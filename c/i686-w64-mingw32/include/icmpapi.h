@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _ICMP_INCLUDED_
@@ -23,8 +23,8 @@ extern "C" {
   DWORD WINAPI Icmp6SendEcho2(HANDLE IcmpHandle,HANDLE Event,FARPROC ApcRoutine,PVOID ApcContext,struct sockaddr_in6 *SourceAddress,struct sockaddr_in6 *DestinationAddress,LPVOID RequestData,WORD RequestSize,PIP_OPTION_INFORMATION RequestOptions,LPVOID ReplyBuffer,DWORD ReplySize,DWORD Timeout);
 #endif
 
-  DWORD IcmpParseReplies(LPVOID ReplyBuffer,DWORD ReplySize);
-  DWORD Icmp6ParseReplies(LPVOID ReplyBuffer,DWORD ReplySize);
+  DWORD WINAPI IcmpParseReplies(LPVOID ReplyBuffer,DWORD ReplySize);
+  DWORD WINAPI Icmp6ParseReplies(LPVOID ReplyBuffer,DWORD ReplySize);
 
 #ifdef __cplusplus
 }

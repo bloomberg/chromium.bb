@@ -1,25 +1,23 @@
 package Moose::Meta::Role::Application::ToInstance;
-BEGIN {
-  $Moose::Meta::Role::Application::ToInstance::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Role::Application::ToInstance::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 use metaclass;
 
 use Scalar::Util 'blessed';
-use List::MoreUtils 'all';
+use List::Util 1.33 'all';
+use Devel::OverloadInfo 0.004 'is_overloaded';
 
-use base 'Moose::Meta::Role::Application';
+use parent 'Moose::Meta::Role::Application';
 
 __PACKAGE__->meta->add_attribute('rebless_params' => (
     reader  => 'rebless_params',
     default => sub { {} },
     Class::MOP::_definition_context(),
 ));
+
+use constant _NEED_OVERLOAD_HACK_FOR_OBJECTS => "$]" < 5.008009;
 
 sub apply {
     my ( $self, $role, $object, $args ) = @_;
@@ -39,15 +37,26 @@ sub apply {
     );
 
     $class->rebless_instance( $object, %{ $self->rebless_params } );
+
+    if ( _NEED_OVERLOAD_HACK_FOR_OBJECTS
+        && is_overloaded( ref $object ) ) {
+
+        # need to use $_[2] here to apply to the object in the caller
+        _reset_amagic($_[2]);
+    }
+
+    return $object;
 }
 
 1;
 
 # ABSTRACT: Compose a role into an instance
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -55,7 +64,7 @@ Moose::Meta::Role::Application::ToInstance - Compose a role into an instance
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -77,20 +86,57 @@ version 2.0602
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

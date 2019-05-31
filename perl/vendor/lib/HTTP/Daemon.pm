@@ -1,15 +1,17 @@
-package HTTP::Daemon;
+package HTTP::Daemon; # git description: v6.03-2-gb274cc6
+# ABSTRACT: A simple http server class
 
 use strict;
-use vars qw($VERSION @ISA $PROTO $DEBUG);
+use warnings;
 
-$VERSION = "6.01";
+our $VERSION = '6.04';
 
 use IO::Socket qw(AF_INET INADDR_ANY INADDR_LOOPBACK inet_ntoa);
-@ISA=qw(IO::Socket::INET);
+our @ISA = qw(IO::Socket::INET);
 
-$PROTO = "HTTP/1.1";
+our $PROTO = "HTTP/1.1";
 
+our $DEBUG;
 
 sub new
 {
@@ -74,11 +76,14 @@ sub product_tokens
 
 
 
-package HTTP::Daemon::ClientConn;
+package  # hide from PAUSE
+    HTTP::Daemon::ClientConn;
+use strict;
+use warnings;
 
-use vars qw(@ISA $DEBUG);
 use IO::Socket ();
-@ISA=qw(IO::Socket::INET);
+our @ISA = qw(IO::Socket::INET);
+our $DEBUG;
 *DEBUG = \$HTTP::Daemon::DEBUG;
 
 use HTTP::Request  ();
@@ -616,9 +621,17 @@ sub daemon
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
-HTTP::Daemon - a simple http server class
+HTTP::Daemon - A simple http server class
+
+=head1 VERSION
+
+version 6.04
 
 =head1 SYNOPSIS
 
@@ -897,10 +910,213 @@ RFC 2616
 
 L<IO::Socket::INET>, L<IO::Socket>
 
-=head1 COPYRIGHT
+=head1 SUPPORT
 
-Copyright 1996-2003, Gisle Aas
+bugs may be submitted through L<https://github.com/libwww-perl/HTTP-Daemon/issues>.
 
-This library is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
+There is also a mailing list available for users of this distribution, at
+L<mailto:libwww@perl.org>.
 
+There is also an irc channel available for users of this distribution, at
+L<C<#lwp> on C<irc.perl.org>|irc://irc.perl.org/#lwp>.
+
+=head1 AUTHOR
+
+Gisle Aas <gisle@activestate.com>
+
+=head1 CONTRIBUTORS
+
+=for stopwords Ville Skyttä Olaf Alders Mark Stosberg Slaven Rezic Karen Etheridge Zefram Tom Hukins Chase Whitener Mike Schilli Alexey Tourbin Bron Gondwana Hans-H. Froehlich Ian Kilgore Jacob J Ondrej Hanak Perlover Peter Rabbitson Robert Stone Rolf Grossmann Sean M. Burke Spiros Denaxas Steve Hay Todd Lipcon Tony Finch Toru Yamaguchi Yuri Karaban amire80 jefflee john9art murphy phrstbrn ruff Adam Kennedy sasao Sjogren Alex Kapranoff Andreas J. Koenig Bill Mann DAVIDRW Daniel Hedlund David E. Wheeler FWILES Father Chrysostomos Gavin Peters Graeme Thompson
+
+=over 4
+
+=item *
+
+Ville Skyttä <ville.skytta@iki.fi>
+
+=item *
+
+Olaf Alders <olaf@wundersolutions.com>
+
+=item *
+
+Mark Stosberg <MARKSTOS@cpan.org>
+
+=item *
+
+Slaven Rezic <slaven@rezic.de>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Zefram <zefram@fysh.org>
+
+=item *
+
+Tom Hukins <tom@eborcom.com>
+
+=item *
+
+Chase Whitener <capoeirab@cpan.org>
+
+=item *
+
+Mike Schilli <mschilli@yahoo-inc.com>
+
+=item *
+
+Alexey Tourbin <at@altlinux.ru>
+
+=item *
+
+Bron Gondwana <brong@fastmail.fm>
+
+=item *
+
+Hans-H. Froehlich <hfroehlich@co-de-co.de>
+
+=item *
+
+Ian Kilgore <iank@cpan.org>
+
+=item *
+
+Jacob J <waif@chaos2.org>
+
+=item *
+
+Ondrej Hanak <ondrej.hanak@ubs.com>
+
+=item *
+
+Perlover <perlover@perlover.com>
+
+=item *
+
+Peter Rabbitson <ribasushi@cpan.org>
+
+=item *
+
+Robert Stone <talby@trap.mtview.ca.us>
+
+=item *
+
+Rolf Grossmann <rg@progtech.net>
+
+=item *
+
+Sean M. Burke <sburke@cpan.org>
+
+=item *
+
+Spiros Denaxas <s.denaxas@gmail.com>
+
+=item *
+
+Steve Hay <SteveHay@planit.com>
+
+=item *
+
+Todd Lipcon <todd@amiestreet.com>
+
+=item *
+
+Tony Finch <dot@dotat.at>
+
+=item *
+
+Toru Yamaguchi <zigorou@cpan.org>
+
+=item *
+
+Yuri Karaban <tech@askold.net>
+
+=item *
+
+amire80 <amir.aharoni@gmail.com>
+
+=item *
+
+jefflee <shaohua@gmail.com>
+
+=item *
+
+john9art <john9art@yahoo.com>
+
+=item *
+
+murphy <murphy@genome.chop.edu>
+
+=item *
+
+phrstbrn <phrstbrn@gmail.com>
+
+=item *
+
+ruff <ruff@ukrpost.net>
+
+=item *
+
+Adam Kennedy <adamk@cpan.org>
+
+=item *
+
+sasao <sasao@yugen.org>
+
+=item *
+
+Adam Sjogren <asjo@koldfront.dk>
+
+=item *
+
+Alex Kapranoff <ka@nadoby.ru>
+
+=item *
+
+Andreas J. Koenig <andreas.koenig@anima.de>
+
+=item *
+
+Bill Mann <wfmann@alum.mit.edu>
+
+=item *
+
+DAVIDRW <davidrw@cpan.org>
+
+=item *
+
+Daniel Hedlund <Daniel.Hedlund@eprize.com>
+
+=item *
+
+David E. Wheeler <david@justatheory.com>
+
+=item *
+
+FWILES <FWILES@cpan.org>
+
+=item *
+
+Father Chrysostomos <sprout@cpan.org>
+
+=item *
+
+Gavin Peters <gpeters@deepsky.com>
+
+=item *
+
+Graeme Thompson <Graeme.Thompson@mobilecohesion.com>
+
+=back
+
+=head1 COPYRIGHT AND LICENCE
+
+This software is copyright (c) 1995 by Gisle Aas.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

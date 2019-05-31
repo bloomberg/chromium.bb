@@ -1,11 +1,5 @@
-
 package Moose::Meta::TypeCoercion;
-BEGIN {
-  $Moose::Meta::TypeCoercion::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::TypeCoercion::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -13,6 +7,8 @@ use metaclass;
 
 use Moose::Meta::Attribute;
 use Moose::Util::TypeConstraints ();
+
+use Moose::Util 'throw_exception';
 
 __PACKAGE__->meta->add_attribute('type_coercion_map' => (
     reader  => 'type_coercion_map',
@@ -50,8 +46,9 @@ sub compile_type_coercion {
         my $type_constraint = ref $constraint_name ? $constraint_name : Moose::Util::TypeConstraints::find_or_parse_type_constraint($constraint_name);
 
         unless ( defined $type_constraint ) {
-            require Moose;
-            Moose->throw_error("Could not find the type constraint ($constraint_name) to coerce from");
+            throw_exception( CouldNotFindTypeConstraintToCoerceFrom => constraint_name => $constraint_name,
+                                                                       instance        => $self
+                           );
         }
 
         push @coercions => [
@@ -88,8 +85,9 @@ sub add_type_coercions {
         my ($constraint_name, $action) = splice(@new_coercion_map, 0, 2);
 
         if ( exists $has_coercion{$constraint_name} ) {
-            require Moose;
-            Moose->throw_error("A coercion action already exists for '$constraint_name'")
+            throw_exception( CoercionAlreadyExists => constraint_name => $constraint_name,
+                                                      instance        => $self
+                           );
         }
 
         push @{$coercion_map} => ($constraint_name, $action);
@@ -106,9 +104,11 @@ sub coerce { $_[0]->_compiled_type_coercion->($_[1]) }
 
 # ABSTRACT: The Moose Type Coercion metaclass
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -116,7 +116,7 @@ Moose::Meta::TypeCoercion - The Moose Type Coercion metaclass
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -128,13 +128,11 @@ class directly, as it's part of the deep internals of Moose.
 
 =head1 METHODS
 
-=over 4
-
-=item B<< Moose::Meta::TypeCoercion->new(%options) >>
+=head2 Moose::Meta::TypeCoercion->new(%options)
 
 Creates a new type coercion object, based on the options provided.
 
-=over 8
+=over 4
 
 =item * type_constraint
 
@@ -143,7 +141,7 @@ being coerced I<to>.
 
 =back
 
-=item B<< $coercion->type_coercion_map >>
+=head2 $coercion->type_coercion_map
 
 This returns the map of type constraints to coercions as an array
 reference. The values of the array alternate between type names and
@@ -152,16 +150,16 @@ subroutine references which implement the coercion.
 The value is an array reference because coercions are tried in the
 order they are added.
 
-=item B<< $coercion->type_constraint >>
+=head2 $coercion->type_constraint
 
 This returns the L<Moose::Meta::TypeConstraint> that was passed to the
 constructor.
 
-=item B<< $coercion->has_coercion_for_type($type_name) >>
+=head2 $coercion->has_coercion_for_type($type_name)
 
 Returns true if the coercion can coerce the named type.
 
-=item B<< $coercion->add_type_coercions( $type_name => $sub, ... ) >>
+=head2 $coercion->add_type_coercions( $type_name => $sub, ... )
 
 This method takes a list of type names and subroutine references. If
 the coercion already has a mapping for a given type, it throws an
@@ -169,7 +167,7 @@ exception.
 
 Coercions are actually
 
-=item B<< $coercion->coerce($value) >>
+=head2 $coercion->coerce($value)
 
 This method takes a value and applies the first valid coercion it
 finds.
@@ -177,29 +175,65 @@ finds.
 This means that if the value could belong to more than type in the
 coercion object, the first coercion added is used.
 
-=item B<< Moose::Meta::TypeCoercion->meta >>
+=head2 Moose::Meta::TypeCoercion->meta
 
 This will return a L<Class::MOP::Class> instance for this class.
-
-=back
 
 =head1 BUGS
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

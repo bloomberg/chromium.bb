@@ -1,4 +1,4 @@
-# $Id: Generator.pm 772 2009-01-23 21:42:09Z pajas 
+# $Id: Generator.pm 772 2009-01-23 21:42:09Z pajas
 #
 # This is free software, you may use it and distribute it under the same terms as
 # Perl itself.
@@ -10,11 +10,12 @@
 package XML::LibXML::SAX::Generator;
 
 use strict;
+use warnings;
 
 use XML::LibXML;
 use vars qw ($VERSION);
 
-$VERSION = "1.98"; # VERSION TEMPLATE: DO NOT CHANGE
+$VERSION = "2.0200"; # VERSION TEMPLATE: DO NOT CHANGE
 
 sub CLONE_SKIP {
   return $XML::LibXML::__threads_shared ? 0 : 1;
@@ -32,18 +33,18 @@ sub new {
 sub generate {
     my $self = shift;
     my ($node) = @_;
-    
+
     my $document = { Parent => undef };
     $self->{Handler}->start_document($document);
-    
+
     process_node($self->{Handler}, $node);
-    
+
     $self->{Handler}->end_document($document);
 }
 
 sub process_node {
     my ($handler, $node) = @_;
-    
+
     my $node_type = $node->getType();
     if ($node_type == XML_COMMENT_NODE) {
         $handler->comment( { Data => $node->getData } );
@@ -79,9 +80,9 @@ sub process_node {
 
 sub process_element {
     my ($handler, $element) = @_;
-    
+
     my @attr;
-    
+
     foreach my $attr ($element->getAttributes) {
         push @attr, XML::LibXML::SAX::AttributeNode->new(
             Name => $attr->getName,
@@ -91,7 +92,7 @@ sub process_element {
             LocalName => $attr->getLocalName,
             );
     }
-    
+
     my $node = {
         Name => $element->getName,
         Attributes => { map { $_->{Name} => $_ } @attr },
@@ -99,13 +100,13 @@ sub process_element {
         Prefix => $element->getPrefix,
         LocalName => $element->getLocalName,
     };
-    
+
     $handler->start_element($node);
-    
+
     foreach my $child ($element->getChildnodes) {
         process_node($handler, $child);
     }
-    
+
     $handler->end_element($node);
 }
 
@@ -137,7 +138,7 @@ XML::LibXML::SAX::Generator - Generate SAX events from a LibXML tree
   my $handler = MySAXHandler->new();
   my $generator = XML::LibXML::SAX::Generator->new(Handler => $handler);
   my $dom = XML::LibXML->new->parse_file("foo.xml");
-  
+
   $generator->generate($dom);
 
 =head1 DESCRIPTION

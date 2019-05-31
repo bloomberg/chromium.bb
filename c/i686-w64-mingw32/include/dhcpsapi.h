@@ -1,13 +1,17 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _DHCPSAPI_
 #define _DHCPSAPI_
 
 #ifndef WINAPI
+#if defined(_ARM_)
+#define WINAPI
+#else
 #define WINAPI __stdcall
+#endif
 #endif
 
 #define DHCP_API_FUNCTION WINAPI
@@ -235,7 +239,7 @@ VOID WINAPI DhcpRpcFreeMemory(PVOID BufferPointer);
 #define ERROR_DHCP_IPRANGE_CONV_ILLEGAL 20049
 #define ERROR_DHCP_NETWORK_CHANGED 20050
 #define ERROR_DHCP_CANNOT_MODIFY_BINDINGS 20051
-#define ERROR_DHCP_SUBNET_EXISTS 20052
+#define ERROR_DHCP_SUBNET_EXISTS_2 20052
 #define ERROR_DHCP_MSCOPE_EXISTS 20053
 #define ERROR_DHCP_MSCOPE_RANGE_TOO_SMALL 20054
 #define ERROR_DHCP_MSCOPE_RANGE_TOO_SMALL 20054
@@ -243,7 +247,7 @@ VOID WINAPI DhcpRpcFreeMemory(PVOID BufferPointer);
 #define ERROR_DDS_NO_DHCP_ROOT 20071
 #define ERROR_DDS_DHCP_SERVER_NOT_FOUND 20074
 #define ERROR_DDS_OPTION_ALREADY_EXISTS 20075
-#define ERROR_DDS_OPTION_ALREADY_EXISTS 20076
+#define ERROR_DDS_OPTION_DOES_NOT_EXIST 20076
 #define ERROR_DDS_CLASS_EXISTS 20077
 #define ERROR_DDS_CLASS_DOES_NOT_EXIST 20078
 #define ERROR_DDS_SERVER_ALREADY_EXISTS 20079

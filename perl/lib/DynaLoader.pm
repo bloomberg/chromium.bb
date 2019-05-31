@@ -1,5 +1,5 @@
 
-# Generated from DynaLoader_pm.PL
+# Generated from DynaLoader_pm.PL, this file is unique for every OS
 
 package DynaLoader;
 
@@ -16,7 +16,7 @@ package DynaLoader;
 # Tim.Bunce@ig.co.uk, August 1994
 
 BEGIN {
-    $VERSION = '1.14';
+    $VERSION = '1.45';
 }
 
 use Config;
@@ -29,6 +29,7 @@ $dl_debug = $ENV{PERL_DL_DEBUG} || 0 unless defined $dl_debug;
 #   0x01  make symbols available for linking later dl_load_file's.
 #         (only known to work on Solaris 2 using dlopen(RTLD_GLOBAL))
 #         (ignored under VMS; effect is built-in to image linking)
+#         (ignored under Android; the linker always uses RTLD_LOCAL)
 #
 # This is called as a class method $module->dl_load_flags.  The
 # definition here will be inherited and result on "default" loading
@@ -43,16 +44,12 @@ sub dl_load_flags { 0x00 }
 $do_expand = 0;
 
 @dl_require_symbols = ();       # names of symbols we need
-@dl_resolve_using   = ();       # names of files to link with
 @dl_library_path    = ();       # path to look for files
 
 #XSLoader.pm may have added elements before we were required
 #@dl_shared_objects  = ();       # shared objects for symbols we have 
 #@dl_librefs         = ();       # things we have loaded
 #@dl_modules         = ();       # Modules we have loaded
-
-# This is a fix to support DLD's unfortunate desire to relink -lc
-@dl_resolve_using = dl_findfile('-lc') if $dlsrc eq "dl_dld.xs";
 
 # Initialise @dl_library_path with the 'standard' library path
 # for this platform as determined by Configure.
@@ -127,6 +124,7 @@ sub bootstrap {
     
     my @modparts = split(/::/,$module);
     my $modfname = $modparts[-1];
+    my $modfname_orig = $modfname; # For .bs file search
 
     # Some systems have restrictions on files names for DLL's etc.
     # mod2fname returns appropriate file base name (typically truncated)
@@ -141,14 +139,15 @@ sub bootstrap {
 		       "(auto/$modpname/$modfname.$dl_dlext)\n"
 	if $dl_debug;
 
+    my $dir;
     foreach (@INC) {
 	
-	    my $dir = "$_/auto/$modpname";
+	    $dir = "$_/auto/$modpname";
 	
 	next unless -d $dir; # skip over uninteresting directories
 	
 	# check for common cases to avoid autoload of dl_findfile
-	my $try = "$dir/$modfname.$dl_dlext";
+        my $try = "$dir/$modfname.$dl_dlext";
 	last if $file = ($do_expand) ? dl_expandspec($try) : ((-f $try) && $try);
 	
 	# no luck here, save dir for possible later dl_findfile search
@@ -168,11 +167,13 @@ sub bootstrap {
     # Execute optional '.bootstrap' perl script for this module.
     # The .bs file can be used to configure @dl_resolve_using etc to
     # match the needs of the individual module on this architecture.
-    my $bs = $file;
+    # N.B. The .bs file does not following the naming convention used
+    # by mod2fname.
+    my $bs = "$dir/$modfname_orig";
     $bs =~ s/(\.\w+)?(;\d*)?$/\.bs/; # look for .bs 'beside' the library
     if (-s $bs) { # only read file if it's not empty
         print STDERR "BS: $bs ($^O, $dlsrc)\n" if $dl_debug;
-        eval { do $bs; };
+        eval { local @INC = ('.'); do $bs; };
         warn "$bs: $@\n" if $@;
     }
 
@@ -187,16 +188,12 @@ sub bootstrap {
     # in this perl code simply because this was the last perl code
     # it executed.
 
-    my $libref = dl_load_file($file, $module->dl_load_flags) or
+    my $flags = $module->dl_load_flags;
+    
+    my $libref = dl_load_file($file, $flags) or
 	croak("Can't load '$file' for module $module: ".dl_error());
 
     push(@dl_librefs,$libref);  # record loaded object
-
-    my @unresolved = dl_undef_symbols();
-    if (@unresolved) {
-	require Carp;
-	Carp::carp("Undefined symbols present after loading $file: @unresolved\n");
-    }
 
     $boot_symbol_ref = dl_find_symbol($libref, $bootname) or
          croak("Can't find '$bootname' symbol in $file\n");
@@ -214,13 +211,12 @@ sub bootstrap {
 }
 
 sub dl_findfile {
-    # Read ext/DynaLoader/DynaLoader.doc for detailed information.
     # This function does not automatically consider the architecture
     # or the perl library auto directories.
     my (@args) = @_;
     my (@dirs,  $dir);   # which directories to search
     my (@found);         # full paths to real files we have found
-    #my $dl_ext= 'dll'; # $Config::Config{'dlext'} suffix for perl extensions
+    #my $dl_ext= 'xs.dll'; # $Config::Config{'dlext'} suffix for perl extensions
     #my $dl_so = 'dll'; # $Config::Config{'so'} suffix for shared libraries
 
     print STDERR "dl_findfile(@args)\n" if $dl_debug;
@@ -239,7 +235,7 @@ sub dl_findfile {
 
         # Deal with directories first:
         #  Using a -L prefix is the preferred option (faster and more robust)
-        if (m:^-L:) { s/^-L//; push(@dirs, $_); next; }
+        if ( s{^-L}{} ) { push(@dirs, $_); next; }
 
         #  Otherwise we try to try to spot directories by a heuristic
         #  (this is a more complicated issue than it first appears)
@@ -249,17 +245,14 @@ sub dl_findfile {
 
         #  Only files should get this far...
         my(@names, $name);    # what filenames to look for
-        if (m:-l: ) {          # convert -lname to appropriate library name
-            s/-l//;
-            push(@names,"lib$_.$dl_so");
-            push(@names,"lib$_.a");
+        if ( s{^-l}{} ) {          # convert -lname to appropriate library name
+            push(@names, "lib$_.$dl_so", "lib$_.a");
         } else {                # Umm, a bare name. Try various alternatives:
             # these should be ordered with the most likely first
             push(@names,"$_.$dl_dlext")    unless m/\.$dl_dlext$/o;
             push(@names,"$_.$dl_so")     unless m/\.$dl_so$/o;
 	    
             push(@names,"lib$_.$dl_so")  unless m:/:;
-            push(@names,"$_.a")          if !m/\.a$/ and $dlsrc eq "dl_dld.xs";
             push(@names, $_);
         }
 	my $dirsep = '/';
@@ -317,7 +310,7 @@ sub dl_find_symbol_anywhere
     my $sym = shift;
     my $libref;
     foreach $libref (@dl_librefs) {
-	my $symref = dl_find_symbol($libref,$sym);
+	my $symref = dl_find_symbol($libref,$sym,1);
 	return $symref if $symref;
     }
     return undef;
@@ -334,7 +327,7 @@ DynaLoader - Dynamically load C libraries into Perl code
     package YourPackage;
     require DynaLoader;
     @ISA = qw(... DynaLoader ...);
-    bootstrap YourPackage;
+    __PACKAGE__->bootstrap;
 
     # optional method for 'global' loading
     sub dl_load_flags { 0x01 }     
@@ -352,7 +345,7 @@ anyone wishing to use the DynaLoader directly in an application.
 
 The DynaLoader is designed to be a very simple high-level
 interface that is sufficiently general to cover the requirements
-of SunOS, HP-UX, NeXT, Linux, VMS and other platforms.
+of SunOS, HP-UX, Linux, VMS and other platforms.
 
 It is also hoped that the interface will cover the needs of OS/2, NT
 etc and also allow pseudo-dynamic linking (using C<ld -A> at runtime).
@@ -372,6 +365,7 @@ DynaLoader Interface Summary
   @dl_resolve_using
   @dl_require_symbols
   $dl_debug
+  $dl_dlext
   @dl_librefs
   @dl_modules
   @dl_shared_objects
@@ -484,6 +478,19 @@ built with the B<-DDEBUGGING> flag.  This can also be set via the
 PERL_DL_DEBUG environment variable.  Set to 1 for minimal information or
 higher for more.
 
+=item $dl_dlext
+
+When specified (localised) in a module's F<.pm> file, indicates the extension
+which the module's loadable object will have. For example:
+
+    local $DynaLoader::dl_dlext = 'unusual_ext';
+
+would indicate that the module's loadable object has an extension of
+C<unusual_ext> instead of the more usual C<$Config{dlext}>.  NOTE: This also
+requires that the module's F<Makefile.PL> specify (in C<WriteMakefile()>):
+
+    DLEXT => 'unusual_ext',
+
 =item dl_findfile()
 
 Syntax:
@@ -556,7 +563,6 @@ current values of @dl_require_symbols and @dl_resolve_using if required.
     SunOS: dlopen($filename)
     HP-UX: shl_load($filename)
     Linux: dld_create_reference(@dl_require_symbols); dld_link($filename)
-    NeXT:  rld_load($filename, @dl_resolve_using)
     VMS:   lib$find_image_symbol($filename,$dl_require_symbols[0])
 
 (The dlopen() function is also used by Solaris and some versions of
@@ -571,9 +577,10 @@ Syntax:
 
 Dynamically unload $libref, which must be an opaque 'library reference' as
 returned from dl_load_file.  Returns one on success and zero on failure.
-
 This function is optional and may not necessarily be provided on all platforms.
-If it is defined, it is called automatically when the interpreter exits for
+
+If it is defined and perl is compiled with the C macro C<DL_UNLOAD_ALL_AT_EXIT>
+defined, then it is called automatically when the interpreter exits for
 every shared object or library loaded by DynaLoader::bootstrap.  All such
 library references are stored in @dl_librefs by DynaLoader::Bootstrap as it
 loads the libraries.  The files are unloaded in last-in, first-out order.
@@ -592,7 +599,6 @@ Apache and mod_perl built with the APXS mechanism.
     SunOS: dlclose($libref)
     HP-UX: ???
     Linux: ???
-    NeXT:  ???
     VMS:   ???
 
 (The dlclose() function is also used by Solaris and some versions of
@@ -628,7 +634,6 @@ be passed to, and understood by, dl_install_xsub().
     SunOS: dlsym($libref, $symbol)
     HP-UX: shl_findsym($libref, $symbol)
     Linux: dld_get_func($symbol) and/or dld_get_symbol($symbol)
-    NeXT:  rld_lookup("_$symbol")
     VMS:   lib$find_image_symbol($libref,$symbol)
 
 
@@ -661,7 +666,7 @@ Syntax:
 
 Create a new Perl external subroutine named $perl_name using $symref as
 a pointer to the function which implements the routine.  This is simply
-a direct call to newXSUB().  Returns a reference to the installed
+a direct call to newXS()/newXS_flags().  Returns a reference to the installed
 function.
 
 The $filename parameter is used by Perl to identify the source file for

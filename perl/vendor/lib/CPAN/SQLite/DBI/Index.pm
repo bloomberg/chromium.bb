@@ -1,31 +1,36 @@
-# $Id: Index.pm 35 2011-06-17 01:34:42Z stro $
+# $Id: Index.pm 79 2019-01-30 02:35:31Z stro $
 
 package CPAN::SQLite::DBI::Index;
-use CPAN::SQLite::DBI qw($dbh);
-use base qw(CPAN::SQLite::DBI);
-
 use strict;
 use warnings;
-our $VERSION = '0.202';
 
-package CPAN::SQLite::DBI::Index::chaps;
-use base qw(CPAN::SQLite::DBI::Index);
+BEGIN {
+  our $VERSION = '0.217';
+  $CPAN::SQLite::DBI::Index::info::VERSION  = $VERSION;
+  $CPAN::SQLite::DBI::Index::mods::VERSION  = $VERSION;
+  $CPAN::SQLite::DBI::Index::dists::VERSION = $VERSION;
+  $CPAN::SQLite::DBI::Index::auths::VERSION = $VERSION;
+}
+
+use CPAN::SQLite::DBI qw($dbh);
+use parent 'CPAN::SQLite::DBI';
+
+package CPAN::SQLite::DBI::Index::info;
+use parent 'CPAN::SQLite::DBI::Index';
 use CPAN::SQLite::DBI qw($dbh);
 
 package CPAN::SQLite::DBI::Index::mods;
-use base qw(CPAN::SQLite::DBI::Index);
+use parent 'CPAN::SQLite::DBI::Index';
 use CPAN::SQLite::DBI qw($dbh);
 
 package CPAN::SQLite::DBI::Index::dists;
-use base qw(CPAN::SQLite::DBI::Index);
+use parent 'CPAN::SQLite::DBI::Index';
 use CPAN::SQLite::DBI qw($dbh);
 
 sub fetch_ids {
   my $self = shift;
-  my $sql = sprintf(qq{SELECT %s,%s,%s FROM %s},
-                    $self->{id}, $self->{name}, 'dist_vers',
-                    $self->{table});
-  my $sth = $dbh->prepare($sql) or do {
+  my $sql  = sprintf(qq{SELECT %s,%s,%s FROM %s}, $self->{id}, $self->{name}, 'dist_vers', $self->{table});
+  my $sth  = $dbh->prepare($sql) or do {
     $self->db_error();
     return;
   };
@@ -35,7 +40,7 @@ sub fetch_ids {
   };
   my ($ids, $versions);
   while (my ($id, $key, $vers) = $sth->fetchrow_array()) {
-    $ids->{$key} = $id;
+    $ids->{$key}      = $id;
     $versions->{$key} = $vers;
   }
   $sth->finish;
@@ -44,7 +49,7 @@ sub fetch_ids {
 }
 
 package CPAN::SQLite::DBI::Index::auths;
-use base qw(CPAN::SQLite::DBI::Index);
+use parent 'CPAN::SQLite::DBI::Index';
 use CPAN::SQLite::DBI qw($dbh);
 
 package CPAN::SQLite::DBI::Index;
@@ -53,9 +58,8 @@ use CPAN::SQLite::DBI qw($dbh);
 
 sub fetch_ids {
   my $self = shift;
-  my $sql = sprintf(qq{SELECT %s,%s from %s},
-                    $self->{id}, $self->{name}, $self->{table});
-  my $sth = $dbh->prepare($sql) or do {
+  my $sql  = sprintf(qq{SELECT %s,%s from %s}, $self->{id}, $self->{name}, $self->{table});
+  my $sth  = $dbh->prepare($sql) or do {
     $self->db_error();
     return;
   };
@@ -76,7 +80,7 @@ sub schema {
   my ($self, $data) = @_;
   my $schema = '';
   foreach my $type (qw(primary other)) {
-    foreach my $column (keys %{$data->{$type}}) {
+    foreach my $column (keys %{ $data->{$type} }) {
       $schema .= $column . ' ' . $data->{$type}->{$column} . ", ";
     }
   }
@@ -86,14 +90,13 @@ sub schema {
 
 sub create_index {
   my ($self, $data) = @_;
-  my $key = $data->{key};
+  my $key   = $data->{key};
   my $table = $self->{table};
   return 1 unless (defined $key and ref($key) eq 'ARRAY');
-  foreach my $index(@$key) {
+  foreach my $index (@$key) {
     my $id_name = 'ix_' . $table . '_' . $index;
     $id_name =~ s/\(\s*\d+\s*\)//;
-    my $sql = 'CREATE INDEX ' . $id_name . ' ON ' .
-      $table . '( ' . $index . ' )';
+    my $sql = 'CREATE INDEX ' . $id_name . ' ON ' . $table . '( ' . $index . ' )';
     my $sth = $dbh->prepare($sql);
     $sth->execute() or do {
       $self->db_error($sth);
@@ -106,11 +109,10 @@ sub create_index {
 }
 
 sub drop_table {
-  my $self = shift;
+  my $self  = shift;
   my $table = $self->{table};
-  my $sql = qq{SELECT name FROM sqlite_master } .
-    qq{ WHERE type='table' AND name=?};
-  my $sth = $dbh->prepare($sql);
+  my $sql   = qq{SELECT name FROM sqlite_master } . qq{ WHERE type='table' AND name=?};
+  my $sth   = $dbh->prepare($sql);
   $sth->execute($table);
   if (defined $sth->fetchrow_array) {
     $dbh->do(qq{drop table $table}) or do {
@@ -141,11 +143,11 @@ sub create_tables {
   my ($self, %args) = @_;
   return unless $args{setup};
   my $objs = $self->{objs};
-  foreach my $table(keys %$objs) {
+  foreach my $table (keys %$objs) {
     next unless my $schema = $self->schema($tables->{$table});
     my $obj = $objs->{$table};
-    $obj->drop_table or return;
-    $obj->create_table($schema) or return;
+    $obj->drop_table                      or return;
+    $obj->create_table($schema)           or return;
     $obj->create_index($tables->{$table}) or return;
   }
   return 1;
@@ -155,8 +157,7 @@ sub sth_insert {
   my ($self, $fields) = @_;
   my $flds = join ',', @{$fields};
   my $vals = join ',', map { '?' } @{$fields};
-  my $sql = sprintf(qq{INSERT INTO %s (%s) VALUES (%s)},
-                    $self->{table}, $flds, $vals);
+  my $sql = sprintf(qq{INSERT INTO %s (%s) VALUES (%s)}, $self->{table}, $flds, $vals);
 
   my $sth = $dbh->prepare($sql) or do {
     $self->db_error();
@@ -168,8 +169,7 @@ sub sth_insert {
 sub sth_update {
   my ($self, $fields, $id, $rep_id) = @_;
   my $set = join ',', map { "$_=?" } @{$fields};
-  my $sql = sprintf(qq{UPDATE %s SET %s WHERE %s = %s},
-                    $self->{table}, $set, $self->{id}, $id);
+  my $sql = sprintf(qq{UPDATE %s SET %s WHERE %s = %s}, $self->{table}, $set, $self->{id}, $id);
   $sql .= qq { AND rep_id = $rep_id } if ($rep_id);
   my $sth = $dbh->prepare($sql) or do {
     $self->db_error();
@@ -180,8 +180,7 @@ sub sth_update {
 
 sub sth_delete {
   my ($self, $table_id, $rep_id) = @_;
-  my $sql = sprintf(qq{DELETE FROM %s where %s = ?},
-                    $self->{table}, $table_id);
+  my $sql = sprintf(qq{DELETE FROM %s where %s = ?}, $self->{table}, $table_id);
   $sql .= qq { AND rep_id = $rep_id } if ($rep_id);
   my $sth = $dbh->prepare($sql) or do {
     $self->db_error();
@@ -192,11 +191,13 @@ sub sth_delete {
 
 1;
 
-__END__
-
 =head1 NAME
 
 CPAN::SQLite::DBI::Index - DBI information for indexing the CPAN::SQLite database
+
+=head1 VERSION
+
+version 0.217
 
 =head1 DESCRIPTION
 
@@ -235,4 +236,3 @@ values from a table.
 L<CPAN::SQLite::Index>
 
 =cut
-

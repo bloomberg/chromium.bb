@@ -244,7 +244,7 @@ sub PUSH {
 
     my $length = $self->FETCHSIZE();
 
-    while (my $content = shift @_) {
+    for my $content (@_) {
         $self->STORE( $length, $content );
         $length++;
     }
@@ -348,7 +348,7 @@ sub SPLICE {
     } $offset .. ($offset + $splice_length - 1);
 
     ##
-    # Adjust array length, and shift elements to accomodate new section.
+    # Adjust array length, and shift elements to accommodate new section.
     ##
     if ( $new_size != $splice_length ) {
         if ($new_size > $splice_length) {

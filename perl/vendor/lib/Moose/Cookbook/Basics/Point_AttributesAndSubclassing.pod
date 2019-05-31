@@ -1,10 +1,11 @@
-package Moose::Cookbook::Basics::Point_AttributesAndSubclassing;
-
+# PODNAME: Moose::Cookbook::Basics::Point_AttributesAndSubclassing
 # ABSTRACT: Point and Point3D classes, showing basic attributes and subclassing.
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Cookbook::Basics::Point_AttributesAndSubclassing - Point and Point3D clas
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -99,8 +100,8 @@ superclass, we use the Moose keyword C<extends>:
 
   extends 'Point';
 
-The C<extends> keyword works much like C<use base>. First, it will
-attempt to load your class if needed. However, unlike C<base>, the
+The C<extends> keyword works much like C<use base>/C<use parent>. First,
+it will attempt to load your class if needed. However, unlike C<base>, the
 C<extends> keyword will I<overwrite> any previous values in your
 package's C<@ISA>, where C<use base> will C<push> values onto the
 package's C<@ISA>.
@@ -172,7 +173,7 @@ required, and calling C<new> without them will throw an error.
 From here on, we can use C<$point> and C<$point3d> just as you would
 any other Perl 5 object. For a more detailed example of what can be
 done, you can refer to the
-F<t/recipes/moose_cookbook_basics_point_attributesandsubclassing.t> test file.
+F<t/recipes/basics_point_attributesandsubclassing.t> test file.
 
 =head2 Moose Objects are Just Hashrefs
 
@@ -432,20 +433,57 @@ foreach my $attr_name (@Point3D_attrs) {
 
 =end testing
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

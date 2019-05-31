@@ -1,10 +1,9 @@
 package MooseX::ClassAttribute::Trait::Application::ToRole;
-BEGIN {
-  $MooseX::ClassAttribute::Trait::Application::ToRole::VERSION = '0.26';
-}
 
 use strict;
 use warnings;
+
+our $VERSION = '0.29';
 
 use Moose::Util::MetaRole;
 use MooseX::ClassAttribute::Trait::Application::ToClass;
@@ -62,9 +61,11 @@ sub _apply_class_attributes {
 
 # ABSTRACT: A trait that supports applying class attributes to roles
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -72,7 +73,7 @@ MooseX::ClassAttribute::Trait::Application::ToRole - A trait that supports apply
 
 =head1 VERSION
 
-version 0.26
+version 0.29
 
 =head1 DESCRIPTION
 
@@ -83,20 +84,21 @@ attributes to roles.
 
 See L<MooseX::ClassAttribute> for details.
 
+Bugs may be submitted through L<the RT bug tracker|http://rt.cpan.org/Public/Dist/Display.html?Name=MooseX-ClassAttribute>
+(or L<bug-moosex-classattribute@rt.cpan.org|mailto:bug-moosex-classattribute@rt.cpan.org>).
+
+I am also usually active on IRC as 'drolsky' on C<irc://irc.perl.org>.
+
 =head1 AUTHOR
 
 Dave Rolsky <autarch@urth.org>
 
-=head1 COPYRIGHT AND LICENSE
+=head1 COPYRIGHT AND LICENCE
 
-This software is Copyright (c) 2011 by Dave Rolsky.
+This software is Copyright (c) 2016 by Dave Rolsky.
 
 This is free software, licensed under:
 
   The Artistic License 2.0 (GPL Compatible)
 
 =cut
-
-
-__END__
-

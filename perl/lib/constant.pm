@@ -1,10 +1,10 @@
 package constant;
-use 5.005;
+use 5.008;
 use strict;
 use warnings::register;
 
-use vars qw($VERSION %declared);
-$VERSION = '1.23';
+our $VERSION = '1.33';
+our %declared;
 
 #=======================================================================
 
@@ -17,30 +17,30 @@ my %forced_into_main = map +($_, 1),
 
 my %forbidden = (%keywords, %forced_into_main);
 
-my $str_end = $] >= 5.006 ? "\\z" : "\\Z";
-my $normal_constant_name = qr/^_?[^\W_0-9]\w*$str_end/;
-my $tolerable = qr/^[A-Za-z_]\w*$str_end/;
-my $boolean = qr/^[01]?$str_end/;
+my $normal_constant_name = qr/^_?[^\W_0-9]\w*\z/;
+my $tolerable = qr/^[A-Za-z_]\w*\z/;
+my $boolean = qr/^[01]?\z/;
 
 BEGIN {
     # We'd like to do use constant _CAN_PCS => $] > 5.009002
     # but that's a bit tricky before we load the constant module :-)
-    # By doing this, we save 1 run time check for *every* call to import.
-    no strict 'refs';
+    # By doing this, we save several run time checks for *every* call
+    # to import.
     my $const = $] > 5.009002;
-    *_CAN_PCS = sub () {$const};
-
-    # Before this makes its way into a dev perl release, we have to do
-    # browser-sniffing, as it were....
-    return unless $const;
-    *{chr 256} = \3;
-    if (exists ${__PACKAGE__."::"}{"\xc4\x80"}) {
-	delete ${__PACKAGE__."::"}{"\xc4\x80"};
-	*_DOWNGRADE = sub () {1};
+    my $downgrade = $] < 5.015004; # && $] >= 5.008
+    my $constarray = exists &_make_const;
+    if ($const) {
+	Internals::SvREADONLY($const, 1);
+	Internals::SvREADONLY($downgrade, 1);
+	$constant::{_CAN_PCS}   = \$const;
+	$constant::{_DOWNGRADE} = \$downgrade;
+	$constant::{_CAN_PCS_FOR_ARRAY} = \$constarray;
     }
     else {
-	delete ${__PACKAGE__."::"}{chr 256};
-	*_DOWNGRADE = sub () {0};
+	no strict 'refs';
+	*{"_CAN_PCS"}   = sub () {$const};
+	*{"_DOWNGRADE"} = sub () { $downgrade };
+	*{"_CAN_PCS_FOR_ARRAY"} = sub () { $constarray };
     }
 }
 
@@ -57,13 +57,13 @@ sub import {
     return unless @_;			# Ignore 'use constant;'
     my $constants;
     my $multiple  = ref $_[0];
-    my $pkg = caller;
+    my $caller = caller;
     my $flush_mro;
     my $symtab;
 
     if (_CAN_PCS) {
 	no strict 'refs';
-	$symtab = \%{$pkg . '::'};
+	$symtab = \%{$caller . '::'};
     };
 
     if ( $multiple ) {
@@ -81,6 +81,20 @@ sub import {
     }
 
     foreach my $name ( keys %$constants ) {
+	my $pkg;
+	my $symtab = $symtab;
+	my $orig_name = $name;
+	if ($name =~ s/(.*)(?:::|')(?=.)//s) {
+	    $pkg = $1;
+	    if (_CAN_PCS && $pkg ne $caller) {
+		no strict 'refs';
+		$symtab = \%{$pkg . '::'};
+	    }
+	}
+	else {
+	    $pkg = $caller;
+	}
+
 	# Normal constant name
 	if ($name =~ $normal_constant_name and !$forbidden{$name}) {
 	    # Everything is okay
@@ -128,9 +142,9 @@ sub import {
 	    my $full_name = "${pkg}::$name";
 	    $declared{$full_name}++;
 	    if ($multiple || @_ == 1) {
-		my $scalar = $multiple ? $constants->{$name} : $_[0];
+		my $scalar = $multiple ? $constants->{$orig_name} : $_[0];
 
-		if (_DOWNGRADE) { # for 5.10 to 5.14
+		if (_DOWNGRADE) { # for 5.8 to 5.14
 		    # Work around perl bug #31991: Sub names (actually glob
 		    # names in general) ignore the UTF8 flag. So we have to
 		    # turn it off to get the "right" symbol table entry.
@@ -139,27 +153,50 @@ sub import {
 
 		# The constant serves to optimise this entire block out on
 		# 5.8 and earlier.
-		if (_CAN_PCS && $symtab && !exists $symtab->{$name}) {
-		    # No typeglob yet, so we can use a reference as space-
-		    # efficient proxy for a constant subroutine
+		if (_CAN_PCS) {
+		    # Use a reference as a proxy for a constant subroutine.
+		    # If this is not a glob yet, it saves space.  If it is
+		    # a glob, we must still create it this way to get the
+		    # right internal flags set, as constants are distinct
+		    # from subroutines created with sub(){...}.
 		    # The check in Perl_ck_rvconst knows that inlinable
 		    # constants from cv_const_sv are read only. So we have to:
 		    Internals::SvREADONLY($scalar, 1);
-		    $symtab->{$name} = \$scalar;
-		    ++$flush_mro;
+		    if (!exists $symtab->{$name}) {
+			$symtab->{$name} = \$scalar;
+			++$flush_mro->{$pkg};
+		    }
+		    else {
+			local $constant::{_dummy} = \$scalar;
+			*$full_name = \&{"_dummy"};
+		    }
 		} else {
 		    *$full_name = sub () { $scalar };
 		}
 	    } elsif (@_) {
 		my @list = @_;
-		*$full_name = sub () { @list };
+		if (_CAN_PCS_FOR_ARRAY) {
+		    _make_const($list[$_]) for 0..$#list;
+		    _make_const(@list);
+		    if (!exists $symtab->{$name}) {
+			$symtab->{$name} = \@list;
+			$flush_mro->{$pkg}++;
+		    }
+		    else {
+			local $constant::{_dummy} = \@list;
+			*$full_name = \&{"_dummy"};
+		    }
+		}
+		else { *$full_name = sub () { @list }; }
 	    } else {
 		*$full_name = sub () { };
 	    }
 	}
     }
     # Flush the cache exactly once if we make any direct symbol table changes.
-    mro::method_changed_in($pkg) if _CAN_PCS && $flush_mro;
+    if (_CAN_PCS && $flush_mro) {
+	mro::method_changed_in($_) for keys %$flush_mro;
+    }
 }
 
 1;
@@ -201,7 +238,7 @@ This pragma allows you to declare constants at compile-time.
 
 When you declare a constant such as C<PI> using the method shown
 above, each machine your script runs upon can have as many digits
-of accuracy as it can use. Also, your program will be easier to
+of accuracy as it can use.  Also, your program will be easier to
 read, more likely to be maintained (and maintained correctly), and
 far less likely to send a space probe to the wrong planet because
 nobody noticed the one equation in which you wrote C<3.14195>.
@@ -214,7 +251,7 @@ away if the constant is false.
 =head1 NOTES
 
 As with all C<use> directives, defining a constant happens at
-compile time. Thus, it's probably not correct to put a constant
+compile time.  Thus, it's probably not correct to put a constant
 declaration inside of a conditional statement (like C<if ($foo)
 { use constant ... }>).
 
@@ -232,10 +269,6 @@ point to data which may be changed, as this code shows.
     ARRAY->[1] = " be changed";
     print ARRAY->[1];
 
-Dereferencing constant references incorrectly (such as using an array
-subscript on a constant hash reference, or vice versa) will be trapped at
-compile time.
-
 Constants belong to the package they are defined in.  To refer to a
 constant defined in another package, specify the full package name, as
 in C<Some::Package::CONSTANT>.  Constants may be exported by modules,
@@ -244,11 +277,18 @@ as C<< Some::Package->CONSTANT >> or as C<< $obj->CONSTANT >> where
 C<$obj> is an instance of C<Some::Package>.  Subclasses may define
 their own constants to override those in their base class.
 
+As of version 1.32 of this module, constants can be defined in packages
+other than the caller, by including the package name in the name of the
+constant:
+
+    use constant "OtherPackage::FWIBBLE" => 7865;
+    constant->import("Other::FWOBBLE",$value); # dynamically at run time
+
 The use of all caps for constant names is merely a convention,
 although it is recommended in order to make constants stand out
 and to help avoid collisions with other barewords, keywords, and
-subroutine names. Constant names must begin with a letter or
-underscore. Names beginning with a double underscore are reserved. Some
+subroutine names.  Constant names must begin with a letter or
+underscore.  Names beginning with a double underscore are reserved.  Some
 poor choices for names will generate warnings, if warnings are enabled at
 compile time.
 
@@ -323,15 +363,15 @@ constants without any problems.
 =head1 TECHNICAL NOTES
 
 In the current implementation, scalar constants are actually
-inlinable subroutines. As of version 5.004 of Perl, the appropriate
+inlinable subroutines.  As of version 5.004 of Perl, the appropriate
 scalar constant is inserted directly in place of some subroutine
-calls, thereby saving the overhead of a subroutine call. See
+calls, thereby saving the overhead of a subroutine call.  See
 L<perlsub/"Constant Functions"> for details about how and when this
 happens.
 
 In the rare case in which you need to discover at run time whether a
 particular constant has been declared via this module, you may use
-this function to examine the hash C<%constant::declared>. If the given
+this function to examine the hash C<%constant::declared>.  If the given
 constant name does not include a package name, the current package is
 used.
 
@@ -346,11 +386,12 @@ used.
 
 =head1 CAVEATS
 
-In the current version of Perl, list constants are not inlined
-and some symbols may be redefined without generating a warning.
+List constants are not inlined unless you are using Perl v5.20 or higher.
+In v5.20 or higher, they are still not read-only, but that may change in
+future versions.
 
 It is not possible to have a subroutine or a keyword with the same
-name as a constant in the same package. This is probably a Good Thing.
+name as a constant in the same package.  This is probably a Good Thing.
 
 A constant with a name in the list C<STDIN STDOUT STDERR ARGV ARGVOUT
 ENV INC SIG> is not allowed anywhere but in package C<main::>, for
@@ -372,9 +413,6 @@ C<< CONSTANT => 'value' >>.
 =head1 SEE ALSO
 
 L<Readonly> - Facility for creating read-only scalars, arrays, hashes.
-
-L<Const> - Facility for creating read-only variables. Similar to C<Readonly>,
-but uses C<SvREADONLY> instead of C<tie>.
 
 L<Attribute::Constant> - Make read-only variables via attribute
 

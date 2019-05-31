@@ -28,10 +28,10 @@ require DBI;    # for looks_like_number()
 
 BEGIN
 {
-    $VERSION = sprintf( "1.%06d", q$Revision: 14600 $ =~ /(\d+)/o );
+    $VERSION = "1.015544";
 
     $versions->{nano_version} = $VERSION;
-    if ( $ENV{DBI_SQL_NANO} || !eval { require SQL::Statement; $SQL::Statement::VERSION ge '1.28' } )
+    if ( $ENV{DBI_SQL_NANO} || !eval { require SQL::Statement; $SQL::Statement::VERSION ge '1.400' } )
     {
         @DBI::SQL::Nano::Statement::ISA = qw(DBI::SQL::Nano::Statement_);
         @DBI::SQL::Nano::Table::ISA     = qw(DBI::SQL::Nano::Table_);
@@ -76,6 +76,7 @@ sub prepare
 {
     my ( $self, $sql ) = @_;
     $sql =~ s/\s+$//;
+    $sql =~ s/\s*;$//;
     for ($sql)
     {
         /^\s*CREATE\s+TABLE\s+(.*?)\s*\((.+)\)\s*$/is
@@ -83,7 +84,8 @@ sub prepare
         {
             $self->{command}      = 'CREATE';
             $self->{table_name}   = $1;
-            $self->{column_names} = parse_coldef_list($2) if $2;
+	    defined $2 and $2 ne "" and
+            $self->{column_names} = parse_coldef_list($2);
             $self->{column_names} or croak "Can't find columns";
         };
         /^\s*DROP\s+TABLE\s+(IF\s+EXISTS\s+)?(.*?)\s*$/is
@@ -91,13 +93,15 @@ sub prepare
         {
             $self->{command}              = 'DROP';
             $self->{table_name}           = $2;
-            $self->{ignore_missing_table} = 1 if $1;
+	    defined $1 and $1 ne "" and
+            $self->{ignore_missing_table} = 1;
         };
         /^\s*SELECT\s+(.*?)\s+FROM\s+(\S+)((.*))?/is
           && do
         {
             $self->{command} = 'SELECT';
-            $self->{column_names} = parse_comma_list($1) if $1;
+	    defined $1 and $1 ne "" and
+            $self->{column_names} = parse_comma_list($1);
             $self->{column_names} or croak "Can't find columns";
             $self->{table_name} = $2;
             if ( my $clauses = $4 )
@@ -115,8 +119,10 @@ sub prepare
         {
             $self->{command}      = 'INSERT';
             $self->{table_name}   = $1;
-            $self->{column_names} = parse_comma_list($2) if $2;
-            $self->{values}       = $self->parse_values_list($4) if $4;
+	    defined $2 and $2 ne "" and
+            $self->{column_names} = parse_comma_list($2);
+	    defined $4 and $4 ne "" and
+            $self->{values}       = $self->parse_values_list($4);
             $self->{values} or croak "Can't parse values";
         };
         /^\s*DELETE\s+FROM\s+(\S+)((.*))?/is
@@ -124,15 +130,18 @@ sub prepare
         {
             $self->{command}      = 'DELETE';
             $self->{table_name}   = $1;
-            $self->{where_clause} = $self->parse_where_clause($3) if $3;
+	    defined $3 and $3 ne "" and
+            $self->{where_clause} = $self->parse_where_clause($3);
         };
         /^\s*UPDATE\s+(\S+)\s+SET\s+(.+)(\s+WHERE\s+.+)/is
           && do
         {
             $self->{command}    = 'UPDATE';
             $self->{table_name} = $1;
-            $self->parse_set_clause($2) if $2;
-            $self->{where_clause} = $self->parse_where_clause($3) if $3;
+	    defined $2 and $2 ne "" and
+            $self->parse_set_clause($2);
+	    defined $3 and $3 ne "" and
+            $self->{where_clause} = $self->parse_where_clause($3);
         };
     }
     croak "Couldn't parse" unless ( $self->{command} and $self->{table_name} );
@@ -329,6 +338,7 @@ sub INSERT ($$$)
     my ( $self, $data, $params ) = @_;
     my $table = $self->open_tables( $data, 0, 1 );
     $self->verify_columns($table);
+    my $all_columns = $table->{col_names};
     $table->seek( $data, 0, 2 ) unless ( $table->can('insert_one_row') );
     my ($array) = [];
     my ( $val, $col, $i );
@@ -336,18 +346,19 @@ sub INSERT ($$$)
     my $cNum = scalar( @{ $self->{column_names} } ) if ( $self->{column_names} );
     my $param_num = 0;
 
-    if ($cNum)
-    {
-        for ( $i = 0; $i < $cNum; $i++ )
-        {
-            $col = $self->{column_names}->[$i];
-            $array->[ $self->column_nums( $table, $col ) ] = $self->row_values($i);
-        }
-    }
-    else
-    {
+    $cNum or
         croak "Bad col names in INSERT";
+
+    my $maxCol = $#$all_columns;
+
+    for ( $i = 0; $i < $cNum; $i++ )
+    {
+       $col = $self->{column_names}->[$i];
+       $array->[ $self->column_nums( $table, $col ) ] = $self->row_values($i);
     }
+
+    # Extend row to put values in ALL fields
+    $#$array < $maxCol and $array->[$maxCol] = undef;
 
     $table->can('insert_new_row') ? $table->insert_new_row( $data, $array ) : $table->push_row( $data, $array );
 
@@ -695,15 +706,8 @@ sub params
     {
         return $self->{"params"}->[$val_num];
     }
-    if (wantarray)
-    {
-        return @{ $self->{"params"} };
-    }
-    else
-    {
-        return scalar @{ $self->{"params"} };
-    }
 
+    return wantarray ? @{ $self->{"params"} } : scalar @{ $self->{"params"} };
 }
 
 sub open_tables

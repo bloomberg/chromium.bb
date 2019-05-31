@@ -2,7 +2,7 @@ package Module::Load::Conditional;
 
 use strict;
 
-use Module::Load;
+use Module::Load qw/load autoload_remote/;
 use Params::Check                       qw[check];
 use Locale::Maketext::Simple Style  => 'gettext';
 
@@ -11,18 +11,23 @@ use File::Spec  ();
 use FileHandle  ();
 use version;
 
-use constant ON_VMS  => $^O eq 'VMS';
+use Module::Metadata ();
+
+use constant ON_VMS   => $^O eq 'VMS';
+use constant ON_WIN32 => $^O eq 'MSWin32' ? 1 : 0;
+use constant QUOTE    => do { ON_WIN32 ? q["] : q['] };
 
 BEGIN {
     use vars        qw[ $VERSION @ISA $VERBOSE $CACHE @EXPORT_OK $DEPRECATED
-                        $FIND_VERSION $ERROR $CHECK_INC_HASH];
+                        $FIND_VERSION $ERROR $CHECK_INC_HASH $FORCE_SAFE_INC ];
     use Exporter;
     @ISA            = qw[Exporter];
-    $VERSION        = '0.50';
+    $VERSION        = '0.68';
     $VERBOSE        = 0;
     $DEPRECATED     = 0;
     $FIND_VERSION   = 1;
     $CHECK_INC_HASH = 0;
+    $FORCE_SAFE_INC = 0;
     @EXPORT_OK      = qw[check_install can_load requires];
 }
 
@@ -193,9 +198,11 @@ sub check_install {
         }
     }
 
-    ### we didnt find the filename yet by looking in %INC,
+    ### we didn't find the filename yet by looking in %INC,
     ### so scan the dirs
     unless( $filename ) {
+
+        local @INC = @INC[0..$#INC-1] if $FORCE_SAFE_INC && $INC[-1] eq '.';
 
         DIR: for my $dir ( @INC ) {
 
@@ -248,34 +255,17 @@ sub check_install {
                 ? VMS::Filespec::unixify( $filename )
                 : $filename;
 
-            ### user wants us to find the version from files
-            if( $FIND_VERSION ) {
+            ### if we don't need the version, we're done
+            last DIR unless $FIND_VERSION;
 
-                my $in_pod = 0;
-                my $line;
-                while ( $line = <$fh> ) {
+            ### otherwise, the user wants us to find the version from files
+            my $mod_info = Module::Metadata->new_from_handle( $fh, $filename );
+            my $ver      = $mod_info->version( $args->{module} );
 
-                    ### #24062: "Problem with CPANPLUS 0.076 misidentifying
-                    ### versions after installing Text::NSP 1.03" where a
-                    ### VERSION mentioned in the POD was found before
-                    ### the real $VERSION declaration.
-                    if( $line =~ /^=(.{0,3})/ ) {
-                        $in_pod = $1 ne 'cut';
-                    }
-                    next if $in_pod;
+            if( defined $ver ) {
+                $href->{version} = $ver;
 
-                    ### skip lines which doesn't contain VERSION
-                    next unless $line =~ /VERSION/;
-
-                    ### try to find a version declaration in this string.
-                    my $ver = __PACKAGE__->_parse_version( $line );
-
-                    if( defined $ver ) {
-                        $href->{version} = $ver;
-
-                        last DIR;
-                    }
-                }
+                last DIR;
             }
         }
     }
@@ -319,78 +309,22 @@ sub check_install {
         };
     }
 
-    if ( $DEPRECATED and version->new($]) >= version->new('5.011') ) {
+    if ( $DEPRECATED and "$]" >= 5.011 ) {
+        local @INC = @INC[0..$#INC-1] if $FORCE_SAFE_INC && $INC[-1] eq '.';
         require Module::CoreList;
         require Config;
 
         $href->{uptodate} = 0 if
            exists $Module::CoreList::version{ 0+$] }{ $args->{module} } and
            Module::CoreList::is_deprecated( $args->{module} ) and
-           $Config::Config{privlibexp} eq $href->{dir};
+           $Config::Config{privlibexp} eq $href->{dir}
+           and $Config::Config{privlibexp} ne $Config::Config{sitelibexp};
     }
 
     return $href;
 }
 
-sub _parse_version {
-    my $self    = shift;
-    my $str     = shift or return;
-    my $verbose = shift || 0;
-
-    ### skip commented out lines, they won't eval to anything.
-    return if $str =~ /^\s*#/;
-
-    ### the following regexp & eval statement comes from the
-    ### ExtUtils::MakeMaker source (EU::MM_Unix->parse_version)
-    ### Following #18892, which tells us the original
-    ### regex breaks under -T, we must modify it so
-    ### it captures the entire expression, and eval /that/
-    ### rather than $_, which is insecure.
-    my $taint_safe_str = do { $str =~ /(^.*$)/sm; $1 };
-
-    if( $str =~ /(?<!\\)([\$*])(([\w\:\']*)\bVERSION)\b.*\=/ ) {
-
-        print "Evaluating: $str\n" if $verbose;
-
-        ### this creates a string to be eval'd, like:
-        # package Module::Load::Conditional::_version;
-        # no strict;
-        #
-        # local $VERSION;
-        # $VERSION=undef; do {
-        #     use version; $VERSION = qv('0.0.3');
-        # }; $VERSION
-
-        my $eval = qq{
-            package Module::Load::Conditional::_version;
-            no strict;
-
-            local $1$2;
-            \$$2=undef; do {
-                $taint_safe_str
-            }; \$$2
-        };
-
-        print "Evaltext: $eval\n" if $verbose;
-
-        my $result = do {
-            local $^W = 0;
-            eval($eval);
-        };
-
-
-        my $rv = defined $result ? $result : '0.0';
-
-        print( $@ ? "Error: $@\n" : "Result: $rv\n" ) if $verbose;
-
-        return $rv;
-    }
-
-    ### unable to find a version in this string
-    return;
-}
-
-=head2 $bool = can_load( modules => { NAME => VERSION [,NAME => VERSION] }, [verbose => BOOL, nocache => BOOL] )
+=head2 $bool = can_load( modules => { NAME => VERSION [,NAME => VERSION] }, [verbose => BOOL, nocache => BOOL, autoload => BOOL] )
 
 C<can_load> will take a list of modules, optionally with version
 numbers and determine if it is able to load them. If it can load *ALL*
@@ -400,8 +334,8 @@ This is particularly useful if you have More Than One Way (tm) to
 solve a problem in a program, and only wish to continue down a path
 if all modules could be loaded, and not load them if they couldn't.
 
-This function uses the C<load> function from Module::Load under the
-hood.
+This function uses the C<load> function or the C<autoload_remote> function
+from Module::Load under the hood.
 
 C<can_load> takes the following arguments:
 
@@ -426,6 +360,12 @@ same module twice, nor will it attempt to load a module that has
 already failed to load before. By default, C<can_load> will check its
 cache, but you can override that by setting C<nocache> to true.
 
+=item autoload
+
+This controls whether imports the functions of a loaded modules to the caller package. The default is no importing any functions.
+
+See the C<autoload> function and the C<autoload_remote> function from L<Module::Load> for details.
+
 =cut
 
 sub can_load {
@@ -435,6 +375,7 @@ sub can_load {
         modules     => { default => {}, strict_type => 1 },
         verbose     => { default => $VERBOSE },
         nocache     => { default => 0 },
+        autoload    => { default => 0 },
     };
 
     my $args;
@@ -507,7 +448,14 @@ sub can_load {
 
             if ( $CACHE->{$mod}->{uptodate} ) {
 
-                eval { load $mod };
+                local @INC = @INC[0..$#INC-1] if $FORCE_SAFE_INC && $INC[-1] eq '.';
+
+                if ( $args->{autoload} ) {
+                    my $who = (caller())[0];
+                    eval { autoload_remote $who, $mod };
+                } else {
+                    eval { load $mod };
+                }
 
                 ### in case anything goes wrong, log the error, the fact
                 ### we tried to use this module and return 0;
@@ -567,13 +515,18 @@ sub requires {
         return undef;
     }
 
+    local @INC = @INC[0..$#INC-1] if $FORCE_SAFE_INC && $INC[-1] eq '.';
+
     my $lib = join " ", map { qq["-I$_"] } @INC;
-    my $cmd = qq["$^X" $lib -M$who -e"print(join(qq[\\n],keys(%INC)))"];
+    my $oneliner = 'print(join(qq[\n],map{qq[BONG=$_]}keys(%INC)),qq[\n])';
+    my $cmd = join '', qq["$^X" $lib -M$who -e], QUOTE, $oneliner, QUOTE;
 
     return  sort
                 grep { !/^$who$/  }
                 map  { chomp; s|/|::|g; $_ }
                 grep { s|\.pm$||i; }
+                map  { s!^BONG\=!!; $_ }
+                grep { m!^BONG\=! }
             `$cmd`;
 }
 
@@ -616,6 +569,12 @@ to C<true> will trust any entries in C<%INC> and return them for
 you.
 
 The default is 0;
+
+=head2 $Module::Load::Conditional::FORCE_SAFE_INC
+
+This controls whether C<Module::Load::Conditional> sanitises C<@INC>
+by removing "C<.>". The current default setting is C<0>, but this
+may change in a future release.
 
 =head2 $Module::Load::Conditional::CACHE
 

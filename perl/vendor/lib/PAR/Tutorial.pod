@@ -1098,7 +1098,7 @@ L<App::Packer>, L<Apache::PAR>, L<CPANPLUS>, L<Module::Install>
 
 Audrey Tang E<lt>cpan@audreyt.orgE<gt>
 
-L<http://par.perl.org/> is the official PAR website.  You can write
+You can write
 to the mailing list at E<lt>par@perl.orgE<gt>, or send an empty mail to
 E<lt>par-subscribe@perl.orgE<gt> to participate in the discussion.
 
@@ -1111,6 +1111,6 @@ Copyright 2003, 2004, 2005, 2006 by Audrey Tang E<lt>cpan@audreyt.orgE<gt>.
 This document is free documentation; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See F<LICENSE>.
 
 =cut

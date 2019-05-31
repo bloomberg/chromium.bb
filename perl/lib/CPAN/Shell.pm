@@ -47,7 +47,7 @@ use vars qw(
              "CPAN/Tarzip.pm",
              "CPAN/Version.pm",
             );
-$VERSION = "5.5002";
+$VERSION = "5.5009";
 # record the initial timestamp for reload.
 $reload = { map {$INC{$_} ? ($_,(stat $INC{$_})[9]) : ()} @relo };
 @CPAN::Shell::ISA = qw(CPAN::Debug);
@@ -174,8 +174,8 @@ Download, Test, Make, Install...
  test     make test (implies make)     readme   display these README files
  install  make install (implies test)  perldoc  display POD documentation
 
-Upgrade
- r        WORDs or /REGEXP/ or NONE    report updates for some/matching/all modules
+Upgrade installed modules
+ r        WORDs or /REGEXP/ or NONE    report updates for some/matching/all
  upgrade  WORDs or /REGEXP/ or NONE    upgrade some/matching/all modules
 
 Pragmas
@@ -206,7 +206,7 @@ sub a {
 sub globls {
     my($self,$s,$pragmas) = @_;
     # ls is really very different, but we had it once as an ordinary
-    # command in the Shell (upto rev. 321) and we could not handle
+    # command in the Shell (up to rev. 321) and we could not handle
     # force well then
     my(@accept,@preexpand);
     if ($s =~ /[\*\?\/]/) {
@@ -374,6 +374,9 @@ sub o {
         if (!@o_what or $cfilter) { # print all things, "o conf"
             $cfilter ||= "";
             my $qrfilter = eval 'qr/$cfilter/';
+            if ($@) {
+                $CPAN::Frontend->mydie("Cannot parse commandline: $@");
+            }
             my($k,$v);
             my $configpm = CPAN::HandleConfig->require_myconfig_or_config;
             $CPAN::Frontend->myprint("\$CPAN::Config options from $configpm\:\n");
@@ -514,14 +517,14 @@ sub hosts {
         $s->{dltime} += $dltime;
     }
     my $res;
-    for my $url (keys %{$S{ok}}) {
+    for my $url (sort keys %{$S{ok}}) {
         next if $S{ok}{$url}{dltime} == 0; # div by zero
         push @{$res->{ok}}, [@{$S{ok}{$url}}{qw(n dlsize dltime)},
                              $S{ok}{$url}{dlsize}/$S{ok}{$url}{dltime},
                              $url,
                             ];
     }
-    for my $url (keys %{$S{no}}) {
+    for my $url (sort keys %{$S{no}}) {
         push @{$res->{no}}, [$S{no}{$url},
                              $url,
                             ];
@@ -559,7 +562,7 @@ sub reload {
     $self->debug("self[$self]command[$command]arg[@arg]") if $CPAN::DEBUG;
     if ($command =~ /^cpan$/i) {
         my $redef = 0;
-        chdir $CPAN::iCwd if $CPAN::iCwd; # may fail
+        chdir "$CPAN::iCwd" if $CPAN::iCwd; # may fail
         my $failed;
       MFILE: for my $f (@relo) {
             next unless exists $INC{$f};
@@ -604,7 +607,7 @@ sub _reload_this {
     CPAN->debug("file[$file]") if $CPAN::DEBUG;
     my @inc = @INC;
     unless ($file && -f $file) {
-        # this thingie is not in the INC path, maybe CPAN/MyConfig.pm?
+        # this thingy is not in the INC path, maybe CPAN/MyConfig.pm?
         $file = $INC{$f};
         unless (CPAN->has_inst("File::Basename")) {
             @inc = File::Basename::dirname($file);
@@ -626,11 +629,18 @@ sub _reload_this {
     if ($must_reload) {
         my $fh = FileHandle->new($file) or
             $CPAN::Frontend->mydie("Could not open $file: $!");
-        local($/);
-        local $^W = 1;
-        my $content = <$fh>;
+        my $content;
+        {
+            local($/);
+            local $^W = 1;
+            $content = <$fh>;
+        }
         CPAN->debug(sprintf("reload file[%s] content[%s...]",$file,substr($content,0,128)))
             if $CPAN::DEBUG;
+        my $includefile;
+        if ($includefile = $INC{$f} and -e $includefile) {
+            $f = $includefile;
+        }
         delete $INC{$f};
         local @INC = @inc;
         eval "require '$f'";
@@ -767,6 +777,31 @@ sub scripts {
         }
         $CPAN::Frontend->myprint("$highest\n");
     }
+}
+
+sub _guess_manpage {
+    my($self,$d,$contains,$dist) = @_;
+    $dist =~ s/-/::/g;
+    my $module;
+    if (exists $contains->{$dist}) {
+        $module = $dist;
+    } elsif (1 == keys %$contains) {
+        ($module) = keys %$contains;
+    }
+    my $manpage;
+    if ($module) {
+        my $m = $self->expand("Module",$module);
+        $m->as_string; # called for side-effects, shame
+        $manpage = $m->{MANPAGE};
+    } else {
+        $manpage = "unknown";
+    }
+    return $manpage;
+}
+
+#-> sub CPAN::Shell::_specfile ;
+sub _specfile {
+    die "CPAN::Shell::_specfile() has been moved to CPAN::Plugin::Specfile::post_test()";
 }
 
 #-> sub CPAN::Shell::report ;
@@ -988,7 +1023,7 @@ CPAN_VERSION: %s %s
         $need{$module->id}++;
     }
     unless (%need) {
-        if ($what eq "u") {
+        if (!@expand || $what eq "u") {
             $CPAN::Frontend->myprint("No modules found for @args\n");
         } elsif ($what eq "r") {
             $CPAN::Frontend->myprint("All modules are up to date for @args\n");
@@ -1040,59 +1075,7 @@ sub u {
 #-> sub CPAN::Shell::failed ;
 sub failed {
     my($self,$only_id,$silent) = @_;
-    my @failed;
-  DIST: for my $d ($CPAN::META->all_objects("CPAN::Distribution")) {
-        my $failed = "";
-      NAY: for my $nosayer ( # order matters!
-                            "unwrapped",
-                            "writemakefile",
-                            "signature_verify",
-                            "make",
-                            "make_test",
-                            "install",
-                            "make_clean",
-                           ) {
-            next unless exists $d->{$nosayer};
-            next unless defined $d->{$nosayer};
-            next unless (
-                         UNIVERSAL::can($d->{$nosayer},"failed") ?
-                         $d->{$nosayer}->failed :
-                         $d->{$nosayer} =~ /^NO/
-                        );
-            next NAY if $only_id && $only_id != (
-                                                 UNIVERSAL::can($d->{$nosayer},"commandid")
-                                                 ?
-                                                 $d->{$nosayer}->commandid
-                                                 :
-                                                 $CPAN::CurrentCommandId
-                                                );
-            $failed = $nosayer;
-            last;
-        }
-        next DIST unless $failed;
-        my $id = $d->id;
-        $id =~ s|^./../||;
-        #$print .= sprintf(
-        #                  "  %-45s: %s %s\n",
-        push @failed,
-            (
-             UNIVERSAL::can($d->{$failed},"failed") ?
-             [
-              $d->{$failed}->commandid,
-              $id,
-              $failed,
-              $d->{$failed}->text,
-              $d->{$failed}{TIME}||0,
-             ] :
-             [
-              1,
-              $id,
-              $failed,
-              $d->{$failed},
-              0,
-             ]
-            );
-    }
+    my @failed = $self->find_failed($only_id);
     my $scope;
     if ($only_id) {
         $scope = "this command";
@@ -1123,6 +1106,75 @@ sub failed {
     } elsif (!$only_id || !$silent) {
         $CPAN::Frontend->myprint("Nothing failed in $scope\n");
     }
+}
+
+sub find_failed {
+    my($self,$only_id) = @_;
+    my @failed;
+  DIST: for my $d (sort { $a->id cmp $b->id } $CPAN::META->all_objects("CPAN::Distribution")) {
+        my $failed = "";
+      NAY: for my $nosayer ( # order matters!
+                            "unwrapped",
+                            "writemakefile",
+                            "signature_verify",
+                            "make",
+                            "make_test",
+                            "install",
+                            "make_clean",
+                           ) {
+            next unless exists $d->{$nosayer};
+            next unless defined $d->{$nosayer};
+            next unless (
+                         UNIVERSAL::can($d->{$nosayer},"failed") ?
+                         $d->{$nosayer}->failed :
+                         $d->{$nosayer} =~ /^NO/
+                        );
+            next NAY if $only_id && $only_id != (
+                                                 UNIVERSAL::can($d->{$nosayer},"commandid")
+                                                 ?
+                                                 $d->{$nosayer}->commandid
+                                                 :
+                                                 $CPAN::CurrentCommandId
+                                                );
+            $failed = $nosayer;
+            last;
+        }
+        next DIST unless $failed;
+        my $id = $d->id;
+        $id =~ s|^./../||;
+        ### XXX need to flag optional modules as '(optional)' if they are
+        # from recommends/suggests -- i.e. *show* failure, but make it clear
+        # it was failure of optional module -- xdg, 2012-04-01
+        $id = "(optional) $id" if ! $d->{mandatory};
+        #$print .= sprintf(
+        #                  "  %-45s: %s %s\n",
+        push @failed,
+            (
+             UNIVERSAL::can($d->{$failed},"failed") ?
+             [
+              $d->{$failed}->commandid,
+              $id,
+              $failed,
+              $d->{$failed}->text,
+              $d->{$failed}{TIME}||0,
+              !! $d->{mandatory},
+             ] :
+             [
+              1,
+              $id,
+              $failed,
+              $d->{$failed},
+              0,
+              !! $d->{mandatory},
+             ]
+            );
+    }
+    return @failed;
+}
+
+sub mandatory_dist_failed {
+    my ($self) = @_;
+    return grep { $_->[5] } $self->find_failed($CPAN::CurrentCommandID);
 }
 
 # XXX intentionally undocumented because completely bogus, unportable,
@@ -1428,6 +1480,14 @@ sub format_result {
     my $print_ornamented_have_warned = 0;
     sub colorize_output {
         my $colorize_output = $CPAN::Config->{colorize_output};
+        if ($colorize_output && $^O eq 'MSWin32' && !$CPAN::META->has_inst("Win32::Console::ANSI")) {
+            unless ($print_ornamented_have_warned++) {
+                # no myprint/mywarn within myprint/mywarn!
+                warn "Colorize_output is set to true but Win32::Console::ANSI is not
+installed. To activate colorized output, please install Win32::Console::ANSI.\n\n";
+            }
+            $colorize_output = 0;
+        }
         if ($colorize_output && !$CPAN::META->has_inst("Term::ANSIColor")) {
             unless ($print_ornamented_have_warned++) {
                 # no myprint/mywarn within myprint/mywarn!
@@ -1461,7 +1521,7 @@ sub print_ornamented {
     }
     if ($self->colorize_output) {
         if ( $CPAN::DEBUG && $swhat =~ /^Debug\(/ ) {
-            # if you want to have this configurable, please file a bugreport
+            # if you want to have this configurable, please file a bug report
             $ornament = $CPAN::Config->{colorize_debug} || "black on_cyan";
         }
         my $color_on = eval { Term::ANSIColor::color($ornament) } || "";
@@ -1551,9 +1611,10 @@ sub mydie {
 
 # sub CPAN::Shell::colorable_makemaker_prompt ;
 sub colorable_makemaker_prompt {
-    my($foo,$bar) = @_;
+    my($foo,$bar,$ornament) = @_;
+    $ornament ||= "colorize_print";
     if (CPAN::Shell->colorize_output) {
-        my $ornament = $CPAN::Config->{colorize_print}||'bold blue on_white';
+        my $ornament = $CPAN::Config->{$ornament}||'bold blue on_white';
         my $color_on = eval { Term::ANSIColor::color($ornament); } || "";
         print $color_on;
     }
@@ -1591,6 +1652,7 @@ sub unrecoverable_error {
 
 #-> sub CPAN::Shell::mysleep ;
 sub mysleep {
+    return if $ENV{AUTOMATED_TESTING} || ! -t STDOUT;
     my($self, $sleep) = @_;
     if (CPAN->has_inst("Time::HiRes")) {
         Time::HiRes::sleep($sleep);
@@ -1700,7 +1762,7 @@ sub rematein {
                     }
                 }
             }
-            CPAN::Queue->queue_item(qmod => $obj->id, reqtype => "c");
+            CPAN::Queue->queue_item(qmod => $obj->id, reqtype => "c", optional => '');
             push @qcopy, $obj;
         } elsif ($CPAN::META->exists('CPAN::Author',uc($s))) {
             $obj = $CPAN::META->instance('CPAN::Author',uc($s));
@@ -1738,6 +1800,7 @@ to find objects with matching identifiers.
         my $obj;
         my $s = $q->as_string;
         my $reqtype = $q->reqtype || "";
+        my $optional = $q->optional || "";
         $obj = CPAN::Shell->expandany($s);
         unless ($obj) {
             # don't know how this can happen, maybe we should panic,
@@ -1750,6 +1813,23 @@ to find objects with matching identifiers.
             next QITEM;
         }
         $obj->{reqtype} ||= "";
+        my $type = ref $obj;
+        if ( $type eq 'CPAN::Distribution' || $type eq 'CPAN::Bundle' ) {
+            $obj->{mandatory} ||= ! $optional; # once mandatory, always mandatory
+        }
+        elsif ( $type eq 'CPAN::Module' ) {
+            $obj->{mandatory} ||= ! $optional; # once mandatory, always mandatory
+            if (my $d = $obj->distribution) {
+                $d->{mandatory} ||= ! $optional; # once mandatory, always mandatory
+            } elsif ($optional) {
+                # the queue object does not know who was recommending/suggesting us:(
+                # So we only vaguely write "optional".
+                $CPAN::Frontend->mywarn("Warning: optional module '$s' ".
+                                        "not known. Skipping.\n");
+                CPAN::Queue->delete_first($s);
+                next QITEM;
+            }
+        }
         {
             # force debugging because CPAN::SQLite somehow delivers us
             # an empty object;
@@ -1788,7 +1868,7 @@ to find objects with matching identifiers.
             }
         }
         if (UNIVERSAL::can($obj, 'called_for')) {
-            $obj->called_for($s);
+            $obj->called_for($s) unless $obj->called_for;
         }
         CPAN->debug(qq{pragma[@pragma]meth[$meth]}.
                     qq{ID[$obj->{ID}]}) if $CPAN::DEBUG;
@@ -1812,11 +1892,18 @@ to find objects with matching identifiers.
             }
             CPAN->debug("Going to panic. meth[$meth]s[$s]") if $CPAN::DEBUG;
             $CPAN::Frontend->mydie("Panic: obj[$serialized] cannot meth[$meth]");
-        } elsif ($obj->$meth()) {
-            CPAN::Queue->delete($s);
-            CPAN->debug("From queue deleted. meth[$meth]s[$s]") if $CPAN::DEBUG;
         } else {
-            CPAN->debug("Failed. pragma[@pragma]meth[$meth]") if $CPAN::DEBUG;
+            my $upgraded_meth = $meth;
+            if ( $meth eq "make" and $obj->{reqtype} eq "b" ) {
+                # rt 86915
+                $upgraded_meth = "test";
+            }
+            if ($obj->$upgraded_meth()) {
+                CPAN::Queue->delete($s);
+                CPAN->debug("Succeeded and deleted from queue. pragma[@pragma]meth[$meth][s][$s]") if $CPAN::DEBUG;
+            } else {
+                CPAN->debug("Failed. pragma[@pragma]meth[$meth]s[$s]") if $CPAN::DEBUG;
+            }
         }
 
         $obj->undelay;
@@ -1826,10 +1913,14 @@ to find objects with matching identifiers.
                 $obj->$unpragma();
             }
         }
-        if ($CPAN::Config->{halt_on_failure}
-                &&
-                    CPAN::Distrostatus::something_has_just_failed()
-              ) {
+        # if any failures occurred and the current object is mandatory, we
+        # still don't know if *it* failed or if it was another (optional)
+        # module, so we have to check that explicitly (and expensively)
+        if (    $CPAN::Config->{halt_on_failure}
+            && $obj->{mandatory}
+            && CPAN::Distrostatus::something_has_just_failed()
+            && $self->mandatory_dist_failed()
+        ) {
             $CPAN::Frontend->mywarn("Stopping: '$meth' failed for '$s'.\n");
             CPAN::Queue->nullify_queue;
             last QITEM;

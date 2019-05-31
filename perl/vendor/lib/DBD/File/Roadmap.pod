@@ -71,7 +71,7 @@ too).  Similar arguments could be made for DBD::DBM, DBD::AnyData,
 DBD::RAM or DBD::PO etc.
 
 To improve the performance of the underlying SQL engines, a clean
-reimplementation seems to be required. Currently both engines are
+re-implementation seems to be required. Currently both engines are
 prematurely optimized and therefore it is not trivial to provide
 further optimization without the risk of breaking existing features.
 
@@ -142,7 +142,7 @@ sources and allow joins between the tables of them:
 
 =head1 PRIORITIES
 
-Our priorities are focussed on current issues. Initially many new test
+Our priorities are focused on current issues. Initially many new test
 cases for DBD::File and DBD::DBM should be added to the DBI test
 suite. After that some additional documentation on how to use the
 DBD::File API will be provided.

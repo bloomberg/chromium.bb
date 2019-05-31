@@ -1,95 +1,24 @@
-# $Id: FCGI.PL,v 1.37 2002/12/15 20:02:48 skimo Exp $
-
 package FCGI;
+use strict;
 
-require Exporter;
-require DynaLoader;
+BEGIN {
+    our $VERSION = '0.78';
 
-@ISA = qw(Exporter DynaLoader);
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-@EXPORT = qw(
+    require XSLoader;
+    XSLoader::load(__PACKAGE__, $VERSION);
+}
 
-);
-
-$VERSION = q{0.74};
-
-bootstrap FCGI;
-$VERSION = eval $VERSION;
-# Preloaded methods go here.
-
-# Autoload methods go after __END__, and are processed by the autosplit program.
-
-*FAIL_ACCEPT_ON_INTR = sub() { 1 };
+sub FAIL_ACCEPT_ON_INTR () { 1 };
 
 sub Request(;***$*$) {
-    my @defaults = (\*STDIN, \*STDOUT, \*STDERR, \%ENV, 0, FAIL_ACCEPT_ON_INTR());
+    my @defaults = (\*STDIN, \*STDOUT, \*STDERR, \%ENV, 0, FAIL_ACCEPT_ON_INTR);
     $_[4] = fileno($_[4]) if defined($_[4]) && defined(fileno($_[4]));
     splice @defaults,0,@_,@_;
-    RequestX(@defaults);
+    &RequestX(@defaults);
 }
-
-sub accept() {
-    warn "accept called as a method; you probably wanted to call Accept" if @_;
-    if ( defined($FCGI::ENV) ) {
-        %ENV = %$FCGI::ENV;
-    } else {
-        $FCGI::ENV = {%ENV};
-    }
-    my $rc = Accept($global_request);
-    for (keys %$FCGI::ENV) {
-        $ENV{$_} = $FCGI::ENV->{$_} unless exists $ENV{$_};
-    }
-
-    # not SFIO
-    $SIG{__WARN__} = $warn_handler if (tied (*STDIN));
-    $SIG{__DIE__} = $die_handler if (tied (*STDIN));
-
-    return $rc;
-}
-
-sub finish() {
-    warn "finish called as a method; you probably wanted to call Finish" if @_;
-    %ENV = %$FCGI::ENV if defined($FCGI::ENV);
-
-    # not SFIO
-    if (tied (*STDIN)) {
-        delete $SIG{__WARN__} if ($SIG{__WARN__} == $warn_handler);
-        delete $SIG{__DIE__} if ($SIG{__DIE__} == $die_handler);
-    }
-
-    Finish ($global_request);
-}
-
-sub flush() {
-    warn "flush called as a method; you probably wanted to call Flush" if @_;
-    Flush($global_request);
-}
-
-sub detach() {
-    warn "detach called as a method; you probably wanted to call Detach" if @_;
-    Detach($global_request);
-}
-
-sub attach() {
-    warn "attach called as a method; you probably wanted to call Attach" if @_;
-    Attach($global_request);
-}
-
-# deprecated
-sub set_exit_status {
-}
-
-sub start_filter_data() {
-    StartFilterData($global_request);
-}
-
-$global_request = Request();
-$warn_handler = sub { print STDERR @_ };
-$die_handler = sub { print STDERR @_ unless $^S };
 
 package FCGI::Stream;
+use strict;
 
 sub PRINTF {
   shift->PRINT(sprintf(shift, @_));
@@ -120,22 +49,24 @@ sub READLINE {
 }
 
 sub OPEN {
-    $_[0]->CLOSE;
-    if (@_ == 2) {
-        return open($_[0], $_[1]);
-    } else {
-        my $rc;
-        eval("$rc = open($_[0], $_[1], $_[2])");
-        die $@ if $@;
-        return $rc;
-    }
+    require Carp;
+    Carp::croak(q/Operation 'OPEN' not supported on FCGI::Stream handle/);
 }
 
-# Some things (e.g. IPC::Run) use fileno to determine if a filehandle is open,
-# so we return a defined, but meaningless value. (-1 being the error return
-# value from the syscall in c, meaning it can never be a valid fd no)
-# Probably a better alternative would be to return the fcgi stream fd.
-sub FILENO { -1 }
+sub SEEK {
+    require Carp;
+    Carp::croak(q/Operation 'SEEK' not supported on FCGI::Stream handle/);
+}
+
+sub TELL {
+    require Carp;
+    Carp::croak(q/Operation 'TELL' not supported on FCGI::Stream handle/);
+}
+
+sub TIEHANDLE {
+    require Carp;
+    Carp::croak(q/Operation 'TIEHANDLE' not supported on FCGI::Stream handle/);
+}
 
 1;
 
@@ -303,7 +234,7 @@ Returns whether or not the program was run as a FastCGI.
 
 =back
 
-=HEAD1 LIMITATIONS
+=head1 LIMITATIONS
 
 FCGI.pm isn't Unicode aware, only characters within the range 0x00-0xFF are 
 supported. Attempts to output strings containing characters above 0xFF results
@@ -321,6 +252,13 @@ exception by using the C<bytes> pragma.
 =head1 AUTHOR
 
 Sven Verdoolaege <skimo@kotnet.org>
+
+=head1 COPYRIGHT AND LICENCE
+
+This software is copyrighted (c) 1996 by by Open Market, Inc.
+
+See the LICENSE file in this distribution for information on usage and
+redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
 =cut
 

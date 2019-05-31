@@ -158,7 +158,7 @@ use overload '""'   => sub { ${*{$_[0]}->{SR}} };
 use overload 'bool' => sub { 1 };      ### have to do this, so object is true!
 
 ### The package version, both in 1.23 style *and* usable by MakeMaker:
-$VERSION = "2.110";
+$VERSION = "2.111";
 
 ### Inheritance:
 @ISA = qw(IO::Handle);
@@ -279,6 +279,17 @@ sub flush { "0 but true" }
 
 #------------------------------
 
+=item fileno
+
+I<Instance method.>
+No-op, returns undef
+
+=cut
+
+sub fileno { }
+
+#------------------------------
+
 =item getc
 
 I<Instance method.>
@@ -316,7 +327,7 @@ sub getline {
     my $i  = *$self->{Pos};	        ### Start matching at this point.
 
     ### Minimal impact implementation!
-    ### We do the fast fast thing (no regexps) if using the
+    ### We do the fast thing (no regexps) if using the
     ### classic input record separator.
 
     ### Case 1: $/ is undef: slurp all...
@@ -619,7 +630,7 @@ sub tell { *{shift()}->{Pos} }
 # use_RS [YESNO]
 #
 # I<Instance method.>
-# Obey the curent setting of $/, like IO::Handle does?
+# Obey the current setting of $/, like IO::Handle does?
 # Default is false in 1.x, but cold-welded true in 2.x and later.
 #
 sub use_RS {
@@ -682,6 +693,7 @@ sub CLOSE     { shift->close(@_); }
 sub SEEK      { shift->seek(@_); }
 sub TELL      { shift->tell(@_); }
 sub EOF       { shift->eof(@_); }
+sub BINMODE   { 1; }
 
 #------------------------------------------------------------
 
@@ -725,7 +737,7 @@ $Id: Scalar.pm,v 1.6 2005/02/10 21:21:53 dfs Exp $
 
 =head2 Primary Maintainer
 
-David F. Skoll (F<dfs@roaringpenguin.com>).
+Dianne Skoll (F<dfs@roaringpenguin.com>).
 
 =head2 Principal author
 

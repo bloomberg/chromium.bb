@@ -1,12 +1,16 @@
 package MooseX::ClassAttribute;
-BEGIN {
-  $MooseX::ClassAttribute::VERSION = '0.26';
-}
 
 use strict;
 use warnings;
 
-use Moose 1.23 ();
+our $VERSION = '0.29';
+
+# This module doesn't really need these pragmas - this is just for the benefit
+# of prereq scanning.
+use namespace::clean 0.20     ();
+use namespace::autoclean 0.11 ();
+
+use Moose 2.00 ();
 use Moose::Exporter;
 use Moose::Util;
 use MooseX::ClassAttribute::Trait::Class;
@@ -29,23 +33,33 @@ Moose::Exporter->setup_import_methods(
 );
 
 sub class_has {
-    my $meta    = shift;
-    my $name    = shift;
+    my $meta = shift;
+    my $name = shift;
 
     my $attrs = ref $name eq 'ARRAY' ? $name : [$name];
 
-    my %options = ( definition_context => Moose::Util::_caller_info(), @_ );
+    my %options = ( definition_context => _caller_info(), @_ );
 
     $meta->add_class_attribute( $_, %options ) for @{$attrs};
+}
+
+# Copied from Moose::Util in 2.06
+sub _caller_info {
+    my $level = @_ ? ( $_[0] + 1 ) : 2;
+    my %info;
+    @info{qw(package file line)} = caller($level);
+    return \%info;
 }
 
 1;
 
 # ABSTRACT: Declare class attributes Moose-style
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -53,7 +67,7 @@ MooseX::ClassAttribute - Declare class attributes Moose-style
 
 =head1 VERSION
 
-version 0.26
+version 0.29
 
 =head1 SYNOPSIS
 
@@ -123,48 +137,68 @@ the class will have the relevant class attributes added. Note that attribute
 defaults will be calculated when the class attribute is composed into the
 class.
 
+=head1 SUPPORT
+
+Bugs may be submitted through L<the RT bug tracker|http://rt.cpan.org/Public/Dist/Display.html?Name=MooseX-ClassAttribute>
+(or L<bug-moosex-classattribute@rt.cpan.org|mailto:bug-moosex-classattribute@rt.cpan.org>).
+
+I am also usually active on IRC as 'drolsky' on C<irc://irc.perl.org>.
+
 =head1 DONATIONS
 
-If you'd like to thank me for the work I've done on this module,
-please consider making a "donation" to me via PayPal. I spend a lot of
-free time creating free software, and would appreciate any support
-you'd care to offer.
+If you'd like to thank me for the work I've done on this module, please
+consider making a "donation" to me via PayPal. I spend a lot of free time
+creating free software, and would appreciate any support you'd care to offer.
 
-Please note that B<I am not suggesting that you must do this> in order
-for me to continue working on this particular software. I will
-continue to do so, inasmuch as I have in the past, for as long as it
-interests me.
+Please note that B<I am not suggesting that you must do this> in order for me
+to continue working on this particular software. I will continue to do so,
+inasmuch as I have in the past, for as long as it interests me.
 
-Similarly, a donation made in this way will probably not make me work
-on this software much more, unless I get so many donations that I can
-consider working on free software full time, which seems unlikely at
-best.
+Similarly, a donation made in this way will probably not make me work on this
+software much more, unless I get so many donations that I can consider working
+on free software full time (let's all have a chuckle at that together).
 
-To donate, log into PayPal and send money to autarch@urth.org or use
-the button on this page:
-L<http://www.urth.org/~autarch/fs-donation.html>
-
-=head1 BUGS
-
-Please report any bugs or feature requests to
-C<bug-moosex-classattribute@rt.cpan.org>, or through the web interface
-at L<http://rt.cpan.org>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
+To donate, log into PayPal and send money to autarch@urth.org, or use the
+button at L<http://www.urth.org/~autarch/fs-donation.html>.
 
 =head1 AUTHOR
 
 Dave Rolsky <autarch@urth.org>
 
-=head1 COPYRIGHT AND LICENSE
+=head1 CONTRIBUTORS
 
-This software is Copyright (c) 2011 by Dave Rolsky.
+=for stopwords Andrew Rodland Karen Etheridge Rafael Kitover Robert Buels Shawn M Moore
+
+=over 4
+
+=item *
+
+Andrew Rodland <andrew@cleverdomain.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Rafael Kitover <rkitover@cpan.org>
+
+=item *
+
+Robert Buels <rmb32@cornell.edu>
+
+=item *
+
+Shawn M Moore <sartak@gmail.com>
+
+=back
+
+=head1 COPYRIGHT AND LICENCE
+
+This software is Copyright (c) 2016 by Dave Rolsky.
 
 This is free software, licensed under:
 
   The Artistic License 2.0 (GPL Compatible)
 
 =cut
-
-
-__END__
-

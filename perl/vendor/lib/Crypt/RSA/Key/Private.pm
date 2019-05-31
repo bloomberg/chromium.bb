@@ -1,84 +1,87 @@
-#!/usr/bin/perl -sw
-##
-## Crypt::RSA::Key::Private 
+package Crypt::RSA::Key::Private;
+use strict;
+use warnings;
+
+## Crypt::RSA::Key::Private
 ##
 ## Copyright (c) 2001, Vipul Ved Prakash.  All rights reserved.
 ## This code is free software; you can redistribute it and/or modify
 ## it under the same terms as Perl itself.
-##
-## $Id: Private.pm,v 1.15 2001/09/25 14:11:22 vipul Exp $
 
-package Crypt::RSA::Key::Private;
-use strict; 
 use vars qw($AUTOLOAD $VERSION);
 use base 'Crypt::RSA::Errorhandler';
-use Tie::EncryptedHash; 
+use Tie::EncryptedHash;
 use Data::Dumper;
-use Math::Pari qw(PARI pari2pv Mod isprime lcm lift);
+use Math::BigInt try => 'GMP, Pari';
+use Math::Prime::Util qw/is_prime/;
 use Carp;
 
-$Crypt::RSA::Key::Private::VERSION = '1.99'; 
+$Crypt::RSA::Key::Private::VERSION = '1.99';
 
-sub new { 
+sub new {
 
-    my ($class, %params) = @_; 
+    my ($class, %params) = @_;
     my $self    = { Version => $Crypt::RSA::Key::Private::VERSION };
-    if ($params{Filename}) { 
+    if ($params{Filename}) {
         bless $self, $class;
         $self = $self->read (%params);
-        return bless $self, $class; 
-    } else { 
+        return bless $self, $class;
+    } else {
         bless $self, $class;
         $self->Identity ($params{Identity}) if $params{Identity};
         $self->Cipher   ($params{Cipher}||"Blowfish");
         $self->Password ($params{Password}) if $params{Password};
         return $self;
-    } 
+    }
 
-} 
+}
 
 
-sub AUTOLOAD { 
+sub AUTOLOAD {
 
     my ($self, $value) = @_;
     my $key = $AUTOLOAD; $key =~ s/.*:://;
-    if ($key =~ /^(e|n|d|p|q|dp|dq|u|phi)$/) { 
-        if (ref $value eq 'Math::Pari') { 
-            $self->{private}{"_$key"} = $value;
-            $self->{Checked} = 0;
-        } elsif ($value && !(ref $value)) { 
-            if ($value =~ /^0x/) { 
-                $self->{private}->{"_$key"} = 
-                    Math::Pari::_hex_cvt($value);
-                $self->{Checked} = 0;
-            } else { $self->{private}{"_$key"} = PARI($value) } 
+    if ($key =~ /^(e|n|d|p|q|dp|dq|u|phi)$/) {
+        my $prikey = \$self->{private}{"_$key"};
+        if (defined $value) {
+          $self->{Checked} = 0;
+          if (ref $value eq 'Math::BigInt') {
+            $$prikey = $value;
+          } elsif (ref $value eq 'Math::Pari') {
+            $$prikey = Math::BigInt->new($value->pari2pv);
+          } else {
+            $$prikey = Math::BigInt->new("$value");
+          }
         }
-        return $self->{private}{"_$key"} || 
-               $self->{private_encrypted}{"_$key"} || 
-               "";
-    } elsif ($key =~ /^Identity|Cipher|Password$/) { 
-        $self->{$key} = $value if $value; 
+        if (defined $$prikey) {
+          $$prikey = Math::BigInt->new("$$prikey") unless ref($$prikey) eq 'Math::BigInt';
+          return $$prikey;
+        }
+        return $self->{private_encrypted}{"_$key"} if defined $self->{private_encrypted}{"_$key"};
+        return;
+    } elsif ($key =~ /^Identity|Cipher|Password$/) {
+        $self->{$key} = $value if $value;
         return $self->{$key};
-    } elsif ($key =~ /^Checked$/) { 
+    } elsif ($key =~ /^Checked$/) {
         my ($package) = caller();
         $self->{Checked} = $value if ($value && $package eq "Crypt::RSA::Key::Private") ;
         return $self->{Checked};
     }
-} 
+}
 
 
-sub hide { 
+sub hide {
 
-    my ($self) = @_; 
+    my ($self) = @_;
 
-    return undef unless $$self{Password};
+    return unless $$self{Password};
 
-    $self->{private_encrypted} = new Tie::EncryptedHash 
+    $self->{private_encrypted} = new Tie::EncryptedHash
             __password => $self->{Password},
             __cipher   => $self->{Cipher};
 
-    for (keys %{$$self{private}}) { 
-        $$self{private_encrypted}{$_} = pari2pv($$self{private}{$_});
+    for (keys %{$$self{private}}) {
+        $$self{private_encrypted}{$_} = $$self{private}{$_}->bstr;
     }
 
     my $private = $self->{private_encrypted};
@@ -86,45 +89,51 @@ sub hide {
     delete $$self{private};
     delete $$self{Password};
 
-} 
-
-
-sub reveal { 
-
-    my ($self, %params) = @_; 
-    $$self{Password} = $params{Password} if $params{Password};
-    return undef unless $$self{Password};
-    $$self{private_encrypted}{__password} = $params{Password};
-    for (keys %{$$self{private_encrypted}}) { 
-        $$self{private}{$_} = PARI($$self{private_encrypted}{$_});
-    }
- 
+    # Mark ourselves as hidden
+    $self->{Hidden} = 1;
 }
 
 
-sub check { 
+sub reveal {
+
+    my ($self, %params) = @_;
+    $$self{Password} = $params{Password} if $params{Password};
+    return unless $$self{Password};
+    $$self{private_encrypted}{__password} = $params{Password};
+    for (keys %{$$self{private_encrypted}}) {
+        $$self{private}{$_} = Math::BigInt->new("$$self{private_encrypted}{$_}");
+    }
+    $self->{Hidden} = 0;
+
+}
+
+
+sub check {
 
     my ($self) = @_;
 
     return 1 if $self->{Checked};
 
-    return $self->error ("Incomplete key.") unless 
+    return $self->error ("Cannot check hidden key - call reveal first.")
+        if $self->{Hidden};
+
+    return $self->error ("Incomplete key.") unless
         ($self->n && $self->d) || ($self->n && $self->p && $self->q);
 
-    if ($self->p && $self->q) { 
+    if ($self->p && $self->q) {
         return $self->error ("n is not a number.") if $self->n =~ /\D/;
         return $self->error ("p is not a number.") if $self->p =~ /\D/;
-        return $self->error ("p is not a number.") if $self->p =~ /\D/;
+        return $self->error ("q is not a number.") if $self->q =~ /\D/;
         return $self->error ("n is not p*q."  ) unless $self->n == $self->p * $self->q;
-        return $self->error ("p is not prime.") unless isprime($self->p);
-        return $self->error ("q is not prime.") unless isprime($self->q);
+        return $self->error ("p is not prime.") unless is_prime( $self->p );
+        return $self->error ("q is not prime.") unless is_prime( $self->q );
     }
 
-    if ($self->e) { 
+    if ($self->e) {
         # d * e == 1 mod lcm(p-1, q-1)
         return $self->error ("e is not a number.") if $self->e =~ /\D/;
-        my $k = lcm (($self->p -1), ($self->q -1));
-        my $K = Mod (1, $k); my $KI = lift($K * $self->d * $self->e);
+        my $k = Math::BigInt::blcm($self->p-1, $self->q-1);
+        my $KI = ($self->e)->copy->bmul($self->d)->bmodinv($k);
         return $self->error ("Bad `d'.") unless $KI == 1;
     }
 
@@ -138,8 +147,8 @@ sub check {
         return $self->error ("Bad `dq'.") unless $self->dq == $self->d % ($self->q - 1);
     }
 
-    if ($self->u && $self->q && $self->p) { 
-        my $m =  Mod (1,$self->q); $m = lift ($m / $self->p);
+    if ($self->u && $self->q && $self->p) {
+        my $m = ($self->p)->copy->bmodinv($self->q);
         return $self->error ("Bad `u'.") unless $self->u == $m;
     }
 
@@ -149,10 +158,10 @@ sub check {
 }
 
 
-sub DESTROY { 
+sub DESTROY {
 
-    my $self = shift; 
-    delete $$self{private_encrypted}{__password}; 
+    my $self = shift;
+    delete $$self{private_encrypted}{__password};
     delete $$self{private_encrypted};
     delete $$self{private};
     delete $$self{Password};
@@ -161,66 +170,66 @@ sub DESTROY {
 }
 
 
-sub write { 
+sub write {
 
-    my ($self, %params) = @_; 
-    $self->hide();
-    my $string = $self->serialize (%params); 
-    open DISK, ">$params{Filename}" or
-        croak "Can't open $params{Filename} for writing.";
-    binmode DISK;
-    print DISK $string;
-    close DISK;
-
-} 
-
-
-sub read { 
     my ($self, %params) = @_;
-    open DISK, $params{Filename} or 
+    $self->hide();
+    my $string = $self->serialize (%params);
+    open(my $disk, '>', $params{Filename}) or
+        croak "Can't open $params{Filename} for writing.";
+    binmode $disk;
+    print $disk $string;
+    close $disk;
+
+}
+
+
+sub read {
+    my ($self, %params) = @_;
+    open(my $disk, '<', $params{Filename}) or
         croak "Can't open $params{Filename} to read.";
-    binmode DISK;
-    my @key = <DISK>; 
-    close DISK;
+    binmode $disk;
+    my @key = <$disk>;
+    close $disk;
     $self = $self->deserialize (String => \@key);
     $self->reveal(%params);
     return $self;
 }
 
 
-sub serialize { 
+sub serialize {
 
     my ($self, %params) = @_;
     if ($$self{private}) {   # this is an unencrypted key
-        for (keys %{$$self{private}}) { 
-            $$self{private}{$_} = pari2pv($$self{private}{$_});
+        for (keys %{$$self{private}}) {
+            $$self{private}{$_} = ($$self{private}{$_})->bstr;
         }
     }
-    return Dumper $self; 
+    return Dumper $self;
 
-} 
+}
 
 
-sub deserialize { 
+sub deserialize {
 
-    my ($self, %params) = @_; 
-    my $string = join'', @{$params{String}}; 
+    my ($self, %params) = @_;
+    my $string = join'', @{$params{String}};
     $string =~ s/\$VAR1 =//;
     $self = eval $string;
-    if ($$self{private}) { # the key is unencrypted 
-        for (keys %{$$self{private}}) { 
-            $$self{private}{$_} = PARI($$self{private}{$_});
+    if ($$self{private}) { # the key is unencrypted
+        for (keys %{$$self{private}}) {
+            $$self{private}{$_} = Math::BigInt->new("$$self{private}{$_}");
         }
         return $self;
     }
-    my $private = new Tie::EncryptedHash; 
+    my $private = new Tie::EncryptedHash;
     %$private = %{$$self{private_encrypted}};
     $self->{private_encrypted} = $private;
     return $self;
 
 }
 
- 
+
 1;
 
 =head1 NAME
@@ -240,7 +249,7 @@ Crypt::RSA::Key::Private -- RSA Private Key Management.
 
     $akey = new Crypt::RSA::Key::Private (
                  Filename => 'rsakeys/banquo.private'
-                );   
+                );
 
     $akey->reveal ( Password => 'The earth hath bubbles' );
 
@@ -250,7 +259,7 @@ Crypt::RSA::Key::Private provides basic private key management
 functionality for Crypt::RSA private keys. Following methods are
 available:
 
-=over 4 
+=over 4
 
 =item B<new()>
 
@@ -264,21 +273,21 @@ which are optional):
 
 =over 4
 
-=item Identity 
+=item Identity
 
 A string identifying the owner of the key. Canonically, a name and
 email address.
 
-=item Filename 
+=item Filename
 
-Name of the file that contains the private key. 
+Name of the file that contains the private key.
 
 =item Password
 
 Password with which the private key is encrypted, or should be encrypted
 (in case of a new key).
 
-=item Cipher 
+=item Cipher
 
 Name of the symmetric cipher in which the private key is encrypted (or
 should be encrypted). The default is "Blowfish" and possible values

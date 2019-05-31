@@ -4,7 +4,7 @@ use Imager;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "1.011";
+$VERSION = "1.012";
 
 # It's just a front end to the XS creation functions.
 
@@ -335,7 +335,8 @@ sub _pspec {
     @result = _hsv_to_rgb(@{$args{hsv}});
   }
   elsif ($args{channels}) {
-    return @{$args{channels}};
+    my @ch = @{$args{channels}};
+    return ( @ch, (0) x (4 - @ch) );
   }
   elsif (exists $args{channel0} || $args{c0}) {
     my $i = 0;

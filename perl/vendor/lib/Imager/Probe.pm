@@ -4,6 +4,8 @@ use File::Spec;
 use Config;
 use Cwd ();
 
+our $VERSION = "1.006";
+
 my @alt_transfer = qw/altname incsuffix libbase/;
 
 sub probe {
@@ -298,7 +300,10 @@ sub _probe_fake {
   elsif (defined $req->{libbase}) {
     # might not need extra libraries, eg. Win32 perl already links
     # everything
-    $lopts = $req->{libbase} ? "-l$req->{libbase}" : "";
+    my @libs = $req->{libbase}
+      ? ( ref $req->{libbase} ? @{$req->{libbase}} : $req->{libbase} )
+      : ();
+    $lopts = join " ", map _lib_option($_), @libs;
   }
   if (defined $lopts) {
     print "$req->{name}: Checking if the compiler can find them on its own\n";
@@ -383,6 +388,14 @@ sub _resolve_libs {
 sub _lib_paths {
   my ($req) = @_;
 
+  print "$req->{name} IM_LIBPATH: $ENV{IM_LIBPATH}\n"
+    if $req->{verbose} && defined $ENV{IM_LIBPATH};
+  print "$req->{name} LIB: $ENV{IM_LIBPATH}\n"
+    if $req->{verbose} && defined $ENV{LIB} && $^O eq "MSWin32";
+  my $lp = $req->{libpath};
+  print "$req->{name} libpath: ", ref $lp ? join($Config{path_sep}, @$lp) : $lp, "\n"
+    if $req->{verbose} && defined $lp;
+
   return _paths
     (
      $ENV{IM_LIBPATH},
@@ -397,6 +410,7 @@ sub _lib_paths {
      "/usr/lib",
      "/usr/local/lib",
      _gcc_lib_paths(),
+     _dyn_lib_paths(),
     );
 }
 
@@ -410,6 +424,8 @@ sub _gcc_lib_paths {
   $base_version >= 4
     or return;
 
+  local $ENV{LANG} = "C";
+  local $ENV{LC_ALL} = "C";
   my ($lib_line) = grep /^libraries:/, `$Config{cc} -print-search-dirs`
     or return;
   $lib_line =~ s/^libraries: =//;
@@ -418,8 +434,22 @@ sub _gcc_lib_paths {
   return grep !/gcc/ && -d, split /:/, $lib_line;
 }
 
+sub _dyn_lib_paths {
+  return map { defined() ? split /\Q$Config{path_sep}/ : () }
+    map $ENV{$_},
+      qw(LD_RUN_PATH LD_LIBRARY_PATH DYLD_LIBRARY_PATH LIBRARY_PATH);
+}
+
 sub _inc_paths {
   my ($req) = @_;
+
+  print "$req->{name} IM_INCPATH: $ENV{IM_INCPATH}\n"
+    if $req->{verbose} && defined $ENV{IM_INCPATH};
+  print "$req->{name} INCLUDE: $ENV{INCLUDE}\n"
+    if $req->{verbose} && defined $ENV{INCLUDE} && $^O eq "MSWin32";
+  my $ip = $req->{incpath};
+  print "$req->{name} incpath: ", ref $ip ? join($Config{path_sep}, @$ip) : $ip, "\n"
+    if $req->{verbose} && defined $req->{incpath};
 
   my @paths = _paths
     (
@@ -434,6 +464,8 @@ sub _inc_paths {
      ),
      "/usr/include",
      "/usr/local/include",
+     _gcc_inc_paths(),
+     _dyn_inc_paths(),
     );
 
   if ($req->{incsuffix}) {
@@ -441,6 +473,56 @@ sub _inc_paths {
   }
 
   return @paths;
+}
+
+sub _gcc_inc_paths {
+  $Config{gccversion}
+    or return;
+
+  my ($base_version) = $Config{gccversion} =~ /^([0-9]+)/
+    or return;
+
+  $base_version >= 4
+    or return;
+
+  local $ENV{LANG} = "C";
+  local $ENV{LC_ALL} = "C";
+  my $devnull = File::Spec->devnull;
+  my @spam = `$Config{cc} -E -v - <$devnull 2>&1`;
+  # output includes lines like:
+  # ...
+  # ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../x86_64-linux-gnu/include"
+  # #include "..." search starts here:
+  # #include <...> search starts here:
+  #  /usr/lib/gcc/x86_64-linux-gnu/4.9/include
+  #  /usr/local/include
+  #  /usr/lib/gcc/x86_64-linux-gnu/4.9/include-fixed
+  #  /usr/include/x86_64-linux-gnu
+  #  /usr/include
+  # End of search list.
+  # # 1 "<stdin>"
+  # # 1 "<built-in>"
+  # ...
+
+  while (@spam && $spam[0] !~ /^#include /) {
+    shift @spam;
+  }
+  my @inc;
+  while (@spam && $spam[0] !~ /^End of search/) {
+    my $line = shift @spam;
+    chomp $line;
+    next if $line =~ /^#include /;
+    next unless $line =~ s/^\s+//;
+    push @inc, $line;
+  }
+  return @inc;
+}
+
+sub _dyn_inc_paths {
+  return map {
+    my $tmp = $_;
+    $tmp =~ s/\blib$/include/ ? $tmp : ()
+  } _dyn_lib_paths();
 }
 
 sub _paths {
@@ -618,5 +700,9 @@ C<altname> key describing the alternative.  Any key not mentioned in
 an alternative defaults to the value from the main configuration.
 
 =back
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>, Arnar M. Hrafnkelsson
 
 =cut

@@ -1,24 +1,18 @@
 package ExtUtils::Install;
 use strict;
 
-use vars qw(@ISA @EXPORT $VERSION $MUST_REBOOT %Config);
-
-use AutoSplit;
-use Carp ();
 use Config qw(%Config);
 use Cwd qw(cwd);
-use Exporter;
-use ExtUtils::Packlist;
+use Exporter ();
 use File::Basename qw(dirname);
-use File::Compare qw(compare);
 use File::Copy;
-use File::Find qw(find);
 use File::Path;
 use File::Spec;
 
+our @ISA = ('Exporter');
+our @EXPORT = ('install','uninstall','pm_to_blib', 'install_default');
 
-@ISA = ('Exporter');
-@EXPORT = ('install','uninstall','pm_to_blib', 'install_default');
+our $MUST_REBOOT;
 
 =pod
 
@@ -38,11 +32,11 @@ ExtUtils::Install - install files from here to there
 
 =head1 VERSION
 
-1.58
+2.14
 
 =cut
 
-$VERSION = '1.58';  # <---- dont forget to update the POD section just above this line!
+our $VERSION = '2.14';  # <-- do not forget to update the POD section just above this line!
 $VERSION = eval $VERSION;
 
 =pod
@@ -57,7 +51,7 @@ ExtUtils::MakeMaker handles the installation and deinstallation of
 perl modules. They are not designed as general purpose tools.
 
 On some operating systems such as Win32 installation may not be possible
-until after a reboot has occured. This can have varying consequences:
+until after a reboot has occurred. This can have varying consequences:
 removing an old DLL does not impact programs using the new one, but if
 a new DLL cannot be installed properly until reboot then anything
 depending on it must wait. The package variable
@@ -66,9 +60,9 @@ depending on it must wait. The package variable
 
 is used to store this status.
 
-If this variable is true then such an operation has occured and
+If this variable is true then such an operation has occurred and
 anything depending on this module cannot proceed until a reboot
-has occured.
+has occurred.
 
 If this value is defined but false then such an operation has
 ocurred, but should not impact later operations.
@@ -95,50 +89,25 @@ Dies with a special message.
 
 =cut
 
-my $Is_VMS     = $^O eq 'VMS';
-my $Is_VMS_noefs = $Is_VMS;
-my $Is_MacPerl = $^O eq 'MacOS';
-my $Is_Win32   = $^O eq 'MSWin32';
-my $Is_cygwin  = $^O eq 'cygwin';
-my $CanMoveAtBoot = ($Is_Win32 || $Is_cygwin);
-
-    if( $Is_VMS ) {
-        my $vms_unix_rpt;
-        my $vms_efs;
-        my $vms_case;
-
-        if (eval { local $SIG{__DIE__}; require VMS::Feature; }) {
-            $vms_unix_rpt = VMS::Feature::current("filename_unix_report");
-            $vms_efs = VMS::Feature::current("efs_charset");
-            $vms_case = VMS::Feature::current("efs_case_preserve");
-        } else {
-            my $unix_rpt = $ENV{'DECC$FILENAME_UNIX_REPORT'} || '';
-            my $efs_charset = $ENV{'DECC$EFS_CHARSET'} || '';
-            my $efs_case = $ENV{'DECC$EFS_CASE_PRESERVE'} || '';
-            $vms_unix_rpt = $unix_rpt =~ /^[ET1]/i;
-            $vms_efs = $efs_charset =~ /^[ET1]/i;
-            $vms_case = $efs_case =~ /^[ET1]/i;
-        }
-        $Is_VMS_noefs = 0 if ($vms_efs);
-    }
-
-
-
-# *note* CanMoveAtBoot is only incidentally the same condition as below
-# this needs not hold true in the future.
-my $Has_Win32API_File = ($Is_Win32 || $Is_cygwin)
-    ? (eval {require Win32API::File; 1} || 0)
-    : 0;
-
+BEGIN {
+    *Is_VMS        = $^O eq 'VMS'     ? sub(){1} : sub(){0};
+    *Is_Win32      = $^O eq 'MSWin32' ? sub(){1} : sub(){0};
+    *Is_cygwin     = $^O eq 'cygwin'  ? sub(){1} : sub(){0};
+    *CanMoveAtBoot = ($^O eq 'MSWin32' || $^O eq 'cygwin') ? sub(){1} : sub(){0};
+}
 
 my $Inc_uninstall_warn_handler;
 
 # install relative to here
 
 my $INSTALL_ROOT = $ENV{PERL_INSTALL_ROOT};
+my $INSTALL_QUIET = $ENV{PERL_INSTALL_QUIET};
+$INSTALL_QUIET = 1
+  if (!exists $ENV{PERL_INSTALL_QUIET} and
+      defined $ENV{MAKEFLAGS} and
+      $ENV{MAKEFLAGS} =~ /\b(s|silent|quiet)\b/);
 
 my $Curdir = File::Spec->curdir;
-my $Updir  = File::Spec->updir;
 
 sub _estr(@) {
     return join "\n",'!' x 72,@_,'!' x 72,'';
@@ -154,7 +123,22 @@ sub _warnonce(@) {
 sub _choke(@) {
     my $first=shift;
     my $msg=_estr "ERROR: $first",@_;
+    require Carp;
     Carp::croak($msg);
+}
+
+sub _croak {
+    require Carp;
+    Carp::croak(@_);
+}
+sub _confess {
+    require Carp;
+    Carp::confess(@_);
+}
+
+sub _compare {
+    require File::Compare;
+    File::Compare::compare(@_);
 }
 
 
@@ -185,7 +169,7 @@ $target should be a ref to an array if the file is to be deleted
 otherwise it should be a filespec for a rename. If the file is existing
 it will be replaced.
 
-Sets $MUST_REBOOT to 0 to indicate a deletion operation has occured
+Sets $MUST_REBOOT to 0 to indicate a deletion operation has occurred
 and sets it to 1 to indicate that a move operation has been requested.
 
 returns 1 on success, on failure if $moan is false errors are fatal.
@@ -195,47 +179,53 @@ If $moan is true then returns 0 on error and warns instead of dies.
 
 =cut
 
+{
+    my $Has_Win32API_File;
+    sub _move_file_at_boot { #XXX OS-SPECIFIC
+        my ( $file, $target, $moan  )= @_;
+        _confess("Panic: Can't _move_file_at_boot on this platform!")
+             unless CanMoveAtBoot;
 
+        my $descr= ref $target
+                    ? "'$file' for deletion"
+                    : "'$file' for installation as '$target'";
 
-sub _move_file_at_boot { #XXX OS-SPECIFIC
-    my ( $file, $target, $moan  )= @_;
-    Carp::confess("Panic: Can't _move_file_at_boot on this platform!")
-         unless $CanMoveAtBoot;
+        # *note* CanMoveAtBoot is only incidentally the same condition as below
+        # this needs not hold true in the future.
+        $Has_Win32API_File = (Is_Win32 || Is_cygwin)
+            ? (eval {require Win32API::File; 1} || 0)
+            : 0 unless defined $Has_Win32API_File;
+        if ( ! $Has_Win32API_File ) {
 
-    my $descr= ref $target
-                ? "'$file' for deletion"
-                : "'$file' for installation as '$target'";
+            my @msg=(
+                "Cannot schedule $descr at reboot.",
+                "Try installing Win32API::File to allow operations on locked files",
+                "to be scheduled during reboot. Or try to perform the operation by",
+                "hand yourself. (You may need to close other perl processes first)"
+            );
+            if ( $moan ) { _warnonce(@msg) } else { _choke(@msg) }
+            return 0;
+        }
+        my $opts= Win32API::File::MOVEFILE_DELAY_UNTIL_REBOOT();
+        $opts= $opts | Win32API::File::MOVEFILE_REPLACE_EXISTING()
+            unless ref $target;
 
-    if ( ! $Has_Win32API_File ) {
+        _chmod( 0666, $file );
+        _chmod( 0666, $target ) unless ref $target;
 
-        my @msg=(
-            "Cannot schedule $descr at reboot.",
-            "Try installing Win32API::File to allow operations on locked files",
-            "to be scheduled during reboot. Or try to perform the operation by",
-            "hand yourself. (You may need to close other perl processes first)"
-        );
-        if ( $moan ) { _warnonce(@msg) } else { _choke(@msg) }
+        if (Win32API::File::MoveFileEx( $file, $target, $opts )) {
+            $MUST_REBOOT ||= ref $target ? 0 : 1;
+            return 1;
+        } else {
+            my @msg=(
+                "MoveFileEx $descr at reboot failed: $^E",
+                "You may try to perform the operation by hand yourself. ",
+                "(You may need to close other perl processes first).",
+            );
+            if ( $moan ) { _warnonce(@msg) } else { _choke(@msg) }
+        }
         return 0;
     }
-    my $opts= Win32API::File::MOVEFILE_DELAY_UNTIL_REBOOT();
-    $opts= $opts | Win32API::File::MOVEFILE_REPLACE_EXISTING()
-        unless ref $target;
-
-    _chmod( 0666, $file );
-    _chmod( 0666, $target ) unless ref $target;
-
-    if (Win32API::File::MoveFileEx( $file, $target, $opts )) {
-        $MUST_REBOOT ||= ref $target ? 0 : 1;
-        return 1;
-    } else {
-        my @msg=(
-            "MoveFileEx $descr at reboot failed: $^E",
-            "You may try to perform the operation by hand yourself. ",
-            "(You may need to close other perl processes first).",
-        );
-        if ( $moan ) { _warnonce(@msg) } else { _choke(@msg) }
-    }
-    return 0;
 }
 
 
@@ -269,8 +259,6 @@ a derivative of the original in the same directory) so that the caller can
 use it to install under. In all other cases of success returns $file.
 On failure throws a fatal error.
 
-=back
-
 =end _private
 
 =cut
@@ -280,14 +268,21 @@ On failure throws a fatal error.
 sub _unlink_or_rename { #XXX OS-SPECIFIC
     my ( $file, $tryhard, $installing )= @_;
 
-    _chmod( 0666, $file );
+    # this chmod was originally unconditional. However, its not needed on
+    # POSIXy systems since permission to unlink a file is specified by the
+    # directory rather than the file; and in fact it screwed up hard- and
+    # symlinked files. Keep it for other platforms in case its still
+    # needed there.
+    if ($^O =~ /^(dos|os2|MSWin32|VMS)$/) {
+        _chmod( 0666, $file );
+    }
     my $unlink_count = 0;
     while (unlink $file) { $unlink_count++; }
     return $file if $unlink_count > 0;
     my $error="$!";
 
     _choke("Cannot unlink '$file': $!")
-          unless $CanMoveAtBoot && $tryhard;
+          unless CanMoveAtBoot && $tryhard;
 
     my $tmp= "AAA";
     ++$tmp while -e "$file.$tmp";
@@ -317,6 +312,8 @@ sub _unlink_or_rename { #XXX OS-SPECIFIC
 
 
 =pod
+
+=back
 
 =head2 Functions
 
@@ -394,8 +391,8 @@ Abstract a -w check that tries to use POSIX::access() if possible.
     sub _have_write_access {
         my $dir=shift;
         unless (defined $has_posix) {
-            $has_posix= (!$Is_cygwin && !$Is_Win32
-             && eval 'local $^W; require POSIX; 1') || 0;
+            $has_posix = (!Is_cygwin && !Is_Win32
+             && eval { local $^W; require POSIX; 1} ) || 0;
         }
         if ($has_posix) {
             return POSIX::access($dir, POSIX::W_OK());
@@ -415,7 +412,7 @@ be created first.
 
 Returns a list, containing: C<($writable, $determined_by, @create)>
 
-C<$writable> says whether whether the directory is (hypothetically) writable
+C<$writable> says whether the directory is (hypothetically) writable
 
 C<$determined_by> is the directory the status was determined from. It will be
 either the C<$dir>, or one of its parents.
@@ -440,9 +437,7 @@ sub _can_write_dir {
     my $path='';
     my @make;
     while (@dirs) {
-        if ($Is_VMS_noefs) {
-            # There is a bug in catdir that is fixed when the EFS character
-            # set is enabled, which requires this VMS specific code.
+        if (Is_VMS) {
             $dir = File::Spec->catdir($vol,@dirs);
         }
         else {
@@ -536,7 +531,7 @@ sub _copy {
     }
     if (!$dry_run) {
         File::Copy::copy($from,$to)
-            or Carp::croak( _estr "ERROR: Cannot copy '$from' to '$to': $!" );
+            or _croak( _estr "ERROR: Cannot copy '$from' to '$to': $!" );
     }
 }
 
@@ -565,7 +560,11 @@ sub _chdir {
 
 =pod
 
+=back
+
 =end _private
+
+=over
 
 =item B<install>
 
@@ -631,7 +630,7 @@ As of version 1.47 the following additions were made to the install interface.
 Note that the new argument style and use of the %result hash is recommended.
 
 The $always_copy parameter which when true causes files to be updated
-regardles as to whether they have changed, if it is defined but false then
+regardless as to whether they have changed, if it is defined but false then
 copies are made only if the files have changed, if it is undefined then the
 value of the environment variable EU_INSTALL_ALWAYS_COPY is used as default.
 
@@ -666,7 +665,7 @@ B<NEW ARGUMENT STYLE>
 If there is only one argument and it is a reference to an array then
 the array is assumed to contain a list of key-value pairs specifying
 the options. In this case the option "from_to" is mandatory. This style
-means that you dont have to supply a cryptic list of arguments and can
+means that you do not have to supply a cryptic list of arguments and can
 use a self documenting argument list that is easier to understand.
 
 This is now the recommended interface to install().
@@ -686,7 +685,7 @@ sub install { #XXX OS-SPECIFIC
     if (@_==1 and eval { 1+@$from_to }) {
         my %opts        = @$from_to;
         $from_to        = $opts{from_to}
-                            or Carp::confess("from_to is a mandatory parameter");
+                            or _confess("from_to is a mandatory parameter");
         $verbose        = $opts{verbose};
         $dry_run        = $opts{dry_run};
         $uninstall_shadows  = $opts{uninstall_shadows};
@@ -707,6 +706,7 @@ sub install { #XXX OS-SPECIFIC
 
     my(%from_to) = %$from_to;
     my(%pack, $dir, %warned);
+    require ExtUtils::Packlist;
     my($packlist) = ExtUtils::Packlist->new();
 
     local(*DIR);
@@ -719,6 +719,13 @@ sub install { #XXX OS-SPECIFIC
     my $cwd = cwd();
     my @found_files;
     my %check_dirs;
+    require File::Find;
+
+    my $blib_lib  = File::Spec->catdir('blib', 'lib');
+    my $blib_arch = File::Spec->catdir('blib', 'arch');
+
+    # File::Find seems to always be Unixy except on MacPerl :(
+    my $current_directory = $^O eq 'MacOS' ? $Curdir : '.';
 
     MOD_INSTALL: foreach my $source (sort keys %from_to) {
         #copy the tree to the target directory without altering
@@ -733,8 +740,6 @@ sub install { #XXX OS-SPECIFIC
 
         my $targetroot = install_rooted_dir($from_to{$source});
 
-        my $blib_lib  = File::Spec->catdir('blib', 'lib');
-        my $blib_arch = File::Spec->catdir('blib', 'arch');
         if ($source eq $blib_lib and
             exists $from_to{$blib_arch} and
             directory_not_empty($blib_arch)
@@ -747,9 +752,7 @@ sub install { #XXX OS-SPECIFIC
         _chdir($source);
         # 5.5.3's File::Find missing no_chdir option
         # XXX OS-SPECIFIC
-        # File::Find seems to always be Unixy except on MacPerl :(
-        my $current_directory= $Is_MacPerl ? $Curdir : '.';
-        find(sub {
+        File::Find::find(sub {
             my ($mode,$size,$atime,$mtime) = (stat)[2,7,8,9];
 
             return if !-f _;
@@ -778,7 +781,7 @@ sub install { #XXX OS-SPECIFIC
                 $diff++;
             } else {
                 # we might not need to copy this file
-                $diff = compare($sourcefile, $targetfile);
+                $diff = _compare($sourcefile, $targetfile);
             }
             $check_dirs{$targetdir}++
                 unless -w $targetfile;
@@ -819,7 +822,7 @@ sub install { #XXX OS-SPECIFIC
 
                 #XXX OS-SPECIFIC
                 print "utime($atime,$mtime,$targetfile)\n" if $verbose>1;
-                utime($atime,$mtime + $Is_VMS,$targetfile) unless $dry_run>1;
+                utime($atime,$mtime + Is_VMS,$targetfile) unless $dry_run>1;
 
 
                 $mode = 0444 | ( $mode & 0111 ? 0111 : 0 );
@@ -863,7 +866,7 @@ sub install { #XXX OS-SPECIFIC
 
 =item _do_cleanup
 
-Standardize finish event for after another instruction has occured.
+Standardize finish event for after another instruction has occurred.
 Handles converting $MUST_REBOOT to a die for instance.
 
 =end _private
@@ -949,7 +952,8 @@ Returns 0 if there is not.
 sub directory_not_empty ($) {
   my($dir) = @_;
   my $files = 0;
-  find(sub {
+  require File::Find;
+  File::Find::find(sub {
            return if $_ eq ".exists";
            if (-f) {
              $File::Find::prune++;
@@ -983,7 +987,7 @@ Consider its use discouraged.
 =cut
 
 sub install_default {
-  @_ < 2 or Carp::croak("install_default should be called with 0 or 1 argument");
+  @_ < 2 or _croak("install_default should be called with 0 or 1 argument");
   my $FULLEXT = @_ ? shift : $ARGV[0];
   defined $FULLEXT or die "Do not know to where to write install log";
   my $INST_LIB = File::Spec->catdir($Curdir,"blib","lib");
@@ -1039,6 +1043,7 @@ sub uninstall {
         unless -f $fil;
     # my $my_req = $self->catfile(qw(auto ExtUtils Install forceunlink.al));
     # require $my_req; # Hairy, but for the first
+    require ExtUtils::Packlist;
     my ($packlist) = ExtUtils::Packlist->new($fil);
     foreach (sort(keys(%$packlist))) {
         chomp;
@@ -1089,7 +1094,7 @@ sub inc_uninstall {
     #warn join "\n","---",@dirs,"---";
     my $seen_ours;
     foreach $dir ( @dirs ) {
-        my $canonpath = $Is_VMS ? $dir : File::Spec->canonpath($dir);
+        my $canonpath = Is_VMS ? $dir : File::Spec->canonpath($dir);
         next if $canonpath eq $Curdir;
         next if $seen_dir{$canonpath}++;
         my $targetfile = File::Spec->catfile($canonpath,$libdir,$file);
@@ -1101,7 +1106,7 @@ sub inc_uninstall {
         my $diff = 0;
         if ( -f $targetfile && -s _ == -s $filepath) {
             # We have a good chance, we can skip this one
-            $diff = compare($filepath,$targetfile);
+            $diff = _compare($filepath,$targetfile);
         } else {
             $diff++;
         }
@@ -1171,11 +1176,12 @@ sub run_filter {
 
 =item B<pm_to_blib>
 
+    pm_to_blib(\%from_to);
     pm_to_blib(\%from_to, $autosplit_dir);
     pm_to_blib(\%from_to, $autosplit_dir, $filter_cmd);
 
 Copies each key of %from_to to its corresponding value efficiently.
-Filenames with the extension .pm are autosplit into the $autosplit_dir.
+If an $autosplit_dir is provided, all .pm files will be autosplit into it.
 Any destination directories are created.
 
 $filter_cmd is an optional shell command to run each .pm file through
@@ -1185,15 +1191,18 @@ output the new module contents.
 You can have an environment variable PERL_INSTALL_ROOT set which will
 be prepended as a directory to each installed file (and directory).
 
+By default verbose output is generated, setting the PERL_INSTALL_QUIET
+environment variable will silence this output.
+
 =cut
 
 sub pm_to_blib {
     my($fromto,$autodir,$pm_filter) = @_;
 
-    _mkpath($autodir,0,0755);
+    _mkpath($autodir,0,0755) if defined $autodir;
     while(my($from, $to) = each %$fromto) {
         if( -f $to && -s $from == -s $to && -M $to < -M $from ) {
-            print "Skip $to (unchanged)\n";
+            print "Skip $to (unchanged)\n" unless $INSTALL_QUIET;
             next;
         }
 
@@ -1205,8 +1214,8 @@ sub pm_to_blib {
         my $need_filtering = defined $pm_filter && length $pm_filter &&
                              $from =~ /\.pm$/;
 
-        if (!$need_filtering && 0 == compare($from,$to)) {
-            print "Skip $to (unchanged)\n";
+        if (!$need_filtering && 0 == _compare($from,$to)) {
+            print "Skip $to (unchanged)\n" unless $INSTALL_QUIET;
             next;
         }
         if (-f $to){
@@ -1220,13 +1229,13 @@ sub pm_to_blib {
             print "$pm_filter <$from >$to\n";
         } else {
             _copy( $from, $to );
-            print "cp $from $to\n";
+            print "cp $from $to\n" unless $INSTALL_QUIET;
         }
         my($mode,$atime,$mtime) = (stat $from)[2,8,9];
-        utime($atime,$mtime+$Is_VMS,$to);
+        utime($atime,$mtime+Is_VMS,$to);
         _chmod(0444 | ( $mode & 0111 ? 0111 : 0 ),$to);
         next unless $from =~ /\.pm$/;
-        _autosplit($to,$autodir);
+        _autosplit($to,$autodir) if defined $autodir;
     }
 }
 
@@ -1244,7 +1253,8 @@ locking (ie. Windows).  So we wrap it and close the filehandle.
 =cut
 
 sub _autosplit { #XXX OS-SPECIFIC
-    my $retval = autosplit(@_);
+    require AutoSplit;
+    my $retval = AutoSplit::autosplit(@_);
     close *AutoSplit::IN if defined *AutoSplit::IN{IO};
 
     return $retval;
@@ -1275,7 +1285,7 @@ sub DESTROY {
         $plural = $i>1 ? "all those files" : "this file";
         my $inst = (_invokant() eq 'ExtUtils::MakeMaker')
                  ? ( $Config::Config{make} || 'make' ).' install'
-                     . ( $Is_VMS ? '/MACRO="UNINST"=1' : ' UNINST=1' )
+                     . ( ExtUtils::Install::Is_VMS ? '/MACRO="UNINST"=1' : ' UNINST=1' )
                  : './Build install uninst=1';
         print "## Running '$inst' will unlink $plural for you.\n";
     }

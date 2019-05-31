@@ -1,7 +1,7 @@
 package
   DBI;	# hide this non-DBI package from simple indexers
 
-# $Id: W32ODBC.pm 8696 2007-01-24 23:12:38Z timbo $
+# $Id: W32ODBC.pm 8696 2007-01-24 23:12:38Z Tim $
 #
 # Copyright (c) 1997,1999 Tim Bunce
 # With many thanks to Patrick Hollins for polishing.
@@ -87,7 +87,7 @@ sub do {
     my($h, $statement, $attribs, @params) = @_;
     Carp::carp "\$h->do() attribs unused" if $attribs;
     my $new_h = $h->prepare($statement) or return undef;    ##
-    pop @{ $h->{'___sths'} };                               ## certian death assured
+    pop @{ $h->{'___sths'} };                               ## certain death assured
     $new_h->execute(@params) or return undef;               ##
     my $rows = $new_h->rows;                                ##
     $new_h->finish;                                         ## bang bang

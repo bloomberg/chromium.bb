@@ -5,7 +5,7 @@ use 5.008;
 use strict;
 use warnings;
 
-our $VERSION = '1.86';
+our $VERSION = '2.22';      # remember to update version in POD!
 my $XS_VERSION = $VERSION;
 $VERSION = eval $VERSION;
 
@@ -134,7 +134,17 @@ threads - Perl interpreter-based threads
 
 =head1 VERSION
 
-This document describes threads version 1.86
+This document describes threads version 2.21
+
+=head1 WARNING
+
+The "interpreter-based threads" provided by Perl are not the fast, lightweight
+system for multitasking that one might expect or hope for.  Threads are
+implemented in a way that make them easy to misuse.  Few people know how to
+use them correctly or will be able to provide help.
+
+The use of interpreter-based threads in perl is officially
+L<discouraged|perlpolicy/discouraged>.
 
 =head1 SYNOPSIS
 
@@ -356,7 +366,7 @@ key) will cause its ID to be used as the value:
     use threads qw(stringify);
 
     my $thr = threads->create(...);
-    print("Thread $thr started...\n");  # Prints out: Thread 1 started...
+    print("Thread $thr started\n");  # Prints: Thread 1 started
 
 =item threads->object($tid)
 
@@ -424,11 +434,12 @@ C<$@> associated with the thread's execution status in its C<eval> context.
 
 =item $thr->_handle()
 
-This I<private> method returns the memory location of the internal thread
-structure associated with a threads object.  For Win32, this is a pointer to
-the C<HANDLE> value returned by C<CreateThread> (i.e., C<HANDLE *>); for other
-platforms, it is a pointer to the C<pthread_t> structure used in the
-C<pthread_create> call (i.e., C<pthread_t *>).
+This I<private> method returns a pointer (i.e., the memory location expressed
+as an unsigned integer) to the internal thread structure associated with a
+threads object.  For Win32, this is a pointer to the C<HANDLE> value returned
+by C<CreateThread> (i.e., C<HANDLE *>); for other platforms, it is a pointer
+to the C<pthread_t> structure used in the C<pthread_create> call (i.e.,
+C<pthread_t *>).
 
 This method is of no use for general Perl threads programming.  Its intent is
 to provide other (XS-based) thread modules with the capability to access, and
@@ -680,7 +691,8 @@ threaded applications.
 To specify a particular stack size for any individual thread, call
 C<-E<gt>create()> with a hash reference as the first argument:
 
-    my $thr = threads->create({'stack_size' => 32*4096}, \&foo, @args);
+    my $thr = threads->create({'stack_size' => 32*4096},
+                              \&foo, @args);
 
 =item $thr2 = $thr1->create(FUNCTION, ARGS)
 
@@ -688,7 +700,8 @@ This creates a new thread (C<$thr2>) that inherits the stack size from an
 existing thread (C<$thr1>).  This is shorthand for the following:
 
     my $stack_size = $thr1->get_stack_size();
-    my $thr2 = threads->create({'stack_size' => $stack_size}, FUNCTION, ARGS);
+    my $thr2 = threads->create({'stack_size' => $stack_size},
+                               FUNCTION, ARGS);
 
 =back
 
@@ -785,7 +798,7 @@ current operation has completed.  For instance, if the thread is I<stuck> on
 an I/O call, sending it a signal will not cause the I/O call to be interrupted
 such that the signal is acted up immediately.
 
-Sending a signal to a terminated thread is ignored.
+Sending a signal to a terminated/finished thread is ignored.
 
 =head1 WARNINGS
 
@@ -841,7 +854,7 @@ C<useithreads> configuration option.
 Having threads support requires all of Perl and all of the XS modules in the
 Perl installation to be rebuilt; it is not just a question of adding the
 L<threads> module (i.e., threaded and non-threaded Perls are binary
-incompatible.)
+incompatible).
 
 =item Cannot change stack size of an existing thread
 
@@ -924,6 +937,33 @@ C<chdir()>) will affect all the threads in the application.
 On MSWin32, each thread maintains its own the current working directory
 setting.
 
+=item Locales
+
+Prior to Perl 5.28, locales could not be used with threads, due to various
+race conditions.  Starting in that release, on systems that implement
+thread-safe locale functions, threads can be used, with some caveats.
+This includes Windows starting with Visual Studio 2005, and systems compatible
+with POSIX 2008.  See L<perllocale/Multi-threaded operation>.
+
+Each thread (except the main thread) is started using the C locale.  The main
+thread is started like all other Perl programs; see L<perllocale/ENVIRONMENT>.
+You can switch locales in any thread as often as you like.
+
+If you want to inherit the parent thread's locale, you can, in the parent, set
+a variable like so:
+
+    $foo = POSIX::setlocale(LC_ALL, NULL);
+
+and then pass to threads->create() a sub that closes over C<$foo>.  Then, in
+the child, you say
+
+    POSIX::setlocale(LC_ALL, $foo);
+
+Or you can use the facilities in L<threads::shared> to pass C<$foo>;
+or if the environment hasn't changed, in the child, do
+
+    POSIX::setlocale(LC_ALL, "");
+
 =item Environment variables
 
 Currently, on all platforms except MSWin32, all I<system> calls (e.g., using
@@ -951,7 +991,7 @@ alarms in threads, set up a signal handler in the main thread, and then use
 L</"THREAD SIGNALLING"> to relay the signal to the thread:
 
   # Create thread with a task that may time out
-  my $thr->create(sub {
+  my $thr = threads->create(sub {
       threads->yield();
       eval {
           $SIG{ALRM} = sub { die("Timeout\n"); };
@@ -974,13 +1014,6 @@ L</"THREAD SIGNALLING"> to relay the signal to the thread:
 On some platforms, it might not be possible to destroy I<parent> threads while
 there are still existing I<child> threads.
 
-=item Creating threads inside special blocks
-
-Creating threads inside C<BEGIN>, C<CHECK> or C<INIT> blocks should not be
-relied upon.  Depending on the Perl version and the application code, results
-may range from success, to (apparently harmless) warnings of leaked scalar, or
-all the way up to crashing of the Perl interpreter.
-
 =item Unsafe signals
 
 Since Perl 5.8.0, signals have been made safer in Perl by postponing their
@@ -995,7 +1028,8 @@ signalling behavior is only in effect in the following situations:
 
 =item * Perl has been built with C<PERL_OLD_SIGNALS> (see C<perl -V>).
 
-=item * The environment variable C<PERL_SIGNALS> is set to C<unsafe> (see L<perlrun/"PERL_SIGNALS">).
+=item * The environment variable C<PERL_SIGNALS> is set to C<unsafe>
+(see L<perlrun/"PERL_SIGNALS">).
 
 =item * The module L<Perl::Unsafe::Signals> is used.
 
@@ -1004,16 +1038,27 @@ signalling behavior is only in effect in the following situations:
 If unsafe signals is in effect, then signal handling is not thread-safe, and
 the C<-E<gt>kill()> signalling method cannot be used.
 
-=item Returning closures from threads
+=item Identity of objects returned from threads
 
-Returning closures from threads should not be relied upon.  Depending of the
-Perl version and the application code, results may range from success, to
-(apparently harmless) warnings of leaked scalar, or all the way up to crashing
-of the Perl interpreter.
+When a value is returned from a thread through a C<join> operation,
+the value and everything that it references is copied across to the
+joining thread, in much the same way that values are copied upon thread
+creation.  This works fine for most kinds of value, including arrays,
+hashes, and subroutines.  The copying recurses through array elements,
+reference scalars, variables closed over by subroutines, and other kinds
+of reference.
 
-=item Returning objects from threads
+However, everything referenced by the returned value is a fresh copy in
+the joining thread, even if a returned object had in the child thread
+been a copy of something that previously existed in the parent thread.
+After joining, the parent will therefore have a duplicate of each such
+object.  This sometimes matters, especially if the object gets mutated;
+this can especially matter for private data to which a returned subroutine
+provides access.
 
-Returning objects from threads does not work.  Depending on the classes
+=item Returning blessed objects from threads
+
+Returning blessed objects from threads does not work.  Depending on the classes
 involved, you may be able to work around this by returning a serialized
 version of the object (e.g., using L<Data::Dumper> or L<Storable>), and then
 reconstituting it in the joining thread.  If you're using Perl 5.10.0 or
@@ -1047,6 +1092,18 @@ In prior perl versions, spawning threads with open directory handles would
 crash the interpreter.
 L<[perl #75154]|http://rt.perl.org/rt3/Public/Bug/Display.html?id=75154>
 
+=item Detached threads and global destruction
+
+If the main thread exits while there are detached threads which are still
+running, then Perl's global destruction phase is not executed because
+otherwise certain global structures that control the operation of threads and
+that are allocated in the main thread's memory may get destroyed before the
+detached thread is destroyed.
+
+If you are using any code that requires the execution of the global
+destruction phase for clean up (e.g., removing temp files), then do not use
+detached threads, but rather join all threads before exiting the program.
+
 =item Perl Bugs and the CPAN Version of L<threads>
 
 Support for threads extends beyond the code in this module (i.e.,
@@ -1072,8 +1129,11 @@ Perl 5.8.0 or later
 
 =head1 SEE ALSO
 
-L<threads> Discussion Forum on CPAN:
-L<http://www.cpanforum.com/dist/threads>
+threads on MetaCPAN:
+L<https://metacpan.org/release/threads>
+
+Code repository for CPAN distribution:
+L<https://github.com/Dual-Life/threads>
 
 L<threads::shared>, L<perlthrtut>
 
@@ -1085,6 +1145,8 @@ L<http://lists.perl.org/list/ithreads.html>
 
 Stack size discussion:
 L<http://www.perlmonks.org/?node_id=532956>
+
+Sample code in the I<examples> directory of this distribution on CPAN.
 
 =head1 AUTHOR
 

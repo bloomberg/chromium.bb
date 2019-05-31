@@ -1,7 +1,7 @@
 package Test::Builder::Tester;
 
 use strict;
-our $VERSION = "1.22";
+our $VERSION = '1.302164';
 
 use Test::Builder;
 use Symbol;
@@ -25,20 +25,20 @@ Test::Builder
 =head1 DESCRIPTION
 
 A module that helps you test testing modules that are built with
-B<Test::Builder>.
+L<Test::Builder>.
 
 The testing system is designed to be used by performing a three step
 process for each test you wish to test.  This process starts with using
 C<test_out> and C<test_err> in advance to declare what the testsuite you
-are testing will output with B<Test::Builder> to stdout and stderr.
+are testing will output with L<Test::Builder> to stdout and stderr.
 
 You then can run the test(s) from your test suite that call
-B<Test::Builder>.  At this point the output of B<Test::Builder> is
-safely captured by B<Test::Builder::Tester> rather than being
+L<Test::Builder>.  At this point the output of L<Test::Builder> is
+safely captured by L<Test::Builder::Tester> rather than being
 interpreted as real test output.
 
 The final stage is to call C<test_test> that will simply compare what you
-predeclared to what B<Test::Builder> actually outputted, and report the
+predeclared to what L<Test::Builder> actually outputted, and report the
 results back with a "ok" or "not ok" (with debugging) to the normal
 output.
 
@@ -98,23 +98,31 @@ my $err = tie *$error_handle,  "Test::Builder::Tester::Tie", "STDERR";
 # for remembering that we're testing and where we're testing at
 my $testing = 0;
 my $testing_num;
+my $original_is_passing;
 
 # remembering where the file handles were originally connected
 my $original_output_handle;
 my $original_failure_handle;
 my $original_todo_handle;
-
-my $original_test_number;
-my $original_harness_state;
+my $original_formatter;
 
 my $original_harness_env;
 
 # function that starts testing and redirects the filehandles for now
 sub _start_testing {
+    # Hack for things that conditioned on Test-Stream being loaded
+    $INC{'Test/Stream.pm'} ||= 'fake' if $INC{'Test/Moose/More.pm'};
     # even if we're running under Test::Harness pretend we're not
     # for now.  This needed so Test::Builder doesn't add extra spaces
     $original_harness_env = $ENV{HARNESS_ACTIVE} || 0;
     $ENV{HARNESS_ACTIVE} = 0;
+
+    my $hub = $t->{Hub} || ($t->{Stack} ? $t->{Stack}->top : Test2::API::test2_stack->top);
+    $original_formatter = $hub->format;
+    unless ($original_formatter && $original_formatter->isa('Test::Builder::Formatter')) {
+        my $fmt = Test::Builder::Formatter->new;
+        $hub->format($fmt);
+    }
 
     # remember what the handles were set to
     $original_output_handle  = $t->output();
@@ -134,6 +142,8 @@ sub _start_testing {
     $testing     = 1;
     $testing_num = $t->current_test;
     $t->current_test(0);
+    $original_is_passing  = $t->is_passing;
+    $t->is_passing(1);
 
     # look, we shouldn't do the ending stuff
     $t->no_ending(1);
@@ -165,8 +175,8 @@ which is even the same as
    test_out("ok 2");
 
 Once C<test_out> or C<test_err> (or C<test_fail> or C<test_diag>) have
-been called, all further output from B<Test::Builder> will be
-captured by B<Test::Builder::Tester>.  This means that you will not
+been called, all further output from L<Test::Builder> will be
+captured by L<Test::Builder::Tester>.  This means that you will not
 be able perform further tests to the normal output in the normal way
 until you call C<test_test> (well, unless you manually meddle with the
 output filehandles)
@@ -189,7 +199,7 @@ sub test_err {
 
 =item test_fail
 
-Because the standard failure message that B<Test::Builder> produces
+Because the standard failure message that L<Test::Builder> produces
 whenever a test fails will be a common occurrence in your test error
 output, and because it has changed between Test::Builder versions, rather
 than forcing you to call C<test_err> with the string all the time like
@@ -222,13 +232,13 @@ sub test_fail {
     $line = $line + ( shift() || 0 );    # prevent warnings
 
     # expect that on stderr
-    $err->expect("#     Failed test ($0 at line $line)");
+    $err->expect("#     Failed test ($filename at line $line)");
 }
 
 =item test_diag
 
 As most of the remaining expected output to the error stream will be
-created by Test::Builder's C<diag> function, B<Test::Builder::Tester>
+created by L<Test::Builder>'s C<diag> function, L<Test::Builder::Tester>
 provides a convenience function C<test_diag> that you can use instead of
 C<test_err>.
 
@@ -242,7 +252,7 @@ you can write
 
    test_diag("Couldn't open file");
 
-Remember that B<Test::Builder>'s diag function will not add newlines to
+Remember that L<Test::Builder>'s diag function will not add newlines to
 the end of output and test_diag will. So to check
 
    Test::Builder->new->diag("foo\n","bar\n");
@@ -267,8 +277,8 @@ sub test_diag {
 =item test_test
 
 Actually performs the output check testing the tests, comparing the
-data (with C<eq>) that we have captured from B<Test::Builder> against
-that that was declared with C<test_out> and C<test_err>.
+data (with C<eq>) that we have captured from L<Test::Builder> against
+what was declared with C<test_out> and C<test_err>.
 
 This takes name/value pairs that effect how the test is run.
 
@@ -297,13 +307,15 @@ As a convenience, if only one argument is passed then this argument
 is assumed to be the name of the test (as in the above examples.)
 
 Once C<test_test> has been run test output will be redirected back to
-the original filehandles that B<Test::Builder> was connected to
+the original filehandles that L<Test::Builder> was connected to
 (probably STDOUT and STDERR,) meaning any further tests you run
-will function normally and cause success/errors for B<Test::Harness>.
+will function normally and cause success/errors for L<Test::Harness>.
 
 =cut
 
 sub test_test {
+    # END the hack
+    delete $INC{'Test/Stream.pm'} if $INC{'Test/Stream.pm'} && $INC{'Test/Stream.pm'} eq 'fake';
     # decode the arguments as described in the pod
     my $mess;
     my %args;
@@ -321,6 +333,10 @@ sub test_test {
     croak "Not testing.  You must declare output with a test function first."
       unless $testing;
 
+
+    my $hub = $t->{Hub} || Test2::API::test2_stack->top;
+    $hub->format($original_formatter);
+
     # okay, reconnect the test suite back to the saved handles
     $t->output($original_output_handle);
     $t->failure_output($original_failure_handle);
@@ -329,6 +345,7 @@ sub test_test {
     # restore the test no, etc, back to the original point
     $t->current_test($testing_num);
     $testing = 0;
+    $t->is_passing($original_is_passing);
 
     # re-enable the original setting of the harness
     $ENV{HARNESS_ACTIVE} = $original_harness_env;
@@ -399,11 +416,11 @@ respectively, and the function called with no argument will return the
 current setting.
 
 To enable colouring from the command line, you can use the
-B<Text::Builder::Tester::Color> module like so:
+L<Text::Builder::Tester::Color> module like so:
 
    perl -Mlib=Text::Builder::Tester::Color test.t
 
-Or by including the B<Test::Builder::Tester::Color> module directly in
+Or by including the L<Test::Builder::Tester::Color> module directly in
 the PERL5LIB.
 
 =cut
@@ -419,29 +436,46 @@ sub color {
 
 =head1 BUGS
 
-Calls C<<Test::Builder->no_ending>> turning off the ending tests.
+Test::Builder::Tester does not handle plans well. It has never done anything
+special with plans. This means that plans from outside Test::Builder::Tester
+will effect Test::Builder::Tester, worse plans when using Test::Builder::Tester
+will effect overall testing. At this point there are no plans to fix this bug
+as people have come to depend on it, and Test::Builder::Tester is now
+discouraged in favor of C<Test2::API::intercept()>. See
+L<https://github.com/Test-More/test-more/issues/667>
+
+Calls C<< Test::Builder->no_ending >> turning off the ending tests.
 This is needed as otherwise it will trip out because we've run more
 tests than we strictly should have and it'll register any failures we
 had that we were testing for as real failures.
 
-The color function doesn't work unless B<Term::ANSIColor> is
-compatible with your terminal.
+The color function doesn't work unless L<Term::ANSIColor> is
+compatible with your terminal. Additionally, L<Win32::Console::ANSI>
+must be installed on windows platforms for color output.
 
 Bugs (and requests for new features) can be reported to the author
-though the CPAN RT system:
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Test-Builder-Tester>
+though GitHub:
+L<https://github.com/Test-More/test-more/issues>
 
 =head1 AUTHOR
 
 Copyright Mark Fowler E<lt>mark@twoshortplanks.comE<gt> 2002, 2004.
 
-Some code taken from B<Test::More> and B<Test::Catch>, written by by
+Some code taken from L<Test::More> and L<Test::Catch>, written by
 Michael G Schwern E<lt>schwern@pobox.comE<gt>.  Hence, those parts
 Copyright Micheal G Schwern 2001.  Used and distributed with
 permission.
 
 This program is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.
+
+=head1 MAINTAINERS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
 
 =head1 NOTES
 
@@ -469,9 +503,18 @@ sub expect {
 
     my @checks = @_;
     foreach my $check (@checks) {
+        $check = $self->_account_for_subtest($check);
         $check = $self->_translate_Failed_check($check);
         push @{ $self->{wanted} }, ref $check ? $check : "$check\n";
     }
+}
+
+sub _account_for_subtest {
+    my( $self, $check ) = @_;
+
+    my $hub = $t->{Stack}->top;
+    my $nesting = $hub->isa('Test2::Hub::Subtest') ? $hub->nested : 0;
+    return ref($check) ? $check : ('    ' x $nesting) . $check;
 }
 
 sub _translate_Failed_check {
@@ -511,13 +554,15 @@ sub complaint {
     my $self   = shift;
     my $type   = $self->type;
     my $got    = $self->got;
-    my $wanted = join "\n", @{ $self->wanted };
+    my $wanted = join '', @{ $self->wanted };
 
     # are we running in colour mode?
     if(Test::Builder::Tester::color) {
         # get color
         eval { require Term::ANSIColor };
         unless($@) {
+            eval { require Win32::Console::ANSI } if 'MSWin32' eq $^O;  # support color on windows platforms
+
             # colours
 
             my $green = Term::ANSIColor::color("black") . Term::ANSIColor::color("on_green");
@@ -544,6 +589,33 @@ sub complaint {
             $got    = $start . $gotend;
             $wanted = $start . $wantedend;
         }
+    }
+
+    my @got = split "\n", $got;
+    my @wanted = split "\n", $wanted;
+
+    $got = "";
+    $wanted = "";
+
+    while (@got || @wanted) {
+        my $g = shift @got    || "";
+        my $w = shift @wanted || "";
+        if ($g ne $w) {
+            if($g =~ s/(\s+)$/    |> /g) {
+                $g .= ($_ eq ' ' ? '_' : '\t') for split '', $1;
+            }
+            if($w =~ s/(\s+)$/    |> /g) {
+                $w .= ($_ eq ' ' ? '_' : '\t') for split '', $1;
+            }
+            $g = "> $g";
+            $w = "> $w";
+        }
+        else {
+            $g = "  $g";
+            $w = "  $w";
+        }
+        $got = $got ? "$got\n$g" : $g;
+        $wanted = $wanted ? "$wanted\n$w" : $w;
     }
 
     return "$type is:\n" . "$got\nnot:\n$wanted\nas expected";

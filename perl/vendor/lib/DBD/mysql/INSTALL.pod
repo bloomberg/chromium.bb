@@ -1,7 +1,8 @@
+=encoding utf8
+
 =head1 NAME
 
-INSTALL - How to install and configure DBD::mysql
-
+DBD::mysql::INSTALL - How to install and configure DBD::mysql
 
 =head1 SYNOPSIS
 
@@ -16,7 +17,7 @@ INSTALL - How to install and configure DBD::mysql
 This document describes the installation and configuration of
 DBD::mysql, the Perl DBI driver for the MySQL database. Before
 reading on, make sure that you have the prerequisites available:
-Perl, MySQL and DBI. For details see the separate section.
+Perl, MySQL and DBI. For details see the separate section
 L</PREREQUISITES>.
 
 Depending on your version of Perl, it might be possible to
@@ -24,16 +25,11 @@ use a binary distribution of DBD::mysql. If possible, this is
 recommended. Otherwise you need to install from the sources.
 If so, you will definitely need a C compiler. Installation
 from binaries and sources are both described in separate
-sections. L<BINARY INSTALLATION>. L<SOURCE INSTALLATION>.
+sections. L</BINARY INSTALLATION>. L</SOURCE INSTALLATION>.
 
 Finally, if you encounter any problems, do not forget to
-read the section on known problems. L<KNOWN PROBLEMS>. If
-that doesn't help, you should look into the archive of the
-mailing list B<perl@lists.mysql.com>. See
-http://www.mysql.com for archive locations. And if that
-still doesn't help, please post a question on this mailing
-list.
-
+read the section on known problems L</KNOWN PROBLEMS>. If
+that doesn't help, you should check the section on L</SUPPORT>.
 
 =head1 PREREQUISITES
 
@@ -41,25 +37,26 @@ list.
 
 =item Perl
 
-Preferrably a version of Perl, that comes preconfigured with
+Preferably a version of Perl, that comes preconfigured with
 your system. For example, all Linux and FreeBSD distributions
-come with Perl. For Windows, ActivePerl is recommended, see
-http://www.activestate.com for details.
+come with Perl. For Windows, use L<ActivePerl|https://www.activestate.com/activeperl> 
+or L<Strawberry Perl|http://www.strawberryperl.com>.
 
 =item MySQL
 
 You need not install the actual MySQL database server, the
-client files and the devlopment files are sufficient. For
-example, Fedora Core 4 Linux distribution comes with RPM files
-(using YUM) B<mysql.i386> and B<mysql-server.i386> (use "yum search" 
-to find exact package names). These are sufficient, if the MySQL 
+client files and the development files are sufficient. For
+example, Fedora Linux distribution comes with RPM files
+(using YUM) B<mysql> and B<mysql-server> (use "yum search"
+to find exact package names). These are sufficient, if the MySQL
 server is located on a foreign machine.  You may also create client
 files by compiling from the MySQL source distribution and using
 
   configure --without-server
 
 If you are using Windows and need to compile from sources
-(which is only the case if you are not using ActivePerl),
+(which is only the case if you are not using ActivePerl or
+Strawberry Perl),
 then you must ensure that the header and library files are
 installed. This may require choosing a "Custom installation"
 and selecting the appropriate option when running the
@@ -73,7 +70,7 @@ from.
 
 =item C compiler
 
-A C compiler is only required, if you install from source. In
+A C compiler is only required if you install from source. In
 most cases there are binary distributions of DBD::mysql
 available. However, if you need a C compiler, make sure, that
 it is the same C compiler that was used for compiling Perl and
@@ -96,97 +93,75 @@ libz-devel, libgz-devel or something similar.
 =head1 BINARY INSTALLATION
 
 Binary installation is possible in the most cases, depending
-on your system. I give some examples:
+on your system.
 
 
 =head2 Windows
 
+=head3 Strawberry Perl
+
+Strawberry Perl comes bundled with DBD::mysql and the needed
+client libraries.
+
+=head3 ActiveState Perl
+
 ActivePerl offers a PPM archive of DBD::mysql. All you need to
-do is typing
+do is typing in a cmd.exe window:
 
-  ppm
-  install DBI
-  install DBD-mysql
+  ppm install DBD-mysql
 
-This will fetch the modules via HTTP and install them. If you
+This will fetch the module via HTTP and install them. If you
 need to use a WWW proxy server, the environment variable
 HTTP_proxy must be set:
 
-  set HTTP_proxy=http://my.proxy.server:8000/
-  ppm
-  install DBI
-  install DBD-mysql
+  set HTTP_proxy=http://myproxy.example.com:8080/
+  ppm install DBD-mysql
 
-Of course you need to replace the host name C<my.proxy.server>
-and the port number C<8000> with your local values.
+Of course you need to replace the host name C<myproxy.example.com>
+and the port number C<8080> with your local values.
 
 If the above procedure doesn't work, please upgrade to the latest
-version of ActivePerl. Versions before build 623 are known to
-have problems.
-
-PPM 3 is said to miss DBD::mysql in the repository. Thus use of
-PPM 3 is discouraged, in favour of PPM 2. If you need to use
-PPM 3, try
-
-  ppm
-  rep add PPM2 http://ppm.activestate.com/PPMPackages/5.6plus/
-  rep 2
-  install DBI
-  install DBD-mysql
+version of ActivePerl. ActiveState has a policy where it only
+provides access free-of-charge for the PPM mirrors of the last
+few stable Perl releases. If you have an older perl, you'd either
+need to upgrade your perl or contact ActiveState about a subscription.
 
 
+=head2 Red Hat Enterprise Linux (RHEL), CentOS and Fedora
 
-=head2 Red Hat Linux
+Red Hat Enterprise Linux, its community derivatives such as
+CentOS, and Fedora come with MySQL and DBD::mysql.
 
-As of version 7.1, Red Hat Linux comes with MySQL and DBD::mysql.
-You need to ensure that the following RPM's are installed:
+Use the following command to install DBD::mysql:
 
-  mysql
-  perl-DBI
-  perl-DBD-MySQL
+    yum install "perl(DBD::mysql)"
 
-For installation from source the following RPM's are required
 
-  mysql-devel
-  libz-devel
+=head2 Debian and Ubuntu
 
-Optional are
+On Debian, Ubuntu and derivatives you can install DBD::mysql from
+the repositories with the following command:
 
-  mysql-server
+    sudo apt-get install libdbd-mysql-perl
 
-=head2 Fedora Core Linux
 
-As of version 3, Fedora Linux comes with MySQL and DBD::mysql.
-You need to ensure that the following RPM's are installed:
+=head2 SLES and openSUSE
 
-  mysql or mysql-server
-  perl-DBD-MySQL
+On SUSE Linux Enterprise and the community version openSUSE, you
+can install DBD::mysql from the repositories with the following
+command:
 
-For installation from source the following RPM's are required
+    zypper install perl-DBD-mysql
 
-  mysql-devel
-  libz-devel
-
-Please try 
-
-  yum search mysql
-
-To see the exact names
-
-Note: (important) FC 3 comes with MySQL 3.x, and some people have
-upgraded using MySQL RPMs for newer versions. If you do this, you 
-must re-compile you DBD::mysql because your existing DBD::mysql will be
-linked against the old version of MySQL's client libs. CPAN has no way to
-know or detect that you have upgraded MySQL.
 
 =head2 Other systems
 
-In the case of Linux or FreeBSD distributions it is very likely
-that all you need comes with your distribution, as in the case
-of Red Hat Linux. I just cannot give you names, as I am not using
+In the case of other Linux or FreeBSD distributions it is very likely
+that all you need comes with your distribution.
+I just cannot give you names, as I am not using
 these systems.
 
-Please let me know if you find the files in your SuSE Linux, Debian
+Please let me know if you find the files in your favorite
 Linux or FreeBSD distribution so that I can extend the above list.
 
 
@@ -194,11 +169,10 @@ Linux or FreeBSD distribution so that I can extend the above list.
 
 So you need to install from sources. If you are lucky, the Perl
 module C<CPAN> will do all for you, thanks to the excellent work
-of Andreas Koenig. Otherwise you will need to do a manual
-installation. Some of you, in particular system administrators
-of multiple sites, will choose automatic installation. All of
-these installation types have an own section. L</CPAN installation>.
-L</Manual installation>. L</Configuration>.
+of Andreas König. Otherwise you will need to do a manual
+installation.
+All of these installation types have their own section:
+L</CPAN installation>, L</Manual installation> and L</Configuration>.
 
 The DBD::mysql Makefile.PL needs to know where to find your MySQL
 installation. This may be achieved using command line switches
@@ -206,27 +180,77 @@ installation. This may be achieved using command line switches
 which comes with most MySQL distributions. If your MySQL distribution
 contains mysql_config the easiest method is to ensure this binary
 is on your path.
- 
+
+Typically, this is the case if you've installed the mysql library
+from your systems' package manager.
+
 e.g.
 
   PATH=$PATH:/usr/local/mysql/bin
   export PATH
 
+As stated, to compile DBD::mysql you'll need a C compiler. This should
+be the same compiler as the one used to build perl AND the mysql client
+libraries. If you're on linux, this is most typically the case and you
+need not worry. If you're on UNIX systems, you might want to pay
+attention.
+
+Also you'll need to get the MySQL client and development headers on
+your system. The easiest is to get these from your package manager.
+
+To run the tests that ship with the module, you'll need access to a
+running MySQL server. This can be running on localhost, but it can also
+be on a remote machine.
+
+On Fedora the process is as follows. Please note that Fedora actually
+ships with MariaDB but not with MySQL. This is not a problem, it
+will work just as well.
+In this example we install and start a local server for running the
+tests against.
+
+    yum -y install make gcc mariadb-devel mariadb-libs mariadb-server
+    yum -y install "perl(Test::Deep)" "perl(Test::More)"
+    systemctl start mariadb.service
+
+
+=head2 Environment Variables
+
+For ease of use, you can set environment variables for
+DBD::mysql installation. You can set any or all of the options, and
+export them by putting them in your .bashrc or the like:
+
+    export DBD_MYSQL_CFLAGS=-I/usr/local/mysql/include/mysql
+    export DBD_MYSQL_LIBS="-L/usr/local/mysql/lib/mysql -lmysqlclient"
+    export DBD_MYSQL_EMBEDDED=
+    export DBD_MYSQL_CONFIG=mysql_config
+    export DBD_MYSQL_NOCATCHSTDERR=0
+    export DBD_MYSQL_NOFOUNDROWS=0
+    export DBD_MYSQL_NOSSL=
+    export DBD_MYSQL_TESTDB=test
+    export DBD_MYSQL_TESTHOST=localhost
+    export DBD_MYSQL_TESTPASSWORD=s3kr1+
+    export DBD_MYSQL_TESTPORT=3306
+    export DBD_MYSQL_TESTUSER=me
+
+The most useful may be the host, database, port, socket, user, and password.
+
+Installation will first look to your mysql_config, and then your
+environment variables, and then it will guess with intelligent defaults.
 
 =head2 CPAN installation
 
 Installation of DBD::mysql can be incredibly easy:
 
-  cpan
-  install DBD::mysql
+  cpan DBD::mysql
+
+Please note that this will only work if the prerequisites are
+fulfilled, which means you have a C-compiler installed, and you
+have the development headers and mysql client libraries available
+on your system.
 
 If you are using the CPAN module for the first time, just answer
 the questions by accepting the defaults which are fine in most
-cases. If you are using an older version of Perl, you might
-instead need a
-
-  perl -MCPAN -e shell
-  install DBD::mysql
+cases.
 
 If you cannot get the CPAN module working, you might try manual
 installation. If installation with CPAN fails because the your local
@@ -242,26 +266,26 @@ For a manual installation you need to fetch the DBD::mysql
 source distribution. The latest version is always available
 from
 
-  http://www.cpan.org/modules/by-module/DBD/
+  https://metacpan.org/module/DBD::mysql
 
 The name is typically something like
 
-  DBD-mysql-1.2216.tar.gz
+  DBD-mysql-4.025.tar.gz
 
 The archive needs to be extracted. On Windows you may use a tool
-like WinZip, on Unix you type
+like 7-zip, on *nix you type
 
-  gzip -cd DBD-mysql-1.2216.tar.gz | tar xf -
+  tar xf DBD-mysql-4.025.tar.gz
 
-This will create a subdirectory DBD-mysql-1.2216. Enter this
+This will create a subdirectory DBD-mysql-4.025. Enter this
 subdirectory and type
 
   perl Makefile.PL
   make
   make test
 
-(On Windows you may need to replace "make" with "nmake" or
-"dmake".) If the tests seem to look fine, you may continue with
+(On Windows you may need to replace "make" with "dmake" or
+"nmake".) If the tests seem to look fine, you may continue with
 
   make install
 
@@ -272,9 +296,9 @@ For example you might choose a different database, the C
 compiler or the linker might need some flags. L</Configuration>.
 L</Compiler flags>. L</Linker flags>.
 
-For Windows/CygWin there is a special section below.
-L<Windows/CygWin>.
- 
+For Cygwin there is a special section below.
+L</Cygwin>.
+
 
 =head2 Configuration
 
@@ -316,7 +340,7 @@ Port number of the test database
 =item ps-protcol=1 or 0
 
 Whether to run the test suite using server prepared statements or driver
-emulated prepared statemetns. ps-protocol=1 means use server prepare,
+emulated prepared statements. ps-protocol=1 means use server prepare,
 ps-protocol=0 means driver emulated.
 
 =item cflags
@@ -373,11 +397,11 @@ If you want to configure your own settings for database name,
 database user and so on, then you have to create a script with
 the same name, that replies
 
-  
+
 =head2 Compiler flags
 
-Note: the folling info about compiler and linker flags, you shouldn't have
-to use these options because Makefile.PL is pretty good at utilising
+Note: the following info about compiler and linker flags, you shouldn't have
+to use these options because Makefile.PL is pretty good at utilizing
 mysql_config to get the flags that you need for a successful compile.
 
 It is typically not so difficult to determine the appropriate
@@ -417,7 +441,7 @@ to the C compiler flags, for example C<-L/usr/include/mysql>.
 Appropriate linker flags are the most common source of problems
 while installing DBD::mysql. I will only give a rough overview,
 you'll find more details in the troubleshooting section.
-L<KNOWN PROBLEMS>
+L</KNOWN PROBLEMS>
 
 The determination of the C compiler flags is usually left to
 a configuration script called F<mysql_config>, which can be
@@ -428,7 +452,7 @@ invoked with
 When doing so, it will emit a line with suggested C compiler
 flags, for example like this:
 
-   -L'/usr/lib/mysql' -lmysqlclient -lnsl -lm   -lz -lcrypt
+   -L'/usr/lib/mysql' -lmysqlclient -lnsl -lm -lz -lcrypt
 
 The following items typically need to be configured for the
 linker:
@@ -494,17 +518,63 @@ you may also try to link without gzip libraries.
 
 =back
 
+=head1 ENCRYPTED CONNECTIONS via SSL
+
+Connecting to your servers over an encrypted connection (SSL) is only possible
+if you enabled this setting at build time. Since version 4.034, this is the
+default.
+
+Attempting to connect to a server that requires an encrypted connection without
+first having L<DBD::mysql> compiled with the C<--ssl> option will result in
+an error that makes things appear as if your password is incorrect.
+
+If you want to compile L<DBD::mysql> without SSL support, which you might
+probably only want if you for some reason can't install libssl headers, you
+can do this by passing the C<--nossl> option to Makefile.PL or by setting the
+DBD_MYSQL_NOSSL environment variable to '1'.
+
+
+=head1 MARIADB NATIVE CLIENT INSTALLATION
+
+The MariaDB native client is another option for connecting to a MySQL·
+database licensed LGPL 2.1. To build DBD::mysql against this client, you
+will first need to build the client. Generally, this is done with
+the following:
+
+  cd path/to/src/mariadb-native-client
+  cmake -G "Unix Makefiles'
+  make
+  sudo make install
+
+Once the client is built and installed, you can build DBD::mysql against
+it:
+
+  perl Makefile.PL --testuser=xxx --testpassword=xxx --testsocket=/path/to//mysqld.sock --mysql_config=/usr/local/bin/mariadb_config·
+  make
+  make test
+  make install
 
 =head1 SPECIAL SYSTEMS
 
 Below you find information on particular systems:
 
+=head2 macOS
 
-=head2 Windows/CygWin
+For installing DBD::mysql you need to have the libssl header files and the
+mysql client libs. The easiest way to install these is using Homebrew
+(L<https://brew.sh/>).
 
-If you are a user of Cygwin (the Redhat distribution) you already
+Once you have Homebrew set up, you can simply install the dependencies using
+
+    brew install openssl mysql-connector-c
+
+Then you can install DBD::mysql using your cpan client.
+
+=head2 Cygwin
+
+If you are a user of Cygwin you already
 know, it contains a nicely running perl 5.6.1, installation of
-additional modules usually works as a charme via the standard
+additional modules usually works like a charm via the standard
 procedure of
 
     perl makefile.PL
@@ -523,56 +593,21 @@ You MUST compile the MySQL clients yourself under Cygwin, to get a
 'libmysqlclient.a' compiled under Cygwin. Really! You'll only need
 that library and the header files, you don't need any other client parts.
 Continue to use the Windows binaries. And don't attempt (currently) to
-build the MySQL Server part, it is unneccessary, as MySQL AB does an
+build the MySQL Server part, it is unnecessary, as MySQL AB does an
 excellent job to deliver optimized binaries for the mainstream
 operating systems, and it is told, that the server compiled under Cygwin is
 unstable.
 
-Install MySQL (if you havn't already)
+Install a MySQL server for testing against. You can install the regular
+Windows MySQL server package on your Windows machine, or you can also
+test against a MySQL server on a remote host.
 
-=over
-
-=item -
-
-download the MySQL Windows Binaries from
-http://www.mysql.com/downloads/index.html
-
-=item -
-
-unzip mysql-<version>-win.zip into some temporary location
-
-=item -
-
-start the setup.exe there and follow the instructions
-
-=item -
-
-start the server
-
-=item -
-
-alternatively download, install and start the server on a remote
-server, on what supported OS ever
-
-=back
-
-
-Build MySQL clients under Cygwin:
-
-=over
-
-=item -
+=head3 Build MySQL clients under Cygwin:
 
 download the MySQL LINUX source from
-http://www.mysql.com/downloads/index.html
-
-=item -
-
-unpack mysql-<version>.tar.gz into some tmp location
-
-=item -
-
-cd into the unpacked dir mysql-<version>
+L<https://www.mysql.com/downloads>,
+unpack mysql-<version>.tar.gz into some tmp location and from this directory
+run configure:
 
   ./configure --prefix=/usr/local/mysql --without-server
 
@@ -583,14 +618,10 @@ normally in your PATH, so that you continue to use already installed
 Windows binaries. The --without-server parameter tells configure to
 only build the clients.
 
-=item -
-
   make
 
 This builds all MySQL client parts ... be patient. It should finish
 finally without any error.
-
-=item -
 
   make install
 
@@ -600,8 +631,6 @@ Remember, you don't need anything except the library under
 
 Essentially you are now done with this part. If you want, you may try
 your compiled binaries shortly; for that, do:
-
-=item -
 
   cd /usr/local/mysql/bin
   ./mysql -h 127.0.0.1
@@ -613,8 +642,6 @@ doesn't work between Cygwin and Windows (as far as I know).
 
 If you have your MySQL server running on some other box, then please
 substitute '127.0.0.1' with the name or IP-number of that box.
-
-=back
 
 Please note, in my environment the 'mysql' client did not accept a
 simple RETURN, I had to use CTRL-RETURN to send commands
@@ -631,25 +658,12 @@ At the 'mysql>' prompt do a quick check:
 
 You are now ready to build DBD::mysql!
 
+=head3 compile DBD::mysql
 
-Build DBD::mysql:
-
-=over
-
-=item -
-
-download DBD-mysql-<version>.tar.gz from CPAN
-
-=item -
-
-unpack DBD-mysql-<version>.tar.gz
-
-=item -
+download and extract DBD-mysql-<version>.tar.gz from CPAN
 
 cd into unpacked dir DBD-mysql-<version>
 you probably did that already, if you are reading this!
-
-=item -
 
   cp /usr/local/mysql/bin/mysql_config .
 
@@ -658,53 +672,25 @@ from your just built Cywin/MySQL client directory; it knows about
 your Cygwin installation, especially about the right libraries to link
 with.
 
-=item -
-
   perl Makefile.PL --testhost=127.0.0.1
 
 The --testhost=127.0.0.1 parameter again forces a TCP/IP connection
 to the MySQL server on the local host instead of a pipe/socket
 connection for the 'make test' phase.
 
-=item -
-
   make
 
 This should run without error
 
-=item -
-
   make test
-
-with DBD-mysql-2.1022 or earlier you will see several errors in
-dbdadmin.t, mysql.t and mysql2.t; with later versions you should not
-get errors (except possibly one, indicating, that some tables could
-not be dropped. I'm hunting for a solution to that problem, but have
-none yet).
-
-=item -
-
   make install
 
 This installs DBD::mysql into the Perl hierarchy.
 
-=back
-
-Notes:
-
-This was tested with MySQL version 3.23.54a and DBD::mysql version
-2.1022. I patched the above mentioned test scripts and sent the
-patches
-to the author of DBD::mysql Jochen Wiedman.
-
-Georg Rehfeld          15. Jan. 2003
-
 
 =head1 KNOWN PROBLEMS
 
-=over
-
-=item 1.)
+=head2 no gzip on your system
 
 Some Linux distributions don't come with a gzip library by default.
 Running "make" terminates with an error message like
@@ -713,7 +699,7 @@ Running "make" terminates with an error message like
     -o blib/arch/auto/DBD/mysql/mysql.so  -shared
     -L/usr/local/lib dbdimp.o mysql.o -L/usr/lib/mysql
     -lmysqlclient -lm -L/usr/lib/gcc-lib/i386-redhat-linux/2.96
-    -lgcc -lz 
+    -lgcc -lz
   /usr/bin/ld: cannot find -lz
   collect2: ld returned 1 exit status
   make: *** [blib/arch/auto/DBD/mysql/mysql.so] Error 1
@@ -722,7 +708,7 @@ If this is the case for you, install an RPM archive like
 libz-devel, libgz-devel, zlib-devel or gzlib-devel or something
 similar.
 
-=item 2.)
+=head2 different compiler for mysql and perl
 
 If Perl was compiled with gcc or egcs, but MySQL was compiled
 with another compiler or on another system, an error message like
@@ -752,49 +738,16 @@ to determine the directory. If you know the directory, add a
 
 to the list of C compiler flags. L</Configuration>. L</Linker flags>.
 
-=item 3.)
-
-There are known problems with shared versions of libmysqlclient,
-at least on some Linux boxes. If you receive an error message
-similar to
-
-  install_driver(mysql) failed: Can't load
-  '/usr/lib/perl5/site_perl/i586-linux/auto/DBD/mysql/mysql.so'
-  for module DBD::mysql: File not found at
-  /usr/lib/perl5/i586-linux/5.00404/DynaLoader.pm line 166
-
-then this error message can be misleading: It's not mysql.so
-that fails being loaded, but libmysqlclient.so! The usual
-problem is that this file is located in a directory like
-
-  /usr/lib/mysql
-
-where the linker doesn't look for it.
-
-The best workaround is using a statically linked mysqlclient
-library, for example
-
-  /usr/lib/mysql/libmysqlclient.a
-
-The use of a statically linked library is described in the
-previous section on linker flags. L</Configuration>.
-L</Linker flags>.  
-
-=item 4.)
-
-Red Hat 8 & 9 set the Default locale to UTF which causes problems with 
-MakeMaker.  To build DBD::mysql on these systems, do a 'unset LANG' 
-before runing 'perl Makefile.PL'
-
-=back
-
-
 =head1 SUPPORT
 
 Finally, if everything else fails, you are not alone. First of
 all, for an immediate answer, you should look into the archives
-of the mailing list B<perl@lists.mysql.com>. See
-http://www.mysql.com for archive locations.
+of the dbi-users mailing list, which is available at
+L<http://groups.google.com/group/perl.dbi.users?hl=en&lr=>
+
+To subscribe to this list, send and email to
+
+    dbi-users-subscribe@perl.org
 
 If you don't find an appropriate posting and reply in the
 mailing list, please post a question. Typically a reply will

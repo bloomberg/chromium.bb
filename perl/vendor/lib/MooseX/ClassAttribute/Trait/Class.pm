@@ -1,10 +1,9 @@
 package MooseX::ClassAttribute::Trait::Class;
-BEGIN {
-  $MooseX::ClassAttribute::Trait::Class::VERSION = '0.26';
-}
 
 use strict;
 use warnings;
+
+our $VERSION = '0.29';
 
 use MooseX::ClassAttribute::Trait::Attribute;
 use Scalar::Util qw( blessed );
@@ -62,7 +61,7 @@ sub _post_add_class_attribute {
 }
 
 sub _attach_class_attribute {
-    my ($self, $attribute) = @_;
+    my ( $self, $attribute ) = @_;
     $attribute->attach_to_class($self);
 }
 
@@ -129,8 +128,7 @@ around remove_class_attribute => sub {
 sub get_all_class_attributes {
     my $self = shift;
 
-    my %attrs
-        = map {
+    my %attrs = map {
         my $meta = Class::MOP::class_of($_);
         $meta && $meta->can('_class_attribute_map')
             ? %{ $meta->_class_attribute_map() }
@@ -159,7 +157,7 @@ sub find_class_attribute_by_name {
 
         return $meta->get_class_attribute($name)
             if $meta->can('has_class_attribute')
-                && $meta->has_class_attribute($name);
+            && $meta->has_class_attribute($name);
     }
 
     return;
@@ -230,9 +228,11 @@ sub _inline_weaken_class_slot_value {
 
 # ABSTRACT: A trait for classes with class attributes
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -240,7 +240,7 @@ MooseX::ClassAttribute::Trait::Class - A trait for classes with class attributes
 
 =head1 VERSION
 
-version 0.26
+version 0.29
 
 =head1 SYNOPSIS
 
@@ -309,20 +309,21 @@ distribution.
 
 See L<MooseX::ClassAttribute> for details.
 
+Bugs may be submitted through L<the RT bug tracker|http://rt.cpan.org/Public/Dist/Display.html?Name=MooseX-ClassAttribute>
+(or L<bug-moosex-classattribute@rt.cpan.org|mailto:bug-moosex-classattribute@rt.cpan.org>).
+
+I am also usually active on IRC as 'drolsky' on C<irc://irc.perl.org>.
+
 =head1 AUTHOR
 
 Dave Rolsky <autarch@urth.org>
 
-=head1 COPYRIGHT AND LICENSE
+=head1 COPYRIGHT AND LICENCE
 
-This software is Copyright (c) 2011 by Dave Rolsky.
+This software is Copyright (c) 2016 by Dave Rolsky.
 
 This is free software, licensed under:
 
   The Artistic License 2.0 (GPL Compatible)
 
 =cut
-
-
-__END__
-

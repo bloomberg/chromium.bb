@@ -4,36 +4,33 @@ Module::Runtime - runtime module handling
 
 =head1 SYNOPSIS
 
-	use Module::Runtime qw(
-		$module_name_rx is_module_name check_module_name
-		module_notional_filename require_module
-	);
+    use Module::Runtime qw(
+	$module_name_rx is_module_name check_module_name
+	module_notional_filename require_module);
 
-	if($module_name =~ /\A$module_name_rx\z/o) { ...
-	if(is_module_name($module_name)) { ...
-	check_module_name($module_name);
+    if($module_name =~ /\A$module_name_rx\z/o) { ...
+    if(is_module_name($module_name)) { ...
+    check_module_name($module_name);
 
-	$notional_filename = module_notional_filename($module_name);
-	require_module($module_name);
+    $notional_filename = module_notional_filename($module_name);
+    require_module($module_name);
 
-	use Module::Runtime qw(use_module use_package_optimistically);
+    use Module::Runtime qw(use_module use_package_optimistically);
 
-	$bi = use_module("Math::BigInt", 1.31)->new("1_234");
-	$widget = use_package_optimistically("Local::Widget")->new;
+    $bi = use_module("Math::BigInt", 1.31)->new("1_234");
+    $widget = use_package_optimistically("Local::Widget")->new;
 
-	use Module::Runtime qw(
-		$top_module_spec_rx $sub_module_spec_rx
-		is_module_spec check_module_spec
-		compose_module_name
-	);
+    use Module::Runtime qw(
+	$top_module_spec_rx $sub_module_spec_rx
+	is_module_spec check_module_spec
+	compose_module_name);
 
-	if($spec =~ /\A$top_module_spec_rx\z/o) { ...
-	if($spec =~ /\A$sub_module_spec_rx\z/o) { ...
-	if(is_module_spec("Standard::Prefix", $spec)) { ...
-	check_module_spec("Standard::Prefix", $spec);
+    if($spec =~ /\A$top_module_spec_rx\z/o) { ...
+    if($spec =~ /\A$sub_module_spec_rx\z/o) { ...
+    if(is_module_spec("Standard::Prefix", $spec)) { ...
+    check_module_spec("Standard::Prefix", $spec);
 
-	$module_name =
-		compose_module_name("Standard::Prefix", $spec);
+    $module_name = compose_module_name("Standard::Prefix", $spec);
 
 =head1 DESCRIPTION
 
@@ -42,11 +39,12 @@ Perl modules, which are normally handled at compile time.  This module
 avoids using any other modules, so that it can be used in low-level
 infrastructure.
 
-The parts of this module that work with module names apply the same
-syntax that is used for barewords in Perl source.  In principle this
-syntax can vary between versions of Perl, and this module applies the
-syntax of the Perl on which it is running.  In practice the usable syntax
-hasn't changed yet, but there's a good chance of it changing in Perl 5.18.
+The parts of this module that work with module names apply the same syntax
+that is used for barewords in Perl source.  In principle this syntax
+can vary between versions of Perl, and this module applies the syntax of
+the Perl on which it is running.  In practice the usable syntax hasn't
+changed yet.  There's some intent for Unicode module names to be supported
+in the future, but this hasn't yet amounted to any consistent facility.
 
 The functions of this module whose purpose is to load modules include
 workarounds for three old Perl core bugs regarding C<require>.  These
@@ -57,7 +55,7 @@ pure Perl.
 =head2 Module name syntax
 
 The usable module name syntax has not changed from Perl 5.000 up to
-Perl 5.15.7.  The syntax is composed entirely of ASCII characters.
+Perl 5.19.8.  The syntax is composed entirely of ASCII characters.
 From Perl 5.6 onwards there has been some attempt to allow the use of
 non-ASCII Unicode characters in Perl source, but it was fundamentally
 broken (like the entirety of Perl 5.6's Unicode handling) and remained
@@ -66,7 +64,6 @@ pretty much entirely unusable until it got some attention in the Perl
 parser in some places, it remains broken for module names.  Furthermore,
 there has not yet been any work on how to map Unicode module names into
 filenames, so in that respect also Unicode module names are unusable.
-This may finally be addressed in the Perl 5.17 series.
 
 The module name syntax is, precisely: the string must consist of one or
 more segments separated by C<::>; each segment must consist of one or more
@@ -120,7 +117,7 @@ BEGIN { require 5.006; }
 BEGIN { ${^WARNING_BITS} = ""; }
 # Don't "use strict" here, to avoid dependencies.
 
-our $VERSION = "0.013";
+our $VERSION = "0.016";
 
 # Don't use Exporter here, to avoid dependencies.
 our @EXPORT_OK = qw(
@@ -310,11 +307,11 @@ sub require_module($) {
 		my $notional_filename = &module_notional_filename;
 		my $guard = bless([ $notional_filename ],
 				"Module::Runtime::__GUARD__");
-		my $result = require($notional_filename);
+		my $result = CORE::require($notional_filename);
 		pop @$guard;
 		return $result;
 	} else {
-		return scalar(require(&module_notional_filename));
+		return scalar(CORE::require(&module_notional_filename));
 	}
 }
 
@@ -346,9 +343,7 @@ the synopsis.
 sub use_module($;$) {
 	my($name, $version) = @_;
 	require_module($name);
-	if(defined $version) {
-		$name->VERSION($version);
-	}
+	$name->VERSION($version) if @_ >= 2;
 	return $name;
 }
 
@@ -364,10 +359,23 @@ of C<require>).  If the module cannot be found then it is assumed that
 the package was actually already loaded by other means, and no error
 is signalled.  That's the optimistic bit.
 
+I<Warning:> this optional module loading is liable to cause unreliable
+behaviour, including security problems.  It interacts especially badly
+with having C<.> in C<@INC>, which was the default state of affairs in
+Perls prior to 5.25.11.  If a package is actually defined by some means
+other than a module, then applying this function to it causes a spurious
+attempt to load a module that is expected to be non-existent.  If a
+module actually exists under that name then it will be unintentionally
+loaded.  If C<.> is in C<@INC> and this code is ever run with the current
+directory being one writable by a malicious user (such as F</tmp>), then
+the malicious user can easily cause the victim to run arbitrary code, by
+creating a module file under the predictable spuriously-loaded name in the
+writable directory.  Generally, optional module loading should be avoided.
+
 This is mostly the same operation that is performed by the L<base> pragma
 to ensure that the specified base classes are available.  The behaviour
-of L<base> was simplified in version 2.18, and this function changed
-to match.
+of L<base> was simplified in version 2.18, and later improved in version
+2.20, and on both occasions this function changed to match.
 
 If a I<VERSION> is specified, the C<VERSION> method of the loaded package is
 called with the specified I<VERSION> as an argument.  This normally serves
@@ -379,11 +387,13 @@ function work just like L</use_module>.
 
 sub use_package_optimistically($;$) {
 	my($name, $version) = @_;
-	check_module_name($name);
+	my $fn = module_notional_filename($name);
 	eval { local $SIG{__DIE__}; require_module($name); };
 	die $@ if $@ ne "" &&
-		$@ !~ /\ACan't locate .+ at \Q@{[__FILE__]}\E line/s;
-	$name->VERSION($version) if defined $version;
+		($@ !~ /\ACan't locate \Q$fn\E .+ at \Q@{[__FILE__]}\E line/s ||
+		 $@ =~ /^Compilation\ failed\ in\ require
+			 \ at\ \Q@{[__FILE__]}\E\ line/xm);
+	$name->VERSION($version) if @_ >= 2;
 	return $name;
 }
 
@@ -468,6 +478,17 @@ sub compose_module_name($$) {
 
 =back
 
+=head1 BUGS
+
+On Perl versions 5.7.2 to 5.8.8, if C<require> is overridden by the
+C<CORE::GLOBAL> mechanism, it is likely to break the heuristics used by
+L</use_package_optimistically>, making it signal an error for a missing
+module rather than assume that it was already loaded.  From Perl 5.8.9
+onwards, and on 5.7.1 and earlier, this module can avoid being confused
+by such an override.  On the affected versions, a C<require> override
+might be installed by L<Lexical::SealRequireHints>, if something requires
+its bugfix but for some reason its XS implementation isn't available.
+
 =head1 SEE ALSO
 
 L<Lexical::SealRequireHints>,
@@ -481,7 +502,7 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2004, 2006, 2007, 2009, 2010, 2011, 2012
+Copyright (C) 2004, 2006, 2007, 2009, 2010, 2011, 2012, 2014, 2017
 Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 LICENSE

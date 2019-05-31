@@ -1,10 +1,18 @@
 /**
- * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER.PD within this package.
+ * This file is part of the mingw-w64 runtime package.
+ * No warranty is given; refer to the file DISCLAIMER within this package.
  */
-#ifndef _INC_WS2IPDEF
-#define _INC_WS2IPDEF
+#ifndef _WS2IPDEF_
+#define _WS2IPDEF_
+
+#include <_mingw_unicode.h>
+#include <winapifamily.h>
+
+#ifdef __LP64__
+#pragma push_macro("u_long")
+#undef u_long
+#define u_long __ms_u_long
+#endif
 
 #include <in6addr.h>
 
@@ -87,8 +95,48 @@ typedef struct group_source_req {
   SOCKADDR_STORAGE gsr_source;
 } GROUP_SOURCE_REQ, *PGROUP_SOURCE_REQ;
 
+#define IPV6_HOPOPTS           1
+#define IPV6_HDRINCL           2
+#define IPV6_UNICAST_HOPS      4
+#define IPV6_MULTICAST_IF      9
+#define IPV6_MULTICAST_HOPS    10
+#define IPV6_MULTICAST_LOOP    11
+#define IPV6_ADD_MEMBERSHIP    12
+#define IPV6_JOIN_GROUP        IPV6_ADD_MEMBERSHIP
+#define IPV6_DROP_MEMBERSHIP   13
+#define IPV6_LEAVE_GROUP       IPV6_DROP_MEMBERSHIP
+#define IPV6_DONTFRAG          14
+#define IPV6_PKTINFO           19
+#define IPV6_HOPLIMIT          21
+#define IPV6_PROTECTION_LEVEL  23
+#define IPV6_RECVIF            24
+#define IPV6_RECVDSTADDR       25
+#define IPV6_CHECKSUM          26
+#define IPV6_V6ONLY            27
+#define IPV6_IFLIST            28
+#define IPV6_ADD_IFLIST        29
+#define IPV6_DEL_IFLIST        30
+#define IPV6_UNICAST_IF        31
+#define IPV6_RTHDR             32
+#define IPV6_RECVRTHDR         38
+#define IPV6_TCLASS            39
+#define IPV6_RECVTCLASS        40
+
+#define WS2TCPIP_INLINE __CRT_INLINE
+
+int IN6_ADDR_EQUAL(const struct in6_addr *,const struct in6_addr *);
+WS2TCPIP_INLINE int IN6_ADDR_EQUAL(const struct in6_addr *a, const struct in6_addr *b) {
+    return !memcmp(a, b, sizeof(struct in6_addr));
+}
+
+#define IN6_ARE_ADDR_EQUAL IN6_ADDR_EQUAL
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /*_INC_WS2IPDEF*/
+#ifdef __LP64__
+#pragma pop_macro("u_long")
+#endif
+
+#endif /*_WS2IPDEF_ */

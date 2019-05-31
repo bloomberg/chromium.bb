@@ -1,7 +1,14 @@
 package GD::Group;
 
-# Simple object for recursive grouping. Does absolutely nothing with GD,
-# but works nicely with GD::SVG.
+=head1 NAME
+
+GD::Group - Simple object for recursive grouping
+
+=head1 DESCRIPTION
+
+Does absolutely nothing with GD, but works nicely with GD::SVG.
+
+=cut
 
 use strict;
 

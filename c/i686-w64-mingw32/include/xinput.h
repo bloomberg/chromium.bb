@@ -106,7 +106,7 @@
 /*
  * Defines what type of abilities the type of joystick has
  * DEVTYPE_GAMEPAD is available for all joysticks, however
- * there may be more specfic identifiers for other joysticks
+ * there may be more specific identifiers for other joysticks
  * which are being used.
  */
 
@@ -156,6 +156,8 @@
 #define XUSER_MAX_COUNT                 4
 #define XUSER_INDEX_ANY                 0x000000FF
 
+#define XINPUT_CAPS_FFB_SUPPORTED       0x0001
+
 /*
  * Defines the structure of an xbox 360 joystick.
  */
@@ -188,8 +190,8 @@ typedef struct _XINPUT_VIBRATION {
 
 /*
  * Defines the structure for what kind of abilities the joystick has
- * such abilites are things such as if the joystick has the ability
- * to send and receive audio, if the joystick is infact a driving
+ * such abilities are things such as if the joystick has the ability
+ * to send and receive audio, if the joystick is in fact a driving
  * wheel or perhaps if the joystick is some kind of dance pad or
  * guitar.
  */
@@ -231,6 +233,8 @@ DWORD WINAPI XInputGetKeystroke(DWORD, DWORD, PXINPUT_KEYSTROKE);
 DWORD WINAPI XInputGetCapabilities(DWORD, DWORD, XINPUT_CAPABILITIES*);
 DWORD WINAPI XInputGetDSoundAudioDeviceGuids(DWORD, GUID*, GUID*);
 DWORD WINAPI XInputGetBatteryInformation(DWORD, BYTE, XINPUT_BATTERY_INFORMATION*);
+
+DWORD WINAPI XInputGetStateEx(DWORD, XINPUT_STATE*);
 
 #ifdef __cplusplus
 }

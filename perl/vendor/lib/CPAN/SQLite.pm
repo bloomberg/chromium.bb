@@ -1,14 +1,17 @@
-# $Id: SQLite.pm 35 2011-06-17 01:34:42Z stro $
+# $Id: SQLite.pm 79 2019-01-30 02:35:31Z stro $
 
 package CPAN::SQLite;
 use strict;
 use warnings;
+
+our $VERSION = '0.217';
+
+use English qw/-no_match_vars/;
+
 use File::HomeDir;
 require File::Spec;
 use Cwd;
 require CPAN::SQLite::META;
-
-our $VERSION = '0.202';
 
 # an array ref of distributions to ignore indexing
 my $ignore = [qw(SpreadSheet-WriteExcel-WebPivot)];
@@ -17,52 +20,56 @@ our $db_name = 'cpandb.sql';
 use constant WIN32 => $^O eq 'MSWin32';
 
 sub new {
-    my $class = shift;
-    my %args = @_;
+  my $class = shift;
+  my %args  = @_;
 
-    my ($CPAN, $update_indices);
-    my $db_dir = $args{db_dir};
-    my $urllist = [];
-    my $keep_source_where;
-    # for testing undr Darwin, must load CPAN::MyConfig contained
-    # in PERL5LIB, as File::HomeDir doesn't use this
-    if ($ENV{CPAN_SQLITE_TESTING}) {
-      eval {require CPAN::MyConfig;};
+  my ($CPAN, $update_indices);
+  my $db_dir  = $args{db_dir};
+  my $urllist = [];
+  my $keep_source_where;
+
+  # for testing under Darwin, must load CPAN::MyConfig contained
+  # in PERL5LIB, as File::HomeDir doesn't use this
+  if ($ENV{CPAN_SQLITE_TESTING}) {
+    eval { require CPAN::MyConfig; };
+  }
+  eval { require CPAN; CPAN::HandleConfig->load; };
+  if (not $@ and not defined $args{CPAN}) {
+    $CPAN              = $CPAN::Config->{cpan_home};
+    $db_dir            = $CPAN;
+    $keep_source_where = $CPAN::Config->{keep_source_where};
+    $urllist           = $CPAN::Config->{urllist};
+
+    # Sometimes this directory doesn't exist (like on new installations)
+    unless (-d $CPAN) {
+      eval { File::Path::mkpath($CPAN); };    # copied from CPAN.pm
     }
-    eval {require CPAN; CPAN::HandleConfig->load;};
-    if ( not $@ and not defined $args{CPAN} ) {
-      $CPAN = $CPAN::Config->{cpan_home};
-      $db_dir = $CPAN;
-      $keep_source_where = $CPAN::Config->{keep_source_where};
-      $urllist = $CPAN::Config->{urllist};
-      # Sometimes this directory dosn't exist (like on new installations)
-      unless (-d $CPAN) {
-          eval { File::Path::mkpath($CPAN); }; # copied from CPAN.pm
-      }
-      die qq{The '$CPAN' directory doesn't exist} unless -d $CPAN;
-      $update_indices = 0;
-    }
-    else {
-      $CPAN = $args{CPAN} || '';
-      die qq{Please specify the CPAN location} unless defined $CPAN;
-      die qq{The '$CPAN' directory doesn't exist} unless (-d $CPAN);
-      $update_indices = (-f File::Spec->catfile($CPAN, 'MIRRORING.FROM')) ?
-        0 : 1;
-    }
-    push @$urllist, q{http://www.cpan.org/};
-    $db_dir ||= cwd;
-    my $self = {%args, CPAN => $CPAN, update_indices => $update_indices,
-                db_name => $db_name, urllist => $urllist,
-                keep_source_where => $keep_source_where, db_dir => $db_dir};
-    return bless $self, $class;
+    die qq{The '$CPAN' directory doesn't exist} unless -d $CPAN;
+    $update_indices = 0;
+  } else {
+    $CPAN = $args{CPAN} || '';
+    die qq{Please specify the CPAN location} unless defined $CPAN;
+    die qq{The '$CPAN' directory doesn't exist} unless (-d $CPAN);
+    $update_indices = (-f File::Spec->catfile($CPAN, 'MIRRORING.FROM')) ? 0 : 1;
+  }
+  push @$urllist, q{http://www.cpan.org/};
+  $db_dir ||= cwd;
+  my $self = {
+    %args,
+    CPAN              => $CPAN,
+    update_indices    => $update_indices,
+    db_name           => $db_name,
+    urllist           => $urllist,
+    keep_source_where => $keep_source_where,
+    db_dir            => $db_dir
+  };
+  return bless $self, $class;
 }
 
 sub index {
   my ($self, %args) = @_;
   require CPAN::SQLite::Index;
-  my %wanted = map {$_ => $self->{$_}} 
-    qw(CPAN ignore update_indices db_name db_dir
-       keep_source_where setup reindex urllist);
+  my %wanted = map { $_ => $self->{$_} } qw(CPAN ignore update_indices db_name db_dir keep_source_where setup reindex urllist);
   my $log_dir = $self->{CPAN} || $self->{db_dir};
   die qq{Please create the directory '$log_dir' first} unless -d $log_dir;
   my $index = CPAN::SQLite::Index->new(%wanted, %args, log_dir => $log_dir);
@@ -76,10 +83,9 @@ sub index {
 sub query {
   my ($self, %args) = @_;
   require CPAN::SQLite::Search;
-  my %wanted = map {$_ => $self->{$_}} 
-    qw(max_results CPAN db_name db_dir meta_obj);
+  my %wanted = map { $_ => $self->{$_} } qw(max_results CPAN db_name db_dir meta_obj);
   my $query = CPAN::SQLite::Search->new(%wanted, %args);
-  %wanted = map {$_ => $self->{$_}} qw(mode query id name);
+  %wanted = map { $_ => $self->{$_} } qw(mode query id name);
   $query->query(%wanted, %args) or do {
     warn qq{Query failed!};
     return;
@@ -92,11 +98,13 @@ sub query {
 
 1;
 
-__END__
-
 =head1 NAME
 
 CPAN::SQLite - maintain and search a minimal CPAN database
+
+=head1 VERSION
+
+version 0.217
 
 =head1 SYNOPSIS
 
@@ -110,9 +118,8 @@ CPAN::SQLite - maintain and search a minimal CPAN database
 
 This package is used for setting up, maintaining, and
 searching a CPAN database consisting of the information
-stored in the three main CPAN indices: 
-F<$CPAN/modules/03modlist.data.gz>,
-F<$CPAN/modules/02packages.details.txt.gz>, and
+stored in the two main CPAN indices:
+F<$CPAN/modules/02packages.details.txt.gz> and
 F<$CPAN/authors/01mailrc.txt.gz>. It should be
 considered at an alpha stage of development.
 
@@ -137,7 +144,7 @@ configured, and are updated if they are more than one
 day old.
 
 If the C<CPAN> option is not given, it will default
-to C<cpan_home> of L<CPAN::>, if this is configured,
+to C<cpan_home> of L<CPAN>, if this is configured,
 with the index files found under C<keep_source_where>.
 A fatal error results if such a directory isn't found.
 Updates to these index files are assumed here to be
@@ -165,7 +172,7 @@ following arguments are accepted:
 =item * setup =E<gt> 1
 
 This specifies that the database is to be created and
-populated from the CPAN indices; any exisiting database
+populated from the CPAN indices; any existing database
 will be overwritten. Not specifying this option will
 assume that an existing database is to be updated.
 
@@ -204,7 +211,7 @@ the C<query_term> for the C<search> option.
 
 As well, an option of C<max_results =E<gt> some_number> will
 limit the number of results returned; if not specified,
-this defaults to 200.
+the limit doesn't apply.
 
 =head1 CPAN.pm support
 
@@ -255,16 +262,11 @@ directory as the database file.
 
 =head1 SEE ALSO
 
-L<CPAN::SQLite::Index>, for setting up and maintaining
-the database, and L<CPAN::SQLite::Search> for an
-interface to querying the database. Some details
-of the interaction with L<CPAN::> is available from
-L<CPAN::SQLite::META>. See also the L<cpandb> script for a
-command-line interface to the
-indexing and querying of the database.
-
-Development takes place on the CPAN-Search-Lite project
-at L<http://cpan-search.svn.sourceforge.net/viewvc/cpan-search/CPAN-SQLite/>.
+L<CPAN::SQLite::Index>, for setting up and maintaining the database, and
+L<CPAN::SQLite::Search> for an interface to querying the database. Some
+details of the interaction with L<CPAN> is available from
+L<CPAN::SQLite::META>. See also the L<cpandb> script for a command-line
+interface to the indexing and querying of the database.
 
 =head1 SUPPORT
 
@@ -307,7 +309,7 @@ distribution will not be present in the database; for example,
 at this time, the latest version of the I<libwww-perl> distribution
 on CPAN is 5.805, but there are modules such as I<URI::URL::finger>
 contained in version 5.10 of libwww-perl that are not present in 5.805.
-This behaviour differs from that of L<CPAN::> without CPAN::SQLite.
+This behaviour differs from that of L<CPAN> without CPAN::SQLite.
 This may change in the future.
 
 Please report bugs and feature requests via
@@ -319,7 +321,18 @@ Information messages from the indexing procedures are printed
 out to STDOUT if the environment variable CPAN_SQLITE_DEBUG
 is set. This is automatically set within L<CPAN::SQLite::Index>.
 If CPAN_SQLITE_NO_LOG_FILES is set, no log files will be created
-during the indexing procedures.
+during the indexing procedures. Log files are deleted automatically
+in 30 days. To override this, set CPAN_SQLITE_LOG_FILES_CLEANUP.
+To stop automatic cleanup, set this variable to 0.
+
+If CPAN_SQLITE_DOWNLOAD variable are set, an already existing and
+up-to-date cpandb.sql file will be downloaded from
+http://cpansqlite.trouchelle.com/ where it's updated every hour. This
+greatly increases performance and decreases CPU and memory consumption
+during the indexing process.
+
+See L<CPAN::SQLite::Index> for more details, potential problems, and more
+configuration options.
 
 =head1 AUTHORS
 
@@ -329,9 +342,9 @@ Serguei Trouchelle E<lt>stro@cpan.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2006,2008 by Randy Kobes E<lt>r.kobes@uwinnipeg.caE<gt>. 
+Copyright 2006,2008 by Randy Kobes E<lt>r.kobes@uwinnipeg.caE<gt>.
 
-Copyright 2011 by Serguei Trouchelle E<lt>stro@cpan.orgE<gt>.
+Copyright 2011-2014 by Serguei Trouchelle E<lt>stro@cpan.orgE<gt>.
 
 Use and redistribution are under the same terms as Perl itself.
 

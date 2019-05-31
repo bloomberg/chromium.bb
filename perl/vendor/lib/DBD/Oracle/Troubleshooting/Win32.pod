@@ -1,0 +1,278 @@
+#PODNAME: DBD::Oracle::Troubleshooting::Win32
+#ABSTRACT: Tips and Hints to Troubleshoot DBD::Oracle on Win32
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+DBD::Oracle::Troubleshooting::Win32 - Tips and Hints to Troubleshoot DBD::Oracle on Win32
+
+=head1 VERSION
+
+version 1.76
+
+=head1 GENERAL INFO
+
+In general, on Windows, it's best to just use ActiveState Perl and the
+PPM package manager to install a pre-built version of DBD::Oracle however only version 1.17 is available there.
+
+=head1 Oracle Instant Client 11.1.0.6.0 Notes
+
+So far I have managed to get it to Makefile and compile test and install and work.  However it seems one needs to set "NLS_LANG" to a valid value
+in the environment variables.
+
+As well IC 11 seems to have trouble finding the .ORA files. A quick fix for this is to add "TNS_ADMIN"
+to the environment variables and point it to where your .ORA files are.
+
+=head1 Other information, some of which is out of date ---
+
+    DBD-Oracle for Windows and Oracle Instantclient and 10XE (Express Edition)
+    By: John Scoles
+    The Pythian Group
+
+The preferred method of getting DBD::Oracle is to use a pre-built version from the ActiveState
+repository, which can be installed with PPM.
+
+Compiling and installing DBD::Oracle 1.18 or later on a windows 2000 professional or XP OS for use
+with Oracle instantClient ver 10.2.0.1 & 10.1.0.5 or Oracle XE requires only a few downloads and
+a minimal number of environment setting.  The procedures below were tested on a clean
+Windows platform having no Oracle or other development environment installed.
+
+    1) The first part of the process is to download and install the latest version of
+    Active Perl from http://www.activeperl.com/.
+
+    2) Use the PPM application to get the latest version of DBI
+
+    3) Download the latest DBD::Oracle from http://svn.perl.org/modules/dbd-oracle/trunk/
+
+    4) Download and unzip the Oracle Instant Client (10.2.0.1 or 10.1.0.5) 32 bit from
+    http://www.oracle.com/technology/tech/oci/instantclient/instantclient.html
+    You will need all three of these products
+        i.	Instant Client Package - Basic
+        ii.	Instant Client Package - SQL*Plus:
+        iii.	Instant Client Package - SDK:
+    or
+
+    install oracle 10XE http://www.oracle.com/technology/products/database/xe/index.html
+
+    5) You will now need the Microsoft Visual C++ toolkit 2003. Unfortunately this product is no longer available from Microsoft.
+    The file name was VCToolkitSetup.exe  and is available at this mirror site http://www.filewatcher.com/m/VCToolkitSetup.exe.32952488.0.0.html at the time of writing.
+    Microsoft's replacement for this tool kit is Visual C++ 2005 Express Edition and all attempts to compile DBD::Oracle with this product fail. It has been successfully compiled
+    using a complete edition of Microsoft Visual Studio 2005.
+    Download and then install this product.
+
+    6) You will also need the Windows SDK. Which can be found at
+    http://www.microsoft.com/downloads/details.aspx?FamilyId=A55B6B43-E24F-4EA3-A93E-40C0EC4F68E5&displaylang=en
+    You have the choice to of either to download the entire SDK and install or run an online install from the page.
+    Both have been tested and proven to work.
+
+    7) Next download and install the Microsoft .net framework 1.1 skd from
+    http://www.microsoft.com/downloads/details.aspx?FamilyID=9b3a2ca6-3647-4070-9f41-a333c6b9181d&displaylang=en
+
+    8) You will also need a copy of nmake.exe which you can download here http://download.microsoft.com/download/vc15/patch/1.52/w95/en-us/nmake15.exe
+
+    9) Enough Downloading and installing go have a coffee.
+
+    10) You should at this time attempt to connect to an Oracle database with the version SQL*Plus that
+    you installed in step 4.  If you are unable to connect at this stage then any problems you encounter
+    later may have nothing to do with DBD::Oracle
+
+    11) On the path where you installed Visual C++ find and edit the vcvars32.bat file as follows.  You may have to modify
+        these path values depending where you installed the products on you computer,
+
+        i.   Add  the local path to the windows platform SDK include directory to the Set INCLUDE
+                Command Line to include the needed files from the Windows SDK.
+
+                e.g.  "C:\Program Files\Microsoft Platform SDK\Include;"
+
+        ii.  Add the local path to the .net Vc7 lib directory to the Set LIB command
+                to include the needed library file from the .Net SKD
+
+                e.g. C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\lib;
+
+            iii. Add the local path to the windows platform SDK Lib directory to the Set Lib command
+                to include the needed library files from the Windows SDK
+
+            e.g. C:\Program Files\Microsoft Platform SDK\Lib;
+
+    12) Open a Windows Visual C++ command window from the start menu.
+
+    13) Add the path to the instant client to the Path command. If you are compiling against a 10XE db/client then you can skip steps
+        12 to 14.
+        e.g.  PATH = C:/Oracle/instantclient;%PATH%
+
+    14) Using the "Set" command add "ORACLE_HOME=path to Instant client" to the environment variables.
+        e.g. Set ORACLE_HOME=C:\Oracle\instantclient
+
+    15) Using the "Set" command add "NLS_LANG=.WE8ISO8859P15" to the environment variables. The globalization variable is required,
+        with this or another compatible value, by Oracle instantclient in order for it to compile correctly.
+        e.g. Set NLS_LANG=.WE8ISO8859P15
+
+    16) Using the "Set" command add "ORACLE_USERID=test/test@test" substituting test with the username/password@database
+        you wish to run the make test files against.
+            Note: it is not necessary to do this step for the compile and install to work.
+        However: The self-test programs included with Oracle-DBD will mostly fail.
+
+    17) Move to the DBD-Oracle directory in the Visual C++ window DOS prompt and enter the following.
+
+                c:\oracle-dbd\>perl Makefile.PL
+
+        The Makefile should then run and compile Oracle-dbd without reporting any errors.
+
+    18) From this DOS prompt enter the following command
+
+            c:\oracle-dbd\>nmake
+
+        The Visual C++ make executable will then build you DBD-execuable. There should be no errors at this point.
+
+    19) You can test the compile by either entering
+
+            c:\oracle-dbd\>nmake test
+
+        As long as you have given a valid user name, password and database name in step 15 you will see some results.  If it appears to
+        run but you do not get a connection check the following.
+
+            i.   User name password and DB Name
+            ii.  Ensure the a valid TNSNAMES.ORA file is in the Instantclient directory
+            iii. Attempt to log into the version of SQLPLUS that comes with Instantclient.
+                        If you manage to log on use the username password and TNS name with
+                        the Set ORACLE_USERID = and rerun the tests.
+                    iv   If you are compiling against 10XE and have skipped steps 12 to 14 try again bu this time carry out these steps
+
+    20) You can now install DBD-Oracle into you system by entering the following command from the Visual C++ window dos prompt;
+
+                c:\oracle-dbd\>nmake install
+
+    21) You should now be able to run DBD-Oracle on you system
+
+=head1 09/30 2006 from asu
+
+DBD::Oracle 1.18a
+
+Linux, Debian unstable (
+DBI: 1.52
+perl v5.8.8 built for i486-linux-gnu-thread-multi
+)
+
+Oracle Instant client (10.1.0.5)
+
+The problem is in Makefile.PL. In line 130 the function find_oracle_home
+is used to guess a value form $ORACLE_HOME if it is not set explicitly.
+This value is used in line 138 to setup the environment (regardless
+which client is used).
+
+in line 1443 (sub get_client_version) sqlplus is used to get the
+version string, but for the oracle instant client you must not set
+$ORACLE_HOME (it will generate an error "SP2-0642: SQL*Plus internal
+error state 2165, context 4294967295:0:0")
+
+A solution that worked for me was to set
+local $ENV{ORACLE_HOME} = '';
+in line 1463 immediately before sqlplus is called (but I cannot tell if
+this fails for full client installations)
+
+11/30/05 -- John Scoles
+I have confirmed that this Makefile.pl will work for both Oracle InstantClient
+10.2.0.1 & 10.1.0.4 using same process the Andy Hassall uses. Starting with a clean OD
+One needs only to get the latest version of Active Perl 5.8.7 use PPM to get DBI and then
+install Microsoft Visual C++ toolkit, Windows SDK, and the Microsoft .net
+framework 1.1. and modify the vcvars32.bat in C++ dir as follows
+
+   1) Add  the local path to the windows platform SDK include directory to the
+      Set INCLUDE Command Line to include the needed files from the Windows SDK.
+        e.g.  "C:\Program Files\Microsoft Platform SDK\Include;"
+   2) Add the local path to the .net Vc7 lib directory to the Set LIB
+      command to include the needed library files from the .Net SKD
+        e.g. C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\lib;
+   3) Add the local path to the windows platform SDK Lib directory to the Set Lib
+      command to include the needed library files from the Windows SDK
+        e.g. C:\Program Files\Microsoft Platform SDK\Lib;
+
+If one happens to have visual studio installed you may not have to download additional MS products.
+
+12/01/05 --- John Scoles
+Oracle 10XE
+No big problem here as 10XE seems to use the instantclient as well. Just ensure your
+ NLS_LANG and ORACLE_HOME are set to the same directory that 10XE uses
+
+10/07/05 --John Scoles
+Andy Hassall kindly added some changes to the Makefile.PL
+so it will work for the Instant Client 10g on Windows OSs.  Below is how he set
+up his environment and the steps he preformed to get it to compile.
+
+  Setting environment for using Microsoft Visual Studio .NET 2003 tools.
+  (If you have another version of Visual Studio or Visual C++ installed and wish
+  to use its tools from the command line, run vcvars32.bat for that version.)
+
+  C:\Documents and Settings\andyh>d:
+
+  D:\>cd cygwin\home\andyh\src\pythian
+
+  D:\cygwin\home\andyh\src\pythian>set ORACLE_HOME=d:\lib\instantclient_10_2
+
+  D:\cygwin\home\andyh\src\pythian>set NLS_LANG=.WE8ISO8859P15
+
+  D:\cygwin\home\andyh\src\pythian>set PATH=d:\lib\instantclient_10_2;D:\Program F
+  iles\Microsoft Visual Studio .NET 2003\Common7\IDE;D:\Program Files\Microsoft Vi
+  sual Studio .NET 2003\VC7\BIN;D:\Program Files\Microsoft Visual Studio .NET 2003
+  \Common7\Tools;D:\Program Files\Microsoft Visual Studio .NET 2003\Common7\Tools\
+  bin\prerelease;D:\Program Files\Microsoft Visual Studio .NET 2003\Common7\Tools\
+  bin;D:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\bin;C:\WINNT\Mic
+  rosoft.NET\Framework\v1.1.4322;d:\Perl\bin\;C:\WINNT\system32;C:\WINNT;C:\WINNT\
+  System32\Wbem;D:\Program Files\Microsoft SDK\Bin;D:\Program Files\Microsoft SDK\
+  Bin\WinNT
+
+  D:\cygwin\home\andyh\src\pythian>set ORACLE_USERID=test/test@test102
+
+  D:\cygwin\home\andyh\src\pythian>perl Makefile.PL
+
+4/27/04 -- Jeff Urlwin
+
+Do not untar this distribution in a directory with spaces.  This will not work.
+
+    i.e. C:\Program Files\ORacle\DBD Oracle Distribution is bad while
+    c:\dev\dbd-oracle-1.15 is good ;)
+
+9/14/02 -- Michael Chase
+
+Makefile.PL uses Win32::TieRegistry or Win32::Registry to find the
+current Oracle Home directory if the ORACLE_HOME environment variable
+is not set.  If neither module is installed, you must set ORACLE_HOME
+before running Makefile.PL.  Since the registry location of the current
+Oracle Home is in different locations in different Oracle versions,
+it is usually safer to set ORACLE_HOME before running Makefile.PL.
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Tim Bunce <timb@cpan.org>
+
+=item *
+
+John Scoles <byterock@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick@cpan.org>
+
+=item *
+
+Martin J. Evans <mjevans@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2018, 2014, 2013, 2012, 2011, 2010 by Tim Bunce.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

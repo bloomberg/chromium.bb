@@ -1,47 +1,76 @@
 #
-#  Copyright (c) 1995-2000, Raphael Manfredi
-#  
+#  Copyright (c) 1995-2001, Raphael Manfredi
+#  Copyright (c) 2002-2014 by the Perl 5 Porters
+#  Copyright (c) 2015-2016 cPanel Inc
+#  Copyright (c) 2017 Reini Urban
+#
 #  You may redistribute only under the same terms as Perl 5, as specified
 #  in the README file that comes with the distribution.
 #
 
 require XSLoader;
 require Exporter;
-package Storable; @ISA = qw(Exporter);
+package Storable;
 
-@EXPORT = qw(store retrieve);
-@EXPORT_OK = qw(
+our @ISA = qw(Exporter);
+our @EXPORT = qw(store retrieve);
+our @EXPORT_OK = qw(
 	nstore store_fd nstore_fd fd_retrieve
 	freeze nfreeze thaw
 	dclone
 	retrieve_fd
 	lock_store lock_nstore lock_retrieve
         file_magic read_magic
+	BLESS_OK TIE_OK FLAGS_COMPAT
+        stack_depth stack_depth_hash
 );
 
-use vars qw($canonical $forgive_me $VERSION);
+our ($canonical, $forgive_me);
 
-$VERSION = '2.34';
+our $VERSION = '3.15';
+
+our $recursion_limit;
+our $recursion_limit_hash;
+
+$recursion_limit = 512
+  unless defined $recursion_limit;
+$recursion_limit_hash = 256
+  unless defined $recursion_limit_hash;
+
+use Carp;
 
 BEGIN {
-    if (eval { local $SIG{__DIE__}; require Log::Agent; 1 }) {
+    if (eval {
+        local $SIG{__DIE__};
+        local @INC = @INC;
+        pop @INC if $INC[-1] eq '.';
+        require Log::Agent;
+        1;
+    }) {
         Log::Agent->import;
     }
     #
     # Use of Log::Agent is optional. If it hasn't imported these subs then
     # provide a fallback implementation.
     #
-    if (!exists &logcroak) {
-        require Carp;
+    unless ($Storable::{logcroak} && *{$Storable::{logcroak}}{CODE}) {
+        *logcroak = \&Carp::croak;
+    }
+    else {
+        # Log::Agent's logcroak always adds a newline to the error it is
+        # given.  This breaks refs getting thrown.  We can just discard what
+        # it throws (but keep whatever logging it does) and throw the original
+        # args.
+        no warnings 'redefine';
+        my $logcroak = \&logcroak;
         *logcroak = sub {
-            Carp::croak(@_);
+            my @args = @_;
+            eval { &$logcroak };
+            Carp::croak(@args);
         };
     }
-    if (!exists &logcarp) {
-	require Carp;
-        *logcarp = sub {
-          Carp::carp(@_);
-        };
+    unless ($Storable::{logcarp} && *{$Storable::{logcarp}}{CODE}) {
+        *logcarp = \&Carp::carp;
     }
 }
 
@@ -50,14 +79,14 @@ BEGIN {
 #
 
 BEGIN {
-	if (eval { require Fcntl; 1 } && exists $Fcntl::EXPORT_TAGS{'flock'}) {
-		Fcntl->import(':flock');
-	} else {
-		eval q{
-			sub LOCK_SH ()	{1}
-			sub LOCK_EX ()	{2}
-		};
-	}
+    if (eval { require Fcntl; 1 } && exists $Fcntl::EXPORT_TAGS{'flock'}) {
+        Fcntl->import(':flock');
+    } else {
+        eval q{
+	          sub LOCK_SH () { 1 }
+		  sub LOCK_EX () { 2 }
+	      };
+    }
 }
 
 sub CLONE {
@@ -65,25 +94,23 @@ sub CLONE {
     Storable::init_perinterp();
 }
 
+sub BLESS_OK     () { 2 }
+sub TIE_OK       () { 4 }
+sub FLAGS_COMPAT () { BLESS_OK | TIE_OK }
+
 # By default restricted hashes are downgraded on earlier perls.
 
+$Storable::flags = FLAGS_COMPAT;
 $Storable::downgrade_restricted = 1;
 $Storable::accept_future_minor = 1;
 
-XSLoader::load('Storable', $Storable::VERSION);
+XSLoader::load('Storable');
 
 #
 # Determine whether locking is possible, but only when needed.
 #
 
-sub CAN_FLOCK; my $CAN_FLOCK; sub CAN_FLOCK {
-	return $CAN_FLOCK if defined $CAN_FLOCK;
-	require Config; import Config;
-	return $CAN_FLOCK =
-		$Config{'d_flock'} ||
-		$Config{'d_fcntl_can_lock'} ||
-		$Config{'d_lockf'};
-}
+sub CAN_FLOCK { 1 } # computed by Storable.pm.PL
 
 sub show_file_magic {
     print <<EOM;
@@ -112,7 +139,7 @@ sub file_magic {
 
     my $file = shift;
     my $fh = IO::File->new;
-    open($fh, "<". $file) || die "Can't open '$file': $!";
+    open($fh, "<", $file) || die "Can't open '$file': $!";
     binmode($fh);
     defined(sysread($fh, my $buf, 32)) || die "Can't read from '$file': $!";
     close($fh);
@@ -199,7 +226,7 @@ sub BIN_WRITE_VERSION_NV {
 # removed.
 #
 sub store {
-	return _store(\&pstore, @_, 0);
+    return _store(\&pstore, @_, 0);
 }
 
 #
@@ -208,7 +235,7 @@ sub store {
 # Same as store, but in network order.
 #
 sub nstore {
-	return _store(\&net_pstore, @_, 0);
+    return _store(\&net_pstore, @_, 0);
 }
 
 #
@@ -217,7 +244,7 @@ sub nstore {
 # Same as store, but flock the file first (advisory locking).
 #
 sub lock_store {
-	return _store(\&pstore, @_, 1);
+    return _store(\&pstore, @_, 1);
 }
 
 #
@@ -226,47 +253,51 @@ sub lock_store {
 # Same as nstore, but flock the file first (advisory locking).
 #
 sub lock_nstore {
-	return _store(\&net_pstore, @_, 1);
+    return _store(\&net_pstore, @_, 1);
 }
 
 # Internal store to file routine
 sub _store {
-	my $xsptr = shift;
-	my $self = shift;
-	my ($file, $use_locking) = @_;
-	logcroak "not a reference" unless ref($self);
-	logcroak "wrong argument number" unless @_ == 2;	# No @foo in arglist
-	local *FILE;
-	if ($use_locking) {
-		open(FILE, ">>$file") || logcroak "can't write into $file: $!";
-		unless (&CAN_FLOCK) {
-			logcarp "Storable::lock_store: fcntl/flock emulation broken on $^O";
-			return undef;
-		}
-		flock(FILE, LOCK_EX) ||
-			logcroak "can't get exclusive lock on $file: $!";
-		truncate FILE, 0;
-		# Unlocking will happen when FILE is closed
-	} else {
-		open(FILE, ">$file") || logcroak "can't create $file: $!";
-	}
-	binmode FILE;				# Archaic systems...
-	my $da = $@;				# Don't mess if called from exception handler
-	my $ret;
-	# Call C routine nstore or pstore, depending on network order
-	eval { $ret = &$xsptr(*FILE, $self) };
-	# close will return true on success, so the or short-circuits, the ()
-	# expression is true, and for that case the block will only be entered
-	# if $@ is true (ie eval failed)
-	# if close fails, it returns false, $ret is altered, *that* is (also)
-	# false, so the () expression is false, !() is true, and the block is
-	# entered.
-	if (!(close(FILE) or undef $ret) || $@) {
-		unlink($file) or warn "Can't unlink $file: $!\n";
-	}
-	logcroak $@ if $@ =~ s/\.?\n$/,/;
-	$@ = $da;
-	return $ret;
+    my $xsptr = shift;
+    my $self = shift;
+    my ($file, $use_locking) = @_;
+    logcroak "not a reference" unless ref($self);
+    logcroak "wrong argument number" unless @_ == 2;	# No @foo in arglist
+    local *FILE;
+    if ($use_locking) {
+        open(FILE, ">>", $file) || logcroak "can't write into $file: $!";
+        unless (1) {
+            logcarp
+              "Storable::lock_store: fcntl/flock emulation broken on $^O";
+            return undef;
+        }
+        flock(FILE, LOCK_EX) ||
+          logcroak "can't get exclusive lock on $file: $!";
+        truncate FILE, 0;
+        # Unlocking will happen when FILE is closed
+    } else {
+        open(FILE, ">", $file) || logcroak "can't create $file: $!";
+    }
+    binmode FILE;	# Archaic systems...
+    my $da = $@;	# Don't mess if called from exception handler
+    my $ret;
+    # Call C routine nstore or pstore, depending on network order
+    eval { $ret = &$xsptr(*FILE, $self) };
+    # close will return true on success, so the or short-circuits, the ()
+    # expression is true, and for that case the block will only be entered
+    # if $@ is true (ie eval failed)
+    # if close fails, it returns false, $ret is altered, *that* is (also)
+    # false, so the () expression is false, !() is true, and the block is
+    # entered.
+    if (!(close(FILE) or undef $ret) || $@) {
+        unlink($file) or warn "Can't unlink $file: $!\n";
+    }
+    if ($@) {
+        $@ =~ s/\.?\n$/,/ unless ref $@;
+        logcroak $@;
+    }
+    $@ = $da;
+    return $ret;
 }
 
 #
@@ -276,7 +307,7 @@ sub _store {
 # Returns undef if an I/O error occurred.
 #
 sub store_fd {
-	return _store_fd(\&pstore, @_);
+    return _store_fd(\&pstore, @_);
 }
 
 #
@@ -285,37 +316,37 @@ sub store_fd {
 # Same as store_fd, but in network order.
 #
 sub nstore_fd {
-	my ($self, $file) = @_;
-	return _store_fd(\&net_pstore, @_);
+    my ($self, $file) = @_;
+    return _store_fd(\&net_pstore, @_);
 }
 
 # Internal store routine on opened file descriptor
 sub _store_fd {
-	my $xsptr = shift;
-	my $self = shift;
-	my ($file) = @_;
-	logcroak "not a reference" unless ref($self);
-	logcroak "too many arguments" unless @_ == 1;	# No @foo in arglist
-	my $fd = fileno($file);
-	logcroak "not a valid file descriptor" unless defined $fd;
-	my $da = $@;				# Don't mess if called from exception handler
-	my $ret;
-	# Call C routine nstore or pstore, depending on network order
-	eval { $ret = &$xsptr($file, $self) };
-	logcroak $@ if $@ =~ s/\.?\n$/,/;
-	local $\; print $file '';	# Autoflush the file if wanted
-	$@ = $da;
-	return $ret;
+    my $xsptr = shift;
+    my $self = shift;
+    my ($file) = @_;
+    logcroak "not a reference" unless ref($self);
+    logcroak "too many arguments" unless @_ == 1;	# No @foo in arglist
+    my $fd = fileno($file);
+    logcroak "not a valid file descriptor" unless defined $fd;
+    my $da = $@;		# Don't mess if called from exception handler
+    my $ret;
+    # Call C routine nstore or pstore, depending on network order
+    eval { $ret = &$xsptr($file, $self) };
+    logcroak $@ if $@ =~ s/\.?\n$/,/;
+    local $\; print $file '';	# Autoflush the file if wanted
+    $@ = $da;
+    return $ret;
 }
 
 #
 # freeze
 #
-# Store oject and its hierarchy in memory and return a scalar
+# Store object and its hierarchy in memory and return a scalar
 # containing the result.
 #
 sub freeze {
-	_freeze(\&mstore, @_);
+    _freeze(\&mstore, @_);
 }
 
 #
@@ -324,22 +355,25 @@ sub freeze {
 # Same as freeze but in network order.
 #
 sub nfreeze {
-	_freeze(\&net_mstore, @_);
+    _freeze(\&net_mstore, @_);
 }
 
 # Internal freeze routine
 sub _freeze {
-	my $xsptr = shift;
-	my $self = shift;
-	logcroak "not a reference" unless ref($self);
-	logcroak "too many arguments" unless @_ == 0;	# No @foo in arglist
-	my $da = $@;				# Don't mess if called from exception handler
-	my $ret;
-	# Call C routine mstore or net_mstore, depending on network order
-	eval { $ret = &$xsptr($self) };
-	logcroak $@ if $@ =~ s/\.?\n$/,/;
-	$@ = $da;
-	return $ret ? $ret : undef;
+    my $xsptr = shift;
+    my $self = shift;
+    logcroak "not a reference" unless ref($self);
+    logcroak "too many arguments" unless @_ == 0;	# No @foo in arglist
+    my $da = $@;	        # Don't mess if called from exception handler
+    my $ret;
+    # Call C routine mstore or net_mstore, depending on network order
+    eval { $ret = &$xsptr($self) };
+    if ($@) {
+        $@ =~ s/\.?\n$/,/ unless ref $@;
+        logcroak $@;
+    }
+    $@ = $da;
+    return $ret ? $ret : undef;
 }
 
 #
@@ -348,8 +382,13 @@ sub _freeze {
 # Retrieve object hierarchy from disk, returning a reference to the root
 # object of that tree.
 #
+# retrieve(file, flags)
+# flags include by default BLESS_OK=2 | TIE_OK=4
+# with flags=0 or the global $Storable::flags set to 0, no resulting object
+# will be blessed nor tied.
+#
 sub retrieve {
-	_retrieve($_[0], 0);
+    _retrieve(shift, 0, @_);
 }
 
 #
@@ -358,30 +397,35 @@ sub retrieve {
 # Same as retrieve, but with advisory locking.
 #
 sub lock_retrieve {
-	_retrieve($_[0], 1);
+    _retrieve(shift, 1, @_);
 }
 
 # Internal retrieve routine
 sub _retrieve {
-	my ($file, $use_locking) = @_;
-	local *FILE;
-	open(FILE, $file) || logcroak "can't open $file: $!";
-	binmode FILE;							# Archaic systems...
-	my $self;
-	my $da = $@;							# Could be from exception handler
-	if ($use_locking) {
-		unless (&CAN_FLOCK) {
-			logcarp "Storable::lock_store: fcntl/flock emulation broken on $^O";
-			return undef;
-		}
-		flock(FILE, LOCK_SH) || logcroak "can't get shared lock on $file: $!";
-		# Unlocking will happen when FILE is closed
-	}
-	eval { $self = pretrieve(*FILE) };		# Call C routine
-	close(FILE);
-	logcroak $@ if $@ =~ s/\.?\n$/,/;
-	$@ = $da;
-	return $self;
+    my ($file, $use_locking, $flags) = @_;
+    $flags = $Storable::flags unless defined $flags;
+    my $FILE;
+    open($FILE, "<", $file) || logcroak "can't open $file: $!";
+    binmode $FILE;			# Archaic systems...
+    my $self;
+    my $da = $@;			# Could be from exception handler
+    if ($use_locking) {
+        unless (1) {
+            logcarp
+              "Storable::lock_store: fcntl/flock emulation broken on $^O";
+            return undef;
+        }
+        flock($FILE, LOCK_SH) || logcroak "can't get shared lock on $file: $!";
+        # Unlocking will happen when FILE is closed
+    }
+    eval { $self = pretrieve($FILE, $flags) };		# Call C routine
+    close($FILE);
+    if ($@) {
+        $@ =~ s/\.?\n$/,/ unless ref $@;
+        logcroak $@;
+    }
+    $@ = $da;
+    return $self;
 }
 
 #
@@ -390,15 +434,19 @@ sub _retrieve {
 # Same as retrieve, but perform from an already opened file descriptor instead.
 #
 sub fd_retrieve {
-	my ($file) = @_;
-	my $fd = fileno($file);
-	logcroak "not a valid file descriptor" unless defined $fd;
-	my $self;
-	my $da = $@;							# Could be from exception handler
-	eval { $self = pretrieve($file) };		# Call C routine
-	logcroak $@ if $@ =~ s/\.?\n$/,/;
-	$@ = $da;
-	return $self;
+    my ($file, $flags) = @_;
+    $flags = $Storable::flags unless defined $flags;
+    my $fd = fileno($file);
+    logcroak "not a valid file descriptor" unless defined $fd;
+    my $self;
+    my $da = $@;				# Could be from exception handler
+    eval { $self = pretrieve($file, $flags) };	# Call C routine
+    if ($@) {
+        $@ =~ s/\.?\n$/,/ unless ref $@;
+        logcroak $@;
+    }
+    $@ = $da;
+    return $self;
 }
 
 sub retrieve_fd { &fd_retrieve }		# Backward compatibility
@@ -409,15 +457,71 @@ sub retrieve_fd { &fd_retrieve }		# Backward compatibility
 # Recreate objects in memory from an existing frozen image created
 # by freeze.  If the frozen image passed is undef, return undef.
 #
+# thaw(frozen_obj, flags)
+# flags include by default BLESS_OK=2 | TIE_OK=4
+# with flags=0 or the global $Storable::flags set to 0, no resulting object
+# will be blessed nor tied.
+#
 sub thaw {
-	my ($frozen) = @_;
-	return undef unless defined $frozen;
-	my $self;
-	my $da = $@;							# Could be from exception handler
-	eval { $self = mretrieve($frozen) };	# Call C routine
-	logcroak $@ if $@ =~ s/\.?\n$/,/;
-	$@ = $da;
-	return $self;
+    my ($frozen, $flags) = @_;
+    $flags = $Storable::flags unless defined $flags;
+    return undef unless defined $frozen;
+    my $self;
+    my $da = $@;			        # Could be from exception handler
+    eval { $self = mretrieve($frozen, $flags) };# Call C routine
+    if ($@) {
+        $@ =~ s/\.?\n$/,/ unless ref $@;
+        logcroak $@;
+    }
+    $@ = $da;
+    return $self;
+}
+
+#
+# _make_re($re, $flags)
+#
+# Internal function used to thaw a regular expression.
+#
+
+my $re_flags;
+BEGIN {
+    if ($] < 5.010) {
+        $re_flags = qr/\A[imsx]*\z/;
+    }
+    elsif ($] < 5.014) {
+        $re_flags = qr/\A[msixp]*\z/;
+    }
+    elsif ($] < 5.022) {
+        $re_flags = qr/\A[msixpdual]*\z/;
+    }
+    else {
+        $re_flags = qr/\A[msixpdualn]*\z/;
+    }
+}
+
+sub _make_re {
+    my ($re, $flags) = @_;
+
+    $flags =~ $re_flags
+        or die "regexp flags invalid";
+
+    my $qr = eval "qr/\$re/$flags";
+    die $@ if $@;
+
+    $qr;
+}
+
+if ($] < 5.012) {
+    eval <<'EOS'
+sub _regexp_pattern {
+    my $re = "" . shift;
+    $re =~ /\A\(\?([xism]*)(?:-[xism]*)?:(.*)\)\z/s
+        or die "Cannot parse regexp /$re/";
+    return ($2, $1);
+}
+1
+EOS
+      or die "Cannot define _regexp_pattern: $@";
 }
 
 1;
@@ -622,6 +726,22 @@ all values unlocked.  To make Storable C<croak()> instead, set
 C<$Storable::downgrade_restricted> to a C<FALSE> value.  To restore
 the default set it back to some C<TRUE> value.
 
+The cperl PERL_PERTURB_KEYS_TOP hash strategy has a known problem with
+restricted hashes.
+
+=item huge objects
+
+On 64bit systems some data structures may exceed the 2G (i.e. I32_MAX)
+limit. On 32bit systems also strings between I32 and U32 (2G-4G).
+Since Storable 3.00 (not in perl5 core) we are able to store and
+retrieve these objects, even if perl5 itself is not able to handle
+them.  These are strings longer then 4G, arrays with more then 2G
+elements and hashes with more then 2G elements. cperl forbids hashes
+with more than 2G elements, but this fail in cperl then. perl5 itself
+at least until 5.26 allows it, but cannot iterate over them.
+Note that creating those objects might cause out of memory
+exceptions by the operating system before perl has a chance to abort.
+
 =item files from future versions of Storable
 
 Earlier versions of Storable would immediately croak if they encountered
@@ -648,16 +768,23 @@ relevant feature.
 
 =head1 ERROR REPORTING
 
-Storable uses the "exception" paradigm, in that it does not try to workaround
-failures: if something bad happens, an exception is generated from the
-caller's perspective (see L<Carp> and C<croak()>).  Use eval {} to trap
-those exceptions.
+Storable uses the "exception" paradigm, in that it does not try to
+workaround failures: if something bad happens, an exception is
+generated from the caller's perspective (see L<Carp> and C<croak()>).
+Use eval {} to trap those exceptions.
 
 When Storable croaks, it tries to report the error via the C<logcroak()>
 routine from the C<Log::Agent> package, if it is available.
 
 Normal errors are reported by having store() or retrieve() return C<undef>.
 Such errors are usually I/O errors (or truncated stream errors at retrieval).
+
+When Storable throws the "Max. recursion depth with nested structures
+exceeded" error we are already out of stack space. Unfortunately on
+some earlier perl versions cleaning up a recursive data structure
+recurses into the free calls, which will lead to stack overflows in
+the cleanup. This data structure is not properly cleaned up then, it
+will only be destroyed during global destruction.
 
 =head1 WIZARDS ONLY
 
@@ -821,6 +948,46 @@ There are a few things you need to know, however:
 
 =item *
 
+From Storable 3.05 to 3.13 we probed for the stack recursion limit for references,
+arrays and hashes to a maximal depth of ~1200-35000, otherwise we might
+fall into a stack-overflow.  On JSON::XS this limit is 512 btw.  With
+references not immediately referencing each other there's no such
+limit yet, so you might fall into such a stack-overflow segfault.
+
+This probing and the checks we performed have some limitations:
+
+=over
+
+=item *
+
+the stack size at build time might be different at run time, eg. the
+stack size may have been modified with ulimit(1).  If it's larger at
+run time Storable may fail the freeze() or thaw() unnecessarily.  If
+it's larger at build time Storable may segmentation fault when
+processing a deep structure at run time.
+
+=item *
+
+the stack size might be different in a thread.
+
+=item *
+
+array and hash recursion limits are checked separately against the
+same recursion depth, a frozen structure with a large sequence of
+nested arrays within many nested hashes may exhaust the processor
+stack without triggering Storable's recursion protection.
+
+=back
+
+So these now have simple defaults rather than probing at build-time.
+
+You can control the maximum array and hash recursion depths by
+modifying C<$Storable::recursion_limit> and
+C<$Storable::recursion_limit_hash> respectively.  Either can be set to
+C<-1> to prevent any depth checks, though this isn't recommended.
+
+=item *
+
 You can create endless loops if the things you serialize via freeze()
 (for instance) point back to the object we're trying to serialize in
 the hook.
@@ -832,6 +999,12 @@ the list of object [A, C] where both object A and C refer to the SAME object
 B, and if there is a serializing hook in A that says freeze(B), then when
 deserializing, we'll get [A', C'] where A' refers to B', but C' refers to D,
 a deep clone of B'.  The topology was not preserved.
+
+=item *
+
+The maximal stack recursion limit for your system is returned by
+C<stack_depth()> and C<stack_depth_hash()>. The hash limit is usually
+half the size of the array and ref limit, as the Perl hash API is not optimal.
 
 =back
 
@@ -905,8 +1078,8 @@ This returns the file format version as number.  It is a string like
 "2.007".  This value is suitable for numeric comparisons.
 
 The constant function C<Storable::BIN_VERSION_NV> returns a comparable
-number that represent the highest file version number that this
-version of Storable fully support (but see discussion of
+number that represents the highest file version number that this
+version of Storable fully supports (but see discussion of
 C<$Storable::accept_future_minor> above).  The constant
 C<Storable::BIN_WRITE_VERSION_NV> function returns what file version
 is written and might be less than C<Storable::BIN_VERSION_NV> in some
@@ -976,48 +1149,84 @@ such.
 
 Here are some code samples showing a possible usage of Storable:
 
-	use Storable qw(store retrieve freeze thaw dclone);
+ use Storable qw(store retrieve freeze thaw dclone);
 
-	%color = ('Blue' => 0.1, 'Red' => 0.8, 'Black' => 0, 'White' => 1);
+ %color = ('Blue' => 0.1, 'Red' => 0.8, 'Black' => 0, 'White' => 1);
 
-	store(\%color, 'mycolors') or die "Can't store %a in mycolors!\n";
+ store(\%color, 'mycolors') or die "Can't store %a in mycolors!\n";
 
-	$colref = retrieve('mycolors');
-	die "Unable to retrieve from mycolors!\n" unless defined $colref;
-	printf "Blue is still %lf\n", $colref->{'Blue'};
+ $colref = retrieve('mycolors');
+ die "Unable to retrieve from mycolors!\n" unless defined $colref;
+ printf "Blue is still %lf\n", $colref->{'Blue'};
 
-	$colref2 = dclone(\%color);
+ $colref2 = dclone(\%color);
 
-	$str = freeze(\%color);
-	printf "Serialization of %%color is %d bytes long.\n", length($str);
-	$colref3 = thaw($str);
+ $str = freeze(\%color);
+ printf "Serialization of %%color is %d bytes long.\n", length($str);
+ $colref3 = thaw($str);
 
 which prints (on my machine):
 
-	Blue is still 0.100000
-	Serialization of %color is 102 bytes long.
+ Blue is still 0.100000
+ Serialization of %color is 102 bytes long.
 
 Serialization of CODE references and deserialization in a safe
 compartment:
 
 =for example begin
 
-	use Storable qw(freeze thaw);
-	use Safe;
-	use strict;
-	my $safe = new Safe;
+ use Storable qw(freeze thaw);
+ use Safe;
+ use strict;
+ my $safe = new Safe;
         # because of opcodes used in "use strict":
-	$safe->permit(qw(:default require));
-	local $Storable::Deparse = 1;
-	local $Storable::Eval = sub { $safe->reval($_[0]) };
-	my $serialized = freeze(sub { 42 });
-	my $code = thaw($serialized);
-	$code->() == 42;
+ $safe->permit(qw(:default require));
+ local $Storable::Deparse = 1;
+ local $Storable::Eval = sub { $safe->reval($_[0]) };
+ my $serialized = freeze(sub { 42 });
+ my $code = thaw($serialized);
+ $code->() == 42;
 
 =for example end
 
 =for example_testing
         is( $code->(), 42 );
+
+=head1 SECURITY WARNING
+
+B<Do not accept Storable documents from untrusted sources!>
+
+Some features of Storable can lead to security vulnerabilities if you
+accept Storable documents from untrusted sources with the default
+flags. Most obviously, the optional (off by default) CODE reference
+serialization feature allows transfer of code to the deserializing
+process. Furthermore, any serialized object will cause Storable to
+helpfully load the module corresponding to the class of the object in
+the deserializing module.  For manipulated module names, this can load
+almost arbitrary code.  Finally, the deserialized object's destructors
+will be invoked when the objects get destroyed in the deserializing
+process. Maliciously crafted Storable documents may put such objects
+in the value of a hash key that is overridden by another key/value
+pair in the same hash, thus causing immediate destructor execution.
+
+To disable blessing objects while thawing/retrieving remove the flag
+C<BLESS_OK> = 2 from C<$Storable::flags> or set the 2nd argument for
+thaw/retrieve to 0.
+
+To disable tieing data while thawing/retrieving remove the flag C<TIE_OK>
+= 4 from C<$Storable::flags> or set the 2nd argument for thaw/retrieve
+to 0.
+
+With the default setting of C<$Storable::flags> = 6, creating or destroying
+random objects, even renamed objects can be controlled by an attacker.
+See CVE-2015-1592 and its metasploit module.
+
+If your application requires accepting data from untrusted sources,
+you are best off with a less powerful and more-likely safe
+serialization format and implementation. If your data is sufficiently
+simple, Cpanel::JSON::XS, Data::MessagePack or Serial are the best
+choices and offers maximum interoperability, but note that Serial is
+unsafe by default.
 
 =head1 WARNING
 
@@ -1045,16 +1254,49 @@ populated, sorted and freed.  Some tests have shown a halving of the
 speed of storing -- the exact penalty will depend on the complexity of
 your data.  There is no slowdown on retrieval.
 
+=head1 REGULAR EXPRESSIONS
+
+Storable now has experimental support for storing regular expressions,
+but there are significant limitations:
+
+=over
+
+=item *
+
+perl 5.8 or later is required.
+
+=item *
+
+regular expressions with code blocks, ie C</(?{ ... })/> or C</(??{
+... })/> will throw an exception when thawed.
+
+=item *
+
+regular expression syntax and flags have changed over the history of
+perl, so a regular expression that you freeze in one version of perl
+may fail to thaw or behave differently in another version of perl.
+
+=item *
+
+depending on the version of perl, regular expressions can change in
+behaviour depending on the context, but later perls will bake that
+behaviour into the regexp.
+
+=back
+
+Storable will throw an exception if a frozen regular expression cannot
+be thawed.
+
 =head1 BUGS
 
-You can't store GLOB, FORMLINE, REGEXP, etc.... If you can define semantics
+You can't store GLOB, FORMLINE, etc.... If you can define semantics
 for those operations, feel free to enhance Storable so that it can
 deal with them.
 
 The store functions will C<croak> if they run into such references
 unless you set C<$Storable::forgive_me> to some C<TRUE> value. In that
-case, the fatal message is turned in a warning and some
-meaningless string is stored instead.
+case, the fatal message is converted to a warning and some meaningless
+string is stored instead.
 
 Setting C<$Storable::canonical> may not yield frozen strings that
 compare equal due to possible stringification of numbers. When the
@@ -1130,7 +1372,7 @@ correct behaviour.
 What this means is that if you have data written by Storable 1.x running
 on perl 5.6.0 or 5.6.1 configured with 64 bit integers on Unix or Linux
 then by default this Storable will refuse to read it, giving the error
-I<Byte order is not compatible>.  If you have such data then you you
+I<Byte order is not compatible>.  If you have such data then you
 should set C<$Storable::interwork_56_64bit> to a true value to make this
 Storable read and write files with the old header.  You should also
 migrate your data, or any older perl you are communicating with, to this
@@ -1160,7 +1402,10 @@ Thank you to (in chronological order):
 	Salvador Ortiz Garcia <sog@msg.com.mx>
 	Dominic Dunlop <domo@computer.org>
 	Erik Haugan <erik@solbors.no>
-    Benjamin A. Holzman <ben.holzman@grantstreet.com>
+	Benjamin A. Holzman <ben.holzman@grantstreet.com>
+	Reini Urban <rurban@cpan.org>
+	Todd Rinaldo <toddr@cpanel.net>
+	Aaron Crane <arc@cpan.org>
 
 for their bug reports, suggestions and contributions.
 
@@ -1175,11 +1420,14 @@ Murray Nesbitt made Storable thread-safe.  Marc Lehmann added overloading
 and references to tied items support.  Benjamin Holzman added a performance
 improvement for overloaded classes; thanks to Grant Street Group for footing
 the bill.
+Reini Urban took over maintainance from p5p, and added security fixes
+and huge object support.
 
 =head1 AUTHOR
 
-Storable was written by Raphael Manfredi F<E<lt>Raphael_Manfredi@pobox.comE<gt>>
-Maintenance is now done by the perl5-porters F<E<lt>perl5-porters@perl.orgE<gt>>
+Storable was written by Raphael Manfredi
+F<E<lt>Raphael_Manfredi@pobox.comE<gt>>
+Maintenance is now done by cperl L<http://perl11.org/cperl>
 
 Please e-mail us with problems, bug fixes, comments and complaints,
 although if you have compliments you should send them to Raphael.

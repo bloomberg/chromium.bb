@@ -1,24 +1,38 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!/usr/local/bin/perl
-#line 15
+#line 29
 
-use 5.006;
+BEGIN { pop @INC if $INC[-1] eq '.' }
 use strict;
 use vars qw($VERSION);
 
-use App::Cpan;
-$VERSION = '1.5902';
+use App::Cpan '1.64';
+$VERSION = '1.64';
 
 my $rc = App::Cpan->run( @ARGV );
 
@@ -35,23 +49,23 @@ cpan - easily interact with CPAN from the command line
 	cpan module_name [ module_name ... ]
 
 	# with switches, installs modules with extra behavior
-	cpan [-cfgimtTw] module_name [ module_name ... ]
+	cpan [-cfFimtTw] module_name [ module_name ... ]
+
+	# use local::lib
+	cpan -I module_name [ module_name ... ]
+
+	# one time mirror override for faster mirrors
+	cpan -p ...
 
 	# with just the dot, install from the distribution in the
 	# current directory
 	cpan .
-	
+
 	# without arguments, starts CPAN.pm shell
 	cpan
 
-	# dump the configuration
-	cpan -J
-	
-	# load a different configuration to install Module::Foo
-	cpan -j some/other/file Module::Foo
-	
 	# without arguments, but some switches
-	cpan [-ahrvACDlLO]
+	cpan [-ahpruvACDLOPX]
 
 =head1 DESCRIPTION
 
@@ -96,7 +110,7 @@ to install a module even if its tests fail. When you use this option,
 
 =item -F
 
-Turn off CPAN.pm's attempts to lock anything. You should be careful with 
+Turn off CPAN.pm's attempts to lock anything. You should be careful with
 this since you might end up with multiple scripts trying to muck in the
 same directory. This isn't so much of a concern if you're loading a special
 config with C<-j>, and that config sets up its own work directories.
@@ -121,18 +135,20 @@ distribution.
 Print a help message and exit. When you specify C<-h>, it ignores all
 of the other options and arguments.
 
-=item -i
+=item -i module [ module ... ]
 
-Install the specified modules.
+Install the specified modules. With no other switches, this switch
+is implied.
 
 =item -I
 
-Load C<local::lib> (think like C<-I> for loading lib paths).
+Load C<local::lib> (think like C<-I> for loading lib paths). Too bad
+C<-l> was already taken.
 
 =item -j Config.pm
 
 Load the file that has the CPAN configuration data. This should have the
-same format as the standard F<CPAN/Config.pm> file, which defines 
+same format as the standard F<CPAN/Config.pm> file, which defines
 C<$CPAN::Config> as an anonymous hash.
 
 =item -J
@@ -143,7 +159,7 @@ for a new, custom configuration.
 
 =item -l
 
-List all installed modules wth their versions
+List all installed modules with their versions
 
 =item -L author [ author ... ]
 
@@ -153,23 +169,38 @@ List the modules by the specified authors.
 
 Make the specified modules.
 
+=item -M mirror1,mirror2,...
+
+A comma-separated list of mirrors to use for just this run. The C<-P>
+option can find them for you automatically.
+
+=item -n
+
+Do a dry run, but don't actually install anything. (unimplemented)
+
 =item -O
 
 Show the out-of-date modules.
 
 =item -p
 
-Ping the configured mirrors
+Ping the configured mirrors and print a report
 
 =item -P
 
-Find the best mirrors you could be using (but doesn't configure them just yet)
+Find the best mirrors you could be using and use them for the current
+session.
 
 =item -r
 
 Recompiles dynamically loaded modules with CPAN::Shell->recompile.
 
-=item -t
+=item -s
+
+Drop in the CPAN.pm shell. This command does this automatically if you don't
+specify any arguments.
+
+=item -t module [ module ... ]
 
 Run a `make test` on the specified modules.
 
@@ -190,12 +221,22 @@ Print the script version and CPAN.pm version then exit.
 
 Print detailed information about the cpan client.
 
-=item -w 
+=item -w
 
 UNIMPLEMENTED
 
 Turn on cpan warnings. This checks various things, like directory permissions,
 and tells you about problems you might have.
+
+=item -x module [ module ... ]
+
+Find close matches to the named modules that you think you might have
+mistyped. This requires the optional installation of Text::Levenshtein or
+Text::Levenshtein::Damerau.
+
+=item -X
+
+Dump all the namespaces to standard output.
 
 =back
 
@@ -222,21 +263,55 @@ and tells you about problems you might have.
 	# force install modules ( must use -i )
 	cpan -fi CGI::Minimal URI
 
-=head1 ENVIRONMENT VARIABLES
+	# install modules but without testing them
+	cpan -Ti CGI::Minimal URI
+
+=head2 Environment variables
+
+There are several components in CPAN.pm that use environment variables.
+The build tools, L<ExtUtils::MakeMaker> and L<Module::Build> use some,
+while others matter to the levels above them. Some of these are specified
+by the Perl Toolchain Gang:
+
+Lancaster Concensus: L<https://github.com/Perl-Toolchain-Gang/toolchain-site/blob/master/lancaster-consensus.md>
+
+Oslo Concensus: L<https://github.com/Perl-Toolchain-Gang/toolchain-site/blob/master/oslo-consensus.md>
 
 =over 4
 
+=item NONINTERACTIVE_TESTING
+
+Assume no one is paying attention and skips prompts for distributions
+that do that correctly. C<cpan(1)> sets this to C<1> unless it already
+has a value (even if that value is false).
+
+=item PERL_MM_USE_DEFAULT
+
+Use the default answer for a prompted questions. C<cpan(1)> sets this
+to C<1> unless it already has a value (even if that value is false).
+
 =item CPAN_OPTS
 
-C<cpan> splits this variable on whitespace and prepends that list to C<@ARGV>
-before it processes the command-line arguments. For instance, if you always
-want to use C<local:lib>, you can set C<CPAN_OPTS> to C<-I>.
+As with C<PERL5OPT>, a string of additional C<cpan(1)> options to
+add to those you specify on the command line.
+
+=item CPANSCRIPT_LOGLEVEL
+
+The log level to use, with either the embedded, minimal logger or
+L<Log::Log4perl> if it is installed. Possible values are the same as
+the C<Log::Log4perl> levels: C<TRACE>, C<DEBUG>, C<INFO>, C<WARN>,
+C<ERROR>, and C<FATAL>. The default is C<INFO>.
+
+=item GIT_COMMAND
+
+The path to the C<git> binary to use for the Git features. The default
+is C</usr/local/bin/git>.
 
 =back
 
 =head1 EXIT VALUES
 
-The script exits with zero if it thinks that everything worked, or a 
+The script exits with zero if it thinks that everything worked, or a
 positive number if it thinks that something failed. Note, however, that
 in some cases it has to divine a failure by the output of things it does
 not control. For now, the exit codes are vague:
@@ -264,9 +339,12 @@ comes directly from CPAN.pm.
 
 =head1 SOURCE AVAILABILITY
 
-This code is in Github:
+This code is in Github in the CPAN.pm repository:
 
-	git://github.com/briandfoy/cpan_script.git
+	https://github.com/andk/cpanpm
+
+The source used to be tracked separately in another GitHub repo,
+but the canonical source is now in the above repo.
 
 =head1 CREDITS
 
@@ -284,7 +362,7 @@ brian d foy, C<< <bdfoy@cpan.org> >>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2010, brian d foy, All Rights Reserved.
+Copyright (c) 2001-2015, brian d foy, All Rights Reserved.
 
 You may redistribute this under the same terms as Perl itself.
 

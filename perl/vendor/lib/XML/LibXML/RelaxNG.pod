@@ -36,11 +36,12 @@ parameters. The parameter tells the class from which source it should generate
 a validation schema. It is important, that each schema only have a single
 source.
 
-The location parameter allows to parse a schema from the filesystem or a URL.
+The location parameter allows one to parse a schema from the filesystem or a
+URL.
 
 The string parameter will parse the schema from the given XML string.
 
-The DOM parameter allows to parse the schema from a pre-parsed L<<<<<< XML::LibXML::Document >>>>>>.
+The DOM parameter allows one to parse the schema from a pre-parsed L<<<<<< XML::LibXML::Document >>>>>>.
 
 Note that the constructor will die() if the schema does not meed the
 constraints of the RelaxNG specification.
@@ -50,11 +51,11 @@ constraints of the RelaxNG specification.
 
   eval { $rngschema->validate( $doc ); };
 
-This function allows to validate a (parsed) document against the given RelaxNG
-schema. The argument of this function should be an XML::LibXML::Document
-object. If this function succeeds, it will return 0, otherwise it will die()
-and report the errors found. Because of this validate() should be always
-evaluated.
+This function allows one to validate a (parsed) document against the given
+RelaxNG schema. The argument of this function should be an
+XML::LibXML::Document object. If this function succeeds, it will return 0,
+otherwise it will die() and report the errors found. Because of this validate()
+should be always evaluated.
 
 
 
@@ -62,14 +63,14 @@ evaluated.
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -80,3 +81,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

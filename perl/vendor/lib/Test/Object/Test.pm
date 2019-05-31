@@ -4,10 +4,7 @@ use strict;
 use Carp         ();
 use Scalar::Util ();
 
-use vars qw{$VERSION};
-BEGIN {
-	$VERSION = '0.07';
-}
+our $VERSION = '0.08';
 
 
 
@@ -64,7 +61,7 @@ sub run {
 # Stolen from Params::Util to avoid adding a dependency needlessly
 
 sub _CLASS ($) {
-	(defined $_[0] and ! ref $_[0] and $_[0] =~ m/^[^\W\d]\w*(?:::\w+)*$/s) ? $_[0] : undef;
+	(defined $_[0] and ! ref $_[0] and $_[0] =~ m/^[^\W\d]\w*(?:::\w+)*\z/s) ? $_[0] : undef;
 }
 
 sub _CODELIKE {

@@ -22,6 +22,7 @@
 
 /* FIXME: #include <iedial.h> */
 #include <schannel.h>
+#include <sspi.h>
 
 typedef struct _INTERNET_CACHE_CONFIG_PATH_ENTRYA
 {
@@ -120,9 +121,13 @@ WINBOOL     WINAPI InternetQueryFortezzaStatus(DWORD*,DWORD_PTR);
 WINBOOL     WINAPI IsUrlCacheEntryExpiredA(LPCSTR,DWORD,FILETIME*);
 WINBOOL     WINAPI IsUrlCacheEntryExpiredW(LPCWSTR,DWORD,FILETIME*);
 #define     IsUrlCacheEntryExpired __MINGW_NAME_AW(IsUrlCacheEntryExpired)
+DWORD       WINAPI ParseX509EncodedCertificateForListBoxEntry(LPBYTE,DWORD,LPSTR,LPDWORD);
 WINBOOL     WINAPI SetUrlCacheConfigInfoA(LPINTERNET_CACHE_CONFIG_INFOA,DWORD);
 WINBOOL     WINAPI SetUrlCacheConfigInfoW(LPINTERNET_CACHE_CONFIG_INFOW,DWORD);
 #define     SetUrlCacheConfigInfo __MINGW_NAME_AW(SetUrlCacheConfigInfo)
+WINBOOL     WINAPI InternetGetSecurityInfoByURLA(LPSTR,PCCERT_CHAIN_CONTEXT*,DWORD*);
+WINBOOL     WINAPI InternetGetSecurityInfoByURLW(LPCWSTR,PCCERT_CHAIN_CONTEXT*,DWORD*);
+#define     InternetGetSecurityInfoByURL __MINGW_NAME_AW(InternetGetSecurityInfoByURL)
 
 #ifdef __cplusplus
 }

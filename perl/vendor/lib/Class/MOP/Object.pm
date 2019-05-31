@@ -1,23 +1,22 @@
-
 package Class::MOP::Object;
-BEGIN {
-  $Class::MOP::Object::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Class::MOP::Object::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use Carp qw(confess);
+use parent 'Class::MOP::Mixin';
 use Scalar::Util 'blessed';
+use Module::Runtime;
 
 # introspection
 
-sub meta {
-    require Class::MOP::Class;
-    Class::MOP::Class->initialize(blessed($_[0]) || $_[0]);
+sub throw_error {
+    shift->_throw_exception( Legacy => message => join('', @_) );
+}
+
+sub _inline_throw_error {
+    my ( $self, $message ) = @_;
+    return 'die Module::Runtime::use_module("Moose::Exception::Legacy")->new(message => ' . $message. ')';
 }
 
 sub _new {
@@ -64,8 +63,11 @@ sub _make_compatible_with {
 
     my $new_metaclass = $self->_get_compatible_metaclass($other_name);
 
-    confess "Can't make $self compatible with metaclass $other_name"
-        unless defined $new_metaclass;
+    unless ( defined $new_metaclass ) {
+        $self->_throw_exception( CannotMakeMetaclassCompatible => superclass_name => $other_name,
+                                                                       class           => $self,
+                                    );
+    }
 
     # can't use rebless_instance here, because it might not be an actual
     # subclass in the case of, e.g. moose role reconciliation
@@ -101,9 +103,11 @@ sub _get_compatible_metaclass_by_subclassing {
 
 # ABSTRACT: Base class for metaclasses
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -111,7 +115,7 @@ Class::MOP::Object - Base class for metaclasses
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -121,33 +125,72 @@ This class is a very minimal base class for metaclasses.
 
 This class provides a few methods which are useful in all metaclasses.
 
-=over 4
-
-=item B<< Class::MOP::???->meta >>
+=head2 Class::MOP::???->meta
 
 This returns a L<Class::MOP::Class> object.
 
-=item B<< $metaobject->dump($max_depth) >>
+=head2 $metaobject->dump($max_depth)
 
 This method uses L<Data::Dumper> to dump the object. You can pass an
 optional maximum depth, which will set C<$Data::Dumper::Maxdepth>. The
 default maximum depth is 1.
 
+=head2 $metaclass->throw_error($message)
+
+This method calls L<Class::MOP::Mixin/_throw_exception> internally, with an object
+of class L<Moose::Exception::Legacy>.
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
 =back
-
-=head1 AUTHOR
-
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

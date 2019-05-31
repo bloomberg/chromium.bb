@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -49,7 +49,7 @@ extern "C" {
   void __RPC_API MIDL_user_free(void *);
 #endif
 
-  typedef long *MSP_HANDLE;
+  typedef __LONG32 *MSP_HANDLE;
 
   typedef enum __MIDL___MIDL_itf_msp_0000_0001 {
     ADDRESS_TERMINAL_AVAILABLE = 0,ADDRESS_TERMINAL_UNAVAILABLE
@@ -95,7 +95,7 @@ extern "C" {
       } MSP_TSP_DATA;
       struct {
 	IDispatch *pEvent;
-	long lEventCode;
+	__LONG32 lEventCode;
       } MSP_PRIVATE_EVENT_INFO;
       struct {
 	ITTerminal *pParentFileTerminal;

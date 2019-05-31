@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _MSPSTRM_H_
@@ -55,7 +55,7 @@ public:
   CMSPStream();
   ~CMSPStream();
   virtual void FinalRelease();
-  STDMETHOD (get_MediaType) (long *plMediaType);
+  STDMETHOD (get_MediaType) (__LONG32 *plMediaType);
   STDMETHOD (get_Direction) (TERMINAL_DIRECTION *pTerminalDirection);
   STDMETHOD (get_Name) (BSTR *ppName) = 0;
   STDMETHOD (SelectTerminal) (ITTerminal *pTerminal);
@@ -69,7 +69,7 @@ public:
   virtual HRESULT ShutDown();
   virtual HRESULT GetState(DWORD *pdwStatus) { return E_NOTIMPL; }
   virtual HRESULT HandleTSPData(BYTE *pData,DWORD dwSize);
-  virtual HRESULT ProcessGraphEvent(long lEventCode,LONG_PTR lParam1,LONG_PTR lParam2);
+  virtual HRESULT ProcessGraphEvent(__LONG32 lEventCode,LONG_PTR lParam1,LONG_PTR lParam2);
 protected:
   HRESULT RegisterPluggableTerminalEventSink(ITTerminal *pTerminal);
   HRESULT UnregisterPluggableTerminalEventSink(ITTerminal *pTerminal);
@@ -91,7 +91,7 @@ protected:
   CMSPCritSection m_lock;
   CMSPCritSection m_lockRefCount;
   ITPluggableTerminalEventSink *m_pPTEventSink;
-  long m_lMyPersonalRefcount;
+  __LONG32 m_lMyPersonalRefcount;
   WINBOOL m_bFirstAddRef;
 };
 

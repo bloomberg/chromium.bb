@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!perl
 
 use Getopt::Long;
 use File::Basename;
@@ -7,7 +7,7 @@ use strict;
 
 use PPM;
 
-$PPM::VERSION = '11.11_01';
+$PPM::VERSION = '11.11_03';
 
 my %help;
 

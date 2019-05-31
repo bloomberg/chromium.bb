@@ -48,8 +48,8 @@ C<PPI::Document> implements the necessary C<STORABLE_freeze> and
 C<STORABLE_thaw> hooks to provide native support for L<Storable>,
 if you have it installed.
 
-However if you want to clone clone a Document, you are highly recommended
-to use the internal C<$Document-E<gt>clone> method rather than Storable's
+However if you want to clone a Document, you are highly recommended
+to use the C<$Document-E<gt>clone> method rather than Storable's
 C<dclone> function (although C<dclone> should still work).
 
 =head1 METHODS
@@ -65,28 +65,24 @@ Document-specific.
 
 use strict;
 use Carp                          ();
-use List::MoreUtils               ();
-use Params::Util                  qw{_SCALAR0 _ARRAY0 _INSTANCE};
+use List::Util 1.33               ();
+use Params::Util 1.00             qw{_SCALAR0 _ARRAY0 _INSTANCE};
 use Digest::MD5                   ();
 use PPI::Util                     ();
 use PPI                           ();
 use PPI::Node                     ();
-use PPI::Exception::ParserTimeout ();
 
 use overload 'bool' => \&PPI::Util::TRUE;
 use overload '""'   => 'content';
 
-use vars qw{$VERSION @ISA $errstr};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Node';
-	$errstr  = '';
-}
+our $VERSION = '1.269'; # VERSION
+
+our ( $errstr, @ISA ) = ( "", "PPI::Node" );
 
 use PPI::Document::Fragment ();
 
 # Document cache
-my $CACHE = undef;
+my $CACHE;
 
 # Convenience constants related to constants
 use constant LOCATION_LINE         => 0;
@@ -142,6 +138,7 @@ optimisation flag, it is off by default and you will need to explicitly
 enable it.
 
 Returns a C<PPI::Document> object, or C<undef> if parsing fails.
+L<PPI::Exception> objects can also be thrown if there are parsing problems.
 
 =cut
 
@@ -159,10 +156,6 @@ sub new {
 	# Check constructor attributes
 	my $source  = shift;
 	my %attr    = @_;
-	my $timeout = delete $attr{timeout};
-	if ( $timeout and ! PPI::Util::HAVE_ALARM() ) {
-		Carp::croak("This platform does not support PPI parser timeouts");
-	}
 
 	# Check the data source
 	if ( ! defined $source ) {
@@ -174,77 +167,39 @@ sub new {
 			Carp::croak("API CHANGE: Source code should only be passed to PPI::Document->new as a SCALAR reference");
 		}
 
+		# Save the filename
+		$attr{filename} ||= $source;
+
 		# When loading from a filename, use the caching layer if it exists.
 		if ( $CACHE ) {
-			my $file   = $source;
-			my $source = PPI::Util::_slurp( $file );
-			unless ( ref $source ) {
-				# Errors returned as plain string
-				return $class->_error($source);
-			}
+			my $file_contents = PPI::Util::_slurp( $source );
+
+			# Errors returned as plain string
+			return $class->_error($file_contents) if !ref $file_contents;
 
 			# Retrieve the document from the cache
-			my $document = $CACHE->get_document($source);
+			my $document = $CACHE->get_document($file_contents);
 			return $class->_setattr( $document, %attr ) if $document;
 
-			if ( $timeout ) {
-				eval {
-					local $SIG{ALRM} = sub { die "alarm\n" };
-					alarm( $timeout );
-					$document = PPI::Lexer->lex_source( $$source );
-					alarm( 0 );
-				};
-			} else {
-				$document = PPI::Lexer->lex_source( $$source );
-			}
+			$document = PPI::Lexer->lex_source( $$file_contents );
 			if ( $document ) {
 				# Save in the cache
 				$CACHE->store_document( $document );
 				return $class->_setattr( $document, %attr );
 			}
 		} else {
-			if ( $timeout ) {
-				eval {
-					local $SIG{ALRM} = sub { die "alarm\n" };
-					alarm( $timeout );
-					my $document = PPI::Lexer->lex_file( $source );
-					return $class->_setattr( $document, %attr ) if $document;
-					alarm( 0 );
-				};
-			} else {
-				my $document = PPI::Lexer->lex_file( $source );
-				return $class->_setattr( $document, %attr ) if $document;
-			}
+			my $document = PPI::Lexer->lex_file( $source );
+			return $class->_setattr( $document, %attr ) if $document;
 		}
 
 	} elsif ( _SCALAR0($source) ) {
-		if ( $timeout ) {
-			eval {
-				local $SIG{ALRM} = sub { die "alarm\n" };
-				alarm( $timeout );
-				my $document = PPI::Lexer->lex_source( $$source );
-				return $class->_setattr( $document, %attr ) if $document;
-				alarm( 0 );
-			};
-		} else {
-			my $document = PPI::Lexer->lex_source( $$source );
-			return $class->_setattr( $document, %attr ) if $document;
-		}
+		my $document = PPI::Lexer->lex_source( $$source );
+		return $class->_setattr( $document, %attr ) if $document;
 
 	} elsif ( _ARRAY0($source) ) {
 		$source = join '', map { "$_\n" } @$source;
-		if ( $timeout ) {
-			eval {
-				local $SIG{ALRM} = sub { die "alarm\n" };
-				alarm( $timeout );
-				my $document = PPI::Lexer->lex_source( $source );
-				return $class->_setattr( $document, %attr ) if $document;
-				alarm( 0 );
-			};
-		} else {
-			my $document = PPI::Lexer->lex_source( $source );
-			return $class->_setattr( $document, %attr ) if $document;
-		}
+		my $document = PPI::Lexer->lex_source( $source );
+		return $class->_setattr( $document, %attr ) if $document;
 
 	} else {
 		$class->_error("Unknown object or reference was passed to PPI::Document::new");
@@ -252,9 +207,7 @@ sub new {
 
 	# Pull and store the error from the lexer
 	my $errstr;
-	if ( _INSTANCE($@, 'PPI::Exception::Timeout') ) {
-		$errstr = 'Timed out while parsing document';
-	} elsif ( _INSTANCE($@, 'PPI::Exception') ) {
+	if ( _INSTANCE($@, 'PPI::Exception') ) {
 		$errstr = $@->message;
 	} elsif ( $@ ) {
 		$errstr = $@;
@@ -275,6 +228,7 @@ sub load {
 sub _setattr {
 	my ($class, $document, %attr) = @_;
 	$document->{readonly} = !! $attr{readonly};
+	$document->{filename} = $attr{filename};
 	return $document;
 }
 
@@ -340,6 +294,19 @@ sub get_cache {
 
 =pod
 
+=head2 filename
+
+The C<filename> accessor returns the name of the file in which the document
+is stored.
+
+=cut
+
+sub filename {
+	$_[0]->{filename};
+}
+
+=pod
+
 =head2 readonly
 
 The C<readonly> attribute indicates if the document is intended to be
@@ -393,6 +360,7 @@ sub save {
 	my $self = shift;
 	local *FILE;
 	open( FILE, '>', $_[0] )    or return undef;
+	binmode FILE;
 	print FILE $self->serialize or return undef;
 	close FILE                  or return undef;
 	return 1;
@@ -457,7 +425,7 @@ sub serialize {
 
 		# This token is a HereDoc.
 		# First, add the token content as normal, which in this
-		# case will definately not contain a newline.
+		# case will definitely not contain a newline.
 		$output .= $Token->content;
 
 		# Now add all of the here-doc content to the heredoc buffer.
@@ -472,7 +440,7 @@ sub serialize {
 			# from the end of a file that we silently allow.
 			#
 			# When writing back out to the file we have to
-			# auto-repair these problems if we arn't going back
+			# auto-repair these problems if we aren't going back
 			# on to the end of the file.
 
 			# When calculating $last_line, ignore the final token if
@@ -485,7 +453,7 @@ sub serialize {
 			# This is a two part test.
 			# First, are we on the last line of the
 			# content part of the file
-			my $last_line = List::MoreUtils::none {
+			my $last_line = List::Util::none {
 				$tokens[$_] and $tokens[$_]->{content} =~ /\n/
 				} (($i + 1) .. $last_index);
 			if ( ! defined $last_line ) {
@@ -495,7 +463,7 @@ sub serialize {
 
 			# Secondly, are their any more here-docs after us,
 			# (with content or a terminator)
-			my $any_after = List::MoreUtils::any {
+			my $any_after = List::Util::any {
 				$tokens[$_]->isa('PPI::Token::HereDoc')
 				and (
 					scalar(@{$tokens[$_]->{_heredoc}})
@@ -592,7 +560,7 @@ sub index_locations {
 	my @tokens = $self->tokens;
 
 	# Whenever we hit a heredoc we will need to increment by
-	# the number of lines in it's content section when when we
+	# the number of lines in its content section when we
 	# encounter the next token with a newline in it.
 	my $heredoc = 0;
 
@@ -793,7 +761,7 @@ Returns a L<PPI::Document::Normalized> object, or C<undef> on error.
 sub normalized {
 	# The normalization process will utterly destroy and mangle
 	# anything passed to it, so we are going to only give it a
-	# clone of ourself.
+	# clone of ourselves.
 	PPI::Normal->process( $_[0]->clone );
 }
 
@@ -842,7 +810,7 @@ sub complete {
 
 # We are a scope boundary
 ### XS -> PPI/XS.xs:_PPI_Document__scope 0.903+
-sub scope { 1 }
+sub scope() { 1 }
 
 
 

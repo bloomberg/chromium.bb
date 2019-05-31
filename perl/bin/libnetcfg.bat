@@ -1,17 +1,31 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!perl
-#line 15
+#line 29
     eval 'exec C:\strawberry\perl\bin\perl.exe -S $0 ${1+"$@"}'
 	if $running_under_some_shell;
 
@@ -65,7 +79,7 @@ specified using the -o option, C<-o newfile>.
 
 =head1 SEE ALSO
 
-L<Net::Config>, L<Net::libnetFAQ>
+L<Net::Config>, L<libnetFAQ>
 
 =head1 AUTHORS
 
@@ -77,6 +91,7 @@ Jarkko Hietaniemi, conversion into libnetcfg for inclusion into Perl 5.8.
 
 # $Id: Configure,v 1.8 1997/03/04 09:22:32 gbarr Exp $
 
+BEGIN { pop @INC if $INC[-1] eq '.' }
 use strict;
 use IO::File;
 use Getopt::Std;
@@ -322,7 +337,7 @@ my %oldcfg = ();
 $Net::Config::CONFIGURE = 1; # Suppress load of user overrides
 if( -f $libnet_cfg_in )
  {
-  %oldcfg = ( %{ do $libnet_cfg_in } );
+  %oldcfg = ( %{ local @INC = '.'; do $libnet_cfg_in } );
  }
 elsif (eval { require Net::Config }) 
  {

@@ -1,24 +1,15 @@
 package Class::MOP::Mixin::HasMethods;
-BEGIN {
-  $Class::MOP::Mixin::HasMethods::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Class::MOP::Mixin::HasMethods::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
 use Class::MOP::Method::Meta;
-use Class::MOP::Method::Overload;
 
-use Scalar::Util 'blessed';
-use Carp         'confess';
-use Sub::Name    'subname';
+use Scalar::Util 'blessed', 'reftype';
+use Sub::Name 'subname';
 
-use overload ();
-
-use base 'Class::MOP::Mixin';
+use parent 'Class::MOP::Mixin';
 
 sub _meta_method_class { 'Class::MOP::Method::Meta' }
 
@@ -42,9 +33,10 @@ sub _add_meta_method {
 sub wrap_method_body {
     my ( $self, %args ) = @_;
 
-    ( 'CODE' eq ref $args{body} )
-        || confess "Your code block must be a CODE reference";
-
+    ( $args{body} && 'CODE' eq reftype $args{body} )
+        || $self->_throw_exception( CodeBlockMustBeACodeRef => instance => $self,
+                                                                    params   => \%args
+                                       );
     $self->method_metaclass->wrap(
         package_name => $self->name,
         %args,
@@ -54,12 +46,12 @@ sub wrap_method_body {
 sub add_method {
     my ( $self, $method_name, $method ) = @_;
     ( defined $method_name && length $method_name )
-        || confess "You must define a method name";
+        || $self->_throw_exception( MustDefineAMethodName => instance => $self );
 
     my $package_name = $self->name;
 
     my $body;
-    if ( blessed($method) ) {
+    if ( blessed($method) && $method->isa('Class::MOP::Method') ) {
         $body = $method->body;
         if ( $method->package_name ne $package_name ) {
             $method = $method->clone(
@@ -102,10 +94,10 @@ sub has_method {
     my ( $self, $method_name ) = @_;
 
     ( defined $method_name && length $method_name )
-        || confess "You must define a method name";
+        || $self->_throw_exception( MustDefineAMethodName => instance => $self );
 
-    my $method = $self->_get_maybe_raw_method($method_name)
-        or return;
+    my $method = $self->_get_maybe_raw_method($method_name);
+    return if not $method;
 
     return defined($self->_method_map->{$method_name} = $method);
 }
@@ -114,12 +106,12 @@ sub get_method {
     my ( $self, $method_name ) = @_;
 
     ( defined $method_name && length $method_name )
-        || confess "You must define a method name";
+        || $self->_throw_exception( MustDefineAMethodName => instance => $self );
 
-    my $method = $self->_get_maybe_raw_method($method_name)
-        or return;
+    my $method = $self->_get_maybe_raw_method($method_name);
+    return if not $method;
 
-    return $method if blessed $method;
+    return $method if blessed($method) && $method->isa('Class::MOP::Method');
 
     return $self->_method_map->{$method_name} = $self->wrap_method_body(
         body                 => $method,
@@ -145,14 +137,14 @@ sub remove_method {
     my ( $self, $method_name ) = @_;
 
     ( defined $method_name && length $method_name )
-        || confess "You must define a method name";
+        || $self->_throw_exception( MustDefineAMethodName => instance => $self );
 
     my $removed_method = delete $self->_method_map->{$method_name};
 
     $self->remove_package_symbol("&$method_name");
 
     $removed_method->detach_from_class
-        if blessed($removed_method);
+        if blessed($removed_method) && $removed_method->isa('Class::MOP::Method');
 
     # still valid, since we just removed the method from the map
     $self->update_package_cache_flag;
@@ -176,9 +168,32 @@ sub _restore_metamethods_from {
     my $self = shift;
     my ($old_meta) = @_;
 
+    my $package_name = $self->name;
+
+    # Check if Perl debugger is enabled
+    my $debugger_enabled = ($^P & 0x10);
+    my $debug_method_info;
+
     for my $method ($old_meta->_get_local_methods) {
+        my $method_name = $method->name;
+
+        # Track DB::sub information for this method if debugger is enabled.
+        # This contains original method filename and line numbers.
+        $debug_method_info = '';
+        if ($debugger_enabled) {
+            $debug_method_info = $DB::sub{$package_name . "::" . $method_name}
+        }
+
         $method->_make_compatible_with($self->method_metaclass);
-        $self->add_method($method->name => $method);
+        $self->add_method($method_name => $method);
+
+        # Restore method debug information, which can be clobbered by add_method.
+        # Note that we handle this here instead of in add_method, because we
+        # only want to preserve the original debug info in cases where we are
+        # restoring a method, not overwriting a method.
+        if ($debugger_enabled && $debug_method_info) {
+            $DB::sub{$package_name . "::" . $method_name} = $debug_method_info;
+        }
     }
 }
 
@@ -209,99 +224,15 @@ sub _full_method_map {
     return $self->_method_map;
 }
 
-# overloading
-
-my $overload_operators;
-sub overload_operators {
-    $overload_operators ||= [map { split /\s+/ } values %overload::ops];
-    return @$overload_operators;
-}
-
-sub is_overloaded {
-    my $self = shift;
-    return overload::Overloaded($self->name);
-}
-
-# XXX this could probably stand to be cached, but i figure it should be
-# uncommon enough to not particularly matter
-sub _overload_map {
-    my $self = shift;
-
-    return {} unless $self->is_overloaded;
-
-    my %map;
-    for my $op ($self->overload_operators) {
-        my $body = $self->_get_overloaded_operator_body($op);
-        next unless defined $body;
-        $map{$op} = $body;
-    }
-
-    return \%map;
-}
-
-sub get_overload_list {
-    my $self = shift;
-    return keys %{ $self->_overload_map };
-}
-
-sub get_all_overloaded_operators {
-    my $self = shift;
-    my $map = $self->_overload_map;
-    return map { $self->_wrap_overload($_, $map->{$_}) } keys %$map;
-}
-
-sub has_overloaded_operator {
-    my $self = shift;
-    my ($op) = @_;
-    return defined $self->_get_overloaded_operator_body($op);
-}
-
-sub get_overloaded_operator {
-    my $self = shift;
-    my ($op) = @_;
-    my $body = $self->_get_overloaded_operator_body($op);
-    return unless defined $body;
-    return $self->_wrap_overload($op, $body);
-}
-
-sub add_overloaded_operator {
-    my $self = shift;
-    my ($op, $body) = @_;
-    $self->name->overload::OVERLOAD($op => $body);
-}
-
-sub remove_overloaded_operator {
-    my $self = shift;
-    my ($op) = @_;
-    # ugh, overload.pm provides no api for this
-    $self->get_or_add_package_symbol('%OVERLOAD')->{dummy}++;
-    $self->remove_package_symbol('&(' . $op);
-}
-
-sub _get_overloaded_operator_body {
-    my $self = shift;
-    my ($op) = @_;
-    return overload::Method($self->name, $op);
-}
-
-sub _wrap_overload {
-    my $self = shift;
-    my ($op, $body) = @_;
-    return Class::MOP::Method::Overload->wrap(
-        operator             => $op,
-        package_name         => $self->name,
-        associated_metaclass => $self,
-        body                 => $body,
-    );
-}
-
 1;
 
 # ABSTRACT: Methods for metaclasses which have methods
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -309,27 +240,65 @@ Class::MOP::Mixin::HasMethods - Methods for metaclasses which have methods
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
 This class implements methods for metaclasses which have methods
-(L<Class::MOP::Package> and L<Moose::Meta::Role>). See L<Class::MOP::Package>
-for API details.
+(L<Class::MOP::Class> and L<Moose::Meta::Role>). See L<Class::MOP::Class> for
+API details.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

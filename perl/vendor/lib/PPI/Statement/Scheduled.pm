@@ -56,13 +56,11 @@ may have 'sub' in front of them.
 use strict;
 use PPI::Statement::Sub ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Statement::Sub';
-}
+our $VERSION = '1.269'; # VERSION
 
-sub __LEXER__normal { '' }
+our @ISA = "PPI::Statement::Sub";
+
+sub __LEXER__normal() { '' }
 
 sub _complete {
 	my $child = $_[0]->schild(-1);

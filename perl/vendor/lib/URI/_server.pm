@@ -1,9 +1,13 @@
 package URI::_server;
-require URI::_generic;
-@ISA=qw(URI::_generic);
 
 use strict;
+use warnings;
+
+use parent 'URI::_generic';
+
 use URI::Escape qw(uri_unescape);
+
+our $VERSION = '1.76';
 
 sub _uric_escape {
     my($class, $str) = @_;
@@ -19,7 +23,7 @@ sub _uric_escape {
 }
 
 sub _host_escape {
-    return unless $_[0] =~ /[^URI::uric]/;
+    return unless $_[0] =~ /[^$URI::uric]/;
     eval {
 	require URI::_idna;
 	$_[0] = URI::_idna::encode($_[0]);

@@ -28,14 +28,12 @@ our parent L<PPI::Token> and L<PPI::Element> classes.
 =cut
 
 use strict;
-use IO::String ();
+use IO::String 1.07 ();
 use PPI::Token ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Token";
 
 
 
@@ -65,7 +63,19 @@ sub handle {
 	IO::String->new( \$self->{content} );
 }
 
-sub __TOKENIZER__on_char { 1 }
+sub __TOKENIZER__on_line_start {
+	my ( $self, $t ) = @_;
+
+	# Add the line
+	if ( defined $t->{token} ) {
+		$t->{token}->{content} .= $t->{line};
+	}
+	else {
+		defined( $t->{token} = $t->{class}->new( $t->{line} ) ) or return undef;
+	}
+
+	return 0;
+}
 
 1;
 

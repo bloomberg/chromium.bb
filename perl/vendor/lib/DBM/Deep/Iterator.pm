@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 
 =head1 NAME
 
-DBM::Deep::Iterator
+DBM::Deep::Iterator - iterator for FIRSTKEY() and NEXTKEY()
 
 =head1 PURPOSE
 

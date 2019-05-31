@@ -308,9 +308,10 @@ The current Statement is in $_. The statement string should not be modified,
 so most subs start with C<local $_ = $_;>.
 
 The list of values it returns is used at that point in the Profile Path.
+Any undefined values are treated as the string "C<undef>".
 
 The sub can 'veto' (reject) a profile sample by including a reference to undef
-in the returned list. That can be useful when you want to only profile
+(C<\undef>) in the returned list. That can be useful when you want to only profile
 statements that match a certain pattern, or only profile certain methods.
 
 =head3 Subroutine Specifier
@@ -476,7 +477,7 @@ The $node argument can be used to focus on a sub-tree.
 If not specified it defaults to $dbh->{Profile}{Data}.
 
 The $path argument can be used to specify a list of path elements that will be
-added to each element of the returned list. If not specified it defaults to a a
+added to each element of the returned list. If not specified it defaults to a
 ref to an empty array.
 
 =head2 as_text
@@ -547,7 +548,7 @@ For example:
       my $totals=[],
       [ 10, 0.51, 0.11, 0.01, 0.22, 1023110000, 1023110010 ],
       [ 15, 0.42, 0.12, 0.02, 0.23, 1023110005, 1023110009 ],
-  );        
+  );
 
 $totals will then contain
 
@@ -556,7 +557,7 @@ $totals will then contain
 and $time_in_dbi will be 0.93;
 
 The second argument need not be just leaf nodes. If given a reference to a hash
-then the hash is recursively searched for for leaf nodes and all those found
+then the hash is recursively searched for leaf nodes and all those found
 are merged.
 
 For example, to get the time spent 'inside' the DBI during an http request,
@@ -663,7 +664,7 @@ resolution. Which isn't sufficiently fine for our needs, but still
 much better than integer resolution. This limited resolution means
 that fast method calls will often register as taking 0 time. And
 timings in general will have much more 'jitter' depending on where
-within the 'current millisecond' the start and and timing was taken.
+within the 'current millisecond' the start and end timing was taken.
 
 This documentation could be more clear. Probably needs to be reordered
 to start with several examples and build from there.  Trying to
@@ -681,8 +682,7 @@ use Carp;
 
 use DBI qw(dbi_time dbi_profile dbi_profile_merge_nodes dbi_profile_merge);
 
-$VERSION = sprintf("2.%06d", q$Revision: 15064 $ =~ /(\d+)/o);
-
+$VERSION = "2.015065";
 
 @ISA = qw(Exporter);
 @EXPORT = qw(
@@ -720,7 +720,7 @@ sub _auto_new {
     # assigned to the Profile attribute. For example
     #	dbi:mysql(RaiseError=>1,Profile=>!Statement:!MethodName/DBIx::MyProfile/arg1:arg2):dbname
     # This sub works out what to do and returns a suitable hash ref.
-    
+
     $arg =~ s/^DBI::/2\/DBI::/
         and carp "Automatically changed old-style DBI::Profile specification to $arg";
 
@@ -758,7 +758,7 @@ sub _auto_new {
         }
     }
 
-    eval "require $package" if $package; # sliently ignores errors
+    eval "require $package" if $package; # silently ignores errors
     $package ||= $class;
 
     return $package->new(Path => \@Path, @args);
@@ -769,7 +769,7 @@ sub empty {             # empty out profile data
     my $self = shift;
     DBI->trace_msg("profile data discarded\n",0) if $self->{Trace};
     $self->{Data} = undef;
-}   
+}
 
 sub filename {          # baseclass method, see DBI::ProfileDumper
     return undef;
@@ -787,7 +787,7 @@ sub flush_to_disk {     # baseclass method, see DBI::ProfileDumper & DashProfile
 sub as_node_path_list {
     my ($self, $node, $path) = @_;
     # convert the tree into an array of arrays
-    # from 
+    # from
     #   {key1a}{key2a}[node1]
     #   {key1a}{key2b}[node2]
     #   {key1b}{key2a}{key3a}[node3]
@@ -816,7 +816,7 @@ sub as_text {
         || "%s"; # or e.g., " key%2$d='%s'"
     my $format    = $args_ref->{format}
         || '%1$s: %11$fs / %10$d = %2$fs avg (first %12$fs, min %13$fs, max %14$fs)'."\n";
-    
+
     my @node_path_list = $self->as_node_path_list(undef, $args_ref->{path});
 
     $args_ref->{sortsub}->(\@node_path_list) if $args_ref->{sortsub};
@@ -832,23 +832,28 @@ sub as_text {
         for (@path) {
             s/[\r\n]+/ /g;
             s/$separator_re/ /g;
-            $_ = sprintf $format_path_element, $_, ++$idx;
+            ++$idx;
+            if ($format_path_element eq "%s") {
+              $_ = sprintf $format_path_element, $_;
+            } else {
+              $_ = sprintf $format_path_element, $_, $idx;
+            }
         }
         push @text, sprintf $format,
             join($separator, @path),                  # 1=path
             ($node->[0] ? $node->[1]/$node->[0] : 0), # 2=avg
             @spare_slots,
             @$node; # 10=count, 11=dur, 12=first_dur, 13=min, 14=max, 15=first_called, 16=last_called
-    }       
+    }
     return @text if wantarray;
     return join "", @text;
-}   
+}
 
 
 sub format {
     my $self = shift;
     my $class = ref($self) || $self;
-    
+
     my $prologue = "$class: ";
     my $detail = $self->format_profile_thingy(
 	$self->{Data}, 0, "    ",

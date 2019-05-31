@@ -52,10 +52,10 @@ sub hex   { shift; CORE::hex($_[0]);          }
 sub int   { shift; CORE::int($_[0]);          }
 sub log   { shift; CORE::log($_[0]);          }
 sub oct   { shift; CORE::oct($_[0]);          }
-sub rand  { shift; CORE::rand($_[0]);         }
+sub rand  { shift; @_ ? CORE::rand($_[0]) : CORE::rand(); }
 sub sin   { shift; CORE::sin($_[0]);          }
 sub sqrt  { shift; CORE::sqrt($_[0]);         }
-sub srand { shift; CORE::srand($_[0]);        }
+sub srand { shift; @_ ? CORE::srand($_[0]) : CORE::srand(); }
 
 # Use the Math::TrulyRandom module
 # XXX This is *sloooooooowwwwwwww*

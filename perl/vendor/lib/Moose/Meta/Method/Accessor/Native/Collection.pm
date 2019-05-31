@@ -1,17 +1,12 @@
 package Moose::Meta::Method::Accessor::Native::Collection;
-BEGIN {
-  $Moose::Meta::Method::Accessor::Native::Collection::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Method::Accessor::Native::Collection::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
 use Moose::Role;
 
-requires qw( _adds_members );
+requires qw( _adds_members _new_members );
 
 sub _inline_coerce_new_values {
     my $self = shift;
@@ -93,7 +88,8 @@ sub _check_new_members_only {
     # constraint, so we need to check the whole value, not just the members.
     return 1
         if $self->_is_root_type( $tc->parent )
-            && $tc->isa('Moose::Meta::TypeConstraint::Parameterized');
+            && ( $tc->isa('Moose::Meta::TypeConstraint::Parameterized')
+                 || !$tc->can('parameterize') );
 
     return 0;
 }
@@ -112,11 +108,13 @@ sub _inline_check_member_constraint {
     return (
         'for my $new_val (' . $new_value . ') {',
             "if ($check) {",
-                $self->_inline_throw_error(
-                    '"A new member value for ' . $attr_name
-                  . ' does not pass its type constraint because: "' . ' . '
-                  . 'do { local $_ = $new_val; $member_message->($new_val) }',
-                    'data => $new_val',
+                'my $msg = do { local $_ = $new_val; $member_message->($new_val) };'.
+                $self->_inline_throw_exception( ValidationFailedForInlineTypeConstraint =>
+                                                "attribute_name          => '".$attr_name."',".
+                                                'type_constraint_message => $msg,'.
+                                                'class_name              => $class_name,'.
+                                                'value                   => $new_val,'.
+                                                'new_member              => 1',
                 ) . ';',
             '}',
         '}',

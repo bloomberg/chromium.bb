@@ -1,0 +1,158 @@
+=encoding utf8
+
+=head1 NAME
+
+Mail::Mailer - send simple emails
+
+=head1 INHERITANCE
+
+ Mail::Mailer
+   is an IO::Handle
+
+=head1 SYNOPSIS
+
+  use Mail::Mailer;
+  use Mail::Mailer qw(mail);    # specifies default mailer
+
+  $mailer = Mail::Mailer->new;
+  $mailer = Mail::Mailer->new($type, @args);
+
+  $mailer->open(\%headers);
+  print $mailer $body;
+  $mailer->close
+      or die "couldn't send whole message: $!\n";
+
+=head1 DESCRIPTION
+
+Sends mail using any of the built-in methods.  As TYPE argument
+to L<new()|Mail::Mailer/"Constructors">, you can specify any of
+
+=over 4
+
+=item C<sendmail>
+
+Use the C<sendmail> program to deliver the mail.
+
+=item C<smtp>
+
+Use the C<smtp> protocol via Net::SMTP to deliver the mail. The server
+to use can be specified in C<@args> with
+
+ $mailer = Mail::Mailer->new('smtp', Server => $server);
+
+The smtp mailer does not handle C<Cc> and C<Bcc> lines, neither their
+C<Resent-*> fellows. The C<Debug> options enables debugging output
+from C<Net::SMTP>.
+
+[added 2.21] You may also use the C<< StartTLS => 1 >> options to upgrade the
+connection with STARTTLS.  You need C<libnet> version 1.28 (2014) for this
+to work.
+
+You may also use the C<< Auth => [ $user, $password ] >> option for SASL
+authentication. To make this work, you have to install the L<Authen::SASL>
+distribution yourself: it is not automatically installed.
+
+=item C<smtps>
+
+This option is B<deprecated> when you have C<libnet> 1.28 (2014) and above.
+
+Use the smtp over ssl protocol via L<Net::SMTP::SSL> to deliver the mail.
+Usage is identical to C<smtp>. You have to install Authen::SASL as
+well.
+
+ $mailer = Mail::Mailer->new('smtps', Server => $server);
+
+=item C<qmail>
+
+Use qmail's qmail-inject program to deliver the mail.
+
+=item C<testfile>
+
+Used for debugging, this displays the data to the file named in
+C<$Mail::Mailer::testfile::config{outfile}> which defaults to a file
+named C<mailer.testfile>.  No mail is ever sent.
+
+=back
+
+C<Mail::Mailer> will search for executables in the above order. The
+default mailer will be the first one found.
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item Mail::Mailer-E<gt>B<new>($type, %options)
+
+The $type is one of the back-end sender implementations, as described in
+the DESCRIPTION chapter of this manual page.  The %options are passed to
+that back-end.
+
+=item $obj-E<gt>B<open>(HASH)
+
+The HASH consists of key and value pairs, the key being the name of
+the header field (eg, C<To>), and the value being the corresponding
+contents of the header field.  The value can either be a scalar
+(eg, C<gnat@frii.com>) or a reference to an array of scalars
+(C<< eg, ['gnat@frii.com', 'Tim.Bunce@ig.co.uk'] >>).
+
+=back
+
+=head1 DETAILS
+
+=head2 ENVIRONMENT VARIABLES
+
+=over 4
+
+=item PERL_MAILERS
+
+Augments/override the build in choice for binary used to send out
+our mail messages.
+
+Format:
+
+    "type1:mailbinary1;mailbinary2;...:type2:mailbinaryX;...:..."
+
+Example: assume you want you use private sendmail binary instead
+of mailx, one could set C<PERL_MAILERS> to:
+
+    "mail:/does/not/exists:sendmail:$HOME/test/bin/sendmail"
+
+On systems which may include C<:> in file names, use C<|> as separator
+between type-groups.
+
+    "mail:c:/does/not/exists|sendmail:$HOME/test/bin/sendmail"
+
+=back
+
+=head2 BUGS
+
+Mail::Mailer does not help with folding, and does not protect
+against various web-script hacker attacks, for instance where
+a new-line is inserted in the content of the field.
+
+=head1 SEE ALSO
+
+This module is part of the MailTools distribution,
+F<http://perl.overmeer.net/mailtools/>.
+
+=head1 AUTHORS
+
+The MailTools bundle was developed by Graham Barr.  Later, Mark
+Overmeer took over maintenance without commitment to further development.
+
+Mail::Cap by Gisle Aas E<lt>aas@oslonett.noE<gt>.
+Mail::Field::AddrList by Peter Orbaek E<lt>poe@cit.dkE<gt>.
+Mail::Mailer and Mail::Send by Tim Bunce E<lt>Tim.Bunce@ig.co.ukE<gt>.
+For other contributors see ChangeLog.
+
+=head1 LICENSE
+
+Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+

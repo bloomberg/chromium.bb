@@ -4,7 +4,15 @@ use strict;
 use warnings;
 use Carp;
 
-# methods
+sub die_with_error {
+    my $self = shift;
+    if (my ($code, $name) = $self->error) {
+        croak join(": ", @_, "SFTP error $code $name");
+    }
+    else {
+        croak join(": ", @_, "no SFTP error registered");
+    }
+}
 
 
 1;
@@ -24,12 +32,17 @@ Returns the last SFTP error (one of the LIBSSH2_FX_* constants).  Use this
 when Net::SSH2::error returns LIBSSH2_ERROR_SFTP_PROTOCOL.  In list context,
 returns (code, error name).
 
+=head2 die_with_error( [message] )
+
+Calls C<die> with the given message and the error information from the
+object appended.
+
 =head2 open ( file [, flags [, mode ]]] )
 
 Open or create a file on the remote host.  The flags are the standard O_RDONLY,
 O_WRONLY, O_RDWR, O_APPEND, O_CREAT, O_TRUNC, and O_EXCL, which may be
 combined as usual.  Flags default to O_RDONLY and mode to 0666 (create only).
-Returns a Net::SSH2::File object on success.
+Returns a L<Net::SSH2::File> object on success.
 
 =head2 opendir ( dir )
 
@@ -93,6 +106,10 @@ Resolve a filename's path; returns the resolved path, or undef on error.
 =head1 SEE ALSO
 
 L<Net::SSH2>.
+
+Check L<Net::SFTP::Foreign> for a high level, perlish and easy to use
+SFTP client module. It can work on top of Net::SSH2 via the
+L<Net::SFTP::Foreign::Backend::Net_SSH2> backend module.
 
 =head1 AUTHOR
 

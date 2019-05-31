@@ -1,6 +1,6 @@
 package DBD::Gofer::Transport::null;
 
-#   $Id: null.pm 10087 2007-10-16 12:42:37Z timbo $
+#   $Id: null.pm 10087 2007-10-16 12:42:37Z Tim $
 #
 #   Copyright (c) 2007, Tim Bunce, Ireland
 #
@@ -14,12 +14,12 @@ use base qw(DBD::Gofer::Transport::Base);
 
 use DBI::Gofer::Execute;
 
-our $VERSION = sprintf("0.%06d", q$Revision: 10087 $ =~ /(\d+)/o);
+our $VERSION = "0.010088";
 
 __PACKAGE__->mk_accessors(qw(
     pending_response
     transmit_count
-)); 
+));
 
 my $executor = DBI::Gofer::Execute->new();
 
@@ -86,7 +86,7 @@ test DBD::Gofer on all platforms with no setup.
 
 Also, by measuring the difference in performance between normal connections and
 connections via C<dbi:Gofer:transport=null> the basic cost of using DBD::Gofer
-can be measured. Furthermore, the additional cost of more advanced transports can be 
+can be measured. Furthermore, the additional cost of more advanced transports can be
 isolated by comparing their performance with the null transport.
 
 The C<t/85gofer.t> script in the DBI distribution includes a comparative benchmark.

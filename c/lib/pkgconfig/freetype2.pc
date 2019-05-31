@@ -1,12 +1,14 @@
-prefix=/mingw
-exec_prefix=${prefix}
-libdir=${exec_prefix}/lib
-includedir=${prefix}/include
+prefix=${pcfiledir}/../..
+exec_prefix=${pcfiledir}/../..
+libdir=${pcfiledir}/../../lib
+includedir=${pcfiledir}/../../include
 
 Name: FreeType 2
+URL: https://freetype.org
 Description: A free, high-quality, and portable font engine.
-Version: 14.1.8
+Version: 23.0.17
 Requires:
+Requires.private: zlib, bzip2, libpng
 Libs: -L${libdir} -lfreetype
-Libs.private: -lz  
-Cflags: -I${includedir}/freetype2 -I${includedir}
+Libs.private: 
+Cflags: -I${includedir}/freetype2

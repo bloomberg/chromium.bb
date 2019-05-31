@@ -16,6 +16,7 @@ package XML::LibXML::Common;
 # global blur                                                             #
 #-------------------------------------------------------------------------#
 use strict;
+use warnings;
 
 require Exporter;
 require DynaLoader;
@@ -23,7 +24,7 @@ use vars qw( @ISA $VERSION @EXPORT @EXPORT_OK %EXPORT_TAGS);
 
 @ISA = qw(Exporter);
 
-$VERSION = "1.98"; # VERSION TEMPLATE: DO NOT CHANGE
+$VERSION = "2.0200"; # VERSION TEMPLATE: DO NOT CHANGE
 
 use XML::LibXML qw(:libxml);
 

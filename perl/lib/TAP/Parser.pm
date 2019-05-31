@@ -1,9 +1,8 @@
 package TAP::Parser;
 
 use strict;
-use vars qw($VERSION @ISA);
+use warnings;
 
-use TAP::Base                              ();
 use TAP::Parser::Grammar                   ();
 use TAP::Parser::Result                    ();
 use TAP::Parser::ResultFactory             ();
@@ -18,17 +17,21 @@ use TAP::Parser::SourceHandler::Handle     ();
 
 use Carp qw( confess );
 
+use base 'TAP::Base';
+
+=encoding utf8
+
 =head1 NAME
 
 TAP::Parser - Parse L<TAP|Test::Harness::TAP> output
 
 =head1 VERSION
 
-Version 3.23
+Version 3.42
 
 =cut
 
-$VERSION = '3.23';
+our $VERSION = '3.42';
 
 my $DEFAULT_TAP_VERSION = 12;
 my $MAX_TAP_VERSION     = 13;
@@ -42,8 +45,6 @@ END {
 }
 
 BEGIN {    # making accessors
-    @ISA = qw(TAP::Base);
-
     __PACKAGE__->mk_methods(
         qw(
           _iterator
@@ -59,6 +60,8 @@ BEGIN {    # making accessors
           in_todo
           start_time
           end_time
+          start_times
+          end_times
           skip_all
           grammar_class
           result_factory_class
@@ -94,7 +97,7 @@ L<http://testanything.org>
 
 It includes the TAP::Parser Cookbook:
 
-L<http://testanything.org/wiki/index.php/TAP::Parser_Cookbook>
+L<http://testanything.org/testing-with-tap/perl/tap::parser-cookbook.html>
 
 =head1 METHODS
 
@@ -174,7 +177,7 @@ I<NEW to 3.18>.
 
 If set, C<sources> must be a hashref containing the names of the
 L<TAP::Parser::SourceHandler>s to load and/or configure.  The values are a
-hash of configuration that will be accessible to to the source handlers via
+hash of configuration that will be accessible to the source handlers via
 L<TAP::Parser::Source/config_for>.
 
 For example:
@@ -638,7 +641,7 @@ C<$result> object.
 
 Returns a list of pragmas each of which is a + or - followed by the
 pragma name.
- 
+
 =head2 C<comment> methods
 
  if ( $result->is_comment ) { ... }
@@ -795,7 +798,11 @@ but had a TODO directive, it will be counted as a passed test.
 
 =cut
 
-sub passed { @{ shift->{passed} } }
+sub passed {
+    return @{ $_[0]->{passed} }
+      if ref $_[0]->{passed};
+    return wantarray ? 1 .. $_[0]->{passed} : $_[0]->{passed};
+}
 
 =head3 C<failed>
 
@@ -822,7 +829,11 @@ regardless of whether or not a TODO directive was found.
 
 =cut
 
-sub actual_passed { @{ shift->{actual_passed} } }
+sub actual_passed {
+    return @{ $_[0]->{actual_passed} }
+      if ref $_[0]->{actual_passed};
+    return wantarray ? 1 .. $_[0]->{actual_passed} : $_[0]->{actual_passed};
+}
 *actual_ok = \&actual_passed;
 
 =head3 C<actual_ok>
@@ -998,11 +1009,20 @@ were skipped.
 
 =head3 C<start_time>
 
-Returns the time when the Parser was created.
+Returns the wall-clock time when the Parser was created.
 
 =head3 C<end_time>
 
-Returns the time when the end of TAP input was seen.
+Returns the wall-clock time when the end of TAP input was seen.
+
+=head3 C<start_times>
+
+Returns the CPU times (like L<perlfunc/times> when the Parser was created.
+
+=head3 C<end_times>
+
+Returns the CPU times (like L<perlfunc/times> when the end of TAP
+input was seen.
 
 =head3 C<has_problems>
 
@@ -1365,6 +1385,7 @@ sub _iter {
     my $state_table = $self->_make_state_table;
 
     $self->start_time( $self->get_time );
+    $self->start_times( $self->get_times );
 
     # Make next_state closure
     my $next_state = sub {
@@ -1457,6 +1478,7 @@ sub _finish {
     my $self = shift;
 
     $self->end_time( $self->get_time );
+    $self->end_times( $self->get_times );
 
     # Avoid leaks
     $self->_iterator(undef);
@@ -1496,6 +1518,17 @@ sub _finish {
     }
 
     $self->is_good_plan(0) unless defined $self->is_good_plan;
+
+    unless ( $self->parse_errors ) {
+        # Optimise storage where possible
+        if ( $self->tests_run == @{$self->{passed}} ) {
+            $self->{passed} = $self->tests_run;
+        }
+        if ( $self->tests_run == @{$self->{actual_passed}} ) {
+            $self->{actual_passed} = $self->tests_run;
+        }
+    }
+
     return $self;
 }
 
@@ -1745,7 +1778,7 @@ so without sub-classing C<TAP::Parser> by setting L</iterator_factory_class>.
 If you just need to customize the objects on creation, subclass L<TAP::Parser>
 and override L</make_iterator_factory>.
 
-Note that L</make_source> & L</make_perl_source> have been I<DEPRECATED> and
+Note that C<make_source> & C<make_perl_source> have been I<DEPRECATED> and
 are now removed.
 
 =head3 Iterators
@@ -1884,7 +1917,7 @@ progress on your bug as we make changes.
 Obviously, bugs which include patches are best. If you prefer, you can
 patch against bleed by via anonymous checkout of the latest version:
 
- git clone git://github.com/AndyA/Test-Harness.git
+ git clone git://github.com/Perl-Toolchain-Gang/Test-Harness.git
 
 =head1 COPYRIGHT & LICENSE
 

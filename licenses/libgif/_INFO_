@@ -1,3 +1,4 @@
-Package: giflib-4.1.6
-Sources: http://downloads.sourceforge.net/giflib/giflib-4.1.6.tar.gz
+Package: giflib-5.1.9
+Sources: http://downloads.sourceforge.net/giflib/giflib-5.1.9.tar.gz
+Patch: giflib-5.1.9.diff
 Homepage: http://giflib.sourceforge.net/

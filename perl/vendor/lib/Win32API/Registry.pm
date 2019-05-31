@@ -4,7 +4,7 @@ package Win32API::Registry;
 
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS); #@EXPORT_FAIL);
-$VERSION= '0.32';
+$VERSION= '0.33';
 
 require Exporter;
 require DynaLoader;
@@ -110,7 +110,7 @@ if(  ! defined &REG_NONE  ) {
     require "Win32API/Registry/cRegistry.pc";
 }
 
-# This would be convenient but inconsistant and hard to explain:
+# This would be convenient but inconsistent and hard to explain:
 #push( @{$EXPORT_TAGS{ALL}}, @{$EXPORT_TAGS{SE_}} )
 #  if  defined &SE_TCB_NAME;
 
@@ -285,10 +285,10 @@ Win32API::Registry - Low-level access to Win32 system API calls from WINREG.H
 
   use Win32API::Registry 0.21 qw( :ALL );
 
-  RegOpenKeyEx( HKEY_LOCAL_MACHINE, "SYSTEM\\Disk", 0, KEY_READ, $key );
+  RegOpenKeyEx( HKEY_LOCAL_MACHINE, "SYSTEM\\Disk", 0, KEY_READ, $key )
     or  die "Can't open HKEY_LOCAL_MACHINE\\SYSTEM\\Disk: ",
 	    regLastError(),"\n";
-  RegQueryValueEx( $key, "Information", [], $type, $data, [] );
+  RegQueryValueEx( $key, "Information", [], $type, $data, [] )
     or  die "Can't read HKEY_L*MACHINE\\SYSTEM\\Disk\\Information: ",
 	    regLastError(),"\n";
   [...]
@@ -728,7 +728,7 @@ C<$sSubKey> is the name of the new subkey to created and associated
 with the hive file.
 
 C<$sFileName> is the name of the hive file to be loaded.  This
-file name is interpretted relative to the
+file name is interpreted relative to the
 C<%SystemRoot%/System32/config> directory on the computer where
 the C<$hKey> key resides.  If C<$sFileName> is on a FAT file
 system, then its name must not have an extension.
@@ -970,7 +970,7 @@ C<$sBuffer> using C<unpack()> [or C<substr()>]:
 
 This routine is meant only for compatibility with Windows version
 3.1.  Use C<RegQueryValueEx()> instead.  This routine can only
-query unamed values [a.k.a. "default values"], that is, values with
+query unnamed values [a.k.a. "default values"], that is, values with
 a name of C<"">.
 
 =item RegQueryValueEx
@@ -1026,7 +1026,7 @@ hive file when the system reboots.
 C<$sOldFile> is the file name to save the current hive file to
 when the system reboots.
 
-C<$sNewFile> and C<$sOldFile> are interpretted relative to the
+C<$sNewFile> and C<$sOldFile> are interpreted relative to the
 C<%SystemRoot%/System32/config> directory on the computer where
 the C<$hKey> key resides [I think].  If either file is [would be]
 on a FAT file system, then its name must not have an extension.
@@ -1048,7 +1048,7 @@ C<$sFileName> is the name of the hive file to be read.  For each
 value and subkey in this file, a value or subkey will be added
 or replaced in C<$hKey>.
 
-C<$uFlags> is usally C<0>.  It can also be C<REG_WHOLE_HIVE_VOLATILE>
+C<$uFlags> is usually C<0>.  It can also be C<REG_WHOLE_HIVE_VOLATILE>
 which, rather than copying the hive over the existing key,
 replaces the existing key with a temporary, memory-only Registry
 key and then copies the hive contents into it.  This option only
@@ -1071,7 +1071,7 @@ C<$hKey> is the handle to a Registry key [either C<HKEY_*> or from
 a previous call].
 
 C<$sFileName> is the name of the file that the Registry tree
-should be saved to.  It is interpretted relative to the
+should be saved to.  It is interpreted relative to the
 C<%SystemRoot%/System32/config> directory on the computer where
 the C<$hKey> key resides.  If C<$sFileName> is on a FAT file system,
 then it must not have an extension.
@@ -1109,7 +1109,7 @@ packed into a Perl string.
 
 This routine is meant only for compatibility with Windows version
 3.1.  Use C<RegSetValueEx()> instead.  This routine can only
-set unamed values [a.k.a. "default values"].
+set unnamed values [a.k.a. "default values"].
 
 =item RegSetValueEx
 
@@ -1414,7 +1414,7 @@ in the C<":ALL"> grouping.
 
 =back
 
-=head2 The Win32API:: heirarchy
+=head2 The Win32API:: hierarchy
 
 This and the other Win32API:: modules are meant to expose the
 nearly raw API calls so they can be used from Perl code in any
@@ -1478,10 +1478,10 @@ negative buffer sizes are treated as very large positive buffer
 sizes which usually cause C<malloc()> to fail.
 
 To force the F<Registry.xs> code to pass in a specific value for
-a buffer size, preceed the size with an equals sign via C<"=".>. 
+a buffer size, precede the size with an equals sign via C<"=".>. 
 Buffer sizes that are passed in as strings starting with an equals
 sign will have the equal sign stripped and the remainder of the string
-interpretted as a number [via C's C<strtoul()> using only base 10]
+interpreted as a number [via C's C<strtoul()> using only base 10]
 which will be passed to the underlying routine [even if the allocated
 buffer is actually larger].  The F<Registry.xs> code will enlarge the
 buffer to the specified size, if needed, but will not enlarge the
@@ -1542,7 +1542,7 @@ Note how C<, 0> above causes an explicit C<L'\0'> to be added since
 Perl's implicit C<'\0'> that it puts after each of its strings is not
 wide enough to terminate a UNICODE string.  So UNICODE strings are
 different than regular strings in that the Perl version of a regular
-string will not include the trialing C<'\0'> while the Perl version
+string will not include the trailing C<'\0'> while the Perl version
 of a UNICODE string must include the trailing C<L'\0'>.
 
 If a UNICODE string contains no non-ASCII characters, then you
@@ -1557,7 +1557,7 @@ A pointer to some buffer [usually containing some C<struct>].  In C,
 a C<void *> or some other pointer type.  In Perl, a string that is
 usually manipulated using C<pack> and C<unpack>.  The "p" is usually
 followed by more prefix character(s) to indicate what type of data is
-stored in the bufffer.
+stored in the buffer.
 
 =item a
 
@@ -1638,7 +1638,7 @@ that are treated as integers in Perl code.
 
 A record.  In C, almost always a C<struct> or perhaps C<union>.  Note
 that C C<struct>s are rarely passed by value so the "r" is almost
-always preceeded by a "p" or "a" [see L</p> and L</a> above].  For
+always preceded by a "p" or "a" [see L</p> and L</a> above].  For
 the very rare unadorned "r", Perl stores the record in the same way
 as a "pr", that is, in a string.  For the very rare case where Perl
 explicitly stores a pointer to the C<struct> rather than storing the
@@ -1761,6 +1761,10 @@ it is not used in the stubs in F<Registry.pm>.
 =head1 AUTHOR
 
 Tye McQueen, tye@metronet.com, http://www.metronet.com/~tye/.
+
+=head1 LICENSE
+
+perl
 
 =head1 SEE ALSO
 

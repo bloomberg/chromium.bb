@@ -1,5 +1,5 @@
 #
-# $Id: GSM0338.pm,v 2.1 2008/05/07 20:56:05 dankogai Exp $
+# $Id: GSM0338.pm,v 2.7 2017/06/10 17:23:50 dankogai Exp $
 #
 package Encode::GSM0338;
 
@@ -8,11 +8,11 @@ use warnings;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = do { my @r = ( q$Revision: 2.1 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
+$VERSION = do { my @r = ( q$Revision: 2.7 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
 
 use Encode qw(:fallbacks);
 
-use base qw(Encode::Encoding);
+use parent qw(Encode::Encoding);
 __PACKAGE__->Define('gsm0338');
 
 sub needs_lines { 1 }
@@ -138,7 +138,8 @@ our %UNI2GSM = (
     "\x{00E4}" => "\x7B",        # LATIN SMALL LETTER A WITH DIAERESIS
     "\x{00E5}" => "\x0F",        # LATIN SMALL LETTER A WITH RING ABOVE
     "\x{00E6}" => "\x1D",        # LATIN SMALL LETTER AE
-    "\x{00E7}" => "\x09",        # LATIN SMALL LETTER C WITH CEDILLA
+    #"\x{00E7}" => "\x09",        # LATIN SMALL LETTER C WITH CEDILLA
+    "\x{00C7}" => "\x09",        # LATIN CAPITAL LETTER C WITH CEDILLA
     "\x{00E8}" => "\x04",        # LATIN SMALL LETTER E WITH GRAVE
     "\x{00E9}" => "\x05",        # LATIN SMALL LETTER E WITH ACUTE
     "\x{00EC}" => "\x07",        # LATIN SMALL LETTER I WITH GRAVE
@@ -170,7 +171,8 @@ our $NBSP   = "\x{00A0}";
 
 sub decode ($$;$) {
     my ( $obj, $bytes, $chk ) = @_;
-    my $str;
+    return undef unless defined $bytes;
+    my $str = substr($bytes, 0, 0); # to propagate taintedness;
     while ( length $bytes ) {
         my $c = substr( $bytes, 0, 1, '' );
         my $u;
@@ -215,7 +217,8 @@ sub decode ($$;$) {
 
 sub encode($$;$) {
     my ( $obj, $str, $chk ) = @_;
-    my $bytes;
+    return undef unless defined $str;
+    my $bytes = substr($str, 0, 0); # to propagate taintedness
     while ( length $str ) {
         my $u = substr( $str, 0, 1, '' );
         my $c;
@@ -258,7 +261,7 @@ this module.
 
 =head1 NOTES
 
-Unlike most other encodings,  the following aways croaks on error
+Unlike most other encodings,  the following always croaks on error
 for any $chk that evaluates to true.
 
   $gsm0338 = encode("gsm0338", $utf8      $chk);
@@ -269,10 +272,9 @@ expression with C<eval {}> block as follows;
 
   eval {
     $utf8    = decode("gsm0338", $gsm0338,  $chk);
-  };
-  if ($@){
+  } or do {
     # handle exception here
-  }
+  };
 
 =head1 BUGS
 

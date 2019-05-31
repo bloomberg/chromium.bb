@@ -19,7 +19,7 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 # Other items we are prepared to export if requested
 @EXPORT_OK =	qw();
 
-$VERSION = '2.05';
+$VERSION = '2.07';
 bootstrap Crypt::DES $VERSION;
 
 use strict;

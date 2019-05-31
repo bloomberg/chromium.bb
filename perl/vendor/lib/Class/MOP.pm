@@ -1,34 +1,26 @@
-
 package Class::MOP;
-BEGIN {
-  $Class::MOP::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Class::MOP::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use 5.008;
+use 5.008003;
 
 use MRO::Compat;
-
-use Carp          'confess';
 use Class::Load 0.07 ();
-use Scalar::Util  'weaken', 'isweak', 'reftype', 'blessed';
+use Scalar::Util  'weaken', 'isweak', 'blessed';
 use Data::OptList;
-use Try::Tiny;
 
 use Class::MOP::Mixin::AttributeCore;
 use Class::MOP::Mixin::HasAttributes;
 use Class::MOP::Mixin::HasMethods;
+use Class::MOP::Mixin::HasOverloads;
 use Class::MOP::Class;
 use Class::MOP::Attribute;
 use Class::MOP::Method;
 
 BEGIN {
-    *IS_RUNNING_ON_5_10 = ($] < 5.009_005)
+    *IS_RUNNING_ON_5_10 = ("$]" < 5.009_005)
         ? sub () { 0 }
         : sub () { 1 };
 
@@ -38,7 +30,7 @@ BEGIN {
 
 XSLoader::load(
     'Moose',
-    $Class::MOP::{VERSION} ? ${ $Class::MOP::{VERSION} } : ()
+    $VERSION,
 );
 
 {
@@ -74,20 +66,35 @@ XSLoader::load(
 }
 
 sub load_class {
+    Class::MOP::Deprecated::deprecated(
+        message => 'Class::MOP::load_class is deprecated',
+        feature => 'Class::Load wrapper functions',
+    );
+    require Class::Load;
     goto &Class::Load::load_class;
 }
 
 sub load_first_existing_class {
+    Class::MOP::Deprecated::deprecated(
+        message => 'Class::MOP::load_first_existing_class is deprecated',
+        feature => 'Class::Load wrapper functions',
+    );
+    require Class::Load;
     goto &Class::Load::load_first_existing_class;
 }
 
 sub is_class_loaded {
+    Class::MOP::Deprecated::deprecated(
+        message => 'Class::MOP::is_class_loaded is deprecated',
+        feature => 'Class::Load wrapper functions',
+    );
+    require Class::Load;
     goto &Class::Load::is_class_loaded;
 }
 
 sub _definition_context {
     my %context;
-    @context{qw(package file line)} = caller(1);
+    @context{qw(package file line)} = caller(0);
 
     return (
         definition_context => \%context,
@@ -111,7 +118,7 @@ sub _definition_context {
 ## to extend the MOP through subclassing and such since now you can use the
 ## MOP itself to extend itself.
 ##
-## Yes, I know, thats weird and insane, but it's a good thing, trust me :)
+## Yes, I know, that's weird and insane, but it's a good thing, trust me :)
 ## ----------------------------------------------------------------------------
 
 # We need to add in the meta-attributes here so that
@@ -161,7 +168,7 @@ Class::MOP::Mixin::HasMethods->meta->add_attribute(
 );
 
 ## --------------------------------------------------------
-## Class::MOP::Mixin::HasMethods
+## Class::MOP::Mixin::HasAttributes
 
 Class::MOP::Mixin::HasAttributes->meta->add_attribute(
     Class::MOP::Attribute->new('attributes' => (
@@ -188,6 +195,20 @@ Class::MOP::Mixin::HasAttributes->meta->add_attribute(
             'attribute_metaclass' => \&Class::MOP::Mixin::HasAttributes::attribute_metaclass
         },
         default  => 'Class::MOP::Attribute',
+        _definition_context(),
+    ))
+);
+
+## --------------------------------------------------------
+## Class::MOP::Mixin::HasOverloads
+
+Class::MOP::Mixin::HasOverloads->meta->add_attribute(
+    Class::MOP::Attribute->new('_overload_map' => (
+        reader   => {
+            '_overload_map' => \&Class::MOP::Mixin::HasOverloads::_overload_map
+        },
+        clearer => '_clear_overload_map',
+        default => sub { {} },
         _definition_context(),
     ))
 );
@@ -609,6 +630,46 @@ Class::MOP::Method::Constructor->meta->add_attribute(
 );
 
 ## --------------------------------------------------------
+## Class::MOP::Overload
+
+Class::MOP::Overload->meta->add_attribute(
+    Class::MOP::Attribute->new(
+        'operator' => (
+            reader   => { 'operator' => \&Class::MOP::Overload::operator },
+            required => 1,
+            _definition_context(),
+        )
+    )
+);
+
+for my $attr (qw( method_name coderef coderef_package coderef_name method )) {
+    Class::MOP::Overload->meta->add_attribute(
+        Class::MOP::Attribute->new(
+            $attr => (
+                reader    => { $attr => Class::MOP::Overload->can($attr) },
+                predicate => {
+                    'has_'
+                        . $attr => Class::MOP::Overload->can( 'has_' . $attr )
+                },
+                _definition_context(),
+            )
+        )
+    );
+}
+
+Class::MOP::Overload->meta->add_attribute(
+    Class::MOP::Attribute->new(
+        'associated_metaclass' => (
+            reader => {
+                'associated_metaclass' =>
+                    \&Class::MOP::Overload::associated_metaclass
+            },
+            _definition_context(),
+        )
+    )
+);
+
+## --------------------------------------------------------
 ## Class::MOP::Instance
 
 # NOTE:
@@ -671,14 +732,14 @@ require Class::MOP::Deprecated unless our $no_deprecated;
 # for the constructor to be able to use it
 Class::MOP::Instance->meta->get_meta_instance;
 
-# pretend the add_method never happenned. it hasn't yet affected anything
+# pretend the add_method never happened. it hasn't yet affected anything
 undef Class::MOP::Instance->meta->{_package_cache_flag};
 
 ## --------------------------------------------------------
 ## Now close all the Class::MOP::* classes
 
-# NOTE: we don't need to inline the the accessors this only lengthens
-# the compile time of the MOP, and gives us no actual benefits.
+# NOTE: we don't need to inline the accessors this only lengthens the compile
+# time of the MOP, and gives us no actual benefits.
 
 $_->meta->make_immutable(
     inline_constructor  => 0,
@@ -703,7 +764,8 @@ $_->meta->make_immutable(
     Class::MOP::Method::Wrapped
 
     Class::MOP::Method::Meta
-    Class::MOP::Method::Overload
+
+    Class::MOP::Overload
 /;
 
 $_->meta->make_immutable(
@@ -715,15 +777,18 @@ $_->meta->make_immutable(
     Class::MOP::Mixin::AttributeCore
     Class::MOP::Mixin::HasAttributes
     Class::MOP::Mixin::HasMethods
+    Class::MOP::Mixin::HasOverloads
 /;
 
 1;
 
 # ABSTRACT: A Meta Object Protocol for Perl 5
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -731,7 +796,7 @@ Class::MOP - A Meta Object Protocol for Perl 5
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -790,7 +855,7 @@ method dispatch.
 
 =head2 What changes do I have to make to use this module?
 
-This module was designed to be as unintrusive as possible. Many of its
+This module was designed to be as unobtrusive as possible. Many of its
 features are accessible without B<any> change to your existing
 code. It is meant to be a complement to your existing code and not an
 intrusion on your code base. Unlike many other B<Class::> modules,
@@ -831,11 +896,11 @@ incompatibility; upwards and downwards.
 
 Upwards metaclass compatibility means that the metaclass of a
 given class is either the same as (or a subclass of) all of the
-class's ancestors.
+metaclasses of the class's ancestors.
 
 Downward metaclass compatibility means that the metaclasses of a
 given class's ancestors are all the same as (or a subclass of) that
-metaclass.
+class's metaclass.
 
 Here is a diagram showing a set of two classes (C<A> and C<B>) and
 two metaclasses (C<Meta::A> and C<Meta::B>) which have correct
@@ -930,22 +995,21 @@ Note that this module does not export any constants or functions.
 
 Note that these are all called as B<functions, not methods>.
 
-=over 4
-
-=item B<Class::MOP::get_code_info($code)>
+=head3 Class::MOP::get_code_info($code)
 
 This function returns two values, the name of the package the C<$code>
 is from and the name of the C<$code> itself. This is used by several
 elements of the MOP to determine where a given C<$code> reference is
 from.
 
-=item B<Class::MOP::class_of($instance_or_class_name)>
+=head3 Class::MOP::class_of($instance_or_class_name)
 
 This will return the metaclass of the given instance or class name.  If the
 class lacks a metaclass, no metaclass will be initialized, and C<undef> will be
 returned.
 
-=back
+You should almost certainly be using
+L<C<Moose::Util::find_meta>|Moose::Util/find_meta> instead.
 
 =head2 Metaclass cache functions
 
@@ -954,54 +1018,50 @@ C<Class::MOP> holds a cache of metaclasses. The following are functions
 recommended that you mess with these. Bad things could happen, but if
 you are brave and willing to risk it: go for it!
 
-=over 4
-
-=item B<Class::MOP::get_all_metaclasses>
+=head3 Class::MOP::get_all_metaclasses
 
 This will return a hash of all the metaclass instances that have
 been cached by L<Class::MOP::Class>, keyed by the package name.
 
-=item B<Class::MOP::get_all_metaclass_instances>
+=head3 Class::MOP::get_all_metaclass_instances
 
 This will return a list of all the metaclass instances that have
 been cached by L<Class::MOP::Class>.
 
-=item B<Class::MOP::get_all_metaclass_names>
+=head3 Class::MOP::get_all_metaclass_names
 
 This will return a list of all the metaclass names that have
 been cached by L<Class::MOP::Class>.
 
-=item B<Class::MOP::get_metaclass_by_name($name)>
+=head3 Class::MOP::get_metaclass_by_name($name)
 
 This will return a cached L<Class::MOP::Class> instance, or nothing
 if no metaclass exists with that C<$name>.
 
-=item B<Class::MOP::store_metaclass_by_name($name, $meta)>
+=head3 Class::MOP::store_metaclass_by_name($name, $meta)
 
 This will store a metaclass in the cache at the supplied C<$key>.
 
-=item B<Class::MOP::weaken_metaclass($name)>
+=head3 Class::MOP::weaken_metaclass($name)
 
 In rare cases (e.g. anonymous metaclasses) it is desirable to
 store a weakened reference in the metaclass cache. This
 function will weaken the reference to the metaclass stored
 in C<$name>.
 
-=item B<Class::MOP::metaclass_is_weak($name)>
+=head3 Class::MOP::metaclass_is_weak($name)
 
 Returns true if the metaclass for C<$name> has been weakened
 (via C<weaken_metaclass>).
 
-=item B<Class::MOP::does_metaclass_exist($name)>
+=head3 Class::MOP::does_metaclass_exist($name)
 
 This will return true of there exists a metaclass stored in the
 C<$name> key, and return false otherwise.
 
-=item B<Class::MOP::remove_metaclass_by_name($name)>
+=head3 Class::MOP::remove_metaclass_by_name($name)
 
 This will remove the metaclass stored in the C<$name> key.
-
-=back
 
 Some utility functions (such as C<Class::MOP::load_class>) that were
 previously defined in C<Class::MOP> regarding loading of classes have been
@@ -1059,8 +1119,6 @@ L<http://citeseer.ist.psu.edu/37617.html>
 
 =over 4
 
-=item L<http://svn.openfoundry.org/pugs/misc/Perl-MetaModel/>
-
 =item L<http://github.com/perl6/p5-modules/tree/master/Perl6-ObjectSpace/>
 
 =back
@@ -1108,19 +1166,57 @@ Thanks to Rob for actually getting the development of this module kick-started.
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

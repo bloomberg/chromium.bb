@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -148,18 +148,18 @@ extern "C" {
   void __RPC_STUB IDCInfo_SetInfo_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
 #endif
 
-  extern const GUID OLEDBDECLSPEC IID_IDataConvert = { 0x0c733a8dL,0x2a1c,0x11ce,{ 0xad,0xe5,0x00,0xaa,0x00,0x44,0x77,0x3d } };
-  extern const GUID OLEDBDECLSPEC IID_IDCInfo = { 0x0c733a9cL,0x2a1c,0x11ce,{ 0xad,0xe5,0x00,0xaa,0x00,0x44,0x77,0x3d } };
+  extern const GUID OLEDBDECLSPEC IID_IDataConvert = { 0x0c733a8d,0x2a1c,0x11ce,{ 0xad,0xe5,0x00,0xaa,0x00,0x44,0x77,0x3d } };
+  extern const GUID OLEDBDECLSPEC IID_IDCInfo = { 0x0c733a9c,0x2a1c,0x11ce,{ 0xad,0xe5,0x00,0xaa,0x00,0x44,0x77,0x3d } };
 
 #include <poppack.h>
 
   extern RPC_IF_HANDLE __MIDL_itf_msdadc_0360_v0_0_c_ifspec;
   extern RPC_IF_HANDLE __MIDL_itf_msdadc_0360_v0_0_s_ifspec;
 
-  unsigned long __RPC_API VARIANT_UserSize(unsigned long *,unsigned long,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserMarshal(unsigned long *,unsigned char *,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserUnmarshal(unsigned long *,unsigned char *,VARIANT *);
-  void __RPC_API VARIANT_UserFree(unsigned long *,VARIANT *);
+  ULONG __RPC_API VARIANT_UserSize(ULONG *,ULONG,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserMarshal(ULONG *,unsigned char *,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserUnmarshal(ULONG *,unsigned char *,VARIANT *);
+  void __RPC_API VARIANT_UserFree(ULONG *,VARIANT *);
 
 #ifdef __cplusplus
 }

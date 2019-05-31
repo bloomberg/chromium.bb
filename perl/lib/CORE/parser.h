@@ -21,6 +21,16 @@ typedef struct {
 #endif
 } yy_stack_frame;
 
+/* Fields that need to be shared with (i.e., visible to) inner lex-
+   ing scopes. */
+typedef struct yy_lexshared {
+    struct yy_lexshared	*ls_prev;
+    SV			*ls_linestr;	/* mirrors PL_parser->linestr */
+    char		*ls_bufptr;	/* mirrors PL_parser->bufptr */
+    char		*re_eval_start;	/* start of "(?{..." text */
+    SV			*re_eval_str;	/* "(?{...})" text */
+} LEXSHARED;
+
 typedef struct yy_parser {
 
     /* parser state */
@@ -32,9 +42,9 @@ typedef struct yy_parser {
     /* Number of tokens to shift before error messages enabled.  */
     int		    yyerrstatus;
 
-    int		    stack_size;
     int		    yylen;	/* length of active reduction */
     yy_stack_frame  *stack;	/* base of stack */
+    yy_stack_frame  *stack_max1;/* (top-1)th element of allocated stack */
     yy_stack_frame  *ps;	/* current stack frame */
 
     /* lexer state */
@@ -44,71 +54,76 @@ typedef struct yy_parser {
     char	*lex_brackstack;/* what kind of brackets to pop */
     char	*lex_casestack;	/* what kind of case mods in effect */
     U8		lex_defer;	/* state after determined token */
-    bool	lex_dojoin;	/* doing an array interpolation */
-    U8		lex_expect;	/* expect after determined token */
+    U8		lex_dojoin;	/* doing an array interpolation
+				   1 = @{...}  2 = ->@ */
     U8		expect;		/* how to interpret ambiguous tokens */
+    bool	preambled;
+    bool        sub_no_recover; /* can't recover from a sublex error */
     I32		lex_formbrack;	/* bracket count at outer format level */
     OP		*lex_inpat;	/* in pattern $) and $| are special */
     OP		*lex_op;	/* extra info to pass back on op */
     SV		*lex_repl;	/* runtime replacement from s/// */
     U16		lex_inwhat;	/* what kind of quoting are we in */
-    OPCODE	last_lop_op;	/* last list operator */
+    OPCODE	last_lop_op;	/* last named list or unary operator */
     I32		lex_starts;	/* how many interps done on level */
     SV		*lex_stuff;	/* runtime pattern from m// or s/// */
     I32		multi_start;	/* 1st line of multi-line string */
     I32		multi_end;	/* last line of multi-line string */
-    char	multi_open;	/* delimiter of said string */
-    char	multi_close;	/* delimiter of said string */
-    char	pending_ident;	/* pending identifier lookup */
-    bool	preambled;
+    UV		multi_open;	/* delimiter of said string */
+    UV		multi_close;	/* delimiter of said string */
+    bool        lex_re_reparsing; /* we're doing G_RE_REPARSING */
+    U8		lex_super_state;/* lexer state to save */
+    U16		lex_sub_inwhat;	/* "lex_inwhat" to use in sublex_push */
     I32		lex_allbrackets;/* (), [], {}, ?: bracket count */
-    SUBLEXINFO	sublex_info;
+    OP		*lex_sub_op;	/* current op in y/// or pattern */
+    SV		*lex_sub_repl;	/* repl of s/// used in sublex_push */
+    LEXSHARED	*lex_shared;
     SV		*linestr;	/* current chunk of src text */
-    char	*bufptr;	
-    char	*oldbufptr;	
-    char	*oldoldbufptr;	
+    char	*bufptr;	/* carries the cursor (current parsing
+				   position) from one invocation of yylex
+				   to the next */
+    char	*oldbufptr;	/* in yylex, beginning of current token */
+    char	*oldoldbufptr;	/* in yylex, beginning of previous token */
     char	*bufend;	
     char	*linestart;	/* beginning of most recently read line */
     char	*last_uni;	/* position of last named-unary op */
     char	*last_lop;	/* position of last list operator */
-    line_t	copline;	/* current line number */
+    /* copline is used to pass a specific line number to newSTATEOP.  It
+       is a one-time line number, as newSTATEOP invalidates it (sets it to
+       NOLINE) after using it.  The purpose of this is to report line num-
+       bers in multiline constructs using the number of the first line. */
+    line_t	copline;
     U16		in_my;		/* we're compiling a "my"/"our" declaration */
     U8		lex_state;	/* next token is determined */
     U8		error_count;	/* how many compile errors so far, max 10 */
+    U8		sub_error_count; /* the number of errors before sublexing */
     HV		*in_my_stash;	/* declared class of this "my" declaration */
     PerlIO	*rsfp;		/* current source file pointer */
     AV		*rsfp_filters;	/* holds chain of active source filters */
 
-#ifdef PERL_MAD
-    SV		*endwhite;
-    I32		faketokens;
-    I32		lasttoke;
-    SV		*nextwhite;
-    I32		realtokenstart;
-    SV		*skipwhite;
-    SV		*thisclose;
-    MADPROP *	thismad;
-    SV		*thisopen;
-    SV		*thisstuff;
-    SV		*thistoken;
-    SV		*thiswhite;
-
-/* What we know when we're in LEX_KNOWNEXT state. */
-    NEXTTOKE	nexttoke[5];	/* value of next token, if any */
-    I32		curforce;
-#else
     YYSTYPE	nextval[5];	/* value of next token, if any */
     I32		nexttype[5];	/* type of next token */
-    I32		nexttoke;
-#endif
-
-    COP		*saved_curcop;	/* the previous PL_curcop */
-    char	tokenbuf[256];
-
+    U8		nexttoke;
+    U8		form_lex_state;	/* remember lex_state when parsing fmt */
     U8		lex_fakeeof;	/* precedence at which to fake EOF */
     U8		lex_flags;
+    COP		*saved_curcop;	/* the previous PL_curcop */
+    char	tokenbuf[256];
+    line_t	herelines;	/* number of lines in here-doc */
+    line_t	preambling;	/* line # when processing $ENV{PERL5DB} */
+
+    bool        sig_seen;       /* the currently parsing sub has a signature */
+    /* these are valid while parsing a subroutine signature */
+    IV          sig_elems;      /* number of signature elements seen so far */
+    IV          sig_optelems;   /* number of optional signature elems seen */
+    char        sig_slurpy;     /* the sigil of the slurpy var (or null) */
+
+    bool        recheck_utf8_validity;
+
     PERL_BITFIELD16	in_pod:1;      /* lexer is within a =pod section */
     PERL_BITFIELD16	filtered:1;    /* source filters in evalbytes */
+    PERL_BITFIELD16	saw_infix_sigil:1; /* saw & or * or % operator */
+    PERL_BITFIELD16	parsed_sub:1;  /* last thing parsed was a sub */
 } yy_parser;
 
 /* flags for lexer API */
@@ -146,11 +161,5 @@ enum {
 };
 
 /*
- * Local variables:
- * c-indentation-style: bsd
- * c-basic-offset: 4
- * indent-tabs-mode: t
- * End:
- *
- * ex: set ts=8 sts=4 sw=4 noet:
+ * ex: set ts=8 sts=4 sw=4 et:
  */

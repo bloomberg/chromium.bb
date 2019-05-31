@@ -1,6 +1,6 @@
 package overload;
 
-our $VERSION = '1.18';
+our $VERSION = '1.30';
 
 %ops = (
     with_assign         => "+ - * / % ** << >> x .",
@@ -8,8 +8,8 @@ our $VERSION = '1.18';
     num_comparison      => "< <= >  >= == !=",
     '3way_comparison'   => "<=> cmp",
     str_comparison      => "lt le gt ge eq ne",
-    binary              => '& &= | |= ^ ^=',
-    unary               => "neg ! ~",
+    binary              => '& &= | |= ^ ^= &. &.= |. |.= ^. ^.=',
+    unary               => "neg ! ~ ~.",
     mutators            => '++ --',
     func                => "atan2 cos sin exp abs log sqrt int",
     conversion          => 'bool "" 0+ qr',
@@ -21,27 +21,26 @@ our $VERSION = '1.18';
 );
 
 my %ops_seen;
-for $category (keys %ops) {
-    $ops_seen{$_}++ for (split /\s+/, $ops{$category});
-}
+@ops_seen{ map split(/ /), values %ops } = ();
 
 sub nil {}
 
 sub OVERLOAD {
   $package = shift;
   my %arg = @_;
-  my ($sub, $fb);
-  $ {$package . "::OVERLOAD"}{dummy}++; # Register with magic by touching.
-  $fb = ${$package . "::()"}; # preserve old fallback value RT#68196
-  *{$package . "::()"} = \&nil; # Make it findable via fetchmethod.
+  my $sub;
+  *{$package . "::(("} = \&nil; # Make it findable via fetchmethod.
   for (keys %arg) {
     if ($_ eq 'fallback') {
-      $fb = $arg{$_};
+      for my $sym (*{$package . "::()"}) {
+	*$sym = \&nil; # Make it findable via fetchmethod.
+	$$sym = $arg{$_};
+      }
     } else {
       warnings::warnif("overload arg '$_' is invalid")
-        unless $ops_seen{$_};
+        unless exists $ops_seen{$_};
       $sub = $arg{$_};
-      if (not ref $sub and $sub !~ /::/) {
+      if (not ref $sub) {
 	$ {$package . "::(" . $_} = $sub;
 	$sub = \&nil;
       }
@@ -49,7 +48,6 @@ sub OVERLOAD {
       *{$package . "::(" . $_} = \&{ $sub };
     }
   }
-  ${$package . "::()"} = $fb; # Make it findable too (fallback only).
 }
 
 sub import {
@@ -61,21 +59,19 @@ sub import {
 
 sub unimport {
   $package = (caller())[0];
-  ${$package . "::OVERLOAD"}{dummy}++; # Upgrade the table
   shift;
+  *{$package . "::(("} = \&nil;
   for (@_) {
-    if ($_ eq 'fallback') {
-      undef $ {$package . "::()"};
-    } else {
-      delete $ {$package . "::"}{"(" . $_};
-    }
+      warnings::warnif("overload arg '$_' is invalid")
+        unless exists $ops_seen{$_};
+      delete $ {$package . "::"}{$_ eq 'fallback' ? '()' : "(" .$_};
   }
 }
 
 sub Overloaded {
   my $package = shift;
   $package = ref $package if ref $package;
-  mycan ($package, '()');
+  mycan ($package, '()') || mycan ($package, '((');
 }
 
 sub ov_method {
@@ -83,7 +79,7 @@ sub ov_method {
   return undef unless $globref;
   my $sub = \&{*$globref};
   no overloading;
-  return $sub if !ref $sub or $sub != \&nil;
+  return $sub if $sub != \&nil;
   return shift->can($ {*$globref});
 }
 
@@ -254,7 +250,9 @@ illustrates the calling conventions:
     # * may recurse once - see table below
 
 Three arguments are passed to all subroutines specified in the
-C<use overload> directive (with one exception - see L</nomethod>).
+C<use overload> directive (with exceptions - see below, particularly
+L</nomethod>).
+
 The first of these is the operand providing the overloaded
 operator implementation -
 in this case, the object whose C<minus()> method is being called.
@@ -312,6 +310,12 @@ An appropriate implementation of C<--> might look like
         # ...
     sub decr { --${$_[0]}; }
 
+If the "bitwise" feature is enabled (see L<feature>), a fifth
+TRUE argument is passed to subroutines handling C<&>, C<|>, C<^> and C<~>.
+This indicates that the caller is expecting numeric behaviour.  The fourth
+argument will be C<undef>, as that position (C<$_[3]>) is reserved for use
+by L</nomethod>.
+
 =head3 Mathemagic, Mutators, and Copy Constructors
 
 The term 'mathemagic' describes the overloaded implementation
@@ -363,8 +367,8 @@ hash C<%overload::ops>:
  num_comparison	  => '< <= > >= == !=',
  '3way_comparison'=> '<=> cmp',
  str_comparison	  => 'lt le gt ge eq ne',
- binary		  => '& &= | |= ^ ^=',
- unary		  => 'neg ! ~',
+ binary		  => '& &= | |= ^ ^= &. &.= |. |.= ^. ^.=',
+ unary		  => 'neg ! ~ ~.',
  mutators	  => '++ --',
  func		  => 'atan2 cos sin exp abs log sqrt int',
  conversion	  => 'bool "" 0+ qr',
@@ -377,6 +381,7 @@ hash C<%overload::ops>:
 Most of the overloadable operators map one-to-one to these keys.
 Exceptions, including additional overloadable operations not
 apparent from this hash, are included in the notes which follow.
+This list is subject to growth over time.
 
 A warning is issued if an attempt is made to register an operator not found
 above.
@@ -409,7 +414,7 @@ evaluating an expression.
 =item * I<Assignments>
 
     +=  -=  *=  /=  %=  **=  <<=  >>=  x=  .=
-    &=  |=  ^=
+    &=  |=  ^=  &.=  |.=  ^.=
 
 Simple assignment is not overloadable (the C<'='> key is used
 for the L<Copy Constructor>).
@@ -439,7 +444,7 @@ even if C<$a> is a scalar.
 =item * I<Non-mutators with a mutator variant>
 
      +  -  *  /  %  **  <<  >>  x  .
-     &  |  ^
+     &  |  ^  &.  |.  ^.
 
 As described L<above|"Calling Conventions and Magic Autogeneration">,
 Perl may call methods for operators like C<+> and C<&> in the course
@@ -497,9 +502,6 @@ value will be ignored.
 If C<E<lt>E<gt>> is overloaded then the same implementation is used
 for both the I<read-filehandle> syntax C<E<lt>$varE<gt>> and
 I<globbing> syntax C<E<lt>${var}E<gt>>.
-
-B<BUGS> Even in list context, the iterator is currently called only
-once and with scalar context.
 
 =item * I<File tests>
 
@@ -655,9 +657,9 @@ to C<'-='> and C<'--'> above:
 And other assignment variations are analogous to
 C<'+='> and C<'-='> (and similar to C<'.='> and C<'x='> above):
 
-              operator ||  *= /= %= **= <<= >>= &= ^= |=
-    -------------------||--------------------------------
-    autogenerated from ||  *  /  %  **  <<  >>  &  ^  |
+              operator ||  *= /= %= **= <<= >>= &= ^= |= &.= ^.= |.=
+    -------------------||-------------------------------------------
+    autogenerated from ||  *  /  %  **  <<  >>  &  ^  |  &.  ^.  |.
 
 Note also that the copy constructor (key C<'='>) may be
 autogenerated, but only for objects based on scalars.
@@ -673,7 +675,7 @@ expects.  The minimal set is:
 
     + - * / % ** << >> x
     <=> cmp
-    & | ^ ~
+    & | ^ ~ &. |. ^. ~.
     atan2 cos sin exp log sqrt int
     "" 0+ bool
     ~~
@@ -691,7 +693,8 @@ The specified function will be passed four parameters.
 The first three arguments coincide with those that would have been
 passed to the corresponding method if it had been defined.
 The fourth argument is the C<use overload> key for that missing
-method.
+method.  If the "bitwise" feature is enabled (see L<feature>),
+a fifth TRUE argument is passed to subroutines handling C<&>, C<|>, C<^> and C<~> to indicate that the caller is expecting numeric behaviour.
 
 For example, if C<$a> is an object blessed into a package declaring
 
@@ -936,10 +939,10 @@ be called to implement operation C<+> for an object in package C<A>.
 
 =back
 
-Note that since the value of the C<fallback> key is not a subroutine,
-its inheritance is not governed by the above rules.  In the current
-implementation, the value of C<fallback> in the first overloaded
-ancestor is used, but this is accidental and subject to change.
+Note that in Perl version prior to 5.18 inheritance of the C<fallback> key
+was not governed by the above rules.  The value of C<fallback> in the first 
+overloaded ancestor was used.  This was fixed in 5.18 to follow the usual
+rules of inheritance.
 
 =head2 Run-time Overloading
 
@@ -1048,10 +1051,7 @@ What follows is subject to change RSN.
 The table of methods for all operations is cached in magic for the
 symbol table hash for the package.  The cache is invalidated during
 processing of C<use overload>, C<no overload>, new function
-definitions, and changes in @ISA.  However, this invalidation remains
-unprocessed until the next C<bless>ing into the package.  Hence if you
-want to change overloading structure dynamically, you'll need an
-additional (fake) C<bless>ing to update the table.
+definitions, and changes in @ISA.
 
 (Every SVish thing has a magic queue, and magic is an entry in that
 queue.  This is how a single variable may participate in multiple
@@ -1061,24 +1061,12 @@ magic.  However, the magic which implements overloading is applied to
 the stashes, which are rarely used directly, thus should not slow down
 Perl.)
 
-If an object belongs to a package using overload, it carries a special
-flag.  Thus the only speed penalty during arithmetic operations without
-overloading is the checking of this flag.
-
-In fact, if C<use overload> is not present, there is almost no overhead
-for overloadable operations, so most programs should not suffer
-measurable performance penalties.  A considerable effort was made to
-minimize the overhead when overload is used in some package, but the
-arguments in question do not belong to packages using overload.  When
-in doubt, test your speed with C<use overload> and without it.  So far
-there have been no reports of substantial speed degradation if Perl is
-compiled with optimization turned on.
-
-There is no size penalty for data if overload is not used.  The only
-size penalty if overload is used in some package is that I<all> the
-packages acquire a magic during the next C<bless>ing into the
-package.  This magic is three-words-long for packages without
-overloading, and carries the cache table if the package is overloaded.
+If a package uses overload, it carries a special flag.  This flag is also
+set when new functions are defined or @ISA is modified.  There will be a
+slight speed penalty on the very first operation thereafter that supports
+overloading, while the overload tables are updated.  If there is no
+overloading present, the flag is turned off.  Thus the only speed penalty
+thereafter is the checking of this flag.
 
 It is expected that arguments to methods that are not explicitly supposed
 to be changed are constant (but this is not enforced).
@@ -1251,7 +1239,7 @@ Put this in F<symbolic.pm> in your Perl library directory:
 
 This module is very unusual as overloaded modules go: it does not
 provide any usual overloaded operators, instead it provides an
-implementation for L<C<nomethod>>.  In this example the C<nomethod>
+implementation for L</C<nomethod>>.  In this example the C<nomethod>
 subroutine returns an object which encapsulates operations done over
 the objects: C<< symbolic->new(3) >> contains C<['n', 3]>, C<< 2 +
 symbolic->new(3) >> contains C<['+', 2, ['n', 3]]>.
@@ -1609,16 +1597,6 @@ recognize.  Did you mistype an operator?
 
 =item *
 
-No warning is issued for invalid C<use overload> keys.
-Such errors are not always obvious:
-
-        use overload "+0" => sub { ...; },   # should be "0+"
-            "not" => sub { ...; };           # should be "!"
-
-(Bug #74098)
-
-=item *
-
 A pitfall when fallback is TRUE and Perl resorts to a built-in
 implementation of an operator is that some operators have more
 than one semantic, for example C<|>:
@@ -1675,11 +1653,12 @@ may be optimized to
 
 =item *
 
-Because it is used for overloading, the per-package hash
-C<%OVERLOAD> now has a special meaning in Perl.
 The symbol table is filled with names looking like line-noise.
 
 =item *
+
+This bug was fixed in Perl 5.18, but may still trip you up if you are using
+older versions:
 
 For the purpose of inheritance every overloaded package behaves as if
 C<fallback> is present (possibly undefined).  This may create
@@ -1703,6 +1682,10 @@ coincides with the current one.
 =item *
 
 Barewords are not covered by overloaded string constants.
+
+=item *
+
+The range operator C<..> cannot be overloaded.
 
 =back
 

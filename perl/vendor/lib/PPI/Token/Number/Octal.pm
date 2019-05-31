@@ -29,11 +29,9 @@ represent base-8 numbers.
 use strict;
 use PPI::Token::Number ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token::Number';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Token::Number";
 
 =pod
 
@@ -43,7 +41,7 @@ Returns the base for the number: 8.
 
 =cut
 
-sub base () { 8 }
+sub base() { 8 }
 
 =pod
 

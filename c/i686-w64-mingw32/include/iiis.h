@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -93,7 +93,7 @@ extern "C"{
   void __RPC_API MIDL_user_free(void *);
 #endif
 
-  DEFINE_GUID(LIBID_IISOle,0x49D704A0L,0x89F7,0x11D0,0x85,0x27,0x00,0xC0,0x4F,0xD8,0xD5,0x03);
+  DEFINE_GUID(LIBID_IISOle,0x49D704A0,0x89F7,0x11D0,0x85,0x27,0x00,0xC0,0x4F,0xD8,0xD5,0x03);
   DEFINE_GUID(IID_IISBaseObject,0x4b42e390,0xe96,0x11d1,0x9c,0x3f,0x0,0xa0,0xc9,0x22,0xe7,0x3);
 
   extern RPC_IF_HANDLE __MIDL_itf_iis_0000_v0_0_c_ifspec;
@@ -354,11 +354,11 @@ extern "C"{
   struct IISPropertyAttribute : public IDispatch {
   public:
     virtual HRESULT WINAPI get_PropName(BSTR *retval) = 0;
-    virtual HRESULT WINAPI get_MetaId(long *retval) = 0;
-    virtual HRESULT WINAPI put_MetaId(long lnMetaId) = 0;
-    virtual HRESULT WINAPI get_UserType(long *retval) = 0;
-    virtual HRESULT WINAPI put_UserType(long lnUserType) = 0;
-    virtual HRESULT WINAPI get_AllAttributes(long *retval) = 0;
+    virtual HRESULT WINAPI get_MetaId(__LONG32 *retval) = 0;
+    virtual HRESULT WINAPI put_MetaId(__LONG32 lnMetaId) = 0;
+    virtual HRESULT WINAPI get_UserType(__LONG32 *retval) = 0;
+    virtual HRESULT WINAPI put_UserType(__LONG32 lnUserType) = 0;
+    virtual HRESULT WINAPI get_AllAttributes(__LONG32 *retval) = 0;
     virtual HRESULT WINAPI get_Inherit(VARIANT_BOOL *retval) = 0;
     virtual HRESULT WINAPI put_Inherit(VARIANT_BOOL fInherit) = 0;
     virtual HRESULT WINAPI get_Secure(VARIANT_BOOL *retval) = 0;
@@ -382,11 +382,11 @@ extern "C"{
       HRESULT (WINAPI *GetIDsOfNames)(IISPropertyAttribute *This,REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId);
       HRESULT (WINAPI *Invoke)(IISPropertyAttribute *This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr);
       HRESULT (WINAPI *get_PropName)(IISPropertyAttribute *This,BSTR *retval);
-      HRESULT (WINAPI *get_MetaId)(IISPropertyAttribute *This,long *retval);
-      HRESULT (WINAPI *put_MetaId)(IISPropertyAttribute *This,long lnMetaId);
-      HRESULT (WINAPI *get_UserType)(IISPropertyAttribute *This,long *retval);
-      HRESULT (WINAPI *put_UserType)(IISPropertyAttribute *This,long lnUserType);
-      HRESULT (WINAPI *get_AllAttributes)(IISPropertyAttribute *This,long *retval);
+      HRESULT (WINAPI *get_MetaId)(IISPropertyAttribute *This,__LONG32 *retval);
+      HRESULT (WINAPI *put_MetaId)(IISPropertyAttribute *This,__LONG32 lnMetaId);
+      HRESULT (WINAPI *get_UserType)(IISPropertyAttribute *This,__LONG32 *retval);
+      HRESULT (WINAPI *put_UserType)(IISPropertyAttribute *This,__LONG32 lnUserType);
+      HRESULT (WINAPI *get_AllAttributes)(IISPropertyAttribute *This,__LONG32 *retval);
       HRESULT (WINAPI *get_Inherit)(IISPropertyAttribute *This,VARIANT_BOOL *retval);
       HRESULT (WINAPI *put_Inherit)(IISPropertyAttribute *This,VARIANT_BOOL fInherit);
       HRESULT (WINAPI *get_Secure)(IISPropertyAttribute *This,VARIANT_BOOL *retval);
@@ -432,15 +432,15 @@ extern "C"{
 #endif
   HRESULT WINAPI IISPropertyAttribute_get_PropName_Proxy(IISPropertyAttribute *This,BSTR *retval);
   void __RPC_STUB IISPropertyAttribute_get_PropName_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IISPropertyAttribute_get_MetaId_Proxy(IISPropertyAttribute *This,long *retval);
+  HRESULT WINAPI IISPropertyAttribute_get_MetaId_Proxy(IISPropertyAttribute *This,__LONG32 *retval);
   void __RPC_STUB IISPropertyAttribute_get_MetaId_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IISPropertyAttribute_put_MetaId_Proxy(IISPropertyAttribute *This,long lnMetaId);
+  HRESULT WINAPI IISPropertyAttribute_put_MetaId_Proxy(IISPropertyAttribute *This,__LONG32 lnMetaId);
   void __RPC_STUB IISPropertyAttribute_put_MetaId_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IISPropertyAttribute_get_UserType_Proxy(IISPropertyAttribute *This,long *retval);
+  HRESULT WINAPI IISPropertyAttribute_get_UserType_Proxy(IISPropertyAttribute *This,__LONG32 *retval);
   void __RPC_STUB IISPropertyAttribute_get_UserType_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IISPropertyAttribute_put_UserType_Proxy(IISPropertyAttribute *This,long lnUserType);
+  HRESULT WINAPI IISPropertyAttribute_put_UserType_Proxy(IISPropertyAttribute *This,__LONG32 lnUserType);
   void __RPC_STUB IISPropertyAttribute_put_UserType_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IISPropertyAttribute_get_AllAttributes_Proxy(IISPropertyAttribute *This,long *retval);
+  HRESULT WINAPI IISPropertyAttribute_get_AllAttributes_Proxy(IISPropertyAttribute *This,__LONG32 *retval);
   void __RPC_STUB IISPropertyAttribute_get_AllAttributes_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI IISPropertyAttribute_get_Inherit_Proxy(IISPropertyAttribute *This,VARIANT_BOOL *retval);
   void __RPC_STUB IISPropertyAttribute_get_Inherit_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);

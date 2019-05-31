@@ -1,6 +1,6 @@
 package DBD::Gofer::Transport::stream;
 
-#   $Id: stream.pm 14598 2010-12-21 22:53:25Z timbo $
+#   $Id: stream.pm 14598 2010-12-21 22:53:25Z Tim $
 #
 #   Copyright (c) 2007, Tim Bunce, Ireland
 #
@@ -14,11 +14,11 @@ use Carp;
 
 use base qw(DBD::Gofer::Transport::pipeone);
 
-our $VERSION = sprintf("0.%06d", q$Revision: 14598 $ =~ /(\d+)/o);
+our $VERSION = "0.014599";
 
 __PACKAGE__->mk_accessors(qw(
     go_persist
-)); 
+));
 
 my $persist_all = 5;
 my %persist;
@@ -197,7 +197,7 @@ sub receive_response_by_transport {
         $response->add_err(0, $stderr_msg, undef, $trace)
             # but ignore warning from old version of blib
             unless $stderr_msg =~ /^Using .*blib/ && "@$cmd" =~ /-Mblib/;
-    }   
+    }
 
     return $response;
 }

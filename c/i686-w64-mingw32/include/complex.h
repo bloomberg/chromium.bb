@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 /*
@@ -27,7 +27,7 @@
 #define _COMPLEX_H_
 
 /* All the headers include this file. */
-#include <_mingw.h>
+#include <crtdefs.h>
 
 /* These macros are specified by C99 standard */
 
@@ -35,7 +35,7 @@
 #define complex _Complex
 #endif
 
-#define _Complex_I  (0.0F +  1.0iF)
+#define _Complex_I  (__extension__  1.0iF)
 
 /* GCC doesn't support _Imaginary type yet, so we don't
    define _Imaginary_I */
@@ -44,7 +44,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 #ifndef RC_INVOKED
 
@@ -67,6 +67,9 @@ double _Complex  csinh (double _Complex);
 double _Complex  ctanh (double _Complex);
 double _Complex  cexp (double _Complex);
 double _Complex  clog (double _Complex);
+#ifdef _GNU_SOURCE
+double _Complex  clog10(double _Complex);
+#endif  /* _GNU_SOURCE */
 double _Complex  cpow (double _Complex, double _Complex);
 double _Complex  csqrt (double _Complex);
 double _Complex __MINGW_ATTRIB_CONST cproj (double _Complex);
@@ -90,6 +93,9 @@ float _Complex  csinhf (float _Complex);
 float _Complex  ctanhf (float _Complex);
 float _Complex  cexpf (float _Complex);
 float _Complex  clogf (float _Complex);
+#ifdef _GNU_SOURCE
+float _Complex  clog10f(float _Complex);
+#endif  /* _GNU_SOURCE */
 float _Complex  cpowf (float _Complex, float _Complex);
 float _Complex  csqrtf (float _Complex);
 float _Complex __MINGW_ATTRIB_CONST cprojf (float _Complex);
@@ -113,6 +119,9 @@ long double _Complex  csinhl (long double _Complex);
 long double _Complex  ctanhl (long double _Complex);
 long double _Complex  cexpl (long double _Complex);
 long double _Complex  clogl (long double _Complex);
+#ifdef _GNU_SOURCE
+long double _Complex  clog10l(long double _Complex);
+#endif  /* _GNU_SOURCE */
 long double _Complex  cpowl (long double _Complex, long double _Complex);
 long double _Complex  csqrtl (long double _Complex);
 long double _Complex __MINGW_ATTRIB_CONST cprojl (long double _Complex);
@@ -204,6 +213,6 @@ __CRT_INLINE long double __MINGW_ATTRIB_CONST cabsl (long double _Complex _Z)
 
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
 #endif /* _COMPLEX_H */

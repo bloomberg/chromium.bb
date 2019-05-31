@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 
 =head1 NAME
 
-DBM::Deep::Iterator::Index
+DBM::Deep::Iterator::Index - mediate between DBM::Deep::Iterator and DBM::Deep::Engine::Sector::Index
 
 =head1 PURPOSE
 
@@ -17,7 +17,7 @@ sector.
 
 =head1 OVERVIEW
 
-This object, despite the implied class hiearchy, does B<NOT> inherit from
+This object, despite the implied class hierarchy, does B<NOT> inherit from
 L<DBM::Deep::Iterator>. Instead, it delegates to it, essentially acting as a
 facade over it. L<DBM::Deep::Iterator/get_next_key> will instantiate one of
 these objects as needed to handle an Index sector.

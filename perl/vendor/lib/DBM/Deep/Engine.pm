@@ -11,7 +11,7 @@ use DBM::Deep::Iterator ();
 # File-wide notes:
 # * Every method in here assumes that the storage has been appropriately
 #   safeguarded. This can be anything from flock() to some sort of manual
-#   mutex. But, it's the caller's responsability to make sure that this has
+#   mutex. But, it's the caller's responsibility to make sure that this has
 #   been done.
 
 sub SIG_HASH     () { 'H' }
@@ -19,7 +19,7 @@ sub SIG_ARRAY    () { 'A' }
 
 =head1 NAME
 
-DBM::Deep::Engine
+DBM::Deep::Engine - mediate mapping between DBM::Deep objects and storage medium
 
 =head1 PURPOSE
 
@@ -196,7 +196,7 @@ sub setup { die "setup must be implemented in a child class" }
 This takes an object that provides _base_offset(). It will set up all necessary
 bookkeeping in order to run all work within a transaction.
 
-If $obj is already within a transaction, an error wiill be thrown. If there are
+If $obj is already within a transaction, an error will be thrown. If there are
 no more available transactions, an error will be thrown.
 
 This returns undef.

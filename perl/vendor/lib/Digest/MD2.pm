@@ -3,7 +3,7 @@ package Digest::MD2;
 use strict;
 use vars qw($VERSION @ISA @EXPORT_OK);
 
-$VERSION = '2.03';  # $Date: 2003/07/23 06:33:38 $
+$VERSION = '2.04';
 
 require Exporter;
 *import = \&Exporter::import;

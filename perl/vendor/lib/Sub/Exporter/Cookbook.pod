@@ -1,7 +1,18 @@
 
+# ABSTRACT: useful, demonstrative, or stupid Sub::Exporter tricks
+# PODNAME: Sub::Exporter::Cookbook
+
+__END__
+
+=pod
+
 =head1 NAME
 
 Sub::Exporter::Cookbook - useful, demonstrative, or stupid Sub::Exporter tricks
+
+=head1 VERSION
+
+version 0.987
 
 =head1 OVERVIEW
 
@@ -22,7 +33,7 @@ L<Sub::Exporter::Util>, a method can be exported with the invocant built in.
 
   package Object::Strenuous;
 
-  use Sub::Exporter::Util;
+  use Sub::Exporter::Util 'curry_method';
   use Sub::Exporter -setup => {
     exports => [ objection => curry_method('new') ],
   };
@@ -47,11 +58,12 @@ Finally, since the invocant can be an object, you can write something like
 this:
 
   package Cypher;
+  use Sub::Exporter::Util 'curry_method';
   use Sub::Exporter -setup => {
     exports => [ encypher => curry_method ],
   };
 
-with the expectation that C<import> will be called an instantiated Cypher
+with the expectation that C<import> will be called on an instantiated Cypher
 object:
 
   BEGIN {
@@ -170,11 +182,13 @@ export constants by using one of its sister modules, Package::Generator.
     Package::Generator->assign_symbols(
       $data->{into},
       [
-        MEANING_OF_LIFE => 42,
-        ONE_TRUE_BASE   => 13,
+        MEANING_OF_LIFE => \42,
+        ONE_TRUE_BASE   => \13,
         FACTORS         => [ 6, 9 ],
       ],
     );
+
+    return 1;
   }
 
 Then, someone can write:
@@ -185,10 +199,10 @@ Then, someone can write:
 
 (The constants must be exported via a collector, because they are effectively
 altering the importing class in a way other than installing subroutines.)
- 
+
 =head2 Altering the Importer's @ISA
 
-It's trivial to make a collector that changes the inheritence of an importing
+It's trivial to make a collector that changes the inheritance of an importing
 package:
 
   use Sub::Exporter -setup => {
@@ -214,8 +228,8 @@ also want to inherit behavior from some base plugin class;
 
   use Sub::Exporter -setup => {
     exports    => [ qw(log global_config) ],
-    collectors => { _become_plugin => \'_become_plugin' },
-    groups     => [ -plugin => [ qw(log global_config _become_plugin) ]
+    groups     => [ _plugin => [ qw(log global_config) ]
+    collectors => { '-plugin' => \'_become_plugin' },
   };
 
   sub _become_plugin {
@@ -223,6 +237,8 @@ also want to inherit behavior from some base plugin class;
 
     my $target = $data->{into};
     push @{"$target\::ISA"}, $class->plugin_base_class;
+
+    push @{ $data->{import_args} }, '-_plugin';
   }
 
 Now, you can write a plugin like this:
@@ -246,18 +262,19 @@ demonstration than a suggestion.
      into    => $new_pkg,
      exports => [ @{"$pkg\::EXPORT_OK"} ],
      groups  => {
-       %{{"$pkg\::EXPORT_TAG"},
+       %{"$pkg\::EXPORT_TAG"},
        default => [ @{"$pkg\::EXPORTS"} ],
      },
    });
 
-   @{"$new_pkg\::ISA"} = $class;
+   @{"$new_pkg\::ISA"} = $pkg;
    return $new_pkg;
  }
 
 This routine, given the name of an existing package configured to use
 Exporter.pm, returns the name of a new package with a Sub::Exporter-powered
-C<import> routine.  This lets you write:
+C<import> routine.  This lets you import C<Toolkit::exported_sub> into the
+current package with the name C<foo> by writing:
 
   BEGIN {
     require Toolkit;
@@ -279,10 +296,13 @@ exported, the new package may be subclassed and some of its exports replaced.
 
 =head1 AUTHOR
 
-Ricardo SIGNES, C<< <rjbs@cpan.org> >>
+Ricardo Signes <rjbs@cpan.org>
 
-=head1 COPYRIGHT
+=head1 COPYRIGHT AND LICENSE
 
-Copyright 2007, Ricardo SIGNES.  This is free software;  you can redistribute
-it and/or modify it under the same terms as Perl itself.
+This software is copyright (c) 2007 by Ricardo Signes.
 
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

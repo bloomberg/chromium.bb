@@ -61,14 +61,12 @@ parent L<PPI::Token> and L<PPI::Element> classes.
 use strict;
 use PPI::Token ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Token";
 
 ### XS -> PPI/XS.xs:_PPI_Token_Comment__significant 0.900+
-sub significant { '' }
+sub significant() { '' }
 
 # Most stuff goes through __TOKENIZER__commit.
 # This is such a rare case, do char at a time to keep the code small

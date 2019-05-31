@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _LMUSER_
@@ -206,6 +206,14 @@ extern "C" {
     DWORD usri23_flags;
     PSID usri23_user_sid;
   } USER_INFO_23,*PUSER_INFO_23,*LPUSER_INFO_23;
+
+  typedef struct _USER_INFO_24 {
+    BOOL usri24_internet_identity;
+    DWORD usri24_flags;
+    LPWSTR usri24_internet_provider_name;
+    LPWSTR usri24_internet_principal_name;
+    PSID usri24_user_sid;
+  } USER_INFO_24,*PUSER_INFO_24,*LPUSER_INFO_24;
 
   typedef struct _USER_INFO_1003 {
     LPWSTR usri1003_password;
@@ -449,9 +457,9 @@ extern "C" {
 
 #define NULL_USERSETINFO_PASSWD "              "
 
-#define TIMEQ_FOREVER ((unsigned long) -1L)
-#define USER_MAXSTORAGE_UNLIMITED ((unsigned long) -1L)
-#define USER_NO_LOGOFF ((unsigned long) -1L)
+#define TIMEQ_FOREVER ((unsigned __LONG32) -1)
+#define USER_MAXSTORAGE_UNLIMITED ((unsigned __LONG32) -1)
+#define USER_NO_LOGOFF ((unsigned __LONG32) -1)
 #define UNITS_PER_DAY 24
 #define UNITS_PER_WEEK UNITS_PER_DAY *7
 
@@ -466,10 +474,10 @@ extern "C" {
 #define DEF_MAX_PWHIST 8
 
 #define DEF_MAX_PWAGE TIMEQ_FOREVER
-#define DEF_MIN_PWAGE (unsigned long) 0L
-#define DEF_FORCE_LOGOFF (unsigned long) 0xffffffff
+#define DEF_MIN_PWAGE (unsigned __LONG32) 0
+#define DEF_FORCE_LOGOFF (unsigned __LONG32) 0xffffffff
 #define DEF_MAX_BADPW 0
-#define ONE_DAY (unsigned long) 01*24*3600
+#define ONE_DAY (unsigned __LONG32) 01*24*3600
 
 #define VALIDATED_LOGON 0
 #define PASSWORD_EXPIRED 2
@@ -866,6 +874,29 @@ extern "C" {
 #define NETLOGON_HAS_TIMESERV 0x20
 #define NETLOGON_DNS_UPDATE_FAILURE 0x40
 #define NETLOGON_VERIFY_STATUS_RETURNED 0x80
+
+#if (_WIN32_WINNT >= 0x0601)
+
+typedef enum _MSA_INFO_STATE {
+  MsaInfoNotExist        = 1,
+  MsaInfoNotService,
+  MsaInfoCannotInstall,
+  MsaInfoCanInstall,
+  MsaInfoInstalled 
+} MSA_INFO_STATE;
+
+typedef struct _MSA_INFO_0 {
+  MSA_INFO_STATE State;
+} MSA_INFO_0, *PMSA_INFO_0;
+
+#define SERVICE_ACCOUNT_FLAG_LINK_TO_HOST_ONLY 0x00000001
+
+  NTSTATUS WINAPI NetAddServiceAccount (LPWSTR ServerName,LPWSTR AccountName,LPWSTR Reserved,DWORD Flags);
+  NTSTATUS WINAPI NetRemoveServiceAccount (LPWSTR ServerName,LPWSTR AccountName,DWORD Flags);
+  NTSTATUS WINAPI NetIsServiceAccount (LPWSTR ServerName,LPWSTR AccountName,BOOL *IsService);
+  NTSTATUS WINAPI NetEnumerateServiceAccounts (LPWSTR ServerName,DWORD Flags,DWORD *AccountsCount, PZPWSTR *Accounts);
+
+#endif /*(_WIN32_WINNT >= 0x0601)*/
 
 #ifdef __cplusplus
 }

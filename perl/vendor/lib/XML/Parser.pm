@@ -16,7 +16,7 @@ use Carp;
 
 BEGIN {
   require XML::Parser::Expat;
-  $VERSION = '2.41';
+  $VERSION = '2.44';
   die "Parser.pm and Expat.pm versions don't match"
     unless $VERSION eq $XML::Parser::Expat::VERSION;
 }
@@ -63,7 +63,7 @@ sub new {
     
     my $htype;
     foreach $htype (keys %{$args{_HNDL_TYPES}}) {
-      # Handlers explicity given override
+      # Handlers explicitly given override
       # handlers from the Style package
       unless (defined($handlers->{$htype})) {
         
@@ -360,7 +360,7 @@ XML::Parser - A perl module for parsing XML documents
   $p3->parsefile('junk.xml', ErrorContext => 3);
 
 =begin man
-.ds PI PI
+.ds PI
 
 =end man
 
@@ -701,7 +701,7 @@ including any internal or external DTD declarations.
 
 =head2 XMLDecl                (Expat, Version, Encoding, Standalone)
 
-This handler is called for xml declarations. Version is a string containg
+This handler is called for xml declarations. Version is a string containing
 the version. Encoding is either undefined or contains an encoding string.
 Standalone will be either true, false, or undefined if the standalone attribute
 is yes, no, or not made respectively.

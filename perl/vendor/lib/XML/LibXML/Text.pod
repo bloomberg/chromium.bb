@@ -8,9 +8,9 @@ XML::LibXML::Text - XML::LibXML Class for Text Nodes
 
   use XML::LibXML;
   # Only methods specific to Text nodes are listed here,
-  # see XML::LibXML::Node manpage for other methods
+  # see the XML::LibXML::Node manpage for other methods
 
-  $text = XML::LibXML::Text->new( $content ); 
+  $text = XML::LibXML::Text->new( $content );
   $nodedata = $text->data;
   $text->setData( $text_content );
   $text->substringData($offset, $length);
@@ -32,15 +32,15 @@ CDATA-sections.
 
 =head1 METHODS
 
-The class inherits from L<<<<<< XML::LibXML::Node >>>>>>. The documentation for Inherited methods is not listed here. 
+The class inherits from L<<<<<< XML::LibXML::Node >>>>>>. The documentation for Inherited methods is not listed here.
 
-Many functions listed here are extensively documented in the DOM Level 3 specification (L<<<<<< http://www.w3.org/TR/DOM-Level-3-Core/ >>>>>>). Please refer to the specification for extensive documentation. 
+Many functions listed here are extensively documented in the DOM Level 3 specification (L<<<<<< http://www.w3.org/TR/DOM-Level-3-Core/ >>>>>>). Please refer to the specification for extensive documentation.
 
 =over 4
 
 =item new
 
-  $text = XML::LibXML::Text->new( $content ); 
+  $text = XML::LibXML::Text->new( $content );
 
 The constructor of the class. It creates an unbound text node.
 
@@ -136,15 +136,15 @@ The DOM style version to replace node data.
 
 The more programmer friendly version of replaceData() :)
 
-Instead of giving offsets and length one can specify the exact string (I<<<<<< $oldstring >>>>>>) to be replaced. Additionally the I<<<<<< $all >>>>>> flag allows to replace all occurrences of I<<<<<< $oldstring >>>>>>.
+Instead of giving offsets and length one can specify the exact string (I<<<<<< $oldstring >>>>>>) to be replaced. Additionally the I<<<<<< $all >>>>>> flag allows one to replace all occurrences of I<<<<<< $oldstring >>>>>>.
 
 
 =item replaceDataRegEx( $search_cond, $replace_cond, $reflags )
 
   $text->replaceDataRegEx( $search_cond, $replace_cond, $reflags );
 
-This method replaces the node's data by a C<<<<<< simple >>>>>> regular expression. Optional, this function allows to pass some flags that will
-be added as flag to the replace statement.
+This method replaces the node's data by a C<<<<<< simple >>>>>> regular expression. Optional, this function allows one to pass some flags that
+will be added as flag to the replace statement.
 
 I<<<<<< NOTE: >>>>>> This is a shortcut for
 
@@ -163,14 +163,14 @@ complex variants it is recommended to use the code snippet above.
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -181,3 +181,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

@@ -1,0 +1,175 @@
+=encoding utf8
+
+=head1 NAME
+
+Mail::Field::AddrList - object representation of e-mail address lists
+
+=head1 INHERITANCE
+
+ Mail::Field::AddrList
+   is a Mail::Field
+
+=head1 SYNOPSIS
+
+  use Mail::Field::AddrList;
+
+  $to   = Mail::Field->new('To');
+  $from = Mail::Field->new('From', 'poe@daimi.aau.dk (Peter Orbaek)');
+  
+  $from->create('foo@bar.com' => 'Mr. Foo', poe => 'Peter');
+  $from->parse('foo@bar.com (Mr Foo), Peter Orbaek <poe>');
+
+  # make a RFC822 header string
+  print $from->stringify(),"\n";
+
+  # extract e-mail addresses and names
+  @addresses = $from->addresses(); # strings
+  @names     = $from->names();     # strings
+  @addr      = $from->addr_list(); # Mail::Address objects (v2.00)
+
+  # adjoin a new address to the list
+  $from->set_address('foo@bar.com', 'Mr. Foo');
+
+=head1 DESCRIPTION
+
+Defines parsing and formatting of address field, for the following
+fields: C<To>, C<From>, C<Cc>, C<Reply-To>, and C<Sender>.
+
+All the normally used features of the address field specification of
+RFC2822 are implemented, but some complex (and therefore hardly ever used)
+constructs will not be understood.  Use Mail::Message::Field::Full
+in MailBox if you need full RFC compliance.
+
+Extends L<"DESCRIPTION" in Mail::Field|Mail::Field/"DESCRIPTION">.
+ 
+=head1 METHODS
+
+Extends L<"METHODS" in Mail::Field|Mail::Field/"METHODS">.
+ 
+=head2 Constructors
+
+Extends L<"Constructors" in Mail::Field|Mail::Field/"Constructors">.
+ 
+=over 4
+
+=item Mail::Field::AddrList-E<gt>B<combine>($fields)
+
+Inherited, see L<Mail::Field/"Constructors">
+
+=item Mail::Field::AddrList-E<gt>B<extract>( $tag, $head [, $index ] )
+
+Inherited, see L<Mail::Field/"Constructors">
+
+=item Mail::Field::AddrList-E<gt>B<new>( $tag [, STRING | %options] )
+
+Inherited, see L<Mail::Field/"Constructors">
+
+=back
+
+=head2 "Fake" constructors
+
+Extends L<""Fake" constructors" in Mail::Field|Mail::Field/""Fake" constructors">.
+ 
+=over 4
+
+=item $obj-E<gt>B<create>(%options)
+
+Inherited, see L<Mail::Field/""Fake" constructors">
+
+=item $obj-E<gt>B<parse>()
+
+Inherited, see L<Mail::Field/""Fake" constructors">
+
+=back
+
+=head2 Accessors
+
+Extends L<"Accessors" in Mail::Field|Mail::Field/"Accessors">.
+ 
+=over 4
+
+=item $obj-E<gt>B<set>(%options)
+
+Inherited, see L<Mail::Field/"Accessors">
+
+=item $obj-E<gt>B<stringify>()
+
+Inherited, see L<Mail::Field/"Accessors">
+
+=item $obj-E<gt>B<tag>()
+
+=item Mail::Field::AddrList-E<gt>B<tag>()
+
+Inherited, see L<Mail::Field/"Accessors">
+
+=back
+
+=head2 Smart accessors
+
+Extends L<"Smart accessors" in Mail::Field|Mail::Field/"Smart accessors">.
+ 
+=over 4
+
+=item $obj-E<gt>B<addr_list>()
+
+Returns the collected L<Mail::Address|Mail::Address> objects.
+
+=item $obj-E<gt>B<addresses>()
+
+Returns a list if email addresses, found in the field content.
+
+=item $obj-E<gt>B<names>()
+
+Returns a list of nicely formatted named, for each of the addresses
+found in the content.
+
+=item $obj-E<gt>B<set_address>($email, $name)
+
+Add/replace an $email address to the field.
+
+=item $obj-E<gt>B<text>( [STRING] )
+
+Inherited, see L<Mail::Field/"Smart accessors">
+
+=back
+
+=head1 DETAILS
+
+Extends L<"DETAILS" in Mail::Field|Mail::Field/"DETAILS">.
+ 
+=head1 DIAGNOSTICS
+
+=over 4
+
+=item Error: Undefined subroutine <method> called
+
+Mail::Field objects use autoloading to compile new functionality.
+Apparently, the method called is not implemented for the specific
+class of the field object.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of the MailTools distribution,
+F<http://perl.overmeer.net/mailtools/>.
+
+=head1 AUTHORS
+
+The MailTools bundle was developed by Graham Barr.  Later, Mark
+Overmeer took over maintenance without commitment to further development.
+
+Mail::Cap by Gisle Aas E<lt>aas@oslonett.noE<gt>.
+Mail::Field::AddrList by Peter Orbaek E<lt>poe@cit.dkE<gt>.
+Mail::Mailer and Mail::Send by Tim Bunce E<lt>Tim.Bunce@ig.co.ukE<gt>.
+For other contributors see ChangeLog.
+
+=head1 LICENSE
+
+Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _XCMC_H
@@ -13,9 +13,9 @@ extern "C" {
 #ifndef DIFFERENT_PLATFORM
   typedef char CMC_sint8;
   typedef short CMC_sint16;
-  typedef long int CMC_sint32;
+  typedef __LONG32 CMC_sint32;
   typedef unsigned short int CMC_uint16;
-  typedef unsigned long int CMC_uint32;
+  typedef unsigned __LONG32 CMC_uint32;
   typedef void *CMC_buffer;
   typedef char *CMC_string;
 #endif

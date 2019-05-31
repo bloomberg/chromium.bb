@@ -150,7 +150,7 @@ use vars qw($VERSION @ISA);
 use IO::Handle;
 
 # The package version, both in 1.23 style *and* usable by MakeMaker:
-$VERSION = "2.110";
+$VERSION = "2.111";
 
 # Inheritance:
 @ISA = qw(IO::Handle);
@@ -270,6 +270,17 @@ sub flush { "0 but true" }
 
 #------------------------------
 
+=item fileno
+
+I<Instance method.>
+No-op, returns undef
+
+=cut
+
+sub fileno { }
+
+#------------------------------
+
 =item getc
 
 I<Instance method.>
@@ -300,7 +311,7 @@ sub getline {
 
 
     ### Minimal impact implementation!
-    ### We do the fast fast thing (no regexps) if using the
+    ### We do the fast thing (no regexps) if using the
     ### classic input record separator.
 
     ### Case 1: $/ is undef: slurp all...    
@@ -323,7 +334,7 @@ sub getline {
     ### Case 2: $/ is "\n": 
     elsif ($/ eq "\012") {    
 	
-	### Until we hit EOF (or exitted because of a found line):
+	### Until we hit EOF (or exited because of a found line):
 	until ($self->eof) {
 	    ### If at end of current string, go fwd to next one (won't be EOF):
 	    if ($self->_eos) {++*$self->{Str}, *$self->{Pos}=0};
@@ -710,6 +721,7 @@ sub CLOSE     { shift->close(@_); }
 sub SEEK      { shift->seek(@_); }
 sub TELL      { shift->tell(@_); }
 sub EOF       { shift->eof(@_); }
+sub BINMODE   { 1; }
 
 #------------------------------------------------------------
 
@@ -759,7 +771,7 @@ $Id: ScalarArray.pm,v 1.7 2005/02/10 21:21:53 dfs Exp $
 
 =head2 Primary Maintainer
 
-David F. Skoll (F<dfs@roaringpenguin.com>).
+Dianne Skoll (F<dfs@roaringpenguin.com>).
 
 =head2 Principal author
 

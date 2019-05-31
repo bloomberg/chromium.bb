@@ -9,7 +9,7 @@ require Exporter;
 use Carp;
 use Symbol qw(gensym qualify);
 
-$VERSION	= '1.12';
+$VERSION	= '1.20';
 @ISA		= qw(Exporter);
 @EXPORT		= qw(open3);
 
@@ -57,7 +57,8 @@ as file descriptors.
 open3() returns the process ID of the child process.  It doesn't return on
 failure: it just raises an exception matching C</^open3:/>.  However,
 C<exec> failures in the child (such as no such file or permission denied),
-are just reported to CHLD_ERR, as it is not possible to trap them.
+are just reported to CHLD_ERR under Windows and OS/2, as it is not possible
+to trap them.
 
 If the child process dies for any reason, the next write to CHLD_IN is
 likely to generate a SIGPIPE in the parent, which is fatal by default.
@@ -98,7 +99,7 @@ C<cat -v> and continually read and write a line from it.
 
 =item L<IPC::Open2>
 
-Like Open3 but without STDERR catpure.
+Like Open3 but without STDERR capture.
 
 =item L<IPC::Run>
 
@@ -163,7 +164,9 @@ sub xopen {
 }
 
 sub xclose {
-    $_[0] =~ /\A=?(\d+)\z/ ? eval { require POSIX; POSIX::close($1); } : close $_[0]
+    $_[0] =~ /\A=?(\d+)\z/
+	? do { my $fh; open($fh, $_[1] . '&=' . $1) and close($fh); }
+	: close $_[0]
 	or croak "$Me: close($_[0]) failed: $!";
 }
 
@@ -182,6 +185,10 @@ sub _open3 {
     # it's too ugly to use @_ throughout to make perl do it for us
     # tchrist 5-Mar-00
 
+    # Historically, open3(undef...) has silently worked, so keep
+    # it working.
+    splice @_, 0, 1, undef if \$_[0] == \undef;
+    splice @_, 1, 1, undef if \$_[1] == \undef;
     unless (eval  {
 	$_[0] = gensym unless defined $_[0] && length $_[0];
 	$_[1] = gensym unless defined $_[1] && length $_[1];
@@ -239,6 +246,7 @@ sub _open3 {
 		# A tie in the parent should not be allowed to cause problems.
 		untie *STDIN;
 		untie *STDOUT;
+		untie *STDERR;
 
 		close $stat_r;
 		require Fcntl;
@@ -264,7 +272,7 @@ sub _open3 {
 			xopen $_->{handle}, $_->{mode} . '&', $_->{parent}
 			    if fileno $_->{handle} != xfileno($_->{parent});
 		    } else {
-			xclose $_->{parent};
+			xclose $_->{parent}, $_->{mode};
 			xopen $_->{handle}, $_->{mode} . '&=',
 			    fileno $_->{open_as};
 		    }
@@ -272,7 +280,7 @@ sub _open3 {
 		return 1 if ($_[0] eq '-');
 		exec @_ or do {
 		    local($")=(" ");
-		    croak "$Me: exec of @_ failed";
+		    croak "$Me: exec of @_ failed: $!";
 		};
 	    } and do {
                 close $stat_w;
@@ -295,6 +303,7 @@ sub _open3 {
 	    if ($bytes_read) {
 		(my $bang, $to_read) = unpack('II', $buf);
 		read($stat_r, my $err = '', $to_read);
+		waitpid $kidpid, 0; # Reap child which should have exited
 		if ($err) {
 		    utf8::decode $err if $] >= 5.008;
 		} else {
@@ -331,12 +340,12 @@ sub _open3 {
 
     foreach (@handles) {
 	next if $_->{dup} or $_->{dup_of_out};
-	xclose $_->{open_as};
+	xclose $_->{open_as}, $_->{mode};
     }
 
     # If the write handle is a dup give it away entirely, close my copy
     # of it.
-    xclose $handles[0]{parent} if $handles[0]{dup};
+    xclose $handles[0]{parent}, $handles[0]{mode} if $handles[0]{dup};
 
     select((select($handles[0]{parent}), $| = 1)[0]); # unbuffer pipe
     $kidpid;
@@ -353,7 +362,7 @@ sub open3 {
 sub spawn_with_handles {
     my $fds = shift;		# Fields: handle, mode, open_as
     my $close_in_child = shift;
-    my ($fd, $pid, @saved_fh, $saved, %saved, @errs);
+    my ($fd, %saved, @errs);
 
     foreach $fd (@$fds) {
 	$fd->{tmp_copy} = IO::Handle->new_from_fd($fd->{handle}, $fd->{mode});
@@ -364,10 +373,12 @@ sub spawn_with_handles {
 	    unless eval { $fd->{handle}->isa('IO::Handle') } ;
 	# If some of handles to redirect-to coincide with handles to
 	# redirect, we need to use saved variants:
-	$fd->{handle}->fdopen(defined fileno $fd->{open_as}
-			      ? $saved{fileno $fd->{open_as}} || $fd->{open_as}
-			      : $fd->{open_as},
-			      $fd->{mode});
+    my $open_as = $fd->{open_as};
+    my $fileno = fileno($open_as);
+    $fd->{handle}->fdopen(defined($fileno)
+                  ? $saved{$fileno} || $open_as
+                  : $open_as,
+                  $fd->{mode});
     }
     unless ($^O eq 'MSWin32') {
 	require Fcntl;
@@ -379,6 +390,7 @@ sub spawn_with_handles {
 	}
     }
 
+    my $pid;
     unless (@errs) {
 	if (FORCE_DEBUG_SPAWN) {
 	    pipe my $r, my $w or die "Pipe failed: $!";
@@ -400,7 +412,11 @@ sub spawn_with_handles {
 	} else {
 	    $pid = eval { system 1, @_ }; # 1 == P_NOWAIT
 	}
-	push @errs, "IO::Pipe: Can't spawn-NOWAIT: $!" if !$pid || $pid < 0;
+	if($@) {
+	    push @errs, "IO::Pipe: Can't spawn-NOWAIT: $@";
+	} elsif(!$pid || $pid < 0) {
+	    push @errs, "IO::Pipe: Can't spawn-NOWAIT: $!";
+	}
     }
 
     # Do this in reverse, so that STDERR is restored first:

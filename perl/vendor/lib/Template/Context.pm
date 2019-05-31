@@ -81,7 +81,7 @@ sub template {
 
     $self->debug("template($name)") if $self->{ DEBUG };
 
-    # references to Template::Document (or sub-class) objects objects, or
+    # references to Template::Document (or sub-class) objects, or
     # CODE references are assumed to be pre-compiled templates and are
     # returned intact
     return $name
@@ -520,7 +520,7 @@ sub throw {
 # catch($error, \$output)
 #
 # Called by various directives after catching an error thrown via die()
-# from within an eval { } block.  The first parameter contains the errror
+# from within an eval { } block.  The first parameter contains the error
 # which may be a sanitized reference to a Template::Exception object
 # (such as that raised by the throw() method above, a plugin object, 
 # and so on) or an error message thrown via die from somewhere in user
@@ -614,7 +614,7 @@ sub leave {
 # object or as text which is compiled into a template.  Returns a true
 # value (the $block reference or compiled block reference) if
 # successful or undef on failure.  Call error() to retrieve the
-# relevent error message (i.e. compilation failure).
+# relevant error message (i.e. compilation failure).
 #------------------------------------------------------------------------
 
 sub define_block {
@@ -761,11 +761,11 @@ sub debugging {
     my @args = @_;
 
     if (@args) {
-        if ($args[0] =~ /^on|1$/i) {
+        if ($args[0] =~ /^(on|1)$/i) {
             $self->{ DEBUG_DIRS } = 1;
             shift(@args);
         }
-        elsif ($args[0] =~ /^off|0$/i) {
+        elsif ($args[0] =~ /^(off|0)$/i) {
             $self->{ DEBUG_DIRS } = 0;
             shift(@args);
         }
@@ -1528,7 +1528,7 @@ Andy Wardley E<lt>abw@wardley.orgE<gt> L<http://wardley.org/>
 
 =head1 COPYRIGHT
 
-Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
+Copyright (C) 1996-2013 Andy Wardley.  All Rights Reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

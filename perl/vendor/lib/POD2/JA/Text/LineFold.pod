@@ -1,0 +1,190 @@
+use utf8;
+
+=encoding utf-8
+
+=head1 NAME
+
+Text::LineFold~[ja] - プレインテキストの行折り
+
+=head1 SYNOPSIS
+
+    use Text::LineFold;
+    $lf = Text::LineFold->new();
+    
+    # 行折りする
+    $folded = $lf->fold($string, 'PLAIN');
+    $indented = $lf->fold(' ' x 8, ' ' x 4, $string);
+
+    # 行折りを戻す
+    $unfolded = $lf->unfold($string, 'FIXED');
+
+=head1 DESCRIPTION
+
+Text::LineFold は、プレインテキストの行折りをしたり行折りを戻したりする。
+電子メールメッセージを主眼に置いており、RFC 3676 の flowed 形式にも対応する。
+
+
+=head2 公開インタフェース
+
+=over 4
+
+=item new ([KEY => VALUE, ...])
+
+I<コンストラクタ>。
+KEY => VALUE の対については config メソッドを参照。
+
+=item $self->config (KEY)
+
+=item $self->config ([KEY => VAL, ...])
+
+I<インスタンスメソッド>。
+設定を取得または更新する。以下の KEY => VALUE 対を指定できる。
+
+=over 4
+
+=item Charset => CHARSET
+
+入力文字列を符号化しているキャラクタセット。
+文字列または L<MIME::Charset~[ja]> オブジェクト。
+初期値は C<"UTF-8">。
+
+=item Language => LANGUAGE
+
+Charset オプションとともに、言語/地域の文脈を決めるのに使える。
+初期値は C<"XX">。
+L<Unicode::LineBreak~[ja]/Context> オプションも参照。
+
+=item Newline => STRING
+
+改行の文字列。
+初期値は C<"\n">。
+
+=item OutputCharset => CHARSET
+
+fold()/unfold() の結果を符号化するキャラクタセット。
+文字列または L<MIME::Charset~[ja]> オブジェクト。
+特殊値 C<"_UNICODE_"> を指定すると、結果は Unicode 文字列となる。
+初期値は Charset オプションの値。
+
+=item TabSize => NUMBER
+
+タブストップの桁数。
+0 を指定すると、タブストップを無視する。
+初期値は 8。
+
+=item BreakIndent
+
+=item CharMax
+
+=item ColMax
+
+=item ColMin
+
+=item ComplexBreaking
+
+=item EAWidth
+
+=item HangulAsAL
+
+=item LBClass
+
+=item LegacyCM
+
+=item Prep
+
+=item Urgent
+
+L<Unicode::LineBreak~[ja]/オプション> を参照。
+
+=back
+
+=item $self->fold (STRING, [METHOD])
+
+=item $self->fold (INITIAL_TAB, SUBSEQUENT_TAB, STRING, ...)
+
+I<インスタンスメソッド>。
+文字列 STRING を行折りする。
+行末の余分な空白文字や水平タブ文字を除去し、
+改行の文字列を Newline オプションで指定したものに置き換え、
+テキスト末尾に改行がなければ追加する。
+水平タブ文字は TabSize オプションによる幅のタブストップと見なす。
+
+ひとつめの形式では、METHOD 引数に以下のオプションを指定できる。
+
+=over 4
+
+=item C<"FIXED">
+
+C<"E<gt>"> で始まる行は行折りしない。
+段落は空行で分かたれる。
+
+=item C<"FLOWED">
+
+RFC 3676 で定義される C<"Format=Flowed; DelSp=Yes"> 形式。
+
+=item C<"PLAIN">
+
+初期の方法。すべての行を行折りする。
+
+=back
+
+ふたつめの形式は、L<Text::Wrap/wrap()> に似ている。
+すべての行を行折りする。段落の先頭には INITIAL_TAB を、ほかの行の先頭には SUBSEQUENT_TAB を挿入する。
+
+=item $self->unfold (STRING, METHOD)
+
+文字列 STRING の行折りされた段落をつなぎ直してそれを返す。
+
+METHOD 引数には以下のオプションを指定できる。
+
+=over 4
+
+=item C<"FIXED">
+
+初期の方法。
+C<"E<gt>"> で始まる行はつなぎ直さない。
+空行を段落の区切りとみなす。
+
+=item C<"FLOWED">
+
+RFC 3676 で定義される C<"Format=Flowed; DelSp=Yes"> 形式をつなぎ直す。
+
+=item C<"FLOWEDSP">
+
+RFC 3676 で定義される C<"Format=Flowed; DelSp=No"> 形式をつなぎ直す。
+
+=begin comment
+
+=item C<"OBSFLOWED">
+
+RFC 2646 (廃止) で定義される C<"Format=Flowed"> 形式をできるだけうまくつなぎ直す。
+
+=end comment
+
+=back
+
+=back
+
+
+=head1 BUGS
+
+バグやバグのような動作は開発者に教えてください。
+
+CPAN Request Tracker:
+L<http://rt.cpan.org/Public/Dist/Display.html?Name=Unicode-LineBreak>.
+
+=head1 VERSION
+
+$VERSION 変数を見てほしい。
+
+=head1 SEE ALSO
+
+L<Unicode::LineBreak~[ja]>,
+L<Text::Wrap>.
+
+=head1 AUTHOR
+
+Copyright (C) 2009-2012 Hatuka*nezumi - IKEDA Soji <hatuka(at)nezumi.nu>.
+
+This program is free software; you can redistribute it and/or modify it 
+under the same terms as Perl itself.

@@ -19,7 +19,8 @@ require 5.004;
 use strict;
 use warnings;
 
-our $VERSION = 1.4;
+our $VERSION = 1.5;
+my %_INSTANCES = ();
 
 
 #========================================================================
@@ -28,12 +29,10 @@ our $VERSION = 1.4;
 #
 # Module constructor.  Creates an Class::Singleton (or derived) instance 
 # if one doesn't already exist.  The instance reference is stored in the
-# _instance variable of the $class package.  This means that classes 
-# derived from Class::Singleton will have the variables defined in *THEIR*
-# package, rather than the Class::Singleton package.  The impact of this is
+# %_INSTANCES hash of the Class::Singleton package.  The impact of this is
 # that you can create any number of classes derived from Class::Singleton
-# and create a single instance of each one.  If the _instance variable
-# was stored in the Class::Singleton package, you could only instantiate 
+# and create a single instance of each one.  If the instance reference
+# was stored in a scalar $_INSTANCE variable, you could only instantiate 
 # *ONE* object of *ANY* class derived from Class::Singleton.  The first
 # time the instance is created, the _new_instance() constructor is called 
 # which simply returns a reference to a blessed hash.  This can be 
@@ -52,12 +51,12 @@ sub instance {
     # already got an object
     return $class if ref $class;
 
-    # we store the instance in the _instance variable in the $class package.
-    no strict 'refs';
-    my $instance = \${ "$class\::_instance" };
-    defined $$instance
-        ? $$instance
-        : ($$instance = $class->_new_instance(@_));
+    # we store the instance against the $class key of %_INSTANCES
+    my $instance = $_INSTANCES{$class};
+    unless(defined $instance) {
+        $_INSTANCES{$class} = $instance = $class->_new_instance(@_);
+    }
+    return $instance;
 }
 
 
@@ -70,8 +69,7 @@ sub instance {
 sub has_instance {
     my $class = shift;
     $class = ref $class || $class;
-    no strict 'refs';
-    return ${"$class\::_instance"};
+    return $_INSTANCES{$class};
 }
 
 
@@ -89,6 +87,19 @@ sub _new_instance {
     bless { %args }, $class;
 }
 
+
+#========================================================================
+# END()
+#
+# END block to explicitly destroy all Class::Singleton objects since
+# destruction order at program exit is not predictable. See CPAN RT
+# bugs #23568 and #68526 for examples of what can go wrong without this.
+#========================================================================
+
+END {
+    # dereferences and causes orderly destruction of all instances
+    undef(%_INSTANCES);
+}
 
 
 1;
@@ -296,19 +307,13 @@ Some time later on in a module far, far away...
         }, $class;
     }
 
-The C<Class::Singleton> L<instance()> method uses a package variable to store
-a reference to any existing instance of the object. This variable,
-"C<_instance>", is coerced into the derived class package rather than the base
-class package.
-
-Thus, in the C<MyApp::Database> example above, the instance variable would
-be:
-
-    $MyApp::Database::_instance;
+The C<Class::Singleton> L<instance()> method uses a private hash to store
+a reference to any existing instance of the object, keyed against the derived
+class package name.
 
 This allows different classes to be derived from C<Class::Singleton> that can
 co-exist in the same system, while still allowing only one instance of any one
-class to exists. For example, it would be possible to derive both
+class to exist. For example, it would be possible to derive both
 'C<PrintSpooler>' and 'C<MyApp::Database>' from C<Class::Singleton> and have a
 single instance of I<each> in a system, rather than a single instance of
 I<either>.
@@ -365,7 +370,7 @@ other ideas.
 
 =head1 VERSION
 
-This is version 1.4, released September 2007
+This is version 1.5, released November 2014
 
 =head1 COPYRIGHT
 

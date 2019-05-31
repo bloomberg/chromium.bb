@@ -1,11 +1,12 @@
 package Imager::Font::FT2;
 use strict;
 use Imager;
+use Scalar::Util ();
 use vars qw($VERSION @ISA);
 @ISA = qw(Imager::Font);
 
 BEGIN {
-  $VERSION = "0.85";
+  $VERSION = "0.97";
 
   require XSLoader;
   XSLoader::load('Imager::Font::FT2', $VERSION);
@@ -50,6 +51,10 @@ sub new {
 
 sub _draw {
   my $self = shift;
+
+  $self->_valid
+    or return;
+
   my %input = @_;
   if (exists $input{channel}) {
     i_ft2_cp($self->{id}, $input{image}{IMG}, $input{'x'}, $input{'y'},
@@ -69,12 +74,25 @@ sub _bounding_box {
   my $self = shift;
   my %input = @_;
 
-  return i_ft2_bbox($self->{id}, $input{size}, $input{sizew}, $input{string}, 
-		    $input{utf8});
+  $self->_valid
+    or return;
+
+  my @result =  i_ft2_bbox($self->{id}, $input{size}, $input{sizew},
+			   $input{string}, $input{utf8});
+  unless (@result) {
+    Imager->_set_error(Imager->_error_as_msg);
+    return;
+  }
+
+  return @result;
 }
 
 sub dpi {
   my $self = shift;
+
+  $self->_valid
+    or return;
+
   my @old = i_ft2_getdpi($self->{id});
   if (@_) {
     my %hsh = @_;
@@ -97,11 +115,17 @@ sub dpi {
 sub hinting {
   my ($self, %opts) = @_;
 
+  $self->_valid
+    or return;
+
   i_ft2_sethinting($self->{id}, $opts{hinting} || 0);
 }
 
 sub _transform {
   my $self = shift;
+
+  $self->_valid
+    or return;
 
   my %hsh = @_;
   my $matrix = $hsh{matrix} or return undef;
@@ -117,26 +141,65 @@ sub utf8 {
 sub has_chars {
   my ($self, %hsh) = @_;
 
+  $self->_valid
+    or return;
+
   unless (defined $hsh{string} && length $hsh{string}) {
     $Imager::ERRSTR = "No string supplied to \$font->has_chars()";
     return;
   }
-  return i_ft2_has_chars($self->{id}, $hsh{string}, 
-			 _first($hsh{'utf8'}, $self->{utf8}, 0));
+  if (wantarray) {
+    my @result =  i_ft2_has_chars($self->{id}, $hsh{string}, 
+				  _first($hsh{'utf8'}, $self->{utf8}, 0));
+    unless (@result) {
+      Imager->_set_error(Imager->_error_as_msg);
+      return;
+    }
+
+    return @result;
+  }
+  else {
+    my $result =  i_ft2_has_chars($self->{id}, $hsh{string}, 
+				  _first($hsh{'utf8'}, $self->{utf8}, 0));
+    unless (defined $result) {
+      Imager->_set_error(Imager->_error_as_msg);
+      return;
+    }
+    return $result;
+  }
 }
 
 sub face_name {
   my ($self) = @_;
 
+  $self->_valid
+    or return;
+
   i_ft2_face_name($self->{id});
 }
 
 sub can_glyph_names {
-  i_ft2_can_do_glyph_names();
+  my ($self) = @_;
+
+  i_ft2_can_do_glyph_names()
+    or return;
+
+  if (ref $self) {
+    $self->_valid
+      or return;
+
+    i_ft2_face_has_glyph_names($self->{id})
+      or return;
+  }
+
+  return 1;
 }
 
 sub glyph_names {
   my ($self, %input) = @_;
+
+  $self->_valid
+    or return;
 
   my $string = $input{string};
   defined $string
@@ -154,11 +217,17 @@ sub glyph_names {
 sub is_mm {
   my ($self) = @_;
 
+  $self->_valid
+    or return;
+
   i_ft2_is_multiple_master($self->{id});
 }
 
 sub mm_axes {
   my ($self) = @_;
+
+  $self->_valid
+    or return;
 
   my ($num_axis, $num_design, @axes) =
     i_ft2_get_multiple_masters($self->{id})
@@ -170,6 +239,9 @@ sub mm_axes {
 sub set_mm_coords {
   my ($self, %opts) = @_;
 
+  $self->_valid
+    or return;
+
   $opts{coords}
     or return Imager->_set_error("Missing coords parameter");
   ref($opts{coords}) && $opts{coords} =~ /ARRAY\(0x[\da-f]+\)$/
@@ -180,6 +252,19 @@ sub set_mm_coords {
 
   return 1;
 }
+
+# objects may be invalidated on thread creation (or Win32 fork emulation)
+sub _valid {
+  my $self = shift;
+
+  unless ($self->{id} && Scalar::Util::blessed($self->{id})) {
+    Imager->_set_error("font object was created in another thread");
+    return;
+  }
+
+  return 1;
+}
+
 1;
 
 __END__

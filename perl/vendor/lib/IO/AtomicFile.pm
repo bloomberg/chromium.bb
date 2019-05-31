@@ -17,7 +17,7 @@ use IO::File;
 use vars qw($VERSION @ISA);
 
 # The package version, both in 1.23 style *and* usable by MakeMaker:
-$VERSION = "2.110";
+$VERSION = "2.111";
 
 # Inheritance:
 @ISA = qw(IO::File);
@@ -86,10 +86,13 @@ sub _closed {
 sub close {
     my ($self, $die) = @_;
     unless ($self->_closed(1)) {             ### sentinel...
-        $self->SUPER::close();    
-        rename(${*$self}{'io_atomicfile_temp'},
-	       ${*$self}{'io_atomicfile_path'}) 
-            or ($die ? die "close atomic file: $!\n" : return undef); 
+	    if ($self->SUPER::close()) {
+		    rename(${*$self}{'io_atomicfile_temp'},
+			   ${*$self}{'io_atomicfile_path'})
+			or ($die ? die "close (rename) atomic file: $!\n" : return undef);
+	    } else {
+		    ($die ? die "close atomic file: $!\n" : return undef);
+	    }
     }
     1;
 }
@@ -174,14 +177,14 @@ done by the destructor will raise a fatal exception if the rename()
 fails.  The explicit close() just returns undef.   
 
 You can also decide at any point to trash the file you've been 
-building. 
+building.
 
 
 =head1 AUTHOR
 
 =head2 Primary Maintainer
 
-David F. Skoll (F<dfs@roaringpenguin.com>).
+Dianne Skoll (F<dfs@roaringpenguin.com>).
 
 =head2 Original Author
 

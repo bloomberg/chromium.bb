@@ -98,10 +98,8 @@ heading.  For example:
 
   =head2 Object Attributes
 
-The text "Object Attributes" comprises the heading there.  (Note that
-head3 and head4 are recent additions, not supported in older Pod
-translators.)  The text in these heading commands can use
-formatting codes, as seen here:
+The text "Object Attributes" comprises the heading there.
+The text in these heading commands can use formatting codes, as seen here:
 
   =head2 Possible Values for C<$/>
 
@@ -240,7 +238,7 @@ of text (i.e., the text in "=foo targetname text..."), but with
 "=begin targetname" ... "=end targetname", you can have any amount
 of stuff in between.  (Note that there still must be a blank line
 after the "=begin" command and a blank line before the "=end"
-command.
+command.)
 
 Here are some examples of how to use these:
 
@@ -284,28 +282,35 @@ be for formatting as a footnote).
 X<=encoding> X<encoding>
 
 This command is used for declaring the encoding of a document.  Most
-users won't need this; but if your encoding isn't US-ASCII or Latin-1,
-then put a C<=encoding I<encodingname>> command early in the document so
+users won't need this; but if your encoding isn't US-ASCII,
+then put a C<=encoding I<encodingname>> command very early in the document so
 that pod formatters will know how to decode the document.  For
 I<encodingname>, use a name recognized by the L<Encode::Supported>
-module.  Examples:
+module.  Some pod formatters may try to guess between a Latin-1 or
+CP-1252 versus
+UTF-8 encoding, but they may guess wrong.  It's best to be explicit if
+you use anything besides strict ASCII.  Examples:
+
+  =encoding latin1
 
   =encoding utf8
 
   =encoding koi8-r
-  
-  =encoding ShiftJIS
-  
-  =encoding big5
 
-=back
+  =encoding ShiftJIS
+
+  =encoding big5
 
 C<=encoding> affects the whole document, and must occur only once.
 
-And don't forget, when using any other command, that the command lasts up
+=back
+
+And don't forget, all commands but C<=encoding> last up
 until the end of its I<paragraph>, not its line.  So in the
 examples below, you can see that every command needs the blank
-line after it, to end its paragraph.
+line after it, to end its paragraph.  (And some older Pod translators
+may require the C<=encoding> line to have a following blank line as
+well, even though it should be legal to omit.)
 
 Some examples of lists include:
 
@@ -501,7 +506,7 @@ in decimal, as in C<EE<lt>181E<gt>>.
 Note that older Pod formatters might not recognize octal or
 hex numeric escapes, and that many formatters cannot reliably
 render characters above 255.  (Some formatters may even have
-to use compromised renderings of Latin-1 characters, like
+to use compromised renderings of Latin-1/CP-1252 characters, like
 rendering C<EE<lt>eacuteE<gt>> as just a plain "e".)
 
 =back
@@ -533,7 +538,7 @@ EE<lt>...E<gt> code sometimes.  For example, instead of
 "C<NEE<lt>ltE<gt>3>" (for "NE<lt>3") you could write
 "C<NZE<lt>E<gt>E<lt>3>" (the "ZE<lt>E<gt>" breaks up the "N" and
 the "E<lt>" so they can't be considered
-the part of a (fictitious) "NE<lt>...E<gt>" code.
+the part of a (fictitious) "NE<lt>...E<gt>" code).
 
 =for comment
  This was formerly explained as a "zero-width character".  But it in
@@ -630,13 +635,17 @@ B<pod2fm>.  Various others are available in CPAN.
 =head2 Embedding Pods in Perl Modules
 X<POD, embedding>
 
-You can embed Pod documentation in your Perl modules and scripts.
-Start your documentation with an empty line, a "=head1" command at the
-beginning, and end it with a "=cut" command and an empty line.  Perl
-will ignore the Pod text.  See any of the supplied library modules for
-examples.  If you're going to put your Pod at the end of the file, and
-you're using an __END__ or __DATA__ cut mark, make sure to put an
-empty line there before the first Pod command.
+You can embed Pod documentation in your Perl modules and scripts.  Start
+your documentation with an empty line, a "=head1" command at the
+beginning, and end it with a "=cut" command and an empty line.  The
+B<perl> executable will ignore the Pod text.  You can place a Pod
+statement where B<perl> expects the beginning of a new statement, but
+not within a statement, as that would result in an error.  See any of
+the supplied library modules for examples.
+
+If you're going to put your Pod at the end of the file, and you're using
+an C<__END__> or C<__DATA__> cut mark, make sure to put an empty line there
+before the first Pod command.
 
   __END__
 

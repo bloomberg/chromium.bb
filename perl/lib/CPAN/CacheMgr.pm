@@ -10,7 +10,7 @@ use File::Find;
 use vars qw(
             $VERSION
 );
-$VERSION = "5.5001";
+$VERSION = "5.5002";
 
 package CPAN::CacheMgr;
 use strict;
@@ -172,7 +172,7 @@ sub _clean_cache {
             } elsif (my $id = $peek_yaml->[0]{distribution}{ID}) {
                 $CPAN::META->delete("CPAN::Distribution", $id);
 
-                # XXX we should restore the state NOW, otherise this
+                # XXX we should restore the state NOW, otherwise this
                 # distro does not exist until we read an index. BUG ALERT(?)
 
                 # $CPAN::Frontend->mywarn (" +++\n");

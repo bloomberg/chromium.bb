@@ -10,7 +10,7 @@ package XML::Parser;
 
 use URI;
 use URI::file;
-use LWP;
+use LWP::UserAgent;
 
 ##
 ## Note that this external entity handler reads the entire entity into

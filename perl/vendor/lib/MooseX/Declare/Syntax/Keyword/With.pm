@@ -1,18 +1,39 @@
 package MooseX::Declare::Syntax::Keyword::With;
-BEGIN {
-  $MooseX::Declare::Syntax::Keyword::With::AUTHORITY = 'cpan:FLORA';
-}
-{
-  $MooseX::Declare::Syntax::Keyword::With::VERSION = '0.35';
-}
 # ABSTRACT: Apply roles within a class- or role-body
+
+our $VERSION = '0.43';
 
 use Moose;
 use Moose::Util;
 use MooseX::Declare::Util qw( outer_stack_peek );
 use aliased 'MooseX::Declare::Context::Namespaced';
-use namespace::autoclean 0.09;
+use namespace::autoclean;
 
+#pod =head1 SYNOPSIS
+#pod
+#pod   use MooseX::Declare;
+#pod
+#pod   class ::Baz {
+#pod       with 'Qux';
+#pod       ...
+#pod   }
+#pod
+#pod =head1 DESCRIPTION
+#pod
+#pod The C<with> keyword allows you to apply roles to the local class or role. It
+#pod differs from the C<with>-option of the C<class> and C<role> keywords in that it
+#pod applies the roles immediately instead of deferring application until the end of
+#pod the class- or role-definition.
+#pod
+#pod It also differs slightly from the C<with> provided by L<Moose|Moose> in that it
+#pod expands relative role names (C<::Foo>) according to the current C<namespace>.
+#pod
+#pod =head1 CONSUMES
+#pod
+#pod =for :list
+#pod * L<MooseX::Declare::Syntax::KeywordHandling>
+#pod
+#pod =cut
 
 with qw(
     MooseX::Declare::Syntax::KeywordHandling
@@ -20,6 +41,14 @@ with qw(
 
 around context_traits => sub { shift->(@_), Namespaced };
 
+#pod =method parse
+#pod
+#pod   Object->parse(Object $context)
+#pod
+#pod Will skip the declarator and make with C<with> invocation apply the set of
+#pod specified roles after possible C<namespace>-expanding has been done.
+#pod
+#pod =cut
 
 sub parse {
     my ($self, $ctx) = @_;
@@ -34,17 +63,29 @@ sub parse {
     });
 }
 
+#pod =head1 SEE ALSO
+#pod
+#pod =for :list
+#pod * L<MooseX::Declare>
+#pod * L<MooseX::Declare::Syntax::Keyword::Namespace>
+#pod
+#pod =cut
 
 1;
 
 __END__
+
 =pod
 
-=encoding utf-8
+=encoding UTF-8
 
 =head1 NAME
 
 MooseX::Declare::Syntax::Keyword::With - Apply roles within a class- or role-body
+
+=head1 VERSION
+
+version 0.43
 
 =head1 SYNOPSIS
 
@@ -59,11 +100,11 @@ MooseX::Declare::Syntax::Keyword::With - Apply roles within a class- or role-bod
 
 The C<with> keyword allows you to apply roles to the local class or role. It
 differs from the C<with>-option of the C<class> and C<role> keywords in that it
-applies the roles immediately instead of defering application until the end of
+applies the roles immediately instead of deferring application until the end of
 the class- or role-definition.
 
 It also differs slightly from the C<with> provided by L<Moose|Moose> in that it
-expands relative role names (C<::Foo>) according to the currenc C<namespace>.
+expands relative role names (C<::Foo>) according to the current C<namespace>.
 
 =head1 METHODS
 
@@ -98,90 +139,15 @@ L<MooseX::Declare::Syntax::Keyword::Namespace>
 
 =back
 
-=head1 AUTHORS
-
-=over 4
-
-=item *
+=head1 AUTHOR
 
 Florian Ragwitz <rafl@debian.org>
 
-=item *
-
-Ash Berlin <ash@cpan.org>
-
-=item *
-
-Chas. J. Owens IV <chas.owens@gmail.com>
-
-=item *
-
-Chris Prather <chris@prather.org>
-
-=item *
-
-Dave Rolsky <autarch@urth.org>
-
-=item *
-
-Devin Austin <dhoss@cpan.org>
-
-=item *
-
-Hans Dieter Pearcey <hdp@cpan.org>
-
-=item *
-
-Justin Hunter <justin.d.hunter@gmail.com>
-
-=item *
-
-Matt Kraai <kraai@ftbfs.org>
-
-=item *
-
-Michele Beltrame <arthas@cpan.org>
-
-=item *
-
-Nelo Onyiah <nelo.onyiah@gmail.com>
-
-=item *
-
-nperez <nperez@cpan.org>
-
-=item *
-
-Piers Cawley <pdcawley@bofh.org.uk>
-
-=item *
-
-Rafael Kitover <rkitover@io.com>
-
-=item *
-
-Robert 'phaylon' Sedlacek <rs@474.at>
-
-=item *
-
-Stevan Little <stevan.little@iinteractive.com>
-
-=item *
-
-Tomas Doran <bobtfish@bobtfish.net>
-
-=item *
-
-Yanick Champoux <yanick@babyl.dyndns.org>
-
-=back
-
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Florian Ragwitz.
+This software is copyright (c) 2008 by Florian Ragwitz.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

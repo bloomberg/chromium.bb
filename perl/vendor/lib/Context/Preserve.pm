@@ -1,4 +1,5 @@
-package Context::Preserve;
+package Context::Preserve; # git description: v0.02-4-g9a6a9b9
+# ABSTRACT: Run code after a subroutine call, preserving the context the subroutine would have seen if it were the last statement in the caller
 use strict;
 use warnings;
 use Carp;
@@ -6,7 +7,7 @@ use Carp;
 use base 'Exporter';
 our @EXPORT = qw(preserve_context);
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 sub preserve_context(&@) {
     my $orig = shift;
@@ -51,16 +52,25 @@ sub preserve_context(&@) {
 }
 
 1;
+
 __END__
+
+=pod
+
+=encoding UTF-8
 
 =head1 NAME
 
-Context::Preserve - run code after a subroutine call, preserving the context the subroutine would have seen if it were the last statement in the caller
+Context::Preserve - Run code after a subroutine call, preserving the context the subroutine would have seen if it were the last statement in the caller
+
+=head1 VERSION
+
+version 0.03
 
 =head1 SYNOPSIS
 
 Have you ever written this?
-  
+
     my ($result, @result);
 
     # run a sub in the correct context
@@ -148,7 +158,6 @@ Run C<preserve_context> like this:
       return preserve_context   { orginal_function() }
                  replace => sub { return @new_return };
   }
-  
 
 Note that there's no comma between the first block and the C<< after
 => >> part.  This is how perl parses functions with the C<(&@)>
@@ -159,11 +168,38 @@ prototype.  The alternative is to say:
 You can pick the one you like, but I think the first version is much
 prettier.
 
-=head1 AUTHOR AND COPYRIGHT
+=head1 SUPPORT
 
-Jonathan Rockway C<< <jrockway@cpan.org> >>
+Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=Context-Preserve>
+(or L<bug-Context-Preserve@rt.cpan.org|mailto:bug-Context-Preserve@rt.cpan.org>).
 
-Copyright (c) 2008 Infinity Interactive.  You may redistribute this
-module under the same terms as Perl itself.
+I am also usually active on irc, as 'ether' at C<irc.perl.org>.
 
+=head1 AUTHOR
 
+Jonathan Rockway <jrockway@cpan.org>
+
+=head1 CONTRIBUTORS
+
+=for stopwords Karen Etheridge Jonathan Rockway
+
+=over 4
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Jonathan Rockway <jon@jrock.us>
+
+=back
+
+=head1 COPYRIGHT AND LICENCE
+
+This software is copyright (c) 2008 by Infinity Interactive.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

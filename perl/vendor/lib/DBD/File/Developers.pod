@@ -6,12 +6,12 @@ DBD::File::Developers - Developers documentation for DBD::File
 
     package DBD::myDriver;
 
-    use base qw(DBD::File);
+    use base qw( DBD::File );
 
     sub driver
     {
 	...
-	my $drh = $proto->SUPER::driver($attr);
+	my $drh = $proto->SUPER::driver ($attr);
 	...
 	return $drh->{class};
 	}
@@ -20,14 +20,14 @@ DBD::File::Developers - Developers documentation for DBD::File
 
     package DBD::myDriver::dr;
 
-    @ISA = qw(DBD::File::dr);
+    @ISA = qw( DBD::File::dr );
 
     sub data_sources { ... }
     ...
 
     package DBD::myDriver::db;
 
-    @ISA = qw(DBD::File::db);
+    @ISA = qw( DBD::File::db );
 
     sub init_valid_attributes { ... }
     sub init_default_attributes { ... }
@@ -38,34 +38,34 @@ DBD::File::Developers - Developers documentation for DBD::File
 
     package DBD::myDriver::st;
 
-    @ISA = qw(DBD::File::st);
+    @ISA = qw( DBD::File::st );
 
     sub FETCH { ... }
     sub STORE { ... }
 
     package DBD::myDriver::Statement;
 
-    @ISA = qw(DBD::File::Statement);
+    @ISA = qw( DBD::File::Statement );
 
     package DBD::myDriver::Table;
 
-    @ISA = qw(DBD::File::Table);
+    @ISA = qw( DBD::File::Table );
 
     my %reset_on_modify = (
-			    myd_abc => "myd_foo",
-			    myd_mno => "myd_bar",
-			  );
-    __PACKAGE__->register_reset_on_modify( \%reset_on_modify );
+        myd_abc => "myd_foo",
+        myd_mno => "myd_bar",
+        );
+    __PACKAGE__->register_reset_on_modify (\%reset_on_modify);
     my %compat_map = (
-		       abc => 'foo_abc',
-		       xyz => 'foo_xyz',
-		     );
-    __PACKAGE__->register_compat_map( \%compat_map );
+        abc => 'foo_abc',
+        xyz => 'foo_xyz',
+        );
+    __PACKAGE__->register_compat_map (\%compat_map);
 
     sub bootstrap_table_meta { ... }
     sub init_table_meta { ... }
     sub table_meta_attr_changed { ... }
-    sub open_file { ... }
+    sub open_data { ... }
 
     sub fetch_row { ... }
     sub push_row { ... }
@@ -106,14 +106,14 @@ interface:
 
   # invokes
   package DBD::DBM::dr;
-  @DBD::DBM::dr::ISA = qw(DBD::File::dr);
+  @DBD::DBM::dr::ISA = qw( DBD::File::dr );
 
   sub connect ($$;$$$)
   {
       ...
-  }
+      }
 
-Similar for C<< data_sources () >> and C<< disconnect_all() >>.
+Similar for C<< data_sources >> and C<< disconnect_all >>.
 
 Pure Perl DBI drivers derived from DBD::File do not usually need to
 override any of the methods provided through the DBD::XXX::dr package
@@ -154,12 +154,12 @@ initialized or from the derived class.
 
   sub driver
   {
-      my ( $class, $attr ) = @_;
+      my ($class, $attr) = @_;
       ...
-      my $drh = $class->SUPER::driver( $attr );
+      my $drh = $class->SUPER::driver ($attr);
       ...
       return $drh;
-  }
+      }
 
 It is not necessary to implement your own driver method as long as
 additional initialization (e.g. installing more private driver
@@ -209,7 +209,7 @@ detected as a private attribute without a valid prefix, the driver prefix
 (written as C<$drv_prefix>) is added.
 
 The driver prefix is extracted from the attribute name and verified against
-C<< $dbh->{ $drv_prefix . "valid_attrs" } >> (when it exists). If the
+C<< $dbh->{$drv_prefix . "valid_attrs"} >> (when it exists). If the
 requested attribute value is not listed as a valid attribute, this method
 croaks. If the attribute is valid and readonly (listed in C<< $dbh->{
 $drv_prefix . "readonly_attrs" } >> when it exists), a real copy of the
@@ -269,11 +269,11 @@ C<f_dir>, C<f_meta>, C<f_meta_map>, C<f_version>.
 
 When the derived implementor class provides the attribute to validate
 attributes (e.g. C<< $dbh->{dbm_valid_attrs} = {...}; >>) or the attribute
-containing the immutable attributes (e.g.  C<< $dbh->{dbm_readonly_attrs}
-= {...}; >>), the attributes C<drv_valid_attrs>, C<drv_readonly_attrs>,
-C<drv_version> and C<drv_meta> are added (when available) to the list of
-valid and immutable attributes (where C<drv_> is interpreted as the driver
-prefix).
+containing the immutable attributes (e.g.
+C<< $dbh->{dbm_readonly_attrs} = {...}; >>), the attributes
+C<drv_valid_attrs>, C<drv_readonly_attrs>, C<drv_version> and C<drv_meta>
+are added (when available) to the list of valid and immutable attributes
+(where C<drv_> is interpreted as the driver prefix).
 
 If C<drv_meta> is set, an attribute with the name in C<drv_meta> is
 initialized providing restricted read/write access to the meta data of the
@@ -291,8 +291,7 @@ allows it to map meta attributes for compatibility reasons.
 
 Retrieve an attribute from a table's meta information. The method
 signature is C<< get_file_meta ($dbh, $table, $attr) >>. This method
-is called by the injected db handle method C<< ${drv_prefix}get_meta
->>.
+is called by the injected db handle method C<< ${drv_prefix}get_meta >>.
 
 While get_file_meta allows C<$table> or C<$attr> to be a list of tables or
 attributes to retrieve, get_single_table_meta allows only one table name
@@ -357,6 +356,129 @@ See L<DBD::CSV> or L<DBD::DBM> for some example.
 
 =back
 
+=head2 DBD::File::TableSource::FileSystem
+
+Provides data sources and table information on database driver and database
+handle level.
+
+  package DBD::File::TableSource::FileSystem;
+
+  sub data_sources ($;$)
+  {
+      my ($class, $drh, $attrs) = @_;
+      ...
+      }
+
+  sub avail_tables
+  {
+      my ($class, $drh) = @_;
+      ...
+      }
+
+The C<data_sources> method is called when the user invokes any of the
+following:
+
+  @ary = DBI->data_sources ($driver);
+  @ary = DBI->data_sources ($driver, \%attr);
+  
+  @ary = $dbh->data_sources ();
+  @ary = $dbh->data_sources (\%attr);
+
+The C<avail_tables> method is called when the user invokes any of the
+following:
+
+  @names = $dbh->tables ($catalog, $schema, $table, $type);
+  
+  $sth   = $dbh->table_info ($catalog, $schema, $table, $type);
+  $sth   = $dbh->table_info ($catalog, $schema, $table, $type, \%attr);
+
+  $dbh->func ("list_tables");
+
+Every time where an C<\%attr> argument can be specified, this C<\%attr>
+object's C<sql_table_source> attribute is preferred over the C<$dbh>
+attribute or the driver default.
+
+=head2 DBD::File::DataSource::Stream
+
+  package DBD::File::DataSource::Stream;
+
+  @DBD::File::DataSource::Stream::ISA = 'DBI::DBD::SqlEngine::DataSource';
+
+  sub complete_table_name
+  {
+      my ($self, $meta, $file, $respect_case) = @_;
+      ...
+      }
+
+Clears all meta attributes identifying a file: C<f_fqfn>, C<f_fqbn> and
+C<f_fqln>. The table name is set according to C<$respect_case> and
+C<< $meta->{sql_identifier_case} >> (SQL_IC_LOWER, SQL_IC_UPPER).
+
+  package DBD::File::DataSource::Stream;
+
+  sub apply_encoding
+  {
+      my ($self, $meta, $fn) = @_;
+      ...
+      }
+
+Applies the encoding from I<meta information> (C<< $meta->{f_encoding} >>)
+to the file handled opened in C<open_data>.
+
+  package DBD::File::DataSource::Stream;
+
+  sub open_data
+  {
+      my ($self, $meta, $attrs, $flags) = @_;
+      ...
+      }
+
+Opens (C<dup (2)>) the file handle provided in C<< $meta->{f_file} >>.
+
+  package DBD::File::DataSource::Stream;
+
+  sub can_flock { ... }
+
+Returns whether C<flock (2)> is available or not (avoids retesting in
+subclasses).
+
+=head2 DBD::File::DataSource::File
+
+  package DBD::File::DataSource::File;
+
+  sub complete_table_name ($$;$)
+  {
+      my ($self, $meta, $table, $respect_case) = @_;
+      ...
+      }
+
+The method C<complete_table_name> tries to map a filename to the associated
+table name.  It is called with a partially filled meta structure for the
+resulting table containing at least the following attributes:
+C<< f_ext >>, C<< f_dir >>, C<< f_lockfile >> and C<< sql_identifier_case >>.
+
+If a file/table map can be found then this method sets the C<< f_fqfn
+>>, C<< f_fqbn >>, C<< f_fqln >> and C<< table_name >> attributes in
+the meta structure. If a map cannot be found the table name will be
+undef.
+
+  package DBD::File::DataSource::File;
+
+  sub open_data ($)
+  {
+      my ($self, $meta, $attrs, $flags) = @_;
+      ...
+      }
+
+Depending on the attributes set in the table's meta data, the
+following steps are performed. Unless C<< f_dontopen >> is set to a
+true value, C<< f_fqfn >> must contain the full qualified file name
+for the table to work on (file2table ensures this). The encoding in
+C<< f_encoding >> is applied if set and the file is opened. If
+C<<f_fqln >> (full qualified lock name) is set, this file is opened,
+too. Depending on the value in C<< f_lock >>, the appropriate lock is
+set on the opened data file or lock file.
+
 =head2 DBD::File::Statement
 
 Derives from DBI::SQL::Nano::Statement to provide following method:
@@ -367,7 +489,7 @@ Derives from DBI::SQL::Nano::Statement to provide following method:
 
 Implements the open_table method required by L<SQL::Statement> and
 L<DBI::SQL::Nano>. All the work for opening the file(s) belonging to the
-table is handled and parameterized in DBD::File::Table. Unless you intend
+table is handled and parametrized in DBD::File::Table. Unless you intend
 to add anything to the following implementation, an empty DBD::XXX::Statement
 package satisfies DBD::File.
 
@@ -379,8 +501,8 @@ package satisfies DBD::File.
       $class =~ s/::Statement/::Table/;
 
       my $flags = {
-  	  createMode	=> $createMode,
-	  lockMode	=> $lockMode,
+  	  createMode => $createMode,
+	  lockMode   => $lockMode,
 	  };
       $self->{command} eq "DROP" and $flags->{dropMode} = 1;
 
@@ -396,18 +518,6 @@ the table data which are stored in the files.
 
 =over 4
 
-=item file2table
-
-This method tries to map a filename to the associated table
-name.  It is called with a partially filled meta structure for the
-resulting table containing at least the following attributes:
-C<< f_ext >>, C<< f_dir >>, C<< f_lockfile >> and C<< sql_identifier_case >>.
-
-If a file/table map can be found then this method sets the C<< f_fqfn
->>, C<< f_fqbn >>, C<< f_fqln >> and C<< table_name >> attributes in
-the meta structure. If a map cannot be found the table name will be
-undef.
-
 =item bootstrap_table_meta
 
 Initializes a table meta structure. Can be safely overridden in a
@@ -415,9 +525,8 @@ derived class, as long as the C<< SUPER >> method is called at the end
 of the overridden method.
 
 It copies the following attributes from the database into the table meta data
-C<< f_dir >>, C<< f_ext >>, C<< f_encoding >>, C<< f_lock >>, C<< f_schema >>,
-C<< f_lockfile >> and C<< sql_identifier_case >> and makes them sticky to the
-table.
+C<< f_dir >>, C<< f_ext >>, C<< f_encoding >>, C<< f_lock >>, C<< f_schema >>
+and C<< f_lockfile >> and makes them sticky to the table.
 
 This method should be called before you attempt to map between file
 name and table name to ensure the correct directory, extension etc. are
@@ -467,17 +576,17 @@ list for C<dbm_type> and C<dbm_mldbm> to reset the value of C<dbm_tietype>.
 If your DBD has calculated values in the meta data area, then call
 C<register_reset_on_modify>:
 
-    my %reset_on_modify = ( "xxx_foo" => "xxx_bar" );
-    __PACKAGE__->register_reset_on_modify( \%reset_on_modify );
+  my %reset_on_modify = (xxx_foo => "xxx_bar");
+  __PACKAGE__->register_reset_on_modify (\%reset_on_modify);
 
 =item register_compat_map
 
 Allows C<get_table_meta_attr> and C<set_table_meta_attr> to update the
 attribute name to the current favored one:
 
-    # from DBD::DBM
-    my %compat_map = ( "dbm_ext" => "f_ext" );
-    __PACKAGE__->register_compat_map( \%compat_map );
+  # from DBD::DBM
+  my %compat_map = (dbm_ext => "f_ext");
+  __PACKAGE__->register_compat_map (\%compat_map);
 
 =item open_file
 
@@ -545,7 +654,7 @@ The original author is Jochen Wiedmann.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2010 by H.Merijn Brand & Jens Rehsack
+Copyright (C) 2010-2013 by H.Merijn Brand & Jens Rehsack
 
 All rights reserved.
 

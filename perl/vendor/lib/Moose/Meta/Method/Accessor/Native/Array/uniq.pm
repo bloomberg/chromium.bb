@@ -1,20 +1,14 @@
 package Moose::Meta::Method::Accessor::Native::Array::uniq;
-BEGIN {
-  $Moose::Meta::Method::Accessor::Native::Array::uniq::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Method::Accessor::Native::Array::uniq::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use List::MoreUtils ();
+use List::Util 1.45 ();
 
 use Moose::Role;
 
-with 'Moose::Meta::Method::Accessor::Native::Reader' =>
-    { -excludes => ['_maximum_arguments'] };
+with 'Moose::Meta::Method::Accessor::Native::Reader';
 
 sub _maximum_arguments { 0 }
 
@@ -22,7 +16,7 @@ sub _return_value {
     my $self = shift;
     my ($slot_access) = @_;
 
-    return 'List::MoreUtils::uniq @{ (' . $slot_access . ') }';
+    return 'List::Util::uniq @{ (' . $slot_access . ') }';
 }
 
 no Moose::Role;

@@ -52,7 +52,7 @@ __END__
 
 =head1 NAME
 
-XML::Parser::Style::Objects
+XML::Parser::Style::Objects - Objects styler parser
 
 =head1 SYNOPSIS
 

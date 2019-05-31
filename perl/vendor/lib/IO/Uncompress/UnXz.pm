@@ -4,18 +4,18 @@ use strict ;
 use warnings;
 use bytes;
 
-use IO::Compress::Base::Common 2.052 qw(:Status createSelfTiedObject);
+use IO::Compress::Base::Common 2.086 qw(:Status createSelfTiedObject);
 
-use IO::Uncompress::Base 2.052 ;
-use IO::Uncompress::Adapter::UnXz 2.052 ;
+use IO::Uncompress::Base 2.086 ;
+use IO::Uncompress::Adapter::UnXz 2.086 ;
 
 require Exporter ;
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, $UnXzError);
 
-$VERSION = '2.052';
+$VERSION = '2.086';
 $UnXzError = '';
 
-@ISA    = qw( Exporter IO::Uncompress::Base );
+@ISA    = qw( IO::Uncompress::Base Exporter );
 @EXPORT_OK = qw( $UnXzError unxz ) ;
 #%EXPORT_TAGS = %IO::Uncompress::Base::EXPORT_TAGS ;
 push @{ $EXPORT_TAGS{all} }, @EXPORT_OK ;
@@ -36,16 +36,14 @@ sub unxz
     return $obj->_inf(@_);
 }
 
+our %PARAMS = (
+        'memlimit' => [IO::Compress::Base::Common::Parse_unsigned, 128 * 1024 * 1024],
+        'flags'    => [IO::Compress::Base::Common::Parse_boolean,  0],
+    );    
+
 sub getExtraParams
 {
-    my $self = shift ;
-
-    use IO::Compress::Base::Common 2.052 qw(:Parse);
-    
-    return (
-        'MemLimit'   => [1, 1, Parse_unsigned,   128 * 1024 * 1024],
-        'Flags'      => [1, 1, Parse_boolean,   0],
-        );
+    return %PARAMS ;
 }
 
 
@@ -68,8 +66,8 @@ sub mkUncomp
     *$self->{Info} = $self->readHeader($magic)
         or return undef ;
 
-    my $memlimit = $got->value('MemLimit');
-    my $flags    = $got->value('Flags');
+    my $memlimit = $got->getValue('memlimit');
+    my $flags    = $got->getValue('flags');
 
     my ($obj, $errstr, $errno) =  IO::Uncompress::Adapter::UnXz::mkUncompObject(
                                                     $memlimit, $flags);
@@ -156,7 +154,7 @@ IO::Uncompress::UnXz - Read xz files/buffers
     my $status = unxz $input => $output [,OPTS]
         or die "unxz failed: $UnXzError\n";
 
-    my $z = new IO::Uncompress::UnXz $input [OPTS] 
+    my $z = new IO::Uncompress::UnXz $input [OPTS]
         or die "unxz failed: $UnXzError\n";
 
     $status = $z->read($buffer)
@@ -194,7 +192,7 @@ IO::Uncompress::UnXz - Read xz files/buffers
 
 =head1 DESCRIPTION
 
-B<WARNING -- This is a Beta release>. 
+B<WARNING -- This is a Beta release>.
 
 =over 5
 
@@ -222,19 +220,20 @@ section.
 
     use IO::Uncompress::UnXz qw(unxz $UnXzError) ;
 
-    unxz $input => $output [,OPTS] 
+    unxz $input_filename_or_reference => $output_filename_or_reference [,OPTS]
         or die "unxz failed: $UnXzError\n";
 
 The functional interface needs Perl5.005 or better.
 
-=head2 unxz $input => $output [, OPTS]
+=head2 unxz $input_filename_or_reference => $output_filename_or_reference [, OPTS]
 
-C<unxz> expects at least two parameters, C<$input> and C<$output>.
+C<unxz> expects at least two parameters,
+C<$input_filename_or_reference> and C<$output_filename_or_reference>.
 
-=head3 The C<$input> parameter
+=head3 The C<$input_filename_or_reference> parameter
 
-The parameter, C<$input>, is used to define the source of
-the compressed data. 
+The parameter, C<$input_filename_or_reference>, is used to define the
+source of the compressed data.
 
 It can take one of the following forms:
 
@@ -242,91 +241,98 @@ It can take one of the following forms:
 
 =item A filename
 
-If the C<$input> parameter is a simple scalar, it is assumed to be a
-filename. This file will be opened for reading and the input data
-will be read from it.
+If the <$input_filename_or_reference> parameter is a simple scalar, it is
+assumed to be a filename. This file will be opened for reading and the
+input data will be read from it.
 
 =item A filehandle
 
-If the C<$input> parameter is a filehandle, the input data will be
-read from it.
-The string '-' can be used as an alias for standard input.
+If the C<$input_filename_or_reference> parameter is a filehandle, the input
+data will be read from it.  The string '-' can be used as an alias for
+standard input.
 
-=item A scalar reference 
+=item A scalar reference
 
-If C<$input> is a scalar reference, the input data will be read
-from C<$$input>.
+If C<$input_filename_or_reference> is a scalar reference, the input data
+will be read from C<$$input_filename_or_reference>.
 
-=item An array reference 
+=item An array reference
 
-If C<$input> is an array reference, each element in the array must be a
-filename.
+If C<$input_filename_or_reference> is an array reference, each element in
+the array must be a filename.
 
-The input data will be read from each file in turn. 
+The input data will be read from each file in turn.
 
 The complete array will be walked to ensure that it only
 contains valid filenames before any data is uncompressed.
 
 =item An Input FileGlob string
 
-If C<$input> is a string that is delimited by the characters "<" and ">"
-C<unxz> will assume that it is an I<input fileglob string>. The
-input is the list of files that match the fileglob.
+If C<$input_filename_or_reference> is a string that is delimited by the
+characters "<" and ">" C<unxz> will assume that it is an
+I<input fileglob string>. The input is the list of files that match the
+fileglob.
 
 See L<File::GlobMapper|File::GlobMapper> for more details.
 
 =back
 
-If the C<$input> parameter is any other type, C<undef> will be returned.
+If the C<$input_filename_or_reference> parameter is any other type,
+C<undef> will be returned.
 
-=head3 The C<$output> parameter
+=head3 The C<$output_filename_or_reference> parameter
 
-The parameter C<$output> is used to control the destination of the
-uncompressed data. This parameter can take one of these forms.
+The parameter C<$output_filename_or_reference> is used to control the
+destination of the uncompressed data. This parameter can take one of
+these forms.
 
 =over 5
 
 =item A filename
 
-If the C<$output> parameter is a simple scalar, it is assumed to be a
-filename.  This file will be opened for writing and the uncompressed
-data will be written to it.
+If the C<$output_filename_or_reference> parameter is a simple scalar, it is
+assumed to be a filename.  This file will be opened for writing and the
+uncompressed data will be written to it.
 
 =item A filehandle
 
-If the C<$output> parameter is a filehandle, the uncompressed data
-will be written to it.
-The string '-' can be used as an alias for standard output.
+If the C<$output_filename_or_reference> parameter is a filehandle, the
+uncompressed data will be written to it.  The string '-' can be used as
+an alias for standard output.
 
-=item A scalar reference 
+=item A scalar reference
 
-If C<$output> is a scalar reference, the uncompressed data will be
-stored in C<$$output>.
+If C<$output_filename_or_reference> is a scalar reference, the
+uncompressed data will be stored in C<$$output_filename_or_reference>.
 
 =item An Array Reference
 
-If C<$output> is an array reference, the uncompressed data will be
-pushed onto the array.
+If C<$output_filename_or_reference> is an array reference,
+the uncompressed data will be pushed onto the array.
 
 =item An Output FileGlob
 
-If C<$output> is a string that is delimited by the characters "<" and ">"
-C<unxz> will assume that it is an I<output fileglob string>. The
-output is the list of files that match the fileglob.
+If C<$output_filename_or_reference> is a string that is delimited by the
+characters "<" and ">" C<unxz> will assume that it is an
+I<output fileglob string>. The output is the list of files that match the
+fileglob.
 
-When C<$output> is an fileglob string, C<$input> must also be a fileglob
-string. Anything else is an error.
+When C<$output_filename_or_reference> is an fileglob string,
+C<$input_filename_or_reference> must also be a fileglob string. Anything
+else is an error.
 
 See L<File::GlobMapper|File::GlobMapper> for more details.
 
 =back
 
-If the C<$output> parameter is any other type, C<undef> will be returned.
+If the C<$output_filename_or_reference> parameter is any other type,
+C<undef> will be returned.
 
 =head2 Notes
 
-When C<$input> maps to multiple compressed files/buffers and C<$output> is
-a single file/buffer, after uncompression C<$output> will contain a
+When C<$input_filename_or_reference> maps to multiple compressed
+files/buffers and C<$output_filename_or_reference> is
+a single file/buffer, after uncompression C<$output_filename_or_reference> will contain a
 concatenation of all the uncompressed data from each of the input
 files/buffers.
 
@@ -340,7 +346,7 @@ L</"Constructor Options"> section below.
 
 =item C<< AutoClose => 0|1 >>
 
-This option applies to any input or output data streams to 
+This option applies to any input or output data streams to
 C<unxz> that are filehandles.
 
 If C<AutoClose> is specified, and the value is true, it will result in all
@@ -351,10 +357,7 @@ This parameter defaults to 0.
 
 =item C<< BinModeOut => 0|1 >>
 
-When writing to a file or filehandle, set C<binmode> before writing to the
-file.
-
-Defaults to 0.
+This option is now a no-op. All files will be written  in binmode.
 
 =item C<< Append => 0|1 >>
 
@@ -383,7 +386,7 @@ written to it.  Otherwise the file pointer will not be moved.
 
 =back
 
-When C<Append> is specified, and set to true, it will I<append> all uncompressed 
+When C<Append> is specified, and set to true, it will I<append> all uncompressed
 data to the output data stream.
 
 So when the output is a filehandle it will carry out a seek to the eof
@@ -411,7 +414,7 @@ Defaults to 0.
 =item C<< TrailingData => $scalar >>
 
 Returns the data, if any, that is present immediately after the compressed
-data stream once uncompression is complete. 
+data stream once uncompression is complete.
 
 This option can be used when there is useful information immediately
 following the compressed data stream, and you don't know the length of the
@@ -423,7 +426,7 @@ end of the compressed data stream to the end of the buffer.
 If the input is a filehandle, C<trailingData> will return the data that is
 left in the filehandle input buffer once the end of the compressed data
 stream has been reached. You can then use the filehandle to read the rest
-of the input file. 
+of the input file.
 
 Don't bother using C<trailingData> if the input is a filename.
 
@@ -458,7 +461,7 @@ uncompressed data to a buffer, C<$buffer>.
     my $input = new IO::File "<file1.txt.xz"
         or die "Cannot open 'file1.txt.xz': $!\n" ;
     my $buffer ;
-    unxz $input => \$buffer 
+    unxz $input => \$buffer
         or die "unxz failed: $UnXzError\n";
 
 To uncompress all files in the directory "/my/home" that match "*.txt.xz" and store the compressed data in the same directory
@@ -480,7 +483,7 @@ and if you want to compress each file one at a time, this will do the trick
     {
         my $output = $input;
         $output =~ s/.xz// ;
-        unxz $input => $output 
+        unxz $input => $output
             or die "Error compressing '$input': $UnXzError\n";
     }
 
@@ -521,7 +524,7 @@ If the C<$input> parameter is a filehandle, the compressed data will be
 read from it.
 The string '-' can be used as an alias for standard input.
 
-=item A scalar reference 
+=item A scalar reference
 
 If C<$input> is a scalar reference, the compressed data will be read from
 C<$$input>.
@@ -596,7 +599,7 @@ When present this option will limit the number of compressed bytes read
 from the input file/buffer to C<$size>. This option can be used in the
 situation where there is useful data directly after the compressed data
 stream and you know beforehand the exact length of the compressed data
-stream. 
+stream.
 
 This option is mostly used when reading from a filehandle, in which case
 the file pointer will be left pointing to the first byte directly after the
@@ -638,7 +641,7 @@ Default is 0.
 
 TODO
 
-=head1 Methods 
+=head1 Methods
 
 =head2 read
 
@@ -646,7 +649,7 @@ Usage is
 
     $status = $z->read($buffer)
 
-Reads a block of compressed data (the size the the compressed block is
+Reads a block of compressed data (the size of the compressed block is
 determined by the C<Buffer> option in the constructor), uncompresses it and
 writes any uncompressed data into C<$buffer>. If the C<Append> parameter is
 set in the constructor, the uncompressed data will be appended to the
@@ -682,16 +685,16 @@ Usage is
     $line = $z->getline()
     $line = <$z>
 
-Reads a single line. 
+Reads a single line.
 
-This method fully supports the use of of the variable C<$/> (or
+This method fully supports the use of the variable C<$/> (or
 C<$INPUT_RECORD_SEPARATOR> or C<$RS> when C<English> is in use) to
 determine what constitutes an end of line. Paragraph mode, record mode and
-file slurp mode are all supported. 
+file slurp mode are all supported.
 
 =head2 getc
 
-Usage is 
+Usage is
 
     $char = $z->getc()
 
@@ -741,6 +744,13 @@ Provides a sub-set of the C<seek> functionality, with the restriction
 that it is only legal to seek forward in the input file/buffer.
 It is a fatal error to attempt to seek backward.
 
+Note that the implementation of C<seek> in this module does not provide
+true random access to a compressed file/buffer. It  works by uncompressing
+data from the current offset in the file/buffer until it reaches the
+uncompressed offset specified in the parameters to C<seek>. For very small
+files this may be acceptable behaviour. For large files it may cause an
+unacceptable delay.
+
 The C<$whence> parameter takes one the usual values, namely SEEK_SET,
 SEEK_CUR or SEEK_END.
 
@@ -759,7 +769,7 @@ This is a noop provided for completeness.
 
     $z->opened()
 
-Returns true if the object currently refers to a opened file/buffer. 
+Returns true if the object currently refers to a opened file/buffer.
 
 =head2 autoflush
 
@@ -786,7 +796,7 @@ Returns the current uncompressed line number. If C<EXPR> is present it has
 the effect of setting the line number. Note that setting the line number
 does not change the current position within the file/buffer being read.
 
-The contents of C<$/> are used to to determine what constitutes a line
+The contents of C<$/> are used to determine what constitutes a line
 terminator.
 
 =head2 fileno
@@ -806,7 +816,7 @@ C<undef>.
     $z->close() ;
     close $z ;
 
-Closes the output file/buffer. 
+Closes the output file/buffer.
 
 For most versions of Perl this method will be automatically invoked if
 the IO::Uncompress::UnXz object is destroyed (either explicitly or by the
@@ -860,7 +870,7 @@ end of the compressed data stream to the end of the buffer.
 If the input is a filehandle, C<trailingData> will return the data that is
 left in the filehandle input buffer once the end of the compressed data
 stream has been reached. You can then use the filehandle to read the rest
-of the input file. 
+of the input file.
 
 Don't bother using C<trailingData> if the input is a filename.
 
@@ -868,9 +878,9 @@ If you know the length of the compressed data stream before you start
 uncompressing, you can avoid having to use C<trailingData> by setting the
 C<InputLength> option in the constructor.
 
-=head1 Importing 
+=head1 Importing
 
-No symbolic constants are required by this IO::Uncompress::UnXz at present. 
+No symbolic constants are required by this IO::Uncompress::UnXz at present.
 
 =over 5
 
@@ -887,7 +897,7 @@ Same as doing this
 
 =head1 SEE ALSO
 
-L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
+L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Compress::Lzip>, L<IO::Uncompress::UnLzip>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Compress::Zstd>, L<IO::Uncompress::UnZstd>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
 
 L<IO::Compress::FAQ|IO::Compress::FAQ>
 
@@ -897,7 +907,7 @@ L<IO::Zlib|IO::Zlib>
 
 =head1 AUTHOR
 
-This module was written by Paul Marquess, F<pmqs@cpan.org>. 
+This module was written by Paul Marquess, C<pmqs@cpan.org>.
 
 =head1 MODIFICATION HISTORY
 
@@ -905,7 +915,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2012 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2019 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

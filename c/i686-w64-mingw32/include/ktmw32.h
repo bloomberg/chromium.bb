@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_KTMW32
@@ -18,6 +18,7 @@ extern "C" {
   WINBOOL WINAPI CommitTransaction(HANDLE TransactionHandle);
   WINBOOL WINAPI CommitTransactionAsync(HANDLE TransactionHandle);
   HANDLE WINAPI CreateEnlistment(LPSECURITY_ATTRIBUTES lpEnlistmentrAttributes,HANDLE ResourceManagerHandle,HANDLE TransactionHandle,NOTIFICATION_MASK NotificationMask,DWORD CreateOptions,PVOID EnlistmentKey);
+  HANDLE WINAPI CreateTransaction (LPSECURITY_ATTRIBUTES lpTransactionAttributes, LPGUID UOW, DWORD CreateOptions, DWORD IsolationLevel, DWORD IsolationFlags, DWORD Timeout, LPWSTR Description);
   WINBOOL WINAPI SinglePhaseReject(HANDLE EnlistmentHandle,PLARGE_INTEGER TmVirtualClock);
   HANDLE WINAPI CreateResourceManager(LPSECURITY_ATTRIBUTES lpResourceManagerAttributes,LPGUID ResourceManagerID,DWORD CreateOptions,HANDLE TmHandle,LPWSTR Description);
   HANDLE WINAPI CreateTransactionManager(LPSECURITY_ATTRIBUTES lpTransactionAttributes,LPWSTR LogFileName,ULONG CreateOptions,ULONG CommitStrength);
@@ -48,7 +49,7 @@ extern "C" {
   WINBOOL WINAPI RollbackEnlistment(HANDLE EnlistmentHandle,PLARGE_INTEGER TmVirtualClock);
   WINBOOL WINAPI RollbackTransaction(HANDLE TransactionHandle);
   WINBOOL WINAPI RollbackTransactionAsync(HANDLE TransactionHandle);
-  WINBOOL RollforwardTransactionManager(HANDLE TransactionManagerHandle,PLARGE_INTEGER TmVirtualClock);
+  WINBOOL WINAPI RollforwardTransactionManager(HANDLE TransactionManagerHandle,PLARGE_INTEGER TmVirtualClock);
   WINBOOL WINAPI RollbackTransactionAsync(HANDLE TransactionHandle);
   WINBOOL WINAPI SetEnlistmentRecoveryInformation(HANDLE EnlistmentHandle,ULONG BufferSize,PVOID Buffer);
   WINBOOL WINAPI SetTransactionInformation(HANDLE TransactionHandle,DWORD IsolationLevel,DWORD IsolationFlags,DWORD Timeout,LPWSTR Description);

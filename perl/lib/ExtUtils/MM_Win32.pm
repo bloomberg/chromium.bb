@@ -17,30 +17,31 @@ See ExtUtils::MM_Unix for a documentation of the methods provided
 there. This package overrides the implementation of these methods, not
 the semantics.
 
-=cut 
+=cut
 
 use ExtUtils::MakeMaker::Config;
 use File::Basename;
 use File::Spec;
-use ExtUtils::MakeMaker qw( neatvalue );
+use ExtUtils::MakeMaker qw(neatvalue _sprintf562);
 
 require ExtUtils::MM_Any;
 require ExtUtils::MM_Unix;
 our @ISA = qw( ExtUtils::MM_Any ExtUtils::MM_Unix );
-our $VERSION = '6.63_02';
+our $VERSION = '7.36';
+$VERSION =~ tr/_//d;
 
 $ENV{EMXSHELL} = 'sh'; # to run `commands`
 
-my ( $BORLAND, $GCC, $DLLTOOL ) = _identify_compiler_environment( \%Config );
+my ( $BORLAND, $GCC, $MSVC ) = _identify_compiler_environment( \%Config );
 
 sub _identify_compiler_environment {
 	my ( $config ) = @_;
 
-	my $BORLAND = $config->{cc} =~ /^bcc/i ? 1 : 0;
+	my $BORLAND = $config->{cc} =~ /\bbcc/i ? 1 : 0;
 	my $GCC     = $config->{cc} =~ /\bgcc\b/i ? 1 : 0;
-	my $DLLTOOL = $config->{dlltool} || 'dlltool';
+	my $MSVC    = $config->{cc} =~ /\b(?:cl|icl)/i ? 1 : 0; # MSVC can come as clarm.exe, icl=Intel C
 
-	return ( $BORLAND, $GCC, $DLLTOOL );
+	return ( $BORLAND, $GCC, $MSVC );
 }
 
 
@@ -54,31 +55,18 @@ sub _identify_compiler_environment {
 
 sub dlsyms {
     my($self,%attribs) = @_;
+    return '' if $self->{SKIPHASH}{'dynamic'};
+    $self->xs_dlsyms_iterator(\%attribs);
+}
 
-    my($funcs) = $attribs{DL_FUNCS} || $self->{DL_FUNCS} || {};
-    my($vars)  = $attribs{DL_VARS} || $self->{DL_VARS} || [];
-    my($funclist) = $attribs{FUNCLIST} || $self->{FUNCLIST} || [];
-    my($imports)  = $attribs{IMPORTS} || $self->{IMPORTS} || {};
-    my(@m);
+=item xs_dlsyms_ext
 
-    if (not $self->{SKIPHASH}{'dynamic'}) {
-	push(@m,"
-$self->{BASEEXT}.def: Makefile.PL
-",
-     q!	$(PERLRUN) -MExtUtils::Mksymlists \\
-     -e "Mksymlists('NAME'=>\"!, $self->{NAME},
-     q!\", 'DLBASE' => '!,$self->{DLBASE},
-     # The above two lines quoted differently to work around
-     # a bug in the 4DOS/4NT command line interpreter.  The visible
-     # result of the bug was files named q('extension_name',) *with the
-     # single quotes and the comma* in the extension build directories.
-     q!', 'DL_FUNCS' => !,neatvalue($funcs),
-     q!, 'FUNCLIST' => !,neatvalue($funclist),
-     q!, 'IMPORTS' => !,neatvalue($imports),
-     q!, 'DL_VARS' => !, neatvalue($vars), q!);"
-!);
-    }
-    join('',@m);
+On Win32, is C<.def>.
+
+=cut
+
+sub xs_dlsyms_ext {
+    '.def';
 }
 
 =item replace_manpage_separator
@@ -89,7 +77,7 @@ Changes the path separator with .
 
 sub replace_manpage_separator {
     my($self,$man) = @_;
-    $man =~ s,/+,.,g;
+    $man =~ s,[/\\]+,.,g;
     $man;
 }
 
@@ -128,7 +116,7 @@ sub maybe_command {
 
 =item B<init_DIRFILESEP>
 
-Using \ for Windows.
+Using \ for Windows, except for "gmake" where it is /.
 
 =cut
 
@@ -137,7 +125,8 @@ sub init_DIRFILESEP {
 
     # The ^ makes sure its not interpreted as an escape in nmake
     $self->{DIRFILESEP} = $self->is_make_type('nmake') ? '^\\' :
-                          $self->is_make_type('dmake') ? '\\\\'
+                          $self->is_make_type('dmake') ? '\\\\' :
+                          $self->is_make_type('gmake') ? '/'
                                                        : '\\';
 }
 
@@ -153,8 +142,8 @@ sub init_tools {
     $self->{NOOP}     ||= 'rem';
     $self->{DEV_NULL} ||= '> NUL';
 
-    $self->{FIXIN}    ||= $self->{PERL_CORE} ? 
-      "\$(PERLRUN) $self->{PERL_SRC}/win32/bin/pl2bat.pl" : 
+    $self->{FIXIN}    ||= $self->{PERL_CORE} ?
+      "\$(PERLRUN) -I$self->{PERL_SRC}\\cpan\\ExtUtils-PL2Bat\\lib $self->{PERL_SRC}\\win32\\bin\\pl2bat.pl" :
       'pl2bat.bat';
 
     $self->SUPER::init_tools;
@@ -231,6 +220,17 @@ sub platform_constants {
     return $make_frag;
 }
 
+=item specify_shell
+
+Set SHELL to $ENV{COMSPEC} only if make is type 'gmake'.
+
+=cut
+
+sub specify_shell {
+    my $self = shift;
+    return '' unless $self->is_make_type('gmake');
+    "\nSHELL = $ENV{COMSPEC}\n";
+}
 
 =item constants
 
@@ -251,7 +251,7 @@ sub constants {
     #
     # This has to come here before all the constants and not in
     # platform_constants which is after constants.
-    my $size = $self->{MAXLINELENGTH} || 64 * 1024;
+    my $size = $self->{MAXLINELENGTH} || 800000;
     my $prefix = qq{
 # Get dmake to read long commands like PM_TO_BLIB
 MAXLINELENGTH = $size
@@ -280,104 +280,76 @@ MAKE_FRAG
     return $make_frag;
 }
 
+=item static_lib_pure_cmd
 
-=item static_lib
-
-Changes how to run the linker.
-
-The rest is duplicate code from MM_Unix.  Should move the linker code
-to its own method.
+Defines how to run the archive utility
 
 =cut
 
-sub static_lib {
-    my($self) = @_;
-    return '' unless $self->has_link_code;
-
-    my(@m);
-    push(@m, <<'END');
-$(INST_STATIC): $(OBJECT) $(MYEXTLIB) $(INST_ARCHAUTODIR)$(DFSEP).exists
-	$(RM_RF) $@
-END
-
-    # If this extension has its own library (eg SDBM_File)
-    # then copy that to $(INST_STATIC) and add $(OBJECT) into it.
-    push @m, <<'MAKE_FRAG' if $self->{MYEXTLIB};
-	$(CP) $(MYEXTLIB) $@
-MAKE_FRAG
-
-    push @m,
-q{	$(AR) }.($BORLAND ? '$@ $(OBJECT:^"+")'
-			  : ($GCC ? '-ru $@ $(OBJECT)'
-			          : '-out:$@ $(OBJECT)')).q{
-	$(CHMOD) $(PERM_RWX) $@
-	$(NOECHO) $(ECHO) "$(EXTRALIBS)" > $(INST_ARCHAUTODIR)\extralibs.ld
-};
-
-    # Old mechanism - still available:
-    push @m, <<'MAKE_FRAG' if $self->{PERL_SRC} && $self->{EXTRALIBS};
-	$(NOECHO) $(ECHO) "$(EXTRALIBS)" >> $(PERL_SRC)\ext.libs
-MAKE_FRAG
-
-    join('', @m);
+sub static_lib_pure_cmd {
+    my ($self, $from) = @_;
+    $from =~ s/(\$\(\w+)(\))/$1:^"+"$2/g if $BORLAND;
+    sprintf qq{\t\$(AR) %s\n}, ($BORLAND ? '$@ ' . $from
+                          : ($GCC ? '-ru $@ ' . $from
+                                  : '-out:$@ ' . $from));
 }
-
 
 =item dynamic_lib
 
-Complicated stuff for Win32 that I don't understand. :(
+Methods are overridden here: not dynamic_lib itself, but the utility
+ones that do the OS-specific work.
 
 =cut
 
-sub dynamic_lib {
-    my($self, %attribs) = @_;
-    return '' unless $self->needs_linking(); #might be because of a subdir
-
-    return '' unless $self->has_link_code;
-
-    my($otherldflags) = $attribs{OTHERLDFLAGS} || ($BORLAND ? 'c0d32.obj': '');
-    my($inst_dynamic_dep) = $attribs{INST_DYNAMIC_DEP} || "";
-    my($ldfrom) = '$(LDFROM)';
-    my(@m);
-
-    push(@m,'
-# This section creates the dynamically loadable $(INST_DYNAMIC)
-# from $(OBJECT) and possibly $(MYEXTLIB).
-OTHERLDFLAGS = '.$otherldflags.'
-INST_DYNAMIC_DEP = '.$inst_dynamic_dep.'
-
-$(INST_DYNAMIC): $(OBJECT) $(MYEXTLIB) $(BOOTSTRAP) $(INST_ARCHAUTODIR)$(DFSEP).exists $(EXPORT_LIST) $(PERL_ARCHIVE) $(INST_DYNAMIC_DEP)
-');
+sub xs_make_dynamic_lib {
+    my ($self, $attribs, $from, $to, $todir, $ldfrom, $exportlist) = @_;
+    my @m = sprintf '%s : %s $(MYEXTLIB) %s$(DFSEP).exists %s $(PERL_ARCHIVEDEP) $(INST_DYNAMIC_DEP)'."\n", $to, $from, $todir, $exportlist;
     if ($GCC) {
-      push(@m,  
-       q{	}.$DLLTOOL.q{ --def $(EXPORT_LIST) --output-exp dll.exp
-	$(LD) -o $@ -Wl,--base-file -Wl,dll.base $(LDDLFLAGS) }.$ldfrom.q{ $(OTHERLDFLAGS) $(MYEXTLIB) $(PERL_ARCHIVE) $(LDLOADLIBS) dll.exp
-	}.$DLLTOOL.q{ --def $(EXPORT_LIST) --base-file dll.base --output-exp dll.exp
-	$(LD) -o $@ $(LDDLFLAGS) }.$ldfrom.q{ $(OTHERLDFLAGS) $(MYEXTLIB) $(PERL_ARCHIVE) $(LDLOADLIBS) dll.exp });
+      # per https://rt.cpan.org/Ticket/Display.html?id=78395 no longer
+      # uses dlltool - relies on post 2002 MinGW
+      #                             1            2
+      push @m, _sprintf562 <<'EOF', $exportlist, $ldfrom;
+	$(LD) %1$s -o $@ $(LDDLFLAGS) %2$s $(OTHERLDFLAGS) $(MYEXTLIB) "$(PERL_ARCHIVE)" $(LDLOADLIBS) -Wl,--enable-auto-image-base
+EOF
     } elsif ($BORLAND) {
-      push(@m,
-       q{	$(LD) $(LDDLFLAGS) $(OTHERLDFLAGS) }.$ldfrom.q{,$@,,}
-       .($self->is_make_type('dmake')
-                ? q{$(PERL_ARCHIVE:s,/,\,) $(LDLOADLIBS:s,/,\,) }
-		 .q{$(MYEXTLIB:s,/,\,),$(EXPORT_LIST:s,/,\,)}
-		: q{$(subst /,\,$(PERL_ARCHIVE)) $(subst /,\,$(LDLOADLIBS)) }
-		 .q{$(subst /,\,$(MYEXTLIB)),$(subst /,\,$(EXPORT_LIST))})
-       .q{,$(RESFILES)});
+      my $ldargs = $self->is_make_type('dmake')
+          ? q{"$(PERL_ARCHIVE:s,/,\,)" $(LDLOADLIBS:s,/,\,) $(MYEXTLIB:s,/,\,),}
+          : q{"$(subst /,\,$(PERL_ARCHIVE))" $(subst /,\,$(LDLOADLIBS)) $(subst /,\,$(MYEXTLIB)),};
+      my $subbed;
+      if ($exportlist eq '$(EXPORT_LIST)') {
+          $subbed = $self->is_make_type('dmake')
+              ? q{$(EXPORT_LIST:s,/,\,)}
+              : q{$(subst /,\,$(EXPORT_LIST))};
+      } else {
+            # in XSMULTI, exportlist is per-XS, so have to sub in perl not make
+          ($subbed = $exportlist) =~ s#/#\\#g;
+      }
+      push @m, sprintf <<'EOF', $ldfrom, $ldargs . $subbed;
+        $(LD) $(LDDLFLAGS) $(OTHERLDFLAGS) %s,$@,,%s,$(RESFILES)
+EOF
     } else {	# VC
-      push(@m,
-       q{	$(LD) -out:$@ $(LDDLFLAGS) }.$ldfrom.q{ $(OTHERLDFLAGS) }
-      .q{$(MYEXTLIB) $(PERL_ARCHIVE) $(LDLOADLIBS) -def:$(EXPORT_LIST)});
-
+      push @m, sprintf <<'EOF', $ldfrom, $exportlist;
+	$(LD) -out:$@ $(LDDLFLAGS) %s $(OTHERLDFLAGS) $(MYEXTLIB) "$(PERL_ARCHIVE)" $(LDLOADLIBS) -def:%s
+EOF
       # Embed the manifest file if it exists
-      push(@m, q{
-	if exist $@.manifest mt -nologo -manifest $@.manifest -outputresource:$@;2
+      push(@m, q{	if exist $@.manifest mt -nologo -manifest $@.manifest -outputresource:$@;2
 	if exist $@.manifest del $@.manifest});
     }
-    push @m, '
-	$(CHMOD) $(PERM_RWX) $@
-';
+    push @m, "\n\t\$(CHMOD) \$(PERM_RWX) \$\@\n";
 
-    join('',@m);
+    join '', @m;
+}
+
+sub xs_dynamic_lib_macros {
+    my ($self, $attribs) = @_;
+    my $otherldflags = $attribs->{OTHERLDFLAGS} || ($BORLAND ? 'c0d32.obj': '');
+    my $inst_dynamic_dep = $attribs->{INST_DYNAMIC_DEP} || "";
+    sprintf <<'EOF', $otherldflags, $inst_dynamic_dep;
+# This section creates the dynamically loadable objects from relevant
+# objects and possibly $(MYEXTLIB).
+OTHERLDFLAGS = %s
+INST_DYNAMIC_DEP = %s
+EOF
 }
 
 =item extra_clean_files
@@ -401,6 +373,7 @@ sub init_linker {
     my $self = shift;
 
     $self->{PERL_ARCHIVE}       = "\$(PERL_INC)\\$Config{libperl}";
+    $self->{PERL_ARCHIVEDEP}    = "\$(PERL_INCDEP)\\$Config{libperl}";
     $self->{PERL_ARCHIVE_AFTER} = '';
     $self->{EXPORT_LIST}        = '$(BASEEXT).def';
 }
@@ -421,15 +394,40 @@ sub perl_script {
     return;
 }
 
+sub can_dep_space {
+    my $self = shift;
+    1; # with Win32::GetShortPathName
+}
 
-=item xs_o
-
-This target is stubbed out.  Not sure why.
+=item quote_dep
 
 =cut
 
-sub xs_o {
-    return ''
+sub quote_dep {
+    my ($self, $arg) = @_;
+    if ($arg =~ / / and not $self->is_make_type('gmake')) {
+        require Win32;
+        $arg = Win32::GetShortPathName($arg);
+        die <<EOF if not defined $arg or $arg =~ / /;
+Tried to use make dependency with space for non-GNU make:
+  '$arg'
+Fallback to short pathname failed.
+EOF
+        return $arg;
+    }
+    return $self->SUPER::quote_dep($arg);
+}
+
+
+=item xs_obj_opt
+
+Override to fixup -o flags for MSVC.
+
+=cut
+
+sub xs_obj_opt {
+    my ($self, $output_file) = @_;
+    ($MSVC ? "/Fo" : "-o ") . $output_file;
 }
 
 
@@ -442,7 +440,10 @@ banner.
 
 sub pasthru {
     my($self) = shift;
-    return "PASTHRU = " . ($self->is_make_type('nmake') ? "-nologo" : "");
+    my $old = $self->SUPER::pasthru;
+    return $old unless $self->is_make_type('nmake');
+    $old =~ s/(PASTHRU\s*=\s*)/$1 -nologo /;
+    $old;
 }
 
 
@@ -505,7 +506,7 @@ sub quote_literal {
     $text =~ s{\\\\"}{\\\\\\\\\\"}g;  # \\" -> \\\\\"
     $text =~ s{(?<!\\)\\"}{\\\\\\"}g; # \"  -> \\\"
     $text =~ s{(?<!\\)"}{\\"}g;       # "   -> \"
-    $text = qq{"$text"} if $text =~ /[ \t]/;
+    $text = qq{"$text"} if $text =~ /[ \t#]/; # hash because gmake 4.2.1
 
     # Apply the Command Prompt parsing rules (cmd.exe)
     my @text = split /("[^"]*")/, $text;
@@ -513,7 +514,7 @@ sub quote_literal {
     # $(MACRO)s in makefiles.
     s{([<>|&^@!])}{^$1}g foreach grep { !/^"[^"]*"$/ } @text;
     $text = join('', @text);
-    
+
     # dmake expands {{ to { and }} to }.
     if( $self->is_make_type('dmake') ) {
         $text =~ s/{/{{/g;
@@ -594,6 +595,16 @@ sub os_flavor {
     return('Win32');
 }
 
+=item dbgoutflag
+
+Returns a CC flag that tells the CC to emit a separate debugging symbol file
+when compiling an object file.
+
+=cut
+
+sub dbgoutflag {
+    $MSVC ? '-Fd$(*).pdb' : '';
+}
 
 =item cflags
 
@@ -622,16 +633,24 @@ PERLTYPE = $self->{PERLTYPE}
 
 }
 
-sub is_make_type {
-    my($self, $type) = @_;
-    return !! ($self->make =~ /\b$type(?:\.exe)?$/);
+=item make_type
+
+Returns a suitable string describing the type of makefile being written.
+
+=cut
+
+sub make_type {
+    my ($self) = @_;
+    my $make = $self->make;
+    $make = +( File::Spec->splitpath( $make ) )[-1];
+    $make =~ s!\.exe$!!i;
+    if ( $make =~ m![^A-Z0-9]!i ) {
+      ($make) = grep { m!make!i } split m![^A-Z0-9]!i, $make;
+    }
+    return "$make-style";
 }
 
 1;
 __END__
 
 =back
-
-=cut 
-
-

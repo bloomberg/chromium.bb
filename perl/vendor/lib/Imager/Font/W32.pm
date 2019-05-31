@@ -5,7 +5,7 @@ use vars qw($VERSION @ISA);
 @ISA = qw(Imager::Font);
 
 BEGIN {
-  $VERSION = "0.84";
+  $VERSION = "0.90";
 
   require XSLoader;
   XSLoader::load('Imager::Font::W32', $VERSION);
@@ -30,6 +30,12 @@ sub _bounding_box {
   my ($self, %opts) = @_;
   
   my @bbox = i_wf_bbox($self->{face}, $opts{size}, $opts{string}, $opts{utf8});
+  unless (@bbox) {
+    Imager->_set_error(Imager->_error_as_msg);
+    return;
+  }
+
+  return @bbox;
 }
 
 sub _draw {
@@ -37,22 +43,24 @@ sub _draw {
 
   my %input = @_;
   if (exists $input{channel}) {
-    i_wf_cp($self->{face}, $input{image}{IMG}, $input{x}, $input{'y'},
+    return i_wf_cp($self->{face}, $input{image}{IMG}, $input{x}, $input{'y'},
 	    $input{channel}, $input{size},
 	    $input{string}, $input{align}, $input{aa}, $input{utf8});
   }
   else {
-    i_wf_text($self->{face}, $input{image}{IMG}, $input{x}, 
+    return i_wf_text($self->{face}, $input{image}{IMG}, $input{x}, 
 	      $input{'y'}, $input{color}, $input{size}, 
 	      $input{string}, $input{align}, $input{aa}, $input{utf8});
   }
-
-  return 1;
 }
 
 
 sub utf8 {
   return 1;
+}
+
+sub can_glyph_names {
+  return;
 }
 
 1;

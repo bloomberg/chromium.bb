@@ -1,6 +1,7 @@
 package Test::Pod;
 
 use strict;
+use warnings;
 
 =head1 NAME
 
@@ -8,11 +9,11 @@ Test::Pod - check for POD errors in files
 
 =head1 VERSION
 
-Version 1.45
+Version 1.52
 
 =cut
 
-our $VERSION = '1.45';
+our $VERSION = '1.52';
 
 =head1 SYNOPSIS
 
@@ -61,10 +62,7 @@ C<Pod::Simple> to do the heavy lifting.
 
 =cut
 
-use 5.008;
-
 use Test::Builder;
-use File::Spec;
 use Pod::Simple;
 
 our %ignore_dirs = (
@@ -156,9 +154,8 @@ be tested. It calls the C<plan()> function for you (one test for each file),
 so you can't have already called C<plan>.
 
 If C<@entries> is empty or not passed, the function finds all POD files in
-files in the F<blib> directory if it exists, or the F<lib> directory if not. A
-POD file is one that ends with F<.pod>, F<.pl> and F<.pm>, or any file where
-the first line looks like a shebang line.
+files in the F<blib> directory if it exists, or the F<lib> directory if not.
+A POD file matches the conditions specified below in L</all_pod_files>.
 
 If you're testing a module, just make a F<t/pod.t>:
 
@@ -175,6 +172,11 @@ sub all_pod_files_ok {
     my @args = @_ ? @_ : _starting_points();
     my @files = map { -d $_ ? all_pod_files($_) : $_ } @args;
 
+    unless (@files) {
+        $Test->skip_all( "No files found in (@args)\n" );
+        return 1;
+    }
+
     $Test->plan( tests => scalar @files );
 
     my $ok = 1;
@@ -185,17 +187,18 @@ sub all_pod_files_ok {
 }
 
 =head2 all_pod_files( [@dirs] )
+X<all_pod_files>
 
-Returns a list of all the Perl files in I<@dirs> and in directories below. If
+Returns a list of all the POD files in I<@dirs> and in directories below. If
 no directories are passed, it defaults to F<blib> if F<blib> exists, or else
-F<lib> if not. Skips any files in CVS, .svn, .git and similar directories. See
-C<%Test::Pod::ignore_dirs> for a list of them.
+F<lib> if not. Skips any files in F<CVS>, F<.svn>, F<.git> and similar
+directories. See C<%Test::Pod::ignore_dirs> for a list of them.
 
-A Perl file is:
+A POD file is:
 
 =over 4
 
-=item * Any file that ends in F<.PL>, F<.pl>, F<.PL>, F<.pm>, F<.pod>, or F<.t>.
+=item * Any file that ends in F<.pl>, F<.PL>, F<.pm>, F<.pod>, F<.psgi> or F<.t>.
 
 =item * Any file that has a first line with a shebang and "perl" on it.
 
@@ -209,34 +212,16 @@ sorted, you'll have to sort them yourself.
 =cut
 
 sub all_pod_files {
-    my @queue = @_ ? @_ : _starting_points();
-    my @pod = ();
-
-    while ( @queue ) {
-        my $file = shift @queue;
-        if ( -d $file ) {
-            local *DH;
-            opendir DH, $file or next;
-            my @newfiles = readdir DH;
-            closedir DH;
-
-            @newfiles = File::Spec->no_upwards( @newfiles );
-            @newfiles = grep { not exists $ignore_dirs{ $_ } } @newfiles;
-
-            foreach my $newfile (@newfiles) {
-                my $filename = File::Spec->catfile( $file, $newfile );
-                if ( -f $filename ) {
-                    push @queue, $filename;
-                }
-                else {
-                    push @queue, File::Spec->catdir( $file, $newfile );
-                }
-            }
-        }
-        if ( -f $file ) {
-            push @pod, $file if _is_perl( $file );
-        }
-    } # while
+    my @pod;
+    require File::Find;
+    File::Find::find({
+        preprocess => sub { grep {
+            !exists $ignore_dirs{$_}
+            || !-d File::Spec->catfile($File::Find::dir, $_)
+        } @_ },
+        wanted   => sub { -f $_ && _is_perl($_) && push @pod, $File::Find::name },
+        no_chdir => 1,
+    }, @_ ? @_ : _starting_points());
     return @pod;
 }
 
@@ -248,48 +233,73 @@ sub _starting_points {
 sub _is_perl {
     my $file = shift;
 
-    return 1 if $file =~ /\.PL$/;
-    return 1 if $file =~ /\.p(?:l|m|od)$/;
-    return 1 if $file =~ /\.t$/;
+    # accept as a Perl file everything that ends with a well known Perl suffix ...
+    return 1 if $file =~ /[.](?:PL|p(?:[lm]|od|sgi)|t)$/;
 
     open my $fh, '<', $file or return;
     my $first = <$fh>;
     close $fh;
+    return unless $first;
 
-    return 1 if defined $first && ($first =~ /(?:^#!.*perl)|--\*-Perl-\*--/);
+    # ... or that has a she-bang as first line ...
+    return 1 if $first =~ /^#!.*perl/;
+
+    # ... or that is a .bat ad has a Perl comment line first
+    return 1 if $file =~ /[.]bat$/i && $first =~ /--[*]-Perl-[*]--/;
 
     return;
 }
 
-=head1 TODO
+=head1 SUPPORT
 
-STUFF TO DO
+This module is managed in an open L<GitHub
+repository|http://github.com/perl-pod/test-pod/>. Feel free to fork and
+contribute, or to clone L<git://github.com/perl-pod/test-pod.git> and send
+patches!
 
-Note the changes that are being made.
+Found a bug? Please L<post|http://github.com/perl-pod/test-pod/issues> or
+L<email|mailto:bug-test-pod@rt.cpan.org> a report!
 
-Note that you no longer can test for "no pod".
+=head1 AUTHORS
 
-=head1 AUTHOR
+=over
 
-Currently maintained by David E. Wheeler, C<< <david@justatheory.com> >>.
+=item David E. Wheeler <david@justatheory.com>
 
-Originally by brian d foy.
+Current maintainer.
 
-Maintainer emeritus: Andy Lester, C<< <andy at petdance.com> >>.
+=item Andy Lester C<< <andy at petdance.com> >>
+
+Maintainer emeritus.
+
+=item brian d foy
+
+Original author.
+
+=back
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to
-Andy Lester,
-David Wheeler,
-Paul Miller
-and
-Peter Edwards
-for contributions and to C<brian d foy> for the original code.
+Thanks brian d foy for the original code, and to these folks for contributions:
+
+=over
+
+=item * Andy Lester
+
+=item * David E. Wheeler
+
+=item * Paul Miller
+
+=item * Peter Edwards
+
+=item * Luca Ferrari
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2006-2010, Andy Lester. Some Rights Reserved.
+Copyright 2006-2010, Andy Lester; 2010-2015 David E. Wheeler. Some Rights
+Reserved.
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.

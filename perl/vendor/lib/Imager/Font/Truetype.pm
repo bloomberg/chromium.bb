@@ -3,7 +3,7 @@ use strict;
 use vars qw(@ISA $VERSION);
 @ISA = qw(Imager::Font);
 
-$VERSION = "1.011";
+$VERSION = "1.012";
 
 *_first = \&Imager::Font::_first;
 
@@ -44,21 +44,16 @@ sub _draw {
   my $self = shift;
   my %input = @_;
 
-  # note that the string length parameter is ignored and calculated in
-  # XS with SvPV(), since we want the number of bytes rather than the
-  # number of characters, which is what we'd get in perl for a UTF8
-  # encoded string in 5.6 and later
-
   if ( exists $input{channel} ) {
     Imager::i_tt_cp($self->{id},$input{image}{IMG},
 		    $input{'x'}, $input{'y'}, $input{channel}, $input{size},
-		    $input{string}, length($input{string}),$input{aa},
+		    $input{string}, $input{aa},
                     $input{utf8}, $input{align}); 
   } else {
     Imager::i_tt_text($self->{id}, $input{image}{IMG}, 
 		      $input{'x'}, $input{'y'}, $input{color},
 		      $input{size}, $input{string}, 
-		      length($input{string}), $input{aa}, $input{utf8},
+		      $input{aa}, $input{utf8},
                       $input{align}); 
   }
 }
@@ -66,9 +61,14 @@ sub _draw {
 sub _bounding_box {
   my $self = shift;
   my %input = @_;
-  return Imager::i_tt_bbox($self->{id}, $input{size},
-			   $input{string}, length($input{string}),
-                           $input{utf8});
+  my @result =
+    Imager::i_tt_bbox($self->{id}, $input{size}, $input{string}, $input{utf8});
+  unless (@result) {
+    Imager->_set_error(Imager->_error_as_msg);
+    return;
+  }
+
+  return @result;
 }
 
 sub utf8 { 1 }
@@ -77,18 +77,39 @@ sub utf8 { 1 }
 sub has_chars {
   my ($self, %hsh) = @_;
 
-  unless (defined $hsh{string} && length $hsh{string}) {
+  unless (defined $hsh{string}) {
     $Imager::ERRSTR = "No string supplied to \$font->has_chars()";
     return;
   }
-  return Imager::i_tt_has_chars($self->{id}, $hsh{string}, 
-				_first($hsh{'utf8'}, $self->{utf8}, 0));
+  if (wantarray) {
+    my @result = Imager::i_tt_has_chars($self->{id}, $hsh{string}, 
+					_first($hsh{'utf8'}, $self->{utf8}, 0));
+    unless (@result) {
+      Imager->_set_error(Imager->_error_as_msg);
+      return;
+    }
+    return @result;
+  }
+  else {
+    my $result = Imager::i_tt_has_chars($self->{id}, $hsh{string}, 
+					_first($hsh{'utf8'}, $self->{utf8}, 0));
+    unless (defined $result) {
+      Imager->_set_error(Imager->_error_as_msg);
+      return;
+    }
+
+    return $result;
+  }
 }
 
 sub face_name {
   my ($self) = @_;
 
   Imager::i_tt_face_name($self->{id});
+}
+
+sub can_glyph_names {
+  1;
 }
 
 sub glyph_names {
@@ -99,7 +120,13 @@ sub glyph_names {
     or return Imager->_set_error("no string parameter passed to glyph_names");
   my $utf8 = _first($input{utf8} || 0);
 
-  Imager::i_tt_glyph_name($self->{id}, $string, $utf8);
+  my @names = Imager::i_tt_glyph_name($self->{id}, $string, $utf8);
+  unless (@names) {
+    Imager->_set_error(Imager->_error_as_msg);
+    return;
+  }
+
+  return @names;
 }
 
 1;

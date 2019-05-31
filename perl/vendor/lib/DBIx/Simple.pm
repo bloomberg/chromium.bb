@@ -3,7 +3,7 @@ use strict;
 use DBI;
 use Carp ();
 
-$DBIx::Simple::VERSION = '1.35';
+$DBIx::Simple::VERSION = '1.37';
 $Carp::Internal{$_} = 1
     for qw(DBIx::Simple DBIx::Simple::Result DBIx::Simple::DeadObject);
 
@@ -397,10 +397,10 @@ sub object {
     $_[0]->_die if ref $_[0]->{st} eq 'DBIx::Simple::DeadObject';
     my $self = shift;
     my $class = shift || ':RowObject';
-    if ($class =~ /^:/) {
-        $class = "DBIx::Simple::Result:$class";
-        (my $package = "$class.pm") =~ s[::][/]g;
-        require $package;
+    $class =~ s/^:/DBIx::Simple::Result::/;
+    if (not $class->can('new_from_dbix_simple') || $class->can('new')) {
+        (my $filename = "$class.pm") =~ s[::][/]g;
+        require $filename;
     }
     if ($class->can('new_from_dbix_simple')) {
         return scalar $class->new_from_dbix_simple($self, @_);
@@ -410,7 +410,7 @@ sub object {
     }
     Carp::croak(
         qq(Can't locate object method "new_from_dbix_simple" or "new" ) .
-        qq(via package "$class" (perhaps you forgot to load "$class"?))
+        qq(via package "$class".)
     );
 }
 
@@ -454,8 +454,8 @@ sub objects {
     $_[0]->_die if ref $_[0]->{st} eq 'DBIx::Simple::DeadObject';
     my $self = shift;
     my $class = shift || ':RowObject';
-    if ($class =~ /^:/) {
-        $class = "DBIx::Simple::Result:$class";
+    $class =~ s/^:/DBIx::Simple::Result::/;
+    if (not $class->can('new_from_dbix_simple') || $class->can('new')) {
         (my $package = "$class.pm") =~ s[::][/]g;
         require $package;
     }
@@ -473,34 +473,58 @@ sub objects {
     );
 }
 
-sub map_hashes {
+sub _map {
+    my ($keys, $values) = @_;
+    my %return;
+    @return{@$keys} = @$values;
+    return wantarray ? %return : \%return;
+}
+
+sub _group {
+    my ($keys, $values) = @_;
+    my %return;
+    push @{ $return{shift @$keys} }, shift @$values while @$values;
+    return wantarray ? %return : \%return;
+}
+
+sub _keys_and_hashes {
     $_[0]->_die if ref $_[0]->{st} eq 'DBIx::Simple::DeadObject';
     my ($self, $keyname) = @_;
     Carp::croak('Key column name not optional') if not defined $keyname;
     my @rows = $self->hashes;
     my @keys;
     push @keys, delete $_->{$keyname} for @rows;
-    my %return;
-    @return{@keys} = @rows;
-    return wantarray ? %return : \%return;
+    return \@keys, \@rows;
 }
 
-sub map_arrays {
+sub _keys_and_arrays {
     $_[0]->_die if ref $_[0]->{st} eq 'DBIx::Simple::DeadObject';
     my ($self, $keyindex) = @_;
     $keyindex += 0;
     my @rows = $self->arrays;
     my @keys;
     push @keys, splice @$_, $keyindex, 1 for @rows;
-    my %return;
-    @return{@keys} = @rows;
-    return wantarray ? %return : \%return;
+    return \@keys, \@rows;
 }
+
+sub group_hashes { return _group shift->_keys_and_hashes(@_) }
+sub   map_hashes { return _map   shift->_keys_and_hashes(@_) }
+sub group_arrays { return _group shift->_keys_and_arrays(@_) }
+sub   map_arrays { return _map   shift->_keys_and_arrays(@_) }
 
 sub map {
     $_[0]->_die if ref $_[0]->{st} eq 'DBIx::Simple::DeadObject';
     return   map @$_, @{ $_[0]->{st}->{sth}->fetchall_arrayref } if wantarray;
     return { map @$_, @{ $_[0]->{st}->{sth}->fetchall_arrayref } };
+}
+
+sub group {
+    $_[0]->_die if ref $_[0]->{st} eq 'DBIx::Simple::DeadObject';
+    my %return;
+    while (my $row = $_[0]->fetch) {
+        push @{ $return{ $row->[0] } }, $row->[1];
+    }
+    return wantarray ? %return : \%return;
 }
 
 sub rows {
@@ -628,9 +652,9 @@ DBIx::Simple - Very complete easy-to-use OO interface to DBI
     $row = $result->kv_array  @rows = $result->kv_arrays
     $obj = $result->object    @objs = $result->objects
 
-    %map = $result->map_arrays(...)
-    %map = $result->map_hashes(...)
-    %map = $result->map
+    %map = $result->map              %grouped = $result->group
+    %map = $result->map_hashes(...)  %grouped = $result->group_hashes(...)
+    %map = $result->map_arrays(...)  %grouped = $result->group_arrays(...)
 
     $rows = $result->rows
 
@@ -717,7 +741,7 @@ Uses SQL::Interp to interpolate values into a query, and uses the resulting
 generated query and bind arguments with C<query>. See SQL::Interp's
 documentation for usage information.
 
-Requires Mark Storberg's SQL::Interp, which is available from CPAN. SQL::Interp
+Requires Mark Stosberg's SQL::Interp, which is available from CPAN. SQL::Interp
 is a fork from David Manura's SQL::Interpolate.
 
 =item C<select>, C<insert>, C<update>, C<delete>
@@ -942,23 +966,37 @@ Affected by C<lc_columns>.
 Returns a list of instances of $class. See "Object construction". Possibly
 affected by C<lc_columns>.
 
-=item C<map_arrays($column_number)>
+=item C<map>
 
-Constructs a hash of array references keyed by the values in the chosen column,
-and returns a list of interleaved keys and values, or (in scalar context), a
-reference to a hash.
+=item C<group>
+
+Constructs a simple hash, using the two columns as key/value pairs. Should only
+be used with queries that return two columns. Returns a list of interleaved
+keys and values, or (in scalar context), a reference to a hash.
+
+With unique keys, use C<map>. With non-unique keys, use C<group>, which gives
+an array of values per key.
 
 =item C<map_hashes($column_name)>
 
-Constructs a hash of hash references keyed by the values in the chosen column,
-and returns a list of interleaved keys and values, or (in scalar context), a
-reference to a hash. Affected by C<lc_columns>.
+=item C<group_arrays($column_number)>
 
-=item C<map>
+Constructs a hash keyed by the values in the chosen column, and returns a list
+of interleaved keys and values, or (in scalar context), a reference to a hash.
+Affected by C<lc_columns>.
 
-Constructs a simple hash, using the two columns as key/value pairs. Should
-only be used with queries that return two columns. Returns a list of interleaved
-keys and values, or (in scalar context), a reference to a hash.
+With unique keys, use C<map_hashes>, which gives a single hash per key. With
+non-unique keys, use C<group_hashes>, which gives an array of hashes per key.
+
+=item C<map_arrays($column_number)>
+
+=item C<group_arrays($column_number)>
+
+Constructs a hash keyed by the values in the chosen column, and returns a list
+of interleaved keys and values, or (in scalar context), a reference to a hash.
+
+With unique keys, use C<map_arrays>, which gives a single array per key. With
+non-unique keys, use C<group_arrays>, which gives an array of arrays per key.
 
 =item C<xto(%attr)>
 
@@ -1019,8 +1057,7 @@ When the C<object> or C<objects> method is called on the result object returned
 by one of the query methods, two approaches are tried. In either case, pass the
 name of a class as the first argument. A prefix of a single colon can be used
 as an alias for C<DBIx::Simple::Result::>, e.g. C<":Example"> is short for
-C<"DBIx::Simple::Result::Example">. When this shortcut is used, the
-corresponding module is loaded automatically.
+C<"DBIx::Simple::Result::Example">. Modules are loaded on demand.
 
 The default class when no class is given, is C<:RowObject>. It requires Jos
 Boumans' Object::Accessor, which is available from CPAN.
@@ -1079,7 +1116,6 @@ Example:
 
 The mapping methods do not check whether the keys are unique. Rows that are
 fetched later overwrite earlier ones.
-
 
 =head1 LICENSE
 

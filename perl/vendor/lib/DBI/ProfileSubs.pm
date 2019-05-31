@@ -1,6 +1,6 @@
 package DBI::ProfileSubs;
 
-our $VERSION = sprintf("0.%06d", q$Revision: 9395 $ =~ /(\d+)/o);
+our $VERSION = "0.009396";
 
 =head1 NAME
 
@@ -26,7 +26,7 @@ use warnings;
 # way to compose them in various combinations into multiple subs.
 # Perhaps via AUTOLOAD where \&auto_X_Y_Z creates a sub that does X, Y, and Z.
 # The final subs always need to be very fast.
-# 
+#
 
 sub norm_std_n3 {
     # my ($h, $method_name) = @_;

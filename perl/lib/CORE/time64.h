@@ -1,8 +1,8 @@
 #include <time.h>
 #include "time64_config.h"
 
-#ifndef TIME64_H
-#    define TIME64_H
+#ifndef PERL_TIME64_H_
+#    define PERL_TIME64_H_
 
 
 /* Set our custom types */
@@ -28,11 +28,15 @@ struct TM64 {
 #endif
 
 #ifdef HAS_TM_TM_ZONE
-#  ifdef __GLIBC__
-        const char    *tm_zone;
-#  else
-        char    *tm_zone;
+/* If glibc is defined or we are on QNX, use const.
+ * Otherwise, if we are on android, use const but
+ * not with g++.
+ */
+#  if defined(__GLIBC__) || (defined(__ANDROID__) && !defined(__cplusplus)) \
+    || defined(__QNX__) || defined(__CYGWIN__)
+        const
 #  endif
+        char    *tm_zone;
 #endif
 };
 
@@ -46,9 +50,8 @@ struct TM64 {
 
 
 /* Declare functions */
-static struct TM *S_gmtime64_r    (const Time64_T *, struct TM *);
-static struct TM *S_localtime64_r (const Time64_T *, struct TM *);
-static Time64_T   S_timegm64      (struct TM *);
+struct TM *Perl_gmtime64_r    (const Time64_T *, struct TM *);
+struct TM *Perl_localtime64_r (const Time64_T *, struct TM *);
 
 
 /* Not everyone has gm/localtime_r(), provide a replacement */

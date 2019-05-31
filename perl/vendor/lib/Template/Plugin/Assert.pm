@@ -4,7 +4,7 @@
 #
 # DESCRIPTION
 #   Template Toolkit plugin module which allows you to assert that
-#   items fetchs from the stash are defined.
+#   items fetches from the stash are defined.
 #
 # AUTHOR
 #   Andy Wardley   <abw@wardley.org>

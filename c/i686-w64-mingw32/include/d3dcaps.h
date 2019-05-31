@@ -21,12 +21,16 @@
 
 #include <ddraw.h>
 
+#ifdef __i386__
+#include <pshpack4.h>
+#endif
+
 typedef struct _D3DTRANSFORMCAPS {
 	DWORD dwSize;
 	DWORD dwCaps;
 } D3DTRANSFORMCAPS, *LPD3DTRANSFORMCAPS;
 
-#define D3DTRANSFORMCAPS_CLIP           0x00000001L
+#define D3DTRANSFORMCAPS_CLIP           __MSABI_LONG(0x00000001)
 
 typedef struct _D3DLIGHTINGCAPS {
 	DWORD dwSize;
@@ -148,7 +152,7 @@ typedef struct _D3dPrimCaps {
 #define D3DPTEXTURECAPS_SQUAREONLY               0x00000020
 #define D3DPTEXTURECAPS_TEXREPEATNOTSCALEDBYSIZE 0x00000040
 #define D3DPTEXTURECAPS_ALPHAPALETTE             0x00000080
-#define D3DPTEXTURECAPS_NONPOW2CONDITIONAL  0x00000100L
+#define D3DPTEXTURECAPS_NONPOW2CONDITIONAL       __MSABI_LONG(0x00000100)
 /* yes actually 0x00000200 is unused - or at least unreleased */
 #define D3DPTEXTURECAPS_PROJECTED                0x00000400
 #define D3DPTEXTURECAPS_CUBEMAP                  0x00000800
@@ -347,8 +351,9 @@ typedef struct _D3DDeviceDesc7 {
 #define D3DVTXPCAPS_POSITIONALLIGHTS    0x00000010
 #define D3DVTXPCAPS_LOCALVIEWER         0x00000020
 
-typedef HRESULT (CALLBACK *LPD3DENUMDEVICESCALLBACK)(LPGUID lpGuid,LPSTR lpDeviceDescription,LPSTR lpDeviceName,LPD3DDEVICEDESC,LPD3DDEVICEDESC,LPVOID);
-typedef HRESULT (CALLBACK *LPD3DENUMDEVICESCALLBACK7)(LPSTR lpDeviceDescription, LPSTR lpDeviceName, LPD3DDEVICEDESC7, LPVOID);
+typedef HRESULT (CALLBACK *LPD3DENUMDEVICESCALLBACK)(GUID *guid, char *description, char *name,
+        D3DDEVICEDESC *hal_desc, D3DDEVICEDESC *hel_desc, void *ctx);
+typedef HRESULT (CALLBACK *LPD3DENUMDEVICESCALLBACK7)(char *description, char *name, D3DDEVICEDESC7 *desc, void *ctx);
 
 #define D3DFDS_COLORMODEL          0x00000001
 #define D3DFDS_GUID                0x00000002
@@ -389,7 +394,7 @@ typedef struct _D3DExecuteBufferDesc {
   DWORD  dwFlags;
   DWORD  dwCaps;
   DWORD  dwBufferSize;
-  LPVOID lpData;
+  void *lpData;
 } D3DEXECUTEBUFFERDESC, *LPD3DEXECUTEBUFFERDESC;
 
 #define D3DDEB_BUFSIZE          0x00000001
@@ -427,6 +432,8 @@ typedef struct _D3DDEVINFO_TEXTURING {
 	DWORD   dwNumGetDCs;
 } D3DDEVINFO_TEXTURING, *LPD3DDEVINFO_TEXTURING;
 
-
+#ifdef __i386__
+#include <poppack.h>
+#endif
 
 #endif

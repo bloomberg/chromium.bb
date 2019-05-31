@@ -77,7 +77,9 @@ of the image, using filled => 1 and color works at 8-bits/sample
   JPEG      8, 12             8
   PBM       1                 1
   PGM/PPM   1-16              read any, writes 8, 16
-  PNG       1, 2, 4, 8, 16    8
+  PNG       1, 2, 4, 8, 16    1, 2, 4, 8 paletted
+  	       	     	      1, 8, 16 gray (1 for is_monochrome() images)
+			      8, 16 RGB
   RAW                         8
   SGI       8, 16             8, 16
   TGA       8                 8

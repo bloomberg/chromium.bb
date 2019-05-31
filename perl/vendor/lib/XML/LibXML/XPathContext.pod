@@ -32,11 +32,14 @@ XML::LibXML::XPathContext - XPath Evaluation
   $xpc->setContextSize($size)
   my $size = $xpc->getContextSize;
   $xpc->setContextNode($node)
+
+=head1 DESCRIPTION
+
 The XML::LibXML::XPathContext class provides an almost complete interface to
-libxml2's XPath implementation. With XML::LibXML::XPathContext is is possible
+libxml2's XPath implementation. With XML::LibXML::XPathContext, it is possible
 to evaluate XPath expressions in the context of arbitrary node, context size,
 and context position, with a user-defined namespace-prefix mapping, custom
-XPath functions written in Perl, and even a custom XPath variable resolver. 
+XPath functions written in Perl, and even a custom XPath variable resolver.
 
 
 =head1 EXAMPLES
@@ -215,7 +218,7 @@ Performs the xpath statement on the current node and returns the result as an
 array. In scalar context, returns an L<<<<<< XML::LibXML::NodeList >>>>>> object. Optionally, a node may be passed as a second argument to set the
 context node for the query.
 
-The xpath expression can be passed either as a string or or as a L<<<<<< XML::LibXML::XPathExpression >>>>>> object. 
+The xpath expression can be passed either as a string, or as a L<<<<<< XML::LibXML::XPathExpression >>>>>> object.
 
 
 =item find
@@ -230,7 +233,7 @@ expression had. For example, the XPath C<<<<<< 1 * 3 + 	      52 >>>>>> results 
 the right thing'' in different contexts. Optionally, a node may be passed as a
 second argument to set the context node for the query.
 
-The xpath expression can be passed either as a string or or as a L<<<<<< XML::LibXML::XPathExpression >>>>>> object. 
+The xpath expression can be passed either as a string, or as a L<<<<<< XML::LibXML::XPathExpression >>>>>> object.
 
 
 =item findvalue
@@ -251,7 +254,7 @@ This could be used as the equivalent of <xsl:value-of select=``some_xpath''/>.
 Optionally, a node may be passed in the second argument to set the context node
 for the query.
 
-The xpath expression can be passed either as a string or or as a L<<<<<< XML::LibXML::XPathExpression >>>>>> object. 
+The xpath expression can be passed either as a string, or as a L<<<<<< XML::LibXML::XPathExpression >>>>>> object.
 
 
 =item exists
@@ -260,7 +263,7 @@ The xpath expression can be passed either as a string or or as a L<<<<<< XML::Li
 
 This method behaves like I<<<<<< findnodes >>>>>>, except that it only returns a boolean value (1 if the expression matches a
 node, 0 otherwise) and may be faster than I<<<<<< findnodes >>>>>>, because the XPath evaluation may stop early on the first match (this is true
-for libxml2 >= 2.6.27). 
+for libxml2 >= 2.6.27).
 
 For XPath expressions that do not return node-set, the method returns true if
 the returned value is a non-zero number or a non-empty string.
@@ -336,7 +339,7 @@ even from XPath extension functions registered with the same object or from a
 variable lookup function. On the other hand, you should rather avoid
 registering new extension functions, namespaces and a variable lookup function
 from within extension functions and a variable lookup function, unless you want
-to experience untested behavior. 
+to experience untested behavior.
 
 
 =head1 AUTHORS
@@ -348,18 +351,18 @@ Matt Sergeant and Christian Glahn.
 =head1 HISTORICAL REMARK
 
 Prior to XML::LibXML 1.61 this module was distributed separately for
-maintenance reasons. 
+maintenance reasons.
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -370,3 +373,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

@@ -1,22 +1,37 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!perl
-#line 15
+#line 29
     eval 'exec C:\strawberry\perl\bin\perl.exe -S $0 ${1+"$@"}'
 	if $running_under_some_shell;
 #!./perl
-# $Id: piconv,v 2.4 2009/07/08 13:34:15 dankogai Exp $
+# $Id: piconv,v 2.8 2016/08/04 03:15:58 dankogai Exp $
 #
+BEGIN { pop @INC if $INC[-1] eq '.' }
 use 5.8.0;
 use strict;
 use Encode ;
@@ -74,9 +89,13 @@ $Opt{perlqq}   and $Opt{check} = Encode::PERLQQ;
 $Opt{htmlcref} and $Opt{check} = Encode::HTMLCREF;
 $Opt{xmlcref}  and $Opt{check} = Encode::XMLCREF;
 
+my $efrom = Encode->getEncoding($from) || die "Unknown encoding '$from'";
+my $eto   = Encode->getEncoding($to)   || die "Unknown encoding '$to'";
+
+my $cfrom = $efrom->name;
+my $cto   = $eto->name;
+
 if ($Opt{debug}){
-    my $cfrom = Encode->getEncoding($from)->name;
-    my $cto   = Encode->getEncoding($to)->name;
     print <<"EOT";
 Scheme: $scheme
 From:   $from => $cfrom
@@ -84,14 +103,15 @@ To:     $to => $cto
 EOT
 }
 
-my %use_bom = map { $_ => 1 } qw/UTF-16 UTF-32/;
+my %use_bom =
+  map { $_ => 1 } qw/UTF-16 UTF-16BE UTF-16LE UTF-32 UTF-32BE UTF-32LE/;
 
 # we do not use <> (or ARGV) for the sake of binmode()
 @ARGV or push @ARGV, \*STDIN;
 
 unless ( $scheme eq 'perlio' ) {
     binmode STDOUT;
-    my $need2slurp = $use_bom{ find_encoding($to)->name };
+    my $need2slurp = $use_bom{ $eto } || $use_bom{ $efrom };
     for my $argv (@ARGV) {
         my $ifh = ref $argv ? $argv : undef;
 	$ifh or open $ifh, "<", $argv or warn "Can't open $argv: $!" and next;
@@ -163,9 +183,13 @@ sub help {
     my $message = shift;
     $message and print STDERR "$name error: $message\n";
     print STDERR <<"EOT";
-$name [-f from_encoding] [-t to_encoding] [-s string] [files...]
+$name [-f from_encoding] [-t to_encoding]
+      [-p|--perlqq|--htmlcref|--xmlcref] [-C N|-c] [-D] [-S scheme]
+      [-s string|file...]
 $name -l
 $name -r encoding_alias
+$name -h
+Common options:
   -l,--list
      lists all available encodings
   -r,--resolve encoding_alias
@@ -177,13 +201,17 @@ $name -r encoding_alias
   -s,--string string         
      "string" will be the input instead of STDIN or files
 The following are mainly of interest to Encode hackers:
-  -D,--debug          show debug information
   -C N | -c           check the validity of the input
+  -D,--debug          show debug information
   -S,--scheme scheme  use the scheme for conversion
-Those are handy when you can only see ascii characters:
-  -p,--perlqq
-  --htmlcref
-  --xmlcref
+Those are handy when you can only see ASCII characters:
+  -p,--perlqq         transliterate characters missing in encoding to \\x{HHHH}
+                      where HHHH is the hexadecimal Unicode code point
+  --htmlcref          transliterate characters missing in encoding to &#NNN;
+                      where NNN is the decimal Unicode code point
+  --xmlcref           transliterate characters missing in encoding to &#xHHHH;
+                      where HHHH is the hexadecimal Unicode code point
+
 EOT
     exit;
 }
@@ -196,12 +224,11 @@ piconv -- iconv(1), reinvented in perl
 
 =head1 SYNOPSIS
 
-  piconv [-f from_encoding] [-t to_encoding] [-s string] [files...]
+  piconv [-f from_encoding] [-t to_encoding]
+         [-p|--perlqq|--htmlcref|--xmlcref] [-C N|-c] [-D] [-S scheme]
+         [-s string|file...]
   piconv -l
-  piconv [-C N|-c|-p]
-  piconv -S scheme ...
-  piconv -r encoding
-  piconv -D ...
+  piconv -r encoding_alias
   piconv -h
 
 =head1 DESCRIPTION
@@ -214,17 +241,17 @@ place of iconv for virtually any case.
 piconv converts the character encoding of either STDIN or files
 specified in the argument and prints out to STDOUT.
 
-Here is the list of options.  Each option can be in short format (-f)
-or long (--from).
+Here is the list of options.  Some options can be in short format (-f)
+or long (--from) one.
 
 =over 4
 
-=item -f,--from from_encoding
+=item -f,--from I<from_encoding>
 
 Specifies the encoding you are converting from.  Unlike B<iconv>,
 this option can be omitted.  In such cases, the current locale is used.
 
-=item -t,--to to_encoding
+=item -t,--to I<to_encoding>
 
 Specifies the encoding you are converting to.  Unlike B<iconv>,
 this option can be omitted.  In such cases, the current locale is used.
@@ -245,6 +272,10 @@ and common aliases work, such as "latin1" for "ISO-8859-1", or "ibm850"
 instead of "cp850", or "winlatin1" for "cp1252".  See L<Encode::Supported>
 for a full discussion.
 
+=item -r,--resolve I<encoding_alias>
+
+Resolve I<encoding_alias> to Encode canonical encoding name.
+
 =item -C,--check I<N>
 
 Check the validity of the stream if I<N> = 1.  When I<N> = -1, something
@@ -256,15 +287,18 @@ Same as C<-C 1>.
 
 =item -p,--perlqq
 
+Transliterate characters missing in encoding to \x{HHHH} where HHHH is the
+hexadecimal Unicode code point.
+
 =item --htmlcref
+
+Transliterate characters missing in encoding to &#NNN; where NNN is the
+decimal Unicode code point.
 
 =item --xmlcref
 
-Applies PERLQQ, HTMLCREF, XMLCREF, respectively.  Try
-
-  piconv -f utf8 -t ascii --perlqq
-
-To see what it does.
+Transliterate characters missing in encoding to &#xHHHH; where HHHH is the
+hexadecimal Unicode code point.
 
 =item -h,--help
 
@@ -274,7 +308,7 @@ Show usage.
 
 Invokes debugging mode.  Primarily for Encode hackers.
 
-=item -S,--scheme scheme
+=item -S,--scheme I<scheme>
 
 Selects which scheme is to be used for conversion.  Available schemes
 are as follows:

@@ -1,12 +1,15 @@
 package Net::SSLeay::Handle;
 
-require 5.005_03;
+use 5.8.1;
+
 use strict;
 
 use Socket;
 use Net::SSLeay;
 
 require Exporter;
+
+=encoding utf-8
 
 =head1 NAME
 
@@ -54,11 +57,10 @@ you need to add to your program is the tie function as in:
 use vars qw(@ISA @EXPORT_OK $VERSION);
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(shutdown);
-$VERSION = '0.61';
+$VERSION = '1.88';
 
 my $Initialized;       #-- only _initialize() once
 my $Debug = 0;         #-- pretty hokey
-my %Glob_Ref;          #-- used to make unique \*S names for versions < 5.6
 
 #== Tie Handle Methods ========================================================
 #
@@ -187,7 +189,7 @@ sub shutdown {
   my $debug = Net::SSLeay::Handle->debug()
   Net::SSLeay::Handle->debug(1)
 
-Get/set debuging mode. Always returns the debug value before the function call.
+Get/set debugging mode. Always returns the debug value before the function call.
 if an additional argument is given the debug option will be set to this value.
 
 =cut
@@ -223,10 +225,9 @@ sub make_socket {
 
     my $dest_ip     = gethostbyname($phost || $host);
     my $host_params = sockaddr_in($pport, $dest_ip);
-    my $socket = $^V ? undef : $class->_glob_ref("$host:$port");
     
-    socket($socket, &PF_INET(), &SOCK_STREAM(), 0) or die "socket: $!";
-    connect($socket, $host_params)                 or die "connect: $!";
+    socket(my $socket, &PF_INET(), &SOCK_STREAM(), 0) or die "socket: $!";
+    connect($socket, $host_params)                    or die "connect: $!";
 
     my $old_select = select($socket); $| = 1; select($old_select);
     $phost and do {
@@ -241,32 +242,6 @@ sub make_socket {
 =back
 
 =cut
-
-#--- _glob_ref($strings) ------------------------------------------------------
-#
-# Create a unique namespace name and return a glob ref to it.  Would be great
-# to use the fileno but need this before we get back the fileno.
-# NEED TO LOCK THIS ROUTINE IF USING THREADS. (but it is only used for
-# versions < 5.6 :)
-#------------------------------------------------------------------------------
-
-sub _glob_ref {
-    my $class = shift;
-    my $preamb = join("", @_) || "_glob_ref";
-    my $num = ++$Glob_Ref{$preamb};
-    my $name = "$preamb:$num";
-    no strict 'refs';
-    my $glob_ref = \*$name;
-    use strict 'refs';
-
-    $Debug and do {
-        print "GLOB_REF $preamb\n";
-        while (my ($k, $v) = each %Glob_Ref) {print "$k = $v\n"} 
-        print "\n";
-    };
-
-    return $glob_ref;
-}
 
 sub _initialize {
     $Initialized++ and return;
@@ -369,23 +344,84 @@ glob, I got a core dump.
 I was able to associate attributes to globs created by this module
 (like *SSL above) by making a hash of hashes keyed by the file head1.
 
-Support for old perls may not be 100%. If in trouble try 5.6.0 or
-newer.
-
 =head1 CHANGES
 
 Please see Net-SSLeay-Handle-0.50/Changes file.
 
-=head1 KNOWN BUGS
+=head1 BUGS
 
-If you let this module construct sockets for you with Perl versions
-below v.5.6 then there is a slight memory leak.  Other upgrade your
-Perl, or create the sockets yourself.  The leak was created to let
-these older versions of Perl access more than one Handle at a time.
+If you encounter a problem with this module that you believe is a bug,
+please report it in one of the following ways:
+
+=over
+
+=item *
+
+L<create a new issue|https://github.com/radiator-software/p5-net-ssleay/issues/new>
+under the Net-SSLeay GitHub project at
+L<https://github.com/radiator-software/p5-net-ssleay>;
+
+=item *
+
+L<open a ticket|https://rt.cpan.org/Ticket/Create.html?Queue=Net-SSLeay> using
+the CPAN RT bug tracker's web interface at
+L<https://rt.cpan.org/Dist/Display.html?Queue=Net-SSLeay>;
+
+=item *
+
+send an email to the CPAN RT bug tracker at
+L<bug-Net-SSLeay@rt.cpan.org|mailto:bug-Net-SSLeay@rt.cpan.org>.
+
+=back
+
+Please make sure your bug report includes the following information:
+
+=over
+
+=item * the code you are trying to run;
+
+=item * your operating system name and version;
+
+=item * the output of C<perl -V>;
+
+=item * the version of OpenSSL or LibreSSL you are using.
+
+=back
 
 =head1 AUTHOR
 
-Jim Bowlin jbowlin@linklint.org
+Originally written by Jim Bowlin.
+
+Maintained by Sampo Kellomäki between July 2001 and August 2003.
+
+Maintained by Florian Ragwitz between November 2005 and January 2010.
+
+Maintained by Mike McCauley between November 2005 and June 2018.
+
+Maintained by Chris Novakovic, Tuure Vartiainen and Heikki Vatiainen since June 2018.
+
+=head1 COPYRIGHT
+
+Copyright (c) 2001 Jim Bowlin <jbowlin@linklint.org>
+
+Copyright (c) 2001-2003 Sampo Kellomäki <sampo@iki.fi>
+
+Copyright (c) 2005-2010 Florian Ragwitz <rafl@debian.org>
+
+Copyright (c) 2005-2018 Mike McCauley <mikem@airspayce.com>
+
+Copyright (c) 2018- Chris Novakovic <chris@chrisn.me.uk>
+
+Copyright (c) 2018- Tuure Vartiainen <vartiait@radiatorsoftware.com>
+
+Copyright (c) 2018- Heikki Vatiainen <hvn@radiatorsoftware.com>
+
+All rights reserved.
+
+=head1 LICENSE
+
+This module is released under the terms of the Artistic License 2.0. For
+details, see the C<LICENSE> file distributed with Net-SSLeay's source code.
 
 =head1 SEE ALSO
 

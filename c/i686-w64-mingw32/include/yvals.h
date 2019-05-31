@@ -1,12 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _YVALS
 #define _YVALS
 
-#include <_mingw.h>
+#include <crtdefs.h>
 
 #pragma pack(push,_CRT_PACKING)
 
@@ -163,9 +163,12 @@
 #define _Restrict __restrict__
 
 #ifdef __cplusplus
+#pragma push_macro("_Bool")
+#undef _Bool
 _STD_BEGIN
 typedef bool _Bool;
 _STD_END
+#pragma pop_macro("_Bool")
 #endif
 
 #define _LONGLONG /* __MINGW_EXTENSION */ __int64

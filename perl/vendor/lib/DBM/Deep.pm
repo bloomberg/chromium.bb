@@ -6,7 +6,7 @@ use strict;
 use warnings FATAL => 'all';
 no warnings 'recursion';
 
-our $VERSION = q(2.0006);
+our $VERSION = q(2.0016);
 
 use Scalar::Util ();
 
@@ -361,7 +361,7 @@ sub optimize {
     # q.v. perlport for more information on this variable
     if ( $^O eq 'MSWin32' || $^O eq 'cygwin' ) {
         ##
-        # Potential race condition when optmizing on Win32 with locking.
+        # Potential race condition when optimizing on Win32 with locking.
         # The Windows filesystem requires that the filehandle be closed
         # before it is overwritten with rename().  This could be redone
         # with a soft copy.
@@ -636,21 +636,26 @@ sub clear  { (shift)->CLEAR( @_ )  }
 sub _dump_file {shift->_get_self->_engine->_dump_file;}
 
 sub _warnif {
- # There is, unfortunately, no way to avoid this hack. warnings.pm does not
- # allow us to specify exactly the call frame we want. So, for now, we just
- # look at the bitmask ourselves.
  my $level;
  {
   my($pack, $file, $line, $bitmask) = (caller $level++)[0..2,9];
   redo if $pack =~ /^DBM::Deep(?:::|\z)/;
-  if(  vec $bitmask, $warnings'Offsets{$_[0]}, 1,
-    || vec $bitmask, $warnings'Offsets{all}, 1,
-    ) {
-     my $msg = $_[1] =~ /\n\z/ ? $_[1] : "$_[1] at $file line $line.\n";
-     die $msg
-      if  vec $bitmask, $warnings'Offsets{$_[0]}+1, 1,
-       || vec $bitmask, $warnings'Offsets{all}+1, 1;
-     warn $msg;
+  if(defined &warnings::warnif_at_level) { # perl >= 5.27.8
+   warnings::warnif_at_level($_[0], $level-1, $_[1]);
+  } else {
+   # In older perl versions (< 5.27.8) there is, unfortunately, no way
+   # to avoid this hack. warnings.pm did not allow us to specify
+   # exactly the call frame we want, so we have to look at the bitmask
+   # ourselves.
+   if(  vec $bitmask, $warnings'Offsets{$_[0]}, 1,
+     || vec $bitmask, $warnings'Offsets{all}, 1,
+     ) {
+      my $msg = $_[1] =~ /\n\z/ ? $_[1] : "$_[1] at $file line $line.\n";
+      die $msg
+       if  vec $bitmask, $warnings'Offsets{$_[0]}+1, 1,
+        || vec $bitmask, $warnings'Offsets{all}+1, 1;
+      warn $msg;
+   }
   }
  }
 }

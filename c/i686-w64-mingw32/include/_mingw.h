@@ -1,13 +1,32 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 
-#ifndef _INC_CRTDEFS
-#define _INC_CRTDEFS
+#ifndef _INC__MINGW_H
+#define _INC__MINGW_H
+
+#define MINGW_HAS_SECURE_API 1
 
 #include "_mingw_mac.h"
+#include "_mingw_secapi.h"
+
+/* Include _cygwin.h if we're building a Cygwin application. */
+#ifdef __CYGWIN__
+#include "_cygwin.h"
+#endif
+
+/* Target specific macro replacement for type "long".  In the Windows API,
+   the type long is always 32 bit, even if the target is 64 bit (LLP64).
+   On 64 bit Cygwin, the type long is 64 bit (LP64).  So, to get the right
+   sized definitions and declarations, all usage of type long in the Windows
+   headers have to be replaced by the below defined macro __LONG32. */
+#ifndef __LP64__	/* 32 bit target, 64 bit Mingw target */
+#define __LONG32 long
+#else			/* 64 bit Cygwin target */
+#define __LONG32 int
+#endif
 
 /* C/C++ specific language defines.  */
 #ifdef _WIN64
@@ -54,25 +73,14 @@ limitations in handling dllimport attribute.  */
 # endif /* __declspec */
 #endif /* __GNUC__ */
 
-#if defined (__GNUC__) && defined (__GNUC_MINOR__)
-#define __MINGW_GNUC_PREREQ(major, minor) \
-  (__GNUC__ > (major) \
-   || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
-#else
-#define __MINGW_GNUC_PREREQ(major, minor)  0
-#endif
-
-#if defined (_MSC_VER)
-#define __MINGW_MSC_PREREQ(major, minor) \
-  (_MSC_VER >= (major * 100 + minor * 10))
-#else
-#define __MINGW_MSC_PREREQ(major, minor)   0
-#endif
-
 #ifdef _MSC_VER
 #define USE___UUIDOF	1
 #else
 #define USE___UUIDOF	0
+#endif
+
+#if !defined(_MSC_VER) && !defined(_inline)
+#define _inline __inline
 #endif
 
 #ifdef __cplusplus
@@ -92,9 +100,11 @@ limitations in handling dllimport attribute.  */
 #define __MINGW_INTRIN_INLINE extern __inline__ __attribute__((__always_inline__,__gnu_inline__))
 #endif
 
+#ifndef __CYGWIN__
 #ifdef __NO_INLINE__
 #undef __CRT__NO_INLINE
 #define __CRT__NO_INLINE 1
+#endif
 #endif
 
 #ifdef __cplusplus
@@ -171,6 +181,9 @@ limitations in handling dllimport attribute.  */
 #if  __MINGW_GNUC_PREREQ (3, 1)
 #define __MINGW_ATTRIB_USED __attribute__ ((__used__))
 #define __MINGW_ATTRIB_DEPRECATED __attribute__ ((__deprecated__))
+#if __MINGW_GNUC_PREREQ (4, 5) || defined (__clang__)
+#define __MINGW_ATTRIB_DEPRECATED_MSG(x) __attribute__ ((__deprecated__(x)))
+#endif
 #elif __MINGW_MSC_PREREQ(12, 0)
 #define __MINGW_ATTRIB_USED
 #define __MINGW_ATTRIB_DEPRECATED __declspec(deprecated)
@@ -178,6 +191,10 @@ limitations in handling dllimport attribute.  */
 #define __MINGW_ATTRIB_USED __MINGW_ATTRIB_UNUSED
 #define __MINGW_ATTRIB_DEPRECATED
 #endif /* GNUC >= 3.1 */
+
+#ifndef __MINGW_ATTRIB_DEPRECATED_MSG
+#define __MINGW_ATTRIB_DEPRECATED_MSG(x) __MINGW_ATTRIB_DEPRECATED
+#endif
 
 #if  __MINGW_GNUC_PREREQ (3, 3)
 #define __MINGW_NOTHROW __attribute__ ((__nothrow__))
@@ -205,40 +222,11 @@ limitations in handling dllimport attribute.  */
   __MINGW_PRAGMA_PARAM(message ("Interface " _CRT_STRINGIZE(x) \
   " has unverified layout."))
 
-#ifdef __MINGW_MSVC_COMPAT_WARNINGS
-# if __MINGW_GNUC_PREREQ (4, 5)
-#  define __MINGW_ATTRIB_DEPRECATED_STR(X) __attribute__ ((__deprecated__ (X)))
-# else
-#  define __MINGW_ATTRIB_DEPRECATED_STR(X) __MINGW_ATTRIB_DEPRECATED
-# endif
-#else
-# define __MINGW_ATTRIB_DEPRECATED_STR(X)
-#endif
-
-#define __MINGW_SEC_WARN_STR "This function or variable may be unsafe, use _CRT_SECURE_NO_WARNINGS to disable deprecation"
-#define __MINGW_MSVC2005_DEPREC_STR "This POSIX function is deprecated beginning in Visual C++ 2005, use _CRT_NONSTDC_NO_DEPRECATE to disable deprecation"
-
-#if !defined (_CRT_NONSTDC_NO_DEPRECATE)
-# define __MINGW_ATTRIB_DEPRECATED_MSVC2005 __MINGW_ATTRIB_DEPRECATED_STR (__MINGW_MSVC2005_DEPREC_STR)
-#else
-# define __MINGW_ATTRIB_DEPRECATED_MSVC2005
-#endif
-
-#if !defined (_CRT_SECURE_NO_WARNINGS)
-# define __MINGW_ATTRIB_DEPRECATED_SEC_WARN __MINGW_ATTRIB_DEPRECATED_STR (__MINGW_SEC_WARN_STR)
-#else
-# define __MINGW_ATTRIB_DEPRECATED_SEC_WARN
-#endif
-
 #ifndef __MSVCRT_VERSION__
 /*  High byte is the major version, low byte is the minor. */
-# define __MSVCRT_VERSION__ 0x0700
+# define __MSVCRT_VERSION__ 0x700
 #endif
 
-
-#ifndef WINVER
-#define WINVER 0x0502
-#endif
 
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x502
@@ -252,6 +240,10 @@ limitations in handling dllimport attribute.  */
 #define __int32 int
 #define __int64 long long
 #ifdef _WIN64
+#if (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 1)) && \
+    !defined(__SIZEOF_INT128__) /* clang >= 3.1 has __int128 but no size macro */
+#define __SIZEOF_INT128__ 16
+#endif
 #ifndef __SIZEOF_INT128__
 typedef int __int128 __attribute__ ((__mode__ (TI)));
 #endif
@@ -275,24 +267,19 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #endif /* __cplusplus */
 #endif /* __GNUC__ */
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__CYGWIN__)
 #error Only Win32 target is supported!
 #endif
 
 #ifndef __nothrow
 #ifdef __cplusplus
-#define __nothrow __declspec(nothrow)
+#define __nothrow __MINGW_NOTHROW
 #else
 #define __nothrow
 #endif
 #endif /* __nothrow */
 
-#undef _CRT_PACKING
-#define _CRT_PACKING 8
-
 #include <vadefs.h>	/* other headers depend on this include */
-
-#pragma pack(push,_CRT_PACKING)
 
 #ifndef _CRT_STRINGIZE
 #define __CRT_STRINGIZE(_Value) #_Value
@@ -377,117 +364,13 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #define _CRT_OBSOLETE(_NewItem)
 #endif
 
-#ifndef _SIZE_T_DEFINED
-#define _SIZE_T_DEFINED
-#undef size_t
-#ifdef _WIN64
-__MINGW_EXTENSION typedef unsigned __int64 size_t;
-#else
-typedef unsigned int size_t;
-#endif /* _WIN64 */
-#endif /* _SIZE_T_DEFINED */
+#ifndef __WIDL__
 
-#ifndef _SSIZE_T_DEFINED
-#define _SSIZE_T_DEFINED
-#undef ssize_t
-#ifdef _WIN64
-__MINGW_EXTENSION typedef __int64 ssize_t;
-#else
-typedef int ssize_t;
-#endif /* _WIN64 */
-#endif /* _SSIZE_T_DEFINED */
-
-#ifndef _INTPTR_T_DEFINED
-#define _INTPTR_T_DEFINED
-#ifndef __intptr_t_defined
-#define __intptr_t_defined
-#undef intptr_t
-#ifdef _WIN64
-__MINGW_EXTENSION typedef __int64 intptr_t;
-#else
-typedef int intptr_t;
-#endif /* _WIN64 */
-#endif /* __intptr_t_defined */
-#endif /* _INTPTR_T_DEFINED */
-
-#ifndef _UINTPTR_T_DEFINED
-#define _UINTPTR_T_DEFINED
-#ifndef __uintptr_t_defined
-#define __uintptr_t_defined
-#undef uintptr_t
-#ifdef _WIN64
-__MINGW_EXTENSION typedef unsigned __int64 uintptr_t;
-#else
-typedef unsigned int uintptr_t;
-#endif /* _WIN64 */
-#endif /* __uintptr_t_defined */
-#endif /* _UINTPTR_T_DEFINED */
-
-#ifndef _PTRDIFF_T_DEFINED
-#define _PTRDIFF_T_DEFINED
-#ifndef _PTRDIFF_T_
-#define _PTRDIFF_T_
-#undef ptrdiff_t
-#ifdef _WIN64
-__MINGW_EXTENSION typedef __int64 ptrdiff_t;
-#else
-typedef int ptrdiff_t;
-#endif /* _WIN64 */
-#endif /* _PTRDIFF_T_ */
-#endif /* _PTRDIFF_T_DEFINED */
-
-#ifndef _WCHAR_T_DEFINED
-#define _WCHAR_T_DEFINED
-#ifndef __cplusplus
-typedef unsigned short wchar_t;
-#endif /* C++ */
-#endif /* _WCHAR_T_DEFINED */
-
-#ifndef _WCTYPE_T_DEFINED
-#define _WCTYPE_T_DEFINED
-#ifndef _WINT_T
-#define _WINT_T
-typedef unsigned short wint_t;
-typedef unsigned short wctype_t;
-#endif /* _WINT_T */
-#endif /* _WCTYPE_T_DEFINED */
-
-#if defined (_WIN32) && !defined (_WIN64) && !defined (__MINGW_USE_VC2005_COMPAT)/* && !(defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS == 64)*/
+#if defined (_WIN32) && !defined (_WIN64) && !defined (__MINGW_USE_VC2005_COMPAT)
 #ifndef _USE_32BIT_TIME_T
 #define _USE_32BIT_TIME_T
 #endif
 #endif
-
-#ifdef _USE_32BIT_TIME_T
-#ifdef _WIN64
-#error You cannot use 32-bit time_t (_USE_32BIT_TIME_T) with _WIN64
-#undef _USE_32BIT_TIME_T
-#endif
-#endif /* _USE_32BIT_TIME_T */
-
-#ifndef _ERRCODE_DEFINED
-#define _ERRCODE_DEFINED
-typedef int errno_t;
-#endif
-
-#ifndef _TIME32_T_DEFINED
-#define _TIME32_T_DEFINED
-typedef long __time32_t;
-#endif
-
-#ifndef _TIME64_T_DEFINED
-#define _TIME64_T_DEFINED
-__MINGW_EXTENSION typedef __int64 __time64_t;
-#endif /* _TIME64_T_DEFINED */
-
-#ifndef _TIME_T_DEFINED
-#define _TIME_T_DEFINED
-#ifdef _USE_32BIT_TIME_T
-typedef __time32_t time_t;
-#else
-typedef __time64_t time_t;
-#endif
-#endif /* _TIME_T_DEFINED */
 
 #ifndef _CONST_RETURN
 #define _CONST_RETURN
@@ -509,6 +392,8 @@ typedef __time64_t time_t;
 #endif
 #endif /* _CRT_ALIGN */
 
+#endif /* __WIDL__ */
+
 #ifndef __CRTDECL
 #define __CRTDECL __cdecl
 #endif
@@ -523,7 +408,21 @@ typedef __time64_t time_t;
 #define _CRT_UNUSED(x) (void)x
 #endif
 
-#if defined(_POSIX) && !defined(__USE_MINGW_ANSI_STDIO)
+/* MSVC defines _NATIVE_NULLPTR_SUPPORTED when nullptr is supported. We emulate it here for GCC. */
+#if __MINGW_GNUC_PREREQ(4, 6)
+#if defined(__GNUC__) && (defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L)
+#define _NATIVE_NULLPTR_SUPPORTED
+#endif
+#endif
+
+/* We are activating __USE_MINGW_ANSI_STDIO for various define indicators.
+   Note that we enable it also for _GNU_SOURCE in C++, but not for C case. */
+#if (defined (_POSIX) || defined (_POSIX_SOURCE) || defined (_POSIX_C_SOURCE) \
+     || defined (_ISOC99_SOURCE) \
+     || defined (_XOPEN_SOURCE) || defined (_XOPEN_SOURCE_EXTENDED) \
+     || (defined (_GNU_SOURCE) && defined (__cplusplus)) \
+     || defined (_SVID_SOURCE)) \
+    && !defined(__USE_MINGW_ANSI_STDIO)
 /* Enable __USE_MINGW_ANSI_STDIO if _POSIX defined
  * and If user did _not_ specify it explicitly... */
 #  define __USE_MINGW_ANSI_STDIO			1
@@ -619,17 +518,35 @@ typedef __time64_t time_t;
 /* Macros for __uuidof template-based emulation */
 #if defined(__cplusplus) && (USE___UUIDOF == 0)
 
+#if __cpp_constexpr >= 200704l && __cpp_inline_variables >= 201606L
+#define __CRT_UUID_DECL(type,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8)    \
+    extern "C++" {                                               \
+    template<> struct __mingw_uuidof_s<type> {                   \
+        static constexpr IID __uuid_inst = {                     \
+            l,w1,w2, {b1,b2,b3,b4,b5,b6,b7,b8}                   \
+        };                                                       \
+    };                                                           \
+    template<> constexpr const GUID &__mingw_uuidof<type>() {    \
+        return __mingw_uuidof_s<type>::__uuid_inst;              \
+    }                                                            \
+    template<> constexpr const GUID &__mingw_uuidof<type*>() {   \
+        return  __mingw_uuidof_s<type>::__uuid_inst;             \
+    }                                                            \
+    }
+#else
 #define __CRT_UUID_DECL(type,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8)           \
     extern "C++" {                                                      \
     template<> inline const GUID &__mingw_uuidof<type>() {              \
-        return (const IID){l,w1,w2, {b1,b2,b3,b4,b5,b6,b7,b8}};         \
+        static const IID __uuid_inst = {l,w1,w2, {b1,b2,b3,b4,b5,b6,b7,b8}}; \
+        return __uuid_inst;                                             \
     }                                                                   \
     template<> inline const GUID &__mingw_uuidof<type*>() {             \
         return __mingw_uuidof<type>();                                  \
     }                                                                   \
     }
+#endif
 
-#define __uuidof(type) __mingw_uuidof<typeof(type)>()
+#define __uuidof(type) __mingw_uuidof<__typeof(type)>()
 
 #else
 
@@ -637,68 +554,22 @@ typedef __time64_t time_t;
 
 #endif
 
-
-/* MSVC-isms: */
-
-struct threadlocaleinfostruct;
-struct threadmbcinfostruct;
-typedef struct threadlocaleinfostruct *pthreadlocinfo;
-typedef struct threadmbcinfostruct *pthreadmbcinfo;
-struct __lc_time_data;
-
-typedef struct localeinfo_struct {
-  pthreadlocinfo locinfo;
-  pthreadmbcinfo mbcinfo;
-} _locale_tstruct,*_locale_t;
-
-#ifndef _TAGLC_ID_DEFINED
-#define _TAGLC_ID_DEFINED
-typedef struct tagLC_ID {
-  unsigned short wLanguage;
-  unsigned short wCountry;
-  unsigned short wCodePage;
-} LC_ID,*LPLC_ID;
-#endif /* _TAGLC_ID_DEFINED */
-
-#ifndef _THREADLOCALEINFO
-#define _THREADLOCALEINFO
-typedef struct threadlocaleinfostruct {
-  int refcount;
-  unsigned int lc_codepage;
-  unsigned int lc_collate_cp;
-  unsigned long lc_handle[6];
-  LC_ID lc_id[6];
-  struct {
-    char *locale;
-    wchar_t *wlocale;
-    int *refcount;
-    int *wrefcount;
-  } lc_category[6];
-  int lc_clike;
-  int mb_cur_max;
-  int *lconv_intl_refcount;
-  int *lconv_num_refcount;
-  int *lconv_mon_refcount;
-  struct lconv *lconv;
-  int *ctype1_refcount;
-  unsigned short *ctype1;
-  const unsigned short *pctype;
-  const unsigned char *pclmap;
-  const unsigned char *pcumap;
-  struct __lc_time_data *lc_time_curr;
-} threadlocinfo;
-#endif /* _THREADLOCALEINFO */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+
 #ifdef __MINGW_INTRIN_INLINE
-#if !defined (__clang__)
+#ifdef __has_builtin
+#define __MINGW_DEBUGBREAK_IMPL !__has_builtin(__debugbreak)
+#else
+#define __MINGW_DEBUGBREAK_IMPL 1
+#endif
+#if __MINGW_DEBUGBREAK_IMPL == 1
 void __cdecl __debugbreak(void);
 __MINGW_INTRIN_INLINE void __cdecl __debugbreak(void)
 {
-  __asm__ __volatile__("int $3");
+  __asm__ __volatile__("int {$}3":);
 }
 #endif
 #endif
@@ -710,21 +581,19 @@ const char *__mingw_get_crt_info (void);
 }
 #endif
 
-#pragma pack(pop)
-
-#endif /* _INC_CRTDEFS */
+#endif /* _INC__MINGW_H */
 
 #ifndef MINGW_SDK_INIT
 #define MINGW_SDK_INIT
-
-
 
 #ifdef MINGW_HAS_SECURE_API
 #define __STDC_SECURE_LIB__ 200411L
 #define __GOT_SECURE_LIB__ __STDC_SECURE_LIB__
 #endif
 
+#ifndef __WIDL__
 #include "sdks/_mingw_directx.h"
 #include "sdks/_mingw_ddk.h"
+#endif
 
 #endif /* MINGW_SDK_INIT */

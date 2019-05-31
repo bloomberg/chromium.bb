@@ -4,11 +4,8 @@ use strict;
 use warnings;
 no warnings 'surrogate';    # surrogates can be inputs to this
 use charnames ();
-use Unicode::Normalize qw(getCombinClass NFD);
 
-our $VERSION = '0.43';
-
-use Storable qw(dclone);
+our $VERSION = '0.72';
 
 require Exporter;
 
@@ -18,19 +15,25 @@ our @EXPORT_OK = qw(charinfo
 		    charblock charscript
 		    charblocks charscripts
 		    charinrange
+		    charprop
+		    charprops_all
 		    general_categories bidi_types
 		    compexcl
-		    casefold casespec
+		    casefold all_casefolds casespec
 		    namedseq
                     num
                     prop_aliases
                     prop_value_aliases
+                    prop_values
                     prop_invlist
                     prop_invmap
+                    search_invlist
                     MAX_CP
                 );
 
 use Carp;
+
+sub IS_ASCII_PLATFORM { ord("A") == 65 }
 
 =head1 NAME
 
@@ -41,11 +44,20 @@ Unicode::UCD - Unicode character database
     use Unicode::UCD 'charinfo';
     my $charinfo   = charinfo($codepoint);
 
+    use Unicode::UCD 'charprop';
+    my $value  = charprop($codepoint, $property);
+
+    use Unicode::UCD 'charprops_all';
+    my $all_values_hash_ref = charprops_all($codepoint);
+
     use Unicode::UCD 'casefold';
-    my $casefold = casefold(0xFB00);
+    my $casefold = casefold($codepoint);
+
+    use Unicode::UCD 'all_casefolds';
+    my $all_casefolds_ref = all_casefolds();
 
     use Unicode::UCD 'casespec';
-    my $casespec = casespec(0xFB00);
+    my $casespec = casespec($codepoint);
 
     use Unicode::UCD 'charblock';
     my $charblock  = charblock($codepoint);
@@ -73,6 +85,9 @@ Unicode::UCD - Unicode character database
     use Unicode::UCD 'prop_value_aliases';
     my @gc_punct_names = prop_value_aliases("Gc", "Punct");
 
+    use Unicode::UCD 'prop_values';
+    my @all_EA_short_names = prop_values("East_Asian_Width");
+
     use Unicode::UCD 'prop_invlist';
     my @puncts = prop_invlist("gc=punctuation");
 
@@ -80,6 +95,12 @@ Unicode::UCD - Unicode character database
     my ($list_ref, $map_ref, $format, $missing)
                                       = prop_invmap("General Category");
 
+    use Unicode::UCD 'search_invlist';
+    my $index = search_invlist(\@invlist, $code_point);
+
+    # The following function should be used only internally in
+    # implementations of the Unicode Normalization Algorithm, and there
+    # are better choices than it.
     use Unicode::UCD 'compexcl';
     my $compexcl = compexcl($codepoint);
 
@@ -100,36 +121,66 @@ Character Database.
 =head2 code point argument
 
 Some of the functions are called with a I<code point argument>, which is either
-a decimal or a hexadecimal scalar designating a Unicode code point, or C<U+>
-followed by hexadecimals designating a Unicode code point.  In other words, if
-you want a code point to be interpreted as a hexadecimal number, you must
-prefix it with either C<0x> or C<U+>, because a string like e.g. C<123> will be
-interpreted as a decimal code point.  Note that the largest code point in
-Unicode is U+10FFFF.
+a decimal or a hexadecimal scalar designating a code point in the platform's
+native character set (extended to Unicode), or a string containing C<U+>
+followed by hexadecimals
+designating a Unicode code point.  A leading 0 will force a hexadecimal
+interpretation, as will a hexadecimal digit that isn't a decimal digit.
+
+Examples:
+
+    223     # Decimal 223 in native character set
+    0223    # Hexadecimal 223, native (= 547 decimal)
+    0xDF    # Hexadecimal DF, native (= 223 decimal)
+    '0xDF'  # String form of hexadecimal (= 223 decimal)
+    'U+DF'  # Hexadecimal DF, in Unicode's character set
+                              (= LATIN SMALL LETTER SHARP S)
+
+Note that the largest code point in Unicode is U+10FFFF.
 
 =cut
 
-my $BLOCKSFH;
-my $VERSIONFH;
-my $CASEFOLDFH;
-my $CASESPECFH;
-my $NAMEDSEQFH;
+my $v_unicode_version;  # v-string.
 
 sub openunicode {
-    my ($rfh, @path) = @_;
-    my $f;
-    unless (defined $$rfh) {
-	for my $d (@INC) {
-	    use File::Spec;
-	    $f = File::Spec->catfile($d, "unicore", @path);
-	    last if open($$rfh, $f);
-	    undef $f;
-	}
-	croak __PACKAGE__, ": failed to find ",
-              File::Spec->catfile(@path), " in @INC"
-	    unless defined $f;
+    my (@path) = @_;
+    my $rfh;
+    for my $d (@INC) {
+        use File::Spec;
+        my $f = File::Spec->catfile($d, "unicore", @path);
+        return $rfh if open($rfh, '<', $f);
     }
-    return $f;
+    croak __PACKAGE__, ": failed to find ",
+        File::Spec->catfile("unicore", @path), " in @INC";
+}
+
+sub _dclone ($) {   # Use Storable::dclone if available; otherwise emulate it.
+
+    use if defined &DynaLoader::boot_DynaLoader, Storable => qw(dclone);
+
+    return dclone(shift) if defined &dclone;
+
+    my $arg = shift;
+    my $type = ref $arg;
+    return $arg unless $type;   # No deep cloning needed for scalars
+
+    if ($type eq 'ARRAY') {
+        my @return;
+        foreach my $element (@$arg) {
+            push @return, &_dclone($element);
+        }
+        return \@return;
+    }
+    elsif ($type eq 'HASH') {
+        my %return;
+        foreach my $key (keys %$arg) {
+            $return{$key} = &_dclone($arg->{$key});
+        }
+        return \%return;
+    }
+    else {
+        croak "_dclone can't handle " . $type;
+    }
 }
 
 =head2 B<charinfo()>
@@ -149,13 +200,18 @@ C<undef> is returned.
 Fields that aren't applicable to the particular code point argument exist in the
 returned hash, and are empty. 
 
+For results that are less "raw" than this function returns, or to get the values for
+any property, not just the few covered by this function, use the
+L</charprop()> function.
+
 The keys in the hash with the meanings of their values are:
 
 =over
 
 =item B<code>
 
-the input L</code point argument> expressed in hexadecimal, with leading zeros
+the input native L</code point argument> expressed in hexadecimal, with
+leading zeros
 added if necessary to make it contain at least four hexdigits
 
 =item B<name>
@@ -199,15 +255,16 @@ of the bidi type name.
 is empty if I<code> has no decomposition; or is one or more codes
 (separated by spaces) that, taken in order, represent a decomposition for
 I<code>.  Each has at least four hexdigits.
-The codes may be preceded by a word enclosed in angle brackets then a space,
+The codes may be preceded by a word enclosed in angle brackets, then a space,
 like C<E<lt>compatE<gt> >, giving the type of decomposition
 
 This decomposition may be an intermediate one whose components are also
-decomposable.  Use L<Unicode::Normalize> to get the final decomposition.
+decomposable.  Use L<Unicode::Normalize> to get the final decomposition in one
+step.
 
 =item B<decimal>
 
-if I<code> is a decimal digit this is its integer numeric value
+if I<code> represents a decimal digit this is its integer numeric value
 
 =item B<digit>
 
@@ -234,47 +291,56 @@ As of Unicode 6.0, this is always empty.
 
 =item B<upper>
 
-is empty if there is no single code point uppercase mapping for I<code>
-(its uppercase mapping is itself);
-otherwise it is that mapping expressed as at least four hexdigits.
-(L</casespec()> should be used in addition to B<charinfo()>
-for case mappings when the calling program can cope with multiple code point
-mappings.)
+is, if non-empty, the uppercase mapping for I<code> expressed as at least four
+hexdigits.  This indicates that the full uppercase mapping is a single
+character, and is identical to the simple (single-character only) mapping.
+When this field is empty, it means that the simple uppercase mapping is
+I<code> itself; you'll need some other means, (like L</charprop()> or
+L</casespec()> to get the full mapping.
 
 =item B<lower>
 
-is empty if there is no single code point lowercase mapping for I<code>
-(its lowercase mapping is itself);
-otherwise it is that mapping expressed as at least four hexdigits.
-(L</casespec()> should be used in addition to B<charinfo()>
-for case mappings when the calling program can cope with multiple code point
-mappings.)
+is, if non-empty, the lowercase mapping for I<code> expressed as at least four
+hexdigits.  This indicates that the full lowercase mapping is a single
+character, and is identical to the simple (single-character only) mapping.
+When this field is empty, it means that the simple lowercase mapping is
+I<code> itself; you'll need some other means, (like L</charprop()> or
+L</casespec()> to get the full mapping.
 
 =item B<title>
 
-is empty if there is no single code point titlecase mapping for I<code>
-(its titlecase mapping is itself);
-otherwise it is that mapping expressed as at least four hexdigits.
-(L</casespec()> should be used in addition to B<charinfo()>
-for case mappings when the calling program can cope with multiple code point
-mappings.)
+is, if non-empty, the titlecase mapping for I<code> expressed as at least four
+hexdigits.  This indicates that the full titlecase mapping is a single
+character, and is identical to the simple (single-character only) mapping.
+When this field is empty, it means that the simple titlecase mapping is
+I<code> itself; you'll need some other means, (like L</charprop()> or
+L</casespec()> to get the full mapping.
 
 =item B<block>
 
 the block I<code> belongs to (used in C<\p{Blk=...}>).
-See L</Blocks versus Scripts>.
+The L</prop_value_aliases()> function can be used to get all the synonyms
+of the block name.
 
+See L</Blocks versus Scripts>.
 
 =item B<script>
 
 the script I<code> belongs to.
+The L</prop_value_aliases()> function can be used to get all the synonyms
+of the script name.  Note that this is the older "Script" property value, and
+not the improved "Script_Extensions" value.
+
 See L</Blocks versus Scripts>.
 
 =back
 
 Note that you cannot do (de)composition and casing based solely on the
-I<decomposition>, I<combining>, I<lower>, I<upper>, and I<title> fields;
-you will need also the L</compexcl()>, and L</casespec()> functions.
+I<decomposition>, I<combining>, I<lower>, I<upper>, and I<title> fields; you
+will need also the L</casespec()> function and the C<Composition_Exclusion>
+property.  (Or you could just use the L<lc()|perlfunc/lc>,
+L<uc()|perlfunc/uc>, and L<ucfirst()|perlfunc/ucfirst> functions, and the
+L<Unicode::Normalize> module.)
 
 =cut
 
@@ -284,8 +350,16 @@ sub _getcode {
 
     if ($arg =~ /^[1-9]\d*$/) {
 	return $arg;
-    } elsif ($arg =~ /^(?:[Uu]\+|0[xX])?([[:xdigit:]]+)$/) {
-	return hex($1);
+    }
+    elsif ($arg =~ /^(?:0[xX])?([[:xdigit:]]+)$/) {
+	return CORE::hex($1);
+    }
+    elsif ($arg =~ /^[Uu]\+([[:xdigit:]]+)$/) { # Is of form U+0000, means
+                                                # wants the Unicode code
+                                                # point, not the native one
+        my $decimal = CORE::hex($1);
+        return $decimal if IS_ASCII_PLATFORM;
+        return utf8::unicode_to_native($decimal);
     }
 
     return;
@@ -303,6 +377,10 @@ my %SIMPLE_LOWER;
 my %SIMPLE_TITLE;
 my %SIMPLE_UPPER;
 my %UNICODE_1_NAMES;
+my %ISO_COMMENT;
+
+# Eval'd so can run on versions earlier than the property is available in
+my $Hangul_Syllables_re = eval 'qr/\p{Block=Hangul_Syllables}/';
 
 sub charinfo {
 
@@ -314,6 +392,9 @@ sub charinfo {
     # mktables tables.
 
     use feature 'unicode_strings';
+
+    # Will fail if called under minitest
+    use if defined &DynaLoader::boot_DynaLoader, "Unicode::Normalize" => qw(getCombinClass NFD);
 
     my $arg  = shift;
     my $code = _getcode($arg);
@@ -328,8 +409,9 @@ sub charinfo {
     @CATEGORIES =_read_table("To/Gc.pl") unless @CATEGORIES;
     $prop{'category'} = _search(\@CATEGORIES, 0, $#CATEGORIES, $code)
                         // $utf8::SwashInfo{'ToGc'}{'missing'};
-
-    return if $prop{'category'} eq 'Cn';    # Unassigned code points are undef
+    # Return undef if category value is 'Unassigned' or one of its synonyms 
+    return if grep { lc $_ eq 'unassigned' }
+                                    prop_value_aliases('Gc', $prop{'category'});
 
     $prop{'code'} = sprintf "%04X", $code;
     $prop{'name'} = ($char =~ /\p{Cntrl}/) ? '<control>'
@@ -353,7 +435,8 @@ sub charinfo {
     # Having no decomposition implies an empty field; otherwise, all but
     # "Canonical" imply a compatible decomposition, and the type is prefixed
     # to that, as it is in UnicodeData.txt
-    if ($char =~ /\p{Block=Hangul_Syllables}/) {
+    UnicodeVersion() unless defined $v_unicode_version;
+    if ($v_unicode_version ge v2.0.0 && $char =~ $Hangul_Syllables_re) {
         # The code points of the decomposition are output in standard Unicode
         # hex format, separated by blanks.
         $prop{'decomposition'} = join " ", map { sprintf("%04X", $_)}
@@ -400,9 +483,16 @@ sub charinfo {
     %UNICODE_1_NAMES =_read_table("To/Na1.pl", "use_hash") unless %UNICODE_1_NAMES;
     $prop{'unicode10'} = $UNICODE_1_NAMES{$code} // "";
 
-    # This is true starting in 6.0, but, num() also requires 6.0, so
-    # don't need to test for version again here.
-    $prop{'comment'} = "";
+    UnicodeVersion() unless defined $v_unicode_version;
+    if ($v_unicode_version ge v6.0.0) {
+        $prop{'comment'} = "";
+    }
+    else {
+        %ISO_COMMENT = _read_table("To/Isc.pl", "use_hash") unless %ISO_COMMENT;
+        $prop{'comment'} = (defined $ISO_COMMENT{$code})
+                           ? $ISO_COMMENT{$code}
+                           : "";
+    }
 
     %SIMPLE_UPPER = _read_table("To/Uc.pl", "use_hash") unless %SIMPLE_UPPER;
     $prop{'upper'} = (defined $SIMPLE_UPPER{$code})
@@ -483,7 +573,7 @@ sub _read_table ($;$) {
     my $property = $table =~ s/\.pl//r;
     $property = $utf8::file_to_swash_name{$property};
     my $to_adjust = defined $property
-                    && $utf8::SwashInfo{$property}{'format'} eq 'a';
+                    && $utf8::SwashInfo{$property}{'format'} =~ / ^ a /x;
 
     for (split /^/m, $list) {
         my ($start, $end, $value) = / ^ (.+?) \t (.*?) \t (.+?)
@@ -491,6 +581,8 @@ sub _read_table ($;$) {
                                         $ /x;
         my $decimal_start = hex $start;
         my $decimal_end = ($end eq "") ? $decimal_start : hex $end;
+        $value = hex $value if $to_adjust
+                               && $utf8::SwashInfo{$property}{'format'} eq 'ax';
         if ($return_hash) {
             foreach my $i ($decimal_start .. $decimal_end) {
                 $return{$i} = ($to_adjust)
@@ -521,6 +613,209 @@ sub charinrange {
     _search($range, 0, $#$range, $code);
 }
 
+=head2 B<charprop()>
+
+    use Unicode::UCD 'charprop';
+
+    print charprop(0x41, "Gc"), "\n";
+    print charprop(0x61, "General_Category"), "\n";
+
+  prints
+    Lu
+    Ll
+
+This returns the value of the Unicode property given by the second parameter
+for the  L</code point argument> given by the first.
+
+The passed-in property may be specified as any of the synonyms returned by
+L</prop_aliases()>.
+
+The return value is always a scalar, either a string or a number.  For
+properties where there are synonyms for the values, the synonym returned by
+this function is the longest, most descriptive form, the one returned by
+L</prop_value_aliases()> when called in a scalar context.  Of course, you can
+call L</prop_value_aliases()> on the result to get other synonyms.
+
+The return values are more "cooked" than the L</charinfo()> ones.  For
+example, the C<"uc"> property value is the actual string containing the full
+uppercase mapping of the input code point.  You have to go to extra trouble
+with C<charinfo> to get this value from its C<upper> hash element when the
+full mapping differs from the simple one.
+
+Special note should be made of the return values for a few properties:
+
+=over
+
+=item Block
+
+The value returned is the new-style (see L</Old-style versus new-style block
+names>).
+
+=item Decomposition_Mapping
+
+Like L</charinfo()>, the result may be an intermediate decomposition whose
+components are also decomposable.  Use L<Unicode::Normalize> to get the final
+decomposition in one step.
+
+Unlike L</charinfo()>, this does not include the decomposition type.  Use the
+C<Decomposition_Type> property to get that.
+
+=item Name_Alias
+
+If the input code point's name has more than one synonym, they are returned
+joined into a single comma-separated string.
+
+=item Numeric_Value
+
+If the result is a fraction, it is converted into a floating point number to
+the accuracy of your platform.
+
+=item Script_Extensions
+
+If the result is multiple script names, they are returned joined into a single
+comma-separated string.
+
+=back
+
+When called with a property that is a Perl extension that isn't expressible in
+a compound form, this function currently returns C<undef>, as the only two
+possible values are I<true> or I<false> (1 or 0 I suppose).  This behavior may
+change in the future, so don't write code that relies on it.  C<Present_In> is
+a Perl extension that is expressible in a bipartite or compound form (for
+example, C<\p{Present_In=4.0}>), so C<charprop> accepts it.  But C<Any> is a
+Perl extension that isn't expressible that way, so C<charprop> returns
+C<undef> for it.  Also C<charprop> returns C<undef> for all Perl extensions
+that are internal-only.
+
+=cut
+
+sub charprop ($$;$) {
+    my ($input_cp, $prop, $internal_ok) = @_;
+
+    my $cp = _getcode($input_cp);
+    croak __PACKAGE__, "::charprop: unknown code point '$input_cp'" unless defined $cp;
+
+    my ($list_ref, $map_ref, $format, $default)
+                                      = prop_invmap($prop, $internal_ok);
+    return undef unless defined $list_ref;
+
+    my $i = search_invlist($list_ref, $cp);
+    croak __PACKAGE__, "::charprop: prop_invmap return is invalid for charprop('$input_cp', '$prop)" unless defined $i;
+
+    # $i is the index into both the inversion list and map of $cp.
+    my $map = $map_ref->[$i];
+
+    # Convert enumeration values to their most complete form.
+    if (! ref $map) {
+        my $long_form = prop_value_aliases($prop, $map);
+        $map = $long_form if defined $long_form;
+    }
+
+    if ($format =~ / ^ s /x) {  # Scalars
+        return join ",", @$map if ref $map; # Convert to scalar with comma
+                                            # separated array elements
+
+        # Resolve ambiguity as to whether an all digit value is a code point
+        # that should be converted to a character, or whether it is really
+        # just a number.  To do this, look at the default.  If it is a
+        # non-empty number, we can safely assume the result is also a number.
+        if ($map =~ / ^ \d+ $ /ax && $default !~ / ^ \d+ $ /ax) {
+            $map = chr $map;
+        }
+        elsif ($map =~ / ^ (?: Y | N ) $ /x) {
+
+            # prop_invmap() returns these values for properties that are Perl
+            # extensions.  But this is misleading.  For now, return undef for
+            # these, as currently documented.
+            undef $map unless
+                exists $Unicode::UCD::prop_aliases{utf8::_loose_name(lc $prop)};
+        }
+        return $map;
+    }
+    elsif ($format eq 'ar') {   # numbers, including rationals
+        my $offset = $cp - $list_ref->[$i];
+        return $map if $map =~ /nan/i;
+        return $map + $offset if $offset != 0;  # If needs adjustment
+        return eval $map;   # Convert e.g., 1/2 to 0.5
+    }
+    elsif ($format =~ /^a/) {   # Some entries need adjusting
+
+        # Linearize sequences into a string.
+        return join "", map { chr $_ } @$map if ref $map; # XXX && $format =~ /^ a [dl] /x;
+
+        return "" if $map eq "" && $format =~ /^a.*e/;
+
+        # These are all character mappings.  Return the chr if no adjustment
+        # is needed
+        return chr $cp if $map eq "0";
+
+        # Convert special entry.
+        if ($map eq '<hangul syllable>' && $format eq 'ad') {
+            use Unicode::Normalize qw(NFD);
+            return NFD(chr $cp);
+        }
+
+        # The rest need adjustment from the first entry in the inversion list
+        # corresponding to this map.
+        my $offset = $cp - $list_ref->[$i];
+        return chr($map + $cp - $list_ref->[$i]);
+    }
+    elsif ($format eq 'n') {    # The name property
+
+        # There are two special cases, handled here.
+        if ($map =~ / ( .+ ) <code\ point> $ /x) {
+            $map = sprintf("$1%04X", $cp);
+        }
+        elsif ($map eq '<hangul syllable>') {
+            $map = charnames::viacode($cp);
+        }
+        return $map;
+    }
+    else {
+        croak __PACKAGE__, "::charprop: Internal error: unknown format '$format'.  Please perlbug this";
+    }
+}
+
+=head2 B<charprops_all()>
+
+    use Unicode::UCD 'charprops_all';
+
+    my $%properties_of_A_hash_ref = charprops_all("U+41");
+
+This returns a reference to a hash whose keys are all the distinct Unicode (no
+Perl extension) properties, and whose values are the respective values for
+those properties for the input L</code point argument>.
+
+Each key is the property name in its longest, most descriptive form.  The
+values are what L</charprop()> would return.
+
+This function is expensive in time and memory.
+
+=cut
+
+sub charprops_all($) {
+    my $input_cp = shift;
+
+    my $cp = _getcode($input_cp);
+    croak __PACKAGE__, "::charprops_all: unknown code point '$input_cp'" unless defined $cp;
+
+    my %return;
+
+    require "unicore/UCD.pl";
+
+    foreach my $prop (keys %Unicode::UCD::prop_aliases) {
+
+        # Don't return a Perl extension.  (This is the only one that
+        # %prop_aliases has in it.)
+        next if $prop eq 'perldecimaldigit';
+
+        # Use long name for $prop in the hash
+        $return{scalar prop_aliases($prop)} = charprop($cp, $prop);
+    }
+
+    return \%return;
+}
+
 =head2 B<charblock()>
 
     use Unicode::UCD 'charblock';
@@ -532,25 +827,32 @@ sub charinrange {
 
     my $range     = charblock('Armenian');
 
-With a L</code point argument> charblock() returns the I<block> the code point
+With a L</code point argument> C<charblock()> returns the I<block> the code point
 belongs to, e.g.  C<Basic Latin>.  The old-style block name is returned (see
 L</Old-style versus new-style block names>).
+The L</prop_value_aliases()> function can be used to get all the synonyms
+of the block name.
+
 If the code point is unassigned, this returns the block it would belong to if
-it were assigned.
+it were assigned.  (If the Unicode version being used is so early as to not
+have blocks, all code points are considered to be in C<No_Block>.)
 
 See also L</Blocks versus Scripts>.
 
-If supplied with an argument that can't be a code point, charblock() tries to
-do the opposite and interpret the argument as an old-style block name. The
-return value
-is a I<range set> with one range: an anonymous list with a single element that
-consists of another anonymous list whose first element is the first code point
-in the block, and whose second (and final) element is the final code point in
-the block.  (The extra list consisting of just one element is so that the same
-program logic can be used to handle both this return, and the return from
-L</charscript()> which can have multiple ranges.) You can test whether a code
-point is in a range using the L</charinrange()> function.  If the argument is
-not a known block, C<undef> is returned.
+If supplied with an argument that can't be a code point, C<charblock()> tries to
+do the opposite and interpret the argument as an old-style block name.  On an
+ASCII platform, the return value is a I<range set> with one range: an
+anonymous array with a single element that consists of another anonymous array
+whose first element is the first code point in the block, and whose second
+element is the final code point in the block.  On an EBCDIC
+platform, the first two Unicode blocks are not contiguous.  Their range sets
+are lists containing I<start-of-range>, I<end-of-range> code point pairs.  You
+can test whether a code point is in a range set using the L</charinrange()>
+function.  (To be precise, each I<range set> contains a third array element,
+after the range boundary ones: the old_style block name.)
+
+If the argument to C<charblock()> is not a known block, C<undef> is
+returned.
 
 =cut
 
@@ -562,10 +864,21 @@ sub _charblocks {
     # Can't read from the mktables table because it loses the hyphens in the
     # original.
     unless (@BLOCKS) {
-	if (openunicode(\$BLOCKSFH, "Blocks.txt")) {
+        UnicodeVersion() unless defined $v_unicode_version;
+        if ($v_unicode_version lt v2.0.0) {
+            my $subrange = [ 0, 0x10FFFF, 'No_Block' ];
+            push @BLOCKS, $subrange;
+            push @{$BLOCKS{'No_Block'}}, $subrange;
+        }
+        else {
+            my $blocksfh = openunicode("Blocks.txt");
 	    local $_;
 	    local $/ = "\n";
-	    while (<$BLOCKSFH>) {
+	    while (<$blocksfh>) {
+
+                # Old versions used a different syntax to mark the range.
+                $_ =~ s/;\s+/../ if $v_unicode_version lt v3.1.0;
+
 		if (/^([0-9A-F]+)\.\.([0-9A-F]+);\s+(.+)/) {
 		    my ($lo, $hi) = (hex($1), hex($2));
 		    my $subrange = [ $lo, $hi, $3 ];
@@ -573,7 +886,36 @@ sub _charblocks {
 		    push @{$BLOCKS{$3}}, $subrange;
 		}
 	    }
-	    close($BLOCKSFH);
+            if (! IS_ASCII_PLATFORM) {
+                # The first two blocks, through 0xFF, are wrong on EBCDIC
+                # platforms.
+
+                my @new_blocks = _read_table("To/Blk.pl");
+
+                # Get rid of the first two ranges in the Unicode version, and
+                # replace them with the ones computed by mktables.
+                shift @BLOCKS;
+                shift @BLOCKS;
+                delete $BLOCKS{'Basic Latin'};
+                delete $BLOCKS{'Latin-1 Supplement'};
+
+                # But there are multiple entries in the computed versions, and
+                # we change their names to (which we know) to be the old-style
+                # ones.
+                for my $i (0.. @new_blocks - 1) {
+                    if ($new_blocks[$i][2] =~ s/Basic_Latin/Basic Latin/
+                        or $new_blocks[$i][2] =~
+                                    s/Latin_1_Supplement/Latin-1 Supplement/)
+                    {
+                        push @{$BLOCKS{$new_blocks[$i][2]}}, $new_blocks[$i];
+                    }
+                    else {
+                        splice @new_blocks, $i;
+                        last;
+                    }
+                }
+                unshift @BLOCKS, @new_blocks;
+            }
 	}
     }
 }
@@ -591,8 +933,11 @@ sub charblock {
         return 'No_Block';
     }
     elsif (exists $BLOCKS{$arg}) {
-        return dclone $BLOCKS{$arg};
+        return _dclone $BLOCKS{$arg};
     }
+
+    carp __PACKAGE__, "::charblock: unknown code '$arg'";
+    return;
 }
 
 =head2 B<charscript()>
@@ -605,16 +950,26 @@ sub charblock {
 
     my $range      = charscript('Thai');
 
-With a L</code point argument> charscript() returns the I<script> the
-code point belongs to, e.g.  C<Latin>, C<Greek>, C<Han>.
-If the code point is unassigned, it returns C<"Unknown">.
+With a L</code point argument>, C<charscript()> returns the I<script> the
+code point belongs to, e.g., C<Latin>, C<Greek>, C<Han>.
+If the code point is unassigned or the Unicode version being used is so early
+that it doesn't have scripts, this function returns C<"Unknown">.
+The L</prop_value_aliases()> function can be used to get all the synonyms
+of the script name.
+
+Note that the Script_Extensions property is an improved version of the Script
+property, and you should probably be using that instead, with the
+L</charprop()> function.
 
 If supplied with an argument that can't be a code point, charscript() tries
 to do the opposite and interpret the argument as a script name. The
-return value is a I<range set>: an anonymous list of lists that contain
+return value is a I<range set>: an anonymous array of arrays that contain
 I<start-of-range>, I<end-of-range> code point pairs. You can test whether a
-code point is in a range set using the L</charinrange()> function. If the
-argument is not a known script, C<undef> is returned.
+code point is in a range set using the L</charinrange()> function.
+(To be precise, each I<range set> contains a third array element,
+after the range boundary ones: the script name.)
+
+If the C<charscript()> argument is not a known script, C<undef> is returned.
 
 See also L</Blocks versus Scripts>.
 
@@ -624,7 +979,15 @@ my @SCRIPTS;
 my %SCRIPTS;
 
 sub _charscripts {
-    @SCRIPTS =_read_table("To/Sc.pl") unless @SCRIPTS;
+    unless (@SCRIPTS) {
+        UnicodeVersion() unless defined $v_unicode_version;
+        if ($v_unicode_version lt v3.1.0) {
+            push @SCRIPTS, [ 0, 0x10FFFF, 'Unknown' ];
+        }
+        else {
+            @SCRIPTS =_read_table("To/Sc.pl");
+        }
+    }
     foreach my $entry (@SCRIPTS) {
         $entry->[2] =~ s/(_\w)/\L$1/g;  # Preserve old-style casing
         push @{$SCRIPTS{$entry->[2]}}, $entry;
@@ -643,9 +1006,10 @@ sub charscript {
         return $result if defined $result;
         return $utf8::SwashInfo{'ToSc'}{'missing'};
     } elsif (exists $SCRIPTS{$arg}) {
-        return dclone $SCRIPTS{$arg};
+        return _dclone $SCRIPTS{$arg};
     }
 
+    carp __PACKAGE__, "::charscript: unknown code '$arg'";
     return;
 }
 
@@ -655,7 +1019,7 @@ sub charscript {
 
     my $charblocks = charblocks();
 
-charblocks() returns a reference to a hash with the known block names
+C<charblocks()> returns a reference to a hash with the known block names
 as the keys, and the code point ranges (see L</charblock()>) as the values.
 
 The names are in the old-style (see L</Old-style versus new-style block
@@ -664,13 +1028,16 @@ names>).
 L<prop_invmap("block")|/prop_invmap()> can be used to get this same data in a
 different type of data structure.
 
+L<prop_values("Block")|/prop_values()> can be used to get all
+the known new-style block names as a list, without the code point ranges.
+
 See also L</Blocks versus Scripts>.
 
 =cut
 
 sub charblocks {
     _charblocks() unless %BLOCKS;
-    return dclone \%BLOCKS;
+    return _dclone \%BLOCKS;
 }
 
 =head2 B<charscripts()>
@@ -679,12 +1046,17 @@ sub charblocks {
 
     my $charscripts = charscripts();
 
-charscripts() returns a reference to a hash with the known script
+C<charscripts()> returns a reference to a hash with the known script
 names as the keys, and the code point ranges (see L</charscript()>) as
 the values.
 
 L<prop_invmap("script")|/prop_invmap()> can be used to get this same data in a
-different type of data structure.
+different type of data structure.  Since the Script_Extensions property is an
+improved version of the Script property, you should instead use
+L<prop_invmap("scx")|/prop_invmap()>.
+
+L<C<prop_values("Script")>|/prop_values()> can be used to get all
+the known script names as a list, without the code point ranges.
 
 See also L</Blocks versus Scripts>.
 
@@ -692,7 +1064,7 @@ See also L</Blocks versus Scripts>.
 
 sub charscripts {
     _charscripts() unless %SCRIPTS;
-    return dclone \%SCRIPTS;
+    return _dclone \%SCRIPTS;
 }
 
 =head2 B<charinrange()>
@@ -700,7 +1072,7 @@ sub charscripts {
 In addition to using the C<\p{Blk=...}> and C<\P{Blk=...}> constructs, you
 can also test whether a code point is in the I<range> as returned by
 L</charblock()> and L</charscript()> or as the values of the hash returned
-by L</charblocks()> and L</charscripts()> by using charinrange():
+by L</charblocks()> and L</charscripts()> by using C<charinrange()>:
 
     use Unicode::UCD qw(charscript charinrange);
 
@@ -752,7 +1124,7 @@ my %GENERAL_CATEGORIES =
  );
 
 sub general_categories {
-    return dclone \%GENERAL_CATEGORIES;
+    return _dclone \%GENERAL_CATEGORIES;
 }
 
 =head2 B<general_categories()>
@@ -769,8 +1141,9 @@ from the long names to the short names.  The general category is the
 one returned from
 L</charinfo()> under the C<category> key.
 
-The L</prop_value_aliases()> function can be used to get all the synonyms of
-the category name.
+The L</prop_values()> and L</prop_value_aliases()> functions can be used as an
+alternative to this function; the first returning a simple list of the short
+category names; and the second gets all the synonyms of a given category name.
 
 =cut
 
@@ -814,22 +1187,34 @@ the Unicode TR9 is recommended reading:
 L<http://www.unicode.org/reports/tr9/>
 (as of Unicode 5.0.0)
 
-The L</prop_value_aliases()> function can be used to get all the synonyms of
-the bidi type name.
+The L</prop_values()> and L</prop_value_aliases()> functions can be used as an
+alternative to this function; the first returning a simple list of the short
+bidi type names; and the second gets all the synonyms of a given bidi type
+name.
 
 =cut
 
 sub bidi_types {
-    return dclone \%BIDI_TYPES;
+    return _dclone \%BIDI_TYPES;
 }
 
 =head2 B<compexcl()>
+
+WARNING: Unicode discourages the use of this function or any of the
+alternative mechanisms listed in this section (the documentation of
+C<compexcl()>), except internally in implementations of the Unicode
+Normalization Algorithm.  You should be using L<Unicode::Normalize> directly
+instead of these.  Using these will likely lead to half-baked results.
 
     use Unicode::UCD 'compexcl';
 
     my $compexcl = compexcl(0x09dc);
 
-This routine is included for backwards compatibility, but as of Perl 5.12, for
+This routine returns C<undef> if the Unicode version being used is so early
+that it doesn't have this property.
+
+C<compexcl()> is included for backwards
+compatibility, but as of Perl 5.12 and more modern Unicode versions, for
 most purposes it is probably more convenient to use one of the following
 instead:
 
@@ -858,14 +1243,20 @@ The routine returns B<false> otherwise.
 
 =cut
 
+# Eval'd so can run on versions earlier than the property is available in
+my $Composition_Exclusion_re = eval 'qr/\p{Composition_Exclusion}/';
+
 sub compexcl {
     my $arg  = shift;
     my $code = _getcode($arg);
     croak __PACKAGE__, "::compexcl: unknown code '$arg'"
 	unless defined $code;
 
+    UnicodeVersion() unless defined $v_unicode_version;
+    return if $v_unicode_version lt v3.0.0;
+
     no warnings "non_unicode";     # So works on non-Unicode code points
-    return chr($code) =~ /\p{Composition_Exclusion}/;
+    return chr($code) =~ $Composition_Exclusion_re
 }
 
 =head2 B<casefold()>
@@ -903,7 +1294,8 @@ with the following fields is returned:
 
 =item B<code>
 
-the input L</code point argument> expressed in hexadecimal, with leading zeros
+the input native L</code point argument> expressed in hexadecimal, with
+leading zeros
 added if necessary to make it contain at least four hexdigits
 
 =item B<full>
@@ -943,12 +1335,12 @@ dotless lowercase i:
 
 =over
 
-=item B<*> If you use this C<I> mapping
+=item Z<>B<*> If you use this C<I> mapping
 
 the result is case-insensitive,
 but dotless and dotted I's are not distinguished
 
-=item B<*> If you exclude this C<I> mapping
+=item Z<>B<*> If you exclude this C<I> mapping
 
 the result is not fully case-insensitive, but
 dotless and dotted I's are distinguished
@@ -997,54 +1389,88 @@ L<http://www.unicode.org/unicode/reports/tr21>
 my %CASEFOLD;
 
 sub _casefold {
-    unless (%CASEFOLD) {
-	if (openunicode(\$CASEFOLDFH, "CaseFolding.txt")) {
-	    local $_;
-	    local $/ = "\n";
-	    while (<$CASEFOLDFH>) {
-		if (/^([0-9A-F]+); ([CFIST]); ([0-9A-F]+(?: [0-9A-F]+)*);/) {
-		    my $code = hex($1);
-		    $CASEFOLD{$code}{'code'} = $1;
-		    $CASEFOLD{$code}{'turkic'} = "" unless
-					    defined $CASEFOLD{$code}{'turkic'};
-		    if ($2 eq 'C' || $2 eq 'I') {	# 'I' is only on 3.1 and
-							# earlier Unicodes
-							# Both entries there (I
-							# only checked 3.1) are
-							# the same as C, and
-							# there are no other
-							# entries for those
-							# codepoints, so treat
-							# as if C, but override
-							# the turkic one for
-							# 'I'.
-			$CASEFOLD{$code}{'status'} = $2;
-			$CASEFOLD{$code}{'full'} = $CASEFOLD{$code}{'simple'} =
-			$CASEFOLD{$code}{'mapping'} = $3;
-			$CASEFOLD{$code}{'turkic'} = $3 if $2 eq 'I';
-		    } elsif ($2 eq 'F') {
-			$CASEFOLD{$code}{'full'} = $3;
-			unless (defined $CASEFOLD{$code}{'simple'}) {
-				$CASEFOLD{$code}{'simple'} = "";
-				$CASEFOLD{$code}{'mapping'} = $3;
-				$CASEFOLD{$code}{'status'} = $2;
-			}
-		    } elsif ($2 eq 'S') {
+    unless (%CASEFOLD) {   # Populate the hash
+        my ($full_invlist_ref, $full_invmap_ref, undef, $default)
+                                                = prop_invmap('Case_Folding');
 
+        # Use the recipe given in the prop_invmap() pod to convert the
+        # inversion map into the hash.
+        for my $i (0 .. @$full_invlist_ref - 1 - 1) {
+            next if $full_invmap_ref->[$i] == $default;
+            my $adjust = -1;
+            for my $j ($full_invlist_ref->[$i] .. $full_invlist_ref->[$i+1] -1) {
+                $adjust++;
+                if (! ref $full_invmap_ref->[$i]) {
 
-			# There can't be a simple without a full, and simple
-			# overrides all but full
+                    # This is a single character mapping
+                    $CASEFOLD{$j}{'status'} = 'C';
+                    $CASEFOLD{$j}{'simple'}
+                        = $CASEFOLD{$j}{'full'}
+                        = $CASEFOLD{$j}{'mapping'}
+                        = sprintf("%04X", $full_invmap_ref->[$i] + $adjust);
+                    $CASEFOLD{$j}{'code'} = sprintf("%04X", $j);
+                    $CASEFOLD{$j}{'turkic'} = "";
+                }
+                else {  # prop_invmap ensures that $adjust is 0 for a ref
+                    $CASEFOLD{$j}{'status'} = 'F';
+                    $CASEFOLD{$j}{'full'}
+                    = $CASEFOLD{$j}{'mapping'}
+                    = join " ", map { sprintf "%04X", $_ }
+                                                    @{$full_invmap_ref->[$i]};
+                    $CASEFOLD{$j}{'simple'} = "";
+                    $CASEFOLD{$j}{'code'} = sprintf("%04X", $j);
+                    $CASEFOLD{$j}{'turkic'} = "";
+                }
+            }
+        }
 
-			$CASEFOLD{$code}{'simple'} = $3;
-			$CASEFOLD{$code}{'mapping'} = $3;
-			$CASEFOLD{$code}{'status'} = $2;
-		    } elsif ($2 eq 'T') {
-			$CASEFOLD{$code}{'turkic'} = $3;
-		    } # else can't happen because only [CIFST] are possible
-		}
-	    }
-	    close($CASEFOLDFH);
-	}
+        # We have filled in the full mappings above, assuming there were no
+        # simple ones for the ones with multi-character maps.  Now, we find
+        # and fix the cases where that assumption was false.
+        (my ($simple_invlist_ref, $simple_invmap_ref, undef), $default)
+                                        = prop_invmap('Simple_Case_Folding');
+        for my $i (0 .. @$simple_invlist_ref - 1 - 1) {
+            next if $simple_invmap_ref->[$i] == $default;
+            my $adjust = -1;
+            for my $j ($simple_invlist_ref->[$i]
+                       .. $simple_invlist_ref->[$i+1] -1)
+            {
+                $adjust++;
+                next if $CASEFOLD{$j}{'status'} eq 'C';
+                $CASEFOLD{$j}{'status'} = 'S';
+                $CASEFOLD{$j}{'simple'}
+                    = $CASEFOLD{$j}{'mapping'}
+                    = sprintf("%04X", $simple_invmap_ref->[$i] + $adjust);
+                $CASEFOLD{$j}{'code'} = sprintf("%04X", $j);
+                $CASEFOLD{$j}{'turkic'} = "";
+            }
+        }
+
+        # We hard-code in the turkish rules
+        UnicodeVersion() unless defined $v_unicode_version;
+        if ($v_unicode_version ge v3.2.0) {
+
+            # These two code points should already have regular entries, so
+            # just fill in the turkish fields
+            $CASEFOLD{ord('I')}{'turkic'} = '0131';
+            $CASEFOLD{0x130}{'turkic'} = sprintf "%04X", ord('i');
+        }
+        elsif ($v_unicode_version ge v3.1.0) {
+
+            # These two code points don't have entries otherwise.
+            $CASEFOLD{0x130}{'code'} = '0130';
+            $CASEFOLD{0x131}{'code'} = '0131';
+            $CASEFOLD{0x130}{'status'} = $CASEFOLD{0x131}{'status'} = 'I';
+            $CASEFOLD{0x130}{'turkic'}
+                = $CASEFOLD{0x130}{'mapping'}
+                = $CASEFOLD{0x130}{'full'}
+                = $CASEFOLD{0x130}{'simple'}
+                = $CASEFOLD{0x131}{'turkic'}
+                = $CASEFOLD{0x131}{'mapping'}
+                = $CASEFOLD{0x131}{'full'}
+                = $CASEFOLD{0x131}{'simple'}
+                = sprintf "%04X", ord('i');
+        }
     }
 }
 
@@ -1057,6 +1483,55 @@ sub casefold {
     _casefold() unless %CASEFOLD;
 
     return $CASEFOLD{$code};
+}
+
+=head2 B<all_casefolds()>
+
+
+    use Unicode::UCD 'all_casefolds';
+
+    my $all_folds_ref = all_casefolds();
+    foreach my $char_with_casefold (sort { $a <=> $b }
+                                    keys %$all_folds_ref)
+    {
+        printf "%04X:", $char_with_casefold;
+        my $casefold = $all_folds_ref->{$char_with_casefold};
+
+        # Get folds for $char_with_casefold
+
+        my @full_fold_hex = split / /, $casefold->{'full'};
+        my $full_fold_string =
+                    join "", map {chr(hex($_))} @full_fold_hex;
+        print " full=", join " ", @full_fold_hex;
+        my @turkic_fold_hex =
+                        split / /, ($casefold->{'turkic'} ne "")
+                                        ? $casefold->{'turkic'}
+                                        : $casefold->{'full'};
+        my $turkic_fold_string =
+                        join "", map {chr(hex($_))} @turkic_fold_hex;
+        print "; turkic=", join " ", @turkic_fold_hex;
+        if (defined $casefold && $casefold->{'simple'} ne "") {
+            my $simple_fold_hex = $casefold->{'simple'};
+            my $simple_fold_string = chr(hex($simple_fold_hex));
+            print "; simple=$simple_fold_hex";
+        }
+        print "\n";
+    }
+
+This returns all the case foldings in the current version of Unicode in the
+form of a reference to a hash.  Each key to the hash is the decimal
+representation of a Unicode character that has a casefold to other than
+itself.  The casefold of a semi-colon is itself, so it isn't in the hash;
+likewise for a lowercase "a", but there is an entry for a capital "A".  The
+hash value for each key is another hash, identical to what is returned by
+L</casefold()> if called with that code point as its argument.  So the value
+C<< all_casefolds()->{ord("A")}' >> is equivalent to C<casefold(ord("A"))>;
+
+=cut
+
+sub all_casefolds () {
+    _casefold() unless %CASEFOLD;
+    return _dclone \%CASEFOLD;
 }
 
 =head2 B<casespec()>
@@ -1085,7 +1560,8 @@ The keys in the bottom layer hash with the meanings of their values are:
 
 =item B<code>
 
-the input L</code point argument> expressed in hexadecimal, with leading zeros
+the input native L</code point argument> expressed in hexadecimal, with
+leading zeros
 added if necessary to make it contain at least four hexdigits
 
 =item B<lower>
@@ -1161,15 +1637,37 @@ my %CASESPEC;
 
 sub _casespec {
     unless (%CASESPEC) {
-	if (openunicode(\$CASESPECFH, "SpecialCasing.txt")) {
+        UnicodeVersion() unless defined $v_unicode_version;
+        if ($v_unicode_version ge v2.1.8) {
+            my $casespecfh = openunicode("SpecialCasing.txt");
 	    local $_;
 	    local $/ = "\n";
-	    while (<$CASESPECFH>) {
+	    while (<$casespecfh>) {
 		if (/^([0-9A-F]+); ([0-9A-F]+(?: [0-9A-F]+)*)?; ([0-9A-F]+(?: [0-9A-F]+)*)?; ([0-9A-F]+(?: [0-9A-F]+)*)?; (\w+(?: \w+)*)?/) {
+
 		    my ($hexcode, $lower, $title, $upper, $condition) =
 			($1, $2, $3, $4, $5);
+                    if (! IS_ASCII_PLATFORM) { # Remap entry to native
+                        foreach my $var_ref (\$hexcode,
+                                             \$lower,
+                                             \$title,
+                                             \$upper)
+                        {
+                            next unless defined $$var_ref;
+                            $$var_ref = join " ",
+                                        map { sprintf("%04X",
+                                              utf8::unicode_to_native(hex $_)) }
+                                        split " ", $$var_ref;
+                        }
+                    }
+
 		    my $code = hex($hexcode);
-		    if (exists $CASESPEC{$code}) {
+
+                    # In 2.1.8, there were duplicate entries; ignore all but
+                    # the first one -- there were no conditions in the file
+                    # anyway.
+		    if (exists $CASESPEC{$code} && $v_unicode_version ne v2.1.8)
+                    {
 			if (exists $CASESPEC{$code}->{code}) {
 			    my ($oldlower,
 				$oldtitle,
@@ -1209,7 +1707,6 @@ sub _casespec {
 		    }
 		}
 	    }
-	    close($CASESPECFH);
 	}
     }
 }
@@ -1222,7 +1719,7 @@ sub casespec {
 
     _casespec() unless %CASESPEC;
 
-    return ref $CASESPEC{$code} ? dclone $CASESPEC{$code} : $CASESPEC{$code};
+    return ref $CASESPEC{$code} ? _dclone $CASESPEC{$code} : $CASESPEC{$code};
 }
 
 =head2 B<namedseq()>
@@ -1236,10 +1733,11 @@ sub casespec {
 If used with a single argument in a scalar context, returns the string
 consisting of the code points of the named sequence, or C<undef> if no
 named sequence by that name exists.  If used with a single argument in
-a list context, it returns the list of the ordinals of the code points.  If used
-with no
-arguments in a list context, returns a hash with the names of the
-named sequences as the keys and the named sequences as strings as
+a list context, it returns the list of the ordinals of the code points.
+
+If used with no
+arguments in a list context, it returns a hash with the names of all the
+named sequences as the keys and their sequences as strings as
 the values.  Otherwise, it returns C<undef> or an empty list depending
 on the context.
 
@@ -1258,19 +1756,17 @@ my %NAMEDSEQ;
 
 sub _namedseq {
     unless (%NAMEDSEQ) {
-	if (openunicode(\$NAMEDSEQFH, "Name.pl")) {
-	    local $_;
-	    local $/ = "\n";
-	    while (<$NAMEDSEQFH>) {
-		if (/^ [0-9A-F]+ \  /x) {
-                    chomp;
-                    my ($sequence, $name) = split /\t/;
-		    my @s = map { chr(hex($_)) } split(' ', $sequence);
-		    $NAMEDSEQ{$name} = join("", @s);
-		}
-	    }
-	    close($NAMEDSEQFH);
-	}
+        my $namedseqfh = openunicode("Name.pl");
+        local $_;
+        local $/ = "\n";
+        while (<$namedseqfh>) {
+            if (/^ [0-9A-F]+ \  /x) {
+                chomp;
+                my ($sequence, $name) = split /\t/;
+                my @s = map { chr(hex($_)) } split(' ', $sequence);
+                $NAMEDSEQ{$name} = join("", @s);
+            }
+        }
     }
 }
 
@@ -1307,16 +1803,6 @@ sub namedseq {
 my %NUMERIC;
 
 sub _numeric {
-
-    # Unicode 6.0 instituted the rule that only digits in a consecutive
-    # block of 10 would be considered decimal digits.  Before that, the only
-    # problematic code point that I'm (khw) aware of is U+019DA, NEW TAI LUE
-    # THAM DIGIT ONE, which is an alternate form of U+019D1, NEW TAI LUE DIGIT
-    # ONE.  The code could be modified to handle that, but not bothering, as
-    # in TUS 6.0, U+19DA was changed to Nt=Di.
-    if ((pack "C*", split /\./, UnicodeVersion()) lt 6.0.0) {
-	croak __PACKAGE__, "::num requires Unicode 6.0 or greater"
-    }
     my @numbers = _read_table("To/Nv.pl");
     foreach my $entry (@numbers) {
         my ($start, $end, $value) = @$entry;
@@ -1364,14 +1850,18 @@ sub _numeric {
 
     my $val = num("123");
     my $one_quarter = num("\N{VULGAR FRACTION 1/4}");
+    my $val = num("12a", \$valid_length);  # $valid_length contains 2
 
-C<num> returns the numeric value of the input Unicode string; or C<undef> if it
+C<num()> returns the numeric value of the input Unicode string; or C<undef> if it
 doesn't think the entire string has a completely valid, safe numeric value.
+If called with an optional second parameter, a reference to a scalar, C<num()>
+will set the scalar to the length of any valid initial substring; or to 0 if none.
 
 If the string is just one character in length, the Unicode numeric value
-is returned if it has one, or C<undef> otherwise.  Note that this need
-not be a whole number.  C<num("\N{TIBETAN DIGIT HALF ZERO}")>, for
-example returns -0.5.
+is returned if it has one, or C<undef> otherwise.  If the optional scalar ref
+is passed, it would be set to 1 if the return is valid; or 0 if the return is
+C<undef>.  Note that the numeric value returned need not be a whole number.
+C<num("\N{TIBETAN DIGIT HALF ZERO}")>, for example returns -0.5.
 
 =cut
 
@@ -1393,7 +1883,9 @@ is returned.  A further restriction is that the digits all have to be of
 the same form.  A half-width digit mixed with a full-width one will
 return C<undef>.  The Arabic script has two sets of digits;  C<num> will
 return C<undef> unless all the digits in the string come from the same
-set.
+set.  In all cases, the optional scalar ref parameter is set to how
+long any valid initial substring of digits is; hence it will be set to the
+entire string length if the main return value is not C<undef>.
 
 C<num> errs on the side of safety, and there may be valid strings of
 decimal digits that it doesn't recognize.  Note that Unicode defines
@@ -1417,24 +1909,72 @@ change these into digits, and then call C<num> on the result.
 # consider those, and return the <decomposition> type in the second
 # array element.
 
-sub num {
-    my $string = $_[0];
+sub num ($;$) {
+    my ($string, $retlen_ref) = @_;
+
+    use feature 'unicode_strings';
 
     _numeric unless %NUMERIC;
+    $$retlen_ref = 0 if $retlen_ref;    # Assume will fail
 
-    my $length = length($string);
-    return $NUMERIC{ord($string)} if $length == 1;
-    return if $string =~ /\D/;
+    my $length = length $string;
+    return if $length == 0;
+
     my $first_ord = ord(substr($string, 0, 1));
+    return if ! exists  $NUMERIC{$first_ord}
+           || ! defined $NUMERIC{$first_ord};
+
+    # Here, we know the first character is numeric
     my $value = $NUMERIC{$first_ord};
+    $$retlen_ref = 1 if $retlen_ref;    # Assume only this one is numeric
+
+    return $value if $length == 1;
+
+    # Here, the input is longer than a single character.  To be valid, it must
+    # be entirely decimal digits, which means it must start with one.
+    return if $string =~ / ^ \D /x;
+
+    # To be a valid decimal number, it should be in a block of 10 consecutive
+    # characters, whose values are 0, 1, 2, ... 9.  Therefore this digit's
+    # value is its offset in that block from the character that means zero.
     my $zero_ord = $first_ord - $value;
 
+    # Unicode 6.0 instituted the rule that only digits in a consecutive
+    # block of 10 would be considered decimal digits.  If this is an earlier
+    # release, we verify that this first character is a member of such a
+    # block.  That is, that the block of characters surrounding this one
+    # consists of all \d characters whose numeric values are the expected
+    # ones.  If not, then this single character is numeric, but the string as
+    # a whole is not considered to be.
+    UnicodeVersion() unless defined $v_unicode_version;
+    if ($v_unicode_version lt v6.0.0) {
+        for my $i (0 .. 9) {
+            my $ord = $zero_ord + $i;
+            return unless chr($ord) =~ /\d/;
+            my $numeric = $NUMERIC{$ord};
+            return unless defined $numeric;
+            return unless $numeric == $i;
+        }
+    }
+
     for my $i (1 .. $length -1) {
+
+        # Here we know either by verifying, or by fact of the first character
+        # being a \d in Unicode 6.0 or later, that any character between the
+        # character that means 0, and 9 positions above it must be \d, and
+        # must have its value correspond to its offset from the zero.  Any
+        # characters outside these 10 do not form a legal number for this
+        # function.
         my $ord = ord(substr($string, $i, 1));
         my $digit = $ord - $zero_ord;
-        return unless $digit >= 0 && $digit <= 9;
+        if ($digit < 0 || $digit > 9) {
+            $$retlen_ref = $i if $retlen_ref;
+            return;
+        }
         $value = $value * 10 + $digit;
     }
+
+    $$retlen_ref = $length if $retlen_ref;
     return $value;
 }
 
@@ -1504,7 +2044,7 @@ Those discouraged forms are accepted as input to C<prop_aliases>, but are not
 returned in the lists.  C<prop_aliases('isL&')> and C<prop_aliases('isL_')>,
 which are old synonyms for C<"Is_LC"> and should not be used in new code, are
 examples of this.  These both return C<(Is_LC, Cased_Letter)>.  Thus this
-function allows you to take a discourarged form, and find its acceptable
+function allows you to take a discouraged form, and find its acceptable
 alternatives.  The same goes with single-form Block property equivalences.
 Only the forms that begin with C<"In_"> are not discouraged; if you pass
 C<prop_aliases> a discouraged form, you will get back the equivalent ones that
@@ -1551,7 +2091,7 @@ sub prop_aliases ($) {
         # as a key into another hash.  The whole concept is for memory
         # savings, as the second hash doesn't have to have all the
         # combinations.  Actually, there are two hashes that do the
-        # converstion.  One is used in utf8_heavy.pl (stored in Heavy.pl) for
+        # conversion.  One is used in utf8_heavy.pl (stored in Heavy.pl) for
         # looking up properties matchable in regexes.  This function needs to
         # access string properties, which aren't available in regexes, so a
         # second conversion hash is made for them (stored in UCD.pl).  Look in
@@ -1599,12 +2139,21 @@ sub prop_aliases ($) {
                 # there, the input is unknown.
                 return;
             }
-            else {
+            elsif ($loose =~ / [:=] /x) {
 
                 # Here we found the name but not its aliases, so it has to
-                # exist.  This means it must be one of the Perl single-form
-                # extensions.  First see if it is for a property-value
-                # combination in one of the following properties.
+                # exist.  Exclude property-value combinations.  (This shows up
+                # for something like ccc=vr which matches loosely, but is a
+                # synonym for ccc=9 which matches only strictly.
+                return;
+            }
+            else {
+
+                # Here it has to exist, and isn't a property-value
+                # combination.  This means it must be one of the Perl
+                # single-form extensions.  First see if it is for a
+                # property-value combination in one of the following
+                # properties.
                 my @list;
                 foreach my $property ("gc", "script") {
                     @list = prop_value_aliases($property, $loose);
@@ -1676,7 +2225,80 @@ sub prop_aliases ($) {
     # The full name is in element 1.
     return $list_ref->[1] unless wantarray;
 
-    return @{dclone $list_ref};
+    return @{_dclone $list_ref};
+}
+
+=pod
+
+=head2 B<prop_values()>
+
+    use Unicode::UCD 'prop_values';
+
+    print "AHex values are: ", join(", ", prop_values("AHex")),
+                               "\n";
+  prints:
+    AHex values are: N, Y
+
+Some Unicode properties have a restricted set of legal values.  For example,
+all binary properties are restricted to just C<true> or C<false>; and there
+are only a few dozen possible General Categories.  Use C<prop_values>
+to find out if a given property is one such, and if so, to get a list of the
+values:
+
+    print join ", ", prop_values("NFC_Quick_Check");
+  prints:
+    M, N, Y
+
+If the property doesn't have such a restricted set, C<undef> is returned.
+
+There are usually several synonyms for each possible value.  Use
+L</prop_value_aliases()> to access those.
+
+Case, white space, hyphens, and underscores are ignored in the input property
+name (except for the trailing underscore in the old-form grandfathered-in
+general category property value C<"L_">, which is better written as C<"LC">).
+
+If the property name is unknown, C<undef> is returned.  Note that Perl typically
+recognizes property names in regular expressions with an optional C<"Is_>"
+(with or without the underscore) prefixed to them, such as C<\p{isgc=punct}>.
+This function does not recognize those in the property parameter, returning
+C<undef>.
+
+For the block property, new-style block names are returned (see
+L</Old-style versus new-style block names>).
+
+C<prop_values> does not know about any user-defined properties, and
+will return C<undef> if called with one of those.
+
+=cut
+
+# These are created by mktables for this module and stored in unicore/UCD.pl
+# where their structures are described.
+our %loose_to_standard_value;
+our %prop_value_aliases;
+
+sub prop_values ($) {
+    my $prop = shift;
+    return undef unless defined $prop;
+
+    require "unicore/UCD.pl";
+    require "utf8_heavy.pl";
+
+    # Find the property name synonym that's used as the key in other hashes,
+    # which is element 0 in the returned list.
+    ($prop) = prop_aliases($prop);
+    return undef if ! $prop;
+    $prop = utf8::_loose_name(lc $prop);
+
+    # Here is a legal property.
+    return undef unless exists $prop_value_aliases{$prop};
+    my @return;
+    foreach my $value_key (sort { lc $a cmp lc $b }
+                            keys %{$prop_value_aliases{$prop}})
+    {
+        push @return, $prop_value_aliases{$prop}{$value_key}[0];
+    }
+    return @return;
 }
 
 =pod
@@ -1694,7 +2316,7 @@ sub prop_aliases ($) {
     print "The short name is $short_name\n";
     print "The other aliases are: ", join(", ", @other_names), "\n";
 
-    prints:
+  prints:
     The full name is Punctuation
     The short name is P
     The other aliases are: Punct
@@ -1703,18 +2325,20 @@ Some Unicode properties have a restricted set of legal values.  For example,
 all binary properties are restricted to just C<true> or C<false>; and there
 are only a few dozen possible General Categories.
 
-For such properties, there are usually several synonyms for each possible
-value.  For example, in binary properties, I<truth> can be represented by any of
-the strings "Y", "Yes", "T", or "True"; and the General Category
-"Punctuation" by that string, or "Punct", or simply "P".
+You can use L</prop_values()> to find out if a given property is one which has
+a restricted set of values, and if so, what those values are.  But usually
+each value actually has several synonyms.  For example, in Unicode binary
+properties, I<truth> can be represented by any of the strings "Y", "Yes", "T",
+or "True"; and the General Category "Punctuation" by that string, or "Punct",
+or simply "P".
 
 Like property names, there is typically at least a short name for each such
-property-value, and a long name.  If you know any name of the property-value,
-you can use C<prop_value_aliases>() to get the long name (when called in
-scalar context), or a list of all the names, with the short name in the 0th
-element, the long name in the next element, and any other synonyms in the
-remaining elements, in no particular order, except that any all-numeric
-synonyms will be last.
+property-value, and a long name.  If you know any name of the property-value
+(which you can get by L</prop_values()>, you can use C<prop_value_aliases>()
+to get the long name (when called in scalar context), or a list of all the
+names, with the short name in the 0th element, the long name in the next
+element, and any other synonyms in the remaining elements, in no particular
+order, except that any all-numeric synonyms will be last.
 
 The long name is returned in a form nicely capitalized, suitable for printing.
 
@@ -1730,7 +2354,7 @@ C<undef>.
 
 If called with a property that doesn't have synonyms for its values, it
 returns the input value, possibly normalized with capitalization and
-underscores.
+underscores, but not necessarily checking that the input value is valid.
 
 For the block property, new-style block names are returned (see
 L</Old-style versus new-style block names>).
@@ -1742,11 +2366,6 @@ C<prop_value_aliases> does not know about any user-defined properties, and
 will return C<undef> if called with one of those.
 
 =cut
-
-# These are created by mktables for this routine and stored in unicore/UCD.pl
-# where their structures are described.
-our %loose_to_standard_value;
-our %prop_value_aliases;
 
 sub prop_value_aliases ($$) {
     my ($prop, $value) = @_;
@@ -1767,7 +2386,18 @@ sub prop_value_aliases ($$) {
     # anything, like most (if not all) string properties.  These don't have
     # synonyms anyway.  Simply return the input.  For example, there is no
     # synonym for ('Uppercase_Mapping', A').
-    return $value if ! exists $prop_value_aliases{$prop};
+    if (! exists $prop_value_aliases{$prop}) {
+
+        # Here, we have a legal property, but an unknown value.  Since the
+        # property is legal, if it isn't in the prop_aliases hash, it must be
+        # a Perl-extension All perl extensions are binary, hence are
+        # enumerateds, which means that we know that the input unknown value
+        # is illegal.
+        return if ! exists $Unicode::UCD::prop_aliases{$prop};
+
+        # Otherwise, we assume it's valid, as documented.
+        return $value;
+    }
 
     # The value name may be loosely or strictly matched; we don't know yet.
     # But both types use lower-case.
@@ -1815,7 +2445,7 @@ sub prop_value_aliases ($$) {
         # The full name is in element 1.
         return $list_ref->[1] unless wantarray;
 
-        return @{dclone $list_ref};
+        return @{_dclone $list_ref};
     }
 
     return $list_ref->[0] unless wantarray;
@@ -1824,8 +2454,8 @@ sub prop_value_aliases ($$) {
     return ( $list_ref->[0], $list_ref->[0] );
 }
 
-# All 1 bits is the largest possible UV.
-$Unicode::UCD::MAX_CP = ~0;
+# All 1 bits but the top one is the largest possible IV.
+$Unicode::UCD::MAX_CP = (~0) >> 1;
 
 =pod
 
@@ -1842,7 +2472,8 @@ by the input parameter string:
  prints:
  0, 1114112
 
-An empty list is returned if the input is unknown; the number of elements in
+If the input is unknown C<undef> is returned in scalar context; an empty-list
+in list context.  If the input is known, the number of elements in
 the list is returned if called in scalar context.
 
 L<perluniprops|perluniprops/Properties accessible through \p{} and \P{}> gives
@@ -1854,7 +2485,7 @@ resolving the input property's name as is done for regular expressions.  These
 are also specified in L<perluniprops|perluniprops/Properties accessible
 through \p{} and \P{}>.  Examples of using the "property=value" form are:
 
- say join ", ", prop_invlist("Script=Shavian");
+ say join ", ", prop_invlist("Script_Extensions=Shavian");
 
  prints:
  66640, 66688
@@ -1892,21 +2523,10 @@ too high for some operations to work; you may wish to use a smaller number for
 your purposes.)
 
 Note that the inversion lists returned by this function can possibly include
-non-Unicode code points, that is anything above 0x10FFFF.  This is in
-contrast to Perl regular expression matches on those code points, in which a
-non-Unicode code point always fails to match.  For example, both of these have
-the same result:
-
- chr(0x110000) =~ \p{ASCII_Hex_Digit=True}      # Fails.
- chr(0x110000) =~ \p{ASCII_Hex_Digit=False}     # Fails!
-
-And both raise a warning that a Unicode property is being used on a
-non-Unicode code point.  It is arguable as to which is the correct thing to do
-here.  This function has chosen the way opposite to the Perl regular
-expression behavior.  This allows you to easily flip to to the Perl regular
-expression way (for you to go in the other direction would be far harder).
-Simply add 0x110000 at the end of the non-empty returned list if it isn't
-already that value; and pop that value if it is; like:
+non-Unicode code points, that is anything above 0x10FFFF.  Unicode properties
+are not defined on such code points.  You might wish to change the output to
+not include these.  Simply add 0x110000 at the end of the non-empty returned
+list if it isn't already that value; and pop that value if it is; like:
 
  my @list = prop_invlist("foo");
  if (@list) {
@@ -1927,11 +2547,7 @@ code points that have the property-value:
  for (my $i = 0; $i < @invlist; $i += 2) {
     my $upper = ($i + 1) < @invlist
                 ? $invlist[$i+1] - 1      # In range
-                : $Unicode::UCD::MAX_CP;  # To infinity.  You may want
-                                          # to stop much much earlier;
-                                          # going this high may expose
-                                          # perl deficiencies with very
-                                          # large numbers.
+                : $Unicode::UCD::MAX_CP;  # To infinity.
     for my $j ($invlist[$i] .. $upper) {
         push @full_list, $j;
     }
@@ -1939,6 +2555,9 @@ code points that have the property-value:
 
 C<prop_invlist> does not know about any user-defined nor Perl internal-only
 properties, and will return C<undef> if called with one of those.
+
+The L</search_invlist()> function is provided for finding a code point within
+an inversion list.
 
 =cut
 
@@ -1952,8 +2571,13 @@ properties, and will return C<undef> if called with one of those.
 our %loose_defaults;
 our $MAX_UNICODE_CODEPOINT;
 
-sub prop_invlist ($) {
+sub prop_invlist ($;$) {
     my $prop = $_[0];
+
+    # Undocumented way to get at Perl internal properties; it may be changed
+    # or removed without notice at any time.
+    my $internal_ok = defined $_[1] && $_[1] eq '_perl_core_internal_ok';
+
     return if ! defined $prop;
 
     require "utf8_heavy.pl";
@@ -1970,7 +2594,7 @@ sub prop_invlist ($) {
               || ref $swash eq ""
               || $swash->{'BITS'} != 1
               || $swash->{'USER_DEFINED'}
-              || $prop =~ /^\s*_/;
+              || (! $internal_ok && $prop =~ /^\s*_/);
 
     if ($swash->{'EXTRAS'}) {
         carp __PACKAGE__, "::prop_invlist: swash returned for $prop unexpectedly has EXTRAS magic";
@@ -1983,44 +2607,53 @@ sub prop_invlist ($) {
 
     my @invlist;
 
-    # The input lines look like:
-    # 0041\t005A   # [26]
-    # 005F
+    if ($swash->{'LIST'} =~ /^V/) {
 
-    # Split into lines, stripped of trailing comments
-    foreach my $range (split "\n",
-                            $swash->{'LIST'} =~ s/ \s* (?: \# .* )? $ //xmgr)
-    {
-        # And find the beginning and end of the range on the line
-        my ($hex_begin, $hex_end) = split "\t", $range;
-        my $begin = hex $hex_begin;
+        # A 'V' as the first character marks the input as already an inversion
+        # list, in which case, all we need to do is put the remaining lines
+        # into our array.
+        @invlist = split "\n", $swash->{'LIST'} =~ s/ \s* (?: \# .* )? $ //xmgr;
+        shift @invlist;
+    }
+    else {
+        # The input lines look like:
+        # 0041\t005A   # [26]
+        # 005F
 
-        # If the new range merely extends the old, we remove the marker
-        # created the last time through the loop for the old's end, which
-        # causes the new one's end to be used instead.
-        if (@invlist && $begin == $invlist[-1]) {
-            pop @invlist;
-        }
-        else {
-            # Add the beginning of the range
-            push @invlist, $begin;
-        }
+        # Split into lines, stripped of trailing comments
+        foreach my $range (split "\n",
+                              $swash->{'LIST'} =~ s/ \s* (?: \# .* )? $ //xmgr)
+        {
+            # And find the beginning and end of the range on the line
+            my ($hex_begin, $hex_end) = split "\t", $range;
+            my $begin = hex $hex_begin;
 
-        if (defined $hex_end) { # The next item starts with the code point 1
-                                # beyond the end of the range.
-            push @invlist, hex($hex_end) + 1;
-        }
-        else {  # No end of range, is a single code point.
-            push @invlist, $begin + 1;
+            # If the new range merely extends the old, we remove the marker
+            # created the last time through the loop for the old's end, which
+            # causes the new one's end to be used instead.
+            if (@invlist && $begin == $invlist[-1]) {
+                pop @invlist;
+            }
+            else {
+                # Add the beginning of the range
+                push @invlist, $begin;
+            }
+
+            if (defined $hex_end) { # The next item starts with the code point 1
+                                    # beyond the end of the range.
+                no warnings 'portable';
+                my $end = hex $hex_end;
+                last if $end == $Unicode::UCD::MAX_CP;
+                push @invlist, $end + 1;
+            }
+            else {  # No end of range, is a single code point.
+                push @invlist, $begin + 1;
+            }
         }
     }
 
-    require "unicore/UCD.pl";
-    my $FIRST_NON_UNICODE = $MAX_UNICODE_CODEPOINT + 1;
-
     # Could need to be inverted: add or subtract a 0 at the beginning of the
-    # list.  And to keep it from matching non-Unicode, add or subtract the
-    # first non-unicode code point.
+    # list.
     if ($swash->{'INVERT_IT'}) {
         if (@invlist && $invlist[0] == 0) {
             shift @invlist;
@@ -2028,104 +2661,9 @@ sub prop_invlist ($) {
         else {
             unshift @invlist, 0;
         }
-        if (@invlist && $invlist[-1] == $FIRST_NON_UNICODE) {
-            pop @invlist;
-        }
-        else {
-            push @invlist, $FIRST_NON_UNICODE;
-        }
-    }
-
-    # Here, the list is set up to include only Unicode code points.  But, if
-    # the table is the default one for the property, it should contain all
-    # non-Unicode code points.  First calculate the loose name for the
-    # property.  This is done even for strict-name properties, as the data
-    # structure that mktables generates for us is set up so that we don't have
-    # to worry about that.  The property-value needs to be split if compound,
-    # as the loose rules need to be independently calculated on each part.  We
-    # know that it is syntactically valid, or SWASHNEW would have failed.
-
-    $prop = lc $prop;
-    my ($prop_only, $table) = split /\s*[:=]\s*/, $prop;
-    if ($table) {
-
-        # May have optional prefixed 'is'
-        $prop = utf8::_loose_name($prop_only) =~ s/^is//r;
-        $prop = $utf8::loose_property_name_of{$prop};
-        $prop .= "=" . utf8::_loose_name($table);
-    }
-    else {
-        $prop = utf8::_loose_name($prop);
-    }
-    if (exists $loose_defaults{$prop}) {
-
-        # Here, is the default table.  If a range ended with 10ffff, instead
-        # continue that range to infinity, by popping the 110000; otherwise,
-        # add the range from 11000 to infinity
-        if (! @invlist || $invlist[-1] != $FIRST_NON_UNICODE) {
-            push @invlist, $FIRST_NON_UNICODE;
-        }
-        else {
-            pop @invlist;
-        }
     }
 
     return @invlist;
-}
-
-sub _search_invlist {
-    # Find the range in the inversion list which contains a code point; that
-    # is, find i such that l[i] <= code_point < l[i+1]
-
-    # If this is ever made public, could use to speed up .t specials.  Would
-    # need to use code point argument, as in other functions in this pm
-
-    my $list_ref = shift;
-    my $code_point = shift;
-    # Verify non-neg numeric  XXX
-
-    my $max_element = @$list_ref - 1;
-    return if ! $max_element < 0;     # Undef if list is empty.
-
-    # Short cut something at the far-end of the table.  This also allows us to
-    # refer to element [$i+1] without fear of being out-of-bounds in the loop
-    # below.
-    return $max_element if $code_point >= $list_ref->[$max_element];
-
-    use integer;        # want integer division
-
-    my $i = $max_element / 2;
-
-    my $lower = 0;
-    my $upper = $max_element;
-    while (1) {
-
-        if ($code_point >= $list_ref->[$i]) {
-
-            # Here we have met the lower constraint.  We can quit if we
-            # also meet the upper one.
-            last if $code_point < $list_ref->[$i+1];
-
-            $lower = $i;        # Still too low.
-
-        }
-        else {
-
-            # Here, $code_point < $list_ref[$i], so look lower down.
-            $upper = $i;
-        }
-
-        # Split search domain in half to try again.
-        my $temp = ($upper + $lower) / 2;
-
-        # No point in continuing unless $i changes for next time
-        # in the loop.
-        return $i if $temp == $i;
-        $i = $temp;
-    } # End of while loop
-
-    # Here we have found the offset
-    return $i;
 }
 
 =pod
@@ -2133,7 +2671,7 @@ sub _search_invlist {
 =head2 B<prop_invmap()>
 
  use Unicode::UCD 'prop_invmap';
- my ($list_ref, $map_ref, $format, $missing)
+ my ($list_ref, $map_ref, $format, $default)
                                       = prop_invmap("General Category");
 
 C<prop_invmap> is used to get the complete mapping definition for a property,
@@ -2150,18 +2688,23 @@ or even better, C<"Gc=LC">).
 
 Many Unicode properties have more than one name (or alias).  C<prop_invmap>
 understands all of these, including Perl extensions to them.  Ambiguities are
-resolved as described above for L</prop_aliases()>.  The Perl internal
-property "Perl_Decimal_Digit, described below, is also accepted.  C<undef> is
-returned if the property name is unknown.
+resolved as described above for L</prop_aliases()> (except if a property has
+both a complete mapping, and a binary C<Y>/C<N> mapping, then specifying the
+property name prefixed by C<"is"> causes the binary one to be returned).  The
+Perl internal property "Perl_Decimal_Digit, described below, is also accepted.
+An empty list is returned if the property name is unknown.
 See L<perluniprops/Properties accessible through Unicode::UCD> for the
 properties acceptable as inputs to this function.
 
 It is a fatal error to call this function except in list context.
 
-In addition to the the two arrays that form the inversion map, C<prop_invmap>
+In addition to the two arrays that form the inversion map, C<prop_invmap>
 returns two other values; one is a scalar that gives some details as to the
-format of the entries of the map array; the other is used for specialized
-purposes, described at the end of this section.
+format of the entries of the map array; the other is a default value, useful
+in maps whose format name begins with the letter C<"a">, as described
+L<below in its subsection|/a>; and for specialized purposes, such as
+converting to another data structure, described at the end of this main
+section.
 
 This means that C<prop_invmap> returns a 4 element list.  For example,
 
@@ -2221,7 +2764,8 @@ that, instead of treating these as unassigned Unicode code points, the value
 for this range should be C<undef>.  If you wish, you can change the returned
 arrays accordingly.
 
-The maps are almost always simple scalars that should be interpreted as-is.
+The maps for almost all properties are simple scalars that should be
+interpreted as-is.
 These values are those given in the Unicode-supplied data files, which may be
 inconsistent as to capitalization and as to which synonym for a property-value
 is given.  The results may be normalized by using the L</prop_value_aliases()>
@@ -2316,7 +2860,7 @@ is like C<"s"> in that all the map array elements are scalars, but here they are
 restricted to all being integers, and some have to be adjusted (hence the name
 C<"a">) to get the correct result.  For example, in:
 
- my ($uppers_ranges_ref, $uppers_maps_ref, $format)
+ my ($uppers_ranges_ref, $uppers_maps_ref, $format, $default)
                           = prop_invmap("Simple_Uppercase_Mapping");
 
 the returned arrays look like this:
@@ -2329,22 +2873,24 @@ the returned arrays look like this:
      182                      0
      ...
 
+and C<$default> is 0.
+
 Let's start with the second line.  It says that the uppercase of code point 97
 is 65; or C<uc("a")> == "A".  But the line is for the entire range of code
-points 97 through 122.  To get the mapping for any code point in a range, you
-take the offset it has from the beginning code point of the range, and add
+points 97 through 122.  To get the mapping for any code point in this range,
+you take the offset it has from the beginning code point of the range, and add
 that to the mapping for that first code point.  So, the mapping for 122 ("z")
 is derived by taking the offset of 122 from 97 (=25) and adding that to 65,
 yielding 90 ("z").  Likewise for everything in between.
 
-The first line works the same way.  The first map in a range is always the
-correct value for its code point (because the adjustment is 0).  Thus the
-C<uc(chr(0))> is just itself.  Also, C<uc(chr(1))> is also itself, as the
-adjustment is 0+1-0 .. C<uc(chr(96))> is 96.
-
 Requiring this simple adjustment allows the returned arrays to be
 significantly smaller than otherwise, up to a factor of 10, speeding up
 searching through them.
+
+Ranges that map to C<$default>, C<"0">, behave somewhat differently.  For
+these, each code point maps to itself.  So, in the first line in the example,
+S<C<ord(uc(chr(0)))>> is 0, S<C<ord(uc(chr(1)))>> is 1, ..
+S<C<ord(uc(chr(96)))>> is 96.
 
 =item B<C<al>>
 
@@ -2352,7 +2898,7 @@ means that some of the map array elements have the form given by C<"a">, and
 the rest are ordered lists of code points.
 For example, in:
 
- my ($uppers_ranges_ref, $uppers_maps_ref, $format)
+ my ($uppers_ranges_ref, $uppers_maps_ref, $format, $default)
                                  = prop_invmap("Uppercase_Mapping");
 
 the returned arrays look like this:
@@ -2378,6 +2924,9 @@ CAPITAL LETTER N).
 
 No adjustments are needed to entries that are references to arrays; each such
 entry will have exactly one element in its range, so the offset is always 0.
+
+The fourth (index [3]) element (C<$default>) in the list returned for this
+format is 0.
 
 =item B<C<ae>>
 
@@ -2408,6 +2957,9 @@ represents 0+1-0 = 1; ... code point 0x39, (DIGIT NINE), represents 0+9-0 = 9;
 (ARABIC-INDIC DIGIT ZERO), represents 0; ... 0x07C1 (NKO DIGIT ONE),
 represents 0+1-0 = 1 ...
 
+The fourth (index [3]) element (C<$default>) in the list returned for this
+format is the empty string.
+
 =item B<C<ale>>
 
 is a combination of the C<"al"> type and the C<"ae"> type.  Some of
@@ -2425,13 +2977,16 @@ An example slice is:
    0x00B0        0
    ...
 
+The fourth (index [3]) element (C<$default>) in the list returned for this
+format is 0.
+
 =item B<C<ar>>
 
 means that all the elements of the map array are either rational numbers or
 the string C<"NaN">, meaning "Not a Number".  A rational number is either an
 integer, or two integers separated by a solidus (C<"/">).  The second integer
 represents the denominator of the division implied by the solidus, and is
-actually always positive, so it is guaranteed not to be 0 and to not to be
+actually always positive, so it is guaranteed not to be 0 and to not be
 signed.  When the element is a plain integer (without the
 solidus), it may need to be adjusted to get the correct value by adding the
 offset, just as other C<"a"> properties.  No adjustment is needed for
@@ -2443,7 +2998,7 @@ can use something like this:
 
  my ($invlist_ref, $invmap_ref, $format) = prop_invmap($property);
  if ($format && $format eq "ar") {
-     map { $_ = eval $_ } @$invmap_ref;
+     map { $_ = eval $_ if $_ ne 'NaN' } @$map_ref;
  }
 
 Here's some entries from the output of the property "Nv", which has format
@@ -2463,6 +3018,9 @@ C<"ar">.
         0xBF           "NaN"
         0x660            0           ARABIC-INDIC DIGIT ZERO .. NINE
         0x66A          "NaN"
+
+The fourth (index [3]) element (C<$default>) in the list returned for this
+format is C<"NaN">.
 
 =item B<C<n>>
 
@@ -2501,13 +3059,18 @@ properties, except that one of the scalar elements is of the form:
 
 This signifies that this entry should be replaced by the decompositions for
 all the code points whose decomposition is algorithmically calculated.  (All
-of them are currently in one range and no others outisde the range are likely
+of them are currently in one range and no others outside the range are likely
 to ever be added to Unicode; the C<"n"> format
 has this same entry.)  These can be generated via the function
 L<Unicode::Normalize::NFD()|Unicode::Normalize>.
 
 Note that the mapping is the one that is specified in the Unicode data files,
 and to get the final decomposition, it may need to be applied recursively.
+Unicode in fact discourages use of this property except internally in
+implementations of the Unicode Normalization Algorithm.
+
+The fourth (index [3]) element (C<$default>) in the list returned for this
+format is 0.
 
 =back
 
@@ -2521,29 +3084,31 @@ which is an integer.  That is, it must match the regular expression:
 Further, the first element in a range never needs adjustment, as the
 adjustment would be just adding 0.
 
-A binary search can be used to quickly find a code point in the inversion
-list, and hence its corresponding mapping.
+A binary search such as that provided by L</search_invlist()>, can be used to
+quickly find a code point in the inversion list, and hence its corresponding
+mapping.
 
-The final element (index [3], assigned to C<$default> in the "block" example) in
-the four element list returned by this function may be useful for applications
+The final, fourth element (index [3], assigned to C<$default> in the "block"
+example) in the four element list returned by this function is used with the
+C<"a"> format types; it may also be useful for applications
 that wish to convert the returned inversion map data structure into some
 other, such as a hash.  It gives the mapping that most code points map to
 under the property.  If you establish the convention that any code point not
 explicitly listed in your data structure maps to this value, you can
 potentially make your data structure much smaller.  As you construct your data
 structure from the one returned by this function, simply ignore those ranges
-that map to this value, generally called the "default" value.  For example, to
+that map to this value.  For example, to
 convert to the data structure searchable by L</charinrange()>, you can follow
 this recipe for properties that don't require adjustments:
 
- my ($list_ref, $map_ref, $format, $missing) = prop_invmap($property);
+ my ($list_ref, $map_ref, $format, $default) = prop_invmap($property);
  my @range_list;
 
  # Look at each element in the list, but the -2 is needed because we
  # look at $i+1 in the loop, and the final element is guaranteed to map
- # to $missing by prop_invmap(), so we would skip it anyway.
+ # to $default by prop_invmap(), so we would skip it anyway.
  for my $i (0 .. @$list_ref - 2) {
-    next if $map_ref->[$i] eq $missing;
+    next if $map_ref->[$i] eq $default;
     push @range_list, [ $list_ref->[$i],
                         $list_ref->[$i+1],
                         $map_ref->[$i]
@@ -2553,13 +3118,13 @@ this recipe for properties that don't require adjustments:
  print charinrange(\@range_list, $code_point), "\n";
 
 With this, C<charinrange()> will return C<undef> if its input code point maps
-to C<$missing>.  You can avoid this by omitting the C<next> statement, and adding
+to C<$default>.  You can avoid this by omitting the C<next> statement, and adding
 a line after the loop to handle the final element of the inversion map.
 
 Similarly, this recipe can be used for properties that do require adjustments:
 
  for my $i (0 .. @$list_ref - 2) {
-    next if $map_ref->[$i] eq $missing;
+    next if $map_ref->[$i] eq $default;
 
     # prop_invmap() guarantees that if the mapping is to an array, the
     # range has just one element, so no need to worry about adjustments.
@@ -2593,6 +3158,51 @@ Use L</casefold()> for these.
 C<prop_invmap> does not know about any user-defined properties, and will
 return C<undef> if called with one of those.
 
+The returned values for the Perl extension properties, such as C<Any> and
+C<Greek> are somewhat misleading.  The values are either C<"Y"> or C<"N>".
+All Unicode properties are bipartite, so you can actually use the C<"Y"> or
+C<"N>" in a Perl regular expression for these, like C<qr/\p{ID_Start=Y/}> or
+C<qr/\p{Upper=N/}>.  But the Perl extensions aren't specified this way, only
+like C</qr/\p{Any}>, I<etc>.  You can't actually use the C<"Y"> and C<"N>" in
+them.
+
+=head3 Getting every available name
+
+Instead of reading the Unicode Database directly from files, as you were able
+to do for a long time, you are encouraged to use the supplied functions. So,
+instead of reading C<Name.pl> - which may disappear without notice in the
+future - directly, as with
+
+  my (%name, %cp);
+  for (split m/\s*\n/ => do "unicore/Name.pl") {
+      my ($cp, $name) = split m/\t/ => $_;
+      $cp{$name} = $cp;
+      $name{$cp} = $name unless $cp =~ m/ /;
+  }
+
+You ought to use L</prop_invmap()> like this:
+
+  my (%name, %cp, %cps, $n);
+  # All codepoints
+  foreach my $cat (qw( Name Name_Alias )) {
+      my ($codepoints, $names, $format, $default) = prop_invmap($cat);
+      # $format => "n", $default => ""
+      foreach my $i (0 .. @$codepoints - 2) {
+          my ($cp, $n) = ($codepoints->[$i], $names->[$i]);
+          # If $n is a ref, the same codepoint has multiple names
+          foreach my $name (ref $n ? @$n : $n) {
+              $name{$cp} //= $name;
+              $cp{$name} //= $cp;
+          }
+      }
+  }
+  # Named sequences
+  {   my %ns = namedseq();
+      foreach my $name (sort { $ns{$a} cmp $ns{$b} } keys %ns) {
+          $cp{$name} //= [ map { ord } split "" => $ns{$name} ];
+      }
+  }
+
 =cut
 
 # User-defined properties could be handled with some changes to utf8_heavy.pl;
@@ -2610,22 +3220,28 @@ our @algorithmic_named_code_points;
 our $HANGUL_BEGIN;
 our $HANGUL_COUNT;
 
-sub prop_invmap ($) {
+sub prop_invmap ($;$) {
 
     croak __PACKAGE__, "::prop_invmap: must be called in list context" unless wantarray;
 
     my $prop = $_[0];
     return unless defined $prop;
 
+    # Undocumented way to get at Perl internal properties; it may be changed
+    # or removed without notice at any time.  It currently also changes the
+    # output to use the format specified in the file rather than the one we
+    # normally compute and return
+    my $internal_ok = defined $_[1] && $_[1] eq '_perl_core_internal_ok';
+
     # Fail internal properties
-    return if $prop =~ /^_/;
+    return if $prop =~ /^_/ && ! $internal_ok;
 
     # The values returned by this function.
     my (@invlist, @invmap, $format, $missing);
 
     # The swash has two components we look at, the base list, and a hash,
     # named 'SPECIALS', containing any additional members whose mappings don't
-    # fit into the the base list scheme of things.  These generally 'override'
+    # fit into the base list scheme of things.  These generally 'override'
     # any value in the base list for the same code point.
     my $overrides;
 
@@ -2665,7 +3281,7 @@ RETRY:
             $prop = "age";
             goto RETRY;
         }
-        elsif ($second_try =~ / ^ s ( cf | [ltu] c ) $ /x) {
+        elsif ($second_try =~ / ^ s ( cf | fc | [ltu] c ) $ /x) {
 
             # These properties use just the LIST part of the full mapping,
             # which includes the simple maps that are otherwise overridden by
@@ -2674,7 +3290,11 @@ RETRY:
             $overrides = -1;
 
             # The full name is the simple name stripped of its initial 's'
-            $prop = $second_try =~ s/^s//r;
+            $prop = $1;
+
+            # .. except for this case
+            $prop = 'cf' if $prop eq 'fc';
+
             goto RETRY;
         }
         elsif ($second_try eq "blk") {
@@ -2710,8 +3330,8 @@ RETRY:
             # we need to also read in that table.  Create a hash with the keys
             # being the code points, and the values being a list of the
             # aliases for the code point key.
-            my ($aliases_code_points, $aliases_maps, undef, undef) =
-                                                &prop_invmap('Name_Alias');
+            my ($aliases_code_points, $aliases_maps, undef, undef)
+                  = &prop_invmap("_Perl_Name_Alias", '_perl_core_internal_ok');
             my %aliases;
             for (my $i = 0; $i < @$aliases_code_points; $i++) {
                 my $code_point = $aliases_code_points->[$i];
@@ -2733,15 +3353,13 @@ RETRY:
                 my ($hex_code_point, $name) = split "\t", $line;
 
                 # Weeds out all comments, blank lines, and named sequences
-                next if $hex_code_point =~ /\P{ASCII_HEX_DIGIT}/;
+                next if $hex_code_point =~ /[^[:xdigit:]]/a;
 
                 my $code_point = hex $hex_code_point;
 
                 # The name of all controls is the default: the empty string.
-                # The set of controls is immutable, so these hard-coded
-                # constants work.
-                next if $code_point <= 0x9F
-                        && ($code_point <= 0x1F || $code_point >= 0x7F);
+                # The set of controls is immutable
+                next if chr($code_point) =~ /[[:cntrl:]]/u;
 
                 # If this is a name_alias, it isn't a name
                 next if grep { $_ eq $name } @{$aliases{$code_point}};
@@ -2791,8 +3409,11 @@ RETRY:
             $decomps{'LIST'} = "";
 
             # This property has one special range not in the file: for the
-            # hangul syllables
-            my $done_hangul = 0;    # Have we done the hangul range.
+            # hangul syllables.  But not in Unicode version 1.
+            UnicodeVersion() unless defined $v_unicode_version;
+            my $done_hangul = ($v_unicode_version lt v2.0.0)
+                              ? 1
+                              : 0;    # Have we done the hangul range ?
             foreach my $line (split "\n", $original) {
                 my ($hex_lower, $hex_upper, $type_and_map) = split "\t", $line;
                 my $code_point = hex $hex_lower;
@@ -2820,6 +3441,12 @@ RETRY:
                                         ($second_try eq 'dt')
                                         ? "Canonical"
                                         : "<hangul syllable>";
+                }
+
+                if ($value =~ / / && $hex_upper ne "" && $hex_upper ne $hex_lower) {
+                    $line = sprintf("%04X\t%s\t%s", hex($hex_lower) + 1, $hex_upper, $value);
+                    $hex_upper = "";
+                    $redo = 1;
                 }
 
                 # And append this to our constructed LIST.
@@ -2863,8 +3490,8 @@ RETRY:
                     }
                     else {
 
-                        # These should all single-element ranges.
-                        croak __PACKAGE__, "::prop_invmap: Not expecting a mapping with multiple code points in a multi-element range, $ranges[$i]" if $hex_end ne "";
+                        # These should all be single-element ranges.
+                        croak __PACKAGE__, "::prop_invmap: Not expecting a mapping with multiple code points in a multi-element range, $ranges[$i]" if $hex_end ne "" && $hex_end ne $hex_begin;
 
                         # Convert them to decimal, as that's what's expected.
                         $list .= "$hex_begin\t\t"
@@ -2956,7 +3583,7 @@ RETRY:
                         $list .= "$hex_begin\t$hex_end\t$decimal_map\n";
                     } else {
 
-                        # Here, no combining done.  Just appen the initial
+                        # Here, no combining done.  Just append the initial
                         # (and current) values.
                         $list .= "$hex_begin\t\t$decimal_map\n";
                     }
@@ -2993,159 +3620,201 @@ RETRY:
 
     my $requires_adjustment = $format =~ /^a/;
 
-    # The LIST input lines look like:
-    # ...
-    # 0374\t\tCommon
-    # 0375\t0377\tGreek   # [3]
-    # 037A\t037D\tGreek   # [4]
-    # 037E\t\tCommon
-    # 0384\t\tGreek
-    # ...
-    #
-    # Convert them to like
-    # 0374 => Common
-    # 0375 => Greek
-    # 0378 => $missing
-    # 037A => Greek
-    # 037E => Common
-    # 037F => $missing
-    # 0384 => Greek
-    #
-    # For binary properties, the final non-comment column is absent, and
-    # assumed to be 'Y'.
+    if ($swash->{'LIST'} =~ /^V/) {
+        @invlist = split "\n", $swash->{'LIST'} =~ s/ \s* (?: \# .* )? $ //xmgr;
 
-    foreach my $range (split "\n", $swash->{'LIST'}) {
-        $range =~ s/ \s* (?: \# .* )? $ //xg; # rmv trailing space, comments
+        shift @invlist;     # Get rid of 'V';
 
-        # Find the beginning and end of the range on the line
-        my ($hex_begin, $hex_end, $map) = split "\t", $range;
-        my $begin = hex $hex_begin;
-        my $end = (defined $hex_end && $hex_end ne "")
-                  ? hex $hex_end
-                  : $begin;
+        # Could need to be inverted: add or subtract a 0 at the beginning of
+        # the list.
+        if ($swash->{'INVERT_IT'}) {
+            if (@invlist && $invlist[0] == 0) {
+                shift @invlist;
+            }
+            else {
+                unshift @invlist, 0;
+            }
+        }
 
-        # Each time through the loop (after the first):
-        # $invlist[-2] contains the beginning of the previous range processed
-        # $invlist[-1] contains the end+1 of the previous range processed
-        # $invmap[-2] contains the value of the previous range processed
-        # $invmap[-1] contains the default value for missing ranges ($missing)
+        if (@invlist) {
+            foreach my $i (0 .. @invlist - 1) {
+                $invmap[$i] = ($i % 2 == 0) ? 'Y' : 'N'
+            }
+
+            # The map includes lines for all code points; add one for the range
+            # from 0 to the first Y.
+            if ($invlist[0] != 0) {
+                unshift @invlist, 0;
+                unshift @invmap, 'N';
+            }
+        }
+    }
+    else {
+        if ($swash->{'INVERT_IT'}) {
+            croak __PACKAGE__, ":prop_invmap: Don't know how to deal with inverted";
+        }
+
+        # The LIST input lines look like:
+        # ...
+        # 0374\t\tCommon
+        # 0375\t0377\tGreek   # [3]
+        # 037A\t037D\tGreek   # [4]
+        # 037E\t\tCommon
+        # 0384\t\tGreek
+        # ...
         #
-        # Thus, things are set up for the typical case of a new non-adjacent
-        # range of non-missings to be added.  But, if the new range is
-        # adjacent, it needs to replace the [-1] element; and if the new
-        # range is a multiple value of the previous one, it needs to be added
-        # to the [-2] map element.
+        # Convert them to like
+        # 0374 => Common
+        # 0375 => Greek
+        # 0378 => $missing
+        # 037A => Greek
+        # 037E => Common
+        # 037F => $missing
+        # 0384 => Greek
+        #
+        # For binary properties, the final non-comment column is absent, and
+        # assumed to be 'Y'.
 
-        # The first time through, everything will be empty.  If the property
-        # doesn't have a range that begins at 0, add one that maps to $missing
-        if (! @invlist) {
-            if ($begin != 0) {
-                push @invlist, 0;
-                push @invmap, $missing;
-            }
-        }
-        elsif (@invlist > 1 && $invlist[-2] == $begin) {
+        foreach my $range (split "\n", $swash->{'LIST'}) {
+            $range =~ s/ \s* (?: \# .* )? $ //xg; # rmv trailing space, comments
 
-            # Here we handle the case where the input has multiple entries for
-            # each code point.  mktables should have made sure that each such
-            # range contains only one code point.  At this point, $invlist[-1]
-            # is the $missing that was added at the end of the last loop
-            # iteration, and [-2] is the last real input code point, and that
-            # code point is the same as the one we are adding now, making the
-            # new one a multiple entry.  Add it to the existing entry, either
-            # by pushing it to the existing list of multiple entries, or
-            # converting the single current entry into a list with both on it.
-            # This is all we need do for this iteration.
+            # Find the beginning and end of the range on the line
+            my ($hex_begin, $hex_end, $map) = split "\t", $range;
+            my $begin = hex $hex_begin;
+            no warnings 'portable';
+            my $end = (defined $hex_end && $hex_end ne "")
+                    ? hex $hex_end
+                    : $begin;
 
-            if ($end != $begin) {
-                croak __PACKAGE__, ":prop_invmap: Multiple maps per code point in '$prop' require single-element ranges: begin=$begin, end=$end, map=$map";
-            }
-            if (! ref $invmap[-2]) {
-                $invmap[-2] = [ $invmap[-2], $map ];
-            }
-            else {
-                push @{$invmap[-2]}, $map;
-            }
-            $has_multiples = 1;
-            next;
-        }
-        elsif ($invlist[-1] == $begin) {
-
-            # If the input isn't in the most compact form, so that there are
-            # two adjacent ranges that map to the same thing, they should be
-            # combined (EXCEPT where the arrays require adjustments, in which
-            # case everything is already set up correctly).  This happens in
-            # our constructed dt mapping, as Element [-2] is the map for the
-            # latest range so far processed.  Just set the beginning point of
-            # the map to $missing (in invlist[-1]) to 1 beyond where this
-            # range ends.  For example, in
-            # 12\t13\tXYZ
-            # 14\t17\tXYZ
-            # we have set it up so that it looks like
-            # 12 => XYZ
-            # 14 => $missing
+            # Each time through the loop (after the first):
+            # $invlist[-2] contains the beginning of the previous range processed
+            # $invlist[-1] contains the end+1 of the previous range processed
+            # $invmap[-2] contains the value of the previous range processed
+            # $invmap[-1] contains the default value for missing ranges
+            #                                                       ($missing)
             #
-            # We now see that it should be
-            # 12 => XYZ
-            # 18 => $missing
-            if (! $requires_adjustment && @invlist > 1 && ( (defined $map)
-                                  ? $invmap[-2] eq $map
-                                  : $invmap[-2] eq 'Y'))
-            {
-                $invlist[-1] = $end + 1;
-                next;
+            # Thus, things are set up for the typical case of a new
+            # non-adjacent range of non-missings to be added.  But, if the new
+            # range is adjacent, it needs to replace the [-1] element; and if
+            # the new range is a multiple value of the previous one, it needs
+            # to be added to the [-2] map element.
+
+            # The first time through, everything will be empty.  If the
+            # property doesn't have a range that begins at 0, add one that
+            # maps to $missing
+            if (! @invlist) {
+                if ($begin != 0) {
+                    push @invlist, 0;
+                    push @invmap, $missing;
+                }
             }
+            elsif (@invlist > 1 && $invlist[-2] == $begin) {
 
-            # Here, the range started in the previous iteration that maps to
-            # $missing starts at the same code point as this range.  That
-            # means there is no gap to fill that that range was intended for,
-            # so we just pop it off the parallel arrays.
-            pop @invlist;
-            pop @invmap;
-        }
+                # Here we handle the case where the input has multiple entries
+                # for each code point.  mktables should have made sure that
+                # each such range contains only one code point.  At this
+                # point, $invlist[-1] is the $missing that was added at the
+                # end of the last loop iteration, and [-2] is the last real
+                # input code point, and that code point is the same as the one
+                # we are adding now, making the new one a multiple entry.  Add
+                # it to the existing entry, either by pushing it to the
+                # existing list of multiple entries, or converting the single
+                # current entry into a list with both on it.  This is all we
+                # need do for this iteration.
 
-        # Add the range beginning, and the range's map.
-        push @invlist, $begin;
-        if ($returned_prop eq 'ToDm') {
-
-            # The decomposition maps are either a line like <hangul syllable>
-            # which are to be taken as is; or a sequence of code points in hex
-            # and separated by blanks.  Convert them to decimal, and if there
-            # is more than one, use an anonymous array as the map.
-            if ($map =~ /^ < /x) {
-                push @invmap, $map;
-            }
-            else {
-                my @map = split " ", $map;
-                if (@map == 1) {
-                    push @invmap, $map[0];
+                if ($end != $begin) {
+                    croak __PACKAGE__, ":prop_invmap: Multiple maps per code point in '$prop' require single-element ranges: begin=$begin, end=$end, map=$map";
+                }
+                if (! ref $invmap[-2]) {
+                    $invmap[-2] = [ $invmap[-2], $map ];
                 }
                 else {
-                    push @invmap, \@map;
+                    push @{$invmap[-2]}, $map;
+                }
+                $has_multiples = 1;
+                next;
+            }
+            elsif ($invlist[-1] == $begin) {
+
+                # If the input isn't in the most compact form, so that there
+                # are two adjacent ranges that map to the same thing, they
+                # should be combined (EXCEPT where the arrays require
+                # adjustments, in which case everything is already set up
+                # correctly).  This happens in our constructed dt mapping, as
+                # Element [-2] is the map for the latest range so far
+                # processed.  Just set the beginning point of the map to
+                # $missing (in invlist[-1]) to 1 beyond where this range ends.
+                # For example, in
+                # 12\t13\tXYZ
+                # 14\t17\tXYZ
+                # we have set it up so that it looks like
+                # 12 => XYZ
+                # 14 => $missing
+                #
+                # We now see that it should be
+                # 12 => XYZ
+                # 18 => $missing
+                if (! $requires_adjustment && @invlist > 1 && ( (defined $map)
+                                    ? $invmap[-2] eq $map
+                                    : $invmap[-2] eq 'Y'))
+                {
+                    $invlist[-1] = $end + 1;
+                    next;
+                }
+
+                # Here, the range started in the previous iteration that maps
+                # to $missing starts at the same code point as this range.
+                # That means there is no gap to fill that that range was
+                # intended for, so we just pop it off the parallel arrays.
+                pop @invlist;
+                pop @invmap;
+            }
+
+            # Add the range beginning, and the range's map.
+            push @invlist, $begin;
+            if ($returned_prop eq 'ToDm') {
+
+                # The decomposition maps are either a line like <hangul
+                # syllable> which are to be taken as is; or a sequence of code
+                # points in hex and separated by blanks.  Convert them to
+                # decimal, and if there is more than one, use an anonymous
+                # array as the map.
+                if ($map =~ /^ < /x) {
+                    push @invmap, $map;
+                }
+                else {
+                    my @map = split " ", $map;
+                    if (@map == 1) {
+                        push @invmap, $map[0];
+                    }
+                    else {
+                        push @invmap, \@map;
+                    }
                 }
             }
-        }
-        else {
+            else {
 
-            # Otherwise, convert hex formatted list entries to decimal; add a
-            # 'Y' map for the missing value in binary properties, or
-            # otherwise, use the input map unchanged.
-            $map = ($format eq 'x')
-                ? hex $map
-                : $format eq 'b'
-                  ? 'Y'
-                  : $map;
-            push @invmap, $map;
-        }
+                # Otherwise, convert hex formatted list entries to decimal;
+                # add a 'Y' map for the missing value in binary properties, or
+                # otherwise, use the input map unchanged.
+                $map = ($format eq 'x' || $format eq 'ax')
+                    ? hex $map
+                    : $format eq 'b'
+                    ? 'Y'
+                    : $map;
+                push @invmap, $map;
+            }
 
-        # We just started a range.  It ends with $end.  The gap between it and
-        # the next element in the list must be filled with a range that maps
-        # to the default value.  If there is no gap, the next iteration will
-        # pop this, unless there is no next iteration, and we have filled all
-        # of the Unicode code space, so check for that and skip.
-        if ($end < $MAX_UNICODE_CODEPOINT) {
-            push @invlist, $end + 1;
-            push @invmap, $missing;
+            # We just started a range.  It ends with $end.  The gap between it
+            # and the next element in the list must be filled with a range
+            # that maps to the default value.  If there is no gap, the next
+            # iteration will pop this, unless there is no next iteration, and
+            # we have filled all of the Unicode code space, so check for that
+            # and skip.
+            if ($end < $Unicode::UCD::MAX_CP) {
+                push @invlist, $end + 1;
+                push @invmap, $missing;
+            }
         }
     }
 
@@ -3156,10 +3825,15 @@ RETRY:
         push @invmap, $missing;
     }
 
-    # And add in standard element that all non-Unicode code points map to:
-    # $missing
-    push @invlist, $MAX_UNICODE_CODEPOINT + 1;
-    push @invmap, $missing;
+    # The final element is always for just the above-Unicode code points.  If
+    # not already there, add it.  It merely splits the current final range
+    # that extends to infinity into two elements, each with the same map.
+    # (This is to conform with the API that says the final element is for
+    # $MAX_UNICODE_CODEPOINT + 1 .. INFINITY.)
+    if ($invlist[-1] != $MAX_UNICODE_CODEPOINT + 1) {
+        push @invmap, $invmap[-1];
+        push @invlist, $MAX_UNICODE_CODEPOINT + 1;
+    }
 
     # The second component of the map are those values that require
     # non-standard specification, stored in SPECIALS.  These override any
@@ -3188,8 +3862,15 @@ RETRY:
                 # If the overrides came from SPECIALS, the code point keys are
                 # packed UTF-8.
                 if ($overrides == $swash->{'SPECIALS'}) {
-                    $cp = unpack("C0U", $cp_maybe_utf8);
-                    @map = unpack "U0U*", $swash->{'SPECIALS'}{$cp_maybe_utf8};
+                    $cp = $cp_maybe_utf8;
+                    if (! utf8::decode($cp)) {
+                        croak __PACKAGE__, "::prop_invmap: Malformed UTF-8: ",
+                              map { sprintf("\\x{%02X}", unpack("C", $_)) }
+                                                                split "", $cp;
+                    }
+
+                    $cp = unpack("W", $cp);
+                    @map = unpack "W*", $swash->{'SPECIALS'}{$cp_maybe_utf8};
 
                     # The empty string will show up unpacked as an empty
                     # array.
@@ -3206,7 +3887,7 @@ RETRY:
                 }
 
                 # Find the range that the override applies to.
-                my $i = _search_invlist(\@invlist, $cp);
+                my $i = search_invlist(\@invlist, $cp);
                 if ($cp < $invlist[$i] || $cp >= $invlist[$i + 1]) {
                     croak __PACKAGE__, "::prop_invmap: wrong_range, cp=$cp; i=$i, current=$invlist[$i]; next=$invlist[$i + 1]"
                 }
@@ -3288,7 +3969,7 @@ RETRY:
         map { $_ = [ split " ", $_  ] if $_ =~ / / } @invmap;
         $format = 'sl';
     }
-    elsif ($returned_prop eq 'ToNameAlias') {
+    elsif ($returned_prop =~ / To ( _Perl )? NameAlias/x) {
 
         # This property currently doesn't have any lists, but theoretically
         # could
@@ -3303,7 +3984,14 @@ RETRY:
         # to indicate that need to add code point to it.
         $format = 'ar';
     }
-    elsif ($format ne 'n' && $format ne 'a') {
+    elsif ($format eq 'ax') {
+
+        # Normally 'ax' properties have overrides, and will have been handled
+        # above, but if not, they still need adjustment, and the hex values
+        # have already been converted to decimal
+        $format = 'a';
+    }
+    elsif ($format ne 'n' && $format !~ / ^ a /x) {
 
         # All others are simple scalars
         $format = 's';
@@ -3313,6 +4001,100 @@ RETRY:
     }
 
     return (\@invlist, \@invmap, $format, $missing);
+}
+
+sub search_invlist {
+
+=pod
+
+=head2 B<search_invlist()>
+
+ use Unicode::UCD qw(prop_invmap prop_invlist);
+ use Unicode::UCD 'search_invlist';
+
+ my @invlist = prop_invlist($property_name);
+ print $code_point, ((search_invlist(\@invlist, $code_point) // -1) % 2)
+                     ? " isn't"
+                     : " is",
+     " in $property_name\n";
+
+ my ($blocks_ranges_ref, $blocks_map_ref) = prop_invmap("Block");
+ my $index = search_invlist($blocks_ranges_ref, $code_point);
+ print "$code_point is in block ", $blocks_map_ref->[$index], "\n";
+
+C<search_invlist> is used to search an inversion list returned by
+C<prop_invlist> or C<prop_invmap> for a particular L</code point argument>.
+C<undef> is returned if the code point is not found in the inversion list
+(this happens only when it is not a legal L<code point argument>, or is less
+than the list's first element).  A warning is raised in the first instance.
+
+Otherwise, it returns the index into the list of the range that contains the
+code point.; that is, find C<i> such that
+
+    list[i]<= code_point < list[i+1].
+
+As explained in L</prop_invlist()>, whether a code point is in the list or not
+depends on if the index is even (in) or odd (not in).  And as explained in
+L</prop_invmap()>, the index is used with the returned parallel array to find
+the mapping.
+
+=cut
+
+
+    my $list_ref = shift;
+    my $input_code_point = shift;
+    my $code_point = _getcode($input_code_point);
+
+    if (! defined $code_point) {
+        carp __PACKAGE__, "::search_invlist: unknown code '$input_code_point'";
+        return;
+    }
+
+    my $max_element = @$list_ref - 1;
+
+    # Return undef if list is empty or requested item is before the first element.
+    return if $max_element < 0;
+    return if $code_point < $list_ref->[0];
+
+    # Short cut something at the far-end of the table.  This also allows us to
+    # refer to element [$i+1] without fear of being out-of-bounds in the loop
+    # below.
+    return $max_element if $code_point >= $list_ref->[$max_element];
+
+    use integer;        # want integer division
+
+    my $i = $max_element / 2;
+
+    my $lower = 0;
+    my $upper = $max_element;
+    while (1) {
+
+        if ($code_point >= $list_ref->[$i]) {
+
+            # Here we have met the lower constraint.  We can quit if we
+            # also meet the upper one.
+            last if $code_point < $list_ref->[$i+1];
+
+            $lower = $i;        # Still too low.
+
+        }
+        else {
+
+            # Here, $code_point < $list_ref[$i], so look lower down.
+            $upper = $i;
+        }
+
+        # Split search domain in half to try again.
+        my $temp = ($upper + $lower) / 2;
+
+        # No point in continuing unless $i changes for next time
+        # in the loop.
+        return $i if $temp == $i;
+        $i = $temp;
+    } # End of while loop
+
+    # Here we have found the offset
+    return $i;
 }
 
 =head2 Unicode::UCD::UnicodeVersion
@@ -3327,29 +4109,30 @@ my $UNICODEVERSION;
 
 sub UnicodeVersion {
     unless (defined $UNICODEVERSION) {
-	openunicode(\$VERSIONFH, "version");
+	my $versionfh = openunicode("version");
 	local $/ = "\n";
-	chomp($UNICODEVERSION = <$VERSIONFH>);
-	close($VERSIONFH);
+	chomp($UNICODEVERSION = <$versionfh>);
 	croak __PACKAGE__, "::VERSION: strange version '$UNICODEVERSION'"
 	    unless $UNICODEVERSION =~ /^\d+(?:\.\d+)+$/;
     }
+    $v_unicode_version = pack "C*", split /\./, $UNICODEVERSION;
     return $UNICODEVERSION;
 }
 
 =head2 B<Blocks versus Scripts>
 
 The difference between a block and a script is that scripts are closer
-to the linguistic notion of a set of code points required to present
+to the linguistic notion of a set of code points required to represent
 languages, while block is more of an artifact of the Unicode code point
-numbering and separation into blocks of (mostly) 256 code points.
+numbering and separation into blocks of consecutive code points (so far the
+size of a block is some multiple of 16, like 128 or 256).
 
 For example the Latin B<script> is spread over several B<blocks>, such
 as C<Basic Latin>, C<Latin 1 Supplement>, C<Latin Extended-A>, and
 C<Latin Extended-B>.  On the other hand, the Latin script does not
 contain all the characters of the C<Basic Latin> block (also known as
 ASCII): it includes only the letters, and not, for example, the digits
-or the punctuation.
+nor the punctuation.
 
 For blocks see L<http://www.unicode.org/Public/UNIDATA/Blocks.txt>
 
@@ -3378,8 +4161,9 @@ The newer style replaces these with underscores, like this:
 
 This newer style is consistent with the values of other Unicode properties.
 To preserve backward compatibility, all the functions in Unicode::UCD that
-return block names (except one) return the old-style ones.  That one function,
-L</prop_value_aliases()> can be used to convert from old-style to new-style:
+return block names (except as noted) return the old-style ones.
+L</prop_value_aliases()> returns the new-style and can be used to convert from
+old-style to new-style:
 
  my $new_style = prop_values_aliases("block", $old_style);
 
@@ -3397,9 +4181,14 @@ for its block using C<charblock>).
 Note that starting in Unicode 6.1, many of the block names have shorter
 synonyms.  These are always given in the new style.
 
-=head1 BUGS
+=head2 Use with older Unicode versions
 
-Does not yet support EBCDIC platforms.
+The functions in this module work as well as can be expected when
+used on earlier Unicode versions.  But, obviously, they use the available data
+from that Unicode version.  For example, if the Unicode version predates the
+definition of the script property (Unicode 3.1), then any function that deals
+with scripts is going to return C<undef> for the script portion of the return
+value.
 
 =head1 AUTHOR
 

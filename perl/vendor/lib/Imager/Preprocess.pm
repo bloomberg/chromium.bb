@@ -8,7 +8,7 @@ use Text::ParseWords;
 @EXPORT = qw(preprocess);
 @ISA = qw(Exporter);
 
-$VERSION = "1.000";
+$VERSION = "1.001";
 
 sub preprocess {
   unshift @ARGV, grep /^-/, shellwords($ENV{IMAGER_PREPROCESS_OPTS})
@@ -125,6 +125,7 @@ sub byte_samples {
     s/\bIM_PPIX\b/i_ppix/g;
     s/\bIM_PLIN\b/i_plin/g;
     s/\bIM_GSAMP\b/i_gsamp/g;
+    s/\bIM_PSAMP\b/i_psamp/g;
     s/\bIM_SAMPLE_MAX\b/255/g;
     s/\bIM_SAMPLE_MAX2\b/65025/g;
     s/\bIM_SAMPLE_T/i_sample_t/g;
@@ -153,6 +154,7 @@ sub double_samples {
     s/\bIM_PPIX\b/i_ppixf/g;
     s/\bIM_PLIN\b/i_plinf/g;
     s/\bIM_GSAMP\b/i_gsampf/g;
+    s/\bIM_PSAMP\b/i_psampf/g;
     s/\bIM_SAMPLE_MAX\b/1.0/g;
     s/\bIM_SAMPLE_MAX2\b/1.0/g;
     s/\bIM_SAMPLE_T/i_fsample_t/g;

@@ -1,3 +1,4 @@
+=encoding utf-8
 
 =head1 NAME
 
@@ -42,6 +43,8 @@ L<Net::SSLeay> module contains perl bindings to openssl (L<http://www.openssl.or
 B<COMPATIBILITY NOTE:> L<Net::SSLeay> cannot be built with pre-0.9.3 openssl. It is strongly recommended
 to use at least 0.9.7 (as older versions are not tested during development). Some low level API functions
 may be available with certain openssl versions.
+
+It is compatible with OpenSSL 1.0 and 1.1. Some functions are not available under OpenSSL 1.1.
 
 L<Net::SSLeay> module basically comprise of:
 
@@ -117,7 +120,8 @@ B<Case 3 (in SYNOPSIS)> invokes C<post_https()> to submit a HTML/CGI form to a s
 server. The first four arguments are equal to C<get_https()> (note that
 the empty string (C<''>) is passed as header argument).
 The fifth argument is the
-contents of the form formatted according to CGI specification. In this
+contents of the form formatted according to CGI specification. 
+Do not post UTF-8 data as content: use utf8::downgrade first. In this
 case the helper function C<make_https()> is used to do the formatting,
 but you could pass any string. C<post_https()> automatically adds
 C<Content-Type> and C<Content-Length> headers to the request.
@@ -169,10 +173,10 @@ to a hash.
     = get_https3('www.bacus.pt', 443, '/');
   print "$headers\n";
 
-  ($page, $response, %headers_ref, $server_cert)
+  ($page, $response, $headers_ref)
     = get_https4('www.bacus.pt', 443, '/');
-  for $k (sort keys %{headers_ref}) {
-      for $v (@{$headers_ref{$k}}) {
+  for $k (sort keys %{$headers_ref}) {
+      for $v (@{$$headers_ref{$k}}) {
 	  print "$k = $v\n";
       }
   }
@@ -185,7 +189,7 @@ a hash of arrays (see L<perlref> and L<perllol> if you are
 not familiar with complex perl data structures). To access a single value
 of such a header hash you would do something like
 
-  print $headers_ref{COOKIE}[0];
+  print $$headers_ref{COOKIE}[0];
 
 Variants 3 and 4 also allow you to discover the server certificate
 in case you would like to store or display it, e.g.
@@ -391,6 +395,190 @@ named files.
         error reading CRL....
     }
 
+Usually the URLs where you can download the CRLs is contained in the certificate
+itself and you can extract them with
+
+    my @url = Net::SSLeay::P_X509_get_crl_distribution_points($cert)
+
+But there is no automatic downloading of the CRLs and often these CRLs are too
+huge to just download them to verify a single certificate.
+Also, these CRLs are often in DER format which you need to convert to PEM before
+you can use it:
+
+    openssl crl -in crl.der -inform der -out crl.pem
+
+So as an alternative for faster and timely revocation checks you better use
+the Online Status Revocation Protocol (OCSP).
+
+=head2 Certificate verification and Online Status Revocation Protocol (OCSP)
+
+While checking for revoked certificates is possible and fast with Certificate
+Revocation Lists, you need to download the complete and often huge list before
+you can verify a single certificate.
+
+A faster way is to ask the CA to check the revocation of just a single or a few
+certificates using OCSP. Basically you generate for each certificate an
+OCSP_CERTID based on the certificate itself and its issuer, put the ids
+togetether into an OCSP_REQUEST and send the request to the URL given in the
+certificate.
+
+As a result you get back an OCSP_RESPONSE and need to check the status of the
+response, check that it is valid (e.g. signed by the CA) and finally extract the
+information about each OCSP_CERTID to find out if the certificate is still valid
+or got revoked.
+
+With Net::SSLeay this can be done like this:
+
+    # get id(s) for given certs, like from get_peer_certificate
+    # or get_peer_cert_chain. This will croak if
+    # - one tries to make an OCSP_CERTID for a self-signed certificate
+    # - the issuer of the certificate cannot be found in the SSL objects
+    #   store, nor in the current certificate chain
+    my $cert = Net::SSLeay::get_peer_certificate($ssl);
+    my $id = eval { Net::SSLeay::OCSP_cert2ids($ssl,$cert) };
+    die "failed to make OCSP_CERTID: $@" if $@;
+
+    # create OCSP_REQUEST from id(s)
+    # Multiple can be put into the same request, if the same OCSP responder
+    # is responsible for them.
+    my $req = Net::SSLeay::OCSP_ids2req($id);
+
+    # determine URI of OCSP responder
+    my $uri = Net::SSLeay::P_X509_get_ocsp_uri($cert);
+
+    # Send stringified OCSP_REQUEST with POST to $uri.
+    # We can ignore certificate verification for https, because the OCSP
+    # response itself is signed.
+    my $ua = HTTP::Tiny->new(verify_SSL => 0);
+    my $res = $ua->request( 'POST',$uri, {
+	headers => { 'Content-type' => 'application/ocsp-request' },
+	content => Net::SSLeay::i2d_OCSP_REQUEST($req)
+    });
+    my $content = $res && $res->{success} && $res->{content}
+	or die "query failed";
+
+    # Extract OCSP_RESPONSE.
+    # this will croak if the string is not an OCSP_RESPONSE
+    my $resp = eval { Net::SSLeay::d2i_OCSP_RESPONSE($content) };
+
+    # Check status of response.
+    my $status = Net::SSLeay::OCSP_response_status($resp);
+    if ($status != Net::SSLeay::OCSP_RESPONSE_STATUS_SUCCESSFUL())
+	die "OCSP response failed: ".
+	    Net::SSLeay::OCSP_response_status_str($status);
+    }
+
+    # Verify signature of response and if nonce matches request.
+    # This will croak if there is a nonce in the response, but it does not match
+    # the request. It will return false if the signature could not be verified,
+    # in which case details can be retrieved with Net::SSLeay::ERR_get_error.
+    # It will not complain if the response does not contain a nonce, which is
+    # usually the case with pre-signed responses.
+    if ( ! eval { Net::SSLeay::OCSP_response_verify($ssl,$resp,$req) }) {
+	die "OCSP response verification failed";
+    }
+
+    # Extract information from OCSP_RESPONSE for each of the ids.
+
+    # If called in scalar context it will return the time (as time_t), when the
+    # next update is due (minimum of all successful responses inside $resp). It
+    # will croak on the following problems:
+    # - response is expired or not yet valid
+    # - no response for given OCSP_CERTID
+    # - certificate status is not good (e.g. revoked or unknown)
+    if ( my $nextupd = eval { Net::SSLeay::OCSP_response_results($resp,$id) }) {
+	warn "certificate is valid, next update in ".
+	    ($nextupd-time())." seconds\n";
+    } else {
+	die "certificate is not valid: $@";
+    }
+
+    # But in array context it will return detailed information about each given
+    # OCSP_CERTID instead croaking on errors:
+    # if no @ids are given it will return information about all single responses
+    # in the OCSP_RESPONSE
+    my @results = Net::SSLeay::OCSP_response_results($resp,@ids);
+    for my $r (@results) {
+	print Dumper($r);
+	# @results are in the same order as the @ids and contain:
+	# $r->[0] - OCSP_CERTID
+	# $r->[1] - undef if no error (certificate good) OR error message as string
+	# $r->[2] - hash with details:
+	#   thisUpdate - time_t of this single response
+	#   nextUpdate - time_t when update is expected
+	#   statusType - integer:
+	#      V_OCSP_CERTSTATUS_GOOD(0)
+	#      V_OCSP_CERTSTATUS_REVOKED(1)
+	#      V_OCSP_CERTSTATUS_UNKNOWN(2)
+	#   revocationTime - time_t (only if revoked)
+	#   revocationReason - integer (only if revoked)
+	#   revocationReason_str - reason as string (only if revoked)
+    }
+
+To further speed up certificate revocation checking one can use a TLS extension
+to instruct the server to staple the OCSP response:
+
+    # set TLS extension before doing SSL_connect
+    Net::SSLeay::set_tlsext_status_type($ssl,
+	Net::SSLeay::TLSEXT_STATUSTYPE_ocsp());
+
+    # setup callback to verify OCSP response
+    my $cert_valid = undef;
+    Net::SSLeay::CTX_set_tlsext_status_cb($context,sub {
+	my ($ssl,$resp) = @_;
+	if (!$resp) {
+	    # Lots of servers don't return an OCSP response.
+	    # In this case we must check the OCSP status outside the SSL
+	    # handshake.
+	    warn "server did not return stapled OCSP response\n";
+	    return 1;
+	}
+	# verify status
+	my $status = Net::SSLeay::OCSP_response_status($resp);
+	if ($status != Net::SSLeay::OCSP_RESPONSE_STATUS_SUCCESSFUL()) {
+	    warn "OCSP response failure: $status\n";
+	    return 1;
+	}
+	# verify signature - we have no OCSP_REQUEST here to check nonce
+	if (!eval { Net::SSLeay::OCSP_response_verify($ssl,$resp) }) {
+	    warn "OCSP response verify failed\n";
+	    return 1;
+	}
+	# check if the certificate is valid
+	# we should check here against the peer_certificate
+	my $cert = Net::SSLeay::get_peer_certificate();
+	my $certid = eval { Net::SSLeay::OCSP_cert2ids($ssl,$cert) } or do {
+	    warn "cannot get certid from cert: $@";
+	    $cert_valid = -1;
+	    return 1;
+	};
+
+	if ( $nextupd = eval {
+	    Net::SSLeay::OCSP_response_results($resp,$certid) }) {
+	    warn "certificate not revoked\n";
+	    $cert_valid = 1;
+	} else {
+	    warn "certificate not valid: $@";
+	    $cert_valid = 0;
+	}
+    });
+
+    # do SSL handshake here
+    ....
+    # check if certificate revocation was checked already
+    if ( ! defined $cert_valid) {
+	# check revocation outside of SSL handshake by asking OCSP responder
+	...
+    } elsif ( ! $cert_valid ) {
+	die "certificate not valid - closing SSL connection";
+    } elsif ( $cert_valid<0 ) {
+	die "cannot verify certificate revocation - self-signed ?";
+    } else {
+	# everything fine
+	...
+    }
+
+
 =head2 Using Net::SSLeay in multi-threaded applications
 
 B<IMPORTANT: versions 1.42 or earlier are not thread-safe!>
@@ -438,7 +626,7 @@ should work without trouble.
 =head3 Using callbacks
 
 Do not use callbacks across threads (the module blocks cross-thread callback operations
-and throws a warning). Allways do the callback setup, callback use and callback destruction
+and throws a warning). Always do the callback setup, callback use and callback destruction
 within the same thread.
 
 =head3 Using openssl elements
@@ -488,15 +676,14 @@ in multi-threaded applications. It is generally recommended to do any global ini
 of such a module in the main thread before calling C<< threads->new(..) >> or
 C<< threads->create(..) >> but it might differ module by module.
 
-To be play safe you can load and init Net::SSLeay explicitly in the main thread:
+To be safe you can load and init Net::SSLeay explicitly in the main thread:
 
     use Net::SSLeay;
     use Other::SSLeay::Based::Module;
 
     Net::SSLeay::load_error_strings();
     Net::SSLeay::SSLeay_add_ssl_algorithms();
-    Net::SSLeay::randomize();Net::SSLeay::initialize();
-    Net::SSLeay::initialize();
+    Net::SSLeay::randomize();
 
 Or even safer:
 
@@ -506,7 +693,7 @@ Or even safer:
     BEGIN {
       Net::SSLeay::load_error_strings();
       Net::SSLeay::SSLeay_add_ssl_algorithms();
-      Net::SSLeay::randomize();Net::SSLeay::initialize();
+      Net::SSLeay::randomize();
     }
 
 =head3 Combining Net::SSLeay with other modules linked with openssl
@@ -812,18 +999,51 @@ Gives version number (string) of underlaying openssl library.
 
  my $ver_string = Net::SSLeay::SSLeay_version($type);
  # $type
- #   0 (=SSLEAY_VERSION) - e.g. 'OpenSSL 1.0.0d 8 Feb 2011'
- #   2 (=SSLEAY_CFLAGS)  - e.g. 'compiler: gcc -D_WINDLL -DOPENSSL_USE_APPLINK .....'
- #   3 (=SSLEAY_BUILT_ON)- e.g. 'built on: Fri May  6 00:00:46 GMT 2011'
- #   4 (=SSLEAY_PLATFORM)- e.g. 'platform: mingw'
+ #   SSLEAY_VERSION  - e.g. 'OpenSSL 1.0.0d 8 Feb 2011'
+ #   SSLEAY_CFLAGS   - e.g. 'compiler: gcc -D_WINDLL -DOPENSSL_USE_APPLINK .....'
+ #   SSLEAY_BUILT_ON - e.g. 'built on: Fri May  6 00:00:46 GMT 2011'
+ #   SSLEAY_PLATFORM - e.g. 'platform: mingw'
+ #   SSLEAY_DIR      - e.g. 'OPENSSLDIR: "z:/...."'
  #
  # returns: string
 
  Net::SSLeay::SSLeay_version();
  #is equivalent to
- Net::SSLeay::SSLeay_version(0);
+ Net::SSLeay::SSLeay_version(SSLEAY_VERSION);
 
-Check openssl doc L<http://www.openssl.org/docs/crypto/SSLeay_version.html|http://www.openssl.org/docs/crypto/SSLeay_version.html>
+Check openssl doc L<https://www.openssl.org/docs/man1.0.2/crypto/SSLeay_version.html|https://www.openssl.org/docs/man1.0.2/crypto/SSLeay_version.html>
+
+=item * OpenSSL_version_num
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.1.0
+
+Gives version number (numeric) of underlaying openssl library. See L</SSLeay> for interpreting the result.
+
+ my $ver_number = Net::SSLeay::OpenSSL_version_num();
+ # returns: the number identifying the openssl release
+
+=item * OpenSSL_version
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.1.0
+
+Gives version number (string) of underlaying openssl library.
+
+ my $ver_string = Net::SSLeay::OpenSSL_version($t);
+ # $t
+ #   OPENSSL_VERSION     - e.g. 'OpenSSL 1.1.0g  2 Nov 2017'
+ #   OPENSSL_CFLAGS      - e.g. 'compiler: cc -DDSO_DLFCN -DHAVE_DLFCN_H .....'
+ #   OPENSSL_BUILT_ON    - e.g. 'built on: reproducible build, date unspecified'
+ #   OPENSSL_PLATFORM    - e.g. 'platform: darwin64-x86_64-cc'
+ #   OPENSSL_DIR         - e.g. 'OPENSSLDIR: "/opt/openssl-1.1.0g"'
+ #   OPENSSL_ENGINES_DIR - e.g. 'ENGINESDIR: "/opt/openssl-1.1.0g/lib/engines-1.1"'
+ #
+ # returns: string
+
+ Net::SSLeay::OpenSSL_version();
+ #is equivalent to
+ Net::SSLeay::OpenSSL_version(OPENSSL_VERSION);
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/OpenSSL_version.html|https://www.openssl.org/docs/crypto/OpenSSL_version.html>
 
 =back
 
@@ -836,10 +1056,13 @@ Check openssl doc L<http://www.openssl.org/docs/crypto/SSLeay_version.html|http:
 Initialize SSL library by registering algorithms.
 
  my $rv = Net::SSLeay::library_init();
- #
- # returns: always 1
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_library_init.html|http://www.openssl.org/docs/ssl/SSL_library_init.html>
+
+While the original function from OpenSSL always returns 1, Net::SSLeay adds a
+wrapper around it to make sure that the OpenSSL function is only called once.
+Thus the function will return 1 if initialization was done and 0 if not, i.e. if
+initialization was done already before.
 
 =item * add_ssl_algorithms
 
@@ -1044,9 +1267,21 @@ Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_alert_type_string.html|h
 
 =over
 
+=item * SSLv23_method, SSLv23_server_method and SSLv23_client_method
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before.
+
+Returns SSL_METHOD structure corresponding to general-purpose version-flexible TLS method, the return value can be later used as a param of L</CTX_new_with_method>.
+
+B<NOTE:> Consider using TLS_method, TLS_server_method or TLS_client_method with new code.
+
+ my $rv = Net::SSLeay::SSLv2_method();
+ #
+ # returns: value corresponding to openssl's SSL_METHOD structure (0 on failure)
+
 =item * SSLv2_method
 
-Returns SSL_METHOD structure corresponding to SSLv2 method, the return value can be later used as a param of L</CTX_new_with_method>.
+Returns SSL_METHOD structure corresponding to SSLv2 method, the return value can be later used as a param of L</CTX_new_with_method>. Only available where supported by the underlying openssl.
 
  my $rv = Net::SSLeay::SSLv2_method();
  #
@@ -1062,11 +1297,49 @@ Returns SSL_METHOD structure corresponding to SSLv3 method, the return value can
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_new.html|http://www.openssl.org/docs/ssl/SSL_CTX_new.html>
 
-=item * TLSv1_method
+=item * TLSv1_method, TLSv1_server_method and TLSv1_client_method
+
+B<COMPATIBILITY:> Server and client methods not available in Net-SSLeay-1.82 and before.
 
 Returns SSL_METHOD structure corresponding to TLSv1 method, the return value can be later used as a param of L</CTX_new_with_method>.
 
  my $rv = Net::SSLeay::TLSv1_method();
+ #
+ # returns: value corresponding to openssl's SSL_METHOD structure (0 on failure)
+
+Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_new.html|http://www.openssl.org/docs/ssl/SSL_CTX_new.html>
+
+=item * TLSv1_1_method, TLSv1_1_server_method and TLSv1_1_client_method
+
+B<COMPATIBILITY:> Server and client methods not available in Net-SSLeay-1.82 and before.
+
+Returns SSL_METHOD structure corresponding to TLSv1_1 method, the return value can be later used as a param of L</CTX_new_with_method>. Only available where supported by the underlying openssl.
+
+ my $rv = Net::SSLeay::TLSv1_1_method();
+ #
+ # returns: value corresponding to openssl's SSL_METHOD structure (0 on failure)
+
+Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_new.html|http://www.openssl.org/docs/ssl/SSL_CTX_new.html>
+
+=item * TLSv1_2_method, TLSv1_2_server_method and TLSv1_2_client_method
+
+B<COMPATIBILITY:> Server and client methods not available in Net-SSLeay-1.82 and before.
+
+Returns SSL_METHOD structure corresponding to TLSv1_2 method, the return value can be later used as a param of L</CTX_new_with_method>. Only available where supported by the underlying openssl.
+
+ my $rv = Net::SSLeay::TLSv1_2_method();
+ #
+ # returns: value corresponding to openssl's SSL_METHOD structure (0 on failure)
+
+Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_new.html|http://www.openssl.org/docs/ssl/SSL_CTX_new.html>
+
+=item * TLS_method, TLS_server_method and TLS_client_method
+
+B<COMPATIBILITY:> Not available in Net-SSLeay-1.82 and before.
+
+Returns SSL_METHOD structure corresponding to general-purpose version-flexible TLS method, the return value can be later used as a param of L</CTX_new_with_method>. Only available where supported by the underlying openssl.
+
+ my $rv = Net::SSLeay::TLS_method();
  #
  # returns: value corresponding to openssl's SSL_METHOD structure (0 on failure)
 
@@ -1080,6 +1353,8 @@ Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_new.html|http://www.
 
 =item * ENGINE_load_builtin_engines
 
+B<COMPATIBILITY:> Requires an OpenSSL build with dynamic engine loading support.
+
 Load all bundled ENGINEs into memory and make them visible.
 
  Net::SSLeay::ENGINE_load_builtin_engines();
@@ -1090,6 +1365,8 @@ Check openssl doc L<http://www.openssl.org/docs/crypto/engine.html|http://www.op
 
 =item * ENGINE_register_all_complete
 
+B<COMPATIBILITY:> Requires an OpenSSL build with dynamic engine loading support.
+
 Register all loaded ENGINEs for every algorithm they collectively implement.
 
  Net::SSLeay::ENGINE_register_all_complete();
@@ -1099,6 +1376,8 @@ Register all loaded ENGINEs for every algorithm they collectively implement.
 Check openssl doc L<http://www.openssl.org/docs/crypto/engine.html|http://www.openssl.org/docs/crypto/engine.html>
 
 =item * ENGINE_set_default
+
+B<COMPATIBILITY:> Requires an OpenSSL build with dynamic engine loading support.
 
 Set default engine to $e + set its flags to $flags.
 
@@ -1128,6 +1407,8 @@ Check openssl doc L<http://www.openssl.org/docs/crypto/engine.html|http://www.op
 =item * ENGINE_by_id
 
 Get ENGINE by its identification $id.
+
+B<COMPATIBILITY:> Requires an OpenSSL build with dynamic engine loading support.
 
  my $rv = Net::SSLeay::ENGINE_by_id($id);
  # $id - (string) engine identification e.g. "dynamic"
@@ -1185,8 +1466,8 @@ B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
 Set the key referenced by $pkey to $key
 
-B<NOTE:> In accordance with the OpenSSL naming convention the $key assigned
-to the $pkey using the "1" functions must be freed as well as $pkey.
+B<NOTE:> No reference counter will be increased, i.e. $key will be freed if
+$pkey is freed.
 
  my $rv = Net::SSLeay::EVP_PKEY_assign_RSA($pkey, $key);
  # $pkey - value corresponding to openssl's EVP_PKEY structure
@@ -1194,7 +1475,24 @@ to the $pkey using the "1" functions must be freed as well as $pkey.
  #
  # returns: 1 on success, 0 on failure
 
-Check openssl doc L<http://www.openssl.org/docs/crypto/EVP_PKEY_set1_RSA.html|http://www.openssl.org/docs/crypto/EVP_PKEY_set1_RSA.html>
+Check openssl doc L<http://www.openssl.org/docs/crypto/EVP_PKEY_assign_RSA.html|http://www.openssl.org/docs/crypto/EVP_PKEY_assign_RSA.html>
+ 
+=item * EVP_PKEY_assign_EC_KEY
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.74 and before
+
+Set the key referenced by $pkey to $key
+
+B<NOTE:> No reference counter will be increased, i.e. $key will be freed if
+$pkey is freed.
+
+ my $rv = Net::SSLeay::EVP_PKEY_assign_EC_KEY($pkey, $key);
+ # $pkey - value corresponding to openssl's EVP_PKEY structure
+ # $key - value corresponding to openssl's EC_KEY structure
+ #
+ # returns: 1 on success, 0 on failure
+
+Check openssl doc L<http://www.openssl.org/docs/crypto/EVP_PKEY_assign_EC_KEY.html|http://www.openssl.org/docs/crypto/EVP_PKEY_assign_EC_KEY.html>
 
 =item * EVP_PKEY_bits
 
@@ -1249,7 +1547,7 @@ Check openssl doc L<http://www.openssl.org/docs/crypto/pem.html|http://www.opens
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
-Loads PEM formated X509 certificate via given BIO structure.
+Loads PEM formatted X509 certificate via given BIO structure.
 
  my $rv = Net::SSLeay::PEM_read_bio_X509($bio);
  # $bio - value corresponding to openssl's BIO structure
@@ -1266,7 +1564,7 @@ Example:
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
-Loads PEM formated X509_REQ object via given BIO structure.
+Loads PEM formatted X509_REQ object via given BIO structure.
 
  my $rv = Net::SSLeay::PEM_read_bio_X509_REQ($bio, $x=NULL, $cb=NULL, $u=NULL);
  # $bio - value corresponding to openssl's BIO structure
@@ -1301,7 +1599,7 @@ Reads X509_CRL structure from BIO.
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
-Loads PEM formated private key via given BIO structure.
+Loads PEM formatted private key via given BIO structure.
 
  my $rv = Net::SSLeay::PEM_read_bio_PrivateKey($bio, $cb, $data);
  # $bio - value corresponding to openssl's BIO structure
@@ -1334,6 +1632,21 @@ Callback function signature:
    return "secret";
  }
 
+=item * PEM_X509_INFO_read_bio
+
+Reads a BIO containing a PEM formatted file into a STACK_OF(X509_INFO) structure.
+
+ my $rv = Net::SSLeay::PEM_X509_INFO_read_bio($bio);
+ # $bio - value corresponding to openssl's BIO structure
+ #
+ # returns: value corresponding to openssl's STACK_OF(X509_INFO) structure.
+
+Example:
+
+ my $bio = Net::SSLeay::BIO_new_file($filename, 'r');
+ my $sk_x509_info = Net::SSLeay::PEM_X509_INFO_read_bio($bio);
+ Net::SSLeay::BIO_free($bio);
+
 =item * PEM_get_string_X509
 
 B<NOTE:> Does not exactly correspond to any low level API function
@@ -1349,14 +1662,14 @@ Converts/exports X509 certificate to string (PEM format).
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
-Converts public key $pk into PEM formated string (optionally protected with password).
+Converts public key $pk into PEM formatted string (optionally protected with password).
 
  my $rv = Net::SSLeay::PEM_get_string_PrivateKey($pk, $passwd, $enc_alg);
  # $pk - value corresponding to openssl's EVP_PKEY structure
  # $passwd - [optional] (string) password to use for key encryption
  # $enc_alg - [optional] algorithm to use for key encryption (default: DES_CBC) - value corresponding to openssl's EVP_CIPHER structure
  #
- # returns: PEM formated string
+ # returns: PEM formatted string
 
 Examples:
 
@@ -1368,7 +1681,7 @@ Examples:
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
-Converts X509_CRL object $x509_crl into PEM formated string.
+Converts X509_CRL object $x509_crl into PEM formatted string.
 
  Net::SSLeay::PEM_get_string_X509_CRL($x509_crl);
  # $x509_crl - value corresponding to openssl's X509_CRL structure
@@ -1379,7 +1692,7 @@ Converts X509_CRL object $x509_crl into PEM formated string.
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
-Converts X509_REQ object $x509_crl into PEM formated string.
+Converts X509_REQ object $x509_crl into PEM formatted string.
 
  Net::SSLeay::PEM_get_string_X509_REQ($x509_req);
  # $x509_req - value corresponding to openssl's X509_REQ structure
@@ -1396,7 +1709,7 @@ Converts X509_REQ object $x509_crl into PEM formated string.
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
-Loads DER formated X509 certificate via given BIO structure.
+Loads DER formatted X509 certificate via given BIO structure.
 
  my $rv = Net::SSLeay::d2i_X509_bio($bp);
  # $bp - value corresponding to openssl's BIO structure
@@ -1415,7 +1728,7 @@ Check openssl doc L<http://www.openssl.org/docs/crypto/d2i_X509.html|http://www.
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
-Loads DER formated X509_CRL object via given BIO structure.
+Loads DER formatted X509_CRL object via given BIO structure.
 
  my $rv = Net::SSLeay::d2i_X509_CRL_bio($bp);
  # $bp - value corresponding to openssl's BIO structure
@@ -1432,7 +1745,7 @@ Example:
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
-Loads DER formated X509_REQ object via given BIO structure.
+Loads DER formatted X509_REQ object via given BIO structure.
 
  my $rv = Net::SSLeay::d2i_X509_REQ_bio($bp);
  # $bp - value corresponding to openssl's BIO structure
@@ -1483,6 +1796,10 @@ Examples:
  #BEWARE: THIS IS WRONG - MEMORY LEAKS! (you cannot free @cachain items)
  my ($privkey, $cert) = Net::SSLeay::P_PKCS12_load_file($filename, 1, $password);
 
+B<NOTE> With some combinations of Windows, perl, compiler and compiler options, you
+may see a runtime error "no OPENSSL_Applink", when calling
+Net::SSLeay::P_PKCS12_load_file. See README.Win32 for more details.
+
 =back
 
 =head3 Low level API: SESSION_* related functions
@@ -1491,35 +1808,31 @@ Examples:
 
 =item * d2i_SSL_SESSION
 
-Transforms the external ASN1 representation of an SSL/TLS session, stored as binary data
-at location pp with length length, into an SSL_SESSION object.
+B<COMPATIBILITY:> does not work in Net-SSLeay-1.85 and before
 
-??? (does this function really work?)
+Transforms the binary ASN1 representation string of an SSL/TLS session into an
+SSL_SESSION object.
 
- my $rv = Net::SSLeay::d2i_SSL_SESSION($a, $pp, $length);
- # $a - value corresponding to openssl's SSL_SESSION structure
- # $pp - pointer/buffer ???
- # $length - ???
+ my $ses = Net::SSLeay::d2i_SSL_SESSION($data);
+ # $data - the session as ASN1 representation string
  #
- # returns: ???
+ # returns: $ses - the new SSL_SESSION
 
-Check openssl doc L<http://www.openssl.org/docs/ssl/d2i_SSL_SESSION.html|http://www.openssl.org/docs/ssl/d2i_SSL_SESSION.html>
+Check openssl doc L<https://www.openssl.org/docs/ssl/i2d_SSL_SESSION.html|https://www.openssl.org/docs/ssl/i2d_SSL_SESSION.html>
 
 =item * i2d_SSL_SESSION
 
-Transforms the SSL_SESSION object in into the ASN1 representation and stores it
-into the memory location pointed to by pp. The length of the resulting ASN1
-representation is returned.
+B<COMPATIBILITY:> does not work in Net-SSLeay-1.85 and before
 
-??? (does this function really work?)
+Transforms the SSL_SESSION object in into the ASN1 representation and returns
+it as string.
 
- my $rv = Net::SSLeay::i2d_SSL_SESSION($in, $pp);
- # $in - value corresponding to openssl's SSL_SESSION structure
- # $pp - pointer/data ???
+ my $data = Net::SSLeay::i2d_SSL_SESSION($ses);
+ # $ses - value corresponding to openssl's SSL_SESSION structure
  #
- # returns: 1 on success, 0
+ # returns: $data - session as string
 
-Check openssl doc L<http://www.openssl.org/docs/ssl/d2i_SSL_SESSION.html|http://www.openssl.org/docs/ssl/d2i_SSL_SESSION.html>
+Check openssl doc L<https://www.openssl.org/docs/ssl/d2i_SSL_SESSION.html|https://www.openssl.org/docs/ssl/d2i_SSL_SESSION.html>
 
 =item * SESSION_new
 
@@ -1539,6 +1852,47 @@ Free an allocated SSL_SESSION structure.
  # returns: no return value
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_SESSION_free.html|http://www.openssl.org/docs/ssl/SSL_SESSION_free.html>
+
+=item * SESSION_up_ref
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.0 or LibreSSL 2.7.0
+
+Increases the reference counter on a SSL_SESSION structure.
+
+ Net::SSLeay::SESSION_up_ref($ses);
+ # $ses - value corresponding to openssl's SSL_SESSION structure
+ #
+ # returns: 1 on success else 0
+
+Check openssl doc
+L<https://www.openssl.org/docs/ssl/SSL_SESSION_up_ref.html|https://www.openssl.org/docs/ssl/SSL_SESSION_up_ref.html>
+
+=item * SESSION_dup
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Duplicates a SSL_SESSION structure.
+
+ Net::SSLeay::SESSION_dup($ses);
+ # $ses - value corresponding to openssl's SSL_SESSION structure
+ #
+ # returns: the duplicated session
+
+Check openssl doc
+L<https://www.openssl.org/docs/ssl/SSL_SESSION_dup.html|https://www.openssl.org/docs/ssl/SSL_SESSION_dup.html>
+
+=item * SESSION_is_resumable
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Determine whether an SSL_SESSION object can be used for resumption.
+
+ Net::SSLeay::SESSION_is_resumable($ses);
+ # $ses - value corresponding to openssl's SSL_SESSION structure
+ #
+ # returns: (integer) 1 if it can or 0 if not
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_SESSION_is_resumable.html|https://www.openssl.org/docs/manmaster/man3/SSL_SESSION_is_resumable.html>
 
 =item * SESSION_cmp
 
@@ -1632,6 +1986,11 @@ Sets 'master_key' value for SSL_SESSION structure $s
  #
  # returns: no return value
 
+Not available with OpenSSL 1.1 and later.
+Code that previously used
+       SESSION_set_master_key must now set $secret in the session_secret
+       callback set with SSL_set_session_secret_cb.
+
 =item * SESSION_get_time
 
 Returns the time at which the session s was established.
@@ -1671,7 +2030,7 @@ Technically the same functionality as L</SESSION_get_timeout>.
 
 B<NOTE:> Does not exactly correspond to any low level API function
 
-Prints session details (e.g. protocol version, ciprher, session-id ...) to BIO.
+Prints session details (e.g. protocol version, cipher, session-id ...) to BIO.
 
  my $rv = Net::SSLeay::SESSION_print($fp, $ses);
  # $fp - value corresponding to openssl's BIO structure
@@ -1689,7 +2048,7 @@ You have to use necessary BIO functions like this:
 
 =item * SESSION_print_fp
 
-Prints session details (e.g. protocol version, ciprher, session-id ...) to file handle.
+Prints session details (e.g. protocol version, cipher, session-id ...) to file handle.
 
  my $rv = Net::SSLeay::SESSION_print_fp($fp, $ses);
  # $fp - perl file handle
@@ -1890,6 +2249,36 @@ B<BEWARE:> openssl doc says: This function should never be called directly!
  77 - SSL_CTRL_CLEAR_OPTIONS
  78 - SSL_CTRL_CLEAR_MODE
 
+ 82 - SSL_CTRL_GET_EXTRA_CHAIN_CERTS
+ 83 - SSL_CTRL_CLEAR_EXTRA_CHAIN_CERTS
+
+ 88 - SSL_CTRL_CHAIN
+ 89 - SSL_CTRL_CHAIN_CERT
+
+ 90 - SSL_CTRL_GET_CURVES
+ 91 - SSL_CTRL_SET_CURVES
+ 92 - SSL_CTRL_SET_CURVES_LIST
+ 93 - SSL_CTRL_GET_SHARED_CURVE 
+ 94 - SSL_CTRL_SET_ECDH_AUTO
+ 97 - SSL_CTRL_SET_SIGALGS
+ 98 - SSL_CTRL_SET_SIGALGS_LIST
+ 99 - SSL_CTRL_CERT_FLAGS
+ 100 - SSL_CTRL_CLEAR_CERT_FLAGS
+ 101 - SSL_CTRL_SET_CLIENT_SIGALGS
+ 102 - SSL_CTRL_SET_CLIENT_SIGALGS_LIST
+ 103 - SSL_CTRL_GET_CLIENT_CERT_TYPES
+ 104 - SSL_CTRL_SET_CLIENT_CERT_TYPES
+ 105 - SSL_CTRL_BUILD_CERT_CHAIN
+ 106 - SSL_CTRL_SET_VERIFY_CERT_STORE
+ 107 - SSL_CTRL_SET_CHAIN_CERT_STORE
+ 108 - SSL_CTRL_GET_PEER_SIGNATURE_NID
+ 109 - SSL_CTRL_GET_SERVER_TMP_KEY
+ 110 - SSL_CTRL_GET_RAW_CIPHERLIST
+ 111 - SSL_CTRL_GET_EC_POINT_FORMATS
+ 112 - SSL_CTRL_GET_TLSA_RECORD
+ 113 - SSL_CTRL_SET_TLSA_RECORD
+ 114 - SSL_CTRL_PULL_TLSA_RECORD 
+
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_ctrl.html|http://www.openssl.org/docs/ssl/SSL_CTX_ctrl.html>
 
 =item * CTX_flush_sessions
@@ -1933,6 +2322,19 @@ Can be used to set some application defined value/data.
  # $arg - (string/buffer/pointer ???) data
  #
  # returns: ???
+
+=item * CTX_get0_param
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.0.2
+
+Returns the current verification parameters.
+
+ my $vpm = Net::SSLeay::CTX_get0_param($ctx);
+ # $ctx - value corresponding to openssl's SSL_CTX structure
+ #
+ # returns: value corresponding to openssl's X509_VERIFY_PARAM structure
+
+Check openssl doc L<https://www.openssl.org/docs/ssl/SSL_CTX_get0_param.html|https://www.openssl.org/docs/ssl/SSL_CTX_get0_param.html>
 
 =item * CTX_get_cert_store
 
@@ -2025,42 +2427,26 @@ Returns the options (bitmask) set for $ctx.
  #
  # returns: options (bitmask)
 
- #to decode the return value (bitmask) use:
- 0x00000001 corresponds to SSL_OP_MICROSOFT_SESS_ID_BUG
- 0x00000002 corresponds to SSL_OP_NETSCAPE_CHALLENGE_BUG
- 0x00000004 corresponds to SSL_OP_LEGACY_SERVER_CONNECT
- 0x00000008 corresponds to SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG
- 0x00000010 corresponds to SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG
- 0x00000020 corresponds to SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER
- 0x00000040 corresponds to SSL_OP_MSIE_SSLV2_RSA_PADDING
- 0x00000080 corresponds to SSL_OP_SSLEAY_080_CLIENT_DH_BUG
- 0x00000100 corresponds to SSL_OP_TLS_D5_BUG
- 0x00000200 corresponds to SSL_OP_TLS_BLOCK_PADDING_BUG
- 0x00000800 corresponds to SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
- 0x80000FFF corresponds to SSL_OP_ALL
- 0x00001000 corresponds to SSL_OP_NO_QUERY_MTU
- 0x00002000 corresponds to SSL_OP_COOKIE_EXCHANGE
- 0x00004000 corresponds to SSL_OP_NO_TICKET
- 0x00008000 corresponds to SSL_OP_CISCO_ANYCONNECT
- 0x00010000 corresponds to SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
- 0x00020000 corresponds to SSL_OP_NO_COMPRESSION
- 0x00040000 corresponds to SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
- 0x00080000 corresponds to SSL_OP_SINGLE_ECDH_USE
- 0x00100000 corresponds to SSL_OP_SINGLE_DH_USE
- 0x00200000 corresponds to SSL_OP_EPHEMERAL_RSA
- 0x00400000 corresponds to SSL_OP_CIPHER_SERVER_PREFERENCE
- 0x00800000 corresponds to SSL_OP_TLS_ROLLBACK_BUG
- 0x01000000 corresponds to SSL_OP_NO_SSLv2
- 0x02000000 corresponds to SSL_OP_NO_SSLv3
- 0x04000000 corresponds to SSL_OP_NO_TLSv1
- 0x08000000 corresponds to SSL_OP_PKCS1_CHECK_1
- 0x10000000 corresponds to SSL_OP_PKCS1_CHECK_2
- 0x20000000 corresponds to SSL_OP_NETSCAPE_CA_DN_BUG
- 0x40000000 corresponds to SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG
- 0x80000000 corresponds to SSL_OP_CRYPTOPRO_TLSEXT_BUG
- (note: some of the bits might not be supported by older openssl versions)
+B<BEWARE:> The available constants and their values in bitmask depend
+on the TLS library. For example, SSL_OP_NO_TLSv1_3 became available
+much later than SSL_OP_NO_COMPRESS which is already deprecated by some
+libraries. Also, some previously used option values have been recycled
+and are now used for newer options. See the list of constants in this
+document for options Net::SSLeay currently supports.
 
-Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_options.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_options.html>
+You are strongly encouraged to B<check your TLS library> if you need
+to use numeric values directly. The following is a sample of historic
+values. It may not be correct anymore.
+
+ #to decode the return value (bitmask) use:
+ 0x00000004 corresponds to SSL_OP_LEGACY_SERVER_CONNECT
+ 0x00000800 corresponds to SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
+ 0x00004000 corresponds to SSL_OP_NO_TICKET
+ 0x00010000 corresponds to SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
+ 0x00400000 corresponds to SSL_OP_CIPHER_SERVER_PREFERENCE
+ 0x04000000 corresponds to SSL_OP_NO_TLSv1
+
+Check openssl doc L<https://www.openssl.org/docs/man1.0.2/ssl/SSL_CTX_set_options.html|https://www.openssl.org/docs/man1.0.2/ssl/SSL_CTX_set_options.html>
 
 =item * CTX_set_options
 
@@ -2074,7 +2460,7 @@ Adds the options set via bitmask in $options to ctx. Options already set before 
 
 For bitmask details see L</CTX_get_options> (above).
 
-Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_options.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_options.html>
+Check openssl doc L<https://www.openssl.org/docs/man1.0.2/ssl/SSL_CTX_set_options.html|https://www.openssl.org/docs/man1.0.2/ssl/SSL_CTX_set_options.html>
 
 =item * CTX_get_quiet_shutdown
 
@@ -2102,6 +2488,11 @@ Returns the currently used cache mode (bitmask).
  # $ctx - value corresponding to openssl's SSL_CTX structure
  #
  # returns: mode (bitmask)
+
+B<BEWARE:> SESS_CACHE_OFF and other constants are not available in
+Net-SSLeay-1.82 and before.  If the constants are not available, the
+following values have historically been correct. You are strongly
+encouraged to B<check your TLS library> for the current values.
 
  #to decode the return value (bitmask) use:
  0x0000 corresponds to SSL_SESS_CACHE_OFF
@@ -2159,14 +2550,9 @@ Returns the verification mode (bitmask) currently set in $ctx.
  #
  # returns: mode (bitmask)
 
- #to decode the return value (bitmask) use:
- 0x00 corresponds to SSL_VERIFY_NONE
- 0x01 corresponds to SSL_VERIFY_PEER
- 0x02 corresponds to SSL_VERIFY_FAIL_IF_NO_PEER_CERT
- 0x04 corresponds to SSL_VERIFY_CLIENT_ONCE
- (note: some of the bits might not be supported by older openssl versions)
+For bitmask details see L</"CTX_set_verify">.
 
-Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_get_verify_mode.html|http://www.openssl.org/docs/ssl/SSL_CTX_get_verify_mode.html>
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_get_verify_mode.html|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_get_verify_mode.html>
 
 =item * CTX_set_verify
 
@@ -2174,14 +2560,26 @@ Sets the verification flags for $ctx to be $mode and specifies the verify_callba
 
  Net::SSLeay::CTX_set_verify($ctx, $mode, $callback);
  # $ctx - value corresponding to openssl's SSL_CTX structure
- # $mode - mode (bitmask)
+ # $mode - mode (bitmask), see OpenSSL manual
  # $callback - [optional] reference to perl callback function
  #
  # returns: no return value
 
-For bitmask details see L</CTX_get_verify_mode> (above).
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_verify.html|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_verify.html>
 
-Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_verify.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_verify.html>
+=item * CTX_set_post_handshake_auth
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Enable the Post-Handshake Authentication extension to be added to the ClientHello such that post-handshake authentication can be requested by the server.
+
+ Net::SSLeay::CTX_set_posthandshake_auth($ctx, $val);
+ # $ctx - value corresponding to openssl's SSL_CTX structure
+ # $val - 0 then the extension is not sent, otherwise it is
+ #
+ # returns: no return value
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_post_handshake_auth|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_post_handshake_auth.html>
 
 =item * CTX_load_verify_locations
 
@@ -2205,6 +2603,8 @@ Return the result of C<SSL_CTX_ctrl(ctx,SSL_CTRL_NEED_TMP_RSA,0,NULL)>
  #
  # returns: result of SSL_CTRL_NEED_TMP_RSA command
 
+Not available with OpenSSL 1.1 and later.
+
 =item * CTX_new
 
 The same as L</CTX_v23_new>
@@ -2214,6 +2614,8 @@ The same as L</CTX_v23_new>
  # returns: value corresponding to openssl's SSL_CTX structure (0 on failure)
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_new.html|http://www.openssl.org/docs/ssl/SSL_CTX_new.html>
+
+Not available with OpenSSL 1.1 and later.
 
 =item * CTX_v2_new
 
@@ -2247,6 +2649,24 @@ Creates a new SSL_CTX object - based on TLSv1_method() - as framework to establi
  #
  # returns: value corresponding to openssl's SSL_CTX structure (0 on failure)
 
+=item * CTX_tlsv1_1_new
+
+Creates a new SSL_CTX object - based on TLSv1_1_method() - as framework to establish TLS/SSL 
+enabled connections. Only available where supported by the underlying openssl.
+
+ my $rv = Net::SSLeay::CTX_tlsv1_1_new();
+ #
+ # returns: value corresponding to openssl's SSL_CTX structure (0 on failure)
+
+=item * CTX_tlsv1_2_new
+
+Creates a new SSL_CTX object - based on TLSv1_2_method() - as framework to establish TLS/SSL 
+enabled connections. Only available where supported by the underlying openssl.
+
+ my $rv = Net::SSLeay::CTX_tlsv1_2_new();
+ #
+ # returns: value corresponding to openssl's SSL_CTX structure (0 on failure)
+
 =item * CTX_new_with_method
 
 Creates a new SSL_CTX object based on $meth method
@@ -2260,6 +2680,41 @@ Creates a new SSL_CTX object based on $meth method
  my $ctx = Net::SSLeay::CTX_new_with_method(&Net::SSLeay::TLSv1_method);
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_new.html|http://www.openssl.org/docs/ssl/SSL_CTX_new.html>
+
+=item * CTX_set_min_proto_version, CTX_set_max_proto_version, set_min_proto_version and set_max_proto_version,
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.1.0 or LibreSSL 2.6.0
+
+Set the minimum and maximum supported protocol for $ctx or $ssl.
+
+ my $rv = Net::SSLeay::CTX_set_min_proto_version($ctx, $version)
+ # $ctx - value corresponding to openssl's SSL_CTX structure
+ # $version - (integer) constat version value or 0 for automatic lowest or highest value
+ #
+ # returns: 1 on success, 0 on failure
+
+ #example: allow only TLS 1.2 for a SSL_CTX
+ my $rv_min = Net::SSLeay::CTX_set_min_proto_version($ctx, Net::SSLeay::TLS1_2_VERSION());
+ my $rv_max = Net::SSLeay::CTX_set_max_proto_version($ctx, Net::SSLeay::TLS1_2_VERSION());
+
+ #example: allow only TLS 1.1 for a SSL
+ my $rv_min = Net::SSLeay::set_min_proto_version($ssl, Net::SSLeay::TLS1_1_VERSION());
+ my $rv_max = Net::SSLeay::set_max_proto_version($ssl, Net::SSLeay::TLS1_1_VERSION());
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_min_proto_version.html|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_min_proto_version.html>
+
+=item * CTX_get_min_proto_version, CTX_get_max_proto_version, get_min_proto_version and get_max_proto_version,
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.1.0g
+
+Get the minimum and maximum supported protocol for $ctx or $ssl.
+
+ my $version = Net::SSLeay::CTX_get_min_proto_version($ctx)
+ # $ctx - value corresponding to openssl's SSL_CTX structure
+ #
+ # returns: 0 automatic lowest or highest value, configured value otherwise
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_min_proto_version.html|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_min_proto_version.html>
 
 =item * CTX_remove_session
 
@@ -2407,6 +2862,34 @@ server mode, but that were invalid due to timeout. These sessions are not includ
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_sess_number.html|http://www.openssl.org/docs/ssl/SSL_CTX_sess_number.html>
 
+=item * CTX_sess_set_new_cb
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before
+
+Sets the callback function, which is automatically called whenever a new session was negotiated.
+
+ Net::SSLeay::CTX_sess_set_new_cb($ctx, $func);
+ # $ctx - value corresponding to openssl's SSL_CTX structure
+ # $func - perl reference to callback function
+ #
+ # returns: no return value
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_sess_set_new_cb.html|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_sess_set_new_cb.html>
+
+=item * CTX_sess_set_remove_cb
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before
+
+Sets the callback function, which is automatically called whenever a session is removed by the SSL engine.
+
+ Net::SSLeay::CTX_sess_set_remove_cb($ctx, $func);
+ # $ctx - value corresponding to openssl's SSL_CTX structure
+ # $func - perl reference to callback function
+ #
+ # returns: no return value
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_sess_set_remove_cb.html|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_sess_set_remove_cb.html>
+
 =item * CTX_sessions
 
 Returns a pointer to the lhash databases containing the internal session cache for ctx.
@@ -2427,6 +2910,8 @@ Applies X509 verification parameters $vpm on $ctx
  # $vpm - value corresponding to openssl's X509_VERIFY_PARAM structure
  #
  # returns: 1 on success, 0 on failure
+
+Check openssl doc L<https://www.openssl.org/docs/ssl/SSL_CTX_get0_param.html|https://www.openssl.org/docs/ssl/SSL_CTX_get0_param.html>
 
 =item * CTX_set_cert_store
 
@@ -2468,6 +2953,20 @@ The list of ciphers is inherited by all ssl objects created from $ctx.
 The format of $str is described in L<http://www.openssl.org/docs/apps/ciphers.html|http://www.openssl.org/docs/apps/ciphers.html>
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_cipher_list.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_cipher_list.html>
+
+=item * CTX_set_ciphersuites
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Configure the available TLSv1.3 ciphersuites.
+
+ my $rv = Net::SSLeay::CTX_set_ciphersuites($ctx, $str);
+ # $ctx  - value corresponding to openssl's SSL_CTX structure
+ # $str  - colon (":") separated list of TLSv1.3 ciphersuite names in order of preference
+ #
+ # returns: (integer) 1 if the requested ciphersuite list was configured, and 0 otherwise
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_ciphersuites.html|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_ciphersuites.html>
 
 =item * CTX_set_client_CA_list
 
@@ -2646,6 +3145,8 @@ Sets the temporary/ephemeral RSA key to be used to be $rsa.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_tmp_rsa_callback.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_tmp_rsa_callback.html>
 
+Not available with OpenSSL 1.1 and later.
+
 =item * CTX_set_tmp_rsa_callback
 
 Sets the callback function for ctx to be used when a temporary/ephemeral RSA key is required to $tmp_rsa_callback.
@@ -2659,6 +3160,8 @@ Sets the callback function for ctx to be used when a temporary/ephemeral RSA key
  # returns: no return value
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_tmp_rsa_callback.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_tmp_rsa_callback.html>
+
+Not available with OpenSSL 1.1 and later.
 
 =item * CTX_set_trust
 
@@ -2793,6 +3296,62 @@ Loads the first certificate stored in $file into $ctx.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_use_certificate.html|http://www.openssl.org/docs/ssl/SSL_CTX_use_certificate.html>
 
+=item * CTX_get_security_level
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.0, not in LibreSSL
+
+Returns the security level associated with $ctx.
+
+ my $level = Net::SSLeay::CTX_get_security_level($ctx);
+ # $ctx   - value corresponding to openssl's SSL_CTX structure
+ #
+ # returns: (integer) current security level
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_get_security_level.html|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_get_security_level.html>
+
+=item * CTX_set_security_level
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.0, not in LibreSSL
+
+Sets the security level associated with $ctx to $level.
+
+ Net::SSLeay::CTX_set_security_level($ctx, $level);
+ # $ssl   - value corresponding to openssl's SSL_CTX structure
+ # $level - new security level
+ #
+ # returns: no return value
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_security_level.html|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_security_level.html>
+
+=item * CTX_set_num_tickets
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Set number of TLSv1.3 session tickets that will be sent to a client.
+
+ my $rv = Net::SSLeay::CTX_set_num_tickets($ctx, $number_of_tickets);
+ # $ctx  - value corresponding to openssl's SSL_CTX structure
+ # $number_of_tickets - number of tickets to send
+ #
+ # returns: 1 on success, 0 on failure
+
+Set to zero if you do not no want to support a session resumption.
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_num_tickets.html|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_num_tickets.html>
+
+=item * CTX_get_num_tickets
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Get number of TLSv1.3 session tickets that will be sent to a client.
+
+ my $number_of_tickets = Net::SSLeay::CTX_get_num_tickets($ctx);
+ # $ctx  - value corresponding to openssl's SSL_CTX structure
+ #
+ # returns: (integer) number of tickets to send
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_CTX_get_num_tickets.html|https://www.openssl.org/docs/manmaster/man3/SSL_CTX_get_num_tickets.html>
+
 =back
 
 =head3 Low level API: SSL_* related functions
@@ -2822,7 +3381,7 @@ channel must already have been set and assigned to the ssl by setting an underly
  my $rv = Net::SSLeay::accept($ssl);
  # $ssl - value corresponding to openssl's SSL structure
  #
- # returns: 1 = success, 0 = handshake not successfull, <0 = fatal error during handshake
+ # returns: 1 = success, 0 = handshake not successful, <0 = fatal error during handshake
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_accept.html|http://www.openssl.org/docs/ssl/SSL_accept.html>
 
@@ -2882,7 +3441,7 @@ Initiate the TLS/SSL handshake with an TLS/SSL server.
  my $rv = Net::SSLeay::connect($ssl);
  # $ssl - value corresponding to openssl's SSL structure
  #
- # returns: 1 = success, 0 = handshake not successfull, <0 = fatal error during handshake
+ # returns: 1 = success, 0 = handshake not successful, <0 = fatal error during handshake
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_connect.html|http://www.openssl.org/docs/ssl/SSL_connect.html>
 
@@ -2923,7 +3482,7 @@ explicitly set in advance using either SSL_set_connect_state or SSL_set_accept_s
  my $rv = Net::SSLeay::do_handshake($ssl);
  # $ssl - value corresponding to openssl's SSL structure
  #
- # returns: 1 = success, 0 = handshake not successfull, <0 = fatal error during handshake
+ # returns: 1 = success, 0 = handshake not successful, <0 = fatal error during handshake
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_do_handshake.html|http://www.openssl.org/docs/ssl/SSL_do_handshake.html>
 
@@ -2947,6 +3506,19 @@ Free an allocated SSL structure.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_free.html|http://www.openssl.org/docs/ssl/SSL_free.html>
 
+=item * get0_param
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.0.2
+
+Returns the current verification parameters.
+
+ my $vpm = Net::SSLeay::get0_param($ssl);
+ # $ssl - value corresponding to openssl's SSL structure
+ #
+ # returns: value corresponding to openssl's X509_VERIFY_PARAM structure
+
+Check openssl doc L<https://www.openssl.org/docs/ssl/SSL_CTX_get0_param.html|https://www.openssl.org/docs/ssl/SSL_CTX_get0_param.html>
+
 =item * get_SSL_CTX
 
 Returns a pointer to the SSL_CTX object, from which $ssl was created with Net::SSLeay::new.
@@ -2957,6 +3529,16 @@ Returns a pointer to the SSL_CTX object, from which $ssl was created with Net::S
  # returns: value corresponding to openssl's SSL_CTX structure (0 on failure)
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_get_SSL_CTX.html|http://www.openssl.org/docs/ssl/SSL_get_SSL_CTX.html>
+
+=item * set_SSL_CTX
+
+Sets the SSL_CTX the corresponds to an SSL session.
+
+ my $the_ssl_ctx = Net::SSLeay::set_SSL_CTX($ssl, $ssl_ctx);
+ # $ssl - value corresponding to openssl's SSL structure
+ # $ssl_ctx - Change the ssl object to the given ssl_ctx
+ #
+ # returns - the ssl_ctx
 
 =item * get_app_data
 
@@ -3140,35 +3722,36 @@ Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_get_fd.html|http://www.o
 
 =item * get_finished
 
-Obtains the latest 'Finished' message sent to the peer.
-
-??? (does this function really work?)
+Obtains the latest 'Finished' message sent to the peer. Return value
+is zero if there's been no Finished message yet. Default count is
+2*EVP_MAX_MD_SIZE that is long enough for all possible Finish
+messages. If you supply a non-default count, the resulting return
+value may be longer than returned buf's length.
 
  my $rv = Net::SSLeay::get_finished($ssl, $buf, $count);
  # $ssl - value corresponding to openssl's SSL structure
- # $buf - buffer where the returned data will be stored (pointer ???, pre-allocated ???)
- # $count - max. size of return data
+ # $buf - buffer where the returned data will be stored
+ # $count - [optional] max size of return data - default is 2*EVP_MAX_MD_SIZE
  #
- # returns: actual size of the returned data in $buf
+ # returns: length of latest Finished message
 
 =item * get_peer_finished
 
-Obtains the latest 'Finished' message expected from the peer.
-
-??? (does this function really work?)
+Obtains the latest 'Finished' message expected from the
+peer. Parameters and return value are similar to get_finished().
 
  my $rv = Net::SSLeay::get_peer_finished($ssl, $buf, $count);
  # $ssl - value corresponding to openssl's SSL structure
- # $buf - buffer where the returned data will be stored (pointer ???, pre-allocated ???)
- # $count - max. size of the return data
+ # $buf - buffer where the returned data will be stored
+ # $count - [optional] max size of return data - default is 2*EVP_MAX_MD_SIZE
  #
- # returns: actual size of the returned data in $buf
+ # returns: length of latest Finished message
 
 =item * get_keyblock_size
 
-B<NOTE:> Does not exactly correspond to any low level API function.
+Gets the length of the TLS keyblock.
 
-??? (more info needed)
+B<NOTE:> Does not exactly correspond to any low level API function.
 
  my $rv = Net::SSLeay::get_keyblock_size($ssl);
  # $ssl - value corresponding to openssl's SSL structure
@@ -3240,6 +3823,17 @@ Get the X509 certificate of the peer.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_get_peer_certificate.html|http://www.openssl.org/docs/ssl/SSL_get_peer_certificate.html>
 
+=item * get_peer_cert_chain
+
+Get the certificate chain of the peer as an array of X509 structures.
+
+ my @rv = Net::SSLeay::get_peer_cert_chain($ssl);
+ # $ssl - value corresponding to openssl's SSL structure
+ #
+ # returns: list of X509 structures
+
+Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_get_peer_certificate.html|http://www.openssl.org/docs/ssl/SSL_get_peer_certificate.html>
+
 =item * get_quiet_shutdown
 
 Returns the 'quiet shutdown' setting of ssl.
@@ -3277,6 +3871,62 @@ Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_get_rbio.html|http://www
  #
  # returns: the original read_ahead value
 
+=item * get_security_level
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.0, not in LibreSSL
+
+Returns the security level associated with $ssl.
+
+ my $level = Net::SSLeay::get_security_level($ssl);
+ # $ssl   - value corresponding to openssl's SSL structure
+ #
+ # returns: (integer) current security level
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_get_security_level.html|https://www.openssl.org/docs/manmaster/man3/SSL_get_security_level.html>
+
+=item * set_security_level
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.0, not in LibreSSL
+
+Sets the security level associated with $ssl to $level.
+
+ Net::SSLeay::set_security_level($ssl, $level);
+ # $ssl   - value corresponding to openssl's SSL structure
+ # $level - new security level
+ #
+ # returns: no return value
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_set_security_level.html|https://www.openssl.org/docs/manmaster/man3/SSL_set_security_level.html>
+
+=item * set_num_tickets
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Set number of TLSv1.3 session tickets that will be sent to a client.
+
+ my $rv = Net::SSLeay::set_num_tickets($ssl, $number_of_tickets);
+ # $ssl  - value corresponding to openssl's SSL structure
+ # $number_of_tickets - number of tickets to send
+ #
+ # returns: 1 on success, 0 on failure
+
+Set to zero if you do not no want to support a session resumption.
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_set_num_tickets.html|https://www.openssl.org/docs/manmaster/man3/SSL_set_num_tickets.html>
+
+=item * get_num_tickets
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Get number of TLSv1.3 session tickets that will be sent to a client.
+
+ my $number_of_tickets = Net::SSLeay::get_num_tickets($ctx);
+ # $ctx  - value corresponding to openssl's SSL structure
+ #
+ # returns: number of tickets to send
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_get_num_tickets.html|https://www.openssl.org/docs/manmaster/man3/SSL_get_num_tickets.html>
+
 =item * get_server_random
 
 Returns internal SSLv3 server_random value.
@@ -3296,6 +3946,23 @@ Returns internal SSLv3 client_random value.
  # $ssl - value corresponding to openssl's SSL structure
  #
  # returns: client_random value (binary data)
+
+=item * export_keying_material
+
+Returns keying material based on the string $label and optional
+$context. Note that with TLSv1.2 and lower, empty context (empty
+string) and undefined context (no value or 'undef') will return
+different values.
+
+  my $out = Net::SSLeay::export_keying_material($ssl, $olen, $label, $context);
+  # $ssl - value corresponding to openssl's SSL structure
+  # $olen - number of bytes to return
+  # $label - application specific label
+  # $context - [optional] context - default is undef for no context
+  #
+  # returns: keying material (binary data) or undef on error
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_export_keying_material.html|https://www.openssl.org/docs/manmaster/man3/SSL_export_keying_material.html>
 
 =item * get_session
 
@@ -3361,7 +4028,22 @@ Returns a function pointer to the TLS/SSL method set in $ssl.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_ssl_version.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_ssl_version.html>
 
+=item * in_init, in_before, is_init_finished, in_connect_init, in_accept_init
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before.
+
+Retrieve information about the handshake state machine. All functions take $ssl as the only argument and return 0 or 1. These functions are recommended over get_state() and state().
+
+ my $rv = Net::SSLeay::is_init_finished($ssl);
+ # $ssl - value corresponding to openssl's SSL structure
+ #
+ # returns: All functions return 1 or 0
+
+Check openssl doc L<https://www.openssl.org/docs/ssl/SSL_in_init.html|http://www.openssl.org/docs/ssl/SSL_in_init.html>
+
 =item * get_state
+
+B<COMPATIBILITY:> OpenSSL 1.1.0 and later use different constants which are not made available. Use is_init_finished() and related functions instead.
 
 Returns the SSL connection state.
 
@@ -3380,6 +4062,14 @@ Returns the SSL connection state.
 Exactly the same as L</get_state>.
 
  my $rv = Net::SSLeay::state($ssl);
+
+=item * set_state
+
+Sets the SSL connection state.
+
+ Net::SSLeay::set_state($ssl,Net::SSLeay::SSL_ST_ACCEPT());
+
+Not available with OpenSSL 1.1 and later.
 
 =item * get_verify_depth
 
@@ -3431,6 +4121,33 @@ Sets the verification flags for $ssl to be $mode and specifies the $verify_callb
 For $mode bitmask details see L</CTX_get_verify_mode>.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_verify.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_verify.html>
+
+=item * set_post_handshake_auth
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Enable the Post-Handshake Authentication extension to be added to the ClientHello such that post-handshake authentication can be requested by the server.
+
+ Net::SSLeay::set_posthandshake_auth($ssl, $val);
+ # $ssl - value corresponding to openssl's SSL structure
+ # $val - 0 then the extension is not sent, otherwise it is
+ #
+ # returns: no return value
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_set_post_handshake_auth|https://www.openssl.org/docs/manmaster/man3/SSL_set_post_handshake_auth.html>
+
+=item * verify_client_post_handshake
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+verify_client_post_handshake causes a CertificateRequest message to be sent by a server on the given ssl connection.
+
+ my $rv = Net::SSLeay::verify_client_post_handshake($ssl);
+ # $ssl - value corresponding to openssl's SSL structure
+ #
+ # returns: 1 if the request succeeded, and 0 if the request failed. The error stack can be examined to determine the failure reason.
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_verify_client_post_handshake.html|https://www.openssl.org/docs/manmaster/man3/SSL_verify_client_post_handshake.html>
 
 =item * get_verify_result
 
@@ -3503,7 +4220,7 @@ Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_get_rbio.html|http://www
 
 =item * load_client_CA_file
 
-Load X509 certificates from file (PEM formated).
+Load X509 certificates from file (PEM formatted).
 
  my $rv = Net::SSLeay::load_client_CA_file($file);
  # $file - (string) file name
@@ -3530,6 +4247,8 @@ Executes SSL_CTRL_NEED_TMP_RSA command on $ssl.
  #
  # returns: command result
 
+Not available with OpenSSL 1.1 and later.
+
 =item * num_renegotiations
 
 Executes SSL_CTRL_GET_NUM_RENEGOTIATIONS command on $ssl.
@@ -3551,14 +4270,33 @@ Executes SSL_CTRL_GET_TOTAL_RENEGOTIATIONS command on $ssl.
 =item * peek
 
 Copies $max bytes from the specified $ssl into the returned value.
-In constrast to the C<Net::SSLeay::read()> function, the data in the SSL
+In contrast to the C<Net::SSLeay::read()> function, the data in the SSL
 buffer is unmodified after the SSL_peek() operation.
 
  Net::SSLeay::peek($ssl, $max);
  # $ssl - value corresponding to openssl's SSL structure
  # $max - [optional] max bytes to peek (integer) - default is 32768
  #
- # returns: read data, undef on error
+ # in scalar context: data read from the TLS/SSL connection, undef on error
+ # in list context:   two-item array consisting of data read (undef on error),
+ #                      and return code from SSL_peek().
+
+=item * peek_ex
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Copies $max bytes from the specified $ssl into the returned value.
+In contrast to the C<Net::SSLeay::read_ex()> function, the data in the SSL
+buffer is unmodified after the SSL_peek_ex() operation.
+
+ my($got, $rv) = Net::SSLeay::peek_ex($ssl, $max);
+ # $ssl - value corresponding to openssl's SSL structure
+ # $max - [optional] max bytes to peek (integer) - default is 32768
+ #
+ # returns a list: two-item list consisting of data read (undef on error),
+ #                 and return code from SSL_peek_ex().
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_peek_ex.html|https://www.openssl.org/docs/manmaster/man3/SSL_peek_ex.html>
 
 =item * pending
 
@@ -3571,17 +4309,49 @@ Obtain number of readable bytes buffered in $ssl object.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_pending.html|http://www.openssl.org/docs/ssl/SSL_pending.html>
 
+=item * has_pending
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.0, not in LibreSSL
+
+Returns 1 if $ssl has buffered data (whether processed or unprocessed) and 0 otherwise.
+
+ my $rv = Net::SSLeay::has_pending($ssl);
+ # $ssl - value corresponding to openssl's SSL structure
+ #
+ # returns: (integer) 1 or 0
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_has_pending.html|https://www.openssl.org/docs/manmaster/man3/SSL_has_pending.html>
+
 =item * read
 
 Tries to read $max bytes from the specified $ssl.
 
- my $rv = Net::SSLeay::read($ssl, $max);
+ my $got = Net::SSLeay::read($ssl, $max);
+ my($got, $rv) = Net::SSLeay::read($ssl, $max);
  # $ssl - value corresponding to openssl's SSL structure
  # $max - [optional] max bytes to read (integer) - default is 32768
  #
- # returns: data read from a TLS/SSL connection, undef on error
+ # returns:
+ # in scalar context: data read from the TLS/SSL connection, undef on error
+ # in list context:   two-item array consisting of data read (undef on error),
+ #                      and return code from SSL_read().
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_read.html|http://www.openssl.org/docs/ssl/SSL_read.html>
+
+=item * read_ex
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Tries to read $max bytes from the specified $ssl.
+
+ my($got, $rv) = Net::SSLeay::read_ex($ssl, $max);
+ # $ssl - value corresponding to openssl's SSL structure
+ # $max - [optional] max bytes to read (integer) - default is 32768
+ #
+ # returns a list: two-item list consisting of data read (undef on error),
+ #                 and return code from SSL_read_ex().
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_read_ex.html|https://www.openssl.org/docs/manmaster/man3/SSL_read_ex.html>
 
 =item * renegotiate
 
@@ -3671,6 +4441,20 @@ Sets the list of ciphers only for ssl.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_cipher_list.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_cipher_list.html>
 
+=item * set_ciphersuites
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Configure the available TLSv1.3 ciphersuites.
+
+ my $rv = Net::SSLeay::set_ciphersuites($ssl, $str);
+ # $ssl  - value corresponding to openssl's SSL structure
+ # $str  - colon (":") separated list of TLSv1.3 ciphersuite names in order of preference
+ #
+ # returns: (integer) 1 if the requested ciphersuite list was configured, and 0 otherwise
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_set_ciphersuites.html|https://www.openssl.org/docs/manmaster/man3/SSL_set_ciphersuites.html>
+
 =item * set_client_CA_list
 
 Sets the list of CAs sent to the client when requesting a client certificate
@@ -3708,6 +4492,20 @@ side of $ssl, $fd will typically be the socket file descriptor of a network conn
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_set_fd.html|http://www.openssl.org/docs/ssl/SSL_set_fd.html>
 
+=item * set_psk_client_callback
+
+Sets the psk client callback.
+
+ Net::SSLeay::set_psk_client_callback($ssl, sub { my $hint = shift; return ($identity, $key) } );
+ # $ssl - value corresponding to openssl's SSL structure
+ # $hint - PSK identity hint send by the server
+ # $identity - PSK identity
+ # $key - PSK key, hex string without the leading '0x', e.g. 'deadbeef'
+ #
+ # returns: no return value
+
+Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_set_psk_client_callback.html|http://www.openssl.org/docs/ssl/SSL_set_psk_client_callback.html>
+
 =item * set_rfd
 
 Sets the file descriptor $fd as the input (read) facility for the TLS/SSL (encrypted) side of $ssl.
@@ -3733,13 +4531,24 @@ Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_set_fd.html|http://www.o
 =item * set_info_callback
 
 Sets the callback function, that can be used to obtain state information for $ssl during connection setup and use.
-When callback is 0 (NULL), the callback setting currently valid for ctx is used.
+When callback is undef, the callback setting currently valid for ctx is used.
 
-??? (does this function really work?)
-
- Net::SSLeay::set_info_callback($ssl, $cb);
+ Net::SSLeay::set_info_callback($ssl, $cb, [$data]);
  # $ssl - value corresponding to openssl's SSL structure
- # $cb - pointer to function ???
+ # $cb - sub { my ($ssl,$where,$ret,$data) = @_; ... }
+ #
+ # returns: no return value
+
+Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_info_callback.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_info_callback.html>
+
+=item * CTX_set_info_callback
+
+Sets the callback function on ctx, that can be used to obtain state information during ssl connection setup and use.
+When callback is undef, an existing callback will be disabled.
+
+ Net::SSLeay::CTX_set_info_callback($ssl, $cb, [$data]);
+ # $ssl - value corresponding to openssl's SSL structure
+ # $cb - sub { my ($ssl,$where,$ret,$data) = @_; ... }
  #
  # returns: no return value
 
@@ -3756,6 +4565,20 @@ Sets the list of available ciphers for $ssl using the control string $str.
  # returns: 1 if any cipher could be selected and 0 on complete failure
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_cipher_list.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_cipher_list.html>
+
+=item * CTX_set_psk_client_callback
+
+Sets the psk client callback.
+
+ Net::SSLeay::CTX_set_psk_client_callback($ssl, sub { my $hint = shift; return ($identity, $key) } );
+ # $ssl - value corresponding to openssl's SSL structure
+ # $hint - PSK identity hint send by the server
+ # $identity - PSK identity
+ # $key - PSK key, hex string without the leading '0x', e.g. 'deadbeef'
+ #
+ # returns: no return value
+
+Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_psk_client_callback.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_psk_client_callback.html>
 
 =item * set_purpose
 
@@ -3814,6 +4637,132 @@ Setup pre-shared secret session resumption function.
  # $data - [optional] data that will be passed to callback function when invoked
  #
  # returns: no return value
+
+The callback function will be called like:
+callback_function($secret, $ciphers, $pref_cipher, $data);
+
+# $secret is the current master session key, usually all 0s at the beginning of a session
+# $ciphers is ref to an array of peer cipher names
+# $pref_cipher is a ref to an index into the list of cipher names of 
+#  the preferred cipher. Set it if you want to specify a preferred cipher
+# $data is the data passed to set_session_secret_cb
+
+The callback function should return 1 if it likes the suggested cipher (or has selected an alternative 
+by setting pref_cipher), else it should return 0 (in which case OpenSSL will select its own preferred cipher).
+
+With OpenSSL 1.1 and later, callback_function can change the master key for the session by 
+altering $secret and returning 1.
+
+=item * CTX_set_tlsext_ticket_getkey_cb
+
+Setup encryption for TLS session tickets (stateless session reuse).
+
+ Net::SSLeay::CTX_set_tlsext_ticket_getkey_cb($ctx, $func, $data);
+ # $ctx  - value corresponding to openssl's SSL_CTX structure
+ # $func - perl reference to callback function
+ # $data - [optional] data that will be passed to callback function when invoked
+ #
+ # returns: no return value
+
+The callback function will be called like:
+getkey($data,[$key_name]) -> ($key,$current_key_name)
+
+# $data is the data passed to set_session_secret_cb
+# $key_name is the name of the key OpenSSL has extracted from the session ticket
+# $key is the requested key for ticket encryption + HMAC
+# $current_key_name is the name for the currently valid key
+
+OpenSSL will call the function without a key name if it generates a new ticket.
+It then needs the callback to return the encryption+HMAC key and an identifier
+(key name) for this key.
+
+When OpenSSL gets a session ticket from the client it extracts the key name and
+calls the callback with this name as argument. It then expects the callback to
+return the encryption+HMAC key matching the requested key name and and also the
+key name which should be used at the moment. If the requested key name and the
+returned key name differ it means that this session ticket was created with an
+expired key and need to be renewed. In this case OpenSSL will call the callback
+again with no key name to create a new session ticket based on the old one.
+
+The key must be at least 32 byte of random data which can be created with
+RAND_bytes. Internally the first 16 byte are used as key in AES-128 encryption
+while the next 16 byte are used for the SHA-256 HMAC.
+The key name are binary data and must be exactly 16 byte long. 
+
+Example:
+
+    Net::SSLeay::RAND_bytes(my $oldkey,32);
+    Net::SSLeay::RAND_bytes(my $newkey,32);
+    my $oldkey_name = pack("a16",'oldsecret');
+    my $newkey_name = pack("a16",'newsecret');
+
+    my @keys = (
+	[ $newkey_name, $newkey ], # current active key
+	[ $oldkey_name, $oldkey ], # already expired
+    );
+
+    Net::SSLeay::CTX_set_tlsext_ticket_getkey_cb($server2->_ctx, sub {
+	my ($mykeys,$name) = @_;
+
+	# return (current_key, current_key_name) if no name given
+	return ($mykeys->[0][1],$mykeys->[0][0]) if ! $name;
+
+	# return (matching_key, current_key_name) if we find a key matching
+	# the given name
+	for(my $i = 0; $i<@$mykeys; $i++) {
+	    next if $name ne $mykeys->[$i][0];
+	    return ($mykeys->[$i][1],$mykeys->[0][0]);
+	}
+
+	# no matching key found
+	return;
+    },\@keys);
+
+
+This function is based on the OpenSSL function SSL_CTX_set_tlsext_ticket_key_cb
+but provides a simpler to use interface. For more information see
+L<http://www.openssl.org/docs/ssl/SSL_CTX_set_tlsext_ticket_key_cb.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_tlsext_ticket_key_cb.html>
+
+=item * set_session_ticket_ext_cb
+
+Setup callback for TLS session tickets (stateless session reuse).
+
+ Net::SSLeay::set_session_ticket_ext_cb($ssl, $func, $data);
+ # $ssl  - value corresponding to openssl's SSL structure
+ # $func - perl reference to callback function
+ # $data - [optional] data that will be passed to callback function when invoked
+ #
+ # returns: no return value
+
+The callback function will be called like:
+getticket($ssl,$ticket,$data) -> $return_value
+
+# $ssl is a value corresponding to openssl's SSL structure
+# $ticket is a value of received TLS session ticket (can also be empty)
+# $data is the data passed to set_session_ticket_ext_cb
+# $return_value is either 0 (failure) or 1 (success)
+
+This function is based on the OpenSSL function SSL_set_session_ticket_ext_cb.
+
+=item * set_session_ticket_ext
+
+Set TLS session ticket (stateless session reuse).
+
+ Net::SSLeay::set_session_ticket_ext($ssl, $ticket);
+ # $ssl    - value corresponding to openssl's SSL structure
+ # $ticket - is a value of TLS session ticket which client will send (can also be empty string)
+ #
+ # returns: no return value
+
+The callback function will be called like:
+getticket($ssl,$ticket,$data) -> $return_value
+
+# $ssl is a value corresponding to openssl's SSL structure
+# $ticket is a value of received TLS session ticket (can also be empty)
+# $data is the data passed to set_session_ticket_ext_cb
+# $return_value is either 0 (failure) or 1 (success)
+
+This function is based on the OpenSSL function SSL_set_session_ticket_ext_cb.
 
 =item * set_shutdown
 
@@ -3946,6 +4895,34 @@ Returns a string indicating the current state of the SSL object $ssl.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_state_string.html|http://www.openssl.org/docs/ssl/SSL_state_string.html>
 
+=item * set_default_passwd_cb
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.1.0f. Not needed with LibreSSL.
+
+Sets the default password callback called when loading/storing a PEM certificate with encryption for $ssl.
+
+ Net::SSLeay::set_default_passwd_cb($ssl, $func);
+ # $ssl - value corresponding to openssl's SSL structure
+ # $func - perl reference to callback function
+ #
+ # returns: no return value
+
+Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_default_passwd_cb.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_default_passwd_cb.html>
+
+=item * set_default_passwd_cb_userdata
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.1.0f. Not needed with LibreSSL.
+
+Sets a pointer to userdata which will be provided to the password callback of $ssl on invocation.
+
+ Net::SSLeay::set_default_passwd_cb_userdata($ssl, $userdata);
+ # $ssl - value corresponding to openssl's SSL structure
+ # $userdata - data that will be passed to callback function when invoked
+ #
+ # returns: no return value
+
+Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_set_default_passwd_cb.html|http://www.openssl.org/docs/ssl/SSL_CTX_set_default_passwd_cb.html>
+
 =item * use_PrivateKey
 
 Adds $pkey as private key to $ssl.
@@ -4048,6 +5025,22 @@ Loads the ASN1 encoded certificate from $data to $ssl.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_use_certificate.html|http://www.openssl.org/docs/ssl/SSL_CTX_use_certificate.html>
 
+=item * use_certificate_chain_file
+
+B<COMPATIBILITY>: not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.1.0
+
+Loads a certificate chain from $file into $ssl. The certificates must be in PEM format and must be sorted
+starting with the subject's certificate (actual client or server certificate), followed by intermediate
+CA certificates if applicable, and ending at the highest level (root) CA.
+
+ my $rv = Net::SSLeay::use_certificate_chain_file($ssl, $file);
+ # $ssl - value corresponding to openssl's SSL structure
+ # $file - (string) file name
+ #
+ # returns: 1 on success, otherwise check out the error stack to find out the reason
+
+Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_use_certificate.html|http://www.openssl.org/docs/ssl/SSL_CTX_use_certificate.html>
+
 =item * use_certificate_file
 
 Loads the first certificate stored in $file into $ssl.
@@ -4061,6 +5054,19 @@ Loads the first certificate stored in $file into $ssl.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_CTX_use_certificate.html|http://www.openssl.org/docs/ssl/SSL_CTX_use_certificate.html>
 
+=item * get_version
+
+Returns SSL/TLS protocol name
+
+ my $rv = Net::SSLeay::get_version($ssl);
+ # $ssl - value corresponding to openssl's SSL structure
+ #
+ # returns: (string) protocol name, see OpenSSL manual for the full list
+ #          TLSv1
+ #          TLSv1.3
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_get_version.html|https://www.openssl.org/docs/manmaster/man3/SSL_get_version.html>
+
 =item * version
 
 Returns SSL/TLS protocol version
@@ -4068,11 +5074,39 @@ Returns SSL/TLS protocol version
  my $rv = Net::SSLeay::version($ssl);
  # $ssl - value corresponding to openssl's SSL structure
  #
- # returns: (integer) protocol version
- #          0x0002 - SSL2_VERSION  (SSLv2)
- #          0x0300 - SSL3_VERSION  (SSLv3)
+ # returns: (integer) protocol version, see OpenSSL manual for the full list
  #          0x0301 - TLS1_VERSION  (TLSv1)
  #          0xFEFF - DTLS1_VERSION (DTLSv1)
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_version.html|https://www.openssl.org/docs/manmaster/man3/SSL_version.html>
+
+=item * client_version
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.0, not in LibreSSL
+
+Returns TLS protocol version used by the client when initiating the connection
+
+ my $rv = Net::SSLeay::client_version($ssl);
+ # $ssl - value corresponding to openssl's SSL structure
+ #
+ # returns: (integer) protocol version, see OpenSSL manual for the full list
+ #          0x0301 - TLS1_VERSION  (TLSv1)
+ #          0xFEFF - DTLS1_VERSION (DTLSv1)
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_client_version.html|https://www.openssl.org/docs/manmaster/man3/SSL_client_version.html>
+
+=item * is_dtls
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.0, not in LibreSSL
+
+ my $rv = Net::SSLeay::is_dtls($ssl);
+ # $ssl - value corresponding to openssl's SSL structure
+ #
+ # returns: (integer) zero or one
+ #          0 - connection is not using DTLS
+ #          1 - connection is using DTLS
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_is_dtls.html|https://www.openssl.org/docs/manmaster/man3/SSL_is_dtls.html>
 
 =item * want
 
@@ -4103,11 +5137,27 @@ Writes data from the buffer $data into the specified $ssl connection.
 
 Check openssl doc L<http://www.openssl.org/docs/ssl/SSL_write.html|http://www.openssl.org/docs/ssl/SSL_write.html>
 
+=item * write_ex
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Writes data from the buffer $data into the specified $ssl connection.
+
+ my ($len, $rv) = Net::SSLeay::write_ex($ssl, $data);
+ # $ssl - value corresponding to openssl's SSL structure
+ # $data - data to be written
+ #
+ # returns a list: two-item list consisting of number of bytes written,
+ #                 and return code from SSL_write_ex()
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/SSL_write_ex.html|https://www.openssl.org/docs/manmaster/man3/SSL_write_ex.html>
+
 =item * write_partial
 
 B<NOTE:> Does not exactly correspond to any low level API function
 
-Writes a fragment of data data from the buffer $data into the specified $ssl connection.
+Writes a fragment of data in $data from the buffer $data into the specified
+$ssl connection. This is a non-blocking function like L<Net::SSLeay::write()>.
 
  my $rv = Net::SSLeay::write_partial($ssl, $from, $count, $data);
  # $ssl - value corresponding to openssl's SSL structure
@@ -4181,9 +5231,25 @@ Puts $num cryptographically strong pseudo-random bytes into $buf.
  # $buf - buffer where the random data will be stored
  # $num - the size (in bytes) of requested random data
  #
- # returns: 1 on success, 0 otherwise
+ # returns: 1 on success, -1 if not supported by the current RAND method, or 0 on other failure
 
-Check openssl doc L<http://www.openssl.org/docs/crypto/RAND_bytes.html|http://www.openssl.org/docs/crypto/RAND_bytes.html>
+Check openssl doc L<http://www.openssl.org/docs/manmaster/man3/RAND_bytes.html|http://www.openssl.org/docs/manmaster/man3/RAND_bytes.html>
+
+=item * RAND_priv_bytes
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.85 and before; requires at least OpenSSL 1.1.1, not in LibreSSL
+
+Puts $num cryptographically strong pseudo-random bytes into $buf.
+
+ my $rv = Net::SSLeay::RAND_priv_bytes($buf, $num);
+ # $buf - buffer where the random data will be stored
+ # $num - the size (in bytes) of requested random data
+ #
+ # returns: 1 on success, -1 if not supported by the current RAND method, or 0 on other failure
+
+RAND_priv_bytes has the same semantics as RAND_bytes, but see see the documentation for more information.
+
+Check openssl doc L<http://www.openssl.org/docs/manmaster/man3/RAND_priv_bytes.html|http://www.openssl.org/docs/manmaster/man3/RAND_priv_bytes.html>
 
 =item * RAND_pseudo_bytes
 
@@ -4205,17 +5271,6 @@ Erase the PRNG state.
  # no args, no return value
 
 Check openssl doc L<http://www.openssl.org/docs/crypto/RAND_cleanup.html|http://www.openssl.org/docs/crypto/RAND_cleanup.html>
-
-=item * RAND_egd
-
-Queries the entropy gathering daemon EGD on socket $path for 255 bytes.
-
- my $rv = Net::SSLeay::RAND_egd($path);
- # $path - path to a socket of entropy gathering daemon EGD
- #
- # returns: the number of bytes read from the daemon on success, and -1 on failure
-
-Check openssl doc L<http://www.openssl.org/docs/crypto/RAND_egd.html|http://www.openssl.org/docs/crypto/RAND_egd.html>
 
 =item * RAND_egd_bytes
 
@@ -4241,6 +5296,8 @@ Generates a default path for the random seed file.
 Check openssl doc L<http://www.openssl.org/docs/crypto/RAND_load_file.html|http://www.openssl.org/docs/crypto/RAND_load_file.html>
 
 =item * RAND_load_file
+
+B<COMPATIBILITY:> Is no longer functional on LibreSSL
 
 Reads $max_bytes of bytes from $file_name and adds them to the PRNG.
 
@@ -4397,7 +5454,7 @@ Check openssl doc L<http://www.openssl.org/docs/crypto/OBJ_nid2obj.html|http://w
 
 =item * OBJ_txt2nid
 
-Returns NID corresponding to text string $s which can be a long name, a short name or the numerical respresentation of an object.
+Returns NID corresponding to text string $s which can be a long name, a short name or the numerical representation of an object.
 
  my $rv = Net::SSLeay::OBJ_txt2nid($s);
  # $s - (string) e.g. 'commonName' or 'CN' or '2.5.4.3'
@@ -4650,6 +5707,81 @@ Frees up the X509 structure.
 
 Check openssl doc L<http://www.openssl.org/docs/crypto/X509_new.html|http://www.openssl.org/docs/crypto/X509_new.html>
 
+=item * X509_check_host
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.68 and before; requires at
+least OpenSSL 1.0.2. X509_CHECK_FLAG_NEVER_CHECK_SUBJECT requires OpenSSL 1.1.0.
+
+Checks f the certificate Subject Alternative Name (SAN) or Subject CommonName
+(CN) matches the specified host name.
+
+ my $rv = Net::SSLeay::X509_check_host($cert, $name, $flags, $peername);
+ # $cert - value corresponding to openssl's X509 structure
+ # $name - host name to check
+ # $flags (optional, default: 0) - can be the bitwise OR of:
+ #   &Net::SSLeay::X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT
+ #   &Net::SSLeay::X509_CHECK_FLAG_NO_WILDCARDS
+ #   &Net::SSLeay::X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS
+ #   &Net::SSLeay::X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS
+ #   &Net::SSLeay::X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS
+ #   &Net::SSLeay::X509_CHECK_FLAG_NEVER_CHECK_SUBJECT
+ # $peername (optional) - If not omitted and $host matches $cert,
+ #                        a copy of the matching SAN or CN from
+ #                        the peer certificate is stored in $peername.
+ #
+ # returns:
+ #   1 for a successful match
+ #   0 for a failed match
+ #  -1 for an internal error
+ #  -2 if the input is malformed
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/X509_check_host.html>.
+
+=item * X509_check_email
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.68 and before; requires at least OpenSSL 1.0.2.
+
+Checks if the certificate matches the specified email address.
+
+ my $rv = Net::SSLeay::X509_check_email($cert, $address, $flags);
+ # $cert - value corresponding to openssl's X509 structure
+ # $address - email address to check
+ # $flags (optional, default: 0) - see X509_check_host()
+ #
+ # returns: see X509_check_host()
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/X509_check_email.html>.
+
+=item * X509_check_ip
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.68 and before; requires at least OpenSSL 1.0.2.
+
+Checks if the certificate matches the specified IPv4 or IPv6 address.
+
+ my $rv = Net::SSLeay::X509_check_email($cert, $address, $flags);
+ # $cert - value corresponding to openssl's X509 structure
+ # $address - IP address to check in binary format, in network byte order
+ # $flags (optional, default: 0) - see X509_check_host()
+ #
+ # returns: see X509_check_host()
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/X509_check_ip.html>.
+
+=item * X509_check_ip_asc
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.68 and before; requires at least OpenSSL 1.0.2.
+
+Checks if the certificate matches the specified IPv4 or IPv6 address.
+
+ my $rv = Net::SSLeay::X509_check_email($cert, $address, $flags);
+ # $cert - value corresponding to openssl's X509 structure
+ # $address - IP address to check in text representation
+ # $flags (optional, default: 0) - see X509_check_host()
+ #
+ # returns: see X509_check_host()
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/X509_check_ip_asc.html>.
+
 =item * X509_certificate_type
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
@@ -4695,7 +5827,7 @@ B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
 Sort of a checksum of issuer name and serial number of X509 certificate $x.
 The result is not a full hash (e.g. sha-1), it is kind-of-a-hash truncated to the size of 'unsigned long' (32 bits).
-The resulting value might differ accross different openssl versions for the same X509 certificate.
+The resulting value might differ across different openssl versions for the same X509 certificate.
 
  my $rv = Net::SSLeay::X509_issuer_and_serial_hash($x);
  # $x - value corresponding to openssl's X509 structure
@@ -4708,7 +5840,7 @@ B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
 Sort of a checksum of issuer name of X509 certificate $x.
 The result is not a full hash (e.g. sha-1), it is kind-of-a-hash truncated to the size of 'unsigned long' (32 bits).
-The resulting value might differ accross different openssl versions for the same X509 certificate.
+The resulting value might differ across different openssl versions for the same X509 certificate.
 
  my $rv = Net::SSLeay::X509_issuer_name_hash($x);
  # $x - value corresponding to openssl's X509 structure
@@ -4721,7 +5853,7 @@ B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
 
 Sort of a checksum of subject name of X509 certificate $x.
 The result is not a full hash (e.g. sha-1), it is kind-of-a-hash truncated to the size of 'unsigned long' (32 bits).
-The resulting value might differ accross different openssl versions for the same X509 certificate.
+The resulting value might differ across different openssl versions for the same X509 certificate.
 
  my $rv = Net::SSLeay::X509_subject_name_hash($x);
  # $x - value corresponding to openssl's X509 structure
@@ -4855,6 +5987,21 @@ Returns public key corresponding to given X509 object $x.
  #
  # returns: value corresponding to openssl's EVP_PKEY structure (0 on failure)
 
+B<NOTE:> This method returns only the public key's key bits, without the
+algorithm or parameters.  Use C<X509_get_X509_PUBKEY()> to return the full
+public key (SPKI) instead.
+
+=item * X509_get_X509_PUBKEY
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.72 and before
+
+Returns the full public key (SPKI) of given X509 certificate $x.
+
+ Net::SSLeay::X509_get_X509_PUBKEY($x);
+ # $x - value corresponding to openssl's X509 structure
+ #
+ # returns: public key data in DER format (binary)
+
 =item * X509_get_serialNumber
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
@@ -4867,6 +6014,12 @@ Returns serial number of X509 certificate $x.
  # returns: value corresponding to openssl's ASN1_INTEGER structure (0 on failure)
 
 See L</P_ASN1_INTEGER_get_dec>, L</P_ASN1_INTEGER_get_hex> or L</ASN1_INTEGER_get> to decode ASN1_INTEGER object.
+
+=item * X509_get0_serialNumber
+
+B<COMPATIBILITY:> available in Net-SSLeay-1.86 onwards
+
+X509_get0_serialNumber() is the same as X509_get_serialNumber() except it accepts a const parameter and returns a const result.
 
 =item * X509_get_version
 
@@ -4975,6 +6128,8 @@ Returns the list of alternative subject names from X509 certificate $cert.
  #          6 - GEN_URI
  #          7 - GEN_IPADD
  #          8 - GEN_RID
+
+Note: type 7 - GEN_IPADD contains the IP address as a packed binary address.
 
 =item * X509_get_subject_name
 
@@ -5283,6 +6438,24 @@ To get textual representation use:
  my $alg = Net::SSLeay::OBJ_obj2txt(Net::SSLeay::P_X509_get_signature_alg($x509))
  # returns for example: "sha1WithRSAEncryption"
 
+=item * sk_X509_new_null
+
+Returns a new, empty, STACK_OF(X509) structure.
+
+ my $rv = Net::SSLeay::sk_X509_new_null();
+ #
+ # returns: value corresponding to openssl's STACK_OF(X509) structure
+
+=item * sk_X509_push
+
+Pushes an X509 structure onto a STACK_OF(X509) structure.
+
+ my $rv = Net::SSLeay::sk_X509_push($sk_x509, $x509);
+ # $sk_x509 - value corresponding to openssl's STACK_OF(X509) structure
+ # $x509 - value corresponding to openssl's X509 structure
+ #
+ # returns: 1 if successful, 0 if unsuccessful
+
 =back
 
 =head3 Low level API: X509_REQ_* related functions
@@ -5567,6 +6740,43 @@ Example:
  #to get printable (hex) value of digest use:
  print "digest=", unpack('H*', $digest_value), "\n";
 
+=item * X509_CRL_get_ext
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.54 and before
+
+Returns X509_EXTENSION from $x509 based on given position/index.
+
+ my $rv = Net::SSLeay::X509_CRL_get_ext($x509, $index);
+ # $x509 - value corresponding to openssl's X509_CRL structure
+ # $index - (integer) position/index of extension within $x509
+ #
+ # returns: value corresponding to openssl's X509_EXTENSION structure (0 on failure)
+
+=item * X509_CRL_get_ext_by_NID
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.54 and before
+
+Returns X509_EXTENSION from $x509 based on given NID.
+
+ my $rv = Net::SSLeay::X509_CRL_get_ext_by_NID($x509, $nid, $loc);
+ # $x509 - value corresponding to openssl's X509_CRL structure
+ # $nid - (integer) NID value
+ # $loc - (integer) position to start lookup at
+ #
+ # returns: position/index of extension, negative value on error
+ #          call Net::SSLeay::X509_CRL_get_ext($x509, $rv) to get the actual extension
+
+=item * X509_CRL_get_ext_count
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.54 and before
+
+Returns the total number of extensions in X509_CRL object $x.
+
+ my $rv = Net::SSLeay::X509_CRL_get_ext_count($x);
+ # $x - value corresponding to openssl's X509_CRL structure
+ #
+ # returns: count of extensions
+
 =item * X509_CRL_get_issuer
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before
@@ -5703,7 +6913,7 @@ Verifies X509_CRL object $a using public key $r (pubkey of issuing CA).
 
 B<COMPATIBILITY:> not available in Net-SSLeay-1.45 and before; requires at least openssl-0.9.7
 
-Adds given serian number $serial_hex to X509_CRL object $crl.
+Adds given serial number $serial_hex to X509_CRL object $crl.
 
  Net::SSLeay::P_X509_CRL_add_revoked_serial_hex($crl, $serial_hex, $rev_time, $reason_code, $comp_time);
  # $crl - value corresponding to openssl's X509_CRL structure
@@ -5841,6 +7051,30 @@ Retrieves the field name of $ne in and ASN1_OBJECT structure.
  # returns: value corresponding to openssl's ASN1_OBJECT structure (0 on failure)
 
 Check openssl doc L<http://www.openssl.org/docs/crypto/X509_NAME_ENTRY_get_object.html|http://www.openssl.org/docs/crypto/X509_NAME_ENTRY_get_object.html>
+
+=item * X509_NAME_new
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.55 and before; requires at least openssl-0.9.5
+
+Creates a new X509_NAME structure.
+Adds a field whose name is defined by a string $field. The field value to be added is in $bytes.
+
+ my $rv = Net::SSLeay::X509_NAME_new();
+ #
+ # returns: value corresponding to openssl's X509_NAME structure (0 on failure)
+
+=item * X509_NAME_hash
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.55 and before; requires at least openssl-0.9.5
+
+Sort of a checksum of issuer name $name.
+The result is not a full hash (e.g. sha-1), it is kind-of-a-hash truncated to the size of 'unsigned long' (32 bits).
+The resulting value might differ across different openssl versions for the same X509 certificate.
+
+ my $rv = Net::SSLeay::X509_NAME_hash($name);
+ # $name - value corresponding to openssl's X509_NAME structure
+ #
+ # returns: number representing checksum
 
 =item * X509_NAME_add_entry_by_txt
 
@@ -6010,7 +7244,7 @@ such entry exists -1 is returned.
 B<openssl note:> this is a legacy function which has various limitations which
 makes it of minimal use in practice. It can only find the first matching
 entry and will copy the contents of the field verbatim: this can be highly
-confusing if the target is a muticharacter string type like a BMPString or a UTF8String.
+confusing if the target is a multicharacter string type like a BMPString or a UTF8String.
 
  Net::SSLeay::X509_NAME_get_text_by_NID($name, $nid);
  # $name - value corresponding to openssl's X509_NAME structure
@@ -6085,6 +7319,48 @@ Add a directory of certs to a stack. All certs in $dir that are not already in t
 
 =over
 
+=item * X509_STORE_CTX_new
+
+returns a newly initialised X509_STORE_CTX structure. 
+
+=item * X509_STORE_CTX_init
+
+X509_STORE_CTX_init() sets up an X509_STORE_CTX for a subsequent verification operation.
+It must be called before each call to X509_verify_cert().
+
+Net::SSLeay::X509_STORE_CTX_init($x509_store_ctx, $x509_store, $x509, $chain);
+
+# $x509_store_ctx - value corresponding to openssl's X509_STORE_CTX structure (required)
+# $x509_store - value corresponding to openssl's X509_STORE structure (optional)
+# $x509 - value corresponding to openssl's X509 structure (optional)
+# $chain - value corresponding to openssl's STACK_OF(X509) structure (optional)
+
+Check openssl doc L<https://www.openssl.org/docs/man1.0.2/crypto/X509_STORE_CTX_init.html|https://www.openssl.org/docs/man1.0.2/crypto/X509_STORE_CTX_init.html>
+
+=item * X509_STORE_CTX_free
+
+Frees an X509_STORE_CTX structure.
+
+Net::SSLeay::X509_STORE_CTX_free($x509_store_ctx);
+
+# $x509_store_ctx - value corresponding to openssl's X509_STORE_CTX structure
+
+=item * X509_verify_cert
+
+The X509_verify_cert() function attempts to discover and validate a
+certificate chain based on parameters in ctx. A complete description
+of the process is contained in the verify(1) manual page.
+
+If this function returns 0, use X509_STORE_CTX_get_error to get additional error
+information.
+
+my $rv = Net::SSLeay::X509_verify_cert($x509_store_ctx);
+# $x509_store_ctx - value corresponding to openssl's X509_STORE_CTX structure
+#
+# returns: 1 if a complete chain can be built and validated, otherwise 0
+
+Check openssl doc L<https://www.openssl.org/docs/manmaster/man3/X509_verify_cert.html|https://www.openssl.org/docs/manmaster/man3/X509_verify_cert.html>
+
 =item * X509_STORE_CTX_get_current_cert
 
 Returns the certificate in ctx which caused the error or 0 if no certificate is relevant.
@@ -6112,7 +7388,7 @@ Check openssl doc L<http://www.openssl.org/docs/crypto/X509_STORE_CTX_get_error.
 =item * X509_STORE_CTX_get_error_depth
 
 Returns the depth of the error. This is a non-negative integer representing
-where in the certificate chain the error occurred. If it is zero it occured
+where in the certificate chain the error occurred. If it is zero it occurred
 in the end entity certificate, one if it is the certificate which signed
 the end entity certificate and so on.
 
@@ -6146,7 +7422,7 @@ Is used to store application data at arg for idx into $x509_store_ctx.
 
 =item * X509_STORE_CTX_set_cert
 
-Sets the certificate to be vertified in $x509_store_ctx to $x.
+Sets the certificate to be verified in $x509_store_ctx to $x.
 
  Net::SSLeay::X509_STORE_CTX_set_cert($x509_store_ctx, $x);
  # $x509_store_ctx - value corresponding to openssl's X509_STORE_CTX structure
@@ -6155,6 +7431,34 @@ Sets the certificate to be vertified in $x509_store_ctx to $x.
  # returns: no return value
 
 Check openssl doc L<http://www.openssl.org/docs/crypto/X509_STORE_CTX_new.html|http://www.openssl.org/docs/crypto/X509_STORE_CTX_new.html>
+
+=item * X509_STORE_new
+
+Returns a newly initialized X509_STORE structure.
+
+my $rv = Net::SSLeay::X509_STORE_new();
+#
+# returns: value corresponding to openssl's X509_STORE structure (0 on failure)
+
+=item * X509_STORE_free
+
+Frees an X509_STORE structure
+
+Net::SSLeay::X509_STORE_free($x509_store);
+# $x509_store - value corresponding to openssl's X509_STORE structure
+
+=item * X509_STORE_add_lookup
+
+Adds a lookup to an X509_STORE for a given lookup method.
+
+my $method = &Net::SSLeay::X509_LOOKUP_hash_dir;
+my $rv = Net::SSLeay::X509_STORE_add_lookup($x509_store, $method);
+# $method - value corresponding to openssl's X509_LOOKUP_METHOD structure
+# $x509_store - value corresponding to openssl's X509_STORE structure
+#
+# returns: value corresponding to openssl's X509_LOOKUP structure
+
+Check openssl doc L<https://www.openssl.org/docs/man1.1.1/man3/X509_load_crl_file.html|https://www.openssl.org/docs/man1.1.1/man3/X509_load_crl_file.html>
 
 =item * X509_STORE_CTX_set_error
 
@@ -6198,6 +7502,31 @@ Adds X509 CRL $x into the X509_STORE $store.
  #
  # returns: 1 on success, 0 on failure
 
+=item * X509_LOOKUP_hash_dir
+
+Returns an X509_LOOKUP structure that instructs an X509_STORE to
+load files from a directory containing certificates with filenames
+in the format I<hash.N> or crls with filenames in the format I<hash.>B<r>I<N>
+
+my $rv = Net::SSLeay::X509_LOOKUP_hash_dir();
+#
+# returns: value corresponding to openssl's X509_LOOKUP_METHOD structure, with the hashed directory method
+
+Check openssl doc L<https://www.openssl.org/docs/man1.1.1/man3/X509_load_crl_file.html|https://www.openssl.org/docs/man1.1.1/man3/X509_load_crl_file.html>
+
+=item * X509_LOOKUP_add_dir
+
+Add a directory to an X509_LOOKUP structure, usually obtained from
+X509_STORE_add_lookup.
+
+my $method = &Net::SSLeay::X509_LOOKUP_hash_dir;
+my $lookup = Net::SSLeay::X509_STORE_add_lookup($x509_store, $method);
+my $type = &Net::SSLeay::X509_FILETYPE_PEM;
+Net::SSLeay::X509_LOOKUP_add_dir($lookup, $dir, $type);
+# $lookup - value corresponding to openssl's X509_LOOKUP structure
+# $dir - string path to a directory
+s# $type - constant corresponding to the type of file in the directory - can be X509_FILETYPE_PEM, X509_FILETYPE_DEFAULT, or X509_FILETYPE_ASN1
+
 =item * X509_STORE_set_flags
 
  Net::SSLeay::X509_STORE_set_flags($ctx, $flags);
@@ -6206,27 +7535,10 @@ Adds X509 CRL $x into the X509_STORE $store.
  #
  # returns: no return value
 
- #to create $flags value use:
- 0x0001 - X509_V_FLAG_CB_ISSUER_CHECK - Send issuer+subject checks to verify_cb
- 0x0002 - X509_V_FLAG_USE_CHECK_TIME - Use check time instead of current time
- 0x0004 - X509_V_FLAG_CRL_CHECK - Lookup CRLs
- 0x0008 - X509_V_FLAG_CRL_CHECK_ALL - Lookup CRLs for whole chain
- 0x0010 - X509_V_FLAG_IGNORE_CRITICAL - Ignore unhandled critical extensions
- 0x0020 - X509_V_FLAG_X509_STRICT - Disable workarounds for broken certificates
- 0x0040 - X509_V_FLAG_ALLOW_PROXY_CERTS - Enable proxy certificate validation
- 0x0080 - X509_V_FLAG_POLICY_CHECK - Enable policy checking
- 0x0100 - X509_V_FLAG_EXPLICIT_POLICY - Policy variable require-explicit-policy
- 0x0200 - X509_V_FLAG_INHIBIT_ANY - Policy variable inhibit-any-policy
- 0x0400 - X509_V_FLAG_INHIBIT_MAP - Policy variable inhibit-policy-mapping
- 0x0800 - X509_V_FLAG_NOTIFY_POLICY - Notify callback that policy is OK
- 0x1000 - X509_V_FLAG_EXTENDED_CRL_SUPPORT - Extended CRL features such as indirect CRLs, alternate CRL signing keys
- 0x2000 - X509_V_FLAG_USE_DELTAS - Delta CRL support
- 0x4000 - X509_V_FLAG_CHECK_SS_SIGNATURE - Check selfsigned CA signature
+ #to create $flags value use corresponding constants like
+ $flags = Net::SSLeay::X509_V_FLAG_CRL_CHECK();
 
- #or use corresponding constants like
- $flags = &Net::SSLeay::X509_V_FLAG_CB_ISSUER_CHECK;
- ...
- $flags = &Net::SSLeay::X509_V_FLAG_CHECK_SS_SIGNATURE;
+For more details about $flags bitmask see L</X509_VERIFY_PARAM_set_flags>.
 
 =item * X509_STORE_set_purpose
 
@@ -6247,6 +7559,40 @@ For more details about $purpose identifier check L</CTX_set_purpose>.
  # returns: no return value
 
 For more details about $trust identifier check L</CTX_set_trust>.
+
+=back
+
+=head3 Low Level API: X509_INFO related functions
+
+=over
+
+=item * sk_X509_INFO_num
+
+Returns the number of values in a STACK_OF(X509_INFO) structure.
+
+ my $rv = Net::SSLeay::sk_X509_INFO_num($sk_x509_info);
+ # $sk_x509_info - value corresponding to openssl's STACK_OF(X509_INFO) structure
+ #
+ # returns: number of values in $sk_X509_info
+
+=item * sk_X509_INFO_value
+
+Returns the value of a STACK_OF(X509_INFO) structure at a given index.
+
+ my $rv = Net::SSLeay::sk_X509_INFO_value($sk_x509_info, $index);
+ # $sk_x509_info - value corresponding to openssl's STACK_OF(X509_INFO) structure
+ # $index - index into the stack
+ #
+ # returns: value corresponding to openssl's X509_INFO structure at the given index
+
+=item * P_X509_INFO_get_x509
+
+Returns the X509 structure stored in an X509_INFO structure.
+
+ my $rv = Net::SSLeay::P_X509_INFO_get_x509($x509_info);
+ # $x509_info - value corresponding to openssl's X509_INFO structure
+ #
+ # returns: value corresponding to openssl's X509 structure
 
 =back
 
@@ -6275,6 +7621,24 @@ Check openssl doc L<http://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_fla
  #
  # returns: 1 on success, 0 on failure
 
+=item * X509_VERIFY_PARAM_add1_host
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.0.2
+
+Adds an additional reference identifier that can match the peer's certificate.
+
+ my $rv = Net::SSLeay::X509_VERIFY_PARAM_add1_host($param, $name);
+ # $param - value corresponding to openssl's X509_VERIFY_PARAM structure
+ # $name - (string) name to be set
+ #
+ # returns: 1 on success, 0 on failure
+
+See also OpenSSL docs, L</X509_VERIFY_PARAM_set1_host> and
+L</X509_VERIFY_PARAM_set_hostflags> for more information, including
+wildcard matching.
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html|https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html>
+
 =item * X509_VERIFY_PARAM_clear_flags
 
 Clears the flags $flags in param.
@@ -6285,7 +7649,7 @@ Clears the flags $flags in param.
  #
  # returns: 1 on success, 0 on failure
 
-For more details about $flags bitmask see L</X509_STORE_set_flags>.
+For more details about $flags bitmask see L</X509_VERIFY_PARAM_set_flags>.
 
 Check openssl doc L<http://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html|http://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html>
 
@@ -6297,6 +7661,19 @@ Frees up the X509_VERIFY_PARAM structure.
  # $param - value corresponding to openssl's X509_VERIFY_PARAM structure
  #
  # returns: no return value
+
+=item * X509_VERIFY_PARAM_get0_peername
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.0.2
+
+Returns the DNS hostname or subject CommonName from the peer certificate that matched one of the reference identifiers.
+
+ my $rv = Net::SSLeay::X509_VERIFY_PARAM_get0_peername($param);
+ # $param - value corresponding to openssl's X509_VERIFY_PARAM structure
+ #
+ # returns: (string) name e.g. '*.example.com' or undef
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html|https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html>
 
 =item * X509_VERIFY_PARAM_get_depth
 
@@ -6318,7 +7695,7 @@ Returns the current verification flags.
  #
  # returns: (unsigned long) flags to be set (bitmask)
 
-For more details about returned flags bitmask see L</X509_STORE_set_flags>.
+For more details about returned flags bitmask see L</X509_VERIFY_PARAM_set_flags>.
 
 Check openssl doc L<http://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html|http://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html>
 
@@ -6330,7 +7707,10 @@ Check openssl doc L<http://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_fla
  #
  # returns: 1 on success, 0 on failure
 
-For more details about $flags bitmask see L</X509_STORE_set_flags>.
+ #to create $flags value use corresponding constants like
+ $flags = Net::SSLeay::X509_V_FLAG_CRL_CHECK();
+
+For more details about $flags bitmask, see the OpenSSL docs below.
 
 Check openssl doc L<http://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html|http://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html>
 
@@ -6372,6 +7752,66 @@ as the name of X509_VERIFY_PARAM structure $from.
  #
  # returns: 1 on success, 0 on failure
 
+=item * X509_VERIFY_PARAM_set1_email
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.0.2
+
+Sets the expected RFC822 email address to email.
+
+ my $rv = Net::SSLeay::X509_VERIFY_PARAM_set1_email($param, $email);
+ # $param - value corresponding to openssl's X509_VERIFY_PARAM structure
+ # $email - (string) email to be set
+ #
+ # returns: 1 on success, 0 on failure
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html|https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html>
+
+=item * X509_VERIFY_PARAM_set1_host
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.0.2
+
+Sets the expected DNS hostname to name clearing any previously specified host name or names.
+
+ my $rv = Net::SSLeay::X509_VERIFY_PARAM_set1_host($param, $name);
+ # $param - value corresponding to openssl's X509_VERIFY_PARAM structure
+ # $name - (string) name to be set
+ #
+ # returns: 1 on success, 0 on failure
+
+See also OpenSSL docs, L</X509_VERIFY_PARAM_add1_host> and
+L</X509_VERIFY_PARAM_set_hostflags> for more information, including
+wildcard matching.
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html|https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html>
+
+=item * X509_VERIFY_PARAM_set1_ip
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.0.2
+
+Sets the expected IP address to ip.
+
+ my $rv = Net::SSLeay::X509_VERIFY_PARAM_set1_ip($param, $ip);
+ # $param - value corresponding to openssl's X509_VERIFY_PARAM structure
+ # $ip - (binary) 4 octet IPv4 or 16 octet IPv6 address
+ #
+ # returns: 1 on success, 0 on failure
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html|https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html>
+
+=item * X509_VERIFY_PARAM_set1_ip_asc
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.82 and before; requires at least OpenSSL 1.0.2
+
+Sets the expected IP address to ipasc.
+
+ my $rv = Net::SSLeay::X509_VERIFY_PARAM_set1_asc($param, $ipasc);
+ # $param - value corresponding to openssl's X509_VERIFY_PARAM structure
+ # $ip - (string) IPv4 or IPv6 address
+ #
+ # returns: 1 on success, 0 on failure
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html|https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html>
+
 =item * X509_VERIFY_PARAM_set1_name
 
 Sets the name of X509_VERIFY_PARAM structure $param to $name.
@@ -6406,6 +7846,19 @@ Sets the maximum verification depth to depth. That is the maximum number of untr
  # returns: no return value
 
 Check openssl doc L<http://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html|http://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html>
+
+=item * X509_VERIFY_PARAM_set_hostflags
+
+ Net::SSLeay::X509_VERIFY_PARAM_set_hostflags($param, $flags);
+ # $param - value corresponding to openssl's X509_VERIFY_PARAM structure
+ # $flags - (unsigned int) flags to be set (bitmask)
+ #
+ # returns: no return value
+
+See also OpenSSL docs,  L</X509_VERIFY_PARAM_add1_host> and L</X509_VERIFY_PARAM_set1_host> for more information.
+The flags for controlling wildcard checks and other features are defined in OpenSSL docs.
+
+Check openssl doc L<https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html|https://www.openssl.org/docs/crypto/X509_VERIFY_PARAM_set_flags.html>
 
 =item * X509_VERIFY_PARAM_set_purpose
 
@@ -6502,7 +7955,7 @@ B<NOTE:> Does not exactly correspond to any low level API function
 
 The returned digest names correspond to values expected by L</EVP_get_digestbyname>.
 
-Note that some of the digets are available by default and some only after calling L</OpenSSL_add_all_digests>.
+Note that some of the digests are available by default and some only after calling L</OpenSSL_add_all_digests>.
 
 =item * EVP_get_digestbyname
 
@@ -6844,6 +8297,15 @@ Frees the RSA structure and its components. The key is erased before the memory 
 
 Check openssl doc L<http://www.openssl.org/docs/crypto/RSA_new.html|http://www.openssl.org/docs/crypto/RSA_new.html>
 
+=item * RSA_get_key_parameters
+
+Returns a list of pointers to BIGNUMs representing the parameters of the key in
+this order:
+(n, e, d, p, q, dmp1, dmq1, iqmp)
+Caution: returned list consists of SV pointers to BIGNUMs, which would need to be blessed as Crypt::OpenSSL::Bignum for further use
+
+my (@params) = RSA_get_key_parameters($r);
+
 =back
 
 =head3 Low level API: BIO_* related functions
@@ -6907,7 +8369,7 @@ Check openssl doc L<http://www.openssl.org/docs/crypto/BIO_f_ssl.html|http://www
 
 =item * BIO_new_file
 
-Creates a new file BIO with mode mode the meaning of mode is the same
+Creates a new file BIO with mode $mode the meaning of mode is the same
 as the stdio function fopen(). The BIO_CLOSE flag is set on the returned BIO.
 
  my $rv = Net::SSLeay::BIO_new_file($filename, $mode);
@@ -7026,14 +8488,106 @@ Check openssl doc L<http://www.openssl.org/docs/crypto/BIO_f_ssl.html|http://www
 
 =back
 
+=head3 Low level API: Server side Server Name Indication (SNI) support
+
+=over
+
+=item * set_tlsext_host_name
+
+TBA
+
+=item * get_servername
+
+TBA
+
+=item * get_servername_type
+
+TBA
+
+=item * CTX_set_tlsext_servername_callback
+
+B<COMPATIBILITY:> requires at least OpenSSL 0.9.8f
+
+This function is used in a server to support Server side Server Name Indication (SNI).
+
+ Net::SSLeay::CTX_set_tlsext_servername_callback($ctx, $code)
+ # $ctx - SSL context
+ # $code - reference to a subroutine that will be called when a new connection is being initiated
+ #
+ # returns: no return value
+On the client side:
+use set_tlsext_host_name($ssl, $servername) before initiating the SSL connection.
+
+On the server side:
+Set up an additional SSL_CTX() for each different certificate;
+
+Add a servername callback to each SSL_CTX() using CTX_set_tlsext_servername_callback();
+
+The callback function is required to retrieve the client-supplied servername
+with get_servername(ssl). Figure out the right
+SSL_CTX to go with that host name, then switch the SSL object to that SSL_CTX
+with set_SSL_CTX().
+
+Example:
+
+ # set callback
+ Net::SSLeay::CTX_set_tlsext_servername_callback($ctx, 
+    sub {
+      my $ssl = shift;
+      my $h = Net::SSLeay::get_servername($ssl);
+      Net::SSLeay::set_SSL_CTX($ssl, $hostnames{$h}->{ctx}) if exists $hostnames{$h};
+    } );
+
+
+More complete example:
+
+ # ... initialize Net::SSLeay
+
+ my %hostnames = (
+   'sni1' => { cert=>'sni1.pem', key=>'sni1.key' },
+   'sni2' => { cert=>'sni2.pem', key=>'sni2.key' },
+ );
+
+ # create a new context for each certificate/key pair
+ for my $name (keys %hostnames) {
+   $hostnames{$name}->{ctx} = Net::SSLeay::CTX_new or die;
+   Net::SSLeay::CTX_set_cipher_list($hostnames{$name}->{ctx}, 'ALL');
+   Net::SSLeay::set_cert_and_key($hostnames{$name}->{ctx},
+   $hostnames{$name}->{cert}, $hostnames{$name}->{key}) or die;
+ }
+
+ # create default context
+ my $ctx = Net::SSLeay::CTX_new or die;
+ Net::SSLeay::CTX_set_cipher_list($ctx, 'ALL');
+ Net::SSLeay::set_cert_and_key($ctx, 'cert.pem','key.pem') or die;
+
+ # set callback
+ Net::SSLeay::CTX_set_tlsext_servername_callback($ctx, sub {
+   my $ssl = shift;
+   my $h = Net::SSLeay::get_servername($ssl);
+   Net::SSLeay::set_SSL_CTX($ssl, $hostnames{$h}->{ctx}) if exists $hostnames{$h};
+   } );
+
+ # ... later
+
+ $s = Net::SSLeay::new($ctx);
+ Net::SSLeay::set_fd($s, fileno($accepted_socket));
+ Net::SSLeay::accept($s); 
+
+=back 
+
 =head3 Low level API: NPN (next protocol negotiation) related functions
+
+NPN is being replaced with ALPN, a more recent TLS extension for application
+protocol negotiation that's in process of being adopted by IETF. Please look
+below for APLN API description.
 
 Simple approach for using NPN support looks like this:
 
  ### client side
  use Net::SSLeay;
  use IO::Socket::INET;
- 
+
  Net::SSLeay::initialize();
  my $sock = IO::Socket::INET->new(PeerAddr=>'encrypted.google.com:443') or die;
  my $ctx = Net::SSLeay::CTX_tlsv1_new() or die;
@@ -7053,7 +8607,7 @@ Simple approach for using NPN support looks like this:
  Net::SSLeay::initialize();
  my $ctx = Net::SSLeay::CTX_tlsv1_new() or die;
  Net::SSLeay::CTX_set_options($ctx, &Net::SSLeay::OP_ALL);
- Net::SSLeay::set_cert_and_key($ctx, "t/data/cert.pem", "t/data/key.pem");
+ Net::SSLeay::set_cert_and_key($ctx, "cert.pem", "key.pem");
  Net::SSLeay::CTX_set_next_protos_advertised_cb($ctx, ['spdy/2','http1.1']);
  my $sock = IO::Socket::INET->new(LocalAddr=>'localhost', LocalPort=>5443, Proto=>'tcp', Listen=>20) or die;
  
@@ -7189,6 +8743,171 @@ Returns the result of the last negotiation for given SSL connection $ssl.
 
 =back
 
+=head3 Low level API: ALPN (application layer protocol negotiation) related functions
+
+Application protocol can be negotiated via two different mechanisms employing
+two different TLS extensions: NPN (obsolete) and ALPN (recommended).
+
+The API is rather similar, with slight differences reflecting protocol
+specifics. In particular, with ALPN the protocol negotiation takes place on
+server, while with NPN the client implements the protocol negotiation logic.
+
+With ALPN, the most basic implementation looks like this:
+
+ ### client side
+ use Net::SSLeay;
+ use IO::Socket::INET;
+
+ Net::SSLeay::initialize();
+ my $sock = IO::Socket::INET->new(PeerAddr=>'encrypted.google.com:443') or die;
+ my $ctx = Net::SSLeay::CTX_tlsv1_new() or die;
+ Net::SSLeay::CTX_set_options($ctx, &Net::SSLeay::OP_ALL);
+ Net::SSLeay::CTX_set_alpn_protos($ctx, ['http/1.1', 'http/2.0', 'spdy/3]);
+ my $ssl = Net::SSLeay::new($ctx) or die;
+ Net::SSLeay::set_fd($ssl, fileno($sock)) or die;
+ Net::SSLeay::connect($ssl);
+
+ warn "client:selected=",Net::SSLeay::P_alpn_selected($ssl), "\n";
+
+ ### server side
+ use Net::SSLeay;
+ use IO::Socket::INET;
+
+ Net::SSLeay::initialize();
+ my $ctx = Net::SSLeay::CTX_tlsv1_new() or die;
+ Net::SSLeay::CTX_set_options($ctx, &Net::SSLeay::OP_ALL);
+ Net::SSLeay::set_cert_and_key($ctx, "cert.pem", "key.pem");
+ Net::SSLeay::CTX_set_alpn_select_cb($ctx, ['http/1.1', 'http/2.0', 'spdy/3]);
+ my $sock = IO::Socket::INET->new(LocalAddr=>'localhost', LocalPort=>5443, Proto=>'tcp', Listen=>20) or die;
+
+ while (1) {
+   my $ssl = Net::SSLeay::new($ctx);
+   warn("server:waiting for incoming connection...\n");
+   my $fd = $sock->accept();
+   Net::SSLeay::set_fd($ssl, $fd->fileno);
+   Net::SSLeay::accept($ssl);
+   warn "server:selected=",Net::SSLeay::P_alpn_selected($ssl),"\n";
+   my $got = Net::SSLeay::read($ssl);
+   Net::SSLeay::ssl_write_all($ssl, "length=".length($got));
+   Net::SSLeay::free($ssl);
+   $fd->close();
+ }
+ # check with: openssl s_client -connect localhost:5443 -alpn spdy/3,http/1.1
+
+Advanced approach allows you to implement your own negotiation algorithm.
+
+ #see below documentation for:
+ Net::SSleay::CTX_set_alpn_select_cb($ctx, $perl_callback_function, $callback_data);
+
+Detection of ALPN support (works even in older Net::SSLeay versions):
+
+ use Net::SSLeay;
+
+ if (exists &Net::SSLeay::P_alpn_selected) {
+   # do ALPN stuff
+ }
+
+=over
+
+=item * CTX_set_alpn_select_cb
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.55 and before; requires at least openssl-1.0.2
+
+B<NOTE:> You need CTX_set_alpn_select_cb on B<server side> of TLS connection.
+
+Simple usage - in this case a "common" negotiation algorithm (as implemented by openssl's function SSL_select_next_proto) is used.
+
+ $rv = Net::SSleay::CTX_set_alpn_select_cb($ctx, $arrayref);
+ # $ctx - value corresponding to openssl's SSL_CTX structure
+ # $arrayref - list of accepted protocols - e.g. ['http/2.0', 'http/1.1', 'spdy/3']
+ #
+ # returns: 0 on success, 1 on failure
+
+Advanced usage (you probably do not need this):
+
+ $rv = Net::SSleay::CTX_set_alpn_select_cb($ctx, $perl_callback_function, $callback_data);
+ # $ctx - value corresponding to openssl's SSL_CTX structure
+ # $perl_callback_function - reference to perl function
+ # $callback_data - [optional] data to passed to callback function when invoked
+ #
+ # returns: 0 on success, 1 on failure
+
+ # where callback function looks like
+ sub alpn_select_cb_invoke {
+   my ($ssl, $arrayref_proto_list_advertised_by_client, $callback_data) = @_;
+   # ...
+   if ($negotiated) {
+     return 'http/2.0';
+   } else {
+     return undef;
+   }
+ }
+
+To undefine/clear this callback use:
+
+ Net::SSleay::CTX_set_alpn_select_cb($ctx, undef);
+
+=item * set_alpn_protos
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.55 and before; requires at least openssl-1.0.2
+
+B<NOTE:> You need set_alpn_protos on B<client side> of TLS connection.
+
+This adds list of supported application layer protocols to ClientHello message sent by a client.
+It advertises the enumeration of supported protocols:
+
+ Net::SSLeay::set_alpn_protos($ssl, ['http/1.1', 'http/2.0', 'spdy/3]);
+ # returns 0 on success
+
+=item * CTX_set_alpn_protos
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.55 and before; requires at least openssl-1.0.2
+
+B<NOTE:> You need CTX_set_alpn_protos on B<client side> of TLS connection.
+
+This adds list of supported application layer protocols to ClientHello message sent by a client.
+It advertises the enumeration of supported protocols:
+
+ Net::SSLeay::CTX_set_alpn_protos($ctx, ['http/1.1', 'http/2.0', 'spdy/3]);
+ # returns 0 on success
+
+=item * P_alpn_selected
+
+B<COMPATIBILITY:> not available in Net-SSLeay-1.55 and before; requires at least openssl-1.0.2
+
+Returns the name of negotiated protocol for given TLS connection $ssl.
+
+ $rv = Net::SSLeay::P_alpn_selected($ssl)
+ # $ssl - value corresponding to openssl's SSL structure
+ #
+ # returns: (string) negotiated protocol name (or undef if no negotiation was done or failed with fatal error)
+
+=back
+
+=head3 Low level API: DANE Support
+
+OpenSSL version 1.0.2 adds preliminary support RFC6698 Domain Authentication of
+Named Entities (DANE) Transport Layer Association within OpenSSL
+
+=over 
+
+=item * SSL_get_tlsa_record_byname
+
+B<COMPATIBILITY:> DELETED from net-ssleay, since it is not supported by OpenSSL
+
+In order to facilitate DANE there is additional interface,
+SSL_get_tlsa_record_byname, accepting hostname, port and socket type
+that returns packed TLSA record. In order to make it even easier there
+is additional SSL_ctrl function that calls SSL_get_tlsa_record_byname
+for you. Latter is recommended for programmers that wish to maintain
+broader binary compatibility, e.g. make application work with both 1.0.2
+and prior version (in which case call to SSL_ctrl with new code
+returning error would have to be ignored when running with prior version).
+
+Net::SSLeay::get_tlsa_record_byname($name, $port, $type);
+
+=back
+
 =head3 Low level API: Other functions
 
 =over
@@ -7222,7 +8941,84 @@ Frees the DH structure and its components. The values are erased before the memo
 
 Check openssl doc L<http://www.openssl.org/docs/crypto/DH_new.html|http://www.openssl.org/docs/crypto/DH_new.html>
 
+=item * FIPS_mode_set
+
+Enable or disable FIPS mode in a FIPS capable OpenSSL.
+
+ Net::SSLeay:: FIPS_mode_set($enable);
+ # $enable - (integer) 1 to enable, 0 to disable
+
 =back
+
+=head3 Low level API: EC related functions
+
+=over 
+
+=item * CTX_set_tmp_ecdh
+
+TBA
+
+=item * EC_KEY_free
+
+TBA
+
+=item * EC_KEY_new_by_curve_name
+
+TBA
+
+=item * EC_KEY_generate_key
+
+Generates a EC key and returns it in a newly allocated EC_KEY structure.
+The EC key then can be used to create a PKEY which can be used in calls
+like X509_set_pubkey.
+
+ my $key = Net::SSLeay::EVP_PKEY_new();
+ my $ec  = Net::SSLeay::EC_KEY_generate_key($curve);
+ Net::SSLeay::EVP_PKEY_assign_EC_KEY($key,$ec);
+
+ # $curve - curve name like 'secp521r1' or the matching Id (integer) of the curve
+ #
+ # returns: value corresponding to openssl's EC_KEY structure (0 on failure)
+
+This function has no equivalent in OpenSSL but combines multiple OpenSSL
+functions for an easier interface.
+
+=item * CTX_set_ecdh_auto, set_ecdh_auto
+
+These functions enable or disable the automatic curve selection on the server
+side by calling SSL_CTX_set_ecdh_auto or SSL_set_ecdh_auto respectively.
+If enabled the highest preference curve is automatically used for ECDH temporary
+keys used during key exchange.
+This function is no longer available for OpenSSL 1.1.0 or higher.
+
+  Net::SSLeay::CTX_set_ecdh_auto($ctx,1);
+  Net::SSLeay::set_ecdh_auto($ssl,1);
+
+=item * CTX_set1_curves_list, set1_curves_list
+
+These functions set the supported curves (in order of preference) by calling
+SSL_CTX_set1_curves_list or SSL_set1_curves_list respectively.
+For a TLS client these curves are offered to the server in the supported curves
+extension while on the server side these are used to determine the shared
+curve.
+These functions are only available since OpenSSL 1.1.0.
+
+  Net::SSLeay::CTX_set1_curves_list($ctx,"P-521:P-384:P-256");
+  Net::SSLeay::set1_curves_list($ssl,"P-521:P-384:P-256");
+
+=item * CTX_set1_groups_list, set1_groups_list
+
+These functions set the supported groups (in order of preference) by calling
+SSL_CTX_set1_groups_list or SSL_set1_groups_list respectively.
+This is practically the same as CTX_set1_curves_list and set1_curves_list except
+that all DH groups can be given as supported by TLS 1.3.
+These functions are only available since OpenSSL 1.1.1.
+
+  Net::SSLeay::CTX_set1_groups_list($ctx,"P-521:P-384:P-256");
+  Net::SSLeay::set1_groups_list($ssl,"P-521:P-384:P-256");
+
+=back
+
 
 =head2 Constants
 
@@ -7249,140 +9045,190 @@ The list of all available constant names:
 
 =for comment the next part is the output of: perl helper_script/regen_openssl_constants.pl -gen-pod
 
- ASN1_STRFLGS_ESC_CTRL           NID_hmacWithSHA1                       OP_CRYPTOPRO_TLSEXT_BUG
- ASN1_STRFLGS_ESC_MSB            NID_id_ad                              OP_DONT_INSERT_EMPTY_FRAGMENTS
- ASN1_STRFLGS_ESC_QUOTE          NID_id_ce                              OP_EPHEMERAL_RSA
- ASN1_STRFLGS_RFC2253            NID_id_kp                              OP_LEGACY_SERVER_CONNECT
- CB_ACCEPT_EXIT                  NID_id_pbkdf2                          OP_MICROSOFT_BIG_SSLV3_BUFFER
- CB_ACCEPT_LOOP                  NID_id_pe                              OP_MICROSOFT_SESS_ID_BUG
- CB_CONNECT_EXIT                 NID_id_pkix                            OP_MSIE_SSLV2_RSA_PADDING
- CB_CONNECT_LOOP                 NID_id_qt_cps                          OP_NETSCAPE_CA_DN_BUG
- ERROR_NONE                      NID_id_qt_unotice                      OP_NETSCAPE_CHALLENGE_BUG
- ERROR_SSL                       NID_idea_cbc                           OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG
- ERROR_SYSCALL                   NID_idea_cfb64                         OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG
- ERROR_WANT_ACCEPT               NID_idea_ecb                           OP_NON_EXPORT_FIRST
- ERROR_WANT_CONNECT              NID_idea_ofb64                         OP_NO_COMPRESSION
- ERROR_WANT_READ                 NID_info_access                        OP_NO_QUERY_MTU
- ERROR_WANT_WRITE                NID_initials                           OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
- ERROR_WANT_X509_LOOKUP          NID_invalidity_date                    OP_NO_SSLv2
- ERROR_ZERO_RETURN               NID_issuer_alt_name                    OP_NO_SSLv3
- EVP_PKS_DSA                     NID_keyBag                             OP_NO_TICKET
- EVP_PKS_EC                      NID_key_usage                          OP_NO_TLSv1
- EVP_PKS_RSA                     NID_localKeyID                         OP_NO_TLSv1_1
- EVP_PKT_ENC                     NID_localityName                       OP_NO_TLSv1_2
- EVP_PKT_EXCH                    NID_md2                                OP_PKCS1_CHECK_1
- EVP_PKT_EXP                     NID_md2WithRSAEncryption               OP_PKCS1_CHECK_2
- EVP_PKT_SIGN                    NID_md5                                OP_SINGLE_DH_USE
- EVP_PK_DH                       NID_md5WithRSA                         OP_SINGLE_ECDH_USE
- EVP_PK_DSA                      NID_md5WithRSAEncryption               OP_SSLEAY_080_CLIENT_DH_BUG
- EVP_PK_EC                       NID_md5_sha1                           OP_SSLREF2_REUSE_CERT_TYPE_BUG
- EVP_PK_RSA                      NID_mdc2                               OP_TLS_BLOCK_PADDING_BUG
- FILETYPE_ASN1                   NID_mdc2WithRSA                        OP_TLS_D5_BUG
- FILETYPE_PEM                    NID_ms_code_com                        OP_TLS_ROLLBACK_BUG
- F_CLIENT_CERTIFICATE            NID_ms_code_ind                        READING
- F_CLIENT_HELLO                  NID_ms_ctl_sign                        RECEIVED_SHUTDOWN
- F_CLIENT_MASTER_KEY             NID_ms_efs                             RSA_3
- F_D2I_SSL_SESSION               NID_ms_ext_req                         RSA_F4
- F_GET_CLIENT_FINISHED           NID_ms_sgc                             R_BAD_AUTHENTICATION_TYPE
- F_GET_CLIENT_HELLO              NID_name                               R_BAD_CHECKSUM
- F_GET_CLIENT_MASTER_KEY         NID_netscape                           R_BAD_MAC_DECODE
- F_GET_SERVER_FINISHED           NID_netscape_base_url                  R_BAD_RESPONSE_ARGUMENT
- F_GET_SERVER_HELLO              NID_netscape_ca_policy_url             R_BAD_SSL_FILETYPE
- F_GET_SERVER_VERIFY             NID_netscape_ca_revocation_url         R_BAD_SSL_SESSION_ID_LENGTH
- F_I2D_SSL_SESSION               NID_netscape_cert_extension            R_BAD_STATE
- F_READ_N                        NID_netscape_cert_sequence             R_BAD_WRITE_RETRY
- F_REQUEST_CERTIFICATE           NID_netscape_cert_type                 R_CHALLENGE_IS_DIFFERENT
- F_SERVER_HELLO                  NID_netscape_comment                   R_CIPHER_TABLE_SRC_ERROR
- F_SSL_CERT_NEW                  NID_netscape_data_type                 R_INVALID_CHALLENGE_LENGTH
- F_SSL_GET_NEW_SESSION           NID_netscape_renewal_url               R_NO_CERTIFICATE_SET
- F_SSL_NEW                       NID_netscape_revocation_url            R_NO_CERTIFICATE_SPECIFIED
- F_SSL_READ                      NID_netscape_ssl_server_name           R_NO_CIPHER_LIST
- F_SSL_RSA_PRIVATE_DECRYPT       NID_ns_sgc                             R_NO_CIPHER_MATCH
- F_SSL_RSA_PUBLIC_ENCRYPT        NID_organizationName                   R_NO_PRIVATEKEY
- F_SSL_SESSION_NEW               NID_organizationalUnitName             R_NO_PUBLICKEY
- F_SSL_SESSION_PRINT_FP          NID_pbeWithMD2AndDES_CBC               R_NULL_SSL_CTX
- F_SSL_SET_FD                    NID_pbeWithMD2AndRC2_CBC               R_PEER_DID_NOT_RETURN_A_CERTIFICATE
- F_SSL_SET_RFD                   NID_pbeWithMD5AndCast5_CBC             R_PEER_ERROR
- F_SSL_SET_WFD                   NID_pbeWithMD5AndDES_CBC               R_PEER_ERROR_CERTIFICATE
- F_SSL_USE_CERTIFICATE           NID_pbeWithMD5AndRC2_CBC               R_PEER_ERROR_NO_CIPHER
- F_SSL_USE_CERTIFICATE_ASN1      NID_pbeWithSHA1AndDES_CBC              R_PEER_ERROR_UNSUPPORTED_CERTIFICATE_TYPE
- F_SSL_USE_CERTIFICATE_FILE      NID_pbeWithSHA1AndRC2_CBC              R_PUBLIC_KEY_ENCRYPT_ERROR
- F_SSL_USE_PRIVATEKEY            NID_pbe_WithSHA1And128BitRC2_CBC       R_PUBLIC_KEY_IS_NOT_RSA
- F_SSL_USE_PRIVATEKEY_ASN1       NID_pbe_WithSHA1And128BitRC4           R_READ_WRONG_PACKET_TYPE
- F_SSL_USE_PRIVATEKEY_FILE       NID_pbe_WithSHA1And2_Key_TripleDES_CBC R_SHORT_READ
- F_SSL_USE_RSAPRIVATEKEY         NID_pbe_WithSHA1And3_Key_TripleDES_CBC R_SSL_SESSION_ID_IS_DIFFERENT
- F_SSL_USE_RSAPRIVATEKEY_ASN1    NID_pbe_WithSHA1And40BitRC2_CBC        R_UNABLE_TO_EXTRACT_PUBLIC_KEY
- F_SSL_USE_RSAPRIVATEKEY_FILE    NID_pbe_WithSHA1And40BitRC4            R_UNKNOWN_REMOTE_ERROR_TYPE
- F_WRITE_PENDING                 NID_pbes2                              R_UNKNOWN_STATE
- GEN_DIRNAME                     NID_pbmac1                             R_X509_LIB
- GEN_DNS                         NID_pkcs                               SENT_SHUTDOWN
- GEN_EDIPARTY                    NID_pkcs3                              SESSION_ASN1_VERSION
- GEN_EMAIL                       NID_pkcs7                              ST_ACCEPT
- GEN_IPADD                       NID_pkcs7_data                         ST_BEFORE
- GEN_OTHERNAME                   NID_pkcs7_digest                       ST_CONNECT
- GEN_RID                         NID_pkcs7_encrypted                    ST_INIT
- GEN_URI                         NID_pkcs7_enveloped                    ST_OK
- GEN_X400                        NID_pkcs7_signed                       ST_READ_BODY
- MBSTRING_ASC                    NID_pkcs7_signedAndEnveloped           ST_READ_HEADER
- MBSTRING_BMP                    NID_pkcs8ShroudedKeyBag                VERIFY_CLIENT_ONCE
- MBSTRING_FLAG                   NID_pkcs9                              VERIFY_FAIL_IF_NO_PEER_CERT
- MBSTRING_UNIV                   NID_pkcs9_challengePassword            VERIFY_NONE
- MBSTRING_UTF8                   NID_pkcs9_contentType                  VERIFY_PEER
- MIN_RSA_MODULUS_LENGTH_IN_BYTES NID_pkcs9_countersignature             WRITING
- NID_OCSP_sign                   NID_pkcs9_emailAddress                 X509_LOOKUP
- NID_SMIMECapabilities           NID_pkcs9_extCertAttributes            X509_PURPOSE_ANY
- NID_X500                        NID_pkcs9_messageDigest                X509_PURPOSE_CRL_SIGN
- NID_X509                        NID_pkcs9_signingTime                  X509_PURPOSE_NS_SSL_SERVER
- NID_ad_OCSP                     NID_pkcs9_unstructuredAddress          X509_PURPOSE_OCSP_HELPER
- NID_ad_ca_issuers               NID_pkcs9_unstructuredName             X509_PURPOSE_SMIME_ENCRYPT
- NID_algorithm                   NID_private_key_usage_period           X509_PURPOSE_SMIME_SIGN
- NID_authority_key_identifier    NID_rc2_40_cbc                         X509_PURPOSE_SSL_CLIENT
- NID_basic_constraints           NID_rc2_64_cbc                         X509_PURPOSE_SSL_SERVER
- NID_bf_cbc                      NID_rc2_cbc                            X509_PURPOSE_TIMESTAMP_SIGN
- NID_bf_cfb64                    NID_rc2_cfb64                          X509_TRUST_COMPAT
- NID_bf_ecb                      NID_rc2_ecb                            X509_TRUST_EMAIL
- NID_bf_ofb64                    NID_rc2_ofb64                          X509_TRUST_OBJECT_SIGN
- NID_cast5_cbc                   NID_rc4                                X509_TRUST_OCSP_REQUEST
- NID_cast5_cfb64                 NID_rc4_40                             X509_TRUST_OCSP_SIGN
- NID_cast5_ecb                   NID_rc5_cbc                            X509_TRUST_SSL_CLIENT
- NID_cast5_ofb64                 NID_rc5_cfb64                          X509_TRUST_SSL_SERVER
- NID_certBag                     NID_rc5_ecb                            X509_TRUST_TSA
- NID_certificate_policies        NID_rc5_ofb64                          X509_V_FLAG_ALLOW_PROXY_CERTS
- NID_client_auth                 NID_ripemd160                          X509_V_FLAG_CB_ISSUER_CHECK
- NID_code_sign                   NID_ripemd160WithRSA                   X509_V_FLAG_CHECK_SS_SIGNATURE
- NID_commonName                  NID_rle_compression                    X509_V_FLAG_CRL_CHECK
- NID_countryName                 NID_rsa                                X509_V_FLAG_CRL_CHECK_ALL
- NID_crlBag                      NID_rsaEncryption                      X509_V_FLAG_EXPLICIT_POLICY
- NID_crl_distribution_points     NID_rsadsi                             X509_V_FLAG_EXTENDED_CRL_SUPPORT
- NID_crl_number                  NID_safeContentsBag                    X509_V_FLAG_IGNORE_CRITICAL
- NID_crl_reason                  NID_sdsiCertificate                    X509_V_FLAG_INHIBIT_ANY
- NID_delta_crl                   NID_secretBag                          X509_V_FLAG_INHIBIT_MAP
- NID_des_cbc                     NID_serialNumber                       X509_V_FLAG_NOTIFY_POLICY
- NID_des_cfb64                   NID_server_auth                        X509_V_FLAG_POLICY_CHECK
- NID_des_ecb                     NID_sha                                X509_V_FLAG_POLICY_MASK
- NID_des_ede                     NID_sha1                               X509_V_FLAG_USE_CHECK_TIME
- NID_des_ede3                    NID_sha1WithRSA                        X509_V_FLAG_USE_DELTAS
- NID_des_ede3_cbc                NID_sha1WithRSAEncryption              X509_V_FLAG_X509_STRICT
- NID_des_ede3_cfb64              NID_shaWithRSAEncryption               X509_V_OK
- NID_des_ede3_ofb64              NID_stateOrProvinceName                XN_FLAG_COMPAT
- NID_des_ede_cbc                 NID_subject_alt_name                   XN_FLAG_DN_REV
- NID_des_ede_cfb64               NID_subject_key_identifier             XN_FLAG_DUMP_UNKNOWN_FIELDS
- NID_des_ede_ofb64               NID_surname                            XN_FLAG_FN_ALIGN
- NID_des_ofb64                   NID_sxnet                              XN_FLAG_FN_LN
- NID_description                 NID_time_stamp                         XN_FLAG_FN_MASK
- NID_desx_cbc                    NID_title                              XN_FLAG_FN_NONE
- NID_dhKeyAgreement              NID_undef                              XN_FLAG_FN_OID
- NID_dnQualifier                 NID_uniqueIdentifier                   XN_FLAG_FN_SN
- NID_dsa                         NID_x509Certificate                    XN_FLAG_MULTILINE
- NID_dsaWithSHA                  NID_x509Crl                            XN_FLAG_ONELINE
- NID_dsaWithSHA1                 NID_zlib_compression                   XN_FLAG_RFC2253
- NID_dsaWithSHA1_2               NOTHING                                XN_FLAG_SEP_COMMA_PLUS
- NID_dsa_2                       OPENSSL_VERSION_NUMBER                 XN_FLAG_SEP_CPLUS_SPC
- NID_email_protect               OP_ALL                                 XN_FLAG_SEP_MASK
- NID_ext_key_usage               OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION   XN_FLAG_SEP_MULTILINE
- NID_ext_req                     OP_CIPHER_SERVER_PREFERENCE            XN_FLAG_SEP_SPLUS_SPC
- NID_friendlyName                OP_CISCO_ANYCONNECT                    XN_FLAG_SPC_EQ
- NID_givenName                   OP_COOKIE_EXCHANGE
+ ASN1_STRFLGS_ESC_CTRL           NID_netscape                              R_UNKNOWN_REMOTE_ERROR_TYPE
+ ASN1_STRFLGS_ESC_MSB            NID_netscape_base_url                     R_UNKNOWN_STATE
+ ASN1_STRFLGS_ESC_QUOTE          NID_netscape_ca_policy_url                R_X509_LIB
+ ASN1_STRFLGS_RFC2253            NID_netscape_ca_revocation_url            SENT_SHUTDOWN
+ CB_ACCEPT_EXIT                  NID_netscape_cert_extension               SESSION_ASN1_VERSION
+ CB_ACCEPT_LOOP                  NID_netscape_cert_sequence                SESS_CACHE_BOTH
+ CB_ALERT                        NID_netscape_cert_type                    SESS_CACHE_CLIENT
+ CB_CONNECT_EXIT                 NID_netscape_comment                      SESS_CACHE_NO_AUTO_CLEAR
+ CB_CONNECT_LOOP                 NID_netscape_data_type                    SESS_CACHE_NO_INTERNAL
+ CB_EXIT                         NID_netscape_renewal_url                  SESS_CACHE_NO_INTERNAL_LOOKUP
+ CB_HANDSHAKE_DONE               NID_netscape_revocation_url               SESS_CACHE_NO_INTERNAL_STORE
+ CB_HANDSHAKE_START              NID_netscape_ssl_server_name              SESS_CACHE_OFF
+ CB_LOOP                         NID_ns_sgc                                SESS_CACHE_SERVER
+ CB_READ                         NID_organizationName                      SSL3_VERSION
+ CB_READ_ALERT                   NID_organizationalUnitName                SSLEAY_BUILT_ON
+ CB_WRITE                        NID_pbeWithMD2AndDES_CBC                  SSLEAY_CFLAGS
+ CB_WRITE_ALERT                  NID_pbeWithMD2AndRC2_CBC                  SSLEAY_DIR
+ ERROR_NONE                      NID_pbeWithMD5AndCast5_CBC                SSLEAY_PLATFORM
+ ERROR_SSL                       NID_pbeWithMD5AndDES_CBC                  SSLEAY_VERSION
+ ERROR_SYSCALL                   NID_pbeWithMD5AndRC2_CBC                  ST_ACCEPT
+ ERROR_WANT_ACCEPT               NID_pbeWithSHA1AndDES_CBC                 ST_BEFORE
+ ERROR_WANT_CONNECT              NID_pbeWithSHA1AndRC2_CBC                 ST_CONNECT
+ ERROR_WANT_READ                 NID_pbe_WithSHA1And128BitRC2_CBC          ST_INIT
+ ERROR_WANT_WRITE                NID_pbe_WithSHA1And128BitRC4              ST_OK
+ ERROR_WANT_X509_LOOKUP          NID_pbe_WithSHA1And2_Key_TripleDES_CBC    ST_READ_BODY
+ ERROR_ZERO_RETURN               NID_pbe_WithSHA1And3_Key_TripleDES_CBC    ST_READ_HEADER
+ EVP_PKS_DSA                     NID_pbe_WithSHA1And40BitRC2_CBC           TLS1_1_VERSION
+ EVP_PKS_EC                      NID_pbe_WithSHA1And40BitRC4               TLS1_2_VERSION
+ EVP_PKS_RSA                     NID_pbes2                                 TLS1_3_VERSION
+ EVP_PKT_ENC                     NID_pbmac1                                TLS1_VERSION
+ EVP_PKT_EXCH                    NID_pkcs                                  TLSEXT_STATUSTYPE_ocsp
+ EVP_PKT_EXP                     NID_pkcs3                                 VERIFY_CLIENT_ONCE
+ EVP_PKT_SIGN                    NID_pkcs7                                 VERIFY_FAIL_IF_NO_PEER_CERT
+ EVP_PK_DH                       NID_pkcs7_data                            VERIFY_NONE
+ EVP_PK_DSA                      NID_pkcs7_digest                          VERIFY_PEER
+ EVP_PK_EC                       NID_pkcs7_encrypted                       VERIFY_POST_HANDSHAKE
+ EVP_PK_RSA                      NID_pkcs7_enveloped                       V_OCSP_CERTSTATUS_GOOD
+ FILETYPE_ASN1                   NID_pkcs7_signed                          V_OCSP_CERTSTATUS_REVOKED
+ FILETYPE_PEM                    NID_pkcs7_signedAndEnveloped              V_OCSP_CERTSTATUS_UNKNOWN
+ F_CLIENT_CERTIFICATE            NID_pkcs8ShroudedKeyBag                   WRITING
+ F_CLIENT_HELLO                  NID_pkcs9                                 X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT
+ F_CLIENT_MASTER_KEY             NID_pkcs9_challengePassword               X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS
+ F_D2I_SSL_SESSION               NID_pkcs9_contentType                     X509_CHECK_FLAG_NEVER_CHECK_SUBJECT
+ F_GET_CLIENT_FINISHED           NID_pkcs9_countersignature                X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS
+ F_GET_CLIENT_HELLO              NID_pkcs9_emailAddress                    X509_CHECK_FLAG_NO_WILDCARDS
+ F_GET_CLIENT_MASTER_KEY         NID_pkcs9_extCertAttributes               X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS
+ F_GET_SERVER_FINISHED           NID_pkcs9_messageDigest                   X509_FILETYPE_ASN1
+ F_GET_SERVER_HELLO              NID_pkcs9_signingTime                     X509_FILETYPE_DEFAULT
+ F_GET_SERVER_VERIFY             NID_pkcs9_unstructuredAddress             X509_FILETYPE_PEM
+ F_I2D_SSL_SESSION               NID_pkcs9_unstructuredName                X509_LOOKUP
+ F_READ_N                        NID_private_key_usage_period              X509_PURPOSE_ANY
+ F_REQUEST_CERTIFICATE           NID_rc2_40_cbc                            X509_PURPOSE_CRL_SIGN
+ F_SERVER_HELLO                  NID_rc2_64_cbc                            X509_PURPOSE_NS_SSL_SERVER
+ F_SSL_CERT_NEW                  NID_rc2_cbc                               X509_PURPOSE_OCSP_HELPER
+ F_SSL_GET_NEW_SESSION           NID_rc2_cfb64                             X509_PURPOSE_SMIME_ENCRYPT
+ F_SSL_NEW                       NID_rc2_ecb                               X509_PURPOSE_SMIME_SIGN
+ F_SSL_READ                      NID_rc2_ofb64                             X509_PURPOSE_SSL_CLIENT
+ F_SSL_RSA_PRIVATE_DECRYPT       NID_rc4                                   X509_PURPOSE_SSL_SERVER
+ F_SSL_RSA_PUBLIC_ENCRYPT        NID_rc4_40                                X509_PURPOSE_TIMESTAMP_SIGN
+ F_SSL_SESSION_NEW               NID_rc5_cbc                               X509_TRUST_COMPAT
+ F_SSL_SESSION_PRINT_FP          NID_rc5_cfb64                             X509_TRUST_EMAIL
+ F_SSL_SET_FD                    NID_rc5_ecb                               X509_TRUST_OBJECT_SIGN
+ F_SSL_SET_RFD                   NID_rc5_ofb64                             X509_TRUST_OCSP_REQUEST
+ F_SSL_SET_WFD                   NID_ripemd160                             X509_TRUST_OCSP_SIGN
+ F_SSL_USE_CERTIFICATE           NID_ripemd160WithRSA                      X509_TRUST_SSL_CLIENT
+ F_SSL_USE_CERTIFICATE_ASN1      NID_rle_compression                       X509_TRUST_SSL_SERVER
+ F_SSL_USE_CERTIFICATE_FILE      NID_rsa                                   X509_TRUST_TSA
+ F_SSL_USE_PRIVATEKEY            NID_rsaEncryption                         X509_V_ERR_AKID_ISSUER_SERIAL_MISMATCH
+ F_SSL_USE_PRIVATEKEY_ASN1       NID_rsadsi                                X509_V_ERR_AKID_SKID_MISMATCH
+ F_SSL_USE_PRIVATEKEY_FILE       NID_safeContentsBag                       X509_V_ERR_APPLICATION_VERIFICATION
+ F_SSL_USE_RSAPRIVATEKEY         NID_sdsiCertificate                       X509_V_ERR_CA_KEY_TOO_SMALL
+ F_SSL_USE_RSAPRIVATEKEY_ASN1    NID_secretBag                             X509_V_ERR_CA_MD_TOO_WEAK
+ F_SSL_USE_RSAPRIVATEKEY_FILE    NID_serialNumber                          X509_V_ERR_CERT_CHAIN_TOO_LONG
+ F_WRITE_PENDING                 NID_server_auth                           X509_V_ERR_CERT_HAS_EXPIRED
+ GEN_DIRNAME                     NID_sha                                   X509_V_ERR_CERT_NOT_YET_VALID
+ GEN_DNS                         NID_sha1                                  X509_V_ERR_CERT_REJECTED
+ GEN_EDIPARTY                    NID_sha1WithRSA                           X509_V_ERR_CERT_REVOKED
+ GEN_EMAIL                       NID_sha1WithRSAEncryption                 X509_V_ERR_CERT_SIGNATURE_FAILURE
+ GEN_IPADD                       NID_shaWithRSAEncryption                  X509_V_ERR_CERT_UNTRUSTED
+ GEN_OTHERNAME                   NID_stateOrProvinceName                   X509_V_ERR_CRL_HAS_EXPIRED
+ GEN_RID                         NID_subject_alt_name                      X509_V_ERR_CRL_NOT_YET_VALID
+ GEN_URI                         NID_subject_key_identifier                X509_V_ERR_CRL_PATH_VALIDATION_ERROR
+ GEN_X400                        NID_surname                               X509_V_ERR_CRL_SIGNATURE_FAILURE
+ LIBRESSL_VERSION_NUMBER         NID_sxnet                                 X509_V_ERR_DANE_NO_MATCH
+ MBSTRING_ASC                    NID_time_stamp                            X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT
+ MBSTRING_BMP                    NID_title                                 X509_V_ERR_DIFFERENT_CRL_SCOPE
+ MBSTRING_FLAG                   NID_undef                                 X509_V_ERR_EE_KEY_TOO_SMALL
+ MBSTRING_UNIV                   NID_uniqueIdentifier                      X509_V_ERR_EMAIL_MISMATCH
+ MBSTRING_UTF8                   NID_x509Certificate                       X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD
+ MIN_RSA_MODULUS_LENGTH_IN_BYTES NID_x509Crl                               X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD
+ MODE_ACCEPT_MOVING_WRITE_BUFFER NID_zlib_compression                      X509_V_ERR_ERROR_IN_CRL_LAST_UPDATE_FIELD
+ MODE_AUTO_RETRY                 NOTHING                                   X509_V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD
+ MODE_ENABLE_PARTIAL_WRITE       OCSP_RESPONSE_STATUS_INTERNALERROR        X509_V_ERR_EXCLUDED_VIOLATION
+ MODE_RELEASE_BUFFERS            OCSP_RESPONSE_STATUS_MALFORMEDREQUEST     X509_V_ERR_HOSTNAME_MISMATCH
+ NID_OCSP_sign                   OCSP_RESPONSE_STATUS_SIGREQUIRED          X509_V_ERR_INVALID_CA
+ NID_SMIMECapabilities           OCSP_RESPONSE_STATUS_SUCCESSFUL           X509_V_ERR_INVALID_CALL
+ NID_X500                        OCSP_RESPONSE_STATUS_TRYLATER             X509_V_ERR_INVALID_EXTENSION
+ NID_X509                        OCSP_RESPONSE_STATUS_UNAUTHORIZED         X509_V_ERR_INVALID_NON_CA
+ NID_ad_OCSP                     OPENSSL_BUILT_ON                          X509_V_ERR_INVALID_POLICY_EXTENSION
+ NID_ad_ca_issuers               OPENSSL_CFLAGS                            X509_V_ERR_INVALID_PURPOSE
+ NID_algorithm                   OPENSSL_DIR                               X509_V_ERR_IP_ADDRESS_MISMATCH
+ NID_authority_key_identifier    OPENSSL_ENGINES_DIR                       X509_V_ERR_KEYUSAGE_NO_CERTSIGN
+ NID_basic_constraints           OPENSSL_PLATFORM                          X509_V_ERR_KEYUSAGE_NO_CRL_SIGN
+ NID_bf_cbc                      OPENSSL_VERSION                           X509_V_ERR_KEYUSAGE_NO_DIGITAL_SIGNATURE
+ NID_bf_cfb64                    OPENSSL_VERSION_NUMBER                    X509_V_ERR_NO_EXPLICIT_POLICY
+ NID_bf_ecb                      OP_ALL                                    X509_V_ERR_NO_VALID_SCTS
+ NID_bf_ofb64                    OP_ALLOW_NO_DHE_KEX                       X509_V_ERR_OCSP_CERT_UNKNOWN
+ NID_cast5_cbc                   OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION      X509_V_ERR_OCSP_VERIFY_FAILED
+ NID_cast5_cfb64                 OP_CIPHER_SERVER_PREFERENCE               X509_V_ERR_OCSP_VERIFY_NEEDED
+ NID_cast5_ecb                   OP_CISCO_ANYCONNECT                       X509_V_ERR_OUT_OF_MEM
+ NID_cast5_ofb64                 OP_COOKIE_EXCHANGE                        X509_V_ERR_PATH_LENGTH_EXCEEDED
+ NID_certBag                     OP_CRYPTOPRO_TLSEXT_BUG                   X509_V_ERR_PATH_LOOP
+ NID_certificate_policies        OP_DONT_INSERT_EMPTY_FRAGMENTS            X509_V_ERR_PERMITTED_VIOLATION
+ NID_client_auth                 OP_ENABLE_MIDDLEBOX_COMPAT                X509_V_ERR_PROXY_CERTIFICATES_NOT_ALLOWED
+ NID_code_sign                   OP_EPHEMERAL_RSA                          X509_V_ERR_PROXY_PATH_LENGTH_EXCEEDED
+ NID_commonName                  OP_LEGACY_SERVER_CONNECT                  X509_V_ERR_PROXY_SUBJECT_NAME_VIOLATION
+ NID_countryName                 OP_MICROSOFT_BIG_SSLV3_BUFFER             X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN
+ NID_crlBag                      OP_MICROSOFT_SESS_ID_BUG                  X509_V_ERR_STORE_LOOKUP
+ NID_crl_distribution_points     OP_MSIE_SSLV2_RSA_PADDING                 X509_V_ERR_SUBJECT_ISSUER_MISMATCH
+ NID_crl_number                  OP_NETSCAPE_CA_DN_BUG                     X509_V_ERR_SUBTREE_MINMAX
+ NID_crl_reason                  OP_NETSCAPE_CHALLENGE_BUG                 X509_V_ERR_SUITE_B_CANNOT_SIGN_P_384_WITH_P_256
+ NID_delta_crl                   OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG        X509_V_ERR_SUITE_B_INVALID_ALGORITHM
+ NID_des_cbc                     OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG       X509_V_ERR_SUITE_B_INVALID_CURVE
+ NID_des_cfb64                   OP_NON_EXPORT_FIRST                       X509_V_ERR_SUITE_B_INVALID_SIGNATURE_ALGORITHM
+ NID_des_ecb                     OP_NO_ANTI_REPLAY                         X509_V_ERR_SUITE_B_INVALID_VERSION
+ NID_des_ede                     OP_NO_CLIENT_RENEGOTIATION                X509_V_ERR_SUITE_B_LOS_NOT_ALLOWED
+ NID_des_ede3                    OP_NO_COMPRESSION                         X509_V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY
+ NID_des_ede3_cbc                OP_NO_ENCRYPT_THEN_MAC                    X509_V_ERR_UNABLE_TO_DECRYPT_CERT_SIGNATURE
+ NID_des_ede3_cfb64              OP_NO_QUERY_MTU                           X509_V_ERR_UNABLE_TO_DECRYPT_CRL_SIGNATURE
+ NID_des_ede3_ofb64              OP_NO_RENEGOTIATION                       X509_V_ERR_UNABLE_TO_GET_CRL
+ NID_des_ede_cbc                 OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION X509_V_ERR_UNABLE_TO_GET_CRL_ISSUER
+ NID_des_ede_cfb64               OP_NO_SSL_MASK                            X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT
+ NID_des_ede_ofb64               OP_NO_SSLv2                               X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY
+ NID_des_ofb64                   OP_NO_SSLv3                               X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE
+ NID_description                 OP_NO_TICKET                              X509_V_ERR_UNHANDLED_CRITICAL_CRL_EXTENSION
+ NID_desx_cbc                    OP_NO_TLSv1                               X509_V_ERR_UNHANDLED_CRITICAL_EXTENSION
+ NID_dhKeyAgreement              OP_NO_TLSv1_1                             X509_V_ERR_UNNESTED_RESOURCE
+ NID_dnQualifier                 OP_NO_TLSv1_2                             X509_V_ERR_UNSPECIFIED
+ NID_dsa                         OP_NO_TLSv1_3                             X509_V_ERR_UNSUPPORTED_CONSTRAINT_SYNTAX
+ NID_dsaWithSHA                  OP_PKCS1_CHECK_1                          X509_V_ERR_UNSUPPORTED_CONSTRAINT_TYPE
+ NID_dsaWithSHA1                 OP_PKCS1_CHECK_2                          X509_V_ERR_UNSUPPORTED_EXTENSION_FEATURE
+ NID_dsaWithSHA1_2               OP_PRIORITIZE_CHACHA                      X509_V_ERR_UNSUPPORTED_NAME_SYNTAX
+ NID_dsa_2                       OP_SAFARI_ECDHE_ECDSA_BUG                 X509_V_FLAG_ALLOW_PROXY_CERTS
+ NID_email_protect               OP_SINGLE_DH_USE                          X509_V_FLAG_CB_ISSUER_CHECK
+ NID_ext_key_usage               OP_SINGLE_ECDH_USE                        X509_V_FLAG_CHECK_SS_SIGNATURE
+ NID_ext_req                     OP_SSLEAY_080_CLIENT_DH_BUG               X509_V_FLAG_CRL_CHECK
+ NID_friendlyName                OP_SSLREF2_REUSE_CERT_TYPE_BUG            X509_V_FLAG_CRL_CHECK_ALL
+ NID_givenName                   OP_TLSEXT_PADDING                         X509_V_FLAG_EXPLICIT_POLICY
+ NID_hmacWithSHA1                OP_TLS_BLOCK_PADDING_BUG                  X509_V_FLAG_EXTENDED_CRL_SUPPORT
+ NID_id_ad                       OP_TLS_D5_BUG                             X509_V_FLAG_IGNORE_CRITICAL
+ NID_id_ce                       OP_TLS_ROLLBACK_BUG                       X509_V_FLAG_INHIBIT_ANY
+ NID_id_kp                       READING                                   X509_V_FLAG_INHIBIT_MAP
+ NID_id_pbkdf2                   RECEIVED_SHUTDOWN                         X509_V_FLAG_NOTIFY_POLICY
+ NID_id_pe                       RSA_3                                     X509_V_FLAG_NO_ALT_CHAINS
+ NID_id_pkix                     RSA_F4                                    X509_V_FLAG_NO_CHECK_TIME
+ NID_id_qt_cps                   R_BAD_AUTHENTICATION_TYPE                 X509_V_FLAG_PARTIAL_CHAIN
+ NID_id_qt_unotice               R_BAD_CHECKSUM                            X509_V_FLAG_POLICY_CHECK
+ NID_idea_cbc                    R_BAD_MAC_DECODE                          X509_V_FLAG_POLICY_MASK
+ NID_idea_cfb64                  R_BAD_RESPONSE_ARGUMENT                   X509_V_FLAG_SUITEB_128_LOS
+ NID_idea_ecb                    R_BAD_SSL_FILETYPE                        X509_V_FLAG_SUITEB_128_LOS_ONLY
+ NID_idea_ofb64                  R_BAD_SSL_SESSION_ID_LENGTH               X509_V_FLAG_SUITEB_192_LOS
+ NID_info_access                 R_BAD_STATE                               X509_V_FLAG_TRUSTED_FIRST
+ NID_initials                    R_BAD_WRITE_RETRY                         X509_V_FLAG_USE_CHECK_TIME
+ NID_invalidity_date             R_CHALLENGE_IS_DIFFERENT                  X509_V_FLAG_USE_DELTAS
+ NID_issuer_alt_name             R_CIPHER_TABLE_SRC_ERROR                  X509_V_FLAG_X509_STRICT
+ NID_keyBag                      R_INVALID_CHALLENGE_LENGTH                X509_V_OK
+ NID_key_usage                   R_NO_CERTIFICATE_SET                      XN_FLAG_COMPAT
+ NID_localKeyID                  R_NO_CERTIFICATE_SPECIFIED                XN_FLAG_DN_REV
+ NID_localityName                R_NO_CIPHER_LIST                          XN_FLAG_DUMP_UNKNOWN_FIELDS
+ NID_md2                         R_NO_CIPHER_MATCH                         XN_FLAG_FN_ALIGN
+ NID_md2WithRSAEncryption        R_NO_PRIVATEKEY                           XN_FLAG_FN_LN
+ NID_md5                         R_NO_PUBLICKEY                            XN_FLAG_FN_MASK
+ NID_md5WithRSA                  R_NULL_SSL_CTX                            XN_FLAG_FN_NONE
+ NID_md5WithRSAEncryption        R_PEER_DID_NOT_RETURN_A_CERTIFICATE       XN_FLAG_FN_OID
+ NID_md5_sha1                    R_PEER_ERROR                              XN_FLAG_FN_SN
+ NID_mdc2                        R_PEER_ERROR_CERTIFICATE                  XN_FLAG_MULTILINE
+ NID_mdc2WithRSA                 R_PEER_ERROR_NO_CIPHER                    XN_FLAG_ONELINE
+ NID_ms_code_com                 R_PEER_ERROR_UNSUPPORTED_CERTIFICATE_TYPE XN_FLAG_RFC2253
+ NID_ms_code_ind                 R_PUBLIC_KEY_ENCRYPT_ERROR                XN_FLAG_SEP_COMMA_PLUS
+ NID_ms_ctl_sign                 R_PUBLIC_KEY_IS_NOT_RSA                   XN_FLAG_SEP_CPLUS_SPC
+ NID_ms_efs                      R_READ_WRONG_PACKET_TYPE                  XN_FLAG_SEP_MASK
+ NID_ms_ext_req                  R_SHORT_READ                              XN_FLAG_SEP_MULTILINE
+ NID_ms_sgc                      R_SSL_SESSION_ID_IS_DIFFERENT             XN_FLAG_SEP_SPLUS_SPC
+ NID_name                        R_UNABLE_TO_EXTRACT_PUBLIC_KEY            XN_FLAG_SPC_EQ
 
 =head2 INTERNAL ONLY functions (do not use these)
 
@@ -7573,6 +9419,10 @@ There are also a number of example/test programs in the examples directory:
                           it gets back (very educative :-)
     makecert.pl  -  Creates a self signed cert (does not use this module)
 
+=head1 INSTALLATION
+
+See README and README.* in the distribution directory for installation guidance on a variety of platforms.
+
 =head1 LIMITATIONS
 
 C<Net::SSLeay::read()> uses an internal buffer of 32KB, thus no single read
@@ -7602,6 +9452,10 @@ Or alternatively you can just use the following convenience functions:
     $got = Net::SSLeay::ssl_read_all($ssl) or die "ssl read failure";
 
 =head1 KNOWN BUGS AND CAVEATS
+
+An OpenSSL bug CVE-2015-0290 "OpenSSL Multiblock Corrupted Pointer Issue" 
+can cause POST requests of over 90kB to fail or crash. This bug is reported to be fixed in
+OpenSSL 1.0.2a.
 
 Autoloader emits a
 
@@ -7684,7 +9538,7 @@ have rather complex interfaces with function pointers and all. In these
 cases you should proceed wit great caution.
 
 This module defaults to using OpenSSL automatic protocol negotiation
-code for automatically detecting the version of the SSL protocol
+code for automatically detecting the version of the SSL/TLS protocol
 that the other end talks. With most web servers this works just
 fine, but once in a while I get complaints from people that the module
 does not work with some web servers. Usually this can be solved
@@ -7693,6 +9547,9 @@ by explicitly setting the protocol version, e.g.
    $Net::SSLeay::ssl_version = 2;  # Insist on SSLv2
    $Net::SSLeay::ssl_version = 3;  # Insist on SSLv3
    $Net::SSLeay::ssl_version = 10; # Insist on TLSv1
+   $Net::SSLeay::ssl_version = 11; # Insist on TLSv1.1
+   $Net::SSLeay::ssl_version = 12; # Insist on TLSv1.2
+   $Net::SSLeay::ssl_version = 13; # Insist on TLSv1.3
 
 Although the autonegotiation is nice to have, the SSL standards
 do not formally specify any such mechanism. Most of the world has
@@ -7724,10 +9581,10 @@ is implemented.
 The high level API functions use a global file handle C<SSLCAT_S>
 internally. This really should not be a problem because there is no
 way to interleave the high level API functions, unless you use threads
-(but threads are not very well supported in perl anyway (as of version
-5.6.1). However, you may run into problems if you call undocumented
-internal functions in an interleaved fashion. The best solution is to "require Net::SSLeay"
-in one thread after all the threads have been created.
+(but threads are not very well supported in perl anyway). However, you
+may run into problems if you call undocumented internal functions in an
+interleaved fashion. The best solution is to "require Net::SSLeay" in
+one thread after all the threads have been created.
 
 =head1 DIAGNOSTICS
 
@@ -7772,78 +9629,141 @@ during C<make test> to do just that).
 
 =back
 
-=head1 BUGS AND SUPPORT
+=head1 SECURITY
 
-Please report any bugs or feature requests to
-C<bug-Net-SSLeay at rt.cpan.org>, or through the web interface at
-L<http://rt.cpan.org/Public/Dist/Display.html?Name=Net-SSLeay>.
-I will be notified, and then you'll automatically be notified of progress on
-your bug as I make changes.
+You can mitigate some of the security vulnerabilities that might be present in your SSL/TLS application: 
 
-Subversion access to the latest source code etc can be obtained at
-L<http://alioth.debian.org/projects/net-ssleay>
 
-The developer mailing list (for people interested in contributing
-to the source code) can be found at
-L<http://lists.alioth.debian.org/mailman/listinfo/net-ssleay-devel>
+=head2 BEAST Attack
 
-You can find documentation for this module with the C<perldoc> command.
+http://blogs.cisco.com/security/beat-the-beast-with-tls/
+https://community.qualys.com/blogs/securitylabs/2011/10/17/mitigating-the-beast-attack-on-tls
+http://blog.zoller.lu/2011/09/beast-summary-tls-cbc-countermeasures.html
 
-    perldoc Net::SSLeay
+The BEAST attack relies on a weakness in the way CBC mode is used in SSL/TLS. 
+In OpenSSL versions 0.9.6d and later, the protocol-level mitigation is enabled by default, 
+thus making it not vulnerable to the BEAST attack.
 
-You can also look for information at:
+Solutions:
 
-=over 4
+=over
 
-=item * AnnoCPAN: Annotated CPAN documentation
+=item * Compile with OpenSSL versions 0.9.6d or later, which enables SSL_OP_ALL by default
 
-L<http://annocpan.org/dist/Net-SSLeay>
+=item * Ensure SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS is not enabled (its not enabled by default)
 
-=item * CPAN Ratings
+=item * Don't support SSLv2, SSLv3
 
-L<http://cpanratings.perl.org/d/Net-SSLeay>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Net-SSLeay>
+=item * Actively control the ciphers your server supports with set_cipher_list:
 
 =back
 
-Commercial support for Net::SSLeay may be obtained from
+Net::SSLeay::set_cipher_list($ssl, 'RC4-SHA:HIGH:!ADH');
 
-   Symlabs (netssleay@symlabs.com)
-   Tel: +351-214.222.630
-   Fax: +351-214.222.637
+
+=head2 Session Resumption 
+
+http://www.openssl.org/docs/ssl/SSL_CTX_set_options.html
+
+The SSL Labs vulnerability test on your SSL server might report in red:
+
+Session resumption      No (IDs assigned but not accepted)
+
+This report is not really bug or a vulnerability, since the server will not 
+accept session resumption requests.
+However, you can prevent this noise in the report by disabling the session cache altogether:
+Net::SSLeay::CTX_set_session_cache_mode($ssl_ctx, Net::SSLeay::SESS_CACHE_OFF());
+Use 0 if you don't have SESS_CACHE_OFF constant.
+
+
+=head2 Secure Renegotiation and DoS Attack
+
+https://community.qualys.com/blogs/securitylabs/2011/10/31/tls-renegotiation-and-denial-of-service-attacks
+
+This is not a "security flaw," it is more of a DoS vulnerability.
+
+Solutions: 
+
+=over
+
+=item * Do not support SSLv2
+
+=item * Do not set the SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION option
+
+=item * Compile with OpenSSL 0.9.8m or later
+
+=back
+
+=head1 BUGS
+
+If you encounter a problem with this module that you believe is a bug,
+please report it in one of the following ways:
+
+=over
+
+=item *
+
+L<create a new issue|https://github.com/radiator-software/p5-net-ssleay/issues/new>
+under the Net-SSLeay GitHub project at
+L<https://github.com/radiator-software/p5-net-ssleay>;
+
+=item *
+
+L<open a ticket|https://rt.cpan.org/Ticket/Create.html?Queue=Net-SSLeay> using
+the CPAN RT bug tracker's web interface at
+L<https://rt.cpan.org/Dist/Display.html?Queue=Net-SSLeay>;
+
+=item *
+
+send an email to the CPAN RT bug tracker at
+L<bug-Net-SSLeay@rt.cpan.org|mailto:bug-Net-SSLeay@rt.cpan.org>.
+
+=back
+
+Please make sure your bug report includes the following information:
+
+=over
+
+=item * the code you are trying to run;
+
+=item * your operating system name and version;
+
+=item * the output of C<perl -V>;
+
+=item * the version of OpenSSL or LibreSSL you are using.
+
+=back
 
 =head1 AUTHOR
 
-Maintained by Mike McCauley and Florian Ragwitz since November 2005
+Originally written by Sampo Kellomäki.
 
-Originally written by Sampo Kellomäki <sampo@symlabs.com>
+Maintained by Florian Ragwitz between November 2005 and January 2010.
+
+Maintained by Mike McCauley between November 2005 and June 2018.
+
+Maintained by Chris Novakovic, Tuure Vartiainen and Heikki Vatiainen since June 2018.
 
 =head1 COPYRIGHT
 
-Copyright (c) 1996-2003 Sampo Kellomäki <sampo@symlabs.com>
+Copyright (c) 1996-2003 Sampo Kellomäki <sampo@iki.fi>
 
-Copyright (C) 2005-2006 Florian Ragwitz <rafl@debian.org>
+Copyright (c) 2005-2010 Florian Ragwitz <rafl@debian.org>
 
-Copyright (C) 2005 Mike McCauley <mikem@open.com.au>
+Copyright (c) 2005-2018 Mike McCauley <mikem@airspayce.com>
 
-All Rights Reserved.
+Copyright (c) 2018- Chris Novakovic <chris@chrisn.me.uk>
 
-Distribution and use of this module is under the same terms as the
-OpenSSL package itself (i.e. free, but mandatory attribution; NO
-WARRANTY). Please consult LICENSE file in the root of the OpenSSL
-distribution.
+Copyright (c) 2018- Tuure Vartiainen <vartiait@radiatorsoftware.com>
 
-While the source distribution of this perl module does not contain
-Eric's or OpenSSL's code, if you use this module you will use OpenSSL
-library. Please give Eric and OpenSSL team credit (as required by
-their licenses).
+Copyright (c) 2018- Heikki Vatiainen <hvn@radiatorsoftware.com>
 
-And remember, you, and nobody else but you, are responsible for
-auditing this module and OpenSSL library for security problems,
-backdoors, and general suitability for your application.
+All rights reserved.
+
+=head1 LICENSE
+
+This module is released under the terms of the Artistic License 2.0. For
+details, see the C<LICENSE> file distributed with Net-SSLeay's source code.
 
 =head1 SEE ALSO
 

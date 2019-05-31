@@ -1,28 +1,14 @@
 package Moose::Meta::Method::Accessor::Native::Array::first_index;
-BEGIN {
-  $Moose::Meta::Method::Accessor::Native::Array::first_index::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Method::Accessor::Native::Array::first_index::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use List::MoreUtils ();
 use Params::Util ();
 
 use Moose::Role;
 
-with 'Moose::Meta::Method::Accessor::Native::Reader' => {
-    -excludes => [
-        qw(
-            _minimum_arguments
-            _maximum_arguments
-            _inline_check_arguments
-            )
-    ]
-};
+with 'Moose::Meta::Method::Accessor::Native::Reader';
 
 sub _minimum_arguments { 1 }
 
@@ -33,19 +19,32 @@ sub _inline_check_arguments {
 
     return (
         'if (!Params::Util::_CODELIKE($_[0])) {',
-            $self->_inline_throw_error(
-                '"The argument passed to first_index must be a code reference"',
+            $self->_inline_throw_exception( InvalidArgumentToMethod =>
+                                            'argument                => $_[0],'.
+                                            'method_name             => "first_index",'.
+                                            'type_of_argument        => "code reference",'.
+                                            'type                    => "CodeRef",',
             ) . ';',
         '}',
     );
 }
 
-sub _return_value {
+sub _inline_return_value {
     my $self = shift;
     my ($slot_access) = @_;
 
-    return '&List::MoreUtils::first_index($_[0], @{ (' . $slot_access . ') })';
+    return join '',
+        'my @values = @{ (' . $slot_access . ') };',
+        'my $f = $_[0];',
+        'foreach my $i ( 0 .. $#values ) {',
+            'local *_ = \\$values[$i];',
+            'return $i if $f->();',
+        '}',
+        'return -1;';
 }
+
+# Not called, but needed to satisfy the Reader role
+sub _return_value { }
 
 no Moose::Role;
 

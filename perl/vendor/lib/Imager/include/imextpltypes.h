@@ -11,7 +11,7 @@
    interfacing with perl - these functions aren't part of the core
    Imager API. */
 
-#define IMAGER_PL_API_LEVEL 1
+#define IMAGER_PL_API_LEVEL 2
 
 typedef struct {
   int version;
@@ -22,7 +22,10 @@ typedef struct {
   void (*f_ip_cleanup_quant_opts)(pTHX_ i_quantize *quant);
   void (*f_ip_copy_colors_back)(pTHX_ HV *hv, i_quantize *quant);
 
-  /* IMAGER_PL_API_LEVEL 2 functions will go here */
+  /* IMAGER_PL_API_LEVEL 2 */
+  int (*f_ip_handle_quant_opts2)(pTHX_ i_quantize *quant, HV *hv);
+
+  /* IMAGER_PL_API_LEVEL 3 functions will go here */
 } im_pl_ext_funcs;
 
 #define PERL_PL_FUNCTION_TABLE_NAME "Imager::__ext_pl_func_table"

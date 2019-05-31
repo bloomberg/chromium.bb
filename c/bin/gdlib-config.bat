@@ -4,9 +4,9 @@ set ROOT=%~dp0
 
 set XLIBDIR=%ROOT%..\lib
 set XINCLUDEDIR=%ROOT%..\include
-set XVERSION=2.0.35
+set XVERSION=2.2.5
 set XCFLAGS=-I"%XINCLUDEDIR%"
-set XLIBS=-lXpm -ljpeg -lfreetype -lpng12 -lz -liconv
+set XLIBS=-ljpeg -lpng -lfreetype -lXpm -ltiff -lz -liconv
 set XLDFLAGS=-L"%XLIBDIR%"
 
 for %%p in (%*) do (
@@ -26,6 +26,6 @@ echo cflags:     %XCFLAGS%
 echo ldflags:    %XLDFLAGS%
 echo libs:       %XLIBS%
 echo libdir:     %XLIBDIR%
-echo features: GD_XPM GD_JPEG GD_FREETYPE GD_PNG GD_GIF GD_GIFANIM GD_OPENPOLYGON
+echo features: GD_GIF GD_GIFANIM GD_OPENPOLYGON GD_ZLIB GD_PNG GD_FREETYPE GD_JPEG GD_XPM GD_TIFF
 
 :END

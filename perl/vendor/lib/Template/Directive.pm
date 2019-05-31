@@ -11,7 +11,7 @@
 # WARNING
 #   Much of this module is hairy, even furry in places.  It needs
 #   a lot of tidying up and may even be moved into a different place 
-#   altogether.  The generator code is often inefficient, particulary in 
+#   altogether.  The generator code is often inefficient, particularly in 
 #   being very anal about pretty-printing the Perl code all neatly, but 
 #   at the moment, that's still high priority for the sake of easier
 #   debugging.
@@ -209,7 +209,13 @@ sub ident {
         # handler defined?
         if (@$ident > 2 && ($ns = $self->{ NAMESPACE })) {
             my $key = $ident->[0];
-            $key =~ s/^'(.+)'$/$1/s;
+
+            # a faster alternate to $key =~ s/^'(.+)'$/$1/s
+            if ( index( $key, q[']) == 0 ) {
+                substr( $key, 0, 1, '' );
+                substr( $key, -1, 1, '' ); # remove the last char blindly
+            }
+
             if ($ns = $ns->{ $key }) {
                 return $ns->ident($ident);
             }
@@ -679,7 +685,7 @@ $block
     };
     if (\$@) {
         \$_tt_error = \$context->catch(\$@, \\\$output);
-        die \$_tt_error if \$_tt_error->type =~ /^return|stop\$/;
+        die \$_tt_error if \$_tt_error->type =~ /^(return|stop)\$/;
         \$stash->set('error', \$_tt_error);
         \$stash->set('e', \$_tt_error);
         if (defined (\$_tt_handler = \$_tt_error->select_handler($handlers))) {

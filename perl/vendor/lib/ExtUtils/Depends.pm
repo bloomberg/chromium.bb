@@ -1,17 +1,14 @@
-#
-# $Id$
-#
-
 package ExtUtils::Depends;
 
 use strict;
 use warnings;
 use Carp;
+use Config;
 use File::Find;
 use File::Spec;
 use Data::Dumper;
 
-our $VERSION = '0.304';
+our $VERSION = '0.8000';
 
 sub import {
 	my $class = shift;
@@ -112,6 +109,8 @@ sub install {
 
 sub save_config {
 	use Data::Dumper;
+	local $Data::Dumper::Terse = 0;
+	local $Data::Dumper::Sortkeys = 1;
 	use IO::File;
 
 	my ($self, $filename) = @_;
@@ -120,20 +119,20 @@ sub save_config {
 		or croak "can't open '$filename' for writing: $!\n";
 
 	print $file "package $self->{name}\::Install::Files;\n\n";
-	# for modern stuff
 	print $file "".Data::Dumper->Dump([{
 		inc => join (" ", @{ $self->{inc} }),
 		libs => $self->{libs},
 		typemaps => [ map { basename $_ } @{ $self->{typemaps} } ],
-		deps => [keys %{ $self->{deps} }],
+		deps => [sort keys %{ $self->{deps} }],
 	}], ['self']);
-	# for ancient stuff
-	print $file "\n\n# this is for backwards compatiblity\n";
-	print $file "\@deps = \@{ \$self->{deps} };\n";
-	print $file "\@typemaps = \@{ \$self->{typemaps} };\n";
-	print $file "\$libs = \$self->{libs};\n";
-	print $file "\$inc = \$self->{inc};\n";
-	# this is riduculous, but old versions of ExtUtils::Depends take
+	print $file <<'EOF';
+
+@deps = @{ $self->{deps} };
+@typemaps = @{ $self->{typemaps} };
+$libs = $self->{libs};
+$inc = $self->{inc};
+EOF
+	# this is ridiculous, but old versions of ExtUtils::Depends take
 	# first $loadedmodule::CORE and then $INC{$file} --- the fallback
 	# includes the Filename.pm, which is not useful.  so we must add
 	# this crappy code.  we don't worry about portable pathnames,
@@ -147,6 +146,17 @@ sub save_config {
 			\$CORE = \$_ . "/$mdir/Install/";
 			last;
 		}
+	}
+
+	sub deps { \@{ \$self->{deps} }; }
+
+	sub Inline {
+		my (\$class, \$lang) = \@_;
+		if (\$lang ne 'C') {
+			warn "Warning: Inline hints not available for \$lang language\n";
+			return;
+		}
+		+{ map { (uc(\$_) => \$self->{\$_}) } qw(inc libs typemaps) };
 	}
 EOT
 
@@ -164,19 +174,19 @@ sub load {
 	my $dep = shift;
 	my @pieces = split /::/, $dep;
 	my @suffix = qw/ Install Files /;
-	my $relpath = File::Spec->catfile (@pieces, @suffix) . '.pm';
+	# not File::Spec - see perldoc -f require
+	my $relpath = join('/', @pieces, @suffix) . '.pm';
 	my $depinstallfiles = join "::", @pieces, @suffix;
 	eval {
 		require $relpath 
 	} or die " *** Can't load dependency information for $dep:\n   $@\n";
-	#
 	#print Dumper(\%INC);
 
 	# effectively $instpath = dirname($INC{$relpath})
 	@pieces = File::Spec->splitdir ($INC{$relpath});
 	pop @pieces;
 	my $instpath = File::Spec->catdir (@pieces);
-	
+
 	no strict;
 
 	croak "No dependency information found for $dep"
@@ -186,22 +196,36 @@ sub load {
 		$instpath = File::Spec->rel2abs ($instpath);
 	}
 
-	my @typemaps = map {
-		File::Spec->rel2abs ($_, $instpath)
-	} @{"$depinstallfiles\::typemaps"};
+	my (@typemaps, $inc, $libs, @deps);
+
+	# this will not exist when loading files from old versions
+	# of ExtUtils::Depends.
+	@deps = eval { $depinstallfiles->deps };
+	@deps = @{"$depinstallfiles\::deps"}
+		if $@ and exists ${"$depinstallfiles\::"}{deps};
+
+	my $inline = eval { $depinstallfiles->Inline('C') };
+	if (!$@) {
+		$inc = $inline->{INC} || '';
+		$libs = $inline->{LIBS} || '';
+		@typemaps = @{ $inline->{TYPEMAPS} || [] };
+	} else {
+		$inc = ${"$depinstallfiles\::inc"} || '';
+		$libs = ${"$depinstallfiles\::libs"} || '';
+		@typemaps = @{"$depinstallfiles\::typemaps"};
+	}
+	@typemaps = map { File::Spec->rel2abs ($_, $instpath) } @typemaps;
 
 	{
 		instpath => $instpath,
 		typemaps => \@typemaps,
-		inc      => "-I$instpath ".${"$depinstallfiles\::inc"},
-		libs     => ${"$depinstallfiles\::libs"},
-		# this will not exist when loading files from old versions
-		# of ExtUtils::Depends.
-		(exists ${"$depinstallfiles\::"}{deps}
-		  ? (deps => \@{"$depinstallfiles\::deps"})
-		  : ()), 
+		inc      => "-I". _quote_if_space($instpath) ." $inc",
+		libs     => $libs,
+		deps     => \@deps,
 	}
 }
+
+sub _quote_if_space { $_[0] =~ / / ? qq{"$_[0]"} : $_[0] }
 
 sub load_deps {
 	my $self = shift;
@@ -241,12 +265,12 @@ sub get_makefile_vars {
 	# collect and uniquify things from the dependencies.
 	# first, ensure they are completely loaded.
 	$self->load_deps;
-	
+
 	##my @defbits = map { split } @{ $self->{defines} };
 	my @incbits = map { split } @{ $self->{inc} };
 	my @libsbits = split /\s+/, $self->{libs};
 	my @typemaps = @{ $self->{typemaps} };
-	foreach my $d (keys %{ $self->{deps} }) {
+	foreach my $d (sort keys %{ $self->{deps} }) {
 		my $dep = $self->{deps}{$d};
 		#push @defbits, @{ $dep->{defines} };
 		push @incbits, @{ $dep->{defines} } if $dep->{defines};
@@ -303,15 +327,19 @@ sub build_dll_lib {
 	my ($self, $vars) = @_;
 	$vars->{macro} ||= {};
 	$vars->{macro}{'INST_DYNAMIC_LIB'} =
-		'$(INST_ARCHAUTODIR)/$(BASEEXT)$(LIB_EXT)';
+		'$(INST_ARCHAUTODIR)/$(DLBASE)$(LIB_EXT)';
 }
 
+# Search for extra library files to link against on Windows (either native
+# Windows library # files, or Cygwin library files)
+# NOTE: not meant to be called publicly, so no POD documentation
 sub find_extra_libs {
 	my $self = shift;
 
 	my %mappers = (
 		MSWin32 => sub { $_[0] . '\.(?:lib|a)' },
 		cygwin	=> sub { $_[0] . '\.dll'},
+		android => sub { $_[0] . '\.' . $Config{dlext} },
 	);
 	my $mapper = $mappers{$^O};
 	return () unless defined $mapper;
@@ -319,6 +347,10 @@ sub find_extra_libs {
 	my @found_libs = ();
 	foreach my $name (keys %{ $self->{deps} }) {
 		(my $stem = $name) =~ s/^.*:://;
+		if ( defined &DynaLoader::mod2fname ) {
+			 my @parts = split /::/, $name;
+			 $stem = DynaLoader::mod2fname([@parts]);
+		}
 		my $lib = $mapper->($stem);
 		my $pattern = qr/$lib$/;
 
@@ -332,7 +364,21 @@ sub find_extra_libs {
 		}, map { -d $_ ? ($_) : () } @INC); # only extant dirs
 
 		if ($matching_file && -f $matching_file) {
-			push @found_libs, ('-L' . $matching_dir, '-l' . $stem);
+			push @found_libs,
+				'-L' . _quote_if_space($matching_dir),
+				'-l' . $stem;
+			# Android's linker ignores the RTLD_GLOBAL flag
+			# and loads everything as if under RTLD_LOCAL.
+			# What this means in practice is that modules need
+			# to explicitly link to their dependencies,
+			# because otherwise they won't be able to locate any
+			# functions they define.
+			# We use the -l:foo.so flag to indicate that the
+			# actual library name to look for is foo.so, not
+			# libfoo.so
+			if ( $^O eq 'android' ) {
+				$found_libs[-1] = "-l:$stem.$Config{dlext}";
+			}
 			next;
 		}
 	}
@@ -355,7 +401,7 @@ sub static_lib {
 	return <<"__EOM__"
 # This isn't actually a static lib, it just has the same name on Win32.
 \$(INST_DYNAMIC_LIB): \$(INST_DYNAMIC)
-	$DLLTOOL --def \$(EXPORT_LIST) --output-lib \$\@ --dllname \$(BASEEXT).\$(SO) \$(INST_DYNAMIC)
+	$DLLTOOL --def \$(EXPORT_LIST) --output-lib \$\@ --dllname \$(DLBASE).\$(DLEXT) \$(INST_DYNAMIC)
 
 dynamic:: \$(INST_DYNAMIC_LIB)
 __EOM__
@@ -399,7 +445,7 @@ that a perl extension is treated like a shared library that provides
 also a C and an XS interface besides the perl one.
 
 This works as long as the base extension is loaded with the RTLD_GLOBAL
-flag (usually done with a 
+flag (usually done with a
 
 	sub dl_load_flags {0x01}
 
@@ -410,6 +456,9 @@ in the instance, and then store that data in the Perl library where it
 may be retrieved later.  The object can also reformat this information
 into the data structures required by ExtUtils::MakeMaker's WriteMakefile
 function.
+
+For information on how to make your module fit into this scheme, see
+L</"hashref = ExtUtils::Depends::load (name)">.
 
 When creating a new Depends object, you give it a name, which is the name
 of the module you are building.   You can also specify the names of modules
@@ -429,6 +478,27 @@ For example:
      this command automatically brings in all the stuff needed
      for Glib, since Gtk2 depends on it.
 
+When the configuration information is saved, it also includes a class
+method called C<Inline>, inheritable by your module. This allows you in
+your module to simply say at the top:
+
+  package Mymod;
+  use parent 'Mymod::Install::Files'; # to inherit 'Inline' method
+
+And users of C<Mymod> who want to write inline code (using L<Inline>)
+will simply be able to write:
+
+  use Inline with => 'Mymod';
+
+And all the necessary header files, defines, and libraries will be added
+for them.
+
+The C<Mymod::Install::Files> will also implement a C<deps> method,
+which will return a list of any modules that C<Mymod> depends on -
+you will not normally need to use this:
+
+  require Mymod::Install::Files;
+  @deps = Mymod::Install::Files->deps;
 
 =head1 METHODS
 
@@ -491,8 +561,9 @@ passed through WriteMakefile's PM key.
 Save the important information from I<$depends> to I<$filename>, and
 set it up to be installed as I<name>::Install::Files.
 
-Note: the actual value of I<$filename> seems to be irrelevant, but its
-usage is kept for backward compatibility.
+Note: the actual value of I<$filename> is unimportant so long as it
+doesn't clash with any other local files. It will be installed as
+I<name>::Install::Files.
 
 =item hash = $depends->get_makefile_vars
 
@@ -543,6 +614,19 @@ loading files created by old versions of ExtUtils::Depends.
 
 =back
 
+If you want to make module I<name> support this, you must provide
+a module I<name>::Install::Files, which on loading will implement the
+following class methods:
+
+  $hashref = name::Install::Files->Inline('C');
+  # hash to contain any necessary TYPEMAPS (array-ref), LIBS, INC
+  @deps = name::Install::Files->deps;
+  # any modules on which "name" depends
+
+An easy way to achieve this is to use the method
+L</"$depends-E<gt>save_config ($filename)">, but your package may have
+different facilities already.
+
 =item $depends->load_deps
 
 Load I<$depends> dependencies, by calling C<load> on each dependency module.
@@ -551,14 +635,48 @@ C<get_deps> after calling C<add_deps> manually.
 
 =back
 
+=head1 SUPPORT
 
-=head1 BUGS
+=head2 Bugs/Feature Requests
 
 Version 0.2 discards some of the more esoteric features provided by the
 older versions.  As they were completely undocumented, and this module
 has yet to reach 1.0, this may not exactly be a bug.
 
 This module is tightly coupled to the ExtUtils::MakeMaker architecture.
+
+You can submit new bugs/feature requests by using one of two bug trackers
+(below).
+
+=over
+
+=item CPAN Request Tracker
+
+You can submit bugs/feature requests via the web by going to
+L<https://rt.cpan.org/Public/Bug/Report.html?Queue=ExtUtils-Depends> (requires
+PAUSE ID or Bitcard), or by sending an e-mail to
+L<bug-ExtUtils-Depends at rt.cpan.org>.
+
+=item Gnome.org Bugzilla
+
+Report bugs/feature requests to the 'gnome-perl' product (requires login)
+L<http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-perl>
+
+=back
+
+Patches that implement new features with test cases, and/or test cases that
+exercise existing bugs are always welcome.
+
+The Gtk-Perl mailing list is at L<gtk-perl-list at gnome dot org>.
+
+=head2 Source Code
+
+The source code to L<ExtUtils::Depends> is available at the Gnome.org Git repo
+(L<https://git.gnome.org/browse/perl-ExtUtils-Depends/>).  Create your own
+copy of the Git repo with:
+
+  git clone git://git.gnome.org/perl-ExtUtils-Depends (Git protocol)
+  git clone https://git.gnome.org/browse/perl-ExtUtils-Depends/ (HTTPS)
 
 =head1 SEE ALSO
 
@@ -572,7 +690,7 @@ version 0.2, borrowing liberally from Paolo's code.
 
 =head1 MAINTAINER
 
-The Gtk2 project, http://gtk2-perl.sf.net/
+The Gtk2 project, L<http://gtk2-perl.sf.net>/L<gtk-perl-list at gnome dot org>.
 
 =head1 LICENSE
 

@@ -1,34 +1,63 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+IF EXIST "%~dp0perl.exe" (
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+IF EXIST "%~dp0perl.exe" (
+"%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!perl
-#line 15
+#line 43
     eval 'exec C:\strawberry\perl\bin\perl.exe -S $0 ${1+"$@"}'
 	if $running_under_some_shell;
 
-my $config_tag1 = '5.16.0 - Mon May 21 22:08:30 2012';
+my $config_tag1 = '5.30.0 - Thu May 23 09:44:58 2019';
 
-my $patchlevel_date = 1337518360;
-my $patch_tags = '';
-my @patches = (
-    ''
-);
+my $patchlevel_date = 1558125963;
+my @patches = Config::local_patches();
+my $patch_tags = join "", map /(\S+)/ ? "+$1 " : (), @patches;
 
+BEGIN { pop @INC if $INC[-1] eq '.' }
 use warnings;
 use strict;
 use Config;
 use File::Spec;		# keep perlbug Perl 5.005 compatible
 use Getopt::Std;
 use File::Basename 'basename';
+
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
 
 sub paraprint;
 
@@ -42,9 +71,11 @@ BEGIN {
     $::HaveTemp = ($@ eq "");
     eval { require Module::CoreList; };
     $::HaveCoreList = ($@ eq "");
+    eval { require Text::Wrap; };
+    $::HaveWrap = ($@ eq "");
 };
 
-my $Version = "1.39";
+our $VERSION = "1.41";
 
 #TODO:
 #       make sure failure (transmission-wise) of Mail::Send is accounted for.
@@ -56,8 +87,10 @@ my( $file, $usefile, $cc, $address, $bugaddress, $testaddress, $thanksaddress,
     $fh, $me, $body, $andcc, %REP, $ok, $thanks, $progname,
     $Is_MSWin32, $Is_Linux, $Is_VMS, $Is_OpenBSD,
     $report_about_module, $category, $severity,
-    %opt,
+    %opt, $have_attachment, $attachments, $has_patch, $mime_boundary
 );
+
+my $running_noninteractively = !-t STDIN;
 
 my $perl_version = $^V ? sprintf("%vd", $^V) : $];
 
@@ -67,7 +100,7 @@ Init();
 
 if ($opt{h}) { Help(); exit; }
 if ($opt{d}) { Dump(*STDOUT); exit; }
-if (!-t STDIN && !($ok and not $opt{n})) {
+if ($running_noninteractively && !$opt{t} && !($ok and not $opt{n})) {
     paraprint <<"EOF";
 Please use $progname interactively. If you want to
 include a file, you can use the -f switch.
@@ -84,9 +117,22 @@ if ($outfile) {
     Send();
     if ($thanks) {
 	print "\nThank you for taking the time to send a thank-you message!\n\n";
+
+	paraprint <<EOF
+Please note that mailing lists are moderated, your message may take a while to
+show up.
+EOF
     } else {
 	print "\nThank you for taking the time to file a bug report!\n\n";
+
+	paraprint <<EOF
+Please note that mailing lists are moderated, your message may take a while to
+show up. If you do not receive an automated response acknowledging your message
+within a few hours (check your SPAM folder and outgoing mail) please consider
+sending an email directly from your mail client to perlbug\@perl.org.
+EOF
     }
+
 }
 
 exit;
@@ -133,6 +179,9 @@ EOF
     lc $alt;
 }
 
+sub HELP_MESSAGE { Help(); exit; }
+sub VERSION_MESSAGE { print "perlbug version $VERSION\n"; }
+
 sub Init {
     # -------- Setup --------
 
@@ -140,13 +189,6 @@ sub Init {
     $Is_VMS = $^O eq 'VMS';
     $Is_Linux = lc($^O) eq 'linux';
     $Is_OpenBSD = lc($^O) eq 'openbsd';
-
-    if (!getopts("Adhva:s:b:f:F:r:e:SCc:to:n:T", \%opt)) { Help(); exit; };
-
-    # This comment is needed to notify metaconfig that we are
-    # using the $perladmin, $cf_by, and $cf_time definitions.
-
-    # -------- Configuration ---------
 
     # perlbug address
     $bugaddress = 'perlbug@perl.org';
@@ -156,6 +198,16 @@ sub Init {
 
     # Thanks address
     $thanksaddress = 'perl-thanks@perl.org';
+
+    # Defaults if getopts fails.
+    $address = (basename ($0) =~ /^perlthanks/i) ? $thanksaddress : $bugaddress;
+    $cc = $::Config{'perladmin'} || $::Config{'cf_email'} || $::Config{'cf_by'} || '';
+
+    HELP_MESSAGE() unless getopts("Adhva:s:b:f:F:r:e:SCc:to:n:T:p:", \%opt);
+
+    # This comment is needed to notify metaconfig that we are
+    # using the $perladmin, $cf_by, and $cf_time definitions.
+    # -------- Configuration ---------
 
     if (basename ($0) =~ /^perlthanks/i) {
 	# invoked as perlthanks
@@ -186,6 +238,21 @@ sub Init {
 
     # File to send as report
     $file = $opt{f} || "";
+
+    # We have one or more attachments
+    $have_attachment = ($opt{p} || 0);
+    $mime_boundary = ('-' x 12) . "$VERSION.perlbug" if $have_attachment;
+
+    # Comma-separated list of attachments
+    $attachments = $opt{p} || "";
+    $has_patch = 0; # TBD based on file type
+
+    for my $attachment (split /\s*,\s*/, $attachments) {
+        unless (-f $attachment && -r $attachment) {
+            die "The attachment $attachment is not a readable file: $!\n";
+        }
+        $has_patch = 1 if $attachment =~ m/\.(patch|diff)$/;
+    }
 
     # File to output to
     $outfile = $opt{F} || "";
@@ -296,8 +363,8 @@ note to $thanksaddress instead of a bug report, please run 'perlthanks'.
 Please do not use $0 to send test messages, test whether perl
 works, or to report bugs in perl modules from CPAN.
 
-For help using perl, try posting to the Usenet newsgroup 
-comp.lang.perl.misc.
+Suggestions for how to find help using Perl can be found at
+http://perldoc.perl.org/perlcommunity.html
 EOF
 	}
     }
@@ -333,6 +400,8 @@ EOF
 	    }
 	} while (TrivialSubject($subject));
     }
+    $subject = '[PATCH] ' . $subject
+        if $has_patch && ($subject !~ m/^\[PATCH/i);
 
     # Prompt for return address, if needed
     unless ($opt{r}) {
@@ -535,21 +604,24 @@ EOF
     }
 
     # Generate report
-    open(REP,">$filename") or die "Unable to create report file '$filename': $!\n";
+    open(REP, '>:raw', $filename) or die "Unable to create report file '$filename': $!\n";
+    binmode(REP, ':raw :crlf') if $Is_MSWin32;
+
     my $reptype = !$ok ? ($thanks ? 'thank-you' : 'bug')
 	: $opt{n} ? "build failure" : "success";
 
     print REP <<EOF;
 This is a $reptype report for perl from $from,
-generated with the help of perlbug $Version running under perl $perl_version.
+generated with the help of perlbug $VERSION running under perl $perl_version.
 
 EOF
 
     if ($body) {
 	print REP $body;
     } elsif ($usefile) {
-	open(F, "<$file")
+	open(F, '<:raw', $file)
 		or die "Unable to read report file from '$file': $!\n";
+	binmode(F, ':raw :crlf') if $Is_MSWin32;
 	while (<F>) {
 	    print REP $_
 	}
@@ -600,6 +672,13 @@ Flags:
     category=$category
     severity=$severity
 EFF
+
+    if ($has_patch) {
+        print OUT <<EFF;
+    Type=Patch
+    PatchStatus=HasPatch
+EFF
+    }
 
     if ($report_about_module ) { 
         print OUT <<EFF;
@@ -677,7 +756,7 @@ sub Edit {
 	$ed = $entry unless $entry eq '';
     }
 
-    _edit_file($ed);
+    _edit_file($ed) unless $running_noninteractively;
 }
 
 sub _edit_file {
@@ -754,15 +833,18 @@ a few options. You can:
 EOF
       retry:
         print $menu;
-	    my $action =  _prompt('', "Action (Send/Display/Edit/Subject/Save to File)");;
+	    my $action =  _prompt('', "Action (Send/Display/Edit/Subject/Save to File)",
+	        $opt{t} ? 'q' : '');
         print "\n";
 	    if ($action =~ /^(f|sa)/i) { # <F>ile/<Sa>ve
             if ( SaveMessage() ) { exit }
 	    } elsif ($action =~ /^(d|l|sh)/i ) { # <D>isplay, <L>ist, <Sh>ow
 		# Display the message
-		open(REP, "<$filename") or die "Couldn't open file '$filename': $!\n";
-		while (<REP>) { print $_ }
-		close(REP) or die "Error closing report file '$filename': $!";
+		print _read_report($filename);
+		if ($have_attachment) {
+		    print "\n\n---\nAttachment(s):\n";
+		    for my $att (split /\s*,\s*/, $attachments) { print "    $att\n"; }
+		}
 	    } elsif ($action =~ /^su/i) { # <Su>bject
 		my $reply = _prompt( "Subject: $subject", "If the above subject is fine, press Enter. Otherwise, type a replacement now\nSubject");
 		if ($reply ne '') {
@@ -800,7 +882,7 @@ sub TrivialSubject {
     if ($subject =~
 	/^(y(es)?|no?|help|perl( (bug|problem))?|bug|problem)$/i ||
 	length($subject) < 4 ||
-	$subject !~ /\s/) {
+	($subject !~ /\s/ && ! $opt{t})) { # non-whitespace is accepted in test mode
 	print "\nThe subject you entered wasn't very descriptive. Please try again.\n\n";
         return 1;
     } else {
@@ -862,6 +944,7 @@ Advanced usage:
 
 $0  [-v] [-a address] [-s subject] [-b body | -f inpufile ] [ -F outputfile ]
     [-r returnaddress] [-e editor] [-c adminaddress | -C] [-S] [-t] [-h]
+    [-p patchfile ]
 $0  [-v] [-r returnaddress] [-A] [-ok | -okay | -nok | -nokay]
 
 
@@ -870,6 +953,8 @@ Options:
   -v    Include Verbose configuration data in the report
   -f    File containing the body of the report. Use this to
         quickly send a prepared message.
+  -p    File containing a patch or other text attachment. Separate
+        multiple files with commas.
   -F    File to output the resulting mail message to, instead of mailing.
   -S    Send without asking for confirmation.
   -a    Address to send the report to. Defaults to '$address'.
@@ -932,6 +1017,7 @@ sub _prompt {
     }
     print $prompt. ($default ? " [$default]" :''). ": ";
 	my $result = scalar(<>);
+    return $default if !defined $result; # got eof
     chomp($result);
 	$result =~ s/^\s*(.*?)\s*$/$1/s;
     if ($default && $result eq '') {
@@ -957,21 +1043,84 @@ sub _message_headers {
     $headers{'Message-Id'} = $messageid if ($messageid);
     $headers{'Reply-To'}   = $from      if ($from);
     $headers{'From'}       = $from      if ($from);
+    if ($have_attachment) {
+        $headers{'MIME-Version'} = '1.0';
+        $headers{'Content-Type'} = qq{multipart/mixed; boundary=\"$mime_boundary\"};
+    }
     return \%headers;
+}
+
+sub _add_body_start {
+    my $body_start = <<"BODY_START";
+This is a multi-part message in MIME format.
+--$mime_boundary
+Content-Type: text/plain; format=fixed
+Content-Transfer-Encoding: 8bit
+
+BODY_START
+    return $body_start;
+}
+
+sub _add_attachments {
+    my $attach = '';
+    for my $attachment (split /\s*,\s*/, $attachments) {
+        my $attach_file = basename($attachment);
+        $attach .= <<"ATTACHMENT";
+
+--$mime_boundary
+Content-Type: text/x-patch; name="$attach_file"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment; filename="$attach_file"
+
+ATTACHMENT
+
+        open my $attach_fh, '<:raw', $attachment
+            or die "Couldn't open attachment '$attachment': $!\n";
+        while (<$attach_fh>) { $attach .= $_; }
+        close($attach_fh) or die "Error closing attachment '$attachment': $!";
+    }
+
+    $attach .= "\n--$mime_boundary--\n";
+    return $attach;
+}
+
+sub _read_report {
+    my $fname = shift;
+    my $content;
+    open( REP, "<:raw", $fname ) or die "Couldn't open file '$fname': $!\n";
+    binmode(REP, ':raw :crlf') if $Is_MSWin32;
+    # wrap long lines to make sure the report gets delivered
+    local $Text::Wrap::columns = 900;
+    local $Text::Wrap::huge = 'overflow';
+    while (<REP>) {
+        if ($::HaveWrap && /\S/) { # wrap() would remove empty lines
+            $content .= Text::Wrap::wrap(undef, undef, $_);
+        } else {
+            $content .= $_;
+        }
+    }
+    close(REP) or die "Error closing report file '$fname': $!";
+    return $content;
 }
 
 sub build_complete_message {
     my $content = _build_header(%{_message_headers()}) . "\n\n";
-    open( REP, "<$filename" ) or die "Couldn't open file '$filename': $!\n";
-    while (<REP>) { $content .= $_; }
-    close(REP) or die "Error closing report file '$filename': $!";
+    $content .= _add_body_start() if $have_attachment;
+    $content .= _read_report($filename);
+    $content .= _add_attachments() if $have_attachment;
     return $content;
 }
 
 sub save_message_to_disk {
     my $file = shift;
 
-	    open OUTFILE, ">$file" or do { warn  "Couldn't open '$file': $!\n"; return undef};
+        if (-e $file) {
+            my $response = _prompt( '', "Overwrite existing '$file'", 'n' );
+            return undef unless $response =~ / yes | y /xi;
+        }
+        open OUTFILE, '>:raw', $file or do { warn  "Couldn't open '$file': $!\n"; return undef};
+        binmode(OUTFILE, ':raw :crlf') if $Is_MSWin32;
+
         print OUTFILE build_complete_message();
         close(OUTFILE) or do { warn  "Error closing $file: $!"; return undef };
 	    print "\nMessage saved.\n";
@@ -979,22 +1128,27 @@ sub save_message_to_disk {
 }
 
 sub _send_message_vms {
-    if (   ( $address =~ /@/ and $address !~ /^\w+%"/ )
-        or ( $cc =~ /@/ and $cc !~ /^\w+%"/ ) ) {
-        my $prefix;
-        foreach ( qw[ IN MX SMTP UCX PONY WINS ], '' ) {
-            $prefix = "$_%", last if $ENV{"MAIL\$PROTOCOL_$_"};
+
+    my $mail_from  = $from;
+    my $rcpt_to_to = $address;
+    my $rcpt_to_cc = $cc;
+
+    map { $_ =~ s/^[^<]*<//;
+          $_ =~ s/>[^>]*//; } ($mail_from, $rcpt_to_to, $rcpt_to_cc);
+
+    if ( open my $sff_fh, '|-:raw', 'MCR TCPIP$SYSTEM:TCPIP$SMTP_SFF.EXE SYS$INPUT:' ) {
+        print $sff_fh "MAIL FROM:<$mail_from>\n";
+        print $sff_fh "RCPT TO:<$rcpt_to_to>\n";
+        print $sff_fh "RCPT TO:<$rcpt_to_cc>\n" if $rcpt_to_cc;
+        print $sff_fh "DATA\n";
+        print $sff_fh build_complete_message();
+        my $success = close $sff_fh;
+        if ($success ) {
+            print "\nMessage sent\n";
+            return;
         }
-        $address = qq[${prefix}"$address"] unless $address =~ /^\w+%"/;
-        $cc = qq[${prefix}"$cc"] unless !$cc || $cc =~ /^\w+%"/;
     }
-    $subject =~ s/"/""/g;
-    $address =~ s/"/""/g;
-    $cc      =~ s/"/""/g;
-    my $sts = system(qq[mail/Subject="$subject" $filename. "$address","$cc"]);
-    if ($sts) {
-        die "Can't spawn off mail (leaving bug report in $filename): $sts";
-    }
+    die "Mail transport failed (leaving bug report in $filename): $^E\n";
 }
 
 sub _send_message_mailsend {
@@ -1005,9 +1159,10 @@ sub _send_message_mailsend {
     }
 
     $fh = $msg->open;
-    open(REP, "<$filename") or die "Couldn't open '$filename': $!\n";
-    while (<REP>) { print $fh $_ }
-    close(REP) or die "Error closing $filename: $!";
+    binmode($fh, ':raw');
+    print $fh _add_body_start() if $have_attachment;
+    print $fh _read_report($filename);
+    print $fh _add_attachments() if $have_attachment;
     $fh->close or die "Error sending mail: $!";
 
     print "\nMessage sent.\n";
@@ -1050,7 +1205,7 @@ send to '$address' with your normal mail client.
 EOF
     }
 
-    open( SENDMAIL, "|-", $sendmail, "-t", "-oi", "-f", $from )
+    open( SENDMAIL, "|-:raw", $sendmail, "-t", "-oi", "-f", $from )
         || die "'|$sendmail -t -oi -f $from' failed: $!";
     print SENDMAIL build_complete_message();
     if ( close(SENDMAIL) ) {
@@ -1072,7 +1227,8 @@ sub _fingerprint_lines_in_report {
     # we can track whether the user does any editing.
     # yes, *all* whitespace is ignored.
 
-    open(REP, "<$filename") or die "Unable to open report file '$filename': $!\n";
+    open(REP, '<:raw', $filename) or die "Unable to open report file '$filename': $!\n";
+    binmode(REP, ':raw :crlf') if $Is_MSWin32;
     while (my $line = <REP>) {
         $line =~ s/\s+//g;
         $new_lines++ if (!$REP{$line});
@@ -1227,11 +1383,11 @@ will help a great deal.  In other words, try to analyze the problem
 
 =item Can you fix the bug yourself?
 
-A bug report which I<includes a patch to fix it> will almost
-definitely be fixed.  When sending a patch, please use the C<diff>
-program with the C<-u> option to generate "unified" diff files.
-Bug reports with patches are likely to receive significantly more
-attention and interest than those without patches.
+If so, that's great news; bug reports with patches are likely to
+receive significantly more attention and interest than those without
+patches.  Please attach your patch to the report using the C<-p> option.
+When sending a patch, create it using C<git format-patch> if possible,
+though a unified diff created with C<diff -pu> will do nearly as well.
 
 Your patch may be returned with requests for changes, or requests for more
 detailed explanations about your fix.
@@ -1240,10 +1396,10 @@ Here are a few hints for creating high-quality patches:
 
 Make sure the patch is not reversed (the first argument to diff is
 typically the original file, the second argument your changed file).
-Make sure you test your patch by applying it with the C<patch>
-program before you send it on its way.  Try to follow the same style
-as the code you are trying to patch.  Make sure your patch really
-does work (C<make test>, if the thing you're patching is covered
+Make sure you test your patch by applying it with C<git am> or the
+C<patch> program before you send it on its way.  Try to follow the
+same style as the code you are trying to patch.  Make sure your patch
+really does work (C<make test>, if the thing you're patching is covered
 by Perl's test suite).
 
 =item Can you use C<perlbug> to submit the report?
@@ -1277,11 +1433,12 @@ a duplicate of an existing report, you may not receive a personal
 reply.
 
 If it is important to you that your bug be fixed, do monitor the
-perl5-porters@perl.org mailing list and the commit logs to development
+perl5-porters@perl.org mailing list (mailing lists are moderated, your
+message may take a while to show up) and the commit logs to development
 versions of Perl, and encourage the maintainers with kind words or
 offers of frosty beverages.  (Please do be kind to the maintainers.
-Harassing or flaming them is likely to have the opposite effect of
-the one you want.)
+Harassing or flaming them is likely to have the opposite effect of the
+one you want.)
 
 Feel free to update the ticket about your bug on http://rt.perl.org
 if a new version of Perl is released and your bug is still present.
@@ -1368,6 +1525,11 @@ days old.
 
 As B<-nok> except it will report on older systems.
 
+=item B<-p>
+
+The names of one or more patch files or other text attachments to be
+included with the report.  Multiple files must be separated with commas.
+
 =item B<-r>
 
 Your return address.  The program will ask you to confirm its default
@@ -1385,6 +1547,8 @@ supply one on the command line.
 =item B<-t>
 
 Test mode.  The target address defaults to B<perlbug-test@perl.org>.
+Also makes it possible to command perlbug from a pipe or file, for
+testing purposes.
 
 =item B<-T>
 
@@ -1402,12 +1566,12 @@ Kenneth Albanowski (E<lt>kjahds@kjahds.comE<gt>), subsequently
 I<doc>tored by Gurusamy Sarathy (E<lt>gsar@activestate.comE<gt>),
 Tom Christiansen (E<lt>tchrist@perl.comE<gt>), Nathan Torkington
 (E<lt>gnat@frii.comE<gt>), Charles F. Randall (E<lt>cfr@pobox.comE<gt>),
-Mike Guy (E<lt>mjtg@cam.a.ukE<gt>), Dominic Dunlop
-(E<lt>domo@computer.orgE<gt>), Hugo van der Sanden (E<lt>hv@crypt.org<gt>),
+Mike Guy (E<lt>mjtg@cam.ac.ukE<gt>), Dominic Dunlop
+(E<lt>domo@computer.orgE<gt>), Hugo van der Sanden (E<lt>hv@crypt.orgE<gt>),
 Jarkko Hietaniemi (E<lt>jhi@iki.fiE<gt>), Chris Nandor
 (E<lt>pudge@pobox.comE<gt>), Jon Orwant (E<lt>orwant@media.mit.eduE<gt>,
-Richard Foley (E<lt>richard.foley@rfi.netE<gt>), and Jesse Vincent
-(E<lt>jesse@bestpractical.com<gt>).
+Richard Foley (E<lt>richard.foley@rfi.netE<gt>), Jesse Vincent
+(E<lt>jesse@bestpractical.comE<gt>), and Craig A. Berry (E<lt>craigberry@mac.comE<gt>).
 
 =head1 SEE ALSO
 

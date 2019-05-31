@@ -6,7 +6,7 @@ use strict;
 
 our($VERSION, @ISA, @EXPORT_OK);
 
-$VERSION = "1.23";
+$VERSION = "1.43";
 
 use Carp;
 use Exporter ();
@@ -65,7 +65,7 @@ sub _init_optags {
 
 	# Split into lines, keep only indented lines
 	my @lines = grep { m/^\s/    } split(/\n/);
-	foreach (@lines) { s/--.*//  } # delete comments
+	foreach (@lines) { s/(?:\t|--).*//  } # delete comments
 	my @ops   = map  { split ' ' } @lines; # get op words
 
 	foreach(@ops) {
@@ -288,8 +288,8 @@ invert_opset function.
 
 =head1 TO DO (maybe)
 
-    $bool = opset_eq($opset1, $opset2)	true if opsets are logically eqiv
-
+    $bool = opset_eq($opset1, $opset2)	true if opsets are logically
+					equivalent
     $yes = opset_can($opset, @ops)	true if $opset has all @ops set
 
     @diff = opset_diff($opset1, $opset2) => ('foo', '!bar', ...)
@@ -308,24 +308,27 @@ invert_opset function.
 
     rv2sv sassign
 
-    rv2av aassign aelem aelemfast aelemfast_lex aslice av2arylen
+    rv2av aassign aelem aelemfast aelemfast_lex aslice kvaslice
+    av2arylen
 
-    rv2hv helem hslice each values keys exists delete aeach akeys avalues
-    boolkeys reach rvalues rkeys
+    rv2hv helem hslice kvhslice each values keys exists delete
+    aeach akeys avalues multideref argelem argdefelem argcheck
 
-    preinc i_preinc predec i_predec postinc i_postinc postdec i_postdec
-    int hex oct abs pow multiply i_multiply divide i_divide
-    modulo i_modulo add i_add subtract i_subtract
+    preinc i_preinc predec i_predec postinc i_postinc
+    postdec i_postdec int hex oct abs pow multiply i_multiply
+    divide i_divide modulo i_modulo add i_add subtract i_subtract
 
-    left_shift right_shift bit_and bit_xor bit_or negate i_negate
-    not complement
+    left_shift right_shift bit_and bit_xor bit_or nbit_and
+    nbit_xor nbit_or sbit_and sbit_xor sbit_or negate i_negate not
+    complement ncomplement scomplement
 
     lt i_lt gt i_gt le i_le ge i_ge eq i_eq ne i_ne ncmp i_ncmp
     slt sgt sle sge seq sne scmp
 
     substr vec stringify study pos length index rindex ord chr
 
-    ucfirst lcfirst uc lc fc quotemeta trans transr chop schop chomp schomp
+    ucfirst lcfirst uc lc fc quotemeta trans transr chop schop
+    chomp schomp
 
     match split qr
 
@@ -335,11 +338,14 @@ invert_opset function.
 
     warn die lineseq nextstate scope enter leave
 
-    rv2cv anoncode prototype coreargs
+    rv2cv anoncode prototype coreargs avhvswitch anonconst
 
-    entersub leavesub leavesublv return method method_named -- XXX loops via recursion?
+    entersub leavesub leavesublv return method method_named
+    method_super method_redir method_redir_super
+     -- XXX loops via recursion?
 
-    leaveeval -- needed for Safe to operate, is safe without entereval
+    leaveeval -- needed for Safe to operate, is safe
+		 without entereval
 
 =item :base_mem
 
@@ -347,7 +353,7 @@ These memory related ops are not included in :base_core because they
 can easily be used to implement a resource attack (e.g., consume all
 available memory).
 
-    concat repeat join range
+    concat multiconcat repeat join range
 
     anonlist anonhash
 
@@ -394,15 +400,16 @@ These are a hotchpotch of opcodes still waiting to be considered
 
     gvsv gv gelem
 
-    padsv padav padhv padany
+    padsv padav padhv padcv padany padrange introcv clonecv
 
     once
 
-    rv2gv refgen srefgen ref
+    rv2gv refgen srefgen ref refassign lvref lvrefslice lvavref
 
-    bless -- could be used to change ownership of objects (reblessing)
+    bless -- could be used to change ownership of objects
+	     (reblessing)
 
-    pushre regcmaybe regcreset regcomp subst substcont
+     regcmaybe regcreset regcomp subst substcont
 
     sprintf prtf -- can core dump
 
@@ -414,7 +421,8 @@ These are a hotchpotch of opcodes still waiting to be considered
     sselect select
     pipe_op sockpair
 
-    getppid getpgrp setpgrp getpriority setpriority localtime gmtime
+    getppid getpgrp setpgrp getpriority setpriority
+    localtime gmtime
 
     entertry leavetry -- can be used to 'hide' fatal errors
 
@@ -460,9 +468,10 @@ then you should not rely on the definition of this, or indeed any other, optag!
 
     stat lstat readlink
 
-    ftatime ftblk ftchr ftctime ftdir fteexec fteowned fteread
-    ftewrite ftfile ftis ftlink ftmtime ftpipe ftrexec ftrowned
-    ftrread ftsgid ftsize ftsock ftsuid fttty ftzero ftrwrite ftsvtx
+    ftatime ftblk ftchr ftctime ftdir fteexec fteowned
+    fteread ftewrite ftfile ftis ftlink ftmtime ftpipe
+    ftrexec ftrowned ftrread ftsgid ftsize ftsock ftsuid
+    fttty ftzero ftrwrite ftsvtx
 
     fttext ftbinary
 
@@ -506,7 +515,8 @@ information about your system but not be able to change it.
 
     utime chmod chown
 
-    fcntl -- not strictly filesys related, but possibly as dangerous?
+    fcntl -- not strictly filesys related, but possibly as
+	     dangerous?
 
 =item :subprocess
 

@@ -18,6 +18,11 @@ X<subroutine, declaration> X<sub>
     sub NAME : ATTRS BLOCK	  #  with attributes
     sub NAME(PROTO) : ATTRS BLOCK #  with prototypes and attributes
 
+    use feature 'signatures';
+    sub NAME(SIG) BLOCK                    # with signature
+    sub NAME :ATTRS (SIG) BLOCK            # with signature, attributes
+    sub NAME :prototype(PROTO) (SIG) BLOCK # with signature, prototype
+
 To define an anonymous subroutine at runtime:
 X<subroutine, anonymous>
 
@@ -25,6 +30,10 @@ X<subroutine, anonymous>
     $subref = sub (PROTO) BLOCK;	 # with proto
     $subref = sub : ATTRS BLOCK;	 # with attributes
     $subref = sub (PROTO) : ATTRS BLOCK; # with proto and attributes
+
+    use feature 'signatures';
+    $subref = sub (SIG) BLOCK;           # with signature
+    $subref = sub : ATTRS(SIG) BLOCK;    # with signature, attributes
 
 To import subroutines:
 X<import>
@@ -59,7 +68,9 @@ function without an explicit return statement is called a subroutine, but
 there's really no difference from Perl's perspective.)
 X<subroutine, parameter> X<parameter>
 
-Any arguments passed in show up in the array C<@_>.  Therefore, if
+Any arguments passed in show up in the array C<@_>.
+(They may also show up in lexical variables introduced by a signature;
+see L</Signatures> below.)  Therefore, if
 you called a function with two arguments, those would be stored in
 C<$_[0]> and C<$_[1]>.  The array C<@_> is a local array, but its
 elements are aliases for the actual scalar parameters.  In particular,
@@ -83,16 +94,17 @@ aggregates (arrays and hashes), these will be flattened together into
 one large indistinguishable list.
 
 If no C<return> is found and if the last statement is an expression, its
-value is returned. If the last statement is a loop control structure
-like a C<foreach> or a C<while>, the returned value is unspecified. The
+value is returned.  If the last statement is a loop control structure
+like a C<foreach> or a C<while>, the returned value is unspecified.  The
 empty sub returns the empty list.
 X<subroutine, return value> X<return value> X<return>
 
+Aside from an experimental facility (see L</Signatures> below),
 Perl does not have named formal parameters.  In practice all you
 do is assign to a C<my()> list of these.  Variables that aren't
 declared to be private are global variables.  For gory details
-on creating private variables, see L<"Private Variables via my()">
-and L<"Temporary Values via local()">.  To create protected
+on creating private variables, see L</"Private Variables via my()">
+and L</"Temporary Values via local()">.  To create protected
 environments for a set of functions in a separate package (and
 probably a separate file), see L<perlmod/"Packages">.
 X<formal parameter> X<parameter, formal>
@@ -185,7 +197,7 @@ Do not, however, be tempted to do this:
 Like the flattened incoming parameter list, the return list is also
 flattened on return.  So all you have managed to do here is stored
 everything in C<@a> and made C<@b> empty.  See 
-L<Pass by Reference> for alternatives.
+L</Pass by Reference> for alternatives.
 
 A subroutine may be called using an explicit C<&> prefix.  The
 C<&> is optional in modern Perl, as are parentheses if the
@@ -232,17 +244,269 @@ your subroutine's name.
       return($x * __SUB__->( $x - 1 ) );
     };
 
+The behavior of C<__SUB__> within a regex code block (such as C</(?{...})/>)
+is subject to change.
+
 Subroutines whose names are in all upper case are reserved to the Perl
 core, as are modules whose names are in all lower case.  A subroutine in
 all capitals is a loosely-held convention meaning it will be called
 indirectly by the run-time system itself, usually due to a triggered event.
-Subroutines that do special, pre-defined things include C<AUTOLOAD>, C<CLONE>,
-C<DESTROY> plus all functions mentioned in L<perltie> and L<PerlIO::via>.
+Subroutines whose name start with a left parenthesis are also reserved the 
+same way.  The following is a list of some subroutines that currently do 
+special, pre-defined things.
+
+=over
+
+=item documented later in this document
+
+C<AUTOLOAD>
+
+=item documented in L<perlmod>
+
+C<CLONE>, C<CLONE_SKIP>
+
+=item documented in L<perlobj>
+
+C<DESTROY>, C<DOES>
+
+=item documented in L<perltie>
+
+C<BINMODE>, C<CLEAR>, C<CLOSE>, C<DELETE>, C<DESTROY>, C<EOF>, C<EXISTS>, 
+C<EXTEND>, C<FETCH>, C<FETCHSIZE>, C<FILENO>, C<FIRSTKEY>, C<GETC>, 
+C<NEXTKEY>, C<OPEN>, C<POP>, C<PRINT>, C<PRINTF>, C<PUSH>, C<READ>, 
+C<READLINE>, C<SCALAR>, C<SEEK>, C<SHIFT>, C<SPLICE>, C<STORE>, 
+C<STORESIZE>, C<TELL>, C<TIEARRAY>, C<TIEHANDLE>, C<TIEHASH>, 
+C<TIESCALAR>, C<UNSHIFT>, C<UNTIE>, C<WRITE>
+
+=item documented in L<PerlIO::via>
+
+C<BINMODE>, C<CLEARERR>, C<CLOSE>, C<EOF>, C<ERROR>, C<FDOPEN>, C<FILENO>, 
+C<FILL>, C<FLUSH>, C<OPEN>, C<POPPED>, C<PUSHED>, C<READ>, C<SEEK>, 
+C<SETLINEBUF>, C<SYSOPEN>, C<TELL>, C<UNREAD>, C<UTF8>, C<WRITE>
+
+=item documented in L<perlfunc>
+
+L<< C<import> | perlfunc/use >>, L<< C<unimport> | perlfunc/use >>,
+L<< C<INC> | perlfunc/require >>
+
+=item documented in L<UNIVERSAL>
+
+C<VERSION>
+
+=item documented in L<perldebguts>
+
+C<DB::DB>, C<DB::sub>, C<DB::lsub>, C<DB::goto>, C<DB::postponed>
+
+=item undocumented, used internally by the L<overload> feature
+
+any starting with C<(>
+
+=back
 
 The C<BEGIN>, C<UNITCHECK>, C<CHECK>, C<INIT> and C<END> subroutines
 are not so much subroutines as named special code blocks, of which you
 can have more than one in a package, and which you can B<not> call
 explicitly.  See L<perlmod/"BEGIN, UNITCHECK, CHECK, INIT and END">
+
+=head2 Signatures
+
+B<WARNING>: Subroutine signatures are experimental.  The feature may be
+modified or removed in future versions of Perl.
+
+Perl has an experimental facility to allow a subroutine's formal
+parameters to be introduced by special syntax, separate from the
+procedural code of the subroutine body.  The formal parameter list
+is known as a I<signature>.  The facility must be enabled first by a
+pragmatic declaration, C<use feature 'signatures'>, and it will produce
+a warning unless the "experimental::signatures" warnings category is
+disabled.
+
+The signature is part of a subroutine's body.  Normally the body of a
+subroutine is simply a braced block of code, but when using a signature,
+the signature is a parenthesised list that goes immediately before the
+block, after any name or attributes.
+
+For example,
+
+    sub foo :lvalue ($a, $b = 1, @c) { .... }
+
+The signature declares lexical variables that are
+in scope for the block.  When the subroutine is called, the signature
+takes control first.  It populates the signature variables from the
+list of arguments that were passed.  If the argument list doesn't meet
+the requirements of the signature, then it will throw an exception.
+When the signature processing is complete, control passes to the block.
+
+Positional parameters are handled by simply naming scalar variables in
+the signature.  For example,
+
+    sub foo ($left, $right) {
+	return $left + $right;
+    }
+
+takes two positional parameters, which must be filled at runtime by
+two arguments.  By default the parameters are mandatory, and it is
+not permitted to pass more arguments than expected.  So the above is
+equivalent to
+
+    sub foo {
+	die "Too many arguments for subroutine" unless @_ <= 2;
+	die "Too few arguments for subroutine" unless @_ >= 2;
+	my $left = $_[0];
+	my $right = $_[1];
+	return $left + $right;
+    }
+
+An argument can be ignored by omitting the main part of the name from
+a parameter declaration, leaving just a bare C<$> sigil.  For example,
+
+    sub foo ($first, $, $third) {
+	return "first=$first, third=$third";
+    }
+
+Although the ignored argument doesn't go into a variable, it is still
+mandatory for the caller to pass it.
+
+A positional parameter is made optional by giving a default value,
+separated from the parameter name by C<=>:
+
+    sub foo ($left, $right = 0) {
+	return $left + $right;
+    }
+
+The above subroutine may be called with either one or two arguments.
+The default value expression is evaluated when the subroutine is called,
+so it may provide different default values for different calls.  It is
+only evaluated if the argument was actually omitted from the call.
+For example,
+
+    my $auto_id = 0;
+    sub foo ($thing, $id = $auto_id++) {
+	print "$thing has ID $id";
+    }
+
+automatically assigns distinct sequential IDs to things for which no
+ID was supplied by the caller.  A default value expression may also
+refer to parameters earlier in the signature, making the default for
+one parameter vary according to the earlier parameters.  For example,
+
+    sub foo ($first_name, $surname, $nickname = $first_name) {
+	print "$first_name $surname is known as \"$nickname\"";
+    }
+
+An optional parameter can be nameless just like a mandatory parameter.
+For example,
+
+    sub foo ($thing, $ = 1) {
+	print $thing;
+    }
+
+The parameter's default value will still be evaluated if the corresponding
+argument isn't supplied, even though the value won't be stored anywhere.
+This is in case evaluating it has important side effects.  However, it
+will be evaluated in void context, so if it doesn't have side effects
+and is not trivial it will generate a warning if the "void" warning
+category is enabled.  If a nameless optional parameter's default value
+is not important, it may be omitted just as the parameter's name was:
+
+    sub foo ($thing, $=) {
+	print $thing;
+    }
+
+Optional positional parameters must come after all mandatory positional
+parameters.  (If there are no mandatory positional parameters then an
+optional positional parameters can be the first thing in the signature.)
+If there are multiple optional positional parameters and not enough
+arguments are supplied to fill them all, they will be filled from left
+to right.
+
+After positional parameters, additional arguments may be captured in a
+slurpy parameter.  The simplest form of this is just an array variable:
+
+    sub foo ($filter, @inputs) {
+	print $filter->($_) foreach @inputs;
+    }
+
+With a slurpy parameter in the signature, there is no upper limit on how
+many arguments may be passed.  A slurpy array parameter may be nameless
+just like a positional parameter, in which case its only effect is to
+turn off the argument limit that would otherwise apply:
+
+    sub foo ($thing, @) {
+	print $thing;
+    }
+
+A slurpy parameter may instead be a hash, in which case the arguments
+available to it are interpreted as alternating keys and values.
+There must be as many keys as values: if there is an odd argument then
+an exception will be thrown.  Keys will be stringified, and if there are
+duplicates then the later instance takes precedence over the earlier,
+as with standard hash construction.
+
+    sub foo ($filter, %inputs) {
+	print $filter->($_, $inputs{$_}) foreach sort keys %inputs;
+    }
+
+A slurpy hash parameter may be nameless just like other kinds of
+parameter.  It still insists that the number of arguments available to
+it be even, even though they're not being put into a variable.
+
+    sub foo ($thing, %) {
+	print $thing;
+    }
+
+A slurpy parameter, either array or hash, must be the last thing in the
+signature.  It may follow mandatory and optional positional parameters;
+it may also be the only thing in the signature.  Slurpy parameters cannot
+have default values: if no arguments are supplied for them then you get
+an empty array or empty hash.
+
+A signature may be entirely empty, in which case all it does is check
+that the caller passed no arguments:
+
+    sub foo () {
+	return 123;
+    }
+
+When using a signature, the arguments are still available in the special
+array variable C<@_>, in addition to the lexical variables of the
+signature.  There is a difference between the two ways of accessing the
+arguments: C<@_> I<aliases> the arguments, but the signature variables
+get I<copies> of the arguments.  So writing to a signature variable
+only changes that variable, and has no effect on the caller's variables,
+but writing to an element of C<@_> modifies whatever the caller used to
+supply that argument.
+
+There is a potential syntactic ambiguity between signatures and prototypes
+(see L</Prototypes>), because both start with an opening parenthesis and
+both can appear in some of the same places, such as just after the name
+in a subroutine declaration.  For historical reasons, when signatures
+are not enabled, any opening parenthesis in such a context will trigger
+very forgiving prototype parsing.  Most signatures will be interpreted
+as prototypes in those circumstances, but won't be valid prototypes.
+(A valid prototype cannot contain any alphabetic character.)  This will
+lead to somewhat confusing error messages.
+
+To avoid ambiguity, when signatures are enabled the special syntax
+for prototypes is disabled.  There is no attempt to guess whether a
+parenthesised group was intended to be a prototype or a signature.
+To give a subroutine a prototype under these circumstances, use a
+L<prototype attribute|attributes/Built-in Attributes>.  For example,
+
+    sub foo :prototype($) { $_[0] }
+
+It is entirely possible for a subroutine to have both a prototype and
+a signature.  They do different jobs: the prototype affects compilation
+of calls to the subroutine, and the signature puts argument values into
+lexical variables at runtime.  You can therefore write
+
+    sub foo :prototype($$) ($left, $right) {
+	return $left + $right;
+    }
+
+The prototype attribute, and any other attributes, must come before
+the signature.  The signature always immediately precedes the block of
+the subroutine's body.
 
 =head2 Private Variables via my()
 X<my> X<variable, lexical> X<lexical> X<lexical variable> X<scope, lexical>
@@ -261,9 +525,10 @@ evolving.  The current semantics and interface are subject to change.
 See L<attributes> and L<Attribute::Handlers>.
 
 The C<my> operator declares the listed variables to be lexically
-confined to the enclosing block, conditional (C<if/unless/elsif/else>),
-loop (C<for/foreach/while/until/continue>), subroutine, C<eval>,
-or C<do/require/use>'d file.  If more than one value is listed, the
+confined to the enclosing block, conditional
+(C<if>/C<unless>/C<elsif>/C<else>), loop
+(C<for>/C<foreach>/C<while>/C<until>/C<continue>), subroutine, C<eval>,
+or C<do>/C<require>/C<use>'d file.  If more than one value is listed, the
 list must be placed in parentheses.  All listed elements must be
 legal lvalues.  Only alphanumeric identifiers may be lexically
 scoped--magical built-ins like C<$/> must currently be C<local>ized
@@ -446,17 +711,25 @@ this.
 X<state> X<state variable> X<static> X<variable, persistent> X<variable, static> X<closure>
 
 There are two ways to build persistent private variables in Perl 5.10.
-First, you can simply use the C<state> feature. Or, you can use closures,
+First, you can simply use the C<state> feature.  Or, you can use closures,
 if you want to stay compatible with releases older than 5.10.
 
 =head3 Persistent variables via state()
 
-Beginning with Perl 5.9.4, you can declare variables with the C<state>
+Beginning with Perl 5.10.0, you can declare variables with the C<state>
 keyword in place of C<my>.  For that to work, though, you must have
 enabled that feature beforehand, either by using the C<feature> pragma, or
 by using C<-E> on one-liners (see L<feature>).  Beginning with Perl 5.16,
 the C<CORE::state> form does not require the
 C<feature> pragma.
+
+The C<state> keyword creates a lexical variable (following the same scoping
+rules as C<my>) that persists from one subroutine call to the next.  If a
+state variable resides inside an anonymous subroutine, then each copy of
+the subroutine has its own copy of the state variable.  However, the value
+of the state variable will still persist between calls to the same copy of
+the anonymous subroutine.  (Don't forget that C<sub { ... }> creates a new
+subroutine each time it is executed.)
 
 For example, the following code maintains a private counter, incremented
 each time the gimme_another() function is called:
@@ -464,13 +737,21 @@ each time the gimme_another() function is called:
     use feature 'state';
     sub gimme_another { state $x; return ++$x }
 
+And this example uses anonymous subroutines to create separate counters:
+
+    use feature 'state';
+    sub create_counter {
+	return sub { state $x; return ++$x }
+    }
+
 Also, since C<$x> is lexical, it can't be reached or modified by any Perl
 code outside.
 
-When combined with variable declaration, simple scalar assignment to C<state>
+When combined with variable declaration, simple assignment to C<state>
 variables (as in C<state $x = 42>) is executed only the first time.  When such
 statements are evaluated subsequent times, the assignment is ignored.  The
-behavior of this sort of assignment to non-scalar variables is undefined.
+behavior of assignment to C<state> declarations where the left hand side
+of the assignment involves any parentheses is currently undefined.
 
 =head3 Persistent variables with closures
 
@@ -543,23 +824,23 @@ Synopsis:
 
     # localization of values
 
-    local $foo;			# make $foo dynamically local
-    local (@wid, %get);		# make list of variables local
-    local $foo = "flurp";	# make $foo dynamic, and init it
-    local @oof = @bar;		# make @oof dynamic, and init it
+    local $foo;		       # make $foo dynamically local
+    local (@wid, %get);	       # make list of variables local
+    local $foo = "flurp";      # make $foo dynamic, and init it
+    local @oof = @bar;	       # make @oof dynamic, and init it
 
-    local $hash{key} = "val";	# sets a local value for this hash entry
-    delete local $hash{key};    # delete this entry for the current block
-    local ($cond ? $v1 : $v2);	# several types of lvalues support
-				# localization
+    local $hash{key} = "val";  # sets a local value for this hash entry
+    delete local $hash{key};   # delete this entry for the current block
+    local ($cond ? $v1 : $v2); # several types of lvalues support
+			       # localization
 
     # localization of symbols
 
-    local *FH;			# localize $FH, @FH, %FH, &FH  ...
-    local *merlyn = *randal;	# now $merlyn is really $randal, plus
-                                #     @merlyn is really @randal, etc
-    local *merlyn = 'randal';	# SAME THING: promote 'randal' to *randal
-    local *merlyn = \$randal;   # just alias $merlyn, not @merlyn etc
+    local *FH;		       # localize $FH, @FH, %FH, &FH  ...
+    local *merlyn = *randal;   # now $merlyn is really $randal, plus
+                               #     @merlyn is really @randal, etc
+    local *merlyn = 'randal';  # SAME THING: promote 'randal' to *randal
+    local *merlyn = \$randal;  # just alias $merlyn, not @merlyn etc
 
 A C<local> modifies its listed variables to be "local" to the
 enclosing block, C<eval>, or C<do FILE>--and to I<any subroutine
@@ -616,7 +897,7 @@ This feature allows code like this to work :
     { local $/ = undef; $slurp = <FILE>; }
 
 Note, however, that this restricts localization of some values ; for
-example, the following statement dies, as of perl 5.9.0, with an error
+example, the following statement dies, as of perl 5.10.0, with an error
 I<Modification of a read-only value attempted>, because the $1 variable is
 magical and read-only :
 
@@ -629,7 +910,7 @@ to safely reuse $_ in a subroutine.
 B<WARNING>: Localization of tied arrays and hashes does not currently
 work as described.
 This will be fixed in a future release of Perl; in the meantime, avoid
-code that relies on any particular behaviour of localising tied arrays
+code that relies on any particular behavior of localising tied arrays
 or hashes (localising individual elements is still okay).
 See L<perl58delta/"Localising Tied Arrays and Hashes Is Broken"> for more
 details.
@@ -656,7 +937,7 @@ X<local, composite type element> X<local, array element> X<local, hash element>
 
 It's also worth taking a moment to explain what happens when you
 C<local>ize a member of a composite type (i.e. an array or hash element).
-In this case, the element is C<local>ized I<by name>. This means that
+In this case, the element is C<local>ized I<by name>.  This means that
 when the scope of the C<local()> ends, the saved value will be
 restored to the hash element whose key was named in the C<local()>, or
 the array element whose index was named in the C<local()>.  If that
@@ -692,14 +973,16 @@ Perl will print
     The array has 6 elements: 0, 1, 2, undef, undef, 5
 
 The behavior of local() on non-existent members of composite
-types is subject to change in future.
+types is subject to change in future. The behavior of local()
+on array elements specified using negative indexes is particularly
+surprising, and is very likely to change.
 
 =head3 Localized deletion of elements of composite types
 X<delete> X<local, composite type element> X<local, array element> X<local, hash element>
 
 You can use the C<delete local $array[$idx]> and C<delete local $hash{key}>
 constructs to delete a composite type entry for the current block and restore
-it when it ends. They return the array/hash value before the localization,
+it when it ends.  They return the array/hash value before the localization,
 which means that they are respectively equivalent to
 
     do {
@@ -718,7 +1001,8 @@ and
         $val
     }
 
-except that for those the C<local> is scoped to the C<do> block. Slices are
+except that for those the C<local> is
+scoped to the C<do> block.  Slices are
 also accepted.
 
     my %hash = (
@@ -746,9 +1030,6 @@ also accepted.
 =head2 Lvalue subroutines
 X<lvalue> X<subroutine, lvalue>
 
-B<WARNING>: Lvalue subroutines are still experimental and the
-implementation may change in future versions of Perl.
-
 It is possible to return a modifiable value from a subroutine.
 To do this, you have to declare the subroutine to return an lvalue.
 
@@ -765,7 +1046,7 @@ To do this, you have to declare the subroutine to return an lvalue.
 
 The scalar/list context for the subroutine and for the right-hand
 side of assignment is determined as if the subroutine call is replaced
-by a scalar. For example, consider:
+by a scalar.  For example, consider:
 
     data(2,3) = get_data(3,4);
 
@@ -779,33 +1060,125 @@ and in:
 
 all the subroutines are called in a list context.
 
-=over 4
+Lvalue subroutines are convenient, but you have to keep in mind that,
+when used with objects, they may violate encapsulation.  A normal
+mutator can check the supplied argument before setting the attribute
+it is protecting, an lvalue subroutine cannot.  If you require any
+special processing when storing and retrieving the values, consider
+using the CPAN module Sentinel or something similar.
 
-=item Lvalue subroutines are EXPERIMENTAL
+=head2 Lexical Subroutines
+X<my sub> X<state sub> X<our sub> X<subroutine, lexical>
 
-They appear to be convenient, but there is at least one reason to be
-circumspect.
+Beginning with Perl 5.18, you can declare a private subroutine with C<my>
+or C<state>.  As with state variables, the C<state> keyword is only
+available under C<use feature 'state'> or C<use 5.010> or higher.
 
-They violate encapsulation.  A normal mutator can check the supplied
-argument before setting the attribute it is protecting, an lvalue
-subroutine never gets that chance.  Consider;
+Prior to Perl 5.26, lexical subroutines were deemed experimental and were
+available only under the C<use feature 'lexical_subs'> pragma.  They also
+produced a warning unless the "experimental::lexical_subs" warnings
+category was disabled.
 
-    my $some_array_ref = [];	# protected by mutators ??
+These subroutines are only visible within the block in which they are
+declared, and only after that declaration:
 
-    sub set_arr { 		# normal mutator
-	my $val = shift;
-	die("expected array, you supplied ", ref $val)
-	   unless ref $val eq 'ARRAY';
-	$some_array_ref = $val;
+    # Include these two lines if your code is intended to run under Perl
+    # versions earlier than 5.26.
+    no warnings "experimental::lexical_subs";
+    use feature 'lexical_subs';
+
+    foo();              # calls the package/global subroutine
+    state sub foo {
+        foo();          # also calls the package subroutine
     }
-    sub set_arr_lv : lvalue {	# lvalue mutator
-	$some_array_ref;
+    foo();              # calls "state" sub
+    my $ref = \&foo;    # take a reference to "state" sub
+
+    my sub bar { ... }
+    bar();              # calls "my" sub
+
+You can't (directly) write a recursive lexical subroutine:
+
+    # WRONG
+    my sub baz {
+        baz();
     }
 
-    # set_arr_lv cannot stop this !
-    set_arr_lv() = { a => 1 };
+This example fails because C<baz()> refers to the package/global subroutine
+C<baz>, not the lexical subroutine currently being defined.
 
-=back
+The solution is to use L<C<__SUB__>|perlfunc/__SUB__>:
+
+    my sub baz {
+        __SUB__->();    # calls itself
+    }
+
+It is possible to predeclare a lexical subroutine.  The C<sub foo {...}>
+subroutine definition syntax respects any previous C<my sub;> or C<state sub;>
+declaration.  Using this to define recursive subroutines is a bad idea,
+however:
+
+    my sub baz;         # predeclaration
+    sub baz {           # define the "my" sub
+        baz();          # WRONG: calls itself, but leaks memory
+    }
+
+Just like C<< my $f; $f = sub { $f->() } >>, this example leaks memory.  The
+name C<baz> is a reference to the subroutine, and the subroutine uses the name
+C<baz>; they keep each other alive (see L<perlref/Circular References>).
+
+=head3 C<state sub> vs C<my sub>
+
+What is the difference between "state" subs and "my" subs?  Each time that
+execution enters a block when "my" subs are declared, a new copy of each
+sub is created.  "State" subroutines persist from one execution of the
+containing block to the next.
+
+So, in general, "state" subroutines are faster.  But "my" subs are
+necessary if you want to create closures:
+
+    sub whatever {
+	my $x = shift;
+	my sub inner {
+	    ... do something with $x ...
+	}
+	inner();
+    }
+
+In this example, a new C<$x> is created when C<whatever> is called, and
+also a new C<inner>, which can see the new C<$x>.  A "state" sub will only
+see the C<$x> from the first call to C<whatever>.
+
+=head3 C<our> subroutines
+
+Like C<our $variable>, C<our sub> creates a lexical alias to the package
+subroutine of the same name.
+
+The two main uses for this are to switch back to using the package sub
+inside an inner scope:
+
+    sub foo { ... }
+
+    sub bar {
+	my sub foo { ... }
+	{
+	    # need to use the outer foo here
+	    our sub foo;
+	    foo();
+	}
+    }
+
+and to make a subroutine visible to other packages in the same scope:
+
+    package MySneakyModule;
+
+    our sub do_something { ... }
+
+    sub do_something_with_caller {
+	package DB;
+	() = caller 1;		# sets @DB::args
+	do_something(@args);	# uses MySneakyModule::do_something
+    }
 
 =head2 Passing Symbol Table Entries (typeglobs)
 X<typeglob> X<*>
@@ -902,10 +1275,10 @@ a local alias.
 
     {
         local *grow = \&shrink; # only until this block exits
-        grow();                 # really calls shrink()
-	move();			# if move() grow()s, it shrink()s too
+        grow();                # really calls shrink()
+	move();		       # if move() grow()s, it shrink()s too
     }
-    grow();			# get the real grow() again
+    grow();		       # get the real grow() again
 
 See L<perlref/"Function Templates"> for more about manipulating
 functions by name in this way.
@@ -923,8 +1296,7 @@ is done on dynamics:
     } 
     # interruptibility automatically restored here
 
-But it also works on lexically declared aggregates.  Prior to 5.005,
-this operation could on occasion misbehave.
+But it also works on lexically declared aggregates.
 
 =back
 
@@ -945,7 +1317,7 @@ of all their former last elements:
 
     sub popmany {
 	my $aref;
-	my @retlist = ();
+	my @retlist;
 	foreach $aref ( @_ ) {
 	    push @retlist, pop @$aref;
 	}
@@ -1046,11 +1418,21 @@ Notice to pass back just the bare *FH, not its reference.
 X<prototype> X<subroutine, prototype>
 
 Perl supports a very limited kind of compile-time argument checking
-using function prototyping.  If you declare
+using function prototyping.  This can be declared in either the PROTO
+section or with a L<prototype attribute|attributes/Built-in Attributes>.
+If you declare either of
 
-    sub mypush (+@)
+    sub mypush (\@@)
+    sub mypush :prototype(\@@)
 
-then C<mypush()> takes arguments exactly like C<push()> does.  The
+then C<mypush()> takes arguments exactly like C<push()> does.
+
+If subroutine signatures are enabled (see L</Signatures>), then
+the shorter PROTO syntax is unavailable, because it would clash with
+signatures.  In that case, a prototype can only be declared in the form
+of an attribute.
+
+The
 function declaration must be visible at compile time.  The prototype
 affects only interpretation of new-style calls to the function,
 where new-style is defined as not using the C<&> character.  In
@@ -1070,33 +1452,33 @@ subroutines that work like built-in functions, here are prototypes
 for some other functions that parse almost exactly like the
 corresponding built-in.
 
-    Declared as			Called as
+   Declared as		   Called as
 
-    sub mylink ($$)	     mylink $old, $new
-    sub myvec ($$$)	     myvec $var, $offset, 1
-    sub myindex ($$;$)	     myindex &getstring, "substr"
-    sub mysyswrite ($$$;$)   mysyswrite $buf, 0, length($buf) - $off, $off
-    sub myreverse (@)	     myreverse $a, $b, $c
-    sub myjoin ($@)	     myjoin ":", $a, $b, $c
-    sub mypop (+)	     mypop @array
-    sub mysplice (+$$@)	     mysplice @array, 0, 2, @pushme
-    sub mykeys (+)	     mykeys %{$hashref}
-    sub myopen (*;$)	     myopen HANDLE, $name
-    sub mypipe (**)	     mypipe READHANDLE, WRITEHANDLE
-    sub mygrep (&@)	     mygrep { /foo/ } $a, $b, $c
-    sub myrand (;$)	     myrand 42
-    sub mytime ()	     mytime
+   sub mylink ($$)	   mylink $old, $new
+   sub myvec ($$$)	   myvec $var, $offset, 1
+   sub myindex ($$;$)	   myindex &getstring, "substr"
+   sub mysyswrite ($$$;$)  mysyswrite $buf, 0, length($buf) - $off, $off
+   sub myreverse (@)	   myreverse $a, $b, $c
+   sub myjoin ($@)	   myjoin ":", $a, $b, $c
+   sub mypop (\@)	   mypop @array
+   sub mysplice (\@$$@)	   mysplice @array, 0, 2, @pushme
+   sub mykeys (\[%@])	   mykeys %{$hashref}
+   sub myopen (*;$)	   myopen HANDLE, $name
+   sub mypipe (**)	   mypipe READHANDLE, WRITEHANDLE
+   sub mygrep (&@)	   mygrep { /foo/ } $a, $b, $c
+   sub myrand (;$)	   myrand 42
+   sub mytime ()	   mytime
 
 Any backslashed prototype character represents an actual argument
 that must start with that character (optionally preceded by C<my>,
 C<our> or C<local>), with the exception of C<$>, which will
 accept any scalar lvalue expression, such as C<$foo = 7> or
-C<< my_function()->[0] >>. The value passed as part of C<@_> will be a
+C<< my_function()->[0] >>.  The value passed as part of C<@_> will be a
 reference to the actual argument given in the subroutine call,
 obtained by applying C<\> to that argument.
 
 You can use the C<\[]> backslash group notation to specify more than one
-allowed argument type. For example:
+allowed argument type.  For example:
 
     sub myref (\[$@%&*])
 
@@ -1235,14 +1617,24 @@ and someone has been calling it with an array or expression
 returning a list:
 
     func(@foo);
-    func( split /:/ );
+    func( $text =~ /\w+/g );
 
 Then you've just supplied an automatic C<scalar> in front of their
 argument, which can be more than a bit surprising.  The old C<@foo>
 which used to hold one thing doesn't get passed in.  Instead,
 C<func()> now gets passed in a C<1>; that is, the number of elements
-in C<@foo>.  And the C<split> gets called in scalar context so it
-starts scribbling on your C<@_> parameter list.  Ouch!
+in C<@foo>.  And the C<m//g> gets called in scalar context so instead of a
+list of words it returns a boolean result and advances C<pos($text)>.  Ouch!
+
+If a sub has both a PROTO and a BLOCK, the prototype is not applied
+until after the BLOCK is completely defined.  This means that a recursive
+function with a prototype has to be predeclared for the prototype to take
+effect, like so:
+
+	sub foo($$);
+	sub foo($$) {
+		foo 1, 2;
+	}
 
 This is all very powerful, of course, and should be used only in moderation
 to make the world a better place.
@@ -1274,11 +1666,12 @@ The following functions would all be inlined:
     sub N () { int(OPT_BAZ) / 3 }
 
     sub FOO_SET () { 1 if FLAG_MASK & FLAG_FOO }
+    sub FOO_SET2 () { if (FLAG_MASK & FLAG_FOO) { 1 } }
 
-Be aware that these will not be inlined; as they contain inner scopes,
-the constant folding doesn't reduce them to a single constant:
-
-    sub foo_set () { if (FLAG_MASK & FLAG_FOO) { 1 } }
+(Be aware that the last example was not always inlined in Perl 5.20 and
+earlier, which did not behave consistently with subroutines containing
+inner scopes.)  You can countermand inlining by using an explicit
+C<return>:
 
     sub baz_val () {
 	if (OPT_BAZ) {
@@ -1288,21 +1681,118 @@ the constant folding doesn't reduce them to a single constant:
 	    return 42;
 	}
     }
+    sub bonk_val () { return 12345 }
 
-If you redefine a subroutine that was eligible for inlining, you'll get
-a warning by default.  (You can use this warning to tell whether or not a
-particular subroutine is considered constant.)  The warning is
-considered severe enough not to be affected by the B<-w>
-switch (or its absence) because previously compiled
-invocations of the function will still be using the old value of the
-function.  If you need to be able to redefine the subroutine, you need to
-ensure that it isn't inlined, either by dropping the C<()> prototype
-(which changes calling semantics, so beware) or by thwarting the
-inlining mechanism in some other way, such as
+As alluded to earlier you can also declare inlined subs dynamically at
+BEGIN time if their body consists of a lexically-scoped scalar which
+has no other references.  Only the first example here will be inlined:
 
-    sub not_inlined () {
-    	23 if $];
+    BEGIN {
+        my $var = 1;
+        no strict 'refs';
+        *INLINED = sub () { $var };
     }
+
+    BEGIN {
+        my $var = 1;
+        my $ref = \$var;
+        no strict 'refs';
+        *NOT_INLINED = sub () { $var };
+    }
+
+A not so obvious caveat with this (see [RT #79908]) is that the
+variable will be immediately inlined, and will stop behaving like a
+normal lexical variable, e.g. this will print C<79907>, not C<79908>:
+
+    BEGIN {
+        my $x = 79907;
+        *RT_79908 = sub () { $x };
+        $x++;
+    }
+    print RT_79908(); # prints 79907
+
+As of Perl 5.22, this buggy behavior, while preserved for backward
+compatibility, is detected and emits a deprecation warning.  If you want
+the subroutine to be inlined (with no warning), make sure the variable is
+not used in a context where it could be modified aside from where it is
+declared.
+
+    # Fine, no warning
+    BEGIN {
+        my $x = 54321;
+        *INLINED = sub () { $x };
+    }
+    # Warns.  Future Perl versions will stop inlining it.
+    BEGIN {
+        my $x;
+        $x = 54321;
+        *ALSO_INLINED = sub () { $x };
+    }
+
+Perl 5.22 also introduces the experimental "const" attribute as an
+alternative.  (Disable the "experimental::const_attr" warnings if you want
+to use it.)  When applied to an anonymous subroutine, it forces the sub to
+be called when the C<sub> expression is evaluated.  The return value is
+captured and turned into a constant subroutine:
+
+    my $x = 54321;
+    *INLINED = sub : const { $x };
+    $x++;
+
+The return value of C<INLINED> in this example will always be 54321,
+regardless of later modifications to $x.  You can also put any arbitrary
+code inside the sub, at it will be executed immediately and its return
+value captured the same way.
+
+If you really want a subroutine with a C<()> prototype that returns a
+lexical variable you can easily force it to not be inlined by adding
+an explicit C<return>:
+
+    BEGIN {
+        my $x = 79907;
+        *RT_79908 = sub () { return $x };
+        $x++;
+    }
+    print RT_79908(); # prints 79908
+
+The easiest way to tell if a subroutine was inlined is by using
+L<B::Deparse>.  Consider this example of two subroutines returning
+C<1>, one with a C<()> prototype causing it to be inlined, and one
+without (with deparse output truncated for clarity):
+
+ $ perl -MO=Deparse -le 'sub ONE { 1 } if (ONE) { print ONE if ONE }'
+ sub ONE {
+     1;
+ }
+ if (ONE ) {
+     print ONE() if ONE ;
+ }
+ $ perl -MO=Deparse -le 'sub ONE () { 1 } if (ONE) { print ONE if ONE }'
+ sub ONE () { 1 }
+ do {
+     print 1
+ };
+
+If you redefine a subroutine that was eligible for inlining, you'll
+get a warning by default.  You can use this warning to tell whether or
+not a particular subroutine is considered inlinable, since it's
+different than the warning for overriding non-inlined subroutines:
+
+    $ perl -e 'sub one () {1} sub one () {2}'
+    Constant subroutine one redefined at -e line 1.
+    $ perl -we 'sub one {1} sub one {2}'
+    Subroutine one redefined at -e line 1.
+
+The warning is considered severe enough not to be affected by the
+B<-w> switch (or its absence) because previously compiled invocations
+of the function will still be using the old value of the function.  If
+you need to be able to redefine the subroutine, you need to ensure
+that it isn't inlined, either by dropping the C<()> prototype (which
+changes calling semantics, so beware) or by thwarting the inlining
+mechanism in some other way, e.g. by adding an explicit C<return>, as
+mentioned above:
+
+    sub not_inlined () { return 23 }
 
 =head2 Overriding Built-in Functions
 X<built-in> X<override> X<CORE> X<CORE::GLOBAL>
@@ -1424,7 +1914,7 @@ And, as you'll have noticed from the previous example, if you override
 C<glob>, the C<< <*> >> glob operator is overridden as well.
 
 In a similar fashion, overriding the C<readline> function also overrides
-the equivalent I/O operator C<< <FILEHANDLE> >>. Also, overriding
+the equivalent I/O operator C<< <FILEHANDLE> >>.  Also, overriding
 C<readpipe> also overrides the operators C<``> and C<qx//>.
 
 Finally, some built-ins (e.g. C<exists> or C<grep>) can't be overridden.
@@ -1459,12 +1949,13 @@ let's pretend that a function that wasn't defined should just invoke
 C<system> with those arguments.  All you'd do is:
 
     sub AUTOLOAD {
-	my $program = $AUTOLOAD;
-	$program =~ s/.*:://;
-	system($program, @_);
+        our $AUTOLOAD;              # keep 'use strict' happy
+        my $program = $AUTOLOAD;
+        $program =~ s/.*:://;
+        system($program, @_);
     }
     date();
-    who('am', 'i');
+    who();
     ls('-l');
 
 In fact, if you predeclare functions you want to call that way, you don't
@@ -1472,7 +1963,7 @@ even need parentheses:
 
     use subs qw(date who ls);
     date;
-    who "am", "i";
+    who;
     ls '-l';
 
 A more complete example of this is the Shell module on CPAN, which

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _NTDDSCRD_H2_
@@ -14,7 +14,7 @@ extern "C" {
 
 #ifndef BASETYPES
 #define BASETYPES
-  typedef unsigned long ULONG;
+  typedef unsigned __LONG32 ULONG;
   typedef ULONG *PULONG;
   typedef unsigned short USHORT;
   typedef USHORT *PUSHORT;

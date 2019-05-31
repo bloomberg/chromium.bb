@@ -21,18 +21,17 @@
 
 #define AM_NOVTABLE
 
+#include <windows.h>
 #ifndef __WINESRC__
-# include <windows.h>
 # include <windowsx.h>
-#else
-# include <windef.h>
-# include <wingdi.h>
-# include <objbase.h>
 #endif
 #include <olectl.h>
 #include <ddraw.h>
 #include <mmsystem.h>
-/* FIXME: #include <strsafe.h>*/
+#ifndef NO_DSHOW_STRSAFE
+#define NO_SHLWAPI_STRFCNS
+#include <strsafe.h>
+#endif
 
 #ifndef NUMELMS
 #define NUMELMS(array) (sizeof(array)/sizeof((array)[0]))
@@ -41,7 +40,7 @@
 #include <strmif.h>
 #include <amvideo.h>
 #ifdef DSHOW_USE_AMAUDIO
-/* FIXME: #include <amaudio.h>*/
+#include <amaudio.h>
 #endif
 #include <control.h>
 #include <evcode.h>

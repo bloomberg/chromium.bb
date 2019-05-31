@@ -29,5 +29,4 @@ C:\strawberry\perl\vendor\lib\XML\Parser\Style\Objects.pm
 C:\strawberry\perl\vendor\lib\XML\Parser\Style\Stream.pm
 C:\strawberry\perl\vendor\lib\XML\Parser\Style\Subs.pm
 C:\strawberry\perl\vendor\lib\XML\Parser\Style\Tree.pm
-C:\strawberry\perl\vendor\lib\auto\XML\Parser\Expat\Expat.bs
-C:\strawberry\perl\vendor\lib\auto\XML\Parser\Expat\Expat.dll
+C:\strawberry\perl\vendor\lib\auto\XML\Parser\Expat\Expat.xs.dll

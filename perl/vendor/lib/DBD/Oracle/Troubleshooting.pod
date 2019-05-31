@@ -1,0 +1,168 @@
+#PODNAME: DBD::Oracle::Troubleshooting
+#ABSTRACT: Tips and Hints to Troubleshoot DBD::Oracle
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+DBD::Oracle::Troubleshooting - Tips and Hints to Troubleshoot DBD::Oracle
+
+=head1 VERSION
+
+version 1.76
+
+=head1 CONNECTING TO ORACLE
+
+If you are reading this it is assumed that you have successfully
+installed DBD::Oracle and you are having some problems connecting to
+Oracle.
+
+First off you will have to tell DBD::Oracle where the binaries reside
+for the Oracle client it was compiled against.  This is the case when
+you encounter a
+
+ DBI connect('','system',...) failed: ERROR OCIEnvNlsCreate.
+
+error in Linux or in Windows when you get
+
+  OCI.DLL not found
+
+The solution to this problem in the case of Linux is to ensure your
+'ORACLE_HOME' (or LD_LIBRARY_PATH for InstantClient) environment
+variable points to the correct directory.
+
+  export ORACLE_HOME=/app/oracle/product/xx.x.x
+
+For Windows the solution is to add this value to you PATH
+
+  PATH=c:\app\oracle\product\xx.x.x;%PATH%
+
+If you get past this stage and get a
+
+  ORA-12154: TNS:could not resolve the connect identifier specified
+
+error then the most likely cause is DBD::ORACLE cannot find your .ORA
+(F<TNSNAMES.ORA>, F<LISTENER.ORA>, F<SQLNET.ORA>) files. This can be
+solved by setting the TNS_ADMIN environment variable to the directory
+where these files can be found.
+
+If you get to this stage and you have either one of the following
+errors;
+
+  ORA-12560: TNS:protocol adapter error
+  ORA-12162: TNS:net service name is incorrectly specified
+
+usually means that DBD::Oracle can find the listener but the it cannot connect to the DB because the listener cannot find the DB you asked for.
+
+=head2 Oracle utilities
+
+If you are still having problems connecting then the Oracle adapters
+utility may offer some help. Run these two commands:
+
+  $ORACLE_HOME/bin/adapters
+  $ORACLE_HOME/bin/adapters $ORACLE_HOME/bin/sqlplus
+
+and check the output. The "Protocol Adapters" should include at least "IPC Protocol Adapter" and "TCP/IP
+Protocol Adapter".
+
+If it generates any errors which look relevant then please talk to your
+Oracle technical support (and not the dbi-users mailing list).
+
+=head2 Connecting using a bequeather
+
+If you are using a bequeather to connect to a server
+on the same host as the client, you might have
+to add
+
+    bequeath_detach = yes
+
+to your sqlnet.ora file or you won't be able to safely use fork/system
+functions in Perl.
+
+See the discussion at
+L<http://www.nntp.perl.org/group/perl.dbi.dev/2012/02/msg6837.html>
+and L<http://www.nntp.perl.org/group/perl.dbi.users/2009/06/msg34023.html>
+for more gory details.
+
+=head1 USING THE LONG TYPES
+
+Some examples related to the use of LONG types are available in
+the C<examples/> directory of the distribution.
+
+=head1 Can't find I<libclntsh.so>
+
+I<libclntsh.so> is the shared
+library composed of all the other Oracle libs you used to have to
+statically link.
+libclntsh.so should be in I<$ORACLE_HOME/lib>.  If it's missing, try
+running I<$ORACLE_HOME/lib/genclntsh.sh> and it should create it.
+
+Never copy I<libclntsh.so> to a different machine or Oracle version.
+If DBD::Oracle was built on a machine with a different path to I<libclntsh.so>
+then you'll need to set an environment variable, typically
+I<LD_LIBRARY_PATH>, to include the directory containing I<libclntsh.so>.
+
+I<LD_LIBRARY_PATH> is typically ignored if the script is running set-uid
+(which is common in some httpd/CGI configurations).  In this case
+either rebuild with I<LD_RUN_PATH> set to include the path to I<libclntsh>
+or create a symbolic link so that I<libclntsh> is available via the same
+path as it was when the module was built. (On Solaris the command
+"ldd -s Oracle.so" can be used to see how the linker is searching for it.)
+
+=head1 Miscellaneous
+
+=head2 Crash with an open connection and Module::Runtime in mod_perl2
+
+See RT 72989 (https://rt.cpan.org/Ticket/Display.html?id=72989)
+
+Apache2 MPM Prefork with mod_perl2 will crash if Module::Runtime is
+loaded, and an Oracle connection is opened through PerlRequire (before
+forking).
+
+It looks like this was fixed in 0.012 of Module::Runtime.
+
+=head2 bind_param_inout swapping return values
+
+See RT 71819 (https://rt.cpan.org/Ticket/Display.html?id=71819)
+
+It seems that in some older versions of Oracle Instant Client
+(certainly 10.2.0.4.0) when output parameters are bound with lengths
+greater than 3584 the output parameters can be returned in the wrong
+placeholders.
+
+It is reported fixed in Instant Client 11.2.0.2.0.
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Tim Bunce <timb@cpan.org>
+
+=item *
+
+John Scoles <byterock@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick@cpan.org>
+
+=item *
+
+Martin J. Evans <mjevans@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2018, 2014, 2013, 2012, 2011, 2010 by Tim Bunce.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

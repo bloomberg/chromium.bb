@@ -5,14 +5,14 @@ require 5;
 package I18N::LangTags::Detect;
 use strict;
 
-use vars qw( @ISA $VERSION $MATCH_SUPERS $USING_LANGUAGE_TAGS
-             $USE_LITERALS $MATCH_SUPERS_TIGHTLY);
+our ( $MATCH_SUPERS, $USING_LANGUAGE_TAGS,
+             $USE_LITERALS, $MATCH_SUPERS_TIGHTLY);
 
 BEGIN { unless(defined &DEBUG) { *DEBUG = sub () {0} } }
  # define the constant 'DEBUG' at compile-time
 
-$VERSION = "1.05";
-@ISA = ();
+our $VERSION = "1.07";
+our @ISA = ();
 use I18N::LangTags qw(alternate_language_tags locale2language_tag);
 
 sub _uniq { my %seen; return grep(!($seen{$_}++), @_); }
@@ -145,6 +145,8 @@ sub _try_use {   # Basically a wrapper around "require Modulename"
   print " About to use $module ...\n" if DEBUG;
   {
     local $SIG{'__DIE__'};
+    local @INC = @INC;
+    pop @INC if $INC[-1] eq '.';
     eval "require $module"; # used to be "use $module", but no point in that.
   }
   if($@) {

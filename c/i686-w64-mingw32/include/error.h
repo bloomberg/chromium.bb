@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #define NO_ERROR 0
@@ -157,6 +157,7 @@
 #define ERROR_BAD_DYNALINK 213
 #define ERROR_TOO_MANY_MODULES 214
 #define ERROR_NESTING_NOT_ALLOWED 215
+#define ERROR_INVALID_TOKEN 315
 #define ERROR_USER_DEFINED_BASE 0xF000
 #define ERROR_I24_WRITE_PROTECT 0
 #define ERROR_I24_BAD_UNIT 1

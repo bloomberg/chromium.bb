@@ -1,13 +1,14 @@
 
 require 5;
 package Pod::Simple::DumpAsXML;
-$VERSION = '3.20';
+$VERSION = '3.36';
 use Pod::Simple ();
 BEGIN {@ISA = ('Pod::Simple')}
 
 use strict;
 
 use Carp ();
+use Text::Wrap qw(wrap);
 
 BEGIN { *DEBUG = \&Pod::Simple::DEBUG unless defined &DEBUG }
 
@@ -16,6 +17,7 @@ sub new {
   my $new = $self->SUPER::new(@_);
   $new->{'output_fh'} ||= *STDOUT{IO};
   $new->accept_codes('VerbatimFormatted');
+  $new->keep_encoding_directive(1);
   return $new;
 }
 
@@ -25,7 +27,7 @@ sub _handle_element_start {
   # ($self, $element_name, $attr_hash_r)
   my $fh = $_[0]{'output_fh'};
   my($key, $value);
-  DEBUG and print "++ $_[1]\n";
+  DEBUG and print STDERR "++ $_[1]\n";
   
   print $fh   '  ' x ($_[0]{'indent'} || 0),  "<", $_[1];
 
@@ -44,27 +46,20 @@ sub _handle_element_start {
 }
 
 sub _handle_text {
-  DEBUG and print "== \"$_[1]\"\n";
+  DEBUG and print STDERR "== \"$_[1]\"\n";
   if(length $_[1]) {
     my $indent = '  ' x $_[0]{'indent'};
     my $text = $_[1];
     _xml_escape($text);
-    $text =~  # A not-totally-brilliant wrapping algorithm:
-      s/(
-         [^\n]{55}         # Snare some characters from a line
-         [^\n\ ]{0,50}     #  and finish any current word
-        )
-        \x20{1,10}(?!\n)   # capture some spaces not at line-end
-       /$1\n$indent/gx     # => line-break here
-    ;
-    
+    local $Text::Wrap::huge = 'overflow';
+    $text = wrap('', $indent, $text);
     print {$_[0]{'output_fh'}} $indent, $text, "\n";
   }
   return;
 }
 
 sub _handle_element_end {
-  DEBUG and print "-- $_[1]\n";
+  DEBUG and print STDERR "-- $_[1]\n";
   print {$_[0]{'output_fh'}}
    '  ' x --$_[0]{'indent'}, "</", $_[1], ">\n";
   return;
@@ -75,11 +70,13 @@ sub _handle_element_end {
 sub _xml_escape {
   foreach my $x (@_) {
     # Escape things very cautiously:
-    $x =~ s/([^-\n\t !\#\$\%\(\)\*\+,\.\~\/\:\;=\?\@\[\\\]\^_\`\{\|\}abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789])/'&#'.(ord($1)).';'/eg;
+    if ($] ge 5.007_003) {
+      $x =~ s/([^-\n\t !\#\$\%\(\)\*\+,\.\~\/\:\;=\?\@\[\\\]\^_\`\{\|\}abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789])/'&#'.(utf8::native_to_unicode(ord($1))).';'/eg;
+    } else { # Is broken for non-ASCII platforms on early perls
+      $x =~ s/([^-\n\t !\#\$\%\(\)\*\+,\.\~\/\:\;=\?\@\[\\\]\^_\`\{\|\}abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789])/'&#'.(ord($1)).';'/eg;
+    }
     # Yes, stipulate the list without a range, so that this can work right on
     #  all charsets that this module happens to run under.
-    # Altho, hmm, what about that ord?  Presumably that won't work right
-    #  under non-ASCII charsets.  Something should be done about that.
   }
   return;
 }
@@ -133,8 +130,8 @@ pod-people@perl.org mail list. Send an empty email to
 pod-people-subscribe@perl.org to subscribe.
 
 This module is managed in an open GitHub repository,
-L<http://github.com/theory/pod-simple/>. Feel free to fork and contribute, or
-to clone L<git://github.com/theory/pod-simple.git> and send patches!
+L<https://github.com/perl-pod/pod-simple/>. Feel free to fork and contribute, or
+to clone L<git://github.com/perl-pod/pod-simple.git> and send patches!
 
 Patches against Pod::Simple are welcome. Please send bug reports to
 <bug-pod-simple@rt.cpan.org>.

@@ -1,10 +1,11 @@
-package Moose::Manual::MethodModifiers;
-
+# PODNAME: Moose::Manual::MethodModifiers
 # ABSTRACT: Moose's method modifiers
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::MethodModifiers - Moose's method modifiers
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 WHAT IS A METHOD MODIFIER?
 
@@ -85,7 +86,7 @@ modifiers work, but may not be the most natural usage.
 
 Method modifiers can be used to add behavior to methods without modifying the definition of those methods.
 
-=head2 BEFORE and AFTER modifiers
+=head2 Before and after Modifiers
 
 Method modifiers can be used to add behavior to a method that Moose
 generates for you, such as an attribute accessor:
@@ -120,7 +121,7 @@ was taken.
 Note that the return values of both before and after modifiers are
 ignored.
 
-=head2 AROUND modifiers
+=head2 Around modifiers
 
 An around modifier is more powerful than either a before or
 after modifier. It can modify the arguments being passed to the
@@ -179,7 +180,7 @@ methods to wrap, like so:
 
 This will match the regular expression against each method name
 returned by L<Class::MOP::Class/get_method_list>, and add a modifier
-to each one that matches. The same caveats apply as above. 
+to each one that matches. The same caveats apply as above.
 
 Using regular expressions to determine methods to wrap is quite a bit more
 powerful than the previous alternatives, but it's also quite a bit more
@@ -187,6 +188,58 @@ dangerous.  Bear in mind that if your regular expression matches certain Perl
 and Moose reserved method names with a special meaning to Moose or Perl, such
 as C<meta>, C<new>, C<BUILD>, C<DESTROY>, C<AUTOLOAD>, etc, this could cause
 unintended (and hard to debug) problems and is best avoided.
+
+=head2 Execution order of method modifiers and inheritance
+
+When both a superclass and an inheriting class have the same method modifiers,
+the method modifiers of the inheriting class are wrapped around the method
+modifiers of the superclass, as the following example illustrates:
+
+Here is the parent class:
+
+  package Superclass;
+  use Moose;
+  sub rant { printf "        RANTING!\n" }
+  before 'rant' => sub { printf "    In %s before\n", __PACKAGE__ };
+  after 'rant'  => sub { printf "    In %s after\n",  __PACKAGE__ };
+  around 'rant' => sub {
+      my $orig = shift;
+      my $self = shift;
+      printf "      In %s around before calling original\n", __PACKAGE__;
+      $self->$orig;
+      printf "      In %s around after calling original\n", __PACKAGE__;
+  };
+  1;
+
+And the child class:
+
+  package Subclass;
+  use Moose;
+  extends 'Superclass';
+  before 'rant' => sub { printf "In %s before\n", __PACKAGE__ };
+  after 'rant'  => sub { printf "In %s after\n",  __PACKAGE__ };
+  around 'rant' => sub {
+      my $orig = shift;
+      my $self = shift;
+      printf "  In %s around before calling original\n", __PACKAGE__;
+      $self->$orig;
+      printf "  In %s around after calling original\n", __PACKAGE__;
+  };
+  1;
+
+And here's the output when we call the wrapped method (C<< Child->rant >>):
+
+  % perl -MSubclass -e 'Subclass->new->rant'
+
+  In Subclass before
+    In Subclass around before calling original
+      In Superclass before
+        In Superclass around before calling original
+          RANTING!
+        In Superclass around after calling original
+      In Superclass after
+    In Subclass around after calling original
+  In Subclass after
 
 =head1 INNER AND AUGMENT
 
@@ -297,7 +350,7 @@ class, you can do this with C<override>:
   override 'display_name' => sub {
       my $self = shift;
 
-      return super() . q{, } . $self->title();
+      return super() . q{, } . $self->job_title();
   };
 
 The call to C<super()> is almost the same as calling C<<
@@ -316,6 +369,23 @@ semi-colon:
 
   after 'foo' => sub { };
 
+=head1 EXCEPTIONS AND STACK TRACES
+
+An exception thrown in a C<before> modifier will prevent the method it
+modifies from being called at all. An exception in an C<around> modifier may
+prevent the modified method from being called, depending on how the C<around>
+modifier is structured. An exception in an C<after> modifier obviously cannot
+prevent the method it wraps from being called.
+
+Both C<override> and C<augment> are similar to C<around> in that they can
+decide whether or not to call the method they modify before or after throwing
+an exception.
+
+From the caller's perspective, an exception in a method modifier will look
+like the method it called threw an exception. However, method modifiers are
+just standard Perl subroutines. This means that they end up on the stack in
+stack traces as an additional frame.
+
 =head1 CAVEATS
 
 These method modification features do not work well with multiple inheritance,
@@ -323,20 +393,57 @@ due to how method resolution is performed in Perl. Experiment with a test
 program to ensure your class hierarchy works as expected, or more preferably,
 don't use multiple inheritance (roles can help with this)!
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

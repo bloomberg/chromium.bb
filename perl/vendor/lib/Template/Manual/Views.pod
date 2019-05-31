@@ -30,7 +30,7 @@ common objects or data types.  You can even use then to automate the
 presentation of complex data structures such as that generated in an
 C<XML::DOM> tree or similar.  You let an iterator do the walking, and the
 view does the talking (or in this case, the presenting).  Voila - you
-have view independant, structure shy traversal using templates.  
+have view independent, structure shy traversal using templates.  
 
 In general, views can be used in a number of different ways to achieve
 several different things.  They elegantly solve some problems which
@@ -118,7 +118,7 @@ template directives.  The entire C<VIEW> definition block is processed to
 initialise the view but no output is generated (this may change RSN -
 and get stored as 'C<output>' item, subsequently accessible as C<[%
 view.output %]>).  However, directives that have side-effects, such as
-those that update a variable, will have noticable consequences.
+those that update a variable, will have noticeable consequences.
 
 =head1 Preserving Variable State within Views
 
@@ -276,7 +276,7 @@ delegating to other views.
     [% fancy.foo %]     # <fancy>public foo block</fancy>
 
 Note that the regular C<INCLUDE/PROCESS/WRAPPER> directives work entirely
-independantly of views and will always get the original, unaltered
+independently of views and will always get the original, unaltered
 template name rather than any local per-view definition.
 
 =head2 Self-Reference

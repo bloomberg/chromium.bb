@@ -1,7 +1,7 @@
 package Math::Round;
 
 use strict;
-use POSIX;
+use POSIX ();
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 
 require Exporter;
@@ -11,7 +11,7 @@ require Exporter;
 @EXPORT_OK = qw(round nearest round_even round_odd round_rand
    nearest_ceil nearest_floor nearest_rand
    nlowmult nhimult );
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 %EXPORT_TAGS = ( all => [ @EXPORT_OK ] );
 
@@ -186,6 +186,10 @@ Numbers that are halfway between two integers are rounded
 "to infinity"; i.e., positive values are rounded up (e.g., 2.5
 becomes 3) and negative values down (e.g., -2.5 becomes -3).
 
+Starting in Perl 5.22, the POSIX module by default exports all functions,
+including one named "round". If you use both POSIX and this module,
+exercise due caution.
+
 =item B<round_even> LIST
 
 Rounds the number(s) to the nearest integer.  In scalar context,
@@ -313,7 +317,7 @@ In order to give more predictable results,
 these routines use a value for
 one-half that is slightly larger than 0.5.  Nevertheless,
 if the numbers to be rounded are stored as floating-point, they will
-be subject, as usual, to the mercies of your hardware, your C
+be subject as usual to the mercies of your hardware, your C
 compiler, etc.
 
 =head1 AUTHOR

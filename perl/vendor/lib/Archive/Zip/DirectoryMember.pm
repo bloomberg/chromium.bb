@@ -6,7 +6,7 @@ use File::Path;
 use vars qw( $VERSION @ISA );
 
 BEGIN {
-    $VERSION = '1.30';
+    $VERSION = '1.64';
     @ISA     = qw( Archive::Zip::Member );
 }
 
@@ -24,25 +24,25 @@ sub _newNamed {
     $self->{'externalFileName'} = $fileName;
     $self->fileName($newName);
 
-    if ( -e $fileName ) {
+    if (-e $fileName) {
 
         # -e does NOT do a full stat, so we need to do one now
-        if ( -d _ ) {
+        if (-d _ ) {
             my @stat = stat(_);
-            $self->unixFileAttributes( $stat[2] );
+            $self->unixFileAttributes($stat[2]);
             my $mod_t = $stat[9];
-            if ( $^O eq 'MSWin32' and !$mod_t ) {
+            if ($^O eq 'MSWin32' and !$mod_t) {
                 $mod_t = time();
             }
             $self->setLastModFileDateTimeFromUnix($mod_t);
 
         } else {    # hmm.. trying to add a non-directory?
-            _error( $fileName, ' exists but is not a directory' );
+            _error($fileName, ' exists but is not a directory');
             return undef;
         }
     } else {
-        $self->unixFileAttributes( $self->DEFAULT_DIRECTORY_PERMISSIONS );
-        $self->setLastModFileDateTimeFromUnix( time() );
+        $self->unixFileAttributes($self->DEFAULT_DIRECTORY_PERMISSIONS);
+        $self->setLastModFileDateTimeFromUnix(time());
     }
     return $self;
 }
@@ -59,8 +59,8 @@ sub extractToFileNamed {
     my $self    = shift;
     my $name    = shift;                                 # local FS name
     my $attribs = $self->unixFileAttributes() & 07777;
-    mkpath( $name, 0, $attribs );                        # croaks on error
-    utime( $self->lastModTime(), $self->lastModTime(), $name );
+    mkpath($name, 0, $attribs);                          # croaks on error
+    utime($self->lastModTime(), $self->lastModTime(), $name);
     return AZ_OK;
 }
 
@@ -74,7 +74,7 @@ sub fileName {
 # So people don't get too confused. This way it looks like the problem
 # is in their code...
 sub contents {
-    return wantarray ? ( undef, AZ_OK ) : undef;
+    return wantarray ? (undef, AZ_OK) : undef;
 }
 
 1;

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WINDOWS_
@@ -8,6 +8,16 @@
 
 #include <_mingw.h>
 #include <sdkddkver.h>
+
+/* Some kludge for Obj-C.
+   For Obj-C the 'interface' is a keyword, but interface is used
+   in midl-code too.  To resolve this conflict for at least the
+   main windows API header, we define it here temporary.  */
+#ifdef __OBJC__
+#pragma push_macro("interface")
+#undef interface
+#define interface struct
+#endif
 
 #ifndef _INC_WINDOWS
 #define _INC_WINDOWS
@@ -78,7 +88,9 @@
 #include <rpc.h>
 #include <shellapi.h>
 #include <winperf.h>
+#if defined(__USE_W32_SOCKETS) || !defined(__CYGWIN__)
 #include <winsock.h>
+#endif
 #ifndef NOCRYPT
 #include <wincrypt.h>
 #include <winefs.h>
@@ -98,7 +110,9 @@
 #endif
 #endif
 
+#ifndef __CYGWIN__
 #include <stralign.h>
+#endif
 
 #ifdef INC_OLE2
 #include <ole2.h>
@@ -118,4 +132,10 @@
 
 #endif
 #endif
+
+/* Restore old value of interface for Obj-C.  See above.  */
+#ifdef __OBJC__
+#pragma pop_macro("interface")
+#endif
+
 #endif

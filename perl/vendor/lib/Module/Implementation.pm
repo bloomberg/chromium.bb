@@ -1,13 +1,21 @@
 package Module::Implementation;
-{
-  $Module::Implementation::VERSION = '0.06';
-}
+# git description: v0.08-2-gd599347
+$Module::Implementation::VERSION = '0.09';
 
 use strict;
 use warnings;
 
 use Module::Runtime 0.012 qw( require_module );
 use Try::Tiny;
+
+# This is needed for the benefit of Test::CleanNamespaces, which in turn loads
+# Package::Stash, which in turn loads this module and expects a minimum
+# version.
+unless ( exists $Module::Implementation::{VERSION}
+    && ${ $Module::Implementation::{VERSION} } ) {
+
+    $Module::Implementation::{VERSION} = \42;
+}
 
 my %Implementation;
 
@@ -59,42 +67,49 @@ sub _load_implementation {
         die "$env_value is not a valid implementation for $package"
             unless grep { $_ eq $env_value } @{$implementations};
 
-        my $loaded = "${package}::$env_value";
+        my $requested = "${package}::$env_value";
 
         # Values from the %ENV hash are tainted. We know it's safe to untaint
         # this value because the value was one of our known implementations.
-        ($loaded) = $loaded =~ /^(.+)$/;
+        ($requested) = $requested =~ /^(.+)$/;
 
         try {
-            require_module($loaded);
+            require_module($requested);
         }
         catch {
             require Carp;
-            Carp::croak("Could not load $loaded: $_");
+            Carp::croak("Could not load $requested: $_");
         };
 
-        return ( $env_value, $loaded );
+        return ( $env_value, $requested );
     }
     else {
         my $err;
         for my $possible ( @{$implementations} ) {
-            my $load = "${package}::$possible";
+            my $try = "${package}::$possible";
 
             my $ok;
             try {
-                require_module($load);
+                require_module($try);
                 $ok = 1;
             }
             catch {
-                $err .= $_;
+                $err .= $_ if defined $_;
             };
 
-            return ( $possible, $load ) if $ok;
+            return ( $possible, $try ) if $ok;
         }
 
         require Carp;
-        Carp::croak(
-            "Could not find a suitable $package implementation: $err");
+        if ( defined $err && length $err ) {
+            Carp::croak(
+                "Could not find a suitable $package implementation: $err");
+        }
+        else {
+            Carp::croak(
+                'Module::Runtime failed to load a module but did not throw a real error. This should never happen. Something is very broken'
+            );
+        }
     }
 }
 
@@ -130,9 +145,11 @@ sub _copy_symbols {
 
 # ABSTRACT: Loads one of several alternate underlying implementations for a module
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -140,7 +157,7 @@ Module::Implementation - Loads one of several alternate underlying implementatio
 
 =head1 VERSION
 
-version 0.06
+version 0.09
 
 =head1 SYNOPSIS
 
@@ -177,7 +194,7 @@ something like a plugin system, not this module.
 
 This module provides two subroutines, neither of which are exported.
 
-=head2 Module::Implementation::<build_loader_sub(...)
+=head2 Module::Implementation::build_loader_sub(...)
 
 This subroutine takes the following arguments.
 
@@ -189,7 +206,7 @@ This should be an array reference of implementation names. Each name should
 correspond to a module in the caller's namespace.
 
 In other words, using the example in the L</SYNOPSIS>, this module will look
-for the C<Foo::Bar::XS> and C<Foo::Bar::PurePerl> modules will be installed
+for the C<Foo::Bar::XS> and C<Foo::Bar::PurePerl> modules.
 
 This argument is required.
 
@@ -264,14 +281,10 @@ Dave Rolsky <autarch@urth.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is Copyright (c) 2012 by Dave Rolsky.
+This software is Copyright (c) 2014 by Dave Rolsky.
 
 This is free software, licensed under:
 
   The Artistic License 2.0 (GPL Compatible)
 
 =cut
-
-
-__END__
-

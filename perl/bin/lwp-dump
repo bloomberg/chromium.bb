@@ -1,21 +1,15 @@
-#!/usr/bin/perl -w
+#!perl
 
 use strict;
+use warnings;
 use LWP::UserAgent ();
 use Getopt::Long qw(GetOptions);
 use Encode;
 use Encode::Locale;
 
-my $VERSION = "6.00";
-
-GetOptions(\my %opt,
-    'parse-head',
-    'max-length=n',
-    'keep-client-headers',
-    'method=s',
-    'agent=s',
-    'request',
-) || usage();
+GetOptions(\my %opt, 'parse-head', 'max-length=n', 'keep-client-headers',
+    'method=s', 'agent=s', 'request',)
+    || usage();
 
 my $url = shift || usage();
 @ARGV && usage();
@@ -39,15 +33,15 @@ EOT
 my $ua = LWP::UserAgent->new(
     parse_head => $opt{'parse-head'} || 0,
     keep_alive => 1,
-    env_proxy => 1,
-    agent => $opt{agent} || "lwp-dump/$VERSION ",
+    env_proxy  => 1,
+    agent      => $opt{agent}        || "lwp-dump/$LWP::UserAgent::VERSION ",
 );
 
 my $req = HTTP::Request->new($opt{method} || 'GET' => decode(locale => $url));
 my $res = $ua->simple_request($req);
 $res->remove_header(grep /^Client-/, $res->header_field_names)
-    unless $opt{'keep-client-headers'} or
-        ($res->header("Client-Warning") || "") eq "Internal response";
+    unless $opt{'keep-client-headers'}
+    or ($res->header("Client-Warning") || "") eq "Internal response";
 
 if ($opt{request}) {
     $res->request->dump;
@@ -68,7 +62,7 @@ B<lwp-dump> [ I<options> ] I<URL>
 
 =head1 DESCRIPTION
 
-The B<lwp-dump> program will get the resource indentified by the URL and then
+The B<lwp-dump> program will get the resource identified by the URL and then
 dump the response object to STDOUT.  This will display the headers returned and
 the initial part of the content, escaped so that it's safe to display even
 binary content.  The escapes syntax used is the same as for Perl's double
@@ -79,7 +73,7 @@ The following options are recognized:
 
 =over
 
-=item B<--agent> I<str>
+=item B<--agent> I<string>
 
 Override the user agent string passed to the server.
 
@@ -98,7 +92,7 @@ If the content is longer then the string is chopped at the
 limit and the string "...\n(### more bytes not shown)"
 appended.
 
-=item B<--method> I<str>
+=item B<--method> I<string>
 
 Use the given method for the request instead of the default "GET".
 
@@ -117,4 +111,3 @@ Also dump the request sent.
 =head1 SEE ALSO
 
 L<lwp-request>, L<LWP>, L<HTTP::Message/"dump">
-

@@ -1,122 +1,128 @@
-#!/usr/bin/perl -sw
-##
+package Crypt::RSA::Key::Public;
+use strict;
+use warnings;
+
 ## Crypt::RSA::Key::Public
 ##
 ## Copyright (c) 2001, Vipul Ved Prakash.  All rights reserved.
 ## This code is free software; you can redistribute it and/or modify
 ## it under the same terms as Perl itself.
-##
-## $Id: Public.pm,v 1.8 2001/09/25 14:11:23 vipul Exp $
 
-package Crypt::RSA::Key::Public;
-use strict; 
 use vars qw($AUTOLOAD);
 use Carp;
 use Data::Dumper;
 use base 'Crypt::RSA::Errorhandler';
-use Math::Pari qw(PARI pari2pv);
+use Math::BigInt try => 'GMP, Pari';
 
 $Crypt::RSA::Key::Public::VERSION = '1.99';
 
-sub new { 
+sub new {
 
-    my ($class, %params) = @_; 
+    my ($class, %params) = @_;
     my $self    = { Version => $Crypt::RSA::Key::Public::VERSION };
-    if ($params{Filename}) { 
+    if ($params{Filename}) {
         bless $self, $class;
         $self = $self->read (%params);
         return bless $self, $class;
-    } else { 
+    } else {
         return bless $self, $class;
-    } 
+    }
 
-} 
+}
 
 
-sub AUTOLOAD { 
+sub AUTOLOAD {
     my ($self, $value) = @_;
     my $key = $AUTOLOAD; $key =~ s/.*:://;
-    if ($key =~ /^n|e$/) { 
-        if (ref $value eq 'Math::Pari') { 
-            $self->{$key} = pari2pv($value)
-        } elsif ($value && !(ref $value)) { 
-            if ($value =~ /^0x/) { 
-                $self->{$key} = pari2pv(Math::Pari::_hex_cvt($value));
-            } else { $self->{$key} = $value } 
+    if ($key =~ /^n|e$/) {
+        if (defined $value) {
+          if (ref $value eq 'Math::BigInt') {
+            $self->{$key} = $value;
+          } elsif (ref $value eq 'Math::Pari') {
+            $self->{$key} = Math::BigInt->new($value->pari2pv);
+          } else {
+            $self->{$key} = Math::BigInt->new("$value");
+          }
         }
-        my $return  = $self->{$key} || "";
-        $return = PARI("$return") if $return =~ /^\d+$/;
-        return $return;
-    } elsif ($key =~ /^Identity$/) { 
+        if (defined $self->{$key}) {
+          $self->{$key} = Math::BigInt->new("$self->{$key}") unless ref($self->{$key}) eq 'Math::BigInt';
+          return $self->{$key};
+        }
+        return;
+    } elsif ($key =~ /^Identity$/) {
         $self->{$key} = $value if $value;
         return $self->{$key};
     }
-        
-} 
+}
 
 
-sub DESTROY { 
+sub DESTROY {
 
-    my $self = shift; 
+    my $self = shift;
     undef $self;
 
 }
 
 
-sub check { 
+sub check {
 
     my $self = shift;
-    return $self->error ("Incomplete key.") unless $self->n && $self->e;
+    return $self->error ("Incomplete key.")
+       unless defined $self->n && defined $self->e;
     return 1;
 
 }
 
 
-sub write { 
+sub write {
 
-    my ($self, %params) = @_; 
-    $self->hide();
-    my $string = $self->serialize (%params); 
-    open DISK, ">$params{Filename}" or
-        croak "Can't open $params{Filename} for writing.";
-    binmode DISK;
-    print DISK $string;
-    close DISK;
-
-} 
-
-
-sub read { 
     my ($self, %params) = @_;
-    open DISK, $params{Filename} or
+    $self->hide();
+    my $string = $self->serialize (%params);
+    open(my $disk, '>', $params{Filename}) or
+        croak "Can't open $params{Filename} for writing.";
+    binmode $disk;
+    print $disk $string;
+    close $disk;
+
+}
+
+
+sub read {
+    my ($self, %params) = @_;
+    open(my $disk, '<', $params{Filename}) or
         croak "Can't open $params{Filename} to read.";
-    binmode DISK;
-    my @key = <DISK>; 
-    close DISK;
+    binmode $disk;
+    my @key = <$disk>;
+    close $disk;
     $self = $self->deserialize (String => \@key);
     return $self;
 }
 
 
-sub serialize { 
+sub serialize {
 
     my ($self, %params) = @_;
-    return Dumper $self; 
+    # Convert bigints to strings
+    foreach my $key (qw/n e/) {
+      $self->{$key} = $self->{$key}->bstr if ref($self->{$key}) eq 'Math::BigInt';
+    }
+    return Dumper $self;
 
-} 
+}
 
 
-sub deserialize { 
+sub deserialize {
 
-    my ($self, %params) = @_; 
-    my $string = join'', @{$params{String}}; 
+    my ($self, %params) = @_;
+    my $string = join'', @{$params{String}};
     $string =~ s/\$VAR1 =//;
     $self = eval $string;
     return $self;
 
 }
 
-    
+
 1;
 
 =head1 NAME
@@ -125,11 +131,11 @@ Crypt::RSA::Key::Public -- RSA Public Key Management.
 
 =head1 SYNOPSIS
 
-    $key = new Crypt::RSA::Key::Public; 
+    $key = new Crypt::RSA::Key::Public;
     $key->write ( Filename => 'rsakeys/banquo.public' );
 
     $akey = new Crypt::RSA::Key::Public (
-                Filename => 'rsakeys/banquo.public' 
+                Filename => 'rsakeys/banquo.public'
             );
 
 

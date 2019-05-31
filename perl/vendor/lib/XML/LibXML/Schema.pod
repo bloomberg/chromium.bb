@@ -18,7 +18,7 @@ XML::LibXML::Schema - XML Schema Validation
 The XML::LibXML::Schema class is a tiny frontend to libxml2's XML Schema
 implementation. Currently it supports only schema parsing and document
 validation. As of 2.6.32, libxml2 only supports decimal types up to 24 digits
-(the standard requires at least 18). 
+(the standard requires at least 18).
 
 
 =head1 METHODS
@@ -35,7 +35,8 @@ parameters. The parameter tells the class from which source it should generate
 a validation schema. It is important, that each schema only have a single
 source.
 
-The location parameter allows to parse a schema from the filesystem or a URL.
+The location parameter allows one to parse a schema from the filesystem or a
+URL.
 
 The string parameter will parse the schema from the given XML string.
 
@@ -47,7 +48,7 @@ constraints of the XML Schema specification.
 
   eval { $xmlschema->validate( $doc ); };
 
-This function allows to validate a (parsed) document against the given XML
+This function allows one to validate a (parsed) document against the given XML
 Schema. The argument of this function should be a L<<<<<< XML::LibXML::Document >>>>>> object. If this function succeeds, it will return 0, otherwise it will die()
 and report the errors found. Because of this validate() should be always
 evaluated.
@@ -58,14 +59,14 @@ evaluated.
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -76,3 +77,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

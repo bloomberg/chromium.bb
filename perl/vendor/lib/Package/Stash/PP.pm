@@ -1,10 +1,9 @@
 package Package::Stash::PP;
-{
-  $Package::Stash::PP::VERSION = '0.33';
-}
 use strict;
 use warnings;
 # ABSTRACT: pure perl implementation of the Package::Stash API
+
+our $VERSION = '0.38';
 
 use B;
 use Carp qw(confess);
@@ -19,33 +18,46 @@ use constant BROKEN_WEAK_STASH     => ($] < 5.010);
 # before 5.10, the scalar slot was always treated as existing if the
 # glob existed
 use constant BROKEN_SCALAR_INITIALIZATION => ($] < 5.010);
+# add_method on anon stashes triggers rt.perl #1804 otherwise
+# fixed in perl commit v5.13.3-70-g0fe688f
+use constant BROKEN_GLOB_ASSIGNMENT => ($] < 5.013004);
+# pre-5.10, ->isa lookups were cached in the ::ISA::CACHE:: slot
+use constant HAS_ISA_CACHE => ($] < 5.010);
 
 
 sub new {
     my $class = shift;
     my ($package) = @_;
 
-    if (!defined($package) || (ref($package) && ref($package) ne 'HASH')) {
+    if (!defined($package) || (ref($package) && reftype($package) ne 'HASH')) {
         confess "Package::Stash->new must be passed the name of the "
               . "package to access";
     }
-    elsif (ref($package) eq 'HASH') {
-        confess "The pure perl implementation of Package::Stash doesn't "
-              . "currently support anonymous stashes. You should install "
-              . "Package::Stash::XS";
+    elsif (ref($package) && reftype($package) eq 'HASH') {
+        confess "The PP implementation of Package::Stash does not support "
+              . "anonymous stashes before perl 5.14"
+            if BROKEN_GLOB_ASSIGNMENT;
+
+        return bless {
+            'namespace' => $package,
+        }, $class;
     }
-    elsif ($package !~ /\A[0-9A-Z_a-z]+(?:::[0-9A-Z_a-z]+)*\z/) {
+    elsif ($package =~ /\A[0-9A-Z_a-z]+(?:::[0-9A-Z_a-z]+)*\z/) {
+        return bless {
+            'package' => $package,
+        }, $class;
+    }
+    else {
         confess "$package is not a module name";
     }
 
-    return bless {
-        'package' => $package,
-    }, $class;
 }
 
 sub name {
     confess "Can't call name as a class method"
         unless blessed($_[0]);
+    confess "Can't get the name of an anonymous package"
+        unless defined($_[0]->{package});
     return $_[0]->{package};
 }
 
@@ -81,7 +93,7 @@ sub namespace {
     );
 
     sub _deconstruct_variable_name {
-        my ($self, $variable) = @_;
+        my ($variable) = @_;
 
         my @ret;
         if (ref($variable) eq 'HASH') {
@@ -112,7 +124,6 @@ sub namespace {
 }
 
 sub _valid_for_type {
-    my $self = shift;
     my ($value, $type) = @_;
     if ($type eq 'HASH' || $type eq 'ARRAY'
      || $type eq 'IO'   || $type eq 'CODE') {
@@ -127,12 +138,10 @@ sub _valid_for_type {
 sub add_symbol {
     my ($self, $variable, $initial_value, %opts) = @_;
 
-    my ($name, $sigil, $type) = $self->_deconstruct_variable_name($variable);
-
-    my $pkg = $self->name;
+    my ($name, $sigil, $type) = _deconstruct_variable_name($variable);
 
     if (@_ > 2) {
-        $self->_valid_for_type($initial_value, $type)
+        _valid_for_type($initial_value, $type)
             || confess "$initial_value is not of type $type";
 
         # cheap fail-fast check for PERLDBf_SUBLINE and '&'
@@ -146,13 +155,74 @@ sub add_symbol {
             my $last_line_num = $opts{last_line_num} || ($first_line_num ||= 0);
 
             # http://perldoc.perl.org/perldebguts.html#Debugger-Internals
-            $DB::sub{$pkg . '::' . $name} = "$filename:$first_line_num-$last_line_num";
+            $DB::sub{$self->name . '::' . $name} = "$filename:$first_line_num-$last_line_num";
         }
     }
 
-    no strict 'refs';
-    no warnings 'redefine', 'misc', 'prototype';
-    *{$pkg . '::' . $name} = ref $initial_value ? $initial_value : \$initial_value;
+    if (BROKEN_GLOB_ASSIGNMENT) {
+        if (@_ > 2) {
+            no strict 'refs';
+            no warnings 'redefine';
+            *{ $self->name . '::' . $name } = ref $initial_value
+                ? $initial_value : \$initial_value;
+        }
+        else {
+            no strict 'refs';
+            if (BROKEN_ISA_ASSIGNMENT && $name eq 'ISA') {
+                *{ $self->name . '::' . $name };
+            }
+            else {
+                my $undef = _undef_ref_for_type($type);
+                *{ $self->name . '::' . $name } = $undef;
+            }
+        }
+    }
+    else {
+        my $namespace = $self->namespace;
+        {
+            # using glob aliasing instead of Symbol::gensym, because otherwise,
+            # magic doesn't get applied properly.
+            # see <20120710063744.19360.qmail@lists-nntp.develooper.com> on p5p
+            local *__ANON__:: = $namespace;
+            no strict 'refs';
+            no warnings 'void';
+            no warnings 'once';
+            *{"__ANON__::$name"};
+        }
+
+        if (@_ > 2) {
+            no warnings 'redefine';
+            *{ $namespace->{$name} } = ref $initial_value
+                ? $initial_value : \$initial_value;
+        }
+        else {
+            return if BROKEN_ISA_ASSIGNMENT && $name eq 'ISA';
+            *{ $namespace->{$name} } = _undef_ref_for_type($type);
+        }
+    }
+}
+
+sub _undef_ref_for_type {
+    my ($type) = @_;
+
+    if ($type eq 'ARRAY') {
+        return [];
+    }
+    elsif ($type eq 'HASH') {
+        return {};
+    }
+    elsif ($type eq 'SCALAR') {
+        return \undef;
+    }
+    elsif ($type eq 'IO') {
+        return Symbol::geniosym;
+    }
+    elsif ($type eq 'CODE') {
+        confess "Don't know how to vivify CODE variables";
+    }
+    else {
+        confess "Unknown type $type in vivication";
+    }
 }
 
 sub remove_glob {
@@ -163,7 +233,7 @@ sub remove_glob {
 sub has_symbol {
     my ($self, $variable) = @_;
 
-    my ($name, $sigil, $type) = $self->_deconstruct_variable_name($variable);
+    my ($name, $sigil, $type) = _deconstruct_variable_name($variable);
 
     my $namespace = $self->namespace;
 
@@ -176,7 +246,10 @@ sub has_symbol {
                 return defined ${ *{$entry_ref}{$type} };
             }
             else {
-                return B::svref_2object($entry_ref)->SV->isa('B::SV');
+                my $sv = B::svref_2object($entry_ref)->SV;
+                return $sv->isa('B::SV')
+                    || ($sv->isa('B::SPECIAL')
+                     && $B::specialsv_name[$$sv] ne 'Nullsv');
             }
         }
         else {
@@ -193,38 +266,13 @@ sub has_symbol {
 sub get_symbol {
     my ($self, $variable, %opts) = @_;
 
-    my ($name, $sigil, $type) = $self->_deconstruct_variable_name($variable);
+    my ($name, $sigil, $type) = _deconstruct_variable_name($variable);
 
     my $namespace = $self->namespace;
 
     if (!exists $namespace->{$name}) {
         if ($opts{vivify}) {
-            if ($type eq 'ARRAY') {
-                if (BROKEN_ISA_ASSIGNMENT) {
-                    $self->add_symbol(
-                        $variable,
-                        $name eq 'ISA' ? () : ([])
-                    );
-                }
-                else {
-                    $self->add_symbol($variable, []);
-                }
-            }
-            elsif ($type eq 'HASH') {
-                $self->add_symbol($variable, {});
-            }
-            elsif ($type eq 'SCALAR') {
-                $self->add_symbol($variable);
-            }
-            elsif ($type eq 'IO') {
-                $self->add_symbol($variable, Symbol::geniosym);
-            }
-            elsif ($type eq 'CODE') {
-                confess "Don't know how to vivify CODE variables";
-            }
-            else {
-                confess "Unknown type $type in vivication";
-            }
+            $self->add_symbol($variable);
         }
         else {
             return undef;
@@ -238,8 +286,25 @@ sub get_symbol {
     }
     else {
         if ($type eq 'CODE') {
-            no strict 'refs';
-            return \&{ $self->name . '::' . $name };
+            if (BROKEN_GLOB_ASSIGNMENT || defined($self->{package})) {
+                no strict 'refs';
+                return \&{ $self->name . '::' . $name };
+            }
+
+            # XXX we should really be able to support arbitrary anonymous
+            # stashes here... (not just via Package::Anon)
+            if (blessed($namespace) && $namespace->isa('Package::Anon')) {
+                # ->can will call gv_init for us, which inflates the glob
+                # don't know how to do this in general
+                $namespace->bless(\(my $foo))->can($name);
+            }
+            else {
+                confess "Don't know how to inflate a " . ref($entry_ref)
+                      . " into a full coderef (perhaps you could use"
+                      . " Package::Anon instead of a bare stash?)"
+            }
+
+            return *{ $namespace->{$name} }{CODE};
         }
         else {
             return undef;
@@ -255,69 +320,48 @@ sub get_or_add_symbol {
 sub remove_symbol {
     my ($self, $variable) = @_;
 
-    my ($name, $sigil, $type) = $self->_deconstruct_variable_name($variable);
+    my ($name, $sigil, $type) = _deconstruct_variable_name($variable);
 
     # FIXME:
     # no doubt this is grossly inefficient and
     # could be done much easier and faster in XS
 
-    my ($scalar_desc, $array_desc, $hash_desc, $code_desc, $io_desc) = (
-        { sigil => '$', type => 'SCALAR', name => $name },
-        { sigil => '@', type => 'ARRAY',  name => $name },
-        { sigil => '%', type => 'HASH',   name => $name },
-        { sigil => '&', type => 'CODE',   name => $name },
-        { sigil => '',  type => 'IO',     name => $name },
+    my %desc = (
+        SCALAR => { sigil => '$', type => 'SCALAR', name => $name },
+        ARRAY  => { sigil => '@', type => 'ARRAY',  name => $name },
+        HASH   => { sigil => '%', type => 'HASH',   name => $name },
+        CODE   => { sigil => '&', type => 'CODE',   name => $name },
+        IO     => { sigil => '',  type => 'IO',     name => $name },
     );
+    confess "This should never ever ever happen" if !$desc{$type};
 
-    my ($scalar, $array, $hash, $code, $io);
-    if ($type eq 'SCALAR') {
-        $array  = $self->get_symbol($array_desc)  if $self->has_symbol($array_desc);
-        $hash   = $self->get_symbol($hash_desc)   if $self->has_symbol($hash_desc);
-        $code   = $self->get_symbol($code_desc)   if $self->has_symbol($code_desc);
-        $io     = $self->get_symbol($io_desc)     if $self->has_symbol($io_desc);
-    }
-    elsif ($type eq 'ARRAY') {
-        $scalar = $self->get_symbol($scalar_desc) if $self->has_symbol($scalar_desc) || BROKEN_SCALAR_INITIALIZATION;
-        $hash   = $self->get_symbol($hash_desc)   if $self->has_symbol($hash_desc);
-        $code   = $self->get_symbol($code_desc)   if $self->has_symbol($code_desc);
-        $io     = $self->get_symbol($io_desc)     if $self->has_symbol($io_desc);
-    }
-    elsif ($type eq 'HASH') {
-        $scalar = $self->get_symbol($scalar_desc) if $self->has_symbol($scalar_desc) || BROKEN_SCALAR_INITIALIZATION;
-        $array  = $self->get_symbol($array_desc)  if $self->has_symbol($array_desc);
-        $code   = $self->get_symbol($code_desc)   if $self->has_symbol($code_desc);
-        $io     = $self->get_symbol($io_desc)     if $self->has_symbol($io_desc);
-    }
-    elsif ($type eq 'CODE') {
-        $scalar = $self->get_symbol($scalar_desc) if $self->has_symbol($scalar_desc) || BROKEN_SCALAR_INITIALIZATION;
-        $array  = $self->get_symbol($array_desc)  if $self->has_symbol($array_desc);
-        $hash   = $self->get_symbol($hash_desc)   if $self->has_symbol($hash_desc);
-        $io     = $self->get_symbol($io_desc)     if $self->has_symbol($io_desc);
-    }
-    elsif ($type eq 'IO') {
-        $scalar = $self->get_symbol($scalar_desc) if $self->has_symbol($scalar_desc) || BROKEN_SCALAR_INITIALIZATION;
-        $array  = $self->get_symbol($array_desc)  if $self->has_symbol($array_desc);
-        $hash   = $self->get_symbol($hash_desc)   if $self->has_symbol($hash_desc);
-        $code   = $self->get_symbol($code_desc)   if $self->has_symbol($code_desc);
-    }
-    else {
-        confess "This should never ever ever happen";
-    }
+    my @types_to_store = grep { $type ne $_ && $self->has_symbol($desc{$_}) }
+                              keys %desc;
+    my %values = map { $_, $self->get_symbol($desc{$_}) } @types_to_store;
+
+    $values{SCALAR} = $self->get_symbol($desc{SCALAR})
+      if !defined $values{SCALAR}
+        && $type ne 'SCALAR'
+        && BROKEN_SCALAR_INITIALIZATION;
 
     $self->remove_glob($name);
 
-    $self->add_symbol($scalar_desc => $scalar) if defined $scalar;
-    $self->add_symbol($array_desc  => $array)  if defined $array;
-    $self->add_symbol($hash_desc   => $hash)   if defined $hash;
-    $self->add_symbol($code_desc   => $code)   if defined $code;
-    $self->add_symbol($io_desc     => $io)     if defined $io;
+    $self->add_symbol($desc{$_} => $values{$_})
+        for grep { defined $values{$_} } keys %values;
 }
 
 sub list_all_symbols {
     my ($self, $type_filter) = @_;
 
     my $namespace = $self->namespace;
-    return keys %{$namespace} unless defined $type_filter;
+    if (HAS_ISA_CACHE) {
+        return grep { $_ ne '::ISA::CACHE::' } keys %{$namespace}
+            unless defined $type_filter;
+    }
+    else {
+        return keys %{$namespace}
+            unless defined $type_filter;
+    }
 
     # NOTE:
     # or we can filter based on
@@ -332,14 +376,15 @@ sub list_all_symbols {
     }
     elsif ($type_filter eq 'SCALAR') {
         return grep {
-            BROKEN_SCALAR_INITIALIZATION
+            !(HAS_ISA_CACHE && $_ eq '::ISA::CACHE::') &&
+            (BROKEN_SCALAR_INITIALIZATION
                 ? (ref(\$namespace->{$_}) eq 'GLOB'
                       && defined(${*{$namespace->{$_}}{'SCALAR'}}))
                 : (do {
                       my $entry = \$namespace->{$_};
                       ref($entry) eq 'GLOB'
                           && B::svref_2object($entry)->SV->isa('B::SV')
-                  })
+                  }))
         } keys %{$namespace};
     }
     else {
@@ -366,7 +411,10 @@ sub get_all_symbols {
 1;
 
 __END__
+
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -374,7 +422,7 @@ Package::Stash::PP - pure perl implementation of the Package::Stash API
 
 =head1 VERSION
 
-version 0.33
+version 0.38
 
 =head1 SYNOPSIS
 
@@ -383,6 +431,52 @@ version 0.33
 =head1 DESCRIPTION
 
 This is a backend for L<Package::Stash> implemented in pure perl, for those without a compiler or who would like to use this inline in scripts.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item * L<Class::MOP::Package>
+
+This module is a factoring out of code that used to live here
+
+=back
+
+=head1 SUPPORT
+
+You can find this documentation for this module with the perldoc command.
+
+    perldoc Package::Stash
+
+You can also look for information at:
+
+=over 4
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Package-Stash>
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Package-Stash>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Package-Stash>
+
+=back
+
+=for Pod::Coverage BROKEN_ISA_ASSIGNMENT
+add_symbol
+get_all_symbols
+get_or_add_symbol
+get_symbol
+has_symbol
+list_all_symbols
+name
+namespace
+new
+remove_glob
 
 =head1 BUGS
 
@@ -405,37 +499,8 @@ core perl bugs, it's hard to tell.
 
 =back
 
-Please report any bugs through RT: email
-C<bug-package-stash at rt.cpan.org>, or browse to
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Package-Stash>.
-
-=head1 SUPPORT
-
-You can find this documentation for this module with the perldoc command.
-
-    perldoc Package::Stash
-
-You can also look for information at:
-
-=over 4
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Package-Stash>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Package-Stash>
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Package-Stash>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Package-Stash>
-
-=back
+Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=Package-Stash>
+(or L<bug-Package-Stash@rt.cpan.org|mailto:bug-Package-Stash@rt.cpan.org>).
 
 =head1 AUTHOR
 
@@ -444,34 +509,11 @@ Jesse Luehrs <doy at tozt dot net>
 Mostly copied from code from L<Class::MOP::Package>, by Stevan Little and the
 Moose Cabal.
 
-=for Pod::Coverage BROKEN_ISA_ASSIGNMENT
-add_symbol
-get_all_symbols
-get_or_add_symbol
-get_symbol
-has_symbol
-list_all_symbols
-name
-namespace
-new
-remove_glob
-
-=head1 SEE ALSO
-
-=over 4
-
-=item * L<Class::MOP::Package>
-
-This module is a factoring out of code that used to live here
-
-=back
-
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Jesse Luehrs.
+This software is copyright (c) 2018 by Jesse Luehrs.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

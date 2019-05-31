@@ -5,7 +5,7 @@ use warnings;
 
 use base qw(DBI::Gofer::Serializer::Base);
 
-#   $Id: Storable.pm 9949 2007-09-18 09:38:15Z timbo $
+#   $Id: Storable.pm 15585 2013-03-22 20:31:22Z Tim $
 #
 #   Copyright (c) 2007, Tim Bunce, Ireland
 #
@@ -38,7 +38,7 @@ See also L<DBI::Gofer::Serializer::Base>.
 
 use Storable qw(nfreeze thaw);
 
-our $VERSION = sprintf("0.%06d", q$Revision: 9949 $ =~ /(\d+)/o);
+our $VERSION = "0.015586";
 
 use base qw(DBI::Gofer::Serializer::Base);
 
@@ -46,6 +46,7 @@ use base qw(DBI::Gofer::Serializer::Base);
 sub serialize {
     my $self = shift;
     local $Storable::forgive_me = 1; # for CODE refs etc
+    local $Storable::canonical = 1; # for go_cache
     my $frozen = nfreeze(shift);
     return $frozen unless wantarray;
     return ($frozen, $self->{deserializer_class});

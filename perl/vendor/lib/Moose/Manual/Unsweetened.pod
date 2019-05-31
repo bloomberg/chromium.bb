@@ -1,10 +1,11 @@
-package Moose::Manual::Unsweetened;
-
+# PODNAME: Moose::Manual::Unsweetened
 # ABSTRACT: Moose idioms in plain old Perl 5 without the sugar
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::Unsweetened - Moose idioms in plain old Perl 5 without the sugar
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -57,7 +58,7 @@ First, we define two very small classes the Moose way.
       handles => { birth_year => 'year' },
   );
 
-  enum 'ShirtSize' => qw( s m l xl xxl );
+  enum 'ShirtSize' => [qw( s m l xl xxl )];
 
   has shirt_size => (
       is      => 'rw',
@@ -250,7 +251,7 @@ Now let's see User:
   use Email::Valid;
   use Scalar::Util qw( blessed );
 
-  use base 'Person';
+  use parent 'Person';
 
   sub new {
       my $class = shift;
@@ -314,7 +315,7 @@ much. We could probably simplify this by defining some sort of
       }
   );
 
-Then we could define a base class that would accept such a definition,
+Then we could define a base class that would accept such a definition
 and do the right thing. Keep that sort of thing up and we're well on
 our way to writing a half-assed version of Moose!
 
@@ -327,21 +328,59 @@ replace or extend a piece of built-in functionality.
 
 Moose is a complete OO package in and of itself, and is part of a rich
 ecosystem of extensions. It also has an enthusiastic community of
-users, and is being actively maintained and developed.
+users and is being actively maintained and developed.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

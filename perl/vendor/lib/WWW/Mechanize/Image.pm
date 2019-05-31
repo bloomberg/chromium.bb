@@ -1,12 +1,75 @@
 package WWW::Mechanize::Image;
-# vi:et:sw=4 ts=4
 
 use strict;
 use warnings;
 
+our $VERSION = '1.91';
+
+#ABSTRACT: Image object for WWW::Mechanize
+
+
+sub new {
+    my $class = shift;
+    my $parms = shift || {};
+
+    my $self = bless {}, $class;
+
+    for my $parm ( qw( url base tag height width alt name attrs ) ) {
+        # Check for what we passed in, not whether it's defined
+        $self->{$parm} = $parms->{$parm} if exists $parms->{$parm};
+    }
+
+    # url and tag are always required
+    for ( qw( url tag ) ) {
+        exists $self->{$_} or die "WWW::Mechanize::Image->new must have a $_ argument";
+    }
+
+    return $self;
+}
+
+
+sub url     { return ($_[0])->{url}; }
+sub base    { return ($_[0])->{base}; }
+sub name    { return ($_[0])->{name}; }
+sub tag     { return ($_[0])->{tag}; }
+sub height  { return ($_[0])->{height}; }
+sub width   { return ($_[0])->{width}; }
+sub alt     { return ($_[0])->{alt}; }
+sub attrs   { return ($_[0])->{attrs}; }
+
+
+sub URI {
+    my $self = shift;
+
+    require URI::URL;
+    my $URI = URI::URL->new( $self->url, $self->base );
+
+    return $URI;
+}
+
+
+sub url_abs {
+    my $self = shift;
+
+    return $self->URI->abs;
+}
+
+
+1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 WWW::Mechanize::Image - Image object for WWW::Mechanize
+
+=head1 VERSION
+
+version 1.91
 
 =head1 SYNOPSIS
 
@@ -22,32 +85,12 @@ Creates and returns a new C<WWW::Mechanize::Image> object.
         url    => $url,
         base   => $base,
         tag    => $tag,
-        name   => $name,    # From the INPUT tag
-        height => $height,  # optional
-        width  => $width,   # optional
-        alt    => $alt,     # optional
+        name   => $name,     # From the INPUT tag
+        height => $height,   # optional
+        width  => $width,    # optional
+        alt    => $alt,      # optional
+        attrs  => $attr_ref, # optional
     } );
-
-=cut
-
-sub new {
-    my $class = shift;
-    my $parms = shift || {};
-
-    my $self = bless {}, $class;
-
-    for my $parm ( qw( url base tag height width alt name ) ) {
-        # Check for what we passed in, not whether it's defined
-        $self->{$parm} = $parms->{$parm} if exists $parms->{$parm};
-    }
-
-    # url and tag are always required
-    for ( qw( url tag ) ) {
-        exists $self->{$_} or die "WWW::Mechanize::Image->new must have a $_ argument";
-    }
-
-    return $self;
-}
 
 =head1 Accessors
 
@@ -79,64 +122,31 @@ Image width
 
 ALT attribute from the source tag, if any.
 
-=cut
+=head2 $link->attrs()
 
-sub url     { return ($_[0])->{url}; }
-sub base    { return ($_[0])->{base}; }
-sub name    { return ($_[0])->{name}; }
-sub tag     { return ($_[0])->{tag}; }
-sub height  { return ($_[0])->{height}; }
-sub width   { return ($_[0])->{width}; }
-sub alt     { return ($_[0])->{alt}; }
+Hash ref of all the attributes and attribute values in the tag.
 
 =head2 $link->URI()
 
 Returns the URL as a L<URI::URL> object.
 
-=cut
-
-sub URI {
-    my $self = shift;
-
-    require URI::URL;
-    my $URI = URI::URL->new( $self->url, $self->base );
-
-    return $URI;
-}
-
 =head2 $link->url_abs()
 
 Returns the URL as an absolute URL string.
-
-=cut
-
-sub url_abs {
-    my $self = shift;
-
-    return $self->URI->abs;
-}
 
 =head1 SEE ALSO
 
 L<WWW::Mechanize> and L<WWW::Mechanize::Link>
 
-=head1 COPYRIGHT & LICENSE
+=head1 AUTHOR
 
-Copyright 2004-2010 Andy Lester.
+Andy Lester <andy at petdance.com>
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of either:
+=head1 COPYRIGHT AND LICENSE
 
-=over 4
+This software is copyright (c) 2004-2016 by Andy Lester.
 
-=item * the GNU General Public License as published by the Free
-Software Foundation; either version 1, or (at your option) any later
-version, or
-
-=item * the Artistic License version 2.0.
-
-=back
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-1;

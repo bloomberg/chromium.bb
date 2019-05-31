@@ -273,7 +273,7 @@ the L<load()> method. In pseudo-code terms looks something like this:
     $object = $class->new($context, @params)  # MyPlugin->new(...)
         || die $class->error();               # MyPlugin->error()
 
-The L<load()> method may alterately return a blessed reference to an
+The L<load()> method may alternately return a blessed reference to an
 object instance.  In this case, L<new()> and L<error()> are then called as
 I<object> methods against that prototype instance.
 

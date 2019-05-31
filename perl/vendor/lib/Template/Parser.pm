@@ -3,11 +3,11 @@
 # Template::Parser
 #
 # DESCRIPTION
-#   This module implements a LALR(1) parser and assocated support 
+#   This module implements a LALR(1) parser and associated support
 #   methods to parse template documents into the appropriate "compiled"
-#   format.  Much of the parser DFA code (see _parse() method) is based 
+#   format.  Much of the parser DFA code (see _parse() method) is based
 #   on Francois Desarmenien's Parse::Yapp module.  Kudos to him.
-# 
+#
 # AUTHOR
 #   Andy Wardley <abw@wardley.org>
 #
@@ -17,8 +17,8 @@
 #   This module is free software; you can redistribute it and/or
 #   modify it under the same terms as Perl itself.
 #
-#   The following copyright notice appears in the Parse::Yapp 
-#   documentation.  
+#   The following copyright notice appears in the Parse::Yapp
+#   documentation.
 #
 #      The Parse::Yapp module and its related modules and shell
 #      scripts are copyright (c) 1998 Francois Desarmenien,
@@ -27,7 +27,7 @@
 #      You may use and distribute them under the terms of either
 #      the GNU General Public License or the Artistic License, as
 #      specified in the Perl README file.
-# 
+#
 #============================================================================
 
 package Template::Parser;
@@ -50,12 +50,36 @@ our $VERSION = 2.89;
 our $DEBUG   = 0 unless defined $DEBUG;
 our $ERROR   = '';
 
+# The ANYCASE option can cause conflicts when reserved words are used as
+# variable names, hash keys, template names, plugin names, etc.  The
+#
+# $ANYCASE_BEFORE regex identifies where such a word precedes an assignment,
+# either as a variable (C<wrapper = 'html'>) or hash key (C<{ wrapper => 'html' }).
+# In that case it is treated as a simple words rather than being the lower case
+# equivalent of the upper case keyword (e.g. WRAPPER).
+#
+# $ANYCASE_AFTER is used to identify when such a word follows a symbols that
+# suggests it can't be a keyword, e.g. after BLOCK INCLUDE WRAPPER, USE, etc.
+our $ANYCASE_BEFORE = qr/\G((?=\s*[=\.]))/;
+our $ANYCASE_AFTER  = {
+    map { $_ => 1 }
+    qw(
+        GET SET CALL DEFAULT INSERT INCLUDE PROCESS WRAPPER BLOCK USE
+        PLUGIN FILTER MACRO IN TO STEP AND OR NOT DIV MOD DOT
+        IF UNLESS ELSIF FOR WHILE SWITCH CASE META THROW CATCH VIEW
+        CMPOP BINOP COMMA
+    ),
+    '(', '[', '{'
+    # not sure about ASSIGN as it breaks C<header_html = include header>
+};
+
 
 #========================================================================
 #                        -- COMMON TAG STYLES --
 #========================================================================
 
 our $TAG_STYLE   = {
+    'outline'   => [ '\[%',    '%\]', '%%' ],  # NEW!  Outline tag
     'default'   => [ '\[%',    '%\]'    ],
     'template1' => [ '[\[%]%', '%[\]%]' ],
     'metatext'  => [ '%%',     '%%'     ],
@@ -71,6 +95,7 @@ $TAG_STYLE->{ template } = $TAG_STYLE->{ tt2 } = $TAG_STYLE->{ default };
 our $DEFAULT_STYLE = {
     START_TAG   => $TAG_STYLE->{ default }->[0],
     END_TAG     => $TAG_STYLE->{ default }->[1],
+    OUTLINE_TAG => $TAG_STYLE->{ default }->[2],
 #    TAG_STYLE   => 'default',
     ANYCASE     => 0,
     INTERPOLATE => 0,
@@ -98,7 +123,7 @@ our $CHOMP_FLAGS  = qr/[-=~+]/;
 #------------------------------------------------------------------------
 # new(\%config)
 #
-# Constructor method. 
+# Constructor method.
 #------------------------------------------------------------------------
 
 sub new {
@@ -106,9 +131,10 @@ sub new {
     my $config = $_[0] && ref($_[0]) eq 'HASH' ? shift(@_) : { @_ };
     my ($tagstyle, $debug, $start, $end, $defaults, $grammar, $hash, $key, $udef);
 
-    my $self = bless { 
+    my $self = bless {
         START_TAG   => undef,
         END_TAG     => undef,
+        OUTLINE_TAG => undef,
         TAG_STYLE   => 'default',
         ANYCASE     => 0,
         INTERPOLATE => 0,
@@ -129,7 +155,7 @@ sub new {
         $self->{ $key } = $config->{ $key } if defined $config->{ $key };
     }
     $self->{ FILEINFO } = [ ];
-    
+
     # DEBUG config item can be a bitmask
     if (defined ($debug = $config->{ DEBUG })) {
         $self->{ DEBUG } = $debug & ( Template::Constants::DEBUG_PARSER
@@ -157,24 +183,24 @@ sub new {
     unless (ref $self->{ FACTORY }) {
         my $fclass = $self->{ FACTORY };
         $self->{ FACTORY } = $self->{ FACTORY }->new(
-             NAMESPACE => $config->{ NAMESPACE } 
+             NAMESPACE => $config->{ NAMESPACE }
         )
         || return $class->error($self->{ FACTORY }->error());
     }
-    
+
     # load grammar rules, states and lex table
-    @$self{ qw( LEXTABLE STATES RULES ) } 
+    @$self{ qw( LEXTABLE STATES RULES ) }
         = @$grammar{ qw( LEXTABLE STATES RULES ) };
-    
+
     $self->new_style($config)
         || return $class->error($self->error());
-        
+
     return $self;
 }
 
 #-----------------------------------------------------------------------
-# These methods are used to track nested IF and WHILE blocks.  Each 
-# generated if/while block is given a label indicating the directive 
+# These methods are used to track nested IF and WHILE blocks.  Each
+# generated if/while block is given a label indicating the directive
 # type and nesting depth, e.g. FOR0, WHILE1, FOR2, WHILE3, etc.  The
 # NEXT and LAST directives use the innermost label, e.g. last WHILE3;
 #-----------------------------------------------------------------------
@@ -201,8 +227,8 @@ sub in_block {
 sub block_label {
     my ($self, $prefix, $suffix) = @_;
     my $blocks = $self->{ IN_BLOCK };
-    my $name   = @$blocks 
-        ? $blocks->[-1] . scalar @$blocks 
+    my $name   = @$blocks
+        ? $blocks->[-1] . scalar @$blocks
         : undef;
     return join('', grep { defined $_ } $prefix, $name, $suffix);
 }
@@ -211,16 +237,16 @@ sub block_label {
 
 #------------------------------------------------------------------------
 # new_style(\%config)
-# 
-# Install a new (stacked) parser style.  This feature is currently 
-# experimental but should mimic the previous behaviour with regard to 
+#
+# Install a new (stacked) parser style.  This feature is currently
+# experimental but should mimic the previous behaviour with regard to
 # TAG_STYLE, START_TAG, END_TAG, etc.
 #------------------------------------------------------------------------
 
 sub new_style {
     my ($self, $config) = @_;
     my $styles = $self->{ STYLE } ||= [ ];
-    my ($tagstyle, $tags, $start, $end, $key);
+    my ($tagstyle, $tags, $start, $end, $out, $key);
 
     # clone new style from previous or default style
     my $style  = { %{ $styles->[-1] || $DEFAULT_STYLE } };
@@ -229,23 +255,62 @@ sub new_style {
     if ($tagstyle = $config->{ TAG_STYLE }) {
         return $self->error("Invalid tag style: $tagstyle")
             unless defined ($tags = $TAG_STYLE->{ $tagstyle });
-        ($start, $end) = @$tags;
-        $config->{ START_TAG } ||= $start;
-        $config->{   END_TAG } ||= $end;
+        ($start, $end, $out) = @$tags;
+        $config->{ START_TAG   } ||= $start;
+        $config->{ END_TAG     } ||= $end;
+        $config->{ OUTLINE_TAG } ||= $out;
     }
 
     foreach $key (keys %$DEFAULT_STYLE) {
         $style->{ $key } = $config->{ $key } if defined $config->{ $key };
     }
+
+    $start = $style->{ START_TAG   };
+    $end   = $style->{ END_TAG     };
+    $out   = $style->{ OUTLINE_TAG };
+    $style->{ TEXT_SPLIT } = $self->text_splitter($start, $end, $out);
+
     push(@$styles, $style);
     return $style;
 }
 
+sub text_splitter {
+    my ($self, $start, $end, $out) = @_;
+
+    if (defined $out) {
+        return qr/
+          \A(.*?)             # $1 - start of line up to directive
+            (?:
+              (?:
+              ^$out           # outline tag at start of line
+              (.*?)           # $2 - content of that line
+              (?:\n|$)        # end of that line or file
+              )
+              |
+              (?:
+              $start          # start of tag
+              (.*?)           # $3 - tag contents
+              $end            # end of tag
+              )
+            )
+        /msx;
+    }
+    else {
+        return qr/
+          ^(.*?)              # $1 - start of line up to directive
+            (?:
+              $start          # start of tag
+              (.*?)           # $2 - tag contents
+              $end            # end of tag
+            )
+        /sx;
+    }
+}
 
 #------------------------------------------------------------------------
 # old_style()
 #
-# Pop the current parser style and revert to the previous one.  See 
+# Pop the current parser style and revert to the previous one.  See
 # new_style().   ** experimental **
 #------------------------------------------------------------------------
 
@@ -320,9 +385,11 @@ sub split_text {
     my ($self, $text) = @_;
     my ($pre, $dir, $prelines, $dirlines, $postlines, $chomp, $tags, @tags);
     my $style = $self->{ STYLE }->[-1];
-    my ($start, $end, $prechomp, $postchomp, $interp ) = 
-        @$style{ qw( START_TAG END_TAG PRE_CHOMP POST_CHOMP INTERPOLATE ) };
+    my ($start, $end, $out, $prechomp, $postchomp, $interp ) =
+        @$style{ qw( START_TAG END_TAG OUTLINE_TAG PRE_CHOMP POST_CHOMP INTERPOLATE ) };
     my $tags_dir = $self->{ANYCASE} ? qr<TAGS>i : qr<TAGS>;
+    my $split    = $style->{ TEXT_SPLIT };
+    my $has_out  = defined $out;
 
     my @tokens = ();
     my $line = 1;
@@ -331,68 +398,68 @@ sub split_text {
         unless defined $text && length $text;
 
     # extract all directives from the text
-    while ($text =~ s/
-           ^(.*?)               # $1 - start of line up to directive
-           (?:
-            $start          # start of tag
-            (.*?)           # $2 - tag contents
-            $end            # end of tag
-            )
-           //sx) {
-        
-        ($pre, $dir) = ($1, $2);
+    while ($text =~ s/$split//) {
+        $pre = $1;
+        $dir = defined($2) ? $2 : $3;
         $pre = '' unless defined $pre;
         $dir = '' unless defined $dir;
-        
-        $prelines  = ($pre =~ tr/\n//);  # newlines in preceeding text
+
+        $prelines  = ($pre =~ tr/\n//);  # newlines in preceding text
         $dirlines  = ($dir =~ tr/\n//);  # newlines in directive tag
         $postlines = 0;                  # newlines chomped after tag
-        
+
         for ($dir) {
             if (/^\#/) {
                 # comment out entire directive except for any end chomp flag
                 $dir = ($dir =~ /($CHOMP_FLAGS)$/o) ? $1 : '';
             }
             else {
-                s/^($CHOMP_FLAGS)?\s*//so;
+
+                if(s/^($CHOMP_FLAGS)?(\s*)//so && $2) {
+                  my $chomped = $2;
+                  my $linecount = ($chomped =~ tr/\n//); # newlines in chomped whitespace
+                  $linecount ||= 0;
+                  $prelines += $linecount;
+                  $dirlines -= $linecount;
+                }
                 # PRE_CHOMP: process whitespace before tag
                 $chomp = $1 ? $1 : $prechomp;
                 $chomp =~ tr/-=~+/1230/;
                 if ($chomp && $pre) {
                     # chomp off whitespace and newline preceding directive
-                    if ($chomp == CHOMP_ALL) { 
+                    if ($chomp == CHOMP_ALL) {
                         $pre =~ s{ (\r?\n|^) [^\S\n]* \z }{}mx;
                     }
-                    elsif ($chomp == CHOMP_COLLAPSE) { 
+                    elsif ($chomp == CHOMP_COLLAPSE) {
                         $pre =~ s{ (\s+) \z }{ }x;
                     }
-                    elsif ($chomp == CHOMP_GREEDY) { 
+                    elsif ($chomp == CHOMP_GREEDY) {
                         $pre =~ s{ (\s+) \z }{}x;
                     }
                 }
             }
-            
+
             # POST_CHOMP: process whitespace after tag
             s/\s*($CHOMP_FLAGS)?\s*$//so;
             $chomp = $1 ? $1 : $postchomp;
             $chomp =~ tr/-=~+/1230/;
             if ($chomp) {
-                if ($chomp == CHOMP_ALL) { 
-                    $text =~ s{ ^ ([^\S\n]* \n) }{}x  
+                if ($chomp == CHOMP_ALL) {
+                    $text =~ s{ ^ ([^\S\n]* \n) }{}x
                         && $postlines++;
                 }
-                elsif ($chomp == CHOMP_COLLAPSE) { 
-                    $text =~ s{ ^ (\s+) }{ }x  
+                elsif ($chomp == CHOMP_COLLAPSE) {
+                    $text =~ s{ ^ (\s+) }{ }x
                         && ($postlines += $1=~y/\n//);
                 }
                 # any trailing whitespace
-                elsif ($chomp == CHOMP_GREEDY) { 
-                    $text =~ s{ ^ (\s+) }{}x  
+                elsif ($chomp == CHOMP_GREEDY) {
+                    $text =~ s{ ^ (\s+) }{}x
                         && ($postlines += $1=~y/\n//);
                 }
             }
         }
-            
+
         # any text preceding the directive can now be added
         if (length $pre) {
             push(@tokens, $interp
@@ -400,17 +467,19 @@ sub split_text {
                  : ('TEXT', $pre) );
         }
         $line += $prelines;
-            
+
         # and now the directive, along with line number information
         if (length $dir) {
             # the TAGS directive is a compile-time switch
             if ($dir =~ /^$tags_dir\s+(.*)/) {
                 my @tags = split(/\s+/, $1);
                 if (scalar @tags > 1) {
-                    ($start, $end) = map { quotemeta($_) } @tags;
+                    ($start, $end, $out) = map { quotemeta($_) } @tags;
+                    $split = $self->text_splitter($start, $end, $out);
                 }
                 elsif ($tags = $TAG_STYLE->{ $tags[0] }) {
-                    ($start, $end) = @$tags;
+                    ($start, $end, $out) = @$tags;
+                    $split = $self->text_splitter($start, $end, $out);
                 }
                 else {
                     warn "invalid TAGS style: $tags[0]\n";
@@ -419,29 +488,29 @@ sub split_text {
             else {
                 # DIRECTIVE is pushed as:
                 #   [ $dirtext, $line_no(s), \@tokens ]
-                push(@tokens, 
-                     [ $dir, 
-                       ($dirlines 
+                push(@tokens,
+                     [ $dir,
+                       ($dirlines
                         ? sprintf("%d-%d", $line, $line + $dirlines)
                         : $line),
                        $self->tokenise_directive($dir) ]);
             }
         }
-            
+
         # update line counter to include directive lines and any extra
         # newline chomped off the start of the following text
         $line += $dirlines + $postlines;
     }
-        
-    # anything remaining in the string is plain text 
-    push(@tokens, $interp 
+
+    # anything remaining in the string is plain text
+    push(@tokens, $interp
          ? [ $text, $line, 'ITEXT' ]
          : ( 'TEXT', $text) )
         if length $text;
-        
+
     return \@tokens;                                        ## RETURN ##
 }
-    
+
 
 
 #------------------------------------------------------------------------
@@ -512,8 +581,8 @@ sub interpolate_text {
 # Jeffrey Friedl's excellent book "Mastering Regular Expressions",
 # from O'Reilly, ISBN 1-56592-257-3
 #
-# Returns a reference to the list of chunks (each one being 2 elements) 
-# identified in the directive text.  On error, the internal _ERROR string 
+# Returns a reference to the list of chunks (each one being 2 elements)
+# identified in the directive text.  On error, the internal _ERROR string
 # is set and undef is returned.
 #------------------------------------------------------------------------
 
@@ -525,8 +594,8 @@ sub tokenise_directive {
     my ($anycase, $start, $end) = @$style{ qw( ANYCASE START_TAG END_TAG ) };
     my @tokens = ( );
 
-    while ($text =~ 
-            / 
+    while ($text =~
+            /
                 # strip out any comments
                 (\#[^\n]*)
            |
@@ -552,7 +621,7 @@ sub tokenise_directive {
             |
                 # an identifier matches in $6
                 (\w+)                    # variable identifier
-            |   
+            |
                 # an unquoted word or symbol matches in $7
                 (   [(){}\[\]:;,\/\\]    # misc parenthesis and symbols
 #               |   \->                  # arrow operator (for future?)
@@ -575,7 +644,7 @@ sub tokenise_directive {
             if ($2 eq '"') {
                 if ($token =~ /[\$\\]/) {
                     $type = 'QUOTED';
-                    # unescape " and \ but leave \$ escaped so that 
+                    # unescape " and \ but leave \$ escaped so that
                         # interpolate_text() doesn't incorrectly treat it
                     # as a variable reference
 #                   $token =~ s/\\([\\"])/$1/g;
@@ -593,7 +662,7 @@ sub tokenise_directive {
                     $token =~ s['][\\']g;
                     $token = "'$token'";
                 }
-            } 
+            }
             else {
                 $type = 'LITERAL';
                 $token = "'$token'";
@@ -608,13 +677,25 @@ sub tokenise_directive {
         }
         elsif (defined($token = $6)) {
             # Fold potential keywords to UPPER CASE if the ANYCASE option is
-            # set, unless (we've got some preceeding tokens and) the previous
+            # set, unless (we've got some preceding tokens and) the previous
             # token is a DOT op.  This prevents the 'last' in 'data.last'
             # from being interpreted as the LAST keyword.
-            $uctoken = 
-                ($anycase && (! @tokens || $tokens[-2] ne 'DOT'))
-                    ? uc $token
-                    :    $token;
+            if ($anycase) {
+                # if the token follows a dot or precedes an assignment then
+                # it's not for folding, e.g. the 'wrapper' in this:
+                # [% page = { wrapper='html' }; page.wrapper %]
+                if ((@tokens && $ANYCASE_AFTER->{ $tokens[-2] })
+                ||  ($text =~ /$ANYCASE_BEFORE/gc)) {
+                    # keep the token unmodified
+                    $uctoken = $token;
+                }
+                else {
+                    $uctoken = uc $token;
+                }
+            }
+            else {
+                $uctoken = $token;
+            }
             if (defined ($type = $lextable->{ $uctoken })) {
                 $token = $uctoken;
             }
@@ -646,25 +727,27 @@ sub tokenise_directive {
 #------------------------------------------------------------------------
 # define_block($name, $block)
 #
-# Called by the parser 'defblock' rule when a BLOCK definition is 
-# encountered in the template.  The name of the block is passed in the 
+# Called by the parser 'defblock' rule when a BLOCK definition is
+# encountered in the template.  The name of the block is passed in the
 # first parameter and a reference to the compiled block is passed in
 # the second.  This method stores the block in the $self->{ DEFBLOCK }
-# hash which has been initialised by parse() and will later be used 
+# hash which has been initialised by parse() and will later be used
 # by the same method to call the store() method on the calling cache
 # to define the block "externally".
 #------------------------------------------------------------------------
 
 sub define_block {
     my ($self, $name, $block) = @_;
-    my $defblock = $self->{ DEFBLOCK } 
+    my $defblock = $self->{ DEFBLOCK }
         || return undef;
 
     $self->debug("compiled block '$name':\n$block")
         if $self->{ DEBUG } & Template::Constants::DEBUG_PARSER;
 
+    warn "Block redefined: $name\n" if exists $defblock->{ $name };
+
     $defblock->{ $name } = $block;
-    
+
     return undef;
 }
 
@@ -691,11 +774,11 @@ sub pop_defblock {
 
 sub add_metadata {
     my ($self, $setlist) = @_;
-    my $metadata = $self->{ METADATA } 
+    my $metadata = $self->{ METADATA }
         || return undef;
 
     push(@$metadata, @$setlist);
-    
+
     return undef;
 }
 
@@ -711,7 +794,7 @@ sub location {
     return "\n" unless $self->{ FILE_INFO };
     my $line = ${ $self->{ LINE } };
     my $info = $self->{ FILEINFO }->[-1];
-    my $file = $info->{ path } || $info->{ name } 
+    my $file = $info->{ path } || $info->{ name }
         || '(unknown template)';
     $line =~ s/\-.*$//; # might be 'n-n'
     $line ||= 1;
@@ -726,15 +809,15 @@ sub location {
 #------------------------------------------------------------------------
 # _parse(\@tokens, \@info)
 #
-# Parses the list of input tokens passed by reference and returns a 
-# Template::Directive::Block object which contains the compiled 
-# representation of the template. 
+# Parses the list of input tokens passed by reference and returns a
+# Template::Directive::Block object which contains the compiled
+# representation of the template.
 #
-# This is the main parser DFA loop.  See embedded comments for 
+# This is the main parser DFA loop.  See embedded comments for
 # further details.
 #
-# On error, undef is returned and the internal _ERROR field is set to 
-# indicate the error.  This can be retrieved by calling the error() 
+# On error, undef is returned and the internal _ERROR field is set to
+# indicate the error.  This can be retrieved by calling the error()
 # method.
 #------------------------------------------------------------------------
 
@@ -751,7 +834,7 @@ sub _parse {
     # retrieve internal rule and state tables
     my ($states, $rules) = @$self{ qw( STATES RULES ) };
 
-    # If we're tracing variable usage then we need to give the factory a 
+    # If we're tracing variable usage then we need to give the factory a
     # reference to our $self->{ VARIABLES } for it to fill in.  This is a
     # bit of a hack to back-patch this functionality into TT2.
     $self->{ FACTORY }->trace_vars($self->{ VARIABLES })
@@ -776,7 +859,7 @@ sub _parse {
         # see if any lookaheads exist for the current state
         if (exists $state->{'ACTIONS'}) {
 
-            # get next token and expand any directives (i.e. token is an 
+            # get next token and expand any directives (i.e. token is an
             # array ref) onto the front of the token list
             while (! defined $token && @$tokens) {
                 $token = shift(@$tokens);
@@ -792,7 +875,7 @@ sub _parse {
                             # - - - - - - - - - - - - - - - - - - - - - - - - -
                             my $dtext = $text;
                             $dtext =~ s[(['\\])][\\$1]g;
-                            unshift(@$tokens, 
+                            unshift(@$tokens,
                                     DEBUG   => 'DEBUG',
                                     IDENT   => 'msg',
                                     IDENT   => 'line',
@@ -805,7 +888,7 @@ sub _parse {
                                     ASSIGN  => '=',
                                     LITERAL => "'$info->{ name }'",
                                     (';') x 2,
-                                    @$token, 
+                                    @$token,
                                     (';') x 2);
                         }
                         else {
@@ -820,7 +903,7 @@ sub _parse {
                             $value = $text;
                         }
                         else {
-                            unshift(@$tokens, 
+                            unshift(@$tokens,
                                     @{ $self->interpolate_text($text, $line) });
                             $token = undef; # force redo
                         }
@@ -871,21 +954,26 @@ sub _parse {
             or $status = ACCEPT;
 
         # use dummy sub if code ref doesn't exist
-        $code = sub { $_[1] }
-            unless $code;
+        if ( !$code ) {
+            $coderet = $len ? $stack->[ -$len ]->[1] : undef;
+        } else {
+            # $code = sub { $_[1] }
+            #     unless $code;
 
-        @codevars = $len
-                ?   map { $_->[1] } @$stack[ -$len .. -1 ]
-                :   ();
+            @codevars = $len
+                    ?   map { $_->[1] } @$stack[ -$len .. -1 ]
+                    :   ();
 
-        eval {
-            $coderet = &$code( $self, @codevars );
-        };
-        if ($@) {
-            my $err = $@;
-            chomp $err;
-            return $self->_parse_error($err);
+            eval {
+                $coderet = &$code( $self, @codevars );
+            };
+            if ($@) {
+                my $err = $@;
+                chomp $err;
+                return $self->_parse_error($err);
+            }
         }
+
 
         # reduce stack by $len
         splice(@$stack, -$len, $len);
@@ -899,12 +987,12 @@ sub _parse {
             if $status == ABORT;
 
         # ERROR
-        last 
+        last
             if $status == ERROR;
     }
     continue {
-        push(@$stack, [ $states->[ $stack->[-1][0] ]->{'GOTOS'}->{ $lhs }, 
-              $coderet ]), 
+        push(@$stack, [ $states->[ $stack->[-1][0] ]->{'GOTOS'}->{ $lhs },
+              $coderet ]),
     }
 
     # ERROR                                                 ## RETURN ##
@@ -926,7 +1014,7 @@ sub _parse {
 # _parse_error($msg, $dirtext)
 #
 # Method used to handle errors encountered during the parse process
-# in the _parse() method.  
+# in the _parse() method.
 #------------------------------------------------------------------------
 
 sub _parse_error {
@@ -944,8 +1032,8 @@ sub _parse_error {
 
 #------------------------------------------------------------------------
 # _dump()
-# 
-# Debug method returns a string representing the internal state of the 
+#
+# Debug method returns a string representing the internal state of the
 # object.
 #------------------------------------------------------------------------
 
@@ -955,7 +1043,7 @@ sub _dump {
     my $format = "    %-16s => %s\n";
     my $key;
 
-    foreach $key (qw( START_TAG END_TAG TAG_STYLE ANYCASE INTERPOLATE 
+    foreach $key (qw( START_TAG END_TAG TAG_STYLE ANYCASE INTERPOLATE
                       PRE_CHOMP POST_CHOMP V1DOLLAR )) {
         my $val = $self->{ $key };
         $val = '<undef>' unless defined $val;
@@ -978,7 +1066,7 @@ Template::Parser - LALR(1) parser for compiling template documents
 =head1 SYNOPSIS
 
     use Template::Parser;
-    
+
     $parser   = Template::Parser->new(\%config);
     $template = $parser->parse($text)
         || die $parser->error(), "\n";
@@ -992,11 +1080,11 @@ methods for parsing template documents into Perl code.
 
 =head2 new(\%params)
 
-The C<new()> constructor creates and returns a reference to a new 
-C<Template::Parser> object.  
+The C<new()> constructor creates and returns a reference to a new
+C<Template::Parser> object.
 
-A reference to a hash may be supplied as a parameter to provide configuration values.  
-See L<CONFIGURATION OPTIONS> below for a summary of these options and 
+A reference to a hash may be supplied as a parameter to provide configuration values.
+See L<CONFIGURATION OPTIONS> below for a summary of these options and
 L<Template::Manual::Config> for full details.
 
     my $parser = Template::Parser->new({
@@ -1023,8 +1111,8 @@ of metadata values defined in C<META> tags.
 
 =head1 CONFIGURATION OPTIONS
 
-The C<Template::Parser> module accepts the following configuration 
-options.  Please see L<Template::Manual::Config> for futher details
+The C<Template::Parser> module accepts the following configuration
+options.  Please see L<Template::Manual::Config> for further details
 on each option.
 
 =head2 START_TAG, END_TAG
@@ -1034,7 +1122,7 @@ L<END_TAG|Template::Manual::Config#START_TAG_END_TAG> options are used to
 specify character sequences or regular expressions that mark the start and end
 of a template directive.
 
-    my $parser = Template::Parser->new({ 
+    my $parser = Template::Parser->new({
         START_TAG => quotemeta('<+'),
         END_TAG   => quotemeta('+>'),
     });
@@ -1044,7 +1132,7 @@ of a template directive.
 The L<TAG_STYLE|Template::Manual::Config#TAG_STYLE> option can be used to set
 both L<START_TAG> and L<END_TAG> according to pre-defined tag styles.
 
-    my $parser = Template::Parser->new({ 
+    my $parser = Template::Parser->new({
         TAG_STYLE => 'star',     # [* ... *]
     });
 
@@ -1064,7 +1152,7 @@ any whitespace before or after a directive tag, respectively.
 The L<INTERPOLATE|Template::Manual::Config#INTERPOLATE> flag can be set
 to allow variables to be embedded in plain text blocks.
 
-    my $parser = Template::Parser->new({ 
+    my $parser = Template::Parser->new({
         INTERPOLATE => 1,
     });
 
@@ -1072,7 +1160,7 @@ Variables should be prefixed by a C<$> to identify them, using curly braces
 to explicitly scope the variable name where necessary.
 
     Hello ${name},
-    
+
     The day today is ${day.today}.
 
 =head2 ANYCASE
@@ -1093,8 +1181,8 @@ entirely new template language to be constructed and used by the Template
 Toolkit.
 
     use MyOrg::Template::Grammar;
-    
-    my $parser = Template::Parser->new({ 
+
+    my $parser = Template::Parser->new({
         GRAMMAR = MyOrg::Template::Grammar->new();
     });
 
@@ -1107,7 +1195,7 @@ The L<DEBUG|Template::Manual::Config#DEBUG> option can be used to enable
 various debugging features of the C<Template::Parser> module.
 
     use Template::Constants qw( :debug );
-    
+
     my $template = Template->new({
         DEBUG => DEBUG_PARSER | DEBUG_DIRS,
     });
@@ -1130,7 +1218,7 @@ following copyright notice appears in the C<Parse::Yapp> documentation.
     The Parse::Yapp module and its related modules and shell
     scripts are copyright (c) 1998 Francois Desarmenien,
     France. All rights reserved.
-    
+
     You may use and distribute them under the terms of either
     the GNU General Public License or the Artistic License, as
     specified in the Perl README file.
@@ -1138,4 +1226,3 @@ following copyright notice appears in the C<Parse::Yapp> documentation.
 =head1 SEE ALSO
 
 L<Template>, L<Template::Grammar>, L<Template::Directive>
-

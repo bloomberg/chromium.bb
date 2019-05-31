@@ -1,14 +1,15 @@
 package HTTP::Headers;
 
 use strict;
-use Carp ();
+use warnings;
 
-use vars qw($VERSION $TRANSLATE_UNDERSCORE);
-$VERSION = "6.00";
+our $VERSION = '6.18';
+
+use Carp ();
 
 # The $TRANSLATE_UNDERSCORE variable controls whether '_' can be used
 # as a replacement for '-' in header field names.
-$TRANSLATE_UNDERSCORE = 1 unless defined $TRANSLATE_UNDERSCORE;
+our $TRANSLATE_UNDERSCORE = 1 unless defined $TRANSLATE_UNDERSCORE;
 
 # "Good Practice" order of HTTP message headers:
 #    - General-Headers
@@ -138,6 +139,9 @@ sub remove_content_headers
     for my $f (grep $entity_header{$_} || /^content-/, keys %$self) {
 	$c->{$f} = delete $self->{$f};
     }
+    if (exists $self->{'::std_case'}) {
+	$c->{'::std_case'} = $self->{'::std_case'};
+    }
     $c;
 }
 
@@ -146,14 +150,17 @@ sub _header
 {
     my($self, $field, $val, $op) = @_;
 
+    Carp::croak("Illegal field name '$field'")
+        if rindex($field, ':') > 1 || !length($field);
+
     unless ($field =~ /^:/) {
 	$field =~ tr/_/-/ if $TRANSLATE_UNDERSCORE;
 	my $old = $field;
 	$field = lc $field;
-	unless(defined $standard_case{$field}) {
-	    # generate a %standard_case entry for this field
+	unless($standard_case{$field} || $self->{'::std_case'}{$field}) {
+	    # generate a %std_case entry for this field
 	    $old =~ s/\b(\w)/\u$1/g;
-	    $standard_case{$field} = $old;
+	    $self->{'::std_case'}{$field} = $old;
 	}
     }
 
@@ -202,15 +209,15 @@ sub _sorted_field_names
     return [ sort {
         ($header_order{$a} || 999) <=> ($header_order{$b} || 999) ||
          $a cmp $b
-    } keys %$self ];
+    } grep !/^::/, keys %$self ];
 }
 
 
 sub header_field_names {
     my $self = shift;
-    return map $standard_case{$_} || $_, @{ $self->_sorted_field_names },
+    return map $standard_case{$_} || $self->{'::std_case'}{$_} || $_, @{ $self->_sorted_field_names },
 	if wantarray;
-    return keys %$self;
+    return grep !/^::/, keys %$self;
 }
 
 
@@ -219,20 +226,31 @@ sub scan
     my($self, $sub) = @_;
     my $key;
     for $key (@{ $self->_sorted_field_names }) {
-	next if substr($key, 0, 1) eq '_';
 	my $vals = $self->{$key};
 	if (ref($vals) eq 'ARRAY') {
 	    my $val;
 	    for $val (@$vals) {
-		$sub->($standard_case{$key} || $key, $val);
+		$sub->($standard_case{$key} || $self->{'::std_case'}{$key} || $key, $val);
 	    }
 	}
 	else {
-	    $sub->($standard_case{$key} || $key, $vals);
+	    $sub->($standard_case{$key} || $self->{'::std_case'}{$key} || $key, $vals);
 	}
     }
 }
 
+sub flatten {
+	my($self)=@_;
+
+	(
+		map {
+			my $k = $_;
+			map {
+				( $k => $_ )
+			} $self->header($_);
+		} $self->header_field_names
+	);
+}
 
 sub as_string
 {
@@ -245,7 +263,8 @@ sub as_string
 	my $vals = $self->{$key};
 	if ( ref($vals) eq 'ARRAY' ) {
 	    for my $val (@$vals) {
-		my $field = $standard_case{$key} || $key;
+		$val = '' if not defined $val;
+		my $field = $standard_case{$key} || $self->{'::std_case'}{$key} || $key;
 		$field =~ s/^://;
 		if ( index($val, "\n") >= 0 ) {
 		    $val = _process_newline($val, $endl);
@@ -254,7 +273,8 @@ sub as_string
 	    }
 	}
 	else {
-	    my $field = $standard_case{$key} || $key;
+	    $vals = '' if not defined $vals;
+	    my $field = $standard_case{$key} || $self->{'::std_case'}{$key} || $key;
 	    $field =~ s/^://;
 	    if ( index($vals, "\n") >= 0 ) {
 		$vals = _process_newline($vals, $endl);
@@ -272,7 +292,7 @@ sub _process_newline {
     # must handle header values with embedded newlines with care
     s/\s+$//;        # trailing newlines and space must go
     s/\n(\x0d?\n)+/\n/g;     # no empty lines
-    s/\n([^\040\t])/\n $1/g; # intial space for continuation
+    s/\n([^\040\t])/\n $1/g; # initial space for continuation
     s/\n/$endl/g;    # substitute with requested line ending
     $_;
 }
@@ -445,11 +465,17 @@ sub _basic_auth {
 
 1;
 
-__END__
+=pod
+
+=encoding UTF-8
 
 =head1 NAME
 
 HTTP::Headers - Class encapsulating HTTP Message headers
+
+=head1 VERSION
+
+version 6.18
 
 =head1 SYNOPSIS
 
@@ -516,7 +542,7 @@ If no such field exists C<undef> will be returned.
 
 A multi-valued field will be returned as separate values in list
 context and will be concatenated with ", " as separator in scalar
-context.  The HTTP spec (RFC 2616) promise that joining multiple
+context.  The HTTP spec (RFC 2616) promises that joining multiple
 values in this way will not change the semantic of a header field, but
 in practice there are cases like old-style Netscape cookies (see
 L<HTTP::Cookies>) where "," is used as part of the syntax of a single
@@ -606,6 +632,10 @@ will be visited in the recommended "Good Practice" order.
 Any return values of the callback routine are ignored.  The loop can
 be broken by raising an exception (C<die>), but the caller of scan()
 would have to trap the exception itself.
+
+=item $h->flatten()
+
+Returns the list of pairs of keys and values.
 
 =item $h->as_string
 
@@ -840,10 +870,21 @@ These field names are returned with the ':' intact for
 $h->header_field_names and the $h->scan callback, but the colons do
 not show in $h->as_string.
 
-=head1 COPYRIGHT
+=head1 AUTHOR
 
-Copyright 1995-2005 Gisle Aas.
+Gisle Aas <gisle@activestate.com>
 
-This library is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 1994-2017 by Gisle Aas.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+
+__END__
+
+
+#ABSTRACT: Class encapsulating HTTP Message headers
 

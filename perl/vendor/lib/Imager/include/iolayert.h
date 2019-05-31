@@ -70,6 +70,8 @@ struct i_io_glue_t {
 
   /* if non-zero we do write buffering (enabled by default) */
   int buffered;
+
+  im_context_t context;
 };
 
 #define I_IO_DUMP_CALLBACKS 1
@@ -88,6 +90,10 @@ struct i_io_glue_t {
   ((ig)->read_ptr < (ig)->read_end ? \
      *((ig)->read_ptr++) : \
      i_io_getc_imp(ig))
+#define i_io_nextc(ig) \
+  ((void)((ig)->read_ptr < (ig)->read_end ?	\
+	  ((ig)->read_ptr++, 0) :		\
+	  i_io_getc_imp(ig)))
 #define i_io_peekc(ig) \
   ((ig)->read_ptr < (ig)->read_end ? \
    *((ig)->read_ptr) :		     \

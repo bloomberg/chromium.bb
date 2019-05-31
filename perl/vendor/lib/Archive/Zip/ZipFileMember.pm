@@ -4,7 +4,7 @@ use strict;
 use vars qw( $VERSION @ISA );
 
 BEGIN {
-    $VERSION = '1.30';
+    $VERSION = '1.64';
     @ISA     = qw ( Archive::Zip::FileMember );
 }
 
@@ -39,11 +39,8 @@ sub _newFromZipFile {
 
 sub isDirectory {
     my $self = shift;
-    return (
-        substr( $self->fileName, -1, 1 ) eq '/'
-        and
-        $self->uncompressedSize == 0
-    );
+    return (substr($self->fileName, -1, 1) eq '/'
+          and $self->uncompressedSize == 0);
 }
 
 # Seek to the beginning of the local header, just past the signature.
@@ -65,21 +62,21 @@ sub _seekToLocalHeader {
     my $status;
     my $signature;
 
-    $status = $self->fh()->seek( $where, IO::Seekable::SEEK_SET );
+    $status = $self->fh()->seek($where, IO::Seekable::SEEK_SET);
     return _ioError("seeking to local header") unless $status;
 
-    ( $status, $signature ) =
-      _readSignature( $self->fh(), $self->externalFileName(),
-        LOCAL_FILE_HEADER_SIGNATURE );
+    ($status, $signature) =
+      _readSignature($self->fh(), $self->externalFileName(),
+        LOCAL_FILE_HEADER_SIGNATURE);
     return $status if $status == AZ_IO_ERROR;
 
     # retry with EOCD offset if any was given.
-    if ( $status == AZ_FORMAT_ERROR && $self->{'possibleEocdOffset'} ) {
+    if ($status == AZ_FORMAT_ERROR && $self->{'possibleEocdOffset'}) {
         $status = $self->_seekToLocalHeader(
             $self->localHeaderRelativeOffset() + $self->{'possibleEocdOffset'},
             $where
         );
-        if ( $status == AZ_OK ) {
+        if ($status == AZ_OK) {
             $self->{'localHeaderRelativeOffset'} +=
               $self->{'possibleEocdOffset'};
             $self->{'possibleEocdOffset'} = 0;
@@ -90,7 +87,7 @@ sub _seekToLocalHeader {
 }
 
 # Because I'm going to delete the file handle, read the local file
-# header if the file handle is seekable. If it isn't, I assume that
+# header if the file handle is seekable. If it is not, I assume that
 # I've already read the local header.
 # Return ( $status, $self )
 
@@ -101,18 +98,18 @@ sub _become {
 
     my $status = AZ_OK;
 
-    if ( _isSeekable( $self->fh() ) ) {
+    if (_isSeekable($self->fh())) {
         my $here = $self->fh()->tell();
         $status = $self->_seekToLocalHeader();
         $status = $self->_readLocalFileHeader() if $status == AZ_OK;
-        $self->fh()->seek( $here, IO::Seekable::SEEK_SET );
+        $self->fh()->seek($here, IO::Seekable::SEEK_SET);
         return $status unless $status == AZ_OK;
     }
 
-    delete( $self->{'eocdCrc32'} );
-    delete( $self->{'diskNumberStart'} );
-    delete( $self->{'localHeaderRelativeOffset'} );
-    delete( $self->{'dataOffset'} );
+    delete($self->{'eocdCrc32'});
+    delete($self->{'diskNumberStart'});
+    delete($self->{'localHeaderRelativeOffset'});
+    delete($self->{'dataOffset'});
 
     return $self->SUPER::_become($newClass);
 }
@@ -134,8 +131,8 @@ sub dataOffset {
 sub _skipLocalFileHeader {
     my $self = shift;
     my $header;
-    my $bytesRead = $self->fh()->read( $header, LOCAL_FILE_HEADER_LENGTH );
-    if ( $bytesRead != LOCAL_FILE_HEADER_LENGTH ) {
+    my $bytesRead = $self->fh()->read($header, LOCAL_FILE_HEADER_LENGTH);
+    if ($bytesRead != LOCAL_FILE_HEADER_LENGTH) {
         return _ioError("reading local file header");
     }
     my $fileNameLength;
@@ -151,31 +148,31 @@ sub _skipLocalFileHeader {
         undef,    # $uncompressedSize,
         $fileNameLength,
         $extraFieldLength
-    ) = unpack( LOCAL_FILE_HEADER_FORMAT, $header );
+    ) = unpack(LOCAL_FILE_HEADER_FORMAT, $header);
 
     if ($fileNameLength) {
-        $self->fh()->seek( $fileNameLength, IO::Seekable::SEEK_CUR )
+        $self->fh()->seek($fileNameLength, IO::Seekable::SEEK_CUR)
           or return _ioError("skipping local file name");
     }
 
     if ($extraFieldLength) {
         $bytesRead =
-          $self->fh()->read( $self->{'localExtraField'}, $extraFieldLength );
-        if ( $bytesRead != $extraFieldLength ) {
+          $self->fh()->read($self->{'localExtraField'}, $extraFieldLength);
+        if ($bytesRead != $extraFieldLength) {
             return _ioError("reading local extra field");
         }
     }
 
     $self->{'dataOffset'} = $self->fh()->tell();
 
-    if ( $bitFlag & GPBF_HAS_DATA_DESCRIPTOR_MASK ) {
+    if ($bitFlag & GPBF_HAS_DATA_DESCRIPTOR_MASK) {
 
         # Read the crc32, compressedSize, and uncompressedSize from the
         # extended data descriptor, which directly follows the compressed data.
         #
         # Skip over the compressed file data (assumes that EOCD compressedSize
         # was correct)
-        $self->fh()->seek( $self->{'compressedSize'}, IO::Seekable::SEEK_CUR )
+        $self->fh()->seek($self->{'compressedSize'}, IO::Seekable::SEEK_CUR)
           or return _ioError("seeking to extended local header");
 
         # these values should be set correctly from before.
@@ -186,10 +183,19 @@ sub _skipLocalFileHeader {
         my $status = $self->_readDataDescriptor();
         return $status unless $status == AZ_OK;
 
+        # The buffer withe encrypted data is prefixed with a new
+        # encrypted 12 byte header. The size only changes when
+        # the buffer is also compressed
+        $self->isEncrypted && $oldUncompressedSize > $self->{uncompressedSize}
+          and $oldUncompressedSize -= DATA_DESCRIPTOR_LENGTH;
+
         return _formatError(
             "CRC or size mismatch while skipping data descriptor")
           if ( $oldCrc32 != $self->{'crc32'}
-            || $oldUncompressedSize != $self->{'uncompressedSize'} );
+            || $oldUncompressedSize != $self->{'uncompressedSize'});
+
+        $self->{'crc32'} = 0 
+            if $self->compressionMethod() == COMPRESSION_STORED ; 
     }
 
     return AZ_OK;
@@ -203,8 +209,8 @@ sub _skipLocalFileHeader {
 sub _readLocalFileHeader {
     my $self = shift;
     my $header;
-    my $bytesRead = $self->fh()->read( $header, LOCAL_FILE_HEADER_LENGTH );
-    if ( $bytesRead != LOCAL_FILE_HEADER_LENGTH ) {
+    my $bytesRead = $self->fh()->read($header, LOCAL_FILE_HEADER_LENGTH);
+    if ($bytesRead != LOCAL_FILE_HEADER_LENGTH) {
         return _ioError("reading local file header");
     }
     my $fileNameLength;
@@ -218,12 +224,12 @@ sub _readLocalFileHeader {
         $crc32,                            $compressedSize,
         $uncompressedSize,                 $fileNameLength,
         $extraFieldLength
-    ) = unpack( LOCAL_FILE_HEADER_FORMAT, $header );
+    ) = unpack(LOCAL_FILE_HEADER_FORMAT, $header);
 
     if ($fileNameLength) {
         my $fileName;
-        $bytesRead = $self->fh()->read( $fileName, $fileNameLength );
-        if ( $bytesRead != $fileNameLength ) {
+        $bytesRead = $self->fh()->read($fileName, $fileNameLength);
+        if ($bytesRead != $fileNameLength) {
             return _ioError("reading local file name");
         }
         $self->fileName($fileName);
@@ -231,39 +237,37 @@ sub _readLocalFileHeader {
 
     if ($extraFieldLength) {
         $bytesRead =
-          $self->fh()->read( $self->{'localExtraField'}, $extraFieldLength );
-        if ( $bytesRead != $extraFieldLength ) {
+          $self->fh()->read($self->{'localExtraField'}, $extraFieldLength);
+        if ($bytesRead != $extraFieldLength) {
             return _ioError("reading local extra field");
         }
     }
 
     $self->{'dataOffset'} = $self->fh()->tell();
 
-    if ( $self->hasDataDescriptor() ) {
+    if ($self->hasDataDescriptor()) {
 
         # Read the crc32, compressedSize, and uncompressedSize from the
         # extended data descriptor.
         # Skip over the compressed file data (assumes that EOCD compressedSize
         # was correct)
-        $self->fh()->seek( $self->{'compressedSize'}, IO::Seekable::SEEK_CUR )
+        $self->fh()->seek($self->{'compressedSize'}, IO::Seekable::SEEK_CUR)
           or return _ioError("seeking to extended local header");
 
         my $status = $self->_readDataDescriptor();
         return $status unless $status == AZ_OK;
-    }
-    else {
+    } else {
         return _formatError(
             "CRC or size mismatch after reading data descriptor")
           if ( $self->{'crc32'} != $crc32
-            || $self->{'uncompressedSize'} != $uncompressedSize );
+            || $self->{'uncompressedSize'} != $uncompressedSize);
     }
 
     return AZ_OK;
 }
 
 # This will read the data descriptor, which is after the end of compressed file
-# data in members that that have GPBF_HAS_DATA_DESCRIPTOR_MASK set in their
-# bitFlag.
+# data in members that have GPBF_HAS_DATA_DESCRIPTOR_MASK set in their bitFlag.
 # The only reliable way to find these is to rely on the EOCD compressedSize.
 # Assumes that file is positioned immediately after the compressed data.
 # Returns status; sets crc32, compressedSize, and uncompressedSize.
@@ -275,35 +279,32 @@ sub _readDataDescriptor {
     my $compressedSize;
     my $uncompressedSize;
 
-    my $bytesRead = $self->fh()->read( $signatureData, SIGNATURE_LENGTH );
+    my $bytesRead = $self->fh()->read($signatureData, SIGNATURE_LENGTH);
     return _ioError("reading header signature")
       if $bytesRead != SIGNATURE_LENGTH;
-    my $signature = unpack( SIGNATURE_FORMAT, $signatureData );
+    my $signature = unpack(SIGNATURE_FORMAT, $signatureData);
 
     # unfortunately, the signature appears to be optional.
-    if ( $signature == DATA_DESCRIPTOR_SIGNATURE
-        && ( $signature != $self->{'crc32'} ) )
-    {
-        $bytesRead = $self->fh()->read( $header, DATA_DESCRIPTOR_LENGTH );
+    if ($signature == DATA_DESCRIPTOR_SIGNATURE
+        && ($signature != $self->{'crc32'})) {
+        $bytesRead = $self->fh()->read($header, DATA_DESCRIPTOR_LENGTH);
         return _ioError("reading data descriptor")
           if $bytesRead != DATA_DESCRIPTOR_LENGTH;
 
-        ( $crc32, $compressedSize, $uncompressedSize ) =
-          unpack( DATA_DESCRIPTOR_FORMAT, $header );
-    }
-    else {
-        $bytesRead =
-          $self->fh()->read( $header, DATA_DESCRIPTOR_LENGTH_NO_SIG );
+        ($crc32, $compressedSize, $uncompressedSize) =
+          unpack(DATA_DESCRIPTOR_FORMAT, $header);
+    } else {
+        $bytesRead = $self->fh()->read($header, DATA_DESCRIPTOR_LENGTH_NO_SIG);
         return _ioError("reading data descriptor")
           if $bytesRead != DATA_DESCRIPTOR_LENGTH_NO_SIG;
 
         $crc32 = $signature;
-        ( $compressedSize, $uncompressedSize ) =
-          unpack( DATA_DESCRIPTOR_FORMAT_NO_SIG, $header );
+        ($compressedSize, $uncompressedSize) =
+          unpack(DATA_DESCRIPTOR_FORMAT_NO_SIG, $header);
     }
 
     $self->{'eocdCrc32'} = $self->{'crc32'}
-      unless defined( $self->{'eocdCrc32'} );
+      unless defined($self->{'eocdCrc32'});
     $self->{'crc32'}            = $crc32;
     $self->{'compressedSize'}   = $compressedSize;
     $self->{'uncompressedSize'} = $uncompressedSize;
@@ -318,11 +319,11 @@ sub _readCentralDirectoryFileHeader {
     my $self      = shift;
     my $fh        = $self->fh();
     my $header    = '';
-    my $bytesRead = $fh->read( $header, CENTRAL_DIRECTORY_FILE_HEADER_LENGTH );
-    if ( $bytesRead != CENTRAL_DIRECTORY_FILE_HEADER_LENGTH ) {
+    my $bytesRead = $fh->read($header, CENTRAL_DIRECTORY_FILE_HEADER_LENGTH);
+    if ($bytesRead != CENTRAL_DIRECTORY_FILE_HEADER_LENGTH) {
         return _ioError("reading central dir header");
     }
-    my ( $fileNameLength, $extraFieldLength, $fileCommentLength );
+    my ($fileNameLength, $extraFieldLength, $fileCommentLength);
     (
         $self->{'versionMadeBy'},
         $self->{'fileAttributeFormat'},
@@ -340,37 +341,36 @@ sub _readCentralDirectoryFileHeader {
         $self->{'internalFileAttributes'},
         $self->{'externalFileAttributes'},
         $self->{'localHeaderRelativeOffset'}
-    ) = unpack( CENTRAL_DIRECTORY_FILE_HEADER_FORMAT, $header );
+    ) = unpack(CENTRAL_DIRECTORY_FILE_HEADER_FORMAT, $header);
 
     $self->{'eocdCrc32'} = $self->{'crc32'};
 
     if ($fileNameLength) {
-        $bytesRead = $fh->read( $self->{'fileName'}, $fileNameLength );
-        if ( $bytesRead != $fileNameLength ) {
+        $bytesRead = $fh->read($self->{'fileName'}, $fileNameLength);
+        if ($bytesRead != $fileNameLength) {
             _ioError("reading central dir filename");
         }
     }
     if ($extraFieldLength) {
-        $bytesRead = $fh->read( $self->{'cdExtraField'}, $extraFieldLength );
-        if ( $bytesRead != $extraFieldLength ) {
+        $bytesRead = $fh->read($self->{'cdExtraField'}, $extraFieldLength);
+        if ($bytesRead != $extraFieldLength) {
             return _ioError("reading central dir extra field");
         }
     }
     if ($fileCommentLength) {
-        $bytesRead = $fh->read( $self->{'fileComment'}, $fileCommentLength );
-        if ( $bytesRead != $fileCommentLength ) {
+        $bytesRead = $fh->read($self->{'fileComment'}, $fileCommentLength);
+        if ($bytesRead != $fileCommentLength) {
             return _ioError("reading central dir file comment");
         }
     }
 
     # NK 10/21/04: added to avoid problems with manipulated headers
     if (    $self->{'uncompressedSize'} != $self->{'compressedSize'}
-        and $self->{'compressionMethod'} == COMPRESSION_STORED )
-    {
+        and $self->{'compressionMethod'} == COMPRESSION_STORED) {
         $self->{'uncompressedSize'} = $self->{'compressedSize'};
     }
 
-    $self->desiredCompressionMethod( $self->compressionMethod() );
+    $self->desiredCompressionMethod($self->compressionMethod());
 
     return AZ_OK;
 }
@@ -396,7 +396,7 @@ sub rewindData {
     return $status unless $status == AZ_OK;
 
     # Seek to beginning of file data
-    $self->fh()->seek( $self->dataOffset(), IO::Seekable::SEEK_SET )
+    $self->fh()->seek($self->dataOffset(), IO::Seekable::SEEK_SET)
       or return _ioError("seeking to beginning of file data");
 
     return AZ_OK;
@@ -406,11 +406,11 @@ sub rewindData {
 # my $data;
 # my ( $bytesRead, $status) = $self->readRawChunk( \$data, $chunkSize );
 sub _readRawChunk {
-    my ( $self, $dataRef, $chunkSize ) = @_;
-    return ( 0, AZ_OK ) unless $chunkSize;
-    my $bytesRead = $self->fh()->read( $$dataRef, $chunkSize )
-      or return ( 0, _ioError("reading data") );
-    return ( $bytesRead, AZ_OK );
+    my ($self, $dataRef, $chunkSize) = @_;
+    return (0, AZ_OK) unless $chunkSize;
+    my $bytesRead = $self->fh()->read($$dataRef, $chunkSize)
+      or return (0, _ioError("reading data"));
+    return ($bytesRead, AZ_OK);
 }
 
 1;

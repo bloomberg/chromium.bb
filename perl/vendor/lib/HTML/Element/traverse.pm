@@ -3,19 +3,29 @@
 #  convert it happily as part of the dist's documentation tree.
 package HTML::Element::traverse;
 
+# ABSTRACT: discussion of HTML::Element's traverse method
+
 use warnings;
 use strict;
 
+our $VERSION = '5.07'; # VERSION from OurPkgVersion
+
 use HTML::Element ();
-use vars qw( $VERSION );
-$VERSION = 4.2;
 1;
 
 __END__
 
+=pod
+
 =head1 NAME
 
 HTML::Element::traverse - discussion of HTML::Element's traverse method
+
+=head1 VERSION
+
+This document describes version 5.07 of
+HTML::Element::traverse, released August 31, 2017
+as part of L<HTML-Tree|HTML::Tree>.
 
 =head1 SYNOPSIS
 
@@ -139,7 +149,7 @@ Note that these two syntaxes specify the same operation:
     $h->traverse([\&foo,\&foo], ...);
     $h->traverse( \&foo       , ...);
 
-The return values from calls to your pre- or post-order 
+The return values from calls to your pre- or post-order
 routines are significant, and are used to control recursion
 into the tree.
 
@@ -259,11 +269,11 @@ pre-order traversal, like so:
      my @to_do = ($tree); # start-node
      while(@to_do) {
        my $this = shift @to_do;
-       
+
        # "Visit" the node:
        $this->attr('id', $counter++)
         unless defined $this->attr('id');
-       
+
        unshift @to_do, grep ref $_, $this->content_list;
         # Put children on the stack -- they'll be visited next
      }
@@ -278,7 +288,7 @@ is insignificant.
 
 =head2 Pruning and Whatnot
 
-The C<traverse> method does have the fairly neat features of 
+The C<traverse> method does have the fairly neat features of
 the C<ABORT>, C<PRUNE_UP> and C<PRUNE_SOFTLY> signals.  None of these
 can be implemented I<totally> straightforwardly with recursive
 routines, but it is quite possible.  C<ABORT>-like behavior can be
@@ -322,20 +332,43 @@ or you can just do it with flags:
 
 L<HTML::Element>
 
+=head1 AUTHOR
+
+Current maintainers:
+
+=over
+
+=item * Christopher J. Madsen S<C<< <perl AT cjmweb.net> >>>
+
+=item * Jeff Fearn S<C<< <jfearn AT cpan.org> >>>
+
+=back
+
+Original HTML-Tree author:
+
+=over
+
+=item * Gisle Aas
+
+=back
+
+Former maintainers:
+
+=over
+
+=item * Sean M. Burke
+
+=item * Andy Lester
+
+=item * Pete Krawczyk S<C<< <petek AT cpan.org> >>>
+
+=back
+
+You can follow or contribute to HTML-Tree's development at
+L<< https://github.com/kentfredric/HTML-Tree >>.
+
 =head1 COPYRIGHT
 
 Copyright 2000,2001 Sean M. Burke
-
-=head1 AUTHOR
-Current Author:
-	Jeff Fearn C<< <jfearn@cpan.org> >>.
-
-Original HTML-Tree author:
-	Gisle Aas.
-
-Former Authors:
-	Sean M. Burke.
-	Andy Lester.
-	Pete Krawczyk C<< <petek@cpan.org> >>.
 
 =cut

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -287,8 +287,8 @@ extern "C" {
     virtual HRESULT WINAPI put_CLSID(BSTR bstrCLSID) = 0;
     virtual HRESULT WINAPI get_Direction(TMGR_DIRECTION *pDirection) = 0;
     virtual HRESULT WINAPI put_Direction(TMGR_DIRECTION nDirection) = 0;
-    virtual HRESULT WINAPI get_MediaTypes(long *pMediaTypes) = 0;
-    virtual HRESULT WINAPI put_MediaTypes(long nMediaTypes) = 0;
+    virtual HRESULT WINAPI get_MediaTypes(__LONG32 *pMediaTypes) = 0;
+    virtual HRESULT WINAPI put_MediaTypes(__LONG32 nMediaTypes) = 0;
     virtual HRESULT WINAPI Add(BSTR bstrSuperclass) = 0;
     virtual HRESULT WINAPI Delete(BSTR bstrSuperclass) = 0;
     virtual HRESULT WINAPI GetTerminalClassInfo(BSTR bstrSuperclass) = 0;
@@ -315,8 +315,8 @@ extern "C" {
       HRESULT (WINAPI *put_CLSID)(ITPluggableTerminalClassRegistration *This,BSTR bstrCLSID);
       HRESULT (WINAPI *get_Direction)(ITPluggableTerminalClassRegistration *This,TMGR_DIRECTION *pDirection);
       HRESULT (WINAPI *put_Direction)(ITPluggableTerminalClassRegistration *This,TMGR_DIRECTION nDirection);
-      HRESULT (WINAPI *get_MediaTypes)(ITPluggableTerminalClassRegistration *This,long *pMediaTypes);
-      HRESULT (WINAPI *put_MediaTypes)(ITPluggableTerminalClassRegistration *This,long nMediaTypes);
+      HRESULT (WINAPI *get_MediaTypes)(ITPluggableTerminalClassRegistration *This,__LONG32 *pMediaTypes);
+      HRESULT (WINAPI *put_MediaTypes)(ITPluggableTerminalClassRegistration *This,__LONG32 nMediaTypes);
       HRESULT (WINAPI *Add)(ITPluggableTerminalClassRegistration *This,BSTR bstrSuperclass);
       HRESULT (WINAPI *Delete)(ITPluggableTerminalClassRegistration *This,BSTR bstrSuperclass);
       HRESULT (WINAPI *GetTerminalClassInfo)(ITPluggableTerminalClassRegistration *This,BSTR bstrSuperclass);
@@ -376,9 +376,9 @@ extern "C" {
   void __RPC_STUB ITPluggableTerminalClassRegistration_get_Direction_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI ITPluggableTerminalClassRegistration_put_Direction_Proxy(ITPluggableTerminalClassRegistration *This,TMGR_DIRECTION nDirection);
   void __RPC_STUB ITPluggableTerminalClassRegistration_put_Direction_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI ITPluggableTerminalClassRegistration_get_MediaTypes_Proxy(ITPluggableTerminalClassRegistration *This,long *pMediaTypes);
+  HRESULT WINAPI ITPluggableTerminalClassRegistration_get_MediaTypes_Proxy(ITPluggableTerminalClassRegistration *This,__LONG32 *pMediaTypes);
   void __RPC_STUB ITPluggableTerminalClassRegistration_get_MediaTypes_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI ITPluggableTerminalClassRegistration_put_MediaTypes_Proxy(ITPluggableTerminalClassRegistration *This,long nMediaTypes);
+  HRESULT WINAPI ITPluggableTerminalClassRegistration_put_MediaTypes_Proxy(ITPluggableTerminalClassRegistration *This,__LONG32 nMediaTypes);
   void __RPC_STUB ITPluggableTerminalClassRegistration_put_MediaTypes_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI ITPluggableTerminalClassRegistration_Add_Proxy(ITPluggableTerminalClassRegistration *This,BSTR bstrSuperclass);
   void __RPC_STUB ITPluggableTerminalClassRegistration_Add_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
@@ -484,14 +484,14 @@ extern "C" {
 #endif
 #endif
 
-  unsigned long __RPC_API BSTR_UserSize(unsigned long *,unsigned long,BSTR *);
-  unsigned char *__RPC_API BSTR_UserMarshal(unsigned long *,unsigned char *,BSTR *);
-  unsigned char *__RPC_API BSTR_UserUnmarshal(unsigned long *,unsigned char *,BSTR *);
-  void __RPC_API BSTR_UserFree(unsigned long *,BSTR *);
-  unsigned long __RPC_API VARIANT_UserSize(unsigned long *,unsigned long,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserMarshal(unsigned long *,unsigned char *,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserUnmarshal(unsigned long *,unsigned char *,VARIANT *);
-  void __RPC_API VARIANT_UserFree(unsigned long *,VARIANT *);
+  ULONG __RPC_API BSTR_UserSize(ULONG *,ULONG,BSTR *);
+  unsigned char *__RPC_API BSTR_UserMarshal(ULONG *,unsigned char *,BSTR *);
+  unsigned char *__RPC_API BSTR_UserUnmarshal(ULONG *,unsigned char *,BSTR *);
+  void __RPC_API BSTR_UserFree(ULONG *,BSTR *);
+  ULONG __RPC_API VARIANT_UserSize(ULONG *,ULONG,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserMarshal(ULONG *,unsigned char *,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserUnmarshal(ULONG *,unsigned char *,VARIANT *);
+  void __RPC_API VARIANT_UserFree(ULONG *,VARIANT *);
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WINSVC_
@@ -8,10 +8,7 @@
 
 #include <_mingw.h>
 #include <_mingw_unicode.h>
-
-#ifndef WINADVAPI
-#define WINADVAPI DECLSPEC_IMPORT
-#endif
+#include <apisetcconv.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -406,6 +403,12 @@ typedef struct _SERVICE_NOTIFYW {
 
 __MINGW_TYPEDEF_AW(SERVICE_NOTIFY)
 __MINGW_TYPEDEF_AW(PSERVICE_NOTIFY)
+
+#define SERVICE_CONFIG_DELAYED_AUTO_START_INFO 3
+#define SERVICE_CONFIG_FAILURE_ACTIONS_FLAG 4
+#define SERVICE_CONFIG_SERVICE_SID_INFO 5
+#define SERVICE_CONFIG_REQUIRED_PRIVILEGES_INFO 6
+#define SERVICE_CONFIG_PRESHUTDOWN_INFO 7
 
 typedef struct _SERVICE_DELAYED_AUTO_START_INFO {
   WINBOOL fDelayedAutostart;

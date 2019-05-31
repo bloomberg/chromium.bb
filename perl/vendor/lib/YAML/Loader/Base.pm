@@ -1,9 +1,9 @@
 package YAML::Loader::Base;
+
 use YAML::Mo;
 
-our $VERSION = '0.81';
-
 has load_code     => default => sub {0};
+has preserve      => default => sub {0};
 has stream        => default => sub {''};
 has document      => default => sub {0};
 has line          => default => sub {0};
@@ -20,11 +20,15 @@ has indent        => default => sub {0};
 has major_version => default => sub {0};
 has minor_version => default => sub {0};
 has inline        => default => sub {''};
+has numify        => default => sub {0};
+has zero_indent   => default => sub {[]};
 
 sub set_global_options {
     my $self = shift;
     $self->load_code($YAML::LoadCode || $YAML::UseCode)
       if defined $YAML::LoadCode or defined $YAML::UseCode;
+    $self->preserve($YAML::Preserve) if defined $YAML::Preserve;
+    $self->numify($YAML::Numify) if defined $YAML::Numify;
 }
 
 sub load {
@@ -32,33 +36,3 @@ sub load {
 }
 
 1;
-
-__END__
-
-=head1 NAME
-
-YAML::Loader::Base - Base class for YAML Loader classes
-
-=head1 SYNOPSIS
-
-    package YAML::Loader::Something;
-    use YAML::Loader::Base -base;
-
-=head1 DESCRIPTION
-
-YAML::Loader::Base is a base class for creating YAML loader classes.
-
-=head1 AUTHOR
-
-Ingy döt Net <ingy@cpan.org>
-
-=head1 COPYRIGHT
-
-Copyright (c) 2006, 2011-2012. Ingy döt Net. All rights reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
-
-See L<http://www.perl.com/perl/misc/Artistic.html>
-
-=cut

@@ -8,13 +8,23 @@ Module::CoreList - what modules shipped with versions of perl
 
  print $Module::CoreList::version{5.00503}{CPAN}; # prints 1.48
 
- print Module::CoreList->first_release('File::Spec');         # prints 5.00405
- print Module::CoreList->first_release_by_date('File::Spec'); # prints 5.005
- print Module::CoreList->first_release('File::Spec', 0.82);   # prints 5.006001
+ print Module::CoreList->first_release('File::Spec');
+ # prints 5.00405
+
+ print Module::CoreList->first_release_by_date('File::Spec');
+ # prints 5.005
+
+ print Module::CoreList->first_release('File::Spec', 0.82);
+ # prints 5.006001
+
+ if (Module::CoreList::is_core('File::Spec')) {
+   print "File::Spec is a core module\n";
+ }
 
  print join ', ', Module::CoreList->find_modules(qr/Data/);
     # prints 'Data::Dumper'
- print join ', ', Module::CoreList->find_modules(qr/test::h.*::.*s/i, 5.008008);
+ print join ', ',
+          Module::CoreList->find_modules(qr/test::h.*::.*s/i, 5.008008);
     # prints 'Test::Harness::Assert, Test::Harness::Straps'
 
  print join ", ", @{ $Module::CoreList::families{5.005} };
@@ -68,8 +78,24 @@ you may provide a list of perl versions to limit the regex search.
 
 =item C<find_version( PERL_VERSION )>
 
-Takes a perl version as an argument. Returns that perl version if it exists or C<undef>
-otherwise.
+Takes a perl version as an argument. Upon successful completion, returns a
+reference to a hash.  Each element of that hash has a key which is the name of
+a module (I<e.g.,> 'File::Path') shipped with that version of perl and a value
+which is the version number (I<e.g.,> '2.09') of that module which shipped
+with that version of perl .  Returns C<undef> otherwise.
+
+=item C<is_core( MODULE, [ MODULE_VERSION, [ PERL_VERSION ] ] )>
+
+Available in version 2.99 and above.
+
+Returns true if MODULE was bundled with the specified version of Perl.
+You can optionally specify a minimum version of the module,
+and can also specify a version of Perl.
+If a version of Perl isn't specified,
+C<is_core()> will use the numeric version of Perl that is running (ie C<$]>).
+
+If you want to specify the version of Perl, but don't care about
+the version of the module, pass C<undef> for the module version:
 
 =item C<is_deprecated( MODULE, PERL_VERSION )>
 
@@ -77,6 +103,13 @@ Available in version 2.22 and above.
 
 Returns true if MODULE is marked as deprecated in PERL_VERSION.  If PERL_VERSION is
 omitted, it defaults to the current version of Perl.
+
+=item C<deprecated_in( MODULE )>
+
+Available in version 2.77 and above.
+
+Returns the first perl version where the MODULE was marked as deprecated. Returns C<undef>
+if the MODULE has not been marked as deprecated.
 
 =item C<removed_from( MODULE )>
 
@@ -99,12 +132,12 @@ in core.
 Available in version 2.66 and above.
 
 Given two perl versions, this returns a list of pairs describing the changes in
-core module content betweent hem.  The list is suitable for storing in a hash.
+core module content between them.  The list is suitable for storing in a hash.
 The keys are library names and the values are hashrefs.  Each hashref has an
 entry for one or both of C<left> and C<right>, giving the versions of the
 library in each of the left and right perl distributions.
 
-For example, it might return these data (among others) for the the difference
+For example, it might return these data (among others) for the difference
 between 5.008000 and 5.008001:
 
   'Pod::ParseLink'  => { left => '1.05', right => '1.06' },
@@ -134,6 +167,17 @@ that's what you're testing for.
 
 Starting with 2.10, the special module name C<Unicode> refers to the version of
 the Unicode Character Database bundled with Perl.
+
+=item C<%Module::CoreList::delta>
+
+Available in version 3.00 and above.
+
+It is a hash of hashes that is keyed on perl version. Each keyed hash will have the
+following keys:
+
+  delta_from - a previous perl version that the changes are based on
+  changed    - a hash of module/versions that have changed
+  removed    - a hash of modules that have been removed
 
 =item C<%Module::CoreList::released>
 
@@ -181,13 +225,12 @@ http://rt.cpan.org/Public/Dist/Display.html?Name=$ModuleName
 =head1 CAVEATS
 
 Module::CoreList currently covers the 5.000, 5.001, 5.002, 5.003_07,
-5.004, 5.004_05, 5.005, 5.005_03, 5.005_04, 5.6.0, 5.6.1, 5.6.2, 5.7.3,
-5.8.0, 5.8.1, 5.8.2, 5.8.3, 5.8.4, 5.8.5, 5.8.6, 5.8.7, 5.8.8, 5.8.9,
-5.9.0, 5.9.1, 5.9.2, 5.9.3, 5.9.4, 5.9.5, 5.10.0, 5.10.1, 5.11.0, 5.11.1,
-5.11.2, 5.11.3, 5.11.4, 5.11.5, 5.12.0, 5.12.1, 5.12.2, 5.12.3, 5.12.4,
-5.13.0, 5.13.1, 5.13.2, 5.13.3, 5.13.4, 5.13.5, 5.13.6, 5.13.7, 5.13.8,
-5.13.9, 5.13.10, 5.13.11, 5.14.0, 5.14.1, 5.14.2, 5.15.0, 5.15.1, 5.15.2,
-5.15.3, 5.15.4, 5.15.5, 5.15.6, 5.15.7, 5.15.8, 5.15.9 and 5.16.0 releases of perl.
+5.004, 5.004_05, 5.005, 5.005_03, 5.005_04 and 5.7.3 releases of perl.
+
+All stable releases of perl since 5.6.0 are covered.
+
+All development releases of perl since 5.9.0 are covered.
+
 
 =head1 HISTORY
 

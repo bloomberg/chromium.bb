@@ -1,36 +1,36 @@
-
-package Moose::Meta::Attribute;
-BEGIN {
-  $Moose::Meta::Attribute::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Attribute::VERSION = '2.0602';
-}
-
 use strict;
 use warnings;
+package Moose::Meta::Attribute;
+our $VERSION = '2.2011';
 
 use B ();
-use Class::Load qw(is_class_loaded load_class);
-use Scalar::Util 'blessed', 'weaken';
-use List::MoreUtils 'any';
+use Scalar::Util 'blessed';
+use List::Util 1.33 'any';
 use Try::Tiny;
 use overload     ();
 
 use Moose::Deprecated;
 use Moose::Meta::Method::Accessor;
 use Moose::Meta::Method::Delegation;
-use Moose::Util ();
+use Moose::Util 'throw_exception';
 use Moose::Util::TypeConstraints ();
 use Class::MOP::MiniTrait;
 
-use base 'Class::MOP::Attribute', 'Moose::Meta::Mixin::AttributeCore';
+use parent 'Class::MOP::Attribute', 'Moose::Meta::Mixin::AttributeCore';
+
+use Carp 'confess';
 
 Class::MOP::MiniTrait::apply(__PACKAGE__, 'Moose::Meta::Object::Trait');
 
 __PACKAGE__->meta->add_attribute('traits' => (
     reader    => 'applied_traits',
     predicate => 'has_applied_traits',
+    Class::MOP::_definition_context(),
+));
+
+__PACKAGE__->meta->add_attribute('role_attribute' => (
+    reader    => 'role_attribute',
+    predicate => 'has_role_attribute',
     Class::MOP::_definition_context(),
 ));
 
@@ -47,40 +47,9 @@ sub does {
     return $self->Moose::Object::does($name);
 }
 
-sub _error_thrower {
-    my $self = shift;
-    require Moose::Meta::Class;
-    ( ref $self && $self->associated_class ) || "Moose::Meta::Class";
-}
-
-sub throw_error {
-    my $self = shift;
-    my $inv = $self->_error_thrower;
-    unshift @_, "message" if @_ % 2 == 1;
-    unshift @_, attr => $self if ref $self;
-    unshift @_, $inv;
-    my $handler = $inv->can("throw_error"); # to avoid incrementing depth by 1
-    goto $handler;
-}
-
-sub _inline_throw_error {
-    my ( $self, $msg, $args ) = @_;
-
-    my $inv = $self->_error_thrower;
-    # XXX ugh
-    $inv = 'Moose::Meta::Class' unless $inv->can('_inline_throw_error');
-
-    # XXX ugh ugh UGH
-    my $class = $self->associated_class;
-    if ($class) {
-        my $class_name = B::perlstring($class->name);
-        my $attr_name = B::perlstring($self->name);
-        $args = 'attr => Class::MOP::class_of(' . $class_name . ')'
-              . '->find_attribute_by_name(' . $attr_name . '), '
-              . (defined $args ? $args : '');
-    }
-
-    return $inv->_inline_throw_error($msg, $args)
+sub _inline_throw_exception {
+    my ( $self, $exception_type, $throw_args ) = @_;
+    return 'die Module::Runtime::use_module("Moose::Exception::' . $exception_type . '")->new(' . ($throw_args || '') . ')';
 }
 
 sub new {
@@ -100,17 +69,39 @@ sub new {
 
     if (@bad)
     {
-        Carp::cluck "Found unknown argument(s) passed to '$name' attribute constructor in '$class': @bad";
+        my $s = @bad > 1 ? 's' : '';
+        my $list = join "', '", @bad;
+
+        my $package = $options{definition_context}{package};
+        my $context = $options{definition_context}{context}
+                   || 'attribute constructor';
+        my $type = $options{definition_context}{type} || 'class';
+
+        my $location = '';
+        if (defined($package)) {
+            $location = " in ";
+            $location .= "$type " if $type;
+            $location .= $package;
+        }
+
+        Carp::cluck "Found unknown argument$s '$list' in the $context for '$name'$location";
     }
 
     return $class->SUPER::new($name, %options);
 }
 
 sub interpolate_class_and_new {
-    my ($class, $name, %args) = @_;
+    my $class = shift;
+    my $name  = shift;
+
+    throw_exception( MustPassEvenNumberOfAttributeOptions => attribute_name => $name,
+                                                             options        => \@_
+                   )
+        if @_ % 2 == 1;
+
+    my %args = @_;
 
     my ( $new_class, @traits ) = $class->interpolate_class(\%args);
-
     $new_class->new($name, %args, ( scalar(@traits) ? ( traits => \@traits ) : () ) );
 }
 
@@ -215,35 +206,12 @@ sub clone_and_inherit_options {
 
     my @found_illegal_options = grep { exists $options{$_} && exists $self->{$_} ? $_ : undef } @illegal_options;
     (scalar @found_illegal_options == 0)
-        || $self->throw_error("Illegal inherited options => (" . (join ', ' => @found_illegal_options) . ")", data => \%options);
+        || throw_exception( IllegalInheritedOptions => illegal_options => \@found_illegal_options,
+                                                       params          => \%options
+                          );
 
-    if ($options{isa}) {
-        my $type_constraint;
-        if (blessed($options{isa}) && $options{isa}->isa('Moose::Meta::TypeConstraint')) {
-            $type_constraint = $options{isa};
-        }
-        else {
-            $type_constraint = Moose::Util::TypeConstraints::find_or_create_isa_type_constraint($options{isa}, { package_defined_in => $options{definition_context}->{package} });
-            (defined $type_constraint)
-                || $self->throw_error("Could not find the type constraint '" . $options{isa} . "'", data => $options{isa});
-        }
-
-        $options{type_constraint} = $type_constraint;
-    }
-
-    if ($options{does}) {
-        my $type_constraint;
-        if (blessed($options{does}) && $options{does}->isa('Moose::Meta::TypeConstraint')) {
-            $type_constraint = $options{does};
-        }
-        else {
-            $type_constraint = Moose::Util::TypeConstraints::find_or_create_does_type_constraint($options{does}, { package_defined_in => $options{definition_context}->{package} });
-            (defined $type_constraint)
-                || $self->throw_error("Could not find the type constraint '" . $options{does} . "'", data => $options{does});
-        }
-
-        $options{type_constraint} = $type_constraint;
-    }
+    $self->_process_isa_option( $self->name, \%options );
+    $self->_process_does_option( $self->name, \%options );
 
     # NOTE:
     # this doesn't apply to Class::MOP::Attributes,
@@ -316,18 +284,20 @@ sub _process_is_option {
     ### -------------------------
 
     if ( $options->{is} eq 'ro' ) {
-        $class->throw_error(
-            "Cannot define an accessor name on a read-only attribute, accessors are read/write",
-            data => $options )
+        throw_exception("AccessorMustReadWrite" => attribute_name => $name,
+                                                   params         => $options,
+                       )
             if exists $options->{accessor};
         $options->{reader} ||= $name;
     }
     elsif ( $options->{is} eq 'rw' ) {
-        if ( $options->{writer} ) {
-            $options->{reader} ||= $name;
-        }
-        else {
-            $options->{accessor} ||= $name;
+        if ( ! $options->{accessor} ) {
+            if ( $options->{writer}) {
+                $options->{reader} ||= $name;
+            }
+            else {
+                $options->{accessor} = $name;
+            }
         }
     }
     elsif ( $options->{is} eq 'bare' ) {
@@ -335,9 +305,9 @@ sub _process_is_option {
         # do nothing, but don't complain (later) about missing methods
     }
     else {
-        $class->throw_error( "I do not understand this option (is => "
-                . $options->{is}
-                . ") on attribute ($name)", data => $options->{is} );
+        throw_exception( InvalidValueForIs => attribute_name => $name,
+                                              params         => $options,
+                       );
     }
 }
 
@@ -349,20 +319,25 @@ sub _process_isa_option {
     if ( exists $options->{does} ) {
         if ( try { $options->{isa}->can('does') } ) {
             ( $options->{isa}->does( $options->{does} ) )
-                || $class->throw_error(
-                "Cannot have an isa option and a does option if the isa does not do the does on attribute ($name)",
-                data => $options );
+                || throw_exception( IsaDoesNotDoTheRole => attribute_name => $name,
+                                                           params         => $options,
+                                  );
         }
         else {
-            $class->throw_error(
-                "Cannot have an isa option which cannot ->does() on attribute ($name)",
-                data => $options );
+            throw_exception( IsaLacksDoesMethod => attribute_name => $name,
+                                                   params         => $options,
+                           );
         }
     }
 
     # allow for anon-subtypes here ...
+    #
+    # There are a _lot_ of methods that we expect from TC objects, but
+    # checking for a specific parent class via ->isa is gross, so we'll check
+    # for at least one method.
     if ( blessed( $options->{isa} )
-        && $options->{isa}->isa('Moose::Meta::TypeConstraint') ) {
+        && $options->{isa}->can('has_coercion') ) {
+
         $options->{type_constraint} = $options->{isa};
     }
     else {
@@ -381,7 +356,8 @@ sub _process_does_option {
 
     # allow for anon-subtypes here ...
     if ( blessed( $options->{does} )
-        && $options->{does}->isa('Moose::Meta::TypeConstraint') ) {
+        && $options->{does}->can('has_coercion') ) {
+
         $options->{type_constraint} = $options->{does};
     }
     else {
@@ -399,23 +375,22 @@ sub _process_coerce_option {
     return unless $options->{coerce};
 
     ( exists $options->{type_constraint} )
-        || $class->throw_error(
-        "You cannot have coercion without specifying a type constraint on attribute ($name)",
-        data => $options );
+        || throw_exception( CoercionNeedsTypeConstraint => attribute_name => $name,
+                                                           params         => $options,
+                          );
 
-    $class->throw_error(
-        "You cannot have a weak reference to a coerced value on attribute ($name)",
-        data => $options )
+    throw_exception( CannotCoerceAWeakRef => attribute_name => $name,
+                                             params         => $options,
+                   )
         if $options->{weak_ref};
 
     unless ( $options->{type_constraint}->has_coercion ) {
         my $type = $options->{type_constraint}->name;
 
-        Moose::Deprecated::deprecated(
-            feature => 'coerce without coercion',
-            message =>
-                "You cannot coerce an attribute ($name) unless its type ($type) has a coercion"
-        );
+        throw_exception( CannotCoerceAttributeWhichHasNoCoercion => attribute_name => $name,
+                                                                    type_name      => $type,
+                                                                    params         => $options
+                       );
     }
 }
 
@@ -425,7 +400,9 @@ sub _process_trigger_option {
     return unless exists $options->{trigger};
 
     ( 'CODE' eq ref $options->{trigger} )
-        || $class->throw_error("Trigger must be a CODE ref on attribute ($name)", data => $options->{trigger});
+        || throw_exception( TriggerMustBeACodeRef => attribute_name => $name,
+                                                     params         => $options,
+                          );
 }
 
 sub _process_auto_deref_option {
@@ -434,15 +411,15 @@ sub _process_auto_deref_option {
     return unless $options->{auto_deref};
 
     ( exists $options->{type_constraint} )
-        || $class->throw_error(
-        "You cannot auto-dereference without specifying a type constraint on attribute ($name)",
-        data => $options );
+        || throw_exception( CannotAutoDerefWithoutIsa => attribute_name => $name,
+                                                         params         => $options,
+                          );
 
     ( $options->{type_constraint}->is_a_type_of('ArrayRef')
       || $options->{type_constraint}->is_a_type_of('HashRef') )
-        || $class->throw_error(
-        "You cannot auto-dereference anything other than a ArrayRef or HashRef on attribute ($name)",
-        data => $options );
+        || throw_exception( AutoDeRefNeedsArrayRefOrHashRef => attribute_name => $name,
+                                                               params         => $options,
+                          );
 }
 
 sub _process_lazy_build_option {
@@ -450,9 +427,9 @@ sub _process_lazy_build_option {
 
     return unless $options->{lazy_build};
 
-    $class->throw_error(
-        "You can not use lazy_build and default for the same attribute ($name)",
-        data => $options )
+    throw_exception( CannotUseLazyBuildAndDefaultSimultaneously => attribute_name => $name,
+                                                                   params         => $options,
+                   )
         if exists $options->{default};
 
     $options->{lazy} = 1;
@@ -474,9 +451,9 @@ sub _process_lazy_option {
     return unless $options->{lazy};
 
     ( exists $options->{default} || defined $options->{builder} )
-        || $class->throw_error(
-        "You cannot have a lazy attribute ($name) without specifying a default value for it",
-        data => $options );
+        || throw_exception( LazyAttributeNeedsADefault => params         => $options,
+                                                          attribute_name => $name,
+                          );
 }
 
 sub _process_required_option {
@@ -490,9 +467,9 @@ sub _process_required_option {
             || defined $options->{builder}
         )
         ) {
-        $class->throw_error(
-            "You cannot have a required attribute ($name) without a default, builder, or an init_arg",
-            data => $options );
+        throw_exception( RequiredAttributeNeedsADefault => params         => $options,
+                                                           attribute_name => $name,
+                       );
     }
 }
 
@@ -511,8 +488,17 @@ sub initialize_instance_slot {
         # skip it if it's lazy
         return if $self->is_lazy;
         # and die if it's required and doesn't have a default value
-        $self->throw_error("Attribute (" . $self->name . ") is required", object => $instance, data => $params)
-            if $self->is_required && !$self->has_default && !$self->has_builder;
+        my $class_name = blessed( $instance );
+        throw_exception(
+            'AttributeIsRequired',
+            attribute_name => $self->name,
+            ( defined $init_arg ? ( attribute_init_arg => $init_arg ) : () ),
+            class_name => $class_name,
+            params     => $params,
+            )
+            if $self->is_required
+            && !$self->has_default
+            && !$self->has_builder;
 
         # if nothing was in the %params, we can use the
         # attribute's default value (if it has one)
@@ -545,14 +531,9 @@ sub _call_builder {
     return $instance->$builder()
         if $instance->can( $self->builder );
 
-    $self->throw_error(  blessed($instance)
-            . " does not support builder method '"
-            . $self->builder
-            . "' for attribute '"
-            . $self->name
-            . "'",
-            object => $instance,
-     );
+    throw_exception( BuilderDoesNotExist => instance  => $instance,
+                                            attribute => $self,
+                   );
 }
 
 ## Slot management
@@ -570,10 +551,18 @@ sub set_value {
     my ($self, $instance, @args) = @_;
     my $value = $args[0];
 
-    my $attr_name = quotemeta($self->name);
-
+    my $class_name = blessed( $instance );
     if ($self->is_required and not @args) {
-        $self->throw_error("Attribute ($attr_name) is required", object => $instance);
+        throw_exception(
+            'AttributeIsRequired',
+            attribute_name => $self->name,
+            (
+                defined $self->init_arg
+                ? ( attribute_init_arg => $self->init_arg )
+                : ()
+            ),
+            class_name => $class_name,
+        );
     }
 
     $value = $self->_coerce_and_verify( $value, $instance );
@@ -649,16 +638,25 @@ sub _inline_check_required {
 
     return unless $self->is_required;
 
-    my $attr_name = quotemeta($self->name);
+    my $throw_params = sprintf( <<'EOF', quotemeta( $self->name ) );
+attribute_name => "%s",
+class_name     => $class_name,
+EOF
+    $throw_params .= sprintf(
+        'attribute_init_arg => "%s",',
+        quotemeta( $self->init_arg )
+    ) if defined $self->init_arg;
 
-    return (
-        'if (@_ < 2) {',
-            $self->_inline_throw_error(
-                '"Attribute (' . $attr_name . ') is required, so cannot '
-              . 'be set to undef"' # defined $_[1] is not good enough
-            ) . ';',
-        '}',
+    my $throw = $self->_inline_throw_exception(
+        'AttributeIsRequired',
+        $throw_params
     );
+
+    return sprintf( <<'EOF', $throw );
+if ( @_ < 2 ) {
+    %s;
+}
+EOF
 }
 
 sub _inline_tc_code {
@@ -707,28 +705,30 @@ sub _inline_check_constraint {
     if ( $self->type_constraint->can_be_inlined ) {
         return (
             'if (! (' . $self->type_constraint->_inline_check($value) . ')) {',
-                $self->_inline_throw_error(
-                    '"Attribute (' . $attr_name . ') does not pass the type '
-                  . 'constraint because: " . '
-                  . 'do { local $_ = ' . $value . '; '
-                      . $message . '->(' . $value . ')'
-                  . '}',
-                    'data => ' . $value
-                ) . ';',
+                'my $msg = do { local $_ = ' . $value . '; '
+                . $message . '->(' . $value . ');'
+                . '};'.
+                $self->_inline_throw_exception( ValidationFailedForInlineTypeConstraint =>
+                                                'type_constraint_message => $msg , '.
+                                                'class_name              => $class_name, '.
+                                                'attribute_name          => "'.$attr_name.'",'.
+                                                'value                   => '.$value
+                ).';',
             '}',
         );
     }
     else {
         return (
             'if (!' . $tc . '->(' . $value . ')) {',
-                $self->_inline_throw_error(
-                    '"Attribute (' . $attr_name . ') does not pass the type '
-                  . 'constraint because: " . '
-                  . 'do { local $_ = ' . $value . '; '
-                      . $message . '->(' . $value . ')'
-                  . '}',
-                    'data => ' . $value
-                ) . ';',
+                'my $msg = do { local $_ = ' . $value . '; '
+                . $message . '->(' . $value . ');'
+                . '};'.
+                $self->_inline_throw_exception( ValidationFailedForInlineTypeConstraint =>
+                                                'type_constraint_message => $msg , '.
+                                                'class_name              => $class_name, '.
+                                                'attribute_name          => "'.$attr_name.'",'.
+                                                'value                   => '.$value
+                ).';',
             '}',
         );
     }
@@ -796,6 +796,8 @@ sub _eval_environment {
         $env = { %$env, %{ $tc_obj->inline_environment } };
     }
 
+    $env->{'$class_name'} = \($self->associated_class->name);
+
     # XXX ugh, fix these
     $env->{'$attr'} = \$self
         if $self->has_initializer && $self->is_lazy;
@@ -853,7 +855,10 @@ sub get_value {
             return wantarray ? %{ $rv } : $rv;
         }
         else {
-            $self->throw_error("Can not auto de-reference the type constraint '" . $type_constraint->name . "'", object => $instance, type_constraint => $type_constraint);
+            throw_exception( CannotAutoDereferenceTypeConstraint => type_name => $type_constraint->name,
+                                                                    instance  => $instance,
+                                                                    attribute => $self
+                           );
         }
 
     }
@@ -898,12 +903,7 @@ sub _inline_init_from_default {
     my ($instance, $default, $tc, $coercion, $message, $for_lazy) = @_;
 
     if (!($self->has_default || $self->has_builder)) {
-        $self->throw_error(
-            'You cannot have a lazy attribute '
-          . '(' . $self->name . ') '
-          . 'without specifying a default value for it',
-            attr => $self,
-        );
+        throw_exception( LazyAttributeNeedsADefault => attribute => $self );
     }
 
     return (
@@ -941,16 +941,18 @@ sub _inline_generate_default {
             '}',
             'else {',
                 'my $class = ref(' . $instance . ') || ' . $instance . ';',
-                $self->_inline_throw_error(
-                    '"$class does not support builder method '
-                  . '\'' . $builder_str . '\' for attribute '
-                  . '\'' . $attr_name_str . '\'"'
+                $self->_inline_throw_exception(
+                    BuilderMethodNotSupportedForInlineAttribute =>
+                    'class_name     => $class,'.
+                    'attribute_name => "'.$attr_name_str.'",'.
+                    'instance       => '.$instance.','.
+                    'builder        => "'.$builder_str.'"'
                 ) . ';',
             '}',
         );
     }
     else {
-        $self->throw_error(
+        confess(
             "Can't generate a default for " . $self->name
           . " since no default or builder was specified"
         );
@@ -991,11 +993,10 @@ sub _auto_deref {
         $sigil = '%';
     }
     else {
-        $self->throw_error(
+        confess(
             'Can not auto de-reference the type constraint \''
           . $type_constraint->name
-          . '\'',
-            type_constraint => $type_constraint,
+          . '\''
         );
     }
 
@@ -1039,15 +1040,59 @@ sub _process_accessors {
     my $method = $self->associated_class->get_method($accessor);
 
     if (   $method
-        && $method->isa('Class::MOP::Method::Accessor')
-        && $method->associated_attribute->name ne $self->name ) {
+        && $method->isa('Class::MOP::Method::Accessor') ) {
 
-        my $other_attr_name = $method->associated_attribute->name;
-        my $name            = $self->name;
+        # This is a special case that is very unlikely to occur outside of the
+        # Moose bootstrapping process. We do not want to warn if the method
+        # we're about to replace is for this same attribute, _and_ we're
+        # replacing a non-inline method with an inlined version.
+        #
+        # This would never occur in normal user code because Moose inlines all
+        # accessors. However, Moose metaclasses are instances of
+        # Class::MOP::Class, which _does not_ inline accessors by
+        # default. However, in Class::MOP & Moose.pm, we iterate over all of
+        # our internal metaclasses and make them immutable after they're fully
+        # defined. This ends up replacing the attribute accessors.
+        unless ( $method->associated_attribute->name eq $self->name
+            && ( $generate_as_inline_methods && !$method->is_inline ) ) {
 
-        Carp::cluck(
-            "You are overwriting an accessor ($accessor) for the $other_attr_name attribute"
-                . " with a new accessor method for the $name attribute" );
+            my $other_attr = $method->associated_attribute;
+
+            my $msg = sprintf(
+                'You are overwriting a %s (%s) for the %s attribute',
+                $method->accessor_type,
+                $accessor,
+                $other_attr->name,
+            );
+
+            if ( my $method_context = $method->definition_context ) {
+                $msg .= sprintf(
+                    ' (defined at %s line %s)',
+                    $method_context->{file},
+                    $method_context->{line},
+                    )
+                    if defined $method_context->{file}
+                    && $method_context->{line};
+            }
+
+            $msg .= sprintf(
+                ' with a new %s method for the %s attribute',
+                $type,
+                $self->name,
+            );
+
+            if ( my $self_context = $self->definition_context ) {
+                $msg .= sprintf(
+                    ' (defined at %s line %s)',
+                    $self_context->{file},
+                    $self_context->{line},
+                    )
+                    if defined $self_context->{file}
+                    && $self_context->{line};
+            }
+
+            Carp::cluck($msg);
+        }
     }
 
     if (
@@ -1088,21 +1133,21 @@ sub install_delegation {
     # Here we canonicalize the 'handles' option
     # this will sort out any details and always
     # return an hash of methods which we want
-    # to delagate to, see that method for details
+    # to delegate to, see that method for details
     my %handles = $self->_canonicalize_handles;
-
 
     # install the delegation ...
     my $associated_class = $self->associated_class;
-    foreach my $handle (sort keys %handles) {
+    my $class_name = $associated_class->name;
+
+    foreach my $handle ( sort keys %handles ) {
         my $method_to_call = $handles{$handle};
-        my $class_name = $associated_class->name;
-        my $name = "${class_name}::${handle}";
+        my $name           = "${class_name}::${handle}";
 
         if ( my $method = $associated_class->get_method($handle) ) {
-            $self->throw_error(
-                "You cannot overwrite a locally defined method ($handle) with a delegation",
-                method_name => $handle
+            throw_exception(
+                CannotDelegateLocalMethodIsPresent => attribute => $self,
+                method                             => $method,
             ) unless $method->is_stub;
         }
 
@@ -1114,7 +1159,9 @@ sub install_delegation {
 
         # FIXME warn when $handle was explicitly specified, but not if the source is a regex or something
         #cluck("Not delegating method '$handle' because it is a core method") and
-        next if $class_name->isa("Moose::Object") and $handle =~ /^BUILD|DEMOLISH$/ || Moose::Object->can($handle);
+        next
+            if $class_name->isa("Moose::Object")
+            and $handle =~ /^BUILD|DEMOLISH$/ || Moose::Object->can($handle);
 
         my $method = $self->_make_delegation_method($handle, $method_to_call);
 
@@ -1149,7 +1196,7 @@ sub _canonicalize_handles {
         }
         elsif ($handle_type eq 'Regexp') {
             ($self->has_type_constraint)
-                || $self->throw_error("Cannot delegate methods based on a Regexp without a type constraint (isa)", data => $handles);
+                || throw_exception( CannotDelegateWithoutIsa => attribute => $self );
             return map  { ($_ => $_) }
                    grep { /$handles/ } $self->_get_delegate_method_list;
         }
@@ -1163,15 +1210,19 @@ sub _canonicalize_handles {
             $handles = $handles->role;
         }
         else {
-            $self->throw_error("Unable to canonicalize the 'handles' option with $handles", data => $handles);
+            throw_exception( UnableToCanonicalizeHandles => attribute => $self,
+                                                            handles   => $handles
+                           );
         }
     }
 
-    load_class($handles);
+    Moose::Util::_load_user_class($handles);
     my $role_meta = Class::MOP::class_of($handles);
 
     (blessed $role_meta && $role_meta->isa('Moose::Meta::Role'))
-        || $self->throw_error("Unable to canonicalize the 'handles' option with $handles because its metaclass is not a Moose::Meta::Role", data => $handles);
+        || throw_exception( UnableToCanonicalizeNonRolePackage => attribute => $self,
+                                                                  handles   => $handles
+                          );
 
     return map { $_ => $_ }
         map { $_->name }
@@ -1193,40 +1244,45 @@ sub _get_delegate_method_list {
         return $meta->get_method_list;
     }
     else {
-        $self->throw_error("Unable to recognize the delegate metaclass '$meta'", data => $meta);
+        throw_exception( UnableToRecognizeDelegateMetaclass => attribute          => $self,
+                                                               delegate_metaclass => $meta
+                       );
     }
 }
 
 sub _find_delegate_metaclass {
     my $self = shift;
-    if (my $class = $self->_isa_metadata) {
-        unless ( is_class_loaded($class) ) {
-            $self->throw_error(
-                sprintf(
-                    'The %s attribute is trying to delegate to a class which has not been loaded - %s',
-                    $self->name, $class
-                )
-            );
+    my $class = $self->_isa_metadata;
+    my $role = $self->_does_metadata;
+
+    if ( $class ) {
+        # make sure isa is actually a class
+        unless ( $self->type_constraint->isa("Moose::Meta::TypeConstraint::Class") ) {
+            throw_exception( DelegationToATypeWhichIsNotAClass => attribute => $self );
+        }
+
+        # make sure the class is loaded
+        unless ( Moose::Util::_is_package_loaded($class) ) {
+            throw_exception( DelegationToAClassWhichIsNotLoaded => attribute  => $self,
+                                                                   class_name => $class
+                           );
         }
         # we might be dealing with a non-Moose class,
         # and need to make our own metaclass. if there's
         # already a metaclass, it will be returned
         return Class::MOP::Class->initialize($class);
     }
-    elsif (my $role = $self->_does_metadata) {
-        unless ( is_class_loaded($class) ) {
-            $self->throw_error(
-                sprintf(
-                    'The %s attribute is trying to delegate to a role which has not been loaded - %s',
-                    $self->name, $role
-                )
-            );
+    elsif ( $role ) {
+        unless ( Moose::Util::_is_package_loaded($role) ) {
+            throw_exception( DelegationToARoleWhichIsNotLoaded => attribute => $self,
+                                                                  role_name => $role
+                           );
         }
 
         return Class::MOP::class_of($role);
     }
     else {
-        $self->throw_error("Cannot find delegate metaclass for attribute " . $self->name);
+        throw_exception( CannotFindDelegateMetaclass => attribute => $self );
     }
 }
 
@@ -1273,28 +1329,25 @@ sub verify_against_type_constraint {
     my $type_constraint = $self->type_constraint;
 
     $type_constraint->check($val)
-        || $self->throw_error("Attribute ("
-                 . $self->name
-                 . ") does not pass the type constraint because: "
-                 . $type_constraint->get_message($val), data => $val, @_);
+        || throw_exception( ValidationFailedForTypeConstraint => type      => $type_constraint,
+                                                                 value     => $val,
+                                                                 attribute => $self,
+                          );
 }
 
-package Moose::Meta::Attribute::Custom::Moose;
-BEGIN {
-  $Moose::Meta::Attribute::Custom::Moose::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Attribute::Custom::Moose::VERSION = '2.0602';
-}
+package  # hide from PAUSE
+    Moose::Meta::Attribute::Custom::Moose;
+
 sub register_implementation { 'Moose::Meta::Attribute' }
-
 1;
 
 # ABSTRACT: The Moose attribute metaclass
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -1302,7 +1355,7 @@ Moose::Meta::Attribute - The Moose attribute metaclass
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -1327,7 +1380,7 @@ L<Class::MOP::Attribute> and add Moose specific features.
 
 =over 4
 
-=item B<< Moose::Meta::Attribute->new(%options) >>
+=item B<< Moose::Meta::Attribute->new($name, %options) >>
 
 This method overrides the L<Class::MOP::Attribute> constructor.
 
@@ -1351,7 +1404,7 @@ name as the attribute, and a C<writer> with the name you provided.
 
 Use 'bare' when you are deliberately not installing any methods
 (accessor, reader, etc.) associated with this attribute; otherwise,
-Moose will issue a deprecation warning when this attribute is added to a
+Moose will issue a warning when this attribute is added to a
 metaclass.
 
 =item * isa => $type
@@ -1377,7 +1430,7 @@ This option is only valid for objects with a type constraint
 (C<isa>) that defined a coercion. If this is true, then coercions will be applied whenever
 this attribute is set.
 
-You can make both this and the C<weak_ref> option true.
+You cannot make both this and the C<weak_ref> option true.
 
 =item * trigger => $sub
 
@@ -1404,13 +1457,25 @@ attribute is read.
 If this is true, the attribute's value will be stored as a weak
 reference.
 
+=item * documentation
+
+An arbitrary string that can be retrieved later by calling C<<
+$attr->documentation >>.
+
 =item * auto_deref => $bool
+
+B<Note that in cases where you want this feature you are often better served
+by using a L<Moose::Meta::Attribute::Native> trait instead>.
 
 If this is true, then the reader will dereference the value when it is
 called. The attribute must have a type constraint which defines the
 attribute as an array or hash reference.
 
 =item * lazy_build => $bool
+
+B<Note that use of this feature is strongly discouraged.> Some documentation
+used to encourage use of this feature as a best practice, but we have changed
+our minds.
 
 Setting this to true makes the attribute lazy and provides a number of
 default methods.
@@ -1452,10 +1517,9 @@ Note the doubled underscore in the builder name. Internally, Moose
 simply prepends the attribute name with "_build_" to come up with the
 builder name.
 
-=item * documentation
+=item * role_attribute => $role_attribute
 
-An arbitrary string that can be retrieved later by calling C<<
-$attr->documentation >>.
+If provided, this should be a L<Moose::Meta::Role::Attribute> object.
 
 =back
 
@@ -1666,6 +1730,15 @@ the constructor, if any.
 
 Returns true if this attribute has any documentation.
 
+=item B<< $attr->role_attribute >>
+
+Returns the L<Moose::Meta::Role::Attribute> object from which this attribute
+was created, if any. This may return C<undef>.
+
+=item B<< $attr->has_role_attribute >>
+
+Returns true if this attribute has an associated role attribute.
+
 =item B<< $attr->applied_traits >>
 
 This returns an array reference of all the traits which were applied
@@ -1681,19 +1754,57 @@ Returns true if this attribute has any traits applied.
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

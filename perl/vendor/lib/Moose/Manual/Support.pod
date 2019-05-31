@@ -1,10 +1,11 @@
-package Moose::Manual::Support
-
+# PODNAME: Moose::Manual::Support
 # ABSTRACT: Policies regarding support, releases, and compatibility.
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::Support - Policies regarding support, releases, and compatibility
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 SUPPORT POLICY
 
@@ -87,10 +88,9 @@ of the Perl install process these warnings may be easy to miss.
 
 =head1 BACKWARDS COMPATIBILITY
 
-We try to ensure compatibility by having a extensive test suite (last
-count just over around 5123 tests), as well as testing a number of
-packages (currently just under 100 packages) that depend on Moose before
-any release.
+We try to ensure compatibility by having a extensive test suite (last count
+over 18000 tests), as well as testing a number of packages (currently just
+under 100 packages) that depend on Moose before any release.
 
 The current list of downstream dependencies that are tested is in
 C<xt/author/test-my-dependents.t>.
@@ -118,47 +118,87 @@ http://www.perlmonks.org/?node_id=608144 >>).
 
 =head1 PERL VERSION COMPATIBILITY
 
-As of version 2.00, Moose officially supports being run on perl 5.8.3+. Our
+As of version 2.16, Moose will officially support being run on perl 5.10.1+. Our
 current policy is to support the earliest version of Perl shipped in the latest
 stable release of any major operating system (this tends to mean CentOS). We
 will provide at least six months notice (two major releases) when we decide to
-increase the officially supported Perl version. The next time this will happen
-is in January of 2012, when Moose 2.06 will increase the minimum officially
-supported Perl version to 5.10.1.
+increase the officially supported Perl version.
 
 "Officially supported" does not mean that these are the only versions of Perl
-that Moose will work with. Our declared perl dependency will remain at 5.8.3 as
-long as our test suite continues to pass on 5.8.3. What this does mean is that
-the core Moose dev team will not be spending any time fixing bugs on versions
-that aren't officially supported, and new contributions will not be rejected
-due to being incompatible with older versions of perl except in the most
-trivial of cases. We will, however, still welcome patches to make Moose
+that Moose will work with. Our declared perl dependency will remain at 5.8.3
+as long as our test suite continues to pass on 5.8.3. What this does mean is
+that the core Moose dev team will not be spending any time fixing bugs on
+versions that aren't officially supported, and new contributions will not be
+rejected due to being incompatible with older versions of perl except in the
+most trivial of cases. We will, however, still welcome patches to make Moose
 compatible with earlier versions, if other people are still interested in
-maintaining compatibility. Note that although performance regressions are
-acceptable in order to maintain backwards compatibility (as long as they only
-affect the older versions), functionality changes and buggy behavior will not
-be. If it becomes impossible to provide identical functionality between modern
-Perl versions and unsupported Perl versions, we will increase our declared perl
-dependency instead.
+maintaining compatibility. As such, the current minimum required version of
+5.8.3 will remain for as long as downstream users are happy to assist with
+maintenance.
+
+Note that although performance regressions are acceptable in order to maintain
+backwards compatibility (as long as they only affect the older versions),
+functionality changes and buggy behavior will not be. If it becomes impossible
+to provide identical functionality between modern Perl versions and
+unsupported Perl versions, we will increase our declared perl dependency
+instead.
 
 =head1 CONTRIBUTING
 
 Moose has an open contribution policy. Anybody is welcome to submit a
 patch. Please see L<Moose::Manual::Contributing> for more details.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

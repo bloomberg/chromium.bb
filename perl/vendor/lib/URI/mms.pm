@@ -1,7 +1,11 @@
 package URI::mms;
 
-require URI::http;
-@ISA=qw(URI::http);
+use strict;
+use warnings;
+
+our $VERSION = '1.76';
+
+use parent 'URI::http';
 
 sub default_port { 1755 }
 

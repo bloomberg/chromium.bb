@@ -4,8 +4,6 @@
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
-# $Id: Deserializer.pod 372 2010-04-29 18:32:31Z kutterma $
-#
 # ======================================================================
 
 =pod

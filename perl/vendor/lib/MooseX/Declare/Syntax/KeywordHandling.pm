@@ -1,28 +1,44 @@
 package MooseX::Declare::Syntax::KeywordHandling;
-BEGIN {
-  $MooseX::Declare::Syntax::KeywordHandling::AUTHORITY = 'cpan:FLORA';
-}
-{
-  $MooseX::Declare::Syntax::KeywordHandling::VERSION = '0.35';
-}
 # ABSTRACT: Basic keyword functionality
 
+our $VERSION = '0.43';
+
 use Moose::Role;
-use Moose::Util::TypeConstraints;
+use Moose::Util::TypeConstraints qw(subtype as where);
 use Devel::Declare ();
 use Sub::Install qw( install_sub );
 use Moose::Meta::Class ();
-use List::MoreUtils qw( uniq );
+use Module::Runtime 'use_module';
 
 use aliased 'MooseX::Declare::Context';
 
-use namespace::clean -except => 'meta';
+use namespace::autoclean -also => ['_uniq'];
 
+#pod =head1 DESCRIPTION
+#pod
+#pod This role provides the functionality common for all keyword handlers
+#pod in L<MooseX::Declare>.
+#pod
+#pod =head1 REQUIRED METHODS
+#pod
+#pod =head2 parse
+#pod
+#pod   Object->parse (Object $context)
+#pod
+#pod This method must implement the actual parsing of the keyword syntax.
+#pod
+#pod =cut
 
 requires qw(
     parse
 );
 
+#pod =attr identifier
+#pod
+#pod This is the name of the actual keyword. It is a required string that is in
+#pod the same format as a usual Perl identifier.
+#pod
+#pod =cut
 
 has identifier => (
     is          => 'ro',
@@ -30,6 +46,13 @@ has identifier => (
     required    => 1,
 );
 
+#pod =method get_identifier
+#pod
+#pod   Str Object->get_identifier ()
+#pod
+#pod Returns the name the handler will be setup under.
+#pod
+#pod =cut
 
 sub get_identifier { shift->identifier }
 
@@ -37,6 +60,18 @@ sub context_class { Context }
 
 sub context_traits { }
 
+#pod =method setup_for
+#pod
+#pod   Object->setup_for (ClassName $class, %args)
+#pod
+#pod This will setup the handler in the specified C<$class>. The handler will
+#pod dispatch to the L</parse_declaration> method when the keyword is used.
+#pod
+#pod A normal code reference will also be exported into the calling namespace.
+#pod It will either be empty or, if a C<generate_export> method is provided,
+#pod the return value of that method.
+#pod
+#pod =cut
 
 sub setup_for {
     my ($self, $setup_class, %args) = @_;
@@ -65,18 +100,26 @@ sub setup_for {
     return 1;
 }
 
+#pod =method parse_declaration
+#pod
+#pod   Object->parse_declaration (Str $filename, HashRef $setup_args, @call_args)
+#pod
+#pod This simply creates a new L<context|MooseX::Declare::Context> and passes it
+#pod to the L</parse> method.
+#pod
+#pod =cut
 
 sub parse_declaration {
     my ($self, $caller_file, $args, @ctx_args) = @_;
 
     # find and load context object class
     my $ctx_class = $self->context_class;
-    Class::MOP::load_class $ctx_class;
+    use_module $ctx_class;
 
     # do we have traits?
-    if (my @ctx_traits = uniq $self->context_traits) {
+    if (my @ctx_traits = _uniq($self->context_traits)) {
 
-        Class::MOP::load_class $_
+        use_module $_
             for @ctx_traits;
 
         $ctx_class = Moose::Meta::Class->create_anon_class(
@@ -97,17 +140,31 @@ sub parse_declaration {
     return $self->parse($ctx);
 }
 
+sub _uniq { keys %{ +{ map { $_ => undef } @_ } } }
+
+#pod =head1 SEE ALSO
+#pod
+#pod =for :list
+#pod * L<MooseX::Declare>
+#pod * L<MooseX::Declare::Context>
+#pod
+#pod =cut
 
 1;
 
 __END__
+
 =pod
 
-=encoding utf-8
+=encoding UTF-8
 
 =head1 NAME
 
 MooseX::Declare::Syntax::KeywordHandling - Basic keyword functionality
+
+=head1 VERSION
+
+version 0.43
 
 =head1 DESCRIPTION
 
@@ -169,90 +226,15 @@ L<MooseX::Declare::Context>
 
 =back
 
-=head1 AUTHORS
-
-=over 4
-
-=item *
+=head1 AUTHOR
 
 Florian Ragwitz <rafl@debian.org>
 
-=item *
-
-Ash Berlin <ash@cpan.org>
-
-=item *
-
-Chas. J. Owens IV <chas.owens@gmail.com>
-
-=item *
-
-Chris Prather <chris@prather.org>
-
-=item *
-
-Dave Rolsky <autarch@urth.org>
-
-=item *
-
-Devin Austin <dhoss@cpan.org>
-
-=item *
-
-Hans Dieter Pearcey <hdp@cpan.org>
-
-=item *
-
-Justin Hunter <justin.d.hunter@gmail.com>
-
-=item *
-
-Matt Kraai <kraai@ftbfs.org>
-
-=item *
-
-Michele Beltrame <arthas@cpan.org>
-
-=item *
-
-Nelo Onyiah <nelo.onyiah@gmail.com>
-
-=item *
-
-nperez <nperez@cpan.org>
-
-=item *
-
-Piers Cawley <pdcawley@bofh.org.uk>
-
-=item *
-
-Rafael Kitover <rkitover@io.com>
-
-=item *
-
-Robert 'phaylon' Sedlacek <rs@474.at>
-
-=item *
-
-Stevan Little <stevan.little@iinteractive.com>
-
-=item *
-
-Tomas Doran <bobtfish@bobtfish.net>
-
-=item *
-
-Yanick Champoux <yanick@babyl.dyndns.org>
-
-=back
-
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Florian Ragwitz.
+This software is copyright (c) 2008 by Florian Ragwitz.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

@@ -1,10 +1,11 @@
-package Moose::Cookbook::Snack::Keywords;
-
+# PODNAME: Moose::Cookbook::Snack::Keywords
 # ABSTRACT: Restricted "keywords" in Moose
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Cookbook::Snack::Keywords - Restricted "keywords" in Moose
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -65,6 +66,8 @@ keywords:
 
 =item blessed
 
+=item meta
+
 =back
 
 =head2 Moose::Util::TypeConstraints Keywords
@@ -91,8 +94,6 @@ these keywords:
 =item where
 
 =item message
-
-=item optimize_as
 
 =item inline_as
 
@@ -173,7 +174,7 @@ you must be careful not to remove C<meta> when doing so:
 
 =item L<Moose::Role>
 
-=item L<Moose::Utils::TypeConstraints>
+=item L<Moose::Util::TypeConstraints>
 
 =item L<Sub::Exporter>
 
@@ -183,19 +184,57 @@ you must be careful not to remove C<meta> when doing so:
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

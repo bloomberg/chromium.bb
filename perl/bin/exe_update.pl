@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!perl
 # Copyright 2004, 2006, 2010 by Audrey Tang <cpan@audreyt.org>
 
 use strict;

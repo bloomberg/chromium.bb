@@ -1,28 +1,19 @@
-# $Id: Clone.pm,v 0.31 2009/01/20 04:54:37 ray Exp $
 package Clone;
 
 use strict;
-use Carp;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $AUTOLOAD);
 
 require Exporter;
 require DynaLoader;
 require AutoLoader;
 
-@ISA = qw(Exporter DynaLoader);
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-@EXPORT = qw();
+@ISA       = qw(Exporter DynaLoader);
+@EXPORT    = qw();
 @EXPORT_OK = qw( clone );
 
-$VERSION = '0.31';
+$VERSION = '0.41';
 
 bootstrap Clone $VERSION;
-
-# Preloaded methods go here.
-
-# Autoload methods go after =cut, and are processed by the autosplit program.
 
 1;
 __END__
@@ -31,58 +22,76 @@ __END__
 
 Clone - recursively copy Perl datatypes
 
+=for html
+<a href="https://travis-ci.org/garu/Clone"><img src="https://travis-ci.org/garu/Clone.png?branch=master" alt="Build Status"></a>
+<a href="https://coveralls.io/r/garu/Clone?branch=master"><img src="https://coveralls.io/repos/garu/Clone/badge.png?branch=master" alt="Coverage Status"></a>
+<a href="https://metacpan.org/pod/Clone"><img src="https://badge.fury.io/pl/Clone.svg" alt="CPAN version"></a>
+
 =head1 SYNOPSIS
 
-  use Clone;
-  
-  push @Foo::ISA, 'Clone';
+    use Clone 'clone';
 
-  $a = new Foo;
-  $b = $a->clone();
-  
-  # or
+    my $data = {
+       set => [ 1 .. 50 ],
+       foo => {
+           answer => 42,
+           object => SomeObject->new,
+       },
+    };
 
-  use Clone qw(clone);
-  
-  $a = { 'foo' => 'bar', 'move' => 'zig' };
-  $b = [ 'alpha', 'beta', 'gamma', 'vlissides' ];
-  $c = new Foo();
+    my $cloned_data = clone($data);
 
-  $d = clone($a);
-  $e = clone($b);
-  $f = clone($c);
+    $cloned_data->{foo}{answer} = 1;
+    print $cloned_data->{foo}{answer};  # '1'
+    print $data->{foo}{answer};         # '42'
+
+You can also add it to your class:
+
+    package Foo;
+    use parent 'Clone';
+    sub new { bless {}, shift }
+
+    package main;
+
+    my $obj = Foo->new;
+    my $copy = $obj->clone;
 
 =head1 DESCRIPTION
 
-This module provides a clone() method which makes recursive
-copies of nested hash, array, scalar and reference types, 
+This module provides a C<clone()> method which makes recursive
+copies of nested hash, array, scalar and reference types,
 including tied variables and objects.
 
+C<clone()> takes a scalar argument and duplicates it. To duplicate lists,
+arrays or hashes, pass them in by reference, e.g.
 
-clone() takes a scalar argument and an optional parameter that 
-can be used to limit the depth of the copy. To duplicate lists,
-arrays or hashes, pass them in by reference. e.g.
-    
     my $copy = clone (\@array);
 
     # or
 
     my %copy = %{ clone (\%hash) };
-    
 
-For a slower, but more flexible solution see Storable's dclone().
+=head1 SEE ALSO
 
-=head1 AUTHOR
+L<Storable>'s C<dclone()> is a flexible solution for cloning variables,
+albeit slower for average-sized data structures. Simple
+and naive benchmarks show that Clone is faster for data structures
+with 3 or fewer levels, while C<dclone()> can be faster for structures
+4 or more levels deep.
 
-Ray Finch, rdf@cpan.org
+=head1 COPYRIGHT
 
-Copyright 2001 Ray Finch.
+Copyright 2001-2018 Ray Finch. All Rights Reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-=head1 SEE ALSO
+=head1 AUTHOR
 
-Storable(3).
+Ray Finch C<< <rdf@cpan.org> >>
+
+Breno G. de Oliveira C<< <garu@cpan.org> >> and
+Florian Ragwitz C<< <rafl@debian.org> >> perform routine maintenance
+releases since 2012.
 
 =cut

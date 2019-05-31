@@ -18,33 +18,12 @@
 
 import "oaidl.idl";
 import "ocidl.idl";
-import "dxgitype.h";
+import "dxgitype.idl";
 
 const UINT _FACDXGI = 0x87a;
 
 cpp_quote("#define MAKE_DXGI_STATUS(x)                         MAKE_HRESULT(0, _FACDXGI, x)")
-cpp_quote("#define DXGI_STATUS_OCCLUDED                        MAKE_DXGI_STATUS(1)")
-cpp_quote("#define DXGI_STATUS_CLIPPED                         MAKE_DXGI_STATUS(2)")
-cpp_quote("#define DXGI_STATUS_NO_REDIRECTION                  MAKE_DXGI_STATUS(4)")
-cpp_quote("#define DXGI_STATUS_NO_DESKTOP_ACCESS               MAKE_DXGI_STATUS(5)")
-cpp_quote("#define DXGI_STATUS_GRAPHICS_VIDPN_SOURCE_IN_USE    MAKE_DXGI_STATUS(6)")
-cpp_quote("#define DXGI_STATUS_MODE_CHANGED                    MAKE_DXGI_STATUS(7)")
-cpp_quote("#define DXGI_STATUS_MODE_CHANGE_IN_PROGRESS         MAKE_DXGI_STATUS(8)")
-
 cpp_quote("#define MAKE_DXGI_HRESULT(x)                        MAKE_HRESULT(1, _FACDXGI, x)")
-cpp_quote("#define DXGI_ERROR_INVALID_CALL                     MAKE_DXGI_HRESULT(1)")
-cpp_quote("#define DXGI_ERROR_NOT_FOUND                        MAKE_DXGI_HRESULT(2)")
-cpp_quote("#define DXGI_ERROR_MORE_DATA                        MAKE_DXGI_HRESULT(3)")
-cpp_quote("#define DXGI_ERROR_UNSUPPORTED                      MAKE_DXGI_HRESULT(4)")
-cpp_quote("#define DXGI_ERROR_DEVICE_REMOVED                   MAKE_DXGI_HRESULT(5)")
-cpp_quote("#define DXGI_ERROR_DEVICE_HUNG                      MAKE_DXGI_HRESULT(6)")
-cpp_quote("#define DXGI_ERROR_DEVICE_RESET                     MAKE_DXGI_HRESULT(7)")
-cpp_quote("#define DXGI_ERROR_WAS_STILL_DRAWING                MAKE_DXGI_HRESULT(10)")
-cpp_quote("#define DXGI_ERROR_FRAME_STATISTICS_DISJOINT        MAKE_DXGI_HRESULT(11)")
-cpp_quote("#define DXGI_ERROR_GRAPHICS_VIDPN_SOURCE_IN_USE     MAKE_DXGI_HRESULT(12)")
-cpp_quote("#define DXGI_ERROR_DRIVER_INTERNAL_ERROR            MAKE_DXGI_HRESULT(32)")
-cpp_quote("#define DXGI_ERROR_NONEXCLUSIVE                     MAKE_DXGI_HRESULT(33)")
-cpp_quote("#define DXGI_ERROR_NOT_CURRENTLY_AVAILABLE          MAKE_DXGI_HRESULT(34)")
 
 cpp_quote("#if 0")
 typedef HANDLE HMONITOR;
@@ -60,13 +39,27 @@ const DXGI_USAGE DXGI_USAGE_RENDER_TARGET_OUTPUT    = 0x20L;
 const DXGI_USAGE DXGI_USAGE_BACK_BUFFER             = 0x40L;
 const DXGI_USAGE DXGI_USAGE_SHARED                  = 0x80L;
 const DXGI_USAGE DXGI_USAGE_READ_ONLY               = 0x100L;
+const DXGI_USAGE DXGI_USAGE_DISCARD_ON_PRESENT      = 0x200L;
+const DXGI_USAGE DXGI_USAGE_UNORDERED_ACCESS        = 0x400L;
 
 const UINT DXGI_ENUM_MODES_INTERLACED               = 1;
 const UINT DXGI_ENUM_MODES_SCALING                  = 2;
 
+const UINT DXGI_RESOURCE_PRIORITY_MINIMUM           = 0x28000000;
+const UINT DXGI_RESOURCE_PRIORITY_LOW               = 0x50000000;
+const UINT DXGI_RESOURCE_PRIORITY_NORMAL            = 0x78000000;
+const UINT DXGI_RESOURCE_PRIORITY_HIGH              = 0xa0000000;
+const UINT DXGI_RESOURCE_PRIORITY_MAXIMUM           = 0xc8000000;
+
+const UINT DXGI_MAP_READ                            = 0x1;
+const UINT DXGI_MAP_WRITE                           = 0x2;
+const UINT DXGI_MAP_DISCARD                         = 0x4;
+
 typedef enum DXGI_SWAP_EFFECT {
     DXGI_SWAP_EFFECT_DISCARD    = 0,
     DXGI_SWAP_EFFECT_SEQUENTIAL = 1,
+    DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL = 3,
+    DXGI_SWAP_EFFECT_FLIP_DISCARD = 4
 } DXGI_SWAP_EFFECT;
 
 typedef enum DXGI_RESIDENCY {
@@ -115,10 +108,21 @@ typedef struct DXGI_ADAPTER_DESC {
     LUID AdapterLuid;
 } DXGI_ADAPTER_DESC;
 
-typedef enum DXGI_SWAP_CHAIN_FLAG {
-    DXGI_SWAP_CHAIN_FLAG_NONPREROTATED      = 1,
-    DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH  = 2,
-    DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE     = 4
+typedef enum DXGI_SWAP_CHAIN_FLAG
+{
+    DXGI_SWAP_CHAIN_FLAG_NONPREROTATED                          = 0x0001,
+    DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH                      = 0x0002,
+    DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE                         = 0x0004,
+    DXGI_SWAP_CHAIN_FLAG_RESTRICTED_CONTEXT                     = 0x0008,
+    DXGI_SWAP_CHAIN_FLAG_RESTRICT_SHARED_RESOURCE_DRIVER        = 0x0010,
+    DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY                           = 0x0020,
+    DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT          = 0x0040,
+    DXGI_SWAP_CHAIN_FLAG_FOREGROUND_LAYER                       = 0x0080,
+    DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO                       = 0x0100,
+    DXGI_SWAP_CHAIN_FLAG_YUV_VIDEO                              = 0x0200,
+    DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED                           = 0x0400,
+    DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING                          = 0x0800,
+    DXGI_SWAP_CHAIN_FLAG_RESTRICTED_TO_ALL_HOLOGRAPHIC_DISPLAYS = 0x1000,
 } DXGI_SWAP_CHAIN_FLAG;
 
 typedef struct DXGI_SWAP_CHAIN_DESC {
@@ -192,6 +196,18 @@ interface IDXGIResource : IDXGIDeviceSubObject
 
 [
     object,
+    uuid(9d8e1289-d7b3-465f-8126-250e349af85d),
+    local,
+    pointer_default(unique)
+]
+interface IDXGIKeyedMutex : IDXGIDeviceSubObject
+{
+    HRESULT AcquireSync([in] UINT64 Key, [in] DWORD dwMilliseconds);
+    HRESULT ReleaseSync([in] UINT64 Key);
+}
+
+[
+    object,
     local,
     uuid(cafcb56c-6ac3-4889-bf47-9e23bbd260ec)
 ]
@@ -205,6 +221,22 @@ interface IDXGISurface : IDXGIDeviceSubObject
         [in] UINT flags
     );
     HRESULT Unmap(
+    );
+}
+
+[
+    object,
+    local,
+    uuid(4ae63092-6327-4c1b-80ae-bfe12ea32b86)
+]
+interface IDXGISurface1 : IDXGISurface
+{
+    HRESULT GetDC(
+        [in] BOOL discard,
+        [out] HDC *hdc
+    );
+    HRESULT ReleaseDC(
+        [in] RECT *dirty_rect
     );
 }
 
@@ -276,6 +308,18 @@ interface IDXGIAdapter : IDXGIObject
         [out] LARGE_INTEGER *umd_version
     );
 }
+
+cpp_quote("#define DXGI_MAX_SWAP_CHAIN_BUFFERS  (16)")
+
+cpp_quote("#define DXGI_PRESENT_TEST                   __MSABI_LONG(0x00000001U)")
+cpp_quote("#define DXGI_PRESENT_DO_NOT_SEQUENCE        __MSABI_LONG(0x00000002U)")
+cpp_quote("#define DXGI_PRESENT_RESTART                __MSABI_LONG(0x00000004U)")
+cpp_quote("#define DXGI_PRESENT_DO_NOT_WAIT            __MSABI_LONG(0x00000008U)")
+cpp_quote("#define DXGI_PRESENT_STEREO_PREFER_RIGHT    __MSABI_LONG(0x00000010U)")
+cpp_quote("#define DXGI_PRESENT_STEREO_TEMPORARY_MONO  __MSABI_LONG(0x00000020U)")
+cpp_quote("#define DXGI_PRESENT_RESTRICT_TO_OUTPUT     __MSABI_LONG(0x00000040U)")
+cpp_quote("#define DXGI_PRESENT_USE_DURATION           __MSABI_LONG(0x00000100U)")
+cpp_quote("#define DXGI_PRESENT_ALLOW_TEARING          __MSABI_LONG(0x00000200U)")
 
 [
     object,
@@ -360,6 +404,7 @@ interface IDXGIFactory : IDXGIObject
 }
 
 [local] HRESULT __stdcall CreateDXGIFactory(REFIID riid, void **factory);
+[local] HRESULT __stdcall CreateDXGIFactory1(REFIID riid, void **factory);
 
 [
     object,
@@ -419,6 +464,18 @@ typedef struct DXGI_ADAPTER_DESC1 {
 interface IDXGIAdapter1 : IDXGIAdapter
 {
     HRESULT GetDesc1([out] DXGI_ADAPTER_DESC1 *pDesc);
+}
+
+[
+    object,
+    uuid(77db970f-6276-48ba-ba28-070143b4392c),
+    local,
+    pointer_default(unique)
+]
+interface IDXGIDevice1 : IDXGIDevice
+{
+    HRESULT SetMaximumFrameLatency([in] UINT MaxLatency);
+    HRESULT GetMaximumFrameLatency([out] UINT *pMaxLatency);
 }
 
 [

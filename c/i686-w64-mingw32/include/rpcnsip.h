@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __RPCNSIP_H__
@@ -20,9 +20,9 @@ extern "C" {
   RPCNSAPI RPC_STATUS RPC_ENTRY I_RpcNsSendReceive(PRPC_MESSAGE Message,RPC_BINDING_HANDLE *Handle);
   RPCNSAPI void RPC_ENTRY I_RpcNsRaiseException(PRPC_MESSAGE Message,RPC_STATUS Status);
   RPCNSAPI RPC_STATUS RPC_ENTRY I_RpcReBindBuffer(PRPC_MESSAGE Message);
-  RPCNSAPI RPC_STATUS RPC_ENTRY I_NsServerBindSearch();
-  RPCNSAPI RPC_STATUS RPC_ENTRY I_NsClientBindSearch();
-  RPCNSAPI void RPC_ENTRY I_NsClientBindDone();
+  RPCNSAPI RPC_STATUS RPC_ENTRY I_NsServerBindSearch(void);
+  RPCNSAPI RPC_STATUS RPC_ENTRY I_NsClientBindSearch(void);
+  RPCNSAPI void RPC_ENTRY I_NsClientBindDone(void);
 
 #ifdef __cplusplus
 }

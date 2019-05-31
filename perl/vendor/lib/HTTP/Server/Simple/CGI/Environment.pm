@@ -5,8 +5,7 @@ use strict;
 use warnings;
 use HTTP::Server::Simple;
 
-use vars qw($VERSION %ENV_MAPPING);
-$VERSION = $HTTP::Server::Simple::VERSION;
+use vars qw(%ENV_MAPPING);
 
 my %clean_env = %ENV;
 
@@ -32,7 +31,7 @@ start-up state.
 sub setup_environment {
     %ENV = (
         %clean_env,
-        SERVER_SOFTWARE   => "HTTP::Server::Simple/$VERSION",
+        SERVER_SOFTWARE   => "HTTP::Server::Simple/$HTTP::Server::Simple::VERSION",
         GATEWAY_INTERFACE => 'CGI/1.1'
     );
 }
@@ -106,7 +105,7 @@ sub header {
         unless $tag =~ m/^CONTENT_(?:LENGTH|TYPE)$/;
 
     if ( exists $ENV{$tag} ) {
-        $ENV{$tag} .= ", $value";
+        $ENV{$tag} .= $tag eq 'HTTP_COOKIE' ? "; $value" : ", $value";
     }
     else {
         $ENV{$tag} = $value;

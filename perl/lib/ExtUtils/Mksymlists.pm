@@ -10,7 +10,8 @@ use Config;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(&Mksymlists);
-our $VERSION = '6.63_02';
+our $VERSION = '7.36';
+$VERSION =~ tr/_//d;
 
 sub Mksymlists {
     my(%spec) = @_;
@@ -27,7 +28,7 @@ sub Mksymlists {
         unless ( ($spec{DL_FUNCS} and keys %{$spec{DL_FUNCS}}) or
                  @{$spec{FUNCLIST}});
     if (defined $spec{DL_FUNCS}) {
-        foreach my $package (keys %{$spec{DL_FUNCS}}) {
+        foreach my $package (sort keys %{$spec{DL_FUNCS}}) {
             my($packprefix,$bootseen);
             ($packprefix = $package) =~ s/\W/_/g;
             foreach my $sym (@{$spec{DL_FUNCS}->{$package}}) {
@@ -86,7 +87,7 @@ sub _write_os2 {
     my $distname = $data->{DISTNAME} || $data->{NAME};
     $distname = "Distribution $distname";
     my $patchlevel = " pl$Config{perl_patchlevel}" || '';
-    my $comment = sprintf "Perl (v%s%s%s) module %s", 
+    my $comment = sprintf "Perl (v%s%s%s) module %s",
       $Config::Config{version}, $threaded, $patchlevel, $data->{NAME};
     chomp $comment;
     if ($data->{INSTALLDIRS} and $data->{INSTALLDIRS} eq 'perl') {
@@ -106,14 +107,20 @@ sub _write_os2 {
     print $def "EXPORTS\n  ";
     print $def join("\n  ",@{$data->{DL_VARS}}, "\n") if @{$data->{DL_VARS}};
     print $def join("\n  ",@{$data->{FUNCLIST}}, "\n") if @{$data->{FUNCLIST}};
-    if (%{$data->{IMPORTS}}) {
+    _print_imports($def, $data);
+    close $def;
+}
+
+sub _print_imports {
+    my ($def, $data)= @_;
+    my $imports= $data->{IMPORTS}
+        or return;
+    if ( keys %$imports ) {
         print $def "IMPORTS\n";
-        my ($name, $exp);
-        while (($name, $exp)= each %{$data->{IMPORTS}}) {
-            print $def "  $name=$exp\n";
+        foreach my $name (sort keys %$imports) {
+            print $def "  $name=$imports->{$name}\n";
         }
     }
-    close $def;
 }
 
 sub _write_win32 {
@@ -129,34 +136,33 @@ sub _write_win32 {
     open( my $def, ">", "$data->{FILE}.def" )
         or croak("Can't create $data->{FILE}.def: $!\n");
     # put library name in quotes (it could be a keyword, like 'Alias')
-    if ($Config::Config{'cc'} !~ /^gcc/i) {
+    if ($Config::Config{'cc'} !~ /\bgcc/i) {
         print $def "LIBRARY \"$data->{DLBASE}\"\n";
     }
     print $def "EXPORTS\n  ";
     my @syms;
     # Export public symbols both with and without underscores to
-    # ensure compatibility between DLLs from different compilers
+    # ensure compatibility between DLLs from Borland C and Visual C
     # NOTE: DynaLoader itself only uses the names without underscores,
     # so this is only to cover the case when the extension DLL may be
     # linked to directly from C. GSAR 97-07-10
-    if ($Config::Config{'cc'} =~ /^bcc/i) {
-        for (@{$data->{DL_VARS}}, @{$data->{FUNCLIST}}) {
-            push @syms, "_$_", "$_ = _$_";
+
+    #bcc dropped in 5.16, so dont create useless extra symbols for export table
+    unless("$]" >= 5.016) {
+        if ($Config::Config{'cc'} =~ /^bcc/i) {
+            push @syms, "_$_", "$_ = _$_"
+                for (@{$data->{DL_VARS}}, @{$data->{FUNCLIST}});
         }
-    }
-    else {
-        for (@{$data->{DL_VARS}}, @{$data->{FUNCLIST}}) {
-            push @syms, "$_", "_$_ = $_";
+        else {
+            push @syms, "$_", "_$_ = $_"
+                for (@{$data->{DL_VARS}}, @{$data->{FUNCLIST}});
         }
+    } else {
+        push @syms, "$_"
+            for (@{$data->{DL_VARS}}, @{$data->{FUNCLIST}});
     }
     print $def join("\n  ",@syms, "\n") if @syms;
-    if (%{$data->{IMPORTS}}) {
-        print $def "IMPORTS\n";
-        my ($name, $exp);
-        while (($name, $exp)= each %{$data->{IMPORTS}}) {
-            print $def "  $name=$exp\n";
-        }
-    }
+    _print_imports($def, $data);
     close $def;
 }
 
@@ -197,7 +203,7 @@ sub _write_vms {
         if ($isvax) { print $opt "UNIVERSAL=$safe\n" }
         else        { print $opt "SYMBOL_VECTOR=($safe=DATA)\n"; }
     }
-    
+
     close $opt;
 }
 
@@ -212,10 +218,10 @@ ExtUtils::Mksymlists - write linker options files for dynamic extension
 =head1 SYNOPSIS
 
     use ExtUtils::Mksymlists;
-    Mksymlists({ NAME     => $name ,
+    Mksymlists(  NAME     => $name ,
                  DL_VARS  => [ $var1, $var2, $var3 ],
                  DL_FUNCS => { $pkg1 => [ $func1, $func2 ],
-                               $pkg2 => [ $func3 ] });
+                               $pkg2 => [ $func3 ] );
 
 =head1 DESCRIPTION
 
@@ -281,9 +287,9 @@ generation of the bootstrap function for the package. To still create
 the bootstrap name you have to specify the package name in the
 DL_FUNCS hash:
 
-    Mksymlists({ NAME     => $name ,
+    Mksymlists(  NAME     => $name ,
 		 FUNCLIST => [ $func1, $func2 ],
-                 DL_FUNCS => { $pkg => [] } });
+                 DL_FUNCS => { $pkg => [] } );
 
 
 =item IMPORTS

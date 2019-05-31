@@ -1,0 +1,183 @@
+@rem = '--*-Perl-*--
+@echo off
+if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
+goto endofperl
+:WinNT
+IF EXIST "%~dp0perl.exe" (
+"%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
+if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
+if %errorlevel% == 9009 echo You do not have Perl in your PATH.
+if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
+goto endofperl
+@rem ';
+#!/usr/bin/perl -w
+#line 29
+# $Id: /xmltwig/trunk/tools/xml_merge/xml_merge 12 2007-04-22T06:04:54.627880Z mrodrigu  $
+use strict;
+
+use XML::Twig;
+use FindBin qw( $RealBin $RealScript);
+use Getopt::Std;
+
+$Getopt::Std::STANDARD_HELP_VERSION=1; # twice to prevent warning with 5.6.1 (I know it's dumb!)
+$Getopt::Std::STANDARD_HELP_VERSION=1; # to stop processing after --help or --version
+
+use vars qw( $VERSION $USAGE);
+
+$VERSION= "0.02";
+$USAGE= "xml_merge [-o <output_file>] [-i] [-v] [-h] [-m] [-V] [file]\n";
+
+{ # main block
+
+my $opt={};
+getopts('o:ivhmV', $opt);
+
+if( $opt->{h}) { die $USAGE, "\n";            }
+if( $opt->{m}) { exec "pod2text $RealBin/$RealScript"; }
+if( $opt->{V}) { print "xml_merge version $VERSION\n"; exit; }
+
+if( $opt->{o})
+  { open( my $out, '>', $opt->{o}) or die "cannot create $opt->{o}: $!";
+    $opt->{fh}= $out; # used to set twig_print_outside_roots
+  }
+else
+  { $opt->{fh}= 1; }  # this way twig_print_outside_roots outputs to STDOUT
+
+$opt->{subdocs} = 1;
+$opt->{file}    = $ARGV[0];
+
+$opt->{twig_roots}= $opt->{i} ? { 'xi:include' => sub { $opt->{file}= $_->att( 'href');
+                                                        if( $_->att( 'subdocs')) { merge( $opt); }
+                                                        else                     { spit(  $opt); }
+                                                      },
+                                }
+                              : { '?merge'     => sub { $opt= parse( $_->data, $opt);
+                                                        if( $opt->{subdocs}) { merge( $opt); }
+                                                        else                 { spit(  $opt); }
+                                                      },
+                                }
+
+                              ;
+
+merge( $opt);
+
+if( $opt->{v}) { warn "done\n"; }
+
+}
+
+sub merge
+  { my( $opt)= @_;
+    my $t= XML::Twig->new( keep_encoding => 1, keep_spaces => 1,
+                           twig_roots => $opt->{twig_roots},
+                           twig_print_outside_roots => $opt->{fh},
+                         );
+    if( $opt->{v} && $opt->{file}) { warn "merging $opt->{file} (parsing)\n"; }
+    if( $opt->{file}) { $t->parsefile( $opt->{file}); } else { $t->parse( \*STDIN); }
+  }
+
+sub spit
+  { my( $opt)= @_;
+    if( $opt->{v} && $opt->{file}) { warn "merging $opt->{file} (no parsing)\n"; }
+    open( my $in, '<', $opt->{file}) or die "cannot open sub document '$opt->{file}': $!";
+    while( <$in>)
+      { next if( m{^\Q<?xml version} || m{^\s*</?xml_split:root});
+        if( $opt->{o}) { print {$opt->{fh}} $_; } else { print $_; } 
+      }
+    close $in;
+  }
+
+# data is the pi data, 
+# (ugly) format is keyword1 = val1 : keyword2 = val2 ... : filename
+# ex: subdoc = 1 : file-01.xml
+
+sub parse
+  { my( $data, $opt)= @_;
+    while( $data=~ s{^\s*(\S+)\s*=\s*(\S+)\s*:\s*}{}) { $opt->{$1}= $2; }
+    $opt->{file}= $data;
+    return $opt;
+  }
+    
+   
+# for Getop::Std
+sub HELP_MESSAGE    { return $USAGE;   }
+sub VERSION_MESSAGE { return $VERSION; } 
+
+__END__
+
+=head1 NAME
+
+  xml_merge - merge back XML files split with C<xml_split>
+
+=head1 DESCRIPTION
+
+C<xml_merge> takes several xml files that have been split using
+C<xml_split> and recreates a single file.
+
+=head1 OPTIONS
+
+=over 4
+
+=item -o <output_file>
+
+unless this option is used the program output goes to STDOUT
+
+=item -i
+
+the files use XInclude instead of processing instructions (they
+were created using the C<-i> option in C<xml_split>)
+
+=item -v
+
+verbose output
+
+=item -V
+
+outputs version and exit
+
+=item -h
+
+short help
+
+=item -m
+
+man (requires pod2text to be in the path)
+
+=back
+
+=head1 EXAMPLES
+
+  xml_merge foo-00.xml             # output to stdout
+  xml_merge -o foo.xml foo-00.xml  # output to foo.xml
+
+=head1 SEE ALSO
+
+XML::Twig, xml_split
+
+=head1 TODO/BUGS
+
+=head1 AUTHOR
+
+Michel Rodriguez <mirod@cpan.org>
+
+=head1 LICENSE
+
+This tool is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+
+__END__
+:endofperl

@@ -16,7 +16,13 @@ Net::SSH2::PublicKey - SSH 2 public key object
 
 =head1 DESCRIPTION
 
+   *** WARNING: public key functionality in libssh2 is experimental
+   *** and mostly abandoned. Don't expect anything on this module to
+   *** work correctly.
+
 A public key object is created by the L<Net::SSH2> C<public_key> method.
+
+=head1 METHODS
 
 =head2 add ( name, blob, overwrite flag, attributes... )
 
@@ -36,17 +42,5 @@ being a hash with C<name>, C<value>, and C<mandatory> keys.
 =head1 SEE ALSO
 
 L<Net::SSH2>.
-
-=head1 AUTHOR
-
-David B. Robins, E<lt>dbrobins@cpan.orgE<gt>
-
-=head1 COPYRIGHT AND LICENSE
-
-Copyright (C) 2005, 2006 by David B. Robins; all rights reserved.
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.0 or,
-at your option, any later version of Perl 5 you may have available.
 
 =cut

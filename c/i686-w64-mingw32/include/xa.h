@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef XA_H
@@ -13,9 +13,9 @@
 #ifndef _XID_T_DEFINED
 #define _XID_T_DEFINED
 struct xid_t {
-  long formatID;
-  long gtrid_length;
-  long bqual_length;
+  __LONG32 formatID;
+  __LONG32 gtrid_length;
+  __LONG32 bqual_length;
   char data[XIDDATASIZE];
 };
 #endif
@@ -23,8 +23,8 @@ struct xid_t {
 typedef struct xid_t XID;
 
 #ifdef _TMPROTOTYPES
-extern int __cdecl ax_reg(int,XID *,long);
-extern int __cdecl ax_unreg(int,long);
+extern int __cdecl ax_reg(int,XID *,__LONG32);
+extern int __cdecl ax_unreg(int,__LONG32);
 #else
 extern int __cdecl ax_reg();
 extern int __cdecl ax_unreg();
@@ -38,42 +38,42 @@ extern int __cdecl ax_unreg();
 #define _XA_SWITCH_T_DEFINED
 struct xa_switch_t {
   char name[RMNAMESZ];
-  long flags;
-  long version;
-  int (__cdecl *xa_open_entry)(char *,int,long);
-  int (__cdecl *xa_close_entry)(char *,int,long);
-  int (__cdecl *xa_start_entry)(XID *,int,long);
-  int (__cdecl *xa_end_entry)(XID *,int,long);
-  int (__cdecl *xa_rollback_entry)(XID *,int,long);
-  int (__cdecl *xa_prepare_entry)(XID *,int,long);
-  int (__cdecl *xa_commit_entry)(XID *,int,long);
-  int (__cdecl *xa_recover_entry)(XID *,long,int,long);
+  __LONG32 flags;
+  __LONG32 version;
+  int (__cdecl *xa_open_entry)(char *,int,__LONG32);
+  int (__cdecl *xa_close_entry)(char *,int,__LONG32);
+  int (__cdecl *xa_start_entry)(XID *,int,__LONG32);
+  int (__cdecl *xa_end_entry)(XID *,int,__LONG32);
+  int (__cdecl *xa_rollback_entry)(XID *,int,__LONG32);
+  int (__cdecl *xa_prepare_entry)(XID *,int,__LONG32);
+  int (__cdecl *xa_commit_entry)(XID *,int,__LONG32);
+  int (__cdecl *xa_recover_entry)(XID *,__LONG32,int,__LONG32);
 
-  int (__cdecl *xa_forget_entry)(XID *,int,long);
-  int (__cdecl *xa_complete_entry)(int *,int *,int,long);
+  int (__cdecl *xa_forget_entry)(XID *,int,__LONG32);
+  int (__cdecl *xa_complete_entry)(int *,int *,int,__LONG32);
 
 };
 
 typedef struct xa_switch_t xa_switch_t;
 #endif
 
-#define TMNOFLAGS 0x00000000L
-#define TMREGISTER 0x00000001L
-#define TMNOMIGRATE 0x00000002L
-#define TMUSEASYNC 0x00000004L
+#define TMNOFLAGS __MSABI_LONG(0x00000000)
+#define TMREGISTER __MSABI_LONG(0x00000001)
+#define TMNOMIGRATE __MSABI_LONG(0x00000002)
+#define TMUSEASYNC __MSABI_LONG(0x00000004)
 
-#define TMASYNC 0x80000000L
-#define TMONEPHASE 0x40000000L
-#define TMFAIL 0x20000000L
-#define TMNOWAIT 0x10000000L
-#define TMRESUME 0x08000000L
-#define TMSUCCESS 0x04000000L
-#define TMSUSPEND 0x02000000L
-#define TMSTARTRSCAN 0x01000000L
-#define TMENDRSCAN 0x00800000L
-#define TMMULTIPLE 0x00400000L
-#define TMJOIN 0x00200000L
-#define TMMIGRATE 0x00100000L
+#define TMASYNC __MSABI_LONG(0x80000000)
+#define TMONEPHASE __MSABI_LONG(0x40000000)
+#define TMFAIL __MSABI_LONG(0x20000000)
+#define TMNOWAIT __MSABI_LONG(0x10000000)
+#define TMRESUME __MSABI_LONG(0x08000000)
+#define TMSUCCESS __MSABI_LONG(0x04000000)
+#define TMSUSPEND __MSABI_LONG(0x02000000)
+#define TMSTARTRSCAN __MSABI_LONG(0x01000000)
+#define TMENDRSCAN __MSABI_LONG(0x00800000)
+#define TMMULTIPLE __MSABI_LONG(0x00400000)
+#define TMJOIN __MSABI_LONG(0x00200000)
+#define TMMIGRATE __MSABI_LONG(0x00100000)
 
 #define TM_JOIN 2
 #define TM_RESUME 1
@@ -110,15 +110,15 @@ typedef struct xa_switch_t xa_switch_t;
 #define XAER_DUPID (-8)
 #define XAER_OUTSIDE (-9)
 
-typedef int (__cdecl *XA_OPEN_EPT)(char *,int,long);
-typedef int (__cdecl *XA_CLOSE_EPT)(char *,int,long);
-typedef int (__cdecl *XA_START_EPT)(XID *,int,long);
-typedef int (__cdecl *XA_END_EPT)(XID *,int,long);
-typedef int (__cdecl *XA_ROLLBACK_EPT)(XID *,int,long);
-typedef int (__cdecl *XA_PREPARE_EPT)(XID *,int,long);
-typedef int (__cdecl *XA_COMMIT_EPT)(XID *,int,long);
-typedef int (__cdecl *XA_RECOVER_EPT)(XID *,long,int,long);
-typedef int (__cdecl *XA_FORGET_EPT)(XID *,int,long);
-typedef int (__cdecl *XA_COMPLETE_EPT)(int *,int *,int,long);
+typedef int (__cdecl *XA_OPEN_EPT)(char *,int,__LONG32);
+typedef int (__cdecl *XA_CLOSE_EPT)(char *,int,__LONG32);
+typedef int (__cdecl *XA_START_EPT)(XID *,int,__LONG32);
+typedef int (__cdecl *XA_END_EPT)(XID *,int,__LONG32);
+typedef int (__cdecl *XA_ROLLBACK_EPT)(XID *,int,__LONG32);
+typedef int (__cdecl *XA_PREPARE_EPT)(XID *,int,__LONG32);
+typedef int (__cdecl *XA_COMMIT_EPT)(XID *,int,__LONG32);
+typedef int (__cdecl *XA_RECOVER_EPT)(XID *,__LONG32,int,__LONG32);
+typedef int (__cdecl *XA_FORGET_EPT)(XID *,int,__LONG32);
+typedef int (__cdecl *XA_COMPLETE_EPT)(int *,int *,int,__LONG32);
 
 #endif

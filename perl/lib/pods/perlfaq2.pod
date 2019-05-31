@@ -2,6 +2,10 @@
 
 perlfaq2 - Obtaining and Learning about Perl
 
+=head1 VERSION
+
+version 5.20190126
+
 =head1 DESCRIPTION
 
 This section of the FAQ answers questions about where to find
@@ -81,8 +85,7 @@ contains tens of thousands of modules and extensions, source code
 and documentation, designed for I<everything> from commercial
 database interfaces to keyboard/screen control and running large web sites.
 
-You can search CPAN on L<http://metacpan.org> or
-L<http://search.cpan.org/>.
+You can search CPAN on L<http://metacpan.org>.
 
 The master web site for CPAN is L<http://www.cpan.org/>,
 L<http://www.cpan.org/SITES.html> lists all mirrors.
@@ -151,7 +154,7 @@ Perl user group.
 
 CPAN, or the Comprehensive Perl Archive Network L<http://www.cpan.org/>,
 is a replicated, worldwide repository of Perl software.
-See L<What is CPAN?|/"What modules and extensions are available for Perl? What is CPAN? What does CPANE<sol>srcE<sol>... mean?">.
+See L<What is CPAN?|/"What modules and extensions are available for Perl? What is CPAN?">.
 
 =head2 Where can I post questions?
 
@@ -174,7 +177,7 @@ There's also I<$foo Magazin>, a German magazine dedicated to Perl, at
 German-speaking magazine for Perl beginners (see
 L<http://perl-zeitung.at.tf> ).
 
-Several unix/linux releated magazines frequently includes articles on Perl.
+Several Unix/Linux related magazines frequently include articles on Perl.
 
 =head2 Which Perl blogs should I read?
 

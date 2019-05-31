@@ -8,36 +8,36 @@ use Test::Deep::RegexpVersion;
 
 sub init
 {
-	my $self = shift;
+  my $self = shift;
 
-	my $val = shift;
+  my $val = shift;
 
-	$self->{val} = $val;
+  $self->{val} = $val;
 }
 
 sub descend
 {
-	my $self = shift;
+  my $self = shift;
 
-	my $got = shift;
+  my $got = shift;
 
-	my $exp = $self->{val};
+  my $exp = $self->{val};
 
-	if ($Test::Deep::RegexpVersion::OldStyle) {
-		return 0 unless $self->test_class($got, "Regexp");
-		return 0 unless $self->test_reftype($got, "SCALAR");
-	} else {
-		return 0 unless $self->test_reftype($got, "REGEXP");
-	}
+  if ($Test::Deep::RegexpVersion::OldStyle) {
+    return 0 unless $self->test_class($got, "Regexp");
+    return 0 unless $self->test_reftype($got, "SCALAR");
+  } else {
+    return 0 unless $self->test_reftype($got, "REGEXP");
+  }
 
-	return Test::Deep::descend($got, Test::Deep::regexprefonly($exp));
+  return Test::Deep::descend($got, Test::Deep::regexprefonly($exp));
 }
 
 sub renderGot
 {
-	my $self = shift;
+  my $self = shift;
 
-	return shift()."";
+  return shift()."";
 }
 
 1;

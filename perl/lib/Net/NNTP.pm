@@ -1,21 +1,55 @@
 # Net::NNTP.pm
 #
-# Copyright (c) 1995-1997 Graham Barr <gbarr@pobox.com>. All rights reserved.
-# This program is free software; you can redistribute it and/or
-# modify it under the same terms as Perl itself.
+# Copyright (C) 1995-1997 Graham Barr.  All rights reserved.
+# Copyright (C) 2013-2016 Steve Hay.  All rights reserved.
+# This module is free software; you can redistribute it and/or modify it under
+# the same terms as Perl itself, i.e. under the terms of either the GNU General
+# Public License or the Artistic License, as specified in the F<LICENCE> file.
 
 package Net::NNTP;
 
+use 5.008001;
+
 use strict;
-use vars qw(@ISA $VERSION $debug);
+use warnings;
+
+use Carp;
 use IO::Socket;
 use Net::Cmd;
-use Carp;
-use Time::Local;
 use Net::Config;
+use Time::Local;
 
-$VERSION = "2.24";
-@ISA     = qw(Net::Cmd IO::Socket::INET);
+our $VERSION = "3.11";
+
+# Code for detecting if we can use SSL
+my $ssl_class = eval {
+  require IO::Socket::SSL;
+  # first version with default CA on most platforms
+  no warnings 'numeric';
+  IO::Socket::SSL->VERSION(2.007);
+} && 'IO::Socket::SSL';
+
+my $nossl_warn = !$ssl_class &&
+  'To use SSL please install IO::Socket::SSL with version>=2.007';
+
+# Code for detecting if we can use IPv6
+my $family_key = 'Domain';
+my $inet6_class = eval {
+  require IO::Socket::IP;
+  no warnings 'numeric';
+  IO::Socket::IP->VERSION(0.25) || die;
+  $family_key = 'Family';
+} && 'IO::Socket::IP' || eval {
+  require IO::Socket::INET6;
+  no warnings 'numeric';
+  IO::Socket::INET6->VERSION(2.62);
+} && 'IO::Socket::INET6';
+
+
+sub can_ssl   { $ssl_class };
+sub can_inet6 { $inet6_class };
+
+our @ISA = ('Net::Cmd', $inet6_class || 'IO::Socket::INET');
 
 
 sub new {
@@ -39,30 +73,41 @@ sub new {
   @{$hosts} = qw(news)
     unless @{$hosts};
 
-  my $h;
-  foreach $h (@{$hosts}) {
-    $obj = $type->SUPER::new(
-      PeerAddr => ($host = $h),
-      PeerPort => $arg{Port} || 'nntp(119)',
-      Proto => 'tcp',
-      Timeout => defined $arg{Timeout}
-      ? $arg{Timeout}
-      : 120
-      )
-      and last;
+  my %connect = ( Proto => 'tcp');
+
+  if ($arg{SSL}) {
+    # SSL from start
+    die $nossl_warn if ! $ssl_class;
+    $arg{Port} ||= 563;
+    $connect{$_} = $arg{$_} for(grep { m{^SSL_} } keys %arg);
   }
 
-  return undef
-    unless defined $obj;
+  foreach my $o (qw(LocalAddr LocalPort Timeout)) {
+    $connect{$o} = $arg{$o} if exists $arg{$o};
+  }
+  $connect{$family_key} = $arg{Domain} || $arg{Family};
+  $connect{Timeout} = 120 unless defined $connect{Timeout};
+  $connect{PeerPort} = $arg{Port} || 'nntp(119)';
+  foreach my $h (@{$hosts}) {
+    $connect{PeerAddr} = $h;
+    $obj = $type->SUPER::new(%connect) or next;
+    ${*$obj}{'net_nntp_host'} = $h;
+    ${*$obj}{'net_nntp_arg'} = \%arg;
+    if ($arg{SSL}) {
+      Net::NNTP::_SSL->start_SSL($obj,%arg) or next;
+    }
+    last:
+  }
 
-  ${*$obj}{'net_nntp_host'} = $host;
+  return
+    unless defined $obj;
 
   $obj->autoflush(1);
   $obj->debug(exists $arg{Debug} ? $arg{Debug} : undef);
 
   unless ($obj->response() == CMD_OK) {
     $obj->close;
-    return undef;
+    return;
   }
 
   my $c = $obj->code;
@@ -74,7 +119,7 @@ sub new {
     # talking to innd not nnrpd
     if ($obj->reader) {
 
-      # If reader suceeds the we need to consider this code to determine postok
+      # If reader succeeds the we need to consider this code to determine postok
       $c = $obj->code;
     }
     else {
@@ -115,6 +160,18 @@ sub postok {
   @_ == 1 or croak 'usage: $nntp->postok()';
   my $nntp = shift;
   ${*$nntp}{'net_nntp_post'} || 0;
+}
+
+
+sub starttls {
+  my $self = shift;
+  $ssl_class or die $nossl_warn;
+  $self->_STARTTLS or return;
+  Net::NNTP::_SSL->start_SSL($self,
+    %{ ${*$self}{'net_nntp_arg'} }, # (ssl) args given in new
+    @_   # more (ssl) args
+  ) or return;
+  return 1;
 }
 
 
@@ -213,16 +270,18 @@ sub nntpstat {
 sub group {
   @_ == 1 || @_ == 2 or croak 'usage: $nntp->group( [ GROUP ] )';
   my $nntp = shift;
-  my $grp  = ${*$nntp}{'net_nntp_group'} || undef;
+  my $grp  = ${*$nntp}{'net_nntp_group'};
 
   return $grp
     unless (@_ || wantarray);
 
   my $newgrp = shift;
 
-  return wantarray ? () : undef
-    unless $nntp->_GROUP($newgrp || $grp || "")
-    && $nntp->message =~ /(\d+)\s+(\d+)\s+(\d+)\s+(\S+)/;
+  $newgrp = (defined($grp) and length($grp)) ? $grp : ""
+    unless defined($newgrp) and length($newgrp);
+
+  return 
+    unless $nntp->_GROUP($newgrp) and $nntp->message =~ /(\d+)\s+(\d+)\s+(\d+)\s+(\S+)/;
 
   my ($count, $first, $last, $group) = ($1, $2, $3, $4);
 
@@ -400,6 +459,7 @@ sub distribution_patterns {
   my $arr;
   local $_;
 
+  ## no critic (ControlStructures::ProhibitMutatingListFunctions)
   $nntp->_LIST('DISTRIB.PATS')
     && ($arr = $nntp->read_until_dot)
     ? [grep { /^\d/ && (chomp, $_ = [split /:/]) } @$arr]
@@ -508,7 +568,7 @@ sub xpath {
   @_ == 2 or croak 'usage: $nntp->xpath( MESSAGE-ID )';
   my ($nntp, $mid) = @_;
 
-  return undef
+  return
     unless $nntp->_XPATH($mid);
 
   my $m;
@@ -587,12 +647,11 @@ sub _timestr {
 sub _grouplist {
   my $nntp = shift;
   my $arr  = $nntp->read_until_dot
-    or return undef;
+    or return;
 
   my $hash = {};
-  my $ln;
 
-  foreach $ln (@$arr) {
+  foreach my $ln (@$arr) {
     my @a = split(/[\s\n]+/, $ln);
     $hash->{$a[0]} = [@a[1, 2, 3]];
   }
@@ -604,12 +663,11 @@ sub _grouplist {
 sub _fieldlist {
   my $nntp = shift;
   my $arr  = $nntp->read_until_dot
-    or return undef;
+    or return;
 
   my $hash = {};
-  my $ln;
 
-  foreach $ln (@$arr) {
+  foreach my $ln (@$arr) {
     my @a = split(/[\t\n]/, $ln);
     my $m = shift @a;
     $hash->{$m} = [@a];
@@ -633,12 +691,11 @@ sub _articlelist {
 sub _description {
   my $nntp = shift;
   my $arr  = $nntp->read_until_dot
-    or return undef;
+    or return;
 
   my $hash = {};
-  my $ln;
 
-  foreach $ln (@$arr) {
+  foreach my $ln (@$arr) {
     chomp($ln);
 
     $hash->{$1} = $ln
@@ -671,6 +728,7 @@ sub _NEXT      { shift->command('NEXT')->response == CMD_OK }
 sub _POST      { shift->command('POST', @_)->response == CMD_MORE }
 sub _QUIT      { shift->command('QUIT', @_)->response == CMD_OK }
 sub _SLAVE     { shift->command('SLAVE', @_)->response == CMD_OK }
+sub _STARTTLS  { shift->command("STARTTLS")->response() == CMD_MORE }
 sub _STAT      { shift->command('STAT', @_)->response == CMD_OK }
 sub _MODE      { shift->command('MODE', @_)->response == CMD_OK }
 sub _XGTITLE   { shift->command('XGTITLE', @_)->response == CMD_OK }
@@ -693,6 +751,28 @@ sub DESTROY {
   defined(fileno($nntp)) && $nntp->quit;
 }
 
+{
+  package Net::NNTP::_SSL;
+  our @ISA = ( $ssl_class ? ($ssl_class):(), 'Net::NNTP' );
+  sub starttls { die "NNTP connection is already in SSL mode" }
+  sub start_SSL {
+    my ($class,$nntp,%arg) = @_;
+    delete @arg{ grep { !m{^SSL_} } keys %arg };
+    ( $arg{SSL_verifycn_name} ||= $nntp->host )
+        =~s{(?<!:):[\w()]+$}{}; # strip port
+    $arg{SSL_hostname} = $arg{SSL_verifycn_name}
+        if ! defined $arg{SSL_hostname} && $class->can_client_sni;
+    my $ok = $class->SUPER::start_SSL($nntp,
+      SSL_verifycn_scheme => 'nntp',
+      %arg
+    );
+    $@ = $ssl_class->errstr if !$ok;
+    return $ok;
+  }
+}
+
+
+
 
 1;
 
@@ -709,10 +789,23 @@ Net::NNTP - NNTP Client class
     $nntp = Net::NNTP->new("some.host.name");
     $nntp->quit;
 
+    # start with SSL, e.g. nntps
+    $nntp = Net::NNTP->new("some.host.name", SSL => 1);
+
+    # start with plain and upgrade to SSL
+    $nntp = Net::NNTP->new("some.host.name");
+    $nntp->starttls;
+
+
 =head1 DESCRIPTION
 
 C<Net::NNTP> is a class implementing a simple NNTP client in Perl as described
-in RFC977. C<Net::NNTP> inherits its communication methods from C<Net::Cmd>
+in RFC977 and RFC4642.
+With L<IO::Socket::SSL> installed it also provides support for implicit and
+explicit TLS encryption, i.e. NNTPS or NNTP+STARTTLS.
+
+The Net::NNTP class is a subclass of Net::Cmd and (depending on avaibility) of
+IO::Socket::IP, IO::Socket::INET6 or IO::Socket::INET.
 
 =head1 CONSTRUCTOR
 
@@ -735,6 +828,14 @@ the C<PeerAddr> option in L<IO::Socket::INET>, or a reference to
 an array with hosts to try in turn. The L</host> method will return the value
 which was used to connect to the host.
 
+B<Port> - port to connect to.
+Default - 119 for plain NNTP and 563 for immediate SSL (nntps).
+
+B<SSL> - If the connection should be done from start with SSL, contrary to later
+upgrade with C<starttls>.
+You can use SSL arguments as documented in L<IO::Socket::SSL>, but it will
+usually use the right arguments already.
+
 B<Timeout> - Maximum time, in seconds, to wait for a response from the
 NNTP server, a value of zero will cause all IO operations to block.
 (default: 120)
@@ -742,10 +843,17 @@ NNTP server, a value of zero will cause all IO operations to block.
 B<Debug> - Enable the printing of debugging information to STDERR
 
 B<Reader> - If the remote server is INN then initially the connection
-will be to nnrpd, by default C<Net::NNTP> will issue a C<MODE READER> command
-so that the remote server becomes innd. If the C<Reader> option is given
+will be to innd, by default C<Net::NNTP> will issue a C<MODE READER> command
+so that the remote server becomes nnrpd. If the C<Reader> option is given
 with a value of zero, then this command will not be sent and the
-connection will be left talking to nnrpd.
+connection will be left talking to innd.
+
+B<LocalAddr> and B<LocalPort> - These parameters are passed directly
+to IO::Socket to allow binding the socket to a specific local address and port.
+
+B<Domain> - This parameter is passed directly to IO::Socket and makes it
+possible to enforce IPv4 connections even if L<IO::Socket::IP> is used as super
+class. Alternatively B<Family> can be used.
 
 =back
 
@@ -756,7 +864,21 @@ value, with I<true> meaning that the operation was a success. When a method
 states that it returns a value, failure will be returned as I<undef> or an
 empty list.
 
+C<Net::NNTP> inherits from C<Net::Cmd> so methods defined in C<Net::Cmd> may
+be used to send commands to the remote NNTP server in addition to the methods
+documented here.
+
 =over 4
+
+=item host ()
+
+Returns the value used by the constructor, and passed to IO::Socket::INET,
+to connect to the host.
+
+=item starttls ()
+
+Upgrade existing plain connection to SSL.
+Any arguments necessary for SSL must be given in C<new> already.
 
 =item article ( [ MSGID|MSGNUM ], [FH] )
 
@@ -823,19 +945,26 @@ In an array context the return value is a list containing, the number
 of articles in the group, the number of the first article, the number
 of the last article and the group name.
 
+=item help ( )
+
+Request help text (a short summary of commands that are understood by this
+implementation) from the server. Returns the text or undef upon failure.
+
 =item ihave ( MSGID [, MESSAGE ])
 
 The C<ihave> command informs the server that the client has an article
 whose id is C<MSGID>.  If the server desires a copy of that
-article, and C<MESSAGE> has been given the it will be sent.
+article and C<MESSAGE> has been given then it will be sent.
 
 Returns I<true> if the server desires the article and C<MESSAGE> was
-successfully sent,if specified.
+successfully sent, if specified.
 
 If C<MESSAGE> is not specified then the message must be sent using the
 C<datasend> and C<dataend> methods from L<Net::Cmd>
 
-C<MESSAGE> can be either an array of lines or a reference to an array.
+C<MESSAGE> can be either an array of lines or a reference to an array
+and must be encoded by the caller to octets of whatever encoding is required,
+e.g. by using the Encode module's C<encode()> function.
 
 =item last ()
 
@@ -856,11 +985,17 @@ that it will allow posting.
 
 =item authinfo ( USER, PASS )
 
-Authenticates to the server (using AUTHINFO USER / AUTHINFO PASS)
-using the supplied username and password.  Please note that the
-password is sent in clear text to the server.  This command should not
-be used with valuable passwords unless the connection to the server is
-somehow protected.
+Authenticates to the server (using the original AUTHINFO USER / AUTHINFO PASS
+form, defined in RFC2980) using the supplied username and password.  Please
+note that the password is sent in clear text to the server.  This command
+should not be used with valuable passwords unless the connection to the server
+is somehow protected.
+
+=item authinfo_simple ( USER, PASS )
+
+Authenticates to the server (using the proposed NNTP V2 AUTHINFO SIMPLE form,
+defined and deprecated in RFC2980) using the supplied username and password.
+As with L</authinfo> the password is sent in clear text.
 
 =item list ()
 
@@ -902,7 +1037,9 @@ is allowed then the message will be sent.
 If C<MESSAGE> is not specified then the message must be sent using the
 C<datasend> and C<dataend> methods from L<Net::Cmd>
 
-C<MESSAGE> can be either an array of lines or a reference to an array.
+C<MESSAGE> can be either an array of lines or a reference to an array
+and must be encoded by the caller to octets of whatever encoding is required,
+e.g. by using the Encode module's C<encode()> function.
 
 The message, either sent via C<datasend> or as the C<MESSAGE>
 parameter, must be in the format as described by RFC822 and must
@@ -926,6 +1063,14 @@ news server.
 
 Quit the remote server and close the socket connection.
 
+=item can_inet6 ()
+
+Returns whether we can use IPv6.
+
+=item can_ssl ()
+
+Returns whether we can use SSL.
+
 =back
 
 =head2 Extension methods
@@ -945,6 +1090,13 @@ each value contains the description text for the group.
 
 Returns a reference to a hash where the keys are all the possible
 distribution names and the values are the distribution descriptions.
+
+=item distribution_patterns ()
+
+Returns a reference to an array where each element, itself an array
+reference, consists of the three fields of a line of the distrib.pats list
+maintained by some NNTP servers, namely: a weight, a wildmat and a value
+which the client may use to construct a Distribution header.
 
 =item subscriptions ()
 
@@ -999,7 +1151,7 @@ message.
 The result is the same as C<xhdr> except the is will be restricted to
 headers where the text of the header matches C<PATTERN>
 
-=item xrover
+=item xrover ()
 
 The XROVER command returns reference information for the article(s)
 specified.
@@ -1012,7 +1164,7 @@ values are the References: lines from the articles
 Returns a reference to a list of all the active messages in C<GROUP>, or
 the current group if C<GROUP> is not specified.
 
-=item reader
+=item reader ()
 
 Tell the server that you are a reader and not another server.
 
@@ -1125,16 +1277,26 @@ with a and ends with d.
 
 =head1 SEE ALSO
 
-L<Net::Cmd>
+L<Net::Cmd>,
+L<IO::Socket::SSL>
 
 =head1 AUTHOR
 
-Graham Barr <gbarr@pobox.com>
+Graham Barr E<lt>F<gbarr@pobox.com>E<gt>.
+
+Steve Hay E<lt>F<shay@cpan.org>E<gt> is now maintaining libnet as of version
+1.22_02.
 
 =head1 COPYRIGHT
 
-Copyright (c) 1995-1997 Graham Barr. All rights reserved.
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
+Copyright (C) 1995-1997 Graham Barr.  All rights reserved.
+
+Copyright (C) 2013-2016 Steve Hay.  All rights reserved.
+
+=head1 LICENCE
+
+This module is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself, i.e. under the terms of either the GNU General Public
+License or the Artistic License, as specified in the F<LICENCE> file.
 
 =cut

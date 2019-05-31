@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -69,13 +69,13 @@ extern "C"{
 #define SURFACE_LOCK_ALLOW_DISCARD 0x02
 #define SURFACE_LOCK_WAIT 0x04
 
-#define E_SURFACE_NOSURFACE 0x8000C000L
-#define E_SURFACE_UNKNOWN_FORMAT 0x8000C001L
-#define E_SURFACE_NOTMYPOINTER 0x8000C002L
-#define E_SURFACE_DISCARDED 0x8000C003L
-#define E_SURFACE_NODC 0x8000C004L
-#define E_SURFACE_NOTMYDC 0x8000C005L
-#define S_SURFACE_DISCARDED 0x0000C003L
+#define E_SURFACE_NOSURFACE __MSABI_LONG(0x8000C000)
+#define E_SURFACE_UNKNOWN_FORMAT __MSABI_LONG(0x8000C001)
+#define E_SURFACE_NOTMYPOINTER __MSABI_LONG(0x8000C002)
+#define E_SURFACE_DISCARDED __MSABI_LONG(0x8000C003)
+#define E_SURFACE_NODC __MSABI_LONG(0x8000C004)
+#define E_SURFACE_NOTMYDC __MSABI_LONG(0x8000C005)
+#define S_SURFACE_DISCARDED __MSABI_LONG(0x0000C003)
 
   typedef GUID BFID;
 
@@ -384,10 +384,10 @@ extern "C"{
   void __RPC_STUB IImageDecodeEventSink_OnProgress_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
 #endif
 
-  unsigned long __RPC_API VARIANT_UserSize(unsigned long *,unsigned long,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserMarshal(unsigned long *,unsigned char *,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserUnmarshal(unsigned long *,unsigned char *,VARIANT *);
-  void __RPC_API VARIANT_UserFree(unsigned long *,VARIANT *);
+  ULONG __RPC_API VARIANT_UserSize(ULONG *,ULONG,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserMarshal(ULONG *,unsigned char *,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserUnmarshal(ULONG *,unsigned char *,VARIANT *);
+  void __RPC_API VARIANT_UserFree(ULONG *,VARIANT *);
 
 #ifdef __cplusplus
 }

@@ -2,9 +2,9 @@
 /**
  * DISCLAIMER
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is a part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  *
- * The w64 mingw-runtime package and its code is distributed in the hope that it 
+ * The mingw-w64 runtime package and its code is distributed in the hope that it 
  * will be useful but WITHOUT ANY WARRANTY.  ALL WARRANTIES, EXPRESSED OR 
  * IMPLIED ARE HEREBY DISCLAIMED.  This includes but is not limited to 
  * warranties of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -13,7 +13,7 @@
 #define __GETOPT_H__
 
 /* All the headers include this file. */
-#include <_mingw.h>
+#include <crtdefs.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,7 +36,6 @@ extern int getopt(int nargc, char * const *nargv, const char *options);
  * to maintain portability, developers are advised to avoid it.
  */
 # define optreset  __mingw_optreset
-
 extern int optreset;
 #endif
 #ifdef __cplusplus
@@ -52,6 +51,7 @@ extern int optreset;
  * to declare the extended API.
  */
 #endif /* !defined(__GETOPT_H__) */
+
 #if !defined(__UNISTD_H_SOURCED__) && !defined(__GETOPT_LONG_H__)
 #define __GETOPT_LONG_H__
 

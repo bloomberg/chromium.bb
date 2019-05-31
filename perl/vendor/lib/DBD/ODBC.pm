@@ -1,9 +1,8 @@
-# $Id: ODBC.pm 15265 2012-04-07 13:53:28Z mjevans $
 #
 # Copyright (c) 1994,1995,1996,1998  Tim Bunce
 # portions Copyright (c) 1997-2004  Jeff Urlwin
 # portions Copyright (c) 1997  Thomas K. Wenrich
-# portions Copyright (c) 2007-2012 Martin J. Evans
+# portions Copyright (c) 2007-2014 Martin J. Evans
 #
 # You may distribute under the terms of either the GNU General Public
 # License or the Artistic License, as specified in the Perl README file.
@@ -19,7 +18,7 @@ require 5.008;
 # see discussion on dbi-users at
 # http://www.nntp.perl.org/group/perl.dbi.dev/2010/07/msg6096.html and
 # http://www.dagolden.com/index.php/369/version-numbers-should-be-boring/
-$DBD::ODBC::VERSION = '1.37';
+$DBD::ODBC::VERSION = '1.60';
 
 {
     ## no critic (ProhibitMagicNumbers ProhibitExplicitISA)
@@ -32,16 +31,16 @@ $DBD::ODBC::VERSION = '1.37';
 
     @ISA = qw(Exporter DynaLoader);
 
-    # my $Revision = substr(q$Id: ODBC.pm 15265 2012-04-07 13:53:28Z mjevans $, 13,2);
+    # my $Revision = substr(q$Id$, 13,2);
 
     require_version DBI 1.609;
 
     bootstrap DBD::ODBC $VERSION;
 
-    $err = 0;           # holds error code   for DBI::err
+    $err = 0;                   # holds error code   for DBI::err
     $errstr = q{};              # holds error string for DBI::errstr
-    $sqlstate = "00000";
-    $drh = undef;       # holds driver handle once initialised
+    $sqlstate = "00000";        # starting state
+    $drh = undef;               # holds driver handle once initialised
 
     use constant {
         # header fields in SQLGetDiagField:
@@ -60,12 +59,28 @@ $DBD::ODBC::VERSION = '1.37';
         SQL_DIAG_ROW_NUMBER => -1248,
         SQL_DIAG_SERVER_NAME => 11,
         SQL_DIAG_SQLSTATE => 4,
-        SQL_DIAG_SUBCLASS_ORIGIN => 9
+        SQL_DIAG_SUBCLASS_ORIGIN => 9,
+        # TAF constants - these are just copies of Oracle constants
+        # events:
+        OCI_FO_END     => 0x00000001,
+        OCI_FO_ABORT   => 0x00000002,
+        OCI_FO_REAUTH  => 0x00000004,
+        OCI_FO_BEGIN   => 0x00000008,
+        OCI_FO_ERROR   => 0x00000010,
+        # callback return codes:
+        OCI_FO_RETRY   => 25410,
+        # types:
+        OCI_FO_NONE    => 0x00000001,
+        OCI_FO_SESSION => 0x00000002,
+        OCI_FO_SELECT  => 0x00000004,
+        OCI_FO_TXNAL   => 0x00000008
     };
     our @EXPORT_DIAGS = qw(SQL_DIAG_CURSOR_ROW_COUNT SQL_DIAG_DYNAMIC_FUNCTION SQL_DIAG_DYNAMIC_FUNCTION_CODE SQL_DIAG_NUMBER SQL_DIAG_RETURNCODE SQL_DIAG_ROW_COUNT SQL_DIAG_CLASS_ORIGIN SQL_DIAG_COLUMN_NUMBER SQL_DIAG_CONNECTION_NAME SQL_DIAG_MESSAGE_TEXT SQL_DIAG_NATIVE SQL_DIAG_ROW_NUMBER SQL_DIAG_SERVER_NAME SQL_DIAG_SQLSTATE SQL_DIAG_SUBCLASS_ORIGIN);
-    our @EXPORT_OK = (@EXPORT_DIAGS);
+    our @EXPORT_TAF = qw(OCI_FO_END OCI_FO_ABORT OCI_FO_REAUTH OCI_FO_BEGIN OCI_FO_ERROR OCI_FO_RETRY OCI_FO_NONE OCI_FO_SESSION OCI_FO_SELECT OCI_FO_TXNAL);
+    our @EXPORT_OK = (@EXPORT_DIAGS, @EXPORT_TAF);
     our %EXPORT_TAGS = (
-        diags => \@EXPORT_DIAGS);
+        diags => \@EXPORT_DIAGS,
+        taf => \@EXPORT_TAF);
 
     sub parse_trace_flag {
         my ($class, $name) = @_;
@@ -79,6 +94,7 @@ $DBD::ODBC::VERSION = '1.37';
         return DBI::parse_trace_flags($class, $flags);
     }
 
+    my $methods_are_installed = 0;
     sub driver{
         return $drh if $drh;
         my($class, $attr) = @_;
@@ -95,12 +111,17 @@ $DBD::ODBC::VERSION = '1.37';
             'State' => \$DBD::ODBC::sqlstate,
             'Attribution' => 'DBD::ODBC by Jeff Urlwin, Tim Bunce and Martin J. Evans',
 	    });
-        DBD::ODBC::st->install_method("odbc_lob_read");
-        # don't clear errors - IMA_KEEP_ERR = 0x00000004
-        DBD::ODBC::st->install_method("odbc_getdiagrec", { O=>0x00000004 });
-        DBD::ODBC::db->install_method("odbc_getdiagrec", { O=>0x00000004 });
-        DBD::ODBC::db->install_method("odbc_getdiagfield", { O=>0x00000004 });
-        DBD::ODBC::st->install_method("odbc_getdiagfield", { O=>0x00000004 });
+        if (!$methods_are_installed) {
+            DBD::ODBC::st->install_method("odbc_lob_read");
+            DBD::ODBC::st->install_method("odbc_rows", { O=>0x00000000 });
+            DBD::ODBC::st->install_method("odbc_describe_param", { O=>0x00000000 });
+            # don't clear errors - IMA_KEEP_ERR = 0x00000004
+            DBD::ODBC::st->install_method("odbc_getdiagrec", { O=>0x00000004 });
+            DBD::ODBC::db->install_method("odbc_getdiagrec", { O=>0x00000004 });
+            DBD::ODBC::db->install_method("odbc_getdiagfield", { O=>0x00000004 });
+            DBD::ODBC::st->install_method("odbc_getdiagfield", { O=>0x00000004 });
+            $methods_are_installed++;
+        }
         return $drh;
     }
 
@@ -115,30 +136,38 @@ $DBD::ODBC::VERSION = '1.37';
 
     ## no critic (ProhibitBuiltinHomonyms)
     sub connect {
-	my($drh, $dbname, $user, $auth, $attr)= @_;
-	#$user = q{} unless defined $user;
-	#$auth = q{} unless defined $auth;
+        my($drh, $dbname, $user, $auth, $attr)= @_;
+        #$user = q{} unless defined $user;
+        #$auth = q{} unless defined $auth;
 
-	# create a 'blank' dbh
-	my $this = DBI::_new_dbh($drh, {
-	    'Name' => $dbname,
-	    'USER' => $user,
-	    'CURRENT_USER' => $user,
+        # create a 'blank' dbh
+        my $this = DBI::_new_dbh($drh, {
+            'Name' => $dbname,
+            'USER' => $user,
+            'CURRENT_USER' => $user,
 	    });
 
-	# Call ODBC _login func in Driver.xst file => dbd_db_login6
-	# and populate internal handle data.
-	# There are 3 versions (currently) if you have a recent DBI:
-	# dbd_db_login (oldest)
-	# dbd_db_login6 (with attribs hash & char * args) and
-	# dbd_db_login6_sv (as dbd_db_login6 with perl scalar args
+        # Call ODBC _login func in Driver.xst file => dbd_db_login6
+        # and populate internal handle data.
+        # There are 3 versions (currently) if you have a recent DBI:
+        # dbd_db_login (oldest)
+        # dbd_db_login6 (with attribs hash & char * args) and
+        # dbd_db_login6_sv (as dbd_db_login6 with perl scalar args
 
-	DBD::ODBC::db::_login($this, $dbname, $user, $auth, $attr) or return;
+        DBD::ODBC::db::_login($this, $dbname, $user, $auth, $attr) or return;
 
-	return $this;
+        return $this;
     }
     ## use critic
 
+    sub data_sources {
+        my ($drh, $attr) = @_;
+        my $dsref = DBD::ODBC::dr::_data_sources( $drh, $attr );
+        if( defined( $dsref ) && ref( $dsref ) eq "ARRAY" ) {
+            return @$dsref;
+        }
+        return ();  # Return empty array
+    }
 }
 
 
@@ -164,7 +193,6 @@ $DBD::ODBC::VERSION = '1.37';
             odbc_force_rebind              => undef, # sth and dbh
             odbc_async_exec                => undef, # sth and dbh
             odbc_exec_direct               => undef,
-            odbc_old_unicode               => undef,
             odbc_describe_parameters       => undef,
             odbc_SQL_ROWSET_SIZE           => undef,
             odbc_SQL_DRIVER_ODBC_VER       => undef,
@@ -180,6 +208,9 @@ $DBD::ODBC::VERSION = '1.37';
             odbc_driver_complete           => undef,
             odbc_batch_size                => undef,
             odbc_array_operations          => undef, # sth and dbh
+            odbc_taf_callback              => undef,
+            odbc_trace                          => undef, # dbh
+            odbc_trace_file                          => undef, # dbh
         };
     }
 
@@ -218,44 +249,46 @@ $DBD::ODBC::VERSION = '1.37';
     }
 
     sub columns {
-	my ($dbh, $catalog, $schema, $table, $column) = @_;
+        my ($dbh, $catalog, $schema, $table, $column) = @_;
 
-	$catalog = q{} if (!$catalog);
-	$schema = q{} if (!$schema);
-	$table = q{} if (!$table);
-	$column = q{} if (!$column);
-	# create a "blank" statement handle
-	my $sth = DBI::_new_sth($dbh, { 'Statement' => "SQLColumns" });
+        $catalog = q{} if (!$catalog);
+        $schema = q{} if (!$schema);
+        $table = q{} if (!$table);
+        $column = q{} if (!$column);
+        # create a "blank" statement handle
+        my $sth = DBI::_new_sth($dbh, { 'Statement' => "SQLColumns" });
 
-	_columns($dbh,$sth, $catalog, $schema, $table, $column)
-	    or return;
+        _columns($dbh,$sth, $catalog, $schema, $table, $column)
+            or return;
 
-	return $sth;
+        return $sth;
     }
 
 
     sub table_info {
- 	my ($dbh, $catalog, $schema, $table, $type) = @_;
+        my ($dbh, $catalog, $schema, $table, $type) = @_;
 
-	if ($#_ == 1) {
-	   my $attrs = $_[1];
-	   $catalog = $attrs->{TABLE_CAT};
-	   $schema = $attrs->{TABLE_SCHEM};
-	   $table = $attrs->{TABLE_NAME};
-	   $type = $attrs->{TABLE_TYPE};
- 	}
+        if ($#_ == 1) {
+            my $attrs = $_[1];
+            $catalog = $attrs->{TABLE_CAT};
+            $schema = $attrs->{TABLE_SCHEM};
+            $table = $attrs->{TABLE_NAME};
+            $type = $attrs->{TABLE_TYPE};
+        }
+        # the following was causing a problem
+        # changing undef to '' makes a big difference to SQLTables
+        # as SQLTables has special cases for empty string calls
+        #$catalog = q{} if (!$catalog);
+        #$schema = q{} if (!$schema);
+        #$table = q{} if (!$table);
+        #$type = q{} if (!$type);
 
-	$catalog = q{} if (!$catalog);
-	$schema = q{} if (!$schema);
-	$table = q{} if (!$table);
-	$type = q{} if (!$type);
+        # create a "blank" statement handle
+        my $sth = DBI::_new_sth($dbh, { 'Statement' => "SQLTables" });
 
-	# create a "blank" statement handle
-	my $sth = DBI::_new_sth($dbh, { 'Statement' => "SQLTables" });
-
-	DBD::ODBC::st::_tables($dbh,$sth, $catalog, $schema, $table, $type)
-	      or return;
-	return $sth;
+        DBD::ODBC::st::_tables($dbh,$sth, $catalog, $schema, $table, $type)
+              or return;
+        return $sth;
     }
 
     sub primary_key_info {
@@ -271,6 +304,7 @@ $DBD::ODBC::VERSION = '1.37';
 	     or return;
        return $sth;
     }
+
     sub statistics_info {
        my ($dbh, $catalog, $schema, $table, $unique, $quick ) = @_;
 
@@ -306,7 +340,7 @@ $DBD::ODBC::VERSION = '1.37';
     }
 
     sub ping {
-	my $dbh = shift;
+        my $dbh = shift;
 
         # DBD::Gofer does the following (with a 0 instead of "0") but it I
         # cannot make it set a warning.
@@ -384,14 +418,14 @@ $DBD::ODBC::VERSION = '1.37';
     # leaving support for ->func(xxx, GetInfo) (below) for a period of time
     # to support older applications which used this.
     sub get_info {
-	my ($dbh, $item) = @_;
-	# Ignore some we cannot do
-	if ($item == SQL_DRIVER_HSTMT ||
+        my ($dbh, $item) = @_;
+        # Ignore some we cannot do
+        if ($item == SQL_DRIVER_HSTMT ||
                 $item == SQL_DRIVER_HLIB ||
                     $item == SQL_DRIVER_HDESC) {
-	   return;
-	}
-	return _GetInfo($dbh, $item);
+            return;
+        }
+        return _GetInfo($dbh, $item);
     }
 
     # new override of do method provided by Merijn Broeren
@@ -402,8 +436,7 @@ $DBD::ODBC::VERSION = '1.37';
         my($dbh, $statement, $attr, @params) = @_;
         my $rows = 0;
         ## no critic (ProhibitMagicNumbers)
-        if( -1 == $#params )
-        {
+        if( -1 == $#params ) {
             $dbh->STORE(Statement => $statement);
             # No parameters, use execute immediate
             $rows = ExecDirect( $dbh, $statement );
@@ -419,6 +452,7 @@ $DBD::ODBC::VERSION = '1.37';
         }
         return $rows
     }
+
     ## use critic
     #
     # can also be called as $dbh->func($sql, ExecDirect);
@@ -437,8 +471,8 @@ $DBD::ODBC::VERSION = '1.37';
     # See the ODBC documentation for more information about this call.
     #
     sub GetInfo {
-	my ($dbh, $item) = @_;
-	return get_info($dbh, $item);
+        my ($dbh, $item) = @_;
+        return get_info($dbh, $item);
     }
 
     # Call the ODBC function SQLStatistics
@@ -485,33 +519,33 @@ $DBD::ODBC::VERSION = '1.37';
     # See the ODBC documentation for more information about this call.
     #
     sub GetSpecialColumns {
-	my ($dbh, $identifier, $catalog, $schema, $table, $scope, $nullable) = @_;
-	# create a "blank" statement handle
-	my $sth = DBI::_new_sth($dbh, { 'Statement' => "SQLSpecialColumns" });
-	_GetSpecialColumns($dbh, $sth, $identifier, $catalog, $schema,
-			   $table, $scope, $nullable) or return;
-	return $sth;
+        my ($dbh, $identifier, $catalog, $schema, $table, $scope, $nullable) = @_;
+        # create a "blank" statement handle
+        my $sth = DBI::_new_sth($dbh, { 'Statement' => "SQLSpecialColumns" });
+        _GetSpecialColumns($dbh, $sth, $identifier, $catalog, $schema,
+                           $table, $scope, $nullable) or return;
+        return $sth;
     }
 
-    sub GetTypeInfo {
-	my ($dbh, $sqltype) = @_;
-	# create a "blank" statement handle
-	my $sth = DBI::_new_sth($dbh, { 'Statement' => "SQLGetTypeInfo" });
-	# print "SQL Type is $sqltype\n";
-	_GetTypeInfo($dbh, $sth, $sqltype) or return;
-	return $sth;
-    }
+#    sub GetTypeInfo {
+#	my ($dbh, $sqltype) = @_;
+#	# create a "blank" statement handle
+#	my $sth = DBI::_new_sth($dbh, { 'Statement' => "SQLGetTypeInfo" });
+#	# print "SQL Type is $sqltype\n";
+#	_GetTypeInfo($dbh, $sth, $sqltype) or return;
+#	return $sth;
+#    }
 
     sub type_info_all {
-	my ($dbh, $sqltype) = @_;
-	$sqltype = DBI::SQL_ALL_TYPES unless defined $sqltype;
-	my $sth = DBI::_new_sth($dbh, { 'Statement' => "SQLGetTypeInfo" });
-	_GetTypeInfo($dbh, $sth, $sqltype) or return;
-	my $info = $sth->fetchall_arrayref;
-	unshift @{$info}, {
-	    map { ($sth->{NAME}->[$_] => $_) } 0..$sth->{NUM_OF_FIELDS}-1
-	};
-	return $info;
+        my ($dbh, $sqltype) = @_;
+        $sqltype = DBI::SQL_ALL_TYPES unless defined $sqltype;
+        my $sth = DBI::_new_sth($dbh, { 'Statement' => "SQLGetTypeInfo" });
+        _GetTypeInfo($dbh, $sth, $sqltype) or return;
+        my $info = $sth->fetchall_arrayref;
+        unshift @{$info}, {
+            map { ($sth->{NAME}->[$_] => $_) } 0..$sth->{NUM_OF_FIELDS}-1
+           };
+        return $info;
     }
 }
 
@@ -534,7 +568,6 @@ $DBD::ODBC::VERSION = '1.37';
             odbc_column_display_size       => undef, # sth and dbh
             odbc_utf8_on                   => undef, # sth and dbh
             odbc_exec_direct               => undef, # sth and dbh
-            odbc_old_unicode               => undef, # sth and dbh
             odbc_describe_parameters       => undef, # sth and dbh
             odbc_batch_size                => undef, # sth and dbh
             odbc_array_operations          => undef, # sth and dbh
@@ -542,15 +575,15 @@ $DBD::ODBC::VERSION = '1.37';
     }
 
     sub ColAttributes { # maps to SQLColAttributes
-	my ($sth, $colno, $desctype) = @_;
-	my $tmp = _ColAttributes($sth, $colno, $desctype);
-	return $tmp;
+        my ($sth, $colno, $desctype) = @_;
+        my $tmp = _ColAttributes($sth, $colno, $desctype);
+        return $tmp;
     }
 
     sub cancel {
-	my $sth = shift;
-	my $tmp = _Cancel($sth);
-	return $tmp;
+        my $sth = shift;
+        my $tmp = _Cancel($sth);
+        return $tmp;
     }
 
     sub execute_for_fetch {
@@ -574,7 +607,7 @@ $DBD::ODBC::VERSION = '1.37';
             return $sth->SUPER::execute_for_fetch(@_);
         }
 
-	$tuple_batch_status = [ ]; # we always want this here
+        $tuple_batch_status = [ ]; # we always want this here
         if (defined($tuple_status)) {
             @$tuple_status = ();
         }
@@ -625,21 +658,88 @@ $DBD::ODBC::VERSION = '1.37';
 }
 
 1;
+
 __END__
 
 =head1 NAME
 
 DBD::ODBC - ODBC Driver for DBI
 
+=for html
+<a href="https://travis-ci.org/perl5-dbi/DBD-ODBC"><img src="https://travis-ci.org/perl5-dbi/DBD-ODBC.svg?branch=master"></a>
+<a href="http://badge.fury.io/pl/DBD-ODBC"><img src="https://badge.fury.io/pl/DBD-ODBC.svg" alt="CPAN version" height="18"></a>
+
 =head1 VERSION
 
-This documentation refers to DBD::ODBC version 1.37.
+This documentation refers to DBD::ODBC version 1.60.
+
+
+=head1 WARNING
+
+This version of DBD::ODBC contains a significant fix to unicode when
+inserting into CHAR/VARCHAR columns and it is a change in behaviour
+from 1.45. The change B<only> applies to unicode builds of DBD::ODBC
+(the default on Windows but you can build it for unicode on unix too)
+and char/varchar columns and not nchar/nvarchar columns.
+
+Prior to this release of DBD::ODBC when you are using the unicode
+build of DBD::ODBC and inserted data into a CHAR/VARCHAR columns using
+parameters DBD::ODBC did this:
+
+1 if you set odbc_describe_parameters to 0, (thus preventing DBD::ODBC
+  from calling SQLDescribeParam) parameters for CHAR/VARCHAR columns
+  were bound as SQL_WVARCHAR or SQL_WLONGVARCHAR (depending on the
+  length of the parameter).
+
+2 if you set odbc_force_bind_type then all parameters are bound as you
+  specified.
+
+3 if you override the parameter type in the bind_param method, the
+  type you specified would be used.
+
+4 if the driver does not support SQLDescribeParam or SQLDescribeParam
+  was called and failed then the bind type defaulted as in 1.
+
+5 if none of the above (and I'd guess that is the normal case for most
+  people) then DBD::ODBC calls SQLDescribeParam to find the parameter
+  type. This usually returns SQL_CHAR or SQL_VARCHAR for CHAR/VARCHAR
+  columns unsurprisingly. The parameter was then bound as SQL_VARCHAR.
+
+Items 1 to 4 still apply. 5 now has a different behaviour. In this
+release, DBD::ODBC now looks at your bound data first before using the
+type returned by SQLDescribeParam. If you data looks like unicode
+(i.e., SvUTF8() is true) it now binds the parameter as SQL_WVARCHAR.
+
+What might this might mean to you?
+
+If you had Perl scalars that were bound to CHAR/VARCHAR columns in an
+insert/update/delete and those scalars contained unicode, DBD::ODBC
+would actually pass the individual octets in your scalar not
+characters.  For instance, if you had the Perl scalar "\x{20ac}" (the
+Euro unicode character) and you bound it to a CHAR/VARCHAR, DBD::ODBC
+would pass 0xe2, 0x82, 0xc2 as separate characters because those bytes
+were Perl's UTF-8 encoding of a euro. These would probably be
+interpreted by your database engine as 3 characters in its current
+codepage. If you queried your database to find the length of the data
+inserted you'd probably get back 3, not 1.
+
+However, when DBD::ODBC read that column back in a select
+statement, it would bind the column as SQL_WCHAR and you'd get back 3
+characters with the utf8 flag on (what those characters were depends
+on how your database or driver translates code page characters to wide
+characters).
+
+What should happen now is that if your bound parameters are unicode,
+DBD::ODBC will bind them as wide characters (unicode) and your driver
+or database will attempt to convert them into the code page it is
+using. This means so long as your database can store the data you are
+inserting, when you read it back you should get what you inserted.
 
 =head1 SYNOPSIS
 
   use DBI;
 
-  $dbh = DBI->connect('dbi:ODBC:DSN', 'user', 'password');
+  $dbh = DBI->connect('dbi:ODBC:DSN=mydsn', 'user', 'password');
 
 See L<DBI> for more information.
 
@@ -656,15 +756,12 @@ C<perldoc DBD::ODBC::FAQ>.
 
 =head2 Important note about the tests
 
-Please note that some tests may fail or report they are unsupported on
-this platform.  Notably Oracle's ODBC driver will fail the "advanced"
-binding tests in t/08bind2.t.  These tests run perfectly under SQL
-Server 2000. This is normal and expected.  Until Oracle fixes their
-drivers to do the right thing from an ODBC perspective, it's going to
-be tough to fix the issue.  The workaround for Oracle is to bind date
-types with SQL_TIMESTAMP.  Also note that some tests may be skipped,
-such as t/09multi.t, if your driver doesn't seem to support returning
-multiple result sets.  This is normal.
+DBD::ODBC is unlike most other DBDs in that it connects to literally
+dozens of possible ODBC Drivers. It is practically impossible for me
+to test every one and so some tests may fail with some ODBC Drivers.
+This does not mean DBD::ODBC will not work with your ODBC Driver but
+it is worth reporting any test failures on rt.cpan.org or to the
+dbi-users mailing list.
 
 =head2 DBI attribute handling
 
@@ -673,7 +770,7 @@ DBI specification.
 
 =head3 ReadOnly (boolean)
 
-DBI documents the C<ReadOnly> attribute as being settleable and
+DBI documents the C<ReadOnly> attribute as being settable and
 retrievable on connection and statement handles. In ODBC setting
 ReadOnly to true causes the connection attribute C<SQL_ATTR_ACCESS_MODE>
 to be set to C<SQL_MODE_READ_ONLY> and setting it to false will set the
@@ -687,6 +784,12 @@ to C<SQL_MODE_READ_ONLY> does B<not> prevent your script from running
 updates or deletes; it is simply a hint to the driver/database that
 you won't being doing updates.
 
+B<Note:> Since DBD::ODCB 1.44_3, if the driver does not support
+setting C<SQL_ATTR_ACCESS_MODE> and returns SQL_SUCCESS_WITH_INFO and
+"option value changed" a warning is issued (which you'll only see if
+you have DBI > 1.628).  In addition, any subsequent attempts to fetch
+the ReadOnly attribute will return the value last set.
+
 This attribute requires DBI version 1.55 or better.
 
 =head2 Private attributes common to connection and statement handles
@@ -695,7 +798,7 @@ This attribute requires DBI version 1.55 or better.
 
 Use this if you have special needs (such as Oracle triggers, etc)
 where :new or :name mean something special and are not just place
-holder names. You I<must> then use ? for binding parameters.  Example:
+holder names. You B<must> then use ? for binding parameters.  Example:
 
  $dbh->{odbc_ignore_named_placeholders} = 1;
  $dbh->do("create trigger foo as if :new.x <> :old.x then ... etc");
@@ -712,9 +815,10 @@ was 12 (C<SQL_VARCHAR>).  Newer versions always attempt to call
 C<SQLDescribeParam> to find the parameter types but if
 C<SQLDescribeParam> is unavailable DBD::ODBC falls back to a default
 bind type. The internal default bind type is C<SQL_VARCHAR> (for
-non-unicode build) and C<SQL_WVARCHAR> (for a unicode build). If you
-set C<odbc_default_bind_type> to a value other than 0 you override the
-internal default.
+non-unicode build) and C<SQL_WVARCHAR> or C<SQL_VARCHAR> (for a
+unicode build depending on whether the parameter is unicode or
+not). If you set C<odbc_default_bind_type> to a value other than 0 you
+override the internal default.
 
 B<N.B> If you call the C<bind_param> method with a SQL type this
 overrides everything else above.
@@ -724,7 +828,8 @@ overrides everything else above.
 This value defaults to 0.
 
 If set to anything other than 0 this will force bound parameters to be
-bound as this type and C<SQLDescribeParam> will not be used.
+bound as this type and C<SQLDescribeParam> will not be used; in other
+words it implies L</odbc_describe_parameters> is set to false too.
 
 Older versions of DBD::ODBC assumed the parameter binding type was 12
 (C<SQL_VARCHAR>) and newer versions always attempt to call
@@ -735,8 +840,9 @@ with some SQL like I<select myfunc(?)  where 1 = 1>). Setting
 C<odbc_force_bind_type> to C<SQL_VARCHAR> will force DBD::ODBC to bind
 all the parameters as C<SQL_VARCHAR> and ignore SQLDescribeParam.
 
-Bare in mind that if you are inserting unicode data you probably want
-to use C<SQL_WVARCHAR> and not C<SQL_VARCHAR>.
+Bear in mind that if you are inserting unicode data you probably want
+to use C<SQL_WVARCHAR>/C<SQL_WCHAR>/C<SQL_WLONGVARCHAR> and not
+C<SQL_VARCHAR>.
 
 As this attribute was created to work around buggy ODBC Drivers which
 support SQLDescribeParam but describe the parameters incorrectly you
@@ -832,33 +938,6 @@ Do not confuse this with DBD::ODBC's unicode support. The
 C<odbc_utf8_on> attribute only applies to non-unicode enabled builds
 of DBD::ODBC.
 
-=head3 odbc_old_unicode
-
-Defaults to off. If set to true returns DBD::ODBC to the old unicode
-behavior in 1.29 and earlier. You can also set this on the prepare
-method.
-
-By default DBD::ODBC now binds all char columns as SQL_WCHARs meaning
-the driver is asked to return the bound data as wide (Unicode)
-characters encoded in UCS2. So long as the driver supports the ODBC
-Unicode API properly this should mean you get your data back correctly
-in Perl even if it is in a character set (codepage) different from the
-one you are working in.
-
-However, if you wrote code using DBD::ODBC 1.29 or earlier and knew
-DBD::ODBC bound varchar/longvarchar columns as SQL_CHARs and decoded
-them yourself the new behaviour will adversely affect you (sorry). To
-revert to the old behaviour set odbc_old_unicode to true.
-
-You can also set this attribute in the attributes passed to the
-prepare method.
-
-See the stackoverflow question at
-L<http://stackoverflow.com/questions/5912082>, the RT at
-L<http://rt.cpan.org/Public/Bug/Display.html?id=67994> and lastly a
-small discussion on dbi-dev at
-L<http://www.nntp.perl.org/group/perl.dbi.dev/2011/05/msg6559.html>.
-
 =head3 odbc_describe_parameters
 
 Defaults to on. When set this allows DBD::ODBC to call SQLDescribeParam
@@ -867,13 +946,13 @@ parameters.
 
 When off/false DBD::ODBC will not call SQLDescribeParam and defaults
 to binding parameters as SQL_CHAR/SQL_WCHAR depending on the build
-type.
+type and whether your data is unicode or not.
 
 You do not have to disable odbc_describe_parameters just because your
 driver does not support SQLDescribeParam as DBD::ODBC will work this
 out at the start via SQLGetFunctions.
 
-Note: disabling odbc_describe_parameters when your driver does support
+B<Note>: disabling odbc_describe_parameters when your driver does support
 SQLDescribeParam may prevent DBD::ODBC binding parameters for some
 column types properly.
 
@@ -892,8 +971,6 @@ not a supported date format.
 =head3 odbc_getdiagrec
 
   @diags = $handle->odbc_getdiagrec($record_number);
-
-NOTE: This is an experimental method and may change.
 
 Introduced in 1.34_3.
 
@@ -921,8 +998,6 @@ happens.
 =head3 odbc_getdiagfield
 
   $diag = $handle->odbc_getdiagfield($record, $identifier);
-
-NOTE: This is an experimental method and may change.
 
 This is just a wrapper around the ODBC API SQLGetDiagField. When a
 method on a connection or statement handle fails if there are any
@@ -1033,7 +1108,7 @@ attribute.
 Thanks to Andrew Brown for the original patch.
 
 DBD developer note: Here lies a bag of worms. Firstly, SQL_ROWSET_SIZE
-is an ODBC 2 attribute and is usally a statement attribute not a
+is an ODBC 2 attribute and is usually a statement attribute not a
 connection attribute. However, in ODBC 2.0 you could set statement
 attributes on a connection handle and it acted as a default for all
 subsequent statement handles created under that connection handle. If
@@ -1135,17 +1210,18 @@ When odbc_has_unicode is 1, DBD::ODBC will:
 
 =over
 
-=item bind columns the database declares as wide characters as SQL_Wxxx
+=item bind all string columns as wide characters (SQL_Wxxx)
 
 This means that UNICODE data stored in these columns will be returned
-to Perl in UTF-8 and with the UTF-8 flag set.
+to Perl correctly as unicode (i.e., encoded in UTF-8 and the UTF-8 flag set).
 
-=item bind parameters the database declares as wide characters as SQL_Wxxx
+=item bind parameters the database declares as wide characters or unicode parameters as SQL_Wxxx
 
 Parameters bound where the database declares the parameter as being a
-wide character (or where the parameter type is explicitly set to a
-wide type - SQL_Wxxx) can be UTF-8 in Perl and will be mapped to
-UTF-16 before passing to the driver.
+wide character, or where the parameter data is unicode, or where the
+parameter type is explicitly set to a wide type (e.g., SQL_Wxxx) are bound
+as wide characters in the ODBC API and DBD::ODBC encodes the perl parameters
+as UTF-16 before passing them to the driver.
 
 =item SQL
 
@@ -1172,8 +1248,14 @@ NOTE: When building DBD::ODBC on Windows ($^O eq 'MSWin32') the
 WITH_UNICODE macro is automatically added. To disable specify -nou as
 an argument to Makefile.PL (e.g. C<perl Makefile.PL -nou>). On non-Windows
 platforms the WITH_UNICODE macro is B<not> enabled by default and to enable
-you need to specify the -u argument to Makefile.PL. Please bare in mind
+you need to specify the -u argument to Makefile.PL. Please bear in mind
 that some ODBC drivers do not support SQL_Wxxx columns or parameters.
+
+You can also specify that you want UNICODE support by setting the
+C<DBD_ODBC_UNICODE> environment variable prior to install:
+
+  export DBD_ODBC_UNICODE=1
+  cpanm DBD::ODBC
 
 UNICODE support in ODBC Drivers differs considerably. Please read the
 README.unicode file for further details.
@@ -1182,6 +1264,17 @@ README.unicode file for further details.
 
 After calling the connect method this will be the ODBC driver's
 out connection string - see documentation on SQLDriverConnect.
+
+B<NOTE>: this value is only set if DBD::ODBC calls the
+SQLDriverConnect ODBC API (and not SQLConnect) which only happens if a) DSN or
+DRIVER is specified in the connection string or b) SQLConnect fails.
+
+Typically, applications (like MS Access and many others) which build a connection string via
+dialogs and possibly SQLBrowseConnect eventually end up with a successful ODBC connection
+to the ODBC driver and database. The odbc_out_connect_string provides a string
+which you can pass to SQLDriverConnect (DBI's connect prefixed with dbi:ODBC:") which
+will connect you to the same datasource at a later date. You may also want to see
+L</odbc_driver_complete>.
 
 =head3 odbc_version
 
@@ -1229,7 +1322,7 @@ connect to and possibly other attributes.
 =head3 odbc_batch_size
 
 Sets the batch size for execute_for_fetch which defaults to 10.
-Bare in mind the bigger you set this the more memory DBD::ODBC will need
+Bear in mind the bigger you set this the more memory DBD::ODBC will need
 to allocate when running execute_for_fetch and the memory required is
 max_length_of_pn * odbc_batch_size * n_parameters.
 
@@ -1261,12 +1354,137 @@ When set to 0 array operations are used no matter what. I know this is
 slightly counter intuitive but I've found it difficult to change the
 name (it got picked up and used in a few places very quickly).
 
+=head3 odbc_taf_callback
+
+NOTE: this is experimental until I at least see more than one ODBC
+driver which supports TAF.
+
+Transparent Application Failover (TAF) is a feature in OCI that
+allows for clients to automatically reconnect to an instance in the
+event of a failure of the instance. The reconnect happens
+automatically from within the OCI (Oracle Call Interface)
+library.
+
+TAF supports a callback function which once registered is called
+by the driver to let you know what is happening and which allows
+you to a degree, to control how the failover is handled.
+
+You need to set up TAF on your instance first and that process
+is beyond the scope of this document. Once TAF is enabled you simply
+set C<odbc_taf_callback> to a code reference which should look like
+this:
+
+  sub taf_handler {
+   my ($dbh, $event, $type) = @_;
+   # do something here
+  }
+
+DBD::ODBC will pass the connection handle ($dbh), the Oracle event
+type (OCI_FO_END, OCI_FO_ABORT, OCI_FO_REAUTH, OCI_FO_BEGIN,
+OCI_FO_ERROR) and the Oracle type (OCI_FO_NONE, OCI_FO_SESSION,
+OCI_FO_SELECT, OCI_FO_TXNAL).  Consult the Oracle documentation for
+what these are. You can import these constants using the :taf export
+tag. If your instance is not TAF enabled it is likely an attempt to
+register a callback will fail but this is driver dependent (all
+DBD::ODBC does is make a SQLSetConnectAttr call and provide a C
+wrapper which calls your Perl subroutine).
+
+Here is a commented example:
+
+  my $h = DBI->connect('dbi:ODBC:oracle','xxx','yyy',
+                       {RaiseError => 1,
+                        odbc_taf_callback => \&taf_handler}) or die "connect";
+  while (1) {
+      my $s = $h->selectall_arrayref(q/select 1 from dual/);
+      sleep 5;
+  }
+
+  sub taf_handler {
+     my ($dbh, $event, $type) = @_;
+
+     #print "taf_handler $dbh, $event, $type\n";
+
+     if ($event == OCI_FO_BEGIN) {
+         print "Instance unavailable, stand by\n";
+         print "Your TAF type is : ",
+             ($type == OCI_FO_NONE ? "NONE" :
+                  ($type == OCI_FO_SESSION ? "SESSION" :
+                       ($type == OCI_FO_SELECT ? "SELECT" : "?"))) , "\n";
+         # start a counter and each time OCI_FO_ERROR is passed in we will
+         # count down and abort the failover when we hit 0.
+         $count = 10;
+         return 0;
+     } elsif ($event == OCI_FO_ERROR) {
+         # We get an OCI_FO_ERROR each time the failover fails
+         # sleep a while until the count hits 0
+         if (--$count < 1) {
+             print "Giving up\n";
+             return 0;            # give up
+         } else {
+             print "Retrying...\n";
+             sleep 1;
+             return OCI_FO_RETRY; # tell Oracle to retry
+         }
+     } elsif ($event == OCI_FO_REAUTH) {
+         print "Failed over user. Resuming Services\n";
+     } elsif ($event == OCI_FO_END) {
+         print "Failover ended - resuming\n";
+     }
+     return 0;
+  }
+
+NOTE: The above example is for use with the Easysoft Oracle ODBC
+Driver. ODBC does not define any standard way of supporting TAF and so
+different drivers may use different connection attributes to set it up
+or may even pass the callback different arguments. Unfortunately, I
+don't have access to any other ODBC driver which supports TAF. Until I
+see others I cannot create a generic interface. I'll happily accept
+patches for any other driver or if you send me a working copy of the
+driver and the documentation I will add support for it.
+
+=head3 odbc_trace_file
+
+Specify the name and path to a file you want ODBC API trace
+information to be written to. See L</odbc_trace>.
+
+=head3 odbc_trace
+
+Enable or disable ODBC API tracing. Set to 1 to enable and 0 to
+disable.
+
+This calls SQLSetConnectAttr for SQL_ATTR_TRACE and either sets
+SQL_OPT_TRACE_ON or SQL_OPT_TRACE_OFF. Enabling tracing will tell
+the ODBC driver manager to write and ODBC API trace to the file
+named with L</odbc_trace_file>.
+
+NOTE: If you don't set odbc_trace_file most ODBC Driver Managers write
+to a file called SQL.LOG in the root directory (but this depends on
+the driver manager used).
+
+NOTE: This tracing is produced by the ODBC Driver Manager and has
+nothing to do with DBD::ODBC other than it should trace the ODBC
+calls DBD::ODBC makes i.e., DBD::ODBC is not responsible for the
+tracing mechanism itself.
+
+NOTE: Enabling tracing will probably slow your application down a lot.
+I'd definitely think twice about it if in a production environment
+unless you are desperate as it tends to produce very large trace
+files for short periods of ODBC activity.
+
 =head2 Private statement attributes
 
 =head3 odbc_more_results
 
 Use this attribute to determine if there are more result sets
-available.  SQL Server supports this feature.  Use this as follows:
+available.
+
+Any ODBC Driver which batches results or counts of inserts/updates
+will need you to loop on odbc_more_results until there are no more
+results. e.g., if you are performing multiple selects in a procedure or
+multiple inserts/updates/deletes then you will probably need to loop on
+odbc_more_results.
+
+Use odbc_more_results as follows:
 
   do {
      my @row;
@@ -1279,11 +1497,40 @@ Note that with multiple result sets and output parameters (i.e,. using
 bind_param_inout), don't expect output parameters to written to until ALL
 result sets have been retrieved.
 
+Under the hood this attribute causes a call to the ODBC API
+SQLMoreResults and then any result set, insert/update/delete or output
+parameters are described by DBD::ODBC and the statement handle will be
+ready for processing the new result.
+
 =head2 Private statement methods
+
+=head3 odbc_rows
+
+This method was added in 1.42_1.
+
+In 64 bit ODBC SQLRowCount can return a 64bit value for the number of
+rows affected. Unfortunately, the DBI DBD interface currently (at
+least until 1.622) defines execute as returning an int so values which
+cannot fit in an int are truncated. See RT 81911.
+
+From DBD::ODBC 1.42_1 DBD::ODBC
+
+o defines this method which will return the affected rows in an IV
+(and IVs are guaranteed to be able to hold a pointer) so you
+can get the real affected rows without truncation.
+
+o if it detects an overflow in the execute method it will issue
+a warning (if Warn is on which it is by default) and return INT_MAX.
+
+At some stage DBI may change to fix the issue this works around.
+
+NOTE: the return from odbc_rows is not the raw value returned by
+SQLRowCount. It is the same as execute normally returns e.g., 0E0 (for
+0), -1 for unknown and N for N rows affected where N > 0.
 
 =head3 odbc_lob_read
 
-  $chrs_or_bytes_read = $sth->lob_read($column_no, \$lob, $length, \%attr);
+  $chrs_or_bytes_read = $sth->odbc_lob_read($column_no, \$lob, $length, \%attr);
 
 Reads C<$length> bytes from the lob at column C<$column_no> returning
 the lob into C<$lob> and the number of bytes or characters read into
@@ -1303,7 +1550,7 @@ unicode support. C<$chrs_or_bytes_read> will by the bytes read when
 the column types SQL_C_CHAR or SQL_C_BINARY are used and characters
 read if the column type is SQL_C_WCHAR.
 
-When built with unicode support C<$length> specifes the amount of
+When built with unicode support C<$length> specifies the amount of
 buffer space to be used when retrieving the lob data but as it is
 returned as SQLWCHAR characters this means you at most retrieve
 C<$length/2> characters. When those retrieved characters are encoded
@@ -1331,7 +1578,7 @@ NOTE: You can retrieve only part of a lob but you will probably have
 to call finish on the statement handle before you do anything else
 with that statement. When only retrieving part of a large lob you
 could see a small delay when you call finish as some protocols used
-by ODBC drivers send the lob down the socket synchonously and there is
+by ODBC drivers send the lob down the socket synchronously and there is
 no way to stop it (this means the ODBC driver needs to read all the
 lob from the socket even though you never retrieved it all yourself).
 
@@ -1348,7 +1595,7 @@ You use DBD::ODBC private functions like this:
 
 =head3 GetInfo
 
-B<This private function is now superceded by DBI's get_info method.>
+B<This private function is now superseded by DBI's get_info method.>
 
 This function maps to the ODBC SQLGetInfo call and the argument
 should be a valid ODBC information type (see ODBC specification).
@@ -1361,10 +1608,11 @@ which returns the C<SQL_DRIVER_NAME>.
 This function returns a scalar value, which can be a numeric or string
 value depending on the information value requested.
 
-=head3 SQLGetTypeInfo
+=head3 GetTypeInfo
 
-B<This private function is now superceded by DBI's type_info and
-type_info_all methods.>
+B<This private function is now superseded by DBI's type_info and
+type_info_all methods however as it is used by those methods it
+still exists.>
 
 This function maps to the ODBC SQLGetTypeInfo API and the argument
 should be a SQL type number (e.g. SQL_VARCHAR) or
@@ -1418,7 +1666,7 @@ or
 
 =head3 GetStatistics
 
-B<This private function is now superceded by DBI's statistics_info
+B<This private function is now superseded by DBI's statistics_info
 method.>
 
 See the ODBC specification for the SQLStatistics API.
@@ -1435,7 +1683,7 @@ SQL_INDEX_ALL for false.
 
 =head3 GetForeignKeys
 
-B<This private function is now superceded by DBI's foreign_key_info
+B<This private function is now superseded by DBI's foreign_key_info
 method.>
 
 See the ODBC specification for the SQLForeignKeys API.
@@ -1447,7 +1695,7 @@ You call SQLForeignKeys like this:
 
 =head3 GetPrimaryKeys
 
-B<This private function is now superceded by DBI's primary_key_info
+B<This private function is now superseded by DBI's primary_key_info
 method.>
 
 See the ODBC specification for the SQLPrimaryKeys API.
@@ -1457,14 +1705,8 @@ You call SQLPrimaryKeys like this:
 
 =head3 data_sources
 
-B<This private function is now superceded by DBI's data_sources
-method.>
-
-You call data_sources like this:
-
-  @dsns = $dbh->func("data_sources);
-
-Handled since 0.21.
+B<This private function is now superseded by DBI's data_sources
+method and was finally removed in 1.49_1>
 
 =head3 GetSpecialColumns
 
@@ -1478,7 +1720,7 @@ Handled as of version 0.28
 
 =head3 ColAttributes
 
-B<This private function is now superceded by DBI's statement attributes
+B<This private function is now superseded by DBI's statement attributes
 NAME, TYPE, PRECISION, SCALE, NULLABLE etc).>
 
 See the ODBC specification for the SQLColAttributes API.
@@ -1513,16 +1755,10 @@ use DBI's NAME and NAME_xx attributes for portability.
 
 =head3 DescribeCol
 
-B<This private function is now superceded by DBI's statement attributes
-NAME, TYPE, PRECISION, SCALE, NULLABLE etc).>
+Removed in DBD::ODBC 1.40_3
 
-See the ODBC specification for the SQLDescribeCol API.
-You call SQLDescribeCol like this:
-
-  @info = $sth->func($column, "DescribeCol");
-
-The returned array contains the column attributes in the order described
-in the ODBC specification for SQLDescribeCol.
+Use the DBI's statement attributes NAME, TYPE, PRECISION, SCALE,
+NULLABLE etc instead.
 
 =head2 Additional bind_col attributes
 
@@ -1539,8 +1775,11 @@ DiscardString to the prepare attributes then if the returned bound
 data is capable of being converted to that type the scalar's pv (the
 string portion of a scalar) is cleared.
 
+NOTE: post DBD::ODBC 1.37, DBD::ODBC binds all SQL_INTEGER columns as
+SQL_C_LONG and DiscardString is irrelevant.
+
 This is especially useful if you are using a module which uses a
-scalars flags and/or pv to decide if a scalar is a number. JSON::XS
+scalar's flags and/or pv to decide if a scalar is a number. JSON::XS
 does this and without this flag you have to add 0 to all bound column
 data returning numbers to get JSON::XS to encode it is N instead of
 "N".
@@ -1559,10 +1798,10 @@ performed an error will be raised.
 
 This is probably not a lot of use with DBD::ODBC as if you ask for say
 an SQL_INTEGER and the data is not able to be converted to an integer
-the ODBC driver will problably return "Invalid character value for
+the ODBC driver will probably return "Invalid character value for
 cast specification (SQL-22018)".
 
-NOTE: For DiscardString you need at least DBI 1.611.
+NOTE: For StrictlyTyped you need at least DBI 1.611.
 
 =head3 TreatAsLOB
 
@@ -1578,7 +1817,7 @@ strings (after modification) passed to the prepare and do methods.
 
 From DBI 1.617 DBI also defines ENC (encoding), CON (connection) TXN
 (transaction) and DBD (DBD only) trace flags. DBI's ENC and CON trace
-flags are synonomous with DBD::ODBC's odbcunicode and odbcconnection
+flags are synonymous with DBD::ODBC's odbcunicode and odbcconnection
 trace flags though I may remove the DBD::ODBC ones in the
 future. DBI's DBD trace flag allows output of only DBD::ODBC trace
 messages without DBI's trace messages.
@@ -1697,7 +1936,7 @@ an error like:
 =head3 Using the same placeholder more than once
 
 DBD::ODBC does not support (currently) the use of one named placeholder
-more than once in the a single SQL string. i.e.,
+more than once in a single SQL string. i.e.,
 
   insert into foo values (:bar, :p1, :p2, :bar);
 
@@ -1735,7 +1974,7 @@ The DBI specification post 1.608 says in bind_param:
   The data type is 'sticky' in that bind values passed to execute()
   are bound with the data type specified by earlier bind_param()
   calls, if any.  Portable applications should not rely on being able
-  to change the data type after the first C<bind_param> call.
+  to change the data type after the first bind_param call.
 
 DBD::ODBC does allow a parameter to be rebound with another data type as
 ODBC inherently allows this. Therefore you can do:
@@ -1767,6 +2006,22 @@ which binds arrays of parameters and can send multiple rows
 when inserting, updating or deleting many rows in one go. Note,
 execute_array uses execute_for_fetch when the parameters are passed
 for column-wise binding.
+
+NOTE: DBD::ODBC 1.34_1 to DBD::ODBC 1.36_1 set the default to use
+DBD::ODBC's own execute_for_fetch but quite a few ODBC drivers just
+cannot handle it. As such, from DBD::ODBC 1.36_2 the default was
+changed to not use DBD::ODBC's execute_for_fetch (i.e., you need to
+enable it with L</odbc_array_operations>).
+
+NOTE: Some ODBC drivers don't support setting SQL_ATTR_PARAMSET_SIZE >
+1, and hence cannot support binding arrays of parameters. The only way
+to detect this is to attempt to set SQL_ATTR_PARAMSET_SIZE to a value
+greater than 1 and it is too late once someone has called
+execute_for_fetch. I don't want to add test code on each connect to
+test for this as it will affect everyone, even those not using the
+native execute_for_fetch so for now it is a suck it and see. For your
+information MS Access which does not support arrays of parameters
+errors with HY092, "Invalid attribute/option identifier".
 
 However, there are a small number of differences between using
 DBD::ODBC's execute_for_fetch compared with using DBI's default
@@ -1833,10 +2088,99 @@ DBI's inbuilt execute_* methods. See rt 75687.
 =head3 type_info_all
 
 Many ODBC drivers now return 20 columns in type_info_all rather than
-the 19 DBI documents DBI documents. The 20th column is usually called
+the 19 DBI documents. The 20th column is usually called
 "USERTYPE".  Recent MS SQL Server ODBC drivers do this. Fortunately
 this should not adversely affect you so long as you are using the keys
 provided at the start of type_info_all.
+
+=head3 Binding Columns
+
+The DBI specification allows a column type to be overridden in the call
+to the bind_col method. Mostly, DBD::ODBC ignores this type as it
+binds integers (SQL_INTEGER) as a SQL_C_LONG (since DBD::ODBC 1.38_1)
+and all other columns as SQL_C_CHAR or SQL_C_WCHAR and it is too late
+to change the bind type after the result-set has been described
+anyway. The only time when the TYPE passed to bind_col is used in
+DBD::ODBC is when it is SQL_NUMERIC or SQL_DOUBLE in which case
+DBD::ODBC will call DBI's sql_type_cast method.
+
+Since DBD::ODBC 1.38_1 if you attempt to change the bind type after
+the column has already bound DBD::ODBC will issue a warning and ignore
+your column type change e.g.,
+
+  my $s = $h->prepare(q/select a from mytable);
+  $s->execute;  # The column type was determined here
+  my $r;
+  $s->bind_col(1, \$r); # and bound as the right type here
+  $s->execute;
+  $s->bind_col(1, \$r, {TYPE => SQL_XXX}); # warning, type changed
+
+Basically, if you are passing a TYPE to bind_col with DBD::ODBC (other
+than SQL_NUMERIC or SQL_DOUBLE) your code is probably wrong.
+
+Significant changes occurred in DBD::ODBC at 1.38_1 for binding
+columns. Please see the Changes file.
+
+=head3 bind_param
+
+DBD::ODBC follows the DBI specification for bind_param however the
+third argument (a type or a hashref containing a type) is loosely
+defined by DBI. From the DBI pod:
+
+I<The \%attr parameter can be used to hint at the data type the placeholder should have. This is rarely needed. >
+
+As a general rule, don't specify a type when calling bind_param. If you stick to inserting appropriate data into the appropriate column DBD::ODBC will mostly do the right thing especially if the ODBC driver supports SQLDescribeParam.
+
+In particular don't just add a type of SQL_DATE because you are inserting a date (it will not work). The correct syntax in ODBC for inserting dates, times and timestamps is:
+
+insert into mytable (mydate, mttime, mytimestamp) values(?,?,?);
+bind_param(1, "{d 'YYYY-MM-DD'}");
+bind_param(2, "{t 'HH:MM:SS.MM'}"); # :MM can be omitted and some dbs support :MMM
+bind_param(3, "{ts 'YYYY-MM-DD HH:MM:SS'}");
+
+See http://technet.microsoft.com/en-US/library/ms190234%28v=SQL.90%29.aspx
+
+The only times when you might want to add a type are:
+
+1. If your ODBC driver does not support SQLDescribeParam (or if you
+told DBD::ODBC not to use it) then DBD::ODBC will default to inserting
+each parameter as a string (which is usually the right thing
+anyway). This is ok, most of the time, but is probably not what you
+want when inserting a binary (use TYPE => SQL_BINARY).
+
+2. If for some reason your driver describes the parameter
+incorrectly. It is difficult to describe an example of this.
+
+3. If SQLDescribeParam is supported but fails e.g., MS SQL Server has
+problems with SQL like "select myfunc(?) where 1 = 1".
+
+Also, DBI exports some types which are not available in ODBC e.g.,
+SQL_BLOB. If you are unsure about ODBC types look at your ODBC header
+files or look up valid types in the ODBC specification.
+
+=head3 tables and table_info
+
+These are not really deviations from the DBI specification but a
+clarification of a DBI optional feature.
+
+DBD::ODBC supports wildcards (% and _) in the catalog, schema and type
+arguments. However, you should be aware that if the statement
+attribute SQL_ATTR_METADATA_ID is SQL_TRUE the values are interpreted
+as identifiers and the case is ignored. SQL_ATTR_METADATA_ID defaults
+to SQL_FALSE so normally the values are treated as patterns and the
+case is significant.
+
+SQLGetInfo for SQL_ACCESSIBLE_TABLES can affect what tables you can
+list.
+
+All the special cases listed by DBI (empty strings for all arguments
+but one which is '%') for catalog, schema and table type are supported
+by DBD::ODBC. However, using '%' for table type in a call to the
+tables method does not currently work with DBI up to 1.631 due to an
+issue in DBI.
+
+Although DBD::ODBC supports all the usage cases listed by DBI, your
+ODBC driver may not.
 
 =head2 Unicode
 
@@ -1845,8 +2189,11 @@ The ODBC specification supports wide character versions (a postfix of
 character version of SQLDriverConnect.
 
 In ODBC on Windows the wide characters are defined as SQLWCHARs (2
-bytes) and are UCS-2. On non-Windows, the main driver managers I know
-of have implemented the wide character APIs differently:
+bytes) and are UCS-2 (but UTF-16 is accepted by some drivers now e.g.,
+MS SQL Server 2012 and the new collation suffix _SC which stands for
+Supplementary Character Support). On non-Windows, the main driver
+managers I know of have implemented the wide character APIs
+differently:
 
 =over
 
@@ -1854,7 +2201,7 @@ of have implemented the wide character APIs differently:
 
 unixODBC mimics the Windows ODBC API precisely meaning the wide
 character versions expect and return 2-byte characters in
-UCS-2.
+UCS-2 or UTF-16.
 
 unixODBC will happily recognise ODBC drivers which only have the ANSI
 versions of the ODBC API and those that have the wide versions
@@ -1951,7 +2298,7 @@ As of DBD::ODBC 1.32_3 meta data calls accept Unicode strings.
 Since version 1.16_4, the default parameter bind type is SQL_WVARCHAR
 for unicode builds of DBD::ODBC. This only affects ODBC drivers which
 do not support SQLDescribeParam and only then if you do not
-specifically set a sql type on the bind_param method call.
+specifically set a SQL type on the bind_param method call.
 
 The above Unicode support has been tested with the SQL Server, Oracle
 9.2+ and Postgres drivers on Windows and various Easysoft ODBC drivers
@@ -1983,8 +2330,8 @@ managers. I have only tested the unixODBC driver manager
 defaults which set WCHAR as 2 bytes.
 
 I believe that the iODBC driver manager expects wide characters to be
-wchar_t types (which are usually 4) and hence DBD::ODBC will not work
-iODBC when built for unicode.
+wchar_t types (which are usually 4 bytes) and hence DBD::ODBC will not
+work iODBC when built for unicode.
 
 The ODBC Driver must expect Unicode data specified in SQLBindParameter
 and SQLBindCol to be UTF-16 in local endianness. Similarly, in calls to
@@ -2036,14 +2383,12 @@ API currently uses UCS-2 it does not support Unicode characters with
 code points above 0xFFFF (if you know better I'd like to hear from
 you). However, because DBD::ODBC uses UTF-16 encoding you can still
 insert Unicode characters above 0xFFFF into your database and retrieve
-them back correctly but they will not being treated as a single
+them back correctly but they may not being treated as a single
 Unicode character in your database e.g., a "select length(a_column)
-from table" with a single Unicode character above 0xFFFF will most
-likely return 2 and not 1 so you cannot use database functions on that
+from table" with a single Unicode character above 0xFFFF may
+return 2 and not 1 so you cannot use database functions on that
 data like upper/lower/length etc but you can at least save the data in
-your database and get it back. This is a fudge and I cannot say I'm
-overjoyed by it but it is what the majority of people who use
-DBD::ODBC have requested.
+your database and get it back.
 
 When built for unicode, DBD::ODBC will always call SQLDriverConnectW
 (and not SQLDriverConnect) even if a) your connection string is not
@@ -2112,9 +2457,9 @@ DBD::ODBC uses the C<SQLDescribeParam> API when parameters are bound
 to your SQL to find the types of the parameters. If the ODBC driver
 does not support C<SQLDescribeParam>, DBD::ODBC assumes the parameters
 are C<SQL_VARCHAR> or C<SQL_WVARCHAR> types (depending on whether
-DBD::ODBC is built for unicode or not). In any case, if you bind a
-parameter and specify a SQL type this overrides any type DBD::ODBC
-would choose.
+DBD::ODBC is built for unicode or not and whether your parameter is
+unicode data). In any case, if you bind a parameter and specify a SQL
+type this overrides any type DBD::ODBC would choose.
 
 For ODBC drivers which do not support C<SQLDescribeParam> the default
 behavior in DBD::ODBC may not be what you want. To change the default
@@ -2130,46 +2475,92 @@ SQL type to the end of the C<bind_param> method.
   $s = $h->prepare(q/insert into mytable values(?)/);
   $s->bind_param(1, "\x{263a}", SQL_WVARCHAR);
 
+=head2 MS SQL Server Query Notification
+
+Query notifications were introduced in SQL Server 2005 and SQL Server
+Native Client.  Query notifications allow applications to be notified
+when data has changed.
+
+DBD::ODBC supports query notification with MS SQL Server using the additional
+prepare attributes odbc_qn_msgtxt, odbc_qn_options and odbc_qn_timeout. When
+you pass suitable values for these attributes to the prepare method, DBD::ODBC
+will make the appropriate SQLSetStmtAttr calls after the statement
+has been allocated.
+
+It is beyond the scope of this document to provide a tutorial on doing this
+but here are some notes that might help you get started.
+
+On SQL Server
+
+  create database MyDatabase
+  ALTER DATABASE MyDatabase SET ENABLE_BROKER
+  use MyDatabase
+  CREATE TABLE QNtest (a int NOT NULL PRIMARY KEY,
+                       b nchar(5) NOT NULL,
+                       c datetime NOT NULL)
+  INSERT QNtest (a, b, c) SELECT 1, 'ALFKI', '19991212'
+  CREATE QUEUE myQueue
+  CREATE SERVICE myService ON QUEUE myQueue
+  See L<http://technet.microsoft.com/en-us/library/ms175110%28v=SQL.105%29.aspx>
+
+
+You need to set these SQL Server permissions unless the subscriber is a sysadmin:
+
+  GRANT RECEIVE ON QueryNotificationErrorsQueue TO "<login-for-subscriber>"
+  GRANT SUBSCRIBE QUERY NOTIFICATIONS TO "<login-for-subscriber>"
+
+To subscribe to query notification for this example:
+
+  # Prepare the statement.
+  # This is the SQL you want to know if the result changes later
+  my $sth = $dbh->prepare(q/SELECT a, b, c FROM dbo.QNtest WHERE a = 1/,
+                          {odbc_qn_msgtxt => 'Message text',
+                           odbc_qn_options => 'service=myService',
+                           odbc_qn_timeout=> 430000});
+  # Fetch and display the result set value.
+  while ( my @row = $sth->fetchrow_array ) {
+     print "@row\n";
+  }
+  # select * from sys.dm_qn_subscriptions will return a record now you are subscribed
+
+To wait for notification:
+
+  # Avoid "String data, right truncation" error when retrieving
+  # the message.
+  $dbh->{LongReadLen} = 800;
+
+  # This query generates a result telling you which query has changed
+  # It will block until the timeout or the query changes
+  my $sth = $dbh->prepare(q/WAITFOR (RECEIVE * FROM MyQueue)/);
+  $sth->execute();
+
+  # in the mean time someone does UPDATE dbo.QNtest SET c = '19981212' WHERE a = 1
+
+  # Fetch and display the result set value.
+  while ( my @row = $sth->fetchrow_array ) {
+     print "@row\n";
+  }
+  # You now need to understand the result and look to decide which query has changed
+
 =head2 Version Control
 
-DBD::ODBC source code is under version control at svn.perl.org.  If
-you would like to use the "bleeding" edge version, you can get the
-latest from svn.perl.org via Subversion version control.  Note there
-is no guarantee that this version is any different than what you get
-from the tarball from CPAN, but it might be :)
-
-You may read about Subversion at L<http://subversion.tigris.org>
-
-You can get a subversion client from there and check dbd-odbc out via:
-
-   svn checkout http://svn.perl.org/modules/dbd-odbc/trunk <your directory name here>
-
-Which will pull all the files from the subversion trunk to your
-specified directory. If you want to see what has changed since the
-last release of DBD::ODBC read the Changes file or use "svn log" to
-get a list of checked in changes.
+DBD::ODBC source code was under version control at svn.perl.org
+until April 2013 when svn.perl.org was closed down and it is now on
+github at https://github.com/perl5-dbi/DBD-ODBC.git.
 
 =head2 Contributing
 
-There are seven main ways you may help with the development and
+There are a number of ways you may help with the development and
 maintenance of this module:
 
 =over
 
 =item Submitting patches
 
-Please use Subversion (see above) to get the latest version of
-DBD::ODBC from the trunk and submit any patches against that.
+Please send me a git pull request or email a unified diff.
 
-Please, before submitting a patch:
-
-   svn update
-   <try and included a test which demonstrates the fix/change working>
-   <test your patch>
-   svn diff > describe_my_diffs.patch
-
-and send the resulting file to me and cc the dbi-users@perl.org
-mailing list (if you are not a member - why not!).
+Please try and include a test which demonstrates the fix/change
+working.
 
 =item Reporting installs
 
@@ -2333,6 +2724,22 @@ L<http://www.easysoft.com/developer/languages/perl/multiple-active-statements.ht
 
 L<http://www.easysoft.com/developer/interfaces/odbc/64-bit.html>
 
+How do I insert Unicode supplementary characters into SQL Server from Perl?
+
+L<http://www.easysoft.com/support/kb/kb01043.html>
+
+Some Common Unicode Problems and Solutions using Perl DBD::ODBC and MS SQL Server
+
+L<http://www.easysoft.com/developer/languages/perl/sql-server-unicode.html>
+
+and a version possibly kept more up to date:
+
+L<https://github.com/mjegh/dbd_odbc_sql_server_unicode/blob/master/common_problems.pod>
+
+How do I use SQL Server Query Notifications from Linux and UNIX?
+
+L<http://www.easysoft.com/support/kb/kb01069.html>
+
 =head2 Frequently Asked Questions
 
 Frequently asked questions are now in L<DBD::ODBC::FAQ>. Run
@@ -2385,5 +2792,14 @@ Jeff Urlwin and Martin J. Evans - see the source.
 =head1 SEE ALSO
 
 L<DBI>
+
+DBD::ODBC can be used with many ODBC drivers to many different
+databases.  If you want a generic DBD for multiple databases DBD::ODBC
+is probably for you.  If you are only accessing a single database then
+you might want to look for DBD::my_database (e.g. DBD::Oracle) as
+database specific DBDs often have more functionality.
+
+L<DBIx::LogAny> or L<DBIx::Log4perl> for logging DBI method calls, SQL,
+parameters and results.
 
 =cut

@@ -5,11 +5,14 @@ perldebug - Perl debugging
 
 =head1 DESCRIPTION
 
-First of all, have you tried using the B<-w> switch?
-
+First of all, have you tried using L<C<use strict;>|strict> and
+L<C<use warnings;>|warnings>?
 
 If you're new to the Perl debugger, you may prefer to read
 L<perldebtut>, which is a tutorial introduction to the debugger.
+
+If you're looking for the nitty gritty details of how the debugger is
+I<implemented>, you may prefer to read L<perldebguts>.
 
 =head1 The Perl Debugger
 
@@ -68,9 +71,9 @@ On the given program identified by C<program_name>.
 
 Interactively supply an arbitrary C<expression> using C<-e>.
 
-=item perl -d:Ptkdb program_name
+=item perl -d:ptkdb program_name
 
-Debug a given program via the C<Devel::Ptkdb> GUI.
+Debug a given program via the C<Devel::ptkdb> GUI.
 
 =item perl -dt threaded_program_name
 
@@ -125,7 +128,7 @@ hashes, you'll probably prefer 'x \%h' rather than 'x %h'.
 See L<Dumpvalue> if you'd like to do this yourself.
 
 The output format is governed by multiple options described under
-L<"Configurable Options">.
+L</"Configurable Options">.
 
 If the C<maxdepth> is included, it must be a numeral I<N>; the value is
 dumped only I<N> levels deep, as if the C<dumpDepth> option had been
@@ -473,7 +476,7 @@ For historical reasons, the C<=value> is optional, but defaults to
 1 only where it is safe to do so--that is, mostly for Boolean
 options.  It is always better to assign a specific value using C<=>.
 The C<option> can be abbreviated, but for clarity probably should
-not be.  Several options can be set together.  See L<"Configurable Options">
+not be.  Several options can be set together.  See L</"Configurable Options">
 for a list of these.
 
 =item < ?
@@ -683,7 +686,7 @@ either interactively or from the environment or an rc file.
 X<debugger option, recallCommand>
 X<debugger option, ShellBang>
 
-The characters used to recall command or spawn shell.  By
+The characters used to recall a command or spawn a shell.  By
 default, both are set to C<!>, which is unfortunate.
 
 =item C<pager>
@@ -842,6 +845,19 @@ Rudimentary per-package memory usage dump.  Calculates total
 size of strings found in variables in the package.  This does not
 include lexicals in a module's file scope, or lost in closures.
 
+=item C<HistFile>
+X<debugger option, history, HistFile>
+
+The path of the file from which the history (assuming a usable
+Term::ReadLine backend) will be read on the debugger's startup, and to which
+it will be saved on shutdown (for persistence across sessions). Similar in
+concept to Bash's C<.bash_history> file.
+
+=item C<HistSize>
+X<debugger option, history, HistSize>
+
+The count of the saved lines in the history (assuming C<HistFile> above).
+
 =back
 
 After the rc file is read, the debugger reads the C<$ENV{PERLDB_OPTS}>
@@ -977,9 +993,11 @@ X<backtrace> X<stack, backtrace>
 Here's an example of what a stack backtrace via C<T> command might
 look like:
 
-    $ = main::infested called from file 'Ambulation.pm' line 10
-    @ = Ambulation::legs(1, 2, 3, 4) called from file 'camel_flea' line 7
-    $ = main::pests('bactrian', 4) called from file 'camel_flea' line 4
+ $ = main::infested called from file 'Ambulation.pm' line 10
+ @ = Ambulation::legs(1, 2, 3, 4) called from file 'camel_flea'
+                                                          line 7
+ $ = main::pests('bactrian', 4) called from file 'camel_flea'
+                                                          line 4
 
 The left-hand character up there indicates the context in which the
 function was called, with C<$> and C<@> meaning scalar or list
@@ -1002,17 +1020,17 @@ an C<eval> frame.
 
 This shows the sorts of output the C<l> command can produce:
 
-    DB<<13>> l
-  101:                @i{@i} = ();
-  102:b               @isa{@i,$pack} = ()
-  103                     if(exists $i{$prevpack} || exists $isa{$pack});
-  104             }
-  105
-  106             next
-  107==>              if(exists $isa{$pack});
-  108
-  109:a           if ($extra-- > 0) {
-  110:                %isa = ($pack,1);
+   DB<<13>> l
+ 101:        @i{@i} = ();
+ 102:b       @isa{@i,$pack} = ()
+ 103             if(exists $i{$prevpack} || exists $isa{$pack});
+ 104     }
+ 105
+ 106     next
+ 107==>      if(exists $isa{$pack});
+ 108
+ 109:a   if ($extra-- > 0) {
+ 110:        %isa = ($pack,1);
 
 Breakable lines are marked with C<:>.  Lines with breakpoints are
 marked by C<b> and those with actions by C<a>.  The line that's
@@ -1129,7 +1147,7 @@ Without Readline support you may see the symbols "^[[A", "^[[C", "^[[B",
 
 =head2 Editor Support for Debugging
 
-If you have the FSF's version of B<emacs> installed on your system,
+If you have the GNU's version of B<emacs> installed on your system,
 it can interact with the Perl debugger to provide an integrated
 software development environment reminiscent of its interactions
 with C debuggers.
@@ -1138,13 +1156,6 @@ Recent versions of Emacs come with a
 start file for making B<emacs> act like a
 syntax-directed editor that understands (some of) Perl's syntax.
 See L<perlfaq3>.
-
-A similar setup by Tom Christiansen for interacting with any
-vendor-shipped B<vi> and the X11 window system is also available.
-This works similarly to the integrated multiwindow support that
-B<emacs> provides, where the debugger drives the editor.  At the
-time of this writing, however, that tool's eventual location in the
-Perl distribution was uncertain.
 
 Users of B<vi> should also look into B<vim> and B<gvim>, the mousey
 and windy version, for coloring of Perl keywords.
@@ -1191,7 +1202,7 @@ See L<perldebguts/"Debugging Perl Memory Usage"> for the details.
 
 =head1 SEE ALSO
 
-You did try the B<-w> switch, didn't you?
+You do have C<use strict> and C<use warnings> enabled, don't you?
 
 L<perldebtut>,
 L<perldebguts>,

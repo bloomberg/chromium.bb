@@ -2,13 +2,13 @@ package File::Spec::Win32;
 
 use strict;
 
-use vars qw(@ISA $VERSION);
+use Cwd ();
 require File::Spec::Unix;
 
-$VERSION = '3.39_02';
-$VERSION =~ tr/_//;
+our $VERSION = '3.78';
+$VERSION =~ tr/_//d;
 
-@ISA = qw(File::Spec::Unix);
+our @ISA = qw(File::Spec::Unix);
 
 # Some regexes we use for path splitting
 my $DRIVE_RX = '[a-zA-Z]:';
@@ -62,13 +62,13 @@ from the following list:
 The SYS:/temp is preferred in Novell NetWare and the C:\system\temp
 for Symbian (the File::Spec::Win32 is used also for those platforms).
 
-Since Perl 5.8.0, if running under taint mode, and if the environment
+If running under taint mode, and if the environment
 variables are tainted, they are not used.
 
 =cut
 
-my $tmpdir;
 sub tmpdir {
+    my $tmpdir = $_[0]->_cached_tmpdir(qw(TMPDIR TEMP TMP));
     return $tmpdir if defined $tmpdir;
     $tmpdir = $_[0]->_tmpdir( map( $ENV{$_}, qw(TMPDIR TEMP TMP) ),
 			      'SYS:/temp',
@@ -76,6 +76,7 @@ sub tmpdir {
 			      'C:/temp',
 			      '/tmp',
 			      '/'  );
+    $_[0]->_cache_tmpdir($tmpdir, qw(TMPDIR TEMP TMP));
 }
 
 =item case_tolerant
@@ -89,7 +90,11 @@ Default: 1
 =cut
 
 sub case_tolerant {
-  eval { require Win32API::File; } or return 1;
+  eval {
+    local @INC = @INC;
+    pop @INC if $INC[-1] eq '.';
+    require Win32API::File;
+  } or return 1;
   my $drive = shift || "C:";
   my $osFsType = "\0"x256;
   my $osVolName = "\0"x256;
@@ -132,7 +137,7 @@ sub catfile {
     # Legacy / compatibility support
     #
     shift, return _canon_cat( "/", @_ )
-	if $_[0] eq "";
+	if !@_ || $_[0] eq "";
 
     # Compatibility with File::Spec <= 3.26:
     #     catfile('A:', 'foo') should return 'A:\foo'.
@@ -188,9 +193,9 @@ sub canonpath {
 
 =item splitpath
 
-    ($volume,$directories,$file) = File::Spec->splitpath( $path );
-    ($volume,$directories,$file) = File::Spec->splitpath( $path,
-                                                          $no_file );
+   ($volume,$directories,$file) = File::Spec->splitpath( $path );
+   ($volume,$directories,$file) = File::Spec->splitpath( $path,
+                                                         $no_file );
 
 Splits a path into volume, directory, and filename portions. Assumes that 
 the last file is a path unless the path ends in '\\', '\\.', '\\..'
@@ -325,14 +330,13 @@ sub rel2abs {
 
     if ($is_abs) {
       # It's missing a volume, add one
-      my $vol = ($self->splitpath( $self->_cwd() ))[0];
+      my $vol = ($self->splitpath( Cwd::getcwd() ))[0];
       return $self->canonpath( $vol . $path );
     }
 
     if ( !defined( $base ) || $base eq '' ) {
-      require Cwd ;
       $base = Cwd::getdcwd( ($self->splitpath( $path ))[0] ) if defined &Cwd::getdcwd ;
-      $base = $self->_cwd() unless defined $base ;
+      $base = Cwd::getcwd() unless defined $base ;
     }
     elsif ( ! $self->file_name_is_absolute( $base ) ) {
       $base = $self->rel2abs( $base ) ;
@@ -403,16 +407,6 @@ sub _canon_cat				# @path -> path
 	       )+			# performance boost -- I do not know why
 	     }{\\}gx;
 
-    # XXX I do not know whether more dots are supported by the OS supporting
-    #     this ... annotation (NetWare or symbian but not MSWin32).
-    #     Then .... could easily become ../../.. etc:
-    # Replace \.\.\. by (\.\.\.+)  and substitute with
-    # { $1 . ".." . "\\.." x (length($2)-2) }gex
-	     				# ... --> ../..
-    $path =~ s{ (\A|\\)			# at begin or after a slash
-    		\.\.\.
-		(?=\\|\z) 		# at end or followed by slash
-	     }{$1..\\..}gx;
     					# xx\yy\..\zz --> xx\zz
     while ( $path =~ s{(?:
 		(?:\A|\\)		# at begin or after a slash

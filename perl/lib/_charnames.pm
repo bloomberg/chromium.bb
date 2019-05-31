@@ -6,8 +6,7 @@
 package _charnames;
 use strict;
 use warnings;
-use File::Spec;
-our $VERSION = '1.31';
+our $VERSION = '1.45';
 use unicore::Name;    # mktables-generated algorithmically-defined names
 
 use bytes ();          # for $bytes::hint_bits
@@ -23,8 +22,8 @@ $Carp::Internal{ (__PACKAGE__) } = 1;
 # The official names with their code points are stored in a table in
 # lib/unicore/Name.pl which is read in as a large string (almost 3/4 Mb in
 # Unicode 6.0).  Each code point/name combination is separated by a \n in the
-# string.  (Some of the CJK and the Hangul syllable names are determined
-# instead algorithmically via subroutines stored instead in
+# string.  (Some of the CJK and the Hangul syllable names are instead
+# determined algorithmically via subroutines stored instead in
 # lib/unicore/Name.pm).  Because of the large size of this table, it isn't
 # converted into hashes for faster lookup.
 #
@@ -66,10 +65,10 @@ $Carp::Internal{ (__PACKAGE__) } = 1;
 
 my %system_aliases = (
 
-    'SINGLE-SHIFT 2'                => pack("U", 0x8E),
-    'SINGLE-SHIFT 3'                => pack("U", 0x8F),
-    'PRIVATE USE 1'                 => pack("U", 0x91),
-    'PRIVATE USE 2'                 => pack("U", 0x92),
+    'SINGLE-SHIFT 2'                => chr utf8::unicode_to_native(0x8E),
+    'SINGLE-SHIFT 3'                => chr utf8::unicode_to_native(0x8F),
+    'PRIVATE USE 1'                 => chr utf8::unicode_to_native(0x91),
+    'PRIVATE USE 2'                 => chr utf8::unicode_to_native(0x92),
 );
 
 # These are the aliases above that differ under :loose and :full matching
@@ -77,19 +76,16 @@ my %system_aliases = (
 #my %loose_system_aliases = (
 #);
 
-my %deprecated_aliases = (
-    # Use of these gives deprecated message.
-    # Unicode 6.0 co-opted this for U+1F514, so deprecate it for now.
-    'BELL'                    => pack("U", 0x07),
-);
+#my %deprecated_aliases;
+#$deprecated_aliases{'BELL'} = chr utf8::unicode_to_native(0x07) if $^V lt v5.17.0;
 
 #my %loose_deprecated_aliases = (
 #);
 
 # These are special cased in :loose matching, differing only in a medial
 # hyphen
-my $HANGUL_JUNGSEONG_O_E_utf8 = pack("U", 0x1180);
-my $HANGUL_JUNGSEONG_OE_utf8 = pack("U", 0x116C);
+my $HANGUL_JUNGSEONG_O_E_utf8 = chr 0x1180;
+my $HANGUL_JUNGSEONG_OE_utf8 = chr 0x116C;
 
 
 my $txt;  # The table of official character names
@@ -146,8 +142,13 @@ sub carp
 
 sub alias (@) # Set up a single alias
 {
+  my @errors;
+  my $nbsp = chr utf8::unicode_to_native(0xA0);
+
   my $alias = ref $_[0] ? $_[0] : { @_ };
-  foreach my $name (keys %$alias) {
+  foreach my $name (sort keys %$alias) {  # Sort only because it helps having
+                                          # deterministic output for
+                                          # t/lib/charnames/alias
     my $value = $alias->{$name};
     next unless defined $value;          # Omit if screwed up.
 
@@ -156,21 +157,62 @@ sub alias (@) # Set up a single alias
     # hex, but makes the code easier to maintain, and is called
     # infrequently, only at compile-time
     if ($value !~ $decimal_qr && $value =~ $hex_qr) {
-      $value = CORE::hex $1;
+      my $temp = CORE::hex $1;
+      $temp = utf8::unicode_to_native($temp) if $value =~ /^[Uu]\+/;
+      $value = $temp;
     }
     if ($value =~ $decimal_qr) {
-        no warnings qw(non_unicode surrogate nonchar); # Allow any non-malformed
-        $^H{charnames_ord_aliases}{$name} = pack("U", $value);
+        no warnings qw(non_unicode surrogate nonchar); # Allow any of these
+        $^H{charnames_ord_aliases}{$name} = chr $value;
 
         # Use a canonical form.
         $^H{charnames_inverse_ords}{sprintf("%05X", $value)} = $name;
     }
     else {
-        # XXX validate syntax when deprecation cycle complete. ie. start
-        # with an alpha only, etc.
-        $^H{charnames_name_aliases}{$name} = $value;
+        my $ok_portion = "";
+        $ok_portion = $1 if $name =~ / ^ (
+                                            \p{_Perl_Charname_Begin}
+                                            \p{_Perl_Charname_Continue}*
+                                         ) /x;
+
+        # If the name was fully correct, the above should have matched all of
+        # it.
+        if (length $ok_portion < length $name) {
+          my $first_bad = substr($name, length($ok_portion), 1);
+          push @errors, "Invalid character in charnames alias definition; "
+                        . "marked by <-- HERE in '$ok_portion$first_bad<-- HERE "
+                        . substr($name, length($ok_portion) + 1)
+                        . "'";
+        }
+        else {
+            if ($name =~ / ( .* \s ) ( \s* ) $ /x) {
+              push @errors, "charnames alias definitions may not contain "
+                            . "trailing white-space; marked by <-- HERE in "
+                            . "'$1 <-- HERE " . $2 . "'";
+              next;
+            }
+
+            # Use '+' instead of '*' in this regex, because any trailing
+            # blanks have already been found
+            if ($name =~ / ( .*? \s{2} ) ( .+ ) /x) {
+              push @errors, "charnames alias definitions may not contain a "
+                            . "sequence of multiple spaces; marked by <-- HERE "
+                            . "in '$1 <-- HERE " . $2 . "'";
+              next;
+            }
+
+            $^H{charnames_name_aliases}{$name} = $value;
+        }
     }
   }
+
+  # We find and output all errors from this :alias definition, rather than
+  # failing on the first one, so fewer runs are needed to get it to compile
+  if (@errors) {
+    croak join "\n", @errors;
+  }
+
+  return;
 } # alias
 
 sub not_legal_use_bytes_msg {
@@ -187,15 +229,16 @@ sub not_legal_use_bytes_msg {
 
 sub alias_file ($)  # Reads a file containing alias definitions
 {
+  require File::Spec;
   my ($arg, $file) = @_;
   if (-f $arg && File::Spec->file_name_is_absolute ($arg)) {
     $file = $arg;
   }
-  elsif ($arg =~ m/^\w+$/) {
+  elsif ($arg =~ m/ ^ \p{_Perl_IDStart} \p{_Perl_IDCont}* $/x) {
     $file = "unicore/${arg}_alias.pl";
   }
   else {
-    croak "Charnames alias files can only have identifier characters";
+    croak "Charnames alias file names can only have identifier characters";
   }
   if (my @alias = do $file) {
     @alias == 1 && !defined $alias[0] and
@@ -235,7 +278,7 @@ sub lookup_name ($$$) {
   # It looks first in the aliases, then in the large table of official Unicode
   # names.
 
-  my $utf8;       # The string result
+  my $result;       # The string result
   my $save_input;
 
   if ($runtime) {
@@ -248,7 +291,7 @@ sub lookup_name ($$$) {
                               || (! defined $hints_ref->{charnames_full}
                                   && ! defined $hints_ref->{charnames_loose});
 
-    # At runtime, but currently not at compile time, $^H gets
+    # At runtime, but currently not at compile time, %^H gets
     # stringified, so un-stringify back to the original data structures.
     # These get thrown away by perl before the next invocation
     # Also fill in the hash with the non-stringified data.
@@ -271,7 +314,7 @@ sub lookup_name ($$$) {
   # User alias should be checked first or else can't override ours, and if we
   # were to add any, could conflict with theirs.
   if (exists $^H{charnames_ord_aliases}{$name}) {
-    $utf8 = $^H{charnames_ord_aliases}{$name};
+    $result = $^H{charnames_ord_aliases}{$name};
   }
   elsif (exists $^H{charnames_name_aliases}{$name}) {
     $name = $^H{charnames_name_aliases}{$name};
@@ -312,22 +355,22 @@ sub lookup_name ($$$) {
     # interested in convenience over speed, and the time for this second check
     # is miniscule compared to the rest of the routine.
     if (exists $system_aliases{$lookup_name}) {
-      $utf8 = $system_aliases{$lookup_name};
+      $result = $system_aliases{$lookup_name};
     }
     # There are currently no entries in this hash, so don't waste time looking
     # for them.  But the code is retained for the unlikely possibility that
     # some will be added in the future.
 #    elsif ($loose && exists $loose_system_aliases{$lookup_name}) {
-#      $utf8 = $loose_system_aliases{$lookup_name};
+#      $result = $loose_system_aliases{$lookup_name};
 #    }
-    if (exists $deprecated_aliases{$lookup_name}) {
-      require warnings;
-      warnings::warnif('deprecated',
-                       "Unicode character name \"$name\" is deprecated, use \""
-                       . viacode(ord $deprecated_aliases{$lookup_name})
-                       . "\" instead");
-      $utf8 = $deprecated_aliases{$lookup_name};
-    }
+#    if (exists $deprecated_aliases{$lookup_name}) {
+#      require warnings;
+#      warnings::warnif('deprecated',
+#                       "Unicode character name \"$name\" is deprecated, use \""
+#                       . viacode(ord $deprecated_aliases{$lookup_name})
+#                       . "\" instead");
+#      $result = $deprecated_aliases{$lookup_name};
+#    }
     # There are currently no entries in this hash, so don't waste time looking
     # for them.  But the code is retained for the unlikely possibility that
     # some will be added in the future.
@@ -337,21 +380,21 @@ sub lookup_name ($$$) {
 #                       "Unicode character name \"$name\" is deprecated, use \""
 #                       . viacode(ord $loose_deprecated_aliases{$lookup_name})
 #                       . "\" instead");
-#      $utf8 = $loose_deprecated_aliases{$lookup_name};
+#      $result = $loose_deprecated_aliases{$lookup_name};
 #    }
   }
 
   my @off;  # Offsets into table of pattern match begin and end
 
   # If haven't found it yet...
-  if (! defined $utf8) {
+  if (! defined $result) {
 
     # See if has looked this input up earlier.
     if (! $loose && $^H{charnames_full} && exists $full_names_cache{$name}) {
-      $utf8 = $full_names_cache{$name};
+      $result = $full_names_cache{$name};
     }
     elsif ($loose && exists $loose_names_cache{$name}) {
-      $utf8 = $loose_names_cache{$name};
+      $result = $loose_names_cache{$name};
     }
     else { # Here, must do a look-up
 
@@ -382,7 +425,7 @@ sub lookup_name ($$$) {
       if (($loose || $^H{charnames_full})
           && (defined (my $ord = charnames::name_to_code_point_special($lookup_name, $loose))))
       {
-        $utf8 = pack("U", $ord);
+        $result = chr $ord;
       }
       else {
 
@@ -439,7 +482,7 @@ sub lookup_name ($$$) {
                                   /xs)
           {
               # Even in non-loose matching, the script traditionally has been
-              # case insensitve
+              # case insensitive
               $scripts_trie = "\U$1";
               $lookup_name = $2;
 
@@ -457,18 +500,8 @@ sub lookup_name ($$$) {
           }
 
           my $case = $name_has_uppercase ? "CAPITAL" : "SMALL";
-          if (! $scripts_trie
-              || $txt !~
-              /\t (?: $scripts_trie ) \ (?:$case\ )? LETTER \ \U$lookup_name $/xm)
-          {
-            # Here we still don't have it, give up.
-            return if $runtime;
-
-            # May have zapped input name, get it again.
-            $name = (defined $save_input) ? $save_input : $_[0];
-            carp "Unknown charname '$name'";
-            return ($wants_ord) ? 0xFFFD : pack("U", 0xFFFD);
-          }
+          return if (! $scripts_trie || $txt !~
+             /\t (?: $scripts_trie ) \ (?:$case\ )? LETTER \ \U$lookup_name $/xm);
 
           # Here have found the input name in the table.
           @off = ($-[0] + 1, $+[0]);  # The 1 is for the tab
@@ -485,14 +518,14 @@ sub lookup_name ($$$) {
         # therefore yield the very last character in the table, which should
         # also be a \n, so the statement works anyway.)
         if (substr($txt, $off[0] - 7, 1) eq "\n") {
-          $utf8 = pack("U", CORE::hex substr($txt, $off[0] - 6, 5));
+          $result = chr CORE::hex substr($txt, $off[0] - 6, 5);
 
           # Handle the single loose matching special case, in which two names
           # differ only by a single medial hyphen.  If the original had a
           # hyphen (or more) in the right place, then it is that one.
-          $utf8 = $HANGUL_JUNGSEONG_O_E_utf8
+          $result = $HANGUL_JUNGSEONG_O_E_utf8
                   if $loose
-                     && $utf8 eq $HANGUL_JUNGSEONG_OE_utf8
+                     && $result eq $HANGUL_JUNGSEONG_OE_utf8
                      && $name =~ m/O \s* - [-\s]* E/ix;
                      # Note that this wouldn't work if there were a 2nd
                      # OE in the name
@@ -504,7 +537,7 @@ sub lookup_name ($$$) {
           # The +1 skips past that newline, or, if the rindex() fails, to put
           # us to an offset of zero.
           my $charstart = rindex($txt, "\n", $off[0] - 7) + 1;
-          $utf8 = pack("U*", map { CORE::hex }
+          $result = pack("W*", map { CORE::hex }
               split " ", substr($txt, $charstart, $off[0] - $charstart - 1));
         }
       }
@@ -513,15 +546,27 @@ sub lookup_name ($$$) {
       # again, but only if it came from the one search that we cache.
       # (Haven't bothered with the pain of sorting out scoping issues for the
       # scripts searches.)
-      $cache_ref->{$name} = $utf8 if defined $cache_ref;
+      $cache_ref->{$name} = $result if defined $cache_ref;
     }
   }
 
-
-  # Here, have the utf8.  If the return is to be an ord, must be any single
-  # character.
+  # Here, have the result character.  If the return is to be an ord, must be
+  # any single character.
   if ($wants_ord) {
-    return ord($utf8) if length $utf8 == 1;
+    return ord($result) if length $result == 1;
+  }
+  elsif (! utf8::is_utf8($result)) {
+
+    # Here isn't UTF-8.  That's OK if it is all ASCII, or we are being called
+    # at compile time where we know we can guarantee that Unicode rules are
+    # correctly imposed on the result, or under 'bytes' where we don't want
+    # those rules.  But otherwise we have to make it UTF8 to guarantee Unicode
+    # rules on the returned string.
+    return $result if ! $runtime
+                      || (caller $runtime)[8] & $bytes::hint_bits
+                      || $result !~ /[[:^ascii:]]/;
+    utf8::upgrade($result);
+    return $result;
   }
   else {
 
@@ -530,7 +575,7 @@ sub lookup_name ($$$) {
     my $in_bytes = ($runtime)
                    ? (caller $runtime)[8] & $bytes::hint_bits
                    : $^H & $bytes::hint_bits;
-    return $utf8 if (! $in_bytes || utf8::downgrade($utf8, 1)) # The 1 arg
+    return $result if (! $in_bytes || utf8::downgrade($result, 1)) # The 1 arg
                                                   # means don't die on failure
   }
 
@@ -554,10 +599,10 @@ sub lookup_name ($$$) {
 
   # Only other possible failure here is from use bytes.
   if ($runtime) {
-    carp not_legal_use_bytes_msg($name, $utf8);
+    carp not_legal_use_bytes_msg($name, $result);
     return;
   } else {
-    croak not_legal_use_bytes_msg($name, $utf8);
+    croak not_legal_use_bytes_msg($name, $result);
   }
 
 } # lookup_name
@@ -599,6 +644,7 @@ sub import
         ref $alias eq "HASH" or
           croak "Only HASH reference supported as argument to :alias";
         alias ($alias);
+        $promote = 1;
         next;
       }
       if ($alias =~ m{:(\w+)$}) {
@@ -607,7 +653,7 @@ sub import
         alias_file ($1) and $promote = 1;
         next;
       }
-      alias_file ($alias);
+      alias_file ($alias) and $promote = 1;
       next;
     }
     if (substr($arg, 0, 1) eq ':'
@@ -670,6 +716,11 @@ sub import
 # not an issue.
 my %viacode;
 
+my $no_name_code_points_re = join "|", map { sprintf("%05X",
+                                             utf8::unicode_to_native($_)) }
+                                            0x80, 0x81, 0x84, 0x99;
+$no_name_code_points_re = qr/$no_name_code_points_re/;
+
 sub viacode {
 
   # Returns the name of the code point argument
@@ -690,8 +741,10 @@ sub viacode {
   if ($arg =~ $decimal_qr) {
     $hex = sprintf "%05X", $arg;
   } elsif ($arg =~ $hex_qr) {
+    $hex = CORE::hex $1;
+    $hex = utf8::unicode_to_native($hex) if $arg =~ /^[Uu]\+/;
     # Below is the line that differs from the _getcode() source
-    $hex = sprintf "%05X", hex $1;
+    $hex = sprintf "%05X", $hex;
   } else {
     carp("unexpected arg \"$arg\" to charnames::viacode()");
     return;
@@ -724,7 +777,7 @@ sub viacode {
         $return = substr($txt, $+[0], index($txt, "\n", $+[0]) - $+[0]);
 
         # If not one of these 4 code points, return what we've found.
-        if ($hex !~ / ^ 000 (?: 8[014] | 99 ) $ /x) {
+        if ($hex !~ / ^ $no_name_code_points_re $ /x) {
           $viacode{$hex} = $return;
           return $return;
         }
@@ -752,12 +805,14 @@ sub viacode {
   # Here there is no user-defined alias, return any official one.
   return $return if defined $return;
 
-  if (CORE::hex($hex) > 0x10FFFF) {
+  if (CORE::hex($hex) > 0x10FFFF
+      && warnings::enabled('non_unicode'))
+  {
       carp "Unicode characters only allocated up to U+10FFFF (you asked for U+$hex)";
   }
   return;
 
-} # _viacode
+} # viacode
 
 1;
 

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -1016,7 +1016,7 @@ extern "C"{
     virtual HRESULT WINAPI get__NewEnum(IUnknown **ppUnkEnum) = 0;
     virtual HRESULT WINAPI get_Item(BSTR objectID,VARIANT *pItem) = 0;
     virtual HRESULT WINAPI get_NewEnum(IEnumEventObject **ppEnum) = 0;
-    virtual HRESULT WINAPI get_Count(long *pCount) = 0;
+    virtual HRESULT WINAPI get_Count(__LONG32 *pCount) = 0;
     virtual HRESULT WINAPI Add(VARIANT *item,BSTR objectID) = 0;
     virtual HRESULT WINAPI Remove(BSTR objectID) = 0;
   };
@@ -1033,7 +1033,7 @@ extern "C"{
       HRESULT (WINAPI *get__NewEnum)(IEventObjectCollection *This,IUnknown **ppUnkEnum);
       HRESULT (WINAPI *get_Item)(IEventObjectCollection *This,BSTR objectID,VARIANT *pItem);
       HRESULT (WINAPI *get_NewEnum)(IEventObjectCollection *This,IEnumEventObject **ppEnum);
-      HRESULT (WINAPI *get_Count)(IEventObjectCollection *This,long *pCount);
+      HRESULT (WINAPI *get_Count)(IEventObjectCollection *This,__LONG32 *pCount);
       HRESULT (WINAPI *Add)(IEventObjectCollection *This,VARIANT *item,BSTR objectID);
       HRESULT (WINAPI *Remove)(IEventObjectCollection *This,BSTR objectID);
     END_INTERFACE
@@ -1063,7 +1063,7 @@ extern "C"{
   void __RPC_STUB IEventObjectCollection_get_Item_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI IEventObjectCollection_get_NewEnum_Proxy(IEventObjectCollection *This,IEnumEventObject **ppEnum);
   void __RPC_STUB IEventObjectCollection_get_NewEnum_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IEventObjectCollection_get_Count_Proxy(IEventObjectCollection *This,long *pCount);
+  HRESULT WINAPI IEventObjectCollection_get_Count_Proxy(IEventObjectCollection *This,__LONG32 *pCount);
   void __RPC_STUB IEventObjectCollection_get_Count_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI IEventObjectCollection_Add_Proxy(IEventObjectCollection *This,VARIANT *item,BSTR objectID);
   void __RPC_STUB IEventObjectCollection_Add_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
@@ -1274,14 +1274,14 @@ extern "C"{
 #endif
 #endif
 
-  unsigned long __RPC_API BSTR_UserSize(unsigned long *,unsigned long,BSTR *);
-  unsigned char *__RPC_API BSTR_UserMarshal(unsigned long *,unsigned char *,BSTR *);
-  unsigned char *__RPC_API BSTR_UserUnmarshal(unsigned long *,unsigned char *,BSTR *);
-  void __RPC_API BSTR_UserFree(unsigned long *,BSTR *);
-  unsigned long __RPC_API VARIANT_UserSize(unsigned long *,unsigned long,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserMarshal(unsigned long *,unsigned char *,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserUnmarshal(unsigned long *,unsigned char *,VARIANT *);
-  void __RPC_API VARIANT_UserFree(unsigned long *,VARIANT *);
+  ULONG __RPC_API BSTR_UserSize(ULONG *,ULONG,BSTR *);
+  unsigned char *__RPC_API BSTR_UserMarshal(ULONG *,unsigned char *,BSTR *);
+  unsigned char *__RPC_API BSTR_UserUnmarshal(ULONG *,unsigned char *,BSTR *);
+  void __RPC_API BSTR_UserFree(ULONG *,BSTR *);
+  ULONG __RPC_API VARIANT_UserSize(ULONG *,ULONG,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserMarshal(ULONG *,unsigned char *,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserUnmarshal(ULONG *,unsigned char *,VARIANT *);
+  void __RPC_API VARIANT_UserFree(ULONG *,VARIANT *);
 
 #ifdef __cplusplus
 }

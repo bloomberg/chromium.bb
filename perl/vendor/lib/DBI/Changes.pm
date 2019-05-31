@@ -2,9 +2,377 @@
 
 DBI::Changes - List of significant changes to the DBI
 
-(As of $Date: 2012-02-25 14:14:52 +0000 (Sat, 25 Feb 2012) $ $Revision: 15179 $)
+=encoding ISO8859-1
 
 =cut
+
+=head2 Changes in DBI 1.642 - 28th October 2018
+
+    Fix '.' in @INC for proxy test under parallel load
+        thanks to H.Merijn Brand.
+    Fix driver-related croak() in DBI->connect to report the original DSN
+        thanks to maxatome #67
+
+    Introduce a new statement DBI method $sth->last_insert_id()
+        thanks to pali #64
+    Allow to call $dbh->last_insert_id() method without arguments
+        thanks to pali #64
+    Added a new XS API function variant dbd_db_do6()
+        thanks to Pali #61
+
+    Fix misprints in doc of selectall_hashref
+        thanks to Perlover #69
+    Remove outdated links to DBI related training resources. RT#125999
+
+=head2 Changes in DBI 1.641 - 19th March 2018
+
+    Remove dependency on Storable 2.16 introduced in DBI 1.639
+        thanks to Ribasushi #60
+    Avoid compiler warnings in Driver.xst #59
+        thanks to pali #59
+
+=head2 Changes in DBI 1.640 - 28th January 2018
+
+    Fix test t/91_store_warning.t for perl 5.10.0
+        thanks to pali #57
+
+    Add Perl 5.10.0 and 5.8.1 specific versions to Travis testing
+        thanks to pali #57
+    Add registration of mariadb_ prefix for new DBD::MariaDB driver
+        thanks to pali #56
+
+=head2 Changes in DBI 1.639 - 28th December 2017
+
+    Fix UTF-8 support for warn/croak calls within DBI internals,
+        thanks to pali #53
+    Fix dependency on Storable for perl older than 5.8.9,
+        thanks to H.Merijn Brand.
+
+    Add DBD::Mem driver, a pure-perl in-memory driver using DBI::DBD::SqlEngine,
+        thanks to Jens Rehsack #42
+
+    Corrected missing semicolon in example in documentation,
+        thanks to pali #55
+
+=head2 Changes in DBI 1.637 - 16th August 2017
+
+    Fix use of externally controlled format string (CWE-134) thanks to pali #44
+        This could cause a crash if, for example, a db error contained a %.
+        https://cwe.mitre.org/data/definitions/134.html
+    Fix extension detection for DBD::File related drivers
+    Fix tests for perl without dot in @INC RT#120443
+    Fix loss of error message on parent handle, thanks to charsbar #34
+    Fix disappearing $_ inside callbacks, thanks to robschaber #47
+    Fix dependency on Storable for perl older than 5.8.9
+
+    Allow objects to be used as passwords without throwing an error, thanks to demerphq #40
+    Allow $sth NAME_* attributes to be set from Perl code, re #45
+    Added support for DBD::XMLSimple thanks to nigelhorne #38
+
+    Documentation updates:
+    Improve examples using eval to be more correct, thanks to pali #39
+    Add cautionary note to prepare_cached docs re refs in %attr #46
+    Small POD changes (Getting Help -> Online) thanks to openstrike #33
+    Adds links to more module names and fix typo, thanks to oalders #43
+    Typo fix thanks to bor #37
+
+=head2 Changes in DBI 1.636 - 24th April 2016
+
+    Fix compilation for threaded perl <= 5.12 broken in 1.635 RT#113955
+    Revert change to DBI::PurePerl DESTROY in 1.635
+    Change t/16destroy.t to avoid race hazard RT#113951
+    Output perl version and archname in t/01basics.t
+    Add perl 5.22 and 5.22-extras to travis-ci config
+
+=head2 Changes in DBI 1.635 - 24th April 2016
+
+    Fixed RaiseError/PrintError for UTF-8 errors/warnings. RT#102404
+    Fixed cases where ShowErrorStatement might show incorrect Statement RT#97434
+    Fixed DBD::Gofer for UTF-8-enabled STDIN/STDOUT
+        thanks to mauke PR#32
+    Fixed fetchall_arrayref({}) behavior with no columns
+        thanks to Dan McGee PR#31
+    Fixed tied CachedKids ref leak in attribute cache by weakening
+        thanks to Michael Conrad RT#113852
+    Fixed "panic: attempt to copy freed scalar" upon commit() or rollback()
+        thanks to fbriere for detailed bug report RT#102791
+    Ceased to ignore DESTROY of outer handle in DBI::PurePerl
+    Treat undef in DBI::Profile Path as string "undef"
+        thanks to fREW Schmidt RT#113298
+    Fix SQL::Nano parser to ignore trailing semicolon
+        thanks to H.Merijn Brand.
+
+    Added @ary = $dbh->selectall_array(...) method
+        thanks to Ed Avis RT#106411
+    Added appveyor support (Travis like CI for windows)
+        thanks to mbeijen PR#30
+
+    Corrected spelling errors in pod
+        thanks to Gregor Herrmann RT#107838
+    Corrected and/or removed broken links to SQL standards
+        thanks to David Pottage RT#111437
+    Corrected doc example to use dbi: instead of DBI: in DSN
+        thanks to Michael R. Davis RT#101181
+    Removed/updated broken links in docs
+        thanks to mbeijen PR#29
+    Clarified docs for DBI::hash($string)
+    Removed the ancient DBI::FAQ module RT#102714
+    Fixed t/pod.t to require Test::Pod >= 1.41 RT#101769
+
+This release was developed at the Perl QA Hackathon 2016
+L<http://act.qa-hackathon.org/qa2016/>
+which was made possible by the generosity of many sponsors:
+
+L<https://www.fastmail.com> FastMail,
+L<https://www.ziprecruiter.com> ZipRecruiter,
+L<http://www.activestate.com> ActiveState,
+L<http://www.opusvl.com> OpusVL,
+L<https://www.strato.com> Strato,
+L<http://www.surevoip.co.uk> SureVoIP,
+L<http://www.cv-library.co.uk> CV-Library,
+L<https://www.iinteractive.com/> Infinity,
+L<https://opensource.careers/perl-careers/> Perl Careers,
+L<https://www.mongodb.com> MongoDB,
+L<https://www.thinkproject.com> thinkproject!,
+L<https://www.dreamhost.com/> Dreamhost,
+L<http://www.perl6.org/> Perl 6,
+L<http://www.perl-services.de/> Perl Services,
+L<https://www.evozon.com/> Evozon,
+L<http://www.booking.com> Booking,
+L<http://eligo.co.uk> Eligo,
+L<http://www.oetiker.ch/> Oetiker+Partner,
+L<http://capside.com/en/> CAPSiDE,
+L<https://www.procura.nl/> Procura,
+L<https://constructor.io/> Constructor.io,
+L<https://metacpan.org/author/BABF> Robbie Bow,
+L<https://metacpan.org/author/RSAVAGE> Ron Savage,
+L<https://metacpan.org/author/ITCHARLIE> Charlie Gonzalez,
+L<https://twitter.com/jscook2345> Justin Cook.
+
+=head2 Changes in DBI 1.634 - 3rd August 2015
+
+    Enabled strictures on all modules (Jose Luis Perez Diez) #22
+        Note that this might cause new exceptions in existing code.
+        Please take time for extra testing before deploying to production.
+    Improved handling of row counts for compiled drivers and enable them to
+        return larger row counts (IV type) by defining new *_iv macros.
+    Fixed quote_identifier that was adding a trailing separator when there
+        was only a catalog (Martin J. Evans)
+
+    Removed redundant keys() call in fetchall_arrayref with hash slice (ilmari) #24
+    Corrected pod xref to Placeholders section (Matthew D. Fuller)
+    Corrected pod grammar (Nick Tonkin) #25
+
+    Added support for tables('', '', '', '%') special case (Martin J. Evans)
+    Added support for DBD prefixes with numbers (Jens Rehsack) #19
+    Added extra initializer for DBI::DBD::SqlEngine based DBD's (Jens Rehsack)
+    Added Memory Leaks section to the DBI docs (Tim)
+    Added Artistic v1 & GPL v1 LICENSE file (Jose Luis Perez Diez) #21
+
+=head2 Changes in DBI 1.633 - 11th Jan 2015
+
+    Fixed selectrow_*ref to return undef on error in list context
+        instead if an empty list.
+    Changed t/42prof_data.t more informative
+    Changed $sth->{TYPE} to be NUMERIC in DBD::File drivers as per the
+        DBI docs. Note TYPE_NAME is now also available. [H.Merijn Brand]
+    Fixed compilation error on bleadperl due DEFSV no longer being an lvalue
+        [Dagfinn Ilmari Mannsåker]
+
+    Added docs for escaping placeholders using a backslash.
+    Added docs for get_info(9000) indicating ability to escape placeholders.
+    Added multi_ prefix for DBD::Multi (Dan Wright) and ad2_ prefix for
+        DBD::AnyData2
+
+=head2 Changes in DBI 1.632 - 9th Nov 2014
+
+    Fixed risk of memory corruption with many arguments to methods
+        originally reported by OSCHWALD for Callbacks but may apply
+        to other functionality in DBI method dispatch RT#86744.
+    Fixed DBD::PurePerl to not set $sth->{Active} true by default
+        drivers are expected to set it true as needed.
+    Fixed DBI::DBD::SqlEngine to complain loudly when prerequite
+        driver_prefix is not fulfilled (RT#93204) [Jens Rehsack]
+    Fixed redundant sprintf argument warning RT#97062 [Reini Urban]
+    Fixed security issue where DBD::File drivers would open files
+        from folders other than specifically passed using the
+        f_dir attribute RT#99508 [H.Merijn Brand]
+
+    Changed delete $h->{$key} to work for keys with 'private_' prefix
+        per request in RT#83156. local $h->{$key} works as before.
+
+    Added security notice to DBD::Proxy and DBI::ProxyServer because they
+        use Storable which is insecure. Thanks to ppisar@redhat.com RT#90475
+    Added note to AutoInactiveDestroy docs strongly recommending that it
+        is enabled in all new code.
+
+=head2 Changes in DBI 1.631 - 20th Jan 2014
+
+NOTE: This release changes the handle passed to Callbacks from being an 'inner'
+handle to being an 'outer' handle. If you have code that makes use of Callbacks,
+ensure that you understand what this change means and review your callback code.
+
+    Fixed err_hash handling of integer err RT#92172 [Dagfinn Ilmari]
+    Fixed use of \Q vs \E in t/70callbacks.t
+
+    Changed the handle passed to Callbacks from being an 'inner'
+        handle to being an 'outer' handle.
+
+    Improved reliability of concurrent testing
+        PR#8 [Peter Rabbitson]
+    Changed optional dependencies to "suggest"
+        PR#9 [Karen Etheridge]
+    Changed to avoid mg_get in neatsvpv during global destruction
+        PR#10 [Matt Phillips]
+
+=head2 Changes in DBI 1.630 - 28th Oct 2013
+
+NOTE: This release enables PrintWarn by default regardless of $^W.
+Your applications may generate more log messages than before.
+
+    Fixed err for new drh to be undef not to 0 [Martin J. Evans]
+    Fixed RT#83132 - moved DBIstcf* constants to util
+        export tag [Martin J. Evans]
+    PrintWarn is now triggered by warnings recorded in methods like STORE
+        that don't clear err RT#89015 [Tim Bunce]
+
+    Changed tracing to no longer show quote and quote_identifier calls
+        at trace level 1.
+    Changed DBD::Gofer ping while disconnected set_err from warn to info.
+    Clarified wording of log message when err is cleared.
+    Changed bootstrap to use $XS_VERSION RT#89618 [Andreas Koenig]
+
+    Added connect_cached.connected Callback PR#3 [David E. Wheeler]
+
+    Clarified effect of refs in connect_cached attributes [David E. Wheeler]
+    Extended ReadOnly attribute docs for when the driver cannot
+      ensure read only [Martin J. Evans]
+    Corrected SQL_BIGINT docs to say ODBC value is used PR#5 [ilmari]
+
+There was no DBI 1.629 release.
+
+=head2 Changes in DBI 1.628 - 22nd July 2013
+
+    Fixed missing fields on partial insert via DBI::DBD::SqlEngine
+        engines (DBD::CSV, DBD::DBM etc.) [H.Merijn Brand, Jens Rehsack]
+    Fixed stack corruption on callbacks RT#85562 RT#84974 [Aaron Schweiger]
+    Fixed DBI::SQL::Nano_::Statement handling of "0" [Jens Rehsack]
+    Fixed exit op precedence in test RT#87029 [Reni Urban]
+
+    Added support for finding tables in multiple directories
+        via new DBD::File f_dir_search attribute [H.Merijn Brand]
+    Enable compiling by C++ RT#84285 [Kurt Jaeger]
+
+    Typo fixes in pod and comment [David Steinbrunner]
+    Change DBI's docs to refer to git not svn [H.Merijn Brand]
+    Clarify bind_col TYPE attribute is sticky [Martin J. Evans]
+    Fixed reference to $sth in selectall_arrayref docs RT#84873
+    Spelling fixes [Ville Skyttä]
+    Changed $VERSIONs to hardcoded strings [H.Merijn Brand]
+
+=head2 Changes in DBI 1.627 - 16th May 2013
+
+    Fixed VERSION regression in DBI::SQL::Nano [Tim Bunce]
+
+=head2 Changes in DBI 1.626 - 15th May 2013
+
+    Fixed pod text/link was reversed in a few cases RT#85168
+        [H.Merijn Brand]
+
+    Handle aliasing of STORE'd attributes in DBI::DBD::SqlEngine
+        [Jens Rehsack]
+
+    Updated repository URI to git [Jens Rehsack]
+
+    Fixed skip() count arg in t/48dbi_dbd_sqlengine.t [Tim Bunce]
+
+=head2 Changes in DBI 1.625 (svn r15595) 28th March 2013
+
+  Fixed heap-use-after-free during global destruction RT#75614
+    thanks to Reini Urban.
+  Fixed ignoring RootClass attribute during connect() by
+    DBI::DBD::SqlEngine reported in RT#84260 by Michael Schout
+
+=head2 Changes in DBI 1.624 (svn r15576) 22nd March 2013
+
+  Fixed Gofer for hash randomization in perl 5.17.10+ RT#84146
+
+  Clarify docs for can() re RT#83207
+
+=head2 Changes in DBI 1.623 (svn r15547) 2nd Jan 2013
+
+  Fixed RT#64330 - ping wipes out errstr (Martin J. Evans).
+  Fixed RT#75868 - DBD::Proxy shouldn't call connected() on the server.
+  Fixed RT#80474 - segfault in DESTROY with threads.
+  Fixed RT#81516 - Test failures due to hash randomisation in perl 5.17.6
+    thanks to Jens Rehsack and H.Merijn Brand and feedback on IRC
+  Fixed RT#81724 - Handle copy-on-write scalars (sprout)
+  Fixed unused variable / self-assignment compiler warnings.
+  Fixed default table_info in DBI::DBD::SqlEngine which passed NAMES
+    attribute instead of NAME to DBD::Sponge RT72343 (Martin J. Evans)
+
+  Corrected a spelling error thanks to Chris Sanders.
+  Corrected typo in DBI->installed_versions docs RT#78825
+    thanks to Jan Dubois.
+
+  Refactored table meta information management from DBD::File into
+    DBI::DBD::SqlEngine (H.Merijn Brand, Jens Rehsack)
+  Prevent undefined f_dir being used in opendir (H.Merijn Brand)
+
+  Added logic to force destruction of children before parents
+    during global destruction. See RT#75614.
+  Added DBD::File Plugin-Support for table names and data sources
+    (Jens Rehsack, #dbi Team)
+  Added new tests to 08keeperr for RT#64330
+    thanks to Kenichi Ishigaki.
+  Added extra internal handle type check, RT#79952
+    thanks to Reini Urban.
+  Added cubrid_ registered prefix for DBD::cubrid, RT#78453
+
+  Removed internal _not_impl method (Martin J. Evans).
+
+  NOTE: The "old-style" DBD::DBM attributes 'dbm_ext' and 'dbm_lockfile'
+    have been deprecated for several years and their use will now generate
+    a warning.
+
+=head2 Changes in DBI 1.622 (svn r15327) 6th June 2012
+
+  Fixed lack of =encoding in non-ASCII pod docs. RT#77588
+
+  Corrected typo in DBI::ProfileDumper thanks to Finn Hakansson.
+
+=head2 Changes in DBI 1.621 (svn r15315) 21st May 2012
+
+  Fixed segmentation fault when a thread is created from
+    within another thread RT#77137, thanks to Dave Mitchell.
+  Updated previous Changes to credit Booking.com for sponsoring
+    Dave Mitchell's recent DBI optimization work.
+
+=head2 Changes in DBI 1.620 (svn r15300) 25th April 2012
+
+  Modified column renaming in fetchall_arrayref, added in 1.619,
+    to work on column index numbers not names (an incompatible change).
+  Reworked the fetchall_arrayref documentation.
+  Hash slices in fetchall_arrayref now detect invalid column names.
+
+=head2 Changes in DBI 1.619 (svn r15294) 23rd April 2012
+
+  Fixed the connected method to stop showing the password in
+    trace file (Martin J. Evans).
+  Fixed _install_method to set CvFILE correctly
+    thanks to sprout RT#76296
+  Fixed SqlEngine "list_tables" thanks to David McMath
+    and Norbert Gruener. RT#67223 RT#69260
+
+  Optimized DBI method dispatch thanks to Dave Mitchell.
+  Optimized driver access to DBI internal state thanks to Dave Mitchell.
+  Optimized driver access to handle data thanks to Dave Mitchell.
+    Dave's work on these optimizations was sponsored by Booking.com.
+  Optimized fetchall_arrayref with hash slice thanks
+    to Dagfinn Ilmari Mannsåker. RT#76520
+  Allow renaming columns in fetchall_arrayref hash slices
+    thanks to Dagfinn Ilmari Mannsåker. RT#76572
+  Reserved snmp_ and tree_ for DBD::SNMP and DBD::TreeData
 
 =head2 Changes in DBI 1.618 (svn r15170) 25rd February 2012
 
@@ -15,6 +383,7 @@ DBI::Changes - List of significant changes to the DBI
 
   Significantly optimized method dispatch via cache (Dave Mitchell)
   Significantly optimized DBI internals for threads (Dave Mitchell)
+    Dave's work on these optimizations was sponsored by Booking.com.
   Xsub to xsub calling optimization now enabled for threaded perls.
   Corrected typo in example in docs (David Precious)
   Added note that calling clone() without an arg may warn in future.
@@ -37,6 +406,7 @@ DBI::Changes - List of significant changes to the DBI
   Fixed is_nested_call logic error RT73118 (Reini Urban)
 
   Enhanced performance for threaded perls (Dave Mitchell, Tim Bunce)
+    Dave's work on this optimization was sponsored by Booking.com.
   Enhanced and standardized driver trace level mechanism (Tim Bunce)
   Removed old code that was an inneffective attempt to detect
     people doing DBI->{Attrib}.
@@ -244,7 +614,7 @@ Jens Rehsack, Martin J. Evans, and H.Merijn Brand for all their contributions.
   Fixed DBD_ATTRIB_DELETE macro for driver authors
     and updated DBI::DBD docs thanks to Martin J. Evans.
   Fixed 64bit issues in trace messages thanks to Charles Jardine.
-  Fixed FETCH_many() method to work with drivers that incorrectly return 
+  Fixed FETCH_many() method to work with drivers that incorrectly return
     an empty list from $h->FETCH. Affected gofer.
 
   Added 'sqlite_' as registered prefix for DBD::SQLite.
@@ -273,7 +643,7 @@ Jens Rehsack, Martin J. Evans, and H.Merijn Brand for all their contributions.
   Fixed DBI::PurePerl neat() to behave more like XS neat().
 
   Increased default $DBI::neat_maxlen from 400 to 1000.
-  Increased timeout on tests to accomodate very slow systems.
+  Increased timeout on tests to accommodate very slow systems.
   Changed behaviour of trace levels 1..4 to show less information
     at lower levels.
   Changed the format of the key used for $h->{CachedKids}
@@ -420,7 +790,7 @@ Jens Rehsack, Martin J. Evans, and H.Merijn Brand for all their contributions.
 =head2 Changes in DBI 1.56 (svn rev 9660),  18th June 2007
 
   Fixed printf arg warnings thanks to JDHEDDEN.
-  Fixed returning driver-private sth attributes via gofer.   
+  Fixed returning driver-private sth attributes via gofer.
 
   Changed pod docs docs to use =head3 instead of =item
     so now in html you get links to individual methods etc.
@@ -671,7 +1041,7 @@ Jens Rehsack, Martin J. Evans, and H.Merijn Brand for all their contributions.
     (driver authors who have used it should rerun it).
 
   Updated docs for NULL Value placeholders thanks to Brian Campbell.
-  
+
   Added multi-keyfield nested hash fetching to fetchall_hashref()
     thanks to Zhuang (John) Li for polishing up my draft.
   Added registered driver prefixes: amzn_ for DBD::Amazon and yaswi_ for DBD::Yaswi.
@@ -1082,7 +1452,7 @@ Jens Rehsack, Martin J. Evans, and H.Merijn Brand for all their contributions.
 
   Documentation changes:
     Documented $high_resolution_time = dbi_time() function.
-    Documented that bind_col() can take an atribute hash.
+    Documented that bind_col() can take an attribute hash.
     Clarified documentation for ParamValues attribute hash keys.
     Many good DBI documentation tweaks from Jonathan Leffler,
       including a major update to the DBI::DBD driver author guide.
@@ -1212,7 +1582,7 @@ Jens Rehsack, Martin J. Evans, and H.Merijn Brand for all their contributions.
   : This does not affect statements that only select one column, which is
   : usually the case when fetchrow_array is called in a scalar context.
   : FYI, this change was triggered by discovering that the fetchrow_array
-  : implementation in Driver.xst (used by most compiled drivers) 
+  : implementation in Driver.xst (used by most compiled drivers)
   : didn't match the DBI specification. Rather than change the code
   : to match, and risk breaking existing applications, I've changed the
   : specification (that part was always of dubious value anyway).
@@ -1221,7 +1591,7 @@ Jens Rehsack, Martin J. Evans, and H.Merijn Brand for all their contributions.
   : If you are still using perl 5.005_03 you should be making plans to
   : upgrade to at least perl 5.6.1, or 5.8.0. Perl 5.8.0 is due to be
   : released in the next week or so.  (Although it's a "point 0" release,
-  : it is the most throughly tested release ever.)
+  : it is the most thoroughly tested release ever.)
 
   Added XS/C implementations of selectrow_array, selectrow_arrayref, and
     selectall_arrayref to Driver.xst. See DBI 1.26 Changes for more info.
@@ -1265,7 +1635,7 @@ Jens Rehsack, Martin J. Evans, and H.Merijn Brand for all their contributions.
 
   Added C implementations of selectrow_arrayref() and fetchall_arrayref()
     in Driver.xst.  All compiled drivers using Driver.xst will now be
-    faster making those calls. Most noticable with fetchall_arrayref for
+    faster making those calls. Most noticeable with fetchall_arrayref for
     many rows or selectrow_arrayref with a fast query. For example, using
     DBD::mysql a selectrow_arrayref for a single row using a primary key
     is ~20% faster, and fetchall_arrayref for 20000 rows is twice as fast!
@@ -1955,12 +2325,12 @@ Jens Rehsack, Martin J. Evans, and H.Merijn Brand for all their contributions.
     DBI scripts no longer need to be modified to make use of Apache::DBI.
   Added a ping method and an experimental connect_test_perf method.
   Added a fetchhash and fetch_all methods.
-  The func method no longer pre-clears err and errstr. 
+  The func method no longer pre-clears err and errstr.
   Added ChopBlanks attribute (currently defaults to off, that may change).
     Support for the attribute needs to be implemented by individual drivers.
   Reworked tests into standard t/*.t form.
   Added more pod text.  Fixed assorted bugs.
-  
+
 
 =head2 Changes in DBI 0.79,	7th Apr 1997
 
@@ -2217,7 +2587,7 @@ Jens Rehsack, Martin J. Evans, and H.Merijn Brand for all their contributions.
   Added DBI->internal->{DebugLog} = $filename;
   Reworked internal logging.
   Added $VERSION.
-  Made disconnect_all a compulsary method for drivers.
+  Made disconnect_all a compulsory method for drivers.
 
 
 =head1 ANCIENT HISTORY

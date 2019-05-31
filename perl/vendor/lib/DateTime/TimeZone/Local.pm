@@ -1,14 +1,15 @@
 package DateTime::TimeZone::Local;
-{
-  $DateTime::TimeZone::Local::VERSION = '1.46';
-}
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
-use Class::Load qw( is_class_loaded load_class try_load_class );
+our $VERSION = '2.35';
+
 use DateTime::TimeZone;
 use File::Spec;
+use Module::Runtime qw( require_module );
+use Try::Tiny;
 
 sub TimeZone {
     my $class = shift;
@@ -29,30 +30,35 @@ sub TimeZone {
     # the non-existent modules if they feel a need, and release them
     # to CPAN separately.
     my %subclass = (
-        MSWin32 => 'Win32',
-        VMS     => 'VMS',
-        MacOS   => 'Mac',
-        os2     => 'OS2',
-        epoc    => 'Epoc',
-        NetWare => 'Win32',
-        symbian => 'Win32',
-        dos     => 'OS2',
+        android => 'Android',
         cygwin  => 'Unix',
+        dos     => 'OS2',
+        epoc    => 'Epoc',
+        MacOS   => 'Mac',
+        MSWin32 => 'Win32',
+        NetWare => 'Win32',
+        os2     => 'OS2',
+        symbian => 'Win32',
+        VMS     => 'VMS',
     );
 
     sub _load_subclass {
         my $class = shift;
 
-        my $os_name = $subclass{$^O} || $^O;
+        my $os_name  = $subclass{$^O} || $^O;
         my $subclass = $class . '::' . $os_name;
 
-        return $subclass if is_class_loaded($subclass);
+        return $subclass if $subclass->can('Methods');
 
-        return $subclass if try_load_class($subclass);
+        return $subclass if try {
+            ## no critic (Variables::RequireInitializationForLocalVars)
+            local $SIG{__DIE__};
+            require_module($subclass);
+        };
 
         $subclass = $class . '::Unix';
 
-        load_class($subclass);
+        require_module($subclass);
 
         return $subclass;
     }
@@ -63,12 +69,12 @@ sub FromEnv {
 
     foreach my $var ( $class->EnvVars() ) {
         if ( $class->_IsValidName( $ENV{$var} ) ) {
-            my $tz;
-            {
-                local $@;
+            my $tz = try {
+                ## no critic (Variables::RequireInitializationForLocalVars)
                 local $SIG{__DIE__};
-                $tz = eval { DateTime::TimeZone->new( name => $ENV{$var} ) };
-            }
+                DateTime::TimeZone->new( name => $ENV{$var} );
+            };
+
             return $tz if $tz;
         }
     }
@@ -89,9 +95,11 @@ sub _IsValidName {
 
 # ABSTRACT: Determine the local system's time zone
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -99,7 +107,7 @@ DateTime::TimeZone::Local - Determine the local system's time zone
 
 =head1 VERSION
 
-version 1.46
+version 2.35
 
 =head1 SYNOPSIS
 
@@ -130,8 +138,8 @@ will be used instead of falling back to the Unix subclass.
 If no OS-specific module exists, we fall back to using the Unix
 subclass.
 
-See L<DateTime::TimeZone::Local::Unix>,
-L<DateTime::TimeZone::Local::Win32>, and
+See L<DateTime::TimeZone::Local::Unix>, L<DateTime::TimeZone::Local::Android>,
+L<DateTime::TimeZone::Local::hpux>, L<DateTime::TimeZone::Local::Win32>, and
 L<DateTime::TimeZone::Local::VMS> for OS-specific details.
 
 =head1 SUBCLASSING
@@ -145,8 +153,8 @@ This method should be provided by your class. It should provide a list
 of methods that will be called to try to determine the local time
 zone.
 
-Each of these methods is expected to return a new
-C<DateTime::TimeZone> object if it determines the time zone.
+Each of these methods is expected to return a new C<DateTime::TimeZone> object
+if it can successfully determine the time zone.
 
 =head2 $class->FromEnv()
 
@@ -161,10 +169,13 @@ items from C<< $class->Methods() >>.
 This method should be provided by your subclass. It should return a
 list of env vars to be checked by C<< $class->FromEnv() >>.
 
+Your class should always include the C<TZ> key as one of the variables to
+check.
+
 =head2 $class->_IsValidName($name)
 
 Given a possible time zone name, this returns a boolean indicating
-whether or not the the name looks valid. It always return false for
+whether or not the name looks valid. It always return false for
 "local" in order to avoid infinite loops.
 
 =head1 EXAMPLE SUBCLASS
@@ -190,19 +201,28 @@ Here is a simple example subclass:
       ...
   }
 
+=head1 SUPPORT
+
+Bugs may be submitted at L<https://github.com/houseabsolute/DateTime-TimeZone/issues>.
+
+I am also usually active on IRC as 'autarch' on C<irc://irc.perl.org>.
+
+=head1 SOURCE
+
+The source code repository for DateTime-TimeZone can be found at L<https://github.com/houseabsolute/DateTime-TimeZone>.
+
 =head1 AUTHOR
 
 Dave Rolsky <autarch@urth.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Dave Rolsky.
+This software is copyright (c) 2019 by Dave Rolsky.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
+The full text of the license can be found in the
+F<LICENSE> file included with this distribution.
+
 =cut
-
-
-__END__
-

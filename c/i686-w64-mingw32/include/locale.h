@@ -1,12 +1,16 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_LOCALE
 #define _INC_LOCALE
 
-#include <_mingw.h>
+#include <crtdefs.h>
+
+#ifdef __cplusplus
+#include <stdio.h>
+#endif
 
 #pragma pack(push,_CRT_PACKING)
 
@@ -75,7 +79,7 @@ extern "C" {
   int __cdecl _configthreadlocale(int _Flag);
   char *__cdecl setlocale(int _Category,const char *_Locale);
   _CRTIMP struct lconv *__cdecl localeconv(void);
-  _locale_t __cdecl _get_current_locale(void);
+  _CRTIMP _locale_t __cdecl _get_current_locale(void);
   _locale_t __cdecl _create_locale(int _Category,const char *_Locale);
   void __cdecl _free_locale(_locale_t _Locale);
   _locale_t __cdecl __get_current_locale(void);

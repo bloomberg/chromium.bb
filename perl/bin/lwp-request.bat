@@ -1,23 +1,37 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
-#!/usr/bin/perl -w
-#line 15
+#!/usr/bin/perl
+#line 29
 
 # Simple user agent using LWP library.
 
 =head1 NAME
 
-lwp-request, GET, POST, HEAD - Simple command line user agent
+lwp-request - Simple command line user agent
 
 =head1 SYNOPSIS
 
@@ -141,22 +155,22 @@ Do B<not> print the content of the response.
 
 Process HTML content in various ways before printing it.  If the
 content type of the response is not HTML, then this option has no
-effect.  The legal format values are; I<text>, I<ps>, I<links>,
-I<html> and I<dump>.
+effect.  The legal format values are; C<text>, C<ps>, C<links>,
+C<html> and C<dump>.
 
-If you specify the I<text> format then the HTML will be formatted as
-plain latin1 text.  If you specify the I<ps> format then it will be
+If you specify the C<text> format then the HTML will be formatted as
+plain C<latin1> text.  If you specify the C<ps> format then it will be
 formatted as Postscript.
 
-The I<links> format will output all links found in the HTML document.
+The C<links> format will output all links found in the HTML document.
 Relative links will be expanded to absolute ones.
 
-The I<html> format will reformat the HTML code and the I<dump> format
+The C<html> format will reformat the HTML code and the C<dump> format
 will just dump the HTML syntax tree.
 
 Note that the C<HTML-Tree> distribution needs to be installed for this
 option to work.  In addition the C<HTML-Format> distribution needs to
-be installed for I<-o text> or I<-o ps> to work.
+be installed for C<-o text> or C<-o ps> to work.
 
 =item -v
 
@@ -193,12 +207,12 @@ Gisle Aas <gisle@aas.no>
 
 =cut
 
-$progname = $0;
-$progname =~ s,.*[\\/],,;  # use basename only
-$progname =~ s/\.\w*$//;   # strip extension, if any
+use strict;
+use warnings;
 
-$VERSION = "6.03";
-
+my $progname = $0;
+$progname =~ s,.*[\\/],,;    # use basename only
+$progname =~ s/\.\w*$//;     # strip extension, if any
 
 require LWP;
 
@@ -218,87 +232,90 @@ use HTTP::Date qw(time2str str2time);
 #
 # "" = No content in request, "C" = Needs content in request
 #
-%allowed_methods = (
-    GET        => "",
-    HEAD       => "",
-    POST       => "C",
-    PUT        => "C",
-    DELETE     => "",
-    TRACE      => "",
-    OPTIONS    => "",
+my %allowed_methods = (
+    GET     => "",
+    HEAD    => "",
+    POST    => "C",
+    PUT     => "C",
+    DELETE  => "",
+    TRACE   => "",
+    OPTIONS => "",
 );
 
+my %options;
 
 # We make our own specialization of LWP::UserAgent that asks for
 # user/password if document is protected.
 {
-    package RequestAgent;
-    @ISA = qw(LWP::UserAgent);
 
-    sub new
-    { 
-	my $self = LWP::UserAgent::new(@_);
-	$self->agent("lwp-request/$main::VERSION ");
-	$self;
+    package     # hide from PAUSE, $VERSION updaters
+        RequestAgent;
+
+    use strict;
+    use warnings;
+    use base qw(LWP::UserAgent);
+
+    sub new {
+        my $self = LWP::UserAgent::new(@_);
+        $self->agent("lwp-request/$LWP::VERSION ");
+        $self;
     }
 
-    sub get_basic_credentials
-    {
-	my($self, $realm, $uri) = @_;
-	if ($main::options{'C'}) {
-	    return split(':', $main::options{'C'}, 2);
-	}
-	elsif (-t) {
-	    my $netloc = $uri->host_port;
-	    print STDERR "Enter username for $realm at $netloc: ";
-	    my $user = <STDIN>;
-	    chomp($user);
-	    return (undef, undef) unless length $user;
-	    print STDERR "Password: ";
-	    system("stty -echo");
-	    my $password = <STDIN>;
-	    system("stty echo");
-	    print STDERR "\n";  # because we disabled echo
-	    chomp($password);
-	    return ($user, $password);
-	}
-	else {
-	    return (undef, undef)
-	}
+    sub get_basic_credentials {
+        my ($self, $realm, $uri) = @_;
+        if ($options{'C'}) {
+            return split(':', $options{'C'}, 2);
+        }
+        elsif (-t) {
+            my $netloc = $uri->host_port;
+            print STDERR "Enter username for $realm at $netloc: ";
+            my $user = <STDIN>;
+            chomp($user);
+            return (undef, undef) unless length $user;
+            print STDERR "Password: ";
+            system("stty -echo");
+            my $password = <STDIN>;
+            system("stty echo");
+            print STDERR "\n";    # because we disabled echo
+            chomp($password);
+            return ($user, $password);
+        }
+        else {
+            return (undef, undef);
+        }
     }
 }
 
-$method = uc(lc($progname) eq "lwp-request" ? "GET" : $progname);
+my $method = uc(lc($progname) eq "lwp-request" ? "GET" : $progname);
 
 # Parse command line
 use Getopt::Long;
-
 my @getopt_args = (
-    'a', # content i/o in text(ascii) mode
-    'm=s', # set method
-    'f', # make request even if method is not in %allowed_methods
-    'b=s', # base url
-    't=s', # timeout
-    'i=s', # if-modified-since
-    'c=s', # content type for POST
-    'C=s', # credentials for basic authorization
-    'H=s@', # extra headers, form "Header: value string"
-    #
-    'u', # display method and URL of request
-    'U', # display request headers also
-    's', # display status code
-    'S', # display whole chain of status codes
-    'e', # display response headers (default for HEAD)
-    'E', # display whole chain of headers
-    'd', # don't display content
-    #
-    'h', # print usage
-    'v', # print version
-    #
-    'p=s', # proxy URL
-    'P', # don't load proxy setting from environment
-    #
-    'o=s', # output format
+    'a',       # content i/o in text(ascii) mode
+    'm=s',     # set method
+    'f',       # make request even if method is not in %allowed_methods
+    'b=s',     # base url
+    't=s',     # timeout
+    'i=s',     # if-modified-since
+    'c=s',     # content type for POST
+    'C=s',     # credentials for basic authorization
+    'H=s@',    # extra headers, form "Header: value string"
+               #
+    'u',       # display method and URL of request
+    'U',       # display request headers also
+    's',       # display status code
+    'S',       # display whole chain of status codes
+    'e',       # display response headers (default for HEAD)
+    'E',       # display whole chain of headers
+    'd',       # don't display content
+               #
+    'h',       # print usage
+    'v',       # print version
+               #
+    'p=s',     # proxy URL
+    'P',       # don't load proxy setting from environment
+               #
+    'o=s',     # output format
 );
 
 Getopt::Long::config("noignorecase", "bundling");
@@ -307,9 +324,9 @@ unless (GetOptions(\%options, @getopt_args)) {
 }
 if ($options{'v'}) {
     require LWP;
-    my $DISTNAME = 'libwww-perl-' . LWP::Version();
+    my $DISTNAME = 'libwww-perl-' . $LWP::VERSION;
     die <<"EOT";
-This is lwp-request version $VERSION ($DISTNAME)
+This is lwp-request version $LWP::VERSION ($DISTNAME)
 
 Copyright 1995-1999, Gisle Aas.
 
@@ -321,7 +338,7 @@ EOT
 usage() if $options{'h'} || !@ARGV;
 
 # Create the user agent object
-$ua = RequestAgent->new;
+my $ua = RequestAgent->new;
 
 # Load proxy settings from *_proxy environment variables.
 $ua->env_proxy unless $options{'P'};
@@ -330,7 +347,7 @@ $method = uc($options{'m'}) if defined $options{'m'};
 
 if ($options{'f'}) {
     if ($options{'c'}) {
-        $allowed_methods{$method} = "C";  # force content
+        $allowed_methods{$method} = "C";    # force content
     }
     else {
         $allowed_methods{$method} = "";
@@ -360,7 +377,7 @@ $options{'s'} = 1 if $options{'e'};
 if (defined $options{'t'}) {
     $options{'t'} =~ /^(\d+)([smh])?/;
     die "$progname: Illegal timeout value!\n" unless defined $1;
-    $timeout = $1;
+    my $timeout = $1;
     if (defined $2) {
         $timeout *= 60   if $2 eq "m";
         $timeout *= 3600 if $2 eq "h";
@@ -369,6 +386,7 @@ if (defined $options{'t'}) {
 }
 
 if (defined $options{'i'}) {
+    my $time;
     if (-e $options{'i'}) {
         $time = (stat _)[9];
     }
@@ -380,20 +398,23 @@ if (defined $options{'i'}) {
     $options{'i'} = time2str($time);
 }
 
-$content = undef;
-$user_ct = undef;
+my $content;
+my $user_ct;
 if ($allowed_methods{$method} eq "C") {
+
     # This request needs some content
     unless (defined $options{'c'}) {
+
         # set default content type
-        $options{'c'} = ($method eq "POST") ?
-              "application/x-www-form-urlencoded"
+        $options{'c'}
+            = ($method eq "POST")
+            ? "application/x-www-form-urlencoded"
             : "text/plain";
     }
     else {
         die "$progname: Illegal Content-type format\n"
             unless $options{'c'} =~ m,^[\w\-]+/[\w\-.+]+(?:\s*;.*)?$,;
-	$user_ct++;
+        $user_ct++;
     }
     print STDERR "Please enter content ($options{'c'}) to be ${method}ed:\n"
         if -t;
@@ -406,31 +427,32 @@ else {
 }
 
 # Set up a request.  We will use the same request object for all URLs.
-$request = HTTP::Request->new($method);
+my $request = HTTP::Request->new($method);
 $request->header('If-Modified-Since', $options{'i'}) if defined $options{'i'};
-for my $user_header (@{ $options{'H'} || [] }) {
+for my $user_header (@{$options{'H'} || []}) {
     my ($header_name, $header_value) = split /\s*:\s*/, $user_header, 2;
     $header_name =~ s/^\s+//;
     if (lc($header_name) eq "user-agent") {
-	$header_value .= $ua->agent if $header_value =~ /\s\z/;
-	$ua->agent($header_value);
+        $header_value .= $ua->agent if $header_value =~ /\s\z/;
+        $ua->agent($header_value);
     }
     else {
-	$request->push_header($header_name, $header_value);
+        $request->push_header($header_name, $header_value);
     }
 }
+
 #$request->header('Accept', '*/*');
-if ($options{'c'}) { # will always be set for request that wants content
+if ($options{'c'}) {    # will always be set for request that wants content
     my $header = ($user_ct ? 'header' : 'init_header');
     $request->$header('Content-Type', $options{'c'});
-    $request->header('Content-Length', length $content);  # Not really needed
+    $request->header('Content-Length', length $content);    # Not really needed
     $request->content($content);
 }
 
-$errors = 0;
+my $errors = 0;
 
 sub show {
-    my $r = shift;
+    my $r    = shift;
     my $last = shift;
     print $method, " ", $r->request->uri->as_string, "\n" if $options{'u'};
     print $r->request->headers_as_string, "\n" if $options{'U'};
@@ -439,92 +461,94 @@ sub show {
 }
 
 # Ok, now we perform the requests, one URL at a time
-while ($url = shift) {
+while (my $url = shift) {
+
     # Create the URL object, but protect us against bad URLs
     eval {
-	if ($url =~ /^\w+:/ || $options{'b'}) {  # is there any scheme specification
-	    $url = URI->new(decode(locale => $url), decode(locale => $options{'b'}));
-	    $url = $url->abs(decode(locale => $options{'b'})) if $options{'b'};
-	}
-	else {
-	    $url = uf_uri($url);
+        if ($url =~ /^\w+:/ || $options{'b'})
+        {    # is there any scheme specification
+            $url = URI->new(decode(locale => $url),
+                decode(locale => $options{'b'}));
+            $url = $url->abs(decode(locale => $options{'b'})) if $options{'b'};
+        }
+        else {
+            $url = uf_uri($url);
         }
     };
     if ($@) {
-	$@ =~ s/ at .* line \d+.*//;
-	print STDERR $@;
-	$errors++;
-	next;
+        $@ =~ s/ at .* line \d+.*//;
+        print STDERR $@;
+        $errors++;
+        next;
     }
 
     $ua->proxy($url->scheme, decode(locale => $options{'p'})) if $options{'p'};
 
     # Send the request and get a response back from the server
     $request->uri($url);
-    $response = $ua->request($request);
+    my $response = $ua->request($request);
 
     if ($options{'S'}) {
         for my $r ($response->redirects) {
-	    show($r);
+            show($r);
         }
     }
     show($response, $options{'e'});
 
     unless ($options{'d'}) {
-	if ($options{'o'} &&
-	    $response->content_type eq 'text/html') {
-	    eval {
-		require HTML::Parse;
-	    };
-	    if ($@) {
-		if ($@ =~ m,^Can't locate HTML/Parse.pm in \@INC,) {
-		    die "The HTML-Tree distribution need to be installed for the -o option to be used.\n";
-		}
-		else {
-		    die $@;
-		}
-	    }
-	    my $html = HTML::Parse::parse_html($response->content);
-	    {
-		$options{'o'} eq 'ps' && do {
-		    require HTML::FormatPS;
-		    my $f = HTML::FormatPS->new;
-		    print $f->format($html);
-		    last;
-		};
-		$options{'o'} eq 'text' && do {
-		    require HTML::FormatText;
-		    my $f = HTML::FormatText->new;
-		    print $f->format($html);
-		    last;
-		};
-		$options{'o'} eq 'html' && do {
-		    print $html->as_HTML;
-		    last;
-		};
-		$options{'o'} eq 'links' && do {
-		    my $base = $response->base;
-		    $base = $options{'b'} if $options{'b'};
-		    for ( @{ $html->extract_links } ) {
-			my($link, $elem) = @$_;
-			my $tag = uc $elem->tag;
-			$link = URI->new($link)->abs($base)->as_string;
-			print "$tag\t$link\n";
-		    }
-		    last;
-		};
-		$options{'o'} eq 'dump' && do {
-		    $html->dump;
-		    last;
-		};
-		# It is bad to not notice this before now :-(
-		die "Illegal -o option value ($options{'o'})\n";
-	    }
-	}
-	else {
-	    binmode STDOUT unless $options{'a'};
-	    print $response->content;
-	}
+        if ($options{'o'} && $response->content_type eq 'text/html') {
+            eval { require HTML::Parse; };
+            if ($@) {
+                if ($@ =~ m,^Can't locate HTML/Parse.pm in \@INC,) {
+                    die
+                        "The HTML-Tree distribution need to be installed for the -o option to be used.\n";
+                }
+                else {
+                    die $@;
+                }
+            }
+            my $html = HTML::Parse::parse_html($response->content);
+            {
+                $options{'o'} eq 'ps' && do {
+                    require HTML::FormatPS;
+                    my $f = HTML::FormatPS->new;
+                    print $f->format($html);
+                    last;
+                };
+                $options{'o'} eq 'text' && do {
+                    require HTML::FormatText;
+                    my $f = HTML::FormatText->new;
+                    print $f->format($html);
+                    last;
+                };
+                $options{'o'} eq 'html' && do {
+                    print $html->as_HTML;
+                    last;
+                };
+                $options{'o'} eq 'links' && do {
+                    my $base = $response->base;
+                    $base = $options{'b'} if $options{'b'};
+                    for (@{$html->extract_links}) {
+                        my ($link, $elem) = @$_;
+                        my $tag = uc $elem->tag;
+                        $link = URI->new($link)->abs($base)->as_string;
+                        print "$tag\t$link\n";
+                    }
+                    last;
+                };
+                $options{'o'} eq 'dump' && do {
+                    $html->dump;
+                    last;
+                };
+
+                # It is bad to not notice this before now :-(
+                die "Illegal -o option value ($options{'o'})\n";
+            }
+        }
+        else {
+            binmode STDOUT unless $options{'a'};
+            print $response->content;
+        }
     }
 
     $errors++ unless $response->is_success;
@@ -533,8 +557,7 @@ while ($url = shift) {
 exit $errors;
 
 
-sub usage
-{
+sub usage {
     die <<"EOT";
 Usage: $progname [-options] <url>...
     -m <method>   use method for the request (default is '$method')

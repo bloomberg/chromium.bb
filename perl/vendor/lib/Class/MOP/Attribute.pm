@@ -1,11 +1,5 @@
-
 package Class::MOP::Attribute;
-BEGIN {
-  $Class::MOP::Attribute::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Class::MOP::Attribute::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -16,7 +10,7 @@ use Carp         'confess';
 use Scalar::Util 'blessed', 'weaken';
 use Try::Tiny;
 
-use base 'Class::MOP::Object', 'Class::MOP::Mixin::AttributeCore';
+use parent 'Class::MOP::Object', 'Class::MOP::Mixin::AttributeCore';
 
 # NOTE: (meta-circularity)
 # This method will be replaced in the
@@ -36,23 +30,34 @@ sub new {
     my $name = $options{name};
 
     (defined $name)
-        || confess "You must provide a name for the attribute";
+        || $class->_throw_exception( MOPAttributeNewNeedsAttributeName => class  => $class,
+                                                                 params => \%options
+                          );
 
     $options{init_arg} = $name
         if not exists $options{init_arg};
     if(exists $options{builder}){
-        confess("builder must be a defined scalar value which is a method name")
+        $class->_throw_exception( BuilderMustBeAMethodName => class  => $class,
+                                                     params => \%options
+                       )
             if ref $options{builder} || !(defined $options{builder});
-        confess("Setting both default and builder is not allowed.")
+        $class->_throw_exception( BothBuilderAndDefaultAreNotAllowed => class  => $class,
+                                                               params => \%options
+                       )
             if exists $options{default};
     } else {
         ($class->is_default_a_coderef(\%options))
-            || confess("References are not allowed as default values, you must ".
-                       "wrap the default of '$name' in a CODE reference (ex: sub { [] } and not [])")
+            || $class->_throw_exception( ReferencesAreNotAllowedAsDefault => class          => $class,
+                                                                    params         => \%options,
+                                                                    attribute_name => $options{name}
+                              )
                 if exists $options{default} && ref $options{default};
     }
+
     if( $options{required} and not( defined($options{builder}) || defined($options{init_arg}) || exists $options{default} ) ) {
-        confess("A required attribute must have either 'init_arg', 'builder', or 'default'");
+        $class->_throw_exception( RequiredAttributeLacksInitialization => class  => $class,
+                                                                 params => \%options
+                       );
     }
 
     $class->_new(\%options);
@@ -94,7 +99,7 @@ sub _new {
 }
 
 # NOTE:
-# this is a primative (and kludgy) clone operation
+# this is a primitive (and kludgy) clone operation
 # for now, it will be replaced in the Class::MOP
 # bootstrap with a proper one, however we know
 # that this one will work fine for now.
@@ -103,6 +108,11 @@ sub clone {
     my %options = @_;
     (blessed($self))
         || confess "Can only clone an instance";
+    # this implementation is overwritten by the bootstrap process,
+    # so this exception will never trigger. If it ever does occur,
+    # it indicates a gigantic problem with the most internal parts
+    # of Moose, so we wouldn't want a Moose-based exception object anyway
+
     return bless { %{$self}, %options } => ref($self);
 }
 
@@ -137,7 +147,9 @@ sub initialize_instance_slot {
             );
         }
         else {
-            confess(ref($instance)." does not support builder method '". $self->{'builder'} ."' for attribute '" . $self->name . "'");
+            $self->_throw_exception( BuilderMethodNotSupportedForAttribute => attribute => $self,
+                                                                      instance  => $instance
+                           );
         }
     }
 }
@@ -238,7 +250,9 @@ sub slots { (shift)->name }
 sub attach_to_class {
     my ($self, $class) = @_;
     (blessed($class) && $class->isa('Class::MOP::Class'))
-        || confess "You must pass a Class::MOP::Class instance (or a subclass)";
+        || $self->_throw_exception( AttachToClassNeedsAClassMOPClassInstanceOrASubclass => attribute => $self,
+                                                                                   class     => $class
+                          );
     weaken($self->{'associated_class'} = $class);
 }
 
@@ -364,7 +378,11 @@ sub _process_accessors {
 
     if (ref($accessor)) {
         (ref($accessor) eq 'HASH')
-            || confess "bad accessor/reader/writer/predicate/clearer format, must be a HASH ref";
+            || $self->_throw_exception( BadOptionFormat => attribute    => $self,
+                                                   option_value => $accessor,
+                                                   option_name  => $type
+                              );
+
         my ($name, $method) = %{$accessor};
 
         $method_ctx->{description} = $self->_accessor_description($name, $type);
@@ -397,7 +415,11 @@ sub _process_accessors {
             );
         }
         catch {
-            confess "Could not create the '$type' method for " . $self->name . " because : $_";
+            $self->_throw_exception( CouldNotCreateMethod => attribute    => $self,
+                                                     option_value => $accessor,
+                                                     option_name  => $type,
+                                                     error        => $_
+                           );
         };
         $self->associate_method($method);
         return ($accessor, $method);
@@ -476,9 +498,11 @@ sub install_accessors {
 
 # ABSTRACT: Attribute Meta Object
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -486,7 +510,7 @@ Class::MOP::Attribute - Attribute Meta Object
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -930,7 +954,7 @@ and by metaclass instances.
 
 =item B<< $attr->associated_class >>
 
-This returns the C<Class::MOP::Class> with which this attribute is
+This returns the L<Class::MOP::Class> with which this attribute is
 associated, if any.
 
 =item B<< $attr->attach_to_class($metaclass) >>
@@ -1020,21 +1044,57 @@ metaclass.
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-
-

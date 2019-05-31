@@ -1,4 +1,4 @@
-/*    fakestdio.h
+/*    fakesdio.h
  *
  *    Copyright (C) 2000, by Larry Wall and others
  *
@@ -123,11 +123,5 @@
 #define fgets(s,n,f)		_CANNOT _fgets_
 
 /*
- * Local variables:
- * c-indentation-style: bsd
- * c-basic-offset: 4
- * indent-tabs-mode: t
- * End:
- *
- * ex: set ts=8 sts=4 sw=4 noet:
+ * ex: set ts=8 sts=4 sw=4 et:
  */

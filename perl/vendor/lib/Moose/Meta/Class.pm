@@ -1,34 +1,24 @@
-
 package Moose::Meta::Class;
-BEGIN {
-  $Moose::Meta::Class::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Class::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use Class::Load qw(load_class);
 use Class::MOP;
-use Carp qw( confess );
 use Data::OptList;
-use List::Util qw( first );
-use List::MoreUtils qw( any all uniq first_index );
+use List::Util 1.33 qw( any );
 use Scalar::Util 'blessed';
 
 use Moose::Meta::Method::Overridden;
 use Moose::Meta::Method::Augmented;
-use Moose::Error::Default;
 use Moose::Meta::Class::Immutable::Trait;
 use Moose::Meta::Method::Constructor;
 use Moose::Meta::Method::Destructor;
 use Moose::Meta::Method::Meta;
-use Moose::Util;
+use Moose::Util 'throw_exception';
 use Class::MOP::MiniTrait;
 
-use base 'Class::MOP::Class';
+use parent 'Class::MOP::Class';
 
 Class::MOP::MiniTrait::apply(__PACKAGE__, 'Moose::Meta::Object::Trait');
 
@@ -64,12 +54,6 @@ __PACKAGE__->meta->add_attribute('destructor_class' => (
     Class::MOP::_definition_context(),
 ));
 
-__PACKAGE__->meta->add_attribute('error_class' => (
-    accessor => 'error_class',
-    default  => 'Moose::Error::Default',
-    Class::MOP::_definition_context(),
-));
-
 sub initialize {
     my $class = shift;
     my @args = @_;
@@ -93,7 +77,7 @@ sub create {
     my %options = @args;
 
     (ref $options{roles} eq 'ARRAY')
-        || $class->throw_error("You must pass an ARRAY ref of roles", data => $options{roles})
+        || throw_exception( RolesInCreateTakesAnArrayRef => params => \%options )
             if exists $options{roles};
 
     my $package = delete $options{package};
@@ -122,7 +106,9 @@ sub _anon_cache_key {
 
     my $roles = Data::OptList::mkopt(($options{roles} || []), {
         moniker  => 'role',
-        val_test => sub { ref($_[0]) eq 'HASH' },
+        name_test => sub {
+            ! ref $_[0] or blessed($_[0]) && $_[0]->isa('Moose::Meta::Role')
+        },
     });
 
     my @role_keys;
@@ -181,7 +167,6 @@ sub reinitialize {
             instance_metaclass
             constructor_class
             destructor_class
-            error_class
         );
     }
 
@@ -195,7 +180,9 @@ sub reinitialize {
 sub add_role {
     my ($self, $role) = @_;
     (blessed($role) && $role->isa('Moose::Meta::Role'))
-        || $self->throw_error("Roles must be instances of Moose::Meta::Role", data => $role);
+        || throw_exception( AddRoleTakesAMooseMetaRoleInstance => role_to_be_added => $role,
+                                                                  class_name       => $self->name,
+                          );
     push @{$self->roles} => $role;
 }
 
@@ -207,8 +194,12 @@ sub role_applications {
 
 sub add_role_application {
     my ($self, $application) = @_;
+
     (blessed($application) && $application->isa('Moose::Meta::Role::Application::ToClass'))
-        || $self->throw_error("Role applications must be instances of Moose::Meta::Role::Application::ToClass", data => $application);
+        || throw_exception( InvalidRoleApplication => class_name  => $self->name,
+                                                      application => $application,
+                          );
+
     push @{$self->_get_role_applications} => $application;
 }
 
@@ -216,6 +207,16 @@ sub calculate_all_roles {
     my $self = shift;
     my %seen;
     grep { !$seen{$_->name}++ } map { $_->calculate_all_roles } @{ $self->roles };
+}
+
+sub _roles_with_inheritance {
+    my $self = shift;
+    my %seen;
+    grep { !$seen{$_->name}++ }
+         map { Class::MOP::class_of($_)->can('roles')
+                   ? @{ Class::MOP::class_of($_)->roles }
+                   : () }
+             $self->linearized_isa;
 }
 
 sub calculate_all_roles_with_inheritance {
@@ -232,7 +233,7 @@ sub does_role {
     my ($self, $role_name) = @_;
 
     (defined $role_name)
-        || $self->throw_error("You must supply a role name to look for");
+        || throw_exception( RoleNameRequired => class_name => $self->name );
 
     foreach my $class ($self->class_precedence_list) {
         my $meta = Class::MOP::class_of($class);
@@ -252,7 +253,7 @@ sub excludes_role {
     my ($self, $role_name) = @_;
 
     (defined $role_name)
-        || $self->throw_error("You must supply a role name to look for");
+        || throw_exception( RoleNameRequired => class_name => $self->name );
 
     foreach my $class ($self->class_precedence_list) {
         my $meta = Class::MOP::class_of($class);
@@ -331,9 +332,8 @@ sub _inline_BUILDARGS {
                 'my $params;',
                 'if (scalar @_ == 1) {',
                     'if (!defined($_[0]) || ref($_[0]) ne \'HASH\') {',
-                        $self->_inline_throw_error(
-                            '"Single parameters to new() must be a HASH ref"',
-                            'data => $_[0]',
+                        $self->_inline_throw_exception(
+                            'SingleParamsToNewMustBeHashRef'
                         ) . ';',
                     '}',
                     '$params = { %{ $_[0] } };',
@@ -377,13 +377,21 @@ sub _inline_check_required_attr {
     return unless $attr->can('is_required') && $attr->is_required;
     return if $attr->has_default || $attr->has_builder;
 
-    return (
-        'if (!exists $params->{\'' . $attr->init_arg . '\'}) {',
-            $self->_inline_throw_error(
-                '"Attribute (' . quotemeta($attr->name) . ') is required"'
-            ) . ';',
-        '}',
-    );
+    my $throw = $self->_inline_throw_exception(
+        'AttributeIsRequired',
+        sprintf(
+            <<'EOF', quotemeta( $attr->name ), quotemeta( $attr->init_arg ) ), );
+params             => $params,
+class_name         => $class_name,
+attribute_name     => "%s",
+attribute_init_arg => "%s",
+EOF
+
+    return sprintf( <<'EOF', quotemeta( $attr->init_arg ), $throw )
+if ( !exists $params->{"%s"} ) {
+    %s;
+}
+EOF
 }
 
 # XXX: these two are duplicated from cmop, because we have to pass the tc stuff
@@ -479,6 +487,8 @@ sub _inline_BUILDALL {
     my $self = shift;
 
     my @methods = reverse $self->find_all_methods_by_name('BUILD');
+    return () unless @methods;
+
     my @BUILD_calls;
 
     foreach my $method (@methods) {
@@ -486,7 +496,11 @@ sub _inline_BUILDALL {
             '$instance->' . $method->{class} . '::BUILD($params);';
     }
 
-    return @BUILD_calls;
+    return (
+        'if (!$params->{__no_BUILD__}) {',
+        @BUILD_calls,
+        '}',
+    );
 }
 
 sub _eval_environment {
@@ -543,6 +557,7 @@ sub _eval_environment {
         # error class at this point, but we should still get rid of this
         # at some point
         '$meta'  => \$self,
+        '$class_name' => \($self->name),
     };
 }
 
@@ -551,9 +566,9 @@ sub superclasses {
     my $supers = Data::OptList::mkopt(\@_);
     foreach my $super (@{ $supers }) {
         my ($name, $opts) = @{ $super };
-        load_class($name, $opts);
+        Moose::Util::_load_user_class($name, $opts);
         my $meta = Class::MOP::class_of($name);
-        $self->throw_error("You cannot inherit from a Moose Role ($name)")
+        throw_exception( CanExtendOnlyClasses => role_name => $meta->name )
             if $meta && $meta->isa('Moose::Meta::Role')
     }
     return $self->SUPER::superclasses(map { $_->[0] } @{ $supers });
@@ -579,9 +594,11 @@ sub add_attribute {
 sub add_override_method_modifier {
     my ($self, $name, $method, $_super_package) = @_;
 
-    (!$self->has_method($name))
-        || $self->throw_error("Cannot add an override method if a local method is already present");
-
+    my $existing_method = $self->get_method($name);
+    (!$existing_method)
+        || throw_exception( CannotOverrideLocalMethodIsPresent => class_name => $self->name,
+                                                                  method     => $existing_method,
+                          );
     $self->add_method($name => Moose::Meta::Method::Overridden->new(
         method  => $method,
         class   => $self,
@@ -592,8 +609,11 @@ sub add_override_method_modifier {
 
 sub add_augment_method_modifier {
     my ($self, $name, $method) = @_;
-    (!$self->has_method($name))
-        || $self->throw_error("Cannot add an augment method if a local method is already present");
+    my $existing_method = $self->get_method($name);
+    throw_exception( CannotAugmentIfLocalMethodPresent => class_name => $self->name,
+                                                          method     => $existing_method,
+                   )
+        if( $existing_method );
 
     $self->add_method($name => Moose::Meta::Method::Augmented->new(
         method  => $method,
@@ -623,7 +643,6 @@ sub _base_metaclasses {
     }
     return (
         %metaclasses,
-        error_class => 'Moose::Error::Default',
     );
 }
 
@@ -635,9 +654,9 @@ sub _fix_class_metaclass_incompatibility {
 
     if ($self->_class_metaclass_can_be_made_compatible($super_meta)) {
         ($self->is_pristine)
-            || confess "Can't fix metaclass incompatibility for "
-                     . $self->name
-                     . " because it is not pristine.";
+            || throw_exception( CannotFixMetaclassCompatibility => class      => $self,
+                                                                   superclass => $super_meta
+                              );
         my $super_meta_name = $super_meta->_real_ref_name;
         my $class_meta_subclass_meta_name = Moose::Util::_reconcile_roles_for_metaclass(blessed($self), $super_meta_name);
         my $new_self = $class_meta_subclass_meta_name->reinitialize(
@@ -656,9 +675,10 @@ sub _fix_single_metaclass_incompatibility {
 
     if ($self->_single_metaclass_can_be_made_compatible($super_meta, $metaclass_type)) {
         ($self->is_pristine)
-            || confess "Can't fix metaclass incompatibility for "
-                     . $self->name
-                     . " because it is not pristine.";
+            || throw_exception( CannotFixMetaclassCompatibility => class          => $self,
+                                                                   superclass     => $super_meta,
+                                                                   metaclass_type => $metaclass_type
+                              );
         my $super_meta_name = $super_meta->_real_ref_name;
         my $class_specific_meta_subclass_meta_name = Moose::Util::_reconcile_roles_for_metaclass($self->$metaclass_type, $super_meta->$metaclass_type);
         my $new_self = $super_meta->reinitialize(
@@ -706,9 +726,13 @@ sub _process_new_attribute {
 
 sub _process_inherited_attribute {
     my ($self, $attr_name, %options) = @_;
+
     my $inherited_attr = $self->find_attribute_by_name($attr_name);
     (defined $inherited_attr)
-        || $self->throw_error("Could not find an attribute by the name of '$attr_name' to inherit from in ${\$self->name}", data => $attr_name);
+        || throw_exception( NoAttributeFoundInSuperClass => class_name     => $self->name,
+                                                            attribute_name => $attr_name,
+                                                            params         => \%options
+                          );
     if ($inherited_attr->isa('Moose::Meta::Attribute')) {
         return $inherited_attr->clone_and_inherit_options(%options);
     }
@@ -769,93 +793,20 @@ sub _fixup_attributes_after_rebless {
 
 our $error_level;
 
-sub throw_error {
-    my ( $self, @args ) = @_;
-    local $error_level = ($error_level || 0) + 1;
-    $self->raise_error($self->create_error(@args));
-}
-
-sub _inline_throw_error {
-    my ( $self, @args ) = @_;
-    $self->_inline_raise_error($self->_inline_create_error(@args));
-}
-
-sub raise_error {
-    my ( $self, @args ) = @_;
-    die @args;
-}
-
-sub _inline_raise_error {
-    my ( $self, $message ) = @_;
-
-    return 'die ' . $message;
-}
-
-sub create_error {
-    my ( $self, @args ) = @_;
-
-    require Carp::Heavy;
-
-    local $error_level = ($error_level || 0 ) + 1;
-
-    if ( @args % 2 == 1 ) {
-        unshift @args, "message";
-    }
-
-    my %args = ( metaclass => $self, last_error => $@, @args );
-
-    $args{depth} += $error_level;
-
-    my $class = ref $self ? $self->error_class : "Moose::Error::Default";
-
-    load_class($class);
-
-    $class->new(
-        Carp::caller_info($args{depth}),
-        %args
-    );
-}
-
-sub _inline_create_error {
-    my ( $self, $msg, $args ) = @_;
-    # XXX ignore $args for now, nothing currently uses it anyway
-
-    require Carp::Heavy;
-
-    my %args = (
-        metaclass  => $self,
-        last_error => $@,
-        message    => $msg,
-    );
-
-    my $class = ref $self ? $self->error_class : "Moose::Error::Default";
-
-    load_class($class);
-
-    # don't check inheritance here - the intention is that the class needs
-    # to provide a non-inherited inlining method, because falling back to
-    # the default inlining method is most likely going to be wrong
-    # yes, this is a huge hack, but so is the entire error system, so.
-    return
-          '$meta->create_error('
-        . $msg
-        . ( defined $args ? ', ' . $args : q{} ) . ');'
-        unless $class->meta->has_method('_inline_new');
-
-    $class->_inline_new(
-        # XXX ignore this for now too
-        # Carp::caller_info($args{depth}),
-        %args
-    );
+sub _inline_throw_exception {
+    my ( $self, $exception_type, $throw_args ) = @_;
+    return 'die Module::Runtime::use_module("Moose::Exception::' . $exception_type . '")->new(' . ($throw_args || '') . ')';
 }
 
 1;
 
 # ABSTRACT: The Moose metaclass
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -863,7 +814,7 @@ Moose::Meta::Class - The Moose metaclass
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -905,7 +856,7 @@ that the class does, each optionally followed by a hashref of options
 This overrides the parent's method to accept a C<roles> option, just
 as C<create> does.
 
-It also accepts a C<cache> option. If this is true, then the anonymous
+It also accepts a C<cache> option. If this is C<true>, then the anonymous
 class will be cached based on its superclasses and roles. If an
 existing anonymous class in the cache has the same superclasses and
 roles, it will be reused.
@@ -938,6 +889,9 @@ Each superclass can be followed by a hash reference containing a
 L<-version|Class::MOP/Class Loading Options> value. If the version
 requirement is not satisfied an error will be thrown.
 
+When you pass classes to this method, we will attempt to load them if they are
+not already loaded.
+
 =item B<< $metaclass->add_override_method_modifier($name, $sub) >>
 
 This adds an C<override> method modifier to the package.
@@ -948,12 +902,12 @@ This adds an C<augment> method modifier to the package.
 
 =item B<< $metaclass->calculate_all_roles >>
 
-This will return a unique array of C<Moose::Meta::Role> instances
+This will return a unique array of L<Moose::Meta::Role> instances
 which are attached to this class.
 
 =item B<< $metaclass->calculate_all_roles_with_inheritance >>
 
-This will return a unique array of C<Moose::Meta::Role> instances
+This will return a unique array of L<Moose::Meta::Role> instances
 which are attached to this class, and each of this class's ancestors.
 
 =item B<< $metaclass->add_role($role) >>
@@ -998,36 +952,63 @@ default to L<Moose::Meta::Method::Constructor> and
 L<Moose::Meta::Method::Destructor> respectively. These accessors are
 read-write, so you can use them to change the class name.
 
-=item B<< $metaclass->error_class($class_name) >>
-
-The name of the class used to throw errors. This defaults to
-L<Moose::Error::Default>, which generates an error with a stacktrace
-just like C<Carp::confess>.
-
-=item B<< $metaclass->throw_error($message, %extra) >>
-
-Throws the error created by C<create_error> using C<raise_error>
-
 =back
 
 =head1 BUGS
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

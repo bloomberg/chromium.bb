@@ -157,7 +157,7 @@ sub tag {
     my $options = ref $_[0] eq 'HASH' ? shift : { @_ };
 
     my $tag = '<img src="' . $self->name() . '" ' . $self->attr();
- 
+
     # XHTML spec says that the alt attribute is mandatory, so who
     # are we to argue?
 
@@ -165,8 +165,8 @@ sub tag {
         unless defined $options->{ alt };
 
     if (%$options) {
-        while (my ($key, $val) = each %$options) {
-            my $escaped = escape( $val );
+        for my $key (sort keys %$options) {
+            my $escaped = escape( $options->{$key} );
             $tag .= qq[ $key="$escaped"];
         }
     }
@@ -340,7 +340,7 @@ The corresponding value is a string like: "C<image/png>" or "C<image/jpeg>".
 
 =head2 file_ext
 
-The is the suggested file name extention for a file of the given
+The is the suggested file name extension for a file of the given
 file format.  The value is a 3 letter, lowercase string like
 "C<png>", "C<jpg>".
 
@@ -362,7 +362,7 @@ composed of indexes into a palette.  Of these, only "C<Indexed-RGB>" is
 likely to occur.
 
 (It is similar to the TIFF field PhotometricInterpretation, but this
-name was found to be too long, so we used the PNG inpired term
+name was found to be too long, so we used the PNG inspired term
 instead.)
 
 =head2 resolution

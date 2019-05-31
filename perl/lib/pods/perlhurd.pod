@@ -9,7 +9,7 @@ perlhurd - Perl version 5 on Hurd
 =head1 DESCRIPTION
 
 If you want to use Perl on the Hurd, I recommend using the Debian
-GNU/Hurd distribution ( see http://www.debian.org/ ), even if an
+GNU/Hurd distribution ( see L<http://www.debian.org/> ), even if an
 official, stable release has not yet been made.  The old "gnu-0.2"
 binary distribution will most certainly have additional problems.
 
@@ -28,12 +28,13 @@ information.
 Here are the statistics for Perl 5.005_62 on my system:
 
  Failed Test  Status Wstat Total Fail  Failed  List of failed
- -------------------------------------------------------------------------
+ -----------------------------------------------------------------------
  lib/anydbm.t                 12    1   8.33%  12
  pragma/warnings             333    1   0.30%  215
 
  8 tests and 24 subtests skipped.
- Failed 2/229 test scripts, 99.13% okay. 2/10850 subtests failed, 99.98% okay.
+ Failed 2/229 test scripts, 99.13% okay. 2/10850 subtests failed,
+     99.98% okay.
 
 There are quite a few systems out there that do worse!
 

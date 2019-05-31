@@ -1,192 +1,79 @@
 /*
- * Module: sched.h
- *
- * Purpose:
- *      Provides an implementation of POSIX realtime extensions
- *      as defined in 
- *
- *              POSIX 1003.1b-1993      (POSIX.1b)
- *
- * --------------------------------------------------------------------------
- *
- *      Pthreads-win32 - POSIX Threads Library for Win32
- *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
- *      The current list of contributors is contained
- *      in the file CONTRIBUTORS included with the source
- *      code distribution. The list can also be seen at the
- *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
- * 
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
- * 
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
- * 
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
-#ifndef _SCHED_H
-#define _SCHED_H
+   Copyright (c) 2011-2016  mingw-w64 project
 
-#undef PTW32_LEVEL
+   Permission is hereby granted, free of charge, to any person obtaining a
+   copy of this software and associated documentation files (the "Software"),
+   to deal in the Software without restriction, including without limitation
+   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so, subject to the following conditions:
 
-#if defined(_POSIX_SOURCE)
-#define PTW32_LEVEL 0
-/* Early POSIX */
-#endif
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-#if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 199309
-#undef PTW32_LEVEL
-#define PTW32_LEVEL 1
-/* Include 1b, 1c and 1d */
-#endif
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+*/
 
-#if defined(INCLUDE_NP)
-#undef PTW32_LEVEL
-#define PTW32_LEVEL 2
-/* Include Non-Portable extensions */
-#endif
-
-#define PTW32_LEVEL_MAX 3
-
-#if ( defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112 )  || !defined(PTW32_LEVEL)
-#define PTW32_LEVEL PTW32_LEVEL_MAX
-/* Include everything */
-#endif
-
-
-#if __GNUC__ && ! defined (__declspec)
-# error Please upgrade your GNU compiler to one that supports __declspec.
-#endif
-
-/*
- * When building the DLL code, you should define PTW32_BUILD so that
- * the variables/functions are exported correctly. When using the DLL,
- * do NOT define PTW32_BUILD, and then the variables/functions will
- * be imported correctly.
- */
-#ifndef PTW32_STATIC_LIB
-#  ifdef PTW32_BUILD
-#    define PTW32_DLLPORT __declspec (dllexport)
-#  else
-#    define PTW32_DLLPORT __declspec (dllimport)
-#  endif
-#else
-#  define PTW32_DLLPORT
-#endif
-
-/*
- * This is a duplicate of what is in the autoconf config.h,
- * which is only used when building the pthread-win32 libraries.
- */
-
-#ifndef PTW32_CONFIG_H
-#  if defined(WINCE)
-#    define NEED_ERRNO
-#    define NEED_SEM
-#  endif
-#  if defined(_UWIN) || defined(__MINGW32__)
-#    define HAVE_MODE_T
-#  endif
-#endif
-
-/*
- *
- */
-
-#if PTW32_LEVEL >= PTW32_LEVEL_MAX
-#ifdef NEED_ERRNO
-#include "need_errno.h"
-#else
+#include <stddef.h>
 #include <errno.h>
-#endif
-#endif /* PTW32_LEVEL >= PTW32_LEVEL_MAX */
+#include <sys/types.h>
 
-#if defined(__MINGW32__) || defined(_UWIN)
-# if PTW32_LEVEL >= PTW32_LEVEL_MAX
-/* For pid_t */
-#  include <sys/types.h>
-/* Required by Unix 98 */
-#  include <time.h>
-# else
-#  define __PTW_DEFINE_PID_T
-# endif
-#else
-# define  __PTW_DEFINE_PID_T
-#endif
+#include <process.h>
+#include <limits.h>
+#include <signal.h>
 
-#if defined(__PTW_DEFINE_PID_T)
-# ifndef _PID_T_
-#  ifndef _WIN64
-   typedef int pid_t;
-#  else
-   typedef long long pid_t;
-#  endif
-#  define _PID_T_
-# endif
-# undef __PTW_DEFINE_PID_T
-#endif
+#include <sys/timeb.h>
 
-/* Thread scheduling policies */
+#ifndef WIN_PTHREADS_SCHED_H
+#define WIN_PTHREADS_SCHED_H
 
-enum {
-  SCHED_OTHER = 0,
-  SCHED_FIFO,
-  SCHED_RR,
-  SCHED_MIN   = SCHED_OTHER,
-  SCHED_MAX   = SCHED_RR
-};
+#ifndef SCHED_OTHER
+/* Some POSIX realtime extensions, mostly stubbed */
+#define SCHED_OTHER     0
+#define SCHED_FIFO      1
+#define SCHED_RR        2
+#define SCHED_MIN       SCHED_OTHER
+#define SCHED_MAX       SCHED_RR
 
 struct sched_param {
   int sched_priority;
 };
 
 #ifdef __cplusplus
-extern "C"
-{
-#endif                          /* __cplusplus */
+extern "C" {
+#endif
 
-PTW32_DLLPORT int __cdecl sched_yield (void);
+#if defined DLL_EXPORT && !defined (WINPTHREAD_EXPORT_ALL_DEBUG)
+#ifdef IN_WINPTHREAD
+#define WINPTHREAD_SCHED_API __declspec(dllexport)
+#else
+#define WINPTHREAD_SCHED_API __declspec(dllimport)
+#endif
+#else
+#define WINPTHREAD_SCHED_API
+#endif
 
-PTW32_DLLPORT int __cdecl sched_get_priority_min (int policy);
-
-PTW32_DLLPORT int __cdecl sched_get_priority_max (int policy);
-
-PTW32_DLLPORT int __cdecl sched_setscheduler (pid_t pid, int policy);
-
-PTW32_DLLPORT int __cdecl sched_getscheduler (pid_t pid);
-
-/*
- * Note that this macro returns ENOTSUP rather than
- * ENOSYS as might be expected. However, returning ENOSYS
- * should mean that sched_get_priority_{min,max} are
- * not implemented as well as sched_rr_get_interval.
- * This is not the case, since we just don't support
- * round-robin scheduling. Therefore I have chosen to
- * return the same value as sched_setscheduler when
- * SCHED_RR is passed to it.
- */
-#define sched_rr_get_interval(_pid, _interval) \
-  ( errno = ENOTSUP, (int) -1 )
-
+int WINPTHREAD_SCHED_API sched_yield(void);
+int WINPTHREAD_SCHED_API sched_get_priority_min(int pol);
+int WINPTHREAD_SCHED_API sched_get_priority_max(int pol);
+int WINPTHREAD_SCHED_API sched_getscheduler(pid_t pid);
+int WINPTHREAD_SCHED_API sched_setscheduler(pid_t pid, int pol, const struct sched_param *param);
 
 #ifdef __cplusplus
-}                               /* End of extern "C" */
-#endif                          /* __cplusplus */
+}
+#endif
 
-#undef PTW32_LEVEL
-#undef PTW32_LEVEL_MAX
+#endif
 
-#endif                          /* !_SCHED_H */
+#ifndef sched_rr_get_interval
+#define sched_rr_get_interval(_p, _i) \
+  ( errno = ENOTSUP, (int) -1 )
+#endif
 
+#endif /* WIN_PTHREADS_SCHED_H */

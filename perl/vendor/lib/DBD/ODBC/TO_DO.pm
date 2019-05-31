@@ -1,3 +1,5 @@
+use strict;
+
 =head1 NAME
 
 DBD::ODBC::TO_DO - Things to do in DBD::ODBC
@@ -9,8 +11,6 @@ $Revision: 10667 $
 =cut
 
 =head1 Todo
-
-  Add row caching/multiple row fetches to speed selects
 
   Better/more tests on multiple statement handles which ensure the
     correct number of rows
@@ -25,12 +25,10 @@ $Revision: 10667 $
 
   There is a Columns private ODBC method which is not documented.
 
-  Add support for sending lobs in chunks instead of all in one go. Although
-    DBD::ODBC uses SQLParamData and SQLPutData internally they are not exposed
-    so anyone binding a lob has to have all of it available before it can
-    be bound.
-
-  Try to produce a Module::Install build.
+  Add support for sending lobs in chunks instead of all in one
+    go. Although DBD::ODBC uses SQLParamData and SQLPutData internally
+    they are not exposed so anyone binding a lob has to have all of it
+    available before it can be bound.
 
   Why does level 15 tracing of any DBD::ODBC script show alot of these:
     !!DBD::ODBC unsupported attribute passed (PrintError)
@@ -43,9 +41,6 @@ $Revision: 10667 $
   Anywhere we are storing a value in an SV that we didn't create
     (and thus might have magic) should probably set magic.
 
-  Work out how to use Unicode in freeTDS as it does not have SQLW functions
-    see examples/freetds_unicode.pl latest CVS trunk apparently has SQLW functions
-
   Add a test for ChopBlanks and unicode data
 
   Add some private SQLGetInfo values for whether SQL_ROWSET_SIZE hack
@@ -56,9 +51,6 @@ $Revision: 10667 $
   Bump requirement to Test::Simple 0.96 so we can use subtest which
   is really cool and reorganise tests to use it. 0.96, because it seems
   to be the first really stable version of subtest.
-
-  Change SQLError to SQLGetDiagRec and perhaps SQLGetDiagField to get
-  further details on the error.
 
   Add more Oracle-specific tests - like calling functions/procedures
   and in/out params.
@@ -107,9 +99,9 @@ $Revision: 10667 $
 <mje> I'll look at it again - added to TO_DO - where does try_compile_and_link come from?
 <ribasushi> mje: it's all part of this makefile, it's a good read rather clean
 <mje> ignore - sorry
+Jens suggested Config::AutoConf
 
-  remove DescribeCol and odbc_describe_col - they've been deprecated for
-    ages and I doubt they work on 64 bit.
-  Same with GetTypeInfo
-  Cancel is not even documented
-  Same with ColAttributes
+  Cancel is not documented
+
+ODBC 3.8:
+http://msdn.microsoft.com/en-us/library/ee388581%28v=vs.85%29.aspx

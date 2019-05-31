@@ -7,28 +7,28 @@ use Test::Deep::Cmp;
 
 sub init
 {
-	my $self = shift;
+  my $self = shift;
 
-	$self->{val} = shift;
+  $self->{val} = shift;
 }
 
 sub descend
 {
-	my $self = shift;
-	my $got = shift()."";
+  my $self = shift;
+  my $got = shift()."";
 
-	$self->data->{got} = $got;
+  $self->data->{got} = $got;
 
-	return $got eq $self->{val};
+  return $got eq $self->{val};
 }
 
 sub diag_message
 {
-	my $self = shift;
+  my $self = shift;
 
-	my $where = shift;
+  my $where = shift;
 
-	return "Comparing $where as a string";
+  return "Comparing $where as a string";
 }
 
 1;

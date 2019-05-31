@@ -6,7 +6,8 @@ use Socket;
 use Carp;
 
 use vars qw(@ISA $VERSION $NEW_ARGS);
-$VERSION = '2.85';
+$VERSION = '2.86';
+$VERSION = eval $VERSION;
 
 require IO::Socket;
 @ISA=qw(IO::Socket::INET);
@@ -120,6 +121,10 @@ sub connect {
     my $new_arg = *$self->{ssl_new_arg};
     $arg->{SSL_Debug} = $debug;
 
+    # setup SNI if available
+    $ssl->can("set_tlsext_host_name") and
+        $ssl->set_tlsext_host_name(*$self->{ssl_peer_addr});
+
     eval {
         local $SIG{ALRM} = sub { $self->die_with_error("SSL connect timeout") };
         # timeout / 2 because we have 3 possible connects here
@@ -192,6 +197,12 @@ sub get_cipher {
     my $self = shift;
     $self = $REAL{$self} || $self;
     *$self->{ssl_ssl}->get_cipher(@_);
+}
+
+sub pending {
+    my $self = shift;
+    $self = $REAL{$self} || $self;
+    *$self->{ssl_ssl}->pending(@_);
 }
 
 sub ssl_context {
@@ -367,15 +378,21 @@ sub proxy_connect_helper {
 
     my $timeout;
     my $header = '';
+
     # See RT #33954
-    while ( $header !~ m{HTTP/\d+\.\d+\s+200\s+.*$CRLF$CRLF}s ) {
+    # See also RT #64054
+    # Handling incomplete reads and writes better (for some values of
+    # better) may actually make this problem go away, but either way,
+    # there is no good reason to use \d when checking for 0-9
+
+    while ($header !~ m{HTTP/[0-9][.][0-9]\s+200\s+.*$CRLF$CRLF}s) {
         $timeout = $self->timeout(5) unless length $header;
         my $n = $self->SUPER::sysread($header, 8192, length $header);
         last if $n <= 0;
     }
 
     $self->timeout($timeout) if defined $timeout;
-    my $conn_ok = ($header =~ /HTTP\/\d+\.\d+\s+200\s+/is) ? 1 : 0;
+    my $conn_ok = ($header =~ m{HTTP/[0-9]+[.][0-9]+\s+200\s+}is) ? 1 : 0;
 
     if (not $conn_ok) {
         croak("PROXY ERROR HEADER, could be non-SSL URL:\n$header");
@@ -410,6 +427,11 @@ sub proxy {
     }
 
     $proxy_server =~ s|\Ahttps?://||i;
+    # sanitize the end of the string too
+    # see also http://www.nntp.perl.org/group/perl.libwww/2012/10/msg7629.html
+    # and https://github.com/nanis/Crypt-SSLeay/pull/1
+    # Thank you Mark Allen and YigangX Wen
+    $proxy_server =~ s|(:[1-9][0-9]{0,4})/\z|$1|;
     $proxy_server;
 }
 
@@ -511,6 +533,11 @@ object.
 Attempts to read up to 32KiB of data from the socket. Returns
 C<undef> if nothing was read, otherwise returns the data as
 a scalar.
+
+=item pending
+
+Provides access to OpenSSL's C<pending> attribute on the SSL connection
+object.
 
 =item getline
 

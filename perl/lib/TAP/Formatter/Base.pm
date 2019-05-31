@@ -1,17 +1,14 @@
 package TAP::Formatter::Base;
 
 use strict;
-use TAP::Base ();
+use warnings;
+use base 'TAP::Base';
 use POSIX qw(strftime);
-
-use vars qw($VERSION @ISA);
 
 my $MAX_ERRORS = 5;
 my %VALIDATION_FOR;
 
 BEGIN {
-    @ISA = qw(TAP::Base);
-
     %VALIDATION_FOR = (
         directives => sub { shift; shift },
         verbosity  => sub { shift; shift },
@@ -25,12 +22,26 @@ BEGIN {
         show_count => sub { shift; shift },
         stdout     => sub {
             my ( $self, $ref ) = @_;
+
             $self->_croak("option 'stdout' needs a filehandle")
-              unless ( ref $ref || '' ) eq 'GLOB'
-              or eval { $ref->can('print') };
+              unless $self->_is_filehandle($ref);
+
             return $ref;
         },
     );
+
+    sub _is_filehandle {
+        my ( $self, $ref ) = @_;
+
+        return 0 if !defined $ref;
+
+        return 1 if ref $ref eq 'GLOB';    # lexical filehandle
+        return 1 if !ref $ref && ref \$ref eq 'GLOB'; # bare glob like *STDOUT
+
+        return 1 if eval { $ref->can('print') };
+
+        return 0;
+    }
 
     my @getter_setters = qw(
       _longest
@@ -47,11 +58,11 @@ TAP::Formatter::Base - Base class for harness output delegates
 
 =head1 VERSION
 
-Version 3.23
+Version 3.42
 
 =cut
 
-$VERSION = '3.23';
+our $VERSION = '3.42';
 
 =head1 DESCRIPTION
 
@@ -375,9 +386,11 @@ sub _summary_test_header {
     my $spaces = ' ' x ( $self->_longest - length $test );
     $spaces = ' ' unless $spaces;
     my $output = $self->_get_output_method($parser);
+    my $wait   = $parser->wait;
+    defined $wait or $wait = '(none)';
     $self->$output(
-        sprintf "$test$spaces(Wstat: %d Tests: %d Failed: %d)\n",
-        $parser->wait, $parser->tests_run, scalar $parser->failed
+        sprintf "$test$spaces(Wstat: %s Tests: %d Failed: %d)\n",
+        $wait, $parser->tests_run, scalar $parser->failed
     );
     $self->_printed_summary_header(1);
 }

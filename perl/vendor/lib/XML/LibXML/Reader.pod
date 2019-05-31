@@ -39,14 +39,15 @@ or
 
 =head1 DESCRIPTION
 
-This is a perl interface to libxml2's pull-parser implementation xmlTextReader I<<<<<< http://xmlsoft.org/html/libxml-xmlreader.html >>>>>>. This feature requires at least libxml2-2.6.21. Pull-parser (StAX in Java,
-XmlReader in C#) use an iterator approach to parse XML documents. They are
-easier to program than event-based parser (SAX) and much more lightweight than
-tree-based parser (DOM), which load the complete tree into memory.
+This is a perl interface to libxml2's pull-parser implementation xmlTextReader I<<<<<< http://xmlsoft.org/html/libxml-xmlreader.html >>>>>>. This feature requires at least libxml2-2.6.21. Pull-parsers (such as StAX in
+Java, or XmlReader in C#) use an iterator approach to parse XML documents. They
+are easier to program than event-based parser (SAX) and much more lightweight
+than tree-based parser (DOM), which load the complete tree into memory.
 
 The Reader acts as a cursor going forward on the document stream and stopping
-at each node in the way. At every point DOM-like methods of the Reader object
-allow to examine the current node (name, namespace, attributes, etc.)
+at each node on the way. At every point, the DOM-like methods of the Reader
+object allow one to examine the current node (name, namespace, attributes,
+etc.)
 
 The user's code keeps control of the progress and simply calls the C<<<<<< read() >>>>>> function repeatedly to progress to the next node in the document order. Other
 functions provide means for skipping complete sub-trees, or nodes until a
@@ -140,7 +141,7 @@ is then used to validate the document as it is processed.
 
 =item ...
 
-the reader further supports various parser options described in L<<<<<< XML::LibXML::Parser >>>>>> (specifically those labeled by /reader/). 
+the reader further supports various parser options described in L<<<<<< XML::LibXML::Parser >>>>>> (specifically those labeled by /reader/).
 
 
 
@@ -319,7 +320,7 @@ if the current node is neither an element nor attribute.
 Returns a canonical location path to the current element from the root node to
 the current node. Namespaced elements are matched by '*', because there is no
 way to declare prefixes within XPath patterns. Unlike C<<<<<< XML::LibXML::Node::nodePath() >>>>>>, this function does not provide sibling counts (i.e. instead of e.g. '/a/b[1]'
-and '/a/b[2]' you get '/a/b' for both matches). 
+and '/a/b[2]' you get '/a/b' for both matches).
 
 
 =item matchesPattern(compiled_pattern)
@@ -649,14 +650,14 @@ Heiko Klein, <H.Klein@gmx.net<gt> and Petr Pajas
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -667,3 +668,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

@@ -1,3 +1,4 @@
-Package: db-5.3.15
-Sources: http://download.oracle.com/berkeley-db/db-5.3.15.tar.gz
+Package: db-6.2.38
+Sources: http://strawberryperl.com/package/kmx/libs_src/db-6.2.38.tar.gz
+Patch: db-6.2.38.diff
 Homepage: http://www.oracle.com/technetwork/database/berkeleydb/downloads/index.html

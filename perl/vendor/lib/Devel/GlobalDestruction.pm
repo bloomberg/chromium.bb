@@ -3,65 +3,36 @@ package Devel::GlobalDestruction;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+our $VERSION = '0.14';
 
-use Sub::Exporter -setup => {
-    exports => [ qw(in_global_destruction) ],
-    groups  => { default => [ -all ] },
+use Sub::Exporter::Progressive -setup => {
+  exports => [ qw(in_global_destruction) ],
+  groups  => { default => [ -all ] },
 };
 
+# we run 5.14+ - everything is in core
+#
 if (defined ${^GLOBAL_PHASE}) {
-    eval 'sub in_global_destruction () { ${^GLOBAL_PHASE} eq q[DESTRUCT] }';
+  eval 'sub in_global_destruction () { ${^GLOBAL_PHASE} eq q[DESTRUCT] }; 1'
+    or die $@;
 }
+# try to load the xs version if it was compiled
+#
 elsif (eval {
-    require XSLoader;
-    XSLoader::load(__PACKAGE__, $VERSION);
-    1;
+  require Devel::GlobalDestruction::XS;
+  no warnings 'once';
+  *in_global_destruction = \&Devel::GlobalDestruction::XS::in_global_destruction;
+  1;
 }) {
-    # the eval already installed everything, nothing to do
+  # the eval already installed everything, nothing to do
 }
 else {
-  eval <<'PP_IGD' or die $@;
-
-my ($in_global_destruction, $before_is_installed);
-
-sub in_global_destruction { $in_global_destruction }
-
-END {
-  # SpeedyCGI runs END blocks every cycle but somehow keeps object instances
-  # hence lying about it seems reasonable...ish
-  $in_global_destruction = 1 unless $CGI::SpeedyCGI::i_am_speedy;
-}
-
-# threads do not execute the global ENDs (it would be stupid). However
-# one can register a new END via simple string eval within a thread, and
-# achieve the same result. A logical place to do this would be CLONE, which
-# is claimed to run in the context of the new thread. However this does
-# not really seem to be the case - any END evaled in a CLONE is ignored :(
-# Hence blatantly hooking threads::create
-
-if ($INC{'threads.pm'}) {
-  my $orig_create = threads->can('create');
-  no warnings 'redefine';
-  *threads::create = sub {
-    { local $@; eval 'END { $in_global_destruction = 1 }' };
-    goto $orig_create;
-  };
-  $before_is_installed = 1;
-}
-
-# just in case threads got loaded after us (silly)
-sub CLONE {
-  unless ($before_is_installed) {
-    require Carp;
-    Carp::croak("You must load the 'threads' module before @{[ __PACKAGE__ ]}");
-  }
-}
-
-1;  # keep eval happy
-
-PP_IGD
-
+  # internally, PL_main_cv is set to Nullcv immediately before entering
+  # global destruction and we can use B to detect that.  B::main_cv will
+  # only ever be a B::CV or a B::SPECIAL that is a reference to 0
+  require B;
+  eval 'sub in_global_destruction () { ${B::main_cv()} == 0 }; 1'
+    or die $@;
 }
 
 1;  # keep require happy
@@ -71,8 +42,8 @@ __END__
 
 =head1 NAME
 
-Devel::GlobalDestruction - Expose the flag which marks global
-destruction.
+Devel::GlobalDestruction - Provides function returning the equivalent of
+C<${^GLOBAL_PHASE} eq 'DESTRUCT'> for older perls.
 
 =head1 SYNOPSIS
 
@@ -93,7 +64,7 @@ Perl's global destruction is a little tricky to deal with WRT finalizers
 because it's not ordered and objects can sometimes disappear.
 
 Writing defensive destructors is hard and annoying, and usually if global
-destruction is happenning you only need the destructors that free up non
+destruction is happening you only need the destructors that free up non
 process local resources to actually execute.
 
 For these constructors you can avoid the mess by simply bailing out if global
@@ -101,15 +72,16 @@ destruction is in effect.
 
 =head1 EXPORTS
 
-This module uses L<Sub::Exporter> so the exports may be renamed, aliased, etc.
+This module uses L<Sub::Exporter::Progressive> so the exports may be renamed,
+aliased, etc. if L<Sub::Exporter> is present.
 
 =over 4
 
 =item in_global_destruction
 
 Returns true if the interpreter is in global destruction. In perl 5.14+, this
-returns C<${^GLOBAL_PHASE} eq 'DESTRUCT'>, and on earlier perls, it returns the
-current value of C<PL_dirty>.
+returns C<${^GLOBAL_PHASE} eq 'DESTRUCT'>, and on earlier perls, detects it using
+the value of C<PL_main_cv> or C<PL_dirty>.
 
 =back
 
@@ -122,6 +94,12 @@ Florian Ragwitz E<lt>rafl@debian.orgE<gt>
 Jesse Luehrs E<lt>doy@tozt.netE<gt>
 
 Peter Rabbitson E<lt>ribasushi@cpan.orgE<gt>
+
+Arthur Axel 'fREW' Schmidt E<lt>frioux@gmail.comE<gt>
+
+Elizabeth Mattijsen E<lt>liz@dijkmat.nlE<gt>
+
+Greham Knop E<lt>haarg@haarg.orgE<gt>
 
 =head1 COPYRIGHT
 

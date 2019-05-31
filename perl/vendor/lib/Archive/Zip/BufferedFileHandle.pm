@@ -13,7 +13,7 @@ use Carp;
 use vars qw{$VERSION};
 
 BEGIN {
-    $VERSION = '1.30';
+    $VERSION = '1.64';
     $VERSION = eval $VERSION;
 }
 
@@ -35,15 +35,15 @@ sub new {
 sub readFromFile {
     my $self     = shift;
     my $fileName = shift;
-    my $fh       = IO::File->new( $fileName, "r" );
+    my $fh       = IO::File->new($fileName, "r");
     CORE::binmode($fh);
-    if ( !$fh ) {
+    if (!$fh) {
         Carp::carp("Can't open $fileName: $!\n");
         return undef;
     }
     local $/ = undef;
     $self->{content} = <$fh>;
-    $self->{size}    = length( $self->{content} );
+    $self->{size}    = length($self->{content});
     return $self;
 }
 
@@ -51,7 +51,7 @@ sub contents {
     my $self = shift;
     if (@_) {
         $self->{content} = shift;
-        $self->{size}    = length( $self->{content} );
+        $self->{size}    = length($self->{content});
     }
     return $self->{content};
 }
@@ -73,14 +73,14 @@ sub seek {
     my $whence = shift;
 
     # SEEK_SET
-    if ( $whence == 0 ) { $self->{position} = $pos; }
+    if ($whence == 0) { $self->{position} = $pos; }
 
     # SEEK_CUR
-    elsif ( $whence == 1 ) { $self->{position} += $pos; }
+    elsif ($whence == 1) { $self->{position} += $pos; }
 
     # SEEK_END
-    elsif ( $whence == 2 ) { $self->{position} = $self->{size} + $pos; }
-    else                   { return 0; }
+    elsif ($whence == 2) { $self->{position} = $self->{size} + $pos; }
+    else                 { return 0; }
 
     return 1;
 }
@@ -90,18 +90,18 @@ sub tell { return shift->{position}; }
 # Copy my data to given buffer
 sub read {
     my $self = shift;
-    my $buf  = \( $_[0] );
+    my $buf  = \($_[0]);
     shift;
     my $len = shift;
     my $offset = shift || 0;
 
     $$buf = '' if not defined($$buf);
     my $bytesRead =
-        ( $self->{position} + $len > $self->{size} )
-      ? ( $self->{size} - $self->{position} )
+        ($self->{position} + $len > $self->{size})
+      ? ($self->{size} - $self->{position})
       : $len;
-    substr( $$buf, $offset, $bytesRead ) =
-      substr( $self->{content}, $self->{position}, $bytesRead );
+    substr($$buf, $offset, $bytesRead) =
+      substr($self->{content}, $self->{position}, $bytesRead);
     $self->{position} += $bytesRead;
     return $bytesRead;
 }
@@ -109,7 +109,7 @@ sub read {
 # Copy given buffer to me
 sub write {
     my $self = shift;
-    my $buf  = \( $_[0] );
+    my $buf  = \($_[0]);
     shift;
     my $len = shift;
     my $offset = shift || 0;
@@ -117,12 +117,12 @@ sub write {
     $$buf = '' if not defined($$buf);
     my $bufLen = length($$buf);
     my $bytesWritten =
-      ( $offset + $len > $bufLen )
+      ($offset + $len > $bufLen)
       ? $bufLen - $offset
       : $len;
-    substr( $self->{content}, $self->{position}, $bytesWritten ) =
-      substr( $$buf, $offset, $bytesWritten );
-    $self->{size} = length( $self->{content} );
+    substr($self->{content}, $self->{position}, $bytesWritten) =
+      substr($$buf, $offset, $bytesWritten);
+    $self->{size} = length($self->{content});
     return $bytesWritten;
 }
 

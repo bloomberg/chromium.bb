@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __INC_PORTABLEDEVICECONNECTAPI__
@@ -32,9 +32,9 @@ DECLARE_INTERFACE_(IConnectionRequestCallback,IUnknown)
     END_INTERFACE
 };
 #ifdef COBJMACROS
-#define IConnectionRequestCallback_QueryInterface(This,riid,ppvObject) (This)->pVtbl->QueryInterface(This,riid,ppvObject)
-#define IConnectionRequestCallback_AddRef(This) (This)->pVtbl->AddRef(This)
-#define IConnectionRequestCallback_Release(This) (This)->pVtbl->Release(This)
+#define IConnectionRequestCallback_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IConnectionRequestCallback_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define IConnectionRequestCallback_Release(This) (This)->lpVtbl->Release(This)
 #define IConnectionRequestCallback_OnComplete(This,hrStatus) (This)->lpVtbl->OnComplete(This,hrStatus)
 #endif /*COBJMACROS*/
 

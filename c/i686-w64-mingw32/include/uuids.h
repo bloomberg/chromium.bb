@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef OUR_GUID_ENTRY
@@ -303,7 +303,7 @@ OUR_GUID_ENTRY(MEDIATYPE_AnalogAudio,0x482dee1,0x7817,0x11cf,0x8a,0x3,0x0,0xaa,0
 
 #include "ksuuids.h"
 
-OUR_GUID_ENTRY(TIME_FORMAT_NONE,0L,0,0,0,0,0,0,0,0,0,0)
+OUR_GUID_ENTRY(TIME_FORMAT_NONE,0,0,0,0,0,0,0,0,0,0,0)
 OUR_GUID_ENTRY(TIME_FORMAT_FRAME,0x7b785570,0x8c82,0x11cf,0xbc,0xc,0x0,0xaa,0x0,0xac,0x74,0xf6)
 OUR_GUID_ENTRY(TIME_FORMAT_BYTE,0x7b785571,0x8c82,0x11cf,0xbc,0xc,0x0,0xaa,0x0,0xac,0x74,0xf6)
 OUR_GUID_ENTRY(TIME_FORMAT_SAMPLE,0x7b785572,0x8c82,0x11cf,0xbc,0xc,0x0,0xaa,0x0,0xac,0x74,0xf6)

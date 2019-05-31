@@ -1,15 +1,19 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __ROUTING_IPRTRMIB_H__
 #define __ROUTING_IPRTRMIB_H__
 
+#include <winapifamily.h>
+#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+
 #include <mprapi.h>
 #include <ipmib.h>
 #include <ipifcons.h>
 #include <udpmib.h>
+#include <tcpmib.h>
 
 #define IPRTRMGR_PID 10000
 
@@ -353,11 +357,6 @@ typedef struct _MIB_TCP6ROW_OWNER_MODULE {
 #define MIB_TCP_STATE_LAST_ACK 10
 #define MIB_TCP_STATE_TIME_WAIT 11
 #define MIB_TCP_STATE_DELETE_TCB 12
-
-/* As I read msdn on Vista the defines above were moved into
-   typedef enum { MIB_..., } MIB_TCP_STATE;
-   We simply typedef it to int.  */
-typedef int MIB_TCP_STATE;
 
 typedef struct _MIB_TCPTABLE {
   DWORD dwNumEntries;
@@ -775,5 +774,7 @@ typedef enum _TCPIP_OWNER_MODULE_INFO_CLASS {
 #define DEFINE_MIB_BUFFER(X,Y,Z) DWORD __rgdwBuff[MIB_INFO_SIZE_IN_DWORDS(Y)]; PMIB_OPAQUE_INFO X = (PMIB_OPAQUE_INFO)__rgdwBuff; Y *Z = (Y *)(X->rgbyData)
 
 #define CAST_MIB_INFO(X,Y,Z) Z = (Y)(X->rgbyData)
+
+#endif /*WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)*/
 
 #endif /* __ROUTING_IPRTRMIB_H__ */

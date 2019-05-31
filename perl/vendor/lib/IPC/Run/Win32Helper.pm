@@ -23,15 +23,16 @@ use strict;
 use Carp;
 use IO::Handle;
 use vars qw{ $VERSION @ISA @EXPORT };
+
 BEGIN {
-	$VERSION = '0.90';
-	@ISA = qw( Exporter );
-	@EXPORT = qw(
-		win32_spawn
-		win32_parse_cmd_line
-		_dont_inherit
-		_inherit
-	);
+    $VERSION = '20180523.0';
+    @ISA     = qw( Exporter );
+    @EXPORT  = qw(
+      win32_spawn
+      win32_parse_cmd_line
+      _dont_inherit
+      _inherit
+    );
 }
 
 require POSIX;
@@ -40,39 +41,39 @@ use Text::ParseWords;
 use Win32::Process;
 use IPC::Run::Debug;
 use Win32API::File qw(
-   FdGetOsFHandle
-   SetHandleInformation
-   HANDLE_FLAG_INHERIT
-   INVALID_HANDLE_VALUE
+  FdGetOsFHandle
+  SetHandleInformation
+  HANDLE_FLAG_INHERIT
+  INVALID_HANDLE_VALUE
 );
 
 ## Takes an fd or a GLOB ref, never never never a Win32 handle.
 sub _dont_inherit {
-   for ( @_ ) {
-      next unless defined $_;
-      my $fd = $_;
-      $fd = fileno $fd if ref $fd;
-      _debug "disabling inheritance of ", $fd if _debugging_details;
-      my $osfh = FdGetOsFHandle $fd;
-      croak $^E if ! defined $osfh || $osfh == INVALID_HANDLE_VALUE;
+    for (@_) {
+        next unless defined $_;
+        my $fd = $_;
+        $fd = fileno $fd if ref $fd;
+        _debug "disabling inheritance of ", $fd if _debugging_details;
+        my $osfh = FdGetOsFHandle $fd;
+        croak $^E if !defined $osfh || $osfh == INVALID_HANDLE_VALUE;
 
-      SetHandleInformation( $osfh, HANDLE_FLAG_INHERIT, 0 );
-   }
+        SetHandleInformation( $osfh, HANDLE_FLAG_INHERIT, 0 );
+    }
 }
 
-sub _inherit {       #### REMOVE
-   for ( @_ ) {       #### REMOVE
-      next unless defined $_;       #### REMOVE
-      my $fd = $_;       #### REMOVE
-      $fd = fileno $fd if ref $fd;       #### REMOVE
-      _debug "enabling inheritance of ", $fd if _debugging_details;       #### REMOVE
-      my $osfh = FdGetOsFHandle $fd;       #### REMOVE
-      croak $^E if ! defined $osfh || $osfh == INVALID_HANDLE_VALUE;       #### REMOVE
-       #### REMOVE
-      SetHandleInformation( $osfh, HANDLE_FLAG_INHERIT, 1 );       #### REMOVE
-   }       #### REMOVE
-}       #### REMOVE
-       #### REMOVE
+sub _inherit {    #### REMOVE
+    for (@_) {    #### REMOVE
+        next unless defined $_;    #### REMOVE
+        my $fd = $_;               #### REMOVE
+        $fd = fileno $fd if ref $fd;    #### REMOVE
+        _debug "enabling inheritance of ", $fd if _debugging_details;    #### REMOVE
+        my $osfh = FdGetOsFHandle $fd;                                   #### REMOVE
+        croak $^E if !defined $osfh || $osfh == INVALID_HANDLE_VALUE;    #### REMOVE
+        #### REMOVE
+        SetHandleInformation( $osfh, HANDLE_FLAG_INHERIT, 1 );           #### REMOVE
+    }    #### REMOVE
+}    #### REMOVE
+#### REMOVE
 #sub _inherit {
 #   for ( @_ ) {
 #      next unless defined $_;
@@ -138,7 +139,7 @@ subroutine will not get any data until after the child process exits,
 and it is likely to get bigger chunks of data at once.
 
 The reason for the optimization is that, without it, "pumper" processes
-are used to overcome the inconsistancies of the Win32 API.  We need to
+are used to overcome the inconsistencies of the Win32 API.  We need to
 use anonymous pipes to connect to the child processes' stdin, stdout,
 and stderr, yet select() does not work on these.  select() only works on
 sockets on Win32.  So for each redirected child handle, there is
@@ -170,145 +171,142 @@ FILE_SHARE_READ|FILE_SHARE_WRITE.
 Setting the debug level to "details" or "gory" will give detailed
 information about the optimization process; setting it to "basic" or
 higher will tell whether or not a given call is optimized.  Setting
-it to "notopt" will highligh those calls that aren't optimized.
+it to "notopt" will highlight those calls that aren't optimized.
 
 =cut
 
 sub optimize {
-   my ( $h ) = @_;
+    my ($h) = @_;
 
-   my @kids = @{$h->{KIDS}};
+    my @kids = @{ $h->{KIDS} };
 
-   my $saw_pipe;
+    my $saw_pipe;
 
-   my ( $ok_to_optimize_outputs, $veto_output_optimization );
+    my ( $ok_to_optimize_outputs, $veto_output_optimization );
 
-   for my $kid ( @kids ) {
-      ( $ok_to_optimize_outputs, $veto_output_optimization ) = ()
-         unless $saw_pipe;
+    for my $kid (@kids) {
+        ( $ok_to_optimize_outputs, $veto_output_optimization ) = ()
+          unless $saw_pipe;
 
-      _debug
-         "Win32 optimizer: (kid $kid->{NUM}) STDIN piped, carrying over ok of non-SCALAR output optimization"
-         if _debugging_details && $ok_to_optimize_outputs;
-      _debug
-         "Win32 optimizer: (kid $kid->{NUM}) STDIN piped, carrying over veto of non-SCALAR output optimization"
-         if _debugging_details && $veto_output_optimization;
+        _debug "Win32 optimizer: (kid $kid->{NUM}) STDIN piped, carrying over ok of non-SCALAR output optimization"
+          if _debugging_details && $ok_to_optimize_outputs;
+        _debug "Win32 optimizer: (kid $kid->{NUM}) STDIN piped, carrying over veto of non-SCALAR output optimization"
+          if _debugging_details && $veto_output_optimization;
 
-      if ( $h->{noinherit} && ! $ok_to_optimize_outputs ) {
-	 _debug
-	    "Win32 optimizer: (kid $kid->{NUM}) STDIN not inherited from parent oking non-SCALAR output optimization"
-	    if _debugging_details && $ok_to_optimize_outputs;
-	 $ok_to_optimize_outputs = 1;
-      }
-
-      for ( @{$kid->{OPS}} ) {
-         if ( substr( $_->{TYPE}, 0, 1 ) eq "<" ) {
-            if ( $_->{TYPE} eq "<" ) {
-	       if ( @{$_->{FILTERS}} > 1 ) {
-		  ## Can't assume that the filters are idempotent.
-	       }
-               elsif ( ref $_->{SOURCE} eq "SCALAR"
-	          || ref $_->{SOURCE} eq "GLOB"
-		  || UNIVERSAL::isa( $_, "IO::Handle" )
-	       ) {
-                  if ( $_->{KFD} == 0 ) {
-                     _debug
-                        "Win32 optimizer: (kid $kid->{NUM}) 0$_->{TYPE}",
-                        ref $_->{SOURCE},
-                        ", ok to optimize outputs"
-                        if _debugging_details;
-                     $ok_to_optimize_outputs = 1;
-                  }
-                  $_->{SEND_THROUGH_TEMP_FILE} = 1;
-                  next;
-               }
-               elsif ( ! ref $_->{SOURCE} && defined $_->{SOURCE} ) {
-                  if ( $_->{KFD} == 0 ) {
-                     _debug
-                        "Win32 optimizer: (kid $kid->{NUM}) 0<$_->{SOURCE}, ok to optimize outputs",
-                        if _debugging_details;
-                     $ok_to_optimize_outputs = 1;
-                  }
-                  next;
-               }
-            }
-            _debug
-               "Win32 optimizer: (kid $kid->{NUM}) ",
-               $_->{KFD},
-               $_->{TYPE},
-               defined $_->{SOURCE}
-                  ? ref $_->{SOURCE}      ? ref $_->{SOURCE}
-                                          : $_->{SOURCE}
-                  : defined $_->{FILENAME}
-                                          ? $_->{FILENAME}
-                                          : "",
-	       @{$_->{FILTERS}} > 1 ? " with filters" : (),
-               ", VETOING output opt."
-               if _debugging_details || _debugging_not_optimized;
-            $veto_output_optimization = 1;
-         }
-         elsif ( $_->{TYPE} eq "close" && $_->{KFD} == 0 ) {
+        if ( $h->{noinherit} && !$ok_to_optimize_outputs ) {
+            _debug "Win32 optimizer: (kid $kid->{NUM}) STDIN not inherited from parent oking non-SCALAR output optimization"
+              if _debugging_details && $ok_to_optimize_outputs;
             $ok_to_optimize_outputs = 1;
-            _debug "Win32 optimizer: (kid $kid->{NUM}) saw 0<&-, ok to optimize outputs"
-               if _debugging_details;
-         }
-         elsif ( $_->{TYPE} eq "dup" && $_->{KFD2} == 0 ) {
-            $veto_output_optimization = 1;
-            _debug "Win32 optimizer: (kid $kid->{NUM}) saw 0<&$_->{KFD2}, VETOING output opt."
-               if _debugging_details || _debugging_not_optimized;
-         }
-         elsif ( $_->{TYPE} eq "|" ) {
-            $saw_pipe = 1;
-         }
-      }
+        }
 
-      if ( ! $ok_to_optimize_outputs && ! $veto_output_optimization ) {
-         _debug
-            "Win32 optimizer: (kid $kid->{NUM}) child STDIN not redirected, VETOING non-SCALAR output opt."
-            if _debugging_details || _debugging_not_optimized;
-         $veto_output_optimization = 1;
-      }
-
-      if ( $ok_to_optimize_outputs && $veto_output_optimization ) {
-         $ok_to_optimize_outputs = 0;
-         _debug "Win32 optimizer: (kid $kid->{NUM}) non-SCALAR output optimizations VETOed"
-            if _debugging_details || _debugging_not_optimized;
-      }
-
-      ## SOURCE/DEST ARRAY means it's a filter.
-      ## TODO: think about checking to see if the final input/output of
-      ## a filter chain (an ARRAY SOURCE or DEST) is a scalar...but
-      ## we may be deprecating filters.
-
-      for ( @{$kid->{OPS}} ) {
-         if ( $_->{TYPE} eq ">" ) {
-            if ( ref $_->{DEST} eq "SCALAR"
-               || (
-                  ( @{$_->{FILTERS}} > 1
-		     || ref $_->{DEST} eq "CODE"
-		     || ref $_->{DEST} eq "ARRAY"  ## Filters?
-	          )
-                  && ( $ok_to_optimize_outputs && ! $veto_output_optimization ) 
-               )
-            ) {
-	       $_->{RECV_THROUGH_TEMP_FILE} = 1;
-	       next;
+        for ( @{ $kid->{OPS} } ) {
+            if ( substr( $_->{TYPE}, 0, 1 ) eq "<" ) {
+                if ( $_->{TYPE} eq "<" ) {
+                    if ( @{ $_->{FILTERS} } > 1 ) {
+                        ## Can't assume that the filters are idempotent.
+                    }
+                    elsif (ref $_->{SOURCE} eq "SCALAR"
+                        || ref $_->{SOURCE} eq "GLOB"
+                        || UNIVERSAL::isa( $_, "IO::Handle" ) ) {
+                        if ( $_->{KFD} == 0 ) {
+                            _debug
+                              "Win32 optimizer: (kid $kid->{NUM}) 0$_->{TYPE}",
+                              ref $_->{SOURCE},
+                              ", ok to optimize outputs"
+                              if _debugging_details;
+                            $ok_to_optimize_outputs = 1;
+                        }
+                        $_->{SEND_THROUGH_TEMP_FILE} = 1;
+                        next;
+                    }
+                    elsif ( !ref $_->{SOURCE} && defined $_->{SOURCE} ) {
+                        if ( $_->{KFD} == 0 ) {
+                            _debug
+                              "Win32 optimizer: (kid $kid->{NUM}) 0<$_->{SOURCE}, ok to optimize outputs",
+                              if _debugging_details;
+                            $ok_to_optimize_outputs = 1;
+                        }
+                        next;
+                    }
+                }
+                _debug
+                  "Win32 optimizer: (kid $kid->{NUM}) ",
+                  $_->{KFD},
+                  $_->{TYPE},
+                  defined $_->{SOURCE}
+                  ? ref $_->{SOURCE}
+                      ? ref $_->{SOURCE}
+                      : $_->{SOURCE}
+                  : defined $_->{FILENAME} ? $_->{FILENAME}
+                  : "",
+                  @{ $_->{FILTERS} } > 1 ? " with filters" : (),
+                  ", VETOING output opt."
+                  if _debugging_details || _debugging_not_optimized;
+                $veto_output_optimization = 1;
             }
-	    _debug
-	       "Win32 optimizer: NOT optimizing (kid $kid->{NUM}) ",
-	       $_->{KFD},
-	       $_->{TYPE},
-	       defined $_->{DEST}
-		  ? ref $_->{DEST}      ? ref $_->{DEST}
-					  : $_->{SOURCE}
-		  : defined $_->{FILENAME}
-					  ? $_->{FILENAME}
-					  : "",
-		  @{$_->{FILTERS}} ? " with filters" : (),
-	       if _debugging_details;
-         }
-      }
-   }
+            elsif ( $_->{TYPE} eq "close" && $_->{KFD} == 0 ) {
+                $ok_to_optimize_outputs = 1;
+                _debug "Win32 optimizer: (kid $kid->{NUM}) saw 0<&-, ok to optimize outputs"
+                  if _debugging_details;
+            }
+            elsif ( $_->{TYPE} eq "dup" && $_->{KFD2} == 0 ) {
+                $veto_output_optimization = 1;
+                _debug "Win32 optimizer: (kid $kid->{NUM}) saw 0<&$_->{KFD2}, VETOING output opt."
+                  if _debugging_details || _debugging_not_optimized;
+            }
+            elsif ( $_->{TYPE} eq "|" ) {
+                $saw_pipe = 1;
+            }
+        }
+
+        if ( !$ok_to_optimize_outputs && !$veto_output_optimization ) {
+            _debug "Win32 optimizer: (kid $kid->{NUM}) child STDIN not redirected, VETOING non-SCALAR output opt."
+              if _debugging_details || _debugging_not_optimized;
+            $veto_output_optimization = 1;
+        }
+
+        if ( $ok_to_optimize_outputs && $veto_output_optimization ) {
+            $ok_to_optimize_outputs = 0;
+            _debug "Win32 optimizer: (kid $kid->{NUM}) non-SCALAR output optimizations VETOed"
+              if _debugging_details || _debugging_not_optimized;
+        }
+
+        ## SOURCE/DEST ARRAY means it's a filter.
+        ## TODO: think about checking to see if the final input/output of
+        ## a filter chain (an ARRAY SOURCE or DEST) is a scalar...but
+        ## we may be deprecating filters.
+
+        for ( @{ $kid->{OPS} } ) {
+            if ( $_->{TYPE} eq ">" ) {
+                if (
+                    ref $_->{DEST} eq "SCALAR"
+                    || (
+                        (
+                               @{ $_->{FILTERS} } > 1
+                            || ref $_->{DEST} eq "CODE"
+                            || ref $_->{DEST} eq "ARRAY"    ## Filters?
+                        )
+                        && ( $ok_to_optimize_outputs && !$veto_output_optimization )
+                    )
+                  ) {
+                    $_->{RECV_THROUGH_TEMP_FILE} = 1;
+                    next;
+                }
+                _debug
+                  "Win32 optimizer: NOT optimizing (kid $kid->{NUM}) ",
+                  $_->{KFD},
+                  $_->{TYPE},
+                  defined $_->{DEST}
+                  ? ref $_->{DEST}
+                      ? ref $_->{DEST}
+                      : $_->{SOURCE}
+                  : defined $_->{FILENAME} ? $_->{FILENAME}
+                  : "",
+                  @{ $_->{FILTERS} } ? " with filters" : (),
+                  if _debugging_details;
+            }
+        }
+    }
 
 }
 
@@ -336,9 +334,9 @@ LIMITATIONS: shellwords dies silently on malformed input like
 =cut
 
 sub win32_parse_cmd_line {
-   my $line = shift;
-   $line =~ s{(\\[\w\s])}{\\$1}g;
-   return shellwords $line;
+    my $line = shift;
+    $line =~ s{(\\[\w\s])}{\\$1}g;
+    return shellwords $line;
 }
 
 =pod
@@ -365,110 +363,109 @@ Remember to check the Win32 handle against INVALID_HANDLE_VALUE.
 =cut
 
 sub _save {
-   my ( $saved, $saved_as, $fd ) = @_;
+    my ( $saved, $saved_as, $fd ) = @_;
 
-   ## We can only save aside the original fds once.
-   return if exists $saved->{$fd};
+    ## We can only save aside the original fds once.
+    return if exists $saved->{$fd};
 
-   my $saved_fd = IPC::Run::_dup( $fd );
-   _dont_inherit $saved_fd;
+    my $saved_fd = IPC::Run::_dup($fd);
+    _dont_inherit $saved_fd;
 
-   $saved->{$fd} = $saved_fd;
-   $saved_as->{$saved_fd} = $fd;
+    $saved->{$fd}          = $saved_fd;
+    $saved_as->{$saved_fd} = $fd;
 
-   _dont_inherit $saved->{$fd};
+    _dont_inherit $saved->{$fd};
 }
 
 sub _dup2_gently {
-   my ( $saved, $saved_as, $fd1, $fd2 ) = @_;
-   _save $saved, $saved_as, $fd2;
+    my ( $saved, $saved_as, $fd1, $fd2 ) = @_;
+    _save $saved, $saved_as, $fd2;
 
-   if ( exists $saved_as->{$fd2} ) {
-      ## The target fd is colliding with a saved-as fd, gotta bump
-      ## the saved-as fd to another fd.
-      my $orig_fd = delete $saved_as->{$fd2};
-      my $saved_fd = IPC::Run::_dup( $fd2 );
-      _dont_inherit $saved_fd;
+    if ( exists $saved_as->{$fd2} ) {
+        ## The target fd is colliding with a saved-as fd, gotta bump
+        ## the saved-as fd to another fd.
+        my $orig_fd  = delete $saved_as->{$fd2};
+        my $saved_fd = IPC::Run::_dup($fd2);
+        _dont_inherit $saved_fd;
 
-      $saved->{$orig_fd} = $saved_fd;
-      $saved_as->{$saved_fd} = $orig_fd;
-   }
-   _debug "moving $fd1 to kid's $fd2" if _debugging_details;
-   IPC::Run::_dup2_rudely( $fd1, $fd2 );
+        $saved->{$orig_fd}     = $saved_fd;
+        $saved_as->{$saved_fd} = $orig_fd;
+    }
+    _debug "moving $fd1 to kid's $fd2" if _debugging_details;
+    IPC::Run::_dup2_rudely( $fd1, $fd2 );
 }
 
 sub win32_spawn {
-   my ( $cmd, $ops) = @_;
+    my ( $cmd, $ops ) = @_;
 
-   ## NOTE: The debug pipe write handle is passed to pump processes as STDOUT.
-   ## and is not to the "real" child process, since they would not know
-   ## what to do with it...unlike Unix, we have no code executing in the
-   ## child before the "real" child is exec()ed.
-   
-   my %saved;      ## Map of parent's orig fd -> saved fd
-   my %saved_as;   ## Map of parent's saved fd -> orig fd, used to
-                    ## detect collisions between a KFD and the fd a
-		    ## parent's fd happened to be saved to.
-   
-   for my $op ( @$ops ) {
-      _dont_inherit $op->{FD}  if defined $op->{FD};
+    ## NOTE: The debug pipe write handle is passed to pump processes as STDOUT.
+    ## and is not to the "real" child process, since they would not know
+    ## what to do with it...unlike Unix, we have no code executing in the
+    ## child before the "real" child is exec()ed.
 
-      if ( defined $op->{KFD} && $op->{KFD} > 2 ) {
-	 ## TODO: Detect this in harness()
-	 ## TODO: enable temporary redirections if ever necessary, not
-	 ## sure why they would be...
-	 ## 4>&1 1>/dev/null 1>&4 4>&-
-         croak "Can't redirect fd #", $op->{KFD}, " on Win32";
-      }
+    my %saved;       ## Map of parent's orig fd -> saved fd
+    my %saved_as;    ## Map of parent's saved fd -> orig fd, used to
+    ## detect collisions between a KFD and the fd a
+    ## parent's fd happened to be saved to.
 
-      ## This is very similar logic to IPC::Run::_do_kid_and_exit().
-      if ( defined $op->{TFD} ) {
-	 unless ( $op->{TFD} == $op->{KFD} ) {
-	    _dup2_gently \%saved, \%saved_as, $op->{TFD}, $op->{KFD};
-	    _dont_inherit $op->{TFD};
-	 }
-      }
-      elsif ( $op->{TYPE} eq "dup" ) {
-         _dup2_gently \%saved, \%saved_as, $op->{KFD1}, $op->{KFD2}
-            unless $op->{KFD1} == $op->{KFD2};
-      }
-      elsif ( $op->{TYPE} eq "close" ) {
-	 _save \%saved, \%saved_as, $op->{KFD};
-	 IPC::Run::_close( $op->{KFD} );
-      }
-      elsif ( $op->{TYPE} eq "init" ) {
-	 ## TODO: detect this in harness()
-         croak "init subs not allowed on Win32";
-      }
-   }
+    for my $op (@$ops) {
+        _dont_inherit $op->{FD} if defined $op->{FD};
 
-   my $process;
-   my $cmd_line = join " ", map {
-      ( my $s = $_ ) =~ s/"/"""/g;
-      $s = qq{"$s"} if /[\"\s]/;
-      $s;
-   } @$cmd;
+        if ( defined $op->{KFD} && $op->{KFD} > 2 ) {
+            ## TODO: Detect this in harness()
+            ## TODO: enable temporary redirections if ever necessary, not
+            ## sure why they would be...
+            ## 4>&1 1>/dev/null 1>&4 4>&-
+            croak "Can't redirect fd #", $op->{KFD}, " on Win32";
+        }
 
-   _debug "cmd line: ", $cmd_line
+        ## This is very similar logic to IPC::Run::_do_kid_and_exit().
+        if ( defined $op->{TFD} ) {
+            unless ( $op->{TFD} == $op->{KFD} ) {
+                _dup2_gently \%saved, \%saved_as, $op->{TFD}, $op->{KFD};
+                _dont_inherit $op->{TFD};
+            }
+        }
+        elsif ( $op->{TYPE} eq "dup" ) {
+            _dup2_gently \%saved, \%saved_as, $op->{KFD1}, $op->{KFD2}
+              unless $op->{KFD1} == $op->{KFD2};
+        }
+        elsif ( $op->{TYPE} eq "close" ) {
+            _save \%saved, \%saved_as, $op->{KFD};
+            IPC::Run::_close( $op->{KFD} );
+        }
+        elsif ( $op->{TYPE} eq "init" ) {
+            ## TODO: detect this in harness()
+            croak "init subs not allowed on Win32";
+        }
+    }
+
+    my $process;
+    my $cmd_line = join " ", map {
+        ( my $s = $_ ) =~ s/"/"""/g;
+        $s = qq{"$s"} if /[\"\s]|^$/;
+        $s;
+    } @$cmd;
+
+    _debug "cmd line: ", $cmd_line
       if _debugging;
 
-   Win32::Process::Create( 
-      $process,
-      $cmd->[0],
-      $cmd_line,
-      1,  ## Inherit handles
-      NORMAL_PRIORITY_CLASS,
-      ".",
-   ) or croak "$!: Win32::Process::Create()";
+    Win32::Process::Create(
+        $process,
+        $cmd->[0],
+        $cmd_line,
+        1,    ## Inherit handles
+        0,    ## Inherit parent priortiy class. Was NORMAL_PRIORITY_CLASS
+        ".",
+    ) or croak "$!: Win32::Process::Create()";
 
-   for my $orig_fd ( keys %saved ) {
-      IPC::Run::_dup2_rudely( $saved{$orig_fd}, $orig_fd );
-      IPC::Run::_close( $saved{$orig_fd} );
-   }
+    for my $orig_fd ( keys %saved ) {
+        IPC::Run::_dup2_rudely( $saved{$orig_fd}, $orig_fd );
+        IPC::Run::_close( $saved{$orig_fd} );
+    }
 
-   return ( $process->GetProcessID(), $process );
+    return ( $process->GetProcessID(), $process );
 }
-
 
 1;
 
@@ -484,6 +481,6 @@ Barries Slaymaker <barries@slaysys.com>.  Funded by Perforce Software, Inc.
 
 Copyright 2001, Barrie Slaymaker, All Rights Reserved.
 
-You may use this under the terms of either the GPL 2.0 ir the Artistic License.
+You may use this under the terms of either the GPL 2.0 or the Artistic License.
 
 =cut

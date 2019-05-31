@@ -1,25 +1,12 @@
 package Moose::Meta::Method::Accessor::Native::Array::clear;
-BEGIN {
-  $Moose::Meta::Method::Accessor::Native::Array::clear::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Method::Accessor::Native::Array::clear::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
 use Moose::Role;
 
-with 'Moose::Meta::Method::Accessor::Native::Array::Writer' => {
-    -excludes => [
-        qw(
-            _maximum_arguments
-            _inline_optimized_set_new_value
-            _return_value
-            )
-    ]
-};
+with 'Moose::Meta::Method::Accessor::Native::Array::Writer';
 
 sub _maximum_arguments { 0 }
 

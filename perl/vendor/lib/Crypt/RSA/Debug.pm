@@ -1,15 +1,13 @@
-#!/usr/bin/perl -s
-##
+package Crypt::RSA::Debug; 
+use strict;
+use warnings;
+
 ## Crypt::RSA::Debug
 ##
 ## Copyright (c) 2001, Vipul Ved Prakash.  All rights reserved.
 ## This code is free software; you can redistribute it and/or modify
 ## it under the same terms as Perl itself.
-##
-## $Id: Debug.pm,v 1.9 2001/04/09 22:21:49 vipul Exp $
 
-package Crypt::RSA::Debug; 
-use strict;
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
@@ -19,7 +17,7 @@ require Exporter;
 my $DEBUG = 0; 
 
 sub debug{
-    return undef unless $DEBUG;
+    return unless $DEBUG;
     my ($caller, undef) = caller;
     my (undef,undef,$line,$sub) = caller(1); $sub =~ s/.*://;
     $sub = sprintf "%12s()%4d", $sub, $line;

@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Net::SSLeay;
 
-#line 435 "blib\lib\Net\SSLeay.pm (autosplit into blib\lib\auto\Net\SSLeay\open_tcp_connection.al)"
+#line 515 "blib\lib\Net\SSLeay.pm (autosplit into blib\lib\auto\Net\SSLeay\open_tcp_connection.al)"
 sub open_tcp_connection {
     my ($dest_serv, $port) = @_;
     my ($errs);
@@ -17,11 +17,11 @@ sub open_tcp_connection {
         return wantarray ? (0, $errs) : 0;
     }
     my $sin = sockaddr_in($port, $dest_serv_ip);
-    
+
     warn "Opening connection to $dest_serv:$port (" .
 	inet_ntoa($dest_serv_ip) . ")" if $trace>2;
-    
-    my $proto = getprotobyname('tcp');
+
+    my $proto = &Socket::IPPROTO_TCP; # getprotobyname('tcp') not available on android
     if (socket (SSLCAT_S, &PF_INET(), &SOCK_STREAM(), $proto)) {
         warn "next connect" if $trace>3;
         if (CORE::connect (SSLCAT_S, $sin)) {

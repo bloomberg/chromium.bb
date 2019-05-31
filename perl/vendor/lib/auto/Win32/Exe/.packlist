@@ -30,5 +30,4 @@ C:\strawberry\perl\vendor\lib\Win32\Exe\Section\Debug.pm
 C:\strawberry\perl\vendor\lib\Win32\Exe\Section\Exports.pm
 C:\strawberry\perl\vendor\lib\Win32\Exe\Section\Imports.pm
 C:\strawberry\perl\vendor\lib\Win32\Exe\Section\Resources.pm
-C:\strawberry\perl\vendor\lib\auto\Win32\Exe\InsertResourceSection\InsertResourceSection.bs
-C:\strawberry\perl\vendor\lib\auto\Win32\Exe\InsertResourceSection\InsertResourceSection.dll
+C:\strawberry\perl\vendor\lib\auto\Win32\Exe\InsertResourceSection\InsertResourceSection.xs.dll

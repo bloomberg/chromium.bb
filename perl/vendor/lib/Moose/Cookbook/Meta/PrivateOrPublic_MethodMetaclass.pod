@@ -1,10 +1,11 @@
-package Moose::Cookbook::Meta::PrivateOrPublic_MethodMetaclass;
-
+# PODNAME: Moose::Cookbook::Meta::PrivateOrPublic_MethodMetaclass
 # ABSTRACT: A method metaclass for marking methods public or private
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Cookbook::Meta::PrivateOrPublic_MethodMetaclass - A method metaclass for 
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -144,6 +145,8 @@ tool like L<Devel::Declare> to create full-blown new keywords in Perl.
 =begin testing
 
 package main;
+use strict;
+use warnings;
 
 use Test::Fatal;
 
@@ -165,20 +168,57 @@ is( $user->password, 'reset', 'password has been reset' );
 
 =end testing
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

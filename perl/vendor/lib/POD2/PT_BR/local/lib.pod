@@ -138,7 +138,7 @@ do C<CMD.exe>, você pode fazer assim:
   set PERL_MM_OPT=INSTALL_BASE=C:\DOCUME~1\ADMINI~1\perl5
   set PERL5LIB=C:\DOCUME~1\ADMINI~1\perl5\lib\perl5;C:\DOCUME~1\ADMINI~1\perl5\lib\perl5\MSWin32-x86-multi-thread
   set PATH=C:\DOCUME~1\ADMINI~1\perl5\bin;%PATH%
-  
+
   ### Para configurar o ambiente apenas dessa shell
   C:\>perl -Mlocal::lib > %TEMP%\tmp.bat && %TEMP%\tmp.bat && del %TEMP%\temp.bat
   ### em vez de $(perl -Mlocal::lib=./)

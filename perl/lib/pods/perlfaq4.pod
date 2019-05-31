@@ -2,6 +2,10 @@
 
 perlfaq4 - Data Manipulation
 
+=head1 VERSION
+
+version 5.20190126
+
 =head1 DESCRIPTION
 
 This section of the FAQ answers questions related to manipulating
@@ -124,10 +128,9 @@ need yourself.
 To see why, notice how you'll still have an issue on half-way-point
 alternation:
 
-    for (my $i = 0; $i < 1.01; $i += 0.05) { printf "%.1f ",$i}
+    for (my $i = -5; $i <= 5; $i += 0.5) { printf "%.0f ",$i }
 
-    0.0 0.1 0.1 0.2 0.2 0.2 0.3 0.3 0.4 0.4 0.5 0.5 0.6 0.7 0.7
-    0.8 0.8 0.9 0.9 1.0 1.0
+    -5 -4 -4 -4 -3 -2 -2 -2 -1 -0 0 0 1 2 2 2 3 4 4 4 5
 
 Don't blame Perl. It's the same as in C. IEEE says we have to do
 this. Perl numbers whose absolute values are integers under 2**31 (on
@@ -398,7 +401,7 @@ random number between 0 and 5 that you can then add to 10.
 
 Hence you derive the following simple function to abstract
 that. It selects a random integer between the two given
-integers (inclusive), For example: C<random_int_between(50,120)>.
+integers (inclusive). For example: C<random_int_between(50,120)>.
 
     sub random_int_between {
         my($min, $max) = @_;
@@ -486,7 +489,7 @@ operators so you can compare them directly:
 You can also get differences with a subtraction, which returns a
 L<Time::Seconds> object:
 
-    my $diff = $date1 - $date2;
+    my $date_diff = $date1 - $date2;
     print "The difference is ", $date_diff->days, " days\n";
 
 If you want to work with formatted dates, the L<Date::Manip>,
@@ -730,7 +733,7 @@ L<Regexp::Common::balanced> and L<Regexp::Common::delimited>).
 More complex cases will require to write a parser, probably
 using a parsing module from CPAN, like
 L<Regexp::Grammars>, L<Parse::RecDescent>, L<Parse::Yapp>,
-L<Text::Balanced>, or L<Marpa::XS>.
+L<Text::Balanced>, or L<Marpa::R2>.
 
 =head2 How do I reverse a string?
 
@@ -1241,6 +1244,10 @@ indentation correctly preserved:
         --Bilbo in /usr/src/perl/pp_ctl.c
     EVER_ON_AND_ON
 
+Beginning with Perl version 5.26, a much simpler and cleaner way to
+write indented here documents has been added to the language: the
+tilde (~) modifier. See L<perlop/"Indented Here-docs"> for details.
+
 =head1 Data: Arrays
 
 =head2 What is the difference between a list and an array?
@@ -1266,8 +1273,8 @@ for list operations, so list operations also work on arrays:
     wash_animals( qw( dog cat bird ) );
     wash_animals( @animals );
 
-Array operations, which change the scalars, rearranges them, or adds
-or subtracts some scalars, only work on arrays. These can't work on a
+Array operations, which change the scalars, rearrange them, or add
+or subtract some scalars, only work on arrays. These can't work on a
 list, which is fixed. Array operations include C<shift>, C<unshift>,
 C<push>, C<pop>, and C<splice>.
 
@@ -1615,7 +1622,7 @@ such as C<push>, C<pop>, C<shift>, C<unshift>, or C<splice> to do
 that.
 
 Sometimes, however, linked lists can be useful in situations where you
-want to "shard" an array so you have have many small arrays instead of
+want to "shard" an array so you have many small arrays instead of
 a single big array. You can keep arrays longer than Perl's largest
 array index, lock smaller arrays separately in threaded programs,
 reallocate less memory, or quickly insert elements in the middle of
@@ -2430,7 +2437,7 @@ Usually a hash ref, perhaps like this:
 References are documented in L<perlref> and L<perlreftut>.
 Examples of complex data structures are given in L<perldsc> and
 L<perllol>. Examples of structures and object-oriented classes are
-in L<perltoot>.
+in L<perlootut>.
 
 =head2 How can I use a reference as a hash key?
 
@@ -2552,24 +2559,23 @@ some gotchas. See the section on Regular Expressions.
 =head2 How do I determine whether a scalar is a number/whole/integer/float?
 
 Assuming that you don't care about IEEE notations like "NaN" or
-"Infinity", you probably just want to use a regular expression:
+"Infinity", you probably just want to use a regular expression (see also
+L<perlretut> and L<perlre>):
 
     use 5.010;
 
-    given( $number ) {
-        when( /\D/ )
-            { say "\thas nondigits"; continue }
-        when( /^\d+\z/ )
-            { say "\tis a whole number"; continue }
-        when( /^-?\d+\z/ )
-            { say "\tis an integer"; continue }
-        when( /^[+-]?\d+\z/ )
-            { say "\tis a +/- integer"; continue }
-        when( /^-?(?:\d+\.?|\.\d)\d*\z/ )
-            { say "\tis a real number"; continue }
-        when( /^[+-]?(?=\.?\d)\d*\.?\d*(?:e[+-]?\d+)?\z/i)
-            { say "\tis a C float" }
-    }
+    if ( /\D/ )
+        { say "\thas nondigits"; }
+    if ( /^\d+\z/ )
+        { say "\tis a whole number"; }
+    if ( /^-?\d+\z/ )
+        { say "\tis an integer"; }
+    if ( /^[+-]?\d+\z/ )
+        { say "\tis a +/- integer"; }
+    if ( /^-?(?:\d+\.?|\.\d)\d*\z/ )
+        { say "\tis a real number"; }
+    if ( /^[+-]?(?=\.?\d)\d*\.?\d*(?:e[+-]?\d+)?\z/i )
+        { say "\tis a C float" }
 
 There are also some commonly used modules for the task.
 L<Scalar::Util> (distributed with 5.8) provides access to perl's
@@ -2661,7 +2667,7 @@ The arrays.h/arrays.c code in the L<PGPLOT> module on CPAN does just this.
 If you're doing a lot of float or double processing, consider using
 the L<PDL> module from CPAN instead--it makes number-crunching easy.
 
-See L<http://search.cpan.org/dist/PGPLOT> for the code.
+See L<https://metacpan.org/release/PGPLOT> for the code.
 
 
 =head1 AUTHOR AND COPYRIGHT

@@ -8,7 +8,7 @@ XML::LibXML::PI - XML::LibXML Processing Instructions
 
   use XML::LibXML;
   # Only methods specific to Processing Instruction nodes are listed here,
-  # see XML::LibXML::Node manpage for other methods
+  # see the XML::LibXML::Node manpage for other methods
 
   $pinode->setData( $data_string );
   $pinode->setData( name=>string_value [...] );
@@ -46,8 +46,8 @@ described above, the call
 
 will have the same result as above.
 
-L<<<<<< XML::LibXML::PI >>>>>>'s implementation of setData() documented below differs a bit from the the
-standard version as available in L<<<<<< XML::LibXML::Node >>>>>>:
+L<<<<<< XML::LibXML::PI >>>>>>'s implementation of setData() documented below differs a bit from the standard
+version as available in L<<<<<< XML::LibXML::Node >>>>>>:
 
 =over 4
 
@@ -56,7 +56,7 @@ standard version as available in L<<<<<< XML::LibXML::Node >>>>>>:
   $pinode->setData( $data_string );
   $pinode->setData( name=>string_value [...] );
 
-This method allows to change the content data of a PI. Additionally to the
+This method allows one to change the content data of a PI. Additionally to the
 interface specified for DOM Level2, the method provides a named parameter
 interface to set the data. This parameter list is converted into a string
 before it is appended to the PI.
@@ -67,14 +67,14 @@ before it is appended to the PI.
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -85,3 +85,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

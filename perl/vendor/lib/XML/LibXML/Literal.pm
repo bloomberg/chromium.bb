@@ -8,24 +8,27 @@
 #
 
 package XML::LibXML::Literal;
+
 use XML::LibXML::Boolean;
 use XML::LibXML::Number;
+
 use strict;
+use warnings;
 
 use vars qw ($VERSION);
-$VERSION = "1.98"; # VERSION TEMPLATE: DO NOT CHANGE
+$VERSION = "2.0200"; # VERSION TEMPLATE: DO NOT CHANGE
 
-use overload 
+use overload
 		'""' => \&value,
 		'cmp' => \&cmp;
 
 sub new {
 	my $class = shift;
 	my ($string) = @_;
-	
+
 #	$string =~ s/&quot;/"/g;
 #	$string =~ s/&apos;/'/g;
-	
+
 	bless \$string, $class;
 }
 

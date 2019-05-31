@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef TAPI_H
@@ -56,45 +56,45 @@ extern "C" {
   typedef void (CALLBACK *LINECALLBACK)(DWORD hDevice,DWORD dwMessage,DWORD_PTR dwInstance,DWORD_PTR dwParam1,DWORD_PTR dwParam2,DWORD_PTR dwParam3);
   typedef void (CALLBACK *PHONECALLBACK)(DWORD hDevice,DWORD dwMessage,DWORD_PTR dwInstance,DWORD_PTR dwParam1,DWORD_PTR dwParam2,DWORD_PTR dwParam3);
 
-#define LINE_ADDRESSSTATE 0L
-#define LINE_CALLINFO 1L
-#define LINE_CALLSTATE 2L
-#define LINE_CLOSE 3L
-#define LINE_DEVSPECIFIC 4L
-#define LINE_DEVSPECIFICFEATURE 5L
-#define LINE_GATHERDIGITS 6L
-#define LINE_GENERATE 7L
-#define LINE_LINEDEVSTATE 8L
-#define LINE_MONITORDIGITS 9L
-#define LINE_MONITORMEDIA 10L
-#define LINE_MONITORTONE 11L
-#define LINE_REPLY 12L
-#define LINE_REQUEST 13L
-#define PHONE_BUTTON 14L
-#define PHONE_CLOSE 15L
-#define PHONE_DEVSPECIFIC 16L
-#define PHONE_REPLY 17L
-#define PHONE_STATE 18L
-#define LINE_CREATE 19L
-#define PHONE_CREATE 20L
-#define LINE_AGENTSPECIFIC 21L
-#define LINE_AGENTSTATUS 22L
-#define LINE_APPNEWCALL 23L
-#define LINE_PROXYREQUEST 24L
-#define LINE_REMOVE 25L
-#define PHONE_REMOVE 26L
+#define LINE_ADDRESSSTATE __MSABI_LONG(0)
+#define LINE_CALLINFO __MSABI_LONG(1)
+#define LINE_CALLSTATE __MSABI_LONG(2)
+#define LINE_CLOSE __MSABI_LONG(3)
+#define LINE_DEVSPECIFIC __MSABI_LONG(4)
+#define LINE_DEVSPECIFICFEATURE __MSABI_LONG(5)
+#define LINE_GATHERDIGITS __MSABI_LONG(6)
+#define LINE_GENERATE __MSABI_LONG(7)
+#define LINE_LINEDEVSTATE __MSABI_LONG(8)
+#define LINE_MONITORDIGITS __MSABI_LONG(9)
+#define LINE_MONITORMEDIA __MSABI_LONG(10)
+#define LINE_MONITORTONE __MSABI_LONG(11)
+#define LINE_REPLY __MSABI_LONG(12)
+#define LINE_REQUEST __MSABI_LONG(13)
+#define PHONE_BUTTON __MSABI_LONG(14)
+#define PHONE_CLOSE __MSABI_LONG(15)
+#define PHONE_DEVSPECIFIC __MSABI_LONG(16)
+#define PHONE_REPLY __MSABI_LONG(17)
+#define PHONE_STATE __MSABI_LONG(18)
+#define LINE_CREATE __MSABI_LONG(19)
+#define PHONE_CREATE __MSABI_LONG(20)
+#define LINE_AGENTSPECIFIC __MSABI_LONG(21)
+#define LINE_AGENTSTATUS __MSABI_LONG(22)
+#define LINE_APPNEWCALL __MSABI_LONG(23)
+#define LINE_PROXYREQUEST __MSABI_LONG(24)
+#define LINE_REMOVE __MSABI_LONG(25)
+#define PHONE_REMOVE __MSABI_LONG(26)
 
-#define LINE_AGENTSESSIONSTATUS 27L
-#define LINE_QUEUESTATUS 28L
-#define LINE_AGENTSTATUSEX 29L
-#define LINE_GROUPSTATUS 30L
-#define LINE_PROXYSTATUS 31L
+#define LINE_AGENTSESSIONSTATUS __MSABI_LONG(27)
+#define LINE_QUEUESTATUS __MSABI_LONG(28)
+#define LINE_AGENTSTATUSEX __MSABI_LONG(29)
+#define LINE_GROUPSTATUS __MSABI_LONG(30)
+#define LINE_PROXYSTATUS __MSABI_LONG(31)
 
-#define LINE_APPNEWCALLHUB 32L
-#define LINE_CALLHUBCLOSE 33L
-#define LINE_DEVSPECIFICEX 34L
+#define LINE_APPNEWCALLHUB __MSABI_LONG(32)
+#define LINE_CALLHUBCLOSE __MSABI_LONG(33)
+#define LINE_DEVSPECIFICEX __MSABI_LONG(34)
 
-#define INITIALIZE_NEGOTIATION 0xFFFFFFFFUL
+#define INITIALIZE_NEGOTIATION __MSABI_LONG(0xFFFFFFFFU)
 
 #define LINEADDRCAPFLAGS_FWDNUMRINGS 0x00000001
 #define LINEADDRCAPFLAGS_PICKUPGROUPID 0x00000002
@@ -956,42 +956,42 @@ extern "C" {
 
 #define TAPI_REPLY WM_USER + 99
 
-#define TAPIERR_CONNECTED 0L
-#define TAPIERR_DROPPED -1L
-#define TAPIERR_NOREQUESTRECIPIENT -2L
-#define TAPIERR_REQUESTQUEUEFULL -3L
-#define TAPIERR_INVALDESTADDRESS -4L
-#define TAPIERR_INVALWINDOWHANDLE -5L
-#define TAPIERR_INVALDEVICECLASS -6L
-#define TAPIERR_INVALDEVICEID -7L
-#define TAPIERR_DEVICECLASSUNAVAIL -8L
-#define TAPIERR_DEVICEIDUNAVAIL -9L
-#define TAPIERR_DEVICEINUSE -10L
-#define TAPIERR_DESTBUSY -11L
-#define TAPIERR_DESTNOANSWER -12L
-#define TAPIERR_DESTUNAVAIL -13L
-#define TAPIERR_UNKNOWNWINHANDLE -14L
-#define TAPIERR_UNKNOWNREQUESTID -15L
-#define TAPIERR_REQUESTFAILED -16L
-#define TAPIERR_REQUESTCANCELLED -17L
-#define TAPIERR_INVALPOINTER -18L
-#define TAPIERR_NOTADMIN -19L
-#define TAPIERR_MMCWRITELOCKED -20L
-#define TAPIERR_PROVIDERALREADYINSTALLED -21L
-#define TAPIERR_SCP_ALREADY_EXISTS -22L
-#define TAPIERR_SCP_DOES_NOT_EXIST -23L
+#define TAPIERR_CONNECTED __MSABI_LONG(0)
+#define TAPIERR_DROPPED __MSABI_LONG(-1)
+#define TAPIERR_NOREQUESTRECIPIENT __MSABI_LONG(-2)
+#define TAPIERR_REQUESTQUEUEFULL __MSABI_LONG(-3)
+#define TAPIERR_INVALDESTADDRESS __MSABI_LONG(-4)
+#define TAPIERR_INVALWINDOWHANDLE __MSABI_LONG(-5)
+#define TAPIERR_INVALDEVICECLASS __MSABI_LONG(-6)
+#define TAPIERR_INVALDEVICEID __MSABI_LONG(-7)
+#define TAPIERR_DEVICECLASSUNAVAIL __MSABI_LONG(-8)
+#define TAPIERR_DEVICEIDUNAVAIL __MSABI_LONG(-9)
+#define TAPIERR_DEVICEINUSE __MSABI_LONG(-10)
+#define TAPIERR_DESTBUSY __MSABI_LONG(-11)
+#define TAPIERR_DESTNOANSWER __MSABI_LONG(-12)
+#define TAPIERR_DESTUNAVAIL __MSABI_LONG(-13)
+#define TAPIERR_UNKNOWNWINHANDLE __MSABI_LONG(-14)
+#define TAPIERR_UNKNOWNREQUESTID __MSABI_LONG(-15)
+#define TAPIERR_REQUESTFAILED __MSABI_LONG(-16)
+#define TAPIERR_REQUESTCANCELLED __MSABI_LONG(-17)
+#define TAPIERR_INVALPOINTER __MSABI_LONG(-18)
+#define TAPIERR_NOTADMIN __MSABI_LONG(-19)
+#define TAPIERR_MMCWRITELOCKED __MSABI_LONG(-20)
+#define TAPIERR_PROVIDERALREADYINSTALLED __MSABI_LONG(-21)
+#define TAPIERR_SCP_ALREADY_EXISTS __MSABI_LONG(-22)
+#define TAPIERR_SCP_DOES_NOT_EXIST __MSABI_LONG(-23)
 
-#define TAPIMAXDESTADDRESSSIZE 80L
-#define TAPIMAXAPPNAMESIZE 40L
-#define TAPIMAXCALLEDPARTYSIZE 40L
-#define TAPIMAXCOMMENTSIZE 80L
-#define TAPIMAXDEVICECLASSSIZE 40L
-#define TAPIMAXDEVICEIDSIZE 40L
+#define TAPIMAXDESTADDRESSSIZE __MSABI_LONG(80)
+#define TAPIMAXAPPNAMESIZE __MSABI_LONG(40)
+#define TAPIMAXCALLEDPARTYSIZE __MSABI_LONG(40)
+#define TAPIMAXCOMMENTSIZE __MSABI_LONG(80)
+#define TAPIMAXDEVICECLASSSIZE __MSABI_LONG(40)
+#define TAPIMAXDEVICEIDSIZE __MSABI_LONG(40)
 
 #ifndef GUID_DEFINED
 #define GUID_DEFINED
   typedef struct _GUID {
-    unsigned long Data1;
+    unsigned __LONG32 Data1;
     unsigned short Data2;
     unsigned short Data3;
     unsigned char Data4[8];
@@ -2007,66 +2007,6 @@ extern "C" {
     DWORD dwStringOffset;
   } VARSTRING,*LPVARSTRING;
 
-#define lineAddProvider __MINGW_NAME_AW(lineAddProvider)
-#define lineBlindTransfer __MINGW_NAME_AW(lineBlindTransfer)
-#define lineConfigDialog __MINGW_NAME_AW(lineConfigDialog)
-#define lineConfigDialogEdit __MINGW_NAME_AW(lineConfigDialogEdit)
-#define lineCreateAgent __MINGW_NAME_AW(lineCreateAgent)
-#define lineCreateAgent __MINGW_NAME_AW(lineCreateAgent)
-#define lineDial __MINGW_NAME_AW(lineDial)
-#define lineForward __MINGW_NAME_AW(lineForward)
-#define lineGatherDigits __MINGW_NAME_AW(lineGatherDigits)
-#define lineGenerateDigits __MINGW_NAME_AW(lineGenerateDigits)
-#define lineGetAddressCaps __MINGW_NAME_AW(lineGetAddressCaps)
-#define lineGetAddressID __MINGW_NAME_AW(lineGetAddressID)
-#define lineGetAddressStatus __MINGW_NAME_AW(lineGetAddressStatus)
-#define lineGetAgentActivityList __MINGW_NAME_AW(lineGetAgentActivityList)
-#define lineGetAgentCaps __MINGW_NAME_AW(lineGetAgentCaps)
-#define lineGetAgentGroupList __MINGW_NAME_AW(lineGetAgentGroupList)
-#define lineGetAgentStatus __MINGW_NAME_AW(lineGetAgentStatus)
-#define lineGetAppPriority __MINGW_NAME_AW(lineGetAppPriority)
-#define lineGetCallInfo __MINGW_NAME_AW(lineGetCallInfo)
-#define lineGetCountry __MINGW_NAME_AW(lineGetCountry)
-#define lineGetDevCaps __MINGW_NAME_AW(lineGetDevCaps)
-#define lineGetDevConfig __MINGW_NAME_AW(lineGetDevConfig)
-#define lineGetGroupList __MINGW_NAME_AW(lineGetGroupList)
-#define lineGetIcon __MINGW_NAME_AW(lineGetIcon)
-#define lineGetID __MINGW_NAME_AW(lineGetID)
-#define lineGetDevStatus __MINGW_NAME_AW(lineGetDevStatus)
-#define lineGetProviderList __MINGW_NAME_AW(lineGetProviderList)
-#define lineGetQueueList __MINGW_NAME_AW(lineGetQueueList)
-#define lineGetRequest __MINGW_NAME_AW(lineGetRequest)
-#define lineGetTranslateCaps __MINGW_NAME_AW(lineGetTranslateCaps)
-#define lineHandoff __MINGW_NAME_AW(lineHandoff)
-#define lineInitializeEx __MINGW_NAME_AW(lineInitializeEx)
-#define lineMakeCall __MINGW_NAME_AW(lineMakeCall)
-#define lineOpen __MINGW_NAME_AW(lineOpen)
-#define linePark __MINGW_NAME_AW(linePark)
-#define linePickup __MINGW_NAME_AW(linePickup)
-#define linePrepareAddToConference __MINGW_NAME_AW(linePrepareAddToConference)
-#define lineRedirect __MINGW_NAME_AW(lineRedirect)
-#define lineSetAppPriority __MINGW_NAME_AW(lineSetAppPriority)
-#define lineSetDevConfig __MINGW_NAME_AW(lineSetDevConfig)
-#define lineSetTollList __MINGW_NAME_AW(lineSetTollList)
-#define lineSetupConference __MINGW_NAME_AW(lineSetupConference)
-#define lineSetupTransfer __MINGW_NAME_AW(lineSetupTransfer)
-#define lineTranslateAddress __MINGW_NAME_AW(lineTranslateAddress)
-#define lineTranslateDialog __MINGW_NAME_AW(lineTranslateDialog)
-#define lineUnpark __MINGW_NAME_AW(lineUnpark)
-
-#define phoneConfigDialog __MINGW_NAME_AW(phoneConfigDialog)
-#define phoneGetButtonInfo __MINGW_NAME_AW(phoneGetButtonInfo)
-#define phoneGetDevCaps __MINGW_NAME_AW(phoneGetDevCaps)
-#define phoneGetIcon __MINGW_NAME_AW(phoneGetIcon)
-#define phoneGetID __MINGW_NAME_AW(phoneGetID)
-#define phoneGetStatus __MINGW_NAME_AW(phoneGetStatus)
-#define phoneInitializeEx __MINGW_NAME_AW(phoneInitializeEx)
-#define phoneSetButtonInfo __MINGW_NAME_AW(phoneSetButtonInfo)
-
-#define tapiGetLocationInfo __MINGW_NAME_AW(tapiGetLocationInfo)
-#define tapiRequestMakeCall __MINGW_NAME_AW(tapiRequestMakeCall)
-#define tapiRequestMediaCall __MINGW_NAME_AW(tapiRequestMediaCall)
-
   LONG WINAPI lineAccept(HCALL hCall,LPCSTR lpsUserUserInfo,DWORD dwSize);
   LONG WINAPI lineAddProvider(LPCSTR lpszProviderFilename,HWND hwndOwner,LPDWORD lpdwPermanentProviderID);
   LONG WINAPI lineAddProviderA(LPCSTR lpszProviderFilename,HWND hwndOwner,LPDWORD lpdwPermanentProviderID);
@@ -2316,6 +2256,70 @@ extern "C" {
   LONG WINAPI tapiRequestMediaCall(HWND hwnd,WPARAM wRequestID,LPCSTR lpszDeviceClass,LPCSTR lpDeviceID,DWORD dwSize,DWORD dwSecure,LPCSTR lpszDestAddress,LPCSTR lpszAppName,LPCSTR lpszCalledParty,LPCSTR lpszComment);
   LONG WINAPI tapiRequestMediaCallA(HWND hwnd,WPARAM wRequestID,LPCSTR lpszDeviceClass,LPCSTR lpDeviceID,DWORD dwSize,DWORD dwSecure,LPCSTR lpszDestAddress,LPCSTR lpszAppName,LPCSTR lpszCalledParty,LPCSTR lpszComment);
   LONG WINAPI tapiRequestMediaCallW(HWND hwnd,WPARAM wRequestID,LPCWSTR lpszDeviceClass,LPCWSTR lpDeviceID,DWORD dwSize,DWORD dwSecure,LPCWSTR lpszDestAddress,LPCWSTR lpszAppName,LPCWSTR lpszCalledParty,LPCWSTR lpszComment);
+
+#if defined(UNICODE) || (TAPI_CURRENT_VERSION >= 0x00020000)
+#define lineAddProvider __MINGW_NAME_AW(lineAddProvider)
+#define lineBlindTransfer __MINGW_NAME_AW(lineBlindTransfer)
+#define lineConfigDialog __MINGW_NAME_AW(lineConfigDialog)
+#define lineConfigDialogEdit __MINGW_NAME_AW(lineConfigDialogEdit)
+#define lineDial __MINGW_NAME_AW(lineDial)
+#define lineGatherDigits __MINGW_NAME_AW(lineGatherDigits)
+#define lineGenerateDigits __MINGW_NAME_AW(lineGenerateDigits)
+#define lineGetAddressID __MINGW_NAME_AW(lineGetAddressID)
+#define lineGetAppPriority __MINGW_NAME_AW(lineGetAppPriority)
+#define lineGetDevConfig __MINGW_NAME_AW(lineGetDevConfig)
+#define lineGetIcon __MINGW_NAME_AW(lineGetIcon)
+#define lineGetID __MINGW_NAME_AW(lineGetID)
+#define lineHandoff __MINGW_NAME_AW(lineHandoff)
+#define lineMakeCall __MINGW_NAME_AW(lineMakeCall)
+#define linePark __MINGW_NAME_AW(linePark)
+#define linePickup __MINGW_NAME_AW(linePickup)
+#define lineRedirect __MINGW_NAME_AW(lineRedirect)
+#define lineSetAppPriority __MINGW_NAME_AW(lineSetAppPriority)
+#define lineSetDevConfig __MINGW_NAME_AW(lineSetDevConfig)
+#define lineSetTollList __MINGW_NAME_AW(lineSetTollList)
+#define lineTranslateAddress __MINGW_NAME_AW(lineTranslateAddress)
+#define lineTranslateDialog __MINGW_NAME_AW(lineTranslateDialog)
+#define lineUnpark __MINGW_NAME_AW(lineUnpark)
+
+#define phoneConfigDialog __MINGW_NAME_AW(phoneConfigDialog)
+#define phoneGetIcon __MINGW_NAME_AW(phoneGetIcon)
+#define phoneGetID __MINGW_NAME_AW(phoneGetID)
+
+#define tapiGetLocationInfo __MINGW_NAME_AW(tapiGetLocationInfo)
+#define tapiRequestMakeCall __MINGW_NAME_AW(tapiRequestMakeCall)
+#define tapiRequestMediaCall __MINGW_NAME_AW(tapiRequestMediaCall)
+#endif /* UNICODE || TAPI2 */
+
+#define lineCreateAgent __MINGW_NAME_AW(lineCreateAgent)
+#define lineCreateAgent __MINGW_NAME_AW(lineCreateAgent)
+#define lineForward __MINGW_NAME_AW(lineForward)
+#define lineGetAddressCaps __MINGW_NAME_AW(lineGetAddressCaps)
+#define lineGetAddressStatus __MINGW_NAME_AW(lineGetAddressStatus)
+#define lineGetAgentActivityList __MINGW_NAME_AW(lineGetAgentActivityList)
+#define lineGetAgentCaps __MINGW_NAME_AW(lineGetAgentCaps)
+#define lineGetAgentGroupList __MINGW_NAME_AW(lineGetAgentGroupList)
+#define lineGetAgentStatus __MINGW_NAME_AW(lineGetAgentStatus)
+#define lineGetCallInfo __MINGW_NAME_AW(lineGetCallInfo)
+#define lineGetCountry __MINGW_NAME_AW(lineGetCountry)
+#define lineGetDevCaps __MINGW_NAME_AW(lineGetDevCaps)
+#define lineGetGroupList __MINGW_NAME_AW(lineGetGroupList)
+#define lineGetDevStatus __MINGW_NAME_AW(lineGetDevStatus)
+#define lineGetProviderList __MINGW_NAME_AW(lineGetProviderList)
+#define lineGetQueueList __MINGW_NAME_AW(lineGetQueueList)
+#define lineGetRequest __MINGW_NAME_AW(lineGetRequest)
+#define lineGetTranslateCaps __MINGW_NAME_AW(lineGetTranslateCaps)
+#define lineInitializeEx __MINGW_NAME_AW(lineInitializeEx)
+#define lineOpen __MINGW_NAME_AW(lineOpen)
+#define linePrepareAddToConference __MINGW_NAME_AW(linePrepareAddToConference)
+#define lineSetupConference __MINGW_NAME_AW(lineSetupConference)
+#define lineSetupTransfer __MINGW_NAME_AW(lineSetupTransfer)
+
+#define phoneGetButtonInfo __MINGW_NAME_AW(phoneGetButtonInfo)
+#define phoneGetDevCaps __MINGW_NAME_AW(phoneGetDevCaps)
+#define phoneGetStatus __MINGW_NAME_AW(phoneGetStatus)
+#define phoneInitializeEx __MINGW_NAME_AW(phoneInitializeEx)
+#define phoneSetButtonInfo __MINGW_NAME_AW(phoneSetButtonInfo)
 
 #define TAPIERROR_FORMATMESSAGE(__ErrCode__) (((__ErrCode__) > 0xFFFF0000) ? ((__ErrCode__) & 0x0000FFFF) : (((__ErrCode__) & 0x10000000) ? ((__ErrCode__) - 0x90000000 + 0xF000) : ((__ErrCode__) - 0x80000000 + 0xE000)))
 

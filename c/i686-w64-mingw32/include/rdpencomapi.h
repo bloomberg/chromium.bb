@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_RDPENCOMAPI
@@ -93,18 +93,18 @@ DECLARE_INTERFACE_(IRDPSRAPITcpConnectionInfo,IDispatch)
     STDMETHOD_(HRESULT,Invoke)(THIS_ DISPID  dispIdMember,REFIID  riid,LCID  lcid,WORD  wFlags,DISPPARAMS FAR*  pDispParams,VARIANT FAR*  pVarResult,EXCEPINFO FAR*  pExcepInfo,unsigned int FAR*  puArgErr) PURE;
 
     /* IRDPSRAPITcpConnectionInfo methods */
-    STDMETHOD_(HRESULT,get_Protocol)(THIS_ long *plProtocol) PURE;
-    STDMETHOD_(HRESULT,get_LocalPort)(THIS_ long *plPort) PURE;
+    STDMETHOD_(HRESULT,get_Protocol)(THIS_ __LONG32 *plProtocol) PURE;
+    STDMETHOD_(HRESULT,get_LocalPort)(THIS_ __LONG32 *plPort) PURE;
     STDMETHOD_(HRESULT,get_LocalIP)(THIS_ BSTR *pbstrLocalIP) PURE;
-    STDMETHOD_(HRESULT,get_PeerPort)(THIS_ long *plPort) PURE;
+    STDMETHOD_(HRESULT,get_PeerPort)(THIS_ __LONG32 *plPort) PURE;
     STDMETHOD_(HRESULT,get_PeerIP)(THIS_ BSTR *pbstrIP) PURE;
 
     END_INTERFACE
 };
 #ifdef COBJMACROS
-#define IRDPSRAPITcpConnectionInfo_QueryInterface(This,riid,ppvObject) (This)->pVtbl->QueryInterface(This,riid,ppvObject)
-#define IRDPSRAPITcpConnectionInfo_AddRef(This) (This)->pVtbl->AddRef(This)
-#define IRDPSRAPITcpConnectionInfo_Release(This) (This)->pVtbl->Release(This)
+#define IRDPSRAPITcpConnectionInfo_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IRDPSRAPITcpConnectionInfo_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define IRDPSRAPITcpConnectionInfo_Release(This) (This)->lpVtbl->Release(This)
 #define IRDPSRAPITcpConnectionInfo_GetTypeInfoCount(This,pctinfo) (This)->lpVtbl->GetTypeInfoCount(This,pctinfo)
 #define IRDPSRAPITcpConnectionInfo_GetTypeInfo(This,iTInfo,lcid,ppTInfo) (This)->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo)
 #define IRDPSRAPITcpConnectionInfo_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) (This)->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)
@@ -139,21 +139,21 @@ DECLARE_INTERFACE_(IRDPSRAPIAttendee,IDispatch)
     STDMETHOD_(HRESULT,Invoke)(THIS_ DISPID  dispIdMember,REFIID  riid,LCID  lcid,WORD  wFlags,DISPPARAMS FAR*  pDispParams,VARIANT FAR*  pVarResult,EXCEPINFO FAR*  pExcepInfo,unsigned int FAR*  puArgErr) PURE;
 
     /* IRDPSRAPIAttendee methods */
-    STDMETHOD_(HRESULT,get_Id)(THIS_ long *pId) PURE;
+    STDMETHOD_(HRESULT,get_Id)(THIS_ __LONG32 *pId) PURE;
     STDMETHOD_(HRESULT,get_RemoteName)(THIS_ BSTR *pVal) PURE;
     STDMETHOD_(HRESULT,get_ControlLevel)(THIS_ CTRL_LEVEL *pVal) PURE;
     STDMETHOD_(HRESULT,put_ControlLevel)(THIS_ CTRL_LEVEL pNewVal) PURE;
     STDMETHOD_(HRESULT,get_Invitation)(THIS_ IRDPSRAPIInvitation **ppVal) PURE;
     STDMETHOD_(HRESULT,TerminateConnection)(THIS) PURE;
-    STDMETHOD_(HRESULT,get_Flags)(THIS_ long *plFlags) PURE;
+    STDMETHOD_(HRESULT,get_Flags)(THIS_ __LONG32 *plFlags) PURE;
     STDMETHOD_(HRESULT,get_ConnectivityInfo)(THIS_ IUnknown **ppVal) PURE;
 
     END_INTERFACE
 };
 #ifdef COBJMACROS
-#define IRDPSRAPIAttendee_QueryInterface(This,riid,ppvObject) (This)->pVtbl->QueryInterface(This,riid,ppvObject)
-#define IRDPSRAPIAttendee_AddRef(This) (This)->pVtbl->AddRef(This)
-#define IRDPSRAPIAttendee_Release(This) (This)->pVtbl->Release(This)
+#define IRDPSRAPIAttendee_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IRDPSRAPIAttendee_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define IRDPSRAPIAttendee_Release(This) (This)->lpVtbl->Release(This)
 #define IRDPSRAPIAttendee_GetTypeInfoCount(This,pctinfo) (This)->lpVtbl->GetTypeInfoCount(This,pctinfo)
 #define IRDPSRAPIAttendee_GetTypeInfo(This,iTInfo,lcid,ppTInfo) (This)->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo)
 #define IRDPSRAPIAttendee_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) (This)->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)

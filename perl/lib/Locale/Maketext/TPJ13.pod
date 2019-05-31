@@ -303,7 +303,7 @@ like "How do I get to the marketplace?" that don't have any blanks to
 fill in, and ones like "How much do these ___ cost?", where there's
 one or more blanks to fill in (and these are usually linked to a
 list of words that you can put in that blank: "fish", "potatoes",
-"tomatoes", etc.)  The ones with no blanks are no problem, but the
+"tomatoes", etc.).  The ones with no blanks are no problem, but the
 fill-in-the-blank ones may not be really straightforward. If it's a
 Swahili phrasebook, for example, the authors probably didn't bother to
 tell you the complicated ways that the verb "cost" changes its
@@ -715,7 +715,7 @@ right tool for the job.
 However, other accidents of history have made Perl a well-accepted
 language for design of server-side programs (generally in CGI form)
 for Web site interfaces.  Localization of static pages in Web sites is
-trivial, feasable either with simple language-negotiation features in
+trivial, feasible either with simple language-negotiation features in
 servers like Apache, or with some kind of server-side inclusions of
 language-appropriate text into layout templates.  However, I think
 that the localization of Perl-based search systems (or other kinds of

@@ -45,11 +45,9 @@ use strict;
 use Clone      ();
 use PPI::Token ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Token";
 
 =pod
 
@@ -73,7 +71,7 @@ actual characters.
 
 =cut
 
-my $null = undef;
+my $null;
 
 sub null {
 	$null ||= $_[0]->new('');
@@ -81,7 +79,7 @@ sub null {
 }
 
 ### XS -> PPI/XS.xs:_PPI_Token_Whitespace__significant 0.900+
-sub significant { '' }
+sub significant() { '' }
 
 =pod
 
@@ -110,44 +108,39 @@ sub tidy {
 # Parsing Methods
 
 # Build the class and commit maps
-use vars qw{ @CLASSMAP @COMMITMAP %MATCHWORD };
-BEGIN {
-	@CLASSMAP  = ();
-	@COMMITMAP = ();
-	foreach (
-		'a' .. 'u', 'w', 'y', 'z', 'A' .. 'Z', '_'
-	) {
-		$COMMITMAP[ord $_] = 'PPI::Token::Word';
-	}
-	foreach ( qw!; [ ] { } )! )       { $COMMITMAP[ord $_] = 'PPI::Token::Structure' }
-	foreach ( 0 .. 9 )                { $CLASSMAP[ord $_]  = 'Number'   }
-	foreach ( qw{= ? | + > . ! ~ ^} ) { $CLASSMAP[ord $_]  = 'Operator' }
-	foreach ( qw{* $ @ & : %} )       { $CLASSMAP[ord $_]  = 'Unknown'  }
+my %COMMITMAP = (
+	map( { ord $_ => 'PPI::Token::Word' } 'a' .. 'u', 'A' .. 'Z', qw" w y z _ " ),    # no v or x
+	map( { ord $_ => 'PPI::Token::Structure' } qw" ; [ ] { } ) " ),
+	ord '#' => 'PPI::Token::Comment',
+	ord 'v' => 'PPI::Token::Number::Version',
+);
+my %CLASSMAP = (
+	map( { ord $_ => 'Number' } 0 .. 9 ),
+	map( { ord $_ => 'Operator' } qw" = ? | + > . ! ~ ^ " ),
+	map( { ord $_ => 'Unknown' } qw" * $ @ & : % " ),
+	ord ','  => 'PPI::Token::Operator',
+	ord "'"  => 'Quote::Single',
+	ord '"'  => 'Quote::Double',
+	ord '`'  => 'QuoteLike::Backtick',
+	ord '\\' => 'Cast',
+	ord '_'  => 'Word',
+	9        => 'Whitespace',             # A horizontal tab
+	10       => 'Whitespace',             # A newline
+	12       => 'Whitespace',             # A form feed
+	13       => 'Whitespace',             # A carriage return
+	32       => 'Whitespace',             # A normal space
+);
 
-	# Miscellaneous remainder
-	$COMMITMAP[ord '#'] = 'PPI::Token::Comment';
-	$COMMITMAP[ord 'v'] = 'PPI::Token::Number::Version';
-	$CLASSMAP[ord ',']  = 'PPI::Token::Operator';
-	$CLASSMAP[ord "'"]  = 'Quote::Single';
-	$CLASSMAP[ord '"']  = 'Quote::Double';
-	$CLASSMAP[ord '`']  = 'QuoteLike::Backtick';
-	$CLASSMAP[ord '\\'] = 'Cast';
-	$CLASSMAP[ord '_']  = 'Word';
-	$CLASSMAP[9]        = 'Whitespace'; # A horizontal tab
-	$CLASSMAP[10]       = 'Whitespace'; # A newline
-	$CLASSMAP[13]       = 'Whitespace'; # A carriage return
-	$CLASSMAP[32]       = 'Whitespace'; # A normal space
-
-	# Words (functions and keywords) after which a following / is
-	# almost certainly going to be a regex
-	%MATCHWORD = map { $_ => 1 } qw{
-		split
-		if
-		unless
-		grep
-		map
-	};
-}
+# Words (functions and keywords) after which a following / is
+# almost certainly going to be a regex
+my %MATCHWORD = map { $_ => 1 } qw{
+  return
+  split
+  if
+  unless
+  grep
+  map
+};
 
 sub __TOKENIZER__on_line_start {
 	my $t    = $_[1];
@@ -181,7 +174,7 @@ sub __TOKENIZER__on_line_start {
 		# Indicates a Perl 6 block. Make the initial
 		# implementation just suck in the entire rest of the
 		# file.
-		my @perl6 = ();
+		my @perl6;
 		while ( 1 ) {
 			my $line6 = $t->_get_line;
 			last unless defined $line6;
@@ -189,7 +182,7 @@ sub __TOKENIZER__on_line_start {
 		}
 		push @{ $t->{perl6} }, join '', @perl6;
 
-		# We only sucked in the block, we don't actially do
+		# We only sucked in the block, we don't actually do
 		# anything to the "use v6..." line. So return as if
 		# we didn't find anything at all.
 		return 1;
@@ -200,13 +193,14 @@ sub __TOKENIZER__on_line_start {
 
 sub __TOKENIZER__on_char {
 	my $t    = $_[1];
-	my $char = ord substr $t->{line}, $t->{line_cursor}, 1;
+	my $c = substr $t->{line}, $t->{line_cursor}, 1;
+	my $char = ord $c;
 
-	# Do we definately know what something is?
-	return $COMMITMAP[$char]->__TOKENIZER__commit($t) if $COMMITMAP[$char];
+	# Do we definitely know what something is?
+	return $COMMITMAP{$char}->__TOKENIZER__commit($t) if $COMMITMAP{$char};
 
 	# Handle the simple option first
-	return $CLASSMAP[$char] if $CLASSMAP[$char];
+	return $CLASSMAP{$char} if $CLASSMAP{$char};
 
 	if ( $char == 40 ) {  # $char eq '('
 		# Finalise any whitespace token...
@@ -219,38 +213,49 @@ sub __TOKENIZER__on_char {
 		# 3. The one before that is a 'structure'
 
 		# Get the three previous significant tokens
-		my $tokens = $t->_previous_significant_tokens(3);
-		if ( $tokens ) {
-			# A normal subroutine declaration
-			my $p1 = $tokens->[1];
-			my $p2 = $tokens->[2];
-			if (
-				$tokens->[0]->isa('PPI::Token::Word')
-				and
-				$p1->isa('PPI::Token::Word')
-				and
-				$p1->content eq 'sub'
-				and (
-					$p2->isa('PPI::Token::Structure')
-					or (
-						$p2->isa('PPI::Token::Whitespace')
-						and
-						$p2->content eq ''
-					)
-				)
-			) {
-				# This is a sub prototype
-				return 'Prototype';
-			}
+		my @tokens = $t->_previous_significant_tokens(3);
 
-			# An prototyped anonymous subroutine
-			my $p0 = $tokens->[0];
-			if ( $p0->isa('PPI::Token::Word') and $p0->content eq 'sub'
-				# Maybe it's invoking a method named 'sub'
-				and not ( $p1 and $p1->isa('PPI::Token::Operator') and $p1->content eq '->')
-			) {
-				return 'Prototype';
-			}
+		# A normal subroutine declaration
+		my $p1 = $tokens[1];
+		my $p2 = $tokens[2];
+		if (
+			$tokens[0]
+			and
+			$tokens[0]->isa('PPI::Token::Word')
+			and
+			$p1
+			and
+			$p1->isa('PPI::Token::Word')
+			and
+			$p1->content eq 'sub'
+			and (
+				not $p2
+				or
+				$p2->isa('PPI::Token::Structure')
+				or (
+					$p2->isa('PPI::Token::Whitespace')
+					and
+					$p2->content eq ''
+				)
+				or (
+					# Lexical subroutine
+					$p2->isa('PPI::Token::Word')
+					and
+					$p2->content =~ /^(?:my|our|state)$/
+				)
+			)
+		) {
+			# This is a sub prototype
+			return 'Prototype';
+		}
+
+		# A prototyped anonymous subroutine
+		my $p0 = $tokens[0];
+		if ( $p0 and $p0->isa('PPI::Token::Word') and $p0->content eq 'sub'
+			# Maybe it's invoking a method named 'sub'
+			and not ( $p1 and $p1->isa('PPI::Token::Operator') and $p1->content eq '->')
+		) {
+			return 'Prototype';
 		}
 
 		# This is a normal open bracket
@@ -268,40 +273,34 @@ sub __TOKENIZER__on_char {
 		# $foo < $bar
 		# 1 < $bar
 		# $#foo < $bar
-		return 'Operator' if $prev->isa('PPI::Token::Symbol');
-		return 'Operator' if $prev->isa('PPI::Token::Magic');
-		return 'Operator' if $prev->isa('PPI::Token::Number');
-		return 'Operator' if $prev->isa('PPI::Token::ArrayIndex');
+		return 'Operator' if $prev and $prev->isa('PPI::Token::Symbol');
+		return 'Operator' if $prev and $prev->isa('PPI::Token::Magic');
+		return 'Operator' if $prev and $prev->isa('PPI::Token::Number');
+		return 'Operator' if $prev and $prev->isa('PPI::Token::ArrayIndex');
 
 		# If it is <<... it's a here-doc instead
-		my $next_char = substr( $t->{line}, $t->{line_cursor} + 1, 1 );
-		if ( $next_char eq '<' ) {
-			return 'Operator';
-		}
+		my $next_char = substr( $t->{line}, $t->{line_cursor} + 1, 2 );
+		return 'Operator' if $next_char =~ /<[^>]/;
+
+		return 'Operator' if not $prev;
 
 		# The most common group of readlines are used like
 		# while ( <...> )
 		# while <>;
 		my $prec = $prev->content;
-		if ( $prev->isa('PPI::Token::Structure') and $prec eq '(' ) {
-			return 'QuoteLike::Readline';
-		}
-		if ( $prev->isa('PPI::Token::Word') and $prec eq 'while' ) {
-			return 'QuoteLike::Readline';
-		}
-		if ( $prev->isa('PPI::Token::Operator') and $prec eq '=' ) {
-			return 'QuoteLike::Readline';
-		}
-		if ( $prev->isa('PPI::Token::Operator') and $prec eq ',' ) {
-			return 'QuoteLike::Readline';
-		}
+		return 'QuoteLike::Readline'
+			if ( $prev->isa('PPI::Token::Structure') and $prec eq '(' )
+			or ( $prev->isa('PPI::Token::Structure') and $prec eq ';' )
+			or ( $prev->isa('PPI::Token::Word')      and $prec eq 'while' )
+			or ( $prev->isa('PPI::Token::Operator')  and $prec eq '=' )
+			or ( $prev->isa('PPI::Token::Operator')  and $prec eq ',' );
 
 		if ( $prev->isa('PPI::Token::Structure') and $prec eq '}' ) {
 			# Could go either way... do a regex check
 			# $foo->{bar} < 2;
 			# grep { .. } <foo>;
-			my $line = substr( $t->{line}, $t->{line_cursor} );
-			if ( $line =~ /^<(?!\d)\w+>/ ) {
+			pos $t->{line} = $t->{line_cursor};
+			if ( $t->{line} =~ m/\G<(?!\d)\w+>/gc ) {
 				# Almost definitely readline
 				return 'QuoteLike::Readline';
 			}
@@ -319,6 +318,10 @@ sub __TOKENIZER__on_char {
 		# Do some context stuff to guess ( ack ) which.
 		# Hopefully the guess will be good enough.
 		my $prev = $t->_last_significant_token;
+
+		# Or as the very first thing in a file
+		return 'Regexp::Match' if not $prev;
+
 		my $prec = $prev->content;
 
 		# Most times following an operator, we are a regex.
@@ -361,11 +364,8 @@ sub __TOKENIZER__on_char {
 			return 'Regexp::Match';
 		}
 
-		# Or as the very first thing in a file
-		return 'Regexp::Match' if $prec eq '';
-
 		# What about the char after the slash? There's some things
-		# that would be highly illogical to see if its an operator.
+		# that would be highly illogical to see if it's an operator.
 		my $next_char = substr $t->{line}, $t->{line_cursor} + 1, 1;
 		if ( defined $next_char and length $next_char ) {
 			if ( $next_char =~ /(?:\^|\[|\\)/ ) {
@@ -378,18 +378,30 @@ sub __TOKENIZER__on_char {
 		return 'Operator';
 
 	} elsif ( $char == 120 ) { # $char eq 'x'
-		# Handle an arcane special case where "string"x10 means the x is an operator.
-		# String in this case means ::Single, ::Double or ::Execute, or the operator versions or same.
-		my $nextchar = substr $t->{line}, $t->{line_cursor} + 1, 1;
-		my $prev     = $t->_previous_significant_tokens(1);
-		$prev = ref $prev->[0];
-		if ( $nextchar =~ /\d/ and $prev ) {
-			if ( $prev =~ /::Quote::(?:Operator)?(?:Single|Double|Execute)$/ ) {
-				return 'Operator';
-			}
+		# Could be a word, the x= operator, the x operator
+		# followed by whitespace, or the x operator without any
+		# space between itself and its operand, e.g.: '$a x3',
+		# which is the same as '$a x 3'.  _current_x_is_operator
+		# assumes we have a complete 'x' token, but we don't
+		# yet.  We may need to split this x character apart from
+		# what follows it.
+		if ( $t->_current_x_is_operator ) {
+			pos $t->{line} = $t->{line_cursor} + 1;
+			return 'Operator' if $t->{line} =~ m/\G(?:
+				\d  # x op with no whitespace e.g. 'x3'
+				|
+				(?!(  # negative lookahead
+					=>  # not on left of fat comma
+					|
+					\w  # not a word like "xyzzy"
+					|
+					\s  # not x op plus whitespace
+				))
+			)/gcx;
 		}
 
-		# Otherwise, commit like a normal bareword
+		# Otherwise, commit like a normal bareword, including x
+		# operator followed by whitespace.
 		return PPI::Token::Word->__TOKENIZER__commit($t);
 
 	} elsif ( $char == 45 ) { # $char eq '-'
@@ -403,9 +415,9 @@ sub __TOKENIZER__on_char {
 		}
 
 	} elsif ( $char >= 128 ) { # Outside ASCII
-		return 'PPI::Token::Word'->__TOKENIZER__commit($t) if $t =~ /\w/;
-		return 'Whitespace' if $t =~ /\s/;
-        }
+		return 'PPI::Token::Word'->__TOKENIZER__commit($t) if $c =~ /\w/;
+		return 'Whitespace' if $c =~ /\s/;
+	}
 
 
 	# All the whitespaces are covered, so what to do

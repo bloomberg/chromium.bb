@@ -55,11 +55,14 @@ Imager::Files - working with image files
   my $img = Imager->new(file => $filename)
     or die Imager->errstr;
 
+  Imager->add_file_magic(name => $name, bits => $bits, mask => $mask);
+
 =head1 DESCRIPTION
 
 You can read and write a variety of images formats, assuming you have
-the appropriate libraries, and images can be read or written to/from
-files, file handles, file descriptors, scalars, or through callbacks.
+the L<appropriate libraries|Imager::Install/EXTERNAL LIBRARIES>, and
+images can be read or written to/from files, file handles, file
+descriptors, scalars, or through callbacks.
 
 To see which image formats Imager is compiled to support the following
 code snippet is sufficient:
@@ -237,10 +240,8 @@ the image.
 =item *
 
 C<data> - When reading data, C<data> is a scalar containing the image
-file data, when writing, C<data> is a reference to the scalar to save
-the image file data too.  For GIF images you will need C<giflib> 4 or
-higher, and you may need to patch C<giflib> to use this option for
-writing.
+file data, or a reference to such a scalar.  When writing, C<data> is
+a reference to the scalar to save the image file data to.
 
   my $data;
   $image->write(data => \$data, type => 'tiff')
@@ -248,6 +249,10 @@ writing.
 
   my $data = $row->{someblob}; # eg. from a database
   my @images = Imager->read_multi(data => $data)
+    or die Imager->errstr;
+
+  # from Imager 0.99
+  my @images = Imager->read_multi(data => \$data)
     or die Imager->errstr;
 
 =item *
@@ -422,6 +427,48 @@ C<RLE>.
 
 =back
 
+You can now add to the magic database Imager uses for detecting file
+types:
+
+=over
+
+=item add_file_magic()
+
+  Imager->add_file_magic(name => $name, bits => $bits, mask => $mask)
+
+Adds to list of magic, the parameters are all required.  The
+parameters are:
+
+=over
+
+=item *
+
+C<name> - the file type name to return on match.
+
+=item *
+
+C<bits> - a binary string to match.
+
+=item *
+
+C<mask> - a mask controlling which parts of I<bits> are significant.
+
+=back
+
+While I<mask> is mostly a bit mask, some byte values are translated,
+the space character is treated as all zeros (C<"\x00">), and the C<x> character as
+all ones (C<"\xFF">).
+
+New magic entries take priority over old entries.
+
+You can add more than one magic entry for a given I<name>.
+
+  Imager->add_file_magic(name => "heif",
+                         bits => "    ftypheif"
+                         mask => "    xxxxxxxx");
+
+=back
+
 =head2 Limiting the sizes of images you read
 
 =over
@@ -459,12 +506,15 @@ To set the limits, call the class method set_file_limits:
 You can pass any or all of the limits above, any limits you do not
 pass are left as they were.
 
-Any limit of zero is treated as unlimited.
+Any limit of zero for width or height is treated as unlimited.
+
+A limit of zero for bytes is treated as one gigabyte, but higher bytes
+limits can be set explicitly.
 
 By default, the width and height limits are zero, or unlimited.  The
 default memory size limit is one gigabyte.
 
-You can reset all limits to unlimited with the reset parameter:
+You can reset all limits to their defaults with the reset parameter:
 
   # no limits
   Imager->set_file_limits(reset=>1);
@@ -484,6 +534,37 @@ You can get the current limits with the get_file_limits() method:
 
   my ($max_width, $max_height, $max_bytes) =
      Imager->get_file_limits();
+
+=item check_file_limits()
+X<class methods, check_file_limits()>X<check_file_limits()>
+
+Intended for use by file handlers to check that the size of a file is
+within the limits set by C<set_file_limits()>.
+
+Parameters:
+
+=over
+
+=item *
+
+C<width>, C<height> - the width and height of the image in pixels.
+Must be a positive integer. Required.
+
+=item *
+
+C<channels> - the number of channels in the image, including the alpha
+channel if any.  Must be a positive integer between 1 and 4
+inclusive.  Default: 3.
+
+=item *
+
+C<sample_size> - the number of bytes stored per sample.  Must be a
+positive integer or C<"float">.  Note that this should be the sample
+size of the Imager image you will be creating, not the sample size in
+the source, eg. if the source has 32-bit samples this should be
+C<"float"> since Imager doesn't have 32-bit/sample images.
+
+=back
 
 =back
 
@@ -562,14 +643,15 @@ image when this tag is non-zero.
 
 =head2 JPEG
 
-=for stopwords composited
-
-You can supply a C<jpegquality> parameter (0-100) when writing a JPEG
-file, which defaults to 75%.  If you write an image with an alpha
-channel to a JPEG file then it will be composited against the
-background set by the C<i_background> parameter (or tag).
+You can supply a C<jpegquality> parameter ranging from 0 (worst
+quality) to 100 (best quality) when writing a JPEG file, which
+defaults to 75.
 
   $img->write(file=>'foo.jpg', jpegquality=>90) or die $img->errstr;
+
+If you write an image with an alpha channel to a JPEG file then it
+will be composed against the background set by the C<i_background>
+parameter (or tag), or black if not supplied.
 
 Imager will read a gray scale JPEG as a 1 channel image and a color
 JPEG as a 3 channel image.
@@ -612,6 +694,18 @@ file. (Imager 0.84)
 
 JPEG supports the spatial resolution tags C<i_xres>, C<i_yres> and
 C<i_aspect_only>.
+
+You can also set the following tags when writing to an image, they are
+not set in the image when reading:
+
+=over
+
+C<jpeg_optimize> - set to a non-zero integer to compute optimal
+Huffman coding tables for the image.  This will increase memory usage
+and processing time (about 12% in my simple tests) but can
+significantly reduce file size without a loss of quality.
+
+=back
 
 =for stopwords EXIF
 
@@ -1199,15 +1293,19 @@ image in the C<xsize> and C<ysize> options:
     or die "Cannot read raw image\n";
 
 If your input file has more channels than you want, or (as is common),
-junk in the fourth channel, you can use the C<datachannels> and
-C<storechannels> options to control the number of channels in your input
+junk in the fourth channel, you can use the C<raw_datachannels> and
+C<raw_storechannels> options to control the number of channels in your input
 file and the resulting channels in your image.  For example, if your
 input image uses 32-bits per pixel with red, green, blue and junk
 values for each pixel you could do:
 
-  $img->read(file=>'foo.raw', xsize=>100, ysize=>100, datachannels=>4,
-	     storechannels=>3)
+  $img->read(file=>'foo.raw', xsize => 100, ysize => 100,
+             raw_datachannels => 4, raw_storechannels => 3,
+	     raw_interleave => 0)
     or die "Cannot read raw image\n";
+
+In general, if you supply C<raw_storechannels> you should also supply
+C<raw_datachannels>
 
 Read parameters:
 
@@ -1215,7 +1313,7 @@ Read parameters:
 
 =item *
 
-raw_interleave - controls the ordering of samples within the image.
+C<raw_interleave> - controls the ordering of samples within the image.
 Default: 1.  Alternatively and historically spelled C<interleave>.
 Possible values:
 
@@ -1252,13 +1350,13 @@ C<raw_interleave> parameter.
 
 =item *
 
-raw_storechannels - the number of channels to store in the image.
+C<raw_storechannels> - the number of channels to store in the image.
 Range: 1 to 4.  Default: 3.  Alternatively and historically spelled
 C<storechannels>.
 
 =item *
 
-raw_datachannels - the number of channels to read from the file.
+C<raw_datachannels> - the number of channels to read from the file.
 Range: 1 or more.  Default: 3.  Alternatively and historically spelled
 C<datachannels>.
 
@@ -1344,7 +1442,7 @@ C<png_warning>X<tags,PNG,png_warning> - keyword "Warning".
 
 =back
 
-Each of these tags has a corresponding C< I<base-tag-name>_compressed
+Each of these tags has a corresponding C<< I<base-tag-name>_compressed
 >> tag, eg. C<png_comment_compressed>.  When reading, if the PNG chunk
 is compressed this tag will be set to 1, but is otherwise unset.  When
 writing, Imager will honor the compression tag if set and non-zero,
@@ -1396,13 +1494,13 @@ C<adam7>.
 X<tags, png_srgb_intent>C<png_srgb_intent> - the sRGB rendering intent
 for the image. an integer from 0 to 3, per the PNG specification.  If
 this chunk is found in the PNG file the C<gAMA> and C<cHRM> are
-ignored and the C<png_gamme> and C<png_chroma_...> tags are not set.
+ignored and the C<png_gamma> and C<png_chroma_...> tags are not set.
 Similarly when writing if C<png_srgb_intent> is set the C<gAMA> and
 C<cHRM> chunks are not written.
 
 =item *
 
-C<tags, png_gamma>C<png_gamma> - the gamma of the image. This value is
+X<tags, png_gamma>C<png_gamma> - the gamma of the image. This value is
 not currently used by Imager when processing the image, but this may
 change in the future.
 
@@ -1427,7 +1525,7 @@ representation.  Ignored when writing.
 
 =item *
 
-X<tags, png_time>X<png_time> - the creation time of the file formatted
+X<tags, png_time>C<png_time> - the creation time of the file formatted
 as C<< I<year>-I<month>-I<day>TI<hour>:I<minute>:I<second> >>.  This
 is stored as time data structure in the file, not a string.  If you
 set C<png_time> and it cannot be parsed as above, writing the PNG file
@@ -1438,6 +1536,24 @@ will fail.
 C<i_background> - set from the C<sBKG> when reading an image file.
 
 =back
+
+X<compression>X<png_compression_level>You can control the level of
+F<zlib> compression used when writing with the
+C<png_compression_level> parameter.  This can be an integer between 0
+(uncompressed) and 9 (best compression).
+
+=for stopwords
+CRC
+
+X<png_ignore_benign_errors>If you're using F<libpng> 1.6 or later, or
+an earlier release configured with C<PNG_BENIGN_ERRORS_SUPPORTED>, you
+can choose to ignore file format errors the authors of F<libpng>
+consider I<benign>, this includes at least CRC errors and palette
+index overflows.  Do this by supplying a true value for the
+C<png_ignore_benign_errors> parameter to the read() method:
+
+  $im->read(file => "foo.png", png_ignore_benign_errors => 1)
+    or die $im->errstr;
 
 =head2 ICO (Microsoft Windows Icon) and CUR (Microsoft Windows Cursor)
 
@@ -1548,9 +1664,10 @@ control reading of ICO/CUR files:
 
 =item *
 
-ico_masked - if true, the default, then the icon/cursors mask is
-applied as an alpha channel to the image.  This may result in a
-paletted image being returned as a direct color image.  Default: 1
+C<ico_masked> - if true, the default, then the icon/cursors mask is
+applied as an alpha channel to the image, unless that image already
+has an alpha channel.  This may result in a paletted image being
+returned as a direct color image.  Default: 1
 
   # retrieve the image as stored, without using the mask as an alpha
   # channel
@@ -1559,6 +1676,15 @@ paletted image being returned as a direct color image.  Default: 1
 
 This was introduced in Imager 0.60.  Previously reading ICO images
 acted as if C<ico_masked =E<gt> 0>.
+
+=item *
+
+C<ico_alpha_masked> - if true, then the icon/cursor mask is applied as
+an alpha channel to images that already have an alpha mask.  Note that
+this will only make pixels transparent, not opaque.  Default: 0.
+
+Note: If you get different results between C<ico_alpha_masked> being
+set to 0 and 1, your mask may break when used with the Win32 API.
 
 =back
 
@@ -1772,6 +1898,15 @@ all the parameters supplied to the read_multi() method.
 
 =back
 
+=item add_type_extensions($type, $ext, ...)
+
+This class method can be used to add extensions to the map used by
+C<def_guess_type> when working out the file type a filename extension.
+
+  Imager->add_type_extension(mytype => "mytype", "mytypish");
+  ...
+  $im->write(file => "foo.mytypish") # use the mytype handler
+
 =back
 
 If you name the reader module C<Imager::File::>I<your-format-name>
@@ -1933,5 +2068,9 @@ only 2 colors used - it will have a 128 color table anyway.
 =head1 SEE ALSO
 
 Imager(3)
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>, Arnar M. Hrafnkelsson
 
 =cut

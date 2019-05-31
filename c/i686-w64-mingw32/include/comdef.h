@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_COMDEF
@@ -19,7 +19,11 @@
 #include <comutil.h>
 
 #ifndef WINAPI
+#if defined(_ARM_)
+#define WINAPI
+#else
 #define WINAPI __stdcall
+#endif
 #endif
 
 #ifdef __cplusplus
@@ -27,7 +31,6 @@
 class _com_error;
 void WINAPI _com_raise_error(HRESULT hr,IErrorInfo *perrinfo = 0);
 void WINAPI _set_com_error_handler(void (WINAPI *pHandler)(HRESULT hr,IErrorInfo *perrinfo));
-void WINAPI _com_issue_error(HRESULT);
 void WINAPI _com_issue_errorex(HRESULT,IUnknown*,REFIID);
 HRESULT WINAPI _com_dispatch_propget(IDispatch*,DISPID,VARTYPE,void*);
 HRESULT __cdecl _com_dispatch_propput(IDispatch*,DISPID,VARTYPE,...);
@@ -162,6 +165,16 @@ inline void _com_error::Ctor(const _com_error &that) throw() {
   if(m_perrinfo!=NULL) m_perrinfo->AddRef();
 }
 
+inline void _com_issue_error(HRESULT hr) {
+#if __EXCEPTIONS
+    throw _com_error(hr);
+#else
+    /* This is designed to use exceptions. If exceptions are disabled, there is not much we can do here. */
+    __debugbreak();
+#endif
+}
+
+
 typedef int __missing_type__;
 
 #if !defined(_COM_SMARTPTR)
@@ -174,14 +187,19 @@ typedef int __missing_type__;
 #if defined(_COM_SMARTPTR)
 #if !defined(_COM_SMARTPTR_TYPEDEF)
 #if defined(_COM_SMARTPTR_LEVEL2)
-#define _COM_SMARTPTR_TYPEDEF(Interface,IID) UUID IIDArgForTypedef ## Interface = IID; typedef _COM_SMARTPTR< _COM_SMARTPTR_LEVEL2<Interface, &IIDArgForTypedef ## Interface > > Interface ## Ptr
+#ifdef __CRT_UUID_DECL
+/* With our __uuidof, its result can't be passed directly as a template argument. We have _com_IIID_getter to work around that. */
+#define _COM_SMARTPTR_TYPEDEF(Interface,aIID) inline const IID &__##Interface##_IID_getter(void) { return aIID; } typedef _COM_SMARTPTR< _com_IIID_getter<Interface, __##Interface##_IID_getter > > Interface ## Ptr
 #else
-#define _COM_SMARTPTR_TYPEDEF(Interface,IID) UUID IIDArgForTypedef ## Interface  = IID; typedef _COM_SMARTPTR<Interface,&IIDArgForTypedef ## Interface > Interface ## Ptr
+#define _COM_SMARTPTR_TYPEDEF(Interface,IID) typedef _COM_SMARTPTR< _COM_SMARTPTR_LEVEL2<Interface, &IID > > Interface ## Ptr
+#endif
+#else
+#define _COM_SMARTPTR_TYPEDEF(Interface,IID) typedef _COM_SMARTPTR<Interface,&IID > Interface ## Ptr
 #endif
 #endif
 #endif
 
-#if !defined(_COM_NO_STANDARD_GUIDS_) && USE___UUIDOF != 0
+#if !defined(_COM_NO_STANDARD_GUIDS_)
 #if defined(__IFontDisp_INTERFACE_DEFINED__)
 #if !defined(Font)
   struct Font : IFontDisp {};

@@ -1,23 +1,38 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!/usr/bin/perl
-#line 15
+#line 29
 
 # zipdetails
 #
 # Display info on the contents of a Zip file
 #
 
+BEGIN { pop @INC if $INC[-1] eq '.' }
 use strict;
 use warnings ;
 
@@ -87,6 +102,7 @@ my %ZIP_CompressionMethods =
          17 => 'Reserved by PKWARE',
          18 => 'File is compressed using IBM TERSE (new)',
          19 => 'IBM LZ77 z Architecture (PFS)',
+         95 => 'XZ',         
          96 => 'WinZip JPEG Compression',
          97 => 'WavPack compressed data',
          98 => 'PPMd version I, Rev 1',
@@ -148,9 +164,9 @@ my %Extras = (
       0x0019,  ['PKCS#7 Encryption Recipient Certificate List', undef],
       
 
-      #The Header ID mappings defined by Info-ZIP and third parties are:
+      # The Header ID mappings defined by Info-ZIP and third parties are:
 
-      0x0065,  ['IBM S/390 attributes - uncompressed', undef],
+      0x0065,  ['IBM S/390 attributes - uncompressed', \&decodeMVS],
       0x0066,  ['IBM S/390 attributes - compressed', undef],
       0x07c8,  ['Info-ZIP Macintosh (old, J. Lee)', undef],
       0x2605,  ['ZipIt Macintosh (first version)', undef],
@@ -175,22 +191,23 @@ my %Extras = (
       0x5855,  ['Info-ZIP Unix (original; also OS/2, NT, etc.)', \&decode_UX],
       0x5a4c,  ['ZipArchive Unicode Filename', undef],
       0x5a4d,  ['ZipArchive Offsets Array', undef],
-      0x6375,  ["Info-ZIP Unicode Comment", \&decode_up ],
+      0x6375,  ['Info-ZIP Unicode Comment', \&decode_up ],
       0x6542,  ['BeOS (BeBox, PowerMac, etc.)', undef],
       0x6854,  ['Theos', undef],
-      0x7075,  ["Info-ZIP Unicode Path", \&decode_up ],
+      0x7075,  ['Info-ZIP Unicode Path', \&decode_up ],
       0x756e,  ['ASi Unix', undef],
       0x7441,  ['AtheOS (AtheOS/Syllable attributes)', undef],
-      0x7855,  ["Unix Extra type 2", \&decode_Ux],
-      0x7875,  ["Unix Extra Type 3", \&decode_ux],
+      0x7855,  ['Unix Extra type 2', \&decode_Ux],
+      0x7875,  ['Unix Extra Type 3', \&decode_ux],
       0x9901,  ['AES Encryption', \&decode_AES],
-      0xA220,  ["Microsoft Microsoft Open Packaging Growth Hint", undef ],
-      0xCAFE,  ["Java Executable", \&decode_Java_exe],
+      0xa11e,  ['Data Stream Alignment', undef],
+      0xA220,  ['Open Packaging Growth Hint', undef ],
+      0xCAFE,  ['Java Executable', \&decode_Java_exe],
       0xfb4a,  ['SMS/QDOS', undef],
 
        );
 
-my $VERSION = "1.05" ;
+my $VERSION = "1.10" ;
 
 my $FH;
 
@@ -202,7 +219,7 @@ my $CentralHeaderCount = 0;
 my $START;
 my $OFFSET = new U64 0;
 my $TRAILING = 0 ;
-my $PAYLOADLIMIT = new U64 256;
+my $PAYLOADLIMIT = 256; #new U64 256;
 my $ZERO = new U64 0 ;
 
 sub prOff
@@ -360,6 +377,8 @@ sub out
     $TEXT    = $text;
     $VALUE   = mySpr $format,  @_;
        
+    no warnings;
+
     write;
 }
 
@@ -482,19 +501,36 @@ sub out_VV
     outer($name, 'VV', 8, $cb1, $cb2);
 }
 
+# sub outSomeData
+# {
+#     my $size = shift;
+#     my $message = shift;
+
+#     my $size64 = U64::mkU64($size);
+
+#     if ($size64->gt($ZERO)) {
+#         my $size32 = $size64->getLow();
+#         if ($size64->gt($PAYLOADLIMIT) ) {
+#             out0 $size32, $message;
+#         } else {
+#             myRead(my $buffer, $size32 );
+#             out $buffer, $message, xDump $buffer ;
+#         }
+#     }
+# }
+
 sub outSomeData
 {
     my $size = shift;
     my $message = shift;
 
-    my $size64 = U64::mkU64($size);
-
-    if ($size64->gt($ZERO)) {
-        my $size32 = $size64->getLow();
-        if ($size64->gt($PAYLOADLIMIT) ) {
-            out0 $size32, $message;
+    if ($size > 0) {
+        if ($size > $PAYLOADLIMIT) {
+            my $before = $FH->tell();
+            out0 $size, $message;
+            # printf "outSomeData %X %X $size %X\n", $before, $FH->tell(), $size;
         } else {
-            myRead(my $buffer, $size32 );
+            myRead(my $buffer, $size );
             out $buffer, $message, xDump $buffer ;
         }
     }
@@ -563,6 +599,9 @@ sub Value_VV
 sub Value_VV64
 {
     my $buffer = shift;
+
+    # This needs perl 5.10
+    # return unpack "Q<", $buffer;
 
     my ($lo, $hi) = unpack ("V V" , $buffer);
     no warnings 'uninitialized';
@@ -652,7 +691,7 @@ $NIBBLES = U64::nibbles(-s $filename) ;
 $NIBBLES = 4 if $NIBBLES < 4 ;
 
 die "$filename too short to be a zip file\n"
-    if $FILELEN <  100 ;
+    if $FILELEN <  22 ;
 
 setupFormat($opt_verbose, $NIBBLES);
 
@@ -667,9 +706,10 @@ if(0)
 }
 
 
-our  @CentralDirectory = scanCentralDirectory($FH);
-die "No Central Directory found\n"
-    if ! @CentralDirectory ;
+our ($CdExists, @CentralDirectory) = scanCentralDirectory($FH);
+
+die "No Central Directory records found\n"
+    if ! $CdExists ;
 
 $OFFSET->reset();
 $FH->seek(0, SEEK_SET) ;
@@ -681,7 +721,8 @@ while (1)
 {
     last if $FH->eof();
 
-    if ($FH->tell() >= $TRAILING) {
+    my $here = $FH->tell();
+    if ($here >= $TRAILING) {
         print "\n" ;
         outSomeData($FILELEN - $TRAILING, "TRAILING DATA");
         last;
@@ -694,9 +735,22 @@ while (1)
 
     if (!defined $handler)
     {
-        my $offset = $FH->tell() - 4;
-        printf "\n\nUnexpecded END at offset %08X, value %s\n", $offset, Value_V($signature);
-        last;        
+        if (@CentralDirectory) {
+            # Should be at offset that central directory says
+            my $locOffset = $CentralDirectory[0][0];
+            my $delta = $locOffset - $here ;
+            
+            if ($here  < $locOffset ) {
+                for (0 .. 3) {
+                    $FH->ungetc(ord(substr($buffer, $_, 1)))
+                }
+                outSomeData($delta, "UNEXPECTED PADDING");
+                next;
+            }
+        }
+
+        printf "\n\nUnexpecded END at offset %08X, value %s\n", $here, Value_V($signature);
+        last;    
     }
 
     $ZIP64 = 0 if $signature != ZIP_DATA_HDR_SIG ;
@@ -725,6 +779,7 @@ sub LocalHeader
     my $buffer;
 
     my ($loc, $CDcompressedLength) = @{ shift @CentralDirectory };
+    # print "LocalHeader loc $loc CDL $CDcompressedLength\n";
     # TODO - add test to check that the loc from central header matches
 
     out_C  "Extract Zip Spec", \&decodeZipVer;
@@ -767,10 +822,12 @@ sub LocalHeader
     $size += printLzmaProperties()
         if $compressedMethod == ZIP_CM_LZMA ;
 
-    $CDcompressedLength->subtract($size)
-        if $size ;
+    # $CDcompressedLength->subtract($size)
+        # if $size ;
+    $CDcompressedLength -= $size;
         
-    if ($CDcompressedLength->getHigh() || $CDcompressedLength->getLow()) {
+    # if ($CDcompressedLength->getHigh() || $CDcompressedLength->getLow()) {
+    if ($CDcompressedLength) {
         outSomeData($CDcompressedLength, "PAYLOAD") ;
     }
 
@@ -1015,7 +1072,20 @@ sub GeneralPurposeBits
 }
 
 
+sub seekSet
+{
+    my $fh = $_[0] ;
+    my $size = $_[1];
 
+    use Fcntl qw(SEEK_SET);
+    if (ref $size eq 'U64') {
+        seek($fh, $size->get64bit(), SEEK_SET);
+    }
+    else {
+        seek($fh, $size, SEEK_SET);
+    }
+    
+}
 
 sub skip
 {
@@ -1077,6 +1147,17 @@ sub walkExtra
     
     my $count = 0 ;
     
+    if ($XLEN < ZIP_EXTRA_SUBFIELD_ID_SIZE + ZIP_EXTRA_SUBFIELD_LEN_SIZE)
+    {
+        # Android zipalign is prime candidate for this non-standard extra field.
+        myRead($payload, $XLEN); 
+        my $data = hexDump($payload);
+        
+        out $payload, "Malformed Extra Data", $data;
+
+        return undef;
+    }
+
     while ($offset < $XLEN) {
 
         ++ $count;
@@ -1409,6 +1490,24 @@ sub decode_NT_security
     }
 }
 
+sub decodeMVS
+{
+    my $len = shift;
+    my $context = shift;
+
+    # data in Big-Endian
+    myRead(my $data, $len);
+    my $ID = unpack("N", $data);
+
+    if ($ID == 0xE9F3F9F0)
+    {
+        out($data, "  ID", "'Z390'");
+        substr($data, 0, 4) = '';
+    }
+
+    out($data, "  Extra Payload", hexDump($data));
+}
+
 sub printAes
 {
     my $context = shift ;
@@ -1502,25 +1601,56 @@ sub scanCentralDirectory
 
         skip($fh, $filename_length ) ;
 
-        my $v64 = new U64 $compressedLength ;
-        my $loc64 = new U64 $locHeaderOffset ;
-        my $got = [$loc64, $v64] ;
+        if ($extra_length)
+        {
+            $fh->read(my $extraField, $extra_length) ;
+            # $self->smartReadExact(\$extraField, $extra_length);               
 
-        if (full32 $compressedLength || full32  $locHeaderOffset) {
-            $fh->read($buffer, $extra_length) ;
-            # TODO - fix this
-            die "xxx $offset $comment_length $filename_length $extra_length" . length($buffer) 
-                if length($buffer) != $extra_length;
-            $got = get64Extra($buffer, full32($uncompressedLength),
-                                 $v64,
-                                 $loc64);
+            # Check for Zip64
+            # my $zip64Extended = findID("\x01\x00", $extraField);
+            my $zip64Extended = findID(0x0001, $extraField);
+            
+            if ($zip64Extended)
+            {
+                if ($uncompressedLength == 0xFFFFFFFF)
+                {
+                    $uncompressedLength = Value_VV64  substr($zip64Extended, 0, 8, "");
+                    # $uncompressedLength = unpack "Q<", substr($zip64Extended, 0, 8, "");
+                }
+                if ($compressedLength == 0xFFFFFFFF)
+                {
+                    $compressedLength = Value_VV64  substr($zip64Extended, 0, 8, "");
+                    # $compressedLength = unpack "Q<", substr($zip64Extended, 0, 8, "");
+                } 
+                if ($locHeaderOffset == 0xFFFFFFFF)
+                {
+                    $locHeaderOffset = Value_VV64  substr($zip64Extended, 0, 8, "");
+                    # $locHeaderOffset = unpack "Q<", substr($zip64Extended, 0, 8, "");
+                }                         
+            }                
+        }        
 
-            # If not Zip64 extra field, assume size is 0xFFFFFFFF
-            #$v64 = $got if defined $got;
-        }
-        else {
-            skip($fh, $extra_length) ;
-        }
+        my $got = [$locHeaderOffset, $compressedLength] ;
+
+        # my $v64 = new U64 $compressedLength ;
+        # my $loc64 = new U64 $locHeaderOffset ;
+        # my $got = [$loc64, $v64] ;
+
+        # if (full32 $compressedLength || full32  $locHeaderOffset) {
+        #     $fh->read($buffer, $extra_length) ;
+        #     # TODO - fix this
+        #     die "xxx $offset $comment_length $filename_length $extra_length" . length($buffer) 
+        #         if length($buffer) != $extra_length;
+        #     $got = get64Extra($buffer, full32($uncompressedLength),
+        #                          $v64,
+        #                          $loc64);
+
+        #     # If not Zip64 extra field, assume size is 0xFFFFFFFF
+        #     #$v64 = $got if defined $got;
+        # }
+        # else {
+        #     skip($fh, $extra_length) ;
+        # }
 
         skip($fh, $comment_length ) ;
             
@@ -1529,34 +1659,11 @@ sub scanCentralDirectory
 
     $fh->seek($here, SEEK_SET) ;
 
-    @CD = sort { $a->[0]->cmp($b->[0]) } @CD ;
-    return @CD;
+    # @CD = sort { $a->[0]->cmp($b->[0]) } @CD ;
+    @CD = sort { $a->[0] <=> $b->[0] } @CD ;
+    return (1, @CD);
 }
 
-sub get64Extra
-{
-    my $buffer = shift;
-    my $is_uncomp = shift ;
-    my $comp = shift ;
-    my $loc = shift ;
-
-    my $extra = findID(0x0001, $buffer);
-                                            
-    if ( defined $extra)
-    {
-        my $offset = 0;
-        $offset += 8 if $is_uncomp;
-        if ($comp->max32()) {
-            $comp = U64::newUnpack_V64(substr($extra,  $offset)) ;
-            $offset += 8;
-        }
-        if ($loc->max32()) {
-            $loc = U64::newUnpack_V64(substr($extra,  $offset)) ;
-        }
-    }    
-
-    return [$loc, $comp] ;
-}
 
 sub offsetFromZip64
 {
@@ -1718,8 +1825,8 @@ sub _dosToUnixTime
     my $mday = ( ( $dt >> 16 ) & 0x1f );
 
     my $hour = ( ( $dt >> 11 ) & 0x1f );
-    my $min  = ( ( $dt >> 5 ) & 0x3f );
-    my $sec  = ( ( $dt << 1 ) & 0x3e );
+    my $min  = ( ( $dt >> 5  ) & 0x3f );
+    my $sec  = ( ( $dt << 1  ) & 0x3e );
 
 
     use POSIX 'mktime';
@@ -2000,7 +2107,7 @@ OPTIONS
      -h     display help
      -v     Verbose - output more stuff
     
-Copyright (c) 2011 Paul Marquess. All rights reserved.
+Copyright (c) 2011-2019 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
@@ -2017,7 +2124,7 @@ zipdetails - display the internal structure of zip files
 
 =head1 SYNOPSIS
 
-    zipdetaile [-v] zipfile.zip
+    zipdetails [-v] zipfile.zip
 	zipdetails -h
 
 =head1 DESCRIPTION
@@ -2102,7 +2209,7 @@ error message.
 The primary reference for Zip files is the "appnote" document available at
 L<http://www.pkware.com/documents/casestudies/APPNOTE.TXT>.
 
-An alternative is the Info-Zip appnote. This is available from
+An alternative reference is the Info-Zip appnote. This is available from
 L<ftp://ftp.info-zip.org/pub/infozip/doc/>
 
 
@@ -2110,7 +2217,8 @@ The C<zipinfo> program that comes with the info-zip distribution
 (L<http://www.info-zip.org/>) can also display details of the structure of
 a zip file.
 
-See also L<IO::Compress::Zip>, L<IO::Uncompress::Unzip>.
+See also L<Archive::Zip::SimpleZip>, L<IO::Compress::Zip>,
+L<IO::Uncompress::Unzip>.
 
 
 =head1 AUTHOR
@@ -2119,7 +2227,7 @@ Paul Marquess F<pmqs@cpan.org>.
 
 =head1 COPYRIGHT 
 
-Copyright (c) 2011-2012 Paul Marquess. All rights reserved.
+Copyright (c) 2011-2019 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself. 

@@ -33,10 +33,7 @@ If -E<gt>fill returns true, finalise the token.
 use strict;
 use Carp ();
 
-use vars qw{$VERSION};
-BEGIN {
-	$VERSION = '1.215';
-}
+our $VERSION = '1.269'; # VERSION
 
 
 
@@ -69,45 +66,11 @@ sub __TOKENIZER__on_char {
 # and quote like stuff, and accessible to the child classes
 
 # An outright scan, raw and fast.
-# Searches for a particular character, loading in new
+# Searches for a particular character, not escaped, loading in new
 # lines as needed.
 # When called, we start at the current position.
 # When leaving, the position should be set to the position
 # of the character, NOT the one after it.
-sub _scan_for_character {
-	my $class = shift;
-	my $t     = shift;
-	my $char  = (length $_[0] == 1) ? quotemeta shift : return undef;
-
-	# Create the search regex
-	my $search = qr/^(.*?$char)/;
-
-	my $string = '';
-	while ( exists $t->{line} ) {
-		# Get the search area for the current line
-		my $search_area
-			= $t->{line_cursor}
-			? substr( $t->{line}, $t->{line_cursor} )
-			: $t->{line};
-
-		# Can we find a match on this line
-		if ( $search_area =~ /$search/ ) {
-			# Found the character on this line
-			$t->{line_cursor} += length($1) - 1;
-			return $string . $1;
-		}
-
-		# Load in the next line
-		$string .= $search_area;
-		return undef unless defined $t->_fill_line;
-		$t->{line_cursor} = 0;
-	}
-
-	# Returning the string as a reference indicates EOF
-	\$string;
-}
-
-# Scan for a character, but not if it is escaped
 sub _scan_for_unescaped_character {
 	my $class = shift;
 	my $t     = shift;
@@ -115,25 +78,22 @@ sub _scan_for_unescaped_character {
 
 	# Create the search regex.
 	# Same as above but with a negative look-behind assertion.
-	my $search = qr/^(.*?(?<!\\)(?:\\\\)*$char)/;
+	my $search = qr/(.*?(?<!\\)(?:\\\\)*$char)/;
 
 	my $string = '';
 	while ( exists $t->{line} ) {
 		# Get the search area for the current line
-		my $search_area
-			= $t->{line_cursor}
-			? substr( $t->{line}, $t->{line_cursor} )
-			: $t->{line};
+		pos $t->{line} = $t->{line_cursor};
 
 		# Can we find a match on this line
-		if ( $search_area =~ /$search/ ) {
+		if ( $t->{line} =~ m/\G$search/gc ) {
 			# Found the character on this line
 			$t->{line_cursor} += length($1) - 1;
 			return $string . $1;
 		}
 
 		# Load in the next line
-		$string .= $search_area;
+		$string .= substr $t->{line}, $t->{line_cursor};
 		my $rv = $t->_fill_line('inscan');
 		if ( $rv ) {
 			# Push to first character
@@ -164,22 +124,19 @@ sub _scan_for_brace_character {
 	# Create the search string
 	$close_brace = quotemeta $close_brace;
 	$open_brace = quotemeta $open_brace;
-	my $search = qr/^(.*?(?<!\\)(?:\\\\)*(?:$open_brace|$close_brace))/;
+	my $search = qr/\G(.*?(?<!\\)(?:\\\\)*(?:$open_brace|$close_brace))/;
 
 	# Loop as long as we can get new lines
 	my $string = '';
 	my $depth = 1;
 	while ( exists $t->{line} ) {
 		# Get the search area
-		my $search_area
-			= $t->{line_cursor}
-			? substr( $t->{line}, $t->{line_cursor} )
-			: $t->{line};
+		pos $t->{line} = $t->{line_cursor};
 
 		# Look for a match
-		unless ( $search_area =~ /$search/ ) {
+		unless ( $t->{line} =~ /$search/gc ) {
 			# Load in the next line
-			$string .= $search_area;
+			$string .= substr( $t->{line}, $t->{line_cursor} );
 			my $rv = $t->_fill_line('inscan');
 			if ( $rv ) {
 				# Push to first character
@@ -199,7 +156,7 @@ sub _scan_for_brace_character {
 		$string .= $1;
 		$t->{line_cursor} += length $1;
 
-		# Alter the depth and continue if we arn't at the end
+		# Alter the depth and continue if we aren't at the end
 		$depth += ($1 =~ /$open_brace$/) ? 1 : -1 and next;
 
 		# Rewind the cursor by one character ( cludgy hack )
@@ -222,19 +179,16 @@ sub _scan_quote_like_operator_gap {
 	my $string = '';
 	while ( exists $t->{line} ) {
 		# Get the search area for the current line
-		my $search_area
-			= $t->{line_cursor}
-			? substr( $t->{line}, $t->{line_cursor} )
-			: $t->{line};
+		pos $t->{line} = $t->{line_cursor};
 
 		# Since this regex can match zero characters, it should always match
-		$search_area =~ /^(\s*(?:\#.*)?)/s or return undef;
+		$t->{line} =~ /\G(\s*(?:\#.*)?)/gc or return undef;
 
 		# Add the chars found to the string
 		$string .= $1;
 
 		# Did we match the entire line?
-		unless ( length $1 == length $search_area ) {
+		unless ( $t->{line_cursor} + length $1 == length $t->{line} ) {
 			# Partial line match, which means we are at
 			# the end of the gap. Fix the cursor and return
 			# the string.

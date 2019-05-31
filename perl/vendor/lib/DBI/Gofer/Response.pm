@@ -1,6 +1,6 @@
 package DBI::Gofer::Response;
 
-#   $Id: Response.pm 11565 2008-07-22 20:17:33Z timbo $
+#   $Id: Response.pm 11565 2008-07-22 20:17:33Z Tim $
 #
 #   Copyright (c) 2007, Tim Bunce, Ireland
 #
@@ -14,7 +14,7 @@ use DBI qw(neat neat_list);
 
 use base qw(DBI::Util::_accessor Exporter);
 
-our $VERSION = sprintf("0.%06d", q$Revision: 11565 $ =~ /(\d+)/o);
+our $VERSION = "0.011566";
 
 use constant GOf_RESPONSE_EXECUTED => 0x0001;
 
@@ -43,7 +43,7 @@ sub new {
     $args->{version} ||= $VERSION;
     chomp $args->{errstr} if $args->{errstr};
     return $self->SUPER::new($args);
-}   
+}
 
 
 sub err_errstr_state {
@@ -77,8 +77,8 @@ sub add_err {
         $r_errstr .= sprintf " [state was %s now %s]", $r_state, $state
                 if $r_state and $r_state ne "S1000" && $state && $r_state ne $state;
         $r_errstr .= "\n$errstr" if $r_errstr ne $errstr;
-    }   
-    else { 
+    }
+    else {
         $r_errstr = $errstr;
     }
 
@@ -121,7 +121,7 @@ sub summary_as_text {
         my @keys = sort keys %$dbh_attr;
         push @s, sprintf "dbh= { %s }", join(", ", map { "$_=>".neat($dbh_attr->{$_},100) } @keys)
             if @keys;
-    }   
+    }
 
     for my $rs (@{$self->sth_resultsets || []}) {
         my ($rowset, $err, $errstr, $state)
@@ -135,7 +135,7 @@ sub summary_as_text {
         $summary .= sprintf ", err=%s, errstr=%s", $err, neat($errstr) if defined $err;
         if ($rows) {
             my $NAME = $rs->{NAME};
-            # generate 
+            # generate
             my @colinfo = map { "$NAME->[$_]=".neat($rowset->[0][$_], 30) } 0..@{$NAME}-1;
             $summary .= sprintf " [%s]", join ", ", @colinfo;
             $summary .= ",..." if $rows > 1;
@@ -149,10 +149,10 @@ sub summary_as_text {
         chomp $w;
         push @s, "warning: $w";
     }
-    if ($context && %$context) { 
+    if ($context && %$context) {
         my @keys = sort keys %$context;
         push @s, join(", ", map { "$_=>".$context->{$_} } @keys);
-    }       
+    }
     return join("\n\t", @s). "\n";
 }
 

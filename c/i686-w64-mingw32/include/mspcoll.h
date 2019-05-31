@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _MSPCOLL_H_
@@ -47,7 +47,7 @@ public:
     delete [] m_Var;
     LOG((MSP_TRACE,"CTapiCollection::FinalRelease - exit"));
   }
-  STDMETHOD(get_Count)(long *retval) {
+  STDMETHOD(get_Count)(__LONG32 *retval) {
     HRESULT hr = S_OK;
     LOG((MSP_TRACE,"CTapiCollection::get_Count - enter"));
     try {
@@ -58,7 +58,7 @@ public:
     LOG((MSP_TRACE,"CTapiCollection::get_Count - exit"));
     return hr;
   }
-  STDMETHOD(get_Item)(long Index,VARIANT *retval) {
+  STDMETHOD(get_Item)(__LONG32 Index,VARIANT *retval) {
     HRESULT hr = S_OK;
     LOG((MSP_TRACE,"CTapiCollection::get_Item - enter"));
     if(!retval) return E_POINTER;
@@ -125,7 +125,7 @@ public:
     LOG((MSP_TRACE,"CTapiBstrCollection::Initialize - exit"));
     return S_OK;
   }
-  STDMETHOD(get_Count)(long *retval) {
+  STDMETHOD(get_Count)(__LONG32 *retval) {
     HRESULT hr = S_OK;
     LOG((MSP_TRACE,"CTapiBstrCollection::get_Count - enter"));
     try {
@@ -136,7 +136,7 @@ public:
     LOG((MSP_TRACE,"CTapiBstrCollection::get_Count - exit"));
     return hr;
   }
-  STDMETHOD(get_Item)(long Index,VARIANT *retval) {
+  STDMETHOD(get_Item)(__LONG32 Index,VARIANT *retval) {
     HRESULT hr = S_OK;
     LOG((MSP_TRACE,"CTapiBstrCollection::get_Item - enter"));
     if(!retval) return E_POINTER;

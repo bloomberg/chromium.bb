@@ -1,166 +1,81 @@
 /*
- * Module: semaphore.h
- *
- * Purpose:
- *	Semaphores aren't actually part of the PThreads standard.
- *	They are defined by the POSIX Standard:
- *
- *		POSIX 1003.1b-1993	(POSIX.1b)
- *
- * --------------------------------------------------------------------------
- *
- *      Pthreads-win32 - POSIX Threads Library for Win32
- *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
- *      The current list of contributors is contained
- *      in the file CONTRIBUTORS included with the source
- *      code distribution. The list can also be seen at the
- *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
- * 
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
- * 
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
- * 
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
-#if !defined( SEMAPHORE_H )
-#define SEMAPHORE_H
+   Copyright (c) 2011-2016  mingw-w64 project
 
-#undef PTW32_LEVEL
+   Permission is hereby granted, free of charge, to any person obtaining a
+   copy of this software and associated documentation files (the "Software"),
+   to deal in the Software without restriction, including without limitation
+   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so, subject to the following conditions:
 
-#if defined(_POSIX_SOURCE)
-#define PTW32_LEVEL 0
-/* Early POSIX */
-#endif
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-#if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 199309
-#undef PTW32_LEVEL
-#define PTW32_LEVEL 1
-/* Include 1b, 1c and 1d */
-#endif
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+*/
 
-#if defined(INCLUDE_NP)
-#undef PTW32_LEVEL
-#define PTW32_LEVEL 2
-/* Include Non-Portable extensions */
-#endif
-
-#define PTW32_LEVEL_MAX 3
-
-#if !defined(PTW32_LEVEL)
-#define PTW32_LEVEL PTW32_LEVEL_MAX
-/* Include everything */
-#endif
-
-#if __GNUC__ && ! defined (__declspec)
-# error Please upgrade your GNU compiler to one that supports __declspec.
-#endif
-
-/*
- * When building the DLL code, you should define PTW32_BUILD so that
- * the variables/functions are exported correctly. When using the DLL,
- * do NOT define PTW32_BUILD, and then the variables/functions will
- * be imported correctly.
- */
-#ifndef PTW32_STATIC_LIB
-#  ifdef PTW32_BUILD
-#    define PTW32_DLLPORT __declspec (dllexport)
-#  else
-#    define PTW32_DLLPORT __declspec (dllimport)
-#  endif
-#else
-#  define PTW32_DLLPORT
-#endif
-
-/*
- * This is a duplicate of what is in the autoconf config.h,
- * which is only used when building the pthread-win32 libraries.
- */
-
-#ifndef PTW32_CONFIG_H
-#  if defined(WINCE)
-#    define NEED_ERRNO
-#    define NEED_SEM
-#  endif
-#  if defined(_UWIN) || defined(__MINGW32__)
-#    define HAVE_MODE_T
-#  endif
-#endif
-
-/*
- *
- */
-
-#if PTW32_LEVEL >= PTW32_LEVEL_MAX
-#ifdef NEED_ERRNO
-#include "need_errno.h"
-#else
-#include <errno.h>
-#endif
-#endif /* PTW32_LEVEL >= PTW32_LEVEL_MAX */
-
-#define _POSIX_SEMAPHORES
+#ifndef WIN_PTHREADS_SEMAPHORE_H
+#define WIN_PTHREADS_SEMAPHORE_H
 
 #ifdef __cplusplus
-extern "C"
-{
-#endif				/* __cplusplus */
-
-#ifndef HAVE_MODE_T
-typedef unsigned int mode_t;
+extern "C" {
 #endif
 
+#if defined DLL_EXPORT && !defined (WINPTHREAD_EXPORT_ALL_DEBUG)
+#ifdef IN_WINPTHREAD
+#define WINPTHREAD_SEMA_API __declspec(dllexport)
+#else
+#define WINPTHREAD_SEMA_API __declspec(dllimport)
+#endif
+#else
+#define WINPTHREAD_SEMA_API
+#endif
 
-typedef struct sem_t_ * sem_t;
+/* Set this to 0 to disable it */
+#define USE_SEM_CriticalSection_SpinCount	100
 
-PTW32_DLLPORT int __cdecl sem_init (sem_t * sem,
-			    int pshared,
-			    unsigned int value);
+#define SEM_VALUE_MAX   INT_MAX
 
-PTW32_DLLPORT int __cdecl sem_destroy (sem_t * sem);
+#ifndef _MODE_T_
+#define	_MODE_T_
+typedef unsigned short mode_t;
+#endif
 
-PTW32_DLLPORT int __cdecl sem_trywait (sem_t * sem);
+typedef void		*sem_t;
 
-PTW32_DLLPORT int __cdecl sem_wait (sem_t * sem);
+#define SEM_FAILED 		NULL
 
-PTW32_DLLPORT int __cdecl sem_timedwait (sem_t * sem,
-				 const struct timespec * abstime);
+int WINPTHREAD_SEMA_API sem_init(sem_t * sem, int pshared, unsigned int value);
 
-PTW32_DLLPORT int __cdecl sem_post (sem_t * sem);
+int WINPTHREAD_SEMA_API sem_destroy(sem_t *sem);
 
-PTW32_DLLPORT int __cdecl sem_post_multiple (sem_t * sem,
-				     int count);
+int WINPTHREAD_SEMA_API sem_trywait(sem_t *sem);
 
-PTW32_DLLPORT int __cdecl sem_open (const char * name,
-			    int oflag,
-			    mode_t mode,
-			    unsigned int value);
+int WINPTHREAD_SEMA_API sem_wait(sem_t *sem);
 
-PTW32_DLLPORT int __cdecl sem_close (sem_t * sem);
+int WINPTHREAD_SEMA_API sem_timedwait(sem_t * sem, const struct timespec *t);
 
-PTW32_DLLPORT int __cdecl sem_unlink (const char * name);
+int WINPTHREAD_SEMA_API sem_post(sem_t *sem);
 
-PTW32_DLLPORT int __cdecl sem_getvalue (sem_t * sem,
-				int * sval);
+int WINPTHREAD_SEMA_API sem_post_multiple(sem_t *sem, int count);
+
+/* yes, it returns a semaphore (or SEM_FAILED) */
+sem_t * WINPTHREAD_SEMA_API sem_open(const char * name, int oflag, mode_t mode, unsigned int value);
+
+int WINPTHREAD_SEMA_API sem_close(sem_t * sem);
+
+int WINPTHREAD_SEMA_API sem_unlink(const char * name);
+
+int WINPTHREAD_SEMA_API sem_getvalue(sem_t * sem, int * sval);
 
 #ifdef __cplusplus
-}				/* End of extern "C" */
-#endif				/* __cplusplus */
+}
+#endif
 
-#undef PTW32_LEVEL
-#undef PTW32_LEVEL_MAX
-
-#endif				/* !SEMAPHORE_H */
+#endif /* WIN_PTHREADS_SEMAPHORE_H */

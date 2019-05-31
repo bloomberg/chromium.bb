@@ -1,10 +1,5 @@
 package Test::Moose;
-BEGIN {
-  $Test::Moose::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Test::Moose::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -12,7 +7,7 @@ use warnings;
 use Sub::Exporter;
 use Test::Builder;
 
-use List::MoreUtils 'all';
+use List::Util 1.33 'all';
 use Moose::Util 'does_role', 'find_meta';
 
 my @exports = qw[
@@ -77,20 +72,25 @@ sub has_attribute_ok ($$;$) {
 sub with_immutable (&@) {
     my $block = shift;
     my $before = $Test->current_test;
-    $block->();
+
+    $block->(0);
     Class::MOP::class_of($_)->make_immutable for @_;
-    $block->();
+    $block->(1);
+
     my $num_tests = $Test->current_test - $before;
-    return all { $_ } ($Test->summary)[-$num_tests..-1];
+    my $all_passed = all { $_ } ($Test->summary)[-$num_tests..-1];
+    return $all_passed;
 }
 
 1;
 
 # ABSTRACT: Test functions for Moose specific features
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -98,7 +98,7 @@ Test::Moose - Test functions for Moose specific features
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -116,28 +116,27 @@ is an experimental first release, so comments and suggestions are very welcome.
 
 =head1 EXPORTED FUNCTIONS
 
-=over 4
-
-=item B<meta_ok ($class_or_object)>
+=head2 meta_ok ($class_or_object)
 
 Tests if a class or object has a metaclass.
 
-=item B<does_ok ($class_or_object, $role, ?$message)>
+=head2 does_ok ($class_or_object, $role, ?$message)
 
 Tests if a class or object does a certain role, similar to what C<isa_ok>
 does for the C<isa> method.
 
-=item B<has_attribute_ok($class_or_object, $attr_name, ?$message)>
+=head2 has_attribute_ok($class_or_object, $attr_name, ?$message)
 
 Tests if a class or object has a certain attribute, similar to what C<can_ok>
 does for the methods.
 
-=item B<with_immutable { CODE } @class_names>
+=head2 with_immutable { CODE } @class_names
 
 Runs B<CODE> (which should contain normal tests) twice, and make each
 class in C<@class_names> immutable in between the two runs.
 
-=back
+The B<CODE> block is called with a single boolean argument indicating whether
+or not the classes have been made immutable yet.
 
 =head1 TODO
 
@@ -173,20 +172,57 @@ class in C<@class_names> immutable in between the two runs.
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

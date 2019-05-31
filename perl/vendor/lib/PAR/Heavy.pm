@@ -18,6 +18,12 @@ No user-serviceable parts inside.
 ########################################################################
 # Dynamic inclusion of XS modules
 
+# NOTE: Don't "use" any module here, esp. one that is an XS module or 
+# whose "use" could cause the loading of an XS module thru its dependencies.
+
+# enable debug/trace messages from DynaLoader perl code
+my $dl_debug = $ENV{PERL_DL_DEBUG} || 0;
+
 my ($bootstrap, $dl_findfile);  # Caches for code references
 my ($cache_key);                # The current file to find
 my $is_insensitive_fs = (
@@ -31,6 +37,9 @@ sub _init_dynaloader {
     return if $bootstrap;
     return unless eval { require DynaLoader; DynaLoader::dl_findfile(); 1 };
 
+    print STDERR "PAR::Heavy: pre-hooks to Dynaloader's key methods\n"
+        if $dl_debug;
+
     $bootstrap   = \&DynaLoader::bootstrap;
     $dl_findfile = \&DynaLoader::dl_findfile;
 
@@ -42,12 +51,23 @@ sub _init_dynaloader {
 
 # Return the cached location of .dll inside PAR first, if possible.
 sub _dl_findfile {
-    return $FullCache{$cache_key} if exists $FullCache{$cache_key};
+    print STDERR "PAR::Heavy::_dl_findfile($cache_key)\n" if $dl_debug;
+
+    if (exists $FullCache{$cache_key}) {
+        print STDERR " found in FullCache as $FullCache{$cache_key}\n"
+            if $dl_debug;
+        return $FullCache{$cache_key};
+    }
     if ($is_insensitive_fs) {
         # We have a case-insensitive filesystem...
         my ($key) = grep { lc($_) eq lc($cache_key) } keys %FullCache;
-        return $FullCache{$key} if defined $key;
+        if (defined $key) {
+            print STDERR " found case-insensitively in FullCache as $FullCache{$key}\n"
+                if $dl_debug;
+            return $FullCache{$key};
+        }
     }
+    print STDERR " fall back to DynaLoader::dl_findfile\n" if $dl_debug;
     return $dl_findfile->(@_);
 }
 
@@ -76,7 +96,7 @@ sub _bootstrap {
     }
 
     my $member;
-    # First, try to find things in the peferentially loaded PARs:
+    # First, try to find things in the preferentially loaded PARs:
     $member = PAR::_find_par_internals([@PAR::PAR_INC], undef, $file, 1)
       if defined &PAR::_find_par_internals;
 
@@ -97,7 +117,7 @@ sub _bootstrap {
         }
     }
 
-    $FullCache{$file} = _dl_extract($member, $file);
+    $FullCache{$file} = _dl_extract($member);
 
     # Now extract all associated shared objs in the same auto/ dir
     # XXX: shouldn't this also set $FullCache{...} for those files?
@@ -112,7 +132,7 @@ sub _bootstrap {
             next if $name eq $first;
             next unless $name =~ m{^/?\Q$path_pattern\E\/[^/]*\.\Q$DynaLoader::dl_dlext\E[^/]*$};
             $name =~ s{.*/}{};
-            _dl_extract($member, $file, $name);
+            _dl_extract($member, $name);
         }
     }
 
@@ -121,46 +141,30 @@ sub _bootstrap {
 }
 
 sub _dl_extract {
-    my ($member, $file, $name) = @_;
+    my ($member, $name) = @_;
+    $name ||= $member->crc32String . ".$DynaLoader::dl_dlext";
 
-    require File::Spec;
-    require File::Temp;
+    my $filename = File::Spec->catfile($ENV{PAR_TEMP} || File::Spec->tmpdir, $name);
+    ($filename) = $filename =~ /^([\x20-\xff]+)$/;
 
-    my ($fh, $filename);
+    return $filename if -e $filename && -s _ == $member->uncompressedSize;
 
-    # fix borked tempdir from earlier versions
-    if ($ENV{PAR_TEMP} and -e $ENV{PAR_TEMP} and !-d $ENV{PAR_TEMP}) {
-        unlink($ENV{PAR_TEMP});
-        mkdir($ENV{PAR_TEMP}, 0755);
+    # $filename doesn't exist or hasn't been completely extracted:
+    # extract it under a temporary name that isn't likely to be used
+    # by concurrent processes doing the same
+    my $tempname = "$filename.$$";
+    $member->extractToFileNamed($tempname) == Archive::Zip::AZ_OK()
+        or die "Can't extract archive member ".$member->fileName." to $tempname: $!";
+
+    # now that we have a "good" copy in $tempname, rename it to $filename;
+    # if this fails (e.g. some OSes won't let you delete DLLs that are
+    # in use), but $filename exists, we assume that $filename is also
+    # "good": remove $tempname and return $filename
+    unless (rename($tempname, $filename))
+    {
+        -e $filename or die "can't rename $tempname to $filename: $!";
+        unlink($tempname);
     }
-
-    if ($ENV{PAR_CLEAN} and !$name) {
-        ($fh, $filename) = File::Temp::tempfile(
-            DIR         => ($ENV{PAR_TEMP} || File::Spec->tmpdir),
-            SUFFIX      => ".$DynaLoader::dl_dlext",
-            UNLINK      => ($^O ne 'MSWin32' and $^O !~ /hpux/),
-        );
-        ($filename) = $filename =~ /^([\x20-\xff]+)$/;
-    }
-    else {
-        $filename = File::Spec->catfile(
-            ($ENV{PAR_TEMP} || File::Spec->tmpdir),
-            ($name || ($member->crc32String . ".$DynaLoader::dl_dlext"))
-        );
-        ($filename) = $filename =~ /^([\x20-\xff]+)$/;
-
-        open $fh, '>', $filename or die $!
-            unless -r $filename and -e _
-                and -s _ == $member->uncompressedSize;
-    }
-
-    if ($fh) {
-        binmode($fh);
-        $member->extractToFileHandle($fh);
-        close $fh;
-        chmod 0755, $filename;
-    }
-
     return $filename;
 }
 
@@ -174,7 +178,7 @@ L<PAR>
 
 Audrey Tang E<lt>cpan@audreyt.orgE<gt>
 
-L<http://par.perl.org/> is the official PAR website.  You can write
+You can write
 to the mailing list at E<lt>par@perl.orgE<gt>, or send an empty mail to
 E<lt>par-subscribe@perl.orgE<gt> to participate in the discussion.
 
@@ -191,6 +195,6 @@ E<lt>smueller@cpan.orgE<gt>.
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See F<LICENSE>.
 
 =cut

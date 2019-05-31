@@ -19,47 +19,8 @@ use strict;
 use vars qw($VERSION $VMS_TERMCAP);
 use vars qw($termpat $state $first $entry);
 
-$VERSION = '1.13';
+$VERSION = '1.17';
 
-# Version undef: Thu Dec 14 20:02:42 CST 1995 by sanders@bsdi.com
-# Version 1.00:  Thu Nov 30 23:34:29 EST 2000 by schwern@pobox.com
-#	[PATCH] $VERSION crusade, strict, tests, etc... all over lib/
-# Version 1.01:  Wed May 23 00:00:00 CST 2001 by d-lewart@uiuc.edu
-#	Avoid warnings in Tgetent and Tputs
-# Version 1.02:  Sat Nov 17 13:50:39 GMT 2001 by jns@gellyfish.com
-#       Altered layout of the POD
-#       Added Test::More to PREREQ_PM in Makefile.PL
-#       Fixed no argument Tgetent()
-# Version 1.03:  Wed Nov 28 10:09:38 GMT 2001
-#       VMS Support from Charles Lane <lane@DUPHY4.Physics.Drexel.Edu>
-# Version 1.04:  Thu Nov 29 16:22:03 GMT 2001
-#       Fixed warnings in test
-# Version 1.05:  Mon Dec  3 15:33:49 GMT 2001
-#       Don't try to fall back on infocmp if it's not there. From chromatic.
-# Version 1.06:  Thu Dec  6 18:43:22 GMT 2001
-#       Preload the default VMS termcap from Charles Lane
-#       Don't carp at setting OSPEED unless warnings are on.
-# Version 1.07:  Wed Jan  2 21:35:09 GMT 2002
-#       Sanity check on infocmp output from Norton Allen
-#       Repaired INSTALLDIRS thanks to Michael Schwern
-# Version 1.08:  Sat Sep 28 11:33:15 BST 2002
-#       Late loading of 'Carp' as per Michael Schwern
-# Version 1.09:  Tue Apr 20 12:06:51 BST 2004
-#       Merged in changes from and to Core
-#       Core (Fri Aug 30 14:15:55 CEST 2002):
-#       Cope with comments lines from 'infocmp' from Brendan O'Dea
-#       Allow for EBCDIC in Tgoto magic test.
-# Version 1.10: Thu Oct 18 16:52:20 BST 2007
-#       Don't use try to use $ENV{HOME} if it doesn't exist
-#       Give Win32 'dumb' if TERM isn't set
-#       Provide fallback 'dumb' termcap entry as last resort
-# Version 1.11: Thu Oct 25 09:33:07 BST 2007
-#       EBDIC fixes from Chun Bing Ge <gecb@cn.ibm.com>
-# Version 1.12: Sat Dec  8 00:10:21 GMT 2007
-#       QNX test fix from Matt Kraai <kraai@ftbfs.org>
-# Version 1.13: Thu Dec 22 22:21:09 GMT 2011
-#       POD error fix from Domin Hargreaves <dom@earth.li>
-#
 # TODO:
 # support Berkeley DB termcaps
 # force $FH into callers package?
@@ -185,7 +146,7 @@ It takes a hash reference as an argument with two optional keys:
 
 The terminal output bit rate (often mistakenly called the baud rate)
 for this terminal - if not set a warning will be generated
-and it will be defaulted to 9600.  I<OSPEED> can be be specified as
+and it will be defaulted to 9600.  I<OSPEED> can be specified as
 either a POSIX termios/SYSV termio speeds (where 9600 equals 9600) or
 an old DSD-style speed ( where 13 equals 9600).
 
@@ -245,7 +206,7 @@ sub Tgetent
        }
        else
        {
-          if ( $^O eq 'Win32' )
+          if ( $^O eq 'MSWin32' )
           {
              $self->{TERM} =  'dumb';
           }
@@ -275,7 +236,7 @@ sub Tgetent
 
     my @termcap_path = termcap_path();
 
-    unless ( @termcap_path || $entry )
+    if ( !@termcap_path && !$entry )
     {
 
         # last resort--fake up a termcap from terminfo
@@ -298,6 +259,7 @@ sub Tgetent
                         $entry = $tmp;
                     }
                 };
+                warn "Can't run infocmp to get a termcap entry: $@" if $@;
             }
             else
             {
@@ -400,25 +362,25 @@ sub Tgetent
     $entry =~ s/^[^:]*://;
     foreach $field ( split( /:[\s:\\]*/, $entry ) )
     {
-        if ( defined $field && $field =~ /^(\w\w)$/ )
+        if ( defined $field && $field =~ /^(\w{2,})$/ )
         {
             $self->{ '_' . $field } = 1 unless defined $self->{ '_' . $1 };
 
             # print STDERR "DEBUG: flag $1\n";
         }
-        elsif ( defined $field && $field =~ /^(\w\w)\@/ )
+        elsif ( defined $field && $field =~ /^(\w{2,})\@/ )
         {
             $self->{ '_' . $1 } = "";
 
             # print STDERR "DEBUG: unset $1\n";
         }
-        elsif ( defined $field && $field =~ /^(\w\w)#(.*)/ )
+        elsif ( defined $field && $field =~ /^(\w{2,})#(.*)/ )
         {
             $self->{ '_' . $1 } = $2 unless defined $self->{ '_' . $1 };
 
             # print STDERR "DEBUG: numeric $1 = $2\n";
         }
-        elsif ( defined $field && $field =~ /^(\w\w)=(.*)/ )
+        elsif ( defined $field && $field =~ /^(\w{2,})=(.*)/ )
         {
 
             # print STDERR "DEBUG: string $1 = $2\n";
@@ -478,7 +440,7 @@ It takes three arguments:
 
 The literal string to be output.  If it starts with a number and an optional
 '*' then the padding will be increased by an amount relative to this number,
-if the '*' is present then this amount will me multiplied by $cnt.  This part
+if the '*' is present then this amount will be multiplied by $cnt.  This part
 of $string is removed before output/
 
 =item B<$cnt>
@@ -681,9 +643,9 @@ sub Tgoto
         elsif ( $code eq '>' )
         {
             ( $code, $tmp, $string ) = unpack( "CCa99", $string );
-            if ( $tmp[$[] > $code )
+            if ( $tmp[0] > $code )
             {
-                $tmp[$[] += $tmp;
+                $tmp[0] += $tmp;
             }
         }
         elsif ( $code eq '2' )
@@ -765,12 +727,21 @@ sub Trequire
 
 =head1 COPYRIGHT AND LICENSE
 
-Please see the README file in distribution.
+Copyright 1995-2015 (c) perl5 porters.
+
+This software is free software and can be modified and distributed under
+the same terms as Perl itself.
+
+Please see the file README in the Perl source distribution for details of
+the Perl license.
 
 =head1 AUTHOR
 
 This module is part of the core Perl distribution and is also maintained
-for CPAN by Jonathan Stowe <jns@gellyfish.com>.
+for CPAN by Jonathan Stowe <jns@gellyfish.co.uk>.
+
+The code is hosted on Github: https://github.com/jonathanstowe/Term-Cap
+please feel free to fork, submit patches etc, etc there.
 
 =head1 SEE ALSO
 

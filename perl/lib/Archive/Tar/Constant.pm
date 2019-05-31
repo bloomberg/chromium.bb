@@ -3,14 +3,16 @@ package Archive::Tar::Constant;
 BEGIN {
     require Exporter;
 
-    $VERSION    = '1.84';
+    $VERSION    = '2.32';
     @ISA        = qw[Exporter];
 
     require Time::Local if $^O eq "MacOS";
 }
 
-use Package::Constants;
-@EXPORT = Package::Constants->list( __PACKAGE__ );
+@EXPORT = Archive::Tar::Constant->_list_consts( __PACKAGE__ );
+
+use strict;
+use warnings;
 
 use constant FILE           => 0;
 use constant HARDLINK       => 1;
@@ -51,7 +53,7 @@ use constant MODE           => do { 0666 & (0777 & ~umask) };
 use constant STRIP_MODE     => sub { shift() & 0777 };
 use constant CHECK_SUM      => "      ";
 
-use constant UNPACK         => 'A100 A8 A8 A8 a12 A12 A8 A1 A100 A6 A2 A32 A32 A8 A8 A155 x12';	# cdrake - size must be a12 - not A12 - or else screws up huge file sizes (>8gb)
+use constant UNPACK         => 'a100 a8 a8 a8 a12 a12 a8 a1 a100 A6 a2 a32 a32 a8 a8 a155 x12';	# cdrake - size must be a12 - not A12 - or else screws up huge file sizes (>8gb)
 use constant PACK           => 'a100 a8 a8 a8 a12 a12 A8 a1 a100 a6 a2 a32 a32 a8 a8 a155 x12';
 use constant NAME_LENGTH    => 100;
 use constant PREFIX_LENGTH  => 155;
@@ -82,5 +84,30 @@ use constant CAN_CHOWN      => sub { ($> == 0 and $^O ne "MacOS" and $^O ne "MSW
 use constant CAN_READLINK   => ($^O ne 'MSWin32' and $^O !~ /RISC(?:[ _])?OS/i and $^O ne 'VMS');
 use constant ON_UNIX        => ($^O ne 'MSWin32' and $^O ne 'MacOS' and $^O ne 'VMS');
 use constant ON_VMS         => $^O eq 'VMS';
+
+sub _list_consts {
+    my $class = shift;
+    my $pkg   = shift;
+    return unless defined $pkg; # some joker might use '0' as a pkg...
+
+    my @rv;
+    {   no strict 'refs';
+        my $stash = $pkg . '::';
+
+        for my $name (sort keys %$stash ) {
+
+            ### is it a subentry?
+            my $sub = $pkg->can( $name );
+            next unless defined $sub;
+
+            next unless defined prototype($sub) and
+                     not length prototype($sub);
+
+            push @rv, $name;
+        }
+    }
+
+    return sort @rv;
+}
 
 1;

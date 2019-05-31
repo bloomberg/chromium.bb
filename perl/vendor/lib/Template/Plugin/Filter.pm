@@ -11,7 +11,7 @@
 #   Andy Wardley   <abw@wardley.org>
 #
 # COPYRIGHT
-#   Copyright (C) 2001-2009 Andy Wardley.  All Rights Reserved.
+#   Copyright (C) 2001-2019 Andy Wardley.  All Rights Reserved.
 #
 #   This module is free software; you can redistribute it and/or
 #   modify it under the same terms as Perl itself.
@@ -23,7 +23,7 @@ package Template::Plugin::Filter;
 use strict;
 use warnings;
 use base 'Template::Plugin';
-use Scalar::Util 'weaken';
+use Scalar::Util 'weaken', 'isweak';
 
 
 our $VERSION = 1.38;
@@ -64,17 +64,12 @@ sub factory {
     my $self = shift;
     my $this = $self;
     
-    # This causes problems: https://rt.cpan.org/Ticket/Display.html?id=46691
-    # If the plugin is loaded twice in different templates (one INCLUDEd into
-    # another) then the filter gets garbage collected when the inner template 
-    # ends (at least, I think that's what's happening).  So I'm going to take
-    # the "suck it and see" approach, comment it out, and wait for someone to
-    # complain that this module is leaking memory.  
-    
-    # weaken($this);
+    # avoid a memory leak
+    weaken( $this->{_CONTEXT} ) if ref $this->{_CONTEXT}
+            && !isweak $this->{_CONTEXT};
 
     if ($self->{ _DYNAMIC }) {
-        return $self->{ _DYNAMIC_FILTER } ||= [ sub {
+        return [ sub {
             my ($context, @args) = @_;
             my $config = ref $args[-1] eq 'HASH' ? pop(@args) : { };
 
@@ -84,7 +79,7 @@ sub factory {
         }, 1 ];
     }
     else {
-        return $self->{ _STATIC_FILTER } ||= sub {
+        return sub {
             $this->filter(shift);
         };
     }
@@ -268,7 +263,7 @@ method which gets called by the C<new()> constructor.
 
 When this is set to a true value, the plugin will automatically
 create a dynamic filter.  The outcome is that the C<filter()> method
-will now also get passed a reference to an array of postional
+will now also get passed a reference to an array of positional
 arguments and a reference to a hash array of named parameters.
 
 So, using a plugin filter like this:
@@ -391,7 +386,7 @@ Andy Wardley E<lt>abw@wardley.orgE<gt> L<http://wardley.org/>
 
 =head1 COPYRIGHT
 
-Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+Copyright (C) 1996-2019 Andy Wardley.  All Rights Reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

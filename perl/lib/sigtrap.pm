@@ -8,7 +8,7 @@ sigtrap - Perl pragma to enable simple signal handling
 
 use Carp;
 
-$VERSION = 1.06;
+$VERSION = 1.09;
 $Verbose ||= 0;
 
 sub import {
@@ -81,27 +81,59 @@ sub handler_die {
 
 sub handler_traceback {
     package DB;		# To get subroutine args.
+    my $use_print;
     $SIG{'ABRT'} = DEFAULT;
     kill 'ABRT', $$ if $panic++;
-    syswrite(STDERR, 'Caught a SIG', 12);
-    syswrite(STDERR, $_[0], length($_[0]));
-    syswrite(STDERR, ' at ', 4);
+
+    # This function might be called as an unsafe signal handler, so it
+    # tries to delay any memory allocations as long as possible.
+    #
+    # Unfortunately with PerlIO layers, using syswrite() here has always
+    # been broken.
+    #
+    # Calling PerlIO::get_layers() here is tempting, but that does
+    # allocations, which we're trying to avoid for this early code.
+    if (eval { syswrite(STDERR, 'Caught a SIG', 12); 1 }) {
+        syswrite(STDERR, $_[0], length($_[0]));
+        syswrite(STDERR, ' at ', 4);
+    }
+    else {
+        print STDERR 'Caught a SIG', $_[0], ' at ';
+        ++$use_print;
+    }
+
     ($pack,$file,$line) = caller;
-    syswrite(STDERR, $file, length($file));
-    syswrite(STDERR, ' line ', 6);
-    syswrite(STDERR, $line, length($line));
-    syswrite(STDERR, "\n", 1);
+    unless ($use_print) {
+        syswrite(STDERR, $file, length($file));
+        syswrite(STDERR, ' line ', 6);
+        syswrite(STDERR, $line, length($line));
+        syswrite(STDERR, "\n", 1);
+    }
+    else {
+        print STDERR $file, ' line ', $line, "\n";
+    }
+
+    # we've got our basic output done, from now on we can be freer with allocations
+    # find out whether we have any layers we need to worry about
+    unless ($use_print) {
+        my @layers = PerlIO::get_layers(*STDERR);
+        for my $name (@layers) {
+            unless ($name =~ /^(unix|perlio)$/) {
+                ++$use_print;
+                last;
+            }
+        }
+    }
 
     # Now go for broke.
     for ($i = 1; ($p,$f,$l,$s,$h,$w,$e,$r) = caller($i); $i++) {
         @a = ();
-	for my $fr (@args) {
-            my $_ = $fr;
+	for (@{[@args]}) {
 	    s/([\'\\])/\\$1/g;
 	    s/([^\0]*)/'$1'/
 	      unless /^(?: -?[\d.]+ | \*[\w:]* )$/x;
-	    s/([\200-\377])/sprintf("M-%c",ord($1)&0177)/eg;
-	    s/([\0-\37\177])/sprintf("^%c",ord($1)^64)/eg;
+            require 'meta_notation.pm';
+            $_ = _meta_notation($_) if /[[:^print:]]/a;
 	    push(@a, $_);
 	}
 	$w = $w ? '@ = ' : '$ = ';
@@ -117,7 +149,12 @@ sub handler_traceback {
 	}
 	$f = "file '$f'" unless $f eq '-e';
 	$mess = "$w$s$a called from $f line $l\n";
-	syswrite(STDERR, $mess, length($mess));
+        if ($use_print) {
+            print STDERR $mess;
+        }
+        else {
+            syswrite(STDERR, $mess, length($mess));
+        }
     }
     kill 'ABRT', $$;
 }

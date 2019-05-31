@@ -1,0 +1,62 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Optional - pick Log::Report or ::Minimal
+
+=head1 INHERITANCE
+
+ Log::Report::Optional
+   is a Exporter
+
+=head1 SYNOPSIS
+
+ # Use Log::Report when already loaded, otherwise Log::Report::Minimal
+ package My::Package;
+ use Log::Report::Optional 'my-domain';
+
+=head1 DESCRIPTION
+
+This module will allow libraries (helper modules) to have a dependency
+to a small module instead of the full Log-Report distribution.  The full
+power of C<Log::Report> is only released when the main program uses that
+module.  In that case, the module using the 'Optional' will also use the
+full Log::Report, otherwise the dressed-down L<Log::Report::Minimal|Log::Report::Minimal>
+version.
+
+For the full documentation:
+
+=over 4
+
+=item * see Log::Report when it is used by main
+
+=item * see L<Log::Report::Minimal|Log::Report::Minimal> otherwise
+
+=back
+
+The latter provides the same functions from the former, but is the
+simpelest possible way.
+
+=head1 METHODS
+
+=over 4
+
+=item Log::Report::Optional-E<gt>B<usedBy>()
+
+Returns the classes which loaded the optional module.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of Log-Report-Optional distribution version 1.06,
+built on February 02, 2018. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2013-2018 by [Mark Overmeer <mark@overmeer.net>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

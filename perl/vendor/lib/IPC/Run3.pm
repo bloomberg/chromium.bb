@@ -8,11 +8,11 @@ IPC::Run3 - run a subprocess with input/ouput redirection
 
 =head1 VERSION
 
-version 0.045
+version 0.048
 
 =cut
 
-our $VERSION = '0.045';
+our $VERSION = '0.048';
 
 =head1 SYNOPSIS
 
@@ -44,7 +44,7 @@ use constant is_win32  => 0 <= index $^O, "Win32";
 
 BEGIN {
    if ( is_win32 ) {
-      eval "use Win32 qw( GetOSName ); 1" or die $@;
+      eval "use Win32 qw( GetOSName ); use Win32::ShellQuote qw(quote_native); 1" or die $@;
    }
 }
 
@@ -344,7 +344,7 @@ sub run3 {
        $fh_cache_pid = $$;
     }
 
-    # This routine procedes in stages so that a failure in an early
+    # This routine proceeds in stages so that a failure in an early
     # stage prevents later stages from running, and thus from needing
     # cleanup.
 
@@ -400,16 +400,7 @@ sub run3 {
         $sys_call_time = gettimeofday() if profiling;
 
         my $r = ref $cmd
-              ? system { $cmd->[0] }
-                       is_win32
-                           ? map {
-                                 # Probably need to offer a win32 escaping
-                                 # option, every command may be different.
-                                 ( my $s = $_ ) =~ s/"/"""/g;
-                                 $s = qq{"$s"};
-                                 $s;
-                             } @$cmd
-                           : @$cmd
+              ? system { $cmd->[0] } is_win32 ? quote_native( @$cmd ) : @$cmd
               : system $cmd;
 
        $errno = $!;              # save $!, because later failures will overwrite it
@@ -423,7 +414,13 @@ sub run3 {
            }
         }
 
-        die $! if defined $r && $r == -1 && !$options->{return_if_system_error};
+        if (
+            defined $r
+            && ( $r == -1 || ( is_win32 && $r == 0xFF00 ) )
+            && !$options->{return_if_system_error}
+        ) {
+            croak( $errno );
+        }
 
         1;
     };
@@ -677,7 +674,7 @@ L<tempfile|Temp/tempfile>)
 
 If C<run3()> opened a temporary file for C<$stdin> in step (1),
 it writes the data using the specified method (either
-from a string, an array or returnd by a function) to the temporary file and rewinds it.
+from a string, an array or returned by a function) to the temporary file and rewinds it.
 
 =item (3)
 
@@ -716,7 +713,7 @@ Often uses intermediate files (determined by File::Temp, and thus by the
 File::Spec defaults and the TMPDIR env. variable) for speed, portability and
 simplicity.
 
-Use extrem caution when using C<run3> in a threaded environment if concurrent
+Use extreme caution when using C<run3> in a threaded environment if concurrent
 calls of C<run3> are possible. Most likely, I/O from different invocations will
 get mixed up. The reason is that in most thread implementations all threads in
 a process share the same STDIN/STDOUT/STDERR.  Known failures are Perl ithreads

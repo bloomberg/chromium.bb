@@ -1,19 +1,13 @@
-
 package Class::MOP::Method::Wrapped;
-BEGIN {
-  $Class::MOP::Method::Wrapped::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Class::MOP::Method::Wrapped::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use Carp         'confess';
 use Scalar::Util 'blessed';
+use Sub::Name 'subname';
 
-use base 'Class::MOP::Method';
+use parent 'Class::MOP::Method';
 
 # NOTE:
 # this ugly beast is the result of trying
@@ -44,13 +38,13 @@ my $_build_wrapped_method = sub {
             return wantarray ? @rval : $rval[0];
         }
     }
-    elsif (@$before && !@$after) {
+    elsif (@$before) {
         $modifier_table->{cache} = sub {
             for my $c (@$before) { $c->(@_) };
             return $around->{cache}->(@_);
         }
     }
-    elsif (@$after && !@$before) {
+    elsif (@$after) {
         $modifier_table->{cache} = sub {
             my @rval;
             ((defined wantarray) ?
@@ -74,7 +68,10 @@ sub wrap {
     my ( $class, $code, %params ) = @_;
 
     (blessed($code) && $code->isa('Class::MOP::Method'))
-        || confess "Can only wrap blessed CODE";
+        || $class->_throw_exception( CanOnlyWrapBlessedCode => params => \%params,
+                                                      class  => $class,
+                                                      code   => $code
+                          );
 
     my $modifier_table = {
         cache  => undef,
@@ -87,15 +84,20 @@ sub wrap {
         },
     };
     $_build_wrapped_method->($modifier_table);
-    return $class->SUPER::wrap(
-        sub { $modifier_table->{cache}->(@_) },
-        # get these from the original
-        # unless explicitly overriden
-        package_name   => $params{package_name} || $code->package_name,
-        name           => $params{name}         || $code->name,
-        original_method => $code,
 
-        modifier_table => $modifier_table,
+    # get these from the original unless explicitly overridden
+    my $pkg_name    = $params{package_name} || $code->package_name;
+    my $method_name = $params{name}         || $code->name;
+
+    return $class->SUPER::wrap(
+        sub {
+            my $wrapped = subname "${pkg_name}::_wrapped_${method_name}" => $modifier_table->{cache};
+            return $wrapped->(@_) ;
+        },
+        package_name    => $pkg_name,
+        name            => $method_name,
+        original_method => $code,
+        modifier_table  => $modifier_table,
     );
 }
 
@@ -203,9 +205,11 @@ sub _make_compatible_with {
 
 # ABSTRACT: Method Meta Object for methods with before/after/around modifiers
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -213,7 +217,7 @@ Class::MOP::Method::Wrapped - Method Meta Object for methods with before/after/a
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -222,18 +226,14 @@ after, and around method modifiers.
 
 =head1 METHODS
 
-=head2 Construction
-
-=over 4
-
-=item B<< Class::MOP::Method::Wrapped->wrap($metamethod, %options) >>
+=head2 Class::MOP::Method::Wrapped->wrap($metamethod, %options)
 
 This is the constructor. It accepts a L<Class::MOP::Method> object and
 a hash of options.
 
 The options are:
 
-=over 8
+=over 4
 
 =item * name
 
@@ -252,45 +252,80 @@ method's class.
 
 =back
 
-=item B<< $metamethod->get_original_method >>
+=head2 $metamethod->get_original_method
 
 This returns the L<Class::MOP::Method> object that was passed to the
 constructor.
 
-=item B<< $metamethod->add_before_modifier($code) >>
+=head2 $metamethod->add_before_modifier($code)
 
-=item B<< $metamethod->add_after_modifier($code) >>
+=head2 $metamethod->add_after_modifier($code)
 
-=item B<< $metamethod->add_around_modifier($code) >>
+=head2 $metamethod->add_around_modifier($code)
 
 These methods all take a subroutine reference and apply it as a
 modifier to the original method.
 
-=item B<< $metamethod->before_modifiers >>
+=head2 $metamethod->before_modifiers
 
-=item B<< $metamethod->after_modifiers >>
+=head2 $metamethod->after_modifiers
 
-=item B<< $metamethod->around_modifiers >>
+=head2 $metamethod->around_modifiers
 
 These methods all return a list of subroutine references which are
 acting as the specified type of modifier.
 
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
 =back
-
-=head1 AUTHOR
-
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

@@ -1,18 +1,12 @@
-
 package Moose::Meta::Role::Method::Conflicting;
-BEGIN {
-  $Moose::Meta::Role::Method::Conflicting::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Role::Method::Conflicting::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
 use Moose::Util;
 
-use base qw(Moose::Meta::Role::Method::Required);
+use parent 'Moose::Meta::Role::Method::Required';
 
 __PACKAGE__->meta->add_attribute('roles' => (
     reader   => 'roles',
@@ -29,9 +23,11 @@ sub roles_as_english_list {
 
 # ABSTRACT: A Moose metaclass for conflicting methods in Roles
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -39,7 +35,7 @@ Moose::Meta::Role::Method::Conflicting - A Moose metaclass for conflicting metho
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -50,13 +46,11 @@ L<Moose::Meta::Role::Method::Required>.
 
 =head1 METHODS
 
-=over 4
-
-=item B<< Moose::Meta::Role::Method::Conflicting->new(%options) >>
+=head2 Moose::Meta::Role::Method::Conflicting->new(%options)
 
 This creates a new type constraint based on the provided C<%options>:
 
-=over 8
+=over 4
 
 =item * name
 
@@ -68,38 +62,74 @@ The list of role names that generated the conflict. This is required.
 
 =back
 
-=item B<< $method->name >>
+=head2 $method->name
 
 Returns the conflicting method's name, as provided to the constructor.
 
-=item B<< $method->roles >>
+=head2 $method->roles
 
 Returns the roles that generated this conflicting method, as provided to the
 constructor.
 
-=item B<< $method->roles_as_english_list >>
+=head2 $method->roles_as_english_list
 
 Returns the roles that generated this conflicting method as an English list.
-
-=back
 
 =head1 BUGS
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

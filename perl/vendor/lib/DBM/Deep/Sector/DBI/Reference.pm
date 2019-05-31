@@ -133,9 +133,7 @@ sub data {
         });
 
         $cache->{$off} = $obj;
-        if($engine->{external_refs}) {
-            Scalar::Util::weaken($cache->{$off});
-        }
+        Scalar::Util::weaken($cache->{$off});
     }
     else {
         $obj = $cache->{$off};

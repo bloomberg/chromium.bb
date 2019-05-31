@@ -32,7 +32,7 @@ my @Ed_Hunks = ();
 ########################
 
 my $usage = << "ENDUSAGE";
-Usage: $0 [{-c | -C lines -e | -f | -u | -U lines}] oldfile newfile
+Usage: $0 [{-c | -C lines -e | -f | -u | -U lines |-q | -i | -w}] oldfile newfile
     -c do a context diff with 3 lines of context
     -C do a context diff with 'lines' lines of context (implies -c)
     -e create a script for the ed editor to change oldfile to newfile
@@ -40,13 +40,16 @@ Usage: $0 [{-c | -C lines -e | -f | -u | -U lines}] oldfile newfile
     -u do a unified diff with 3 lines of context
     -U do a unified diff with 'lines' lines of context (implies -u)
     -q report only whether or not the files differ
+    -i ignore differences in Upper/lower-case
+    -w ignore differences in white-space (space and TAB characters)
 
 By default it will do an "old-style" diff, with output like UNIX diff
 ENDUSAGE
 
 my $Context_Lines = 0; # lines of context to print. 0 for old-style diff
 my $Diff_Type = "OLD"; # by default, do standard UNIX diff
-my ($opt_c, $opt_u, $opt_e, $opt_f, $opt_q);
+my ($opt_c, $opt_u, $opt_e, $opt_f, $opt_q, $opt_i, $opt_w);
+my $compareRoutineRef = undef;
 while ($ARGV[0] =~ /^-/) {
   my $opt = shift;
   last if $opt eq '--';
@@ -77,6 +80,12 @@ while ($ARGV[0] =~ /^-/) {
     $opt_q = 1;
     $opt_e = 1;
     $Diff_Type = "ED";
+  } elsif ($opt =~ /^-i$/) {
+    $opt_i = 1;
+    $compareRoutineRef = \&compareRoutine;
+  } elsif ($opt =~ /^-w$/) {
+    $opt_w = 1;
+    $compareRoutineRef = \&compareRoutine;
   } else {
     $opt =~ s/^-//;
     bag("Illegal option -- $opt");
@@ -112,7 +121,7 @@ chomp(@f2 = <F2>);
 close F2;
 
 # diff yields lots of pieces, each of which is basically a Block object
-my $diffs = diff(\@f1, \@f2);
+my $diffs = diff(\@f1, \@f2, $compareRoutineRef);
 exit 0 unless @$diffs;
 
 if ($opt_q and @$diffs) {
@@ -160,6 +169,13 @@ sub bag {
   $msg .= "\n";
   warn $msg;
   exit 2;
+}
+
+sub compareRoutine {
+  my $line = shift;
+  $line =~ s/[ \t\r\n]+//g  if ($opt_w);
+  $line = uc( $line )   if ($opt_i);
+  return $line;
 }
 
 ########

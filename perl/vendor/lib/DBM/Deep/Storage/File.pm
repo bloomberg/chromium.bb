@@ -13,7 +13,7 @@ use base 'DBM::Deep::Storage';
 
 =head1 NAME
 
-DBM::Deep::Storage::File
+DBM::Deep::Storage::File - mediate low-level interaction with storage mechanism
 
 =head1 PURPOSE
 
@@ -147,7 +147,7 @@ sub size {
 
 This will set the inode value of the underlying file object.
 
-This is only needed to handle some obscure Win32 bugs. It reqlly shouldn't be
+This is only needed to handle some obscure Win32 bugs. It really shouldn't be
 needed outside this object.
 
 There is no return value.

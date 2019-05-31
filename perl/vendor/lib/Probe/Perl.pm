@@ -1,9 +1,9 @@
-package Probe::Perl;
-
-use vars qw( $VERSION );
-$VERSION = '0.01';
-
 use strict;
+
+package Probe::Perl;
+{
+  $Probe::Perl::VERSION = '0.03';
+}
 
 # TODO: cache values derived from launching an external perl process
 # TODO: docs refer to Config.pm and $self->{config}
@@ -51,9 +51,32 @@ sub perl_version_to_float {
   return $version;
 }
 
+sub _backticks {
+  my $perl = shift;
+  return unless -e $perl;
+
+  my $fh;
+  eval {open $fh, '-|', $perl, @_ or die $!};
+  if (!$@) {
+    return <$fh> if wantarray;
+    my $tmp = do {local $/=undef; <$fh>};
+    return $tmp;
+  }
+
+  # Quoting only happens on the path to perl - I control the rest of
+  # the args and they don't need quoting.
+  if ($^O eq 'MSWin32') {
+    $perl = qq{"$perl"} if $perl =~ m{^[\w\\]+$};
+  } else {
+    $perl =~ s{([^\w\\])}{\\$1}g;
+  }
+
+  return `$perl @_`;
+}
+
 sub perl_is_same {
   my ($self, $perl) = @_;
-  return `$perl -MConfig=myconfig -e print -e myconfig` eq Config->myconfig;
+  return _backticks($perl, qw(-MConfig=myconfig -e print -e myconfig)) eq Config->myconfig;
 }
 
 sub find_perl_interpreter {
@@ -88,7 +111,7 @@ sub perl_inc {
 
   my $perl = $self->find_perl_interpreter();
 
-  my @inc = `$perl -l -e print -e for -e \@INC`;
+  my @inc = _backticks($perl, qw(-l -e print -e for -e @INC));
   chomp @inc;
 
   return @inc;
@@ -153,6 +176,10 @@ __END__
 =head1 NAME
 
 Probe::Perl - Information about the currently running perl
+
+=head1 VERSION
+
+version 0.03
 
 =head1 SYNOPSIS
 

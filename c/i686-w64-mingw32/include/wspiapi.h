@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WSPIAPI_H_
@@ -23,7 +23,7 @@
 #ifndef __cplusplus
 #define _WSPIAPI_COUNTOF(_Array) (sizeof(_Array) / sizeof(_Array[0]))
 #else
-template <typename __CountofType,size_t _N> char (&__wspiapi_countof_helper(__CountofType (&_Array)[_N]))[_N];
+template <typename __CountofType,size_t __wspiapi_countof_helper_N> char (&__wspiapi_countof_helper(__CountofType (&_Array)[__wspiapi_countof_helper_N]))[__wspiapi_countof_helper_N];
 #define _WSPIAPI_COUNTOF(_Array) sizeof(__wspiapi_countof_helper(_Array))
 #endif
 #endif

@@ -166,7 +166,7 @@ scale() will fail if C<type> is set to some other value.
 For example, if the original image is 400 pixels wide by 200 pixels
 high and C<xpixels> is set to 300, and C<ypixels> is set to 160.  When
 C<type> is C<'min'> the resulting image is 300 x 150, when C<type> is
-C<'max'> the resulting image is 320 x 150.
+C<'max'> the resulting image is 320 x 160.
 
 C<type> is only used if both C<xpixels> and C<ypixels> are supplied.
 
@@ -577,7 +577,7 @@ sub image to be pasted.
 If the source image has an alpha channel and the target doesn't, then
 the source is treated as if composed onto a black background.
 
-If the source image is color and the target is gray scale, the the
+If the source image is color and the target is gray scale, the
 source is treated as if run through C<< convert(preset=>'gray') >>.
 
 =item rubthrough()
@@ -604,7 +604,7 @@ Parameters:
 
 =item *
 
-C<tx>, C<ty> - location in the the target image ($self) to render the
+C<tx>, C<ty> - location in the target image ($self) to render the
 top left corner of the source.
 
 =item *
@@ -662,7 +662,7 @@ C<src> - the source image to draw onto the target.  Required.
 
 =item *
 
-C<tx>, C<ty> - location in the the target image ($self) to render the top
+C<tx>, C<ty> - location in the target image ($self) to render the top
 left corner of the source.  These can also be supplied as C<left> and
 C<right>.  Default: (0, 0).
 
@@ -782,7 +782,8 @@ This weights the RGB channels at 22.2%, 70.7% and 7.1% respectively.
 =item *
 
 C<noalpha> - removes the alpha channel from a 2 or 4 channel image.
-An identity for other images.
+An identity for other images.  Warning: this removes the alpha channel
+without applying it.
 
 =item *
 

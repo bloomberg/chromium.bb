@@ -1,15 +1,58 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
+
+/* The purpose of this file is to provide support for MSVC's intrinsics (what gcc calls
+   Builtins) in gcc.  In MSVC, there are several features for intrinsics:
+
+   - Intrinsics can either be implemented inline (via the compiler), or implemented as functions.
+   - You can specify which approach you prefer either globally (via compile switch /Oi) or
+     on a function by function basis via pragmas.
+   - Before you can use any of the intrinsics, they must be declared via a prototype.  For
+     whatever reason, MS has decided to put all the intrinsics in one file (intrin.h) AND
+     to put duplicate copies of some of these prototypes in various platform sdk headers.
+
+   In gcc, this is implemented as follows:
+
+   - The inline implementations for the intrinsics are located in intrin-impl.h.  This file
+     is included by intrin.h, as well as various platform sdk headers.
+   - Including intrin.h will create definitions/implementations for all available MSVC intrinsics.
+   - Including various platforms sdk headers will only include the intrinsics defined in that
+     header.  As of this writing, only winnt.h and winbase.h use this approach.
+   - If an application defines its own prototypes for intrinsics (ie without including any
+     platform header or intrin.h), the symbols will be resolved from the library.  Since this
+     will likely result in the code being invoked via 'call', performance may be degraded.
+
+   If you wish to implement intrinsic functions that are defined in intrin.h but are not
+   yet implemented in mingw-w64, see the comments at the top of intrin-impl.h.
+*/
+
 #ifndef __INTRIN_H_
 #define __INTRIN_H_
 #ifndef RC_INVOKED
 
-#include <_mingw.h>
+#include <crtdefs.h>
+#ifndef __CYGWIN__
 #include <setjmp.h>
+#endif
 #include <stddef.h>
+#include <psdk_inc/intrin-impl.h>
+
+/*
+ * Intrins shiped with GCC conflict with our versions in C++, because they don't use extern "C"
+ * linkage while our variants use them. We try to work around this by including those headers
+ * here wrapped in extern "C" block. It's still possible that those intrins will get default
+ * C++ linkage (when GCC headers are explicitly included before intrin.h), but at least their
+ * guards will prevent duplicated declarations and avoid conflicts.
+ *
+ * On GCC 4.9 we may always include those headers. On older GCCs, we may do it only if CPU
+ * features used by them are enabled, so we need to check macros like __SSE__ or __MMX__ first.
+ */
+#if __MINGW_GNUC_PREREQ(4, 9)
+#define __MINGW_FORCE_SYS_INTRINS
+#endif
 
 #if defined(__GNUC__) && \
    (defined(__i386__) || defined(__x86_64__))
@@ -29,12 +72,17 @@ extern "C" {
 
 #include <x86intrin.h>
 
+/* Before 4.9.2, x86intrin.h had broken versions of these. */
+#undef _lrotl
+#undef _lrotr
+
 #if defined(__cplusplus)
 }
 #endif
 
 #endif
 
+#ifndef __MINGW_FORCE_SYS_INTRINS
 #ifndef __MMX__
 typedef union __m64 { char v[7]; } __m64;
 #endif
@@ -45,9 +93,69 @@ typedef union __m128 { char v[16]; } __m128;
 typedef union __m128d { char v[16]; } __m128d;
 typedef union __m128i { char v[16]; } __m128i;
 #endif
+#endif
 
 #ifndef WINAPI
+#if defined(_ARM_)
+#define WINAPI
+#else
 #define WINAPI __stdcall
+#endif
+#endif
+
+#if (defined(_X86_) || defined(__x86_64))
+
+#if defined(__MMX__) || defined(__MINGW_FORCE_SYS_INTRINS)
+#if defined(__cplusplus)
+extern "C" {
+#endif
+#include <mmintrin.h>
+#if defined(__cplusplus)
+}
+#endif
+#endif
+
+#if defined(__3dNOW__) || defined(__MINGW_FORCE_SYS_INTRINS)
+#if defined(__cplusplus)
+extern "C" {
+#endif
+#include <mm3dnow.h>
+#if defined(__cplusplus)
+}
+#endif
+#endif
+
+/* NOTE: it's not included by MS version, but we do it to try work around C++/C linkage differences */
+#if defined(__SSE__) || defined(__MINGW_FORCE_SYS_INTRINS)
+#if defined(__cplusplus)
+extern "C" {
+#endif
+#include <xmmintrin.h>
+#if defined(__cplusplus)
+}
+#endif
+#endif
+
+#if defined(__SSE2__) || defined(__MINGW_FORCE_SYS_INTRINS)
+#if defined(__cplusplus)
+extern "C" {
+#endif
+#include <emmintrin.h>
+#if defined(__cplusplus)
+}
+#endif
+#endif
+
+#if defined(__SSE3__) || defined(__MINGW_FORCE_SYS_INTRINS)
+#if defined(__cplusplus)
+extern "C" {
+#endif
+#include <pmmintrin.h>
+#if defined(__cplusplus)
+}
+#endif
+#endif
+
 #endif
 
 #if (defined(_X86_) && !defined(__x86_64))
@@ -61,11 +169,6 @@ extern "C" {
 }
 #endif
 
-#if defined(__cplusplus)
-#include <dvec.h>
-#include <fvec.h>
-#include <ivec.h>
-#endif
 #endif
 
 #define __MACHINEX64 __MACHINE
@@ -91,7 +194,7 @@ extern "C" {
 #define __MACHINEIA32 __MACHINEZ
 #endif
 
-#if !(_X86_ || __x86_64 || __ia64__)
+#if !(defined(_X86_) || defined(__x86_64) || defined(__ia64__))
 #undef __MACHINEIW64
 #define __MACHINEIW64 __MACHINEZ
 #endif
@@ -101,17 +204,17 @@ extern "C" {
 #define __MACHINEIA64 __MACHINEZ
 #endif
 
-#if !(__ia64__ || __x86_64)
+#if !(defined(__ia64__) || defined(__x86_64))
 #undef __MACHINEW64
 #define __MACHINEW64 __MACHINEZ
 #endif
 
-#if !(_X86_ || __x86_64)
+#if !(defined(_X86_) || defined(__x86_64))
 #undef __MACHINEX86X
 #define __MACHINEX86X __MACHINEZ
 #endif
 
-#if !(_X86_) || __x86_64
+#if !(defined(_X86_)) || defined(__x86_64)
 #undef __MACHINEX86X_NOX64
 #define __MACHINEX86X_NOX64 __MACHINEZ
 #endif
@@ -121,7 +224,7 @@ extern "C" {
 #define __MACHINEX86X_NOIA64 __MACHINEZ
 #endif
 
-#if !(_X86_) || __x86_64 || __ia64__
+#if !(defined(_X86_)) || defined(__x86_64) || defined(__ia64__)
 #undef __MACHINEX86X_NOWIN64
 #define __MACHINEX86X_NOWIN64 __MACHINEZ
 #endif
@@ -135,7 +238,7 @@ extern "C" {
 #define __MACHINECC __MACHINEZ
 #endif
 
-#if !(__x86_64)
+#if !(defined(__x86_64))
 #undef __MACHINEX64
 #define __MACHINEX64 __MACHINEZ
 #endif
@@ -149,6 +252,29 @@ extern "C" {
 extern "C" {
 #endif
 
+#ifndef __CYGWIN__
+	/* Put all declarations potentially colliding with POSIX headers here.
+	   So far, Cygwin is the only POSIX system using this header file.
+	   If that ever changes, make sure to tweak the guarding ifndef. */
+    __MACHINE(int __cdecl abs(int))
+    __MACHINEX64(double ceil(double))
+    __MACHINE(long __cdecl labs(long))
+    __MACHINECE(_CONST_RETURN void *__cdecl memchr(const void *,int,size_t))
+    __MACHINE(int __cdecl memcmp(const void *,const void *,size_t))
+    __MACHINE(void *__cdecl memcpy(void * __restrict__ ,const void * __restrict__ ,size_t))
+    __MACHINE(void *__cdecl memset(void *,int,size_t))
+    __MACHINE(char *__cdecl strcat(char *,const char *))
+    __MACHINE(int __cdecl strcmp(const char *,const char *))
+    __MACHINE(char *__cdecl strcpy(char * __restrict__ ,const char * __restrict__ ))
+    __MACHINE(size_t __cdecl strlen(const char *))
+    __MACHINECE(int __cdecl strncmp(const char *,const char *,size_t))
+    __MACHINECE(char *__cdecl strncpy(char * __restrict__ ,const char * __restrict__ ,size_t))
+    __MACHINEIW64(wchar_t *__cdecl wcscat(wchar_t * __restrict__ ,const wchar_t * __restrict__ ))
+    __MACHINEIW64(int __cdecl wcscmp(const wchar_t *,const wchar_t *))
+    __MACHINEIW64(wchar_t *__cdecl wcscpy(wchar_t * __restrict__ ,const wchar_t * __restrict__ ))
+    __MACHINEIW64(size_t __cdecl wcslen(const wchar_t *))
+#endif
+
   __MACHINEIA64(__MINGW_EXTENSION void _AcquireSpinLock(unsigned __int64 *))
 #ifdef __GNUC__
 #undef _alloca
@@ -156,16 +282,13 @@ extern "C" {
 #else
     __MACHINE(void *__cdecl _alloca(size_t))
 #endif
-    __MACHINE(int __cdecl abs(int))
     __MACHINEIA64(void __break(int))
     __MACHINECE(__MINGW_EXTENSION __int64 __cdecl _abs64(__int64))
     __MACHINE(unsigned short __cdecl _byteswap_ushort(unsigned short value))
-    __MACHINE(unsigned long __cdecl _byteswap_ulong(unsigned long value))
+    __MACHINE(unsigned __LONG32 __cdecl _byteswap_ulong(unsigned __LONG32 value))
     __MACHINE(__MINGW_EXTENSION unsigned __int64 __cdecl _byteswap_uint64(unsigned __int64 value))
     __MACHINECE(void __CacheRelease(void *))
     __MACHINECE(void __CacheWriteback(void *))
-    __MACHINECE(double ceil(double))
-    __MACHINEX64(double ceil(double))
     __MACHINECE(double ceil(double))
     __MACHINECE(__MINGW_EXTENSION double _CopyDoubleFromInt64(__int64))
     __MACHINECE(float _CopyFloatFromInt32(__int32))
@@ -201,33 +324,33 @@ extern "C" {
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedAdd64(__int64 volatile *,__int64))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedAdd64_acq(__int64 volatile *,__int64))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedAdd64_rel(__int64 volatile *,__int64))
-    __MACHINEI(long __cdecl _InterlockedDecrement(long volatile *))
+    /* __MACHINEI(__LONG32 __cdecl _InterlockedDecrement(__LONG32 volatile *)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIA64(long _InterlockedDecrement(long volatile *))
     __MACHINEIA64(long _InterlockedDecrement_acq(long volatile *))
     __MACHINEIA64(long _InterlockedDecrement_rel(long volatile *))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedDecrement64(__int64 volatile *))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedDecrement64_acq(__int64 volatile *))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedDecrement64_rel(__int64 volatile *))
-    __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedDecrement64(__int64 volatile *))
-    __MACHINEI(long _InterlockedExchange(long volatile *,long))
+    /* __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedDecrement64(__int64 volatile *)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(__LONG32 _InterlockedExchange(__LONG32 volatile *,__LONG32)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIA64(long _InterlockedExchange(long volatile *,long))
     __MACHINEIA64(long _InterlockedExchange_acq(long volatile *,long))
     __MACHINESA(long WINAPI _InterlockedExchange(long volatile *,long))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedExchange64(__int64 volatile *,__int64))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedExchange64_acq(__int64 volatile *,__int64))
-    __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedExchange64(__int64 volatile *,__int64))
+    /* __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedExchange64(__int64 volatile *,__int64)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIA64(void *_InterlockedExchangePointer(void *volatile *,void *))
     __MACHINEIA64(void *_InterlockedExchangePointer_acq(void *volatile *,void volatile *))
-    __MACHINEX64(void *_InterlockedExchangePointer(void *volatile *,void *))
-    __MACHINEI(long _InterlockedExchangeAdd(long volatile *,long))
+    /* __MACHINEX64(void *_InterlockedExchangePointer(void *volatile *,void *)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(__LONG32 _InterlockedExchangeAdd(__LONG32 volatile *,__LONG32)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIA64(long _InterlockedExchangeAdd(long volatile *,long))
     __MACHINEIA64(long _InterlockedExchangeAdd_acq(long volatile *,long))
     __MACHINEIA64(long _InterlockedExchangeAdd_rel(long volatile *,long))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedExchangeAdd64(__int64 volatile *,__int64))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedExchangeAdd64_acq(__int64 volatile *,__int64))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedExchangeAdd64_rel(__int64 volatile *,__int64))
-    __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedExchangeAdd64(__int64 volatile *,__int64))
-    __MACHINEI(long _InterlockedCompareExchange (long volatile *,long,long))
+    /* __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedExchangeAdd64(__int64 volatile *,__int64)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(__LONG32 _InterlockedCompareExchange (__LONG32 volatile *,__LONG32,__LONG32)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIA64(long _InterlockedCompareExchange (long volatile *,long,long))
     __MACHINEIA64(long _InterlockedCompareExchange_acq (long volatile *,long,long))
     __MACHINEIA64(long _InterlockedCompareExchange_rel (long volatile *,long,long))
@@ -243,20 +366,20 @@ extern "C" {
     __MACHINEIA64(void *_InterlockedCompareExchangePointer (void *volatile *,void *,void *))
     __MACHINEIA64(void *_InterlockedCompareExchangePointer_acq (void *volatile *,void *,void *))
     __MACHINEIA64(void *_InterlockedCompareExchangePointer_rel (void *volatile *,void *,void *))
-    __MACHINEI(__MINGW_EXTENSION __int64 _InterlockedCompareExchange64(__int64 volatile *,__int64,__int64))
-    __MACHINEX64(void *_InterlockedCompareExchangePointer (void *volatile *,void *,void *))
-    __MACHINEI(long __cdecl _InterlockedIncrement(long volatile *))
+    /* __MACHINEI(__MINGW_EXTENSION __int64 _InterlockedCompareExchange64(__int64 volatile *,__int64,__int64)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(void *_InterlockedCompareExchangePointer (void *volatile *,void *,void *)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(__LONG32 __cdecl _InterlockedIncrement(__LONG32 volatile *)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIA64(long _InterlockedIncrement(long volatile *))
     __MACHINEIA64(long _InterlockedIncrement_acq(long volatile *))
     __MACHINEIA64(long _InterlockedIncrement_rel(long volatile *))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedIncrement64(__int64 volatile *))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedIncrement64_acq(__int64 volatile *))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedIncrement64_rel(__int64 volatile *))
-    __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedIncrement64(__int64 volatile *))
-    __MACHINEIW64(long _InterlockedOr(long volatile *,long))
+    /* __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedIncrement64(__int64 volatile *)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIW64(__LONG32 _InterlockedOr(__LONG32 volatile *,__LONG32)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIW64(char _InterlockedOr8(char volatile *,char))
     __MACHINEIW64(short _InterlockedOr16(short volatile *,short))
-    __MACHINEW64(__MINGW_EXTENSION __int64 _InterlockedOr64(__int64 volatile *,__int64))
+    /* __MACHINEW64(__MINGW_EXTENSION __int64 _InterlockedOr64(__int64 volatile *,__int64)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIA64(long _InterlockedOr_acq(long volatile *,long))
     __MACHINEIA64(char _InterlockedOr8_acq(char volatile *,char))
     __MACHINEIA64(short _InterlockedOr16_acq(short volatile *,short))
@@ -265,10 +388,10 @@ extern "C" {
     __MACHINEIA64(char _InterlockedOr8_rel(char volatile *,char))
     __MACHINEIA64(short _InterlockedOr16_rel(short volatile *,short))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedOr64_rel(__int64 volatile *,__int64))
-    __MACHINEIW64(long _InterlockedXor(long volatile *,long))
+    /* __MACHINEIW64(__LONG32 _InterlockedXor(__LONG32 volatile *,__LONG32)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIW64(char _InterlockedXor8(char volatile *,char))
     __MACHINEIW64(short _InterlockedXor16(short volatile *,short))
-    __MACHINEW64(__MINGW_EXTENSION __int64 _InterlockedXor64(__int64 volatile *,__int64))
+    /* __MACHINEW64(__MINGW_EXTENSION __int64 _InterlockedXor64(__int64 volatile *,__int64)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIA64(long _InterlockedXor_acq(long volatile *,long))
     __MACHINEIA64(char _InterlockedXor8_acq(char volatile *,char))
     __MACHINEIA64(short _InterlockedXor16_acq(short volatile *,short))
@@ -277,10 +400,10 @@ extern "C" {
     __MACHINEIA64(char _InterlockedXor8_rel(char volatile *,char))
     __MACHINEIA64(short _InterlockedXor16_rel(short volatile *,short))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedXor64_rel(__int64 volatile *,__int64))
-    __MACHINEIW64(long _InterlockedAnd(long volatile *,long))
+    /* __MACHINEIW64(__LONG32 _InterlockedAnd(__LONG32 volatile *,__LONG32)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIW64(char _InterlockedAnd8(char volatile *,char))
     __MACHINEIW64(short _InterlockedAnd16(short volatile *,short))
-    __MACHINEW64(__MINGW_EXTENSION __int64 _InterlockedAnd64(__int64 volatile *,__int64))
+    /* __MACHINEW64(__MINGW_EXTENSION __int64 _InterlockedAnd64(__int64 volatile *,__int64)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIA64(long _InterlockedAnd_acq(long volatile *,long))
     __MACHINEIA64(char _InterlockedAnd8_acq(char volatile *,char))
     __MACHINEIA64(short _InterlockedAnd16_acq(short volatile *,short))
@@ -289,11 +412,11 @@ extern "C" {
     __MACHINEIA64(char _InterlockedAnd8_rel(char volatile *,char))
     __MACHINEIA64(short _InterlockedAnd16_rel(short volatile *,short))
     __MACHINEIA64(__MINGW_EXTENSION __int64 _InterlockedAnd64_rel(__int64 volatile *,__int64))
-    __MACHINEIA32(__MINGW_EXTENSION long _InterlockedAddLargeStatistic(__int64 volatile *,long))
+    __MACHINEIA32(__MINGW_EXTENSION __LONG32 _InterlockedAddLargeStatistic(__int64 volatile *,__LONG32))
     __MACHINEI(int __cdecl _inp(unsigned short))
     __MACHINEI(int __cdecl inp(unsigned short))
-    __MACHINEI(unsigned long __cdecl _inpd(unsigned short))
-    __MACHINEI(unsigned long __cdecl inpd(unsigned short))
+    __MACHINEI(unsigned __LONG32 __cdecl _inpd(unsigned short))
+    __MACHINEI(unsigned __LONG32 __cdecl inpd(unsigned short))
     __MACHINEI(unsigned short __cdecl _inpw(unsigned short))
     __MACHINEI(unsigned short __cdecl inpw(unsigned short))
     __MACHINEIA64(int __isNat(int))
@@ -303,7 +426,6 @@ extern "C" {
     __MACHINECE(int _isnanf(float))
     __MACHINECE(int _isunordered(double,double))
     __MACHINECE(int _isunorderedf(float,float))
-    __MACHINE(long __cdecl labs(long))
     __MACHINEIA64(void __lfetch(int,void const *))
     __MACHINEIA64(void __lfetchfault(int,void const *))
     __MACHINEIA64(void __lfetch_excl(int,void const *))
@@ -312,19 +434,8 @@ extern "C" {
     __MACHINEIA64(__MINGW_EXTENSION __int64 __load128_acq(void *,__int64 *))
     __MACHINEZ(void __cdecl longjmp(jmp_buf,int))
 
-#pragma push_macro ("_lrotl")
-#undef _lrotl
-#pragma push_macro ("_lrotr")
-#undef _lrotr
-#ifdef __x86_64__
-    __MACHINE(__MINGW_EXTENSION unsigned long long __cdecl _lrotl(unsigned long long,int))
-    __MACHINE(__MINGW_EXTENSION unsigned long long __cdecl _lrotr(unsigned long long,int))
-#else
-    __MACHINE(unsigned long __cdecl _lrotl(unsigned long,int))
-    __MACHINE(unsigned long __cdecl _lrotr(unsigned long,int))
-#endif
-#pragma pop_macro ("_lrotl")
-#pragma pop_macro ("_lrotr")
+    /* __MACHINE(unsigned long __cdecl _lrotl(unsigned long,int)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINE(unsigned long __cdecl _lrotr(unsigned long,int)) moved to psdk_inc/intrin-impl.h */
 
     __MACHINEI(__MINGW_EXTENSION unsigned __int64 __ll_lshift(unsigned __int64,int))
     __MACHINEI(__MINGW_EXTENSION __int64 __ll_rshift(__int64,int))
@@ -366,18 +477,14 @@ extern "C" {
     __MACHINEIA64(__m64 __m64_psub2uus(__m64,__m64))
     __MACHINEIA64(__m64 __m64_shladd(__m64,const int,__m64))
     __MACHINEIA64(__m64 __m64_shrp(__m64,__m64,const int))
-    __MACHINECE(_CONST_RETURN void *__cdecl memchr(const void *,int,size_t))
-    __MACHINE(int __cdecl memcmp(const void *,const void *,size_t))
-    __MACHINE(void *__cdecl memcpy(void * __restrict__ ,const void * __restrict__ ,size_t))
-    __MACHINE(void *__cdecl memset(void *,int,size_t))
     __MACHINEIA64(void __mf(void))
     __MACHINEIA64(void __mfa(void))
     __MACHINECE(long _MulHigh(long,long))
     __MACHINECE(unsigned long _MulUnsignedHigh (unsigned long,unsigned long))
     __MACHINEI(int __cdecl _outp(unsigned short,int))
     __MACHINEI(int __cdecl outp(unsigned short,int))
-    __MACHINEI(unsigned long __cdecl _outpd(unsigned short,unsigned long))
-    __MACHINEI(unsigned long __cdecl outpd(unsigned short,unsigned long))
+    __MACHINEI(unsigned __LONG32 __cdecl _outpd(unsigned short,unsigned __LONG32))
+    __MACHINEI(unsigned __LONG32 __cdecl outpd(unsigned short,unsigned __LONG32))
     __MACHINEI(unsigned short __cdecl _outpw(unsigned short,unsigned short))
     __MACHINEI(unsigned short __cdecl outpw(unsigned short,unsigned short))
     __MACHINECE(void __cdecl __prefetch(unsigned long *addr))
@@ -388,7 +495,7 @@ extern "C" {
     __MACHINEIA64(__MINGW_EXTENSION void __ptri(__int64,__int64))
     __MACHINEIA64(void *_rdteb(void))
     __MACHINESA(int _ReadStatusReg(int))
-    __MACHINECE(void _ReadWriteBarrier(void))
+    /* __MACHINECE(void _ReadWriteBarrier(void)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIA64(__MINGW_EXTENSION void _ReleaseSpinLock(unsigned __int64 *))
     __MACHINEI(void *_ReturnAddress(void))
     __MACHINEIA64(void *_ReturnAddress(void))
@@ -404,12 +511,13 @@ extern "C" {
 #pragma pop_macro ("_rotr")
 #undef _rotl64
 #undef _rotr64
-    __MACHINECE(__MINGW_EXTENSION unsigned __int64 __cdecl _rotl64(unsigned __int64,int))
-    __MACHINECE(__MINGW_EXTENSION unsigned __int64 __cdecl _rotr64(unsigned __int64,int))
+    __MACHINE(__MINGW_EXTENSION unsigned __int64 __cdecl _rotl64(unsigned __int64,int))
+    __MACHINE(__MINGW_EXTENSION unsigned __int64 __cdecl _rotr64(unsigned __int64,int))
 #define _rotl64 __rolq
 #define _rotr64 __rorq
     __MACHINEIA64(void __rsm(int))
     __MACHINEIA64(void __rum(int))
+#ifndef __CYGWIN__
 #ifndef USE_NO_MINGW_SETJMP_TWO_ARGS
     __MACHINE(int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmp(jmp_buf,void *))
     __MACHINEIA64(int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmpex(jmp_buf,void *))
@@ -418,6 +526,7 @@ extern "C" {
     __MACHINE(int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmp(jmp_buf))
     __MACHINEIA64(int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmpex(jmp_buf))
     __MACHINEX64(int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmpex(jmp_buf))
+#endif
 #endif
     __MACHINEIA64(__MINGW_EXTENSION void __setReg(int,unsigned __int64))
     __MACHINEARMX(void _SmulAdd_SL_ACC(int,int))
@@ -428,12 +537,6 @@ extern "C" {
     __MACHINEARMX(void _SmulAddLoHi_SW_ACC(int,int))
     __MACHINEIA64(__MINGW_EXTENSION void __store128(void *,__int64,__int64))
     __MACHINEIA64(__MINGW_EXTENSION void __store128_rel(void *,__int64,__int64))
-    __MACHINE(char *__cdecl strcat(char *,const char *))
-    __MACHINE(int __cdecl strcmp(const char *,const char *))
-    __MACHINE(char *__cdecl strcpy(char * __restrict__ ,const char * __restrict__ ))
-    __MACHINE(size_t __cdecl strlen(const char *))
-    __MACHINECE(int __cdecl strncmp(const char *,const char *,size_t))
-    __MACHINECE(char *__cdecl strncpy(char * __restrict__ ,const char * __restrict__ ,size_t))
     __MACHINE(char *__cdecl _strset(char *,int))
     __MACHINE(char *__cdecl strset(char *,int))
     __MACHINEIA64(void __ssm(int))
@@ -452,12 +555,13 @@ extern "C" {
     __MACHINECE(int __cdecl wcsncmp(const wchar_t *,const wchar_t *,size_t))
     __MACHINECE(wchar_t *__cdecl wcsncpy(wchar_t * __restrict__ ,const wchar_t * __restrict__ ,size_t))
     __MACHINECE(wchar_t *__cdecl _wcsset(wchar_t *,wchar_t))
-    __MACHINECE(void _WriteBarrier(void))
+    /* __MACHINECE(void _WriteBarrier(void)) moved to psdk_inc/intrin-impl.h */
     __MACHINESA(void _WriteStatusReg(int,int,int))
     __MACHINEI(void *_AddressOfReturnAddress(void))
     __MACHINEIA64(void __yield(void))
     __MACHINEIA64(void __fci(void*))
 
+#if !defined(__GNUC__) || (!defined(__MMX__) && !defined(__MINGW_FORCE_SYS_INTRINS))
     __MACHINEX86X_NOX64(void _m_empty(void))
     __MACHINEX86X_NOX64(__m64 _m_from_int(int))
     __MACHINEX86X_NOX64(int _m_to_int(__m64))
@@ -523,6 +627,8 @@ extern "C" {
     __MACHINEX86X_NOX64(__m64 _mm_setr_pi32(int,int))
     __MACHINEX86X_NOX64(__m64 _mm_setr_pi16(short,short,short,short))
     __MACHINEX86X_NOX64(__m64 _mm_setr_pi8(char,char,char,char,char,char,char,char))
+#endif
+#if !defined(__GNUC__) || (!defined(__SSE__) && !defined(__MINGW_FORCE_SYS_INTRINS))
 #pragma push_macro ("_m_pextrw")
 #undef _m_pextrw
     __MACHINEX86X_NOX64(int _m_pextrw(__m64,int))
@@ -546,8 +652,8 @@ extern "C" {
     __MACHINEX86X_NOX64(__m64 _m_pavgb(__m64,__m64))
     __MACHINEX86X_NOX64(__m64 _m_pavgw(__m64,__m64))
     __MACHINEX86X_NOX64(__m64 _m_psadbw(__m64,__m64))
-    __MACHINEX86X_NOWIN64(__m64 _m_from_float(float))
-    __MACHINEX86X_NOWIN64(float _m_to_float(__m64))
+#endif
+#if !defined(__GNUC__) || (!defined(__SSE__) && !defined(__MINGW_FORCE_SYS_INTRINS))
     __MACHINEX86X_NOIA64(__m128 _mm_add_ss(__m128,__m128))
     __MACHINEX86X_NOIA64(__m128 _mm_add_ps(__m128,__m128))
     __MACHINEX86X_NOIA64(__m128 _mm_sub_ss(__m128,__m128))
@@ -647,6 +753,10 @@ extern "C" {
     __MACHINEX86X_NOIA64(void _mm_setcsr(unsigned int))
     __MACHINEX86X_NOIA64(__m128 _mm_movelh_ps(__m128,__m128))
     __MACHINEX86X_NOIA64(__m128 _mm_movehl_ps(__m128,__m128))
+#endif
+#if !defined(__GNUC__) || (!defined(__3dNOW__) && !defined(__MINGW_FORCE_SYS_INTRINS))
+    __MACHINEX86X_NOWIN64(__m64 _m_from_float(float))
+    __MACHINEX86X_NOWIN64(float _m_to_float(__m64))
     __MACHINEX86X_NOIA64(void _m_prefetch(void*))
     __MACHINEX86X_NOIA64(void _m_prefetchw(void*_Source))
     __MACHINEX86X_NOWIN64(void _m_femms(void))
@@ -669,11 +779,13 @@ extern "C" {
     __MACHINEX86X_NOWIN64(__m64 _m_pfsubr(__m64,__m64))
     __MACHINEX86X_NOWIN64(__m64 _m_pi2fd(__m64))
     __MACHINEX86X_NOWIN64(__m64 _m_pmulhrw(__m64,__m64))
+#endif
     __MACHINEX86X_NOWIN64(__m64 _m_pf2iw(__m64))
     __MACHINEX86X_NOWIN64(__m64 _m_pfnacc(__m64,__m64))
     __MACHINEX86X_NOWIN64(__m64 _m_pfpnacc(__m64,__m64))
     __MACHINEX86X_NOWIN64(__m64 _m_pi2fw(__m64))
     __MACHINEX86X_NOWIN64(__m64 _m_pswapd(__m64))
+#if !defined(__GNUC__) || (!defined(__SSE2__) && !defined(__MINGW_FORCE_SYS_INTRINS))
     __MACHINEX86X(__m128d _mm_add_sd(__m128d,__m128d))
     __MACHINEX86X(__m128d _mm_add_pd(__m128d,__m128d))
     __MACHINEX86X(__m128d _mm_div_sd(__m128d,__m128d))
@@ -747,7 +859,7 @@ extern "C" {
     __MACHINEX86X(__m128d _mm_unpackhi_pd(__m128d,__m128d))
     __MACHINEX86X(__m128d _mm_unpacklo_pd(__m128d,__m128d))
     __MACHINEX86X(int _mm_movemask_pd(__m128d))
-    //		__MACHINEX86X(__m128d _mm_shuffle_pd(__m128d,__m128d,int))
+    /*		__MACHINEX86X(__m128d _mm_shuffle_pd(__m128d,__m128d,int)) */
     __MACHINEX86X(__m128d _mm_load_pd(double const*))
     __MACHINEX86X(__m128d _mm_load1_pd(double const*))
     __MACHINEX86X(__m128d _mm_loadr_pd(double const*))
@@ -771,7 +883,13 @@ extern "C" {
     __MACHINEX86X(__m128i _mm_add_epi8(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_add_epi16(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_add_epi32(__m128i,__m128i))
+#endif
+
+#if !defined(__GNUC__) || (!defined(__MMX__) && !defined(__MINGW_FORCE_SYS_INTRINS))
     __MACHINEX86X_NOX64(__m64 _mm_add_si64(__m64,__m64))
+#endif
+
+#if !defined(__GNUC__) || (!defined(__SSE2__) && !defined(__MINGW_FORCE_SYS_INTRINS))
     __MACHINEX86X(__m128i _mm_add_epi64(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_adds_epi8(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_adds_epi16(__m128i,__m128i))
@@ -793,7 +911,11 @@ extern "C" {
     __MACHINEX86X(__m128i _mm_sub_epi8(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_sub_epi16(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_sub_epi32(__m128i,__m128i))
+#endif
+#if !defined(__GNUC__) || (!defined(__MMX__) && !defined(__MINGW_FORCE_SYS_INTRINS))
     __MACHINEX86X_NOX64(__m64 _mm_sub_si64(__m64,__m64))
+#endif
+#if !defined(__GNUC__) || (!defined(__SSE2__) && !defined(__MINGW_FORCE_SYS_INTRINS))
     __MACHINEX86X(__m128i _mm_sub_epi64(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_subs_epi8(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_subs_epi16(__m128i,__m128i))
@@ -803,23 +925,23 @@ extern "C" {
     __MACHINEX86X(__m128i _mm_and_si128(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_or_si128(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_xor_si128(__m128i,__m128i))
-    //		__MACHINEX86X(__m128i _mm_slli_si128(__m128i,int))
-//    __MACHINEX86X(__m128i _mm_slli_epi16(__m128i,int))
+    /*		__MACHINEX86X(__m128i _mm_slli_si128(__m128i,int)) */
+/*    __MACHINEX86X(__m128i _mm_slli_epi16(__m128i,int)) */
     __MACHINEX86X(__m128i _mm_sll_epi16(__m128i,__m128i))
-//    __MACHINEX86X(__m128i _mm_slli_epi32(__m128i,int))
+/*    __MACHINEX86X(__m128i _mm_slli_epi32(__m128i,int)) */
     __MACHINEX86X(__m128i _mm_sll_epi32(__m128i,__m128i))
-//    __MACHINEX86X(__m128i _mm_slli_epi64(__m128i,int))
+/*    __MACHINEX86X(__m128i _mm_slli_epi64(__m128i,int)) */
     __MACHINEX86X(__m128i _mm_sll_epi64(__m128i,__m128i))
-//    __MACHINEX86X(__m128i _mm_srai_epi16(__m128i,int))
+/*    __MACHINEX86X(__m128i _mm_srai_epi16(__m128i,int)) */
     __MACHINEX86X(__m128i _mm_sra_epi16(__m128i,__m128i))
-//    __MACHINEX86X(__m128i _mm_srai_epi32(__m128i,int))
+/*    __MACHINEX86X(__m128i _mm_srai_epi32(__m128i,int)) */
     __MACHINEX86X(__m128i _mm_sra_epi32(__m128i,__m128i))
-    //		__MACHINEX86X(__m128i _mm_srli_si128(__m128i,int))
-//    __MACHINEX86X(__m128i _mm_srli_epi16(__m128i,int))
+    /*		__MACHINEX86X(__m128i _mm_srli_si128(__m128i,int)) */
+/*    __MACHINEX86X(__m128i _mm_srli_epi16(__m128i,int)) */
     __MACHINEX86X(__m128i _mm_srl_epi16(__m128i,__m128i))
-//    __MACHINEX86X(__m128i _mm_srli_epi32(__m128i,int))
+/*    __MACHINEX86X(__m128i _mm_srli_epi32(__m128i,int)) */
     __MACHINEX86X(__m128i _mm_srl_epi32(__m128i,__m128i))
-//    __MACHINEX86X(__m128i _mm_srli_epi64(__m128i,int))
+/*    __MACHINEX86X(__m128i _mm_srli_epi64(__m128i,int)) */
     __MACHINEX86X(__m128i _mm_srl_epi64(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_cmpeq_epi8(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_cmpeq_epi16(__m128i,__m128i))
@@ -835,12 +957,12 @@ extern "C" {
     __MACHINEX86X(__m128i _mm_packs_epi16(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_packs_epi32(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_packus_epi16(__m128i,__m128i))
-    //		__MACHINEX86X(int _mm_extract_epi16(__m128i,int))
-    //		__MACHINEX86X(__m128i _mm_insert_epi16(__m128i,int,int))
+    /*		__MACHINEX86X(int _mm_extract_epi16(__m128i,int)) */
+    /*		__MACHINEX86X(__m128i _mm_insert_epi16(__m128i,int,int)) */
     __MACHINEX86X(int _mm_movemask_epi8(__m128i))
-    //		__MACHINEX86X(__m128i _mm_shuffle_epi32(__m128i,int))
-    //		__MACHINEX86X(__m128i _mm_shufflehi_epi16(__m128i,int))
-    //		__MACHINEX86X(__m128i _mm_shufflelo_epi16(__m128i,int))
+    /*		__MACHINEX86X(__m128i _mm_shuffle_epi32(__m128i,int)) */
+    /*		__MACHINEX86X(__m128i _mm_shufflehi_epi16(__m128i,int)) */
+    /*		__MACHINEX86X(__m128i _mm_shufflelo_epi16(__m128i,int)) */
     __MACHINEX86X(__m128i _mm_unpackhi_epi8(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_unpackhi_epi16(__m128i,__m128i))
     __MACHINEX86X(__m128i _mm_unpackhi_epi32(__m128i,__m128i))
@@ -879,7 +1001,11 @@ extern "C" {
     __MACHINEX86X(void _mm_lfence(void))
     __MACHINEX86X(void _mm_mfence(void))
     __MACHINEX86X(void _mm_stream_si32(int*,int))
+#endif
+#if !defined(__GNUC__) || (!defined(__SSE__) && !defined(__MINGW_FORCE_SYS_INTRINS))
     __MACHINEX86X(void _mm_pause(void))
+#endif
+#if !defined(__GNUC__) || (!defined(__SSE3__) && !defined(__MINGW_FORCE_SYS_INTRINS))
     __MACHINEX86X(__m128 _mm_addsub_ps(__m128,__m128))
     __MACHINEX86X(__m128d _mm_addsub_pd(__m128d,__m128d))
     __MACHINEX86X(__m128 _mm_hadd_ps(__m128,__m128))
@@ -893,59 +1019,65 @@ extern "C" {
     __MACHINEX86X(__m128 _mm_movehdup_ps(__m128))
     __MACHINEX86X(__m128 _mm_moveldup_ps(__m128))
     __MACHINEX86X(void _mm_mwait(unsigned int,unsigned int))
-    __MACHINEI(void _WriteBarrier(void))
-    __MACHINEI(void _ReadWriteBarrier(void))
-    __MACHINEIA64(void _WriteBarrier(void))
-    __MACHINEIA64(void _ReadWriteBarrier(void))
-    __MACHINEX64(void __faststorefence(void))
+#endif
+    /* __MACHINEI(void _WriteBarrier(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void _ReadWriteBarrier(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA64(void _WriteBarrier(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA64(void _ReadWriteBarrier(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(void __faststorefence(void)) moved to psdk_inc/intrin-impl.h */
     __MACHINEX64(__MINGW_EXTENSION __int64 __mulh(__int64,__int64))
     __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __umulh(unsigned __int64,unsigned __int64))
-    __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readcr0(void))
-    __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readcr2(void))
-    __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readcr3(void))
-    __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readcr4(void))
-    __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readcr8(void))
-    __MACHINEIA32(unsigned long __readcr0(void))
-    __MACHINEIA32(unsigned long __readcr2(void))
-    __MACHINEIA32(unsigned long __readcr3(void))
-    __MACHINEIA32(unsigned long __readcr4(void))
-    __MACHINEX64(__MINGW_EXTENSION void __writecr0(unsigned __int64))
-    __MACHINEX64(__MINGW_EXTENSION void __writecr3(unsigned __int64))
-    __MACHINEX64(__MINGW_EXTENSION void __writecr4(unsigned __int64))
-    __MACHINEX64(__MINGW_EXTENSION void __writecr8(unsigned __int64))
-    __MACHINEIA32(void __writecr0(unsigned))
-    __MACHINEIA32(void __writecr3(unsigned))
-    __MACHINEIA32(void __writecr4(unsigned))
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readcr0(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readcr2(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readcr3(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readcr4(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readcr8(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(unsigned __LONG32 __readcr0(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(unsigned __LONG32 __readcr2(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(unsigned __LONG32 __readcr3(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(unsigned __LONG32 __readcr4(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(unsigned __LONG32 __readcr8(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION void __writecr0(unsigned __int64)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION void __writecr3(unsigned __int64)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION void __writecr4(unsigned __int64)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION void __writecr8(unsigned __int64)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(void __writecr0(unsigned)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(void __writecr3(unsigned)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(void __writecr4(unsigned)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(void __writecr8(unsigned)) moved to psdk_inc/intrin-impl.h */
     __MACHINEI(void __wbinvd(void))
     __MACHINEI(void __invlpg(void*))
-    __MACHINEI(__MINGW_EXTENSION unsigned __int64 __readmsr(unsigned long))
-    __MACHINEI(__MINGW_EXTENSION void __writemsr(unsigned long,unsigned __int64))
-    __MACHINEI(__MINGW_EXTENSION unsigned __int64 __rdtsc(void))
-    __MACHINEI(void __movsb(unsigned char *,unsigned char const *,size_t))
-    __MACHINEI(void __movsw(unsigned short *,unsigned short const *,size_t))
-    __MACHINEI(void __movsd(unsigned long *,unsigned long const *,size_t))
-    __MACHINEX64(__MINGW_EXTENSION void __movsq(unsigned long long *,unsigned long long const *,size_t))
-    __MACHINEX64(unsigned char __readgsbyte(unsigned long Offset))
-    __MACHINEX64(unsigned short __readgsword(unsigned long Offset))
-    __MACHINEX64(unsigned long __readgsdword(unsigned long Offset))
-    __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readgsqword(unsigned long Offset))
-    __MACHINEX64(void __writegsbyte(unsigned long Offset,unsigned char Data))
-    __MACHINEX64(void __writegsword(unsigned long Offset,unsigned short Data))
-    __MACHINEX64(void __writegsdword(unsigned long Offset,unsigned long Data))
-    __MACHINEX64(__MINGW_EXTENSION void __writegsqword(unsigned long Offset,unsigned __int64 Data))
-    __MACHINEI(unsigned char __inbyte(unsigned short Port))
-    __MACHINEI(unsigned short __inword(unsigned short Port))
-    __MACHINEI(unsigned long __indword(unsigned short Port))
-    __MACHINEI(void __outbyte(unsigned short Port,unsigned char Data))
-    __MACHINEI(void __outword(unsigned short Port,unsigned short Data))
-    __MACHINEI(void __outdword(unsigned short Port,unsigned long Data))
-    __MACHINEI(void __inbytestring(unsigned short Port,unsigned char *Buffer,unsigned long Count))
-    __MACHINEI(void __inwordstring(unsigned short Port,unsigned short *Buffer,unsigned long Count))
-    __MACHINEI(void __indwordstring(unsigned short Port,unsigned long *Buffer,unsigned long Count))
-    __MACHINEI(void __outbytestring(unsigned short Port,unsigned char *Buffer,unsigned long Count))
-    __MACHINEI(void __outwordstring(unsigned short Port,unsigned short *Buffer,unsigned long Count))
-    __MACHINEI(void __outdwordstring(unsigned short Port,unsigned long *Buffer,unsigned long Count))
+    /* __MACHINEI(__MINGW_EXTENSION unsigned __int64 __readmsr(unsigned __LONG32)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(__MINGW_EXTENSION void __writemsr(unsigned __LONG32,unsigned __int64)) moved to psdk_inc/intrin-impl.h */
+#ifndef __GNUC__
+    __MACHINEIW64(__MINGW_EXTENSION unsigned __int64 __rdtsc(void))
+#endif
+    /* __MACHINEI(void __movsb(unsigned char *,unsigned char const *,size_t)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __movsw(unsigned short *,unsigned short const *,size_t)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __movsd(unsigned __LONG32 *,unsigned __LONG32 const *,size_t)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION void __movsq(unsigned long long *,unsigned long long const *,size_t)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(unsigned char __readgsbyte(unsigned __LONG32 Offset)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(unsigned short __readgsword(unsigned __LONG32 Offset)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(unsigned __LONG32 __readgsdword(unsigned __LONG32 Offset)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned __int64 __readgsqword(unsigned __LONG32 Offset)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(void __writegsbyte(unsigned __LONG32 Offset,unsigned char Data)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(void __writegsword(unsigned __LONG32 Offset,unsigned short Data)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(void __writegsdword(unsigned __LONG32 Offset,unsigned __LONG32 Data)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION void __writegsqword(unsigned __LONG32 Offset,unsigned __int64 Data)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(unsigned char __inbyte(unsigned short Port)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(unsigned short __inword(unsigned short Port)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(unsigned __LONG32 __indword(unsigned short Port)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __outbyte(unsigned short Port,unsigned char Data)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __outword(unsigned short Port,unsigned short Data)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __outdword(unsigned short Port,unsigned __LONG32 Data)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __inbytestring(unsigned short Port,unsigned char *Buffer,unsigned __LONG32 Count)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __inwordstring(unsigned short Port,unsigned short *Buffer,unsigned __LONG32 Count)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __indwordstring(unsigned short Port,unsigned __LONG32 *Buffer,unsigned __LONG32 Count)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __outbytestring(unsigned short Port,unsigned char *Buffer,unsigned __LONG32 Count)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __outwordstring(unsigned short Port,unsigned short *Buffer,unsigned __LONG32 Count)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __outdwordstring(unsigned short Port,unsigned __LONG32 *Buffer,unsigned __LONG32 Count)) moved to psdk_inc/intrin-impl.h */
     __MACHINEI(unsigned int __getcallerseflags())
+#if !defined(__GNUC__) || (!defined(__SSE2__) && !defined(__MINGW_FORCE_SYS_INTRINS))
     __MACHINEX64(__MINGW_EXTENSION __m128i _mm_set_epi64x(__int64 i1,__int64 i0))
     __MACHINEX64(__MINGW_EXTENSION __m128i _mm_set1_epi64x(__int64 i))
     __MACHINEX64(__MINGW_EXTENSION __int64 _mm_cvtsd_si64x(__m128d a))
@@ -956,62 +1088,65 @@ extern "C" {
     __MACHINEX64(__MINGW_EXTENSION __int64 _mm_cvttss_si64x(__m128 a))
     __MACHINEX64(__MINGW_EXTENSION __m128i _mm_cvtsi64x_si128(__int64 a))
     __MACHINEX64(__MINGW_EXTENSION __int64 _mm_cvtsi128_si64x(__m128i a))
+#endif
     __MACHINEX64(__MINGW_EXTENSION void _mm_stream_si64x(__int64 *,__int64))
-    __MACHINEI(void __stosb(unsigned char *,unsigned char,size_t))
-    __MACHINEI(void __stosw(unsigned short *,unsigned short,size_t))
-    __MACHINEI(void __stosd(unsigned long *,unsigned long,size_t))
-    __MACHINEX64(__MINGW_EXTENSION void __stosq(unsigned __int64 *,unsigned __int64,size_t))
-    __MACHINEIW64(unsigned char _bittest(long const *a,long b))
-    __MACHINEIW64(unsigned char _bittestandset(long *a,long b))
-    __MACHINEIW64(unsigned char _bittestandreset(long *a,long b))
-    __MACHINEIW64(unsigned char _bittestandcomplement(long *a,long b))
-    __MACHINEI(unsigned char _interlockedbittestandset(long *a,long b))
-    __MACHINEI(unsigned char _interlockedbittestandreset(long *a,long b))
-    __MACHINEW64(__MINGW_EXTENSION unsigned char _bittest64(__int64 const *a,__int64 b))
-    __MACHINEW64(__MINGW_EXTENSION unsigned char _bittestandset64(__int64 *a,__int64 b))
-    __MACHINEW64(__MINGW_EXTENSION unsigned char _bittestandreset64(__int64 *a,__int64 b))
-    __MACHINEW64(__MINGW_EXTENSION unsigned char _bittestandcomplement64(__int64 *a,__int64 b))
-    __MACHINEX64(__MINGW_EXTENSION unsigned char _interlockedbittestandset64(__int64 *a,__int64 b))
-    __MACHINEX64(__MINGW_EXTENSION unsigned char _interlockedbittestandreset64(__int64 *a,__int64 b))
+    /* __MACHINEI(void __stosb(unsigned char *,unsigned char,size_t)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __stosw(unsigned short *,unsigned short,size_t)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __stosd(unsigned __LONG32 *,unsigned __LONG32,size_t)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION void __stosq(unsigned __int64 *,unsigned __int64,size_t)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIW64(unsigned char _bittest(__LONG32 const *a,__LONG32 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIW64(unsigned char _bittestandset(__LONG32 *a,__LONG32 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIW64(unsigned char _bittestandreset(__LONG32 *a,__LONG32 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIW64(unsigned char _bittestandcomplement(__LONG32 *a,__LONG32 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(unsigned char InterlockedBitTestAndSet(volatile __LONG32 *a,__LONG32 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(unsigned char InterlockedBitTestAndReset(volatile __LONG32 *a,__LONG32 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(unsigned char InterlockedBitTestAndComplement(volatile __LONG32 *a,__LONG32 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(unsigned char _interlockedbittestandset(__LONG32 *a,__LONG32 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(unsigned char _interlockedbittestandreset(__LONG32 *a,__LONG32 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(unsigned char _interlockedbittestandcomplement(__LONG32 *a,__LONG32 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEW64(__MINGW_EXTENSION unsigned char _bittest64(__int64 const *a,__int64 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEW64(__MINGW_EXTENSION unsigned char _bittestandset64(__int64 *a,__int64 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEW64(__MINGW_EXTENSION unsigned char _bittestandreset64(__int64 *a,__int64 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEW64(__MINGW_EXTENSION unsigned char _bittestandcomplement64(__int64 *a,__int64 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned char InterlockedBitTestAndSet64(volatile __int64 *a,__int64 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned char InterlockedBitTestAndReset64(volatile __int64 *a,__int64 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned char InterlockedBitTestAndComplement64(volatile __int64 *a,__int64 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned char _interlockedbittestandset64(__int64 *a,__int64 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned char _interlockedbittestandreset64(__int64 *a,__int64 b)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEX64(__MINGW_EXTENSION unsigned char _interlockedbittestandcomplement64(__int64 *a,__int64 b)) moved to psdk_inc/intrin-impl.h */
     __MACHINEI(void __cpuid(int a[4],int b))
-    __MACHINEI(__MINGW_EXTENSION unsigned __int64 __readpmc(unsigned long a))
-    __MACHINEI(unsigned long __segmentlimit(unsigned long a))
+    __MACHINEI(__MINGW_EXTENSION unsigned __int64 __readpmc(unsigned __LONG32 a))
+    __MACHINEI(unsigned __LONG32 __segmentlimit(unsigned __LONG32 a))
 
-    __MACHINEIA32(unsigned char __readfsbyte(unsigned long Offset))
-    __MACHINEIA32(unsigned short __readfsword(unsigned long Offset))
-    __MACHINEIA32(unsigned long __readfsdword(unsigned long Offset))
-    __MACHINEIA32(__MINGW_EXTENSION unsigned __int64 __readfsqword(unsigned long Offset))
-    __MACHINEIA32(void __writefsbyte(unsigned long Offset,unsigned char Data))
-    __MACHINEIA32(void __writefsword(unsigned long Offset,unsigned short Data))
-    __MACHINEIA32(void __writefsdword(unsigned long Offset,unsigned long Data))
-    __MACHINEIA32(__MINGW_EXTENSION void __writefsqword(unsigned long Offset,unsigned __int64 Data))
+    /* __MACHINEIA32(unsigned char __readfsbyte(unsigned __LONG32 Offset)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(unsigned short __readfsword(unsigned __LONG32 Offset)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(unsigned __LONG32 __readfsdword(unsigned __LONG32 Offset)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(__MINGW_EXTENSION unsigned __int64 __readfsqword(unsigned __LONG32 Offset)) intrinsic doesn't actually exist */
+    /* __MACHINEIA32(void __writefsbyte(unsigned __LONG32 Offset,unsigned char Data)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(void __writefsword(unsigned __LONG32 Offset,unsigned short Data)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(void __writefsdword(unsigned __LONG32 Offset,unsigned __LONG32 Data)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIA32(__MINGW_EXTENSION void __writefsqword(unsigned __LONG32 Offset,unsigned __int64 Data)) intrinsic doesn't actually exist */
 
-    __MACHINE(__MINGW_EXTENSION unsigned __int64 __cdecl _rotl64(unsigned __int64,int))
-    __MACHINE(__MINGW_EXTENSION unsigned __int64 __cdecl _rotr64(unsigned __int64,int))
     __MACHINE(__MINGW_EXTENSION __int64 __cdecl _abs64(__int64))
 
-    __MACHINEIW64(unsigned char _BitScanForward(unsigned long *Index,unsigned long Mask))
-    __MACHINEIW64(unsigned char _BitScanReverse(unsigned long *Index,unsigned long Mask))
-    __MACHINEW64(__MINGW_EXTENSION unsigned char _BitScanForward64(unsigned long *Index,unsigned __int64 Mask))
-    __MACHINEW64(__MINGW_EXTENSION unsigned char _BitScanReverse64(unsigned long *Index,unsigned __int64 Mask))
-    __MACHINEIW64(wchar_t *__cdecl wcscat(wchar_t * __restrict__ ,const wchar_t * __restrict__ ))
-    __MACHINEIW64(int __cdecl wcscmp(const wchar_t *,const wchar_t *))
-    __MACHINEIW64(wchar_t *__cdecl wcscpy(wchar_t * __restrict__ ,const wchar_t * __restrict__ ))
-    __MACHINEIW64(size_t __cdecl wcslen(const wchar_t *))
+    /* __MACHINEIW64(unsigned char _BitScanForward(unsigned __LONG32 *Index,unsigned __LONG32 Mask)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIW64(unsigned char _BitScanReverse(unsigned __LONG32 *Index,unsigned __LONG32 Mask)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEW64(__MINGW_EXTENSION unsigned char _BitScanForward64(unsigned __LONG32 *Index,unsigned __int64 Mask)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEW64(__MINGW_EXTENSION unsigned char _BitScanReverse64(unsigned __LONG32 *Index,unsigned __int64 Mask)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIW64(_CRTIMP wchar_t *__cdecl _wcsset(wchar_t *,wchar_t))
-    __MACHINEW64(__MINGW_EXTENSION unsigned __int64 __shiftleft128(unsigned __int64 LowPart,unsigned __int64 HighPart,unsigned char Shift))
-    __MACHINEW64(__MINGW_EXTENSION unsigned __int64 __shiftright128(unsigned __int64 LowPart,unsigned __int64 HighPart,unsigned char Shift))
-    __MACHINEW64(__MINGW_EXTENSION unsigned __int64 _umul128(unsigned __int64 multiplier,unsigned __int64 multiplicand,unsigned __int64 *highproduct))
-    __MACHINEW64(__MINGW_EXTENSION __int64 _mul128(__int64 multiplier,__int64 multiplicand,__int64 *highproduct))
-    __MACHINEI(void __int2c(void))
-    __MACHINEIW64(void _ReadBarrier(void))
+    /* __MACHINEW64(__MINGW_EXTENSION unsigned __int64 __shiftleft128(unsigned __int64 LowPart,unsigned __int64 HighPart,unsigned char Shift)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEW64(__MINGW_EXTENSION unsigned __int64 __shiftright128(unsigned __int64 LowPart,unsigned __int64 HighPart,unsigned char Shift)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEW64(__MINGW_EXTENSION unsigned __int64 _umul128(unsigned __int64 multiplier,unsigned __int64 multiplicand,unsigned __int64 *highproduct)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEW64(__MINGW_EXTENSION __int64 _mul128(__int64 multiplier,__int64 multiplicand,__int64 *highproduct)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEI(void __int2c(void)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIW64(void _ReadBarrier(void)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIW64(unsigned char _rotr8(unsigned char value,unsigned char shift))
     __MACHINEIW64(unsigned short _rotr16(unsigned short value,unsigned char shift))
     __MACHINEIW64(unsigned char _rotl8(unsigned char value,unsigned char shift))
     __MACHINEIW64(unsigned short _rotl16(unsigned short value,unsigned char shift))
-    __MACHINEIW64(short _InterlockedIncrement16(short volatile *Addend))
-    __MACHINEIW64(short _InterlockedDecrement16(short volatile *Addend))
-    __MACHINEIW64(short _InterlockedCompareExchange16(short volatile *Destination,short Exchange,short Comparand))
+    /* __MACHINEIW64(short _InterlockedIncrement16(short volatile *Addend)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIW64(short _InterlockedDecrement16(short volatile *Addend)) moved to psdk_inc/intrin-impl.h */
+    /* __MACHINEIW64(short _InterlockedCompareExchange16(short volatile *Destination,short Exchange,short Comparand)) moved to psdk_inc/intrin-impl.h */
     __MACHINEIA64(short _InterlockedIncrement16_acq(short volatile *Addend))
     __MACHINEIA64(short _InterlockedIncrement16_rel(short volatile *Addend))
     __MACHINEIA64(short _InterlockedDecrement16_acq(short volatile *Addend))
@@ -1167,21 +1302,21 @@ extern "C" {
     __MACHINEIW64(void __nvreg_restore_fence(void))
 
     __MACHINEX64(short _InterlockedCompareExchange16_np(short volatile *Destination,short Exchange,short Comparand))
-    __MACHINEX64(long _InterlockedCompareExchange_np (long *,long,long))
+    __MACHINEX64(__LONG32 _InterlockedCompareExchange_np (__LONG32 *,__LONG32,__LONG32))
     __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedCompareExchange64_np(__int64 *,__int64,__int64))
     __MACHINEX64(void *_InterlockedCompareExchangePointer_np (void **,void *,void *))
     __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedCompare64Exchange128_np(__int64 *Destination,__int64 ExchangeHigh,__int64 ExchangeLow,__int64 Comparand))
     __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedCompare64Exchange128_acq_np(__int64 *Destination,__int64 ExchangeHigh,__int64 ExchangeLow,__int64 Comparand))
     __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedCompare64Exchange128_rel_np(__int64 *Destination,__int64 ExchangeHigh,__int64 ExchangeLow,__int64 Comparand))
-    __MACHINEX64(long _InterlockedAnd_np(long *,long))
+    __MACHINEX64(__LONG32 _InterlockedAnd_np(__LONG32 *,__LONG32))
     __MACHINEX64(char _InterlockedAnd8_np(char *,char))
     __MACHINEX64(short _InterlockedAnd16_np(short *,short))
     __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedAnd64_np(__int64 *,__int64))
-    __MACHINEX64(long _InterlockedOr_np(long *,long))
+    __MACHINEX64(__LONG32 _InterlockedOr_np(__LONG32 *,__LONG32))
     __MACHINEX64(char _InterlockedOr8_np(char *,char))
     __MACHINEX64(short _InterlockedOr16_np(short *,short))
     __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedOr64_np(__int64 *,__int64))
-    __MACHINEX64(long _InterlockedXor_np(long *,long))
+    __MACHINEX64(__LONG32 _InterlockedXor_np(__LONG32 *,__LONG32))
     __MACHINEX64(char _InterlockedXor8_np(char *,char))
     __MACHINEX64(short _InterlockedXor16_np(short *,short))
     __MACHINEX64(__MINGW_EXTENSION __int64 _InterlockedXor64_np(__int64 *,__int64))

@@ -6,6 +6,7 @@ BEGIN {
 
     use constant IS_VMS         => $^O eq 'VMS'                       ? 1 : 0;
     use constant IS_WIN32       => $^O eq 'MSWin32'                   ? 1 : 0;
+    use constant IS_HPUX        => $^O eq 'hpux'                      ? 1 : 0;
     use constant IS_WIN98       => (IS_WIN32 and !Win32::IsWinNT())   ? 1 : 0;
     use constant ALARM_CLASS    => __PACKAGE__ . '::TimeOut';
     use constant SPECIAL_CHARS  => qw[< > | &];
@@ -15,9 +16,10 @@ BEGIN {
     use vars        qw[ @ISA $VERSION @EXPORT_OK $VERBOSE $DEBUG
                         $USE_IPC_RUN $USE_IPC_OPEN3 $CAN_USE_RUN_FORKED $WARN
                         $INSTANCES $ALLOW_NULL_ARGS
+                        $HAVE_MONOTONIC
                     ];
 
-    $VERSION        = '0.78';
+    $VERSION        = '1.02';
     $VERBOSE        = 0;
     $DEBUG          = 0;
     $WARN           = 1;
@@ -32,23 +34,34 @@ BEGIN {
         require IO::Select; IO::Select->import();
         require IO::Handle; IO::Handle->import();
         require FileHandle; FileHandle->import();
-        require Socket; Socket->import();
+        require Socket;
         require Time::HiRes; Time::HiRes->import();
         require Win32 if IS_WIN32;
     };
     $CAN_USE_RUN_FORKED = $@ || !IS_VMS && !IS_WIN32;
+
+    eval {
+        my $wait_start_time = Time::HiRes::clock_gettime(&Time::HiRes::CLOCK_MONOTONIC);
+    };
+    if ($@) {
+        $HAVE_MONOTONIC = 0;
+    }
+    else {
+        $HAVE_MONOTONIC = 1;
+    }
 
     @ISA            = qw[Exporter];
     @EXPORT_OK      = qw[can_run run run_forked QUOTE];
 }
 
 require Carp;
-use Socket;
 use File::Spec;
 use Params::Check               qw[check];
 use Text::ParseWords            ();             # import ONLY if needed!
 use Module::Load::Conditional   qw[can_load];
 use Locale::Maketext::Simple    Style => 'gettext';
+
+local $Module::Load::Conditional::FORCE_SAFE_INC = 1;
 
 =pod
 
@@ -84,6 +97,13 @@ IPC::Cmd - finding and running system commands made easy
     if( $success ) {
         print "this is what the command printed:\n";
         print join "", @$full_buf;
+    }
+
+    ### run_forked example ###
+    my $result = run_forked("$full_path -q -O - theregister.co.uk", {'timeout' => 20});
+    if ($result->{'exit_code'} eq 0 && !$result->{'timeout'}) {
+        print "this is what wget returned:\n";
+        print $result->{'stdout'};
     }
 
     ### check for features
@@ -124,7 +144,7 @@ sub can_use_ipc_run     {
     ### IPC::Run doesn't run on win98
     return if IS_WIN98;
 
-    ### if we dont have ipc::run, we obviously can't use it.
+    ### if we don't have ipc::run, we obviously can't use it.
     return unless can_load(
                         modules => { 'IPC::Run' => '0.55' },
                         verbose => ($WARN && $verbose),
@@ -150,7 +170,7 @@ sub can_use_ipc_open3   {
     ### IPC::Open3 is not working on VMS because of a lack of fork.
     return if IS_VMS;
 
-    ### IPC::Open3 works on every non-VMS platform platform, but it can't
+    ### IPC::Open3 works on every non-VMS platform, but it can't
     ### capture buffers on win32 :(
     return unless can_load(
         modules => { map {$_ => '0.0'} qw|IPC::Open3 IO::Select Symbol| },
@@ -212,7 +232,6 @@ sub can_run {
         return $command if scalar $syms->getsym( uc $command );
     }
 
-    require Config;
     require File::Spec;
     require ExtUtils::MakeMaker;
 
@@ -223,8 +242,8 @@ sub can_run {
 
     } else {
         for my $dir (
-            (split /\Q$Config::Config{path_sep}\E/, $ENV{PATH}),
-            File::Spec->curdir
+            File::Spec->path,
+            ( IS_WIN32 ? File::Spec->curdir : () )
         ) {
             next if ! $dir || ! -d $dir;
             my $abs = File::Spec->catfile( IS_WIN32 ? Win32::GetShortPathName( $dir ) : $dir, $command);
@@ -347,6 +366,50 @@ sub can_use_run_forked {
     return $CAN_USE_RUN_FORKED eq "1";
 }
 
+sub get_monotonic_time {
+    if ($HAVE_MONOTONIC) {
+        return Time::HiRes::clock_gettime(&Time::HiRes::CLOCK_MONOTONIC);
+    }
+    else {
+        return time();
+    }
+}
+
+sub adjust_monotonic_start_time {
+    my ($ref_vars, $now, $previous) = @_;
+
+    # workaround only for those systems which don't have
+    # Time::HiRes::CLOCK_MONOTONIC (Mac OSX in particular)
+    return if $HAVE_MONOTONIC;
+
+    # don't have previous monotonic value (only happens once
+    # in the beginning of the program execution)
+    return unless $previous;
+
+    my $time_diff = $now - $previous;
+
+    # adjust previously saved time with the skew value which is
+    # either negative when clock moved back or more than 5 seconds --
+    # assuming that event loop does happen more often than once
+    # per five seconds, which might not be always true (!) but
+    # hopefully that's ok, because it's just a workaround
+    if ($time_diff > 5 || $time_diff < 0) {
+        foreach my $ref_var (@{$ref_vars}) {
+            if (defined($$ref_var)) {
+                $$ref_var = $$ref_var + $time_diff;
+            }
+        }
+    }
+}
+
+sub uninstall_signals {
+		return unless defined($IPC::Cmd::{'__old_signals'});
+
+		foreach my $sig_name (keys %{$IPC::Cmd::{'__old_signals'}}) {
+				$SIG{$sig_name} = $IPC::Cmd::{'__old_signals'}->{$sig_name};
+		}
+}
+
 # incompatible with POSIX::SigAction
 #
 sub install_layered_signal {
@@ -354,10 +417,14 @@ sub install_layered_signal {
 
   my %available_signals = map {$_ => 1} keys %SIG;
 
-  die("install_layered_signal got nonexistent signal name [$s]")
+  Carp::confess("install_layered_signal got nonexistent signal name [$s]")
     unless defined($available_signals{$s});
-  die("install_layered_signal expects coderef")
+  Carp::confess("install_layered_signal expects coderef")
     if !ref($handler_code) || ref($handler_code) ne 'CODE';
+
+  $IPC::Cmd::{'__old_signals'} = {}
+  		unless defined($IPC::Cmd::{'__old_signals'});
+	$IPC::Cmd::{'__old_signals'}->{$s} = $SIG{$s};
 
   my $previous_handler = $SIG{$s};
 
@@ -414,14 +481,32 @@ sub kill_gently {
     kill(-15, $pid);
   }
 
+  my $do_wait = 1;
   my $child_finished = 0;
-  my $wait_start_time = time();
 
-  while (!$child_finished && $wait_start_time + $opts->{'wait_time'} > time()) {
-    my $waitpid = waitpid($pid, POSIX::WNOHANG);
-    if ($waitpid eq -1) {
-      $child_finished = 1;
+  my $wait_start_time = get_monotonic_time();
+  my $now;
+  my $previous_monotonic_value;
+
+  while ($do_wait) {
+    $previous_monotonic_value = $now;
+    $now = get_monotonic_time();
+
+    adjust_monotonic_start_time([\$wait_start_time], $now, $previous_monotonic_value);
+
+    if ($now > $wait_start_time + $opts->{'wait_time'}) {
+        $do_wait = 0;
+        next;
     }
+
+    my $waitpid = waitpid($pid, POSIX::WNOHANG);
+
+    if ($waitpid eq -1) {
+        $child_finished = 1;
+        $do_wait = 0;
+        next;
+    }
+
     Time::HiRes::usleep(250000); # quarter of a second
   }
 
@@ -436,173 +521,180 @@ sub kill_gently {
 }
 
 sub open3_run {
-  my ($cmd, $opts) = @_;
+    my ($cmd, $opts) = @_;
 
-  $opts = {} unless $opts;
+    $opts = {} unless $opts;
 
-  my $child_in = FileHandle->new;
-  my $child_out = FileHandle->new;
-  my $child_err = FileHandle->new;
-  $child_out->autoflush(1);
-  $child_err->autoflush(1);
+    my $child_in = FileHandle->new;
+    my $child_out = FileHandle->new;
+    my $child_err = FileHandle->new;
+    $child_out->autoflush(1);
+    $child_err->autoflush(1);
 
-  my $pid = open3($child_in, $child_out, $child_err, $cmd);
+    my $pid = open3($child_in, $child_out, $child_err, $cmd);
+    Time::HiRes::usleep(1) if IS_HPUX;
 
-  # push my child's pid to our parent
-  # so in case i am killed parent
-  # could stop my child (search for
-  # child_child_pid in parent code)
-  if ($opts->{'parent_info'}) {
-    my $ps = $opts->{'parent_info'};
-    print $ps "spawned $pid\n";
-  }
+    # will consider myself orphan if my ppid changes
+    # from this one:
+    my $original_ppid = $opts->{'original_ppid'};
 
-  if ($child_in && $child_out->opened && $opts->{'child_stdin'}) {
-
-    # If the child process dies for any reason,
-    # the next write to CHLD_IN is likely to generate
-    # a SIGPIPE in the parent, which is fatal by default.
-    # So you may wish to handle this signal.
-    #
-    # from http://perldoc.perl.org/IPC/Open3.html,
-    # absolutely needed to catch piped commands errors.
-    #
-    local $SIG{'PIPE'} = sub { 1; };
-
-    print $child_in $opts->{'child_stdin'};
-  }
-  close($child_in);
-
-  my $child_output = {
-    'out' => $child_out->fileno,
-    'err' => $child_err->fileno,
-    $child_out->fileno => {
-      'parent_socket' => $opts->{'parent_stdout'},
-      'scalar_buffer' => "",
-      'child_handle' => $child_out,
-      'block_size' => ($child_out->stat)[11] || 1024,
-      },
-    $child_err->fileno => {
-      'parent_socket' => $opts->{'parent_stderr'},
-      'scalar_buffer' => "",
-      'child_handle' => $child_err,
-      'block_size' => ($child_err->stat)[11] || 1024,
-      },
-    };
-
-  my $select = IO::Select->new();
-  $select->add($child_out, $child_err);
-
-  # pass any signal to the child
-  # effectively creating process
-  # strongly attached to the child:
-  # it will terminate only after child
-  # has terminated (except for SIGKILL,
-  # which is specially handled)
-  foreach my $s (keys %SIG) {
-    my $sig_handler;
-    $sig_handler = sub {
-      kill("$s", $pid);
-      $SIG{$s} = $sig_handler;
-    };
-    $SIG{$s} = $sig_handler;
-  }
-
-  my $child_finished = 0;
-
-  my $got_sig_child = 0;
-  $SIG{'CHLD'} = sub { $got_sig_child = time(); };
-
-  while(!$child_finished && ($child_out->opened || $child_err->opened)) {
-
-    # parent was killed otherwise we would have got
-    # the same signal as parent and process it same way
-    if (getppid() eq "1") {
-
-      # end my process group with all the children
-      # (i am the process group leader, so my pid
-      # equals to the process group id)
-      #
-      # same thing which is done
-      # with $opts->{'clean_up_children'}
-      # in run_forked
-      #
-      kill(-9, $$);
-
-      POSIX::_exit 1;
+    # push my child's pid to our parent
+    # so in case i am killed parent
+    # could stop my child (search for
+    # child_child_pid in parent code)
+    if ($opts->{'parent_info'}) {
+      my $ps = $opts->{'parent_info'};
+      print $ps "spawned $pid\n";
     }
 
-    if ($got_sig_child) {
-      if (time() - $got_sig_child > 1) {
-        # select->can_read doesn't return 0 after SIG_CHLD
+    if ($child_in && $child_out->opened && $opts->{'child_stdin'}) {
+        # If the child process dies for any reason,
+        # the next write to CHLD_IN is likely to generate
+        # a SIGPIPE in the parent, which is fatal by default.
+        # So you may wish to handle this signal.
         #
-        # "On POSIX-compliant platforms, SIGCHLD is the signal
-        # sent to a process when a child process terminates."
-        # http://en.wikipedia.org/wiki/SIGCHLD
+        # from http://perldoc.perl.org/IPC/Open3.html,
+        # absolutely needed to catch piped commands errors.
         #
-        # nevertheless kill KILL wouldn't break anything here
-        #
-        kill (9, $pid);
-        $child_finished = 1;
-      }
+        local $SIG{'PIPE'} = sub { 1; };
+
+        print $child_in $opts->{'child_stdin'};
+    }
+    close($child_in);
+
+    my $child_output = {
+        'out' => $child_out->fileno,
+        'err' => $child_err->fileno,
+        $child_out->fileno => {
+            'parent_socket' => $opts->{'parent_stdout'},
+            'scalar_buffer' => "",
+            'child_handle' => $child_out,
+            'block_size' => ($child_out->stat)[11] || 1024,
+          },
+        $child_err->fileno => {
+            'parent_socket' => $opts->{'parent_stderr'},
+            'scalar_buffer' => "",
+            'child_handle' => $child_err,
+            'block_size' => ($child_err->stat)[11] || 1024,
+          },
+        };
+
+    my $select = IO::Select->new();
+    $select->add($child_out, $child_err);
+
+    # pass any signal to the child
+    # effectively creating process
+    # strongly attached to the child:
+    # it will terminate only after child
+    # has terminated (except for SIGKILL,
+    # which is specially handled)
+    SIGNAL: foreach my $s (keys %SIG) {
+        next SIGNAL if $s eq '__WARN__' or $s eq '__DIE__'; # Skip and don't clobber __DIE__ & __WARN__
+        my $sig_handler;
+        $sig_handler = sub {
+            kill("$s", $pid);
+            $SIG{$s} = $sig_handler;
+        };
+        $SIG{$s} = $sig_handler;
     }
 
-    Time::HiRes::usleep(1);
+    my $child_finished = 0;
 
-    foreach my $fd ($select->can_read(1/100)) {
-      my $str = $child_output->{$fd->fileno};
-      psSnake::die("child stream not found: $fd") unless $str;
+    my $real_exit;
+    my $exit_value;
 
-      my $data;
-      my $count = $fd->sysread($data, $str->{'block_size'});
+    while(!$child_finished) {
 
-      if ($count) {
-        if ($str->{'parent_socket'}) {
-          my $ph = $str->{'parent_socket'};
-          print $ph $data;
+        # parent was killed otherwise we would have got
+        # the same signal as parent and process it same way
+        if (getppid() != $original_ppid) {
+
+          # end my process group with all the children
+          # (i am the process group leader, so my pid
+          # equals to the process group id)
+          #
+          # same thing which is done
+          # with $opts->{'clean_up_children'}
+          # in run_forked
+          #
+          kill(-9, $$);
+
+          POSIX::_exit 1;
         }
-        else {
-          $str->{'scalar_buffer'} .= $data;
+
+        my $waitpid = waitpid($pid, POSIX::WNOHANG);
+
+        # child finished, catch it's exit status
+        if ($waitpid ne 0 && $waitpid ne -1) {
+          $real_exit = $?;
+          $exit_value = $? >> 8;
         }
-      }
-      elsif ($count eq 0) {
-        $select->remove($fd);
-        $fd->close();
-      }
-      else {
-        psSnake::die("error during sysread: " . $!);
-      }
+
+        if ($waitpid eq -1) {
+          $child_finished = 1;
+        }
+
+
+        my $ready_fds = [];
+        push @{$ready_fds}, $select->can_read(1/100);
+
+        READY_FDS: while (scalar(@{$ready_fds})) {
+            my $fd = shift @{$ready_fds};
+            $ready_fds = [grep {$_ ne $fd} @{$ready_fds}];
+
+            my $str = $child_output->{$fd->fileno};
+            Carp::confess("child stream not found: $fd") unless $str;
+
+            my $data;
+            my $count = $fd->sysread($data, $str->{'block_size'});
+
+            if ($count) {
+                if ($str->{'parent_socket'}) {
+                    my $ph = $str->{'parent_socket'};
+                    print $ph $data;
+                }
+                else {
+                    $str->{'scalar_buffer'} .= $data;
+                }
+            }
+            elsif ($count eq 0) {
+                $select->remove($fd);
+                $fd->close();
+            }
+            else {
+                Carp::confess("error during sysread: " . $!);
+            }
+
+            push @{$ready_fds}, $select->can_read(1/100) if $child_finished;
+        }
+
+        Time::HiRes::usleep(1);
     }
-  }
 
-  my $waitpid_ret = waitpid($pid, 0);
-  my $real_exit = $?;
-  my $exit_value  = $real_exit >> 8;
+    # since we've successfully reaped the child,
+    # let our parent know about this.
+    #
+    if ($opts->{'parent_info'}) {
+        my $ps = $opts->{'parent_info'};
 
-  # since we've successfully reaped the child,
-  # let our parent know about this.
-  #
-  if ($opts->{'parent_info'}) {
-    my $ps = $opts->{'parent_info'};
+        # child was killed, inform parent
+        if ($real_exit & 127) {
+          print $ps "$pid killed with " . ($real_exit & 127) . "\n";
+        }
 
-    # child was killed, inform parent
-    if ($real_exit & 127) {
-      print $ps "$pid killed with " . ($real_exit & 127) . "\n";
+        print $ps "reaped $pid\n";
     }
 
-    print $ps "reaped $pid\n";
-  }
-
-  if ($opts->{'parent_stdout'} || $opts->{'parent_stderr'}) {
-    return $exit_value;
-  }
-  else {
-    return {
-      'stdout' => $child_output->{$child_output->{'out'}}->{'scalar_buffer'},
-      'stderr' => $child_output->{$child_output->{'err'}}->{'scalar_buffer'},
-      'exit_code' => $exit_value,
-      };
-  }
+    if ($opts->{'parent_stdout'} || $opts->{'parent_stderr'}) {
+        return $exit_value;
+    }
+    else {
+        return {
+            'stdout' => $child_output->{$child_output->{'out'}}->{'scalar_buffer'},
+            'stderr' => $child_output->{$child_output->{'err'}}->{'scalar_buffer'},
+            'exit_code' => $exit_value,
+            };
+    }
 }
 
 =head2 $hashref = run_forked( COMMAND, { child_stdin => SCALAR, timeout => DIGIT, stdout_handler => CODEREF, stderr_handler => CODEREF} );
@@ -639,7 +731,7 @@ Invocation requires the command to be executed or a coderef and optionally a has
 
 =item C<timeout>
 
-Specify in seconds how long to run the command before it is killed with with SIG_KILL (9),
+Specify in seconds how long to run the command before it is killed with SIG_KILL (9),
 which effectively terminates it and all of its children (direct or indirect).
 
 =item C<child_stdin>
@@ -656,6 +748,29 @@ STDOUT from the executing program.
 Coderef of a subroutine to call when a portion of data is received on
 STDERR from the executing program.
 
+=item C<wait_loop_callback>
+
+Coderef of a subroutine to call inside of the main waiting loop
+(while C<run_forked> waits for the external to finish or fail).
+It is useful to stop running external process before it ends
+by itself, e.g.
+
+  my $r = run_forked("some external command", {
+	  'wait_loop_callback' => sub {
+          if (condition) {
+              kill(1, $$);
+          }
+	  },
+	  'terminate_on_signal' => 'HUP',
+	  });
+
+Combined with C<stdout_handler> and C<stderr_handler> allows terminating
+external command based on its output. Could also be used as a timer
+without engaging with L<alarm> (signals).
+
+Remember that this code could be called every millisecond (depending
+on the output which external command generates), so try to make it
+as lightweight as possible.
 
 =item C<discard_output>
 
@@ -709,14 +824,17 @@ sub run_forked {
     ### container to store things in
     my $self = bless {}, __PACKAGE__;
 
-    require POSIX;
-
     if (!can_use_run_forked()) {
         Carp::carp("run_forked is not available: $CAN_USE_RUN_FORKED");
         return;
     }
 
+    require POSIX;
+
     my ($cmd, $opts) = @_;
+    if (ref($cmd) eq 'ARRAY') {
+        $cmd = join(" ", @{$cmd});
+    }
 
     if (!$cmd) {
         Carp::carp("run_forked expects command to run");
@@ -742,12 +860,12 @@ sub run_forked {
     my $child_info_socket;
     my $parent_info_socket;
 
-    socketpair($child_stdout_socket, $parent_stdout_socket, AF_UNIX, SOCK_STREAM, PF_UNSPEC) ||
-      die ("socketpair: $!");
-    socketpair($child_stderr_socket, $parent_stderr_socket, AF_UNIX, SOCK_STREAM, PF_UNSPEC) ||
-      die ("socketpair: $!");
-    socketpair($child_info_socket, $parent_info_socket, AF_UNIX, SOCK_STREAM, PF_UNSPEC) ||
-      die ("socketpair: $!");
+    socketpair($child_stdout_socket, $parent_stdout_socket, &Socket::AF_UNIX, &Socket::SOCK_STREAM, &Socket::PF_UNSPEC) ||
+      Carp::confess ("socketpair: $!");
+    socketpair($child_stderr_socket, $parent_stderr_socket, &Socket::AF_UNIX, &Socket::SOCK_STREAM, &Socket::PF_UNSPEC) ||
+      Carp::confess ("socketpair: $!");
+    socketpair($child_info_socket, $parent_info_socket, &Socket::AF_UNIX, &Socket::SOCK_STREAM, &Socket::PF_UNSPEC) ||
+      Carp::confess ("socketpair: $!");
 
     $child_stdout_socket->autoflush(1);
     $parent_stdout_socket->autoflush(1);
@@ -756,9 +874,10 @@ sub run_forked {
     $child_info_socket->autoflush(1);
     $parent_info_socket->autoflush(1);
 
-    my $start_time = time();
+    my $start_time = get_monotonic_time();
 
     my $pid;
+    my $ppid = $$;
     if ($pid = fork) {
 
       # we are a parent
@@ -770,22 +889,43 @@ sub run_forked {
 
       # prepare sockets to read from child
 
-      $flags = 0;
-      fcntl($child_stdout_socket, POSIX::F_GETFL, $flags) || die "can't fnctl F_GETFL: $!";
+      $flags = fcntl($child_stdout_socket, POSIX::F_GETFL, 0) || Carp::confess "can't fnctl F_GETFL: $!";
       $flags |= POSIX::O_NONBLOCK;
-      fcntl($child_stdout_socket, POSIX::F_SETFL, $flags) || die "can't fnctl F_SETFL: $!";
+      fcntl($child_stdout_socket, POSIX::F_SETFL, $flags) || Carp::confess "can't fnctl F_SETFL: $!";
 
-      $flags = 0;
-      fcntl($child_stderr_socket, POSIX::F_GETFL, $flags) || die "can't fnctl F_GETFL: $!";
+      $flags = fcntl($child_stderr_socket, POSIX::F_GETFL, 0) || Carp::confess "can't fnctl F_GETFL: $!";
       $flags |= POSIX::O_NONBLOCK;
-      fcntl($child_stderr_socket, POSIX::F_SETFL, $flags) || die "can't fnctl F_SETFL: $!";
+      fcntl($child_stderr_socket, POSIX::F_SETFL, $flags) || Carp::confess "can't fnctl F_SETFL: $!";
 
-      $flags = 0;
-      fcntl($child_info_socket, POSIX::F_GETFL, $flags) || die "can't fnctl F_GETFL: $!";
+      $flags = fcntl($child_info_socket, POSIX::F_GETFL, 0) || Carp::confess "can't fnctl F_GETFL: $!";
       $flags |= POSIX::O_NONBLOCK;
-      fcntl($child_info_socket, POSIX::F_SETFL, $flags) || die "can't fnctl F_SETFL: $!";
+      fcntl($child_info_socket, POSIX::F_SETFL, $flags) || Carp::confess "can't fnctl F_SETFL: $!";
 
   #    print "child $pid started\n";
+
+      my $child_output = {
+        $child_stdout_socket->fileno => {
+          'scalar_buffer' => "",
+          'child_handle' => $child_stdout_socket,
+          'block_size' => ($child_stdout_socket->stat)[11] || 1024,
+          'protocol' => 'stdout',
+          },
+        $child_stderr_socket->fileno => {
+          'scalar_buffer' => "",
+          'child_handle' => $child_stderr_socket,
+          'block_size' => ($child_stderr_socket->stat)[11] || 1024,
+          'protocol' => 'stderr',
+          },
+        $child_info_socket->fileno => {
+          'scalar_buffer' => "",
+          'child_handle' => $child_info_socket,
+          'block_size' => ($child_info_socket->stat)[11] || 1024,
+          'protocol' => 'info',
+          },
+        };
+
+      my $select = IO::Select->new();
+      $select->add($child_stdout_socket, $child_stderr_socket, $child_info_socket);
 
       my $child_timedout = 0;
       my $child_finished = 0;
@@ -796,27 +936,30 @@ sub run_forked {
       my $child_killed_by_signal = 0;
       my $parent_died = 0;
 
+      my $last_parent_check = 0;
       my $got_sig_child = 0;
       my $got_sig_quit = 0;
       my $orig_sig_child = $SIG{'CHLD'};
 
-      $SIG{'CHLD'} = sub { $got_sig_child = time(); };
+      $SIG{'CHLD'} = sub { $got_sig_child = get_monotonic_time(); };
 
       if ($opts->{'terminate_on_signal'}) {
         install_layered_signal($opts->{'terminate_on_signal'}, sub { $got_sig_quit = time(); });
       }
 
       my $child_child_pid;
+      my $now;
+      my $previous_monotonic_value;
 
       while (!$child_finished) {
-        my $now = time();
+        $previous_monotonic_value = $now;
+        $now = get_monotonic_time();
+
+        adjust_monotonic_start_time([\$start_time, \$last_parent_check, \$got_sig_child], $now, $previous_monotonic_value);
 
         if ($opts->{'terminate_on_parent_sudden_death'}) {
-          $opts->{'runtime'}->{'last_parent_check'} = 0
-            unless defined($opts->{'runtime'}->{'last_parent_check'});
-
           # check for parent once each five seconds
-          if ($now - $opts->{'runtime'}->{'last_parent_check'} > 5) {
+          if ($now > $last_parent_check + 5) {
             if (getppid() eq "1") {
               kill_gently ($pid, {
                 'first_kill_type' => 'process_group',
@@ -826,13 +969,13 @@ sub run_forked {
               $parent_died = 1;
             }
 
-            $opts->{'runtime'}->{'last_parent_check'} = $now;
+            $last_parent_check = $now;
           }
         }
 
         # user specified timeout
         if ($opts->{'timeout'}) {
-          if ($now - $start_time > $opts->{'timeout'}) {
+          if ($now > $start_time + $opts->{'timeout'}) {
             kill_gently ($pid, {
               'first_kill_type' => 'process_group',
               'final_kill_type' => 'process_group',
@@ -846,7 +989,7 @@ sub run_forked {
         # kill process after that and finish wait loop;
         # shouldn't ever happen -- remove this code?
         if ($got_sig_child) {
-          if ($now - $got_sig_child > 10) {
+          if ($now > $got_sig_child + 10) {
             print STDERR "waitpid did not return -1 for 10 seconds after SIG_CHLD, killing [$pid]\n";
             kill (-9, $pid);
             $child_finished = 1;
@@ -871,43 +1014,99 @@ sub run_forked {
 
         if ($waitpid eq -1) {
           $child_finished = 1;
-          next;
         }
 
-        # child -> parent simple internal communication protocol
-        while (my $l = <$child_info_socket>) {
-          if ($l =~ /^spawned ([0-9]+?)\n(.*?)/so) {
-            $child_child_pid = $1;
-            $l = $2;
+        my $ready_fds = [];
+        push @{$ready_fds}, $select->can_read(1/100);
+
+        READY_FDS: while (scalar(@{$ready_fds})) {
+          my $fd = shift @{$ready_fds};
+          $ready_fds = [grep {$_ ne $fd} @{$ready_fds}];
+
+          my $str = $child_output->{$fd->fileno};
+          Carp::confess("child stream not found: $fd") unless $str;
+
+          my $data = "";
+          my $count = $fd->sysread($data, $str->{'block_size'});
+
+          if ($count) {
+              # extract all the available lines and store the rest in temporary buffer
+              if ($data =~ /(.+\n)([^\n]*)/so) {
+                  $data = $str->{'scalar_buffer'} . $1;
+                  $str->{'scalar_buffer'} = $2 || "";
+              }
+              else {
+                  $str->{'scalar_buffer'} .= $data;
+                  $data = "";
+              }
           }
-          if ($l =~ /^reaped ([0-9]+?)\n(.*?)/so) {
-            $child_child_pid = undef;
-            $l = $2;
+          elsif ($count eq 0) {
+            $select->remove($fd);
+            $fd->close();
+            if ($str->{'scalar_buffer'}) {
+                $data = $str->{'scalar_buffer'} . "\n";
+            }
           }
-          if ($l =~ /^[\d]+ killed with ([0-9]+?)\n(.*?)/so) {
-            $child_killed_by_signal = $1;
-            $l = $2;
+          else {
+            Carp::confess("error during sysread on [$fd]: " . $!);
           }
+
+          # $data contains only full lines (or last line if it was unfinished read
+          # or now new-line in the output of the child); dat is processed
+          # according to the "protocol" of socket
+          if ($str->{'protocol'} eq 'info') {
+            if ($data =~ /^spawned ([0-9]+?)\n(.*?)/so) {
+              $child_child_pid = $1;
+              $data = $2;
+            }
+            if ($data =~ /^reaped ([0-9]+?)\n(.*?)/so) {
+              $child_child_pid = undef;
+              $data = $2;
+            }
+            if ($data =~ /^[\d]+ killed with ([0-9]+?)\n(.*?)/so) {
+              $child_killed_by_signal = $1;
+              $data = $2;
+            }
+
+            # we don't expect any other data in info socket, so it's
+            # some strange violation of protocol, better know about this
+            if ($data) {
+              Carp::confess("info protocol violation: [$data]");
+            }
+          }
+          if ($str->{'protocol'} eq 'stdout') {
+            if (!$opts->{'discard_output'}) {
+              $child_stdout .= $data;
+              $child_merged .= $data;
+            }
+
+            if ($opts->{'stdout_handler'} && ref($opts->{'stdout_handler'}) eq 'CODE') {
+              $opts->{'stdout_handler'}->($data);
+            }
+          }
+          if ($str->{'protocol'} eq 'stderr') {
+            if (!$opts->{'discard_output'}) {
+              $child_stderr .= $data;
+              $child_merged .= $data;
+            }
+
+            if ($opts->{'stderr_handler'} && ref($opts->{'stderr_handler'}) eq 'CODE') {
+              $opts->{'stderr_handler'}->($data);
+            }
+          }
+ 
+          # process may finish (waitpid returns -1) before
+          # we've read all of its output because of buffering;
+          # so try to read all the way it is possible to read
+          # in such case - this shouldn't be too much (unless
+          # the buffer size is HUGE -- should introduce
+          # another counter in such case, maybe later)
+          #
+          push @{$ready_fds}, $select->can_read(1/100) if $child_finished;
         }
 
-        while (my $l = <$child_stdout_socket>) {
-          if (!$opts->{'discard_output'}) {
-            $child_stdout .= $l;
-            $child_merged .= $l;
-          }
-
-          if ($opts->{'stdout_handler'} && ref($opts->{'stdout_handler'}) eq 'CODE') {
-            $opts->{'stdout_handler'}->($l);
-          }
-        }
-        while (my $l = <$child_stderr_socket>) {
-          if (!$opts->{'discard_output'}) {
-            $child_stderr .= $l;
-            $child_merged .= $l;
-          }
-          if ($opts->{'stderr_handler'} && ref($opts->{'stderr_handler'}) eq 'CODE') {
-            $opts->{'stderr_handler'}->($l);
-          }
+        if ($opts->{'wait_loop_callback'} && ref($opts->{'wait_loop_callback'}) eq 'CODE') {
+          $opts->{'wait_loop_callback'}->();
         }
 
         Time::HiRes::usleep(1);
@@ -961,6 +1160,7 @@ sub run_forked {
         'parent_died' => $parent_died,
         'killed_by_signal' => $child_killed_by_signal,
         'child_pgid' => $pid,
+        'cmd' => $cmd,
         };
 
       my $err_msg = '';
@@ -973,7 +1173,7 @@ sub run_forked {
       if ($o->{'parent_died'}) {
         $err_msg .= "parent died\n";
       }
-      if ($o->{'stdout'}) {
+      if ($o->{'stdout'} && !$opts->{'non_empty_stdout_ok'}) {
         $err_msg .= "stdout:\n" . $o->{'stdout'} . "\n";
       }
       if ($o->{'stderr'}) {
@@ -991,10 +1191,12 @@ sub run_forked {
         delete($SIG{'CHLD'});
       }
 
+      uninstall_signals();
+
       return $o;
     }
     else {
-      die("cannot fork: $!") unless defined($pid);
+      Carp::confess("cannot fork: $!") unless defined($pid);
 
       # create new process session for open3 call,
       # so we hopefully can kill all the subprocesses
@@ -1002,7 +1204,7 @@ sub run_forked {
       # which do setsid theirselves -- can't do anything
       # with those)
 
-      POSIX::setsid() || die("Error running setsid: " . $!);
+      POSIX::setsid() || Carp::confess("Error running setsid: " . $!);
 
       if ($opts->{'child_BEGIN'} && ref($opts->{'child_BEGIN'}) eq 'CODE') {
         $opts->{'child_BEGIN'}->();
@@ -1022,9 +1224,15 @@ sub run_forked {
           'parent_stdout' => $parent_stdout_socket,
           'parent_stderr' => $parent_stderr_socket,
           'child_stdin' => $opts->{'child_stdin'},
+          'original_ppid' => $ppid,
           });
       }
       elsif (ref($cmd) eq 'CODE') {
+        # reopen STDOUT and STDERR for child code:
+        # https://rt.cpan.org/Ticket/Display.html?id=85912
+        open STDOUT, '>&', $parent_stdout_socket || Carp::confess("Unable to reopen STDOUT: $!\n");
+        open STDERR, '>&', $parent_stderr_socket || Carp::confess("Unable to reopen STDERR: $!\n");
+
         $child_exit_code = $cmd->({
           'opts' => $opts,
           'parent_info' => $parent_info_socket,
@@ -1046,6 +1254,7 @@ sub run_forked {
         $opts->{'child_END'}->();
       }
 
+      $| = 1;
       POSIX::_exit $child_exit_code;
     }
 }
@@ -1124,7 +1333,7 @@ sub run {
     ### flag indicating if the subcall went ok
     my $ok;
 
-    ### dont look at previous errors:
+    ### don't look at previous errors:
     local $?;
     local $@;
     local $!;
@@ -1208,8 +1417,10 @@ sub _open3_run_win32 {
   my $outhand = shift;
   my $errhand = shift;
 
+  require Socket;
+
   my $pipe = sub {
-    socketpair($_[0], $_[1], AF_UNIX, SOCK_STREAM, PF_UNSPEC)
+    socketpair($_[0], $_[1], &Socket::AF_UNIX, &Socket::SOCK_STREAM, &Socket::PF_UNSPEC)
         or return undef;
     shutdown($_[0], 1);  # No more writing for reader
     shutdown($_[1], 0);  # No more reading for writer
@@ -1259,8 +1470,8 @@ sub _open3_run_win32 {
             $in_sel->remove($fh);
         }
         else {
-	          $obj->( "$buf" );
-	      }
+            $obj->( "$buf" );
+        }
       }
 
       for my $fh (@$outs) {
@@ -1314,7 +1525,7 @@ sub _open3_run {
     ### whitespace. This sub fixes up such commands so they run properly
     $cmd = $self->__fix_cmd_whitespace_and_special_chars( $cmd );
 
-    ### dont stringify @$cmd, so spaces in filenames/paths are
+    ### don't stringify @$cmd, so spaces in filenames/paths are
     ### treated properly
     my $pid = eval {
         IPC::Open3::open3(
@@ -1460,7 +1671,7 @@ sub _open3_run {
         ### if there's no pipe in the command, append STDIN to the back
         ### of the command instead.
         ### XXX seems IPC::Run works it out for itself if you just
-        ### dont pass STDIN at all.
+        ### don't pass STDIN at all.
         #     if( $special_chars and $special_chars =~ /\|/ ) {
         #         ### only add STDIN the first time..
         #         my $i;
@@ -1756,7 +1967,7 @@ sub _pp_child_error {
 
     } elsif ( $ce & 127 ) {
         ### some signal
-        $str = loc( "'%1' died with signal %d, %s coredump\n",
+        $str = loc( "'%1' died with signal %2, %3 coredump",
                $pp_cmd, ($ce & 127), ($ce & 128) ? 'with' : 'without');
 
     } else {
@@ -1771,6 +1982,8 @@ sub _pp_child_error {
 
 1;
 
+__END__
+
 =head2 $q = QUOTE
 
 Returns the character used for quoting strings on this platform. This is
@@ -1784,8 +1997,6 @@ You can use it as follows:
 
 This makes sure that C<foo bar> is treated as a string, rather than two
 separate arguments to the C<echo> function.
-
-__END__
 
 =head1 HOW IT WORKS
 
@@ -1883,7 +2094,7 @@ special characters are escaped and passed as arguments instead of retaining
 their special meaning.
 
 However, if the command contained arguments that contained whitespace,
-stringifying the command would loose the significance of the whitespace.
+stringifying the command would lose the significance of the whitespace.
 Therefore, C<IPC::Cmd> will quote any arguments containing whitespace in your
 command if the command is passed as an arrayref and contains special characters.
 

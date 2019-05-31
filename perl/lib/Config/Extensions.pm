@@ -1,10 +1,10 @@
 package Config::Extensions;
 use strict;
-use vars qw(%Extensions $VERSION @ISA @EXPORT_OK);
+our (%Extensions, $VERSION, @ISA, @EXPORT_OK);
 use Config;
 require Exporter;
 
-$VERSION = '0.01';
+$VERSION = '0.03';
 @ISA = 'Exporter';
 @EXPORT_OK = '%Extensions';
 
@@ -17,6 +17,7 @@ foreach my $type (qw(static dynamic nonxs)) {
 
 1;
 __END__
+
 =head1 NAME
 
 Config::Extensions - hash lookup of which core extensions were built.

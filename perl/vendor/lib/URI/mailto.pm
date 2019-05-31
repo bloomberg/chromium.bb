@@ -1,10 +1,11 @@
 package URI::mailto;  # RFC 2368
 
-require URI;
-require URI::_query;
-@ISA=qw(URI URI::_query);
-
 use strict;
+use warnings;
+
+our $VERSION = '1.76';
+
+use parent qw(URI URI::_query);
 
 sub to
 {

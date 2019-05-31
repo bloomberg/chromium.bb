@@ -30,7 +30,7 @@ sub init {
         { local $/; $ring->{_data} = <FH> }
         close FH;
     }
-    if ($ring->{_data} =~ /-----BEGIN/) {
+    if ($ring->{_data} =~ /^-----BEGIN/) {
         require Crypt::OpenPGP::Armour;
         my $rec = Crypt::OpenPGP::Armour->unarmour($ring->{_data}) or
             return (ref $ring)->error("Unarmour failed: " .

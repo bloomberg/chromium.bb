@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __HTTP_H__
@@ -8,6 +8,9 @@
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
+
+#define SECURITY_WIN32
+#include <sspi.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,6 +20,7 @@ extern "C" {
 #define HTTP_INITIALIZE_CONFIG 0x00000002
 
 #define HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY 0x00000001
+#define HTTP_RECEIVE_REQUEST_ENTITY_BODY_FLAG_FILL_BUFFER 0x00000001
 
 #define HTTP_SEND_RESPONSE_FLAG_DISCONNECT 0x00000001
 #define HTTP_SEND_RESPONSE_FLAG_MORE_DATA 0x00000002
@@ -29,6 +33,8 @@ extern "C" {
   typedef HTTP_OPAQUE_ID HTTP_REQUEST_ID,*PHTTP_REQUEST_ID;
   typedef HTTP_OPAQUE_ID HTTP_CONNECTION_ID,*PHTTP_CONNECTION_ID;
   typedef HTTP_OPAQUE_ID HTTP_RAW_CONNECTION_ID,*PHTTP_RAW_CONNECTION_ID;
+  typedef HTTP_OPAQUE_ID HTTP_URL_GROUP_ID, *PHTTP_URL_GROUP_ID;
+  typedef HTTP_OPAQUE_ID HTTP_SERVER_SESSION_ID, *PHTTP_SERVER_SESSION_ID;
 
 #define HTTP_NULL_ID (0ull)
 #define HTTP_IS_NULL_ID(pid) (HTTP_NULL_ID==*(pid))
@@ -201,11 +207,38 @@ extern "C" {
     PVOID                  pInfo;
   } HTTP_REQUEST_INFO, *PHTTP_REQUEST_INFO;
 
-  typedef struct _HTTP_REQUEST_V2 {
-    struct HTTP_REQUEST_V1;
+#ifdef __cplusplus
+  typedef struct _HTTP_REQUEST_V2 : HTTP_REQUEST_V1 {
     USHORT             RequestInfoCount;
     PHTTP_REQUEST_INFO pRequestInfo;
   } HTTP_REQUEST_V2, *PHTTP_REQUEST_V2;
+#else
+  typedef struct _HTTP_REQUEST_V2 {
+    /* struct HTTP_REQUEST_V1; */
+    __C89_NAMELESS struct {
+    ULONG Flags;
+    HTTP_CONNECTION_ID ConnectionId;
+    HTTP_REQUEST_ID RequestId;
+    HTTP_URL_CONTEXT UrlContext;
+    HTTP_VERSION Version;
+    HTTP_VERB Verb;
+    USHORT UnknownVerbLength;
+    USHORT RawUrlLength;
+    PCSTR pUnknownVerb;
+    PCSTR pRawUrl;
+    HTTP_COOKED_URL CookedUrl;
+    HTTP_TRANSPORT_ADDRESS Address;
+    HTTP_REQUEST_HEADERS Headers;
+    ULONGLONG BytesReceived;
+    USHORT EntityChunkCount;
+    PHTTP_DATA_CHUNK pEntityChunks;
+    HTTP_RAW_CONNECTION_ID RawConnectionId;
+    PHTTP_SSL_INFO pSslInfo;
+    };
+    USHORT             RequestInfoCount;
+    PHTTP_REQUEST_INFO pRequestInfo;
+  } HTTP_REQUEST_V2, *PHTTP_REQUEST_V2;
+#endif
 
 #if (_WIN32_WINNT >= 0x0600)
   typedef HTTP_REQUEST_V2 HTTP_REQUEST, *PHTTP_REQUEST;
@@ -239,11 +272,28 @@ extern "C" {
     PVOID                   pInfo;
   } HTTP_RESPONSE_INFO, *PHTTP_RESPONSE_INFO;
 
-  typedef struct {
-    struct HTTP_RESPONSE_V1;
+#ifdef __cplusplus
+  typedef struct _HTTP_RESPONSE_V2 : HTTP_RESPONSE_V1 {
     USHORT              ResponseInfoCount;
     PHTTP_RESPONSE_INFO pResponseInfo;
   } HTTP_RESPONSE_V2, *PHTTP_RESPONSE_V2;
+#else
+  typedef struct _HTTP_RESPONSE_V2 {
+    /* struct HTTP_RESPONSE_V1; */
+    __C89_NAMELESS struct {
+    ULONG Flags;
+    HTTP_VERSION Version;
+    USHORT StatusCode;
+    USHORT ReasonLength;
+    PCSTR pReason;
+    HTTP_RESPONSE_HEADERS Headers;
+    USHORT EntityChunkCount;
+    PHTTP_DATA_CHUNK pEntityChunks;
+    };
+    USHORT              ResponseInfoCount;
+    PHTTP_RESPONSE_INFO pResponseInfo;
+  } HTTP_RESPONSE_V2, *PHTTP_RESPONSE_V2;
+#endif
 
 #if (_WIN32_WINNT >= 0x0600)
   typedef HTTP_RESPONSE_V2 HTTP_RESPONSE, *PHTTP_RESPONSE;
@@ -338,7 +388,12 @@ extern "C" {
   } HTTP_SERVICE_CONFIG_URLACL_QUERY,*PHTTP_SERVICE_CONFIG_URLACL_QUERY;
 
 #if !defined(HTTPAPI_LINKAGE)
+#ifdef HTTPAPI_LINKAGE_EXPORT
+#define DECLSPEC_EXPORT __declspec(dllexport)
+#define HTTPAPI_LINKAGE DECLSPEC_EXPORT
+#else
 #define HTTPAPI_LINKAGE DECLSPEC_IMPORT
+#endif
 #endif
 
   typedef struct _HTTPAPI_VERSION {
@@ -432,6 +487,10 @@ extern "C" {
     HttpLogDataTypeFields   = 0
   } HTTP_LOG_DATA_TYPE, *PHTTP_LOG_DATA_TYPE;
 
+  typedef struct _HTTP_LOG_DATA {
+    HTTP_LOG_DATA_TYPE Type;
+  } HTTP_LOG_DATA, *PHTTP_LOG_DATA;
+
   typedef enum _HTTP_REQUEST_AUTH_TYPE {
     HttpRequestAuthTypeNone = 0,
     HttpRequestAuthTypeBasic,
@@ -452,9 +511,11 @@ extern "C" {
     HeaderWaitTimeout
   } HTTP_SERVICE_CONFIG_TIMEOUT_KEY, *PHTTP_SERVICE_CONFIG_TIMEOUT_KEY;
 
+  typedef USHORT HTTP_SERVICE_CONFIG_TIMEOUT_PARAM, *PHTTP_SERVICE_CONFIG_TIMEOUT_PARAM;
+
   typedef struct _HTTP_PROPERTY_FLAGS {
     ULONG Present:1;
-  } HTTP_PROPERTY_FLAGS, *PHTTP_PROPERTY_FLAGS
+  } HTTP_PROPERTY_FLAGS, *PHTTP_PROPERTY_FLAGS;
 
   typedef struct _HTTP_CONNECTION_LIMIT_INFO {
     HTTP_PROPERTY_FLAGS Flags;

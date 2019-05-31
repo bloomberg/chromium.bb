@@ -276,6 +276,12 @@ sub test_expect {
             $name = "template text $count";
         }
 
+        # Configure a test as TODO
+        my $todo = '';
+        if ($input =~ s/^\s*-- todo:? (.*?) --\s*\n//im) {
+            $todo = ( $1 eq '' ) ? 'No reason given' : $1;
+        }
+        
         # split input by a line like "-- expect --"
         ($input, $expect) = 
             split(/^\s*--\s*expect\s*--\s*\n/im, $input);
@@ -348,8 +354,13 @@ sub test_expect {
             printf(" input: [%s]\nexpect: [%s]\noutput: [%s]\n", 
                    $copyi, $copye, $copyo);
         }
-        
-        ok($match, $match ? "$name matched expected" : "$name did not match expected");
+
+        my $testprefix = $name;
+        if ( $todo ) {
+            $testprefix = "# TODO $todo - $name";
+        }
+
+        ok($match, $match ? "$testprefix matched expected" : "$testprefix did not match expected");
     };
 }
 

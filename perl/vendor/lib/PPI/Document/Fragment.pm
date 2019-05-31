@@ -21,11 +21,9 @@ within it, and it does not represent a scope.
 use strict;
 use PPI::Document ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Document';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = 'PPI::Document';
 
 
 
@@ -60,7 +58,7 @@ sub index_locations {
 
 # We are not a scope boundary
 ### XS -> PPI/XS.xs:_PPI_Document_Fragment__scope 0.903+
-sub scope { '' }
+sub scope() { '' }
 
 1;
 

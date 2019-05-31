@@ -1,0 +1,143 @@
+=encoding utf-8
+
+=head1 NAME
+
+Time::Moment::Adjusters - Adjusters for Time::Moment
+
+=head1 SYNOPSIS
+
+    $adjuster = NextDayOfWeek($day);
+    $adjuster = NextOrSameDayOfWeek($day);
+    
+    $adjuster = PreviousDayOfWeek($day);
+    $adjuster = PreviousOrSameDayOfWeek($day);
+    
+    $adjuster = FirstDayOfWeekInMonth($day);
+    $adjuster = LastDayOfWeekInMonth($day);
+    
+    $adjuster = NthDayOfWeekInMonth($ordinal, $day);
+    
+    $adjuster = WesternEasterSunday();
+    $adjuster = OrthodoxEasterSunday();
+    
+    $adjuster = NearestMinuteInterval($interval);
+    
+
+=head1 DESCRIPTION
+
+C<Time::Moment::Adjusters> provides adjusters. An adjuster is a CODE reference 
+invoked with an instance of Time::Moment and is expected to return an instance 
+of Time::Moment.
+
+=head1 FUNCTIONS
+
+=head2 NextDayOfWeek
+
+    $adjuster = NextDayOfWeek($day);
+
+The C<$adjuster> adjusts the date to the next occurrence of the given I<day> 
+of the week [1=Monday, 7=Sunday] that is after the date. 
+
+=head2 NextOrSameDayOfWeek
+
+    $adjuster = NextOrSameDayOfWeek($day);
+
+The C<$adjuster> adjusts the date to the next occurrence of the given I<day> 
+of the week [1=Monday, 7=Sunday]. If the date already falls on the given 
+I<day> of the week it's unaltered.
+
+=head2 PreviousDayOfWeek
+
+    $adjuster = PreviousDayOfWeek($day);
+
+The C<$adjuster> adjusts the date to the previous occurrence of the given 
+I<day> of the week [1=Monday, 7=Sunday] that is before the date. 
+
+=head2 PreviousOrSameDayOfWeek
+
+    $adjuster = PreviousOrSameDayOfWeek($day);
+
+The C<$adjuster> adjusts the date to the previous occurrence of the given 
+I<day> of the week [1=Monday, 7=Sunday]. If the date already falls on the 
+given I<day> of the week it's unaltered.
+
+=head2 FirstDayOfWeekInMonth
+
+    $adjuster = FirstDayOfWeekInMonth($day);
+
+The C<$adjuster> adjusts the date to the first occurrence of the given 
+I<day> of the week [1=Monday, 7=Sunday] within the month.
+
+=head2 LastDayOfWeekInMonth
+
+    $adjuster = LastDayOfWeekInMonth($day);
+
+The C<$adjuster> adjusts the date to the last occurrence of the given 
+I<day> of the week [1=Monday, 7=Sunday] within the month.
+
+=head2 NthDayOfWeekInMonth
+
+    $adjuster = NthDayOfWeekInMonth($ordinal, $day);
+
+The C<$adjuster> adjusts the date to the given I<ordinal> I<day> of 
+the week within the month.
+
+B<Parameters:>
+
+=over 4
+
+=item ordinal
+
+The I<ordinal> of the week within the month [-4, -1] ∪ [1, 4]. 
+
+=item day
+
+The I<day> of the week [1=Monday, 7=Sunday].
+
+=back
+
+=head2 WesternEasterSunday
+
+    $adjuster = WesternEasterSunday();
+
+The C<$adjuster> adjusts the date to the Western Easter Sunday. The Western 
+computus is based on the Gregorian calendar.
+
+=head2 OrthodoxEasterSunday
+
+    $adjuster = OrthodoxEasterSunday();
+
+The C<$adjuster> adjusts the date to the Orthodox Easter Sunday. The Orthodox 
+computus is based on the Julian calendar with the Julian date converted to 
+the equivalent Gregorian date.
+
+=head2 NearestMinuteInterval
+
+    $adjuster = NearestMinuteInterval($interval);
+
+The C<$adjuster> adjusts the time of day to the nearest minute of the given
+minute I<interval> [1, 1440].
+
+Given an minute interval of C<30>:
+    
+    T10:14:59 => T10:00:00
+    T10:15:00 => T10:30:00
+    T10:29:59 => T10:30:00
+    T23:55:00 => T00:00:00 (midnight of the following day)
+
+=head1 EXPORTS
+
+None by default. All functions can be exported using the C<:all> tag or 
+individually.
+
+=head1 AUTHOR
+
+Christian Hansen C<chansen@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright 2015-2017 by Christian Hansen.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+

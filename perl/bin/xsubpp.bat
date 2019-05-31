@@ -1,30 +1,39 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!perl
-#line 15
+#line 29
     eval 'exec C:\strawberry\perl\bin\perl.exe -S $0 ${1+"$@"}'
 	if $running_under_some_shell;
 #!perl
 use 5.006;
+BEGIN { pop @INC if $INC[-1] eq '.' }
 use strict;
 eval {
   require ExtUtils::ParseXS;
-  ExtUtils::ParseXS->import(
-    qw(
-      process_file
-      report_error_count
-    )
-  );
   1;
 }
 or do {
@@ -38,7 +47,7 @@ use Getopt::Long;
 
 my %args = ();
 
-my $usage = "Usage: xsubpp [-v] [-csuffix csuffix] [-except] [-prototypes] [-noversioncheck] [-nolinenumbers] [-nooptimize] [-noinout] [-noargtypes] [-s pattern] [-typemap typemap]... file.xs\n";
+my $usage = "Usage: xsubpp [-v] [-csuffix csuffix] [-except] [-prototypes] [-noversioncheck] [-nolinenumbers] [-nooptimize] [-noinout] [-noargtypes] [-strip|s pattern] [-typemap typemap]... file.xs\n";
 
 Getopt::Long::Configure qw(no_auto_abbrev no_ignore_case);
 
@@ -55,7 +64,7 @@ GetOptions(\%args, qw(hiertype!
 		      v
 		      typemap=s@
 		      output=s
-		      s=s
+		      s|strip=s
 		      csuffix=s
 		     ))
   or die $usage;
@@ -69,8 +78,9 @@ if ($args{v}) {
 
 $args{filename} = shift @ARGV;
 
-process_file(%args);
-exit( report_error_count() ? 1 : 0 );
+my $pxs = ExtUtils::ParseXS->new;
+$pxs->process_file(%args);
+exit( $pxs->report_error_count() ? 1 : 0 );
 
 __END__
 
@@ -165,6 +175,22 @@ Disable recognition of ANSI-like descriptions of function signature.
 Currently doesn't do anything at all.  This flag has been a no-op for
 many versions of perl, at least as far back as perl5.003_07.  It's
 allowed here for backwards compatibility.
+
+=item B<-s=...> or B<-strip=...>
+
+I<This option is obscure and discouraged.>
+
+If specified, the given string will be stripped off from the beginning
+of the C function name in the generated XS functions (if it starts with that prefix).
+This only applies to XSUBs without C<CODE> or C<PPCODE> blocks.
+For example, the XS:
+
+  void foo_bar(int i);
+
+when C<xsubpp> is invoked with C<-s foo_> will install a C<foo_bar>
+function in Perl, but really call C<bar(i)> in C. Most of the time,
+this is the opposite of what you want and failure modes are somewhat
+obscure, so please avoid this option where possible.
 
 =back
 

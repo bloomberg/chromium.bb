@@ -4,8 +4,11 @@
 
 package Convert::ASN1;
 {
-  $Convert::ASN1::VERSION = '0.23';
+  $Convert::ASN1::VERSION = '0.27';
 }
+
+use strict;
+use warnings;
 
 BEGIN {
   local $SIG{__DIE__};
@@ -27,6 +30,7 @@ my @decode = (
   \&_dec_object_id,
   \&_dec_real,
   \&_dec_sequence,
+  \&_dec_explicit,
   \&_dec_set,
   \&_dec_time,
   \&_dec_time,
@@ -79,7 +83,7 @@ sub _decode {
 	    next OP;
 	  }
 
-	  if ($tag eq ($op->[cTAG] | chr(ASN_CONSTRUCTOR))
+	  if ($tag eq ($op->[cTAG] | pack("C",ASN_CONSTRUCTOR))
 	      and my $ctr = $ctr[$op->[cTYPE]]) 
 	  {
 	    _decode(
@@ -121,17 +125,18 @@ sub _decode {
 		die "decode error";
 	      };
 
-	    $len += $npos-$pos;
+	    $len += $npos - $pos + $indef;
 
-             if ($op->[cDEFINE]) {
-                $handler = $optn->{oidtable} && $optn->{oidtable}{$stash->{$op->[cDEFINE]}};
-                $handler ||= $optn->{handlers}{$op->[cVAR]}{$stash->{$op->[cDEFINE]}};
-             }
+            my $handler;
+            if ($op->[cDEFINE]) {
+              $handler = $optn->{oidtable} && $optn->{oidtable}{$stash->{$op->[cDEFINE]}};
+              $handler ||= $optn->{handlers}{$op->[cVAR]}{$stash->{$op->[cDEFINE]}};
+            }
 
 	    ($seqof ? $seqof->[$idx++] : ref($stash) eq 'SCALAR' ? $$stash : $stash->{$var})
 	      = $handler ? $handler->decode(substr($buf,$pos,$len)) : substr($buf,$pos,$len);
 
-	    $pos += $len + $indef;
+	    $pos += $len;
 
 	    redo ANYLOOP if $seqof && $pos < $end;
 	  }
@@ -144,6 +149,7 @@ sub _decode {
 		next OP if $pos==$end and ($seqof || defined $op->[cEXT]);
 		die "decode error";
 	      };
+	    my $extensions;
 	    foreach my $cop (@{$op->[cCHILD]}) {
 
 	      if ($tag eq $cop->[cTAG]) {
@@ -167,6 +173,11 @@ sub _decode {
 
 		redo CHOICELOOP if $seqof && $pos < $end;
 		next OP;
+	      }
+
+	      if ($cop->[cTYPE] == opEXTENSIONS) {
+		$extensions = 1;
+		next;
 	      }
 
 	      unless (length $cop->[cTAG]) {
@@ -199,7 +210,7 @@ sub _decode {
 		next OP;
 	      }
 
-	      if ($tag eq ($cop->[cTAG] | chr(ASN_CONSTRUCTOR))
+	      if ($tag eq ($cop->[cTAG] | pack("C",ASN_CONSTRUCTOR))
 		  and my $ctr = $ctr[$cop->[cTYPE]]) 
 	      {
 		my $nstash = $seqof
@@ -227,6 +238,13 @@ sub _decode {
 		next OP;
 	      }
 	    }
+
+	    if ($pos < $end && $extensions) {
+	      $pos = $npos+$len+$indef;
+
+	      redo CHOICELOOP if $seqof && $pos < $end;
+	      next OP;
+	    }
 	  }
 	  die "decode error" unless $op->[cEXT];
 	}
@@ -247,7 +265,7 @@ sub _dec_boolean {
 # 0      1    2       3     4     5     6
 # $optn, $op, $stash, $var, $buf, $pos, $len
 
-  $_[3] = ord(substr($_[4],$_[5],1)) ? 1 : 0;
+  $_[3] = unpack("C",substr($_[4],$_[5],1)) ? 1 : 0;
   1;
 }
 
@@ -257,9 +275,9 @@ sub _dec_integer {
 # $optn, $op, $stash, $var, $buf, $pos, $len
 
   my $buf = substr($_[4],$_[5],$_[6]);
-  my $tmp = ord($buf) & 0x80 ? chr(255) : chr(0);
+  my $tmp = unpack("C",$buf) & 0x80 ? pack("C",255) : pack("C",0);
   if ($_[6] > 4) {
-      $_[3] = os2ip($tmp x (4-$_[6]) . $buf, $_[0]->{decode_bigint} || 'Math::BigInt');
+      $_[3] = os2ip($buf, $_[0]->{decode_bigint} || 'Math::BigInt');
   } else {
       # N unpacks an unsigned value
       $_[3] = unpack("l",pack("l",unpack("N", $tmp x (4-$_[6]) . $buf)));
@@ -272,7 +290,7 @@ sub _dec_bitstring {
 # 0      1    2       3     4     5     6
 # $optn, $op, $stash, $var, $buf, $pos, $len
 
-  $_[3] = [ substr($_[4],$_[5]+1,$_[6]-1), ($_[6]-1)*8-ord(substr($_[4],$_[5],1)) ];
+  $_[3] = [ substr($_[4],$_[5]+1,$_[6]-1), ($_[6]-1)*8-unpack("C",substr($_[4],$_[5],1)) ];
   1;
 }
 
@@ -324,7 +342,7 @@ sub _dec_real {
 
   $_[3] = 0.0, return unless $_[6];
 
-  my $first = ord(substr($_[4],$_[5],1));
+  my $first = unpack("C",substr($_[4],$_[5],1));
   if ($first & 0x80) {
     # A real number
 
@@ -336,7 +354,7 @@ sub _dec_real {
 
     if($expLen == 3) {
       $estart++;
-      $expLen = ord(substr($_[4],$_[5]+1,1));
+      $expLen = unpack("C",substr($_[4],$_[5]+1,1));
     }
     else {
       $expLen++;
@@ -367,6 +385,24 @@ sub _dec_real {
 }
 
 
+sub _dec_explicit {
+# 0      1    2       3     4     5     6     7
+# $optn, $op, $stash, $var, $buf, $pos, $len, $larr
+
+  local $_[1][cCHILD][0][cVAR] = $_[1][cVAR] unless $_[1][cCHILD][0][cVAR];
+
+  _decode(
+    $_[0], #optn
+    $_[1]->[cCHILD],   #ops
+    $_[2], #stash
+    $_[5], #pos
+    $_[5]+$_[6], #end
+    undef, #loop
+    $_[7],
+    $_[4], #buf
+  );
+  1;
+}
 sub _dec_sequence {
 # 0      1    2       3     4     5     6     7
 # $optn, $op, $stash, $var, $buf, $pos, $len, $larr
@@ -402,6 +438,7 @@ sub _dec_set {
   my $stash = defined($_[3]) ? $_[2] : ($_[3]={});
   my $end = $pos + $_[6];
   my @done;
+  my $extensions;
 
   while ($pos < $end) {
     my($tag,$len,$npos,$indef) = _decode_tl($_[4],$pos,$end,$larr)
@@ -428,7 +465,7 @@ SET_OP:
 	  $done = $idx;
 	  last SET_OP;
 	}
-	if ($tag eq ($op->[cTAG] | chr(ASN_CONSTRUCTOR))
+	if ($tag eq ($op->[cTAG] | pack("C",ASN_CONSTRUCTOR))
 	    and my $ctr = $ctr[$op->[cTYPE]]) 
 	{
 	  _decode(
@@ -453,6 +490,7 @@ SET_OP:
 	$any = $idx;
       }
       elsif ($op->[cTYPE] == opCHOICE) {
+	my $var = $op->[cVAR];
 	foreach my $cop (@{$op->[cCHILD]}) {
 	  if ($tag eq $cop->[cTAG]) {
 	    my $nstash = defined($var) ? ($stash->{$var}={}) : $stash;
@@ -467,7 +505,7 @@ SET_OP:
 	    $done = $idx;
 	    last SET_OP;
 	  }
-	  if ($tag eq ($cop->[cTAG] | chr(ASN_CONSTRUCTOR))
+	  if ($tag eq ($cop->[cTAG] | pack("C",ASN_CONSTRUCTOR))
 	      and my $ctr = $ctr[$cop->[cTYPE]]) 
 	  {
 	    my $nstash = defined($var) ? ($stash->{$var}={}) : $stash;
@@ -490,9 +528,7 @@ SET_OP:
 	}
       }
       elsif ($op->[cTYPE] == opEXTENSIONS) {
-	  # EXTENSION MARKER takes up everything unknown
-	  $done = $idx;
-	  last SET_OP;
+	  $extensions = $idx;
       }
       else {
 	die "internal error";
@@ -505,6 +541,10 @@ SET_OP:
       $done = $any;
     }
 
+    if( !defined($done) && defined($extensions) ) {
+      $done = $extensions;
+    }
+
     die "decode error" if !defined($done) or $done[$done]++;
 
     $pos = $npos + $len + $indef;
@@ -513,7 +553,7 @@ SET_OP:
   die "decode error" unless $end == $pos;
 
   foreach my $idx (0..$#{$ch}) {
-    die "decode error" unless $done[$idx] or $ch->[$idx][cEXT];
+    die "decode error" unless $done[$idx] or $ch->[$idx][cEXT] or $ch->[$idx][cTYPE] == opEXTENSIONS;
   }
 
   1;
@@ -583,14 +623,17 @@ sub _dec_utf8 {
 sub _decode_tl {
   my($pos,$end,$larr) = @_[1,2,3];
 
+  return if $pos >= $end;
+
   my $indef = 0;
 
   my $tag = substr($_[0], $pos++, 1);
 
-  if((ord($tag) & 0x1f) == 0x1f) {
+  if((unpack("C",$tag) & 0x1f) == 0x1f) {
     my $b;
     my $n=1;
     do {
+      return if $pos >= $end;
       $tag .= substr($_[0],$pos++,1);
       $b = ord substr($tag,-1);
     } while($b & 0x80);
@@ -605,7 +648,8 @@ sub _decode_tl {
     if ($len) {
       return if $pos+$len > $end ;
 
-      ($len,$pos) = (unpack("N", "\0" x (4 - $len) . substr($_[0],$pos,$len)), $pos+$len);
+      my $padding = $len < 4 ? "\0" x (4 - $len) : "";
+      ($len,$pos) = (unpack("N", $padding . substr($_[0],$pos,$len)), $pos+$len);
     }
     else {
       unless (exists $larr->{$pos}) {
@@ -642,7 +686,7 @@ sub _scan_indef {
 
     my $tag = substr($_[0], $pos++, 1);
 
-    if((ord($tag) & 0x1f) == 0x1f) {
+    if((unpack("C",$tag) & 0x1f) == 0x1f) {
       my $b;
       do {
 	$tag .= substr($_[0],$pos++,1);
@@ -657,7 +701,8 @@ sub _scan_indef {
       if ($len &= 0x7f) {
 	return if $pos+$len > $end ;
 
-	$pos += $len + unpack("N", "\0" x (4 - $len) . substr($_[0],$pos,$len));
+	my $padding = $len < 4 ? "\0" x (4 - $len) : "";
+	$pos += $len + unpack("N", $padding . substr($_[0],$pos,$len));
       }
       else {
         # reserve another list element

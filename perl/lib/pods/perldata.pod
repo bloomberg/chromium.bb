@@ -24,8 +24,9 @@ containing letters, underscores, and digits.  In some cases, it may
 be a chain of identifiers, separated by C<::> (or by the slightly
 archaic C<'>); all but the last are interpreted as names of packages,
 to locate the namespace in which to look up the final identifier
-(see L<perlmod/Packages> for details).  It's possible to substitute
-for a simple identifier, an expression that produces a reference
+(see L<perlmod/Packages> for details).  For a more in-depth discussion
+on identifiers, see L</Identifier parsing>.  It's possible to
+substitute for a simple identifier, an expression that produces a reference
 to the value at runtime.   This is described in more detail below
 and in L<perlref>.
 X<identifier>
@@ -36,8 +37,8 @@ collide with one of your normal variables.  Strings that match
 parenthesized parts of a regular expression are saved under names
 containing only digits after the C<$> (see L<perlop> and L<perlre>).
 In addition, several special variables that provide windows into
-the inner working of Perl have names containing punctuation characters
-and control characters.  These are documented in L<perlvar>.
+the inner working of Perl have names containing punctuation characters.
+These are documented in L<perlvar>.
 X<variable, built-in>
 
 Scalar values are always named with '$', even when referring to a
@@ -98,11 +99,151 @@ that returns a reference to the appropriate type.  For a description
 of this, see L<perlref>.
 
 Names that start with a digit may contain only more digits.  Names
-that do not start with a letter, underscore, digit or a caret (i.e.
-a control character) are limited to one character, e.g.,  C<$%> or
+that do not start with a letter, underscore, digit or a caret are
+limited to one character, e.g.,  C<$%> or
 C<$$>.  (Most of these one character names have a predefined
 significance to Perl.  For instance, C<$$> is the current process
-id.)
+id.  And all such names are reserved for Perl's possible use.)
+
+=head2 Identifier parsing
+X<identifiers>
+
+Up until Perl 5.18, the actual rules of what a valid identifier
+was were a bit fuzzy.  However, in general, anything defined here should
+work on previous versions of Perl, while the opposite -- edge cases
+that work in previous versions, but aren't defined here -- probably
+won't work on newer versions.
+As an important side note, please note that the following only applies
+to bareword identifiers as found in Perl source code, not identifiers
+introduced through symbolic references, which have much fewer
+restrictions.
+If working under the effect of the C<use utf8;> pragma, the following
+rules apply:
+
+    / (?[ ( \p{Word} & \p{XID_Start} ) + [_] ])
+      (?[ ( \p{Word} & \p{XID_Continue} ) ]) *    /x
+
+That is, a "start" character followed by any number of "continue"
+characters.  Perl requires every character in an identifier to also
+match C<\w> (this prevents some problematic cases); and Perl
+additionally accepts identfier names beginning with an underscore.
+
+If not under C<use utf8>, the source is treated as ASCII + 128 extra
+generic characters, and identifiers should match
+
+    / (?aa) (?!\d) \w+ /x
+
+That is, any word character in the ASCII range, as long as the first
+character is not a digit.
+
+There are two package separators in Perl: A double colon (C<::>) and a single
+quote (C<'>).  Normal identifiers can start or end with a double colon, and
+can contain several parts delimited by double colons.
+Single quotes have similar rules, but with the exception that they are not
+legal at the end of an identifier: That is, C<$'foo> and C<$foo'bar> are
+legal, but C<$foo'bar'> is not.
+
+Additionally, if the identifier is preceded by a sigil --
+that is, if the identifier is part of a variable name -- it
+may optionally be enclosed in braces.
+
+While you can mix double colons with singles quotes, the quotes must come
+after the colons: C<$::::'foo> and C<$foo::'bar> are legal, but C<$::'::foo>
+and C<$foo'::bar> are not.
+
+Put together, a grammar to match a basic identifier becomes
+
+ /
+  (?(DEFINE)
+      (?<variable>
+          (?&sigil)
+          (?:
+                  (?&normal_identifier)
+              |   \{ \s* (?&normal_identifier) \s* \}
+          )
+      )
+      (?<normal_identifier>
+          (?: :: )* '?
+           (?&basic_identifier)
+           (?: (?= (?: :: )+ '? | (?: :: )* ' ) (?&normal_identifier) )?
+          (?: :: )*
+      )
+      (?<basic_identifier>
+        # is use utf8 on?
+          (?(?{ (caller(0))[8] & $utf8::hint_bits })
+              (?&Perl_XIDS) (?&Perl_XIDC)*
+            | (?aa) (?!\d) \w+
+          )
+      )
+      (?<sigil> [&*\$\@\%])
+      (?<Perl_XIDS> (?[ ( \p{Word} & \p{XID_Start} ) + [_] ]) )
+      (?<Perl_XIDC> (?[ \p{Word} & \p{XID_Continue} ]) )
+  )
+ /x
+
+Meanwhile, special identifiers don't follow the above rules; For the most
+part, all of the identifiers in this category have a special meaning given
+by Perl.  Because they have special parsing rules, these generally can't be
+fully-qualified.  They come in six forms (but don't use forms 5 and 6):
+
+=over
+
+=item 1.
+
+A sigil, followed solely by digits matching C<\p{POSIX_Digit}>, like
+C<$0>, C<$1>, or C<$10000>.
+
+=item 2.
+
+A sigil followed by a single character matching the C<\p{POSIX_Punct}>
+property, like C<$!> or C<%+>, except the character C<"{"> doesn't work.
+
+=item 3.
+
+A sigil, followed by a caret and any one of the characters
+C<[][A-Z^_?\]>, like C<$^V> or C<$^]>.
+
+=item 4.
+
+Similar to the above, a sigil, followed by bareword text in braces,
+where the first character is a caret.  The next character is any one of
+the characters C<[][A-Z^_?\]>, followed by ASCII word characters.  An
+example is C<${^GLOBAL_PHASE}>.
+
+=item 5.
+
+A sigil, followed by any single character in the range C<[\xA1-\xAC\xAE-\xFF]>
+when not under C<S<"use utf8">>.  (Under C<S<"use utf8">>, the normal
+identifier rules given earlier in this section apply.)  Use of
+non-graphic characters (the C1 controls, the NO-BREAK SPACE, and the
+SOFT HYPHEN) has been disallowed since v5.26.0.
+The use of the other characters is unwise, as these are all
+reserved to have special meaning to Perl, and none of them currently
+do have special meaning, though this could change without notice.
+
+Note that an implication of this form is that there are identifiers only
+legal under C<S<"use utf8">>, and vice-versa, for example the identifier
+C<$E<233>tat> is legal under C<S<"use utf8">>, but is otherwise
+considered to be the single character variable C<$E<233>> followed by
+the bareword C<"tat">, the combination of which is a syntax error.
+
+=item 6.
+
+This is a combination of the previous two forms.  It is valid only when
+not under S<C<"use utf8">> (normal identifier rules apply when under
+S<C<"use utf8">>).  The form is a sigil, followed by text in braces,
+where the first character is any one of the characters in the range
+C<[\x80-\xFF]> followed by ASCII word characters up to the trailing
+brace.
+
+The same caveats as the previous form apply:  The non-graphic
+characters are no longer allowed with S<"use utf8">, it is unwise
+to use this form at all, and utf8ness makes a big difference.
+
+=back
+
+Prior to Perl v5.24, non-graphical ASCII control characters were also
+allowed in some situations; this had been deprecated since v5.20.
 
 =head2 Context
 X<context> X<scalar context> X<list context>
@@ -179,12 +320,17 @@ are considered pretty much the same thing for nearly all purposes,
 references are strongly-typed, uncastable pointers with builtin
 reference-counting and destructor invocation.
 
+X<truth> X<falsehood> X<true> X<false> X<!> X<not> X<negation> X<0>
+X<boolean> X<bool>
 A scalar value is interpreted as FALSE in the Boolean sense
 if it is undefined, the null string or the number 0 (or its
 string equivalent, "0"), and TRUE if it is anything else.  The
 Boolean context is just a special kind of scalar context where no 
 conversion to a string or a number is ever performed.
-X<boolean> X<bool> X<true> X<false> X<truth>
+Negation of a true value by C<!> or C<not> returns a special false value.
+When evaluated as a string it is treated as C<"">, but as a number, it
+is treated as 0.  Most Perl operators
+that return true or false behave this way.
 
 There are actually two varieties of null strings (sometimes referred
 to as "empty" strings), a defined one and an undefined one.  The
@@ -232,8 +378,7 @@ which is a different value since there is ordinarily a 0th element.
 Assigning to C<$#days> actually changes the length of the array.
 Shortening an array this way destroys intervening values.  Lengthening
 an array that was previously shortened does not recover values
-that were in those elements.  (It used to do so in Perl 4, but we
-had to break this to make sure destructors were called when expected.)
+that were in those elements.
 X<$#> X<array, length>
 
 You can also gain some minuscule measure of efficiency by pre-extending
@@ -259,18 +404,25 @@ leave nothing to doubt:
 
     $element_count = scalar(@whatever);
 
-If you evaluate a hash in scalar context, it returns false if the
-hash is empty.  If there are any key/value pairs, it returns true;
-more precisely, the value returned is a string consisting of the
+If you evaluate a hash in scalar context, it returns a false value if
+the hash is empty.  If there are any key/value pairs, it returns a
+true value.  A more precise definition is version dependent.
+
+Prior to Perl 5.25 the value returned was a string consisting of the
 number of used buckets and the number of allocated buckets, separated
 by a slash.  This is pretty much useful only to find out whether
 Perl's internal hashing algorithm is performing poorly on your data
 set.  For example, you stick 10,000 things in a hash, but evaluating
 %HASH in scalar context reveals C<"1/16">, which means only one out
 of sixteen buckets has been touched, and presumably contains all
-10,000 of your items.  This isn't supposed to happen.  If a tied hash
-is evaluated in scalar context, the C<SCALAR> method is called (with a
-fallback to C<FIRSTKEY>).
+10,000 of your items.  This isn't supposed to happen.
+
+As of Perl 5.25 the return was changed to be the count of keys in the
+hash. If you need access to the old behavior you can use
+C<Hash::Util::bucket_ratio()> instead.
+
+If a tied hash is evaluated in scalar context, the C<SCALAR> method is
+called (with a fallback to C<FIRSTKEY>).
 X<hash, scalar context> X<hash, bucket> X<bucket>
 
 You can preallocate space for a hash by assigning to the keys() function.
@@ -284,15 +436,16 @@ X<scalar, literal> X<scalar, constant>
 Numeric literals are specified in any of the following floating point or
 integer formats:
 
-    12345
-    12345.67
-    .23E-10             # a very small number
-    3.14_15_92          # a very important number
-    4_294_967_296       # underscore for legibility
-    0xff                # hex
-    0xdead_beef         # more hex   
-    0377                # octal (only numbers, begins with 0)
-    0b011011            # binary
+ 12345
+ 12345.67
+ .23E-10             # a very small number
+ 3.14_15_92          # a very important number
+ 4_294_967_296       # underscore for legibility
+ 0xff                # hex
+ 0xdead_beef         # more hex
+ 0377                # octal (only numbers, begins with 0)
+ 0b011011            # binary
+ 0x1.999ap-4         # hexadecimal floating point (the 'p' is required)
 
 You are allowed to use underscores (underbars) in numeric literals
 between digits for legibility (but not multiple underscores in a row:
@@ -315,6 +468,17 @@ Hexadecimal, octal, or binary, representations in string literals
 (e.g. '0xff') are not automatically converted to their integer
 representation.  The hex() and oct() functions make these conversions
 for you.  See L<perlfunc/hex> and L<perlfunc/oct> for more details.
+
+Hexadecimal floating point can start just like a hexadecimal literal,
+and it can be followed by an optional fractional hexadecimal part,
+but it must be followed by C<p>, an optional sign, and a power of two.
+The format is useful for accurately presenting floating point values,
+avoiding conversions to or from decimal floating point, and therefore
+avoiding possible loss in precision.  Notice that while most current
+platforms use the 64-bit IEEE 754 floating point, not all do.  Another
+potential source of (low-order) differences are the floating point
+rounding modes, which can differ between CPUs, operating systems,
+and compilers, and which Perl doesn't control.
 
 You can also embed newlines directly in your strings, i.e., they can end
 on a different line than they begin.  This is nice, but if you forget
@@ -355,13 +519,44 @@ C<$who::0>, and a C<$who's> variable.  The last two would be the
 $0 and the $s variables in the (presumably) non-existent package
 C<who>.
 
-In fact, an identifier within such curlies is forced to be a string,
-as is any simple identifier within a hash subscript.  Neither need
+In fact, a simple identifier within such curlies is forced to be
+a string, and likewise within a hash subscript.  Neither need
 quoting.  Our earlier example, C<$days{'Feb'}> can be written as
 C<$days{Feb}> and the quotes will be assumed automatically.  But
 anything more complicated in the subscript will be interpreted as an
 expression.  This means for example that C<$version{2.0}++> is
 equivalent to C<$version{2}++>, not to C<$version{'2.0'}++>.
+
+=head3 Special floating point: infinity (Inf) and not-a-number (NaN)
+
+Floating point values include the special values C<Inf> and C<NaN>,
+for infinity and not-a-number.  The infinity can be also negative.
+
+The infinity is the result of certain math operations that overflow
+the floating point range, like 9**9**9.  The not-a-number is the
+result when the result is undefined or unrepresentable.  Though note
+that you cannot get C<NaN> from some common "undefined" or
+"out-of-range" operations like dividing by zero, or square root of
+a negative number, since Perl generates fatal errors for those.
+
+The infinity and not-a-number have their own special arithmetic rules.
+The general rule is that they are "contagious": C<Inf> plus one is
+C<Inf>, and C<NaN> plus one is C<NaN>.  Where things get interesting
+is when you combine infinities and not-a-numbers: C<Inf> minus C<Inf>
+and C<Inf> divided by C<Inf> are C<NaN> (while C<Inf> plus C<Inf> is
+C<Inf> and C<Inf> times C<Inf> is C<Inf>).  C<NaN> is also curious
+in that it does not equal any number, I<including> itself:
+C<NaN> != C<NaN>.
+
+Perl doesn't understand C<Inf> and C<NaN> as numeric literals, but
+you can have them as strings, and Perl will convert them as needed:
+"Inf" + 1.  (You can, however, import them from the POSIX extension;
+C<use POSIX qw(Inf NaN);> and then use them as literals.)
+
+Note that on input (string to number) Perl accepts C<Inf> and C<NaN>
+in many forms.   Case is ignored, and the Win32-specific forms like
+C<1.#INF> are understood, but on output the values are normalized to
+C<Inf> and C<NaN>.
 
 =head3 Version Strings
 X<version string> X<vstring> X<v-string>
@@ -402,7 +597,7 @@ point in your program.  __SUB__ gives a reference to the current
 subroutine.  They may be used only as separate tokens; they
 will not be interpolated into strings.  If there is no current package
 (due to an empty C<package;> directive), __PACKAGE__ is the undefined
-value. (But the empty C<package;> is no longer supported, as of version
+value.  (But the empty C<package;> is no longer supported, as of version
 5.10.)  Outside of a subroutine, __SUB__ is the undefined value.  __SUB__
 is only available in 5.16 or higher, and only with a C<use v5.16> or
 C<use feature "current_sub"> declaration.
@@ -423,6 +618,17 @@ compatibility with older scripts written before __DATA__ was
 introduced, __END__ behaves like __DATA__ in the top level script (but
 not in files loaded with C<require> or C<do>) and leaves the remaining
 contents of the file accessible via C<main::DATA>.
+
+The C<DATA> file handle by default has whatever PerlIO layers were
+in place when Perl read the file to parse the source.  Normally that
+means that the file is being read bytewise, as if it were encoded in
+Latin-1, but there are two major ways for it to be otherwise.  Firstly,
+if the C<__END__>/C<__DATA__> token is in the scope of a C<use utf8>
+pragma then the C<DATA> handle will be in UTF-8 mode.  And secondly,
+if the source is being read from perl's standard input then the C<DATA>
+file handle is actually aliased to the C<STDIN> file handle, and may
+be in UTF-8 mode because of the C<PERL_UNICODE> environment variable or
+perl's command-line switches.
 
 See L<SelfLoader> for more description of __DATA__, and
 an example of its use.  Note that you cannot read from the DATA
@@ -545,7 +751,7 @@ array had been interpolated at that point.
 This interpolation combines with the facts that the opening
 and closing parentheses are optional (except when necessary for
 precedence) and lists may end with an optional comma to mean that
-multiple commas within lists are legal syntax. The list C<1,,3> is a
+multiple commas within lists are legal syntax.  The list C<1,,3> is a
 concatenation of two lists, C<1,> and C<3>, the first of which ends
 with that optional comma.  C<1,,3> is C<(1,),(3)> is C<1,3> (And
 similarly for C<1,,,3> is C<(1,),(,),3> is C<1,3> and so on.)  Not that
@@ -569,7 +775,7 @@ put the list in parentheses to avoid ambiguity.  For example:
 Lists may be assigned to only when each element of the list
 is itself legal to assign to:
 
-    ($a, $b, $c) = (1, 2, 3);
+    ($x, $y, $z) = (1, 2, 3);
 
     ($map{'red'}, $map{'blue'}, $map{'green'}) = (0x00f, 0x0f0, 0xf00);
 
@@ -578,6 +784,57 @@ This is useful for throwing away some of the return values of a
 function:
 
     ($dev, $ino, undef, undef, $uid, $gid) = stat($file);
+
+As of Perl 5.22, you can also use C<(undef)x2> instead of C<undef, undef>.
+(You can also do C<($x) x 2>, which is less useful, because it assigns to
+the same variable twice, clobbering the first value assigned.)
+
+When you assign a list of scalars to an array, all previous values in that
+array are wiped out and the number of elements in the array will now be equal to
+the number of elements in the right-hand list -- the list from which
+assignment was made.  The array will automatically resize itself to precisely
+accommodate each element in the right-hand list.
+
+    use warnings;
+    my (@xyz, $x, $y, $z);
+
+    @xyz = (1, 2, 3);
+    print "@xyz\n";                             # 1 2 3
+
+    @xyz = ('al', 'be', 'ga', 'de');
+    print "@xyz\n";                             # al be ga de
+
+    @xyz = (101, 102);
+    print "@xyz\n";                             # 101 102
+
+When, however, you assign a list of scalars to another list of scalars, the
+results differ according to whether the left-hand list -- the list being
+assigned to -- has the same, more or fewer elements than the right-hand list.
+
+    ($x, $y, $z) = (1, 2, 3);
+    print "$x $y $z\n";                         # 1 2 3
+
+    ($x, $y, $z) = ('al', 'be', 'ga', 'de');
+    print "$x $y $z\n";                         # al be ga
+
+    ($x, $y, $z) = (101, 102);
+    print "$x $y $z\n";                         # 101 102
+    # Use of uninitialized value $z in concatenation (.)
+    # or string at [program] line [line number].
+
+If the number of scalars in the left-hand list is less than that in the
+right-hand list, the "extra" scalars in the right-hand list will simply not be
+assigned.
+
+If the number of scalars in the left-hand list is greater than that in the
+left-hand list, the "missing" scalars will become undefined.
+
+    ($x, $y, $z) = (101, 102);
+    for my $el ($x, $y, $z) {
+        (defined $el) ? print "$el " : print "<undef>";
+    }
+    print "\n";
+                                                # 101 102 <undef>
 
 List assignment in scalar context returns the number of elements
 produced by the expression on the right side of the assignment:
@@ -592,16 +849,16 @@ which when assigned produces a 0, which is interpreted as FALSE.
 It's also the source of a useful idiom for executing a function or
 performing an operation in list context and then counting the number of
 return values, by assigning to an empty list and then using that
-assignment in scalar context. For example, this code:
+assignment in scalar context.  For example, this code:
 
     $count = () = $string =~ /\d+/g;
 
 will place into $count the number of digit groups found in $string.
 This happens because the pattern match is in list context (since it
 is being assigned to the empty list), and will therefore return a list
-of all matching parts of the string. The list assignment in scalar
+of all matching parts of the string.  The list assignment in scalar
 context will translate that into the number of elements (here, the
-number of times the pattern matched) and assign that to $count. Note
+number of times the pattern matched) and assign that to $count.  Note
 that simply using
 
     $count = $string =~ /\d+/g;
@@ -611,8 +868,8 @@ only return true or false, rather than a count of matches.
 
 The final element of a list assignment may be an array or a hash:
 
-    ($a, $b, @rest) = split;
-    my($a, $b, %rest) = @_;
+    ($x, $y, @rest) = split;
+    my($x, $y, %rest) = @_;
 
 You can actually put an array or hash anywhere in the list, but the first one
 in the list will soak up all the values, and anything after it will become
@@ -635,8 +892,8 @@ It is often more readable to use the C<< => >> operator between key/value
 pairs.  The C<< => >> operator is mostly just a more visually distinctive
 synonym for a comma, but it also arranges for its left-hand operand to be
 interpreted as a string if it's a bareword that would be a legal simple
-identifier. C<< => >> doesn't quote compound identifiers, that contain
-double colons. This makes it nice for initializing hashes:
+identifier.  C<< => >> doesn't quote compound identifiers, that contain
+double colons.  This makes it nice for initializing hashes:
 
     %map = (
                  red   => 0x00f,
@@ -666,6 +923,29 @@ Note that just because a hash is initialized in that order doesn't
 mean that it comes out in that order.  See L<perlfunc/sort> for examples
 of how to arrange for an output ordering.
 
+If a key appears more than once in the initializer list of a hash, the last
+occurrence wins:
+
+    %circle = (
+                  center => [5, 10],
+                  center => [27, 9],
+                  radius => 100,
+                  color => [0xDF, 0xFF, 0x00],
+                  radius => 54,
+    );
+
+    # same as
+    %circle = (
+                  center => [27, 9],
+                  color => [0xDF, 0xFF, 0x00],
+                  radius => 54,
+    );
+
+This can be used to provide overridable configuration defaults:
+
+    # values in %args take priority over %config_defaults
+    %config = (%config_defaults, %args);
+
 =head2 Subscripts
 
 An array can be accessed one scalar at a
@@ -676,12 +956,12 @@ square brackets.  For example:
     @myarray = (5, 50, 500, 5000);
     print "The Third Element is", $myarray[2], "\n";
 
-The array indices start with 0. A negative subscript retrieves its 
+The array indices start with 0.  A negative subscript retrieves its 
 value from the end.  In our example, C<$myarray[-1]> would have been 
 5000, and C<$myarray[-2]> would have been 500.
 
 Hash subscripts are similar, only instead of square brackets curly brackets
-are used. For example:
+are used.  For example:
 
     %scientists = 
     (
@@ -700,14 +980,14 @@ You can also subscript a list to get a single element from it:
 =head2 Multi-dimensional array emulation
 
 Multidimensional arrays may be emulated by subscripting a hash with a
-list. The elements of the list are joined with the subscript separator
+list.  The elements of the list are joined with the subscript separator
 (see L<perlvar/$;>).
 
-    $foo{$a,$b,$c}
+    $foo{$x,$y,$z}
 
 is equivalent to
 
-    $foo{join($;, $a, $b, $c)}
+    $foo{join($;, $x, $y, $z)}
 
 The default subscript separator is "\034", the same as SUBSEP in B<awk>.
 
@@ -751,21 +1031,21 @@ values of the array or hash.
         s/(\w+)/\u\L$1/g;   # "titlecase" words
     }
 
-A slice of an empty list is still an empty list.  Thus:
+As a special exception, when you slice a list (but not an array or a hash),
+if the list evaluates to empty, then taking a slice of that empty list will
+always yield the empty list in turn.  Thus:
 
-    @a = ()[1,0];           # @a has no elements
-    @b = (@a)[0,1];         # @b has no elements
-    @c = (0,1)[2,3];        # @c has no elements
-
-But:
-
-    @a = (1)[1,0];          # @a has two elements
-    @b = (1,undef)[1,0,2];  # @b has three elements
+    @a = ()[0,1];          # @a has no elements
+    @b = (@a)[0,1];        # @b has no elements
+    @c = (sub{}->())[0,1]; # @c has no elements
+    @d = ('a','b')[0,1];   # @d has two elements
+    @e = (@d)[0,1,8,9];    # @e has four elements
+    @f = (@d)[8,9];        # @f has two elements
 
 This makes it easy to write loops that terminate when a null list
 is returned:
 
-    while ( ($home, $user) = (getpwent)[7,0]) {
+    while ( ($home, $user) = (getpwent)[7,0] ) {
         printf "%-8s %s\n", $user, $home;
     }
 
@@ -787,6 +1067,39 @@ or curly) governs whether it's an array or a hash being looked at.
 On the other hand, the leading symbol ('$' or '@') on the array or
 hash indicates whether you are getting back a singular value (a
 scalar) or a plural one (a list).
+
+=head3 Key/Value Hash Slices
+
+Starting in Perl 5.20, a hash slice operation
+with the % symbol is a variant of slice operation
+returning a list of key/value pairs rather than just values:
+
+    %h = (blonk => 2, foo => 3, squink => 5, bar => 8);
+    %subset = %h{'foo', 'bar'}; # key/value hash slice
+    # %subset is now (foo => 3, bar => 8)
+    %removed = delete %h{'foo', 'bar'};
+    # %removed is now (foo => 3, bar => 8)
+    # %h is now (blonk => 2, squink => 5)
+
+However, the result of such a slice cannot be localized or used
+in assignment.  These are otherwise very much consistent with hash slices
+using the @ symbol.
+
+=head3 Index/Value Array Slices
+
+Similar to key/value hash slices (and also introduced
+in Perl 5.20), the % array slice syntax returns a list
+of index/value pairs:
+
+    @a = "a".."z";
+    @list = %a[3,4,6];
+    # @list is now (3, "d", 4, "e", 6, "g")
+    @removed = delete %a[3,4,6]
+    # @removed is now (3, "d", 4, "e", 6, "g")
+    # @list[3,4,6] are now undef
+
+Note that calling L<C<delete>|perlfunc/delete EXPR> on array values is
+strongly discouraged.
 
 =head2 Typeglobs and Filehandles
 X<typeglob> X<filehandle> X<*>
@@ -841,7 +1154,7 @@ For example:
 
 Now that we have the C<*foo{THING}> notation, typeglobs aren't used as much
 for filehandle manipulations, although they're still needed to pass brand
-new file and directory handles into or out of functions. That's because
+new file and directory handles into or out of functions.  That's because
 C<*HANDLE{IO}> only works if HANDLE has already been used as a handle.
 In other words, C<*FH> must be used to create new symbol table entries;
 C<*foo{THING}> cannot.  When in doubt, use C<*FH>.
@@ -849,10 +1162,10 @@ C<*foo{THING}> cannot.  When in doubt, use C<*FH>.
 All functions that are capable of creating filehandles (open(),
 opendir(), pipe(), socketpair(), sysopen(), socket(), and accept())
 automatically create an anonymous filehandle if the handle passed to
-them is an uninitialized scalar variable. This allows the constructs
+them is an uninitialized scalar variable.  This allows the constructs
 such as C<open(my $fh, ...)> and C<open(local $fh,...)> to be used to
 create filehandles that will conveniently be closed automatically when
-the scope ends, provided there are no other references to them. This
+the scope ends, provided there are no other references to them.  This
 largely eliminates the need for typeglobs when opening filehandles
 that must be passed around, as in the following example:
 

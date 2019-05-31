@@ -191,7 +191,7 @@ menu:
 
     [% template.name  %]     # index.html
 
-In constrast, the C<component> variable always references the I<current>
+In contrast, the C<component> variable always references the I<current>
 template being processed.  
 
 index.html

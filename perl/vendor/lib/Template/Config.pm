@@ -70,7 +70,7 @@ sub preload {
 #------------------------------------------------------------------------
 # load($module)
 #
-# Load a module via require().  Any occurences of '::' in the module name
+# Load a module via require().  Any occurrences of '::' in the module name
 # are be converted to '/' and '.pm' is appended.  Returns 1 on success
 # or undef on error.  Use $class->error() to examine the error string.
 #------------------------------------------------------------------------
@@ -326,9 +326,10 @@ object from the new class.
 
 =head2 load($module)
 
-Load a module using Perl's L<require()>. Any occurences of 'C<::>' in the module
-name are be converted to 'C</>', and 'C<.pm>' is appended. Returns 1 on success or
-undef on error.  Use C<$class-E<gt>error()> to examine the error string.
+Load a module using Perl's L<require()>. Any occurrences of 'C<::>' in the
+module name are be converted to 'C</>', and 'C<.pm>' is appended. Returns 1 on
+success or undef on error.  Use C<$class-E<gt>error()> to examine the error
+string.
 
 =head2 preload()
 

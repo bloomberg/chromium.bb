@@ -6,7 +6,13 @@ use File::Spec ();
 use File::Basename ();
 use Carp ();
 
-$VERSION = "5.5003"; # see also CPAN::Config::VERSION at end of file
+=head1 NAME
+
+CPAN::HandleConfig - internal configuration handling for CPAN.pm
+
+=cut 
+
+$VERSION = "5.5009"; # see also CPAN::Config::VERSION at end of file
 
 %can = (
         commit   => "Commit changes to disk",
@@ -36,6 +42,7 @@ $VERSION = "5.5003"; # see also CPAN::Config::VERSION at end of file
      "bzip2",
      "cache_metadata",
      "check_sigs",
+     "cleanup_after_install",
      "colorize_debug",
      "colorize_output",
      "colorize_print",
@@ -82,6 +89,7 @@ $VERSION = "5.5003"; # see also CPAN::Config::VERSION at end of file
      "patch",
      "patches_dir",
      "perl5lib_verbosity",
+     "plugin_list",
      "prefer_external_tar",
      "prefer_installer",
      "prefs_dir",
@@ -89,11 +97,13 @@ $VERSION = "5.5003"; # see also CPAN::Config::VERSION at end of file
      "proxy_pass",
      "proxy_user",
      "randomize_urllist",
+     "recommends_policy",
      "scan_cache",
      "shell",
      "show_unparsable_versions",
      "show_upload_date",
      "show_zero_versions",
+     "suggests_policy",
      "tar",
      "tar_verbosity",
      "term_is_latin",
@@ -102,6 +112,7 @@ $VERSION = "5.5003"; # see also CPAN::Config::VERSION at end of file
      "trust_test_report_history",
      "unzip",
      "urllist",
+     "use_prompt_default",
      "use_sqlite",
      "username",
      "version_timeout",
@@ -144,7 +155,7 @@ sub edit {
         # one day I used randomize_urllist for a boolean, so we must
         # list them explicitly --ak
         if (0) {
-        } elsif ($o =~ /^(wait_list|urllist|dontload_list)$/) {
+        } elsif ($o =~ /^(wait_list|urllist|dontload_list|plugin_list)$/) {
 
             #
             # ARRAYS
@@ -240,7 +251,7 @@ sub prettyprint {
                     sprintf "\t%-18s => %s\n",
                                "[$_]",
                                         defined $v->{$_} ? "[$v->{$_}]" : "undef"
-                } keys %$v;
+                } sort keys %$v;
         }
         $CPAN::Frontend->myprint(
                                  join(
@@ -374,9 +385,9 @@ sub neatvalue {
         return join "", @m;
     }
     return "$v" unless $t eq 'HASH';
-    my(@m, $key, $val);
-    while (($key,$val) = each %$v) {
-        last unless defined $key; # cautious programming in case (undef,undef) is true
+    my @m;
+    foreach my $key (sort keys %$v) {
+        my $val = $v->{$key};
         push(@m,"q[$key]=>".$self->neatvalue($val)) ;
     }
     return "{ ".join(', ',@m)." }";
@@ -527,7 +538,8 @@ sub cpan_home_dir_candidates {
     push @dirs, $ENV{USERPROFILE} if $ENV{USERPROFILE};
 
     $CPAN::Config->{load_module_verbosity} = $old_v;
-    @dirs = map { "$_/.cpan" } grep { defined } @dirs;
+    my $dotcpan = $^O eq 'VMS' ? '_cpan' : '.cpan';
+    @dirs = map { File::Spec->catdir($_, $dotcpan) } grep { defined } @dirs;
     return wantarray ? @dirs : $dirs[0];
 }
 
@@ -739,7 +751,7 @@ sub prefs_lookup {
         return $distro->prefs->{cpanconfig}{$what};
     } else {
         $CPAN::Frontend->mywarn("Warning: $what not yet officially ".
-                                "supported for distroprefs, doing a normal lookup");
+                                "supported for distroprefs, doing a normal lookup\n");
         return $CPAN::Config->{$what};
     }
 }
@@ -758,7 +770,7 @@ sub prefs_lookup {
 
     use strict;
     use vars qw($AUTOLOAD $VERSION);
-    $VERSION = "5.5001";
+    $VERSION = "5.5008";
 
     # formerly CPAN::HandleConfig was known as CPAN::Config
     sub AUTOLOAD { ## no critic

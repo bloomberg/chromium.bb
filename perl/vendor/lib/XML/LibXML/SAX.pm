@@ -10,14 +10,16 @@
 package XML::LibXML::SAX;
 
 use strict;
+use warnings;
+
 use vars qw($VERSION @ISA);
 
-$VERSION = "1.98"; # VERSION TEMPLATE: DO NOT CHANGE
+$VERSION = "2.0200"; # VERSION TEMPLATE: DO NOT CHANGE
 
 use XML::LibXML;
 use XML::SAX::Base;
 
-use base qw(XML::SAX::Base);
+use parent qw(XML::SAX::Base);
 
 use Carp;
 use IO::File;
@@ -28,12 +30,12 @@ sub CLONE_SKIP {
 
 sub set_feature {
 	my ($self, $feat, $val) = @_;
-	
+
 	if ($feat eq 'http://xmlns.perl.org/sax/join-character-data') {
 		$self->{JOIN_CHARACTERS} = $val;
 		return 1;
 	}
-	
+
 	shift(@_);
 	return $self->SUPER::set_feature(@_);
 }
@@ -47,8 +49,7 @@ sub _parse_characterstream {
 
 sub _parse_bytestream {
     my ( $self, $fh ) = @_;
- 
-    $self->{ParserOptions}{LibParser}      = XML::LibXML->new;
+    $self->{ParserOptions}{LibParser}      = XML::LibXML->new()     unless defined $self->{ParserOptions}{LibParser};
     $self->{ParserOptions}{ParseFunc}      = \&XML::LibXML::parse_fh;
     $self->{ParserOptions}{ParseFuncParam} = $fh;
     $self->_parse;
@@ -57,7 +58,6 @@ sub _parse_bytestream {
 
 sub _parse_string {
     my ( $self, $string ) = @_;
-#    $self->{ParserOptions}{LibParser}      = XML::LibXML->new;
     $self->{ParserOptions}{LibParser}      = XML::LibXML->new()     unless defined $self->{ParserOptions}{LibParser};
     $self->{ParserOptions}{ParseFunc}      = \&XML::LibXML::parse_string;
     $self->{ParserOptions}{ParseFuncParam} = $string;
@@ -67,7 +67,7 @@ sub _parse_string {
 
 sub _parse_systemid {
     my $self = shift;
-    $self->{ParserOptions}{LibParser}      = XML::LibXML->new;
+    $self->{ParserOptions}{LibParser}      = XML::LibXML->new()     unless defined $self->{ParserOptions}{LibParser};
     $self->{ParserOptions}{ParseFunc}      = \&XML::LibXML::parse_file;
     $self->{ParserOptions}{ParseFuncParam} = shift;
     $self->_parse;
@@ -76,7 +76,7 @@ sub _parse_systemid {
 
 sub parse_chunk {
     my ( $self, $chunk ) = @_;
-    $self->{ParserOptions}{LibParser}      = XML::LibXML->new;
+    $self->{ParserOptions}{LibParser}      = XML::LibXML->new()     unless defined $self->{ParserOptions}{LibParser};
     $self->{ParserOptions}{ParseFunc}      = \&XML::LibXML::parse_xml_chunk;
     $self->{ParserOptions}{LibParser}->{IS_FILTER}=1; # a hack to prevent parse_xml_chunk from issuing end_document
     $self->{ParserOptions}{ParseFuncParam} = $chunk;
@@ -87,7 +87,7 @@ sub parse_chunk {
 sub _parse {
     my $self = shift;
     my $args = bless $self->{ParserOptions}, ref($self);
-    
+
     if (defined($self->{JOIN_CHARACTERS})) {
     	$args->{LibParser}->{JOIN_CHARACTERS} = $self->{JOIN_CHARACTERS};
     } else {

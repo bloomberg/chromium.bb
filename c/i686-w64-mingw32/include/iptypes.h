@@ -1,10 +1,13 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef IP_TYPES_INCLUDED
 #define IP_TYPES_INCLUDED
+
+#include <winapifamily.h>
+#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP) || _WIN32_WINNT >= 0x0A00
 
 #ifdef __cplusplus
 extern "C" {
@@ -282,7 +285,7 @@ extern "C" {
 #if (NTDDI_VERSION >= 0x06000100) /* NTDDI_VISTASP1 */
     PIP_ADAPTER_DNS_SUFFIX FirstDnsSuffix;
 #endif
-  } IP_ADAPTER_ADDRESSES_LH;
+  } IP_ADAPTER_ADDRESSES_LH, *PIP_ADAPTER_ADDRESSES_LH;
 
   typedef struct _IP_ADAPTER_ADDRESSES_XP {
     __C89_NAMELESS union {
@@ -368,6 +371,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* #if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP) || _WIN32_WINNT >= 0x0A00 */
 
 #endif /* IP_TYPES_INCLUDED */
 

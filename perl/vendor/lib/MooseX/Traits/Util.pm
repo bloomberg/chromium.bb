@@ -2,11 +2,14 @@ package MooseX::Traits::Util;
 use strict;
 use warnings;
 
+our $VERSION = '0.13';
+
 use Sub::Exporter -setup => {
     exports => ['new_class_with_traits'],
 };
 
-use Carp qw(confess);
+use Class::Load ();
+use Carp ();
 
 # note: "$class" throughout is "class name" or "instance of class
 # name"
@@ -14,7 +17,7 @@ use Carp qw(confess);
 sub check_class {
     my $class = shift;
 
-    confess "We can't interact with traits for a class ($class) ".
+    Carp::confess "We can't interact with traits for a class ($class) ".
       "that does not do MooseX::Traits" unless $class->does('MooseX::Traits');
 }
 
@@ -46,7 +49,7 @@ sub resolve_traits {
         my $orig = $_;
         if(!ref $orig){
             my $transformed = transform_trait($class, $orig);
-            Class::MOP::load_class($transformed);
+            Class::Load::load_class($transformed);
             $transformed;
         }
         else {
@@ -78,3 +81,7 @@ sub new_class_with_traits {
 }
 
 1;
+
+=for Pod::Coverage check_class new_class_with_traits resolve_traits transform_trait
+
+=cut

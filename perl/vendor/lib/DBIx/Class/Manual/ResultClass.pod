@@ -1,0 +1,103 @@
+=for comment POD_DERIVED_INDEX_GENERATED
+The following documentation is automatically generated.  Please do not edit
+this file, but rather the original, inline with DBIx::Class::Manual::ResultClass
+at lib/DBIx/Class/Manual/ResultClass.pod
+(on the system that originally ran this).
+If you do edit this file, and don't want your changes to be removed, make
+sure you change the first line.
+
+=cut
+
+=head1 NAME
+
+DBIx::Class::Manual::ResultClass - Representing a single result (row) from
+a DB query
+
+=head1 SYNOPSIS
+
+  package My::Schema::Result::Track;
+
+  use parent 'DBIx::Class::Core';
+
+  __PACKAGE__->table('tracks');
+
+  __PACKAGE__->add_columns({
+    id => {
+      data_type => 'int',
+      is_auto_increment => 1,
+    },
+    cd_id => {
+      data_type => 'int',
+    },
+    title => {
+      data_type => 'varchar',
+      size => 50,
+    },
+    rank => {
+      data_type => 'int',
+      is_nullable => 1,
+    },
+  });
+
+  __PACKAGE__->set_primary_key('id');
+  __PACKAGE__->add_unique_constraint(u_title => ['cd_id', 'title']);
+
+=head1 DESCRIPTION
+
+In L<DBIx::Class>, a user normally receives query results as instances of a
+certain C<Result Class>, depending on the main query source.  Besides being
+the primary "toolset" for interaction with your data, a C<Result Class> also
+serves to establish source metadata, which is then used during initialization
+of your L<DBIx::Class::Schema> instance.
+
+Because of these multiple seemingly conflicting purposes, it is hard to
+aggregate the documentation of various methods available on a typical
+C<Result Class>. This document serves as a general overview of C<Result Class>
+declaration best practices, and offers an index of the available methods
+(and the Components/Roles which provide them).
+
+=head1 INHERITED METHODS
+
+=over 4
+
+=item L<DBIx::Class::Relationship>
+
+L<has_many|DBIx::Class::Relationship/has_many>, L<has_one|DBIx::Class::Relationship/has_one>, L<might_have|DBIx::Class::Relationship/might_have>, L<belongs_to|DBIx::Class::Relationship/belongs_to>, L<many_to_many|DBIx::Class::Relationship/many_to_many>
+
+=item L<DBIx::Class::Relationship::Base>
+
+L<register_relationship|DBIx::Class::Relationship::Base/register_relationship>, L<count_related|DBIx::Class::Relationship::Base/count_related>, L<create_related|DBIx::Class::Relationship::Base/create_related>, L<delete_related|DBIx::Class::Relationship::Base/delete_related>, L<find_or_create_related|DBIx::Class::Relationship::Base/find_or_create_related>, L<find_or_new_related|DBIx::Class::Relationship::Base/find_or_new_related>, L<find_related|DBIx::Class::Relationship::Base/find_related>, L<new_related|DBIx::Class::Relationship::Base/new_related>, L<related_resultset|DBIx::Class::Relationship::Base/related_resultset>, L<search_related|DBIx::Class::Relationship::Base/search_related>, L<search_related_rs|DBIx::Class::Relationship::Base/search_related_rs>, L<set_from_related|DBIx::Class::Relationship::Base/set_from_related>, L<update_from_related|DBIx::Class::Relationship::Base/update_from_related>, L<update_or_create_related|DBIx::Class::Relationship::Base/update_or_create_related>
+
+=item L<DBIx::Class::InflateColumn>
+
+L<get_inflated_column|DBIx::Class::InflateColumn/get_inflated_column>, L<inflate_column|DBIx::Class::InflateColumn/inflate_column>, L<set_inflated_column|DBIx::Class::InflateColumn/set_inflated_column>, L<store_inflated_column|DBIx::Class::InflateColumn/store_inflated_column>
+
+=item L<DBIx::Class::PK>
+
+L<ID|DBIx::Class::PK/ID>, L<id|DBIx::Class::PK/id>, L<ident_condition|DBIx::Class::PK/ident_condition>
+
+=item L<DBIx::Class::Row>
+
+L<delete|DBIx::Class::Row/delete>, L<update|DBIx::Class::Row/update>, L<copy|DBIx::Class::Row/copy>, L<discard_changes|DBIx::Class::Row/discard_changes>, L<get_column|DBIx::Class::Row/get_column>, L<get_columns|DBIx::Class::Row/get_columns>, L<get_dirty_columns|DBIx::Class::Row/get_dirty_columns>, L<get_from_storage|DBIx::Class::Row/get_from_storage>, L<get_inflated_columns|DBIx::Class::Row/get_inflated_columns>, L<has_column_loaded|DBIx::Class::Row/has_column_loaded>, L<in_storage|DBIx::Class::Row/in_storage>, L<inflate_result|DBIx::Class::Row/inflate_result>, L<insert|DBIx::Class::Row/insert>, L<insert_or_update|DBIx::Class::Row/insert_or_update>, L<is_changed|DBIx::Class::Row/is_changed>, L<is_column_changed|DBIx::Class::Row/is_column_changed>, L<make_column_dirty|DBIx::Class::Row/make_column_dirty>, L<new|DBIx::Class::Row/new>, L<register_column|DBIx::Class::Row/register_column>, L<result_source|DBIx::Class::Row/result_source>, L<set_column|DBIx::Class::Row/set_column>, L<set_columns|DBIx::Class::Row/set_columns>, L<set_inflated_columns|DBIx::Class::Row/set_inflated_columns>, L<store_column|DBIx::Class::Row/store_column>, L<throw_exception|DBIx::Class::Row/throw_exception>, L<update_or_insert|DBIx::Class::Row/update_or_insert>
+
+=item L<DBIx::Class::ResultSourceProxy::Table>
+
+L<table|DBIx::Class::ResultSourceProxy::Table/table>, L<table_class|DBIx::Class::ResultSourceProxy::Table/table_class>
+
+=item L<DBIx::Class::ResultSource>
+
+L<add_column|DBIx::Class::ResultSource/add_column>, L<add_columns|DBIx::Class::ResultSource/add_columns>, L<add_relationship|DBIx::Class::ResultSource/add_relationship>, L<add_unique_constraint|DBIx::Class::ResultSource/add_unique_constraint>, L<add_unique_constraints|DBIx::Class::ResultSource/add_unique_constraints>, L<column_info|DBIx::Class::ResultSource/column_info>, L<column_info_from_storage|DBIx::Class::ResultSource/column_info_from_storage>, L<columns|DBIx::Class::ResultSource/columns>, L<columns_info|DBIx::Class::ResultSource/columns_info>, L<has_column|DBIx::Class::ResultSource/has_column>, L<has_relationship|DBIx::Class::ResultSource/has_relationship>, L<primary_columns|DBIx::Class::ResultSource/primary_columns>, L<relationship_info|DBIx::Class::ResultSource/relationship_info>, L<relationships|DBIx::Class::ResultSource/relationships>, L<remove_column|DBIx::Class::ResultSource/remove_column>, L<remove_columns|DBIx::Class::ResultSource/remove_columns>, L<result_class|DBIx::Class::ResultSource/result_class>, L<resultset_attributes|DBIx::Class::ResultSource/resultset_attributes>, L<resultset_class|DBIx::Class::ResultSource/resultset_class>, L<sequence|DBIx::Class::ResultSource/sequence>, L<set_primary_key|DBIx::Class::ResultSource/set_primary_key>, L<source_info|DBIx::Class::ResultSource/source_info>, L<source_name|DBIx::Class::ResultSource/source_name>, L<unique_constraint_columns|DBIx::Class::ResultSource/unique_constraint_columns>, L<unique_constraint_names|DBIx::Class::ResultSource/unique_constraint_names>, L<unique_constraints|DBIx::Class::ResultSource/unique_constraints>
+
+=back
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.
+

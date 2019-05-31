@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -226,21 +226,21 @@ extern "C" {
 
 #define XACTTOMSG(dwXact) (dwXact-0x00040000+0x40000000)
   typedef enum XACT_DTC_CONSTANTS {
-    XACT_E_CONNECTION_REQUEST_DENIED = 0x8004d100L,XACT_E_TOOMANY_ENLISTMENTS = 0x8004d101L,XACT_E_DUPLICATE_GUID = 0x8004d102L,
-    XACT_E_NOTSINGLEPHASE = 0x8004d103L,XACT_E_RECOVERYALREADYDONE = 0x8004d104L,XACT_E_PROTOCOL = 0x8004d105L,XACT_E_RM_FAILURE = 0x8004d106L,
-    XACT_E_RECOVERY_FAILED = 0x8004d107L,XACT_E_LU_NOT_FOUND = 0x8004d108L,XACT_E_DUPLICATE_LU = 0x8004d109L,XACT_E_LU_NOT_CONNECTED = 0x8004d10aL,
-    XACT_E_DUPLICATE_TRANSID = 0x8004d10bL,XACT_E_LU_BUSY = 0x8004d10cL,XACT_E_LU_NO_RECOVERY_PROCESS = 0x8004d10dL,XACT_E_LU_DOWN = 0x8004d10eL,
-    XACT_E_LU_RECOVERING = 0x8004d10fL,XACT_E_LU_RECOVERY_MISMATCH = 0x8004d110L,XACT_E_RM_UNAVAILABLE = 0x8004d111L,
-    XACT_E_LRMRECOVERYALREADYDONE = 0x8004d112L,XACT_E_NOLASTRESOURCEINTERFACE = 0x8004d113L,XACT_S_NONOTIFY = 0x4d100L,XACT_OK_NONOTIFY = 0x4d101L,
+    XACT_E_CONNECTION_REQUEST_DENIED = 0x8004d100,XACT_E_TOOMANY_ENLISTMENTS = 0x8004d101,XACT_E_DUPLICATE_GUID = 0x8004d102,
+    XACT_E_NOTSINGLEPHASE = 0x8004d103,XACT_E_RECOVERYALREADYDONE = 0x8004d104,XACT_E_PROTOCOL = 0x8004d105,XACT_E_RM_FAILURE = 0x8004d106,
+    XACT_E_RECOVERY_FAILED = 0x8004d107,XACT_E_LU_NOT_FOUND = 0x8004d108,XACT_E_DUPLICATE_LU = 0x8004d109,XACT_E_LU_NOT_CONNECTED = 0x8004d10a,
+    XACT_E_DUPLICATE_TRANSID = 0x8004d10b,XACT_E_LU_BUSY = 0x8004d10c,XACT_E_LU_NO_RECOVERY_PROCESS = 0x8004d10d,XACT_E_LU_DOWN = 0x8004d10e,
+    XACT_E_LU_RECOVERING = 0x8004d10f,XACT_E_LU_RECOVERY_MISMATCH = 0x8004d110,XACT_E_RM_UNAVAILABLE = 0x8004d111,
+    XACT_E_LRMRECOVERYALREADYDONE = 0x8004d112,XACT_E_NOLASTRESOURCEINTERFACE = 0x8004d113,XACT_S_NONOTIFY = 0x4d100,XACT_OK_NONOTIFY = 0x4d101,
     dwUSER_MS_SQLSERVER = 0xffff
   } XACT_DTC_CONSTANTS;
 
 #ifndef _XID_T_DEFINED
 #define _XID_T_DEFINED
   typedef struct xid_t {
-    long formatID;
-    long gtrid_length;
-    long bqual_length;
+    __LONG32 formatID;
+    __LONG32 gtrid_length;
+    __LONG32 bqual_length;
     char data[128 ];
   } XID;
 #endif
@@ -248,18 +248,18 @@ extern "C" {
 #define _XA_SWITCH_T_DEFINED
   typedef struct xa_switch_t {
     char name[32 ];
-    long flags;
-    long version;
-    int (__cdecl *xa_open_entry)(char *__MIDL_0004,int __MIDL_0005,long __MIDL_0006);
-    int (__cdecl *xa_close_entry)(char *__MIDL_0008,int __MIDL_0009,long __MIDL_0010);
-    int (__cdecl *xa_start_entry)(XID *__MIDL_0012,int __MIDL_0013,long __MIDL_0014);
-    int (__cdecl *xa_end_entry)(XID *__MIDL_0016,int __MIDL_0017,long __MIDL_0018);
-    int (__cdecl *xa_rollback_entry)(XID *__MIDL_0020,int __MIDL_0021,long __MIDL_0022);
-    int (__cdecl *xa_prepare_entry)(XID *__MIDL_0024,int __MIDL_0025,long __MIDL_0026);
-    int (__cdecl *xa_commit_entry)(XID *__MIDL_0028,int __MIDL_0029,long __MIDL_0030);
-    int (__cdecl *xa_recover_entry)(XID *__MIDL_0032,long __MIDL_0033,int __MIDL_0034,long __MIDL_0035);
-    int (__cdecl *xa_forget_entry)(XID *__MIDL_0037,int __MIDL_0038,long __MIDL_0039);
-    int (__cdecl *xa_complete_entry)(int *__MIDL_0041,int *__MIDL_0042,int __MIDL_0043,long __MIDL_0044);
+    __LONG32 flags;
+    __LONG32 version;
+    int (__cdecl *xa_open_entry)(char *__MIDL_0004,int __MIDL_0005,__LONG32 __MIDL_0006);
+    int (__cdecl *xa_close_entry)(char *__MIDL_0008,int __MIDL_0009,__LONG32 __MIDL_0010);
+    int (__cdecl *xa_start_entry)(XID *__MIDL_0012,int __MIDL_0013,__LONG32 __MIDL_0014);
+    int (__cdecl *xa_end_entry)(XID *__MIDL_0016,int __MIDL_0017,__LONG32 __MIDL_0018);
+    int (__cdecl *xa_rollback_entry)(XID *__MIDL_0020,int __MIDL_0021,__LONG32 __MIDL_0022);
+    int (__cdecl *xa_prepare_entry)(XID *__MIDL_0024,int __MIDL_0025,__LONG32 __MIDL_0026);
+    int (__cdecl *xa_commit_entry)(XID *__MIDL_0028,int __MIDL_0029,__LONG32 __MIDL_0030);
+    int (__cdecl *xa_recover_entry)(XID *__MIDL_0032,__LONG32 __MIDL_0033,int __MIDL_0034,__LONG32 __MIDL_0035);
+    int (__cdecl *xa_forget_entry)(XID *__MIDL_0037,int __MIDL_0038,__LONG32 __MIDL_0039);
+    int (__cdecl *xa_complete_entry)(int *__MIDL_0041,int *__MIDL_0042,int __MIDL_0043,__LONG32 __MIDL_0044);
   } xa_switch_t;
 #endif
 

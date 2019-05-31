@@ -658,7 +658,7 @@ set_handler with the correct arguments.
 
 The inverse of set_handler, this method takes a an optional string containing a handler type (DTDHandler, 
 ContentHandler, etc. 'Handler' is used if no type is passed). It returns a reference to the object that implements
-that that class, or undef if that handler type is not set for the current driver/filter. 
+that class, or undef if that handler type is not set for the current driver/filter. 
 
 =item * get_document_handler, get_content_handler, get_dtd_handler, get_lexical_handler, get_decl_handler, 
 get_error_handler, get_entity_resolver

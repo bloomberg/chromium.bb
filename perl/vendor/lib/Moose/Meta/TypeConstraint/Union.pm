@@ -1,11 +1,5 @@
-
 package Moose::Meta::TypeConstraint::Union;
-BEGIN {
-  $Moose::Meta::TypeConstraint::Union::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::TypeConstraint::Union::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -13,10 +7,9 @@ use metaclass;
 
 use Moose::Meta::TypeCoercion::Union;
 
-use List::MoreUtils qw(all);
-use List::Util qw(first);
+use List::Util 1.33 qw(first all);
 
-use base 'Moose::Meta::TypeConstraint';
+use parent 'Moose::Meta::TypeConstraint';
 
 __PACKAGE__->meta->add_attribute('type_constraints' => (
     accessor  => 'type_constraints',
@@ -35,7 +28,7 @@ sub new {
         %options,
     );
 
-    $self->_set_constraint(sub { $self->check($_[0]) });
+    $self->_set_constraint( $self->_compiled_type_constraint );
 
     return $self;
 }
@@ -203,9 +196,11 @@ sub create_child_type {
 
 # ABSTRACT: A union of Moose type constraints
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -213,7 +208,7 @@ Moose::Meta::TypeConstraint::Union - A union of Moose type constraints
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -226,9 +221,9 @@ constraints is true.
 C<Moose::Meta::TypeConstraint::Union> is a subclass of
 L<Moose::Meta::TypeConstraint>.
 
-=over 4
+=head1 METHODS
 
-=item B<< Moose::Meta::TypeConstraint::Union->new(%options) >>
+=head2 Moose::Meta::TypeConstraint::Union->new(%options)
 
 This creates a new class type constraint based on the given
 C<%options>.
@@ -245,18 +240,18 @@ simply calls C<check> on the newly created object.
 Finally, the constructor also makes sure that the object's C<coercion>
 attribute is a L<Moose::Meta::TypeCoercion::Union> object.
 
-=item B<< $constraint->type_constraints >>
+=head2 $constraint->type_constraints
 
 This returns the array reference of C<type_constraints> provided to
 the constructor.
 
-=item B<< $constraint->parent >>
+=head2 $constraint->parent
 
 This returns the nearest common ancestor of all the components of the union.
 
-=item B<< $constraint->check($value) >>
+=head2 $constraint->check($value)
 
-=item B<< $constraint->validate($value) >>
+=head2 $constraint->validate($value)
 
 These two methods simply call the relevant method on each of the
 member type constraints in the union. If any type accepts the value,
@@ -265,51 +260,87 @@ the value is valid.
 With C<validate> the error message returned includes all of the error
 messages returned by the member type constraints.
 
-=item B<< $constraint->equals($type_name_or_object) >>
+=head2 $constraint->equals($type_name_or_object)
 
 A type is considered equal if it is also a union type, and the two
 unions have the same member types.
 
-=item B<< $constraint->find_type_for($value) >>
+=head2 $constraint->find_type_for($value)
 
 This returns the first member type constraint for which C<check($value)> is
 true, allowing you to determine which of the Union's member type constraints
 a given value matches.
 
-=item B<< $constraint->is_a_type_of($type_name_or_object) >>
+=head2 $constraint->is_a_type_of($type_name_or_object)
 
 This returns true if all of the member type constraints return true
 for the C<is_a_type_of> method.
 
-=item B<< $constraint->is_subtype_of >>
+=head2 $constraint->is_subtype_of
 
 This returns true if all of the member type constraints return true
-for the C<is_a_subtype_of> method.
+for the C<is_subtype_of> method.
 
-=item B<< $constraint->create_child_type(%options) >>
+=head2 $constraint->create_child_type(%options)
 
 This returns a new L<Moose::Meta::TypeConstraint> object with the type
 as its parent.
-
-=back
 
 =head1 BUGS
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

@@ -1,21 +1,32 @@
+# PODNAME: MooseX::Role::Parameterized::Tutorial
+# ABSTRACT: why and how
+
+__END__
+
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
 MooseX::Role::Parameterized::Tutorial - why and how
 
+=head1 VERSION
+
+version 1.10
+
 =head1 MOTIVATION
 
 Roles are composable units of behavior. They are useful for factoring out
 functionality common to many classes from any part of your class hierarchy. See
-L<Moose::Cookbook::Roles::Recipe1> for an introduction to L<Moose::Role>.
+L<Moose::Cookbook::Roles::Comparable_CodeReuse> for an introduction to L<Moose::Role>.
 
 While combining roles affords you a great deal of flexibility, individual roles
 have very little in the way of configurability. Core Moose provides C<-alias>
 for renaming methods and C<-excludes> for ignoring methods. These options are
 primarily for resolving role conflicts. Depending on how much of a purist you are,
 these options are I<solely> for resolving role conflicts. See
-L<Moose::Cookbook::Roles::Recipe2> for more about C<-alias> and C<-excludes>.
+L<Moose::Cookbook::Roles::Restartable_AdvancedComposition> for more about C<-alias> and C<-excludes>.
 
 Because roles serve many different masters, they usually provide only the least
 common denominator of functionality. To empower roles further, more
@@ -27,7 +38,7 @@ Parameterized roles offer a solution to these (and other) kinds of problems.
 
 =head1 USAGE
 
-=head3 C<with>
+=head2 C<with>
 
 The syntax of a class consuming a parameterized role has not changed
 from the standard C<with>. You pass in parameters just like you
@@ -53,7 +64,7 @@ immediately after the role they belong to:
 We, like Moose itself, use L<Data::OptList> to make sure that a list of role
 names and associated parameters is handled correctly.
 
-=head3 C<parameter>
+=head2 C<parameter>
 
 Inside your parameterized role, you specify a set of parameters. This is
 exactly like specifying the attributes of a class. Instead of L<Moose/has> you
@@ -75,7 +86,7 @@ the parameters object, so data hiding is not as important than in the general
 case of L<Moose/has>. If you do not want an accessor, you can use
 C<< is => 'bare' >>.
 
-=head3 C<role>
+=head2 C<role>
 
 C<role> takes a block of code that will be used to generate your role with its
 parameters bound. Here is where you declare components that depend on
@@ -96,7 +107,7 @@ your methods may use parameters however they wish!
 =head1 USES
 
 Ideally these will become fully-explained examples in something resembling
-L<Moose::Cookbook>. But for now, only a braindump.
+L<Moose::Cookbook>. But for now, only a brain dump.
 
 =over 4
 
@@ -123,7 +134,7 @@ can now also choose type, default value, whether it's required, B<traits>, etc.
             isa    => $p->type,
             ...
         );
-    }
+    };
 
 =item Inform a role of your class' attributes and methods
 
@@ -139,7 +150,7 @@ instrument, or which attributes to dump to a file.
     role {
         my $p = shift;
         around $p->instrument_method => sub { ... };
-    }
+    };
 
 =item Arbitrary execution choices
 
@@ -159,7 +170,7 @@ states.
             if ($p->save_intermediate) { ... }
             ...
         };
-    }
+    };
 
 =item Deciding a backend
 
@@ -182,7 +193,7 @@ L<Storable>. Which backend to use can be a parameter.
             method thaw   => \&YAML::Load;
         }
         ...
-    }
+    };
 
 =item Additional validation
 
@@ -208,9 +219,30 @@ names. Since parameterized roles have direct access to its consumer, you can ins
             or confess "Your push parameter must be a scalar";
 
         ...
-    }
+    };
 
 =back
 
-=cut
+=head1 SUPPORT
 
+Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=MooseX-Role-Parameterized>
+(or L<bug-MooseX-Role-Parameterized@rt.cpan.org|mailto:bug-MooseX-Role-Parameterized@rt.cpan.org>).
+
+There is also a mailing list available for users of this distribution, at
+L<http://lists.perl.org/list/moose.html>.
+
+There is also an irc channel available for users of this distribution, at
+L<C<#moose> on C<irc.perl.org>|irc://irc.perl.org/#moose>.
+
+=head1 AUTHOR
+
+Shawn M Moore <code@sartak.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2008 by Shawn M Moore.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

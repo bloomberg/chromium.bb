@@ -1,17 +1,31 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!/usr/bin/perl -w
-#line 15
+#line 29
 use strict;
 use warnings;
 use CPAN::Mini::App;
@@ -20,9 +34,9 @@ CPAN::Mini::App->run;
 # PODNAME: minicpan
 # ABSTRACT: uses CPAN::Mini to create or update a local mirror
 
-
-
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -30,7 +44,7 @@ minicpan - uses CPAN::Mini to create or update a local mirror
 
 =head1 VERSION
 
-version 1.111008
+version 1.111016
 
 =head1 SYNOPSIS
 
@@ -53,6 +67,7 @@ version 1.111008
    -t SEC      - timeout in sec. Defaults to 180 sec
    --offline   - operate in offline mode (generally: do nothing)
    --log-level - provide a log level; instead of --debug, -q, or -qq
+   --remote-from TYPE - cpan remote from 'cpan' or 'cpanplus' configs
 
 =head1 DESCRIPTION
 
@@ -123,9 +138,78 @@ the same terms as the Perl 5 programming language system itself.
 
 =cut
 
-
 __END__
 
+#pod =head1 SYNOPSIS
+#pod
+#pod  minicpan [options]
+#pod
+#pod  Options
+#pod    -l LOCAL    - where is the local minicpan?     (required)
+#pod    -r REMOTE   - where is the remote cpan mirror? (required)
+#pod    -d 0###     - permissions (numeric) to use when creating directories
+#pod    -f          - check all directories, even if indices are unchanged
+#pod    -p          - mirror perl, ponie, and parrot distributions
+#pod    --debug     - run in debug mode (print even banal messages)
+#pod    -q          - run in quiet mode (don't print status)
+#pod    -qq         - run in silent mode (don't even print warnings)
+#pod    -c CLASS    - what class to use to mirror (default: CPAN::Mini)
+#pod    -C FILE     - what config file to use (default: ~/.minicpanrc)
+#pod    -h          - print help and exit
+#pod    -v          - print version and exit
+#pod    -x          - build an exact mirror, getting even normally disallowed files
+#pod    -t SEC      - timeout in sec. Defaults to 180 sec
+#pod    --offline   - operate in offline mode (generally: do nothing)
+#pod    --log-level - provide a log level; instead of --debug, -q, or -qq
+#pod    --remote-from TYPE - cpan remote from 'cpan' or 'cpanplus' configs
+#pod
+#pod =head1 DESCRIPTION
+#pod
+#pod This simple shell script just updates (or creates) a miniature CPAN mirror as
+#pod described in CPAN::Mini.
+#pod
+#pod =head1 CONFIGURATION FILE
+#pod
+#pod By default, C<minicpan> will read a configuration file to get configuration
+#pod information.  The file is a simple set of names and values, as in the following
+#pod example:
+#pod
+#pod  local:  /home/rjbs/mirrors/minicpan/
+#pod  remote: http://your.favorite.cpan/cpan/
+#pod  exact_mirror: 1
+#pod  
+#pod C<minicpan> tries to find a configuration file through the following process.
+#pod It takes the first defined it finds:
+#pod
+#pod =over 4
+#pod
+#pod =item * Use the value specified by C<-C> on the command line
+#pod
+#pod =item * Use the value in the C<CPAN_MINI_CONFIG> environment variable
+#pod
+#pod =item * Use F<~/.minicpanrc>
+#pod
+#pod =item * Use F<CPAN/Mini/minicpan.conf>
+#pod
+#pod =back
+#pod
+#pod If the selected file does not exist, C<minicpan> does not keep looking.
+#pod
+#pod You can override this process with a C<config_file> method in your subclass.
+#pod
+#pod See C<CPAN::Mini> for a full listing of available options.
+#pod
+#pod =head1 TO DO
+#pod
+#pod Improve command-line options.
+#pod
+#pod =head1 SEE ALSO 
+#pod
+#pod Randal Schwartz's original article, which can be found here:
+#pod
+#pod   http://www.stonehenge.com/merlyn/LinuxMag/col42.html
+#pod
+#pod =cut
 
 __END__
 :endofperl

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __DTCHELP_H__
@@ -29,8 +29,8 @@ typedef HRESULT (*DTC_INSTALL_CLIENT)(LPTSTR i_pszRemoteTmHostName,DWORD i_dwPro
 #define StartDTC __MINGW_NAME_AW(StartDTC)
 #define StopDTC __MINGW_NAME_AW(StopDTC)
 
-#define DTCINSTALL_E_CLIENT_ALREADY_INSTALLED 0x0000180L
-#define DTCINSTALL_E_SERVER_ALREADY_INSTALLED 0x0000181L
+#define DTCINSTALL_E_CLIENT_ALREADY_INSTALLED __MSABI_LONG(0x0000180)
+#define DTCINSTALL_E_SERVER_ALREADY_INSTALLED __MSABI_LONG(0x0000181)
 
 const DWORD DTC_INSTALL_OVERWRITE_CLIENT = 0x00000001;
 const DWORD DTC_INSTALL_OVERWRITE_SERVER = 0x00000002;

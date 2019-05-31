@@ -615,7 +615,7 @@ or, diagrammed as a part of the parse tree:
       . "Elvis seen in tortilla"
 
 A rule that matches these can be formalized as "look for any 'a'
-element that has only one daugher node, which must be a 'b' element".
+element that has only one daughter node, which must be a 'b' element".
 And this is what it looks like when cooked up as a C<look_down>
 expression and prefaced with a bit of code that retrieves the text of
 the given Yahoo News page and feeds it to TreeBuilder:

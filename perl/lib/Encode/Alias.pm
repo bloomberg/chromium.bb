@@ -1,11 +1,10 @@
 package Encode::Alias;
 use strict;
 use warnings;
-no warnings 'redefine';
-our $VERSION = do { my @r = ( q$Revision: 2.15 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
+our $VERSION = do { my @r = ( q$Revision: 2.24 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
 use constant DEBUG => !!$ENV{PERL_ENCODE_DEBUG};
 
-use base qw(Exporter);
+use Exporter 'import';
 
 # Public, encouraged API is exported by default
 
@@ -19,7 +18,6 @@ our @Alias;    # ordered matching list
 our %Alias;    # cached known aliases
 
 sub find_alias {
-    require Encode;
     my $class = shift;
     my $find  = shift;
     unless ( exists $Alias{$find} ) {
@@ -79,8 +77,10 @@ sub find_alias {
 
 sub define_alias {
     while (@_) {
-        my ( $alias, $name ) = splice( @_, 0, 2 );
-        unshift( @Alias, $alias => $name );    # newer one has precedence
+        my $alias = shift;
+        my $name = shift;
+        unshift( @Alias, $alias => $name )    # newer one has precedence
+            if defined $alias;
         if ( ref($alias) ) {
 
             # clear %Alias cache to allow overrides
@@ -96,12 +96,19 @@ sub define_alias {
                 }
             }
         }
-        else {
+        elsif (defined $alias) {
             DEBUG and warn "delete \$Alias\{$alias\}";
             delete $Alias{$alias};
         }
+        elsif (DEBUG) {
+            require Carp;
+            Carp::croak("undef \$alias");
+        }
     }
 }
+
+# HACK: Encode must be used after define_alias is declarated as Encode calls define_alias
+use Encode ();
 
 # Allow latin-1 style names as well
 # 0  1  2  3  4  5   6   7   8   9  10
@@ -128,7 +135,6 @@ sub undef_aliases {
 }
 
 sub init_aliases {
-    require Encode;
     undef_aliases();
 
     # Try all-lower-case version should all else fails
@@ -139,7 +145,7 @@ sub init_aliases {
     define_alias( qr/^UCS-?2-?LE$/i => '"UCS-2LE"' );
     define_alias(
         qr/^UCS-?2-?(BE)?$/i    => '"UCS-2BE"',
-        qr/^UCS-?4-?(BE|LE)?$/i => 'uc("UTF-32$1")',
+        qr/^UCS-?4-?(BE|LE|)?$/i => 'uc("UTF-32$1")',
         qr/^iso-10646-1$/i      => '"UCS-2BE"'
     );
     define_alias(
@@ -209,8 +215,9 @@ sub init_aliases {
     define_alias( qr/^(?:x[_-])?mac[_-](.*)$/i => '"mac$1"' );
     # http://rt.cpan.org/Ticket/Display.html?id=36326
     define_alias( qr/^macintosh$/i => '"MacRoman"' );
-
-    # Ououououou. gone.  They are differente!
+    # https://rt.cpan.org/Ticket/Display.html?id=78125
+    define_alias( qr/^macce$/i => '"MacCentralEurRoman"' );
+    # Ououououou. gone.  They are different!
     # define_alias( qr/\bmacRomanian$/i => '"macRumanian"');
 
     # Standardize on the dashed versions.
@@ -255,11 +262,15 @@ sub init_aliases {
         define_alias( qr/\bhk(?:scs)?[-_]?big5$/i => '"big5-hkscs"' );
     }
 
+    # https://github.com/dankogai/p5-encode/issues/37
+    define_alias(qr/cp65000/i => '"UTF-7"');
+    define_alias(qr/cp65001/i => '"utf-8-strict"');
+
     # utf8 is blessed :)
     define_alias( qr/\bUTF-8$/i => '"utf-8-strict"' );
 
     # At last, Map white space and _ to '-'
-    define_alias( qr/^(\S+)[\s_]+(.*)$/i => '"$1-$2"' );
+    define_alias( qr/^([^\s_]+)[\s_]+([^\s_]*)$/i => '"$1-$2"' );
 }
 
 1;
@@ -337,7 +348,7 @@ As of Encode 1.87, the older form
 
 no longer works. 
 
-Encode up to 1.86 internally used "local $_" to implement ths older
+Encode up to 1.86 internally used "local $_" to implement this older
 form.  But consider the code below;
 
   use Encode;

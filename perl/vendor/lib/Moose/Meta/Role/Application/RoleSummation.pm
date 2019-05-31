@@ -1,20 +1,18 @@
 package Moose::Meta::Role::Application::RoleSummation;
-BEGIN {
-  $Moose::Meta::Role::Application::RoleSummation::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Role::Application::RoleSummation::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 use metaclass;
 
+use List::Util 1.33 qw( all );
 use Scalar::Util 'blessed';
 
 use Moose::Meta::Role::Composite;
 
-use base 'Moose::Meta::Role::Application';
+use parent 'Moose::Meta::Role::Application';
+
+use Moose::Util 'throw_exception';
 
 __PACKAGE__->meta->add_attribute('role_params' => (
     reader  => 'role_params',
@@ -84,8 +82,9 @@ sub check_role_exclusions {
 
             my @excluding = @{ $excluded_roles{$excluded} };
 
-            require Moose;
-            Moose->throw_error(sprintf "Conflict detected: Role%s %s exclude%s role '%s'", (@excluding == 1 ? '' : 's'), join(', ', @excluding), (@excluding == 1 ? 's' : ''), $excluded);
+            throw_exception( RoleExclusionConflict => roles     => \@excluding,
+                                                      role_name => $excluded
+                           );
         }
     }
 
@@ -136,12 +135,10 @@ sub apply_attributes {
             my $role1 = $seen{$name}->associated_role->name;
             my $role2 = $attr->associated_role->name;
 
-            require Moose;
-            Moose->throw_error(
-                "We have encountered an attribute conflict with '$name' "
-                    . "during role composition. "
-                    . " This attribute is defined in both $role1 and $role2."
-                    . " This is a fatal error and cannot be disambiguated." );
+            throw_exception( AttributeConflictInSummation => attribute_name   => $name,
+                                                             role_name        => $role1,
+                                                             second_role_name => $role2,
+                           );
         }
 
         $seen{$name} = $attr;
@@ -220,18 +217,20 @@ sub apply_override_method_modifiers {
 
     my %seen;
     foreach my $override (@all_overrides) {
+        my @role_names = map { $_->name } @{$c->get_roles};
         if ( $c->has_method($override->{name}) ){
-            require Moose;
-            Moose->throw_error( "Role '" . $c->name . "' has encountered an 'override' method conflict " .
-                                "during composition (A local method of the same name as been found). This " .
-                                "is fatal error." )
+            throw_exception( OverrideConflictInSummation => role_names       => \@role_names,
+                                                            role_application => $self,
+                                                            method_name      => $override->{name}
+                           );
         }
         if (exists $seen{$override->{name}}) {
             if ( $seen{$override->{name}} != $override->{method} ) {
-                require Moose;
-                Moose->throw_error( "We have encountered an 'override' method conflict during " .
-                                    "composition (Two 'override' methods of the same name encountered). " .
-                                    "This is fatal error.")
+                throw_exception( OverrideConflictInSummation => role_names          => \@role_names,
+                                                                role_application    => $self,
+                                                                method_name         => $override->{name},
+                                                                two_overrides_found => 1
+                               );
             }
         }
         $seen{$override->{name}} = $override->{method};
@@ -257,13 +256,80 @@ sub apply_method_modifiers {
     }
 }
 
+sub apply_overloading {
+    my ( $self, $c ) = @_;
+
+    my @overloaded_roles = grep { $_->is_overloaded } @{ $c->get_roles };
+    return unless @overloaded_roles;
+
+    my %fallback;
+    for my $role (@overloaded_roles) {
+        $fallback{ $role->name } = $role->get_overload_fallback_value;
+    }
+
+    for my $role_name ( keys %fallback ) {
+        for my $other_role_name ( grep { $_ ne $role_name } keys %fallback ) {
+            my @fb_values = @fallback{ $role_name, $other_role_name };
+            if ( all {defined} @fb_values ) {
+                next if $fallback{$role_name} eq $fallback{$other_role_name};
+                throw_exception(
+                    'OverloadConflictInSummation',
+                    role_names       => [ $role_name, $other_role_name ],
+                    role_application => $self,
+                    overloaded_op    => 'fallback',
+                );
+            }
+
+            next if all { !defined } @fb_values;
+            throw_exception(
+                'OverloadConflictInSummation',
+                role_names       => [ $role_name, $other_role_name ],
+                role_application => $self,
+                overloaded_op    => 'fallback',
+            );
+        }
+    }
+
+    if ( keys %fallback ) {
+        $c->set_overload_fallback_value( ( values %fallback )[0] );
+    }
+
+    my %overload_map;
+    for my $role (@overloaded_roles) {
+        for my $overload ( $role->get_all_overloaded_operators ) {
+            $overload_map{ $overload->operator }{ $role->name } = $overload;
+        }
+    }
+
+    for my $op_name ( keys %overload_map ) {
+        my @roles = keys %{ $overload_map{$op_name} };
+        my $overload = $overload_map{$op_name}{ $roles[0] };
+
+        if ( @roles > 1 && !all { $overload->_is_equal_to($_) }
+            values %{ $overload_map{$op_name} } ) {
+
+            throw_exception(
+                'OverloadConflictInSummation',
+                role_names       => [ @roles[ 0, 1 ] ],
+                role_application => $self,
+                overloaded_op    => $op_name,
+            );
+        }
+
+        $c->add_overloaded_operator(
+            $op_name => $overload_map{$op_name}{ $roles[0] } );
+    }
+}
+
 1;
 
 # ABSTRACT: Combine two or more roles
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -271,7 +337,7 @@ Moose::Meta::Role::Application::RoleSummation - Combine two or more roles
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -310,30 +376,65 @@ bindings and 'disabling' the conflicting bindings
 
 =item B<apply_methods>
 
+=item B<apply_overloading>
+
 =item B<apply_method_modifiers>
 
 =item B<apply_override_method_modifiers>
 
 =back
 
-=head1 BUGS
+=head1 AUTHORS
 
-See L<Moose/BUGS> for details on reporting bugs.
+=over 4
 
-=head1 AUTHOR
+=item *
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

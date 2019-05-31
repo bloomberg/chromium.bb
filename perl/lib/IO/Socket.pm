@@ -7,13 +7,12 @@
 
 package IO::Socket;
 
-require 5.006;
+use 5.008_001;
 
 use IO::Handle;
 use Socket 1.3;
 use Carp;
 use strict;
-our(@ISA, $VERSION, @EXPORT_OK);
 use Exporter;
 use Errno;
 
@@ -22,11 +21,11 @@ use Errno;
 require IO::Socket::INET;
 require IO::Socket::UNIX if ($^O ne 'epoc' && $^O ne 'symbian');
 
-@ISA = qw(IO::Handle);
+our @ISA = qw(IO::Handle);
 
-$VERSION = "1.34";
+our $VERSION = "1.40";
 
-@EXPORT_OK = qw(sockatmark);
+our @EXPORT_OK = qw(sockatmark);
 
 sub import {
     my $pkg = shift;
@@ -135,11 +134,13 @@ sub connect {
 		$@ = "connect: timeout";
 	    }
 	    elsif (!connect($sock,$addr) &&
-                not ($!{EISCONN} || ($! == 10022 && $^O eq 'MSWin32'))
+                not ($!{EISCONN} || ($^O eq 'MSWin32' &&
+                ($! == (($] < 5.019004) ? 10022 : Errno::EINVAL))))
             ) {
 		# Some systems refuse to re-connect() to
 		# an already open socket and set errno to EISCONN.
-		# Windows sets errno to WSAEINVAL (10022)
+		# Windows sets errno to WSAEINVAL (10022) (pre-5.19.4) or
+		# EINVAL (22) (5.19.4 onwards).
 		$err = $!;
 		$@ = "connect: $!";
 	    }
@@ -167,7 +168,7 @@ sub blocking {
     my $sock = shift;
 
     return $sock->SUPER::blocking(@_)
-        if $^O ne 'MSWin32';
+        if $^O ne 'MSWin32' && $^O ne 'VMS';
 
     # Windows handles blocking differently
     #
@@ -248,6 +249,8 @@ sub accept {
 
     $peer = accept($new,$sock)
 	or return;
+
+    ${*$new}{$_} = ${*$sock}{$_} for qw( io_socket_domain io_socket_type io_socket_proto );
 
     return wantarray ? ($new, $peer)
     	      	     : $new;
@@ -349,18 +352,27 @@ sub timeout {
 sub sockdomain {
     @_ == 1 or croak 'usage: $sock->sockdomain()';
     my $sock = shift;
+    if (!defined(${*$sock}{'io_socket_domain'})) {
+	my $addr = $sock->sockname();
+	${*$sock}{'io_socket_domain'} = sockaddr_family($addr)
+	    if (defined($addr));
+    }
     ${*$sock}{'io_socket_domain'};
 }
 
 sub socktype {
     @_ == 1 or croak 'usage: $sock->socktype()';
     my $sock = shift;
+    ${*$sock}{'io_socket_type'} = $sock->sockopt(Socket::SO_TYPE)
+	if (!defined(${*$sock}{'io_socket_type'}) && defined(eval{Socket::SO_TYPE}));
     ${*$sock}{'io_socket_type'}
 }
 
 sub protocol {
     @_ == 1 or croak 'usage: $sock->protocol()';
     my($sock) = @_;
+    ${*$sock}{'io_socket_proto'} = $sock->sockopt(Socket::SO_PROTOCOL)
+	if (!defined(${*$sock}{'io_socket_proto'}) && defined(eval{Socket::SO_PROTOCOL}));
     ${*$sock}{'io_socket_proto'};
 }
 
@@ -401,12 +413,12 @@ C<new> only looks for one key C<Domain> which tells new which domain
 the socket will be in. All other arguments will be passed to the
 configuration method of the package for that domain, See below.
 
- NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE
+B<NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE>
 
 As of VERSION 1.18 all IO::Socket objects have autoflush turned on
 by default. This was not the case with earlier releases.
 
- NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE
+B<NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE>
 
 =back
 
@@ -486,8 +498,23 @@ C<use> declaration will fail at compile time.
 
 =item connected
 
-If the socket is in a connected state the peer address is returned.
-If the socket is not in a connected state then undef will be returned.
+If the socket is in a connected state, the peer address is returned. If the
+socket is not in a connected state, undef is returned.
+
+Note that connected() considers a half-open TCP socket to be "in a connected
+state".  Specifically, connected() does not distinguish between the
+B<ESTABLISHED> and B<CLOSE-WAIT> TCP states; it returns the peer address,
+rather than undef, in either case.  Thus, in general, connected() cannot
+be used to reliably learn whether the peer has initiated a graceful shutdown
+because in most cases (see below) the local TCP state machine remains in
+B<CLOSE-WAIT> until the local application calls shutdown() or close();
+only at that point does connected() return undef.
+
+The "in most cases" hedge is because local TCP state machine behavior may
+depend on the peer's socket options. In particular, if the peer socket has
+SO_LINGER enabled with a zero timeout, then the peer's close() will generate
+a RST segment, upon receipt of which the local TCP transitions immediately to
+B<CLOSED>, and in that state, connected() I<will> return undef.
 
 =item protocol
 
@@ -528,6 +555,12 @@ called with an argument the current setting is changed and the previous
 value returned.
 
 =back
+
+=head1 LIMITATIONS
+
+On some systems, for an IO::Socket object created with new_from_fd(),
+or created with accept() from such an object, the protocol(),
+sockdomain() and socktype() methods may return undef.
 
 =head1 SEE ALSO
 

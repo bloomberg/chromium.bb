@@ -4,6 +4,7 @@ use strict;
 use Crypt::OpenPGP::Buffer;
 use Crypt::OpenPGP::Digest;
 use Crypt::OpenPGP::ErrorHandler;
+use Crypt::OpenPGP::Util;
 use base qw( Crypt::OpenPGP::ErrorHandler );
 
 use vars qw( %TYPES );
@@ -95,8 +96,7 @@ sub init {
     }
     else {
         $s2k->{hash_alg} = DEFAULT_DIGEST;
-        require Crypt::Random;
-        $s2k->{salt} = Crypt::Random::makerandom_octet( Length => 8 );
+        $s2k->{salt} = Crypt::OpenPGP::Util::get_random_bytes(8);
     }
     if ($s2k->{hash_alg}) {
         $s2k->{hash} = Crypt::OpenPGP::Digest->new($s2k->{hash_alg});
@@ -130,8 +130,7 @@ sub init {
     }
     else {
         $s2k->{hash_alg} = DEFAULT_DIGEST;
-        require Crypt::Random;
-        $s2k->{salt} = Crypt::Random::makerandom_octet( Length => 8 );
+        $s2k->{salt} = Crypt::OpenPGP::Util::get_random_bytes(8);
         $s2k->{count} = 96;
     }
     if ($s2k->{hash_alg}) {
@@ -212,7 +211,7 @@ this class implements.
 
 Creates a new type of S2k-generator of type I<$type>; valid values for
 I<$type> are C<Simple>, C<Salted>, and C<Salt_Iter>. These generator
-types are described in the OpenPGP RFC section 3.6.
+types are described in the OpenPGP RFC section 3.7.
 
 Returns the new S2k-generator object.
 

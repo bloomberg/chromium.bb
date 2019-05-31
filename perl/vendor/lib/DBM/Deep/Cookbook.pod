@@ -1,6 +1,6 @@
 =head1 NAME
 
-DBM::Deep::Cookbook
+DBM::Deep::Cookbook - Cookbook for DBM::Deep
 
 =head1 DESCRIPTION
 

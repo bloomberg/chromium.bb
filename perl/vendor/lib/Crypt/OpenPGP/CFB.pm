@@ -29,7 +29,7 @@ sub encrypt {
     my $iv = $c->{iv};
     my $out = $c->{unused} || '';
     my $size = length $out;
-    while ($data) {
+    while ( $data ne '' ) {
         unless ($size) {
             $out = $c->{cipher}->encrypt($iv);
             $size = $c->{blocksize};
@@ -52,7 +52,7 @@ sub decrypt {
     my $iv = $c->{iv};
     my $out = $c->{unused} || '';
     my $size = length $out;
-    while ($data) {
+    while ( $data ne '' ) {
         unless ($size) {
             $out = $c->{cipher}->encrypt($iv);
             $size = $c->{blocksize};
@@ -94,7 +94,7 @@ that PGP uses in its encryption and decryption. The key difference
 with PGP CFB is that the CFB state is resynchronized at each
 encryption/decryption. This applies both when encrypting secret key
 data and in symmetric encryption of standard encrypted data. More
-differences are described in the OpenPGP RFC, in section 12.8
+differences are described in the OpenPGP RFC, in section 13.9
 (OpenPGP CFB mode).
 
 Typically you should never need to directly use I<Crypt::OpenPGP::CFB>;

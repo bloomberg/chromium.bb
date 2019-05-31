@@ -1,17 +1,31 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!perl
-#line 15
+#line 29
 
 use 5.008001;
 use strict;
@@ -60,10 +74,10 @@ local $ENV{HOME} = undef;
 
 my $ll_exists = 0;
 my $default_path;
-if ( exists $environment_key->{'/MODULEBUILDRC'} ) {
+if ( exists $environment_key->{'/PERL_MB_OPT'} ) {
 	$ll_exists = 1;
 	my ( $volume, $directories, $file ) =
-	  File::Spec->splitpath( $environment_key->{'MODULEBUILDRC'} );
+	  File::Spec->splitpath( $environment_key->{'PERL_MB_OPT'} );
 	$default_path = catpath( $volume, $directories, undef );
 } else {
 	$default_path =
@@ -88,7 +102,7 @@ if ($ll_exists) {
 
 	goto EXISTS if ( 'y' ne lc substr $answer, 0, 1 );
 
-	delete $environment_key->{'/MODULEBUILDRC'};
+	delete $environment_key->{'/PERL_MB_OPT'};
 	delete $environment_key->{'/PERL_MM_OPT'};
 	delete $environment_key->{'/PERL5LIB'};
 
@@ -147,7 +161,7 @@ __END_TEXT__
 	my %ll_env_entries =
 	  'local::lib'->build_environment_vars_for( $answer, 0 );
 
-	$environment_key->{'/MODULEBUILDRC'} = $ll_env_entries{'MODULEBUILDRC'};
+	$environment_key->{'/PERL_MB_OPT'}   = $ll_env_entries{'PERL_MB_OPT'};
 	$environment_key->{'/PERL_MM_OPT'}   = $ll_env_entries{'PERL_MM_OPT'};
 	$environment_key->{'/PERL5LIB'}      = $ll_env_entries{'PERL5LIB'};
 

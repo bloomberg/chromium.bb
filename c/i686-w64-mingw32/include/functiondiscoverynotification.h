@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_FUNCTIONDISCOVERYNOTIFICATION
@@ -32,9 +32,9 @@ DECLARE_INTERFACE_(IFunctionDiscoveryNotification,IUnknown)
     END_INTERFACE
 };
 #ifdef COBJMACROS
-#define IFunctionDiscoveryNotification_QueryInterface(This,riid,ppvObject) (This)->pVtbl->QueryInterface(This,riid,ppvObject)
-#define IFunctionDiscoveryNotification_AddRef(This) (This)->pVtbl->AddRef(This)
-#define IFunctionDiscoveryNotification_Release(This) (This)->pVtbl->Release(This)
+#define IFunctionDiscoveryNotification_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IFunctionDiscoveryNotification_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define IFunctionDiscoveryNotification_Release(This) (This)->lpVtbl->Release(This)
 #define IFunctionDiscoveryNotification_OnUpdate(This,enumQueryUpdateAction,fdqcQueryContext,pIFunctionInstance) (This)->lpVtbl->OnUpdate(This,enumQueryUpdateAction,fdqcQueryContext,pIFunctionInstance)
 #define IFunctionDiscoveryNotification_OnError(This,hr,fdqcQueryContext,pszProvider) (This)->lpVtbl->OnError(This,hr,fdqcQueryContext,pszProvider)
 #define IFunctionDiscoveryNotification_OnEvent(This,dwEventID,fdqcQueryContext,pszProvider) (This)->lpVtbl->OnEvent(This,dwEventID,fdqcQueryContext,pszProvider)

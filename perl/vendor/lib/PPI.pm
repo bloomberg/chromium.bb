@@ -6,12 +6,9 @@ use 5.006;
 use strict;
 
 # Set the version for CPAN
-use vars qw{$VERSION $XS_COMPATIBLE @XS_EXCLUDE};
-BEGIN {
-	$VERSION       = '1.215';
-	$XS_COMPATIBLE = '0.845';
-	@XS_EXCLUDE    = ();
-}
+our $VERSION = '1.269'; # VERSION
+
+our ( $XS_COMPATIBLE, @XS_EXCLUDE ) = ( '0.845' );
 
 # Load everything
 use PPI::Util                 ();
@@ -29,11 +26,10 @@ use PPI::Tokenizer            ();
 use PPI::Lexer                ();
 
 # If it is installed, load in PPI::XS
-unless ( $PPI::XS_DISABLE ) {
-	eval { require PPI::XS };
-	# Only ignore the failure to load PPI::XS if not installed
-	die if $@ && $@ !~ /^Can't locate .*? at /;
-}
+die
+  if !$PPI::XS_DISABLE
+  and !eval { require PPI::XS; 1 }
+  and $@ !~ /^Can't locate .*? at /;    # ignore failure to load if not installed
 
 1;
 
@@ -91,7 +87,7 @@ The cause of this problem was Perl's complex and dynamic grammar.
 Although there is typically not a huge diversity in the grammar of most
 Perl code, certain issues cause large problems when it comes to parsing.
 
-Indeed, quite early in Perl's history Tom Christenson introduced the Perl
+Indeed, quite early in Perl's history Tom Christiansen introduced the Perl
 community to the quote I<"Nothing but perl can parse Perl">, or as it is
 more often stated now as a truism:
 
@@ -117,7 +113,7 @@ the statement being parsed.
 The information might not just be elsewhere in the file, it might not even be
 in the same file at all. It might also not be able to determine this
 information without the prior execution of a C<BEGIN {}> block, or the
-loading and execution of one or more external modules. Or worse the &dothis
+loading and execution of one or more external modules. Or worse the C<&dothis>
 function may not even have been written yet.
 
 B<When parsing Perl as code, you must also execute it>
@@ -140,16 +136,16 @@ resources, such as libraries upon which the code may depend, and
 without needing to run an instance of perl alongside or inside the parser.
 
 Historically, using an embedded perl parser was widely considered to be
-the most likely avenue for finding a solution to C<Parse::Perl>. It was
-investigated from time to time and attempts have generally failed or
+the most likely avenue for finding a solution to parsing Perl. It has been
+investigated from time to time, but attempts have generally failed or
 suffered from sufficiently bad corner cases that they were abandoned.
 
 =head2 What Does PPI Stand For?
 
 C<PPI> is an acronym for the longer original module name
-C<Parse::Perl::Isolated>. And in the spirit or the silly acronym games
+C<Parse::Perl::Isolated>. And in the spirit of the silly acronym games
 played by certain unnamed Open Source projects you may have I<hurd> of,
-it also a reverse backronym of "I Parse Perl".
+it is also a reverse backronym of "I Parse Perl".
 
 Of course, I could just be lying and have just made that second bit up
 10 minutes before the release of PPI 1.000. Besides, B<all> the cool
@@ -169,23 +165,13 @@ Since that time I've been able to prove to my own satisfaction that it
 B<is> truly impossible to accurately parse Perl as both code and document
 at once. For the academics, parsing Perl suffers from the "Halting Problem".
 
-With this in mind C<Parse::Perl> has now been co-opted as the title for
-the SourceForge project that publishes PPI and a large collection of other
-applications and modules related to the (document) parsing of Perl source
-code.
-
-You can find this project at L<http://sf.net/projects/parseperl>,
-however we no longer use the SourceForge CVS server.  Instead, the
-current development version of PPI is available via SVN at
-L<http://svn.ali.as/cpan/trunk/PPI/>.
-
 =head2 Why Parse Perl?
 
 Once you can accept that we will never be able to parse Perl well enough
 to meet the standards of things that treat Perl as code, it is worth
-re-examining C<why> we want to "parse" Perl at all.
+re-examining I<why> we want to "parse" Perl at all.
 
-What are the things that people might want a "Perl parser" for.
+What are the things that people might want a "Perl parser" for?
 
 =over 4
 
@@ -194,7 +180,7 @@ What are the things that people might want a "Perl parser" for.
 Analyzing the contents of a Perl document to automatically generate
 documentation, in parallel to, or as a replacement for, POD documentation.
 
-Allow an indexer to to locate and process all the comments and
+Allow an indexer to locate and process all the comments and
 documentation from code for "full text search" applications.
 
 =item Structural and Quality Analysis
@@ -204,6 +190,9 @@ situations relating to particular phrases, techniques or locations.
 
 Index functions, variables and packages within Perl code, and doing search
 and graph (in the node/edge sense) analysis of large code bases.
+
+L<Perl::Critic>, based on PPI, is a large, thriving tool for bug detection
+and style analysis of Perl code.
 
 =item Refactoring
 
@@ -265,17 +254,13 @@ expect that it will handle your code just fine.
 
 PPI provides partial support for internationalisation and localisation.
 
-Specifically, it allows the use characters from the Latin-1 character
+Specifically, it allows the use of characters from the Latin-1 character
 set to be used in quotes, comments, and POD. Primarily, this covers
 languages from Europe and South America.
 
-PPI does B<not> currently provide support for Unicode, although there
-is an initial implementation available in a development branch from
-CVS.
-
-If you need Unicode support, and would like to help stress test the
-Unicode support so we can move it to the main branch and enable it
-in the main release should contact the author. (contact details below)
+PPI does B<not> currently provide support for Unicode.
+If you need Unicode support and would like to help,
+contact the author. (contact details below)
 
 =head2 Round Trip Safe
 
@@ -309,7 +294,7 @@ anyone wanting to help out is encouraged to contact the author.
 =head2 General Layout
 
 PPI is built upon two primary "parsing" components, L<PPI::Tokenizer>
-and L<PPI::Lexer>, and a large tree of about 50 classes which implement
+and L<PPI::Lexer>, and a large tree of about 70 classes which implement
 the various the I<Perl Document Object Model> (PDOM).
 
 The PDOM is conceptually similar in style and intent to the regular DOM or
@@ -358,7 +343,7 @@ with multi-gigahertz processors, but can still be painful when working with
 very large files.
 
 The target parsing rate for PPI is about 5000 lines per gigacycle. It is
-currently believed to be at about 1500, and main avenue for making it to
+currently believed to be at about 1500, and the main avenue for making it to
 the target speed has now become L<PPI::XS>, a drop-in XS accelerator for
 PPI.
 
@@ -388,7 +373,7 @@ syntax.
 
 =head2 The PDOM Class Tree
 
-The following lists all of the 67 current PDOM classes, listing with indentation
+The following lists all of the 72 current PDOM classes, listing with indentation
 based on inheritance.
 
    PPI::Element
@@ -541,8 +526,8 @@ via the included L<PPI::Dumper>).
   PPI::Document
     PPI::Token::Comment                '#!/usr/bin/perl\n'
     PPI::Token::Whitespace             '\n'
-    PPI::Statement::Expression
-      PPI::Token::Bareword             'print'
+    PPI::Statement
+      PPI::Token::Word                 'print'
       PPI::Structure::List             ( ... )
         PPI::Token::Whitespace         ' '
         PPI::Statement::Expression
@@ -551,15 +536,15 @@ via the included L<PPI::Dumper>).
       PPI::Token::Structure            ';'
     PPI::Token::Whitespace             '\n'
     PPI::Token::Whitespace             '\n'
-    PPI::Statement::Expression
-      PPI::Token::Bareword             'exit'
+    PPI::Statement
+      PPI::Token::Word                 'exit'
       PPI::Structure::List             ( ... )
       PPI::Token::Structure            ';'
     PPI::Token::Whitespace             '\n'
 
-Please note that in this this example, strings are only listed for the
+Please note that in this example, strings are only listed for the
 B<actual> L<PPI::Token> that contains that string. Structures are listed
-with the type of brace characters it represents noted.
+with the type of brace characters they represent noted.
 
 The L<PPI::Dumper> module can be used to generate similar trees yourself.
 
@@ -568,14 +553,14 @@ whitespace. Here it is again, sans the distracting whitespace tokens.
 
   PPI::Document
     PPI::Token::Comment                '#!/usr/bin/perl\n'
-    PPI::Statement::Expression
-      PPI::Token::Bareword             'print'
+    PPI::Statement
+      PPI::Token::Word                 'print'
       PPI::Structure::List             ( ... )
         PPI::Statement::Expression
           PPI::Token::Quote::Double    '"Hello World!"'
       PPI::Token::Structure            ';'
-    PPI::Statement::Expression
-      PPI::Token::Bareword             'exit'
+    PPI::Statement
+      PPI::Token::Word                 'exit'
       PPI::Structure::List             ( ... )
       PPI::Token::Structure            ';'
 
@@ -641,7 +626,7 @@ The base class for all Perl statements. Generic "evaluate for side-effects"
 statements are of this actual type. Other more interesting statement types
 belong to one of its children.
 
-See it's own documentation for a longer description and list of all of the
+See its own documentation for a longer description and list of all of the
 different statement types and sub-classes.
 
 =item L<PPI::Structure>
@@ -662,7 +647,7 @@ some cases).
 
 The L<PPI::Token::Quote> and L<PPI::Token::QuoteLike> classes provide
 abstract base classes for the many and varied types of quote and
-quote-like things in Perl. However, much of the actual quote login is
+quote-like things in Perl. However, much of the actual quote logic is
 implemented in a separate quote engine, based at
 L<PPI::Token::_QuoteEngine>.
 
@@ -705,20 +690,15 @@ apply.
 
 =head1 EXTENDING
 
-The PPI namespace itself is reserved for the sole use of the modules under
-the umbrella of the C<Parse::Perl> SourceForge project.
-
-L<http://sf.net/projects/parseperl>
-
+The PPI namespace itself is reserved for use by PPI itself.
 You are recommended to use the PPIx:: namespace for PPI-specific
 modifications or prototypes thereof, or Perl:: for modules which provide
 a general Perl language-related functions.
 
-If what you wish to implement looks like it fits into PPIx:: namespace,
-you should consider contacting the C<Parse::Perl> mailing list (detailed on
-the SourceForge site) first, as what you want may already be in progress,
-or you may wish to consider joining the team and doing it within the
-C<Parse::Perl> project itself.
+If what you wish to implement looks like it fits into the PPIx:: namespace,
+you should consider contacting the PPI maintainers on GitHub first, as what
+you want may already be in progress, or you may wish to consider contributing
+to PPI itself.
 
 =head1 TO DO
 
@@ -736,36 +716,32 @@ C<Parse::Perl> project itself.
 
 =head1 SUPPORT
 
-This module is stored in an Open Repository at the following address.
+The most recent version of PPI is available at the following address.
 
-L<http://svn.ali.as/cpan/trunk/PPI>
+L<http://search.cpan.org/~mithaldu/PPI/>
 
-Write access to the repository is made available automatically to any
-published CPAN author, and to most other volunteers on request.
+PPI source is maintained in a GitHub repository at the following address.
 
-If you are able to submit your bug report in the form of new (failing)
-unit tests, or can apply your fix directly instead of submitting a patch,
-you are B<strongly> encouraged to do so, as the author currently maintains
-over 100 modules and it can take some time to deal with non-"Critical" bug
-reports or patches.
+L<https://github.com/adamkennedy/PPI>
 
-This will also guarentee that your issue will be addressed in the next
-release of the module.
+Contributions via GitHub pull request are welcome.
 
-For large changes though, please consider creating a branch so that they
-can be properly reviewed and trialed before being applied to the trunk.
+Bug fixes in the form of pull requests or bug reports with
+new (failing) unit tests have the best chance of being addressed
+by busy maintainers, and are B<strongly> encouraged.
 
-If you cannot provide a direct test or fix, or don't have time to do so,
-then regular bug reports are still accepted and appreciated via the CPAN
-bug tracker.
+If you cannot provide a test or fix, or don't have time to do so,
+then regular bug reports are still accepted and appreciated via the
+GitHub bug tracker.
 
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=PPI>
+L<https://github.com/adamkennedy/PPI/issues>
 
-For other issues or questions, contact the C<Parse::Perl> project mailing
-list.
+The C<ppidump> utility that is part of the L<Perl::Critic> distribution
+is a useful tool for demonstrating how PPI is parsing (or misparsing)
+small code snippets, and for providing information for bug reports.
 
-For commercial or media-related enquiries, or to have your SVN commit bit
-enabled, contact the author.
+For other issues, questions, or commercial or media-related enquiries,
+contact the author.
 
 =head1 AUTHOR
 

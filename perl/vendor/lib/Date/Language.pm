@@ -110,7 +110,7 @@ L<Date::Language> provides objects to parse and format dates for specific langua
   Danish                  Norwegian               TigrinyaEritrean
   Dutch                   Oromo                   TigrinyaEthiopian
   English                 Romanian                Turkish
-  Finnish                 Russian
+  Finnish                 Russian                 Bulgarian
 
 =head1 METHODS
 

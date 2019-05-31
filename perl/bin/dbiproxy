@@ -2,7 +2,7 @@
 
 use strict;
 
-my $VERSION = sprintf("1.%06d", q$Revision: 13336 $ =~ /(\d+)/o);
+my $VERSION = sprintf("1.%06d", q$Revision$ =~ /(\d+)/o);
 
 my $arg_test    = shift(@ARGV)		if $ARGV[0] eq '--test';
 $ENV{DBI_TRACE} = shift(@ARGV) || 2	if $ARGV[0] =~ s/^--dbitrace=?//;
@@ -103,7 +103,7 @@ GID's can be passed as group names or numeric values.
 =item B<--localaddr=ip>
 
 By default a daemon is listening to any IP number that a machine
-has. This attribute allows to restrict the server to the given
+has. This attribute allows one to restrict the server to the given
 IP number.
 
 =item B<--localport=port>
@@ -155,7 +155,7 @@ UID's can be passed as group names or numeric values.
 
 =item B<--version>
 
-Supresses startup of the server; instead the version string will
+Suppresses startup of the server; instead the version string will
 be printed and the program exits immediately.
 
 =back

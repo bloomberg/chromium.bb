@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Symbol;
 
-our $VERSION = '3.16';
+our $VERSION = '3.40';
 
 =head1 NAME
 
@@ -38,5 +38,7 @@ our @XSKeywords      = qw(
   INTERFACE_MACRO C_ARGS POSTCALL OVERLOAD FALLBACK
   EXPORT_XSUB_SYMBOLS
 );
+
+our $XSKeywordsAlternation = join('|', @XSKeywords);
 
 1;

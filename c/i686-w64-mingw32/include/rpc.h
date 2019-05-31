@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 
@@ -28,7 +28,11 @@ extern "C" {
 #if defined(__ia64__) || defined(__x86_64)
 #define __RPC_WIN64__
 #else
+#if !defined (_ARM_)
 #define __RPC_WIN32__
+#else
+#define __RPC_ARM32__
+#endif
 #endif
 
 #ifdef __RPC_WIN64__
@@ -42,17 +46,25 @@ extern "C" {
 #endif
 
   typedef void *I_RPC_HANDLE;
-  typedef long RPC_STATUS;
+  typedef __LONG32 RPC_STATUS;
 
 #define RPC_UNICODE_SUPPORTED
 #define __RPC_FAR
+#if defined(_ARM_)
+#define __RPC_API
+#else
 #define __RPC_API __stdcall
+#endif
 #define __RPC_USER __RPC_API
 #define __RPC_STUB __RPC_API
 #define RPC_ENTRY __RPC_API
 
 #ifndef DECLSPEC_IMPORT
+#ifndef __WIDL__
 #define DECLSPEC_IMPORT __declspec(dllimport)
+#else
+#define DECLSPEC_IMPORT
+#endif
 #endif
 
 #ifndef _RPCRT4_
@@ -68,11 +80,16 @@ extern "C" {
 #endif
 
 #include <rpcdce.h>
+#ifndef _KRPCENV_
 #include <rpcnsi.h>
+#endif
 #include <rpcnterr.h>
 #include <excpt.h>
 #include <winerror.h>
 
+/* TODO:  This isn't actual working on gcc.  Either we need to implement
+   their __try/__except/__finally feature, or we need to do at least for x64
+   emulation-code via inline-assembler ...  */
 #define RpcTryExcept __try {
 #define RpcExcept(expr) } __except(expr) {
 #define RpcEndExcept }

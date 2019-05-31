@@ -64,6 +64,9 @@ that comes with the module source.
   Filter          Arguments   Default value
   autolevels      lsat        0.1
                   usat        0.1
+
+  autolevels_skew lsat        0.1
+                  usat        0.1
                   skew        0
 
   bumpmap         bump lightx lighty
@@ -148,18 +151,35 @@ A reference of the filters follows:
 
 =item autolevels
 
-scales the value of each channel so that the values in the image will
+Scales the luminosity of the image so that the luminosity will cover
+the possible range for the image.  C<lsat> and C<usat> truncate the
+range by the specified fraction at the top and bottom of the range
+respectively.
+
+  # increase contrast, losing little detail
+  $img->filter(type=>"autolevels")
+    or die $img->errstr;
+
+The method used here is typically called L<Histogram
+Equalization|http://en.wikipedia.org/wiki/Histogram_equalization>.
+
+=item autolevels_skew
+
+Scales the value of each channel so that the values in the image will
 cover the whole possible range for the channel.  C<lsat> and C<usat>
 truncate the range by the specified fraction at the top and bottom of
 the range respectively.
 
   # increase contrast per channel, losing little detail
-  $img->filter(type=>"autolevels")
+  $img->filter(type=>"autolevels_skew")
     or die $img->errstr;
 
   # increase contrast, losing 20% of highlight at top and bottom range
   $img->filter(type=>"autolevels", lsat=>0.2, usat=>0.2)
     or die $img->errstr;
+
+This filter was the original C<autolevels> filter, but it's typically
+useless due to the significant color skew it can produce.
 
 =item bumpmap
 

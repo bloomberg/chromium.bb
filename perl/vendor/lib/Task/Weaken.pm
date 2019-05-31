@@ -1,12 +1,9 @@
-package Task::Weaken;
+package Task::Weaken; # git description: v1.05-5-g1336c7b
 
 use 5.005;
 use strict;
 
-use vars qw{$VERSION};
-BEGIN {
-	$VERSION = '1.04';
-}
+our $VERSION = '1.06';
 
 1;
 
@@ -18,12 +15,16 @@ __END__
 
 Task::Weaken - Ensure that a platform has weaken support
 
+=head1 VERSION
+
+version 1.06
+
 =head1 DESCRIPTION
 
 One recurring problem in modules that use L<Scalar::Util>'s C<weaken>
 function is that it is not present in the pure-perl variant.
 
-While this isn't necesarily always a problem in a straight CPAN-based
+While this isn't necessarily always a problem in a straight CPAN-based
 Perl environment, some operating system distributions only include the
 pure-Perl versions, don't include the XS version, and so weaken is
 then "missing" from the platform, B<despite> passing a dependency on

@@ -29,7 +29,7 @@ sub keygen {
     require Crypt::RSA::Key;
     my $chain = Crypt::RSA::Key->new;
     my($pub, $sec) = $chain->generate( %param );
-    return $class->errstr( $chain->errstr ) unless $pub && $sec;
+    return $class->error( $chain->errstr ) unless $pub && $sec;
     ($pub, $sec);
 }
 

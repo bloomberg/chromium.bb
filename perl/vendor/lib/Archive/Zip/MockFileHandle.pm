@@ -10,7 +10,7 @@ use strict;
 use vars qw{$VERSION};
 
 BEGIN {
-    $VERSION = '1.30';
+    $VERSION = '1.64';
     $VERSION = eval $VERSION;
 }
 
@@ -35,9 +35,9 @@ sub eof {
 # Copy given buffer to me
 sub print {
     my $self         = shift;
-    my $bytes        = join( '', @_ );
+    my $bytes        = join('', @_);
     my $bytesWritten = $self->writeHook($bytes);
-    if ( $self->{'position'} + $bytesWritten > $self->{'size'} ) {
+    if ($self->{'position'} + $bytesWritten > $self->{'size'}) {
         $self->{'size'} = $self->{'position'} + $bytesWritten;
     }
     $self->{'position'} += $bytesWritten;

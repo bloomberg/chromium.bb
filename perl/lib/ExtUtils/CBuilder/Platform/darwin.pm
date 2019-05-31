@@ -1,11 +1,11 @@
 package ExtUtils::CBuilder::Platform::darwin;
 
+use warnings;
 use strict;
 use ExtUtils::CBuilder::Platform::Unix;
 
-use vars qw($VERSION @ISA);
-$VERSION = '0.280206';
-@ISA = qw(ExtUtils::CBuilder::Platform::Unix);
+our $VERSION = '0.280231'; # VERSION
+our @ISA = qw(ExtUtils::CBuilder::Platform::Unix);
 
 sub compile {
   my $self = shift;

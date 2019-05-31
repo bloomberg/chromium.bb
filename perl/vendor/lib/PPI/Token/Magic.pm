@@ -18,12 +18,12 @@ PPI::Token::Magic - Tokens representing magic variables
   # When we say magic variables, we mean these...
   $1   $2   $3   $4   $5   $6   $7   $8   $9
   $_   $&   $`   $'   $+   @+   %+   $*   $.    $/    $|
-  $\\  $"   $;   $%   $=   $-   @-   %-   $)    $#
+  $\   $"   $;   $%   $=   $-   @-   %-   $)    $#
   $~   $^   $:   $?   $!   %!   $@   $$   $<    $>
   $(   $0   $[   $]   @_   @*   $}   $,   $#+   $#-
   $^L  $^A  $^E  $^C  $^D  $^F  $^H
   $^I  $^M  $^N  $^O  $^P  $^R  $^S
-  $^T  $^V  $^W  $^X
+  $^T  $^V  $^W  $^X  %^H
 
 =head1 DESCRIPTION
 
@@ -36,7 +36,7 @@ probably never encounter in your Perl career.
 
 =head1 METHODS
 
-The class provides no additional methods, beyond those provided by it's
+The class provides no additional methods, beyond those provided by
 L<PPI::Token::Symbol>, L<PPI::Token> and L<PPI::Element>.
 
 =cut
@@ -44,71 +44,11 @@ L<PPI::Token::Symbol>, L<PPI::Token> and L<PPI::Element>.
 use strict;
 use PPI::Token::Symbol ();
 use PPI::Token::Unknown ();
+use PPI::Singletons qw' %MAGIC $CURLY_SYMBOL ';
 
-use vars qw{$VERSION @ISA %magic};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token::Symbol';
+our $VERSION = '1.269'; # VERSION
 
-	# Magic variables taken from perlvar.
-	# Several things added separately to avoid warnings.
-	foreach ( qw{
-		$1 $2 $3 $4 $5 $6 $7 $8 $9
-		$_ $& $` $' $+ @+ %+ $* $. $/ $|
-		$\\ $" $; $% $= $- @- %- $)
-		$~ $^ $: $? $! %! $@ $$ $< $>
-		$( $0 $[ $] @_ @*
-
-		$^L $^A $^E $^C $^D $^F $^H
-		$^I $^M $^N $^O $^P $^R $^S
-		$^T $^V $^W $^X %^H
-
-		$::|
-	}, '$}', '$,', '$#', '$#+', '$#-' ) {
-		$magic{$_} = 1;
-	}
-}
-
-=pod
-
-=begin testing __TOKENIZER_on_char 30
-
-my $document = PPI::Document->new(\<<'END_PERL');
-$[;			# Magic  $[
-$$;			# Magic  $$
-%-;			# Magic  %-
-$#-;			# Magic  $#-
-$$foo;			# Symbol $foo		Dereference of $foo
-$^W;			# Magic  $^W
-$^WIDE_SYSTEM_CALLS;	# Magic  $^WIDE_SYSTEM_CALLS
-${^MATCH};		# Magic  ${^MATCH}
-@{^_Bar};		# Magic  @{^_Bar}
-${^_Bar}[0];		# Magic  @{^_Bar}
-%{^_Baz};		# Magic  %{^_Baz}
-${^_Baz}{burfle};	# Magic  %{^_Baz}
-$${^MATCH};		# Magic  ${^MATCH}	Dereference of ${^MATCH}
-\${^MATCH};		# Magic  ${^MATCH}
-END_PERL
-
-isa_ok( $document, 'PPI::Document' );
-
-$document->index_locations();
-
-my $symbols = $document->find( 'PPI::Token::Symbol' );
-
-is( scalar(@$symbols), 14, 'Found 14 symbols' );
-my $comments = $document->find( 'PPI::Token::Comment' );
-
-foreach my $token ( @$symbols ) {
-	my ($hash, $class, $name, $remk) =
-		split '\s+', $comments->[$token->line_number - 1], 4;
-	isa_ok( $token, "PPI::Token::$class" );
-	is( $token->symbol, $name, $remk || "The symbol is $name" );
-}
-
-=end testing
-
-=cut
+our @ISA = "PPI::Token::Symbol";
 
 sub __TOKENIZER__on_char {
 	my $t = $_[1];
@@ -124,7 +64,7 @@ sub __TOKENIZER__on_char {
 
 		if ( $c =~ /^(\$(?:\_[\w:]|::))/ or $c =~ /^\$\'[\w]/ ) {
 			# If and only if we have $'\d, it is not a
-			# symbol. (this was apparently a concious choice)
+			# symbol. (this was apparently a conscious choice)
 			# Note that $::0 on the other hand is legal
 			if ( $c =~ /^\$\'\d$/ ) {
 				# In this case, we have a magic plus a digit.
@@ -151,8 +91,8 @@ sub __TOKENIZER__on_char {
 		if ( $c eq '$${' ) {
 			# This _might_ be a dereference of one of the
 			# control-character symbols.
-			my $line = substr $t->{line}, $t->{line_cursor} + 1;
-			if ( $line =~ m/$PPI::Token::Unknown::CURLY_SYMBOL/ ) {
+			pos $t->{line} = $t->{line_cursor} + 1;
+			if ( $t->{line} =~ m/$CURLY_SYMBOL/gc ) {
 				# This is really a dereference. ( $${^_foo} )
 				# Add the current token as the cast...
 				$t->{token} = PPI::Token::Cast->new( '$' );
@@ -179,7 +119,7 @@ sub __TOKENIZER__on_char {
 		if ( $c =~ /^\$\^\w+$/o ) {
 			# It's an escaped char magic... maybe ( like $^M )
 			my $next = substr( $t->{line}, $t->{line_cursor}+1, 1 ); # Peek ahead
-			if ($magic{$c} && (!$next || $next !~ /\w/)) {
+			if ($MAGIC{$c} && (!$next || $next !~ /\w/)) {
 				$t->{token}->{content} = $c;
 				$t->{line_cursor}++;
 			} else {
@@ -189,7 +129,7 @@ sub __TOKENIZER__on_char {
 		}
 
 		if ( $c =~ /^\$\#\{/ ) {
-			# The $# is actually a case, and { is its block
+			# The $# is actually a cast, and { is its block
 			# Add the current token as the cast...
 			$t->{token} = PPI::Token::Cast->new( '$#' );
 			$t->_finalize_token;
@@ -200,7 +140,7 @@ sub __TOKENIZER__on_char {
 	} elsif ($c =~ /^%\^/) {
 		return 1 if $c eq '%^';
 		# It's an escaped char magic... maybe ( like %^H )
-		if ($magic{$c}) {
+		if ($MAGIC{$c}) {
 			$t->{token}->{content} = $c;
 			$t->{line_cursor}++;
 		} else {
@@ -211,16 +151,20 @@ sub __TOKENIZER__on_char {
 		}
 	}
 
-	if ( $magic{$c} ) {
+	if ( $MAGIC{$c} ) {
 		# $#+ and $#-
 		$t->{line_cursor} += length( $c ) - length( $t->{token}->{content} );
 		$t->{token}->{content} = $c;
 	} else {
-		my $line = substr( $t->{line}, $t->{line_cursor} );
-		if ( $line =~ /($PPI::Token::Unknown::CURLY_SYMBOL)/ ) {
+		pos $t->{line} = $t->{line_cursor};
+		if ( $t->{line} =~ m/($CURLY_SYMBOL)/gc ) {
 			# control character symbol (e.g. ${^MATCH})
 			$t->{token}->{content} .= $1;
 			$t->{line_cursor}      += length $1;
+		} elsif ( $c =~ /^\$\d+$/ and $t->{line} =~ /\G(\d+)/gc ) {
+			# Grab trailing digits of regex capture variables.
+			$t->{token}{content} .= $1;
+			$t->{line_cursor} += length $1;
 		}
 	}
 

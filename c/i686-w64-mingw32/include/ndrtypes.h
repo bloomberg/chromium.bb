@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __NDRTYPES_H__
@@ -22,16 +22,16 @@ extern "C" {
 
 #define SIZEOF_INT3264() ((pCommand->Is64BitEnv()) ? 8 : 4)
 
-#define NDR_MAJOR_VERSION 5UL
-#define NDR_MINOR_VERSION 4UL
+#define NDR_MAJOR_VERSION __MSABI_LONG(5U)
+#define NDR_MINOR_VERSION __MSABI_LONG(4U)
 #define NDR_VERSION ((NDR_MAJOR_VERSION << 16) | NDR_MINOR_VERSION)
 
-#define NDR_VERSION_1_1 ((1UL << 16) | 1UL)
-#define NDR_VERSION_2_0 ((2UL << 16) | 0UL)
-#define NDR_VERSION_5_0 ((5UL << 16) | 0UL)
-#define NDR_VERSION_5_2 ((5UL << 16) | 2UL)
-#define NDR_VERSION_5_3 ((5UL << 16) | 3UL)
-#define NDR_VERSION_5_4 ((5UL << 16) | 4UL)
+#define NDR_VERSION_1_1 ((__MSABI_LONG(1U) << 16) | 1)
+#define NDR_VERSION_2_0 ((__MSABI_LONG(2U) << 16) | 0)
+#define NDR_VERSION_5_0 ((__MSABI_LONG(5U) << 16) | 0)
+#define NDR_VERSION_5_2 ((__MSABI_LONG(5U) << 16) | 2)
+#define NDR_VERSION_5_3 ((__MSABI_LONG(5U) << 16) | 3)
+#define NDR_VERSION_5_4 ((__MSABI_LONG(5U) << 16) | 4)
 
 #define LOAD_TLB_AS_64BIT 0
 #define LOAD_TLB_AS_32BIT 0
@@ -140,15 +140,15 @@ extern "C" {
   } NDR_CONTEXT_HANDLE_FLAGS,*PNDR_CONTEXT_HANDLE_FLAGS;
 
   typedef struct _MIDL_TYPE_PICKLING_FLAGS {
-    unsigned long Oicf : 1;
-    unsigned long HasNewCorrDesc : 1;
-    unsigned long Unused : 30;
+    unsigned __LONG32 Oicf : 1;
+    unsigned __LONG32 HasNewCorrDesc : 1;
+    unsigned __LONG32 Unused : 30;
   } MIDL_TYPE_PICKLING_FLAGS,*PMIDL_TYPE_PICKLING_FLAGS;
 
 #define MAX_INTERPRETER_OUT_SIZE 128
 #define MAX_INTERPRETER_PARAM_OUT_SIZE 7*8
 
-#define INTERPRETER_THUNK_PARAM_SIZE_THRESHOLD (sizeof(long)*32)
+#define INTERPRETER_THUNK_PARAM_SIZE_THRESHOLD (sizeof(__LONG32)*32)
 
 #define INTERPRETER_PROC_STACK_FRAME_SIZE_THRESHOLD ((64*1024) - 1)
 

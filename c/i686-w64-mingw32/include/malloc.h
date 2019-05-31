@@ -1,12 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _MALLOC_H_
 #define _MALLOC_H_
 
-#include <_mingw.h>
+#include <crtdefs.h>
 
 #pragma pack(push,_CRT_PACKING)
 
@@ -134,9 +134,9 @@ void * __mingw_aligned_realloc (void *_Memory, size_t _Size, size_t _Offset);
 #define _ALLOCA_S_STACK_MARKER 0xCCCC
 #define _ALLOCA_S_HEAP_MARKER 0xDDDD
 
-#if(defined(_X86_) && !defined(__x86_64))
+#if defined(_ARM_) || (defined(_X86_) && !defined(__x86_64))
 #define _ALLOCA_S_MARKER_SIZE 8
-#elif defined(__ia64__) || defined(__x86_64)
+#elif defined(__ia64__) || defined(__x86_64) || defined(__aarch64__)
 #define _ALLOCA_S_MARKER_SIZE 16
 #endif
 

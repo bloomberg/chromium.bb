@@ -1,12 +1,13 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WINREG_
 #define _WINREG_
 
 #include <_mingw_unicode.h>
+#include <winapifamily.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -110,6 +111,8 @@ extern "C" {
 
 #define WIN31_CLASS NULL
 
+#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+
 #define RegConnectRegistry __MINGW_NAME_AW(RegConnectRegistry)
 #define RegConnectRegistryEx __MINGW_NAME_AW(RegConnectRegistryEx)
 #define RegCreateKey __MINGW_NAME_AW(RegCreateKey)
@@ -141,7 +144,7 @@ extern "C" {
   WINADVAPI LONG WINAPI RegOverridePredefKey(HKEY hKey,HKEY hNewHKey);
   WINADVAPI LONG WINAPI RegOpenUserClassesRoot(HANDLE hToken,DWORD dwOptions,REGSAM samDesired,PHKEY phkResult);
   WINADVAPI LONG WINAPI RegOpenCurrentUser(REGSAM samDesired,PHKEY phkResult);
-  WINADVAPI LONG WINAPI RegDisablePredefinedCache();
+  WINADVAPI LONG WINAPI RegDisablePredefinedCache(void);
   WINADVAPI LONG WINAPI RegConnectRegistryA(LPCSTR lpMachineName,HKEY hKey,PHKEY phkResult);
   WINADVAPI LONG WINAPI RegConnectRegistryW(LPCWSTR lpMachineName,HKEY hKey,PHKEY phkResult);
   WINADVAPI LONG WINAPI RegConnectRegistryExA(LPCSTR lpMachineName,HKEY hKey,ULONG Flags,PHKEY phkResult);
@@ -332,25 +335,8 @@ WINADVAPI LONG WINAPI RegLoadAppKeyW(
 
 #define RegLoadAppKey __MINGW_NAME_AW(RegLoadAppKey)
 
-WINADVAPI LONG WINAPI RegLoadMUIStringA(
-  HKEY hKey,
-  LPCSTR pszValue,
-  LPSTR pszOutBuf,
-  DWORD cbOutBuf,
-  LPDWORD pcbData,
-  DWORD Flags,
-  LPCSTR pszDirectory
-);
-
-WINADVAPI LONG WINAPI RegLoadMUIStringW(
-  HKEY hKey,
-  LPCWSTR pszValue,
-  LPWSTR pszOutBuf,
-  DWORD cbOutBuf,
-  LPDWORD pcbData,
-  DWORD Flags,
-  LPCWSTR pszDirectory
-);
+WINADVAPI LONG WINAPI RegLoadMUIStringA(HKEY hKey, LPCSTR pszValue, LPSTR pszOutBuf, DWORD cbOutBuf, LPDWORD pcbData, DWORD Flags, LPCSTR pszDirectory);
+WINADVAPI LONG WINAPI RegLoadMUIStringW(HKEY hKey, LPCWSTR pszValue, LPWSTR pszOutBuf, DWORD cbOutBuf, LPDWORD pcbData, DWORD Flags, LPCWSTR pszDirectory);
 
 #define RegLoadMUIString __MINGW_NAME_AW(RegLoadMUIString)
 
@@ -387,15 +373,45 @@ WINADVAPI LONG WINAPI RegSetKeyValueA(
 
 WINADVAPI LONG WINAPI RegSetKeyValueW(
   HKEY hKey,
-  LPCSTR lpSubKey,
-  LPCSTR lpValueName,
+  LPCWSTR lpSubKey,
+  LPCWSTR lpValueName,
   DWORD dwType,
   LPCVOID lpData,
   DWORD cbData
 );
 #define RegSetKeyValue __MINGW_NAME_AW(RegSetKeyValue)
 
+#define SHUTDOWN_FORCE_OTHERS 0x00000001
+#define SHUTDOWN_FORCE_SELF 0x00000002
+#define SHUTDOWN_RESTART 0x00000004
+#define SHUTDOWN_POWEROFF 0x00000008
+#define SHUTDOWN_NOREBOOT 0x00000010
+#define SHUTDOWN_GRACE_OVERRIDE 0x00000020
+#define SHUTDOWN_INSTALL_UPDATES 0x00000040
+#define SHUTDOWN_RESTARTAPPS 0x00000080
+#define SHUTDOWN_HYBRID 0x00000200
+
+WINADVAPI DWORD WINAPI InitiateShutdownA(
+  LPSTR lpMachineName,
+  LPSTR lpMessage,
+  DWORD dwGracePeriod,
+  DWORD dwShutdownFlags,
+  DWORD dwReason
+);
+
+WINADVAPI DWORD WINAPI InitiateShutdownW(
+  LPWSTR lpMachineName,
+  LPWSTR lpMessage,
+  DWORD dwGracePeriod,
+  DWORD dwShutdownFlags,
+  DWORD dwReason
+);
+
+#define InitiateShutdown __MINGW_NAME_AW(InitiateShutdown)
+
 #endif /* (_WIN32_WINNT >= 0x0600) */
+
+#endif /* WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP) */
 
 #ifdef __cplusplus
 }

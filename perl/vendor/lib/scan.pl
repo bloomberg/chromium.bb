@@ -35,7 +35,7 @@ my $filler = ' ' x 26 ;
 
 chdir "libraries" || die "Cannot chdir into './libraries': $!\n";
 
-foreach my $name (sort tuple glob "[2-9]*")
+foreach my $name (sort tuple glob("[2-9]*"), glob("[1-9][0-9]*"))
 {
     next if $name =~ /(NOHEAP|NC|private)$/;
 
@@ -102,8 +102,8 @@ sub scan
     foreach $define (sort keys %seen_define)
     { 
         my $out = $filler ;
-	substr($out,0, length $define) = $define;
-	$result .= "\t$out => $seen_define{$define},\n" ;
+        substr($out,0, length $define) = $define;
+        $result .= "\t$out => $seen_define{$define},\n" ;
     }
     
     while ($file =~ /\btypedef\s+enum\s*{(.*?)}\s*(\w+)/gs )
@@ -120,8 +120,9 @@ sub scan
     
         my @tokens = map { s/\s*=.*// ; $_} split /\s*,\s*/, $enum ;
         my @new =  grep { ! $Enums{$_}++ } @tokens ;
-	if (@new)
-	{
+
+        if (@new)
+        {
             my $value ;
             if ($ignore)
               { $value = "IGNORE, # $version" }
@@ -130,14 +131,14 @@ sub scan
 
             $result .= "\n\t# enum $name\n";
             my $out = $filler ;
-	    foreach $name (@new)
-	    {
+            foreach $name (@new)
+            {
                 next if $ignore_exact_enum{$name} ;
-	        $out = $filler ;
-	        substr($out,0, length $name) = $name;
+                $out = $filler ;
+                substr($out,0, length $name) = $name;
                 $result .= "\t$out => $value\n" ;
-	    }
-	}
+            }
+        }
     }
 
     return $result ;

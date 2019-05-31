@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __DBGENG_H__
@@ -1842,7 +1842,7 @@ extern "C" {
   typedef void (CALLBACK *PDEBUG_EXTENSION_NOTIFY)(ULONG Notify,ULONG64 Argument);
   typedef HRESULT (CALLBACK *PDEBUG_EXTENSION_CALL)(PDEBUG_CLIENT Client,PCSTR Args);
 
-#define DEBUG_EXTENSION_CONTINUE_SEARCH HRESULT_FROM_NT(0xC0000271L)
+#define DEBUG_EXTENSION_CONTINUE_SEARCH HRESULT_FROM_NT(0xC0000271)
 #define DEBUG_EXTENSION_VERSION(Major,Minor) ((((Major) & 0xffff) << 16) | ((Minor) & 0xffff))
 
 #ifdef __cplusplus

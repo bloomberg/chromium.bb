@@ -2,7 +2,7 @@ package PPM;
 require 5.004;
 require Exporter;
 use vars qw( $VERSION );
-$VERSION = '11.11_01';
+$VERSION = '11.11_03';
 
 @ISA = qw(Exporter);
 @EXPORT = qw(PPMdat PPMERR InstalledPackageProperties ListOfRepositories

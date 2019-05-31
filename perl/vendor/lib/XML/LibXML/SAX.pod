@@ -24,30 +24,30 @@ provided by databases.
 
 =head1 FEATURES
 
-I<<<<<< NOTE: >>>>>> This feature is experimental. 
+I<<<<<< NOTE: >>>>>> This feature is experimental.
 
 You can enable character data joining which may yield a significant speed boost
 in your XML processing in lower markup ratio situations by enabling the
 http://xmlns.perl.org/sax/join-character-data feature of this parser. This is
-done via the set_feature method like this: 
+done via the set_feature method like this:
 
 
 
   $p->set_feature('http://xmlns.perl.org/sax/join-character-data', 1);
 
 You can also specify a 0 to disable. The default is to have this feature
-disabled. 
+disabled.
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -58,3 +58,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

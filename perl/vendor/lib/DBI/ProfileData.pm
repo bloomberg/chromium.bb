@@ -36,7 +36,7 @@ This module can also be used to roll your own profile analysis:
   $prof->match(key1 => qr/^SELECT/i);
 
   # produce a formatted report with the given number of items
-  $report = $prof->report(number => 10); 
+  $report = $prof->report(number => 10);
 
   # clone the profile data set
   $clone = $prof->clone();
@@ -56,7 +56,7 @@ This module can also be used to roll your own profile analysis:
 =head1 DESCRIPTION
 
 This module offers the ability to read, manipulate and format
-DBI::ProfileDumper profile data.  
+L<DBI::ProfileDumper> profile data.
 
 Conceptually, a profile consists of a series of records, or nodes,
 each of each has a set of statistics and set of keys.  Each record
@@ -69,8 +69,7 @@ The following methods are supported by DBI::ProfileData objects.
 
 =cut
 
-
-our $VERSION = sprintf("2.%06d", q$Revision: 10007 $ =~ /(\d+)/o);
+our $VERSION = "2.010008";
 
 use Carp qw(croak);
 use Symbol;
@@ -100,7 +99,7 @@ my $HAS_FLOCK = (defined $ENV{DBI_PROFILE_FLOCK})
 
 =head2 $prof = DBI::ProfileData->new(Files => [ "dbi.prof.1", "dbi.prof.2" ])
 
-Creates a a new DBI::ProfileData object.  Takes either a single file
+Creates a new DBI::ProfileData object.  Takes either a single file
 through the File option or a list of Files in an array ref.  If
 multiple files are specified then the header data from the first file
 is used.
@@ -117,7 +116,7 @@ Name of file to read. Takes precedence over C<Files>.
 
 If true, the files are deleted after being read.
 
-Actually the files are renamed with a C.deleteme> suffix before being read,
+Actually the files are renamed with a C<deleteme> suffix before being read,
 and then, after reading all the files, they're all deleted together.
 
 The files are locked while being read which, combined with the rename, makes it
@@ -163,7 +162,7 @@ data for many different SQL statement. See L<DBI::Profile>.
 
 sub new {
     my $pkg = shift;
-    my $self = {                
+    my $self = {
                 Files        => [ "dbi.prof" ],
 		Filter       => undef,
                 DeleteFiles  => 0,
@@ -175,7 +174,7 @@ sub new {
                 @_
                };
     bless $self, $pkg;
-    
+
     # File (singular) overrides Files (plural)
     $self->{Files} = [ $self->{File} ] if exists $self->{File};
 
@@ -189,7 +188,7 @@ sub _read_files {
     my $files  = $self->{Files};
     my $read_header = 0;
     my @files_to_delete;
-  
+
     my $fh = gensym;
     foreach (@$files) {
         my $filename = $_;
@@ -212,7 +211,7 @@ sub _read_files {
           or croak("Unable to read profile file '$filename': $!");
 
         # lock the file in case it's still being written to
-        # (we'll be foced to wait till the write is complete)
+        # (we'll be forced to wait till the write is complete)
         flock($fh, LOCK_SH) if $self->{LockFile};
 
         if (-s $fh) {   # not empty
@@ -221,7 +220,7 @@ sub _read_files {
             $self->_read_body($fh, $filename);
         }
         close($fh); # and release lock
-        
+
         push @files_to_delete, $filename
             if $self->{DeleteFiles};
     }
@@ -232,7 +231,7 @@ sub _read_files {
 	    warn "Can't delete '$_': $!";
 	}
     }
-    
+
     # discard node_lookup now that all files are read
     delete $self->{_node_lookup};
 }
@@ -255,7 +254,7 @@ sub _read_header {
         /^(\S+)\s*=\s*(.*)/
           or croak("Syntax error in header in $filename line $.: $_");
         # XXX should compare new with existing (from previous file)
-        # and warn if they differ (diferent program or path)
+        # and warn if they differ (different program or path)
         $self->{_header}{$1} = unescape_key($2) if $keep;
     }
 }
@@ -361,7 +360,7 @@ sub clone {
 =head2 $header = $prof->header();
 
 Returns a reference to a hash of header values.  These are the key
-value pairs included in the header section of the DBI::ProfileDumper
+value pairs included in the header section of the L<DBI::ProfileDumper>
 data format.  For example:
 
   $header = {
@@ -381,7 +380,7 @@ sub header { shift->{_header} }
 
 Returns a reference the sorted nodes array.  Each element in the array
 is a single record in the data set.  The first seven elements are the
-same as the elements provided by DBI::Profile.  After that each key is
+same as the elements provided by L<DBI::Profile>.  After that each key is
 in a separate element.  For example:
 
  $nodes = [
@@ -450,22 +449,22 @@ the dbiprof frontend.
         my $self = shift;
         my $nodes = $self->{_nodes};
         my %opt = @_;
-        
+
         croak("Missing required field option.") unless $opt{field};
 
         my $index = $FIELDS{$opt{field}};
-        
+
         croak("Unrecognized sort field '$opt{field}'.")
           unless defined $index;
 
         # sort over index
         if ($opt{reverse}) {
-            @$nodes = sort { 
-                $a->[$index] <=> $b->[$index] 
+            @$nodes = sort {
+                $a->[$index] <=> $b->[$index]
             } @$nodes;
         } else {
-            @$nodes = sort { 
-                $b->[$index] <=> $a->[$index] 
+            @$nodes = sort {
+                $b->[$index] <=> $a->[$index]
             } @$nodes;
         }
 
@@ -509,16 +508,16 @@ sub exclude {
     if (UNIVERSAL::isa($val,"Regexp")) {
         # regex match
         @$nodes = grep {
-            $#$_ < $index or $_->[$index] !~ /$val/ 
+            $#$_ < $index or $_->[$index] !~ /$val/
         } @$nodes;
     } else {
         if ($opt{case_sensitive}) {
-            @$nodes = grep { 
+            @$nodes = grep {
                 $#$_ < $index or $_->[$index] ne $val;
             } @$nodes;
         } else {
             $val = lc $val;
-            @$nodes = grep { 
+            @$nodes = grep {
                 $#$_ < $index or lc($_->[$index]) ne $val;
             } @$nodes;
         }
@@ -560,16 +559,16 @@ sub match {
     if (UNIVERSAL::isa($val,"Regexp")) {
         # regex match
         @$nodes = grep {
-            $#$_ >= $index and $_->[$index] =~ /$val/ 
+            $#$_ >= $index and $_->[$index] =~ /$val/
         } @$nodes;
     } else {
         if ($opt{case_sensitive}) {
-            @$nodes = grep { 
+            @$nodes = grep {
                 $#$_ >= $index and $_->[$index] eq $val;
             } @$nodes;
         } else {
             $val = lc $val;
-            @$nodes = grep { 
+            @$nodes = grep {
                 $#$_ >= $index and lc($_->[$index]) eq $val;
             } @$nodes;
         }
@@ -581,7 +580,7 @@ sub match {
 
 =head2 $Data = $prof->Data()
 
-Returns the same Data hash structure as seen in DBI::Profile.  This
+Returns the same Data hash structure as seen in L<DBI::Profile>.  This
 structure is not sorted.  The nodes() structure probably makes more
 sense for most analysis.
 
@@ -616,12 +615,12 @@ Formats a single node into a human-readable block of text.
 sub format {
     my ($self, $node) = @_;
     my $format;
-    
+
     # setup keys
     my $keys = "";
     for (my $i = PATH; $i <= $#$node; $i++) {
         my $key = $node->[$i];
-        
+
         # remove leading and trailing space
         $key =~ s/^\s+//;
         $key =~ s/\s+$//;
@@ -644,7 +643,7 @@ sub format {
   Shortest Time : %3.6f seconds
   Average Time  : %3.6f seconds
 END
-        return sprintf($format, @{$node}[COUNT,TOTAL,LONGEST,SHORTEST], 
+        return sprintf($format, @{$node}[COUNT,TOTAL,LONGEST,SHORTEST],
                        $node->[TOTAL] / $node->[COUNT]) . $keys;
     } else {
         $format = <<END;
@@ -675,7 +674,7 @@ sub report {
 
     my $report = $self->_report_header($opt{number});
     for (0 .. $opt{number} - 1) {
-        $report .= sprintf("#" x 5  . "[ %d ]". "#" x 59 . "\n", 
+        $report .= sprintf("#" x 5  . "[ %d ]". "#" x 59 . "\n",
                            $_ + 1);
         $report .= $self->format($nodes->[$_]);
         $report .= "\n";
@@ -711,7 +710,7 @@ END
     $header .= sprintf(<<END, $node_count, $number, $self->{_sort}, $count, $time);
   Total Records : %d (showing %d, sorted by %s)
   Total Count   : %d
-  Total Runtime : %3.6f seconds  
+  Total Runtime : %3.6f seconds
 
 END
 

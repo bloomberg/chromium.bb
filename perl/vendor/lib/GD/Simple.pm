@@ -6,6 +6,9 @@ GD::Simple - Simplified interface to GD library
 
 =head1 SYNOPSIS
 
+For a nice tutorial on using this module, see Gabor Szabo's article at
+http://perlmaven.com/drawing-images-using-gd-simple.
+
     use GD::Simple;
 
     # create a new image
@@ -164,9 +167,200 @@ our @EXPORT    = @GD::EXPORT;
 our @EXPORT_OK = @GD::EXPORT_OK;
 our $AUTOLOAD;
 
-my %COLORS;
 my $IMAGECLASS = 'GD::Image';
 my $TRANSPARENT;
+my %COLORS = (
+  white                 => [  0xFF,  0xFF,  0xFF ],
+  black                 => [  0x00,  0x00,  0x00 ],
+  aliceblue             => [  0xF0,  0xF8,  0xFF ],
+  antiquewhite          => [  0xFA,  0xEB,  0xD7 ],
+  aqua                  => [  0x00,  0xFF,  0xFF ],
+  aquamarine            => [  0x7F,  0xFF,  0xD4 ],
+  azure                 => [  0xF0,  0xFF,  0xFF ],
+  beige                 => [  0xF5,  0xF5,  0xDC ],
+  bisque                => [  0xFF,  0xE4,  0xC4 ],
+  blanchedalmond        => [  0xFF,  0xEB,  0xCD ],
+  blue                  => [  0x00,  0x00,  0xFF ],
+  blueviolet            => [  0x8A,  0x2B,  0xE2 ],
+  brown                 => [  0xA5,  0x2A,  0x2A ],
+  burlywood             => [  0xDE,  0xB8,  0x87 ],
+  cadetblue             => [  0x5F,  0x9E,  0xA0 ],
+  chartreuse            => [  0x7F,  0xFF,  0x00 ],
+  chocolate             => [  0xD2,  0x69,  0x1E ],
+  coral                 => [  0xFF,  0x7F,  0x50 ],
+  cornflowerblue        => [  0x64,  0x95,  0xED ],
+  cornsilk              => [  0xFF,  0xF8,  0xDC ],
+  crimson               => [  0xDC,  0x14,  0x3C ],
+  cyan                  => [  0x00,  0xFF,  0xFF ],
+  darkblue              => [  0x00,  0x00,  0x8B ],
+  darkcyan              => [  0x00,  0x8B,  0x8B ],
+  darkgoldenrod         => [  0xB8,  0x86,  0x0B ],
+  darkgray              => [  0xA9,  0xA9,  0xA9 ],
+  darkgreen             => [  0x00,  0x64,  0x00 ],
+  darkkhaki             => [  0xBD,  0xB7,  0x6B ],
+  darkmagenta           => [  0x8B,  0x00,  0x8B ],
+  darkolivegreen        => [  0x55,  0x6B,  0x2F ],
+  darkorange            => [  0xFF,  0x8C,  0x00 ],
+  darkorchid            => [  0x99,  0x32,  0xCC ],
+  darkred               => [  0x8B,  0x00,  0x00 ],
+  darksalmon            => [  0xE9,  0x96,  0x7A ],
+  darkseagreen          => [  0x8F,  0xBC,  0x8F ],
+  darkslateblue         => [  0x48,  0x3D,  0x8B ],
+  darkslategray         => [  0x2F,  0x4F,  0x4F ],
+  darkturquoise         => [  0x00,  0xCE,  0xD1 ],
+  darkviolet            => [  0x94,  0x00,  0xD3 ],
+  deeppink              => [  0xFF,  0x14, 0x100 ],
+  deepskyblue           => [  0x00,  0xBF,  0xFF ],
+  dimgray               => [  0x69,  0x69,  0x69 ],
+  dodgerblue            => [  0x1E,  0x90,  0xFF ],
+  firebrick             => [  0xB2,  0x22,  0x22 ],
+  floralwhite           => [  0xFF,  0xFA,  0xF0 ],
+  forestgreen           => [  0x22,  0x8B,  0x22 ],
+  fuchsia               => [  0xFF,  0x00,  0xFF ],
+  gainsboro             => [  0xDC,  0xDC,  0xDC ],
+  ghostwhite            => [  0xF8,  0xF8,  0xFF ],
+  gold                  => [  0xFF,  0xD7,  0x00 ],
+  goldenrod             => [  0xDA,  0xA5,  0x20 ],
+  gray                  => [  0x80,  0x80,  0x80 ],
+  green                 => [  0x00,  0x80,  0x00 ],
+  greenyellow           => [  0xAD,  0xFF,  0x2F ],
+  honeydew              => [  0xF0,  0xFF,  0xF0 ],
+  hotpink               => [  0xFF,  0x69,  0xB4 ],
+  indianred             => [  0xCD,  0x5C,  0x5C ],
+  indigo                => [  0x4B,  0x00,  0x82 ],
+  ivory                 => [  0xFF,  0xFF,  0xF0 ],
+  khaki                 => [  0xF0,  0xE6,  0x8C ],
+  lavender              => [  0xE6,  0xE6,  0xFA ],
+  lavenderblush         => [  0xFF,  0xF0,  0xF5 ],
+  lawngreen             => [  0x7C,  0xFC,  0x00 ],
+  lemonchiffon          => [  0xFF,  0xFA,  0xCD ],
+  lightblue             => [  0xAD,  0xD8,  0xE6 ],
+  lightcoral            => [  0xF0,  0x80,  0x80 ],
+  lightcyan             => [  0xE0,  0xFF,  0xFF ],
+  lightgoldenrodyellow  => [  0xFA,  0xFA,  0xD2 ],
+  lightgreen            => [  0x90,  0xEE,  0x90 ],
+  lightgrey             => [  0xD3,  0xD3,  0xD3 ],
+  lightpink             => [  0xFF,  0xB6,  0xC1 ],
+  lightsalmon           => [  0xFF,  0xA0,  0x7A ],
+  lightseagreen         => [  0x20,  0xB2,  0xAA ],
+  lightskyblue          => [  0x87,  0xCE,  0xFA ],
+  lightslategray        => [  0x77,  0x88,  0x99 ],
+  lightsteelblue        => [  0xB0,  0xC4,  0xDE ],
+  lightyellow           => [  0xFF,  0xFF,  0xE0 ],
+  lime                  => [  0x00,  0xFF,  0x00 ],
+  limegreen             => [  0x32,  0xCD,  0x32 ],
+  linen                 => [  0xFA,  0xF0,  0xE6 ],
+  magenta               => [  0xFF,  0x00,  0xFF ],
+  maroon                => [  0x80,  0x00,  0x00 ],
+  mediumaquamarine      => [  0x66,  0xCD,  0xAA ],
+  mediumblue            => [  0x00,  0x00,  0xCD ],
+  mediumorchid          => [  0xBA,  0x55,  0xD3 ],
+  mediumpurple          => [ 0x100,  0x70,  0xDB ],
+  mediumseagreen        => [  0x3C,  0xB3,  0x71 ],
+  mediumslateblue       => [  0x7B,  0x68,  0xEE ],
+  mediumspringgreen     => [  0x00,  0xFA,  0x9A ],
+  mediumturquoise       => [  0x48,  0xD1,  0xCC ],
+  mediumvioletred       => [  0xC7,  0x15,  0x85 ],
+  midnightblue          => [  0x19,  0x19,  0x70 ],
+  mintcream             => [  0xF5,  0xFF,  0xFA ],
+  mistyrose             => [  0xFF,  0xE4,  0xE1 ],
+  moccasin              => [  0xFF,  0xE4,  0xB5 ],
+  navajowhite           => [  0xFF,  0xDE,  0xAD ],
+  navy                  => [  0x00,  0x00,  0x80 ],
+  oldlace               => [  0xFD,  0xF5,  0xE6 ],
+  olive                 => [  0x80,  0x80,  0x00 ],
+  olivedrab             => [  0x6B,  0x8E,  0x23 ],
+  orange                => [  0xFF,  0xA5,  0x00 ],
+  orangered             => [  0xFF,  0x45,  0x00 ],
+  orchid                => [  0xDA,  0x70,  0xD6 ],
+  palegoldenrod         => [  0xEE,  0xE8,  0xAA ],
+  palegreen             => [  0x98,  0xFB,  0x98 ],
+  paleturquoise         => [  0xAF,  0xEE,  0xEE ],
+  palevioletred         => [  0xDB,  0x70, 0x100 ],
+  papayawhip            => [  0xFF,  0xEF,  0xD5 ],
+  peachpuff             => [  0xFF,  0xDA,  0xB9 ],
+  peru                  => [  0xCD,  0x85,  0x3F ],
+  pink                  => [  0xFF,  0xC0,  0xCB ],
+  plum                  => [  0xDD,  0xA0,  0xDD ],
+  powderblue            => [  0xB0,  0xE0,  0xE6 ],
+  purple                => [  0x80,  0x00,  0x80 ],
+  red                   => [  0xFF,  0x00,  0x00 ],
+  rosybrown             => [  0xBC,  0x8F,  0x8F ],
+  royalblue             => [  0x41,  0x69,  0xE1 ],
+  saddlebrown           => [  0x8B,  0x45,  0x13 ],
+  salmon                => [  0xFA,  0x80,  0x72 ],
+  sandybrown            => [  0xF4,  0xA4,  0x60 ],
+  seagreen              => [  0x2E,  0x8B,  0x57 ],
+  seashell              => [  0xFF,  0xF5,  0xEE ],
+  sienna                => [  0xA0,  0x52,  0x2D ],
+  silver                => [  0xC0,  0xC0,  0xC0 ],
+  skyblue               => [  0x87,  0xCE,  0xEB ],
+  slateblue             => [  0x6A,  0x5A,  0xCD ],
+  slategray             => [  0x70,  0x80,  0x90 ],
+  snow                  => [  0xFF,  0xFA,  0xFA ],
+  springgreen           => [  0x00,  0xFF,  0x7F ],
+  steelblue             => [  0x46,  0x82,  0xB4 ],
+  tan                   => [  0xD2,  0xB4,  0x8C ],
+  teal                  => [  0x00,  0x80,  0x80 ],
+  thistle               => [  0xD8,  0xBF,  0xD8 ],
+  tomato                => [  0xFF,  0x63,  0x47 ],
+  turquoise             => [  0x40,  0xE0,  0xD0 ],
+  violet                => [  0xEE,  0x82,  0xEE ],
+  wheat                 => [  0xF5,  0xDE,  0xB3 ],
+  whitesmoke            => [  0xF5,  0xF5,  0xF5 ],
+  yellow                => [  0xFF,  0xFF,  0x00 ],
+  yellowgreen           => [  0x9A,  0xCD,  0x32 ],
+  gradient1             => [  0x00,  0xFF,  0x00 ],
+  gradient2             => [  0x0A,  0xFF,  0x00 ],
+  gradient3             => [  0x14,  0xFF,  0x00 ],
+  gradient4             => [  0x1E,  0xFF,  0x00 ],
+  gradient5             => [  0x28,  0xFF,  0x00 ],
+  gradient6             => [  0x32,  0xFF,  0x00 ],
+  gradient7             => [  0x3D,  0xFF,  0x00 ],
+  gradient8             => [  0x47,  0xFF,  0x00 ],
+  gradient9             => [  0x51,  0xFF,  0x00 ],
+  gradient10            => [  0x5B,  0xFF,  0x00 ],
+  gradient11            => [  0x65,  0xFF,  0x00 ],
+  gradient12            => [  0x70,  0xFF,  0x00 ],
+  gradient13            => [  0x7A,  0xFF,  0x00 ],
+  gradient14            => [  0x84,  0xFF,  0x00 ],
+  gradient15            => [  0x8E,  0xFF,  0x00 ],
+  gradient16            => [  0x99,  0xFF,  0x00 ],
+  gradient17            => [  0xA3,  0xFF,  0x00 ],
+  gradient18            => [  0xAD,  0xFF,  0x00 ],
+  gradient19            => [  0xB7,  0xFF,  0x00 ],
+  gradient20            => [  0xC1,  0xFF,  0x00 ],
+  gradient21            => [  0xCC,  0xFF,  0x00 ],
+  gradient22            => [  0xD6,  0xFF,  0x00 ],
+  gradient23            => [  0xE0,  0xFF,  0x00 ],
+  gradient24            => [  0xEA,  0xFF,  0x00 ],
+  gradient25            => [  0xF4,  0xFF,  0x00 ],
+  gradient26            => [  0xFF,  0xFF,  0x00 ],
+  gradient27            => [  0xFF,  0xF4,  0x00 ],
+  gradient28            => [  0xFF,  0xEA,  0x00 ],
+  gradient29            => [  0xFF,  0xE0,  0x00 ],
+  gradient30            => [  0xFF,  0xD6,  0x00 ],
+  gradient31            => [  0xFF,  0xCC,  0x00 ],
+  gradient32            => [  0xFF,  0xC1,  0x00 ],
+  gradient33            => [  0xFF,  0xB7,  0x00 ],
+  gradient34            => [  0xFF,  0xAD,  0x00 ],
+  gradient35            => [  0xFF,  0xA3,  0x00 ],
+  gradient36            => [  0xFF,  0x99,  0x00 ],
+  gradient37            => [  0xFF,  0x8E,  0x00 ],
+  gradient38            => [  0xFF,  0x84,  0x00 ],
+  gradient39            => [  0xFF,  0x7A,  0x00 ],
+  gradient40            => [  0xFF,  0x70,  0x00 ],
+  gradient41            => [  0xFF,  0x65,  0x00 ],
+  gradient42            => [  0xFF,  0x5B,  0x00 ],
+  gradient43            => [  0xFF,  0x51,  0x00 ],
+  gradient44            => [  0xFF,  0x47,  0x00 ],
+  gradient45            => [  0xFF,  0x3D,  0x00 ],
+  gradient46            => [  0xFF,  0x32,  0x00 ],
+  gradient47            => [  0xFF,  0x28,  0x00 ],
+  gradient48            => [  0xFF,  0x1E,  0x00 ],
+  gradient49            => [  0xFF,  0x14,  0x00 ],
+  gradient50            => [  0xFF,  0x0A,  0x00 ],
+);
 
 sub AUTOLOAD {
   my $self = shift;
@@ -396,9 +590,10 @@ sub ellipse {
   $gd->ellipse($self->curPos,@_,$fg)       if defined $fg && (!defined $bg || $bg != $fg);
 }
 
-=item $img->arc($cx,$cy,$width,$height,$start,$end [,$style])
+=item $img->arc([$cx,$cy,] $width,$height,$start,$end [,$style])
 
-This method draws filled and unfilled arcs.  See L<GD> for a
+This method draws filled and unfilled arcs, at the current position,
+with the current fore- and background colors.  See L<GD> for a
 description of the arguments. To draw a solid arc (such as a pie
 wedge) set bgcolor equal to fgcolor. To draw an unfilled arc, set
 bgcolor to undef.
@@ -409,7 +604,7 @@ sub arc {
   my $self = shift;
   return $self->gd->arc(@_) if @_ == 7;
 
-  croak 'Usage GD::Simple->arc($width,$height,$start,$end,$style)' unless @_ >= 4;
+  croak 'Usage GD::Simple->arc($width,$height,$start,$end[,$style])' unless @_ >= 4;
   my ($width,$height,$start,$end,$style) = @_;
   my $gd = $self->gd;
   my ($bg,$fg) = ($self->bgcolor,$self->fgcolor);
@@ -819,8 +1014,7 @@ sub translate_color {
       return $TRANSPARENT ||= $self->alphaColor('white',127);
   } 
   else {
-    $self->read_color_table unless %COLORS;
-    die "unknown color" unless exists $COLORS{lc $_[0]};
+    die "unknown color $_[0]" unless exists $COLORS{lc $_[0]};
     ($r,$g,$b) = @{$COLORS{lc $_[0]}};
   }
   return $self->colorResolve($r,$g,$b);
@@ -848,8 +1042,7 @@ sub alphaColor {
   if (@_ == 4) {  # (rgb triplet)
     ($r,$g,$b,$a) = @_;
   } else {
-    $self->read_color_table unless %COLORS;
-    die "unknown color" unless exists $COLORS{lc $_[0]};
+    die "unknown color $_[0]" unless exists $COLORS{lc $_[0]};
     ($r,$g,$b) = @{$COLORS{lc $_[0]}};
     $a = $_[1];
   }
@@ -869,7 +1062,6 @@ names and the values are array references containing [r,g,b] triples.
 
 sub color_names {
   my $self = shift;
-  $self->read_color_table unless %COLORS;
   return wantarray ? sort keys %COLORS : \%COLORS;
 }
 
@@ -881,16 +1073,6 @@ call this since all GD methods are automatically referred to this object.
 =cut
 
 sub gd { shift->{gd} }
-
-sub read_color_table {
-  my $class = shift;
-  while (<DATA>) {
-    chomp;
-    last if /^__END__/;
-    my ($name,$r,$g,$b) = split /\s+/;
-    $COLORS{$name} = [hex $r,hex $g,hex $b];
-  }
-}
 
 sub setBrush {
   my $self  = shift;
@@ -960,7 +1142,7 @@ sub HSVtoRGB {
   return (int($r+0.5),int($g+0.5),int($b+0.5));
 }
 
-=item ($hue,$saturation,$value) = GD::Simple->RGBtoHSV($hue,$saturation,$value)
+=item ($hue,$saturation,$value) = GD::Simple->RGBtoHSV($red,$green,$blue)
 
 Convert a Red/Green/Blue (RGB) value into a Hue/Saturation/Value (HSV)
 triple. The hue, saturation and value are integers from 0 to 255.
@@ -994,6 +1176,7 @@ sub RGBtoHSV {
     $h = 60 * ($r-$g)/$range + 240;
   }
 
+  $h += 360 if $h < 0;
   $h = int($h*255/360 + 0.5);
 
   return ($h, $s, $v);
@@ -1005,199 +1188,6 @@ sub newGroup {
 }
 
 1;
-
-__DATA__
-white                FF           FF            FF
-black                00           00            00
-aliceblue            F0           F8            FF
-antiquewhite         FA           EB            D7
-aqua                 00           FF            FF
-aquamarine           7F           FF            D4
-azure                F0           FF            FF
-beige                F5           F5            DC
-bisque               FF           E4            C4
-blanchedalmond       FF           EB            CD
-blue                 00           00            FF
-blueviolet           8A           2B            E2
-brown                A5           2A            2A
-burlywood            DE           B8            87
-cadetblue            5F           9E            A0
-chartreuse           7F           FF            00
-chocolate            D2           69            1E
-coral                FF           7F            50
-cornflowerblue       64           95            ED
-cornsilk             FF           F8            DC
-crimson              DC           14            3C
-cyan                 00           FF            FF
-darkblue             00           00            8B
-darkcyan             00           8B            8B
-darkgoldenrod        B8           86            0B
-darkgray             A9           A9            A9
-darkgreen            00           64            00
-darkkhaki            BD           B7            6B
-darkmagenta          8B           00            8B
-darkolivegreen       55           6B            2F
-darkorange           FF           8C            00
-darkorchid           99           32            CC
-darkred              8B           00            00
-darksalmon           E9           96            7A
-darkseagreen         8F           BC            8F
-darkslateblue        48           3D            8B
-darkslategray        2F           4F            4F
-darkturquoise        00           CE            D1
-darkviolet           94           00            D3
-deeppink             FF           14            100
-deepskyblue          00           BF            FF
-dimgray              69           69            69
-dodgerblue           1E           90            FF
-firebrick            B2           22            22
-floralwhite          FF           FA            F0
-forestgreen          22           8B            22
-fuchsia              FF           00            FF
-gainsboro            DC           DC            DC
-ghostwhite           F8           F8            FF
-gold                 FF           D7            00
-goldenrod            DA           A5            20
-gray                 80           80            80
-green                00           80            00
-greenyellow          AD           FF            2F
-honeydew             F0           FF            F0
-hotpink              FF           69            B4
-indianred            CD           5C            5C
-indigo               4B           00            82
-ivory                FF           FF            F0
-khaki                F0           E6            8C
-lavender             E6           E6            FA
-lavenderblush        FF           F0            F5
-lawngreen            7C           FC            00
-lemonchiffon         FF           FA            CD
-lightblue            AD           D8            E6
-lightcoral           F0           80            80
-lightcyan            E0           FF            FF
-lightgoldenrodyellow FA           FA            D2
-lightgreen           90           EE            90
-lightgrey            D3           D3            D3
-lightpink            FF           B6            C1
-lightsalmon          FF           A0            7A
-lightseagreen        20           B2            AA
-lightskyblue         87           CE            FA
-lightslategray       77           88            99
-lightsteelblue       B0           C4            DE
-lightyellow          FF           FF            E0
-lime                 00           FF            00
-limegreen            32           CD            32
-linen                FA           F0            E6
-magenta              FF           00            FF
-maroon               80           00            00
-mediumaquamarine     66           CD            AA
-mediumblue           00           00            CD
-mediumorchid         BA           55            D3
-mediumpurple         100          70            DB
-mediumseagreen       3C           B3            71
-mediumslateblue      7B           68            EE
-mediumspringgreen    00           FA            9A
-mediumturquoise      48           D1            CC
-mediumvioletred      C7           15            85
-midnightblue         19           19            70
-mintcream            F5           FF            FA
-mistyrose            FF           E4            E1
-moccasin             FF           E4            B5
-navajowhite          FF           DE            AD
-navy                 00           00            80
-oldlace              FD           F5            E6
-olive                80           80            00
-olivedrab            6B           8E            23
-orange               FF           A5            00
-orangered            FF           45            00
-orchid               DA           70            D6
-palegoldenrod        EE           E8            AA
-palegreen            98           FB            98
-paleturquoise        AF           EE            EE
-palevioletred        DB           70            100
-papayawhip           FF           EF            D5
-peachpuff            FF           DA            B9
-peru                 CD           85            3F
-pink                 FF           C0            CB
-plum                 DD           A0            DD
-powderblue           B0           E0            E6
-purple               80           00            80
-red                  FF           00            00
-rosybrown            BC           8F            8F
-royalblue            41           69            E1
-saddlebrown          8B           45            13
-salmon               FA           80            72
-sandybrown           F4           A4            60
-seagreen             2E           8B            57
-seashell             FF           F5            EE
-sienna               A0           52            2D
-silver               C0           C0            C0
-skyblue              87           CE            EB
-slateblue            6A           5A            CD
-slategray            70           80            90
-snow                 FF           FA            FA
-springgreen          00           FF            7F
-steelblue            46           82            B4
-tan                  D2           B4            8C
-teal                 00           80            80
-thistle              D8           BF            D8
-tomato               FF           63            47
-turquoise            40           E0            D0
-violet               EE           82            EE
-wheat                F5           DE            B3
-whitesmoke           F5           F5            F5
-yellow               FF           FF            00
-yellowgreen          9A           CD            32
-gradient1	00 ff 00
-gradient2	0a ff 00
-gradient3	14 ff 00
-gradient4	1e ff 00
-gradient5	28 ff 00
-gradient6	32 ff 00
-gradient7	3d ff 00
-gradient8	47 ff 00
-gradient9	51 ff 00
-gradient10	5b ff 00
-gradient11	65 ff 00
-gradient12	70 ff 00
-gradient13	7a ff 00
-gradient14	84 ff 00
-gradient15	8e ff 00
-gradient16	99 ff 00
-gradient17	a3 ff 00
-gradient18	ad ff 00
-gradient19	b7 ff 00
-gradient20	c1 ff 00
-gradient21	cc ff 00
-gradient22	d6 ff 00
-gradient23	e0 ff 00
-gradient24	ea ff 00
-gradient25	f4 ff 00
-gradient26	ff ff 00
-gradient27	ff f4 00
-gradient28	ff ea 00
-gradient29	ff e0 00
-gradient30	ff d6 00
-gradient31	ff cc 00
-gradient32	ff c1 00
-gradient33	ff b7 00
-gradient34	ff ad 00
-gradient35	ff a3 00
-gradient36	ff 99 00
-gradient37	ff 8e 00
-gradient38	ff 84 00
-gradient39	ff 7a 00
-gradient40	ff 70 00
-gradient41	ff 65 00
-gradient42	ff 5b 00
-gradient43	ff 51 00
-gradient44	ff 47 00
-gradient45	ff 3d 00
-gradient46	ff 32 00
-gradient47	ff 28 00
-gradient48	ff 1e 00
-gradient49	ff 14 00
-gradient50	ff 0a 00
-__END__
 
 =head1 COLORS
 
@@ -1243,9 +1233,7 @@ The GD::Simple module is copyright 2004, Lincoln D. Stein.  It is
 distributed under the same terms as Perl itself.  See the "Artistic
 License" in the Perl source code distribution for licensing terms.
 
-The latest versions of GD.pm are available at
-
-  http://stein.cshl.org/WWW/software/GD
+The latest versions of GD.pm are available at https://github.com/lstein/Perl-GD
 
 =head1 SEE ALSO
 

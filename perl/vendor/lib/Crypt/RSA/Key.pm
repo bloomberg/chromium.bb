@@ -1,22 +1,21 @@
-#!/usr/bin/perl -sw
-##
+package Crypt::RSA::Key; 
+use strict;
+use warnings;
+
 ## Crypt::RSA::Keys
 ##
 ## Copyright (c) 2001, Vipul Ved Prakash.  All rights reserved.
 ## This code is free software; you can redistribute it and/or modify
 ## it under the same terms as Perl itself.
-##
-## $Id: Key.pm,v 1.13 2001/05/25 00:20:40 vipul Exp $
 
-package Crypt::RSA::Key; 
-use strict;
 use base 'Class::Loader';
 use base 'Crypt::RSA::Errorhandler';
-use Crypt::Primes          qw(rsaparams);
+use Math::Prime::Util qw(random_nbit_prime miller_rabin_random is_frobenius_khashin_pseudoprime);
 use Crypt::RSA::DataFormat qw(bitsize);
-use Math::Pari             qw(PARI Mod lift);
+use Math::BigInt try => 'GMP, Pari';
 use Crypt::RSA::Key::Private;
 use Crypt::RSA::Key::Public;
+use Carp;
 
 $Crypt::RSA::Key::VERSION = '1.99';
 
@@ -55,13 +54,49 @@ sub generate {
         my $size = int($params{Size}/2);  
         my $verbosity = $params{Verbosity} || 0;
 
-        my $cbitsize = 0;
-        while (!($cbitsize)) { 
-            $key = rsaparams ( Size => $size, Verbosity => $verbosity );
-            my $n = $$key{p} * $$key{q};
-            $cbitsize = 1 if bitsize($n) == $params{Size}
-        }
+        # Switch from Maurer prime to nbit prime, then add some more primality
+        # testing.  This is faster and gives us a wider set of possible primes.
 
+        # We really ought to consider the distribution.  See:
+        # https://crocs.fi.muni.cz/_media/public/papers/usenixsec16_1mrsakeys_trfimu_201603.pdf
+        # for comments on p/q selection.
+
+        while (1) {
+          my $p = random_nbit_prime($size);
+          my $q = random_nbit_prime($size);
+          $p = Math::BigInt->new("$p") unless ref($p) eq 'Math::BigInt';
+          $q = Math::BigInt->new("$q") unless ref($q) eq 'Math::BigInt';
+
+          # For unbiased rejection sampling, generate both p/q if size too small.
+          next unless bitsize($p * $q) == $params{Size};
+
+          # Verify primes aren't too close together.
+          if ($params{Size} >= 256) {
+            my $threshold = Math::BigInt->new(2)->bpow($params{Size}/2 - 100);
+            my $diff = $p->copy->bsub($q)->babs;
+            next if $diff <= $threshold;
+          }
+
+          # We could check p-1 and q-1 smoothness.
+
+          # p and q have passed the strong BPSW test, so it would be shocking
+          # if they were not prime.  We'll add a few more tests because they're
+          # cheap and we want to be extra careful, but also don't want to spend
+          # the time doing a full primality proof.
+
+          do { carp "$p passes BPSW but fails Frobenius test!"; next; }
+            unless is_frobenius_khashin_pseudoprime($p);
+          do { carp "$q passes BPSW but fails Frobenius test!"; next; }
+            unless is_frobenius_khashin_pseudoprime($q);
+
+          do { carp "$p fails Miller-Rabin testing!"; next; }
+            unless miller_rabin_random($p,3);
+          do { carp "$q fails Miller-Rabin testing!"; next; }
+            unless miller_rabin_random($q,3);
+
+          $key = { p => $p, q => $q, e => Math::BigInt->new(65537) };
+          last;
+        }
     } 
 
     if ($params{KF}) { 
@@ -73,9 +108,9 @@ sub generate {
     my $priload = $params{SKF} ? $params{SKF} : { Name => "Native_SKF" };
 
     my $pubkey = $self->_load (%$pubload) || 
-        return $self->error ("Couldn't load the public key module.");
-    my $prikey = $self->_load ((%$priload), Args => ['Cipher' => $params{Cipher}, 'Password', $params{Password} ]) || 
-        return $self->error ("Couldn't load the private key module.");
+        return $self->error ("Couldn't load the public key module: $@");
+    my $prikey = $self->_load ((%$priload), Args => ['Cipher' => $params{Cipher}, 'Password' => $params{Password} ]) || 
+        return $self->error ("Couldn't load the private key module: $@");
     $pubkey->Identity ($params{Identity});
     $prikey->Identity ($params{Identity});
 
@@ -84,21 +119,20 @@ sub generate {
     $prikey->p ($$key{p} || $params{p});
     $prikey->q ($$key{q} || $params{q});
 
-    $prikey->phi (($prikey->p - 1) * ($prikey->q - 1));
-    my $m = Mod (1, $prikey->phi);
+    $prikey->phi ( ($prikey->p - 1) * ($prikey->q - 1) );
 
-    $prikey->d (lift($m/$pubkey->e));
-    $prikey->n ($prikey->p * $prikey->q);
-    $pubkey->n ($prikey->n);
+    $prikey->d ( ($pubkey->e)->copy->bmodinv($prikey->phi) );
+    $prikey->n ( $prikey->p * $prikey->q );
+    $pubkey->n ( $prikey->n );
 
     $prikey->dp ($prikey->d % ($prikey->p - 1));
     $prikey->dq ($prikey->d % ($prikey->q - 1));
-    $prikey->u  (mod_inverse($prikey->p, $prikey->q));
+    $prikey->u ( ($prikey->p)->copy->bmodinv($prikey->q) );
 
     return $self->error ("d is too small. Regenerate.") if
         bitsize($prikey->d) < 0.25 * bitsize($prikey->n);
 
-    $$key{p} = 0; $$key{q} = 0; $$key{e} = 0; $m = 0;
+    $$key{p} = 0; $$key{q} = 0; $$key{e} = 0;
 
     if ($params{Filename}) { 
         $pubkey->write (Filename => "$params{Filename}.public");
@@ -108,14 +142,6 @@ sub generate {
     return ($pubkey, $prikey);
 
 }
-
-
-sub mod_inverse {
-    my($a, $n) = @_;
-    my $m = Mod(1, $n);
-    lift($m / $a);
-}
-
 
 1;
 
@@ -224,7 +250,8 @@ Vipul Ved Prakash, E<lt>mail@vipul.netE<gt>
 =head1 SEE ALSO
 
 Crypt::RSA(3), Crypt::RSA::Key::Public(3), Crypt::RSA::Key::Private(3), 
-Crypt::Primes(3), Tie::EncryptedHash(3), Class::Loader(3)
+Tie::EncryptedHash(3), Class::Loader(3),
+Math::Prime::Util(3)
 
 =cut
 

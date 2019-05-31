@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WINSOCK2SPI_
@@ -14,7 +14,7 @@
 
 #define WSPDESCRIPTION_LEN 255
 
-#define WSS_OPERATION_IN_PROGRESS 0x00000103L
+#define WSS_OPERATION_IN_PROGRESS __MSABI_LONG(0x00000103)
 
 typedef struct WSPData {
   WORD wVersion;
@@ -37,7 +37,7 @@ extern "C" {
   typedef VOID (CALLBACK *LPWSAUSERAPC)(DWORD_PTR dwContext);
   typedef SOCKET (WSPAPI *LPWSPACCEPT)(SOCKET s,struct sockaddr *addr,LPINT addrlen,LPCONDITIONPROC lpfnCondition,DWORD_PTR dwCallbackData,LPINT lpErrno);
   typedef INT (WSPAPI *LPWSPADDRESSTOSTRING)(LPSOCKADDR lpsaAddress,DWORD dwAddressLength,LPWSAPROTOCOL_INFOW lpProtocolInfo,LPWSTR lpszAddressString,LPDWORD lpdwAddressStringLength,LPINT lpErrno);
-  typedef int (WSPAPI *LPWSPASYNCSELECT)(SOCKET s,HWND hWnd,unsigned int wMsg,long lEvent,LPINT lpErrno);
+  typedef int (WSPAPI *LPWSPASYNCSELECT)(SOCKET s,HWND hWnd,unsigned int wMsg,__LONG32 lEvent,LPINT lpErrno);
   typedef int (WSPAPI *LPWSPBIND)(SOCKET s,const struct sockaddr *name,int namelen,LPINT lpErrno);
   typedef int (WSPAPI *LPWSPCANCELBLOCKINGCALL)(LPINT lpErrno);
   typedef int (WSPAPI *LPWSPCLEANUP)(LPINT lpErrno);
@@ -45,7 +45,7 @@ extern "C" {
   typedef int (WSPAPI *LPWSPCONNECT)(SOCKET s,const struct sockaddr *name,int namelen,LPWSABUF lpCallerData,LPWSABUF lpCalleeData,LPQOS lpSQOS,LPQOS lpGQOS,LPINT lpErrno);
   typedef int (WSPAPI *LPWSPDUPLICATESOCKET)(SOCKET s,DWORD dwProcessId,LPWSAPROTOCOL_INFOW lpProtocolInfo,LPINT lpErrno);
   typedef int (WSPAPI *LPWSPENUMNETWORKEVENTS)(SOCKET s,WSAEVENT hEventObject,LPWSANETWORKEVENTS lpNetworkEvents,LPINT lpErrno);
-  typedef int (WSPAPI *LPWSPEVENTSELECT)(SOCKET s,WSAEVENT hEventObject,long lNetworkEvents,LPINT lpErrno);
+  typedef int (WSPAPI *LPWSPEVENTSELECT)(SOCKET s,WSAEVENT hEventObject,__LONG32 lNetworkEvents,LPINT lpErrno);
   typedef WINBOOL (WSPAPI *LPWSPGETOVERLAPPEDRESULT)(SOCKET s,LPWSAOVERLAPPED lpOverlapped,LPDWORD lpcbTransfer,WINBOOL fWait,LPDWORD lpdwFlags,LPINT lpErrno);
   typedef int (WSPAPI *LPWSPGETPEERNAME)(SOCKET s,struct sockaddr *name,LPINT namelen,LPINT lpErrno);
   typedef int (WSPAPI *LPWSPGETSOCKNAME)(SOCKET s,struct sockaddr *name,LPINT namelen,LPINT lpErrno);
@@ -57,7 +57,7 @@ extern "C" {
   typedef int (WSPAPI *LPWSPRECV)(SOCKET s,LPWSABUF lpBuffers,DWORD dwBufferCount,LPDWORD lpNumberOfBytesRecvd,LPDWORD lpFlags,LPWSAOVERLAPPED lpOverlapped,LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine,LPWSATHREADID lpThreadId,LPINT lpErrno);
   typedef int (WSPAPI *LPWSPRECVDISCONNECT)(SOCKET s,LPWSABUF lpInboundDisconnectData,LPINT lpErrno);
   typedef int (WSPAPI *LPWSPRECVFROM)(SOCKET s,LPWSABUF lpBuffers,DWORD dwBufferCount,LPDWORD lpNumberOfBytesRecvd,LPDWORD lpFlags,struct sockaddr *lpFrom,LPINT lpFromlen,LPWSAOVERLAPPED lpOverlapped,LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine,LPWSATHREADID lpThreadId,LPINT lpErrno);
-  typedef int (WSPAPI *LPWSPSELECT)(int nfds,fd_set *readfds,fd_set *writefds,fd_set *exceptfds,const struct timeval *timeout,LPINT lpErrno);
+  typedef int (WSPAPI *LPWSPSELECT)(int nfds,fd_set *readfds,fd_set *writefds,fd_set *exceptfds,const PTIMEVAL timeout,LPINT lpErrno);
   typedef int (WSPAPI *LPWSPSEND)(SOCKET s,LPWSABUF lpBuffers,DWORD dwBufferCount,LPDWORD lpNumberOfBytesSent,DWORD dwFlags,LPWSAOVERLAPPED lpOverlapped,LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine,LPWSATHREADID lpThreadId,LPINT lpErrno);
   typedef int (WSPAPI *LPWSPSENDDISCONNECT)(SOCKET s,LPWSABUF lpOutboundDisconnectData,LPINT lpErrno);
   typedef int (WSPAPI *LPWSPSENDTO)(SOCKET s,LPWSABUF lpBuffers,DWORD dwBufferCount,LPDWORD lpNumberOfBytesSent,DWORD dwFlags,const struct sockaddr *lpTo,int iTolen,LPWSAOVERLAPPED lpOverlapped,LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine,LPWSATHREADID lpThreadId,LPINT lpErrno);

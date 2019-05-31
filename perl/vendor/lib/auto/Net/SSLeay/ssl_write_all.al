@@ -3,9 +3,9 @@
 # See AutoSplit.pm.
 package Net::SSLeay;
 
-#line 542 "blib\lib\Net\SSLeay.pm (autosplit into blib\lib\auto\Net\SSLeay\ssl_write_all.al)"
+#line 630 "blib\lib\Net\SSLeay.pm (autosplit into blib\lib\auto\Net\SSLeay\ssl_write_all.al)"
 sub ssl_write_all {
-    my $ssl = $_[0];    
+    my $ssl = $_[0];
     my ($data_ref, $errs);
     if (ref $_[1]) {
 	$data_ref = $_[1];
@@ -32,10 +32,10 @@ sub ssl_write_all {
 	      SWITCH: {
 		$sslerr == constant("ERROR_NONE") && do {
 		  # according to map page SSL_get_error(3ssl):
-		  #  The TLS/SSL I/O operation completed.  
+		  #  The TLS/SSL I/O operation completed.
 		  #  This result code is returned if and only if ret > 0
                   # so if we received it here complain...
-		  warn "ERROR_NONE unexpected with invalid return value!" 
+		  warn "ERROR_NONE unexpected with invalid return value!"
 		    if $trace;
 		  $errname = "SSL_ERROR_NONE";
 		};
@@ -82,7 +82,7 @@ sub ssl_write_all {
 		  $errname = "SSL_ERROR_WANT_CONNECT";
 		  last SWITCH;
 		};
-		$sslerr == constant("ERROR_WANT_ACCEPT") && do { 
+		$sslerr == constant("ERROR_WANT_ACCEPT") && do {
 		  # according to man page, should never happen on call to
 		  # SSL_write, so complain, but handle as known error type
 		  warn "ERROR_WANT_ACCEPT: Unexpected error for SSL_write\n"
@@ -91,7 +91,7 @@ sub ssl_write_all {
 		  last SWITCH;
 		};
 		$sslerr == constant("ERROR_WANT_X509_LOOKUP") && do {
-		  # operation did not complete: waiting on call back,  
+		  # operation did not complete: waiting on call back,
 		  # call again later, so do not set errname and empty err_que
 		  # since this is a known error that is expected but, we should
 		  # continue to try writing the rest of our data with same io
@@ -102,7 +102,7 @@ sub ssl_write_all {
 		  last SWITCH;
 		};
 		$sslerr == constant("ERROR_SYSCALL") && do {
-		  # some IO error occured. According to man page: 
+		  # some IO error occured. According to man page:
 		  # Check retval, ERR, fallback to errno
 		  if ($wrote==0) { # EOF
 		    warn "ERROR_SYSCALL($wrote): EOF violates protocol.\n"
@@ -112,7 +112,7 @@ sub ssl_write_all {
 		    # check error que for details, don't set errname since we
 		    # are directly appending to errs
 		    my $chkerrs = print_errs('SSL_write (syscall)');
-		    if ($chkerrs) { 
+		    if ($chkerrs) {
 		      warn "ERROR_SYSCALL($wrote): Have errors\n" if $trace;
 		      $errs .= "ssl_write_all $$: 1 - ERROR_SYSCALL($wrote,".
 			"$sslerr,$errstr,$!)\n$chkerrs";
@@ -131,7 +131,7 @@ sub ssl_write_all {
 	      if ($errname) { # if we had an errname set add the error
 		$errs .= "ssl_write_all $$: 1 - $errname($wrote,$sslerr,".
 		  "$errstr,$!)\n";
-	      }	      
+	      }
 	    } # endif on have SSL_get_error val
 	  } # endif on $wrote defined
 	} # endelse on $wrote > 0

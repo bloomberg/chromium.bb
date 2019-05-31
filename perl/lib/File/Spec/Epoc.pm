@@ -1,13 +1,12 @@
 package File::Spec::Epoc;
 
 use strict;
-use vars qw($VERSION @ISA);
 
-$VERSION = '3.39_02';
-$VERSION =~ tr/_//;
+our $VERSION = '3.78';
+$VERSION =~ tr/_//d;
 
 require File::Spec::Unix;
-@ISA = qw(File::Spec::Unix);
+our @ISA = qw(File::Spec::Unix);
 
 =head1 NAME
 
@@ -20,10 +19,10 @@ File::Spec::Epoc - methods for Epoc file specs
 =head1 DESCRIPTION
 
 See File::Spec::Unix for a documentation of the methods provided
-there. This package overrides the implementation of these methods, not
+there.  This package overrides the implementation of these methods, not
 the semantics.
 
-This package is still work in progress ;-)
+This package is still a work in progress. ;-)
 
 =cut
 
@@ -38,7 +37,7 @@ sub case_tolerant {
 =item canonpath()
 
 No physical check on the filesystem, but a logical cleanup of a
-path. On UNIX eliminated successive slashes and successive "/.".
+path.  On UNIX eliminated successive slashes and successive "/.".
 
 =back
 

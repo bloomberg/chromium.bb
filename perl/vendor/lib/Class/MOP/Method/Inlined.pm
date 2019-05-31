@@ -1,18 +1,12 @@
 package Class::MOP::Method::Inlined;
-BEGIN {
-  $Class::MOP::Method::Inlined::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Class::MOP::Method::Inlined::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use Carp         'confess';
-use Scalar::Util 'blessed', 'weaken', 'looks_like_number', 'refaddr';
+use Scalar::Util 'refaddr';
 
-use base 'Class::MOP::Method::Generated';
+use parent 'Class::MOP::Method::Generated';
 
 sub _uninlined_body {
     my $self = shift;
@@ -113,9 +107,11 @@ sub can_be_inlined {
 
 # ABSTRACT: Method base class for methods which have been inlined
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -123,7 +119,7 @@ Class::MOP::Method::Inlined - Method base class for methods which have been inli
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -132,31 +128,64 @@ can be inlined.
 
 =head1 METHODS
 
-=over 4
-
-=item B<< $metamethod->can_be_inlined >>
+=head2 $metamethod->can_be_inlined
 
 This method returns true if the method in question can be inlined in
 the associated metaclass.
 
 If it cannot be inlined, it spits out a warning and returns false.
 
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
 =back
-
-=head1 AUTHOR
-
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

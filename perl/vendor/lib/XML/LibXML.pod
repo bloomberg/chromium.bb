@@ -148,12 +148,12 @@ Recall that since version 5.6.1, Perl distinguishes between character strings
 (internally encoded in UTF-8) and so called binary data and, accordingly,
 applies either character or byte semantics to them. A scalar representing a
 character string is distinguished from a byte string by special flag (UTF8).
-Please refer to I<<<<<< perlunicode >>>>>> for details. 
+Please refer to I<<<<<< perlunicode >>>>>> for details.
 
 XML::LibXML's API is designed to deal with many encodings of XML documents
 completely transparently, so that the application using XML::LibXML can be
 completely ignorant about the encoding of the XML documents it works with. On
-the other hand, functions like C<<<<<< XML::LibXML::Document->setEncoding >>>>>> give the user control over the document encoding. 
+the other hand, functions like C<<<<<< XML::LibXML::Document-E<gt>setEncoding >>>>>> give the user control over the document encoding.
 
 To ensure the aforementioned transparency and uniformity, most functions of
 XML::LibXML that work with in-memory trees accept and return data as character
@@ -162,7 +162,7 @@ document encoding; however, the functions related to I/O operations (i.e.
 parsing and saving) operate with binary data (in the original document
 encoding) obeying the encoding declaration of the XML documents.
 
-Below we summarize basic rules and principles regarding encoding: 
+Below we summarize basic rules and principles regarding encoding:
 
 
 =over 4
@@ -172,7 +172,7 @@ Below we summarize basic rules and principles regarding encoding:
 Do NOT apply any encoding-related PerlIO layers (C<<<<<< :utf8 >>>>>> or C<<<<<< :encoding(...) >>>>>>) to file handles that are an input for the parses or an output for a
 serializer of (full) XML documents. This is because the conversion of the data
 to/from the internal character representation is provided by libxml2 itself
-which must be able to enforce the encoding specified by the C<<<<<< <?xml version="1.0" encoding="..."?> >>>>>> declaration. Here is an example to follow: 
+which must be able to enforce the encoding specified by the C<<<<<< E<lt>?xml version="1.0" encoding="..."?E<gt> >>>>>> declaration. Here is an example to follow:
 
   use XML::LibXML;
   # load
@@ -194,7 +194,7 @@ which must be able to enforce the encoding specified by the C<<<<<< <?xml versio
 =item 2.
 
 All functions working with DOM accept and return character strings (UTF-8
-encoded with UTF8 flag on). E.g. 
+encoded with UTF8 flag on). E.g.
 
   my $doc = XML::LibXML::Document->new('1.0',$some_encoding);
   my $element = $doc->createElement($name);
@@ -204,11 +204,11 @@ encoded with UTF8 flag on). E.g.
 
 where C<<<<<< $some_encoding >>>>>> is the document encoding that will be used when saving the document, and C<<<<<< $name >>>>>> and C<<<<<< $text >>>>>> contain character strings (UTF-8 encoded with UTF8 flag on). Note that the
 method C<<<<<< toString >>>>>> returns XML as a character string if applied to other node than the Document
-node and a byte string containing the appropriate 
+node and a byte string containing the appropriate
 
   <?xml version="1.0" encoding="..."?>
 
-declaration if applied to a L<<<<<< XML::LibXML::Document >>>>>>. 
+declaration if applied to a L<<<<<< XML::LibXML::Document >>>>>>.
 
 
 
@@ -217,7 +217,7 @@ declaration if applied to a L<<<<<< XML::LibXML::Document >>>>>>.
 DOM methods also accept binary strings in the original encoding of the document
 to which the node belongs (UTF-8 is assumed if the node is not attached to any
 document). Exploiting this feature is NOT RECOMMENDED since it is considered
-bad practice. 
+bad practice.
 
 
 
@@ -240,14 +240,14 @@ that ship with a broken version of iconv.
 =head1 THREAD SUPPORT
 
 XML::LibXML since 1.67 partially supports Perl threads in Perl >= 5.8.8.
-XML::LibXML can be used with threads in two ways: 
+XML::LibXML can be used with threads in two ways:
 
 By default, all XML::LibXML classes use CLONE_SKIP class method to prevent Perl
 from copying XML::LibXML::* objects when a new thread is spawn. In this mode,
 all XML::LibXML::* objects are thread specific. This is the safest way to work
-with XML::LibXML in threads. 
+with XML::LibXML in threads.
 
-Alternatively, one may use 
+Alternatively, one may use
 
 
 
@@ -255,7 +255,7 @@ Alternatively, one may use
   use XML::LibXML qw(:threads_shared);
 
 to indicate, that all XML::LibXML node and parser objects should be shared
-between the main thread and any thread spawn from there. For example, in 
+between the main thread and any thread spawn from there. For example, in
 
 
 
@@ -267,15 +267,15 @@ between the main thread and any thread spawn from there. For example, in
   $thr->join;
 
 the variable C<<<<<< $doc >>>>>> refers to the exact same XML::LibXML::Document in the spawned thread as in the
-main thread. 
+main thread.
 
 Without using mutex locks, parallel threads may read the same document (i.e.
 any node that belongs to the document), parse files, and modify different
-documents. 
+documents.
 
 However, if there is a chance that some of the threads will attempt to modify a
-document (or even create new nodes based on that document, e.g. with C<<<<<< $doc->createElement >>>>>>) that other threads may be reading at the same time, the user is responsible
-for creating a mutex lock and using it in I<<<<<< both >>>>>> in the thread that modifies and the thread that reads: 
+document (or even create new nodes based on that document, e.g. with C<<<<<< $doc-E<gt>createElement >>>>>>) that other threads may be reading at the same time, the user is responsible
+for creating a mutex lock and using it in I<<<<<< both >>>>>> in the thread that modifies and the thread that reads:
 
 
 
@@ -308,7 +308,7 @@ installation meets all functionality for the package. The functions
 XML::LibXML::LIBXML_DOTTED_VERSION and XML::LibXML::LIBXML_VERSION provide this
 version information. Both functions simply pass through the values of the
 similar named macros of libxml2. Similarly, XML::LibXML::LIBXML_RUNTIME_VERSION
-returns the version of the (usually dynamically) linked libxml2. 
+returns the version of the (usually dynamically) linked libxml2.
 
 =over 4
 
@@ -339,7 +339,7 @@ by XML::LibXML. This will be "20602" for libxml2 released as "2.6.2" and
 something like "20602-CVS2032" for a CVS build of libxml2.
 
 XML::LibXML issues a warning if the version of libxml2 dynamically linked to it
-is less than the version of libxml2 which it was compiled against. 
+is less than the version of libxml2 which it was compiled against.
 
 
 
@@ -349,7 +349,7 @@ is less than the version of libxml2 which it was compiled against.
 =head1 EXPORTS
 
 By default the module exports all constants and functions listed in the :all
-tag, described below. 
+tag, described below.
 
 
 =head1 EXPORT TAGS
@@ -459,8 +459,8 @@ XML::LibXML provides two functions to export or import GDOME nodes:
 import_GDOME() and export_GDOME(). Both function have two parameters: the node
 and a flag for recursive import. The flag works as in cloneNode().
 
-The two functions allow to export and import XML::GDOME nodes explicitly,
-however, XML::LibXML allows also the transparent import of XML::GDOME nodes in
+The two functions allow one to export and import XML::GDOME nodes explicitly,
+however, XML::LibXML also allows the transparent import of XML::GDOME nodes in
 functions such as appendChild(), insertAfter() and so on. While native nodes
 are automatically adopted in most functions XML::GDOME nodes are always cloned
 in advance. Thus if the original node is modified after the operation, the node
@@ -479,7 +479,7 @@ This clones an XML::GDOME node to an XML::LibXML node explicitly.
 
   $gdomenode = XML::LibXML->export_GDOME( $node, $deep );
 
-Allows to clone an XML::LibXML node into an XML::GDOME node.
+Allows one to clone an XML::LibXML node into an XML::GDOME node.
 
 
 
@@ -494,18 +494,18 @@ http://rt.cpan.org/NoAuth/Bugs.html?Dist=XML-LibXML
 For suggestions etc., and other issues related to XML::LibXML you may use the
 perl XML mailing list (C<<<<<< perl-xml@listserv.ActiveState.com >>>>>>), where most XML-related Perl modules are discussed. In case of problems you
 should check the archives of that list first. Many problems are already
-discussed there. You can find the list's archives and subscription options at L<<<<<< http://aspn.activestate.com/ASPN/Mail/Browse/Threaded/perl-xml >>>>>>. 
+discussed there. You can find the list's archives and subscription options at L<<<<<< http://aspn.activestate.com/ASPN/Mail/Browse/Threaded/perl-xml >>>>>>.
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -516,3 +516,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

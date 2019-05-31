@@ -1,15 +1,16 @@
 package App::Prove;
 
 use strict;
-use vars qw($VERSION @ISA);
+use warnings;
 
-use TAP::Object ();
-use TAP::Harness;
-use TAP::Parser::Utils qw( split_shell );
+use TAP::Harness::Env;
+use Text::ParseWords qw(shellwords);
 use File::Spec;
 use Getopt::Long;
 use App::Prove::State;
 use Carp;
+
+use base 'TAP::Object';
 
 =head1 NAME
 
@@ -17,11 +18,11 @@ App::Prove - Implements the C<prove> command.
 
 =head1 VERSION
 
-Version 3.23
+Version 3.42
 
 =cut
 
-$VERSION = '3.23';
+our $VERSION = '3.42';
 
 =head1 DESCRIPTION
 
@@ -51,8 +52,6 @@ use constant PLUGINS => 'App::Prove::Plugin';
 my @ATTR;
 
 BEGIN {
-    @ISA = qw(TAP::Object);
-
     @ATTR = qw(
       archive argv blib show_count color directives exec failures comments
       formatter harness includes modules plugins jobs lib merge parse quiet
@@ -60,6 +59,7 @@ BEGIN {
       verbose warnings_fail warnings_warn show_help show_man show_version
       state_class test_args state dry extensions ignore_exit rules state_manager
       normalize sources tapversion trap
+      statefile
     );
     __PACKAGE__->mk_methods(@ATTR);
 }
@@ -89,7 +89,6 @@ sub _initialize {
     for my $key (@is_array) {
         $self->{$key} = [];
     }
-    $self->{harness_class} = 'TAP::Harness';
 
     for my $attr (@ATTR) {
         if ( exists $args->{$attr} ) {
@@ -99,13 +98,6 @@ sub _initialize {
         }
     }
 
-    my %env_provides_default = (
-        HARNESS_TIMER => 'timer',
-    );
-
-    while ( my ( $env, $attr ) = each %env_provides_default ) {
-        $self->{$attr} = 1 if $ENV{$env};
-    }
     $self->state_class('App::Prove::State');
     return $self;
 }
@@ -218,6 +210,7 @@ sub process_args {
             'D|dry'      => \$self->{dry},
             'ext=s@'     => sub {
                 my ( $opt, $val ) = @_;
+
                 # Workaround for Getopt::Long 2.25 handling of
                 # multivalue options
                 push @{ $self->{extensions} ||= [] }, $val;
@@ -237,6 +230,7 @@ sub process_args {
             'M=s@'         => $self->{modules},
             'P=s@'         => $self->{plugins},
             'state=s@'     => $self->{state},
+            'statefile=s'  => \$self->{statefile},
             'directives'   => \$self->{directives},
             'h|help|?'     => \$self->{show_help},
             'H|man'        => \$self->{show_man},
@@ -287,7 +281,7 @@ sub _help {
 sub _color_default {
     my $self = shift;
 
-    return -t STDOUT && !$ENV{HARNESS_NOTTY} && !IS_WIN32;
+    return -t STDOUT && !$ENV{HARNESS_NOTTY};
 }
 
 sub _get_args {
@@ -386,8 +380,9 @@ sub _get_args {
         }
         $args{rules} = { par => [@rules] };
     }
+    $args{harness_class} = $self->{harness_class} if $self->{harness_class};
 
-    return ( \%args, $self->{harness_class} );
+    return \%args;
 }
 
 sub _find_module {
@@ -486,7 +481,7 @@ sub run {
 
     unless ( $self->state_manager ) {
         $self->state_manager(
-            $self->state_class->new( { store => STATE_FILE } ) );
+            $self->state_class->new( { store => $self->statefile || STATE_FILE } ) );
     }
 
     if ( $self->show_help ) {
@@ -533,8 +528,8 @@ sub _get_tests {
 }
 
 sub _runtests {
-    my ( $self, $args, $harness_class, @tests ) = @_;
-    my $harness = $harness_class->new($args);
+    my ( $self, $args, @tests ) = @_;
+    my $harness = TAP::Harness::Env->create($args);
 
     my $state = $self->state_manager;
 
@@ -572,8 +567,6 @@ sub _get_switches {
     elsif ( $self->warnings_warn ) {
         push @switches, '-w';
     }
-
-    push @switches, split_shell( $ENV{HARNESS_PERL_SWITCHES} );
 
     return @switches ? \@switches : ();
 }
@@ -643,6 +636,7 @@ current Perl.
 
 sub print_version {
     my $self = shift;
+    require TAP::Harness;
     printf(
         "TAP::Harness v%s and Perl v%vd\n",
         $TAP::Harness::VERSION, $^V

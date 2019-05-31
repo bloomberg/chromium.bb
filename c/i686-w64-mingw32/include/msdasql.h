@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _MSDASQL_H_
@@ -12,9 +12,9 @@
 #ifdef DBINITCONSTANTS
 extern const MSDASQLDECLSPEC GUID IID_ISQLRequestDiagFields = { 0x228972f0,0xb5ff,0x11d0,{ 0x8a,0x80,0x0,0xc0,0x4f,0xd6,0x11,0xcd } };
 extern const MSDASQLDECLSPEC GUID IID_ISQLGetDiagField = { 0x228972f1,0xb5ff,0x11d0,{ 0x8a,0x80,0x0,0xc0,0x4f,0xd6,0x11,0xcd } };
-extern const MSDASQLDECLSPEC GUID IID_IRowsetChangeExtInfo = {0x0C733A8FL,0x2A1C,0x11CE,{0xAD,0xE5,0x00,0xAA,0x00,0x44,0x77,0x3D}};
-extern const MSDASQLDECLSPEC GUID CLSID_MSDASQL = {0xC8B522CBL,0x5CF3,0x11CE,{0xAD,0xE5,0x00,0xAA,0x00,0x44,0x77,0x3D}};
-extern const MSDASQLDECLSPEC GUID CLSID_MSDASQL_ENUMERATOR = {0xC8B522CDL,0x5CF3,0x11CE,{0xAD,0xE5,0x00,0xAA,0x00,0x44,0x77,0x3D}};
+extern const MSDASQLDECLSPEC GUID IID_IRowsetChangeExtInfo = {0x0C733A8F,0x2A1C,0x11CE,{0xAD,0xE5,0x00,0xAA,0x00,0x44,0x77,0x3D}};
+extern const MSDASQLDECLSPEC GUID CLSID_MSDASQL = {0xC8B522CB,0x5CF3,0x11CE,{0xAD,0xE5,0x00,0xAA,0x00,0x44,0x77,0x3D}};
+extern const MSDASQLDECLSPEC GUID CLSID_MSDASQL_ENUMERATOR = {0xC8B522CD,0x5CF3,0x11CE,{0xAD,0xE5,0x00,0xAA,0x00,0x44,0x77,0x3D}};
 #else
 extern const GUID IID_ISQLRequestDiagFields;
 extern const GUID IID_ISQLGetDiagField;
@@ -283,10 +283,10 @@ extern "C" {
   void __RPC_STUB ISQLGetDiagField_GetDiagField_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
 #endif
 
-  unsigned long __RPC_API VARIANT_UserSize(unsigned long *,unsigned long,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserMarshal(unsigned long *,unsigned char *,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserUnmarshal(unsigned long *,unsigned char *,VARIANT *);
-  void __RPC_API VARIANT_UserFree(unsigned long *,VARIANT *);
+  ULONG __RPC_API VARIANT_UserSize(ULONG *,ULONG,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserMarshal(ULONG *,unsigned char *,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserUnmarshal(ULONG *,unsigned char *,VARIANT *);
+  void __RPC_API VARIANT_UserFree(ULONG *,VARIANT *);
 
 #ifdef __cplusplus
 }

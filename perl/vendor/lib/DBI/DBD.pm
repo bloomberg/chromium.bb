@@ -1,14 +1,13 @@
 package DBI::DBD;
 # vim:ts=8:sw=4
-
+use strict;
 use vars qw($VERSION);	# set $VERSION early so we don't confuse PAUSE/CPAN etc
 
 # don't use Revision here because that's not in svn:keywords so that the
 # examples that use it below won't be messed up
-$VERSION = sprintf("12.%06d", q$Id: DBD.pm 15128 2012-02-04 20:51:39Z timbo $ =~ /(\d+)/o);
+$VERSION = "12.015129";
 
-
-# $Id: DBD.pm 15128 2012-02-04 20:51:39Z timbo $
+# $Id: DBD.pm 15128 2012-02-04 20:51:39Z Tim $
 #
 # Copyright (c) 1997-2006 Jonathan Leffler, Jochen Wiedmann, Steffen
 # Goeldner and Tim Bunce
@@ -28,12 +27,14 @@ DBI::DBD - Perl DBI Database Driver Writer's Guide
 
 This document is I<still> a minimal draft which is in need of further work.
 
-The changes will occur both because the B<DBI> specification is changing
-and hence the requirements on B<DBD> drivers change, and because feedback
-from people reading this document will suggest improvements to it.
+Please read the B<DBI> documentation first and fully.  Then look at the
+implementation of some high-profile and regularly maintained drivers like
+DBD::Oracle, DBD::ODBC, DBD::Pg etc. (Those are no no particular order.)
 
-Please read the B<DBI> documentation first and fully, including the B<DBI> FAQ.
-Then reread the B<DBI> specification again as you're reading this. It'll help.
+Then reread the B<DBI> specification and the code of those drivers again as
+you're reading this. It'll help.  Where this document and the driver code
+differ it's likely that the driver code is more correct, especially if multiple
+drivers do the same thing.
 
 This document is a patchwork of contributions from various authors.
 More contributions (preferably as patches) are very welcome.
@@ -694,13 +695,13 @@ very common).
 
 For Subversion you could use:
 
-  $VERSION = sprintf("12.%06d", q$Revision: 12345 $ =~ /(\d+)/o);
+  $VERSION = "12.012346";
 
 (use lots of leading zeros on the second portion so if you move the code to a
 shared repository like svn.perl.org the much larger revision numbers won't
 cause a problem, at least not for a few years).  For RCS or CVS you can use:
 
-  $VERSION = sprintf "%d.%02d", '$Revision: 11.21 $ ' =~ /(\d+)\.(\d+)/;
+  $VERSION = "11.22";
 
 which pads out the fractional part with leading zeros so all is well
 (so long as you don't go past x.99)
@@ -797,8 +798,8 @@ and document the interface are very welcome to get in touch via dbi-dev@perl.org
 
 Methods installed using install_method default to the standard error
 handling behaviour for DBI methods: clearing err and errstr before
-calling the method, and checking for errors to trigger RaiseError 
-etc. on return. This differs from the default behaviour of func(). 
+calling the method, and checking for errors to trigger RaiseError
+etc. on return. This differs from the default behaviour of func().
 
 Note for driver authors: The DBD::Foo::xx->install_method call won't
 work until the class-hierarchy has been setup. Normally the DBI
@@ -1796,6 +1797,12 @@ additional information about I<PERL_NO_GET_CONTEXT>.
 This header file has two jobs:
 
 First it defines data structures for your private part of the handles.
+Note that the DBI provides many common fields for you. For example
+the statement handle (imp_sth) already has a row_count field with an IV type
+that accessed via the DBIc_ROW_COUNT(imp_sth) macro. Using this is strongly
+recommended as it's built in to some DBI internals so the DBI can 'just work'
+in more cases and you'll have less driver-specific code to write.
+Study DBIXS.h to see what's included with each type of handle.
 
 Second it defines macros that rename the generic names like
 C<dbd_db_login()> to database specific names like C<ora_db_login()>. This
@@ -1818,6 +1825,10 @@ a function like dbd_db_login6 but with scalar pointers for the dbname,
 username and password), it will be used instead. This will allow your
 login6 function to see if there are any Unicode characters in the
 dbname.
+
+Similarly defining dbd_db_do4_iv is preferred over dbd_db_do4, dbd_st_rows_iv
+over dbd_st_rows, and dbd_st_execute_iv over dbd_st_execute. The *_iv forms are
+declared to return the IV type instead of an int.
 
 People used to just pick Oracle's F<dbdimp.c> and use the same names,
 structures and types. I strongly recommend against that. At first glance
@@ -2708,7 +2719,7 @@ L</Generating the get_info method>.
 With the pre-requisites in place, you might type:
 
     perl -MDBI::DBD::Metadata -we \
-       "write_typeinfo (qw{ dbi:ODBC:foo_db username password Driver })"
+       "write_typeinfo_pm (qw{ dbi:ODBC:foo_db username password Driver })"
 
 The procedure writes to standard output the code that should be added to
 your F<Driver.pm> file and the code that should be written to
@@ -3454,16 +3465,16 @@ sub dbd_postamble {
     my $dbi_driver_xst= File::Spec->catfile($dbi_instarch_dir, 'Driver.xst');
     my $xstf_h = File::Spec->catfile($dbi_instarch_dir, 'Driver_xst.h');
 
-    # we must be careful of quotes, expecially for Win32 here.
+    # we must be careful of quotes, especially for Win32 here.
     return '
 # --- This section was generated by DBI::DBD::dbd_postamble()
 DBI_INSTARCH_DIR='.$dbi_instarch_dir.'
 DBI_DRIVER_XST='.$dbi_driver_xst.'
 
-# The main dependancy (technically correct but probably not used)
+# The main dependency (technically correct but probably not used)
 $(BASEEXT).c: $(BASEEXT).xsi
 
-# This dependancy is needed since MakeMaker uses the .xs.o rule
+# This dependency is needed since MakeMaker uses the .xs.o rule
 $(BASEEXT)$(OBJ_EXT): $(BASEEXT).xsi
 
 $(BASEEXT).xsi: $(DBI_DRIVER_XST) '.$xstf_h.'

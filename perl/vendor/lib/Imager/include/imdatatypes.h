@@ -6,6 +6,33 @@
 
 #define MAXCHANNELS 4
 
+/*
+=item im_context_t
+=category Data Types
+
+Imager's per-thread context.
+
+=cut
+*/
+
+typedef struct im_context_tag *im_context_t;
+
+/*
+=item im_slot_t
+=category Data Types
+
+Represents a slot in the context object.
+
+=cut
+*/
+
+typedef ptrdiff_t im_slot_t;
+typedef void (*im_slot_destroy_t)(void *);
+
+/* just so we can use our own input typemap */
+typedef double im_double;
+typedef float im_float;
+
 /* used for palette indices in some internal code (which might be 
    exposed at some point
 */
@@ -36,6 +63,21 @@ May be larger than int on some platforms.
 */
 
 typedef ptrdiff_t i_img_dim;
+
+/*
+=item i_img_dim_u
+=category Data Types
+=synopsis i_img_dim_u limit;
+=order 90
+
+An unsigned variant of L</i_img_dim>.
+
+=cut
+*/
+
+typedef size_t i_img_dim_u;
+
+#define i_img_dim_MAX ((i_img_dim)(~(i_img_dim_u)0 >> 1))
 
 /*
 =item i_color
@@ -283,6 +325,14 @@ i_f_psamp - implements psamp() for this image.
 
 i_f_psampf - implements psamp() for this image.
 
+=item *
+
+C<im_data> - image specific data internal to Imager.
+
+=item *
+
+C<context> - the Imager API context this image belongs to.
+
 =back
 
 =cut
@@ -335,6 +385,9 @@ struct i_img_ {
   i_f_psampf_t i_f_psampf;
 
   void *im_data;
+
+  /* 0.91 */
+  im_context_t context;
 };
 
 /* ext_data for paletted images
@@ -422,6 +475,59 @@ enum bounding_box_index_t {
   BBOX_RIGHT_BEARING,
   BOUNDING_BOX_COUNT
 };
+
+/*
+=item i_polygon_t
+=category Data Types
+
+Represents a polygon.  Has the following members:
+
+=over
+
+=item *
+
+C<x>, C<y> - arrays of x and y locations of vertices.
+
+=item *
+
+C<count> - the number of entries in the C<x> and C<y> arrays.
+
+=back
+
+=cut
+*/
+
+typedef struct i_polygon_tag {
+  const double *x;
+  const double *y;
+  size_t count;
+} i_polygon_t;
+
+/*
+=item i_poly_fill_mode_t
+=category Data Types
+
+Control how polygons are filled.  Has the following values:
+
+=over
+
+=item *
+
+C<i_pfm_evenodd> - simple even-odd fills.
+
+=item *
+
+C<i_pfm_nonzero> - non-zero winding rule fills.
+
+=back
+
+=cut
+*/
+
+typedef enum i_poly_fill_mode_tag {
+  i_pfm_evenodd,
+  i_pfm_nonzero
+} i_poly_fill_mode_t;
 
 /* Generic fills */
 struct i_fill_tag;
@@ -541,6 +647,18 @@ typedef enum {
 } i_combine_t;
 
 /*
+=item i_mutex_t
+X<i_mutex>
+=category mutex
+=synopsis i_mutex_t mutex;
+
+Opaque type for Imager's mutex API.
+
+=cut
+ */
+typedef struct i_mutex_tag *i_mutex_t;
+
+/*
    describes an axis of a MM font.
    Modelled on FT2's FT_MM_Axis.
    It would be nice to have a default entry too, but FT2 
@@ -572,6 +690,40 @@ typedef struct TT_Fonthandle_ TT_Fonthandle;
 
 #endif
 
+/*
+=item i_transp
+=category Data Types
+
+An enumerated type for controlling how transparency is handled during
+quantization.
+
+This has the following possible values:
+
+=over
+
+=item *
+
+C<tr_none> - ignore the alpha channel
+
+=item *
+
+C<tr_threshold> - simple transparency thresholding.
+
+=item *
+
+C<tr_errdiff> - use error diffusion to control which pixels are
+transparent.
+
+=item *
+
+C<tr_ordered> - use ordered dithering to control which pixels are
+transparent.
+
+=back
+
+=cut
+*/
+
 /* transparency handling for quantized output */
 typedef enum i_transp_tag {
   tr_none, /* ignore any alpha channel */
@@ -580,7 +732,49 @@ typedef enum i_transp_tag {
   tr_ordered /* an ordered dither */
 } i_transp;
 
-/* controls how we build the colour map */
+/*
+=item i_make_colors
+=category Data Types
+
+An enumerated type used to control the method used for produce the
+color map:
+
+=over
+
+=item *
+
+C<mc_none> - the user supplied map is used.
+
+=item *
+
+C<mc_web_map> - use the classic web map.  Any existing fixed colors
+are ignored.
+
+=item *
+
+C<mc_median_cut> - use median cut
+
+=item *
+
+C<mono> - use a fixed black and white map.
+
+=item *
+
+C<gray> - 256 step gray map.
+
+=item *
+
+C<gray4> - 4 step gray map.
+
+=item *
+
+C<gray16> - 16 step gray map.
+
+=back
+
+=cut
+*/
+
 typedef enum i_make_colors_tag {
   mc_none, /* user supplied colour map only */
   mc_web_map, /* Use the 216 colour web colour map */
@@ -593,6 +787,37 @@ typedef enum i_make_colors_tag {
   mc_mask = 0xFF /* (mask for generator) */
 } i_make_colors;
 
+/*
+=item i_translate
+=category Data Types
+
+An enumerated type that controls how colors are translated:
+
+=over
+
+=item *
+
+C<pt_giflib> - obsolete, forces C<make_colors> to use median cut and
+acts like C<pt_closest>.
+
+=item *
+
+C<pt_closest> - always use the closest color.
+
+=item *
+
+C<pt_perturb> - add random values to each sample and find the closest
+color.
+
+=item *
+
+C<pt_errdiff> - error diffusion dither.
+
+=back
+
+=cut
+*/
+
 /* controls how we translate the colours */
 typedef enum i_translate_tag {
   pt_giflib, /* get gif lib to do it (ignores make_colours) */
@@ -600,6 +825,41 @@ typedef enum i_translate_tag {
   pt_perturb, /* randomly perturb the data - uses perturb_size*/
   pt_errdiff /* error diffusion dither - uses errdiff */
 } i_translate;
+
+/*
+=item i_errdiff
+=category Data Types
+
+Controls the type of error diffusion to use:
+
+=over
+
+=item *
+
+C<ed_floyd> - floyd-steinberg
+
+=item *
+
+C<ed_jarvis> - Jarvis, Judice and Ninke 
+
+=item *
+
+C<ed_stucki> - Stucki
+
+=item *
+
+C<ed_custom> - not usable for transparency dithering, allows a custom
+error diffusion map to be used.
+
+=item *
+
+C<ed_bidir> - or with the error diffusion type to use alternate
+directions on each line of the dither.
+
+=back
+
+=cut
+*/
 
 /* Which error diffusion map to use */
 typedef enum i_errdiff_tag {
@@ -611,8 +871,55 @@ typedef enum i_errdiff_tag {
   ed_bidir = 0x100 /* change direction for each row */
 } i_errdiff;
 
-/* which ordered dither map to use
-   currently only available for transparency
+/*
+=item i_ord_dith
+=category Data Types
+
+Which ordered dither map to use, currently only available for
+transparency.  Values are:
+
+=over
+
+=item *
+
+C<od_random> - a pre-generated random map.
+
+=item *
+
+C<od_dot8> - large dot dither.
+
+=item *
+
+C<od_dot4> - smaller dot dither
+
+=item *
+
+C<od_hline> - horizontal line dither.
+
+=item *
+
+C<od_vline> - vertical line dither.
+
+=item *
+
+C<od_slashline> - C</> line dither.
+
+=item *
+
+C<od_backline> - C<\> line dither.
+
+=item *
+
+C<od_tiny> - small checkbox dither
+
+=item *
+
+C<od_custom> - custom dither map.
+
+=back
+
+=cut
+
    I don't know of a way to do ordered dither of an image against some 
    general palette
  */
@@ -629,7 +936,89 @@ typedef enum i_ord_dith_tag
   od_custom /* custom 8x8 map */
 } i_ord_dith;
 
-/* passed into i_writegif_gen() to control quantization */
+/*
+=item i_quantize
+=category Data Types
+
+A structure type used to supply image quantization, ie. when
+converting a direct color image to a paletted image.
+
+This has the following members:
+
+=over
+
+=item *
+
+C<transp> - how to handle transparency, see L</i_transp>.
+
+=item *
+
+C<threshold> - when C<transp> is C<tr_threshold>, this is the alpha
+level at which pixels become transparent.
+
+=item *
+
+C<tr_errdiff> - when C<transp> is C<tr_errdiff> this controls the type
+of error diffusion to be done.  This may not be C<ed_custom> for this
+member.
+
+=item *
+
+C<tr_orddith> - when C<transp> is C<tr_ordered> this controls the
+patten used for dithering transparency.
+
+=item *
+
+C<tr_custom> - when C<tr_orddith> is C<tr_custom> this is the ordered
+dither mask.
+
+=item *
+
+C<make_colors> - the method used to generate the color palette, see
+L</i_make_colors>.
+
+=item *
+
+C<mc_colors> - an array of C<mc_size> L</i_color> entries used to
+define the fixed colors (controlled by C<mc_count> and to return the
+generated color list.
+
+=item *
+
+C<mc_size> - the size of the buffer allocated to C<mc_colors> in
+C<sizeof(i_color)> units.
+
+=item *
+
+C<mc_count> - the number of initialized colors in C<mc_colors>.
+
+=item *
+
+C<translate> - how RGB colors are translated to palette indexes, see
+L</i_translate>.
+
+=item *
+
+C<errdiff> - when C<translate> is C<pt_errdiff> this controls the type
+of error diffusion to be done.
+
+=item *
+
+C<ed_map>, C<ed_width>, C<ed_height>, C<ed_orig> - when C<errdiff> is
+C<ed_custom> this controls the error diffusion map.  C<ed_map> is an
+array of C<ed_width * ed_height> integers.  C<ed_orig> is the position
+of the current pixel in the error diffusion map, always on the top
+row.
+
+=item *
+
+C<perturb> - the amount to perturb pixels when C<translate> is
+C<mc_perturb>.
+
+=back
+
+=cut
+*/
 typedef struct i_quantize_tag {
   int version;
 
@@ -681,7 +1070,62 @@ enum {
 
 #include "iolayert.h"
 
+/* error message information returned by im_errors() */
+
+typedef struct {
+  char *msg;
+  int code;
+} i_errmsg;
+
 typedef struct i_render_tag i_render;
+
+/*
+=item i_color_model_t
+=category Data Types
+=order 95
+
+Returned by L</i_img_color_model(im)> to indicate the color model of
+the image.
+
+An enumerated type with the following possible values:
+
+=over
+
+=item *
+
+C<icm_unknown> - the image has no usable color data.  In future
+versions of Imager this will be returned in a few limited cases,
+eg. when the source image is CMYK and the user has requested no color
+translation is done.
+
+=item *
+
+C<icm_gray> - gray scale with no alpha channel.
+
+=item *
+
+C<icm_gray_alpha> - gray scale with an alpha channel.
+
+=item *
+
+C<icm_rgb> - RGB
+
+=item *
+
+C<icm_rgb_alpha> - RGB with an alpha channel.
+
+=back
+
+=cut
+*/
+
+typedef enum {
+  icm_unknown,
+  icm_gray,
+  icm_gray_alpha,
+  icm_rgb,
+  icm_rgb_alpha
+} i_color_model_t;
 
 #ifdef IMAGER_FORMAT_ATTR
 #define I_FORMAT_ATTR(format_index, va_index) \

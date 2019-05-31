@@ -1,4 +1,4 @@
-/* $Id: dbi_sql.h 2488 2006-02-07 22:24:43Z timbo $
+/* $Id$
  *
  * Copyright (c) 1997,1998,1999  Tim Bunce  England
  *

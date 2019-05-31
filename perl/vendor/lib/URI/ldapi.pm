@@ -1,12 +1,11 @@
 package URI::ldapi;
 
 use strict;
+use warnings;
 
-use vars qw(@ISA);
+our $VERSION = '1.76';
 
-require URI::_generic;
-require URI::_ldap;
-@ISA=qw(URI::_ldap URI::_generic);
+use parent qw(URI::_ldap URI::_generic);
 
 require URI::Escape;
 

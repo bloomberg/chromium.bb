@@ -1,10 +1,5 @@
 package Moose::Meta::TypeConstraint::DuckType;
-BEGIN {
-  $Moose::Meta::TypeConstraint::DuckType::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::TypeConstraint::DuckType::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -12,12 +7,12 @@ use metaclass;
 
 use B;
 use Scalar::Util 'blessed';
-use List::MoreUtils qw(all);
+use List::Util 1.33 qw(all);
 use Moose::Util 'english_list';
 
 use Moose::Util::TypeConstraints ();
 
-use base 'Moose::Meta::TypeConstraint';
+use parent 'Moose::Meta::TypeConstraint';
 
 __PACKAGE__->meta->add_attribute('methods' => (
     accessor => 'methods',
@@ -31,7 +26,7 @@ my $inliner = sub {
     return $self->parent->_inline_check($val)
          . ' && do {' . "\n"
              . 'my $val = ' . $val . ';' . "\n"
-             . '&List::MoreUtils::all(' . "\n"
+             . '&List::Util::all(' . "\n"
                  . 'sub { $val->can($_) },' . "\n"
                  . join(', ', map { B::perlstring($_) } @{ $self->methods })
              . ');' . "\n"
@@ -110,9 +105,11 @@ sub get_message {
 
 # ABSTRACT: Type constraint for duck typing
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -120,7 +117,7 @@ Moose::Meta::TypeConstraint::DuckType - Type constraint for duck typing
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -134,9 +131,7 @@ L<Moose::Meta::TypeConstraint>.
 
 =head1 METHODS
 
-=over 4
-
-=item B<< Moose::Meta::TypeConstraint::DuckType->new(%options) >>
+=head2 Moose::Meta::TypeConstraint::DuckType->new(%options)
 
 This creates a new duck type constraint based on the given
 C<%options>.
@@ -149,12 +144,12 @@ names. Second, it automatically sets the parent to the C<Object> type.
 Finally, it ignores any provided C<constraint> option. The constraint
 is generated automatically based on the provided C<methods>.
 
-=item B<< $constraint->methods >>
+=head2 $constraint->methods
 
 Returns the array reference of required methods provided to the
 constructor.
 
-=item B<< $constraint->create_child_type >>
+=head2 $constraint->create_child_type
 
 This returns a new L<Moose::Meta::TypeConstraint> object with the type
 as its parent.
@@ -162,26 +157,61 @@ as its parent.
 Note that it does I<not> return a C<Moose::Meta::TypeConstraint::DuckType>
 object!
 
-=back
-
 =head1 BUGS
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

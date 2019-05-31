@@ -2,6 +2,10 @@
 
 perlfaq3 - Programming Tools
 
+=head1 VERSION
+
+version 5.20190126
+
 =head1 DESCRIPTION
 
 This section of the FAQ answers questions related to programmer tools
@@ -366,6 +370,20 @@ Perl Editor by EngInSite is a complete integrated development
 environment (IDE) for creating, testing, and  debugging  Perl scripts;
 the tool runs on Windows 9x/NT/2000/XP or later.
 
+=item IntelliJ IDEA
+
+L<https://plugins.jetbrains.com/plugin/7796>
+
+Camelcade plugin provides Perl5 support in IntelliJ IDEA and other JetBrains IDEs.
+
+=item Kephra
+
+L<http://kephra.sf.net>
+
+GUI editor written in Perl using wxWidgets and Scintilla with lots of smaller features.
+Aims for a UI based on Perl principles like TIMTOWTDI and "easy things should be easy,
+hard things should be possible".
+
 =item Komodo
 
 L<http://www.ActiveState.com/Products/Komodo/>
@@ -424,7 +442,7 @@ Visual Perl is a Visual Studio.NET plug-in from ActiveState.
 
 L<http://www.zeusedit.com/lookmain.html>
 
-Zeus for Window is another Win32 multi-language editor/IDE
+Zeus for Windows is another Win32 multi-language editor/IDE
 that comes with support for Perl.
 
 =back
@@ -445,7 +463,7 @@ among others.
 
 If you are using MacOS, the same concerns apply. MacPerl (for Classic
 environments) comes with a simple editor. Popular external editors are
-BBEdit ( L<http://www.bbedit.com/> ) or Alpha (
+BBEdit ( L<http://www.barebones.com/products/bbedit/> ) or Alpha (
 L<http://www.his.com/~jguyer/Alpha/Alpha8.html> ). MacOS X users can use
 Unix editors as well.
 
@@ -487,10 +505,6 @@ The following are Win32 multilanguage editor/IDEs that support Perl:
 
 =over 4
 
-=item Codewright
-
-L<http://www.borland.com/codewright/>
-
 =item MultiEdit
 
 L<http://www.MultiEdit.com/>
@@ -517,58 +531,27 @@ powerful shell environment for Win32. Your options include
 
 =over 4
 
-=item Bash
+=item bash
 
-from the Cygwin package ( L<http://sources.redhat.com/cygwin/> )
+from the Cygwin package ( L<http://cygwin.com/> )
 
-=item Ksh
-
-from the MKS Toolkit ( L<http://www.mkssoftware.com/> ), or the Bourne shell of
-the U/WIN environment ( L<http://www.research.att.com/sw/tools/uwin/> )
-
-=item Tcsh
-
-L<ftp://ftp.astron.com/pub/tcsh/> , see also
-L<http://www.primate.wisc.edu/software/csh-tcsh-book/>
-
-=item Zsh
+=item zsh
 
 L<http://www.zsh.org/>
 
 =back
 
-MKS and U/WIN are commercial (U/WIN is free for educational and
-research purposes), Cygwin is covered by the GNU General Public
-License (but that shouldn't matter for Perl use). The Cygwin, MKS,
-and U/WIN all contain (in addition to the shells) a comprehensive set
+Cygwin is covered by the GNU General Public
+License (but that shouldn't matter for Perl use). Cygwin
+contains (in addition to the shell) a comprehensive set
 of standard Unix toolkit utilities.
-
-If you're transferring text files between Unix and Windows using FTP
-be sure to transfer them in ASCII mode so the ends of lines are
-appropriately converted.
-
-On Mac OS the MacPerl Application comes with a simple 32k text editor
-that behaves like a rudimentary IDE. In contrast to the MacPerl Application
-the MPW Perl tool can make use of the MPW Shell itself as an editor (with
-no 32k limit).
 
 =over 4
 
-=item Affrus
+=item BBEdit and TextWrangler
 
-is a full Perl development environment with full debugger support
-( L<http://www.latenightsw.com> ).
-
-=item Alpha
-
-is an editor, written and extensible in Tcl, that nonetheless has
-built-in support for several popular markup and programming languages,
-including Perl and HTML ( L<http://www.his.com/~jguyer/Alpha/Alpha8.html> ).
-
-=item BBEdit and BBEdit Lite
-
-are text editors for Mac OS that have a Perl sensitivity mode
-( L<http://web.barebones.com/> ).
+are text editors for OS X that have a Perl sensitivity mode
+( L<http://www.barebones.com/> ).
 
 =back
 
@@ -957,9 +940,8 @@ You probably won't see much of a speed increase either, since most
 solutions simply bundle a Perl interpreter in the final product
 (but see L<How can I make my Perl program run faster?>).
 
-The Perl Archive Toolkit ( L<http://par.perl.org/> ) is Perl's
-analog to Java's JAR. It's freely available and on CPAN (
-L<http://search.cpan.org/dist/PAR/> ).
+The Perl Archive Toolkit is Perl's analog to Java's JAR. It's freely
+available and on CPAN ( L<https://metacpan.org/pod/PAR> ).
 
 There are also some commercial products that may work for you, although
 you have to buy a license for them.
@@ -1090,8 +1072,8 @@ simple CGI scripts.
 
 =head2 Where can I learn about object-oriented Perl programming?
 
-A good place to start is L<perltoot>, and you can use L<perlobj>,
-L<perlboot>, L<perltoot>, L<perltooc>, and L<perlbot> for reference.
+A good place to start is L<perlootut>, and you can use L<perlobj> for
+reference.
 
 A good book on OO on Perl is the "Object-Oriented Perl"
 by Damian Conway from Manning Publications, or "Intermediate Perl"

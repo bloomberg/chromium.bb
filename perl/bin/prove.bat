@@ -1,22 +1,38 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!perl
-#line 15
+#line 29
     eval 'exec C:\strawberry\perl\bin\perl.exe -S $0 ${1+"$@"}'
 	if $running_under_some_shell;
 #!/usr/bin/perl -w
 
+BEGIN { pop @INC if $INC[-1] eq '.' }
 use strict;
+use warnings;
 use App::Prove;
 
 my $app = App::Prove->new;
@@ -48,7 +64,6 @@ Boolean options:
                         (default)
       --nocount         Disable the X/Y test count.
  -D   --dry             Dry run. Show test that would have run.
-      --ext             Set the extension for tests (default '.t')
  -f,  --failures        Show failed tests.
  -o,  --comments        Show comments.
       --ignore-exit     Ignore exit status from test scripts.
@@ -68,6 +83,7 @@ Boolean options:
  -w                     Enable warnings.
  -h,  --help            Display this help
  -?,                    Display this help
+ -V,  --version         Display the version
  -H,  --man             Longer manpage for prove
       --norc            Don't process default .proverc
 
@@ -78,6 +94,7 @@ Options that take arguments:
  -M                     Load a module.
  -e,  --exec            Interpreter to run the tests ('' for compiled
                         tests.)
+      --ext             Set the extension for tests (default '.t')
       --harness         Define test harness to use.  See TAP::Harness.
       --formatter       Result formatter to use. See FORMATTERS.
       --source          Load and/or configure a SourceHandler. See
@@ -85,7 +102,9 @@ Options that take arguments:
  -a,  --archive out.tgz Store the resulting TAP in an archive file.
  -j,  --jobs N          Run N test jobs in parallel (try 9.)
       --state=opts      Control prove's persistent state.
+      --statefile=file  Use `file` instead of `.prove` for state
       --rc=rcfile       Process options from rcfile
+      --rules           Rules for parallel vs sequential processing.
 
 =head1 NOTES
 
@@ -121,12 +140,12 @@ matching the pattern C<t/*.t>.
 
 =head2 Colored Test Output
 
-Colored test output is the default, but if output is not to a
-terminal, color is disabled. You can override this by adding the
-C<--color> switch.
+Colored test output using L<TAP::Formatter::Color> is the default, but
+if output is not to a terminal, color is disabled. You can override this by
+adding the C<--color> switch.
 
-Color support requires L<Term::ANSIColor> on Unix-like platforms and
-L<Win32::Console> windows. If the necessary module is not installed
+Color support requires L<Term::ANSIColor> and, on windows platforms, also
+L<Win32::Console::ANSI>. If the necessary module(s) are not installed
 colored output will not be available.
 
 =head2 Exit Code
@@ -160,7 +179,7 @@ If you need to make sure your diagnostics are displayed in the correct
 order relative to test results you can use the C<--merge> option to
 merge the test scripts' STDERR into their STDOUT.
 
-This guarantees that STDOUT (where the test results appear) and STDOUT
+This guarantees that STDOUT (where the test results appear) and STDERR
 (where the diagnostics appear) will stay in sync. The harness will
 display any diagnostics your tests emit on STDERR.
 
@@ -279,6 +298,61 @@ Save the state on exit. The state is stored in a file called F<.prove>
 The C<--state> switch may be used more than once.
 
     $ prove -b --state=hot --state=all,save
+
+=head2 --rules
+
+The C<--rules> option is used to control which tests are run sequentially and
+which are run in parallel, if the C<--jobs> option is specified. The option may
+be specified multiple times, and the order matters.
+
+The most practical use is likely to specify that some tests are not
+"parallel-ready".  Since mentioning a file with --rules doesn't cause it to
+be selected to run as a test, you can "set and forget" some rules preferences in
+your .proverc file. Then you'll be able to take maximum advantage of the
+performance benefits of parallel testing, while some exceptions are still run
+in parallel.
+
+=head3 --rules examples
+
+    # All tests are allowed to run in parallel, except those starting with "p"
+    --rules='seq=t/p*.t' --rules='par=**'
+
+    # All tests must run in sequence except those starting with "p", which should be run parallel
+    --rules='par=t/p*.t'
+
+=head3 --rules resolution
+
+=over 4
+
+=item * By default, all tests are eligible to be run in parallel. Specifying any of your own rules removes this one.
+
+=item * "First match wins". The first rule that matches a test will be the one that applies.
+
+=item * Any test which does not match a rule will be run in sequence at the end of the run.
+
+=item * The existence of a rule does not imply selecting a test. You must still specify the tests to run.
+
+=item * Specifying a rule to allow tests to run in parallel does not make them run in parallel. You still need specify the number of parallel C<jobs> in your Harness object.
+
+=back
+
+=head3 --rules Glob-style pattern matching
+
+We implement our own glob-style pattern matching for --rules. Here are the
+supported patterns:
+
+    ** is any number of characters, including /, within a pathname
+    * is zero or more characters within a filename/directory name
+    ? is exactly one character within a filename/directory name
+    {foo,bar,baz} is any of foo, bar or baz.
+    \ is an escape character
+
+=head3 More advanced specifications for parallel vs sequence run rules
+
+If you need more advanced management of what runs in parallel vs in sequence, see
+the associated 'rules' documentation in L<TAP::Harness> and L<TAP::Parser::Scheduler>.
+If what's possible directly through C<prove> is not sufficient, you can write your own
+harness to access these features directly.
 
 =head2 @INC
 

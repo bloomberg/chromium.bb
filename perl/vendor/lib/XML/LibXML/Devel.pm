@@ -2,7 +2,7 @@
 # This is free software, you may use it and distribute it under the same terms as
 # Perl itself.
 #
-# Copyright 2011 Joachim Zobel 
+# Copyright 2011 Joachim Zobel
 #
 package XML::LibXML::Devel;
 
@@ -12,18 +12,18 @@ use warnings;
 use XML::LibXML;
 
 use vars qw ($VERSION);
-$VERSION = "1.98"; # VERSION TEMPLATE: DO NOT CHANGE
+$VERSION = "2.0200"; # VERSION TEMPLATE: DO NOT CHANGE
 
 use 5.008_000;
 
-use base qw(Exporter);
+use parent qw(Exporter);
 
 use vars qw( @EXPORT @EXPORT_OK %EXPORT_TAGS );
 
 # This allows declaration	use XML::LibXML::Devel ':all';
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
-our %EXPORT_TAGS = ( 'all' => [ qw(	
+our %EXPORT_TAGS = ( 'all' => [ qw(
   node_to_perl
   node_from_perl
   refcnt_inc
@@ -45,7 +45,7 @@ __END__
 XML::LibXML::Devel - makes functions from LibXML.xs available
 
 =head1 SYNOPSIS
-  
+
   /**********************************************
    * C functions you want to access
    */
@@ -71,7 +71,7 @@ XML::LibXML::Devel - makes functions from LibXML.xs available
   # Perl code
   use XML::LibXML::Devel;
 
-  sub return_node 
+  sub return_node
   {
     my $raw_node = xs_return_node();
     my $node = XML::LibXML::Devel::node_to_perl($raw_node);
@@ -79,7 +79,7 @@ XML::LibXML::Devel - makes functions from LibXML.xs available
     return $node;
   }
 
-  sub receive_node 
+  sub receive_node
   {
     my ($node) = @_;
     my $raw_node = XML::LibXML::Devel::node_from_perl($node);
@@ -90,20 +90,20 @@ XML::LibXML::Devel - makes functions from LibXML.xs available
 
 =head1 DESCRIPTION
 
-C<XML::LibXML::Devel> makes functions from LibXML.xs available that 
+C<XML::LibXML::Devel> makes functions from LibXML.xs available that
 are needed to wrap libxml2 nodes in and out of XML::LibXML::Nodes.
 This gives cleaner dependencies than using LibXML.so directly.
 
-To XS a library that uses libxml2 nodes the first step is to 
-do this so that xmlNodePtr is passed as void *. These raw nodes 
+To XS a library that uses libxml2 nodes the first step is to
+do this so that xmlNodePtr is passed as void *. These raw nodes
 are then turned into libxml nodes by using this C<Devel> functions.
 
-Be aware that this module is currently rather experimental. The function 
-names may change if I XS more functions and introduce a reasonable 
+Be aware that this module is currently rather experimental. The function
+names may change if I XS more functions and introduce a reasonable
 naming convention.
 
-Be also aware that this module is a great tool to cause segfaults and 
-introduce memory leaks. It does however provide a partial cure by making 
+Be also aware that this module is a great tool to cause segfaults and
+introduce memory leaks. It does however provide a partial cure by making
 C<xmlMemUsed> available as C<mem_used>.
 
 =head1 FUNCTIONS
@@ -116,10 +116,10 @@ C<xmlMemUsed> available as C<mem_used>.
 
   node_to_perl($raw_node);
 
-Returns a LibXML::Node object. This has a proxy node with a reference 
+Returns a LibXML::Node object. This has a proxy node with a reference
 counter and an owner attached. The raw node will be deleted as soon
-as the reference counter reaches zero. 
-If the C library is keeping a 
+as the reference counter reaches zero.
+If the C library is keeping a
 pointer to the raw node, you need to call refcnt_inc immediately.
 You also need to replace xmlFreeNode by a call to refcnt_dec.
 
@@ -128,9 +128,9 @@ You also need to replace xmlFreeNode by a call to refcnt_dec.
   node_from_perl($node);
 
 Returns a raw node. This is a void * pointer and you can do nothing
-but passing it to functions that treat it as an xmlNodePtr. The 
+but passing it to functions that treat it as an xmlNodePtr. The
 raw node will be freed as soon as its reference counter reaches zero.
-If the C library is keeping a 
+If the C library is keeping a
 pointer to the raw node, you need to call refcnt_inc immediately.
 You also need to replace xmlFreeNode by a call to refcnt_dec.
 
@@ -138,16 +138,16 @@ You also need to replace xmlFreeNode by a call to refcnt_dec.
 
   refcnt_inc($raw_node);
 
-Increments the raw nodes reference counter. The raw node must already 
+Increments the raw nodes reference counter. The raw node must already
 be known to perl to have a reference counter.
 
 =item refcnt_dec
 
   refcnt_dec($raw_node);
 
-Decrements the raw nodes reference counter and returns the value it 
+Decrements the raw nodes reference counter and returns the value it
 had before. if the counter becomes zero or less,
-this method will free the proxy node holding the reference counter. 
+this method will free the proxy node holding the reference counter.
 If the node is part of a
 subtree, refcnt_dec will fix the reference counts and delete
 the subtree if it is not required any more.
@@ -156,7 +156,7 @@ the subtree if it is not required any more.
 
   refcnt($raw_node);
 
-Returns the value of the reference counter. 
+Returns the value of the reference counter.
 
 =item fix_owner
 
@@ -165,7 +165,7 @@ Returns the value of the reference counter.
 This functions fixes the reference counts for an entire subtree.
 it is very important to fix an entire subtree after node operations
 where the documents or the owner node may get changed. this method is
-aware about nodes that already belong to a certain owner node. 
+aware about nodes that already belong to a certain owner node.
 
 =back
 
@@ -178,7 +178,7 @@ aware about nodes that already belong to a certain owner node.
   BEGIN {$ENV{DEBUG_MEMORY} = 1;};
   use XML::LibXML;
 
-This turns on libxml2 memory debugging. It must be set before 
+This turns on libxml2 memory debugging. It must be set before
 XML::LibXML is loaded.
 
 
@@ -196,7 +196,7 @@ None by default.
 
 =head1 SEE ALSO
 
-This was created to support the needs of Apache2::ModXml2. So this 
+This was created to support the needs of Apache2::ModXml2. So this
 can serve as an example.
 
 =head1 AUTHOR

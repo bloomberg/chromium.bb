@@ -22,11 +22,7 @@
 #ifndef __WINE_DMUSIC_PERFORMANCE_H
 #define __WINE_DMUSIC_PERFORMANCE_H
 
-#ifndef __WINESRC__
 #include <windows.h>
-#else
-#include <oleauto.h> /* VARIANT */
-#endif /* __WINESRC__ */
 
 #define COM_NO_WINDOWS_H
 #include <objbase.h>
@@ -68,7 +64,6 @@ DEFINE_GUID(CLSID_DirectMusicSynthSink,                    0xaec17ce3,0xa514,0x1
 DEFINE_GUID(CLSID_DirectMusicSection,                      0x3f037241,0x414e,0x11d1,0xa7,0xce,0x00,0xa0,0xc9,0x13,0xf7,0x3c);
 DEFINE_GUID(CLSID_DirectMusicAuditionTrack,                0xd2ac2897,0xb39b,0x11d1,0x87,0x04,0x00,0x60,0x08,0x93,0xb1,0xbd);
 DEFINE_GUID(CLSID_DirectMusicSegTriggerTrack,              0xbae4d665,0x4ea1,0x11d3,0x8b,0xda,0x00,0x60,0x08,0x93,0xb1,0xb6);
-DEFINE_GUID(CLSID_DirectMusicAudioPath,                    0xee0b9ca0,0xa81e,0x11d3,0x9b,0xd1,0x00,0x80,0xc7,0x15,0x0a,0x74);
 DEFINE_GUID(CLSID_DirectMusicTemplate,                     0xd30bcc65,0x60e8,0x11d1,0xa7,0xce,0x00,0xa0,0xc9,0x13,0xf7,0x3c);
 DEFINE_GUID(CLSID_DirectMusicScriptAutoImpSegment,         0x4062c116,0x0270,0x11d3,0x8b,0xcb,0x00,0x60,0x08,0x93,0xb1,0xb6);
 DEFINE_GUID(CLSID_AudioVBScript,                           0x4ee17959,0x931e,0x49e4,0xa2,0xc6,0x97,0x7e,0xcf,0x36,0x28,0xf3);
@@ -861,7 +856,7 @@ DECLARE_INTERFACE_(IDirectMusicLoader,IUnknown)
     STDMETHOD_(ULONG,AddRef)(THIS) PURE;
     STDMETHOD_(ULONG,Release)(THIS) PURE;
     /*** IDirectMusicLoader methods ***/
-    STDMETHOD(_GetObject)(THIS_ LPDMUS_OBJECTDESC pDesc, REFIID riid, LPVOID *ppv) PURE;
+    STDMETHOD(GetObject)(THIS_ LPDMUS_OBJECTDESC pDesc, REFIID riid, LPVOID *ppv) PURE;
     STDMETHOD(SetObject)(THIS_ LPDMUS_OBJECTDESC pDesc) PURE;
     STDMETHOD(SetSearchDirectory)(THIS_ REFGUID rguidClass, WCHAR *pwzPath, WINBOOL fClear) PURE;
     STDMETHOD(ScanDirectory)(THIS_ REFGUID rguidClass, WCHAR *pwzFileExtension, WCHAR *pwzScanFileName) PURE;
@@ -879,7 +874,7 @@ DECLARE_INTERFACE_(IDirectMusicLoader,IUnknown)
 #define IDirectMusicLoader_AddRef(p)                   (p)->lpVtbl->AddRef(p)
 #define IDirectMusicLoader_Release(p)                  (p)->lpVtbl->Release(p)
 /*** IDirectMusicLoader methods ***/
-#define IDirectMusicLoader_GetObject(p,a,b,c)          (p)->lpVtbl->_GetObject(p,a,b,c)
+#define IDirectMusicLoader_GetObject(p,a,b,c)          (p)->lpVtbl->GetObject(p,a,b,c)
 #define IDirectMusicLoader_SetObject(p,a)              (p)->lpVtbl->SetObject(p,a)
 #define IDirectMusicLoader_SetSearchDirectory(p,a,b,c) (p)->lpVtbl->SetSearchDirectory(p,a,b,c)
 #define IDirectMusicLoader_ScanDirectory(p,a,b,c)      (p)->lpVtbl->ScanDirectory(p,a,b,c)
@@ -902,7 +897,7 @@ DECLARE_INTERFACE_(IDirectMusicLoader8,IDirectMusicLoader)
     STDMETHOD_(ULONG,AddRef)(THIS) PURE;
     STDMETHOD_(ULONG,Release)(THIS) PURE;
     /*** IDirectMusicLoader methods ***/
-    STDMETHOD(_GetObject)(THIS_ LPDMUS_OBJECTDESC pDesc, REFIID riid, LPVOID *ppv) PURE;
+    STDMETHOD(GetObject)(THIS_ LPDMUS_OBJECTDESC pDesc, REFIID riid, LPVOID *ppv) PURE;
     STDMETHOD(SetObject)(THIS_ LPDMUS_OBJECTDESC pDesc) PURE;
     STDMETHOD(SetSearchDirectory)(THIS_ REFGUID rguidClass, WCHAR *pwzPath, WINBOOL fClear) PURE;
     STDMETHOD(ScanDirectory)(THIS_ REFGUID rguidClass, WCHAR *pwzFileExtension, WCHAR *pwzScanFileName) PURE;
@@ -924,7 +919,7 @@ DECLARE_INTERFACE_(IDirectMusicLoader8,IDirectMusicLoader)
 #define IDirectMusicLoader8_AddRef(p)                     (p)->lpVtbl->AddRef(p)
 #define IDirectMusicLoader8_Release(p)                    (p)->lpVtbl->Release(p)
 /*** IDirectMusicLoader methods ***/
-#define IDirectMusicLoader8_GetObject(p,a,b,c)            (p)->lpVtbl->_GetObject(p,a,b,c)
+#define IDirectMusicLoader8_GetObject(p,a,b,c)            (p)->lpVtbl->GetObject(p,a,b,c)
 #define IDirectMusicLoader8_SetObject(p,a)                (p)->lpVtbl->SetObject(p,a)
 #define IDirectMusicLoader8_SetSearchDirectory(p,a,b,c)   (p)->lpVtbl->SetSearchDirectory(p,a,b,c)
 #define IDirectMusicLoader8_ScanDirectory(p,a,b,c)        (p)->lpVtbl->ScanDirectory(p,a,b,c)

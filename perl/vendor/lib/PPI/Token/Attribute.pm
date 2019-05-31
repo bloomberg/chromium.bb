@@ -28,18 +28,14 @@ treated by Perl (and thus by us) as a single string.
 This class provides some additional methods beyond those provided by its
 L<PPI::Token> and L<PPI::Element> parent classes.
 
-Got any ideas for methods? Submit a report to rt.cpan.org!
-
 =cut
 
 use strict;
 use PPI::Token ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Token";
 
 
 
@@ -67,13 +63,13 @@ sub identifier {
 
 =head2 parameters
 
-The C<parameters> method returns the parameter strong for the attribute.
+The C<parameters> method returns the parameter string for the attribute.
 
 That is, for the attribute C<foo(bar)>, the C<parameters> method would
 return C<"bar">.
 
 Returns the parameters as a string (including the null string C<''> for
-the case of an attribute such as C<foo()>.
+the case of an attribute such as C<foo()>.)
 
 Returns C<undef> if the attribute does not have parameters.
 
@@ -81,7 +77,7 @@ Returns C<undef> if the attribute does not have parameters.
 
 sub parameters {
 	my $self = shift;
-	$self->{content} =~ /\((.+)\)$/ ? $1 : undef;
+	$self->{content} =~ /\((.*)\)$/ ? $1 : undef;
 }
 
 
@@ -129,14 +125,12 @@ sub __TOKENIZER__scan_for_end {
 	my $depth = 0;
 	while ( exists $t->{line} ) {
 		# Get the search area
-		my $search = $t->{line_cursor}
-			? substr( $t->{line}, $t->{line_cursor} )
-			: $t->{line};
+		pos $t->{line} = $t->{line_cursor};
 
 		# Look for a match
-		unless ( $search =~ /^((?:\\.|[^()])*?[()])/ ) {
+		unless ( $t->{line} =~ /\G((?:\\.|[^()])*?[()])/gc ) {
 			# Load in the next line and push to first character
-			$string .= $search;
+			$string .= substr( $t->{line}, $t->{line_cursor} );
 			$t->_fill_line(1) or return \$string;
 			$t->{line_cursor} = 0;
 			next;
@@ -146,7 +140,7 @@ sub __TOKENIZER__scan_for_end {
 		$string .= $1;
 		$t->{line_cursor} += length $1;
 
-		# Alter the depth and continue if we arn't at the end
+		# Alter the depth and continue if we aren't at the end
 		$depth += ($1 =~ /\($/) ? 1 : -1 and next;
 
 		# Found the end

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WINSOCKAPI_
@@ -23,6 +23,12 @@
 #endif /* WINSOCK_API_LINKAGE */
 #define WSAAPI			WINAPI
 
+#ifdef __LP64__
+#pragma push_macro("u_long")
+#undef u_long
+#define u_long __ms_u_long
+#endif
+
 #include <_timeval.h>
 #include <_bsd_types.h>
 #include <inaddr.h>
@@ -37,35 +43,6 @@
 extern "C" {
 #endif
 
-extern int WINAPI __WSAFDIsSet(SOCKET,fd_set *);
-
-#define FD_CLR(fd,set)							\
-  do {									\
-	u_int __i;							\
-	for(__i = 0; __i < ((fd_set *)(set))->fd_count; __i++) {	\
-		if (((fd_set *)(set))->fd_array[__i] == fd) {		\
-			while (__i < ((fd_set *)(set))->fd_count - 1) {	\
-				((fd_set *)(set))->fd_array[__i] =	\
-				 ((fd_set *)(set))->fd_array[__i + 1];	\
-				__i++;					\
-			}						\
-			((fd_set *)(set))->fd_count--;			\
-			break;						\
-		}							\
-	}								\
-} while(0)
-
-#define FD_ZERO(set)		(((fd_set *)(set))->fd_count = 0)
-
-#define FD_ISSET(fd,set)	__WSAFDIsSet((SOCKET)(fd),(fd_set *)(set))
-
-#define FD_SET(fd,set)							\
-  do {									\
-	if (((fd_set *)(set))->fd_count < FD_SETSIZE)			\
-	    ((fd_set *)(set))->fd_array[((fd_set *)(set))->fd_count++] =\
-								   (fd);\
-} while(0)
-
 #define IOCPARM_MASK 0x7f
 #define IOC_VOID 0x20000000
 #define IOC_OUT 0x40000000
@@ -73,8 +50,8 @@ extern int WINAPI __WSAFDIsSet(SOCKET,fd_set *);
 #define IOC_INOUT (IOC_IN|IOC_OUT)
 
 #define _IO(x,y) (IOC_VOID|((x)<<8)|(y))
-#define _IOR(x,y,t) (IOC_OUT|(((long)sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y))
-#define _IOW(x,y,t) (IOC_IN|(((long)sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y))
+#define _IOR(x,y,t) (IOC_OUT|(((__LONG32)sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y))
+#define _IOW(x,y,t) (IOC_IN|(((__LONG32)sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y))
 
 #define FIONREAD _IOR('f',127,u_long)
 #define FIONBIO _IOW('f',126,u_long)
@@ -134,19 +111,19 @@ extern int WINAPI __WSAFDIsSet(SOCKET,fd_set *);
 #define IMPLINK_HIGHEXPER 158
 
 
-#define IN_CLASSA(i) (((long)(i) & 0x80000000)==0)
+#define IN_CLASSA(i) (((__LONG32)(i) & 0x80000000)==0)
 #define IN_CLASSA_NET 0xff000000
 #define IN_CLASSA_NSHIFT 24
 #define IN_CLASSA_HOST 0x00ffffff
 #define IN_CLASSA_MAX 128
 
-#define IN_CLASSB(i) (((long)(i) & 0xc0000000)==0x80000000)
+#define IN_CLASSB(i) (((__LONG32)(i) & 0xc0000000)==0x80000000)
 #define IN_CLASSB_NET 0xffff0000
 #define IN_CLASSB_NSHIFT 16
 #define IN_CLASSB_HOST 0x0000ffff
 #define IN_CLASSB_MAX 65536
 
-#define IN_CLASSC(i) (((long)(i) & 0xe0000000)==0xc0000000)
+#define IN_CLASSC(i) (((__LONG32)(i) & 0xe0000000)==0xc0000000)
 #define IN_CLASSC_NET 0xffffff00
 #define IN_CLASSC_NSHIFT 8
 #define IN_CLASSC_HOST 0x000000ff
@@ -301,20 +278,26 @@ extern int WINAPI __WSAFDIsSet(SOCKET,fd_set *);
   WINSOCK_API_LINKAGE int WSAAPI bind(SOCKET s,const struct sockaddr *name,int namelen);
   WINSOCK_API_LINKAGE int WSAAPI closesocket(SOCKET s);
   WINSOCK_API_LINKAGE int WSAAPI connect(SOCKET s,const struct sockaddr *name,int namelen);
-  WINSOCK_API_LINKAGE int WSAAPI ioctlsocket(SOCKET s,long cmd,u_long *argp);
+  WINSOCK_API_LINKAGE int WSAAPI ioctlsocket(SOCKET s,__LONG32 cmd,u_long *argp);
   WINSOCK_API_LINKAGE int WSAAPI getpeername(SOCKET s,struct sockaddr *name,int *namelen);
   WINSOCK_API_LINKAGE int WSAAPI getsockname(SOCKET s,struct sockaddr *name,int *namelen);
   WINSOCK_API_LINKAGE int WSAAPI getsockopt(SOCKET s,int level,int optname,char *optval,int *optlen);
+#ifndef __INSIDE_CYGWIN__
   WINSOCK_API_LINKAGE u_long WSAAPI htonl(u_long hostlong);
   WINSOCK_API_LINKAGE u_short WSAAPI htons(u_short hostshort);
-  WINSOCK_API_LINKAGE unsigned long WSAAPI inet_addr(const char *cp);
+#endif /* !__INSIDE_CYGWIN__ */
+  WINSOCK_API_LINKAGE unsigned __LONG32 WSAAPI inet_addr(const char *cp);
   WINSOCK_API_LINKAGE char *WSAAPI inet_ntoa(struct in_addr in);
   WINSOCK_API_LINKAGE int WSAAPI listen(SOCKET s,int backlog);
+#ifndef __INSIDE_CYGWIN__
   WINSOCK_API_LINKAGE u_long WSAAPI ntohl(u_long netlong);
   WINSOCK_API_LINKAGE u_short WSAAPI ntohs(u_short netshort);
+#endif /* !__INSIDE_CYGWIN__ */
   WINSOCK_API_LINKAGE int WSAAPI recv(SOCKET s,char *buf,int len,int flags);
   WINSOCK_API_LINKAGE int WSAAPI recvfrom(SOCKET s,char *buf,int len,int flags,struct sockaddr *from,int *fromlen);
-  WINSOCK_API_LINKAGE int WSAAPI select(int nfds,fd_set *readfds,fd_set *writefds,fd_set *exceptfds,const struct timeval *timeout);
+#ifndef __INSIDE_CYGWIN__
+  WINSOCK_API_LINKAGE int WSAAPI select(int nfds,fd_set *readfds,fd_set *writefds,fd_set *exceptfds,const PTIMEVAL timeout);
+#endif /* !__INSIDE_CYGWIN__ */
   WINSOCK_API_LINKAGE int WSAAPI send(SOCKET s,const char *buf,int len,int flags);
   WINSOCK_API_LINKAGE int WSAAPI sendto(SOCKET s,const char *buf,int len,int flags,const struct sockaddr *to,int tolen);
   WINSOCK_API_LINKAGE int WSAAPI setsockopt(SOCKET s,int level,int optname,const char *optval,int optlen);
@@ -322,7 +305,9 @@ extern int WINAPI __WSAFDIsSet(SOCKET,fd_set *);
   WINSOCK_API_LINKAGE SOCKET WSAAPI socket(int af,int type,int protocol);
   WINSOCK_API_LINKAGE struct hostent *WSAAPI gethostbyaddr(const char *addr,int len,int type);
   WINSOCK_API_LINKAGE struct hostent *WSAAPI gethostbyname(const char *name);
+#ifndef __INSIDE_CYGWIN__
   WINSOCK_API_LINKAGE int WSAAPI gethostname(char *name,int namelen);
+#endif /* !__INSIDE_CYGWIN__ */
   WINSOCK_API_LINKAGE struct servent *WSAAPI getservbyport(int port,const char *proto);
   WINSOCK_API_LINKAGE struct servent *WSAAPI getservbyname(const char *name,const char *proto);
   WINSOCK_API_LINKAGE struct protoent *WSAAPI getprotobynumber(int number);
@@ -342,7 +327,7 @@ extern int WINAPI __WSAFDIsSet(SOCKET,fd_set *);
   WINSOCK_API_LINKAGE HANDLE WSAAPI WSAAsyncGetHostByName(HWND hWnd,u_int wMsg,const char *name,char *buf,int buflen);
   WINSOCK_API_LINKAGE HANDLE WSAAPI WSAAsyncGetHostByAddr(HWND hWnd,u_int wMsg,const char *addr,int len,int type,char *buf,int buflen);
   WINSOCK_API_LINKAGE int WSAAPI WSACancelAsyncRequest(HANDLE hAsyncTaskHandle);
-  WINSOCK_API_LINKAGE int WSAAPI WSAAsyncSelect(SOCKET s,HWND hWnd,u_int wMsg,long lEvent);
+  WINSOCK_API_LINKAGE int WSAAPI WSAAsyncSelect(SOCKET s,HWND hWnd,u_int wMsg,__LONG32 lEvent);
 #define __WINSOCK_WS1_SHARED	/* avoid redefinitions in winsock2.h */
 
 /* these four functions are in mswsock.h in the new api */
@@ -377,6 +362,10 @@ extern int WINAPI __WSAFDIsSet(SOCKET,fd_set *);
 
 #ifdef IPV6STRICT
 #error WINSOCK2 required.
+#endif
+
+#ifdef __LP64__
+#pragma pop_macro("u_long")
 #endif
 
 #endif /* _WINSOCKAPI_ */
