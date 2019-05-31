@@ -132,6 +132,7 @@ builder.
 
   Path regular expressions:
     * [`//build/chromeos/.+`](https://cs.chromium.org/chromium/src/build/chromeos/)
+    * [`//build/config/chromeos/.*`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:build/config/chromeos/.*)
 
 * [closure_compilation](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/closure_compilation) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/closure_compilation)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+closure_compilation))
 
