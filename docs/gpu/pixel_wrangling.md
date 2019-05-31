@@ -204,6 +204,8 @@ shift, and a calendar appointment.
         the "pixel" step.
     1.  The output will contain a link of the form
         <http://chromium-browser-gpu-tests.commondatastorage.googleapis.com/view_test_results.html?242523_Linux_Release_Intel__telemetry>
+        * For pixel_skia_gold_tests the output link will be of the form
+        <https://chrome-gpu-gold.skia.org/detail?test=Pixel_BackgroundImage&digest=13c038c8d426720ae575f4cb9f0bf8da>
     1.  Visit the link to see whether the generated or reference images look
         incorrect.
     1.  All of the reference images for all of the bots are stored in cloud
