@@ -85,8 +85,10 @@ public class GridTabSwitcherCoordinator
                 mMediator::getCreateGroupButtonOnClickListener, gridCardOnClickListenerProvider,
                 compositorViewHolder, compositorViewHolder.getDynamicResourceLoader(), true,
                 org.chromium.chrome.tab_ui.R.layout.grid_tab_switcher_layout, COMPONENT_NAME);
-        HistoryNavigationLayout navigation =
-                compositorViewHolder.findViewById(R.id.history_navigation);
+
+        HistoryNavigationLayout navigation = compositorViewHolder.findViewById(
+                org.chromium.chrome.tab_ui.R.id.history_navigation);
+
         navigation.setNavigationDelegate(HistoryNavigationDelegate.createForTabSwitcher(
                 context, backPress, tabModelSelector::getCurrentTab));
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,

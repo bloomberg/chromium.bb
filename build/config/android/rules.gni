@@ -4353,9 +4353,11 @@ if (enable_java_templates) {
               build_config = _module.build_config
               repackage_classes = "ap${_async_package_number}"
 
-              # Pass mapping file of synchronous proguarding run to async module proguarding
-              # runs to preserve compatibility.
-              apply_mapping = _sync_proguard_mapping_path
+              # TODO(https://crbug.com/952858): R8 currently doesn't handle
+              # applying mapping files.
+              # Pass mapping file of synchronous proguarding run to async
+              # module proguarding runs to preserve compatibility.
+              # apply_mapping = _sync_proguard_mapping_path
 
               deps = [
                 _module.module_target,

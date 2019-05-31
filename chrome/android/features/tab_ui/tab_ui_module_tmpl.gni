@@ -5,6 +5,7 @@
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 import("//chrome/android/features/dynamic_feature_modules.gni")
+import("//chrome/android/features/tab_ui/buildflags.gni")
 
 template("tab_ui_module_tmpl") {
   assert(defined(invoker.version_code))
@@ -39,5 +40,11 @@ template("tab_ui_module_tmpl") {
     deps = [
       "//chrome/android/features/tab_ui:java",
     ]
+
+    # If tab_ui is set as async DFM, generate list of dependencies on base for keep
+    # rule generation.
+    if (async_tab_ui) {
+      enable_class_deps_output = "tabUiConstantPoolDeps.txt"
+    }
   }
 }

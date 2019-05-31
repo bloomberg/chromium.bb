@@ -75,7 +75,7 @@ public class TabGridDialogParent {
         mDialogContainerView = new LinearLayout(context);
         mDialogContainerView.setLayoutParams(mContainerParams);
         mDialogContainerView.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.modern_primary_color));
+                context.getResources(), org.chromium.chrome.R.color.modern_primary_color));
         mDialogContainerView.setOrientation(LinearLayout.VERTICAL);
         mScrimView = new ScrimView(context, null, backgroundView);
         mPopupWindow = new PopupWindow(backgroundView, 0, 0);

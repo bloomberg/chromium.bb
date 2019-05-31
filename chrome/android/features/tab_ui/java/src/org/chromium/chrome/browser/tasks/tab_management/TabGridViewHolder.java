@@ -39,8 +39,8 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
         this.thumbnail = itemView.findViewById(R.id.tab_thumbnail);
         this.title = itemView.findViewById(R.id.tab_title);
         // TODO(yuezhanggg): Remove this when the strip is properly tinted. (crbug/939915)
-        title.setTextColor(
-                ContextCompat.getColor(itemView.getContext(), R.color.default_text_color_dark));
+        title.setTextColor(ContextCompat.getColor(
+                itemView.getContext(), org.chromium.chrome.R.color.default_text_color_dark));
         this.favicon = itemView.findViewById(R.id.tab_favicon);
         this.closeButton = itemView.findViewById(R.id.close_button);
         this.createGroupButton = itemView.findViewById(R.id.create_group_button);
@@ -49,8 +49,8 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
         if (sCloseButtonBitmapWeakRef == null || sCloseButtonBitmapWeakRef.get() == null) {
             int closeButtonSize =
                     (int) itemView.getResources().getDimension(R.dimen.tab_grid_close_button_size);
-            Bitmap bitmap =
-                    BitmapFactory.decodeResource(itemView.getResources(), R.drawable.btn_close);
+            Bitmap bitmap = BitmapFactory.decodeResource(
+                    itemView.getResources(), org.chromium.chrome.R.drawable.btn_close);
             sCloseButtonBitmapWeakRef = new WeakReference<>(
                     Bitmap.createScaledBitmap(bitmap, closeButtonSize, closeButtonSize, true));
             bitmap.recycle();
