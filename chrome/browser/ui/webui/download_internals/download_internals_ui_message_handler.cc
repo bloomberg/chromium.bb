@@ -42,7 +42,8 @@ void DownloadInternalsUIMessageHandler::RegisterMessages() {
           weak_ptr_factory_.GetWeakPtr()));
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  download_service_ = DownloadServiceFactory::GetForBrowserContext(profile);
+  download_service_ =
+      DownloadServiceFactory::GetForKey(profile->GetProfileKey());
   download_service_->GetLogger()->AddObserver(this);
 }
 

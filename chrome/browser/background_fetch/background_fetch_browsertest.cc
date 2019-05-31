@@ -242,7 +242,8 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
 
     download_observer_ = std::make_unique<WaitableDownloadLoggerObserver>();
 
-    download_service_ = DownloadServiceFactory::GetForBrowserContext(profile);
+    download_service_ =
+        DownloadServiceFactory::GetForKey(profile->GetProfileKey());
     download_service_->GetLogger()->AddObserver(download_observer_.get());
 
     // Register our observer for the offline items collection.

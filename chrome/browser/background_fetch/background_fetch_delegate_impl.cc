@@ -71,8 +71,8 @@ download::DownloadService* BackgroundFetchDelegateImpl::GetDownloadService() {
   if (download_service_)
     return download_service_;
 
-  download_service_ =
-      DownloadServiceFactory::GetInstance()->GetForBrowserContext(profile_);
+  download_service_ = DownloadServiceFactory::GetInstance()->GetForKey(
+      profile_->GetProfileKey());
   return download_service_;
 }
 

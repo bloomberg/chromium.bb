@@ -413,7 +413,8 @@ std::string PluginVmImageManager::GetCurrentDownloadGuidForTesting() {
 
 PluginVmImageManager::PluginVmImageManager(Profile* profile)
     : profile_(profile),
-      download_service_(DownloadServiceFactory::GetForBrowserContext(profile)),
+      download_service_(
+          DownloadServiceFactory::GetForKey(profile->GetProfileKey())),
       weak_ptr_factory_(this) {}
 
 GURL PluginVmImageManager::GetPluginVmImageDownloadUrl() {

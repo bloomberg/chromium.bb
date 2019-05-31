@@ -17,10 +17,6 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace download {
 class DownloadService;
 }  // namespace download
@@ -34,12 +30,6 @@ class DownloadServiceFactory : public SimpleKeyedServiceFactory {
 
   // Returns the DownloadService associated with |key|.
   static download::DownloadService* GetForKey(SimpleFactoryKey* key);
-
-  // Helper method that calls GetForKey().
-  // Returns the DownloadService associated with the key associated with
-  // |context|.
-  static download::DownloadService* GetForBrowserContext(
-      content::BrowserContext* context);
 
  private:
   friend struct base::DefaultSingletonTraits<DownloadServiceFactory>;
