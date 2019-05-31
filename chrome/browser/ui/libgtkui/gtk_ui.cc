@@ -64,6 +64,7 @@
 #include "ui/gfx/x/x11_types.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/shell_dialogs/select_file_policy.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
@@ -98,22 +99,31 @@ const double kDefaultDPI = 96;
 
 class GtkButtonImageSource : public gfx::ImageSkiaSource {
  public:
-  GtkButtonImageSource(const char* idr_string, gfx::Size size)
-      : width_(size.width()), height_(size.height()) {
-    focus_ = !!strstr(idr_string, "_FOCUSED_");
-
-    if (strstr(idr_string, "_DISABLED")) {
-      state_ = ui::NativeTheme::kDisabled;
-    } else if (strstr(idr_string, "_HOVER")) {
-      state_ = ui::NativeTheme::kHovered;
-    } else if (strstr(idr_string, "_PRESSED")) {
-      state_ = ui::NativeTheme::kPressed;
-    } else {
-      state_ = ui::NativeTheme::kNormal;
+  GtkButtonImageSource(bool focus,
+                       views::Button::ButtonState button_state,
+                       gfx::Size size)
+      : focus_(focus), width_(size.width()), height_(size.height()) {
+    switch (button_state) {
+      case views::Button::ButtonState::STATE_NORMAL:
+        state_ = ui::NativeTheme::kNormal;
+        break;
+      case views::Button::ButtonState::STATE_HOVERED:
+        state_ = ui::NativeTheme::kHovered;
+        break;
+      case views::Button::ButtonState::STATE_PRESSED:
+        state_ = ui::NativeTheme::kPressed;
+        break;
+      case views::Button::ButtonState::STATE_DISABLED:
+        state_ = ui::NativeTheme::kDisabled;
+        break;
+      case views::Button::ButtonState::STATE_COUNT:
+        NOTREACHED();
+        state_ = ui::NativeTheme::kNormal;
+        break;
     }
   }
 
-  ~GtkButtonImageSource() override {}
+  ~GtkButtonImageSource() override = default;
 
   gfx::ImageSkiaRep GetImageForScale(float scale) override {
     int width = width_ * scale;
@@ -191,18 +201,20 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
 
 class GtkButtonPainter : public views::Painter {
  public:
-  explicit GtkButtonPainter(std::string idr) : idr_(idr) {}
-  ~GtkButtonPainter() override {}
+  GtkButtonPainter(bool focus, views::Button::ButtonState button_state)
+      : focus_(focus), button_state_(button_state) {}
+  ~GtkButtonPainter() override = default;
 
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
   void Paint(gfx::Canvas* canvas, const gfx::Size& size) override {
     gfx::ImageSkia image(
-        std::make_unique<GtkButtonImageSource>(idr_.c_str(), size), 1);
+        std::make_unique<GtkButtonImageSource>(focus_, button_state_, size), 1);
     canvas->DrawImageInt(image, 0, 0);
   }
 
  private:
-  std::string idr_;
+  const bool focus_;
+  const views::Button::ButtonState button_state_;
 
   DISALLOW_COPY_AND_ASSIGN(GtkButtonPainter);
 };
@@ -574,43 +586,28 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
 
   gtk_border->set_insets(border->GetInsets());
 
+  constexpr bool kFocus = true;
+
   static struct {
-    const char* idr;
     bool focus;
     views::Button::ButtonState state;
   } const paintstate[] = {
-      {
-          "IDR_BUTTON_NORMAL", false, views::Button::STATE_NORMAL,
-      },
-      {
-          "IDR_BUTTON_HOVER", false, views::Button::STATE_HOVERED,
-      },
-      {
-          "IDR_BUTTON_PRESSED", false, views::Button::STATE_PRESSED,
-      },
-      {
-          "IDR_BUTTON_DISABLED", false, views::Button::STATE_DISABLED,
-      },
-
-      {
-          "IDR_BUTTON_FOCUSED_NORMAL", true, views::Button::STATE_NORMAL,
-      },
-      {
-          "IDR_BUTTON_FOCUSED_HOVER", true, views::Button::STATE_HOVERED,
-      },
-      {
-          "IDR_BUTTON_FOCUSED_PRESSED", true, views::Button::STATE_PRESSED,
-      },
-      {
-          "IDR_BUTTON_DISABLED", true, views::Button::STATE_DISABLED,
-      },
+      { !kFocus, views::Button::STATE_NORMAL, },
+      { !kFocus, views::Button::STATE_HOVERED, },
+      { !kFocus, views::Button::STATE_PRESSED, },
+      { !kFocus, views::Button::STATE_DISABLED, },
+      { kFocus, views::Button::STATE_NORMAL, },
+      { kFocus, views::Button::STATE_HOVERED, },
+      { kFocus, views::Button::STATE_PRESSED, },
+      { kFocus, views::Button::STATE_DISABLED, },
   };
 
   for (unsigned i = 0; i < base::size(paintstate); i++) {
     gtk_border->SetPainter(
         paintstate[i].focus, paintstate[i].state,
         border->PaintsButtonState(paintstate[i].focus, paintstate[i].state)
-            ? std::make_unique<GtkButtonPainter>(paintstate[i].idr)
+            ? std::make_unique<GtkButtonPainter>(paintstate[i].focus,
+                                                 paintstate[i].state)
             : nullptr);
   }
 
