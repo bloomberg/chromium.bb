@@ -213,16 +213,6 @@ bool IconLabelBubbleView::IsBubbleShowing() const {
   return false;
 }
 
-void IconLabelBubbleView::UpdateBorder() {
-  // Bubbles are given the full internal height of the location bar so that all
-  // child views in the location bar have the same height. The visible height of
-  // the bubble should be smaller, so use an empty border to shrink down the
-  // content bounds so the background gets painted correctly.
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
-                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left())));
-}
-
 gfx::Size IconLabelBubbleView::CalculatePreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(label()->GetPreferredSize().width());
@@ -510,4 +500,14 @@ void IconLabelBubbleView::UpdateHighlightPath() {
     focus_ring()->Layout();
     focus_ring()->SchedulePaint();
   }
+}
+
+void IconLabelBubbleView::UpdateBorder() {
+  // Bubbles are given the full internal height of the location bar so that all
+  // child views in the location bar have the same height. The visible height of
+  // the bubble should be smaller, so use an empty border to shrink down the
+  // content bounds so the background gets painted correctly.
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
+                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left())));
 }

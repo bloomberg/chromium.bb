@@ -50,6 +50,7 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   // Only shows bubble after mouse is released.
   set_notify_action(NotifyAction::NOTIFY_ON_RELEASE);
+  UpdateBorder();
 }
 
 PageActionIconView::~PageActionIconView() {}
@@ -178,12 +179,9 @@ void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 void PageActionIconView::OnTouchUiChanged() {
   icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   UpdateIconImage();
-  IconLabelBubbleView::OnTouchUiChanged();
-}
-
-void PageActionIconView::UpdateBorder() {
-  SetBorder(views::CreateEmptyBorder(
-      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
+  UpdateBorder();
+  if (GetVisible())
+    PreferredSizeChanged();
 }
 
 void PageActionIconView::SetIconColor(SkColor icon_color) {
@@ -210,4 +208,9 @@ void PageActionIconView::SetActiveInternal(bool active) {
 
 content::WebContents* PageActionIconView::GetWebContents() const {
   return delegate_->GetWebContentsForPageActionIconView();
+}
+
+void PageActionIconView::UpdateBorder() {
+  SetBorder(views::CreateEmptyBorder(
+      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
 }
