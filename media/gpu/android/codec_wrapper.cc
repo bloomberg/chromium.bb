@@ -418,17 +418,9 @@ bool CodecWrapperImpl::ReleaseCodecOutputBuffer(int64_t id, bool render) {
   if (!valid)
     return false;
 
-  // Discard the buffers preceding the one we're releasing. The buffers are in
-  // presentation order because the ids are generated in presentation order.
-  for (auto it = buffer_ids_.begin(); it < buffer_it; ++it) {
-    int index = it->second;
-    codec_->ReleaseOutputBuffer(index, false);
-    DVLOG(2) << __func__ << " discarded " << index;
-  }
-
   int index = buffer_it->second;
   codec_->ReleaseOutputBuffer(index, render);
-  buffer_ids_.erase(buffer_ids_.begin(), buffer_it + 1);
+  buffer_ids_.erase(buffer_it);
   if (output_buffer_release_cb_) {
     output_buffer_release_cb_.Run(state_ == State::kDrained ||
                                   state_ == State::kDraining);
