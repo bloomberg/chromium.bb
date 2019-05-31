@@ -59,8 +59,12 @@ class LayoutTreeBuilder {
   STACK_ALLOCATED();
 
  protected:
-  LayoutTreeBuilder(NodeType& node, LayoutObject* layout_object_parent)
-      : node_(node), layout_object_parent_(layout_object_parent) {
+  LayoutTreeBuilder(NodeType& node,
+                    LayoutObject* layout_object_parent,
+                    ComputedStyle* style)
+      : node_(node),
+        layout_object_parent_(layout_object_parent),
+        style_(style) {
     DCHECK(!node.GetLayoutObject());
     DCHECK(node.GetDocument().InStyleRecalc());
     DCHECK(node.InActiveDocument());
@@ -92,6 +96,7 @@ class LayoutTreeBuilder {
 
   Member<NodeType> node_;
   LayoutObject* layout_object_parent_;
+  ComputedStyle* style_;
 };
 
 class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
@@ -108,8 +113,6 @@ class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
   LayoutObject* NextLayoutObject() const;
   bool ShouldCreateLayoutObject() const;
   void CreateLayoutObject(LegacyLayout);
-
-  scoped_refptr<ComputedStyle> style_;
 };
 
 class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
@@ -117,14 +120,12 @@ class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
   LayoutTreeBuilderForText(Text& text,
                            LayoutObject* layout_parent,
                            ComputedStyle* style_from_parent)
-      : LayoutTreeBuilder(text, layout_parent), style_(style_from_parent) {}
+      : LayoutTreeBuilder(text, layout_parent, style_from_parent) {}
 
   void CreateLayoutObject();
 
  private:
   LayoutObject* CreateInlineWrapperForDisplayContentsIfNeeded();
-
-  scoped_refptr<ComputedStyle> style_;
 };
 
 }  // namespace blink

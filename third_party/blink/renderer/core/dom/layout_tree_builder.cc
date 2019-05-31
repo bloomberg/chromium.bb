@@ -47,7 +47,7 @@ namespace blink {
 
 LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element,
                                                          ComputedStyle* style)
-    : LayoutTreeBuilder(element, nullptr), style_(style) {
+    : LayoutTreeBuilder(element, nullptr, style) {
   DCHECK(element.CanParticipateInFlatTree());
   DCHECK(style_);
   DCHECK(!style_->IsEnsuredInDisplayNone());
