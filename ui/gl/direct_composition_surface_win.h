@@ -69,6 +69,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
   // DXGI_OVERLAY_SUPPORT_FLAG_SCALING bits.
   static UINT GetOverlaySupportFlags(DXGI_FORMAT format);
 
+  // Returns queried flags from ID3D11Device::CheckFormatSupport().
+  static UINT GetFormatSupportFlags(DXGI_FORMAT format);
+
   // Returns true if there is an HDR capable display connected.
   static bool IsHDRSupported();
 

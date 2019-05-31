@@ -185,6 +185,15 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
       "Direct composition",
       std::make_unique<base::Value>(gpu_info.direct_composition)));
   basic_info->Append(NewDescriptionValuePair(
+      "BGRA format support",
+      base::StringPrintf("0x%08x", gpu_info.bgra_format_support)));
+  basic_info->Append(NewDescriptionValuePair(
+      "YUY2 format support",
+      base::StringPrintf("0x%08x", gpu_info.yuy2_format_support)));
+  basic_info->Append(NewDescriptionValuePair(
+      "NV12 format support",
+      base::StringPrintf("0x%08x", gpu_info.nv12_format_support)));
+  basic_info->Append(NewDescriptionValuePair(
       "Supports overlays",
       std::make_unique<base::Value>(gpu_info.supports_overlays)));
   basic_info->Append(NewDescriptionValuePair(

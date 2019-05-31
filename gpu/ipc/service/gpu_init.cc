@@ -92,6 +92,15 @@ void InitializePlatformOverlaySettings(GPUInfo* gpu_info) {
     DCHECK(gpu_info);
     gpu_info->direct_composition =
         gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported();
+    gpu_info->bgra_format_support = static_cast<uint32_t>(
+        gl::DirectCompositionSurfaceWin::GetFormatSupportFlags(
+            DXGI_FORMAT_B8G8R8A8_UNORM));
+    gpu_info->yuy2_format_support = static_cast<uint32_t>(
+        gl::DirectCompositionSurfaceWin::GetFormatSupportFlags(
+            DXGI_FORMAT_YUY2));
+    gpu_info->nv12_format_support = static_cast<uint32_t>(
+        gl::DirectCompositionSurfaceWin::GetFormatSupportFlags(
+            DXGI_FORMAT_NV12));
     gpu_info->supports_overlays =
         gl::DirectCompositionSurfaceWin::AreOverlaysSupported();
     gpu_info->nv12_overlay_support = FlagsToOverlaySupport(

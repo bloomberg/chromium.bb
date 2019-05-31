@@ -155,6 +155,9 @@ TEST_F(StructTraitsTest, GpuInfo) {
   const bool passthrough_cmd_decoder = true;
 #if defined(OS_WIN)
   const bool direct_composition = true;
+  const uint32_t bgra_format_support = 0x33fef3f3;
+  const uint32_t yuy2_format_support = 0x3a820320;
+  const uint32_t nv12_format_support = 0xfa82c320;
   const bool supports_overlays = true;
   const OverlaySupport yuy2_overlay_support = OverlaySupport::kScaling;
   const OverlaySupport nv12_overlay_support = OverlaySupport::kNone;
@@ -199,6 +202,9 @@ TEST_F(StructTraitsTest, GpuInfo) {
   input.passthrough_cmd_decoder = passthrough_cmd_decoder;
 #if defined(OS_WIN)
   input.direct_composition = direct_composition;
+  input.bgra_format_support = bgra_format_support;
+  input.yuy2_format_support = yuy2_format_support;
+  input.nv12_format_support = nv12_format_support;
   input.supports_overlays = supports_overlays;
   input.yuy2_overlay_support = yuy2_overlay_support;
   input.nv12_overlay_support = nv12_overlay_support;
@@ -259,6 +265,9 @@ TEST_F(StructTraitsTest, GpuInfo) {
   EXPECT_EQ(passthrough_cmd_decoder, output.passthrough_cmd_decoder);
 #if defined(OS_WIN)
   EXPECT_EQ(direct_composition, output.direct_composition);
+  EXPECT_EQ(bgra_format_support, output.bgra_format_support);
+  EXPECT_EQ(yuy2_format_support, output.yuy2_format_support);
+  EXPECT_EQ(nv12_format_support, output.nv12_format_support);
   EXPECT_EQ(supports_overlays, output.supports_overlays);
   EXPECT_EQ(yuy2_overlay_support, output.yuy2_overlay_support);
   EXPECT_EQ(nv12_overlay_support, output.nv12_overlay_support);
