@@ -1164,8 +1164,7 @@ TEST_F(HostResolverTest, TextResults) {
   static const char* kTextRecords[] = {"foo", "bar", "more text"};
   net::MockDnsClientRuleList rules;
   rules.emplace_back(
-      "example.com", net::dns_protocol::kTypeTXT,
-      net::DnsConfig::SecureDnsMode::AUTOMATIC,
+      "example.com", net::dns_protocol::kTypeTXT, false /* secure */,
       net::MockDnsClientRule::Result(net::BuildTestDnsTextResponse(
           "example.com", {std::vector<std::string>(std::begin(kTextRecords),
                                                    std::end(kTextRecords))})),
@@ -1205,8 +1204,7 @@ TEST_F(HostResolverTest, TextResults) {
 TEST_F(HostResolverTest, HostResults) {
   net::MockDnsClientRuleList rules;
   rules.emplace_back(
-      "example.com", net::dns_protocol::kTypePTR,
-      net::DnsConfig::SecureDnsMode::AUTOMATIC,
+      "example.com", net::dns_protocol::kTypePTR, false /*secure */,
       net::MockDnsClientRule::Result(net::BuildTestDnsPointerResponse(
           "example.com", {"google.com", "chromium.org"})),
       false /* delay */);

@@ -142,6 +142,10 @@ class NET_EXPORT HostCache {
     Entry& operator=(Entry&& entry);
 
     int error() const { return error_; }
+    bool did_complete() const {
+      return error_ != ERR_NETWORK_CHANGED &&
+             error_ != ERR_HOST_RESOLVER_QUEUE_TOO_LARGE;
+    }
     void set_error(int error) { error_ = error; }
     const base::Optional<AddressList>& addresses() const { return addresses_; }
     void set_addresses(const base::Optional<AddressList>& addresses) {

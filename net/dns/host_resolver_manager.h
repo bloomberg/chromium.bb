@@ -91,6 +91,7 @@ class NET_EXPORT HostResolverManager
   using ResolveHostParameters = HostResolver::ResolveHostParameters;
   using DnsClientFactory =
       base::RepeatingCallback<std::unique_ptr<DnsClient>(NetLog*)>;
+  using SecureDnsMode = DnsConfig::SecureDnsMode;
 
   class CancellableRequest : public ResolveHostRequest {
    public:
@@ -238,6 +239,17 @@ class NET_EXPORT HostResolverManager
     MODE_FOR_HISTOGRAM_ASYNC_DNS_PRIVATE_SUPPORTS_DOH,
   };
 
+  // Task types that a Job might run.
+  enum class TaskType {
+    PROC,
+    DNS,
+    SECURE_DNS,
+    MDNS,
+    CACHE_LOOKUP,
+    INSECURE_CACHE_LOOKUP,
+    SECURE_CACHE_LOOKUP,
+  };
+
   // Number of consecutive failures of DnsTask (with successful fallback to
   // ProcTask) before the DnsClient is disabled until the next DNS change.
   static const unsigned kMaximumDnsFailures;
@@ -254,6 +266,8 @@ class NET_EXPORT HostResolverManager
   //
   // On ERR_DNS_CACHE_MISS and OK, effective request parameters are written to
   // |out_effective_query_type| and |out_effective_host_resolver_flags|.
+  // |out_tasks| contains the tentative sequence of tasks that a future job
+  // should run.
   //
   // If results are returned from the host cache, |out_stale_info| will be
   // filled in with information on how stale or fresh the result is. Otherwise,
@@ -266,11 +280,13 @@ class NET_EXPORT HostResolverManager
       DnsQueryType requested_address_family,
       HostResolverSource source,
       HostResolverFlags flags,
+      base::Optional<SecureDnsMode> secure_dns_mode_override,
       ResolveHostParameters::CacheUsage cache_usage,
       const NetLogWithSource& request_net_log,
       HostCache* cache,
       DnsQueryType* out_effective_query_type,
       HostResolverFlags* out_effective_host_resolver_flags,
+      std::deque<TaskType>* out_tasks,
       base::Optional<HostCache::EntryStaleness>* out_stale_info);
 
   // Attempts to create and start a Job to asynchronously attempt to resolve
@@ -278,6 +294,7 @@ class NET_EXPORT HostResolverManager
   // |request|. On error, marks |request| completed and returns the error.
   int CreateAndStartJob(DnsQueryType effective_query_type,
                         HostResolverFlags effective_host_resolver_flags,
+                        std::deque<TaskType> tasks,
                         RequestImpl* request);
 
   // Tries to resolve |key| and its possible IP address representation,
@@ -312,14 +329,47 @@ class NET_EXPORT HostResolverManager
       DnsQueryType query_type,
       bool default_family_due_to_no_ipv6);
 
+  // When no DoH servers are in an "available" state, no DoH requests should
+  // be sent.
+  bool HasAvailableDohServer();
+
+  // Returns the secure dns mode to use for a job, taking into account the
+  // global DnsConfig mode and any per-request override.
+  SecureDnsMode GetEffectiveSecureDnsMode(
+      base::Optional<SecureDnsMode> secure_dns_mode_override);
+
+  // Helper method to add DnsTasks and related tasks based on the SecureDnsMode
+  // and fallback parameters.
+  void PushDnsTasks(bool allow_proc_fallback,
+                    SecureDnsMode secure_dns_mode,
+                    ResolveHostParameters::CacheUsage cache_usage,
+                    std::deque<TaskType>* out_tasks);
+
+  // Initialized the sequence of tasks to run to resolve a request. The sequence
+  // may be adjusted later and not all tasks need to be run.
+  void CreateTaskSequence(
+      const std::string& hostname,
+      DnsQueryType dns_query_type,
+      HostResolverSource source,
+      HostResolverFlags flags,
+      base::Optional<SecureDnsMode> secure_dns_mode_override,
+      ResolveHostParameters::CacheUsage cache_usage,
+      std::deque<TaskType>* out_tasks);
+
   // Determines "effective" request parameters using manager properties and IPv6
   // reachability.
-  void GetEffectiveParametersForRequest(DnsQueryType dns_query_type,
-                                        HostResolverFlags flags,
-                                        const IPAddress* ip_address,
-                                        const NetLogWithSource& net_log,
-                                        DnsQueryType* out_effective_type,
-                                        HostResolverFlags* out_effective_flags);
+  void GetEffectiveParametersForRequest(
+      const std::string& hostname,
+      DnsQueryType dns_query_type,
+      HostResolverSource source,
+      HostResolverFlags flags,
+      base::Optional<SecureDnsMode> secure_dns_mode_override,
+      ResolveHostParameters::CacheUsage cache_usage,
+      const IPAddress* ip_address,
+      const NetLogWithSource& net_log,
+      DnsQueryType* out_effective_type,
+      HostResolverFlags* out_effective_flags,
+      std::deque<TaskType>* out_tasks);
 
   // Probes IPv6 support and returns true if IPv6 support is enabled.
   // Results are cached, i.e. when called repeatedly this method returns result
@@ -347,9 +397,10 @@ class NET_EXPORT HostResolverManager
   // Removes |job_it| from |jobs_| and return.
   std::unique_ptr<Job> RemoveJob(JobMap::iterator job_it);
 
-  // Aborts all in progress jobs with ERR_NETWORK_CHANGED and notifies their
-  // requests. Might start new jobs.
-  void AbortAllInProgressJobs();
+  // Aborts both scheduled and running jobs with ERR_NETWORK_CHANGED and
+  // notifies their requests. Aborts only running jobs if |in_progress_only| is
+  // true. Might start new jobs.
+  void AbortAllJobs(bool in_progress_only);
 
   void SetDnsClient(std::unique_ptr<DnsClient> dns_client);
 

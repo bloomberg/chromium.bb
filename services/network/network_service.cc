@@ -31,6 +31,7 @@
 #include "net/cert/cert_database.h"
 #include "net/cert/ct_log_response_parser.h"
 #include "net/cert/signed_tree_head.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
@@ -472,6 +473,8 @@ void NetworkService::ConfigureStubHostResolver(
     overrides.dns_over_https_servers.value().emplace_back(
         doh_server->server_template, doh_server->use_post);
   }
+  // TODO(dalyk): Allow the secure dns mode to be set.
+  overrides.secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
   host_resolver_manager_->SetDnsConfigOverrides(overrides);
 }
 

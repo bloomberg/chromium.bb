@@ -70,6 +70,7 @@ class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
     DnsConfig config;
     config.nameservers.push_back(IPEndPoint());
     config.dns_over_https_servers.emplace_back(url.spec(), true /* use_post */);
+    config.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
     dns_client->SetConfig(config);
     resolver_->SetRequestContext(&request_context_);
     resolver_->SetProcParamsForTesting(

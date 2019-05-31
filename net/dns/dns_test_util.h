@@ -216,18 +216,14 @@ struct MockDnsClientRule {
 
     ResultType type;
     std::unique_ptr<DnsResponse> response;
-    // Whether the mock result was obtained securely or not.
-    bool secure = false;
   };
-
-  static Result CreateSecureResult(std::unique_ptr<DnsResponse> response);
 
   // If |delay| is true, matching transactions will be delayed until triggered
   // by the consumer. If |context| is non-null, it will only match transactions
   // with the same context.
   MockDnsClientRule(const std::string& prefix,
                     uint16_t qtype,
-                    DnsConfig::SecureDnsMode secure_dns_mode,
+                    bool secure,
                     Result result,
                     bool delay,
                     URLRequestContext* context = nullptr);
@@ -236,7 +232,7 @@ struct MockDnsClientRule {
   Result result;
   std::string prefix;
   uint16_t qtype;
-  DnsConfig::SecureDnsMode secure_dns_mode;
+  bool secure;
   bool delay;
   URLRequestContext* context;
 };

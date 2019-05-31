@@ -192,7 +192,9 @@ class NET_EXPORT HostResolver {
       ALLOWED,
 
       // Results may come from the host cache even if stale (by expiration or
-      // network changes).
+      // network changes). In secure dns AUTOMATIC mode, the cache is checked
+      // for both secure and insecure results prior to any secure DNS lookups to
+      // minimize response time.
       STALE_ALLOWED,
 
       // Results will not come from the host cache.
