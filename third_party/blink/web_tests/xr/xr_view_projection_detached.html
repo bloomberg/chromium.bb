@@ -16,23 +16,19 @@ function detachView(array_buffer_view) {
 }
 
 let testFunction = function() {
-  out_canvas = document.body.appendChild(document.createElement('canvas'));
-  context = out_canvas.getContext('xrpresent');
-
   in_canvas = document.body.appendChild(document.createElement('canvas'));
   webgl = in_canvas.getContext('webgl', { xrCompatible: true });
 
   return navigator.xr.requestSession('inline').then(session => {
     session.updateRenderState({
-      baseLayer: new XRWebGLLayer(session, webgl),
-      outputContext: context
+      baseLayer: new XRWebGLLayer(session, webgl, { compositionDisabled: true })
     });
 
     return session.requestReferenceSpace('viewer').then(space => {
       return new Promise(resolve => {
         counter = 0;
         request_frame_callback = (t, frame) => {
-          out_canvas.height += counter % 2 * 2 - 1;
+          webgl.canvas.height += counter % 2 * 2 - 1;
 
           pose = frame.getViewerPose(space);
 

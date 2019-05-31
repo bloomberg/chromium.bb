@@ -275,9 +275,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
       CanvasRenderingContext::ContextTypeFromId(type);
 
   // Unknown type.
-  if (context_type == CanvasRenderingContext::kContextTypeUnknown ||
-      (context_type == CanvasRenderingContext::kContextXRPresent &&
-       !RuntimeEnabledFeatures::WebXREnabled(&GetDocument()))) {
+  if (context_type == CanvasRenderingContext::kContextTypeUnknown) {
     return nullptr;
   }
 
@@ -1539,8 +1537,7 @@ bool HTMLCanvasElement::HasImageBitmapContext() const {
   if (!context_)
     return false;
   CanvasRenderingContext::ContextType type = context_->GetContextType();
-  return (type == CanvasRenderingContext::kContextImageBitmap ||
-          type == CanvasRenderingContext::kContextXRPresent);
+  return (type == CanvasRenderingContext::kContextImageBitmap);
 }
 
 cc::Layer* HTMLCanvasElement::ContentsCcLayer() const {

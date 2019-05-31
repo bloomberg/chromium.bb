@@ -10627,10 +10627,6 @@ interface XRPose
     getter emulatedPosition
     getter transform
     method constructor
-interface XRPresentationContext
-    attribute @@toStringTag
-    getter canvas
-    method constructor
 interface XRRay
     attribute @@toStringTag
     getter direction
@@ -10654,7 +10650,6 @@ interface XRRenderState
     getter depthFar
     getter depthNear
     getter inlineVerticalFieldOfView
-    getter outputContext
     method constructor
 interface XRRigidTransform
     attribute @@toStringTag

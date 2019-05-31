@@ -25,6 +25,7 @@ namespace blink {
 
 class Element;
 class ExceptionState;
+class HTMLCanvasElement;
 class ResizeObserver;
 class ScriptPromiseResolver;
 class V8XRFrameRequestCallback;
@@ -32,7 +33,6 @@ class XR;
 class XRCanvasInputProvider;
 class XRSpace;
 class XRInputSourceEvent;
-class XRPresentationContext;
 class XRRay;
 class XRReferenceSpace;
 class XRRenderState;
@@ -112,11 +112,10 @@ class XRSession final : public EventTargetWithInlineData,
   // value that provides a good balance between quality and performance.
   DoubleSize DefaultFramebufferSize() const;
 
-  // Reports the size of the output context's, if one is available. If not
+  // Reports the size of the output canvas, if one is available. If not
   // reports (0, 0);
   DoubleSize OutputCanvasSize() const;
-  XRPresentationContext* outputContext() const;
-  void DetachOutputContext(XRPresentationContext* output_context);
+  void DetachOutputCanvas(HTMLCanvasElement* output_canvas);
 
   void LogGetPose() const;
 

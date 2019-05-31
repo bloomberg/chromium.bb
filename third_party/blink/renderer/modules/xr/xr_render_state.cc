@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define _USE_MATH_DEFINES  // For VC++ to get M_PI. This has to be first.
+
 #include "third_party/blink/renderer/modules/xr/xr_render_state.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
-#include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_render_state_init.h"
 
 namespace blink {
@@ -36,9 +38,6 @@ void XRRenderState::Update(const XRRenderStateInit* init) {
   if (init->hasBaseLayer()) {
     base_layer_ = init->baseLayer();
   }
-  if (init->hasOutputContext()) {
-    output_context_ = init->outputContext();
-  }
   if (init->hasInlineVerticalFieldOfView()) {
     double fov = init->inlineVerticalFieldOfView();
 
@@ -49,8 +48,11 @@ void XRRenderState::Update(const XRRenderStateInit* init) {
   }
 }
 
-void XRRenderState::removeOutputContext() {
-  output_context_ = nullptr;
+HTMLCanvasElement* XRRenderState::output_canvas() const {
+  if (base_layer_) {
+    return base_layer_->output_canvas();
+  }
+  return nullptr;
 }
 
 double XRRenderState::inlineVerticalFieldOfView(bool& is_null) const {
@@ -60,7 +62,6 @@ double XRRenderState::inlineVerticalFieldOfView(bool& is_null) const {
 
 void XRRenderState::Trace(blink::Visitor* visitor) {
   visitor->Trace(base_layer_);
-  visitor->Trace(output_context_);
   visitor->Trace(inline_vertical_fov_);
   ScriptWrappable::Trace(visitor);
 }

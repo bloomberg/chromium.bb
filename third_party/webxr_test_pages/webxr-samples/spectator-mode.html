@@ -74,7 +74,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let xrNonImmersiveRefSpace = null;
 
       // WebGL scene globals.
-      let outputCanvas = null;
       let gl = null;
       let renderer = null;
       let scene = new Scene();
@@ -100,16 +99,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          outputCanvas = document.createElement('canvas');
-
           navigator.xr.requestSession('inline')
               .then((session) => {
                 session.mode = 'inline';
-                document.body.appendChild(outputCanvas);
-                session.updateRenderState({
-                  outputContext: outputCanvas.getContext('xrpresent')
-                });
-
                 onSessionStarted(session);
               });
         } else {
@@ -119,7 +111,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function initFallback() {
         initGL();
-        document.body.appendChild(gl.canvas);
         let fallbackHelper = new FallbackHelper(scene, gl);
         fallbackHelper.emulateStage = true;
       }
@@ -131,6 +122,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         gl = createWebGLContext({
           xrCompatible: true
         });
+
+        function onResize () {
+          gl.canvas.width = (gl.canvas.offsetWidth * window.devicePixelRatio);
+          gl.canvas.height = (gl.canvas.offsetHeight * window.devicePixelRatio);
+        }
+        window.addEventListener('resize', onResize);
+        onResize();
 
         renderer = new Renderer(gl);
         scene.setRenderer(renderer);
@@ -158,9 +156,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           spectatorButton.addEventListener('click', onEnableSpectatorMode);
           mainElement.appendChild(spectatorButton);
 
-          // Hide the non-exclusive session's output canvas so that we can see
+          // Hide the inline session's canvas so that we can see
           // the button.
-          outputCanvas.style.display = 'none';
+          gl.canvas.style.display = 'none';
         });
       }
 
@@ -213,8 +211,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             spectatorButton = null;
           }
 
-          // Show the non-exclusive session's output canvas again.
-          outputCanvas.style.display = '';
+          // Show the inline session's canvas again.
+          gl.canvas.style.display = '';
         }
       }
 

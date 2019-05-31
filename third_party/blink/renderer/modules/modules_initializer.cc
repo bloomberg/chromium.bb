@@ -91,7 +91,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
-#include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -136,8 +135,6 @@ void ModulesInitializer::Initialize() {
 #endif
   HTMLCanvasElement::RegisterRenderingContextFactory(
       std::make_unique<ImageBitmapRenderingContext::Factory>());
-  HTMLCanvasElement::RegisterRenderingContextFactory(
-      std::make_unique<XRPresentationContext::Factory>());
   HTMLCanvasElement::RegisterRenderingContextFactory(
       std::make_unique<GPUCanvasContext::Factory>());
 

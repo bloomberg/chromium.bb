@@ -503,7 +503,6 @@ modules_idl_files =
           "xr/xr_plane.idl",
           "xr/xr_plane_detection_state.idl",
           "xr/xr_pose.idl",
-          "xr/xr_presentation_context.idl",
           "xr/xr_ray.idl",
           "xr/xr_reference_space.idl",
           "xr/xr_reference_space_event.idl",

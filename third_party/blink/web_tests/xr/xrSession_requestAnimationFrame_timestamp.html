@@ -24,8 +24,8 @@ let requestSessionModes = [
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or else frame requests will be ignored.
   session.updateRenderState({
-    baseLayer: new XRWebGLLayer(session, gl),
-    outputContext: getOutputContext()
+    baseLayer: new XRWebGLLayer(session, gl, {
+        compositionDisabled: session.mode == 'inline' })
   });
 
   // Need to have a valid pose or input event's don't process.

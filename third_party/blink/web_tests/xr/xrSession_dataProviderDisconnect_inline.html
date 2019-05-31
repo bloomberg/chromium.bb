@@ -19,10 +19,8 @@ let requestSessionModes = ['inline'];
 let testFunction = function(session, t, fakeDeviceController) {
   return new Promise((resolve) => {
     // Session must have a baseLayer or frame requests will be ignored.
-    // outputContext is also required for inline sessions.
     session.updateRenderState({
-      baseLayer: new XRWebGLLayer(session, gl),
-      outputContext: getOutputContext()
+      baseLayer: new XRWebGLLayer(session, gl, { compositionDisabled: true })
     });
 
     session.addEventListener('end', () => resolve());

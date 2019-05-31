@@ -98,7 +98,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // finger drag.
       function initFallback() {
         initGL();
-        document.body.appendChild(gl.canvas);
         let fallbackHelper = new FallbackHelper(scene, gl);
       }
 
@@ -109,6 +108,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         gl = createWebGLContext({
           xrCompatible: true
         });
+        document.body.appendChild(gl.canvas);
+
+        function onResize () {
+          gl.canvas.width = (gl.canvas.offsetWidth * window.devicePixelRatio);
+          gl.canvas.height = (gl.canvas.offsetHeight * window.devicePixelRatio);
+        }
+        window.addEventListener('resize', onResize);
+        onResize();
+
         // Set up a non-black clear color so that we can see if something renders wrong.
         gl.clearColor(0.1, 0.2, 0.3, 1.0);
 
@@ -132,12 +140,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         initGL();
 
-        let outputCanvas = makeCanvas();
-        document.body.appendChild(outputCanvas);
-
         session.updateRenderState({
-            baseLayer: new XRWebGLLayer(session, gl),
-            outputContext: outputCanvas.getContext('xrpresent')
+            baseLayer: new XRWebGLLayer(session, gl, {
+              compositionDisabled: session.mode == 'inline'
+            })
         });
 
         session.requestReferenceSpace('local').then((refSpace) => {
@@ -167,10 +173,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onSessionEnded(event) {
         if (event.session.mode.startsWith('immersive')) {
           xrButton.setSession(null);
-        }
-
-        if (event.session.renderState.outputContext) {
-          document.body.removeChild(event.session.renderState.outputContext.canvas);
         }
       }
 

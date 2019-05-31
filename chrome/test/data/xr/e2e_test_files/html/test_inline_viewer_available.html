@@ -52,10 +52,8 @@ identity reference space
           throw 'Failed to get WebGL context';
         }
 
-        let outputCanvas = document.createElement('canvas');
         session.updateRenderState({
-            baseLayer: new XRWebGLLayer(session, gl),
-            outputContext: outputCanvas.getContext('xrpresent')
+            baseLayer: new XRWebGLLayer(session, gl, { compositionDisabled: true })
         });
         session.requestAnimationFrame(onRequestAnimationFrame);
       })

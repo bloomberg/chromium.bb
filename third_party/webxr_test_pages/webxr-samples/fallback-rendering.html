@@ -155,12 +155,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         initGL();
 
-        let outputCanvas = document.createElement('canvas');
-        document.body.appendChild(outputCanvas);
-
         session.updateRenderState({
-            baseLayer: new XRWebGLLayer(session, gl),
-            outputContext: outputCanvas.getContext('xrpresent')
+            baseLayer: new XRWebGLLayer(session, gl, {
+              compositionDisabled: session.mode == 'inline'
+            })
         });
 
         session.requestReferenceSpace('local').then((refSpace) => {
@@ -190,9 +188,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onSessionEnded(event) {
         if (event.session.mode.startsWith('immersive')) {
           xrButton.setSession(null);
-        }
-        if (event.session.renderState.outputContext) {
-          document.body.removeChild(event.session.renderState.outputContext.canvas);
         }
       }
 

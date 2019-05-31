@@ -9,7 +9,6 @@ typedef (CanvasRenderingContext2D or
          WebGL2RenderingContext or
          WebGL2ComputeRenderingContext or
          ImageBitmapRenderingContext or
-         XRPresentationContext or
          GPUCanvasContext) RenderingContext;
 
 [

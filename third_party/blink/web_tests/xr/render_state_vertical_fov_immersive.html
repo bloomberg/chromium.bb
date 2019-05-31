@@ -20,8 +20,8 @@ let testFunction = function(session, t, fakeDeviceController) {
 
   // Session must have a baseLayer or frame requests will be ignored.
   session.updateRenderState({
-    baseLayer: new XRWebGLLayer(session, gl),
-    outputContext: getOutputContext()
+    baseLayer: new XRWebGLLayer(session, gl, {
+        compositionDisabled: session.mode == 'inline' })
   });
 
   return new Promise((resolve, reject) => {
