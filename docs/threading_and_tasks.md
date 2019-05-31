@@ -369,7 +369,7 @@ be the main thread or the IO thread, post them to a `base::SingleThreadTaskRunne
 created by `base::CreateSingleThreadTaskRunnerWithTraits`.
 
 ```cpp
-scoped_refptr<SequencedTaskRunner> single_thread_task_runner =
+scoped_refptr<SingleThreadTaskRunner> single_thread_task_runner =
     base::CreateSingleThreadTaskRunnerWithTraits(...);
 
 // TaskB runs after TaskA completes. Both tasks run on the same thread.
