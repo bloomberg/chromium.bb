@@ -8,32 +8,34 @@
 #include <map>
 #include <string>
 
+#include "build/build_config.h"
 #include "chrome/browser/vr/vr_base_export.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace vr {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Adding a value at the end is okay.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr
+enum class ConsentDialogAction : int {
+  // The user gave permission to enter an immersive presentation.
+  kUserAllowed = 0,
+  // The user denied permission to enter an immersive presentation.
+  kUserDenied = 1,
+  // The user aborted the consent flow by clicking on the permission
+  // dialog's 'X' system button.
+  kUserAbortedConsentFlow = 2,
+  // The user initially aborted consent flow or denied explicitly, only to
+  // retry and allow this time.
+  kUserAllowedAfterBounce = 3,
+  // To insert a new enum, assign the next numeric value to it, and replace
+  // the value of of this enum with the value of the added enum.
+  kMaxValue = 3,
+};
+
 class VR_BASE_EXPORT ConsentFlowMetricsHelper
     : public content::WebContentsUserData<ConsentFlowMetricsHelper> {
  public:
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused. Adding a value at the end is okay.
-  enum class ConsentDialogAction : int {
-    // The user gave permission to enter an immersive presentation.
-    kUserAllowed = 0,
-    // The user denied permission to enter an immersive presentation.
-    kUserDenied = 1,
-    // The user aborted the consent flow by clicking on the permission
-    // dialog's 'X' system button.
-    kUserAbortedConsentFlow = 2,
-    // The user initially aborted consent flow or denied explicitly, only to
-    // retry and allow this time.
-    kUserAllowedAfterBounce = 3,
-    // To insert a new enum, assign the next numeric value to it, and replace
-    // the value of of this enum with the value of the added enum.
-    kMaxValue = kUserAllowedAfterBounce,
-  };
-
   static ConsentFlowMetricsHelper* InitFromWebContents(
       content::WebContents* contents);
 
@@ -43,11 +45,30 @@ class VR_BASE_EXPORT ConsentFlowMetricsHelper
   void OnShowDialog();
 
   void OnDialogClosedWithConsent(const std::string& url, bool is_granted);
-
   void LogUserAction(ConsentDialogAction action);
   void LogConsentFlowDurationWhenConsentGranted();
   void LogConsentFlowDurationWhenConsentNotGranted();
   void LogConsentFlowDurationWhenUserAborted();
+
+#if defined(OS_ANDROID)
+  void OnDialogClosedWithConsent(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& url,
+      jboolean is_granted);
+  void LogUserAction(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     jint action);
+  void LogConsentFlowDurationWhenConsentGranted(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void LogConsentFlowDurationWhenConsentNotGranted(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void LogConsentFlowDurationWhenUserAborted(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+#endif
 
  private:
   explicit ConsentFlowMetricsHelper(content::WebContents* contents);

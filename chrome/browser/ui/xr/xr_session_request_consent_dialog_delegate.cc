@@ -46,22 +46,19 @@ base::string16 XrSessionRequestConsentDialogDelegate::GetCancelButtonTitle() {
 
 void XrSessionRequestConsentDialogDelegate::OnAccepted() {
   OnUserActionTaken(true);
-  metrics_helper_->LogUserAction(
-      ConsentFlowMetricsHelper::ConsentDialogAction::kUserAllowed);
+  metrics_helper_->LogUserAction(ConsentDialogAction::kUserAllowed);
   metrics_helper_->LogConsentFlowDurationWhenConsentGranted();
 }
 
 void XrSessionRequestConsentDialogDelegate::OnCanceled() {
   OnUserActionTaken(false);
-  metrics_helper_->LogUserAction(
-      ConsentFlowMetricsHelper::ConsentDialogAction::kUserDenied);
+  metrics_helper_->LogUserAction(ConsentDialogAction::kUserDenied);
   metrics_helper_->LogConsentFlowDurationWhenConsentNotGranted();
 }
 
 void XrSessionRequestConsentDialogDelegate::OnClosed() {
   OnUserActionTaken(false);
-  metrics_helper_->LogUserAction(
-      ConsentFlowMetricsHelper::ConsentDialogAction::kUserAbortedConsentFlow);
+  metrics_helper_->LogUserAction(ConsentDialogAction::kUserAbortedConsentFlow);
   metrics_helper_->LogConsentFlowDurationWhenUserAborted();
 }
 
