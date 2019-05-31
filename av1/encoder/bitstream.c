@@ -3737,7 +3737,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
       cm->temporal_layer_id << 5 | cm->spatial_layer_id << 3 | 0;
 
   // If no non-zero delta_q has been used, reset delta_q_present_flag
-  if (cm->delta_q_info.delta_q_present_flag && cpi->delta_q_used == 0) {
+  if (cm->delta_q_info.delta_q_present_flag && cpi->deltaq_used == 0) {
     cm->delta_q_info.delta_q_present_flag = 0;
   }
 

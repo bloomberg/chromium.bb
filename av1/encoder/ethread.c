@@ -518,6 +518,8 @@ static void accumulate_counters_enc_workers(AV1_COMP *cpi, int num_workers) {
     AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = (EncWorkerData *)worker->data1;
     cpi->intrabc_used |= thread_data->td->intrabc_used;
+    cpi->deltaq_used |= thread_data->td->deltaq_used;
+
     // Accumulate counters.
     if (i > 0) {
       av1_accumulate_frame_counts(&cpi->counts, thread_data->td->counts);
@@ -541,6 +543,7 @@ static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
     worker->data2 = NULL;
 
     thread_data->td->intrabc_used = 0;
+    thread_data->td->deltaq_used = 0;
 
     // Before encoding a frame, copy the thread data from cpi.
     if (thread_data->td != &cpi->td) {

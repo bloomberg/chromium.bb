@@ -615,6 +615,7 @@ typedef struct ThreadData {
   CONV_BUF_TYPE *tmp_conv_dst;
   uint8_t *tmp_obmc_bufs[2];
   int intrabc_used;
+  int deltaq_used;
   FRAME_CONTEXT *tctx;
 } ThreadData;
 
@@ -1016,7 +1017,7 @@ typedef struct AV1_COMP {
   FrameWindowBuffer frame_window_buffer;
 
   // whether any no-zero delta_q was actually used
-  int delta_q_used;
+  int deltaq_used;
 } AV1_COMP;
 
 typedef struct {

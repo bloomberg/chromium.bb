@@ -3471,9 +3471,9 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   return qindex;
 }
 
-static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
-                          const TileInfo *const tile_info, int mi_row,
-                          int mi_col, int num_planes) {
+static void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
+                          MACROBLOCK *const x, const TileInfo *const tile_info,
+                          int mi_row, int mi_col, int num_planes) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
@@ -3525,7 +3525,7 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
 
   // keep track of any non-zero delta-q used
-  cpi->delta_q_used |= (xd->delta_qindex != 0);
+  td->deltaq_used |= (xd->delta_qindex != 0);
 
   if (cpi->oxcf.deltaq_mode != NO_DELTA_Q && cpi->oxcf.deltalf_mode) {
     const int lfmask = ~(delta_q_info->delta_lf_res - 1);
@@ -3872,7 +3872,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 
     x->sb_energy_level = 0;
     if (cm->delta_q_info.delta_q_present_flag)
-      setup_delta_q(cpi, x, tile_info, mi_row, mi_col, num_planes);
+      setup_delta_q(cpi, td, x, tile_info, mi_row, mi_col, num_planes);
 
     td->mb.cb_coef_buff = av1_get_cb_coeff_buffer(cpi, mi_row, mi_col);
 
@@ -4153,10 +4153,12 @@ static void encode_tiles(AV1_COMP *cpi) {
       TileDataEnc *const this_tile =
           &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
       cpi->td.intrabc_used = 0;
+      cpi->td.deltaq_used = 0;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
       cpi->td.mb.tile_pb_ctx = &this_tile->tctx;
       av1_encode_tile(cpi, &cpi->td, tile_row, tile_col);
       cpi->intrabc_used |= cpi->td.intrabc_used;
+      cpi->deltaq_used |= cpi->td.deltaq_used;
     }
   }
 }
@@ -4508,7 +4510,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cm->delta_q_info.delta_lf_res = DEFAULT_DELTA_LF_RES;
   cm->delta_q_info.delta_q_present_flag = cpi->oxcf.deltaq_mode != NO_DELTA_Q;
   // Reset delta_q_used flag
-  cpi->delta_q_used = 0;
+  cpi->deltaq_used = 0;
 
   cm->delta_q_info.delta_lf_present_flag =
       cpi->oxcf.deltaq_mode != NO_DELTA_Q && cpi->oxcf.deltalf_mode;
@@ -4815,6 +4817,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   // If intrabc is allowed but never selected, reset the allow_intrabc flag.
   if (cm->allow_intrabc && !cpi->intrabc_used) cm->allow_intrabc = 0;
   if (cm->allow_intrabc) cm->delta_q_info.delta_lf_present_flag = 0;
+
+  if (cm->delta_q_info.delta_q_present_flag && cpi->deltaq_used == 0) {
+    cm->delta_q_info.delta_q_present_flag = 0;
+  }
 }
 
 #define CHECK_PRECOMPUTED_REF_FRAME_MAP 0
