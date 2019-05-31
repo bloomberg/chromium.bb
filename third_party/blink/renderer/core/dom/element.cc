@@ -4154,7 +4154,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
   // actual element so that the 'length' properties, which are only known by the
   // layoutObject because it did the layout, will be correct and so that the
   // values returned for the ":selection" pseudo-element will be correct.
-  ComputedStyle* element_style = MutableComputedStyle();
+  const ComputedStyle* element_style = GetComputedStyle();
   if (!element_style) {
     if (CanParticipateInFlatTree()) {
       ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this);
@@ -4174,7 +4174,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
     else
       new_style = OriginalStyleForLayoutObject();
     element_style = new_style.get();
-    element_style->SetIsEnsuredInDisplayNone();
+    new_style->SetIsEnsuredInDisplayNone();
     SetComputedStyle(std::move(new_style));
   }
 
@@ -4421,7 +4421,7 @@ LayoutObject* Element::PseudoElementLayoutObject(PseudoId pseudo_id) const {
 const ComputedStyle* Element::CachedStyleForPseudoElement(
     const PseudoStyleRequest& request,
     const ComputedStyle* parent_style) {
-  ComputedStyle* style = MutableComputedStyle();
+  const ComputedStyle* style = GetComputedStyle();
 
   if (!style || (request.pseudo_id < kFirstInternalPseudoId &&
                  !style->HasPseudoStyle(request.pseudo_id))) {

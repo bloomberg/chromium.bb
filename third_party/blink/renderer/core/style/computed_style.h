@@ -223,7 +223,7 @@ class ComputedStyle : public ComputedStyleBase,
 
  protected:
   // list of associated pseudo styles
-  std::unique_ptr<PseudoStyleCache> cached_pseudo_styles_;
+  mutable std::unique_ptr<PseudoStyleCache> cached_pseudo_styles_;
 
   DataRef<SVGComputedStyle> svg_style_;
 
@@ -325,7 +325,7 @@ class ComputedStyle : public ComputedStyleBase,
   void SetStyleType(PseudoId style_type) { SetStyleTypeInternal(style_type); }
 
   const ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
-  const ComputedStyle* AddCachedPseudoStyle(scoped_refptr<ComputedStyle>);
+  const ComputedStyle* AddCachedPseudoStyle(scoped_refptr<ComputedStyle>) const;
 
   /**
    * ComputedStyle properties
