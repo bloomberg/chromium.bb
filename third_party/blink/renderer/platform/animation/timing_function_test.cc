@@ -37,15 +37,6 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-// Macro is only used to allow the use of streams.
-// Can be removed if a pretty failure message isn't needed.
-#define EXPECT_NE_WITH_MESSAGE(a, b)                                        \
-  EXPECT_NE(*a.second, *b.second)                                           \
-      << a.first << " (" << a.second->ToString().Latin1().data() << ")"     \
-      << " ==  " << b.first << " (" << b.second->ToString().Latin1().data() \
-      << ")"                                                                \
-      << "\n";
-
 namespace blink {
 
 namespace {
@@ -60,7 +51,10 @@ class TimingFunctionTest : public testing::Test {
       for (size_t j = 0; j < v.size(); ++j) {
         if (i == j)
           continue;
-        EXPECT_NE_WITH_MESSAGE(v[i], v[j]);
+        EXPECT_NE(v[i], v[j])
+            << v[i].first << " (" << v[i].second->ToString() << ")"
+            << " ==  " << v[j].first << " (" << v[j].second->ToString() << ")"
+            << "\n";
       }
     }
   }

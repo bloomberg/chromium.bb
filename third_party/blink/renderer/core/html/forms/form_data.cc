@@ -289,8 +289,7 @@ scoped_refptr<EncodedFormData> FormData::EncodeMultiPartFormData() {
         content_type = "application/octet-stream";
       else
         content_type = entry->GetBlob()->type();
-      FormDataEncoder::AddContentTypeToMultiPartHeader(header,
-                                                       content_type.Latin1());
+      FormDataEncoder::AddContentTypeToMultiPartHeader(header, content_type);
     }
 
     FormDataEncoder::FinishMultiPartHeader(header);

@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/frame/window_or_worker_global_scope.h"
 
+#include "base/containers/span.h"
 #include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
@@ -47,6 +48,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -98,7 +100,8 @@ String WindowOrWorkerGlobalScope::btoa(EventTarget&,
     return String();
   }
 
-  return Base64Encode(string_to_encode.Latin1());
+  return Base64Encode(
+      base::as_bytes(base::make_span(string_to_encode.Latin1())));
 }
 
 String WindowOrWorkerGlobalScope::atob(EventTarget&,

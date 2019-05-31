@@ -441,29 +441,27 @@ CString String::Ascii() const {
   return result;
 }
 
-CString String::Latin1() const {
+std::string String::Latin1() const {
   // Basic Latin1 (ISO) encoding - Unicode characters 0..255 are
   // preserved, characters outside of this range are converted to '?'.
-
   unsigned length = this->length();
 
   if (!length)
-    return CString("", 0);
+    return std::string();
 
-  if (Is8Bit())
-    return CString(reinterpret_cast<const char*>(this->Characters8()), length);
-
-  const UChar* characters = this->Characters16();
-
-  char* character_buffer;
-  CString result = CString::CreateUninitialized(length, character_buffer);
-
-  for (unsigned i = 0; i < length; ++i) {
-    UChar ch = characters[i];
-    character_buffer[i] = ch > 0xff ? '?' : static_cast<char>(ch);
+  if (Is8Bit()) {
+    return std::string(reinterpret_cast<const char*>(this->Characters8()),
+                       length);
   }
 
-  return result;
+  const UChar* characters = this->Characters16();
+  std::string latin1(length, '\0');
+  for (unsigned i = 0; i < length; ++i) {
+    UChar ch = characters[i];
+    latin1[i] = ch > 0xff ? '?' : static_cast<char>(ch);
+  }
+
+  return latin1;
 }
 
 // Helper to write a three-byte UTF-8 code point to the buffer, caller must

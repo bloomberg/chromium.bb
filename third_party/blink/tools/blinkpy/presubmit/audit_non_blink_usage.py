@@ -71,6 +71,7 @@ _CONFIG = [
             'base::WeakPtr',
             'base::WeakPtrFactory',
             'base::WritableSharedMemoryMapping',
+            'base::as_bytes',
             'base::in_place',
             'base::make_optional',
             'base::make_span',

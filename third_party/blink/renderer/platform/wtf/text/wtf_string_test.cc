@@ -62,8 +62,7 @@ TEST(StringTest, ASCII) {
 namespace {
 
 void TestNumberToStringECMAScript(double number, const char* reference) {
-  CString number_string = String::NumberToStringECMAScript(number).Latin1();
-  EXPECT_STREQ(reference, number_string.data());
+  EXPECT_EQ(reference, String::NumberToStringECMAScript(number));
 }
 
 }  // anonymous namespace
@@ -424,8 +423,8 @@ TEST(StringTest, FindIgnoringASCIICase) {
 TEST(StringTest, DeprecatedLower) {
   EXPECT_EQ("link", String("LINK").DeprecatedLower());
   EXPECT_EQ("link", String("lInk").DeprecatedLower());
-  EXPECT_STREQ("lin\xE1k",
-               String("lIn\xC1k").DeprecatedLower().Latin1().data());
+  EXPECT_EQ("lin\xE1k", String("lIn\xC1k").DeprecatedLower().Latin1());
+
   // U+212A -> k
   EXPECT_STREQ(
       "link",

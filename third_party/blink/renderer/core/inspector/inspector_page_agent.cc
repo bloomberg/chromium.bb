@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/containers/span.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -77,6 +78,7 @@
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8-inspector.h"
@@ -251,7 +253,8 @@ static void MaybeEncodeTextContent(const String& text_content,
     *base64_encoded = false;
   } else {
     DCHECK(!text_content.Is8Bit());
-    *result = Base64Encode(text_content.Utf8(WTF::kLenientUTF8Conversion));
+    *result = Base64Encode(
+        base::as_bytes(base::make_span(StringUTF8Adaptor(text_content))));
     *base64_encoded = true;
   }
 }

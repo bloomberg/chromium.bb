@@ -55,7 +55,7 @@ WTF_EXPORT String Base64Encode(const Vector<char>&,
                                Base64EncodePolicy = kBase64DoNotInsertLFs);
 WTF_EXPORT String Base64Encode(const Vector<unsigned char>&,
                                Base64EncodePolicy = kBase64DoNotInsertLFs);
-WTF_EXPORT String Base64Encode(const CString&,
+WTF_EXPORT String Base64Encode(base::span<const uint8_t>,
                                Base64EncodePolicy = kBase64DoNotInsertLFs);
 
 WTF_EXPORT bool Base64Decode(
@@ -116,8 +116,10 @@ inline String Base64Encode(const Vector<unsigned char>& in,
                       policy);
 }
 
-inline String Base64Encode(const CString& in, Base64EncodePolicy policy) {
-  return Base64Encode(in.data(), in.length(), policy);
+inline String Base64Encode(base::span<const uint8_t> in,
+                           Base64EncodePolicy policy) {
+  return Base64Encode(reinterpret_cast<const char*>(in.data()),
+                      static_cast<unsigned>(in.size()), policy);
 }
 
 }  // namespace WTF

@@ -5740,10 +5740,11 @@ void Document::SetEncodingData(const DocumentEncodingData& new_data) {
       !ElementTraversal::FirstWithin(*title_element_) &&
       Encoding() == Latin1Encoding() &&
       title_element_->textContent().ContainsOnlyLatin1OrEmpty()) {
-    CString original_bytes = title_element_->textContent().Latin1();
+    std::string original_bytes = title_element_->textContent().Latin1();
     std::unique_ptr<TextCodec> codec = NewTextCodec(new_data.Encoding());
     String correctly_decoded_title =
-        codec->Decode(original_bytes.data(), original_bytes.length(),
+        codec->Decode(original_bytes.c_str(),
+                      static_cast<wtf_size_t>(original_bytes.length()),
                       WTF::FlushBehavior::kDataEOF);
     title_element_->setTextContent(correctly_decoded_title);
   }

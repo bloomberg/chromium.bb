@@ -1567,7 +1567,7 @@ xmlDocPtr XmlDocPtrForString(Document* document,
   // document results in good error messages.
   XMLDocumentParserScope scope(document, ErrorFunc, nullptr);
   XMLParserInput input(source);
-  return xmlReadMemory(input.Data(), input.size(), url.Latin1().data(),
+  return xmlReadMemory(input.Data(), input.size(), url.Latin1().c_str(),
                        input.Encoding(), XSLT_PARSE_OPTIONS);
 }
 
