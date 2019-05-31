@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/bluetooth/web_bluetooth_device_id.h"
+#include "third_party/blink/public/common/bluetooth/web_bluetooth_device_id.h"
 
 #include "base/base64.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::WebBluetoothDeviceId;
+using blink::WebBluetoothDeviceId;
 
 namespace {
 

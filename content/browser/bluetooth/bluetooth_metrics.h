@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 
 namespace base {

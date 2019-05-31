@@ -199,7 +199,6 @@ jumbo_source_set("browser") {
     "//third_party/blink/public:scaled_resources",
     "//third_party/blink/public/common",
     "//third_party/blink/public/mojom:mojom_broadcastchannel_bindings",
-    "//third_party/blink/public/mojom:web_bluetooth_mojo_bindings",
     "//third_party/boringssl",
     "//third_party/brotli:dec",
     "//third_party/icu",

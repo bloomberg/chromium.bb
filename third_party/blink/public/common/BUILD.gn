@@ -16,6 +16,7 @@ component("common") {
   public_deps = [
     "//third_party/blink/public/common:headers",
     "//third_party/blink/public/mojom:mojom_modules",
+    "//third_party/blink/public/mojom:web_bluetooth_mojo_bindings",
   ]
   deps = [
     "//third_party/blink/common",
@@ -37,6 +38,8 @@ source_set("headers") {
     "associated_interfaces/associated_interface_provider.h",
     "associated_interfaces/associated_interface_registry.h",
     "blob/blob_utils.h",
+    "bluetooth/web_bluetooth_device_id.h",
+    "bluetooth/web_bluetooth_device_id_struct_traits.h",
     "cache_storage/cache_storage_utils.h",
     "client_hints/client_hints.h",
     "common_export.h",
@@ -111,6 +114,7 @@ source_set("headers") {
     "//services/network/public/cpp:cpp",
     "//skia",
     "//third_party/blink/public/mojom:mojom_modules_headers",
+    "//third_party/blink/public/mojom:web_bluetooth_mojo_bindings_headers",
   ]
 
   deps = [

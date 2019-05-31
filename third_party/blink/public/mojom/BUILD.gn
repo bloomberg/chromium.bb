@@ -332,12 +332,17 @@ mojom("mojom_modules") {
 
 mojom("web_bluetooth_mojo_bindings") {
   visibility = [
-    "//content/browser:browser",
-    "//content/common:mojo_bindings",
+    "//third_party/blink/common",
+    "//third_party/blink/public/common:common",
+    "//third_party/blink/public/common:headers",
   ]
 
-  visibility_blink =
-      [ "//third_party/blink/renderer/platform:blink_platform_public_deps" ]
+  visibility_blink = [
+    "//third_party/blink/common",
+    "//third_party/blink/public/common:common",
+    "//third_party/blink/public/common:headers",
+    "//third_party/blink/renderer/platform:blink_platform_public_deps",
+  ]
 
   sources = [
     "bluetooth/web_bluetooth.mojom",
@@ -350,9 +355,9 @@ mojom("web_bluetooth_mojo_bindings") {
   # The chromium variant must be linked with content and use the same export
   # settings in component build because of the WebBluetoothDeviceId typemap
   # inside content.
-  export_class_attribute = "CONTENT_EXPORT"
-  export_define = "CONTENT_IMPLEMENTATION=1"
-  export_header = "content/common/content_export.h"
+  export_class_attribute = "BLINK_COMMON_EXPORT"
+  export_define = "BLINK_COMMON_IMPLEMENTATION=1"
+  export_header = "third_party/blink/public/common/common_export.h"
 
   # Similarly, the blink variant must be linked with the platform component
   # since it uses types from it in its typemaps.

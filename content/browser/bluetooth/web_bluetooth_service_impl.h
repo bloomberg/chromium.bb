@@ -170,12 +170,13 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void RequestDevice(blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
                      RequestDeviceCallback callback) override;
   void RemoteServerConnect(
-      const WebBluetoothDeviceId& device_id,
+      const blink::WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothServerClientAssociatedPtrInfo client,
       RemoteServerConnectCallback callback) override;
-  void RemoteServerDisconnect(const WebBluetoothDeviceId& device_id) override;
+  void RemoteServerDisconnect(
+      const blink::WebBluetoothDeviceId& device_id) override;
   void RemoteServerGetPrimaryServices(
-      const WebBluetoothDeviceId& device_id,
+      const blink::WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const base::Optional<device::BluetoothUUID>& services_uuid,
       RemoteServerGetPrimaryServicesCallback callback) override;
@@ -236,7 +237,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // Should only be run after the services have been discovered for
   // |device_address|.
   void RemoteServerGetPrimaryServicesImpl(
-      const WebBluetoothDeviceId& device_id,
+      const blink::WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const base::Optional<device::BluetoothUUID>& services_uuid,
       RemoteServerGetPrimaryServicesCallback callback,
@@ -252,7 +253,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
   // Callbacks for BluetoothDevice::CreateGattConnection.
   void OnCreateGATTConnectionSuccess(
-      const WebBluetoothDeviceId& device_id,
+      const blink::WebBluetoothDeviceId& device_id,
       base::TimeTicks start_time,
       blink::mojom::WebBluetoothServerClientAssociatedPtr client,
       RemoteServerConnectCallback callback,
@@ -315,7 +316,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
   // Queries the platform cache for a Device with |device_id| for |origin|.
   // Fills in the |outcome| field and the |device| field if successful.
-  CacheQueryResult QueryCacheForDevice(const WebBluetoothDeviceId& device_id);
+  CacheQueryResult QueryCacheForDevice(
+      const blink::WebBluetoothDeviceId& device_id);
 
   // Queries the platform cache for a Service with |service_instance_id|. Fills
   // in the |outcome| field, and |device| and |service| fields if successful.

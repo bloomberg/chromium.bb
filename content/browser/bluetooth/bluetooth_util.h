@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_UTIL_H_
 #define CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_UTIL_H_
 
+#include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 
 namespace content {
