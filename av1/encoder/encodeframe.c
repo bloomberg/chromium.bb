@@ -3913,7 +3913,8 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
                        &dummy_rate, &dummy_dist, 1, pc_root);
     } else if (sf->partition_search_type == VAR_BASED_PARTITION &&
                use_nonrd_mode) {
-      set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
+      set_offsets_without_segment_id(cpi, tile_info, x, mi_row, mi_col,
+                                     sb_size);
       av1_choose_var_based_partitioning(cpi, tile_info, x, mi_row, mi_col);
       td->mb.cb_offset = 0;
       nonrd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
@@ -4810,7 +4811,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, av1_setup_motion_field_time);
 #endif
-  av1_setup_motion_field(cm);
+  if (cm->allow_ref_frame_mvs) av1_setup_motion_field(cm);
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, av1_setup_motion_field_time);
 #endif
