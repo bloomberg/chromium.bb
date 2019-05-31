@@ -34,6 +34,9 @@ namespace chromeos {
 // static
 std::unique_ptr<apps::AppsNavigationThrottle>
 ChromeOsAppsNavigationThrottle::MaybeCreate(content::NavigationHandle* handle) {
+  if (!handle->IsInMainFrame())
+    return nullptr;
+
   content::WebContents* web_contents = handle->GetWebContents();
   const bool arc_enabled = arc::IsArcPlayStoreEnabledForProfile(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
