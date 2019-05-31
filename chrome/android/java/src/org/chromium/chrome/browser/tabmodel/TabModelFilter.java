@@ -110,6 +110,25 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
      */
     protected abstract void reorder();
 
+    /**
+     * Concrete class requires to define what to clean up.
+     */
+    protected abstract void resetFilterStateInternal();
+
+    /**
+     * Calls {@code resetFilterStateInternal} method to clean up filter internal data, and resets
+     * the internal data based on the current {@link TabModel}.
+     */
+    protected void resetFilterState() {
+        resetFilterStateInternal();
+
+        TabModel tabModel = getTabModel();
+        for (int i = 0; i < tabModel.getCount(); i++) {
+            Tab tab = tabModel.getTabAt(i);
+            addTab(tab);
+        }
+    }
+
     // TODO(crbug.com/948518): This is a band-aid fix for not crashing when undo the last closed
     // tab, should remove later.
     /**
@@ -161,7 +180,6 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
 
     @Override
     public void didMoveTab(Tab tab, int newIndex, int curIndex) {
-        reorder();
         for (TabModelObserver observer : mFilteredObservers) {
             observer.didMoveTab(tab, newIndex, curIndex);
         }

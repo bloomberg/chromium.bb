@@ -28,6 +28,9 @@ public class EmptyTabModelFilter extends TabModelFilter {
     @Override
     protected void reorder() {}
 
+    @Override
+    protected void resetFilterStateInternal() {}
+
     // TabList implementation.
     @Override
     public boolean isIncognito() {
