@@ -177,14 +177,14 @@ bool InZeroSuggestPersonalizedFieldTrial(
     metrics::OmniboxEventProto::PageClassification page_classification);
 
 // ---------------------------------------------------------
-// For the Zero Suggest Redirect to Chrome field trial.
+// For the On Focus Suggestions Custom Endpoint field trial.
 
 // Returns the server-side experiment ID to use for contextual suggestions.
 // Returns -1 if there is no associated experiment ID.
-int GetZeroSuggestRedirectToChromeExperimentId();
+int GetOnFocusSuggestionsCustomEndpointExperimentId();
 
 // Returns the server address associated with the current field trial.
-std::string GetZeroSuggestRedirectToChromeServerAddress();
+std::string GetOnFocusSuggestionsCustomEndpointURL();
 
 // ---------------------------------------------------------
 // For the ShortcutsScoringMaxRelevance experiment that's part of the
@@ -512,9 +512,9 @@ extern const char kSimplifyHttpsIndicatorParameterSecureToLock[];
 extern const char kSimplifyHttpsIndicatorParameterBothToLock[];
 extern const char kSimplifyHttpsIndicatorParameterKeepSecureChip[];
 
-// Parameter names used by Zero Suggest Redirect to Chrome.
-extern const char kZeroSuggestRedirectToChromeExperimentIdParam[];
-extern const char kZeroSuggestRedirectToChromeServerAddressParam[];
+// Parameter names used by On Focus Suggestions Custom Endpoint.
+extern const char kOnFocusSuggestionsEndpointExperimentIdParam[];
+extern const char kOnFocusSuggestionsEndpointURLParam[];
 
 // The amount of time to wait before sending a new suggest request after the
 // previous one unless overridden by a field trial parameter.

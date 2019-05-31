@@ -49,7 +49,7 @@ class ContextualSuggestionsServiceTest : public testing::Test {
 TEST_F(ContextualSuggestionsServiceTest, EnsureAttachCookies) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
-      omnibox::kZeroSuggestRedirectToChrome);
+      omnibox::kOnFocusSuggestionsCustomEndpoint);
 
   network::ResourceRequest resource_request;
   test_url_loader_factory_.SetInterceptor(

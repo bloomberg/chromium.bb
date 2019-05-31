@@ -468,7 +468,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
             prefs->GetString(omnibox::kZeroSuggestCachedResults));
 }
 
-TEST_F(ZeroSuggestProviderTest, RedirectToChrome) {
+TEST_F(ZeroSuggestProviderTest, CustomEndpoint) {
   CreateContextualSuggestFieldTrial();
   // Coverage for the URL-specific page. (Regression test for a DCHECK).
   // This is exercising ContextualSuggestionsService::CreateExperimentalRequest,
@@ -478,11 +478,10 @@ TEST_F(ZeroSuggestProviderTest, RedirectToChrome) {
   // redirect to chrome mode on.
   base::test::ScopedFeatureList features;
   std::map<std::string, std::string> params;
-  params[std::string(
-      OmniboxFieldTrial::kZeroSuggestRedirectToChromeServerAddressParam)] =
+  params[std::string(OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam)] =
       "https://cuscochromeextension-pa.googleapis.com/v1/omniboxsuggestions";
   features.InitAndEnableFeatureWithParameters(
-      omnibox::kZeroSuggestRedirectToChrome, params);
+      omnibox::kOnFocusSuggestionsCustomEndpoint, params);
 
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));

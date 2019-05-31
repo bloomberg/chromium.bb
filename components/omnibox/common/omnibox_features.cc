@@ -285,7 +285,8 @@ const base::Feature kOmniboxMaterialDesignWeatherIcons{
 const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Feature used for the Zero Suggest Redirect to Chrome Field Trial.
+// Feature used to specify a custom endpoint URL for on-focus suggestions that
+// are sourced via RPC.
 //
 // This feature is *enabled* in order to *disable* all forms of suggestions
 // based on the URL on-focus (whether from "redirect to Chrome" or the
@@ -296,8 +297,9 @@ const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
 // If this feature were not enabled, Chrome would use the default suggest
 // server for suggestions based on the current URL on focus.  There is no
 // code in Chrome to disable that, so that why we took this route.
-const base::Feature kZeroSuggestRedirectToChrome{
-    "ZeroSuggestRedirectToChrome", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kOnFocusSuggestionsCustomEndpoint{
+    "OmniboxOnFocusSuggestionsCustomEndpoint",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allow suggestions to be shown to the user on the New Tab Page upon focusing
 // URL bar (the omnibox).

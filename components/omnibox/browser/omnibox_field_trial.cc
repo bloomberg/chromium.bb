@@ -258,18 +258,18 @@ bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
 }
 
 // static
-int OmniboxFieldTrial::GetZeroSuggestRedirectToChromeExperimentId() {
+int OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointExperimentId() {
   return base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kZeroSuggestRedirectToChrome,
-      kZeroSuggestRedirectToChromeExperimentIdParam,
+      omnibox::kOnFocusSuggestionsCustomEndpoint,
+      kOnFocusSuggestionsEndpointExperimentIdParam,
       /*default_value=*/-1);
 }
 
 // static
-std::string OmniboxFieldTrial::GetZeroSuggestRedirectToChromeServerAddress() {
+std::string OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointURL() {
   return base::GetFieldTrialParamValueByFeature(
-      omnibox::kZeroSuggestRedirectToChrome,
-      kZeroSuggestRedirectToChromeServerAddressParam);
+      omnibox::kOnFocusSuggestionsCustomEndpoint,
+      kOnFocusSuggestionsEndpointURLParam);
 }
 
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
@@ -806,10 +806,10 @@ const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock[] =
 const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip[] =
     "keep-secure-chip";
 
-const char OmniboxFieldTrial::kZeroSuggestRedirectToChromeExperimentIdParam[] =
-    "ZeroSuggestRedirectToChromeExperimentID";
-const char OmniboxFieldTrial::kZeroSuggestRedirectToChromeServerAddressParam[] =
-    "ZeroSuggestRedirectToChromeServerAddress";
+const char OmniboxFieldTrial::kOnFocusSuggestionsEndpointExperimentIdParam[] =
+    "CustomEndpointExperimentID";
+const char OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam[] =
+    "CustomEndpointURL";
 
 // static
 int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;

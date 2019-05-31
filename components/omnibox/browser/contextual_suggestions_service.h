@@ -31,7 +31,16 @@ class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
 
-// A service to fetch suggestions from a remote endpoint given a URL.
+// A service to fetch suggestions from a remote endpoint. Usually, the remote
+// endpoint is the default search provider's suggest service. However, the
+// endpoint URL can be customized by field trial.
+//
+// This service is always sent the user's authentication state, so the
+// suggestions always can be personalized. This service is also sometimes sent
+// the user's current URL, so the suggestions are sometimes also contextual.
+//
+// TODO(tommycli): Probably we should just rename this RemoteSuggestionsService,
+// as the suggestions are not always contextual.
 class ContextualSuggestionsService : public KeyedService {
  public:
   // |identity_manager| may be null but only unauthenticated requests will

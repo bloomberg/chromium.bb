@@ -89,7 +89,7 @@ std::string FormatRequestBodyExperimentalService(const std::string& current_url,
   // stream_type = 1 corresponds to zero suggest suggestions.
   request->SetInteger("stream_type", 1);
   const int experiment_id =
-      OmniboxFieldTrial::GetZeroSuggestRedirectToChromeExperimentId();
+      OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointExperimentId();
   if (experiment_id >= 0)
     request->SetInteger("experiment_id", experiment_id);
   std::string result;
@@ -176,7 +176,8 @@ GURL ContextualSuggestionsService::ExperimentalContextualSuggestionsUrl(
     return GURL();
   }
 
-  if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestRedirectToChrome)) {
+  if (!base::FeatureList::IsEnabled(
+          omnibox::kOnFocusSuggestionsCustomEndpoint)) {
     return GURL();
   }
 
@@ -191,16 +192,16 @@ GURL ContextualSuggestionsService::ExperimentalContextualSuggestionsUrl(
   }
 
   const std::string server_address_param =
-      OmniboxFieldTrial::GetZeroSuggestRedirectToChromeServerAddress();
+      OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointURL();
   GURL suggest_url(server_address_param.empty()
                        ? kDefaultExperimentalServerAddress
                        : server_address_param);
-  // Check that the suggest URL for redirect to chrome field trial is valid.
+  // Check that the custom endpoint URL is valid.
   if (!suggest_url.is_valid()) {
     return GURL();
   }
 
-  // Check that the suggest URL for redirect to chrome is HTTPS.
+  // Check that the custom endpoint URL is HTTPS.
   if (!suggest_url.SchemeIsCryptographic()) {
     return GURL();
   }
