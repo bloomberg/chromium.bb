@@ -205,7 +205,8 @@ void SearchResultTileItemView::OnResultChanged() {
   title_->SetMultiLine(
       (result()->display_type() == ash::SearchResultDisplayType::kTile ||
        (IsSuggestedAppTile() && !show_in_apps_page_)) &&
-      result()->result_type() == ash::SearchResultType::kInstalledApp);
+      (result()->result_type() == ash::SearchResultType::kInstalledApp ||
+       result()->result_type() == ash::SearchResultType::kArcAppShortcut));
 
   // If the new icon is null, it's being decoded asynchronously. Not updating it
   // now to prevent flickering from showing an empty icon while decoding.
