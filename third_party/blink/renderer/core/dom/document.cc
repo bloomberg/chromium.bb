@@ -2458,8 +2458,10 @@ bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
     if (auto* context = ToElement(ancestor)->GetDisplayLockContext()) {
       // Even if the ancestor is style-clean, we might've previously
       // blocked a style traversal going to the ancestor or its descendants.
-      if (context->StyleTraversalWasBlocked())
+      if (context->StyleTraversalWasBlocked()) {
+        DCHECK(context->IsLocked());
         return true;
+      }
     }
   }
   return false;

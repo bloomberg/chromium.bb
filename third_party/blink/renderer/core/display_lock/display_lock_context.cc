@@ -590,6 +590,7 @@ bool DisplayLockContext::MarkForStyleRecalcIfNeeded() {
               style_change_reason::kDisplayLock));
       if (blocked_style_traversal_type_ == kStyleUpdateChildren)
         element_->SetChildNeedsStyleRecalc();
+      blocked_style_traversal_type_ = kStyleUpdateNotRequired;
     }
     // Propagate to the ancestors, since the dirty bit in a locked subtree is
     // stopped at the locked ancestor.
