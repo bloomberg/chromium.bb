@@ -98,4 +98,12 @@ void InputDeviceFactoryEvdevProxy::GetTouchEventLog(
                                     std::move(reply))));
 }
 
+void InputDeviceFactoryEvdevProxy::GetGesturePropertiesService(
+    ozone::mojom::GesturePropertiesServiceRequest request) {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&InputDeviceFactoryEvdev::GetGesturePropertiesService,
+                     input_device_factory_, std::move(request)));
+}
+
 }  // namespace ui

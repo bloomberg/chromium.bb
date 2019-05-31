@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/ozone/ozone_base_export.h"
+#include "ui/ozone/public/interfaces/gesture_properties_service.mojom.h"
 
 namespace base {
 class TimeDelta;
@@ -87,6 +88,9 @@ class OZONE_BASE_EXPORT InputController {
   // |allowed_keys| are disabled.
   virtual void SetInternalKeyboardFilter(bool enable_filter,
                                          std::vector<DomCode> allowed_keys) = 0;
+
+  virtual void GetGesturePropertiesService(
+      ui::ozone::mojom::GesturePropertiesServiceRequest request) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputController);

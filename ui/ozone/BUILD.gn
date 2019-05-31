@@ -117,6 +117,7 @@ jumbo_component("ozone_base") {
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",
     "//ui/gl",
+    "//ui/ozone/public/interfaces:gesture_properties_service",
   ]
 
   if (enable_vulkan) {

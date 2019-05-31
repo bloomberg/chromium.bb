@@ -67,6 +67,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   void SetTouchscreensEnabled(bool enabled) override;
   void SetInternalKeyboardFilter(bool enable_filter,
                                  std::vector<DomCode> allowed_keys) override;
+  void GetGesturePropertiesService(
+      ozone::mojom::GesturePropertiesServiceRequest request) override;
 
  private:
   // Post task to update settings.
