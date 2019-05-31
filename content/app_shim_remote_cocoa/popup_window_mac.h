@@ -13,7 +13,7 @@
 @class NSWindow;
 @class RenderWidgetHostViewCocoa;
 
-namespace content {
+namespace remote_cocoa {
 
 // Helper class for RHWVMacs that are initialized using InitAsPopup. Note that
 // this refers to UI that creates its own NSWindow, and does not refer to JS
@@ -35,6 +35,6 @@ class PopupWindowMac {
   DISALLOW_COPY_AND_ASSIGN(PopupWindowMac);
 };
 
-}  // namespace content
+}  // namespace remote_cocoa
 
 #endif  // CONTENT_APP_SHIM_REMOTE_COCOA_POPUP_WINDOW_MAC_H_

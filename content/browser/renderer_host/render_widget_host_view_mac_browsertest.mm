@@ -75,9 +75,9 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewMacTest,
   RenderWidgetHostViewMac* rwhv_mac =
       static_cast<RenderWidgetHostViewMac*>(rwhv);
 
-  NSRect rect =
-      [rwhv_mac->cocoa_view() firstRectForCharacterRange:NSMakeRange(2, 1)
-                                             actualRange:nullptr];
+  NSRect rect = [rwhv_mac->GetInProcessNSView()
+      firstRectForCharacterRange:NSMakeRange(2, 1)
+                     actualRange:nullptr];
   EXPECT_GT(NSMinX(rect), 0);
   EXPECT_GT(NSWidth(rect), 0);
   EXPECT_GT(NSHeight(rect), 0);

@@ -43,7 +43,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMacEditCommandHelper {
   // Each selector is connected to a single c method which forwards the message
   // to WebCore's ExecuteEditCommand() function.
   // This method is idempotent.
-  // The class passed in must conform to the RenderWidgetHostNSViewClientOwner
+  // The class passed in must conform to the RenderWidgetHostNSViewHostOwner
   // protocol.
   void AddEditingSelectorsToClass(Class klass);
 
@@ -52,7 +52,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMacEditCommandHelper {
   // owner - An object we can retrieve a RenderWidgetHostViewMac from to
   // determine the command states.
   bool IsMenuItemEnabled(SEL item_action,
-                         id<RenderWidgetHostNSViewClientOwner> owner);
+                         id<RenderWidgetHostNSViewHostOwner> owner);
 
   // Converts an editing selector into a command name that can be sent to
   // webkit.

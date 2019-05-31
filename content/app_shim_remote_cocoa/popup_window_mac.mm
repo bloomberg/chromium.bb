@@ -80,7 +80,7 @@
 
 @end
 
-namespace content {
+namespace remote_cocoa {
 
 PopupWindowMac::PopupWindowMac(const gfx::Rect& content_rect,
                                RenderWidgetHostViewCocoa* cocoa_view)
@@ -115,4 +115,4 @@ PopupWindowMac::~PopupWindowMac() {
   popup_window_.autorelease();
 }
 
-}  // namespace content
+}  // namespace remote_cocoa

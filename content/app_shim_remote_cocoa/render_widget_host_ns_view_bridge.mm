@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "content/app_shim_remote_cocoa/render_widget_host_ns_view_bridge_local.h"
+#import "content/app_shim_remote_cocoa/render_widget_host_ns_view_bridge.h"
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/remote_cocoa/app_shim/ns_view_ids.h"
-#include "content/app_shim_remote_cocoa/render_widget_host_ns_view_client_helper.h"
+#include "content/app_shim_remote_cocoa/render_widget_host_ns_view_host_helper.h"
 #include "content/common/cursors/webcursor.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -16,17 +16,17 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
-namespace content {
+namespace remote_cocoa {
 
-RenderWidgetHostNSViewBridgeLocal::RenderWidgetHostNSViewBridgeLocal(
-    mojom::RenderWidgetHostNSViewClient* client,
-    RenderWidgetHostNSViewClientHelper* client_helper)
+RenderWidgetHostNSViewBridge::RenderWidgetHostNSViewBridge(
+    mojom::RenderWidgetHostNSViewHost* host,
+    RenderWidgetHostNSViewHostHelper* host_helper)
     : binding_(this) {
   display::Screen::GetScreen()->AddObserver(this);
 
   cocoa_view_.reset([[RenderWidgetHostViewCocoa alloc]
-        initWithClient:client
-      withClientHelper:client_helper]);
+        initWithHost:host
+      withHostHelper:host_helper]);
 
   background_layer_.reset([[CALayer alloc] init]);
   display_ca_layer_tree_ =
@@ -35,8 +35,8 @@ RenderWidgetHostNSViewBridgeLocal::RenderWidgetHostNSViewBridgeLocal(
   [cocoa_view_ setWantsLayer:YES];
 }
 
-RenderWidgetHostNSViewBridgeLocal::~RenderWidgetHostNSViewBridgeLocal() {
-  [cocoa_view_ setClientDisconnected];
+RenderWidgetHostNSViewBridge::~RenderWidgetHostNSViewBridge() {
+  [cocoa_view_ setHostDisconnected];
   // Do not immediately remove |cocoa_view_| from the NSView heirarchy, because
   // the call to -[NSView removeFromSuperview] may cause use to call into the
   // RWHVMac during tear-down, via WebContentsImpl::UpdateWebContentsVisibility.
@@ -49,23 +49,21 @@ RenderWidgetHostNSViewBridgeLocal::~RenderWidgetHostNSViewBridgeLocal() {
   popup_window_.reset();
 }
 
-void RenderWidgetHostNSViewBridgeLocal::BindRequest(
-    mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request) {
+void RenderWidgetHostNSViewBridge::BindRequest(
+    mojom::RenderWidgetHostNSViewAssociatedRequest bridge_request) {
   binding_.Bind(std::move(bridge_request),
                 ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
-RenderWidgetHostViewCocoa*
-RenderWidgetHostNSViewBridgeLocal::GetRenderWidgetHostViewCocoa() {
+RenderWidgetHostViewCocoa* RenderWidgetHostNSViewBridge::GetNSView() {
   return cocoa_view_;
 }
 
-void RenderWidgetHostNSViewBridgeLocal::InitAsPopup(
-    const gfx::Rect& content_rect) {
+void RenderWidgetHostNSViewBridge::InitAsPopup(const gfx::Rect& content_rect) {
   popup_window_ = std::make_unique<PopupWindowMac>(content_rect, cocoa_view_);
 }
 
-void RenderWidgetHostNSViewBridgeLocal::SetParentWebContentsNSView(
+void RenderWidgetHostNSViewBridge::SetParentWebContentsNSView(
     uint64_t parent_ns_view_id) {
   NSView* parent_ns_view = remote_cocoa::GetNSViewFromId(parent_ns_view_id);
   // If the browser passed an invalid handle, then there is no recovery.
@@ -77,11 +75,11 @@ void RenderWidgetHostNSViewBridgeLocal::SetParentWebContentsNSView(
   [parent_ns_view addSubview:cocoa_view_];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::MakeFirstResponder() {
+void RenderWidgetHostNSViewBridge::MakeFirstResponder() {
   [[cocoa_view_ window] makeFirstResponder:cocoa_view_];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::DisableDisplay() {
+void RenderWidgetHostNSViewBridge::DisableDisplay() {
   if (display_disabled_)
     return;
   SetBackgroundColor(SK_ColorTRANSPARENT);
@@ -89,7 +87,7 @@ void RenderWidgetHostNSViewBridgeLocal::DisableDisplay() {
   display_disabled_ = true;
 }
 
-void RenderWidgetHostNSViewBridgeLocal::SetBounds(const gfx::Rect& rect) {
+void RenderWidgetHostNSViewBridge::SetBounds(const gfx::Rect& rect) {
   // |rect.size()| is view coordinates, |rect.origin| is screen coordinates,
   // TODO(thakis): fix, http://crbug.com/73362
 
@@ -130,14 +128,14 @@ void RenderWidgetHostNSViewBridgeLocal::SetBounds(const gfx::Rect& rect) {
   }
 }
 
-void RenderWidgetHostNSViewBridgeLocal::SetCALayerParams(
+void RenderWidgetHostNSViewBridge::SetCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
   if (display_disabled_)
     return;
   display_ca_layer_tree_->UpdateCALayerTree(ca_layer_params);
 }
 
-void RenderWidgetHostNSViewBridgeLocal::SetBackgroundColor(SkColor color) {
+void RenderWidgetHostNSViewBridge::SetBackgroundColor(SkColor color) {
   if (display_disabled_)
     return;
   ScopedCAActionDisabler disabler;
@@ -146,12 +144,12 @@ void RenderWidgetHostNSViewBridgeLocal::SetBackgroundColor(SkColor color) {
   [background_layer_ setBackgroundColor:cg_color];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::SetVisible(bool visible) {
+void RenderWidgetHostNSViewBridge::SetVisible(bool visible) {
   ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:!visible];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::SetTooltipText(
+void RenderWidgetHostNSViewBridge::SetTooltipText(
     const base::string16& tooltip_text) {
   // Called from the renderer to tell us what the tooltip text should be. It
   // calls us frequently so we need to cache the value to prevent doing a lot
@@ -175,25 +173,24 @@ void RenderWidgetHostNSViewBridgeLocal::SetTooltipText(
   [cocoa_view_ setToolTipAtMousePoint:tooltip_nsstring];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::SetCompositionRangeInfo(
+void RenderWidgetHostNSViewBridge::SetCompositionRangeInfo(
     const gfx::Range& range) {
   [cocoa_view_ setCompositionRange:range];
   [cocoa_view_ setMarkedRange:range.ToNSRange()];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::CancelComposition() {
+void RenderWidgetHostNSViewBridge::CancelComposition() {
   [cocoa_view_ cancelComposition];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::SetTextInputType(
+void RenderWidgetHostNSViewBridge::SetTextInputType(
     ui::TextInputType text_input_type) {
   [cocoa_view_ setTextInputType:text_input_type];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::SetTextSelection(
-    const base::string16& text,
-    uint64_t offset,
-    const gfx::Range& range) {
+void RenderWidgetHostNSViewBridge::SetTextSelection(const base::string16& text,
+                                                    uint64_t offset,
+                                                    const gfx::Range& range) {
   [cocoa_view_ setTextSelectionText:text offset:offset range:range];
   // Updates markedRange when there is no marked text so that retrieving
   // markedRange immediately after calling setMarkdText: returns the current
@@ -203,11 +200,11 @@ void RenderWidgetHostNSViewBridgeLocal::SetTextSelection(
   }
 }
 
-void RenderWidgetHostNSViewBridgeLocal::SetShowingContextMenu(bool showing) {
+void RenderWidgetHostNSViewBridge::SetShowingContextMenu(bool showing) {
   [cocoa_view_ setShowingContextMenu:showing];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::OnDisplayMetricsChanged(
+void RenderWidgetHostNSViewBridge::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
   // Note that -updateScreenProperties is also be called by the notification
@@ -216,21 +213,22 @@ void RenderWidgetHostNSViewBridgeLocal::OnDisplayMetricsChanged(
   [cocoa_view_ updateScreenProperties];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::DisplayCursor(const WebCursor& cursor) {
-  WebCursor non_const_cursor(cursor);
+void RenderWidgetHostNSViewBridge::DisplayCursor(
+    const content::WebCursor& cursor) {
+  content::WebCursor non_const_cursor(cursor);
   [cocoa_view_ updateCursor:non_const_cursor.GetNativeCursor()];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::SetCursorLocked(bool locked) {
+void RenderWidgetHostNSViewBridge::SetCursorLocked(bool locked) {
   [cocoa_view_ setCursorLocked:locked];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::ShowDictionaryOverlayForSelection() {
+void RenderWidgetHostNSViewBridge::ShowDictionaryOverlayForSelection() {
   NSRange selection_range = [cocoa_view_ selectedRange];
   [cocoa_view_ showLookUpDictionaryOverlayFromRange:selection_range];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::ShowDictionaryOverlay(
+void RenderWidgetHostNSViewBridge::ShowDictionaryOverlay(
     const mac::AttributedStringCoder::EncodedString& encoded_string,
     const gfx::Point& baseline_point) {
   NSAttributedString* string =
@@ -238,13 +236,14 @@ void RenderWidgetHostNSViewBridgeLocal::ShowDictionaryOverlay(
   if ([string length] == 0)
     return;
   NSPoint flipped_baseline_point = {
-      baseline_point.x(), [cocoa_view_ frame].size.height - baseline_point.y(),
+      baseline_point.x(),
+      [cocoa_view_ frame].size.height - baseline_point.y(),
   };
   [cocoa_view_ showDefinitionForAttributedString:string
                                          atPoint:flipped_baseline_point];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::LockKeyboard(
+void RenderWidgetHostNSViewBridge::LockKeyboard(
     const base::Optional<std::vector<uint32_t>>& uint_dom_codes) {
   base::Optional<base::flat_set<ui::DomCode>> dom_codes;
   if (uint_dom_codes) {
@@ -255,8 +254,8 @@ void RenderWidgetHostNSViewBridgeLocal::LockKeyboard(
   [cocoa_view_ lockKeyboard:std::move(dom_codes)];
 }
 
-void RenderWidgetHostNSViewBridgeLocal::UnlockKeyboard() {
+void RenderWidgetHostNSViewBridge::UnlockKeyboard() {
   [cocoa_view_ unlockKeyboard];
 }
 
-}  // namespace content
+}  // namespace remote_cocoa

@@ -23,7 +23,7 @@
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
-#import "content/app_shim_remote_cocoa/render_widget_host_ns_view_bridge_local.h"
+#import "content/app_shim_remote_cocoa/render_widget_host_ns_view_bridge.h"
 #import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
@@ -125,7 +125,7 @@ void RenderWidgetHostViewMac::AcceleratedWidgetCALayerParamsUpdated() {
   const gfx::CALayerParams* ca_layer_params =
       browser_compositor_->GetLastCALayerParams();
   if (ca_layer_params)
-    ns_view_bridge_->SetCALayerParams(*ca_layer_params);
+    ns_view_->SetCALayerParams(*ca_layer_params);
 
   // Take this opportunity to update the VSync parameters, if needed.
   if (display_link_) {
@@ -173,7 +173,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
     : RenderWidgetHostViewBase(widget),
       page_at_minimum_scale_(true),
       mouse_wheel_phase_handler_(this),
-      ns_view_client_binding_(this),
+      remote_ns_view_client_binding_(this),
       is_loading_(false),
       is_guest_view_hack_(is_guest_view_hack),
       popup_parent_host_view_(nullptr),
@@ -183,10 +183,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
                         this),
       accessibility_focus_overrider_(this),
       weak_factory_(this) {
-  // The NSView is on the other side of |ns_view_bridge_|.
-  ns_view_bridge_local_ =
-      std::make_unique<RenderWidgetHostNSViewBridgeLocal>(this, this);
-  ns_view_bridge_ = ns_view_bridge_local_.get();
+  // The NSView is on the other side of |ns_view_|.
+  in_process_ns_view_bridge_ =
+      std::make_unique<remote_cocoa::RenderWidgetHostNSViewBridge>(this, this);
+  ns_view_ = in_process_ns_view_bridge_.get();
 
   // Guess that the initial screen we will be on is the screen of the current
   // window (since that's the best guess that we have, and is usually right).
@@ -200,7 +200,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 
   browser_compositor_.reset(new BrowserCompositorMac(
       this, this, host()->is_hidden(), display_, frame_sink_id));
-  DCHECK(![cocoa_view() window]);
+  DCHECK(![GetInProcessNSView() window]);
 
   if (!is_guest_view_hack_)
     host()->SetView(this);
@@ -248,9 +248,9 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
 
   // Disconnect from the previous bridge (this will have the effect of
   // destroying the associated bridge), and close the binding (to allow it
-  // to be re-bound). Note that |ns_view_bridge_local_| remains valid.
-  ns_view_client_binding_.Close();
-  ns_view_bridge_remote_.reset();
+  // to be re-bound). Note that |in_process_ns_view_bridge_| remains valid.
+  remote_ns_view_client_binding_.Close();
+  remote_ns_view_ptr_.reset();
 
   // Enable accessibility focus overriding for remote NSViews.
   accessibility_focus_overrider_.SetAppIsRemote(remote_cocoa_application !=
@@ -258,16 +258,16 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
 
   // If no host is specified, then use the locally hosted NSView.
   if (!remote_cocoa_application) {
-    ns_view_bridge_ = ns_view_bridge_local_.get();
+    ns_view_ = in_process_ns_view_bridge_.get();
     return;
   }
 
-  mojom::RenderWidgetHostNSViewClientAssociatedPtr client;
-  ns_view_client_binding_.Bind(mojo::MakeRequest(&client));
-  mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request =
-      mojo::MakeRequest(&ns_view_bridge_remote_);
+  remote_cocoa::mojom::RenderWidgetHostNSViewHostAssociatedPtr client;
+  remote_ns_view_client_binding_.Bind(mojo::MakeRequest(&client));
+  remote_cocoa::mojom::RenderWidgetHostNSViewAssociatedRequest bridge_request =
+      mojo::MakeRequest(&remote_ns_view_ptr_);
 
-  // Cast from mojom::RenderWidgetHostNSViewClientPtr and
+  // Cast from mojom::RenderWidgetHostNSViewHostPtr and
   // mojom::RenderWidgetHostNSViewBridgeRequest to the public interfaces
   // accepted by the application.
   // TODO(ccameron): Remove the need for this cast.
@@ -280,8 +280,8 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
   remote_cocoa_application->CreateRenderWidgetHostNSView(
       std::move(stub_client), std::move(stub_bridge_request));
 
-  ns_view_bridge_ = ns_view_bridge_remote_.get();
-  ns_view_bridge_remote_->SetParentWebContentsNSView(parent_ns_view_id);
+  ns_view_ = remote_ns_view_ptr_.get();
+  remote_ns_view_ptr_->SetParentWebContentsNSView(parent_ns_view_id);
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
@@ -293,7 +293,7 @@ void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
     // must be done lazily because not all code has been updated to use
     // ui::Views (e.g, content_shell).
     display_only_using_parent_ui_layer_ = true;
-    ns_view_bridge_->DisableDisplay();
+    ns_view_->DisableDisplay();
   }
   if (browser_compositor_)
     browser_compositor_->SetParentUiLayer(parent_ui_layer);
@@ -301,18 +301,19 @@ void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
 
 void RenderWidgetHostViewMac::SetParentAccessibilityElement(
     id parent_accessibility_element) {
-  [cocoa_view() setAccessibilityParentElement:parent_accessibility_element];
+  [GetInProcessNSView()
+      setAccessibilityParentElement:parent_accessibility_element];
 }
 
-RenderWidgetHostViewCocoa* RenderWidgetHostViewMac::cocoa_view() const {
-  if (ns_view_bridge_local_)
-    return ns_view_bridge_local_->GetRenderWidgetHostViewCocoa();
+RenderWidgetHostViewCocoa* RenderWidgetHostViewMac::GetInProcessNSView() const {
+  if (in_process_ns_view_bridge_)
+    return in_process_ns_view_bridge_->GetNSView();
   return nullptr;
 }
 
 void RenderWidgetHostViewMac::SetDelegate(
     NSObject<RenderWidgetHostViewMacDelegate>* delegate) {
-  [cocoa_view() setResponderDelegate:delegate];
+  [GetInProcessNSView() setResponderDelegate:delegate];
 }
 
 ui::TextInputType RenderWidgetHostViewMac::GetTextInputType() {
@@ -363,7 +364,7 @@ void RenderWidgetHostViewMac::InitAsPopup(
   popup_parent_host_view_->popup_child_host_view_ = this;
 
   // This path is used by the time/date picker.
-  ns_view_bridge_->InitAsPopup(pos);
+  ns_view_->InitAsPopup(pos);
 }
 
 void RenderWidgetHostViewMac::InitAsFullscreen(
@@ -437,7 +438,7 @@ void RenderWidgetHostViewMac::GetScreenInfo(ScreenInfo* screen_info) {
 
 void RenderWidgetHostViewMac::Show() {
   is_visible_ = true;
-  ns_view_bridge_->SetVisible(is_visible_);
+  ns_view_->SetVisible(is_visible_);
   browser_compositor_->SetViewVisible(is_visible_);
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
 
@@ -446,7 +447,7 @@ void RenderWidgetHostViewMac::Show() {
 
 void RenderWidgetHostViewMac::Hide() {
   is_visible_ = false;
-  ns_view_bridge_->SetVisible(is_visible_);
+  ns_view_->SetVisible(is_visible_);
   browser_compositor_->SetViewVisible(is_visible_);
   host()->WasHidden();
   browser_compositor_->SetRenderWidgetHostIsHidden(true);
@@ -492,19 +493,19 @@ void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
-  ns_view_bridge_->SetBounds(rect);
+  ns_view_->SetBounds(rect);
 }
 
 gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
-  return cocoa_view();
+  return GetInProcessNSView();
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
-  return cocoa_view();
+  return GetInProcessNSView();
 }
 
 void RenderWidgetHostViewMac::Focus() {
-  ns_view_bridge_->MakeFirstResponder();
+  ns_view_->MakeFirstResponder();
 }
 
 bool RenderWidgetHostViewMac::HasFocus() {
@@ -534,7 +535,7 @@ void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
 }
 
 void RenderWidgetHostViewMac::DisplayCursor(const WebCursor& cursor) {
-  ns_view_bridge_->DisplayCursor(cursor);
+  ns_view_->DisplayCursor(cursor);
 }
 
 CursorManager* RenderWidgetHostViewMac::GetCursorManager() {
@@ -558,7 +559,7 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
   if (!did_update_state)
     return;
 
-  ns_view_bridge_->SetTextInputType(GetTextInputType());
+  ns_view_->SetTextInputType(GetTextInputType());
 
   // |updated_view| is the last view to change its TextInputState which can be
   // used to start/stop monitoring composition info when it has a focused
@@ -593,7 +594,7 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
 void RenderWidgetHostViewMac::OnImeCancelComposition(
     TextInputManager* text_input_manager,
     RenderWidgetHostViewBase* updated_view) {
-  ns_view_bridge_->CancelComposition();
+  ns_view_->CancelComposition();
 }
 
 void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
@@ -605,7 +606,7 @@ void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
     return;
   // The RangeChanged message is only sent with valid values. The current
   // caret position (start == end) will be sent if there is no IME range.
-  ns_view_bridge_->SetCompositionRangeInfo(info->range);
+  ns_view_->SetCompositionRangeInfo(info->range);
 }
 
 void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
@@ -650,8 +651,8 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
   if (!selection)
     return;
 
-  ns_view_bridge_->SetTextSelection(selection->text(), selection->offset(),
-                                    selection->range());
+  ns_view_->SetTextSelection(selection->text(), selection->offset(),
+                             selection->range());
 }
 
 void RenderWidgetHostViewMac::OnGestureEvent(
@@ -687,15 +688,15 @@ void RenderWidgetHostViewMac::Destroy() {
   // it.
   if (mouse_locked_) {
     mouse_locked_ = false;
-    ns_view_bridge_->SetCursorLocked(false);
+    ns_view_->SetCursorLocked(false);
   }
 
   // Destroy the local and remote briges to the NSView. Note that the NSView on
-  // the other side of |ns_view_bridge_| may outlive us due to other retains.
-  ns_view_bridge_ = nullptr;
-  ns_view_bridge_local_.reset();
-  ns_view_client_binding_.Close();
-  ns_view_bridge_remote_.reset();
+  // the other side of |ns_view_| may outlive us due to other retains.
+  ns_view_ = nullptr;
+  in_process_ns_view_bridge_.reset();
+  remote_ns_view_client_binding_.Close();
+  remote_ns_view_ptr_.reset();
 
   // Delete the delegated frame state, which will reach back into
   // host().
@@ -723,7 +724,7 @@ void RenderWidgetHostViewMac::SetTooltipText(
 
 void RenderWidgetHostViewMac::DisplayTooltipText(
     const base::string16& tooltip_text) {
-  ns_view_bridge_->SetTooltipText(tooltip_text);
+  ns_view_->SetTooltipText(tooltip_text);
 }
 
 viz::ScopedSurfaceIdAllocator
@@ -820,7 +821,7 @@ void RenderWidgetHostViewMac::SpeakSelection() {
 //
 
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
-  ns_view_bridge_->SetShowingContextMenu(showing);
+  ns_view_->SetShowingContextMenu(showing);
 }
 
 uint32_t RenderWidgetHostViewMac::GetCaptureSequenceNumber() const {
@@ -885,7 +886,7 @@ void RenderWidgetHostViewMac::TakeFallbackContentFrom(
   const gfx::CALayerParams* ca_layer_params =
       view_mac->browser_compositor_->GetLastCALayerParams();
   if (ca_layer_params)
-    ns_view_bridge_->SetCALayerParams(*ca_layer_params);
+    ns_view_->SetCALayerParams(*ca_layer_params);
   browser_compositor_->TakeFallbackContentFrom(
       view_mac->browser_compositor_.get());
 }
@@ -1056,7 +1057,7 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
 void RenderWidgetHostViewMac::FocusedNodeChanged(
     bool is_editable_node,
     const gfx::Rect& node_bounds_in_screen) {
-  ns_view_bridge_->CancelComposition();
+  ns_view_->CancelComposition();
 
   // If the Mac Zoom feature is enabled, update it with the bounds of the
   // current focused node so that it can ensure that it's scrolled into view.
@@ -1122,10 +1123,10 @@ bool RenderWidgetHostViewMac::LockMouse() {
   mouse_locked_ = true;
 
   // Lock position of mouse cursor and hide it.
-  ns_view_bridge_->SetCursorLocked(true);
+  ns_view_->SetCursorLocked(true);
 
   // Clear the tooltip window.
-  ns_view_bridge_->SetTooltipText(base::string16());
+  ns_view_->SetTooltipText(base::string16());
 
   return true;
 }
@@ -1134,7 +1135,7 @@ void RenderWidgetHostViewMac::UnlockMouse() {
   if (!mouse_locked_)
     return;
   mouse_locked_ = false;
-  ns_view_bridge_->SetCursorLocked(false);
+  ns_view_->SetCursorLocked(false);
 
   if (host())
     host()->LostMouseLock();
@@ -1149,7 +1150,7 @@ bool RenderWidgetHostViewMac::LockKeyboard(
       uint_dom_codes->push_back(static_cast<uint32_t>(dom_code));
   }
   is_keyboard_locked_ = true;
-  ns_view_bridge_->LockKeyboard(uint_dom_codes);
+  ns_view_->LockKeyboard(uint_dom_codes);
   return true;
 }
 
@@ -1158,7 +1159,7 @@ void RenderWidgetHostViewMac::UnlockKeyboard() {
     return;
 
   is_keyboard_locked_ = false;
-  ns_view_bridge_->UnlockKeyboard();
+  ns_view_->UnlockKeyboard();
 }
 
 bool RenderWidgetHostViewMac::IsKeyboardLocked() {
@@ -1183,7 +1184,8 @@ void RenderWidgetHostViewMac::GestureEventAck(const WebGestureEvent& event,
     case WebInputEvent::kGestureScrollBegin:
     case WebInputEvent::kGestureScrollUpdate:
     case WebInputEvent::kGestureScrollEnd:
-      [cocoa_view() processedGestureScrollEvent:event consumed:consumed];
+      [GetInProcessNSView() processedGestureScrollEvent:event
+                                               consumed:consumed];
       return;
     default:
       break;
@@ -1210,7 +1212,7 @@ void RenderWidgetHostViewMac::ProcessAckedTouchEvent(
 
 void RenderWidgetHostViewMac::DidOverscroll(
     const ui::DidOverscrollParams& params) {
-  [cocoa_view() processedOverscroll:params];
+  [GetInProcessNSView() processedOverscroll:params];
 }
 
 std::unique_ptr<SyntheticGestureTarget>
@@ -1218,7 +1220,7 @@ RenderWidgetHostViewMac::CreateSyntheticGestureTarget() {
   RenderWidgetHostImpl* host =
       RenderWidgetHostImpl::From(GetRenderWidgetHost());
   return std::unique_ptr<SyntheticGestureTarget>(
-      new SyntheticGestureTargetMac(host, cocoa_view()));
+      new SyntheticGestureTargetMac(host, GetInProcessNSView()));
 }
 
 const viz::LocalSurfaceIdAllocation&
@@ -1344,7 +1346,7 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
 
 void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
   // This will round-trip to the NSView to determine the selection range.
-  ns_view_bridge_->ShowDictionaryOverlayForSelection();
+  ns_view_->ShowDictionaryOverlayForSelection();
 }
 
 void RenderWidgetHostViewMac::UpdateBackgroundColor() {
@@ -1372,7 +1374,7 @@ void RenderWidgetHostViewMac::SetBackgroundLayerColor(SkColor color) {
   if (color == background_layer_color_)
     return;
   background_layer_color_ = color;
-  ns_view_bridge_->SetBackgroundColor(color);
+  ns_view_->SetBackgroundColor(color);
 }
 
 BrowserAccessibilityManager*
@@ -1384,14 +1386,14 @@ BrowserAccessibilityManager*
 
 gfx::NativeViewAccessible
 RenderWidgetHostViewMac::AccessibilityGetNativeViewAccessible() {
-  return cocoa_view();
+  return GetInProcessNSView();
 }
 
 gfx::NativeViewAccessible
 RenderWidgetHostViewMac::AccessibilityGetNativeViewAccessibleForWindow() {
   if (remote_window_accessible_)
     return remote_window_accessible_.get();
-  return [cocoa_view() window];
+  return [GetInProcessNSView() window];
 }
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
@@ -1416,7 +1418,7 @@ MouseWheelPhaseHandler* RenderWidgetHostViewMac::GetMouseWheelPhaseHandler() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostNSViewClientHelper and mojom::RenderWidgetHostNSViewClient
+// RenderWidgetHostNSViewHostHelper and mojom::RenderWidgetHostNSViewHost
 // implementation:
 
 id RenderWidgetHostViewMac::GetRootBrowserAccessibilityElement() {
@@ -1612,7 +1614,7 @@ void RenderWidgetHostViewMac::ForwardMouseEvent(
     host()->ForwardMouseEvent(web_event);
 
   if (web_event.GetType() == WebInputEvent::kMouseLeave)
-    ns_view_bridge_->SetTooltipText(base::string16());
+    ns_view_->SetTooltipText(base::string16());
 }
 
 void RenderWidgetHostViewMac::ForwardWheelEvent(
@@ -1922,8 +1924,8 @@ void RenderWidgetHostViewMac::SetRemoteAccessibilityWindowToken(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// mojom::RenderWidgetHostNSViewClient functions that translate events and
-// forward them to the RenderWidgetHostNSViewClientHelper implementation:
+// mojom::RenderWidgetHostNSViewHost functions that translate events and
+// forward them to the RenderWidgetHostNSViewHostHelper implementation:
 
 void RenderWidgetHostViewMac::ForwardKeyboardEvent(
     std::unique_ptr<InputEvent> input_event,
@@ -2112,7 +2114,7 @@ void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(
       if (auto* rwhv = widget_host->GetView())
         baseline_point = rwhv->TransformPointToRootCoordSpace(baseline_point);
     }
-    ns_view_bridge_->ShowDictionaryOverlay(encoded_string, baseline_point);
+    ns_view_->ShowDictionaryOverlay(encoded_string, baseline_point);
   }
 }
 

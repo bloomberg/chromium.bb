@@ -307,8 +307,8 @@ void AppShimController::CreateRemoteCocoaApplication(
     remote_cocoa::mojom::ApplicationAssociatedRequest request) {
   remote_cocoa::ApplicationBridge::Get()->BindRequest(std::move(request));
   remote_cocoa::ApplicationBridge::Get()->SetContentNSViewCreateCallbacks(
-      base::BindRepeating(content::CreateRenderWidgetHostNSView),
-      base::BindRepeating(content::CreateWebContentsNSView));
+      base::BindRepeating(remote_cocoa::CreateRenderWidgetHostNSView),
+      base::BindRepeating(remote_cocoa::CreateWebContentsNSView));
 }
 
 void AppShimController::CreateCommandDispatcherForWidget(uint64_t widget_id) {

@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "content/app_shim_remote_cocoa/render_widget_host_ns_view_bridge_local.h"
-#include "content/app_shim_remote_cocoa/render_widget_host_ns_view_client_helper.h"
+#include "content/app_shim_remote_cocoa/render_widget_host_ns_view_bridge.h"
+#include "content/app_shim_remote_cocoa/render_widget_host_ns_view_host_helper.h"
 #include "content/app_shim_remote_cocoa/web_contents_ns_view_bridge.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
 #include "content/common/render_widget_host_ns_view.mojom.h"
@@ -21,19 +21,19 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
 
-namespace content {
+namespace remote_cocoa {
 
 namespace {
 
 class RenderWidgetHostNSViewBridgeOwner
-    : public RenderWidgetHostNSViewClientHelper {
+    : public RenderWidgetHostNSViewHostHelper {
  public:
   explicit RenderWidgetHostNSViewBridgeOwner(
-      mojom::RenderWidgetHostNSViewClientAssociatedPtr client,
-      mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request)
+      mojom::RenderWidgetHostNSViewHostAssociatedPtr client,
+      mojom::RenderWidgetHostNSViewAssociatedRequest bridge_request)
       : client_(std::move(client)) {
-    bridge_ = std::make_unique<RenderWidgetHostNSViewBridgeLocal>(client_.get(),
-                                                                  this);
+    bridge_ = std::make_unique<remote_cocoa::RenderWidgetHostNSViewBridge>(
+        client_.get(), this);
     bridge_->BindRequest(std::move(bridge_request));
     client_.set_connection_error_handler(
         base::BindOnce(&RenderWidgetHostNSViewBridgeOwner::OnConnectionError,
@@ -43,12 +43,12 @@ class RenderWidgetHostNSViewBridgeOwner
  private:
   void OnConnectionError() { delete this; }
 
-  std::unique_ptr<InputEvent> TranslateEvent(
+  std::unique_ptr<content::InputEvent> TranslateEvent(
       const blink::WebInputEvent& web_event) {
-    return std::make_unique<InputEvent>(web_event, ui::LatencyInfo());
+    return std::make_unique<content::InputEvent>(web_event, ui::LatencyInfo());
   }
 
-  // RenderWidgetHostNSViewClientHelper implementation.
+  // RenderWidgetHostNSViewHostHelper implementation.
   id GetRootBrowserAccessibilityElement() override {
     // The RenderWidgetHostViewCocoa in the app shim process does not
     // participate in the accessibility tree. Only the instance in the browser
@@ -64,23 +64,23 @@ class RenderWidgetHostNSViewBridgeOwner
         ui::RemoteAccessibility::GetTokenForLocalElement(window));
   }
 
-  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
+  void ForwardKeyboardEvent(const content::NativeWebKeyboardEvent& key_event,
                             const ui::LatencyInfo& latency_info) override {
     const blink::WebKeyboardEvent* web_event =
         static_cast<const blink::WebKeyboardEvent*>(&key_event);
-    std::unique_ptr<InputEvent> input_event =
-        std::make_unique<InputEvent>(*web_event, latency_info);
+    std::unique_ptr<content::InputEvent> input_event =
+        std::make_unique<content::InputEvent>(*web_event, latency_info);
     client_->ForwardKeyboardEvent(std::move(input_event),
                                   key_event.skip_in_browser);
   }
   void ForwardKeyboardEventWithCommands(
-      const NativeWebKeyboardEvent& key_event,
+      const content::NativeWebKeyboardEvent& key_event,
       const ui::LatencyInfo& latency_info,
-      const std::vector<EditCommand>& commands) override {
+      const std::vector<content::EditCommand>& commands) override {
     const blink::WebKeyboardEvent* web_event =
         static_cast<const blink::WebKeyboardEvent*>(&key_event);
-    std::unique_ptr<InputEvent> input_event =
-        std::make_unique<InputEvent>(*web_event, latency_info);
+    std::unique_ptr<content::InputEvent> input_event =
+        std::make_unique<content::InputEvent>(*web_event, latency_info);
     client_->ForwardKeyboardEventWithCommands(
         std::move(input_event), key_event.skip_in_browser, commands);
   }
@@ -120,27 +120,26 @@ class RenderWidgetHostNSViewBridgeOwner
     client_->SmartMagnify(TranslateEvent(web_event));
   }
 
-  mojom::RenderWidgetHostNSViewClientAssociatedPtr client_;
-  std::unique_ptr<RenderWidgetHostNSViewBridgeLocal> bridge_;
+  mojom::RenderWidgetHostNSViewHostAssociatedPtr client_;
+  std::unique_ptr<RenderWidgetHostNSViewBridge> bridge_;
   base::scoped_nsobject<NSAccessibilityRemoteUIElement>
       remote_accessibility_element_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridgeOwner);
 };
-
 }
 
 void CreateRenderWidgetHostNSView(
     mojo::ScopedInterfaceEndpointHandle host_handle,
     mojo::ScopedInterfaceEndpointHandle view_request_handle) {
-  // Cast from the stub interface to the mojom::RenderWidgetHostNSViewClient
-  // and mojom::RenderWidgetHostNSViewBridge private interfaces.
+  // Cast from the stub interface to the mojom::RenderWidgetHostNSViewHost
+  // and mojom::RenderWidgetHostNSView private interfaces.
   // TODO(ccameron): Remove the need for this cast.
   // https://crbug.com/888290
-  mojom::RenderWidgetHostNSViewClientAssociatedPtr client(
-      mojo::AssociatedInterfacePtrInfo<mojom::RenderWidgetHostNSViewClient>(
+  mojom::RenderWidgetHostNSViewHostAssociatedPtr client(
+      mojo::AssociatedInterfacePtrInfo<mojom::RenderWidgetHostNSViewHost>(
           std::move(host_handle), 0));
-  mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request(
+  mojom::RenderWidgetHostNSViewAssociatedRequest bridge_request(
       std::move(view_request_handle));
 
   // Create a RenderWidgetHostNSViewBridgeOwner. The resulting object will be
@@ -153,19 +152,19 @@ void CreateWebContentsNSView(
     uint64_t view_id,
     mojo::ScopedInterfaceEndpointHandle host_handle,
     mojo::ScopedInterfaceEndpointHandle view_request_handle) {
-  mojom::WebContentsNSViewClientAssociatedPtr client(
-      mojo::AssociatedInterfacePtrInfo<mojom::WebContentsNSViewClient>(
+  content::mojom::WebContentsNSViewClientAssociatedPtr client(
+      mojo::AssociatedInterfacePtrInfo<content::mojom::WebContentsNSViewClient>(
           std::move(host_handle), 0));
-  mojom::WebContentsNSViewBridgeAssociatedRequest bridge_request(
+  content::mojom::WebContentsNSViewBridgeAssociatedRequest bridge_request(
       std::move(view_request_handle));
   // Note that the resulting object will be destroyed when its underlying pipe
   // is closed.
   mojo::MakeStrongAssociatedBinding(
-      std::make_unique<WebContentsNSViewBridge>(
-          view_id,
-          mojom::WebContentsNSViewClientAssociatedPtr(std::move(client))),
+      std::make_unique<content::WebContentsNSViewBridge>(
+          view_id, content::mojom::WebContentsNSViewClientAssociatedPtr(
+                       std::move(client))),
       std::move(bridge_request),
       ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
-}  // namespace content
+}  // namespace remote_cocoa

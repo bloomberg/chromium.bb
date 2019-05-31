@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_BRIDGE_LOCAL_H_
-#define CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_BRIDGE_LOCAL_H_
+#ifndef CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_BRIDGE_H_
+#define CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_BRIDGE_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -16,31 +16,29 @@
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/display/display_observer.h"
 
-namespace content {
+namespace remote_cocoa {
 
 // Mojo bridge for a RenderWidgetHostViewMac's NSView. This class may be
 // instantiated in the same process as its RenderWidgetHostViewMac, or it may
 // be in a different process.
-class RenderWidgetHostNSViewBridgeLocal
-    : public mojom::RenderWidgetHostNSViewBridge,
-      public display::DisplayObserver {
+class RenderWidgetHostNSViewBridge : public mojom::RenderWidgetHostNSView,
+                                     public display::DisplayObserver {
  public:
-  RenderWidgetHostNSViewBridgeLocal(
-      mojom::RenderWidgetHostNSViewClient* client,
-      RenderWidgetHostNSViewClientHelper* client_helper);
-  ~RenderWidgetHostNSViewBridgeLocal() override;
+  RenderWidgetHostNSViewBridge(mojom::RenderWidgetHostNSViewHost* client,
+                               RenderWidgetHostNSViewHostHelper* client_helper);
+  ~RenderWidgetHostNSViewBridge() override;
 
-  // Bind to a remote request for a bridge interface.
+  // Bind to a remote request for a mojo interface.
   void BindRequest(
-      mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request);
+      mojom::RenderWidgetHostNSViewAssociatedRequest bridge_request);
 
   // TODO(ccameron): RenderWidgetHostViewMac and other functions currently use
   // this method to communicate directly with RenderWidgetHostViewCocoa. The
   // goal of this class is to eliminate this direct communication (so this
   // method is expected to go away).
-  RenderWidgetHostViewCocoa* GetRenderWidgetHostViewCocoa();
+  RenderWidgetHostViewCocoa* GetNSView();
 
-  // mojom::RenderWidgetHostNSViewBridge implementation.
+  // mojom::RenderWidgetHostNSView implementation.
   void InitAsPopup(const gfx::Rect& content_rect) override;
   void SetParentWebContentsNSView(uint64_t parent_ns_view_id) override;
   void DisableDisplay() override;
@@ -57,7 +55,7 @@ class RenderWidgetHostNSViewBridgeLocal
   void SetCompositionRangeInfo(const gfx::Range& range) override;
   void CancelComposition() override;
   void SetShowingContextMenu(bool showing) override;
-  void DisplayCursor(const WebCursor& cursor) override;
+  void DisplayCursor(const content::WebCursor& cursor) override;
   void SetCursorLocked(bool locked) override;
   void ShowDictionaryOverlayForSelection() override;
   void ShowDictionaryOverlay(
@@ -93,11 +91,11 @@ class RenderWidgetHostNSViewBridgeLocal
   base::string16 tooltip_text_;
 
   // The binding for this object (only used when remotely instantiated).
-  mojo::AssociatedBinding<mojom::RenderWidgetHostNSViewBridge> binding_;
+  mojo::AssociatedBinding<mojom::RenderWidgetHostNSView> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridgeLocal);
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridge);
 };
 
-}  // namespace content
+}  // namespace remote_cocoa
 
-#endif  // CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_BRIDGE_LOCAL_H_
+#endif  // CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_BRIDGE_H_

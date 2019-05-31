@@ -24,27 +24,29 @@
 
 namespace blink {
 class WebGestureEvent;
-}
+}  // namespace blink
 
 namespace content {
-namespace mojom {
-class RenderWidgetHostNSViewClient;
-}
-
-class RenderWidgetHostNSViewClientHelper;
 class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
-}
+}  // namespace content
+
+namespace remote_cocoa {
+namespace mojom {
+class RenderWidgetHostNSViewHost;
+}  // namespace mojom
+class RenderWidgetHostNSViewHostHelper;
+}  // namespace remote_cocoa
 
 namespace ui {
 enum class DomCode;
 struct DidOverscrollParams;
-}
+}  // namespace ui
 
 @protocol RenderWidgetHostViewMacDelegate;
 
-@protocol RenderWidgetHostNSViewClientOwner
-- (content::mojom::RenderWidgetHostNSViewClient*)renderWidgetHostNSViewClient;
+@protocol RenderWidgetHostNSViewHostOwner
+- (remote_cocoa::mojom::RenderWidgetHostNSViewHost*)renderWidgetHostNSViewHost;
 @end
 
 // This is the view that lives in the Cocoa view hierarchy. In Windows-land,
@@ -54,29 +56,29 @@ struct DidOverscrollParams;
 // TODO(ccameron): Hide this interface behind RenderWidgetHostNSViewBridge.
 @interface RenderWidgetHostViewCocoa
     : ToolTipBaseView <CommandDispatcherTarget,
-                       RenderWidgetHostNSViewClientOwner,
+                       RenderWidgetHostNSViewHostOwner,
                        NSCandidateListTouchBarItemDelegate,
                        NSTextInputClient,
                        NSAccessibility> {
  @private
   // The communications channel to the RenderWidgetHostViewMac. This pointer is
-  // always valid. When the original client disconnects, |client_| is changed to
-  // point to |dummyClient_|, to avoid having to preface every dereference with
+  // always valid. When the original host disconnects, |host_| is changed to
+  // point to |dummyHost_|, to avoid having to preface every dereference with
   // a nullptr check.
-  content::mojom::RenderWidgetHostNSViewClient* client_;
+  remote_cocoa::mojom::RenderWidgetHostNSViewHost* host_;
 
-  // A separate client interface for the parts of the interface to
+  // A separate host interface for the parts of the interface to
   // RenderWidgetHostViewMac that cannot or should not be forwarded over mojo.
   // This includes events (where the extra translation is unnecessary or loses
   // information) and access to accessibility structures (only present in the
   // browser process).
-  content::RenderWidgetHostNSViewClientHelper* clientHelper_;
+  remote_cocoa::RenderWidgetHostNSViewHostHelper* hostHelper_;
 
-  // Dummy client and client helper that are always valid (see above comments
-  // about client_).
-  content::mojom::RenderWidgetHostNSViewClientPtr dummyClient_;
-  std::unique_ptr<content::RenderWidgetHostNSViewClientHelper>
-      dummyClientHelper_;
+  // Dummy host and host helper that are always valid (see above comments
+  // about host_).
+  remote_cocoa::mojom::RenderWidgetHostNSViewHostPtr dummyHost_;
+  std::unique_ptr<remote_cocoa::RenderWidgetHostNSViewHostHelper>
+      dummyHostHelper_;
 
   // This ivar is the cocoa delegate of the NSResponder.
   base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate>>
@@ -98,7 +100,7 @@ struct DidOverscrollParams;
   // Controlled by setShowingContextMenu.
   BOOL showingContextMenu_;
 
-  // Set during -setFrame to avoid spamming client_ with origin and size
+  // Set during -setFrame to avoid spamming host_ with origin and size
   // changes.
   BOOL inSetFrame_;
 
@@ -228,8 +230,8 @@ struct DidOverscrollParams;
 
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setCloseOnDeactivate:(BOOL)b;
-// Inidicate that the client was destroyed and can't be called back into.
-- (void)setClientDisconnected;
+// Inidicate that the host was destroyed and can't be called back into.
+- (void)setHostDisconnected;
 // True for always-on-top special windows (e.g. Balloons and Panels).
 - (BOOL)acceptsMouseEventsWhenInactive;
 // Cancel ongoing composition (abandon the marked text).
@@ -242,7 +244,7 @@ struct DidOverscrollParams;
 - (void)showLookUpDictionaryOverlayFromRange:(NSRange)range;
 - (BOOL)suppressNextKeyUpForTesting:(int)keyCode;
 // Query the display::Display from the view's NSWindow's NSScreen and forward
-// it to the RenderWidgetHostNSViewClient (only if the screen is non-nil).
+// it to the RenderWidgetHostNSViewHost (only if the screen is non-nil).
 - (void)updateScreenProperties;
 // Indicate if the embedding WebContents is showing a web content context menu.
 - (void)setShowingContextMenu:(BOOL)showing;
@@ -268,8 +270,8 @@ struct DidOverscrollParams;
 - (void)setAccessibilityParentElement:(id)accessibilityParent;
 
 // Methods previously marked as private.
-- (id)initWithClient:(content::mojom::RenderWidgetHostNSViewClient*)client
-    withClientHelper:(content::RenderWidgetHostNSViewClientHelper*)clientHelper;
+- (id)initWithHost:(remote_cocoa::mojom::RenderWidgetHostNSViewHost*)host
+    withHostHelper:(remote_cocoa::RenderWidgetHostNSViewHostHelper*)hostHelper;
 - (void)setResponderDelegate:
     (NSObject<RenderWidgetHostViewMacDelegate>*)delegate;
 - (void)processedGestureScrollEvent:(const blink::WebGestureEvent&)event

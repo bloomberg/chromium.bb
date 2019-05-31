@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "content/app_shim_remote_cocoa/render_widget_host_ns_view_client_helper.h"
+#include "content/app_shim_remote_cocoa/render_widget_host_ns_view_host_helper.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -34,6 +34,7 @@ namespace remote_cocoa {
 namespace mojom {
 class Application;
 }  // namespace mojom
+class RenderWidgetHostNSViewBridge;
 }  // namespace remote_cocoa
 
 namespace ui {
@@ -51,7 +52,6 @@ namespace content {
 
 class CursorManager;
 class RenderWidgetHost;
-class RenderWidgetHostNSViewBridgeLocal;
 class RenderWidgetHostViewMac;
 class WebContents;
 class WebCursor;
@@ -74,8 +74,8 @@ class WebCursor;
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class CONTENT_EXPORT RenderWidgetHostViewMac
     : public RenderWidgetHostViewBase,
-      public RenderWidgetHostNSViewClientHelper,
-      public mojom::RenderWidgetHostNSViewClient,
+      public remote_cocoa::RenderWidgetHostNSViewHostHelper,
+      public remote_cocoa::mojom::RenderWidgetHostNSViewHost,
       public BrowserCompositorMacClient,
       public TextInputManager::Observer,
       public ui::GestureProviderClient,
@@ -93,7 +93,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // to use RWHVChildFrame (http://crbug.com/330264).
   RenderWidgetHostViewMac(RenderWidgetHost* widget, bool is_guest_view_hack);
 
-  RenderWidgetHostViewCocoa* cocoa_view() const;
+  RenderWidgetHostViewCocoa* GetInProcessNSView() const;
 
   // |delegate| is used to separate out the logic from the NSResponder delegate.
   // |delegate| is retained by this class.
@@ -304,7 +304,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // RenderWidgetHostImpl as well.
   void UpdateNSViewAndDisplayProperties();
 
-  // RenderWidgetHostNSViewClientHelper implementation.
+  // RenderWidgetHostNSViewHostHelper implementation.
   id GetRootBrowserAccessibilityElement() override;
   id GetFocusedBrowserAccessibilityElement() override;
   void SetAccessibilityWindow(NSWindow* window) override;
@@ -326,7 +326,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void GestureEnd(blink::WebGestureEvent end_event) override;
   void SmartMagnify(const blink::WebGestureEvent& smart_magnify_event) override;
 
-  // mojom::RenderWidgetHostNSViewClient implementation.
+  // mojom::RenderWidgetHostNSViewHost implementation.
   void SyncIsWidgetForMainFrame(
       SyncIsWidgetForMainFrameCallback callback) override;
   bool SyncIsWidgetForMainFrame(bool* is_for_main_frame) override;
@@ -522,21 +522,22 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void GetPageTextForSpeech(SpeechCallback callback);
 
   // Interface through which the NSView is to be manipulated. This points either
-  // to |ns_view_bridge_local_| or to (to-be-added) |ns_view_bridge_remote_|.
-  mojom::RenderWidgetHostNSViewBridge* ns_view_bridge_ = nullptr;
+  // to |in_process_ns_view_bridge_| or to |remote_ns_view_ptr_|.
+  remote_cocoa::mojom::RenderWidgetHostNSView* ns_view_ = nullptr;
 
-  // If |ns_view_bridge_| is hosted in this process, then this will be non-null,
+  // If |ns_view_| is hosted in this process, then this will be non-null,
   // and may be used to query the actual RenderWidgetHostViewCocoa that is being
   // used for |this|. Any functionality that uses |new_view_bridge_local_| will
   // not work when the RenderWidgetHostViewCocoa is hosted in an app process.
-  std::unique_ptr<RenderWidgetHostNSViewBridgeLocal> ns_view_bridge_local_;
+  std::unique_ptr<remote_cocoa::RenderWidgetHostNSViewBridge>
+      in_process_ns_view_bridge_;
 
   // If the NSView is hosted in a remote process and accessed via mojo then
-  // - |ns_view_bridge_| will point to |ns_view_bridge_remote_|
-  // - |ns_view_client_binding_| is the binding provided to the bridge.
-  mojom::RenderWidgetHostNSViewBridgeAssociatedPtr ns_view_bridge_remote_;
-  mojo::AssociatedBinding<mojom::RenderWidgetHostNSViewClient>
-      ns_view_client_binding_;
+  // - |ns_view_| will point to |remote_ns_view_ptr_|
+  // - |remote_ns_view_client_binding_| is the binding provided to the bridge.
+  remote_cocoa::mojom::RenderWidgetHostNSViewAssociatedPtr remote_ns_view_ptr_;
+  mojo::AssociatedBinding<remote_cocoa::mojom::RenderWidgetHostNSViewHost>
+      remote_ns_view_client_binding_;
 
   // State tracked by Show/Hide/IsShowing.
   bool is_visible_ = false;

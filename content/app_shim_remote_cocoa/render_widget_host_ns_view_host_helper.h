@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_CLIENT_HELPER_H_
-#define CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_CLIENT_HELPER_H_
+#ifndef CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_HOST_HELPER_H_
+#define CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_HOST_HELPER_H_
 
 #include "base/macros.h"
 
@@ -21,24 +21,26 @@ class LatencyInfo;
 }  // namespace ui
 
 namespace content {
-
-namespace mojom {
-class RenderWidgetHostNSViewClient;
-}  // namespace mojom
-
 struct EditCommand;
 struct NativeWebKeyboardEvent;
+}  // namespace content
+
+namespace remote_cocoa {
+
+namespace mojom {
+class RenderWidgetHostNSViewHost;
+}  // namespace mojom
 
 // An interface through which the NSView for a RenderWidgetHostViewMac is to
 // communicate with the RenderWidgetHostViewMac (potentially in another
-// process). Unlike mojom::RenderWidgetHostNSViewClient, this object is always
+// process). Unlike mojom::RenderWidgetHostNSViewHost, this object is always
 // instantiated in the local process. This is to implement functions that
 // cannot be sent across mojo or to avoid unnecessary translation of event
 // types.
-class RenderWidgetHostNSViewClientHelper {
+class RenderWidgetHostNSViewHostHelper {
  public:
-  RenderWidgetHostNSViewClientHelper() {}
-  virtual ~RenderWidgetHostNSViewClientHelper() {}
+  RenderWidgetHostNSViewHostHelper() {}
+  virtual ~RenderWidgetHostNSViewHostHelper() {}
 
   // Return the RenderWidget's BrowserAccessibilityManager's root accessibility
   // node.
@@ -52,12 +54,13 @@ class RenderWidgetHostNSViewClientHelper {
 
   // Forward a keyboard event to the RenderWidgetHost that is currently handling
   // the key-down event.
-  virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
-                                    const ui::LatencyInfo& latency_info) = 0;
+  virtual void ForwardKeyboardEvent(
+      const content::NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency_info) = 0;
   virtual void ForwardKeyboardEventWithCommands(
-      const NativeWebKeyboardEvent& key_event,
+      const content::NativeWebKeyboardEvent& key_event,
       const ui::LatencyInfo& latency_info,
-      const std::vector<EditCommand>& commands) = 0;
+      const std::vector<content::EditCommand>& commands) = 0;
 
   // Forward events to the renderer or the input router, as appropriate.
   virtual void RouteOrProcessMouseEvent(
@@ -81,9 +84,9 @@ class RenderWidgetHostNSViewClientHelper {
       const blink::WebGestureEvent& smart_magnify_event) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewClientHelper);
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewHostHelper);
 };
 
-}  // namespace content
+}  // namespace remote_cocoa
 
-#endif  // CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_CLIENT_HELPER_H_
+#endif  // CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_HOST_HELPER_H_

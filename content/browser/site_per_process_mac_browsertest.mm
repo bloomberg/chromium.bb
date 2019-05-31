@@ -255,7 +255,7 @@ void SendMacTouchpadPinchSequenceWithExpectedTarget(
     RenderWidgetHostViewBase*& router_touchpad_gesture_target,
     RenderWidgetHostViewBase* expected_target) {
   auto* root_view_mac = static_cast<RenderWidgetHostViewMac*>(root_view);
-  RenderWidgetHostViewCocoa* cocoa_view = root_view_mac->cocoa_view();
+  RenderWidgetHostViewCocoa* cocoa_view = root_view_mac->GetInProcessNSView();
 
   NSEvent* pinchBeginEvent =
       MockGestureEvent(NSEventTypeMagnify, 0, gesture_point.x(),

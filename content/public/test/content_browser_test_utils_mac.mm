@@ -56,7 +56,7 @@ content::RenderWidgetHostViewMac* GetRenderWidgetHostViewMac(NSObject* object) {
     if (!contents->GetBrowserPluginGuest()) {
       RenderWidgetHostViewMac* rwhv_mac = static_cast<RenderWidgetHostViewMac*>(
           contents->GetRenderWidgetHostView());
-      if (rwhv_mac->cocoa_view() == object)
+      if (rwhv_mac->GetInProcessNSView() == object)
         return rwhv_mac;
     }
   }
@@ -179,10 +179,10 @@ void GetStringFromRangeForRenderWidget(
     return;
 
   NSRect bounds_in_cocoa_view =
-      [view convertRect:view.bounds toView:rwhv_mac->cocoa_view()];
+      [view convertRect:view.bounds toView:rwhv_mac->GetInProcessNSView()];
 
   gfx::Rect rect =
-      [rwhv_mac->cocoa_view() flipNSRectToRect:bounds_in_cocoa_view];
+      [rwhv_mac->GetInProcessNSView() flipNSRectToRect:bounds_in_cocoa_view];
 
   observer->DidAddSubviewWillBeDismissed(rect);
 

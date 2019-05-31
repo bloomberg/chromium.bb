@@ -63,7 +63,7 @@ void PopupMenuHelper::ShowPopupMenu(
   RenderWidgetHostViewMac* rwhvm =
       static_cast<RenderWidgetHostViewMac*>(GetRenderWidgetHostView());
   base::scoped_nsobject<RenderWidgetHostViewCocoa> cocoa_view(
-      [rwhvm->cocoa_view() retain]);
+      [rwhvm->GetInProcessNSView() retain]);
 
   // Display the menu.
   base::scoped_nsobject<WebMenuRunner> runner([[WebMenuRunner alloc]

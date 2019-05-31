@@ -492,7 +492,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
         &delegate_, process_host_.get(), process_host_->GetNextRoutingID()));
     host_->set_owner_delegate(&mock_owner_delegate_);
     rwhv_mac_ = new RenderWidgetHostViewMac(host_.get(), false);
-    rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
+    rwhv_cocoa_.reset([rwhv_mac_->GetInProcessNSView() retain]);
 
     window_.reset([[CocoaTestHelperWindow alloc] init]);
     window_.get().pretendIsKeyWindow = YES;
@@ -599,7 +599,7 @@ TEST_F(RenderWidgetHostViewMacTest, FilterNonPrintableCharacter) {
       host_->GetAndResetDispatchedMessages();
 
   EXPECT_EQ(0U, events.size());
-  [rwhv_mac_->cocoa_view()
+  [rwhv_mac_->GetInProcessNSView()
       keyEvent:cocoa_test_event_utils::KeyEventWithKeyCode(
                    0x7B, 0xF70F, NSKeyDown, NSControlKeyMask)];
   base::RunLoop().RunUntilIdle();
@@ -611,7 +611,7 @@ TEST_F(RenderWidgetHostViewMacTest, FilterNonPrintableCharacter) {
   // fire keypress event
   process_host_->sink().ClearMessages();
   EXPECT_EQ(0U, process_host_->sink().message_count());
-  [rwhv_mac_->cocoa_view()
+  [rwhv_mac_->GetInProcessNSView()
       keyEvent:cocoa_test_event_utils::KeyEventWithKeyCode(
                    0x2E, 0xF728, NSKeyDown, NSControlKeyMask)];
   base::RunLoop().RunUntilIdle();
@@ -619,7 +619,7 @@ TEST_F(RenderWidgetHostViewMacTest, FilterNonPrintableCharacter) {
   EXPECT_EQ("RawKeyDown", GetMessageNames(events));
 
   // Simulate a printable char, should generate keypress event
-  [rwhv_mac_->cocoa_view()
+  [rwhv_mac_->GetInProcessNSView()
       keyEvent:cocoa_test_event_utils::KeyEventWithKeyCode(0x58, 'x', NSKeyDown,
                                                            NSControlKeyMask)];
   base::RunLoop().RunUntilIdle();
@@ -632,8 +632,9 @@ TEST_F(RenderWidgetHostViewMacTest, FilterNonPrintableCharacter) {
 TEST_F(RenderWidgetHostViewMacTest, InvalidKeyCode) {
   // Simulate "Convert" key on JIS PC keyboard, will generate a |NSFlagsChanged|
   // NSEvent with |keyCode| == 0xFF.
-  [rwhv_mac_->cocoa_view() keyEvent:cocoa_test_event_utils::KeyEventWithKeyCode(
-                                        0xFF, 0, NSFlagsChanged, 0)];
+  [rwhv_mac_->GetInProcessNSView()
+      keyEvent:cocoa_test_event_utils::KeyEventWithKeyCode(0xFF, 0,
+                                                           NSFlagsChanged, 0)];
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0U, host_->GetAndResetDispatchedMessages().size());
 }
@@ -906,7 +907,7 @@ TEST_F(RenderWidgetHostViewMacTest, CompositionEventAfterDestroy) {
 // |RenderWidgetHostImp::Focus()|.
 TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
   EXPECT_CALL(*host_, Focus());
-  [window_ makeFirstResponder:rwhv_mac_->cocoa_view()];
+  [window_ makeFirstResponder:rwhv_mac_->GetInProcessNSView()];
   testing::Mock::VerifyAndClearExpectations(host_.get());
 
   EXPECT_CALL(*host_, Blur());
@@ -935,7 +936,7 @@ TEST_F(RenderWidgetHostViewMacTest, LastWheelEventLatencyInfoExists) {
   // Verifies that ui::INPUT_EVENT_LATENCY_UI_COMPONENT is added
   // properly in scrollWheel function.
   NSEvent* wheelEvent1 = MockScrollWheelEventWithPhase(@selector(phaseBegan),3);
-  [rwhv_mac_->cocoa_view() scrollWheel:wheelEvent1];
+  [rwhv_mac_->GetInProcessNSView() scrollWheel:wheelEvent1];
   ASSERT_TRUE(host_->lastWheelEventLatencyInfo.FindLatency(
       ui::INPUT_EVENT_LATENCY_UI_COMPONENT, nullptr));
 
@@ -944,7 +945,7 @@ TEST_F(RenderWidgetHostViewMacTest, LastWheelEventLatencyInfoExists) {
   // properly in shortCircuitScrollWheelEvent function which is called
   // in scrollWheel.
   NSEvent* wheelEvent2 = MockScrollWheelEventWithPhase(@selector(phaseEnded),0);
-  [rwhv_mac_->cocoa_view() scrollWheel:wheelEvent2];
+  [rwhv_mac_->GetInProcessNSView() scrollWheel:wheelEvent2];
   ASSERT_TRUE(host_->lastWheelEventLatencyInfo.FindLatency(
       ui::INPUT_EVENT_LATENCY_UI_COMPONENT, nullptr));
 }
@@ -955,7 +956,7 @@ TEST_F(RenderWidgetHostViewMacTest, SourceEventTypeExistsInLatencyInfo) {
   // Send a wheel event for scrolling by 3 lines.
   // Verifies that SourceEventType exists in forwarded LatencyInfo object.
   NSEvent* wheelEvent = MockScrollWheelEventWithPhase(@selector(phaseBegan), 3);
-  [rwhv_mac_->cocoa_view() scrollWheel:wheelEvent];
+  [rwhv_mac_->GetInProcessNSView() scrollWheel:wheelEvent];
   ASSERT_TRUE(host_->lastWheelEventLatencyInfo.source_event_type() ==
               ui::SourceEventType::WHEEL);
 }
@@ -963,7 +964,7 @@ TEST_F(RenderWidgetHostViewMacTest, SourceEventTypeExistsInLatencyInfo) {
 TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   // Send an initial wheel event with NSEventPhaseBegan to the view.
   NSEvent* event1 = MockScrollWheelEventWithPhase(@selector(phaseBegan), 0);
-  [rwhv_mac_->cocoa_view() scrollWheel:event1];
+  [rwhv_mac_->GetInProcessNSView() scrollWheel:event1];
 
   // Flush and clear other messages (e.g. begin frames) the RWHVMac also sends.
   base::RunLoop().RunUntilIdle();
@@ -990,14 +991,14 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithEraserType) {
   // Send a NSEvent of NSTabletProximity type which has a device type of eraser.
   NSEvent* event = MockTabletEventWithParams(kCGEventTabletProximity, true,
                                              NSEraserPointingDevice);
-  [rwhv_mac_->cocoa_view() tabletEvent:event];
+  [rwhv_mac_->GetInProcessNSView() tabletEvent:event];
   // Flush and clear other messages (e.g. begin frames) the RWHVMac also sends.
   base::RunLoop().RunUntilIdle();
 
   event =
       MockMouseEventWithParams(kCGEventMouseMoved, {6, 9}, kCGMouseButtonLeft,
                                kCGEventMouseSubtypeTabletPoint);
-  [rwhv_mac_->cocoa_view() mouseEvent:event];
+  [rwhv_mac_->GetInProcessNSView() mouseEvent:event];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       host_->GetAndResetDispatchedMessages();
@@ -1010,14 +1011,14 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenType) {
   // Send a NSEvent of NSTabletProximity type which has a device type of pen.
   NSEvent* event = MockTabletEventWithParams(kCGEventTabletProximity, true,
                                              NSPenPointingDevice);
-  [rwhv_mac_->cocoa_view() tabletEvent:event];
+  [rwhv_mac_->GetInProcessNSView() tabletEvent:event];
   // Flush and clear other messages (e.g. begin frames) the RWHVMac also sends.
   base::RunLoop().RunUntilIdle();
 
   event =
       MockMouseEventWithParams(kCGEventMouseMoved, {6, 9}, kCGMouseButtonLeft,
                                kCGEventMouseSubtypeTabletPoint);
-  [rwhv_mac_->cocoa_view() mouseEvent:event];
+  [rwhv_mac_->GetInProcessNSView() mouseEvent:event];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       host_->GetAndResetDispatchedMessages();
@@ -1032,7 +1033,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenTypeNoTabletEvent) {
   NSEvent* event =
       MockMouseEventWithParams(kCGEventMouseMoved, {6, 9}, kCGMouseButtonLeft,
                                kCGEventMouseSubtypeTabletProximity, true);
-  [rwhv_mac_->cocoa_view() mouseEvent:event];
+  [rwhv_mac_->GetInProcessNSView() mouseEvent:event];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       host_->GetAndResetDispatchedMessages();
@@ -1042,7 +1043,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenTypeNoTabletEvent) {
   events.clear();
 
   event = cocoa_test_event_utils::EnterEvent({1, 1}, window_);
-  [rwhv_mac_->cocoa_view() mouseEntered:event];
+  [rwhv_mac_->GetInProcessNSView() mouseEntered:event];
   base::RunLoop().RunUntilIdle();
   events = host_->GetAndResetDispatchedMessages();
   ASSERT_EQ("MouseMove", GetMessageNames(events));
@@ -1057,7 +1058,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithMouseType) {
   NSEvent* event =
       MockMouseEventWithParams(kCGEventMouseMoved, {6, 9}, kCGMouseButtonLeft,
                                kCGEventMouseSubtypeDefault);
-  [rwhv_mac_->cocoa_view() mouseEvent:event];
+  [rwhv_mac_->GetInProcessNSView() mouseEvent:event];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       host_->GetAndResetDispatchedMessages();
@@ -1070,7 +1071,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenTypeSendAsTouch) {
   // Send a NSEvent of NSTabletProximity type which has a device type of pen.
   NSEvent* event = MockTabletEventWithParams(kCGEventTabletProximity, true,
                                              NSPenPointingDevice);
-  [rwhv_mac_->cocoa_view() tabletEvent:event];
+  [rwhv_mac_->GetInProcessNSView() tabletEvent:event];
   // Flush and clear other messages (e.g. begin frames) the RWHVMac also sends.
   base::RunLoop().RunUntilIdle();
   static_cast<RenderWidgetHostImpl*>(rwhv_mac_->GetRenderWidgetHost())
@@ -1080,7 +1081,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenTypeSendAsTouch) {
   event = MockMouseEventWithParams(
       kCGEventLeftMouseDown, {6, 9}, kCGMouseButtonLeft,
       kCGEventMouseSubtypeTabletPoint, false, true);
-  [rwhv_mac_->cocoa_view() mouseEvent:event];
+  [rwhv_mac_->GetInProcessNSView() mouseEvent:event];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       host_->GetAndResetDispatchedMessages();
@@ -1094,7 +1095,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenTypeSendAsTouch) {
   event = MockMouseEventWithParams(
       kCGEventLeftMouseDragged, {16, 29}, kCGMouseButtonLeft,
       kCGEventMouseSubtypeTabletPoint, false, true);
-  [rwhv_mac_->cocoa_view() mouseEvent:event];
+  [rwhv_mac_->GetInProcessNSView() mouseEvent:event];
   base::RunLoop().RunUntilIdle();
   events = host_->GetAndResetDispatchedMessages();
   ASSERT_EQ("TouchMove", GetMessageNames(events));
@@ -1108,7 +1109,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenTypeSendAsTouch) {
   event = MockMouseEventWithParams(kCGEventLeftMouseUp, {16, 29},
                                    kCGMouseButtonLeft,
                                    kCGEventMouseSubtypeTabletPoint, false);
-  [rwhv_mac_->cocoa_view() mouseEvent:event];
+  [rwhv_mac_->GetInProcessNSView() mouseEvent:event];
   base::RunLoop().RunUntilIdle();
   events = host_->GetAndResetDispatchedMessages();
   ASSERT_EQ("TouchEnd GestureScrollEnd", GetMessageNames(events));
@@ -1125,7 +1126,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenTypeSendAsTouch) {
   event =
       MockMouseEventWithParams(kCGEventLeftMouseDown, {6, 9},
                                kCGMouseButtonLeft, kCGEventMouseSubtypeDefault);
-  [rwhv_mac_->cocoa_view() mouseEvent:event];
+  [rwhv_mac_->GetInProcessNSView() mouseEvent:event];
   base::RunLoop().RunUntilIdle();
   events = host_->GetAndResetDispatchedMessages();
   ASSERT_EQ("MouseDown", GetMessageNames(events));
@@ -1161,7 +1162,7 @@ TEST_F(RenderWidgetHostViewMacTest,
 
   // Send an initial wheel event for scrolling by 3 lines.
   NSEvent* event1 = MockScrollWheelEventWithPhase(@selector(phaseBegan), 3);
-  [rwhv_mac_->cocoa_view() scrollWheel:event1];
+  [rwhv_mac_->GetInProcessNSView() scrollWheel:event1];
   base::RunLoop().RunUntilIdle();
 
   MockWidgetInputHandler::MessageVector events =
@@ -1187,7 +1188,7 @@ TEST_F(RenderWidgetHostViewMacTest,
 
   // Send another wheel event, this time for scrolling by 0 lines (empty event).
   NSEvent* event2 = MockScrollWheelEventWithPhase(@selector(phaseChanged), 0);
-  [rwhv_mac_->cocoa_view() scrollWheel:event2];
+  [rwhv_mac_->GetInProcessNSView() scrollWheel:event2];
   base::RunLoop().RunUntilIdle();
   events = host_->GetAndResetDispatchedMessages();
   ASSERT_EQ("MouseWheel", GetMessageNames(events));
@@ -1206,7 +1207,7 @@ TEST_F(RenderWidgetHostViewMacTest,
 TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
   int32_t routing_id = process_host_->GetNextRoutingID();
 
-  // Owned by its |cocoa_view()|.
+  // Owned by its |GetInProcessNSView()|.
   MockRenderWidgetHostImpl* rwh = MockRenderWidgetHostImpl::Create(
       &delegate_, process_host_.get(), routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh, true);
@@ -1220,10 +1221,10 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
       (RenderWidgetHostViewGuest::Create(rwh, nullptr, view->GetWeakPtr()))
           ->GetWeakPtr();
 
-  // Remove the cocoa_view() so |view| also goes away before |rwh|.
+  // Remove the GetInProcessNSView() so |view| also goes away before |rwh|.
   {
     base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa;
-    rwhv_cocoa.reset([view->cocoa_view() retain]);
+    rwhv_cocoa.reset([view->GetInProcessNSView() retain]);
   }
   RecycleAndWait();
 
@@ -1284,7 +1285,7 @@ TEST_F(RenderWidgetHostViewMacTest, TimerBasedPhaseInfo) {
 
   // Send a wheel event without phase information for scrolling by 3 lines.
   NSEvent* wheelEvent = MockScrollWheelEventWithoutPhase(3);
-  [rwhv_mac_->cocoa_view() scrollWheel:wheelEvent];
+  [rwhv_mac_->GetInProcessNSView() scrollWheel:wheelEvent];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       host_->GetAndResetDispatchedMessages();
@@ -1336,7 +1337,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   // Send an initial wheel event for scrolling by 3 lines.
   NSEvent* wheelEvent1 =
       MockScrollWheelEventWithPhase(@selector(phaseBegan), 3);
-  [view->cocoa_view() scrollWheel:wheelEvent1];
+  [view->GetInProcessNSView() scrollWheel:wheelEvent1];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       host->GetAndResetDispatchedMessages();
@@ -1352,7 +1353,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   // mouse_wheel_end_dispatch_timer_ will start.
   NSEvent* wheelEvent2 =
       MockScrollWheelEventWithPhase(@selector(phaseEnded), 0);
-  [view->cocoa_view() scrollWheel:wheelEvent2];
+  [view->GetInProcessNSView() scrollWheel:wheelEvent2];
   base::RunLoop().RunUntilIdle();
   events = host->GetAndResetDispatchedMessages();
   ASSERT_EQ(0U, events.size());
@@ -1391,7 +1392,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   // Send an initial wheel event for scrolling by 3 lines.
   NSEvent* wheelEvent1 =
       MockScrollWheelEventWithPhase(@selector(phaseBegan), 3);
-  [view->cocoa_view() scrollWheel:wheelEvent1];
+  [view->GetInProcessNSView() scrollWheel:wheelEvent1];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       host->GetAndResetDispatchedMessages();
@@ -1408,7 +1409,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   // mouse_wheel_end_dispatch_timer_ will start.
   NSEvent* wheelEvent2 =
       MockScrollWheelEventWithPhase(@selector(phaseEnded), 0);
-  [view->cocoa_view() scrollWheel:wheelEvent2];
+  [view->GetInProcessNSView() scrollWheel:wheelEvent2];
   base::RunLoop().RunUntilIdle();
   events = host->GetAndResetDispatchedMessages();
   ASSERT_EQ(0U, events.size());
@@ -1419,7 +1420,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   NSEvent* wheelEvent3 =
       MockScrollWheelEventWithMomentumPhase(@selector(phaseBegan), 3);
   ASSERT_TRUE(wheelEvent3);
-  [view->cocoa_view() scrollWheel:wheelEvent3];
+  [view->GetInProcessNSView() scrollWheel:wheelEvent3];
   base::RunLoop().RunUntilIdle();
   events = host->GetAndResetDispatchedMessages();
   ASSERT_EQ("MouseWheel GestureScrollUpdate", GetMessageNames(events));
@@ -1447,7 +1448,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   // Send an initial wheel event for scrolling by 3 lines.
   NSEvent* wheelEvent1 =
       MockScrollWheelEventWithPhase(@selector(phaseBegan), 3);
-  [view->cocoa_view() scrollWheel:wheelEvent1];
+  [view->GetInProcessNSView() scrollWheel:wheelEvent1];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       host->GetAndResetDispatchedMessages();
@@ -1464,7 +1465,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   // mouse_wheel_end_dispatch_timer_ will start.
   NSEvent* wheelEvent2 =
       MockScrollWheelEventWithPhase(@selector(phaseEnded), 0);
-  [view->cocoa_view() scrollWheel:wheelEvent2];
+  [view->GetInProcessNSView() scrollWheel:wheelEvent2];
   base::RunLoop().RunUntilIdle();
   events = host->GetAndResetDispatchedMessages();
   ASSERT_EQ(0U, events.size());
@@ -1476,7 +1477,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   NSEvent* wheelEvent3 =
       MockScrollWheelEventWithPhase(@selector(phaseBegan), 3);
   ASSERT_TRUE(wheelEvent3);
-  [view->cocoa_view() scrollWheel:wheelEvent3];
+  [view->GetInProcessNSView() scrollWheel:wheelEvent3];
   base::RunLoop().RunUntilIdle();
   events = host->GetAndResetDispatchedMessages();
   ASSERT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
@@ -1705,7 +1706,7 @@ TEST_F(RenderWidgetHostViewMacTest, EventLatencyOSMouseWheelHistogram) {
   // Send an initial wheel event for scrolling by 3 lines.
   // Verify that Event.Latency.OS.MOUSE_WHEEL histogram is computed properly.
   NSEvent* wheelEvent = MockScrollWheelEventWithPhase(@selector(phaseBegan),3);
-  [rwhv_mac_->cocoa_view() scrollWheel:wheelEvent];
+  [rwhv_mac_->GetInProcessNSView() scrollWheel:wheelEvent];
   histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
 }
 
@@ -1773,11 +1774,13 @@ class InputMethodMacTest : public RenderWidgetHostViewMacTest {
   }
   RenderWidgetHostViewMac* tab_view() { return rwhv_mac_; }
   RenderWidgetHostImpl* tab_widget() { return host_.get(); }
-  RenderWidgetHostViewCocoa* tab_cocoa_view() { return rwhv_cocoa_.get(); }
+  RenderWidgetHostViewCocoa* tab_GetInProcessNSView() {
+    return rwhv_cocoa_.get();
+  }
 
   API_AVAILABLE(macos(10.12.2))
   NSCandidateListTouchBarItem* candidate_list_item() {
-    return [tab_cocoa_view().touchBar
+    return [tab_GetInProcessNSView().touchBar
         itemForIdentifier:NSTouchBarItemIdentifierCandidateList];
   }
 
@@ -1801,7 +1804,7 @@ TEST_F(InputMethodMacTest, UnmarkText) {
   // tests as well). We should observe an IPC being sent to the |child_widget_|.
   SetTextInputType(child_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(child_widget_, text_input_manager()->GetActiveWidget());
-  [tab_cocoa_view() unmarkText];
+  [tab_GetInProcessNSView() unmarkText];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       child_widget_->GetAndResetDispatchedMessages();
@@ -1810,7 +1813,7 @@ TEST_F(InputMethodMacTest, UnmarkText) {
   // Repeat the same steps for the tab's view .
   SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
-  [tab_cocoa_view() unmarkText];
+  [tab_GetInProcessNSView() unmarkText];
   base::RunLoop().RunUntilIdle();
   events = host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("FinishComposingText", GetMessageNames(events));
@@ -1829,9 +1832,9 @@ TEST_F(InputMethodMacTest, SetMarkedText) {
   // should observe an IPC being sent to the |child_widget_|.
   SetTextInputType(child_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(child_widget_, text_input_manager()->GetActiveWidget());
-  [tab_cocoa_view() setMarkedText:text
-                    selectedRange:selectedRange
-                 replacementRange:replacementRange];
+  [tab_GetInProcessNSView() setMarkedText:text
+                            selectedRange:selectedRange
+                         replacementRange:replacementRange];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       child_widget_->GetAndResetDispatchedMessages();
@@ -1840,9 +1843,9 @@ TEST_F(InputMethodMacTest, SetMarkedText) {
   // Repeat the same steps for the tab's view.
   SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
-  [tab_cocoa_view() setMarkedText:text
-                    selectedRange:selectedRange
-                 replacementRange:replacementRange];
+  [tab_GetInProcessNSView() setMarkedText:text
+                            selectedRange:selectedRange
+                         replacementRange:replacementRange];
   base::RunLoop().RunUntilIdle();
   events = host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("SetComposition", GetMessageNames(events));
@@ -1860,7 +1863,7 @@ TEST_F(InputMethodMacTest, InsertText) {
   // should observe an IPC being sent to the |child_widget_|.
   SetTextInputType(child_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(child_widget_, text_input_manager()->GetActiveWidget());
-  [tab_cocoa_view() insertText:text replacementRange:replacementRange];
+  [tab_GetInProcessNSView() insertText:text replacementRange:replacementRange];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       child_widget_->GetAndResetDispatchedMessages();
@@ -1869,7 +1872,7 @@ TEST_F(InputMethodMacTest, InsertText) {
   // Repeat the same steps for the tab's view.
   SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
-  [tab_cocoa_view() insertText:text replacementRange:replacementRange];
+  [tab_GetInProcessNSView() insertText:text replacementRange:replacementRange];
   base::RunLoop().RunUntilIdle();
   events = host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("CommitText", GetMessageNames(events));
@@ -1892,10 +1895,10 @@ TEST_F(InputMethodMacTest, FinishComposingText) {
   // we will first call setMarkedText on cocoa view. This would lead to a set
   // composition IPC in the sink, but it doesn't matter since we will be looking
   // for a finish composing text IPC for this test.
-  [tab_cocoa_view() setMarkedText:text
-                    selectedRange:selectedRange
-                 replacementRange:replacementRange];
-  [tab_cocoa_view() finishComposingText];
+  [tab_GetInProcessNSView() setMarkedText:text
+                            selectedRange:selectedRange
+                         replacementRange:replacementRange];
+  [tab_GetInProcessNSView() finishComposingText];
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       child_widget_->GetAndResetDispatchedMessages();
@@ -1904,10 +1907,10 @@ TEST_F(InputMethodMacTest, FinishComposingText) {
   // Repeat the same steps for the tab's view.
   SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
-  [tab_cocoa_view() setMarkedText:text
-                    selectedRange:selectedRange
-                 replacementRange:replacementRange];
-  [tab_cocoa_view() finishComposingText];
+  [tab_GetInProcessNSView() setMarkedText:text
+                            selectedRange:selectedRange
+                         replacementRange:replacementRange];
+  [tab_GetInProcessNSView() finishComposingText];
   base::RunLoop().RunUntilIdle();
   events = host_->GetAndResetDispatchedMessages();
   EXPECT_EQ("SetComposition FinishComposingText", GetMessageNames(events));
@@ -1922,7 +1925,7 @@ TEST_F(InputMethodMacTest, SecurePasswordInput) {
   EXPECT_CALL(*host_, Focus()).Times(::testing::AnyNumber());
   EXPECT_CALL(*host_, Blur()).Times(::testing::AnyNumber());
 
-  [window_ makeFirstResponder:tab_view()->cocoa_view()];
+  [window_ makeFirstResponder:tab_view()->GetInProcessNSView()];
 
   // Shouldn't enable secure input if it's not a password textfield.
   tab_view()->SetActive(true);
@@ -1952,20 +1955,20 @@ TEST_F(InputMethodMacTest, ImeCancelCompositionForAllViews) {
   NSRange replacementRange = NSMakeRange(0, 1);
 
   // Make Cocoa view assume there is marked text.
-  [tab_cocoa_view() setMarkedText:text
-                    selectedRange:selectedRange
-                 replacementRange:replacementRange];
-  EXPECT_TRUE([tab_cocoa_view() hasMarkedText]);
+  [tab_GetInProcessNSView() setMarkedText:text
+                            selectedRange:selectedRange
+                         replacementRange:replacementRange];
+  EXPECT_TRUE([tab_GetInProcessNSView() hasMarkedText]);
   child_view_->ImeCancelComposition();
-  EXPECT_FALSE([tab_cocoa_view() hasMarkedText]);
+  EXPECT_FALSE([tab_GetInProcessNSView() hasMarkedText]);
 
   // Repeat for the tab's view.
-  [tab_cocoa_view() setMarkedText:text
-                    selectedRange:selectedRange
-                 replacementRange:replacementRange];
-  EXPECT_TRUE([tab_cocoa_view() hasMarkedText]);
+  [tab_GetInProcessNSView() setMarkedText:text
+                            selectedRange:selectedRange
+                         replacementRange:replacementRange];
+  EXPECT_TRUE([tab_GetInProcessNSView() hasMarkedText]);
   tab_view()->ImeCancelComposition();
-  EXPECT_FALSE([tab_cocoa_view() hasMarkedText]);
+  EXPECT_FALSE([tab_GetInProcessNSView() hasMarkedText]);
 }
 
 // This test verifies that calling FocusedNodeChanged() on
@@ -1977,12 +1980,12 @@ TEST_F(InputMethodMacTest, FocusedNodeChanged) {
   NSRange selectedRange = NSMakeRange(0, 1);
   NSRange replacementRange = NSMakeRange(0, 1);
 
-  [tab_cocoa_view() setMarkedText:text
-                    selectedRange:selectedRange
-                 replacementRange:replacementRange];
-  EXPECT_TRUE([tab_cocoa_view() hasMarkedText]);
+  [tab_GetInProcessNSView() setMarkedText:text
+                            selectedRange:selectedRange
+                         replacementRange:replacementRange];
+  EXPECT_TRUE([tab_GetInProcessNSView() hasMarkedText]);
   tab_view()->FocusedNodeChanged(true, gfx::Rect());
-  EXPECT_FALSE([tab_cocoa_view() hasMarkedText]);
+  EXPECT_FALSE([tab_GetInProcessNSView() hasMarkedText]);
 }
 
 // This test verifies that when a RenderWidgetHostView changes its
@@ -1994,7 +1997,7 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
   // method RWHVMac::HasFocus() returns true. Then we can make sure that as long
   // as there is some TextInputState of non-NONE, the corresponding widget will
   // be asked to start monitoring composition info.
-  [window_ makeFirstResponder:tab_cocoa_view()];
+  [window_ makeFirstResponder:tab_GetInProcessNSView()];
   EXPECT_TRUE(tab_view()->HasFocus());
 
   TextInputState state;
@@ -2070,7 +2073,7 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsReplacement) {
   if (@available(macOS 10.12.2, *)) {
     base::scoped_nsobject<FakeSpellChecker> spellChecker(
         [[FakeSpellChecker alloc] init]);
-    tab_cocoa_view().spellCheckerForTesting =
+    tab_GetInProcessNSView().spellCheckerForTesting =
         static_cast<NSSpellChecker*>(spellChecker.get());
 
     SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
@@ -2117,8 +2120,8 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsReplacement) {
     ASSERT_EQ("", GetMessageNames(events));
 
     // Now, select that result.
-    [tab_cocoa_view() candidateListTouchBarItem:candidate_list_item()
-                   endSelectingCandidateAtIndex:0];
+    [tab_GetInProcessNSView() candidateListTouchBarItem:candidate_list_item()
+                           endSelectingCandidateAtIndex:0];
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
     ASSERT_EQ("CommitText", GetMessageNames(events));
@@ -2133,7 +2136,7 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsInvalidSelection) {
   if (@available(macOS 10.12.2, *)) {
     base::scoped_nsobject<FakeSpellChecker> spellChecker(
         [[FakeSpellChecker alloc] init]);
-    tab_cocoa_view().spellCheckerForTesting =
+    tab_GetInProcessNSView().spellCheckerForTesting =
         static_cast<NSSpellChecker*>(spellChecker.get());
 
     SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
@@ -2262,7 +2265,7 @@ TEST_F(RenderWidgetHostViewMacTest, TransformToRootWithParentLayer) {
 }
 
 TEST_F(RenderWidgetHostViewMacTest, AccessibilityParentTest) {
-  NSView* view = rwhv_mac_->cocoa_view();
+  NSView* view = rwhv_mac_->GetInProcessNSView();
 
   // NSBox so it participates in the a11y hierarchy.
   base::scoped_nsobject<NSView> parent_view([[NSBox alloc] init]);
@@ -2288,7 +2291,7 @@ TEST_F(RenderWidgetHostViewMacTest, AccessibilityParentTest) {
 
 // Tests that when entering mouse lock, the cursor will lock to window center.
 TEST_F(RenderWidgetHostViewMacTest, PointerLockCenterPosition) {
-  NSView* view = rwhv_mac_->cocoa_view();
+  NSView* view = rwhv_mac_->GetInProcessNSView();
 
   NSRect bound = NSMakeRect(123, 234, 456, 678);
   [view setFrame:bound];
