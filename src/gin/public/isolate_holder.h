@@ -95,7 +95,7 @@ class GIN_EXPORT IsolateHolder {
                          const intptr_t* reference_table = nullptr);
 
   // Return the heap tracer.
-  MultiHeapTracer* heap_tracer();
+  MultiHeapTracer* heap_tracer() const;
 
   v8::Isolate* isolate() { return isolate_; }
 

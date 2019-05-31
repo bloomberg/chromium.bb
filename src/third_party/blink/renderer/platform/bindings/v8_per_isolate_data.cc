@@ -131,6 +131,8 @@ V8PerIsolateData::V8PerIsolateData()
       is_reporting_exception_(false),
       script_wrappable_visitor_(
           new ScriptWrappableMarkingVisitor(ThreadState::Current())),
+      unified_heap_controller_(
+          new UnifiedHeapController(ThreadState::Current())),
       runtime_call_stats_(base::DefaultTickClock::GetInstance()) {
   CHECK(IsMainThread());
 

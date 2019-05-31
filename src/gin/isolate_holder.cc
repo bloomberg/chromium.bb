@@ -135,7 +135,7 @@ void IsolateHolder::EnableIdleTasks(
   isolate_data_->EnableIdleTasks(std::move(idle_task_runner));
 }
 
-MultiHeapTracer* IsolateHolder::heap_tracer() {
+MultiHeapTracer* IsolateHolder::heap_tracer() const {
   return isolate_data_->heap_tracer();
 }
 
