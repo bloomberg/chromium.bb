@@ -20071,6 +20071,7 @@ Called by update_net_error_codes.py.-->
   <int value="215" label="kArcAppsPrivate"/>
   <int value="216" label="kEnterpriseHardwarePlatform"/>
   <int value="217" label="kLoginScreenUi"/>
+  <int value="218" label="kDeclarativeNetRequestFeedback"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">

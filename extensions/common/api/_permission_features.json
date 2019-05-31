@@ -204,6 +204,11 @@
     "extension_types": ["extension"],
     "min_manifest_version": 2
   },
+  "declarativeNetRequestFeedback": {
+    "channel": "beta",
+    "extension_types": ["extension"],
+    "min_manifest_version": 2
+  },
   "declarativeWebRequest": {
       "channel": "beta",
       "extension_types": ["extension", "legacy_packaged_app"]

@@ -127,6 +127,8 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kWindowShape, "app.window.shape"},
     {APIPermission::kFileSystemRequestDownloads, "fileSystem.requestDownloads"},
+    {APIPermission::kDeclarativeNetRequestFeedback,
+     declarative_net_request::kFeedbackAPIPermission},
 };
 
 }  // namespace

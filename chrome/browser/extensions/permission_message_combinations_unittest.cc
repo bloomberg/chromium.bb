@@ -1179,6 +1179,34 @@ TEST_F(PermissionMessageCombinationsUnittest, NewTabPagePermissionMessages) {
       "Replace the page you see when opening a new tab"));
 }
 
+TEST_F(PermissionMessageCombinationsUnittest,
+       DeclarativeNetRequestFeedbackPermissionMessages) {
+  CreateAndInstall(
+      "{"
+      "  'permissions': ["
+      "    'declarativeNetRequestFeedback'"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions("Read your browsing history"));
+
+  CreateAndInstall(
+      "{"
+      "  'permissions': ["
+      "    'tabs', 'declarativeNetRequestFeedback'"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions("Read your browsing history"));
+
+  CreateAndInstall(
+      "{"
+      "  'permissions': ["
+      "    '<all_urls>', 'declarativeNetRequestFeedback'"
+      "  ]"
+      "}");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Read and change all your data on the websites you visit"));
+}
+
 // TODO(sashab): Add a test that checks that messages are generated correctly
 // for withheld permissions, when an app is granted the 'all sites' permission.
 
