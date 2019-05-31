@@ -162,19 +162,13 @@ Polymer({
       vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
     };
 
-    // TODO(crbug.com/961514) remove unnecessary valueExists() calls.
-    this.showApps_ = loadTimeData.valueExists('showApps') &&
-        loadTimeData.getBoolean('showApps');
-    this.showAndroidApps_ = loadTimeData.valueExists('androidAppsVisible') &&
-        loadTimeData.getBoolean('androidAppsVisible');
+    this.showApps_ = loadTimeData.getBoolean('showApps');
+    this.showAndroidApps_ = loadTimeData.getBoolean('androidAppsVisible');
     this.showKioskNextShell_ = loadTimeData.valueExists('showKioskNextShell') &&
         loadTimeData.getBoolean('showKioskNextShell');
-    this.showCrostini_ = loadTimeData.valueExists('showCrostini') &&
-        loadTimeData.getBoolean('showCrostini');
-    this.showPluginVm_ = loadTimeData.valueExists('showPluginVm') &&
-        loadTimeData.getBoolean('showPluginVm');
-    this.havePlayStoreApp_ = loadTimeData.valueExists('havePlayStoreApp') &&
-        loadTimeData.getBoolean('havePlayStoreApp');
+    this.showCrostini_ = loadTimeData.getBoolean('showCrostini');
+    this.showPluginVm_ = loadTimeData.getBoolean('showPluginVm');
+    this.havePlayStoreApp_ = loadTimeData.getBoolean('havePlayStoreApp');
 
     this.addEventListener('show-container', () => {
       this.$.container.style.visibility = 'visible';

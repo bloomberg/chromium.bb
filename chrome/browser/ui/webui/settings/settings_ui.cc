@@ -455,6 +455,7 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
 #if defined(KIOSK_NEXT)
+  // Remove valueExists call from os_settings_ui.js when the #define is removed.
   html_source->AddBoolean(
       "showKioskNextShell",
       base::FeatureList::IsEnabled(ash::features::kKioskNextShell) &&
