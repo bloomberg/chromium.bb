@@ -120,6 +120,14 @@ DevToolsAgentHostImpl* RenderFrameDevToolsAgentHost::GetFor(
   return FindAgentHost(frame_tree_node);
 }
 
+// static
+DevToolsAgentHostImpl* RenderFrameDevToolsAgentHost::GetFor(
+    RenderFrameHostImpl* rfh) {
+  return ShouldCreateDevToolsForHost(rfh)
+             ? FindAgentHost(rfh->frame_tree_node())
+             : GetFor(rfh->frame_tree_node());
+}
+
 scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::GetOrCreateFor(
     FrameTreeNode* frame_tree_node) {
   frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);

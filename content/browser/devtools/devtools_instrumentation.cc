@@ -253,7 +253,7 @@ bool WillCreateURLLoaderFactory(
   // Within the target, the agents added earlier are closer to network.
 
   DevToolsAgentHostImpl* frame_agent_host =
-      RenderFrameDevToolsAgentHost::GetFor(rfh->frame_tree_node());
+      RenderFrameDevToolsAgentHost::GetFor(rfh);
   RenderProcessHost* rph = rfh->GetProcess();
   const base::UnguessableToken& frame_token = rfh->GetDevToolsFrameToken();
 
