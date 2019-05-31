@@ -5420,7 +5420,12 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
 
     // The GPU-GPU copy path uses the Y-up coordinate system.
     IntRect adjusted_source_sub_rectangle = source_sub_rectangle;
-    if (!unpack_flip_y_) {
+
+    bool should_adjust_source_sub_rectangle = !unpack_flip_y_;
+    if (is_origin_top_left_ && source_canvas_webgl_context)
+      should_adjust_source_sub_rectangle = !should_adjust_source_sub_rectangle;
+
+    if (should_adjust_source_sub_rectangle) {
       adjusted_source_sub_rectangle.SetY(context_host->Size().Height() -
                                          adjusted_source_sub_rectangle.MaxY());
     }
