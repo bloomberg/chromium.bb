@@ -12,10 +12,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -101,9 +101,10 @@ class PipelineImplTest : public ::testing::Test {
   };
 
   PipelineImplTest()
-      : pipeline_(new PipelineImpl(message_loop_.task_runner(),
-                                   message_loop_.task_runner(),
-                                   &media_log_)),
+      : pipeline_(
+            new PipelineImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
+                             scoped_task_environment_.GetMainThreadTaskRunner(),
+                             &media_log_)),
         demuxer_(new StrictMock<MockDemuxer>()),
         demuxer_host_(nullptr),
         scoped_renderer_(new StrictMock<MockRenderer>()),
@@ -321,7 +322,7 @@ class PipelineImplTest : public ::testing::Test {
   // Fixture members.
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   NullMediaLog media_log_;
   std::unique_ptr<PipelineImpl> pipeline_;
 
@@ -714,21 +715,22 @@ TEST_F(PipelineImplTest, ErrorDuringSeek) {
 
 // Invoked function OnError. This asserts that the pipeline does not enqueue
 // non-teardown related tasks while tearing down.
-static void TestNoCallsAfterError(PipelineImpl* pipeline,
-                                  base::MessageLoop* message_loop,
-                                  PipelineStatus /* status */) {
+static void TestNoCallsAfterError(
+    PipelineImpl* pipeline,
+    base::test::ScopedTaskEnvironment* task_environment,
+    PipelineStatus /* status */) {
   CHECK(pipeline);
-  CHECK(message_loop);
+  CHECK(task_environment);
 
-  // When we get to this stage, the message loop should be empty.
-  EXPECT_TRUE(message_loop->IsIdleForTesting());
+  // When we get to this stage, there should be no pending tasks.
+  EXPECT_EQ(0u, task_environment->GetPendingMainThreadTaskCount());
 
   // Make calls on pipeline after error has occurred.
   pipeline->SetPlaybackRate(0.5);
   pipeline->SetVolume(0.5f);
 
   // No additional tasks should be queued as a result of these calls.
-  EXPECT_TRUE(message_loop->IsIdleForTesting());
+  EXPECT_EQ(0u, task_environment->GetPendingMainThreadTaskCount());
 }
 
 TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
@@ -741,8 +743,8 @@ TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
   StartPipelineAndExpect(PIPELINE_OK);
 
   // Trigger additional requests on the pipeline during tear down from error.
-  base::Callback<void(PipelineStatus)> cb =
-      base::Bind(&TestNoCallsAfterError, pipeline_.get(), &message_loop_);
+  base::Callback<void(PipelineStatus)> cb = base::Bind(
+      &TestNoCallsAfterError, pipeline_.get(), &scoped_task_environment_);
   ON_CALL(callbacks_, OnError(_)).WillByDefault(Invoke(CreateFunctor(cb)));
 
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);

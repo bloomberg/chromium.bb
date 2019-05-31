@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -63,8 +63,9 @@ class MojoAudioDecoderTest : public ::testing::Test {
         base::BindOnce(&MojoAudioDecoderTest::ConnectToService,
                        base::Unretained(this),
                        base::Passed(mojo::MakeRequest(&remote_audio_decoder))));
-    mojo_audio_decoder_.reset(new MojoAudioDecoder(
-        message_loop_.task_runner(), std::move(remote_audio_decoder)));
+    mojo_audio_decoder_.reset(
+        new MojoAudioDecoder(scoped_task_environment_.GetMainThreadTaskRunner(),
+                             std::move(remote_audio_decoder)));
   }
 
   ~MojoAudioDecoderTest() override {
@@ -216,7 +217,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
     RunLoop();
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   // The MojoAudioDecoder that we are testing.

@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
@@ -157,7 +157,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnVideoDecoderChange(const std::string& name) override {}
   void OnRemotePlayStateChange(MediaStatus::State state) override {}
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   NiceMock<MockDemuxer> demuxer_;
   StrictMock<MockPipeline>* pipeline_;

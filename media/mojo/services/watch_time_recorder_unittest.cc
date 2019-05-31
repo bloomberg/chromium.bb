@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/hash/hash.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -156,7 +156,7 @@ class WatchTimeRecorderTest : public testing::Test {
   MOCK_METHOD0(GetCurrentMediaTime, base::TimeDelta());
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   mojom::MediaMetricsProviderPtr provider_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;

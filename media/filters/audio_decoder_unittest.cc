@@ -13,10 +13,10 @@
 #include "base/format_macros.h"
 #include "base/hash/md5.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "media/base/audio_buffer.h"
@@ -133,12 +133,13 @@ class AudioDecoderTest
         last_decode_status_(DecodeStatus::DECODE_ERROR) {
     switch (decoder_type_) {
       case FFMPEG:
-        decoder_.reset(
-            new FFmpegAudioDecoder(message_loop_.task_runner(), &media_log_));
+        decoder_.reset(new FFmpegAudioDecoder(
+            scoped_task_environment_.GetMainThreadTaskRunner(), &media_log_));
         break;
 #if defined(OS_ANDROID)
       case MEDIA_CODEC:
-        decoder_.reset(new MediaCodecAudioDecoder(message_loop_.task_runner()));
+        decoder_.reset(new MediaCodecAudioDecoder(
+            scoped_task_environment_.GetMainThreadTaskRunner()));
         break;
 #endif
     }
@@ -392,7 +393,7 @@ class AudioDecoderTest
   // that the decoder can be reinitialized with different parameters.
   TestParams params_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   NullMediaLog media_log_;
   scoped_refptr<DecoderBuffer> data_;

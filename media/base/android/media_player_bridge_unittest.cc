@@ -5,7 +5,7 @@
 #include "media/base/android/media_player_bridge.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,9 +46,7 @@ class MediaPlayerBridgeTest : public testing::Test {
 
   void SimulatePlaybackCompleted() { bridge_.OnPlaybackComplete(); }
 
-  // A message loop needs to be instantiated in order for the test to run
-  // properly.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   StrictMock<MockMediaPlayerBridgeClient> client_;
   MediaPlayerBridge bridge_;
 
