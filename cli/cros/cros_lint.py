@@ -226,16 +226,25 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
     logging.notice('Install shellcheck for additional shell linting.')
     return syntax_check
 
+  (dir_name, file_name) = os.path.split(path)
+  pwd = os.getcwd()
+
   cmd = [shellcheck]
   if output_format != 'default':
     cmd.extend(SHLINT_OUTPUT_FORMAT_MAP[output_format])
+  cmd.append('-x')
   if gentoo_format:
     # ebuilds don't explicitly export variables or contain a shebang.
     cmd.append('--exclude=SC2034,SC2148')
     # ebuilds always use bash.
     cmd.append('--shell=bash')
-  cmd.append(path)
+  cmd.append(file_name)
+
+  # TODO(crbug.com/969045): Remove chdir once -P is available in shellcheck.
+  os.chdir(dir_name)
   lint_result = _LinterRunCommand(cmd, debug)
+  os.chdir(pwd)
+
   # During testing, we don't want to fail the linter for shellcheck errors,
   # so override the return code.
   if lint_result.returncode != 0:
