@@ -12,6 +12,7 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "content/browser/network_service_instance_impl.h"
+#include "content/public/test/test_host_resolver.h"
 #include "content/test/test_blink_web_unit_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/blink.h"
@@ -103,6 +104,7 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite,
 #endif
   DCHECK(test_suite);
   blink_test_support_.reset(new TestBlinkWebUnitTestSupport);
+  test_host_resolver_ = std::make_unique<TestHostResolver>();
 }
 
 UnitTestTestSuite::~UnitTestTestSuite() = default;

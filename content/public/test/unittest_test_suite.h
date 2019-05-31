@@ -17,6 +17,7 @@ class TestSuite;
 
 namespace content {
 class TestBlinkWebUnitTestSupport;
+class TestHostResolver;
 
 // A special test suite that also initializes WebKit once for all unittests.
 // This is useful for two reasons:
@@ -38,6 +39,8 @@ class UnitTestTestSuite {
   std::unique_ptr<base::TestSuite> test_suite_;
 
   std::unique_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
+
+  std::unique_ptr<TestHostResolver> test_host_resolver_;
 
   DISALLOW_COPY_AND_ASSIGN(UnitTestTestSuite);
 };
