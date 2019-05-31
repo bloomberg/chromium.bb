@@ -4,12 +4,15 @@
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 
+#include "ash/public/cpp/shelf_model.h"
 #include "base/files/file_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -126,6 +129,40 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmShowAndStop) {
 
   histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
                                         PluginVmLaunchResult::kSuccess, 1);
+}
+
+TEST_F(PluginVmManagerTest, LaunchPluginVmSpinner) {
+  ash::ShelfModel shelf_model;
+  ChromeLauncherController chrome_launcher_controller(&testing_profile_,
+                                                      &shelf_model);
+  ShelfSpinnerController* spinner_controller =
+      chrome_launcher_controller.GetShelfSpinnerController();
+
+  test_helper_.AllowPluginVm();
+  EXPECT_TRUE(IsPluginVmAllowedForProfile(&testing_profile_));
+
+  // No spinner before doing anything
+  EXPECT_FALSE(spinner_controller->HasApp(kPluginVmAppId));
+
+  vm_tools::plugin_dispatcher::ListVmResponse list_vms_response;
+  list_vms_response.add_vm_info()->set_state(
+      vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
+  VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
+
+  plugin_vm_manager_.LaunchPluginVm();
+  base::RunLoop().RunUntilIdle();
+
+  // Spinner exists for first launch.
+  EXPECT_TRUE(spinner_controller->HasApp(kPluginVmAppId));
+  // Under normal operation, the Plugin VM window would appear and close the
+  // spinner. Since the ShowVm call doesn't actually do this, manually close
+  // the spinner.
+  spinner_controller->CloseSpinner(kPluginVmAppId);
+
+  plugin_vm_manager_.LaunchPluginVm();
+  base::RunLoop().RunUntilIdle();
+  // A second launch shouldn't show a spinner.
+  EXPECT_FALSE(spinner_controller->HasApp(kPluginVmAppId));
 }
 
 }  // namespace plugin_vm

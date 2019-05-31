@@ -49,9 +49,15 @@ class PluginVmManager : public KeyedService {
       base::Optional<vm_tools::concierge::GetVmInfoResponse> reply);
   void OnDefaultSharedDirExists(const base::FilePath& dir, bool exists);
 
+  // Called when LaunchPluginVm() is unsuccessful.
+  void LaunchFailed();
+
   Profile* profile_;
   std::string owner_id_;
   uint64_t seneschal_server_handle_ = 0;
+
+  // We display a spinner on the first launch as it tends to take a bit longer.
+  bool vm_has_been_launched_ = false;
 
   base::WeakPtrFactory<PluginVmManager> weak_ptr_factory_;
 

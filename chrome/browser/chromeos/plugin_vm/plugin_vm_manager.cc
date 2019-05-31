@@ -10,6 +10,9 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/vm_plugin_dispatcher_client.h"
@@ -66,8 +69,20 @@ PluginVmManager::~PluginVmManager() {}
 void PluginVmManager::LaunchPluginVm() {
   if (!IsPluginVmAllowedForProfile(profile_)) {
     LOG(ERROR) << "Attempted to launch PluginVm when it is not allowed";
-    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
+    LaunchFailed();
     return;
+  }
+
+  if (!vm_has_been_launched_) {
+    ChromeLauncherController* chrome_controller =
+        ChromeLauncherController::instance();
+    // Can be null in tests.
+    if (chrome_controller) {
+      chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
+          kPluginVmAppId,
+          std::make_unique<ShelfSpinnerItemController>(kPluginVmAppId));
+    }
+    vm_has_been_launched_ = true;
   }
 
   // Launching Plugin Vm goes through the following steps:
@@ -101,7 +116,7 @@ void PluginVmManager::StopPluginVm() {
 void PluginVmManager::OnStartPluginVmDispatcher(bool success) {
   if (!success) {
     LOG(ERROR) << "Failed to start Plugin Vm Dispatcher.";
-    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
+    LaunchFailed();
     return;
   }
 
@@ -118,12 +133,12 @@ void PluginVmManager::OnListVms(
     base::Optional<vm_tools::plugin_dispatcher::ListVmResponse> reply) {
   if (!reply.has_value() || reply->error()) {
     LOG(ERROR) << "Failed to list VMs.";
-    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
+    LaunchFailed();
     return;
   }
   if (reply->vm_info_size() != 1) {
     LOG(ERROR) << "Default VM is missing.";
-    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
+    LaunchFailed();
     return;
   }
 
@@ -148,10 +163,10 @@ void PluginVmManager::OnListVms(
       break;
     }
     default:
-      // TODO(timloh): We need some way to handle states like stopping, perhaps
-      // we should retry after a few seconds?
+      // TODO(timloh): Handle states like stopping by waiting for a signal of
+      // completion, and show a spinner while we wait.
       LOG(ERROR) << "Didn't start VM as it is in state " << vm_state;
-      RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
+      LaunchFailed();
       break;
   }
 }
@@ -160,7 +175,7 @@ void PluginVmManager::OnStartVm(
     base::Optional<vm_tools::plugin_dispatcher::StartVmResponse> reply) {
   if (!reply.has_value() || reply->error()) {
     LOG(ERROR) << "Failed to start VM.";
-    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
+    LaunchFailed();
     return;
   }
 
@@ -190,7 +205,7 @@ void PluginVmManager::OnShowVm(
     base::Optional<vm_tools::plugin_dispatcher::ShowVmResponse> reply) {
   if (!reply.has_value() || reply->error()) {
     LOG(ERROR) << "Failed to show VM.";
-    RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
+    LaunchFailed();
     return;
   }
 
@@ -232,4 +247,16 @@ void PluginVmManager::OnDefaultSharedDirExists(const base::FilePath& dir,
         }));
   }
 }
+
+void PluginVmManager::LaunchFailed() {
+  RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kError);
+
+  ChromeLauncherController* chrome_controller =
+      ChromeLauncherController::instance();
+  if (chrome_controller) {
+    chrome_controller->GetShelfSpinnerController()->CloseSpinner(
+        kPluginVmAppId);
+  }
+}
+
 }  // namespace plugin_vm
