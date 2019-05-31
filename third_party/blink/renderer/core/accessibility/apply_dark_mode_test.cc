@@ -29,26 +29,9 @@ TEST_F(ApplyDarkModeCheckTest, LightSolidBackgroundAlwaysFiltered) {
 TEST_F(ApplyDarkModeCheckTest, DarkSolidBackgroundFilteredIfPolicyIsFilterAll) {
   GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
                                                CSSValueID::kBlack);
-  // TODO(https://crbug.com/925949): Set opacity the same way as the other CSS
-  // properties.
-  GetLayoutView().MutableStyle()->SetOpacity(0.9);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(ShouldApplyDarkModeFilterToPage(
-      DarkModePagePolicy::kFilterByBackground, GetLayoutView()));
-  EXPECT_TRUE(ShouldApplyDarkModeFilterToPage(DarkModePagePolicy::kFilterAll,
-                                              GetLayoutView()));
-}
-
-TEST_F(ApplyDarkModeCheckTest, DarkLowOpacityBackgroundAlwaysFiltered) {
-  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
-                                               CSSValueID::kBlack);
-  // TODO(https://crbug.com/925949): Set opacity the same way as the other CSS
-  // properties.
-  GetLayoutView().MutableStyle()->SetOpacity(0.1);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_TRUE(ShouldApplyDarkModeFilterToPage(
       DarkModePagePolicy::kFilterByBackground, GetLayoutView()));
   EXPECT_TRUE(ShouldApplyDarkModeFilterToPage(DarkModePagePolicy::kFilterAll,
                                               GetLayoutView()));

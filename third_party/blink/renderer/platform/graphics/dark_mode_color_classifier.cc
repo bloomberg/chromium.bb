@@ -13,12 +13,11 @@ namespace blink {
 const float kOpacityThreshold = 0.4;
 
 // TODO(https://crbug.com/925949): Find a better algorithm for this.
-bool IsLight(const Color& color, float opacity) {
-  // Multiply the opacity by the alpha value to get a more accurate sense of how
-  // transparent the element is.
-  float real_opacity = opacity * (color.Alpha() / 255);
+bool IsLight(const Color& color) {
+  // Use the alpha value as the opacity.
+  float opacity = (color.Alpha() / 255);
   // Assume the color is light if the background is sufficiently transparent.
-  if (real_opacity < kOpacityThreshold) {
+  if (opacity < kOpacityThreshold) {
     return true;
   }
   double hue;

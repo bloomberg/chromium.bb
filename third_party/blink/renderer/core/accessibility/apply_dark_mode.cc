@@ -21,7 +21,7 @@ bool HasLightBackground(const LayoutView& root) {
   const ComputedStyle& style = root.StyleRef();
   if (style.HasBackground()) {
     Color color = style.VisitedDependentColor(GetCSSPropertyBackgroundColor());
-    return IsLight(color, style.Opacity());
+    return IsLight(color);
   }
 
   // If we can't easily determine the background color, default to inverting the

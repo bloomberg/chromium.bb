@@ -10,7 +10,7 @@
 
 namespace blink {
 
-bool PLATFORM_EXPORT IsLight(const Color& color, float opacity);
+bool PLATFORM_EXPORT IsLight(const Color& color);
 
 }  // namespace blink
 
