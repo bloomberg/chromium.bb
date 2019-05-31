@@ -663,8 +663,7 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
       LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
     } else {
       network_context_params->proxy_resolver_factory =
-          ChromeMojoProxyResolverFactory::CreateWithStrongBinding()
-              .PassInterface();
+          ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
     }
   }
 

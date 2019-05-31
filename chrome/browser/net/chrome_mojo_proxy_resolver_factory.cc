@@ -11,7 +11,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/service_manager_connection.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 ChromeMojoProxyResolverFactory::ChromeMojoProxyResolverFactory() = default;
 
@@ -19,28 +20,29 @@ ChromeMojoProxyResolverFactory::~ChromeMojoProxyResolverFactory() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-proxy_resolver::mojom::ProxyResolverFactoryPtr
-ChromeMojoProxyResolverFactory::CreateWithStrongBinding() {
-  proxy_resolver::mojom::ProxyResolverFactoryPtr proxy_resolver_factory;
-  mojo::MakeStrongBinding(std::make_unique<ChromeMojoProxyResolverFactory>(),
-                          mojo::MakeRequest(&proxy_resolver_factory));
-  return proxy_resolver_factory;
+mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
+ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver() {
+  mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory> remote;
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ChromeMojoProxyResolverFactory>(),
+      remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
 void ChromeMojoProxyResolverFactory::CreateResolver(
     const std::string& pac_script,
-    proxy_resolver::mojom::ProxyResolverRequest req,
-    proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client) {
+    mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolver> receiver,
+    mojo::PendingRemote<
+        proxy_resolver::mojom::ProxyResolverFactoryRequestClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Bind a ProxyResolverFactory backed by the proxy resolver service, have it
   // create a ProxyResolverFactory and then destroy the factory, to avoid
   // keeping the service alive after all resolvers have been destroyed.
-  proxy_resolver::mojom::ProxyResolverFactoryPtr resolver_factory;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(proxy_resolver::mojom::kProxyResolverServiceName,
-                      mojo::MakeRequest(&resolver_factory));
-  resolver_factory->CreateResolver(pac_script, std::move(req),
+  mojo::Remote<proxy_resolver::mojom::ProxyResolverFactory> resolver_factory;
+  content::ServiceManagerConnection::GetForProcess()->GetConnector()->Connect(
+      proxy_resolver::mojom::kProxyResolverServiceName,
+      resolver_factory.BindNewPipeAndPassReceiver());
+  resolver_factory->CreateResolver(pac_script, std::move(receiver),
                                    std::move(client));
 }

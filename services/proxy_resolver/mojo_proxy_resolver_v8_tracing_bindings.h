@@ -62,15 +62,16 @@ class MojoProxyResolverV8TracingBindings
 
  private:
   // HostResolverMojo::Impl override.
-  void ResolveDns(const std::string& hostname,
-                  net::ProxyResolveDnsOperation operation,
-                  mojom::HostResolverRequestClientPtr client) override {
+  void ResolveDns(
+      const std::string& hostname,
+      net::ProxyResolveDnsOperation operation,
+      mojo::PendingRemote<mojom::HostResolverRequestClient> client) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     client_->ResolveDns(hostname, operation, std::move(client));
   }
 
   base::ThreadChecker thread_checker_;
-  Client* client_;
+  Client* const client_;
   HostResolverMojo host_resolver_;
 };
 

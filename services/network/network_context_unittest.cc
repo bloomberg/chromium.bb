@@ -42,8 +42,8 @@
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/testing_pref_service.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/cache_type.h"
 #include "net/base/features.h"
@@ -4222,9 +4222,12 @@ class MockMojoProxyResolver : public proxy_resolver::mojom::ProxyResolver {
   // Overridden from proxy_resolver::mojom::ProxyResolver:
   void GetProxyForUrl(
       const GURL& url,
-      proxy_resolver::mojom::ProxyResolverRequestClientPtr client) override {
+      mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverRequestClient>
+          pending_client) override {
     // Report a Javascript error and then complete the request successfully,
     // having chosen DIRECT connections.
+    mojo::Remote<proxy_resolver::mojom::ProxyResolverRequestClient> client(
+        std::move(pending_client));
     client->OnError(42, "Failed: FindProxyForURL(url=" + url.spec() + ")");
 
     net::ProxyInfo result;
@@ -4247,21 +4250,26 @@ class MockMojoProxyResolverFactory
   // Binds and returns a mock ProxyResolverFactory whose lifetime is bound to
   // the message pipe.
   static proxy_resolver::mojom::ProxyResolverFactoryPtrInfo Create() {
-    proxy_resolver::mojom::ProxyResolverFactoryPtrInfo ptr_info;
-    mojo::MakeStrongBinding(std::make_unique<MockMojoProxyResolverFactory>(),
-                            mojo::MakeRequest(&ptr_info));
-    return ptr_info;
+    mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory> remote;
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<MockMojoProxyResolverFactory>(),
+        remote.InitWithNewPipeAndPassReceiver());
+    return remote;
   }
 
  private:
   void CreateResolver(
       const std::string& pac_url,
-      mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> request,
-      proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client)
-      override {
-    // Bind |request| to a new MockMojoProxyResolver, and return success.
-    mojo::MakeStrongBinding(std::make_unique<MockMojoProxyResolver>(),
-                            std::move(request));
+      mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolver> receiver,
+      mojo::PendingRemote<
+          proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
+          pending_client) override {
+    // Bind |receiver| to a new MockMojoProxyResolver, and return success.
+    mojo::MakeSelfOwnedReceiver(std::make_unique<MockMojoProxyResolver>(),
+                                std::move(receiver));
+
+    mojo::Remote<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
+        client(std::move(pending_client));
     client->ReportResult(net::OK);
   }
 

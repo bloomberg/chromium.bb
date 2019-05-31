@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
@@ -20,25 +20,19 @@ namespace proxy_resolver {
 
 class ProxyResolverService : public service_manager::Service {
  public:
-  explicit ProxyResolverService(service_manager::mojom::ServiceRequest request);
+  explicit ProxyResolverService(
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
   ~ProxyResolverService() override;
 
   // Lifescycle events that occur after the service has started to spinup.
-  void OnStart() override;
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void OnConnect(const service_manager::ConnectSourceInfo& source,
+                 const std::string& interface_name,
+                 mojo::ScopedMessagePipeHandle receiver_pipe) override;
 
  private:
-  void OnProxyResolverFactoryRequest(
-      proxy_resolver::mojom::ProxyResolverFactoryRequest request);
-
   service_manager::ServiceBinding service_binding_;
   service_manager::ServiceKeepalive service_keepalive_;
-
   ProxyResolverFactoryImpl proxy_resolver_factory_;
-
-  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverService);
 };

@@ -10,8 +10,8 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/test_completion_callback.h"
 #include "net/proxy_resolution/mock_proxy_resolver.h"
@@ -33,10 +33,10 @@ const char kScriptData[] = "FooBarBaz";
 
 class FakeProxyResolver : public net::ProxyResolverV8Tracing {
  public:
-  explicit FakeProxyResolver(const base::Closure& on_destruction)
-      : on_destruction_(on_destruction) {}
+  explicit FakeProxyResolver(base::OnceClosure on_destruction)
+      : on_destruction_(std::move(on_destruction)) {}
 
-  ~FakeProxyResolver() override { on_destruction_.Run(); }
+  ~FakeProxyResolver() override { std::move(on_destruction_).Run(); }
 
  private:
   // net::ProxyResolverV8Tracing overrides.
@@ -46,7 +46,7 @@ class FakeProxyResolver : public net::ProxyResolverV8Tracing {
                       std::unique_ptr<net::ProxyResolver::Request>* request,
                       std::unique_ptr<Bindings> bindings) override {}
 
-  const base::Closure on_destruction_;
+  base::OnceClosure on_destruction_;
 };
 
 enum Event {
@@ -78,7 +78,7 @@ class TestProxyResolverFactory : public net::ProxyResolverV8TracingFactory {
     waiter_->NotifyEvent(RESOLVER_CREATED);
     EXPECT_EQ(base::ASCIIToUTF16(kScriptData), pac_script->utf16());
     EXPECT_TRUE(resolver);
-    pending_request_.reset(new PendingRequest);
+    pending_request_ = std::make_unique<PendingRequest>();
     pending_request_->resolver = resolver;
     pending_request_->callback = std::move(callback);
 
@@ -123,15 +123,15 @@ class ProxyResolverFactoryImplTest
     mock_factory_ = test_factory.get();
     mock_factory_impl_ =
         std::make_unique<TestProxyResolverFactoryImpl>(std::move(test_factory));
-    mock_factory_impl_->BindRequest(mojo::MakeRequest(&factory_),
-                                    &service_keepalive_);
+    mock_factory_impl_->BindReceiver(factory_.BindNewPipeAndPassReceiver(),
+                                     &service_keepalive_);
   }
 
   ~ProxyResolverFactoryImplTest() override {
     service_keepalive_.RemoveObserver(this);
   }
 
-  void OnConnectionError() { waiter_.NotifyEvent(CONNECTION_ERROR); }
+  void OnDisconnect() { waiter_.NotifyEvent(CONNECTION_ERROR); }
 
   void OnFakeProxyInstanceDestroyed() {
     instances_destroyed_++;
@@ -146,9 +146,10 @@ class ProxyResolverFactoryImplTest
 
   void OnError(int32_t line_number, const std::string& message) override {}
 
-  void ResolveDns(const std::string& hostname,
-                  net::ProxyResolveDnsOperation operation,
-                  mojom::HostResolverRequestClientPtr client) override {}
+  void ResolveDns(
+      const std::string& hostname,
+      net::ProxyResolveDnsOperation operation,
+      mojo::PendingRemote<mojom::HostResolverRequestClient> client) override {}
 
   void WaitForNoServiceRefs() {
     DCHECK(!service_keepalive_ref_run_loop_);
@@ -173,7 +174,7 @@ class ProxyResolverFactoryImplTest
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<TestProxyResolverFactoryImpl> mock_factory_impl_;
   TestProxyResolverFactory* mock_factory_;
-  mojom::ProxyResolverFactoryPtr factory_;
+  mojo::Remote<mojom::ProxyResolverFactory> factory_;
 
   service_manager::ServiceKeepalive service_keepalive_;
   std::unique_ptr<base::RunLoop> service_keepalive_ref_run_loop_;
@@ -185,24 +186,25 @@ class ProxyResolverFactoryImplTest
 };
 
 TEST_F(ProxyResolverFactoryImplTest, DisconnectProxyResolverClient) {
-  mojom::ProxyResolverPtr proxy_resolver;
-  mojom::ProxyResolverFactoryRequestClientPtr client_ptr;
-  mojo::Binding<ProxyResolverFactoryRequestClient> client_binding(
-      this, mojo::MakeRequest(&client_ptr));
-  factory_->CreateResolver(kScriptData, mojo::MakeRequest(&proxy_resolver),
-                           std::move(client_ptr));
-  proxy_resolver.set_connection_error_handler(
-      base::Bind(&ProxyResolverFactoryImplTest::OnConnectionError,
-                 base::Unretained(this)));
+  mojo::Remote<mojom::ProxyResolver> proxy_resolver;
+  mojo::PendingRemote<mojom::ProxyResolverFactoryRequestClient> client;
+  mojo::Receiver<ProxyResolverFactoryRequestClient> client_receiver(
+      this, client.InitWithNewPipeAndPassReceiver());
+  factory_->CreateResolver(kScriptData,
+                           proxy_resolver.BindNewPipeAndPassReceiver(),
+                           std::move(client));
+  proxy_resolver.set_disconnect_handler(base::BindOnce(
+      &ProxyResolverFactoryImplTest::OnDisconnect, base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
   ASSERT_EQ(1u, mock_factory_->requests_handled());
   net::TestCompletionCallback create_callback;
   create_callback_ = create_callback.callback();
   ASSERT_TRUE(mock_factory_->pending_request());
-  mock_factory_->pending_request()->resolver->reset(new FakeProxyResolver(
-      base::Bind(&ProxyResolverFactoryImplTest::OnFakeProxyInstanceDestroyed,
-                 base::Unretained(this))));
+  *mock_factory_->pending_request()->resolver =
+      std::make_unique<FakeProxyResolver>(base::BindOnce(
+          &ProxyResolverFactoryImplTest::OnFakeProxyInstanceDestroyed,
+          base::Unretained(this)));
   std::move(mock_factory_->pending_request()->callback).Run(net::OK);
   EXPECT_THAT(create_callback.WaitForResult(), IsOk());
   EXPECT_FALSE(service_keepalive_.HasNoRefs());
@@ -222,25 +224,26 @@ TEST_F(ProxyResolverFactoryImplTest, DisconnectProxyResolverClient) {
 // Same as above, but disconnect the factory right after the CreateResolver
 // call, which should not prevent the request from succeeding.
 TEST_F(ProxyResolverFactoryImplTest, DisconnectProxyResolverFactory) {
-  mojom::ProxyResolverPtr proxy_resolver;
-  mojom::ProxyResolverFactoryRequestClientPtr client_ptr;
-  mojo::Binding<ProxyResolverFactoryRequestClient> client_binding(
-      this, mojo::MakeRequest(&client_ptr));
-  factory_->CreateResolver(kScriptData, mojo::MakeRequest(&proxy_resolver),
-                           std::move(client_ptr));
+  mojo::Remote<mojom::ProxyResolver> proxy_resolver;
+  mojo::PendingRemote<mojom::ProxyResolverFactoryRequestClient> client;
+  mojo::Receiver<ProxyResolverFactoryRequestClient> client_receiver(
+      this, client.InitWithNewPipeAndPassReceiver());
+  factory_->CreateResolver(kScriptData,
+                           proxy_resolver.BindNewPipeAndPassReceiver(),
+                           std::move(client));
   factory_.reset();
-  proxy_resolver.set_connection_error_handler(
-      base::Bind(&ProxyResolverFactoryImplTest::OnConnectionError,
-                 base::Unretained(this)));
+  proxy_resolver.set_disconnect_handler(base::BindOnce(
+      &ProxyResolverFactoryImplTest::OnDisconnect, base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
   ASSERT_EQ(1u, mock_factory_->requests_handled());
   net::TestCompletionCallback create_callback;
   create_callback_ = create_callback.callback();
   ASSERT_TRUE(mock_factory_->pending_request());
-  mock_factory_->pending_request()->resolver->reset(new FakeProxyResolver(
-      base::Bind(&ProxyResolverFactoryImplTest::OnFakeProxyInstanceDestroyed,
-                 base::Unretained(this))));
+  *mock_factory_->pending_request()->resolver =
+      std::make_unique<FakeProxyResolver>(base::BindOnce(
+          &ProxyResolverFactoryImplTest::OnFakeProxyInstanceDestroyed,
+          base::Unretained(this)));
   std::move(mock_factory_->pending_request()->callback).Run(net::OK);
   EXPECT_THAT(create_callback.WaitForResult(), IsOk());
   EXPECT_FALSE(service_keepalive_.HasNoRefs());
@@ -256,15 +259,16 @@ TEST_F(ProxyResolverFactoryImplTest, DisconnectProxyResolverFactory) {
 }
 
 TEST_F(ProxyResolverFactoryImplTest, Error) {
-  mojom::ProxyResolverPtr proxy_resolver;
-  mojom::ProxyResolverFactoryRequestClientPtr client_ptr;
-  mojo::Binding<ProxyResolverFactoryRequestClient> client_binding(
-      this, mojo::MakeRequest(&client_ptr));
-  factory_->CreateResolver(kScriptData, mojo::MakeRequest(&proxy_resolver),
-                           std::move(client_ptr));
-  proxy_resolver.set_connection_error_handler(
-      base::Bind(&ProxyResolverFactoryImplTest::OnConnectionError,
-                 base::Unretained(this)));
+  mojo::Remote<mojom::ProxyResolver> proxy_resolver;
+  mojo::PendingRemote<mojom::ProxyResolverFactoryRequestClient> client;
+  mojo::Receiver<ProxyResolverFactoryRequestClient> client_receiver(
+      this, client.InitWithNewPipeAndPassReceiver());
+  factory_->CreateResolver(kScriptData,
+                           proxy_resolver.BindNewPipeAndPassReceiver(),
+                           std::move(client));
+  factory_.reset();
+  proxy_resolver.set_disconnect_handler(base::BindOnce(
+      &ProxyResolverFactoryImplTest::OnDisconnect, base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
   ASSERT_EQ(1u, mock_factory_->requests_handled());
@@ -278,19 +282,20 @@ TEST_F(ProxyResolverFactoryImplTest, Error) {
 }
 
 TEST_F(ProxyResolverFactoryImplTest, DisconnectClientDuringResolverCreation) {
-  mojom::ProxyResolverPtr proxy_resolver;
-  mojom::ProxyResolverFactoryRequestClientPtr client_ptr;
-  mojo::Binding<ProxyResolverFactoryRequestClient> client_binding(
-      this, mojo::MakeRequest(&client_ptr));
-  factory_->CreateResolver(kScriptData, mojo::MakeRequest(&proxy_resolver),
-                           std::move(client_ptr));
-  proxy_resolver.set_connection_error_handler(
-      base::Bind(&ProxyResolverFactoryImplTest::OnConnectionError,
-                 base::Unretained(this)));
+  mojo::Remote<mojom::ProxyResolver> proxy_resolver;
+  mojo::PendingRemote<mojom::ProxyResolverFactoryRequestClient> client;
+  mojo::Receiver<ProxyResolverFactoryRequestClient> client_receiver(
+      this, client.InitWithNewPipeAndPassReceiver());
+  factory_->CreateResolver(kScriptData,
+                           proxy_resolver.BindNewPipeAndPassReceiver(),
+                           std::move(client));
+  factory_.reset();
+  proxy_resolver.set_disconnect_handler(base::BindOnce(
+      &ProxyResolverFactoryImplTest::OnDisconnect, base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
   ASSERT_EQ(1u, mock_factory_->requests_handled());
-  client_binding.Close();
+  client_receiver.reset();
   waiter_.WaitForEvent(CONNECTION_ERROR);
 }
 
@@ -300,9 +305,9 @@ TEST_F(ProxyResolverFactoryImplTest, MultipleFactories) {
   EXPECT_FALSE(service_keepalive_.HasNoRefs());
 
   // Creating another shouldn't change that.
-  mojom::ProxyResolverFactoryPtr factory2;
-  mock_factory_impl_->BindRequest(mojo::MakeRequest(&factory2),
-                                  &service_keepalive_);
+  mojo::Remote<mojom::ProxyResolverFactory> factory2;
+  mock_factory_impl_->BindReceiver(factory2.BindNewPipeAndPassReceiver(),
+                                   &service_keepalive_);
   EXPECT_FALSE(service_keepalive_.HasNoRefs());
 
   // Destroying one factory while keeping the other around should not release
@@ -317,8 +322,8 @@ TEST_F(ProxyResolverFactoryImplTest, MultipleFactories) {
 
   // Test that creating and then destroying a new factory gets and releases a
   // reference again.
-  mock_factory_impl_->BindRequest(mojo::MakeRequest(&factory2),
-                                  &service_keepalive_);
+  mock_factory_impl_->BindReceiver(factory2.BindNewPipeAndPassReceiver(),
+                                   &service_keepalive_);
   EXPECT_FALSE(service_keepalive_.HasNoRefs());
   factory2.reset();
   WaitForNoServiceRefs();

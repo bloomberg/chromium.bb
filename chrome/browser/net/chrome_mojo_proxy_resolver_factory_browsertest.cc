@@ -18,7 +18,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 
@@ -37,11 +38,10 @@ class TestServiceManagerListener
     : public service_manager::mojom::ServiceManagerListener {
  public:
   explicit TestServiceManagerListener(
-      service_manager::mojom::ServiceManager* service_manager)
-      : binding_(this) {
-    service_manager::mojom::ServiceManagerListenerPtr listener_ptr;
-    binding_.Bind(mojo::MakeRequest(&listener_ptr));
-    service_manager->AddListener(std::move(listener_ptr));
+      service_manager::mojom::ServiceManager* service_manager) {
+    service_manager::mojom::ServiceManagerListenerPtr listener;
+    receiver_.Bind(mojo::MakeRequest(&listener));
+    service_manager->AddListener(std::move(listener));
   }
 
   bool service_running() const { return service_running_; }
@@ -105,10 +105,11 @@ class TestServiceManagerListener
       std::move(on_service_event_loop_closure_).Run();
   }
 
-  mojo::Binding<service_manager::mojom::ServiceManagerListener> binding_;
+  mojo::Receiver<service_manager::mojom::ServiceManagerListener> receiver_{
+      this};
 
   bool service_running_ = false;
-  base::Closure on_service_event_loop_closure_;
+  base::OnceClosure on_service_event_loop_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TestServiceManagerListener);
 };
@@ -119,17 +120,20 @@ class TestServiceManagerListener
 class DumbProxyResolverFactoryRequestClient
     : public proxy_resolver::mojom::ProxyResolverFactoryRequestClient {
  public:
-  DumbProxyResolverFactoryRequestClient() : binding_(this) {}
+  DumbProxyResolverFactoryRequestClient() = default;
 
   ~DumbProxyResolverFactoryRequestClient() override {
-    EXPECT_TRUE(binding_.is_bound());
+    EXPECT_TRUE(receiver_.is_bound());
   }
 
   void CreateResolver(
       proxy_resolver::mojom::ProxyResolverFactory* resolver_factory) {
-    proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr resolver_client;
-    binding_.Bind(mojo::MakeRequest(&resolver_client));
-    resolver_factory->CreateResolver(kPacScript, mojo::MakeRequest(&resolver_),
+    mojo::PendingRemote<
+        proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
+        resolver_client;
+    receiver_.Bind(resolver_client.InitWithNewPipeAndPassReceiver());
+    resolver_factory->CreateResolver(kPacScript,
+                                     resolver_.BindNewPipeAndPassReceiver(),
                                      std::move(resolver_client));
     // Wait for proxy resolver to be created, to avoid any races between
     // creating one resolver and destroying the next one.
@@ -147,11 +151,12 @@ class DumbProxyResolverFactoryRequestClient
   void ResolveDns(
       const std::string& hostname,
       net::ProxyResolveDnsOperation operation,
-      proxy_resolver::mojom::HostResolverRequestClientPtr client) override {}
+      mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+          client) override {}
 
-  proxy_resolver::mojom::ProxyResolverPtr resolver_;
-  mojo::Binding<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
-      binding_;
+  mojo::Remote<proxy_resolver::mojom::ProxyResolver> resolver_;
+  mojo::Receiver<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
+      receiver_{this};
   base::RunLoop run_loop_;
 };
 
@@ -160,10 +165,9 @@ class ChromeMojoProxyResolverFactoryBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     // Access the service manager so a listener for service creation/destruction
     // can be set-up.
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(service_manager::mojom::kServiceName,
-                        &service_manager_);
+    content::ServiceManagerConnection::GetForProcess()->GetConnector()->Connect(
+        service_manager::mojom::kServiceName,
+        service_manager_.BindNewPipeAndPassReceiver());
 
     listener_ =
         std::make_unique<TestServiceManagerListener>(service_manager_.get());
@@ -172,7 +176,7 @@ class ChromeMojoProxyResolverFactoryBrowserTest : public InProcessBrowserTest {
   TestServiceManagerListener* listener() const { return listener_.get(); }
 
  private:
-  mojo::InterfacePtr<service_manager::mojom::ServiceManager> service_manager_;
+  mojo::Remote<service_manager::mojom::ServiceManager> service_manager_;
   std::unique_ptr<TestServiceManagerListener> listener_;
 };
 
@@ -181,8 +185,8 @@ class ChromeMojoProxyResolverFactoryBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
                        ServiceLifecycle) {
   // Set up the ProxyResolverFactory.
-  proxy_resolver::mojom::ProxyResolverFactoryPtr resolver_factory =
-      ChromeMojoProxyResolverFactory::CreateWithStrongBinding();
+  mojo::Remote<proxy_resolver::mojom::ProxyResolverFactory> resolver_factory(
+      ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver());
 
   // Create a resolver, this should create and start the service.
   std::unique_ptr<DumbProxyResolverFactoryRequestClient> resolver_client1 =
@@ -221,8 +225,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
 IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
                        DestroyFactory) {
   // Set up the ProxyResolverFactory.
-  proxy_resolver::mojom::ProxyResolverFactoryPtr resolver_factory =
-      ChromeMojoProxyResolverFactory::CreateWithStrongBinding();
+  mojo::Remote<proxy_resolver::mojom::ProxyResolverFactory> resolver_factory(
+      ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver());
 
   // Create a resolver, this should create and start the service.
   std::unique_ptr<DumbProxyResolverFactoryRequestClient> resolver_client1 =
@@ -263,8 +267,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
 IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
                        DestroyAndCreateService) {
   // Set up the ProxyResolverFactory.
-  proxy_resolver::mojom::ProxyResolverFactoryPtr resolver_factory =
-      ChromeMojoProxyResolverFactory::CreateWithStrongBinding();
+  mojo::Remote<proxy_resolver::mojom::ProxyResolverFactory> resolver_factory(
+      ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver());
 
   // Create a resolver, this should create and start the service.
   std::unique_ptr<DumbProxyResolverFactoryRequestClient> resolver_client =

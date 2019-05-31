@@ -35,8 +35,9 @@ class ProxyResolverImpl : public mojom::ProxyResolver {
   class Job;
 
   // mojom::ProxyResolver overrides.
-  void GetProxyForUrl(const GURL& url,
-                      mojom::ProxyResolverRequestClientPtr client) override;
+  void GetProxyForUrl(
+      const GURL& url,
+      mojo::PendingRemote<mojom::ProxyResolverRequestClient> client) override;
 
   void DeleteJob(Job* job);
 

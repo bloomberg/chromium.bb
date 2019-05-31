@@ -9,7 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
@@ -26,22 +27,24 @@ class TestMojoProxyResolverFactory
   // Returns true if CreateResolver was called.
   bool resolver_created() const { return resolver_created_; }
 
-  proxy_resolver::mojom::ProxyResolverFactoryPtr CreateFactoryInterface();
+  mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
+  CreateFactoryRemote();
 
   // Overridden from interfaces::ProxyResolverFactory:
   void CreateResolver(
       const std::string& pac_script,
-      proxy_resolver::mojom::ProxyResolverRequest req,
-      proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client)
+      mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolver> receiver,
+      mojo::PendingRemote<
+          proxy_resolver::mojom::ProxyResolverFactoryRequestClient> client)
       override;
 
  private:
   service_manager::ServiceKeepalive service_keepalive_;
   proxy_resolver::ProxyResolverFactoryImpl proxy_resolver_factory_impl_;
 
-  proxy_resolver::mojom::ProxyResolverFactoryPtr factory_;
+  mojo::Remote<proxy_resolver::mojom::ProxyResolverFactory> factory_;
 
-  mojo::Binding<ProxyResolverFactory> binding_;
+  mojo::Receiver<ProxyResolverFactory> receiver_{this};
 
   bool resolver_created_ = false;
 

@@ -25,9 +25,10 @@ class HostResolverMojo : public net::ProxyHostResolver {
   class Impl {
    public:
     virtual ~Impl() = default;
-    virtual void ResolveDns(const std::string& hostname,
-                            net::ProxyResolveDnsOperation operation,
-                            mojom::HostResolverRequestClientPtr) = 0;
+    virtual void ResolveDns(
+        const std::string& hostname,
+        net::ProxyResolveDnsOperation operation,
+        mojo::PendingRemote<mojom::HostResolverRequestClient> client) = 0;
   };
 
   // |impl| must outlive |this|.

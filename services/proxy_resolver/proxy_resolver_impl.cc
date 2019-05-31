@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/pac_file_data.h"
 #include "net/proxy_resolution/proxy_info.h"
@@ -19,7 +20,7 @@ namespace proxy_resolver {
 
 class ProxyResolverImpl::Job {
  public:
-  Job(mojom::ProxyResolverRequestClientPtr client,
+  Job(mojo::PendingRemote<mojom::ProxyResolverRequestClient> client,
       ProxyResolverImpl* resolver,
       const GURL& url);
   ~Job();
@@ -29,13 +30,13 @@ class ProxyResolverImpl::Job {
  private:
   // Mojo error handler. This is invoked in response to the client
   // disconnecting, indicating cancellation.
-  void OnConnectionError();
+  void OnDisconnect();
 
   void GetProxyDone(int error);
 
   ProxyResolverImpl* resolver_;
 
-  mojom::ProxyResolverRequestClientPtr client_;
+  mojo::Remote<mojom::ProxyResolverRequestClient> client_;
   net::ProxyInfo result_;
   GURL url_;
   std::unique_ptr<net::ProxyResolver::Request> request_;
@@ -49,11 +50,11 @@ ProxyResolverImpl::ProxyResolverImpl(
     std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref)
     : resolver_(std::move(resolver)), service_ref_(std::move(service_ref)) {}
 
-ProxyResolverImpl::~ProxyResolverImpl() {}
+ProxyResolverImpl::~ProxyResolverImpl() = default;
 
 void ProxyResolverImpl::GetProxyForUrl(
     const GURL& url,
-    mojom::ProxyResolverRequestClientPtr client) {
+    mojo::PendingRemote<mojom::ProxyResolverRequestClient> client) {
   DVLOG(1) << "GetProxyForUrl(" << url << ")";
   std::unique_ptr<Job> job =
       std::make_unique<Job>(std::move(client), this, url);
@@ -67,24 +68,25 @@ void ProxyResolverImpl::DeleteJob(Job* job) {
   DCHECK_EQ(1U, erased_count);
 }
 
-ProxyResolverImpl::Job::Job(mojom::ProxyResolverRequestClientPtr client,
-                            ProxyResolverImpl* resolver,
-                            const GURL& url)
+ProxyResolverImpl::Job::Job(
+    mojo::PendingRemote<mojom::ProxyResolverRequestClient> client,
+    ProxyResolverImpl* resolver,
+    const GURL& url)
     : resolver_(resolver),
       client_(std::move(client)),
       url_(url),
       done_(false) {}
 
-ProxyResolverImpl::Job::~Job() {}
+ProxyResolverImpl::Job::~Job() = default;
 
 void ProxyResolverImpl::Job::Start() {
   resolver_->resolver_->GetProxyForURL(
-      url_, &result_, base::Bind(&Job::GetProxyDone, base::Unretained(this)),
-      &request_,
+      url_, &result_,
+      base::BindOnce(&Job::GetProxyDone, base::Unretained(this)), &request_,
       std::make_unique<MojoProxyResolverV8TracingBindings<
           mojom::ProxyResolverRequestClient>>(client_.get()));
-  client_.set_connection_error_handler(base::Bind(
-      &ProxyResolverImpl::Job::OnConnectionError, base::Unretained(this)));
+  client_.set_disconnect_handler(base::BindOnce(
+      &ProxyResolverImpl::Job::OnDisconnect, base::Unretained(this)));
 }
 
 void ProxyResolverImpl::Job::GetProxyDone(int error) {
@@ -102,7 +104,7 @@ void ProxyResolverImpl::Job::GetProxyDone(int error) {
   resolver_->DeleteJob(this);
 }
 
-void ProxyResolverImpl::Job::OnConnectionError() {
+void ProxyResolverImpl::Job::OnDisconnect() {
   resolver_->DeleteJob(this);
 }
 

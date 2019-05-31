@@ -7,34 +7,31 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
 TestMojoProxyResolverFactory::TestMojoProxyResolverFactory()
     : service_keepalive_(static_cast<service_manager::ServiceBinding*>(nullptr),
-                         base::nullopt),
-      binding_(this) {
-  proxy_resolver_factory_impl_.BindRequest(mojo::MakeRequest(&factory_),
-                                           &service_keepalive_);
+                         base::nullopt) {
+  proxy_resolver_factory_impl_.BindReceiver(
+      factory_.BindNewPipeAndPassReceiver(), &service_keepalive_);
 }
 
 TestMojoProxyResolverFactory::~TestMojoProxyResolverFactory() = default;
 
 void TestMojoProxyResolverFactory::CreateResolver(
     const std::string& pac_script,
-    proxy_resolver::mojom::ProxyResolverRequest req,
-    proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client) {
+    mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolver> receiver,
+    mojo::PendingRemote<
+        proxy_resolver::mojom::ProxyResolverFactoryRequestClient> client) {
   resolver_created_ = true;
-  factory_->CreateResolver(pac_script, std::move(req), std::move(client));
+  factory_->CreateResolver(pac_script, std::move(receiver), std::move(client));
 }
 
-proxy_resolver::mojom::ProxyResolverFactoryPtr
-TestMojoProxyResolverFactory::CreateFactoryInterface() {
-  DCHECK(!binding_.is_bound());
-  proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_factory;
-  binding_.Bind(mojo::MakeRequest(&mojo_factory));
-  return mojo_factory;
+mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
+TestMojoProxyResolverFactory::CreateFactoryRemote() {
+  DCHECK(!receiver_.is_bound());
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
 }  // namespace content

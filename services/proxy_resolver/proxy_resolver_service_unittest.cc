@@ -30,12 +30,13 @@ class ProxyResolverServiceTest : public testing::Test {
 // Check that destroying the service while there's a live ProxyResolverFactory
 // is safe.
 TEST_F(ProxyResolverServiceTest, ShutdownServiceWithLiveProxyResolverFactory) {
-  mojom::ProxyResolverFactoryPtr proxy_resolver_factory;
-  connector_factory_.GetDefaultConnector()->BindInterface(
-      mojom::kProxyResolverServiceName, &proxy_resolver_factory);
+  mojo::Remote<mojom::ProxyResolverFactory> proxy_resolver_factory;
+  connector_factory_.GetDefaultConnector()->Connect(
+      mojom::kProxyResolverServiceName,
+      proxy_resolver_factory.BindNewPipeAndPassReceiver());
 
   // Wait for the ProxyFactory to be bound.
-  task_environment_.RunUntilIdle();
+  proxy_resolver_factory.FlushForTesting();
 
   // Simulate the service being destroyed. No crash should occur.
   service_.reset();

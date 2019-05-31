@@ -13,28 +13,22 @@
 namespace proxy_resolver {
 
 ProxyResolverService::ProxyResolverService(
-    service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+    : service_binding_(this, std::move(receiver)),
       service_keepalive_(&service_binding_, base::TimeDelta()) {}
 
 ProxyResolverService::~ProxyResolverService() = default;
 
-void ProxyResolverService::OnStart() {
-  registry_.AddInterface(
-      base::Bind(&ProxyResolverService::OnProxyResolverFactoryRequest,
-                 base::Unretained(this)));
-}
-
-void ProxyResolverService::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
+void ProxyResolverService::OnConnect(
+    const service_manager::ConnectSourceInfo& source,
     const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
-}
-
-void ProxyResolverService::OnProxyResolverFactoryRequest(
-    proxy_resolver::mojom::ProxyResolverFactoryRequest request) {
-  proxy_resolver_factory_.BindRequest(std::move(request), &service_keepalive_);
+    mojo::ScopedMessagePipeHandle receiver_pipe) {
+  if (interface_name == mojom::ProxyResolverFactory::Name_) {
+    proxy_resolver_factory_.BindReceiver(
+        mojo::PendingReceiver<mojom::ProxyResolverFactory>(
+            std::move(receiver_pipe)),
+        &service_keepalive_);
+  }
 }
 
 }  // namespace proxy_resolver
