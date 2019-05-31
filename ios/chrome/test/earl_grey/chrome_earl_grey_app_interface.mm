@@ -170,12 +170,9 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 }
 
 + (BOOL)tapWebStateElementWithID:(NSString*)elementID error:(NSError*)error {
-  NSError* __autoreleasing autoreleasingError = nil;
-  bool success = web::test::TapWebViewElementWithId(
+  return web::test::TapWebViewElementWithId(
       chrome_test_util::GetCurrentWebState(),
-      base::SysNSStringToUTF8(elementID), &autoreleasingError);
-  error = autoreleasingError;
-  return success;
+      base::SysNSStringToUTF8(elementID), &error);
 }
 
 + (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {
