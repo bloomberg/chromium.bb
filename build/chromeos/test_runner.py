@@ -402,6 +402,7 @@ class GTestTest(RemoteTest):
     self._test_launcher_total_shards = args.test_launcher_total_shards
 
     self._on_device_script = None
+    self._stop_ui = args.stop_ui
 
   @property
   def suite_name(self):
@@ -469,9 +470,7 @@ class GTestTest(RemoteTest):
     if self._additional_args:
       test_invocation += ' %s' % ' '.join(self._additional_args)
 
-    if self._test_exe == 'interactive_ui_tests':
-      # interactive_ui_tests needs some special setup. See crbug.com/946685#c4
-      # TODO(bpastene): Put all this behind a flag if more suites need it.
+    if self._stop_ui:
       device_test_script_contents += [
           'stop ui',
       ]
@@ -772,6 +771,9 @@ def main():
       '--test-launcher-total-shards',
       type=int, default=os.environ.get('GTEST_TOTAL_SHARDS', 1),
       help='Total number of external shards.')
+  gtest_parser.add_argument(
+      '--stop-ui', action='store_true',
+      help='Will stop the UI service in the device before running the test.')
 
   # Tast test args.
   # pylint: disable=line-too-long

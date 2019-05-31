@@ -4117,7 +4117,7 @@
       },
       {
         "args": [
-          "--ozone-platform=headless"
+          "--stop-ui"
         ],
         "isolate_coverage_data": true,
         "merge": {

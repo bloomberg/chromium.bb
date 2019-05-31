@@ -244,6 +244,7 @@
       'google_apis_unittests': {},
       'interactive_ui_tests': {
         'args': [
+          '--stop-ui',
           '--dbus-stub',
           '--gtest_filter=SplitViewTest.SplitViewResize',
         ],
@@ -278,7 +279,7 @@
       },
       'ozone_gl_unittests': {
         'args': [
-          '--ozone-platform=headless',
+          '--stop-ui',
         ],
       },
       'ozone_unittests': {},

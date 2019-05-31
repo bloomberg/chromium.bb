@@ -191,6 +191,7 @@
       },
       {
         "args": [
+          "--stop-ui",
           "--dbus-stub",
           "--gtest_filter=SplitViewTest.SplitViewResize"
         ],
@@ -345,7 +346,7 @@
       },
       {
         "args": [
-          "--ozone-platform=headless"
+          "--stop-ui"
         ],
         "merge": {
           "args": [],
