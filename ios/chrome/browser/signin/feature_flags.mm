@@ -16,7 +16,7 @@ const base::Feature kUseNSURLSessionForGaiaSigninRequests{
     "UseNSURLSessionForGaiaSigninRequests", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIdentityDisc{"IdentityDisc",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsIdentityDiscFeatureEnabled() {
   // Checks feature flag and any dependencies. Display of Identity Disc depends
