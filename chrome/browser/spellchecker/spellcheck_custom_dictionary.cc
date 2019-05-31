@@ -453,9 +453,9 @@ void SpellcheckCustomDictionary::OnLoaded(
     fix_invalid_file_.Reset(
         base::BindOnce(&SpellcheckCustomDictionary::FixInvalidFile,
                        weak_ptr_factory_.GetWeakPtr(), std::move(result)));
-    BrowserThread::PostAfterStartupTask(
+    base::PostTaskWithTraits(
         FROM_HERE,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         fix_invalid_file_.callback());
   }
 }
