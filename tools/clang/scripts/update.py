@@ -248,8 +248,8 @@ def UpdateClang():
   if ReadStampFile(STAMP_FILE) == expected_stamp:
     return 0
 
-  if os.path.exists(LLVM_BUILD_DIR):
-    RmTree(LLVM_BUILD_DIR)
+  if os.path.exists(os.path.dirname(LLVM_BUILD_DIR)):
+    RmTree(os.path.dirname(LLVM_BUILD_DIR))
 
   DownloadAndUnpackClangPackage(sys.platform, LLVM_BUILD_DIR)
   if 'win' in target_os:
