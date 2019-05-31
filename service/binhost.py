@@ -16,6 +16,17 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
 
+# The name of the ACL argument file.
+_GOOGLESTORAGE_GSUTIL_FILE = 'googlestorage_acl.txt'
+
+
+class Error(Exception):
+  """Base error class for the module."""
+
+
+class NoAclFileFound(Error):
+  """No ACL file could be found."""
+
 
 def _ValidateBinhostConf(path, key):
   """Validates the binhost conf file defines only one environment variable.
@@ -171,6 +182,7 @@ def SetBinhost(target, key, uri, private=True):
   osutils.WriteFile(conf_path, '%s="%s"' % (key, uri))
   return conf_path
 
+
 def RegenBuildCache(overlay_type, sysroot_path):
   """Regenerate the Build Cache for the given target.
 
@@ -181,3 +193,28 @@ def RegenBuildCache(overlay_type, sysroot_path):
   overlays = portage_util.FindOverlays(overlay_type, buildroot=sysroot_path)
   task_inputs = [[o] for o in overlays if os.path.isdir(o)]
   parallel.RunTasksInProcessPool(portage_util.RegenCache, task_inputs)
+
+
+def GetPrebuiltAclArgs(build_target):
+  """Read and parse the GS ACL file from the private overlays.
+
+  Args:
+    build_target (build_target_util.BuildTarget): The build target.
+
+  Returns:
+    list[list[str]]: A list containing all of the [arg, value] pairs. E.g.
+      [['-g', 'group_id:READ'], ['-u', 'user:FULL_CONTROL']]
+  """
+  acl_file = portage_util.FindOverlayFile(_GOOGLESTORAGE_GSUTIL_FILE,
+                                          board=build_target.name)
+
+  if not acl_file:
+    raise NoAclFileFound('No ACL file found for %s.' % build_target.name)
+
+  lines = osutils.ReadFile(acl_file).splitlines()
+  # Remove comments.
+  lines = [line.split('#', 1)[0].strip() for line in lines]
+  # Remove empty lines.
+  lines = [line.strip() for line in lines if line.strip()]
+
+  return [line.split() for line in lines]

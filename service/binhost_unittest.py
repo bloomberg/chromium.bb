@@ -10,12 +10,55 @@ from __future__ import print_function
 import os
 
 from chromite.lib import binpkg
+from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
 from chromite.service import binhost
+
+
+class GetPrebuiltAclArgsTest(cros_test_lib.MockTempDirTestCase):
+  """GetPrebuiltAclArgs tests."""
+
+  _ACL_FILE = """
+# Comment
+-g group1:READ
+
+# Another Comment
+-u user:FULL_CONTROL # EOL Comment
+
+
+
+# Comment # Comment
+-g group2:READ
+"""
+
+  def setUp(self):
+    self.build_target = build_target_util.BuildTarget('board')
+    self.acl_file = os.path.join(self.tempdir, 'googlestorage_acl.txt')
+    osutils.WriteFile(self.acl_file, self._ACL_FILE)
+
+  def testParse(self):
+    """Test parsing a valid file."""
+    self.PatchObject(portage_util, 'FindOverlayFile',
+                     return_value=self.acl_file)
+
+    expected_acls = [['-g', 'group1:READ'], ['-u', 'user:FULL_CONTROL'],
+                     ['-g', 'group2:READ']]
+
+    acls = binhost.GetPrebuiltAclArgs(self.build_target)
+
+    self.assertItemsEqual(expected_acls, acls)
+
+  def testNoFile(self):
+    """Test no file handling."""
+    self.PatchObject(portage_util, 'FindOverlayFile', return_value=None)
+
+    with self.assertRaises(binhost.NoAclFileFound):
+      binhost.GetPrebuiltAclArgs(self.build_target)
+
 
 class SetBinhostTest(cros_test_lib.MockTempDirTestCase):
   """Unittests for SetBinhost."""

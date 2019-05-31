@@ -10,10 +10,30 @@ from __future__ import print_function
 import urlparse
 
 from chromite.api.gen.chromite.api import binhost_pb2
+from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.service import binhost
+
+
+def GetPrivatePrebuiltAclArgs(input_proto, output_proto):
+  """Get the ACL args from the files in the private overlays."""
+  build_target_name = input_proto.build_target.name
+  if not build_target_name:
+    cros_build_lib.Die('Build target name is required.')
+
+  build_target = build_target_util.BuildTarget(build_target_name)
+
+  try:
+    args = binhost.GetPrebuiltAclArgs(build_target)
+  except binhost.Error as e:
+    cros_build_lib.Die(e.message)
+
+  for arg, value in args:
+    new_arg = output_proto.args.add()
+    new_arg.arg = arg
+    new_arg.value = value
 
 
 def PrepareBinhostUploads(input_proto, output_proto):
