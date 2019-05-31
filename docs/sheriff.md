@@ -371,7 +371,7 @@ If a bot turns purple rather than red, that indicates an infra failure of some
 type. These can have unpredictable effects, and in particular, if a bot goes red
 after a purple run, that can often be caused by corrupt disk state on the bot.
 Ask a trooper for help with this via [go/bugatrooper][bug-a-trooper]. Do not
-immediately ping in [#ops][slack-ops] unless you have just filed (or are about
+immediately ping in [slack #ops] unless you have just filed (or are about
 to file) a Pri-0 infra bug, or you have a Pri-1 bug that has been ignored for >2
 hours.
 
