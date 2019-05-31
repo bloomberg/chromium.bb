@@ -311,15 +311,15 @@ Cada item da lista da política é uma string que contém um código de extensã
 <translation id="1502843533062797703">Ativar bloqueio de injeção de software de terceiros</translation>
 <translation id="1504431521196476721">Declaração remota</translation>
 <translation id="1507382822467487898">
-          Configura qual endereço de controle de acesso de mídia (MAC, na sigla em inglês) será usado quando uma dock estiver conectada ao dispositivo.
+          Configura qual endereço de controle de acesso de mídia (MAC, na sigla em inglês) será usado quando uma base estiver conectada ao dispositivo.
 
-          Quando uma dock estiver conectada a alguns modelos de dispositivo, o endereço MAC designado da dock será usado para identificar o dispositivo em Ethernet por padrão. Esta política permite que o administrador altere a fonte do endereço MAC enquanto o dispositivo estiver conectado à dock.
+          Quando uma base estiver conectada a alguns modelos de dispositivo, o endereço MAC designado da base será usado para identificar o dispositivo em Ethernet por padrão. Esta política permite que o administrador altere a fonte do endereço MAC enquanto o dispositivo estiver conectado à base.
 
-          Se "DeviceDockMacAddress" for selecionada ou se a política não for definida, o endereço MAC designado da dock para o dispositivo será usado.
+          Se "DeviceDockMacAddress" for selecionada ou se a política não for definida, o endereço MAC designado da base para o dispositivo será usado.
 
           Se "DeviceNicMacAddress" for selecionada, o endereço MAC da placa de rede (NIC, na sigla em inglês) do dispositivo será usado.
 
-          Se "DockNicMacAddress" for selecionada, o endereço MAC da placa de rede da dock será usado.
+          Se "DockNicMacAddress" for selecionada, o endereço MAC da placa de rede da base será usado.
 
           Essa configuração não pode ser alterada pelo usuário.</translation>
 <translation id="1507957856411744193">Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_NAME" /> fará a conexão com os dispositivos de transmissão em todos os endereços IP, não apenas nos endereços privados RFC1918/RFC4193.
@@ -1041,7 +1041,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se você ativar essa configuração, a Visualização de impressão utilizará a impressora padrão do sistema operacional como a escolha padrão.</translation>
 <translation id="285627849510728211">Definir a configuração do dia para o modo avançado de carregamento de bateria</translation>
 <translation id="2856674246949497058">Faça a reversão e permaneça na versão de destino se a versão do SO for mais recente que a de destino. Execute um Powerwash durante o processo.</translation>
-<translation id="2872961005593481000">Encerrar</translation>
+<translation id="2872961005593481000">Desligar</translation>
 <translation id="2873651257716068683">Modifica o tamanho da página de impressão padrão. Se o tamanho da página não estiver disponível, esta política será ignorada.</translation>
 <translation id="2874209944580848064">Observação para dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com apps Android:</translation>
 <translation id="2877225735001246144">Desativar consulta CNAME ao negociar a autenticação do Kerberos</translation>
@@ -1227,7 +1227,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="3220624000494482595">Se o aplicativo de quiosque for um app Android, ele não terá nenhum controle sobre a versão do <ph name="PRODUCT_OS_NAME" />, mesmo se esta política estiver definida como <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Padrões de URL para permitir instalação de extensões, aplicativos e scripts do usuário a partir de</translation>
 <translation id="3240609035816615922">Política de acesso à configuração de impressoras.</translation>
-<translation id="3240655340884151271">Endereço MAC da placa de rede integrada da dock</translation>
+<translation id="3240655340884151271">Endereço MAC da placa de rede integrada da base</translation>
 <translation id="3243309373265599239">Especifica o período de inatividade do usuário após o qual a tela é escurecida no funcionamento com alimentação CA.
 
           Quando esta política está definida para um valor superior a zero, especifica por qual período o usuário deve permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> escureça a tela.
@@ -1817,7 +1817,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
       Observe que a política que contém um código de app não significa necessariamente que o usuário poderá ativar o app como um app de anotações na tela de bloqueio. Por exemplo, no Chrome 61, o conjunto de apps disponíveis é ainda mais restrito pela plataforma.
 
       Se a política for deixada sem definição, não haverá restrições impostas por ela no conjunto de apps que o usuário pode ativar na tela de bloqueio.</translation>
-<translation id="4313767483634435271">Endereço MAC designado da dock para o dispositivo</translation>
+<translation id="4313767483634435271">Endereço MAC designado da base para o dispositivo</translation>
 <translation id="4322842393287974810">Permitir que o aplicativo de quiosque aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adicionar um botão de logout à bandeja do sistema</translation>
 <translation id="4332177773549877617">Registra eventos de instalações do app Android</translation>
@@ -3568,7 +3568,7 @@ Se esta política não for definida, o renderizador padrão será usado para tod
           Se esta configuração for ativada, os usuários deverão fornecer um código de dois fatores válido ao acessar um host.
 
           Se esta configuração for desativada ou não for definida, a autenticação de dois fatores não será ativada, e será usada a opção padrão (PIN definido pelo usuário).</translation>
-<translation id="7750991880413385988">Abrir a página Nova guia</translation>
+<translation id="7750991880413385988">Abrir Nova guia</translation>
 <translation id="7754704193130578113">Perguntar onde salvar cada arquivo antes de fazer download</translation>
 <translation id="7761446981238915769">Configurar a lista de apps instalados na tela de login</translation>
 <translation id="7763479091692861127"> Os tipos de conexão que podem ser usados para atualizações do sistema operacional. As atualizações do sistema operacional podem colocar grande pressão sobre a conexão, devido a seu tamanho, e poderão incorrer em custos adicionais. Portanto, por padrão, não são ativadas para tipos de conexão considerados dispendiosos, o que inclui WiMax, Bluetooth, WiMax e Cellular, no momento.

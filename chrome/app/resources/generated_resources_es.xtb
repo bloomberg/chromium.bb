@@ -237,7 +237,7 @@
 <translation id="1361655923249334273">Sin utilizar</translation>
 <translation id="1361872463926621533">Reproducir sonido al iniciar</translation>
 <translation id="1364702626840264065">{NUM_TABS,plural, =1{Cerrar pestaña}other{Cerrar pestañas}}</translation>
-<translation id="1366177842110999534">Permite ejecutar herramientas, editores e IDEs de Linux en tu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
+<translation id="1366177842110999534">Ejecuta herramientas, editores e IDEs de Linux en tu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Selecciona un archivo</translation>
 <translation id="1371301976177520732">Tus marcadores, contraseñas, historial y mucho más en todos tus dispositivos</translation>
 <translation id="1372841398847029212">Sincronizar con tu cuenta</translation>
@@ -646,7 +646,7 @@
 <translation id="1994173015038366702">URL del sitio</translation>
 <translation id="1997484222658892567"><ph name="URL" /> quiere almacenar datos de gran tamaño de forma permanente en tu ordenador local</translation>
 <translation id="1997616988432401742">Tus certificados</translation>
-<translation id="1999115740519098545">Al abrir el navegador...</translation>
+<translation id="1999115740519098545">Al abrir</translation>
 <translation id="2000419248597011803">Envía algunas cookies y búsquedas de la barra de direcciones y del cuadro de búsqueda a tu buscador predeterminado</translation>
 <translation id="2002109485265116295">En tiempo real</translation>
 <translation id="2003130567827682533">Para activar los datos de "<ph name="NAME" />", conéctate a una red Wi‑Fi</translation>
@@ -683,7 +683,7 @@
 <translation id="2075474481720804517"><ph name="BATTERY_PERCENTAGE" />% de batería</translation>
 <translation id="2075959085554270910">Te permite habilitar o inhabilitar las funciones tocar para hacer clic y tocar y arrastrar</translation>
 <translation id="2076269580855484719">Ocultar este complemento</translation>
-<translation id="2076672359661571384">Medio (recomendado)</translation>
+<translation id="2076672359661571384">Mediano (recomendado)</translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
 <translation id="2078019350989722914">Avisar antes de salir (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">Si eliminas uno de tus propios certificados, ya no podrás utilizarlo para identificarte.</translation>
@@ -1700,7 +1700,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3650952250015018111">Permitir que "<ph name="APP_NAME" />" acceda a:</translation>
 <translation id="3651488188562686558">Se desconectará de la red Wi-Fi</translation>
 <translation id="3652817283076144888">Inicializando</translation>
-<translation id="3653160965917900914">Archivos compartidos en red</translation>
+<translation id="3653160965917900914">Sistema de archivos compartidos en red</translation>
 <translation id="3653842108912548333">Accede al Asistente con Voice Match</translation>
 <translation id="3653999333232393305">Seguir permitiendo que <ph name="HOST" /> acceda al micrófono</translation>
 <translation id="3654045516529121250">Leer tu configuración de accesibilidad</translation>
@@ -1807,7 +1807,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3792890930871100565">Desconectar impresoras</translation>
 <translation id="3792938779249970121">Seleccionar una cuenta</translation>
 <translation id="3796648294839530037">Redes favoritas:</translation>
-<translation id="3797739167230984533">Tu <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> lo administra<ph name="END_LINK" /> tu organización</translation>
+<translation id="3797739167230984533">Tu organización <ph name="BEGIN_LINK" />administra este <ph name="DEVICE_TYPE" /><ph name="END_LINK" />.</translation>
 <translation id="3797900183766075808">&amp;Buscar <ph name="SEARCH_TERMS" /> en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3798449238516105146">Versión</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Abrir todas}=1{&amp;Abrir marcador}other{&amp;Abrir (#)}}</translation>
@@ -2300,7 +2300,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4593021220803146968">&amp;Ir a <ph name="URL" /></translation>
 <translation id="4595560905247879544">Únicamente el administrador (<ph name="CUSTODIAN_NAME" />) puede modificar las aplicaciones y las extensiones.</translation>
 <translation id="4596295440756783523">Tienes certificados registrados que identifican a estos servidores</translation>
-<translation id="4598556348158889687">Administración del almacenamiento</translation>
+<translation id="4598556348158889687">Gestión del almacenamiento</translation>
 <translation id="4598776695426288251">Wi-Fi disponible a través de varios dispositivos</translation>
 <translation id="4602466770786743961">Permitir que <ph name="HOST" /> acceda siempre a la cámara y al micrófono</translation>
 <translation id="4608500690299898628">&amp;Buscar...</translation>
@@ -2905,7 +2905,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5554720593229208774">Entidad emisora de certificados de correo electrónico</translation>
 <translation id="5556206011531515970">Haz clic en Siguiente para seleccionar el navegador predeterminado.</translation>
 <translation id="5556459405103347317">Volver a cargar</translation>
-<translation id="5557991081552967863">Usar Wi-Fi en suspensión</translation>
+<translation id="5557991081552967863">Mantener Wi-Fi activado en suspensión</translation>
 <translation id="5558129378926964177">&amp;Ampliar</translation>
 <translation id="55601339223879446">Ajusta los extremos de tu escritorio en la pantalla</translation>
 <translation id="5562781907504170924">Esta pestaña está conectada a un dispositivo Bluetooth.</translation>
@@ -3139,7 +3139,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 
 Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <ph name="EXPONENT_HEX_DUMP" /></translation>
-<translation id="5916664084637901428">Activar</translation>
+<translation id="5916664084637901428">Activado</translation>
 <translation id="59174027418879706">Habilitada</translation>
 <translation id="5920543303088087579">El administrador ha inhabilitado la conexión a esta red</translation>
 <translation id="5920835625712313205">Escritor de imágenes del sistema de Chrome OS</translation>
@@ -3880,7 +3880,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7072010813301522126">Nombre del acceso directo</translation>
 <translation id="707392107419594760">Selecciona el teclado:</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 con cifrado RSA</translation>
-<translation id="7075625805486468288">Administrar configuración y certificados HTTPS/SSL</translation>
+<translation id="7075625805486468288">Administra la configuración y los certificados HTTPS/SSL</translation>
 <translation id="7076293881109082629">Iniciando sesión</translation>
 <translation id="7077829361966535409">No se ha podido cargar la página de inicio de sesión con la configuración de proxy actual. <ph name="GAIA_RELOAD_LINK_START" />Intenta iniciar sesión de nuevo<ph name="GAIA_RELOAD_LINK_END" /> o utiliza otra <ph name="PROXY_SETTINGS_LINK_START" />configuración de proxy<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="7078120482318506217">Todas las redes</translation>
@@ -4221,7 +4221,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7607002721634913082">En pausa</translation>
 <translation id="7607274158153386860">Solicitar sitio para tablets</translation>
 <translation id="7609148976235050828">Conéctate a Internet y vuelve a intentarlo.</translation>
-<translation id="7611008212562900400">Busca tu dispositivo, aplicaciones, páginas web…</translation>
+<translation id="7611008212562900400">Busca en tu dispositivo, aplicaciones, páginas web…</translation>
 <translation id="7616214729753637086">Registrando dispositivo...</translation>
 <translation id="7617366389578322136">Se está estableciendo conexión con "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7621382409404463535">El sistema no ha podido guardar la configuración del dispositivo.</translation>
@@ -4493,7 +4493,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7986295104073916105">Leer y cambiar la configuración de contraseñas guardadas</translation>
 <translation id="7987814697832569482">Conectar siempre a través de esta VPN</translation>
 <translation id="798835209536175951">Envía y recibe mensajes de texto con tu Chromebook. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
-<translation id="7988355189918024273">Habilitar funciones de accesibilidad</translation>
+<translation id="7988355189918024273">Habilita las funciones de accesibilidad</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="7997826902155442747">Prioridad del proceso</translation>
 <translation id="7999229196265990314">Se han creado los siguientes archivos:
@@ -4808,7 +4808,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8502536196501630039">Para utilizar aplicaciones de Google Play, antes debes restaurar tus aplicaciones. Es posible que se haya perdido información.</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="850875081535031620">No se ha encontrado software dañino</translation>
-<translation id="8509177919508253835">Restablecer las llaves de seguridad y crear los PIN</translation>
+<translation id="8509177919508253835">Restablece las llaves de seguridad y crea los PIN</translation>
 <translation id="8509646642152301857">Se ha producido un error al descargar el diccionario del corrector ortográfico.</translation>
 <translation id="8512476990829870887">Finalizar proceso</translation>
 <translation id="851263357009351303">Permitir siempre que <ph name="HOST" /> muestre imágenes</translation>
@@ -4835,7 +4835,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="85486688517848470">Mantén pulsada la tecla de búsqueda para cambiar el comportamiento de las teclas de la fila superior</translation>
 <translation id="8549457076611407730">{NUM_ITEMS,plural, =1{1 elemento}other{# elementos}}</translation>
 <translation id="8551388862522347954">Licencias</translation>
-<translation id="8553342806078037065">Administrar otros usuarios</translation>
+<translation id="8553342806078037065">Gestionar otros usuarios</translation>
 <translation id="8554899698005018844">Sin idioma</translation>
 <translation id="855773602626431402">Se ha evitado que un complemento no incluido en la zona de pruebas se ejecutara en esta página.</translation>
 <translation id="8557930019681227453">Archivo de manifiesto</translation>
@@ -4901,7 +4901,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8659875081143553823">Un segundo</translation>
 <translation id="8661290697478713397">Abrir enlace en una ventana de incó&amp;gnito</translation>
 <translation id="8662671328352114214">Unirse a una red <ph name="TYPE" /></translation>
-<translation id="8662795692588422978">Otros usuarios</translation>
+<translation id="8662795692588422978">Usuarios</translation>
 <translation id="8662811608048051533">Cierra tu sesión en la mayoría de los sitios web.</translation>
 <translation id="8662911384982557515">Cambiar página de inicio por: <ph name="HOME_PAGE" /></translation>
 <translation id="8662978096466608964">Chrome no puede establecer el fondo de pantalla.</translation>

@@ -1407,7 +1407,7 @@
 <translation id="3170072451822350649">Voit myös ohittaa sisäänkirjautumisen ja <ph name="LINK_START" />selata vierailijana<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Sivusto käyttää videotuloa</translation>
 <translation id="3177909033752230686">Sivun kieli:</translation>
-<translation id="3181954750937456830">Selaussuoja (Suojaa sinua ja laitettasi vaarallisilta sivustoilta)</translation>
+<translation id="3181954750937456830">Selaussuoja (suojaa sinua ja laitettasi vaarallisilta sivustoilta)</translation>
 <translation id="3182749001423093222">Oikeinkirjoituksen tarkistus</translation>
 <translation id="3183139917765991655">Profiilien tuoja</translation>
 <translation id="3188465121994729530">Liukuva keskiarvo</translation>
@@ -3736,7 +3736,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6841186874966388268">Virheet</translation>
 <translation id="6843423766595476978">Ok Google on valmiina</translation>
 <translation id="6845038076637626672">Avaa suuressa koossa</translation>
-<translation id="6845325883481699275">Auttaa parantamaan Chromen suojausta.</translation>
+<translation id="6845325883481699275">Auta parantamaan Chromen suojausta</translation>
 <translation id="6848388270925200958">Joitakin korttejasi voi juuri nyt käyttää vain tällä laitteella</translation>
 <translation id="6851497530878285708">Sovellus käytössä</translation>
 <translation id="6853388645642883916">Päivittäjä on lepotilassa</translation>

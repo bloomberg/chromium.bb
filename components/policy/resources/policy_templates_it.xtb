@@ -179,7 +179,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="131353325527891113">Mostra nomi utente nella schermata di accesso</translation>
 <translation id="1327466551276625742">Attivazione richiesta di configurazione della rete offline</translation>
 <translation id="1330145147221172764">Attiva tastiera sullo schermo</translation>
-<translation id="13356285923490863">Nome norma</translation>
+<translation id="13356285923490863">Nome criterio</translation>
 <translation id="1347198119056266798">Questa norma è obsoleta, al suo posto usa <ph name="FORCE_GOOGLE_SAFE_SEARCH_POLICY_NAME" /> e <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />. Questa norma viene ignorata se sono impostate le norme <ph name="FORCE_GOOGLE_SAFE_SEARCH_POLICY_NAME" />, <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" /> o la norma (obsoleta) <ph name="FORCE_YOUTUBE_SAFETY_MODE_POLICY_NAME" />.
 
       Forza l'esecuzione delle query in Ricerca Google con l'opzione SafeSearch attiva e impedisce agli utenti di modificare questa impostazione. Questa impostazione forza anche il livello medio della Modalità con restrizioni su YouTube.
@@ -2335,15 +2335,15 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="5511702823008968136">Attiva barra dei Preferiti</translation>
 <translation id="5512418063782665071">URL pagina iniziale</translation>
-<translation id="551639594034811656">Questa norma definisce un elenco di percentuali che definiranno la frazione dei dispositivi di <ph name="PRODUCT_OS_NAME" /> nell'UO da aggiornare ogni giorno a partire dal giorno in cui l'aggiornamento viene rilevato la prima volta. L'ora del rilevamento è successiva all'ora in cui l'aggiornamento viene pubblicato, perché potrebbe passare del tempo tra la pubblicazione dell'aggiornamento e il momento in cui il dispositivo controlla la disponibilità di aggiornamenti.
+<translation id="551639594034811656">Questo criterio definisce un elenco di percentuali che definiranno la frazione dei dispositivi di <ph name="PRODUCT_OS_NAME" /> nell'UO da aggiornare ogni giorno a partire dal giorno in cui l'aggiornamento viene rilevato la prima volta. L'ora del rilevamento è successiva all'ora in cui l'aggiornamento viene pubblicato, perché potrebbe passare del tempo tra la pubblicazione dell'aggiornamento e il momento in cui il dispositivo controlla la disponibilità di aggiornamenti.
 
       Ogni coppia (giorno, percentuale) contiene la percentuale dei gruppi da aggiornare entro il numero di giorni stabilito a partire dal giorno in cui l'aggiornamento viene rilevato. Ad esempio, se abbiamo le coppie [(4, 40), (10, 70), (15, 100)], allora il 40% dei gruppi deve essere aggiornato entro 4 giorni dal rilevamento dell'aggiornamento; il 70% deve essere aggiornato dopo 10 giorni e così via.
 
-      Se viene definito un valore per questa norma, gli aggiornamenti ignoreranno la norma <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> e seguiranno invece questa norma.
+      Se viene definito un valore per questo criterio, gli aggiornamenti ignoreranno il criterio <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> e seguiranno invece questo criterio.
 
-      Se quest'elenco è vuoto, non verrà eseguita alcuna gestione temporanea e gli aggiornamenti verranno applicati in base alle altre norme del dispositivo.
+      Se quest'elenco è vuoto, non verrà eseguita alcuna gestione temporanea e gli aggiornamenti verranno applicati in base agli altri criteri del dispositivo.
 
-      Questa norma non viene applicata agli switch del canale.</translation>
+      Questo criterio non viene applicato agli switch del canale.</translation>
 <translation id="5526701598901867718">Tutto (non sicuro)</translation>
 <translation id="5529037166721644841">Consente di specificare in millisecondi il periodo di tempo per cui vengono richieste informazioni sui criteri relativi al dispositivo al servizio di gestione del dispositivo.
 
@@ -2797,7 +2797,7 @@ Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca ver
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="6368011194414932347">Configura l'URL della pagina iniziale</translation>
 <translation id="6368403635025849609">Consenti JavaScript su questi siti</translation>
-<translation id="6376659517206731212">Può essere obbligatoria</translation>
+<translation id="6376659517206731212">Può essere obbligatorio</translation>
 <translation id="6377355597423503887">Questa norma è stata ritirata; usa la norma BrowserSignin.
 
       Consente all'utente di accedere a <ph name="PRODUCT_NAME" />.
@@ -4180,7 +4180,7 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="9126014181388780690">"Consenti all'Assistente Google di accedere al contesto dello schermo"</translation>
 <translation id="913195841488580904">Blocca l'accesso a un elenco di URL</translation>
 <translation id="9135033364005346124">Attiva proxy <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="9136399279941091445">Intervalli di orari di minore attività quando vengono rilasciate le norme del dispositivo specificate</translation>
+<translation id="9136399279941091445">Intervalli di orari di minore attività quando vengono rilasciati i criteri del dispositivo specificati</translation>
 <translation id="9147029539363974059">Consente di inviare log di sistema al server di gestione per consentire
       agli amministratori di monitorare i log di sistema.
 

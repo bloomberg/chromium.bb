@@ -48,7 +48,7 @@
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1061904396131502319">快到休息時間了</translation>
 <translation id="1067048845568873861">建立時間</translation>
-<translation id="1067291318998134776">Linux (測試版)</translation>
+<translation id="1067291318998134776">Linux (Beta 版)</translation>
 <translation id="1067922213147265141">其他 Google 服務</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">電腦中的其他程式新增了一個擴充功能，可能會使 Chrome 的運作方式發生變更。
@@ -3532,7 +3532,7 @@
 <translation id="6514010653036109809">可用的裝置：</translation>
 <translation id="6514565641373682518">這個網頁已停用滑鼠游標。</translation>
 <translation id="6518014396551869914">複製圖片(&amp;Y)</translation>
-<translation id="6518133107902771759">確認</translation>
+<translation id="6518133107902771759">驗證</translation>
 <translation id="651942933739530207">你想讓 <ph name="APP_NAME" /> 共用你的畫面和音訊輸入嗎？</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />

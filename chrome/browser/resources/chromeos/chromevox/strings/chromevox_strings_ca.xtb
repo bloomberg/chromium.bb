@@ -6,7 +6,7 @@
 <translation id="1012173283529841972">Element de la llista</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1014370462248694370">Fes lliscar dos dits cap a la dreta</translation>
-<translation id="1022586497894531524">És el primer cop que fas servir els comentaris de veu de l'extensió ChromeVox? En aquest tutorial ràpid s'expliquen els aspectes bàsics per començar a utilitzar-la.</translation>
+<translation id="1022586497894531524">És el primer cop que fas servir els avisos de veu de l'extensió ChromeVox? En aquest tutorial ràpid s'expliquen els aspectes bàsics per començar a utilitzar-la.</translation>
 <translation id="1023866615269196768">Amb abast.</translation>
 <translation id="1025074108959230262">S'ha desactivat el mode persistent.</translation>
 <translation id="1031961866430398710">i, a continuació,</translation>
@@ -19,7 +19,7 @@
 <translation id="1082209053475788238">No hi ha cap capçalera anterior del nivell 6.</translation>
 <translation id="1087788677726983142">Amaga els filtres del flux d'esdeveniments</translation>
 <translation id="1088219014394087294">No hi ha cap capçalera.</translation>
-<translation id="1106741348836243114">Activa o desactiva els sons (earcons).</translation>
+<translation id="1106741348836243114">Activa o desactiva els avisos sonors (earcons).</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Fes lliscar dos dits cap amunt</translation>
 <translation id="1124771028211010580">L'estil de pantalla actual és paral·lel.</translation>
@@ -441,7 +441,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4158704014418536539">Es distingeix entre majúscules i minúscules.</translation>
 <translation id="4159784952369912983">Porpra</translation>
 <translation id="4161104397932142764">{COUNT,plural, =1{segon}other{segons}}</translation>
-<translation id="4161663686871496107">Ja podeu utilitzar els comentaris de veu de ChromeVox.</translation>
+<translation id="4161663686871496107">Ja podeu utilitzar els avisos de veu de ChromeVox.</translation>
 <translation id="4173994908659439270">No hi ha cap més camp de text que es pugui editar.</translation>
 <translation id="4176463684765177261">Desactivat</translation>
 <translation id="4187322598335821254">Llisca cap amunt o cap avall per moure't d'una línia a una altra</translation>

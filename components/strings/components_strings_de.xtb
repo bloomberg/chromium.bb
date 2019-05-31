@@ -78,7 +78,7 @@
           <ph name="LIST_ITEM" />Ihren Arbeitgeber oder Ihre Bildungseinrichtung
           <ph name="LIST_ITEM" />Ihren Internetanbieter
         <ph name="END_LIST" /></translation>
-<translation id="1339601241726513588">Anmeldedomain:</translation>
+<translation id="1339601241726513588">Anmeldedomain: </translation>
 <translation id="1340482604681802745">Abholadresse</translation>
 <translation id="1348198688976932919">Die Website, die Sie aufrufen möchten, enthält gefährliche Apps</translation>
 <translation id="1348779747280417563">Namen bestätigen</translation>
@@ -104,7 +104,7 @@
 <translation id="1472675084647422956">Mehr anzeigen</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Versandadresse auswählen</translation>
-<translation id="1492194039220927094">Richtlinien übernehmen:</translation>
+<translation id="1492194039220927094">Richtlinien übernehmen: </translation>
 <translation id="1501859676467574491">Zeigen Sie Karten von Ihrem Google-Konto</translation>
 <translation id="1507202001669085618">&lt;p&gt;Diese Fehlermeldung wird angezeigt, wenn Sie ein WLAN-Portal verwenden, bei dem eine Anmeldung erforderlich ist, bevor Sie online gehen können.&lt;/p&gt;
     &lt;p&gt;Klicken Sie auf der Seite, die Sie öffnen möchten, auf &lt;strong&gt;Verbinden&lt;/strong&gt;, um den Fehler zu beheben.&lt;/p&gt;</translation>
@@ -301,14 +301,14 @@
 <translation id="2556876185419854533">&amp;Bearbeiten rückgängig machen</translation>
 <translation id="2586657967955657006">Zwischenablage</translation>
 <translation id="2587730715158995865">Von <ph name="ARTICLE_PUBLISHER" />. Diese Meldung und <ph name="OTHER_ARTICLE_COUNT" /> weitere Meldungen lesen.</translation>
-<translation id="2587841377698384444">Directory API-ID:</translation>
+<translation id="2587841377698384444">Directory API-ID: </translation>
 <translation id="2595719060046994702">Dieses Gerät und dieses Konto werden nicht von einem Unternehmen oder einer anderen Organisation verwaltet.</translation>
 <translation id="2597378329261239068">Dieses Dokument ist passwortgeschützt. Geben Sie ein Passwort ein.</translation>
 <translation id="2609632851001447353">Varianten</translation>
 <translation id="2618023639789766142">C10 (Umschlag)</translation>
 <translation id="2625385379895617796">Ihre Uhr geht vor</translation>
 <translation id="2634124572758952069">Die Server-IP-Adresse von <ph name="HOST_NAME" /> wurde nicht gefunden.</translation>
-<translation id="2639739919103226564">Status:</translation>
+<translation id="2639739919103226564">Status: </translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Der Zugriff auf die Datei wurde verweigert.</translation>
 <translation id="2653659639078652383">Senden</translation>
@@ -388,7 +388,7 @@
 <translation id="3083099961703215236">{COUNT,plural, =0{Keine}=1{1 Passwort}other{# Passwörter}}</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Abholadresse hinzufügen</translation>
-<translation id="3105172416063519923">Geräte-ID:</translation>
+<translation id="3105172416063519923">Geräte-ID: </translation>
 <translation id="3109728660330352905">Sie sind nicht zum Aufrufen dieser Seite autorisiert.</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Versuchen Sie, die Verbindungsdiagnose auszuführen.<ph name="END_LINK" /></translation>
@@ -441,7 +441,7 @@
 <translation id="337363190475750230">Bereitstellung aufgehoben</translation>
 <translation id="3377188786107721145">Fehler beim Parsen der Richtlinie</translation>
 <translation id="3380365263193509176">Unbekannter Fehler</translation>
-<translation id="3380864720620200369">Client-ID:</translation>
+<translation id="3380864720620200369">Client-ID: </translation>
 <translation id="3387261909427947069">Zahlungsmethoden</translation>
 <translation id="3391030046425686457">Lieferadresse</translation>
 <translation id="3395827396354264108">Abholoption</translation>
@@ -455,7 +455,7 @@
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Der Eigentümer dieses Geräts hat das Dinosaurier-Spiel deaktiviert.</translation>
 <translation id="3447884698081792621">Zertifikat anzeigen (ausgestellt von <ph name="ISSUER" />)</translation>
-<translation id="3452404311384756672">Abrufintervall:</translation>
+<translation id="3452404311384756672">Abrufintervall: </translation>
 <translation id="3456231139987291353">Number-11 (Umschlag)</translation>
 <translation id="3461824795358126837">Textmarker</translation>
 <translation id="3462200631372590220">Erweiterte Informationen ausblenden</translation>
@@ -1052,7 +1052,7 @@
 <translation id="6895330447102777224">Ihre Karte wurde bestätigt</translation>
 <translation id="6897140037006041989">User-Agent</translation>
 <translation id="6903319715792422884">Sie können uns dabei helfen, Safe Browsing weiter zu verbessern, indem Sie einige <ph name="BEGIN_WHITEPAPER_LINK" />Systeminformationen und Seiteninhalte<ph name="END_WHITEPAPER_LINK" /> an Google senden. <ph name="PRIVACY_PAGE_LINK" /></translation>
-<translation id="6915804003454593391">Nutzer:</translation>
+<translation id="6915804003454593391">Nutzer: </translation>
 <translation id="6934672428414710184">Dieser Name stammt aus Ihrem Google-Konto</translation>
 <translation id="6944692733090228304">Sie haben Ihr Passwort auf einer Website eingegeben, die nicht von <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> verwaltet wird. Zum Schutz Ihres Kontos sollten Sie das Passwort nicht für andere Apps und Websites verwenden.</translation>
 <translation id="6945221475159498467">Auswählen</translation>
@@ -1097,7 +1097,7 @@
 <translation id="7152423860607593928">Number-14 (Umschlag)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> weitere}other{<ph name="PAYMENT_METHOD_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> weitere}}</translation>
 <translation id="7153618581592392745">Lavendel</translation>
-<translation id="717330890047184534">GAIA-ID:</translation>
+<translation id="717330890047184534">GAIA-ID: </translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> weitere}other{<ph name="SHIPPING_OPTION_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> weitere}}</translation>
 <translation id="7177397715882417099">Der Server <ph name="ORIGIN" />, zu dem Sie gehen, verlangt, dass auf alle an ihn gerichteten Anfragen eine Sicherheitsrichtlinie angewendet wird. Aber statt eine Richtlinie bereitzustellen, hat er den Browser weitergeleitet, was den Browser daran hindert, Ihre Anfrage für <ph name="SITE" /> auszuführen.</translation>
 <translation id="7179323680825933600">Zahlungsmethoden speichern und ausfüllen</translation>
@@ -1230,7 +1230,7 @@ Weitere Details:
 <translation id="7755287808199759310">Deine Eltern können die Blockierung aufheben</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">Möglicherweise wurde die Verbindung von einer Firewall oder Antivirensoftware blockiert.</translation>
-<translation id="7759163816903619567">Anzeigebereich</translation>
+<translation id="7759163816903619567">Anzeigebereich: </translation>
 <translation id="7761701407923456692">Das Serverzertifikat stimmt nicht mit der URL überein.</translation>
 <translation id="7763386264682878361">Zahlungsmanifest-Parser</translation>
 <translation id="7764225426217299476">Adresse hinzufügen</translation>
@@ -1310,7 +1310,7 @@ Weitere Details:
 <translation id="8202370299023114387">Konflikt</translation>
 <translation id="8206978196348664717">Prc4 (Umschlag)</translation>
 <translation id="8211406090763984747">Verbindung ist sicher</translation>
-<translation id="8218327578424803826">Zugewiesener Standort:</translation>
+<translation id="8218327578424803826">Zugewiesener Standort: </translation>
 <translation id="8220146938470311105">C7/C6 (Umschlag)</translation>
 <translation id="8225771182978767009">Die Person, die diesen Computer eingerichtet hat, hat diese Website gesperrt.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -1318,7 +1318,7 @@ Weitere Details:
 <translation id="8241707690549784388">Die gesuchte Seite hat die von Ihnen eingegebenen Informationen verwendet bzw. verarbeitet. Wenn Sie zu dieser Seite zurückgehen, wird eventuell eine schon ausgeführte Aktion wiederholt. Möchten Sie fortfahren?</translation>
 <translation id="8241712895048303527">Auf dieser Website blockieren</translation>
 <translation id="8242426110754782860">Fortfahren</translation>
-<translation id="8249320324621329438">Letzter Abruf:</translation>
+<translation id="8249320324621329438">Letzter Abruf: </translation>
 <translation id="8253091569723639551">Rechnungsadresse ist erforderlich</translation>
 <translation id="825929999321470778">Alle gespeicherten Passwörter anzeigen</translation>
 <translation id="8261506727792406068">Löschen</translation>

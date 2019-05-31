@@ -299,7 +299,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" después de sincronizar tu configuración.</translation>
 <translation id="5691772641933328258">Huella digital no reconocida</translation>
 <translation id="5710450975648804523">Modo No molestar activado</translation>
-<translation id="574392208103952083">Mediano</translation>
+<translation id="574392208103952083">Mediana</translation>
 <translation id="5744083938413354016">Tocar y arrastrar</translation>
 <translation id="5750765938512549687">El Bluetooth está desactivado</translation>
 <translation id="5777841717266010279">¿Dejar de compartir la pantalla?</translation>
@@ -310,7 +310,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Mayús+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
-<translation id="5916664084637901428">Activar</translation>
+<translation id="5916664084637901428">Activado</translation>
 <translation id="5947494881799873997">Deshacer</translation>
 <translation id="595202126637698455">Se ha habilitado el control del rendimiento</translation>
 <translation id="5957083217255311415">Los datos móviles están desactivados.</translation>
@@ -454,7 +454,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
 <translation id="8098591350844501178">Dejar de enviar la pantalla a <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Activadas para todas las aplicaciones</translation>
+<translation id="8113423164597455979">Activadas, todas las aplicaciones</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8142441511840089262">Doble clic</translation>

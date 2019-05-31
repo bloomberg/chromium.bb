@@ -510,7 +510,7 @@
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1779652936965200207">Insira esta senha em "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1781291988450150470">PIN atual</translation>
-<translation id="1781502536226964113">Abrir a página Nova guia</translation>
+<translation id="1781502536226964113">Abrir Nova guia</translation>
 <translation id="1781771911845953849">Contas e sincronização</translation>
 <translation id="1782196717298160133">Como encontrar seu smartphone</translation>
 <translation id="1784849162047402014">O dispositivo está com pouco espaço em disco</translation>
@@ -1136,7 +1136,7 @@
 <translation id="2739240477418971307">Modificar suas configurações de acessibilidade</translation>
 <translation id="2740393541869613458">analisar os websites que o usuário supervisionado visitou e</translation>
 <translation id="274290345632688601">Restaurando apps e arquivos do Linux</translation>
-<translation id="2743387203779672305">Copiar para a área de trabalho</translation>
+<translation id="2743387203779672305">Copiar para área de transferência</translation>
 <translation id="2745080116229976798">Subordinação qualificada da Microsoft</translation>
 <translation id="2749756011735116528">Fazer login no <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Verificar a gramática com a ortografia</translation>
@@ -1534,7 +1534,7 @@
 <translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> hertz) - entrelaçado</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="3404065873681873169">Nenhuma senha salva para este site</translation>
-<translation id="340485819826776184">Utilizar um serviço de previsão para ajudar a preencher pesquisas e URLs digitados na barra de endereço</translation>
+<translation id="340485819826776184">Utilizar um serviço de previsão para completar pesquisas e URLs digitados na barra de endereço</translation>
 <translation id="3405664148539009465">Personalizar fontes</translation>
 <translation id="3405763860805964263">...</translation>
 <translation id="3406605057700382950">&amp;Exibir barra de favoritos</translation>
@@ -2013,7 +2013,7 @@
 <translation id="4087470595660267445">Instalar apps e jogos do Google Play no Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saber mais&lt;/a&gt;</translation>
 <translation id="4088095054444612037">Aceitar fazer parte do grupo</translation>
 <translation id="4089235344645910861">Configurações salvas. Sincronização iniciada.</translation>
-<translation id="4090103403438682346">Ativa o acesso verificado</translation>
+<translation id="4090103403438682346">Ativar o acesso verificado</translation>
 <translation id="4090947011087001172">Redefinir permissões de site para <ph name="SITE" />?</translation>
 <translation id="4091434297613116013">folhas de papel</translation>
 <translation id="4093955363990068916">Arquivo local:</translation>
@@ -2908,7 +2908,7 @@
 <translation id="5554720593229208774">Autoridade de certificação de e-mail</translation>
 <translation id="5556206011531515970">Clique ao lado para escolher o navegador padrão.</translation>
 <translation id="5556459405103347317">Recarregar</translation>
-<translation id="5557991081552967863">Manter Wi-Fi ativado durante a suspensão.</translation>
+<translation id="5557991081552967863">Manter Wi-Fi ativado no modo de espera</translation>
 <translation id="5558129378926964177">Aumentar z&amp;oom</translation>
 <translation id="55601339223879446">Ajustar as fronteiras da sua área de trabalho dentro da tela</translation>
 <translation id="5562781907504170924">Esta guia está conectada a um dispositivo Bluetooth.</translation>
@@ -3549,10 +3549,10 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6532101170117367231">Salvar no Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Observação:<ph name="END_BOLD" /> Ative somente se você souber o que está fazendo ou tiver sido solicitado(a) a fazê-lo, porque a coleta de dados pode reduzir o desempenho.</translation>
 <translation id="6541638731489116978">Este site foi impedido de acessar seus sensores de movimento.</translation>
-<translation id="654233263479157500">Utilizar um serviço da web para ajudar a solucionar erros de navegação</translation>
+<translation id="654233263479157500">Utilizar um serviço da Web para solucionar erros de navegação</translation>
 <translation id="6544215763872433504">O navegador da Web do Google para você</translation>
 <translation id="6545665334409411530">Taxa de repetição</translation>
-<translation id="6545834809683560467">Utilizar o serviço de previsão para ajudar a completar pesquisas e URLs digitados na barra de endereço ou na caixa de pesquisa do Acesso rápido aos apps</translation>
+<translation id="6545834809683560467">Utilizar o serviço de previsão para completar pesquisas e URLs digitados na barra de endereço ou na caixa de pesquisa do Acesso rápido aos apps</translation>
 <translation id="6545867563032584178">O microfone está desativado nas preferências do sistema do Mac</translation>
 <translation id="6547316139431024316">Não avisar novamente para esta extensão</translation>
 <translation id="6547354035488017500">Libere pelo menos 512 MB de espaço. Caso contrário, seu dispositivo deixará de responder. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
@@ -4029,7 +4029,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7287143125007575591">Acesso negado.</translation>
 <translation id="7287411021188441799">Restaurar plano de fundo padrão</translation>
 <translation id="7288676996127329262"><ph name="HORIZONTAL_DPI" />x<ph name="VERTICAL_DPI" /> dpi</translation>
-<translation id="7289225569524511578">Abra o app de papel de parede</translation>
+<translation id="7289225569524511578">Ativa o app de planos de fundo</translation>
 <translation id="7290242001003353852">Este serviço de login, hospedado por <ph name="SAML_DOMAIN" />, está acessando sua câmara.</translation>
 <translation id="7290594223351252791">Confirmar registro</translation>
 <translation id="7295614427631867477">O Android, o Google Play e os apps associados são regidos pelas próprias políticas de uso e de coleta de dados.</translation>
@@ -4136,7 +4136,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7458168200501453431">Usa o mesmo corretor ortográfico da Pesquisa Google. O texto que você digita no navegador é enviado para o Google.</translation>
 <translation id="7461924472993315131">Fixar</translation>
 <translation id="746216226901520237">Na próxima vez, o smartphone desbloqueará o <ph name="DEVICE_TYPE" />. É possível desativar o Smart Lock nas configurações.</translation>
-<translation id="7463006580194749499">Adicionar pessoa</translation>
+<translation id="7463006580194749499">Adicionar pessoas</translation>
 <translation id="7465778193084373987">URL da revogação do certificado do Netscape</translation>
 <translation id="7469894403370665791">Conectar automaticamente a esta rede</translation>
 <translation id="747114903913869239">Erro: Não foi possível decodificar a extensão</translation>
@@ -4226,7 +4226,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7607002721634913082">Pausado</translation>
 <translation id="7607274158153386860">Solicitar site para tablet</translation>
 <translation id="7609148976235050828">Conecte-se à Internet e tente novamente.</translation>
-<translation id="7611008212562900400">Pesquisar seu dispositivo, apps, Web...</translation>
+<translation id="7611008212562900400">Pesquisar no dispositivo, nos apps, na Web...</translation>
 <translation id="7616214729753637086">Registrando dispositivo…</translation>
 <translation id="7617366389578322136">Conectando-se a "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7621382409404463535">Falha do sistema ao salvar a configuração do dispositivo.</translation>
@@ -4498,7 +4498,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7986295104073916105">Ler e alterar as configurações de senhas salvas</translation>
 <translation id="7987814697832569482">Sempre se conectar usando esta VPN</translation>
 <translation id="798835209536175951">Envie e receba mensagens de texto no seu Chromebook.<ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
-<translation id="7988355189918024273">Permitir recursos de acessibilidade</translation>
+<translation id="7988355189918024273">Ativa os recursos de acessibilidade</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="7997826902155442747">Prioridade de processo</translation>
 <translation id="7999229196265990314">Os seguintes arquivos foram criados:
@@ -5039,7 +5039,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8831664945713891930">Abrir configurações de extensões</translation>
 <translation id="8834039744648160717">A configuração de rede é controlada por <ph name="USER_EMAIL" />.</translation>
 <translation id="8838770651474809439">Hambúrger</translation>
-<translation id="883911313571074303">Fazer anotações na imagem</translation>
+<translation id="883911313571074303">Nota na imagem</translation>
 <translation id="8845001906332463065">Ajuda</translation>
 <translation id="8845164297565101021">Insira sua chave de segurança e toque nela para criar ou alterar um PIN.</translation>
 <translation id="8846132060409673887">Ler as informações sobre o fabricante e modelo deste computador</translation>

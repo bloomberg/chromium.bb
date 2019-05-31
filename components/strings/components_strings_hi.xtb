@@ -270,7 +270,7 @@
 <translation id="2380886658946992094">कानूनी</translation>
 <translation id="2384307209577226199">एंटरप्राइज़ डिफ़ॉल्ट</translation>
 <translation id="2386255080630008482">सर्वर का प्रमाणपत्र निरस्त कर दिया गया है.</translation>
-<translation id="2392959068659972793">कोई भी मान सेट नहीं की गई नीतियां दिखाएं</translation>
+<translation id="2392959068659972793">ऐसी नीतियां दिखाएं जिनके लिए कोई मान सेट नहीं किया गया है</translation>
 <translation id="239429038616798445">शिपिंग का यह तरीका उपलब्ध नहीं है. कोई दूसरा तरीका आज़माएं.</translation>
 <translation id="2396249848217231973">मिटाना &amp;पहले जैसा करें</translation>
 <translation id="2410754574180102685">सरकारी-कानूनी</translation>
@@ -461,7 +461,7 @@
 <translation id="3443726618221119081">जूरो-कु-काई</translation>
 <translation id="3447661539832366887">इस डिवाइस के मालिक ने डायनासोर गेम को बंद कर दिया है.</translation>
 <translation id="3447884698081792621">प्रमाणपत्र (<ph name="ISSUER" /> की ओर से जारी किया गया) दिखाएं</translation>
-<translation id="3452404311384756672">प्राप्ति अंतराल:</translation>
+<translation id="3452404311384756672">दो रीफ़्रेश के बीच का अंतराल:</translation>
 <translation id="3456231139987291353">संख्या-11 (एन्वेलप)</translation>
 <translation id="3461824795358126837">हाइलाइटर</translation>
 <translation id="3462200631372590220">बेहतर को छिपाएं</translation>
@@ -868,13 +868,13 @@
 <translation id="5675650730144413517">यह पेज काम नहीं कर रहा है</translation>
 <translation id="5684874026226664614">ओह. इस पेज का अनुवाद नहीं किया जा सका.</translation>
 <translation id="5685654322157854305">शिपिंग पता जोड़ें</translation>
-<translation id="5689199277474810259">JSON में निर्यात करें</translation>
+<translation id="5689199277474810259">JSON में एक्सपोर्ट करें</translation>
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="570530837424789914">प्रबंधित करें...</translation>
 <translation id="57094364128775171">मज़बूत पासवर्ड सुझाएं…</translation>
 <translation id="5710435578057952990">इस वेबसाइट की पहचान सत्यापित नहीं की गई है.</translation>
 <translation id="5719499550583120431">प्रीपेड कार्ड स्वीकार किए जाते हैं.</translation>
-<translation id="5720705177508910913">वर्तमान उपयोगकर्ता</translation>
+<translation id="5720705177508910913">मौजूदा उपयोगकर्ता</translation>
 <translation id="5728056243719941842">सी5 (एन्वेलॉप)</translation>
 <translation id="5730040223043577876">अगर आपने अपने पासवर्ड का दूसरी साइटों पर दोबारा इस्तेमाल किया है, तो Chrome आपको उसे रीसेट करने का सुझाव देता है.</translation>
 <translation id="5732392974455271431">आपके अभिभावक इसे आपके लिए अनवरोधित कर सकते हैं</translation>
@@ -1190,7 +1190,7 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">इस साइट से आपका कनेक्‍शन निजी नहीं है</translation>
 <translation id="7535087603100972091">मान</translation>
-<translation id="7537536606612762813">आवश्यक</translation>
+<translation id="7537536606612762813">ज़रूरी है</translation>
 <translation id="7538364083937897561">ए2 (एन्वेलप)</translation>
 <translation id="7542403920425041731">आपकी तरफ से पुष्टि हो जाने पर, आपके कार्ड के विवरण इस साइट के साथ शेयर किए जाएंगे.</translation>
 <translation id="7542995811387359312">अपने आप क्रेडिट कार्ड भरना अक्षम किया गया है क्योंकि यह फ़ॉर्म किसी सुरक्षित कनेक्शन का उपयोग नहीं करता है.</translation>
@@ -1278,7 +1278,7 @@
 <translation id="7956713633345437162">मोबाइल बुकमार्क</translation>
 <translation id="7961015016161918242">कभी नहीं</translation>
 <translation id="7977894662897852582">ईडीपी</translation>
-<translation id="7995512525968007366">निर्दिष्‍ट नहीं किया गया</translation>
+<translation id="7995512525968007366">बताया नहीं गया है</translation>
 <translation id="800218591365569300">जगह खाली करने के लिए दूसरे टैब या प्रोग्राम बंद करके देखें.</translation>
 <translation id="8004582292198964060">ब्राउज़र</translation>
 <translation id="8009225694047762179">पासवर्ड संभालें</translation>
@@ -1329,7 +1329,7 @@
 <translation id="8241707690549784388">आप जिस पेज को ढूंढ रहे हैं उसने आपकी डाली गई जानकारी का इस्तेमाल किया है. उस पेज पर वापस लौटने से आपकी कोई कार्रवाई दोहराई जा सकती है. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="8241712895048303527">इस साइट पर ब्लॉक करें</translation>
 <translation id="8242426110754782860">आगे बढ़ें</translation>
-<translation id="8249320324621329438">पिछली बार प्राप्त किया गया:</translation>
+<translation id="8249320324621329438">इससे पहले कब रीफ़्रेश हुआ था:</translation>
 <translation id="8253091569723639551">बिलिंग पता आवश्यक</translation>
 <translation id="825929999321470778">सेव किए गए सभी पासवर्ड दिखाएं</translation>
 <translation id="8261506727792406068">मिटाएं</translation>

@@ -57,7 +57,7 @@
 <translation id="2583543531130364912">Calibrar a touchscreen</translation>
 <translation id="2666092431469916601">Parte superior</translation>
 <translation id="2701330563083355633">Compartilhada por <ph name="DEVICE_NAME" /></translation>
-<translation id="2743387203779672305">Copiar para a área de trabalho</translation>
+<translation id="2743387203779672305">Copiar para área de transferência</translation>
 <translation id="2803313416453193357">Abrir pasta</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 ano atrás}one{# ano atrás}other{# anos atrás}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{em 1 d}one{em # d}other{em # d}}</translation>
@@ -205,7 +205,7 @@
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}one{# h}other{# h}}</translation>
 <translation id="8798099450830957504">Padrão</translation>
 <translation id="8806053966018712535">Pasta <ph name="FOLDER_NAME" /></translation>
-<translation id="883911313571074303">Fazer anotações na imagem</translation>
+<translation id="883911313571074303">Nota na imagem</translation>
 <translation id="8841375032071747811">Botão "Voltar"</translation>
 <translation id="8876215549894133151">Formato:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

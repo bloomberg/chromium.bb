@@ -1874,7 +1874,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="3888550877729210209">Escriu notes amb <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Afegeix OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Llegir i canviar la configuració d'accessibilitat</translation>
-<translation id="3893630138897523026">ChromeVox (comentaris de veu)</translation>
+<translation id="3893630138897523026">ChromeVox (avisos de veu)</translation>
 <translation id="3894123633473837029">Inclou l'historial recent de l'Assistent a través de Sherlog. Pot incloure informació sobre la teva identitat, la teva ubicació i dades de depuració. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Afegeix una carpeta</translation>
 <translation id="389589731200570180">Compartiu amb els convidats</translation>
@@ -1895,7 +1895,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="3918972485393593704">Informa dels detalls a Google</translation>
 <translation id="3919145445993746351">Per accedir a les extensions des de tots els ordinadors, activa la sincronització</translation>
 <translation id="3920504717067627103">Normes de certificats</translation>
-<translation id="392089482157167418">Activa ChromeVox (comentaris de veu)</translation>
+<translation id="392089482157167418">Activa ChromeVox (avisos de veu)</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Càmera:</translation>
 <translation id="3925842537050977900">No el fixis al prestatge</translation>
@@ -5301,7 +5301,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="987897973846887088">No hi ha cap imatge disponible</translation>
 <translation id="988978206646512040">No es permeten les frases de contrasenya buides</translation>
 <translation id="992032470292211616">Les extensions, les aplicacions i els temes poden malmetre el vostre dispositiu. Confirmeu que voleu continuar?</translation>
-<translation id="992592832486024913">Desactiva ChromeVox (comentaris de veu)</translation>
+<translation id="992592832486024913">Desactiva ChromeVox (avisos de veu)</translation>
 <translation id="993540765962421562">Instal·lació en curs</translation>
 <translation id="994289308992179865">&amp;Bucle</translation>
 <translation id="995782501881226248">YouTube</translation>
