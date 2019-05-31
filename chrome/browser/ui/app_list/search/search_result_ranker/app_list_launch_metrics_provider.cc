@@ -10,6 +10,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder_state.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder_util.h"
 #include "components/metrics/metrics_log.h"
 #include "crypto/sha2.h"
 #include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
@@ -44,6 +46,7 @@ void SaveStateToDisk(const base::FilePath& filepath,
   std::string proto_str;
   if (!proto.SerializeToString(&proto_str)) {
     LOG(DFATAL) << "Error serializing AppListLaunchRecorderStateProto.";
+    LogMetricsProviderError(MetricsProviderError::kStateToProtoError);
     return;
   }
 
@@ -57,6 +60,7 @@ void SaveStateToDisk(const base::FilePath& filepath,
 
   if (!write_result) {
     LOG(DFATAL) << "Error writing AppListLaunchRecorderStateProto.";
+    LogMetricsProviderError(MetricsProviderError::kStateWriteError);
   }
 }
 
@@ -75,6 +79,7 @@ base::Optional<AppListLaunchRecorderStateProto> LoadStateFromDisk(
 
     if (!base::ReadFileToString(filepath, &proto_str)) {
       LOG(DFATAL) << "Error reading AppListLaunchRecorderStateProto.";
+      LogMetricsProviderError(MetricsProviderError::kStateReadError);
       return base::nullopt;
     }
   }
@@ -82,6 +87,7 @@ base::Optional<AppListLaunchRecorderStateProto> LoadStateFromDisk(
   AppListLaunchRecorderStateProto proto;
   if (!proto.ParseFromString(proto_str)) {
     LOG(DFATAL) << "Error parsing AppListLaunchRecorderStateProto.";
+    LogMetricsProviderError(MetricsProviderError::kStateFromProtoError);
     return base::nullopt;
   }
 
@@ -208,7 +214,11 @@ void AppListLaunchMetricsProvider::OnStateLoaded(
     user_id_ = proto.value().recurrence_ranker_user_id();
   } else {
     // Either there is no state proto saved, or it was corrupt. Generate a new
-    // secret and ID regardless.
+    // secret and ID regardless. We log an 'error' to UMA despite this not
+    // always being an error, because this happening too frequently would
+    // indicate an issue with the system.
+    LogMetricsProviderError(MetricsProviderError::kNoStateProto);
+
     AppListLaunchRecorderStateProto new_proto = GenerateStateProto();
     PostTaskWithTraits(
         FROM_HERE, {base::MayBlock()},
@@ -219,10 +229,10 @@ void AppListLaunchMetricsProvider::OnStateLoaded(
   }
 
   if (!user_id_) {
-    LOG(ERROR) << "Invalid user ID.";
+    LogMetricsProviderError(MetricsProviderError::kInvalidUserId);
     OnRecordingDisabled();
   } else if (!secret_ || secret_.value().value.size() != kSecretSize) {
-    LOG(ERROR) << "Invalid user secret.";
+    LogMetricsProviderError(MetricsProviderError::kInvalidSecret);
     OnRecordingDisabled();
   } else {
     init_state_ = InitState::ENABLED;
@@ -249,15 +259,23 @@ void AppListLaunchMetricsProvider::OnAppListLaunch(
     Initialize();
   }
 
-  if (launch_info_cache_.size() >= static_cast<size_t>(kMaxEventsPerUpload)) {
-    // TODO(951287): Log an error to UMA if this happens.
-  } else if (launch_info.launch_type ==
-             ChromeOSAppListLaunchEventProto::LAUNCH_TYPE_UNSPECIFIED) {
-    // TODO(951287): Log an error to UMA if this happens.
-    LOG(ERROR) << "Invalid launch type.";
-  } else if (init_state_ != InitState::DISABLED) {
-    launch_info_cache_.push_back(launch_info);
+  if (init_state_ == InitState::DISABLED ||
+      launch_info_cache_.size() >= static_cast<size_t>(kMaxEventsPerUpload))
+    return;
+
+  if (launch_info.launch_type ==
+      ChromeOSAppListLaunchEventProto::LAUNCH_TYPE_UNSPECIFIED) {
+    LogMetricsProviderError(MetricsProviderError::kLaunchTypeUnspecified);
+    return;
   }
+
+  launch_info_cache_.push_back(launch_info);
+
+  // We want the metric to reflect the number of uploads affected, not the
+  // number of dropped events, so only log an error when max events is first
+  // exceeded.
+  if (launch_info_cache_.size() == static_cast<size_t>(kMaxEventsPerUpload))
+    LogMetricsProviderError(MetricsProviderError::kMaxEventsPerUploadExceeded);
 }
 
 void AppListLaunchMetricsProvider::CreateLaunchEvent(

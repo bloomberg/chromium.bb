@@ -2107,6 +2107,18 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Launched From SearchBox"/>
 </enum>
 
+<enum name="AppListLaunchRecorderError">
+  <int value="0" label="kStateReadError"/>
+  <int value="1" label="kStateWriteError"/>
+  <int value="2" label="kStateFromProtoError"/>
+  <int value="3" label="kStateToProtoError"/>
+  <int value="4" label="kNoStateProto"/>
+  <int value="5" label="kInvalidUserId"/>
+  <int value="6" label="kInvalidSecret"/>
+  <int value="7" label="kMaxEventsPerUploadExceeded"/>
+  <int value="8" label="kLaunchTypeUnspecified"/>
+</enum>
+
 <enum name="AppListOmniboxResult">
   <int value="0" label="QUERY_SUGGESTION"/>
   <int value="1" label="ZERO_STATE_SUGEESTION"/>

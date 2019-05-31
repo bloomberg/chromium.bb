@@ -14,12 +14,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder_state.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder_util.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/metrics/client_info.h"
@@ -174,8 +176,13 @@ class AppListLaunchMetricsProviderTest : public testing::Test {
     return uma_log.chrome_os_app_list_launch_event();
   }
 
+  void ExpectNoErrors() {
+    histogram_tester_.ExpectTotalCount("Apps.AppListLaunchRecorderError", 0);
+  }
+
   void Wait() { scoped_task_environment_.RunUntilIdle(); }
 
+  base::HistogramTester histogram_tester_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir temp_dir_;
 
@@ -187,6 +194,7 @@ TEST_F(AppListLaunchMetricsProviderTest, ProvidesNothingWhenUninitialized) {
 
   ExpectUninitialized();
   EXPECT_TRUE(GetLogs().empty());
+  ExpectNoErrors();
 }
 
 TEST_F(AppListLaunchMetricsProviderTest, SucceedsGeneratingNewSecret) {
@@ -201,6 +209,9 @@ TEST_F(AppListLaunchMetricsProviderTest, SucceedsGeneratingNewSecret) {
   EXPECT_EQ(32ul, ReadSecret().size());
 
   EXPECT_EQ(GetSecret().value().value, ReadSecret());
+
+  histogram_tester_.ExpectUniqueSample("Apps.AppListLaunchRecorderError",
+                                       MetricsProviderError::kNoStateProto, 1);
 }
 
 TEST_F(AppListLaunchMetricsProviderTest, SucceedsLoadingExistingSecret) {
@@ -211,6 +222,7 @@ TEST_F(AppListLaunchMetricsProviderTest, SucceedsLoadingExistingSecret) {
 
   ExpectEnabled();
   EXPECT_EQ(kSecret, GetSecret().value().value);
+  ExpectNoErrors();
 }
 
 // Tests that a call to ProvideCurrentSessionData populates protos for each log,
@@ -235,6 +247,7 @@ TEST_F(AppListLaunchMetricsProviderTest, CorrectHashedValues) {
                            kValue1Hash, std::string(kValue3).size());
   ExpectLoggingEventEquals(events[3], kValue3Hash, kValue4Hash, kValue1Hash,
                            kValue2Hash, std::string(kValue4).size());
+  ExpectNoErrors();
 }
 
 // Tests that the logs reported in one call to ProvideCurrentSessionData do no
@@ -257,6 +270,7 @@ TEST_F(AppListLaunchMetricsProviderTest, EventsNotDuplicated) {
                            kValue1Hash, std::string(kValue3).size());
 
   EXPECT_TRUE(GetLogs().empty());
+  ExpectNoErrors();
 }
 
 // Tests that logging events are dropped after an unreasonably large number of
@@ -277,6 +291,10 @@ TEST_F(AppListLaunchMetricsProviderTest, EventsAreCapped) {
   for (int i = 0; i < 2 * max_events; ++i)
     AddLog(kValue1, kValue2, kValue3, kValue4);
   EXPECT_EQ(max_events, GetLogs().size());
+
+  histogram_tester_.ExpectBucketCount(
+      "Apps.AppListLaunchRecorderError",
+      MetricsProviderError::kMaxEventsPerUploadExceeded, 1);
 }
 
 // Tests that logging events that occur before the provider is initialized are
@@ -305,6 +323,7 @@ TEST_F(AppListLaunchMetricsProviderTest,
                            kValue2Hash, std::string(kValue4).size());
 
   EXPECT_TRUE(GetLogs().empty());
+  ExpectNoErrors();
 }
 
 }  // namespace app_list
