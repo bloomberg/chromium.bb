@@ -18,8 +18,10 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/data_buffer.h"
 #include "media/base/video_frame.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -1327,43 +1329,71 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     yuv_textures[plane] = yuv_images[plane]->getBackendTexture(false);
   }
 
-  // Decode 3 GPU-side Y,U,V SkImages into a GPU-side RGB SkImage.
-  sk_sp<SkImage> yuv_image = YUVGrBackendTexturesToSkImage(
-      gr_context, video_frame.ColorSpace(), video_frame.format(), yuv_textures);
-  if (!yuv_image) {
-    return false;
+  auto* sii = context_provider->SharedImageInterface();
+  gpu::gles2::GLES2Interface* source_gl = context_provider->ContextGL();
+
+  // Create a shared image to receive the intermediate RGB result.
+  gpu::Mailbox mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::RGBA_8888, video_frame.coded_size(),
+      gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+  gpu::SyncToken creation_sync_token = sii->GenUnverifiedSyncToken();
+
+  // On the source GL context, do the YUV->RGB conversion using Skia.
+  gpu::SyncToken post_conversion_sync_token;
+  {
+    source_gl->WaitSyncTokenCHROMIUM(creation_sync_token.GetConstData());
+    GLuint intermediate_texture =
+        source_gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+    source_gl->BeginSharedImageAccessDirectCHROMIUM(
+        intermediate_texture, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+
+    GrGLTextureInfo backend_texture = {};
+    backend_texture.fTarget = GL_TEXTURE_2D;
+    backend_texture.fID = intermediate_texture;
+    backend_texture.fFormat = GL_RGBA8;
+    GrBackendTexture result_texture(video_frame.coded_size().width(),
+                                    video_frame.coded_size().height(),
+                                    GrMipMapped::kNo, backend_texture);
+
+    sk_sp<SkImage> yuv_image = YUVGrBackendTexturesToSkImage(
+        gr_context, video_frame.ColorSpace(), video_frame.format(),
+        yuv_textures, &result_texture);
+
+    gr_context->flush();
+    source_gl->EndSharedImageAccessDirectCHROMIUM(intermediate_texture);
+    source_gl->DeleteTextures(1, &intermediate_texture);
+
+    source_gl->GenUnverifiedSyncTokenCHROMIUM(
+        post_conversion_sync_token.GetData());
+
+    if (!yuv_image) {
+      sii->DestroySharedImage(post_conversion_sync_token, mailbox);
+      return false;
+    }
   }
 
-  GrGLTextureInfo src_texture_info{};
-  yuv_image->getBackendTexture(true).getGLTextureInfo(&src_texture_info);
+  // On the destination GL context, do a copy (with cropping) into the
+  // destination texture.
+  gpu::SyncToken post_copy_sync_token;
+  {
+    destination_gl->WaitSyncTokenCHROMIUM(
+        post_conversion_sync_token.GetConstData());
+    GLuint intermediate_texture =
+        destination_gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+    destination_gl->BeginSharedImageAccessDirectCHROMIUM(
+        intermediate_texture, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
 
-  gpu::gles2::GLES2Interface* source_gl = context_provider->ContextGL();
-  gpu::MailboxHolder mailbox_holder;
-  mailbox_holder.texture_target = src_texture_info.fTarget;
-  source_gl->ProduceTextureDirectCHROMIUM(src_texture_info.fID,
-                                          mailbox_holder.mailbox.name);
+    VideoFrameCopyTextureOrSubTexture(
+        destination_gl, video_frame.coded_size(), video_frame.visible_rect(),
+        intermediate_texture, target, texture, internal_format, format, type,
+        level, premultiply_alpha, flip_y);
 
-  // Wait for mailbox creation on source context before consuming it and
-  // copying from it on the consumer context.
-  source_gl->GenUnverifiedSyncTokenCHROMIUM(
-      mailbox_holder.sync_token.GetData());
-
-  destination_gl->WaitSyncTokenCHROMIUM(
-      mailbox_holder.sync_token.GetConstData());
-  uint32_t intermediate_texture =
-      destination_gl->CreateAndConsumeTextureCHROMIUM(
-          mailbox_holder.mailbox.name);
-  VideoFrameCopyTextureOrSubTexture(
-      destination_gl, video_frame.coded_size(), video_frame.visible_rect(),
-      intermediate_texture, target, texture, internal_format, format, type,
-      level, premultiply_alpha, flip_y);
-  destination_gl->DeleteTextures(1, &intermediate_texture);
-
-  // Wait for destination context to consume mailbox before deleting it in
-  // source context.
-  gpu::SyncToken dest_sync_token;
-  destination_gl->GenUnverifiedSyncTokenCHROMIUM(dest_sync_token.GetData());
-  source_gl->WaitSyncTokenCHROMIUM(dest_sync_token.GetConstData());
+    destination_gl->EndSharedImageAccessDirectCHROMIUM(intermediate_texture);
+    destination_gl->DeleteTextures(1, &intermediate_texture);
+    destination_gl->GenUnverifiedSyncTokenCHROMIUM(
+        post_copy_sync_token.GetData());
+  }
+  sii->DestroySharedImage(post_copy_sync_token, mailbox);
 
   // video_frame->UpdateReleaseSyncToken is not necessary since the video frame
   // data we used was CPU-side (IsMappable) to begin with. If there were any
