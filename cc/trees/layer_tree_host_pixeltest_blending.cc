@@ -268,15 +268,6 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(::testing::Values(SOFTWARE, ZERO_COPY, SKIA_GL),
                        ::testing::ValuesIn(kBlendModes)));
 
-using LayerTreeHostBlendingPixelTestNonSkia = LayerTreeHostBlendingPixelTest;
-
-// TODO(crbug.com/948128): Enable these tests for Skia.
-INSTANTIATE_TEST_SUITE_P(B,
-                         LayerTreeHostBlendingPixelTestNonSkia,
-                         ::testing::Combine(::testing::Values(SOFTWARE,
-                                                              ZERO_COPY),
-                                            ::testing::ValuesIn(kBlendModes)));
-
 TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRoot) {
   const int kRootWidth = 2;
   const int kRootHeight = 2;
@@ -304,7 +295,7 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRoot) {
   RunPixelResourceTest(background, expected);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTestNonSkia, BlendingWithBackdropFilter) {
+TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithBackdropFilter) {
   const int kRootWidth = 2;
   const int kRootHeight = 2;
   InitializeFromTestCase(resource_type());

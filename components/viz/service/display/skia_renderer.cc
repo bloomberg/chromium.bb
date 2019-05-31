@@ -1806,10 +1806,16 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   }
 
   // Save the layer with the restoration paint (which holds the final image
-  // filters and blending parameters), the backdrop filters, and mask image.
+  // filters, the backdrop filters, and mask image. If we have a backdrop filter
+  // the layer will blended with src-over, and the rpdq's blend mode will apply
+  // when drawing the content into the layer itself. When there's no backdrop
+  // (so the layer starts empty), use the rp's blend mode when flattening layer.
   SkCanvas::SaveLayerFlags layer_flags = 0;
+  SkBlendMode content_blend = SkBlendMode::kSrcOver;
   if (rpdq_params.backdrop_filter) {
     layer_flags |= SkCanvas::kInitWithPrevious_SaveLayerFlag;
+    content_blend = paint.getBlendMode();
+    paint.setBlendMode(SkBlendMode::kSrcOver);
   }
   SkRect bounds = gfx::RectFToSkRect(params->visible_rect);
   current_canvas_->saveLayer(
@@ -1831,9 +1837,11 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   }
 
   // Now draw the main content using the same per-edge AA API to be consistent
-  // with DrawSingleImage. Use a new paint that defaults to opaque+src-over,
-  // and just preserve the filter quality from the original paint.
+  // with DrawSingleImage. Use a new paint that uses either srcOver or the rpdq
+  // blend mode, depending how filters were applied, and just preserve the
+  // filter quality from the original paint.
   SkPaint content_paint;
+  content_paint.setBlendMode(content_blend);
   content_paint.setFilterQuality(paint.getFilterQuality());
 
   SkCanvas::SrcRectConstraint constraint =

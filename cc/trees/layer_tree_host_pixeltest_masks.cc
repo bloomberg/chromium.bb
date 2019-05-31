@@ -820,18 +820,6 @@ using LayerTreeHostMasksForBackdropFiltersPixelTest =
 INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(
     LayerTreeHostMasksForBackdropFiltersPixelTest);
 
-using LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia =
-    ParameterizedPixelResourceTest;
-
-// TODO(crbug.com/948128): Enable these tests for Skia.
-INSTANTIATE_TEST_SUITE_P(
-    PixelResourceTest,
-    LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
-    ::testing::Combine(
-        ::testing::Values(SOFTWARE, GPU, ONE_COPY, ZERO_COPY),
-        ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,
-                          Layer::LayerMaskType::MULTI_TEXTURE_MASK)));
-
 TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
        MaskOfLayerWithBackdropFilter) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
@@ -1284,7 +1272,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   RunPixelResourceTest(root, image_name);
 }
 
-TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
+TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
        MaskOfLayerWithBackdropFilterAndBlend) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(128, 128), SK_ColorWHITE);
