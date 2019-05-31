@@ -487,7 +487,7 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
   if (!resource_id)
     return;
   auto* resource_provider = skia_renderer->resource_provider_;
-  if (!skia_renderer->is_using_ddl() || skia_renderer->non_root_surface_ ||
+  if (!skia_renderer->is_using_ddl() ||
       !IsTextureResource(resource_provider, resource_id)) {
     // TODO(penghuang): remove this code when DDL is used everywhere.
     lock_.emplace(resource_provider, resource_id, alpha_type, origin);
@@ -680,7 +680,6 @@ void SkiaRenderer::FinishDrawingFrame() {
   if (sync_queries_) {
     sync_queries_->EndCurrentFrame();
   }
-  non_root_surface_ = nullptr;
   current_canvas_ = nullptr;
   current_surface_ = nullptr;
 
@@ -743,7 +742,6 @@ void SkiaRenderer::EnsureScissorTestDisabled() {
 
 void SkiaRenderer::BindFramebufferToOutputSurface() {
   DCHECK(!output_surface_->HasExternalStencilTest());
-  non_root_surface_ = nullptr;
 
   switch (draw_mode_) {
     case DrawMode::DDL: {
@@ -789,7 +787,6 @@ void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
   RenderPassBacking& backing = iter->second;
   switch (draw_mode_) {
     case DrawMode::DDL: {
-      non_root_surface_ = nullptr;
       current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
           render_pass_id, backing.size, backing.format, backing.generate_mipmap,
           backing.color_space.ToSkColorSpace());
