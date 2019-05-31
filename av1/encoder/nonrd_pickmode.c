@@ -517,6 +517,167 @@ static TX_SIZE calculate_tx_size(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   return AOMMIN(tx_size, TX_16X16);
 }
 
+static const uint8_t b_width_log2_lookup[BLOCK_SIZES] = { 0, 0, 1, 1, 1, 2,
+                                                          2, 2, 3, 3, 3, 4,
+                                                          4, 4, 5, 5 };
+static const uint8_t b_height_log2_lookup[BLOCK_SIZES] = { 0, 1, 0, 1, 2, 1,
+                                                           2, 3, 2, 3, 4, 3,
+                                                           4, 5, 4, 5 };
+
+static void block_variance(const uint8_t *src, int src_stride,
+                           const uint8_t *ref, int ref_stride, int w, int h,
+                           unsigned int *sse, int *sum, int block_size,
+                           uint32_t *sse8x8, int *sum8x8, uint32_t *var8x8) {
+  int i, j, k = 0;
+
+  *sse = 0;
+  *sum = 0;
+
+  for (i = 0; i < h; i += block_size) {
+    for (j = 0; j < w; j += block_size) {
+      aom_get8x8var(src + src_stride * i + j, src_stride,
+                    ref + ref_stride * i + j, ref_stride, &sse8x8[k],
+                    &sum8x8[k]);
+      *sse += sse8x8[k];
+      *sum += sum8x8[k];
+      var8x8[k] = sse8x8[k] - (uint32_t)(((int64_t)sum8x8[k] * sum8x8[k]) >> 6);
+      k++;
+    }
+  }
+}
+
+static void calculate_variance(int bw, int bh, TX_SIZE tx_size,
+                               unsigned int *sse_i, int *sum_i,
+                               unsigned int *var_o, unsigned int *sse_o,
+                               int *sum_o) {
+  const BLOCK_SIZE unit_size = txsize_to_bsize[tx_size];
+  const int nw = 1 << (bw - b_width_log2_lookup[unit_size]);
+  const int nh = 1 << (bh - b_height_log2_lookup[unit_size]);
+  int i, j, k = 0;
+
+  for (i = 0; i < nh; i += 2) {
+    for (j = 0; j < nw; j += 2) {
+      sse_o[k] = sse_i[i * nw + j] + sse_i[i * nw + j + 1] +
+                 sse_i[(i + 1) * nw + j] + sse_i[(i + 1) * nw + j + 1];
+      sum_o[k] = sum_i[i * nw + j] + sum_i[i * nw + j + 1] +
+                 sum_i[(i + 1) * nw + j] + sum_i[(i + 1) * nw + j + 1];
+      var_o[k] = sse_o[k] - (uint32_t)(((int64_t)sum_o[k] * sum_o[k]) >>
+                                       (b_width_log2_lookup[unit_size] +
+                                        b_height_log2_lookup[unit_size] + 6));
+      k++;
+    }
+  }
+}
+
+// Adjust the ac_thr according to speed, width, height and normalized sum
+static int ac_thr_factor(const int speed, const int width, const int height,
+                         const int norm_sum) {
+  if (speed >= 8 && norm_sum < 5) {
+    if (width <= 640 && height <= 480)
+      return 4;
+    else
+      return 2;
+  }
+  return 1;
+}
+
+static void model_skip_for_sb_y_large(AV1_COMP *cpi, BLOCK_SIZE bsize,
+                                      MACROBLOCK *x, MACROBLOCKD *xd,
+                                      unsigned int *var_y, unsigned int *sse_y,
+                                      int *early_term) {
+  // Note our transform coeffs are 8 times an orthogonal transform.
+  // Hence quantizer step is also 8 times. To get effective quantizer
+  // we need to divide by 8 before sending to modeling function.
+  unsigned int sse;
+  struct macroblock_plane *const p = &x->plane[0];
+  struct macroblockd_plane *const pd = &xd->plane[0];
+  const uint32_t dc_quant = pd->dequant_Q3[0];
+  const uint32_t ac_quant = pd->dequant_Q3[1];
+  const int64_t dc_thr = dc_quant * dc_quant >> 6;
+  int64_t ac_thr = ac_quant * ac_quant >> 6;
+  unsigned int var;
+  int sum;
+
+  const int bw = b_width_log2_lookup[bsize];
+  const int bh = b_height_log2_lookup[bsize];
+  const int num8x8 = 1 << (bw + bh - 2);
+  unsigned int sse8x8[256] = { 0 };
+  int sum8x8[256] = { 0 };
+  unsigned int var8x8[256] = { 0 };
+  TX_SIZE tx_size;
+  int k;
+  // Calculate variance for whole partition, and also save 8x8 blocks' variance
+  // to be used in following transform skipping test.
+  block_variance(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride,
+                 4 << bw, 4 << bh, &sse, &sum, 8, sse8x8, sum8x8, var8x8);
+  var = sse - (unsigned int)(((int64_t)sum * sum) >> (bw + bh + 4));
+
+  *var_y = var;
+  *sse_y = sse;
+
+  ac_thr *= ac_thr_factor(cpi->oxcf.speed, cpi->common.width,
+                          cpi->common.height, abs(sum) >> (bw + bh));
+
+  tx_size = calculate_tx_size(cpi, bsize, xd, var, sse);
+  // The code below for setting skip flag assumes tranform size of at least 8x8,
+  // so force this lower limit on transform.
+  if (tx_size < TX_8X8) tx_size = TX_8X8;
+  xd->mi[0]->tx_size = tx_size;
+
+  // Evaluate if the partition block is a skippable block in Y plane.
+  {
+    unsigned int sse16x16[64] = { 0 };
+    int sum16x16[64] = { 0 };
+    unsigned int var16x16[64] = { 0 };
+    const int num16x16 = num8x8 >> 2;
+
+    unsigned int sse32x32[16] = { 0 };
+    int sum32x32[16] = { 0 };
+    unsigned int var32x32[16] = { 0 };
+    const int num32x32 = num8x8 >> 4;
+
+    int ac_test = 1;
+    int dc_test = 1;
+    const int num = (tx_size == TX_8X8)
+                        ? num8x8
+                        : ((tx_size == TX_16X16) ? num16x16 : num32x32);
+    const unsigned int *sse_tx =
+        (tx_size == TX_8X8) ? sse8x8
+                            : ((tx_size == TX_16X16) ? sse16x16 : sse32x32);
+    const unsigned int *var_tx =
+        (tx_size == TX_8X8) ? var8x8
+                            : ((tx_size == TX_16X16) ? var16x16 : var32x32);
+
+    // Calculate variance if tx_size > TX_8X8
+    if (tx_size >= TX_16X16)
+      calculate_variance(bw, bh, TX_8X8, sse8x8, sum8x8, var16x16, sse16x16,
+                         sum16x16);
+    if (tx_size == TX_32X32)
+      calculate_variance(bw, bh, TX_16X16, sse16x16, sum16x16, var32x32,
+                         sse32x32, sum32x32);
+
+    // Skipping test
+    *early_term = 0;
+    for (k = 0; k < num; k++)
+      // Check if all ac coefficients can be quantized to zero.
+      if (!(var_tx[k] < ac_thr || var == 0)) {
+        ac_test = 0;
+        break;
+      }
+
+    for (k = 0; k < num; k++)
+      // Check if dc coefficient can be quantized to zero.
+      if (!(sse_tx[k] - var_tx[k] < dc_thr || sse == var)) {
+        dc_test = 0;
+        break;
+      }
+
+    if (ac_test && dc_test) {
+      *early_term = 1;
+    }
+  }
+}
+
 static void model_rd_for_sb_y(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
                               MACROBLOCK *x, MACROBLOCKD *xd, int *out_rate_sum,
                               int64_t *out_dist_sum, int *skip_txfm_sb,
@@ -1019,6 +1180,11 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                       comp_modes > 0);
     }
   }
+  const int large_block = bsize >= BLOCK_32X32;
+  const int use_model_yrd_large =
+      cpi->oxcf.rc_mode == AOM_CBR && large_block &&
+      !cyclic_refresh_segment_id_boosted(xd->mi[0]->segment_id) &&
+      cm->base_qindex;
 
   for (int idx = 0; idx < num_inter_modes; ++idx) {
     int rate_mv = 0;
@@ -1193,41 +1359,53 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         (filter_ref == SWITCHABLE) ? EIGHTTAP_REGULAR : filter_ref;
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                   AOM_PLANE_Y, AOM_PLANE_Y);
-
-    // TODO(kyslov) For large partition blocks, extra testing needs to be done
-
-    model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
-                      &this_rdc.skip, NULL, &var_y, &sse_y);
+#if !_TMP_USE_CURVFIT_
+    if (use_model_yrd_large) {
+      model_skip_for_sb_y_large(cpi, bsize, x, xd, &var_y, &sse_y,
+                                &this_early_term);
+    } else {
+#endif
+      model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
+                        &this_rdc.skip, NULL, &var_y, &sse_y);
+#if !_TMP_USE_CURVFIT_
+    }
+#endif
 
     if (sse_y < best_sse_sofar) best_sse_sofar = sse_y;
 
     const int skip_ctx = av1_get_skip_context(xd);
     const int skip_cost = x->skip_cost[skip_ctx][1];
     const int no_skip_cost = x->skip_cost[skip_ctx][0];
-
+    if (!this_early_term) {
 #if !_TMP_USE_CURVFIT_
-    this_sse = (int64_t)sse_y;
-    block_yrd(cpi, x, mi_row, mi_col, &this_rdc, &is_skippable, &this_sse,
-              bsize, mi->tx_size);
+      this_sse = (int64_t)sse_y;
+      block_yrd(cpi, x, mi_row, mi_col, &this_rdc, &is_skippable, &this_sse,
+                bsize, mi->tx_size);
 #endif
 
-    x->skip = this_rdc.skip;
-    if (this_rdc.skip) {
-      this_rdc.rate = skip_cost;
-    } else {
-#if !_TMP_USE_CURVFIT_
-      // on CurvFit this condition is checked inside curvfit modeling
-      if (RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist) >=
-          RDCOST(x->rdmult, 0,
-                 this_sse)) {  // this_sse already multiplied by 16 in block_yrd
-        x->skip = 1;
+      x->skip = this_rdc.skip;
+      if (this_rdc.skip) {
         this_rdc.rate = skip_cost;
-        this_rdc.dist = this_sse;
-      } else
+      } else {
+#if !_TMP_USE_CURVFIT_
+        // on CurvFit this condition is checked inside curvfit modeling
+        if (RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist) >=
+            RDCOST(
+                x->rdmult, 0,
+                this_sse)) {  // this_sse already multiplied by 16 in block_yrd
+          x->skip = 1;
+          this_rdc.rate = skip_cost;
+          this_rdc.dist = this_sse;
+        } else
 #endif
-      {
-        this_rdc.rate += no_skip_cost;
+        {
+          this_rdc.rate += no_skip_cost;
+        }
       }
+    } else {
+      x->skip = 1;
+      this_rdc.rate = skip_cost;
+      this_rdc.dist = sse_y << 4;
     }
 
     // TODO(kyslov) account for UV prediction cost
