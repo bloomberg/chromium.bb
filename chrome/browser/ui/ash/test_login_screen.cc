@@ -78,6 +78,10 @@ void TestLoginScreen::SetShowParentAccessDialog(bool show) {}
 
 void TestLoginScreen::FocusLoginShelf(bool reverse) {}
 
+void TestLoginScreen::ShowParentAccessWidget(
+    const AccountId& child_account_id,
+    base::RepeatingCallback<void(bool success)> callback) {}
+
 ash::LoginScreenModel* TestLoginScreen::GetModel() {
   return &test_screen_model_;
 }

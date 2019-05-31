@@ -158,6 +158,7 @@ Polymer({
     this.addWebUIListener('system-clock-updated', this.updateTime_.bind(this));
     this.addWebUIListener(
         'system-timezone-changed', this.setTimezone_.bind(this));
+    this.addWebUIListener('validation-complete', this.saveAndClose_.bind(this));
 
     this.browserProxy_.sendPageReady();
 
@@ -227,7 +228,6 @@ Polymer({
     if (e.target.validity.valid && e.target.value) {
       // Make this the new fallback time in case of future invalid input.
       this.prevValues_[e.target.id] = e.target.value;
-      this.applyTime_();
     } else {
       // Restore previous value.
       e.target.value = this.prevValues_[e.target.id];
@@ -242,8 +242,22 @@ Polymer({
     this.browserProxy_.setTimezone(e.currentTarget.value);
   },
 
-  /** @private */
+  /**
+   * Called when the done button is clicked. Child accounts need parental
+   * approval to change time, which requires an extra step after the button is
+   * clicked. This method notifyies the dialog delegate to start the approval
+   * step, once the approval is granted the 'validation-complete' event is
+   * triggered invoking saveAndClose_. For regular accounts, this step is
+   * skipped and saveAndClose_ is called immediately after the button click.
+   * @private
+   */
   onDoneClick_: function() {
+    this.browserProxy_.doneClicked();
+  },
+
+  /** @private */
+  saveAndClose_: function() {
+    this.applyTime_();
     this.browserProxy_.dialogClose();
   },
 });

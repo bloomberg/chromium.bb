@@ -8,6 +8,9 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/callback_forward.h"
+
+class AccountId;
 
 namespace ash {
 
@@ -22,6 +25,16 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   static LoginScreen* Get();
 
   virtual LoginScreenModel* GetModel() = 0;
+
+  // Shows a standalone Parent Access dialog. If |child_account_id| is valid, it
+  // validates the parent access code for that child only, when it is  empty it
+  // validates the code for any child signed in the device. |callback| is
+  // invoked when the back button is clicked or the correct code was entered.
+  // Note: this is intended for children only. If a non child account id is
+  // provided, the validation will necessarily fail.
+  virtual void ShowParentAccessWidget(
+      const AccountId& child_account_id,
+      base::RepeatingCallback<void(bool success)> callback) = 0;
 
  protected:
   LoginScreen();

@@ -60,7 +60,7 @@ void MockLoginScreenClient::EnrollUserWithExternalBinary(
 }
 
 void MockLoginScreenClient::ValidateParentAccessCode(
-    const base::Optional<AccountId>& account_id,
+    const AccountId& account_id,
     const std::string& code,
     ValidateParentAccessCodeCallback callback) {
   ValidateParentAccessCode_(account_id, code, callback);

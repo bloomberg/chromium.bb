@@ -69,7 +69,7 @@ class ParentAccessViewTest : public LoginTestBase {
     access_granted ? ++successful_validation_ : ++back_action_;
   }
 
-  const base::Optional<AccountId> account_id_;
+  const AccountId account_id_;
   std::unique_ptr<MockLoginScreenClient> login_client_;
 
   // Number of times the view was dismissed with back button.

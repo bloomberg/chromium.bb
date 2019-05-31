@@ -21,6 +21,7 @@ class PrefRegistrySimple;
 
 namespace ash {
 
+class ParentAccessWidget;
 class SystemTrayNotifier;
 
 // LoginScreenController implements mojom::LoginScreen and wraps the
@@ -74,7 +75,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
                                           OnAuthenticateCallback callback);
   void EnrollUserWithExternalBinary(OnAuthenticateCallback callback);
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id);
-  void ValidateParentAccessCode(const base::Optional<AccountId>& account_id,
+  void ValidateParentAccessCode(const AccountId& account_id,
                                 const std::string& code,
                                 OnParentAccessValidation callback);
   void HardlockPod(const AccountId& account_id);
@@ -109,6 +110,9 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
 
   // LoginScreen:
   LoginScreenModel* GetModel() override;
+  void ShowParentAccessWidget(
+      const AccountId& child_account_id,
+      base::RepeatingCallback<void(bool success)> callback) override;
 
   // mojom::LoginScreen:
   void SetClient(mojom::LoginScreenClientPtr client) override;
@@ -176,6 +180,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
 
   // If set to false, all auth requests will forcibly fail.
   ForceFailAuth force_fail_auth_for_debug_overlay_ = ForceFailAuth::kOff;
+
+  std::unique_ptr<ParentAccessWidget> parent_access_widget_;
 
   base::WeakPtrFactory<LoginScreenController> weak_factory_;
 

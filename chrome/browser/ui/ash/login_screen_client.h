@@ -101,7 +101,7 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
       EnrollUserWithExternalBinaryCallback callback) override;
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id) override;
   void ValidateParentAccessCode(
-      const base::Optional<AccountId>& account_id,
+      const AccountId& account_id,
       const std::string& access_code,
       ValidateParentAccessCodeCallback callback) override;
   void HardlockPod(const AccountId& account_id) override;

@@ -15,9 +15,9 @@
 
 namespace ash {
 
-ParentAccessWidget::ParentAccessWidget(
-    const base::Optional<AccountId>& account_id,
-    const OnExitCallback& callback) {
+ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
+                                       const OnExitCallback& callback)
+    : callback_(callback) {
   views::Widget::InitParams widget_params;
   // Using window frameless to be able to get focus on the view input fields,
   // which does not work with popup type.
@@ -40,7 +40,8 @@ ParentAccessWidget::ParentAccessWidget(
   widget_->Init(widget_params);
 
   ParentAccessView::Callbacks callbacks;
-  callbacks.on_finished = callback;
+  callbacks.on_finished = base::BindRepeating(&ParentAccessWidget::OnExit,
+                                              weak_factory_.GetWeakPtr());
 
   widget_->SetContentsView(new ParentAccessView(account_id, callbacks));
   widget_->CenterWindow(widget_->GetContentsView()->GetPreferredSize());
@@ -49,5 +50,10 @@ ParentAccessWidget::ParentAccessWidget(
 }
 
 ParentAccessWidget::~ParentAccessWidget() = default;
+
+void ParentAccessWidget::OnExit(bool success) {
+  callback_.Run(success);
+  widget_->Close();
+}
 
 }  // namespace ash

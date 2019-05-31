@@ -12,12 +12,30 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
 namespace parent_access {
+
+namespace {
+
+// Returns true when the device owner is a child.
+bool IsDeviceOwnedByChild() {
+  AccountId owner_account_id =
+      user_manager::UserManager::Get()->GetOwnerAccountId();
+  if (owner_account_id.empty())
+    return false;
+  const user_manager::User* device_owner =
+      user_manager::UserManager::Get()->FindUser(owner_account_id);
+  CHECK(device_owner);
+  return device_owner->IsChild();
+}
+
+}  // namespace
 
 // static
 void ParentAccessService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -30,17 +48,31 @@ ParentAccessService& ParentAccessService::Get() {
   return *instance;
 }
 
+// static
+bool ParentAccessService::IsApprovalRequired(SupervisedAction action) {
+  switch (action) {
+    case SupervisedAction::kUpdateClock:
+      if (!base::FeatureList::IsEnabled(
+              features::kParentAccessCodeForTimeChange)) {
+        return false;
+      }
+      if (user_manager::UserManager::Get()->IsUserLoggedIn())
+        return user_manager::UserManager::Get()->GetActiveUser()->IsChild();
+      return IsDeviceOwnedByChild();
+  }
+}
+
 ParentAccessService::ParentAccessService()
     : clock_(base::DefaultClock::GetInstance()) {}
 
 ParentAccessService::~ParentAccessService() = default;
 
 bool ParentAccessService::ValidateParentAccessCode(
-    base::Optional<AccountId> account_id,
+    const AccountId& account_id,
     const std::string& access_code) {
   bool validation_result = false;
   for (const auto& map_entry : config_source_.config_map()) {
-    if (!account_id || account_id == map_entry.first) {
+    if (!account_id.is_valid() || account_id == map_entry.first) {
       for (const auto& validator : map_entry.second) {
         if (validator->Validate(access_code, clock_->Now())) {
           validation_result = true;

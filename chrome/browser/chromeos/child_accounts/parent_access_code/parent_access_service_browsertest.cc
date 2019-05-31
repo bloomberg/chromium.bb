@@ -294,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoAccountId) {
   test_clock_.SetNow(test_value->first);
 
   EXPECT_TRUE(ParentAccessService::Get().ValidateParentAccessCode(
-      base::nullopt, test_value->second));
+      EmptyAccountId(), test_value->second));
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, InvalidAccountId) {

@@ -391,7 +391,7 @@ ParentAccessView::Callbacks::Callbacks(const Callbacks& other) = default;
 
 ParentAccessView::Callbacks::~Callbacks() = default;
 
-ParentAccessView::ParentAccessView(const base::Optional<AccountId>& account_id,
+ParentAccessView::ParentAccessView(const AccountId& account_id,
                                    const Callbacks& callbacks)
     : NonAccessibleView(kParentAccessViewClassName),
       callbacks_(callbacks),

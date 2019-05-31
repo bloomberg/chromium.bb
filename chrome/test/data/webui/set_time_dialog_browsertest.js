@@ -31,10 +31,8 @@ TEST_F('SetTimeDialogBrowserTest', 'All', function() {
     class TestSetTimeBrowserProxy extends TestBrowserProxy {
       constructor() {
         super([
-          'sendPageReady',
-          'setTimeInSeconds',
-          'setTimezone',
-          'dialogClose',
+          'sendPageReady', 'setTimeInSeconds', 'setTimezone', 'dialogClose',
+          'doneClicked'
         ]);
       }
 
@@ -56,6 +54,12 @@ TEST_F('SetTimeDialogBrowserTest', 'All', function() {
       /** @override */
       dialogClose() {
         this.methodCalled('dialogClose');
+      }
+
+      /** @override */
+      doneClicked() {
+        this.methodCalled('doneClicked');
+        cr.webUIListenerCallback('validation-complete');
       }
     }
 
@@ -110,7 +114,7 @@ TEST_F('SetTimeDialogBrowserTest', 'All', function() {
       const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
       dateInput.focus();
       dateInput.valueAsDate = nextWeek;
-      dateInput.blur();
+      setTimeElement.$$('#doneButton').click();
 
       // Verify the page sends a request to move time forward.
       return testBrowserProxy.whenCalled('setTimeInSeconds')

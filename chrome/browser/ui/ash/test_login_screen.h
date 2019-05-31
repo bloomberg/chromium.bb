@@ -52,6 +52,9 @@ class TestLoginScreen : public ash::mojom::LoginScreen,
   void SetShowParentAccessButton(bool show) override;
   void SetShowParentAccessDialog(bool show) override;
   void FocusLoginShelf(bool reverse) override;
+  void ShowParentAccessWidget(
+      const AccountId& child_account_id,
+      base::RepeatingCallback<void(bool success)> callback) override;
 
   // ash::LoginScreen:
   ash::LoginScreenModel* GetModel() override;

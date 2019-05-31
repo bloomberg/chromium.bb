@@ -299,6 +299,9 @@ extern const base::Feature kUseNewAcceptLanguageHeader;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kParentAccessCode;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kParentAccessCodeForTimeChange;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)

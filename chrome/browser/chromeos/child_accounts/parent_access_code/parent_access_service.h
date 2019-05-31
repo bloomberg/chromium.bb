@@ -39,16 +39,27 @@ class ParentAccessService {
         base::Optional<AccountId> account_id) = 0;
   };
 
+  // Actions that might require parental approval.
+  enum class SupervisedAction {
+    // When Chrome is unable to automatically verify if the OS time is correct
+    // the user becomes able to manually change the clock. The entry points are
+    // the settings page (in-session) and the tray bubble (out-session).
+    kUpdateClock
+  };
+
   // Registers preferences.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Gets the service singleton.
   static ParentAccessService& Get();
 
+  // Checks if the provided |action| requires parental approval to be performed.
+  static bool IsApprovalRequired(SupervisedAction action);
+
   // Checks if |access_code| is valid for the user identified by |account_id|.
   // When account_id is empty, this method checks if the |access_code| is valid
   // for any child that was added to this device.
-  bool ValidateParentAccessCode(base::Optional<AccountId> account_id,
+  bool ValidateParentAccessCode(const AccountId& account_id,
                                 const std::string& access_code);
 
   // Reloads config for the provided user.

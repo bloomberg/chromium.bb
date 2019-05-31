@@ -8,12 +8,14 @@
 
 #include <memory>
 
+#include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/build_time.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -25,6 +27,7 @@
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -38,7 +41,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
                               public chromeos::SystemClockClient::Observer,
                               public system::TimezoneSettings::Observer {
  public:
-  SetTimeMessageHandler() = default;
+  SetTimeMessageHandler() : weak_factory_(this) {}
   ~SetTimeMessageHandler() override = default;
 
   // WebUIMessageHandler:
@@ -55,6 +58,9 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
         "setTimezone",
         base::BindRepeating(&SetTimeMessageHandler::OnSetTimezone,
                             base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "doneClicked", base::BindRepeating(&SetTimeMessageHandler::DoneClicked,
+                                           base::Unretained(this)));
   }
 
   void OnJavascriptAllowed() override {
@@ -113,10 +119,35 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
     system::SetTimezoneFromUI(profile, timezone_id);
   }
 
+  void DoneClicked(const base::ListValue* args) {
+    if (!parent_access::ParentAccessService::IsApprovalRequired(
+            parent_access::ParentAccessService::SupervisedAction::
+                kUpdateClock)) {
+      OnParentAccessValidation(true);
+      return;
+    }
+
+    AccountId account_id;
+    if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
+      account_id =
+          user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
+    }
+    ash::LoginScreen::Get()->ShowParentAccessWidget(
+        account_id,
+        base::BindRepeating(&SetTimeMessageHandler::OnParentAccessValidation,
+                            weak_factory_.GetWeakPtr()));
+  }
+
+  void OnParentAccessValidation(bool success) {
+    if (success)
+      FireWebUIListener("validation-complete");
+  }
+
   ScopedObserver<SystemClockClient, SystemClockClient::Observer>
       clock_observer_{this};
   ScopedObserver<system::TimezoneSettings, system::TimezoneSettings::Observer>
       timezone_observer_{this};
+  base::WeakPtrFactory<SetTimeMessageHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SetTimeMessageHandler);
 };

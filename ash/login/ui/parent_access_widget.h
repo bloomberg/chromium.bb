@@ -7,8 +7,9 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 
 class AccountId;
@@ -24,18 +25,25 @@ class ParentAccessWidget {
  public:
   using OnExitCallback = base::RepeatingCallback<void(bool success)>;
 
-  // Creates and shows the widget. When |account_id| is set, the parent
+  // Creates and shows the widget. When |account_id| is valid, the parent
   // access code is validated using the configuration for the provided account,
   // when it is empty it tries to validate the access code to any child signed
   // in the device. The |callback| is called when (a) the validation is
   // successful or (b) the back button is pressed.
-  ParentAccessWidget(const base::Optional<AccountId>& account_id,
+  ParentAccessWidget(const AccountId& account_id,
                      const OnExitCallback& callback);
 
   ~ParentAccessWidget();
 
  private:
+  // Closes the widget and forwards the result to the validation to |callback_|.
+  void OnExit(bool success);
+
   std::unique_ptr<views::Widget> widget_;
+
+  OnExitCallback callback_;
+
+  base::WeakPtrFactory<ParentAccessWidget> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ParentAccessWidget);
 };

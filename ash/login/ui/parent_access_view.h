@@ -80,8 +80,7 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
   // specific child, when |account_id| is set, or to any child signed in the
   // device, when it is empty. |callbacks| will be called when user performs
   // certain actions.
-  ParentAccessView(const base::Optional<AccountId>& account_id,
-                   const Callbacks& callbacks);
+  ParentAccessView(const AccountId& account_id, const Callbacks& callbacks);
   ~ParentAccessView() override;
 
   // views::View:
@@ -123,7 +122,7 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
 
   // Account id of the user that parent access code is processed for. When
   // empty, the code is processed for all the children signed in the device.
-  const base::Optional<AccountId> account_id_;
+  const AccountId account_id_;
 
   State state_ = State::kNormal;
 

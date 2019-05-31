@@ -9,6 +9,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
+#include "ash/login/ui/parent_access_widget.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -180,7 +181,7 @@ void LoginScreenController::AuthenticateUserWithEasyUnlock(
 }
 
 void LoginScreenController::ValidateParentAccessCode(
-    const base::Optional<AccountId>& account_id,
+    const AccountId& account_id,
     const std::string& code,
     OnParentAccessValidation callback) {
   if (!login_screen_client_) {
@@ -298,6 +299,13 @@ void LoginScreenController::FlushForTesting() {
 
 LoginScreenModel* LoginScreenController::GetModel() {
   return &login_data_dispatcher_;
+}
+
+void LoginScreenController::ShowParentAccessWidget(
+    const AccountId& child_account_id,
+    base::RepeatingCallback<void(bool success)> callback) {
+  parent_access_widget_ =
+      std::make_unique<ash::ParentAccessWidget>(child_account_id, callback);
 }
 
 void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {

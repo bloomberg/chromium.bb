@@ -30,7 +30,7 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   MOCK_METHOD1(EnrollUserWithExternalBinary_,
                void(EnrollUserWithExternalBinaryCallback& callback));
   MOCK_METHOD3(ValidateParentAccessCode_,
-               void(const base::Optional<AccountId>& account_id,
+               void(const AccountId& account_id,
                     const std::string& access_code,
                     ValidateParentAccessCodeCallback& callback));
 
@@ -74,7 +74,7 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   void EnrollUserWithExternalBinary(
       EnrollUserWithExternalBinaryCallback callback) override;
   void ValidateParentAccessCode(
-      const base::Optional<AccountId>& account_id,
+      const AccountId& account_id,
       const std::string& code,
       ValidateParentAccessCodeCallback callback) override;
   MOCK_METHOD1(AuthenticateUserWithEasyUnlock,
