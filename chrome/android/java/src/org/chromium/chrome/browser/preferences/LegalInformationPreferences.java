@@ -5,18 +5,16 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 
 /**
  * Fragment to display legal information about Chrome.
  */
-public class LegalInformationPreferences extends PreferenceFragment {
-
+public class LegalInformationPreferences extends PreferenceFragmentCompat {
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String s) {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.legal_information_preferences);
         getActivity().setTitle(R.string.legal_information_title);
     }
