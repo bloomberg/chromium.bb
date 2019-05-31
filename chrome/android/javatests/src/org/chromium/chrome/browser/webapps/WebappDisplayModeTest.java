@@ -90,6 +90,7 @@ public class WebappDisplayModeTest {
         Assert.assertTrue(isFullscreen(activity));
     }
 
+    @Test
     //@SmallTest
     //@Feature({"Webapps"})
     @DisabledTest(message = "crbug.com/793133")
