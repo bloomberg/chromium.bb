@@ -25,6 +25,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/system_fonts_win.h"
@@ -49,6 +50,7 @@ class LayoutProviderTest : public testing::Test {
  protected:
   static void SetUpTestSuite() {
 #if defined(OS_WIN)
+    base::win::EnableHighDPISupport();
     gfx::win::InitializeDirectWrite();
 
     // Ensures anti-aliasing is activated.
