@@ -23,6 +23,8 @@
 @interface DisconnectWindowController()
 - (BOOL)isRToL;
 - (void)Hide;
+@property(nonatomic, retain) NSTextField* connectedToField;
+@property(nonatomic, retain) NSButton* disconnectButton;
 @end
 
 const int kMaximumConnectedNameWidthInPixels = 600;
@@ -69,9 +71,18 @@ void DisconnectWindowMac::Start(
                  client_session_control, protocol::OK);
   std::string client_jid = client_session_control->client_jid();
   std::string username = client_jid.substr(0, client_jid.find('/'));
+
+  NSRect frame = NSMakeRect(0, 0, 466, 40);
+  DisconnectWindow* window =
+      [[[DisconnectWindow alloc] initWithContentRect:frame
+                                           styleMask:NSBorderlessWindowMask
+                                             backing:NSBackingStoreBuffered
+                                               defer:NO] autorelease];
   window_controller_ =
       [[DisconnectWindowController alloc] initWithCallback:disconnect_callback
-                                                  username:username];
+                                                  username:username
+                                                    window:window];
+  [window_controller_ initializeWindow];
   [window_controller_ showWindow:nil];
 }
 
@@ -83,9 +94,13 @@ std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
 }  // namespace remoting
 
 @implementation DisconnectWindowController
+@synthesize connectedToField = connectedToField_;
+@synthesize disconnectButton = disconnectButton_;
+
 - (id)initWithCallback:(const base::Closure&)disconnect_callback
-              username:(const std::string&)username {
-  self = [super initWithWindowNibName:@"disconnect_window"];
+              username:(const std::string&)username
+                window:(NSWindow*)window {
+  self = [super initWithWindow:(NSWindow*)window];
   if (self) {
     disconnect_callback_ = disconnect_callback;
     username_ = base::UTF8ToUTF16(username);
@@ -112,7 +127,27 @@ std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
   [self close];
 }
 
-- (void)windowDidLoad {
+- (void)initializeWindow {
+  self.window.contentView = [[[DisconnectView alloc]
+      initWithFrame:self.window.contentView.frame] autorelease];
+
+  self.connectedToField = [[[NSTextField alloc]
+      initWithFrame:NSMakeRect(26, 13, 240, 14)] autorelease];
+  self.connectedToField.drawsBackground = NO;
+  self.connectedToField.bezeled = NO;
+  self.connectedToField.editable = NO;
+  self.connectedToField.font = [NSFont systemFontOfSize:11];
+  [self.window.contentView addSubview:self.connectedToField];
+
+  self.disconnectButton = [[[NSButton alloc]
+      initWithFrame:NSMakeRect(271, 9, 182, 22)] autorelease];
+  self.disconnectButton.buttonType = NSButtonTypeMomentaryPushIn;
+  self.disconnectButton.bezelStyle = NSBezelStyleRegularSquare;
+  self.disconnectButton.font = [NSFont systemFontOfSize:11];
+  self.disconnectButton.action = @selector(stopSharing:);
+  self.disconnectButton.target = self;
+  [self.window.contentView addSubview:self.disconnectButton];
+
   [connectedToField_ setStringValue:l10n_util::GetNSStringF(IDS_MESSAGE_SHARED,
                                                             username_)];
   [disconnectButton_ setTitle:l10n_util::GetNSString(IDS_STOP_SHARING_BUTTON)];
@@ -137,6 +172,8 @@ std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
 
   // Move the disconnect button appropriately.
   disconnectFrame.origin.x += newConnectedWidth - oldConnectedWidth;
+  disconnectFrame.origin.y =
+      (NSHeight(self.window.contentView.frame) - NSHeight(disconnectFrame)) / 2;
   [disconnectButton_ setFrame:disconnectFrame];
 
   // Then resize the window appropriately

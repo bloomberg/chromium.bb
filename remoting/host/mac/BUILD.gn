@@ -32,12 +32,6 @@ foreach(locale, remoting_locales_with_underscores) {
   }
 }
 
-mac_xib_bundle_data("remoting_host_xibs") {
-  sources = [
-    "disconnect_window.xib",
-  ]
-}
-
 bundle_data("remoting_host_resources") {
   sources = [
     "$root_gen_dir/remoting/CREDITS.txt",
@@ -94,7 +88,6 @@ target("mac_app_bundle", "remoting_me2me_host") {
   }
   deps += [
     ":remoting_host_resources",
-    ":remoting_host_xibs",
     "//remoting/host:remoting_infoplist_strings",
     "//remoting/resources:copy_locales",
   ]

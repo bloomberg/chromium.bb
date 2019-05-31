@@ -170,12 +170,6 @@ if (!is_chromeos && enable_remoting_host) {
         }
       }
 
-      mac_xib_bundle_data("remote_assistance_host_xibs") {
-        sources = [
-          "//remoting/host/mac/disconnect_window.xib",
-        ]
-      }
-
       if (icu_use_data_file) {
         bundle_data("remote_assistance_host_resources") {
           sources = [
@@ -238,7 +232,6 @@ if (!is_chromeos && enable_remoting_host) {
         }
         deps += [
           ":remote_assistance_host_dialog_icon",
-          ":remote_assistance_host_xibs",
           "//remoting/host:remoting_infoplist_strings",
           "//remoting/resources:copy_locales",
         ]
