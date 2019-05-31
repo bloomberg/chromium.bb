@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
@@ -23,6 +22,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/timer/timer.h"
@@ -464,7 +464,7 @@ class ResourceSchedulerTest : public testing::Test {
 
   ResourceScheduler* scheduler() { return scheduler_.get(); }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<ResourceScheduler> scheduler_;
   net::HttpServerPropertiesImpl http_server_properties_;
   net::TestNetworkQualityEstimator network_quality_estimator_;
