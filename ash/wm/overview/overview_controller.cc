@@ -393,6 +393,49 @@ bool OverviewController::ToggleOverview(
   return true;
 }
 
+// TODO(flackr): Make OverviewController observe the activation of
+// windows, so we can remove OverviewDelegate.
+// TODO(sammiequon): Refactor to use a single entry point for overview.
+void OverviewController::EndOverview() {
+  if (!InOverviewSession())
+    return;
+
+  if (!occlusion_tracker_pauser_)
+    PauseOcclusionTracker();
+
+  if (!start_animations_.empty())
+    OnStartingAnimationComplete(/*canceled=*/true);
+  start_animations_.clear();
+
+  overview_session_->set_is_shutting_down(true);
+  // Do not show mask and show during overview shutdown.
+  overview_session_->UpdateMaskAndShadow();
+
+  for (auto& observer : observers_)
+    observer.OnOverviewModeEnding(overview_session_.get());
+  overview_session_->Shutdown();
+
+#if DCHECK_IS_ON()
+  const auto enter_exit_type = overview_session_->enter_exit_overview_type();
+  if (enter_exit_type ==
+          OverviewSession::EnterExitOverviewType::kImmediateExit &&
+      !delayed_animations_.empty()) {
+    // Immediate exit type implies no delayed exit animations at all, if we get
+    // here then this is a bug.
+    NOTREACHED();
+  }
+#endif
+
+  // Don't delete |overview_session_| yet since the stack is still using it.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  overview_session_.release());
+  last_overview_session_time_ = base::Time::Now();
+  for (auto& observer : observers_)
+    observer.OnOverviewModeEnded();
+  if (delayed_animations_.empty())
+    OnEndingAnimationComplete(/*canceled=*/false);
+}
+
 bool OverviewController::InOverviewSession() const {
   return overview_session_ && !overview_session_->is_shutting_down();
 }
@@ -537,49 +580,6 @@ void OverviewController::DelayedUpdateMaskAndShadow() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&OverviewController::UpdateMaskAndShadow,
                                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-// TODO(flackr): Make OverviewController observe the activation of
-// windows, so we can remove OverviewDelegate.
-// TODO(sammiequon): Refactor to use a single entry point for overview.
-void OverviewController::EndOverview() {
-  if (!InOverviewSession())
-    return;
-
-  if (!occlusion_tracker_pauser_)
-    PauseOcclusionTracker();
-
-  if (!start_animations_.empty())
-    OnStartingAnimationComplete(/*canceled=*/true);
-  start_animations_.clear();
-
-  overview_session_->set_is_shutting_down(true);
-  // Do not show mask and show during overview shutdown.
-  overview_session_->UpdateMaskAndShadow();
-
-  for (auto& observer : observers_)
-    observer.OnOverviewModeEnding(overview_session_.get());
-  overview_session_->Shutdown();
-
-#if DCHECK_IS_ON()
-  const auto enter_exit_type = overview_session_->enter_exit_overview_type();
-  if (enter_exit_type ==
-          OverviewSession::EnterExitOverviewType::kImmediateExit &&
-      !delayed_animations_.empty()) {
-    // Immediate exit type implies no delayed exit animations at all, if we get
-    // here then this is a bug.
-    NOTREACHED();
-  }
-#endif
-
-  // Don't delete |overview_session_| yet since the stack is still using it.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
-                                                  overview_session_.release());
-  last_overview_session_time_ = base::Time::Now();
-  for (auto& observer : observers_)
-    observer.OnOverviewModeEnded();
-  if (delayed_animations_.empty())
-    OnEndingAnimationComplete(/*canceled=*/false);
 }
 
 void OverviewController::AddExitAnimationObserver(

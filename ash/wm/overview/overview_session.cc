@@ -143,6 +143,10 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
   return bounds;
 }
 
+void EndOverview() {
+  Shell::Get()->overview_controller()->EndOverview();
+}
+
 }  // namespace
 
 OverviewSession::OverviewSession(OverviewDelegate* delegate)
@@ -337,10 +341,6 @@ void OverviewSession::Shutdown() {
   }
 }
 
-void OverviewSession::CancelSelection() {
-  delegate_->EndOverview();
-}
-
 void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
   size_t index = 0;
   // If there are no longer any items on any of the grids, shutdown,
@@ -376,7 +376,7 @@ void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
       Move(LEFT, true);
   }
   if (grid_list_.empty())
-    CancelSelection();
+    EndOverview();
   else
     PositionWindows(/*animate=*/false);
 }
@@ -685,7 +685,7 @@ void OverviewSession::OnWindowActivating(
     // Cancel overview session and do not restore focus when active window is
     // set to nullptr. This happens when removing a display.
     ResetFocusRestoreWindow(false);
-    CancelSelection();
+    EndOverview();
     return;
   }
 
@@ -723,7 +723,7 @@ void OverviewSession::OnWindowActivating(
 
   if (iter != windows.end())
     selected_item_ = iter->get();
-  CancelSelection();
+  EndOverview();
 }
 
 aura::Window* OverviewSession::GetOverviewFocusWindow() {
@@ -753,7 +753,7 @@ bool OverviewSession::IsEmpty() const {
 
 void OverviewSession::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
-  CancelSelection();
+  EndOverview();
 }
 
 void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
@@ -800,7 +800,7 @@ void OverviewSession::OnWindowHierarchyChanged(
   if (wm::IsSwitchableContainer(new_window->parent()) &&
       !::wm::GetTransientParent(new_window)) {
     // The new window is in one of the switchable containers, abort overview.
-    CancelSelection();
+    EndOverview();
     return;
   }
 }
@@ -833,7 +833,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       // Cancel overview unless we're in single split mode with no overview
       // windows.
       if (!(IsEmpty() && shell->split_view_controller()->InSplitViewMode()))
-        CancelSelection();
+        EndOverview();
       break;
     case ui::VKEY_UP:
       num_key_presses_++;
@@ -888,7 +888,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
 
 void OverviewSession::OnShellDestroying() {
   // Cancel selection will call |Shutodnw()|, which will remove observer.
-  CancelSelection();
+  EndOverview();
 }
 
 void OverviewSession::OnSplitViewStateChanged(SplitViewState previous_state,
@@ -913,7 +913,7 @@ void OverviewSession::OnSplitViewStateChanged(SplitViewState previous_state,
   if (state == SplitViewState::kBothSnapped || unsnappable_window_activated ||
       (Shell::Get()->split_view_controller()->InClamshellSplitViewMode() &&
        IsEmpty())) {
-    CancelSelection();
+    EndOverview();
     return;
   }
 

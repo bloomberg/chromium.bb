@@ -33,7 +33,6 @@ class TestOverviewDelegate : public OverviewDelegate {
   }
 
   // OverviewDelegate:
-  void EndOverview() override {}
   void AddExitAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override {
     animation_observer->SetOwner(this);

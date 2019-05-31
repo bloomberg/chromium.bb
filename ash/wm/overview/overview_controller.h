@@ -35,6 +35,8 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   bool ToggleOverview(OverviewSession::EnterExitOverviewType type =
                           OverviewSession::EnterExitOverviewType::kNormal);
 
+  void EndOverview();
+
   // Returns true if overview mode is active.
   bool InOverviewSession() const;
 
@@ -71,7 +73,6 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   void DelayedUpdateMaskAndShadow();
 
   // OverviewDelegate:
-  void EndOverview() override;
   void AddExitAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation) override;
   void RemoveAndDestroyExitAnimationObserver(
