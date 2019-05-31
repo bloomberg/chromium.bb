@@ -293,6 +293,9 @@ void SetIndividualRuntimeFeatures(
       base::FeatureList::IsEnabled(
           features::kPaymentRequestHasEnrolledInstrument));
 
+  WebRuntimeFeatures::EnablePaymentRetry(
+      base::FeatureList::IsEnabled(features::kPaymentResponseRetry));
+
   if (base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps))
     WebRuntimeFeatures::EnablePaymentApp(true);
 

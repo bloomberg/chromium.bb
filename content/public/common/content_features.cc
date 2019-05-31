@@ -321,6 +321,10 @@ const base::Feature kPassiveEventListenersDueToFling{
 const base::Feature kPaymentRequestHasEnrolledInstrument = {
     "PaymentRequestHasEnrolledInstrument", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether PaymentResponse exposes retry API.
+const base::Feature kPaymentResponseRetry = {"PaymentResponseRetry",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether ExecutionContext is paused (and workers) on background freeze.
 const base::Feature kPauseExecutionContextOnBackgroundFreeze = {
     "PauseExecutionContextOnBackgroundFreeze",
