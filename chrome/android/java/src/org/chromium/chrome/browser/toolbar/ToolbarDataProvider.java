@@ -102,6 +102,14 @@ public interface ToolbarDataProvider {
     int getSecurityLevel();
 
     /**
+     * @param isFocusedFromFakebox If the omnibox focus originated from the fakebox.
+     * @return The current page classification.
+     */
+    default int getPageClassification(boolean isFocusedFromFakebox) {
+        return 0;
+    }
+
+    /**
      * @return The resource ID of the icon that should be displayed or 0 if no icon should be shown.
      */
     @DrawableRes

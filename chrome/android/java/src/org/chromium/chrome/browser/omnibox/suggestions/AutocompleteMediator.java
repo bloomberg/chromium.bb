@@ -693,8 +693,10 @@ class AutocompleteMediator
                     // position.  Hence, there's no need to check for -1 here explicitly.
                     cursorPosition = mUrlBarEditingTextProvider.getSelectionStart();
                 }
-                mAutocomplete.start(profile, mDataProvider.getCurrentUrl(), textWithoutAutocomplete,
-                        cursorPosition, preventAutocomplete, mDelegate.didFocusUrlFromFakebox());
+                int pageClassification =
+                        mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
+                mAutocomplete.start(profile, mDataProvider.getCurrentUrl(), pageClassification,
+                        textWithoutAutocomplete, cursorPosition, preventAutocomplete);
             };
             if (mNativeInitialized) {
                 mHandler.postDelayed(mRequestSuggestions, OMNIBOX_SUGGESTION_START_DELAY_MS);
@@ -860,8 +862,10 @@ class AutocompleteMediator
         if (!shouldSkipNativeLog) {
             int autocompleteLength = mUrlBarEditingTextProvider.getTextWithAutocomplete().length()
                     - mUrlBarEditingTextProvider.getTextWithoutAutocomplete().length();
+            int pageClassification =
+                    mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
             mAutocomplete.onSuggestionSelected(matchPosition, suggestion.hashCode(), type,
-                    currentPageUrl, mDelegate.didFocusUrlFromFakebox(), elapsedTimeSinceModified,
+                    currentPageUrl, pageClassification, elapsedTimeSinceModified,
                     autocompleteLength, webContents);
         }
         if (((transition & PageTransition.CORE_MASK) == PageTransition.TYPED)
@@ -900,10 +904,11 @@ class AutocompleteMediator
         mHasStartedNewOmniboxEditSession = false;
         mNewOmniboxEditSessionTimestamp = -1;
         if (mNativeInitialized && mDelegate.isUrlBarFocused() && mDataProvider.hasTab()) {
+            int pageClassification =
+                    mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
             mAutocomplete.startZeroSuggest(mDataProvider.getProfile(),
                     mUrlBarEditingTextProvider.getTextWithAutocomplete(),
-                    mDataProvider.getCurrentUrl(), mDataProvider.getTitle(),
-                    mDelegate.didFocusUrlFromFakebox());
+                    mDataProvider.getCurrentUrl(), pageClassification, mDataProvider.getTitle());
         }
     }
 
@@ -969,8 +974,8 @@ class AutocompleteMediator
     void startAutocompleteForQuery(String query) {
         stopAutocomplete(false);
         if (mDataProvider.hasTab()) {
-            mAutocomplete.start(mDataProvider.getProfile(), mDataProvider.getCurrentUrl(), query,
-                    -1, false, false);
+            mAutocomplete.start(mDataProvider.getProfile(), mDataProvider.getCurrentUrl(),
+                    mDataProvider.getPageClassification(false), query, -1, false);
         }
     }
 

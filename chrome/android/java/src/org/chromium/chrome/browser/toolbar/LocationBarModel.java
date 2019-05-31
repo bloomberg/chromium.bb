@@ -352,6 +352,12 @@ public class LocationBarModel implements ToolbarDataProvider {
     }
 
     @Override
+    public int getPageClassification(boolean isFocusedFromFakebox) {
+        if (mNativeLocationBarModelAndroid == 0) return 0;
+        return nativeGetPageClassification(mNativeLocationBarModelAndroid, isFocusedFromFakebox);
+    }
+
+    @Override
     public int getSecurityIconResource(boolean isTablet) {
         // If we're showing a query in the omnibox, and the security level is high enough to show
         // the search icon, return that instead of the security icon.
@@ -486,4 +492,6 @@ public class LocationBarModel implements ToolbarDataProvider {
     private native String nativeGetFormattedFullURL(long nativeLocationBarModelAndroid);
     private native String nativeGetURLForDisplay(long nativeLocationBarModelAndroid);
     private native String nativeGetDisplaySearchTerms(long nativeLocationBarModelAndroid);
+    private native int nativeGetPageClassification(
+            long nativeLocationBarModelAndroid, boolean isFocusedFromFakebox);
 }

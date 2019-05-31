@@ -27,20 +27,11 @@ class ChromeLocationBarModelDelegate : public LocationBarModelDelegate {
   bool ShouldPreventElision() const override;
 
   // LocationBarModelDelegate:
-  bool ShouldDisplayURL() const override;
-
- protected:
-  ChromeLocationBarModelDelegate();
-  ~ChromeLocationBarModelDelegate() override;
-
-  // Helper method to get the navigation entry from the navigation controller.
-  content::NavigationEntry* GetNavigationEntry() const;
-
- private:
   base::string16 FormattedStringWithEquivalentMeaning(
       const GURL& url,
       const base::string16& formatted_url) const override;
   bool GetURL(GURL* url) const override;
+  bool ShouldDisplayURL() const override;
   security_state::SecurityLevel GetSecurityLevel() const override;
   std::unique_ptr<security_state::VisibleSecurityState>
   GetVisibleSecurityState() const override;
@@ -53,6 +44,14 @@ class ChromeLocationBarModelDelegate : public LocationBarModelDelegate {
   AutocompleteClassifier* GetAutocompleteClassifier() override;
   TemplateURLService* GetTemplateURLService() override;
 
+ protected:
+  ChromeLocationBarModelDelegate();
+  ~ChromeLocationBarModelDelegate() override;
+
+  // Helper method to get the navigation entry from the navigation controller.
+  content::NavigationEntry* GetNavigationEntry() const;
+
+ private:
   // Returns the navigation controller used to retrieve the navigation entry
   // from which the states are retrieved. If this returns null, default values
   // are used.

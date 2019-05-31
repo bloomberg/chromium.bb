@@ -157,11 +157,11 @@ void AutocompleteControllerAndroid::Start(JNIEnv* env,
                                           jint j_cursor_pos,
                                           const JavaRef<jstring>& j_desired_tld,
                                           const JavaRef<jstring>& j_current_url,
+                                          jint j_page_classification,
                                           bool prevent_inline_autocomplete,
                                           bool prefer_keyword,
                                           bool allow_exact_keyword_match,
-                                          bool want_asynchronous_matches,
-                                          bool focused_from_fakebox) {
+                                          bool want_asynchronous_matches) {
   if (!autocomplete_controller_)
     return;
 
@@ -172,11 +172,11 @@ void AutocompleteControllerAndroid::Start(JNIEnv* env,
   if (!j_desired_tld.is_null())
     desired_tld = base::android::ConvertJavaStringToUTF8(env, j_desired_tld);
   base::string16 text = ConvertJavaStringToUTF16(env, j_text);
-  OmniboxEventProto::PageClassification page_classification =
-      ClassifyPage(current_url, focused_from_fakebox);
   size_t cursor_pos = j_cursor_pos == -1 ? base::string16::npos : j_cursor_pos;
-  input_ = AutocompleteInput(text, cursor_pos, desired_tld, page_classification,
-                             ChromeAutocompleteSchemeClassifier(profile_));
+  input_ = AutocompleteInput(
+      text, cursor_pos, desired_tld,
+      OmniboxEventProto::PageClassification(j_page_classification),
+      ChromeAutocompleteSchemeClassifier(profile_));
   input_.set_current_url(current_url);
   input_.set_prevent_inline_autocomplete(prevent_inline_autocomplete);
   input_.set_prefer_keyword(prefer_keyword);
@@ -198,8 +198,8 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_omnibox_text,
     const JavaParamRef<jstring>& j_current_url,
-    const JavaParamRef<jstring>& j_current_title,
-    jboolean focused_from_fakebox) {
+    jint j_page_classification,
+    const JavaParamRef<jstring>& j_current_title) {
   if (!autocomplete_controller_)
     return;
 
@@ -220,9 +220,10 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
       !current_url.SchemeIs(chrome::kChromeUINativeScheme))
     omnibox_text = url;
 
-  input_ = AutocompleteInput(omnibox_text,
-                             ClassifyPage(current_url, focused_from_fakebox),
-                             ChromeAutocompleteSchemeClassifier(profile_));
+  input_ = AutocompleteInput(
+      omnibox_text,
+      OmniboxEventProto::PageClassification(j_page_classification),
+      ChromeAutocompleteSchemeClassifier(profile_));
   input_.set_current_url(current_url);
   input_.set_current_title(current_title);
   input_.set_from_omnibox_focus(true);
@@ -249,7 +250,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
     jint selected_index,
     jint hash_code,
     const JavaParamRef<jstring>& j_current_url,
-    jboolean focused_from_fakebox,
+    jint j_page_classification,
     jlong elapsed_time_since_first_modified,
     jint completed_length,
     const JavaParamRef<jobject>& j_web_contents) {
@@ -258,8 +259,6 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
 
   base::string16 url = ConvertJavaStringToUTF16(env, j_current_url);
   const GURL current_url = GURL(url);
-  OmniboxEventProto::PageClassification current_page_classification =
-      ClassifyPage(current_url, focused_from_fakebox);
   const base::TimeTicks& now(base::TimeTicks::Now());
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
@@ -280,16 +279,12 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       // For zero suggest, record an empty input string instead of the
       // current URL.
       input_.from_omnibox_focus() ? base::string16() : input_.text(),
-      false, /* don't know */
-      input_.type(),
-      false, /* not keyword mode */
-      OmniboxEventProto::INVALID,
-      true,
-      selected_index,
-      WindowOpenDisposition::CURRENT_TAB,
-      false,
+      false,                /* don't know */
+      input_.type(), false, /* not keyword mode */
+      OmniboxEventProto::INVALID, true, selected_index,
+      WindowOpenDisposition::CURRENT_TAB, false,
       SessionTabHelper::IdForTab(web_contents),
-      current_page_classification,
+      OmniboxEventProto::PageClassification(j_page_classification),
       base::TimeDelta::FromMilliseconds(elapsed_time_since_first_modified),
       completed_length,
       now - autocomplete_controller_->last_time_default_match_changed(),
@@ -429,49 +424,6 @@ void AutocompleteControllerAndroid::NotifySuggestionsReceived(
   Java_AutocompleteController_onSuggestionsReceived(
       env, java_bridge, suggestion_list_obj, inline_text,
       j_autocomplete_result);
-}
-
-OmniboxEventProto::PageClassification
-AutocompleteControllerAndroid::ClassifyPage(const GURL& gurl,
-                                            bool focused_from_fakebox) const {
-  if (!gurl.is_valid())
-    return OmniboxEventProto::INVALID_SPEC;
-
-  const std::string& url = gurl.spec();
-
-  if (gurl.SchemeIs(content::kChromeUIScheme) &&
-      gurl.host_piece() == chrome::kChromeUINewTabHost) {
-    return OmniboxEventProto::NTP;
-  }
-
-  if (url == chrome::kChromeUINativeNewTabURL) {
-    // On phones, the omnibox is not initially shown on the NTP.  In this case,
-    // treat the fakebox like the omnibox.
-    if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE)
-      return OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
-
-    // On tablets, the user can choose to focus either the fakebox or the
-    // omnibox.  Chrome distinguishes between the two in order to apply URL
-    // demotion when the user focuses the fakebox (which looks more like a
-    // search box) but not when they focus the omnibox (which looks more
-    // like a URL bar).
-    return focused_from_fakebox ?
-        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS :
-        OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
-  }
-
-  if (url == url::kAboutBlankURL)
-    return OmniboxEventProto::BLANK;
-
-  if (url == profile_->GetPrefs()->GetString(prefs::kHomePage))
-    return OmniboxEventProto::HOME_PAGE;
-
-  bool is_search_url = TemplateURLServiceFactory::GetForProfile(profile_)->
-      IsSearchResultsPageFromDefaultSearchProvider(gurl);
-  if (is_search_url)
-    return OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
-
-  return OmniboxEventProto::OTHER;
 }
 
 namespace {
