@@ -38,6 +38,8 @@ class UsbDeviceResource : public ApiResource {
   friend class ApiResourceManager<UsbDeviceResource>;
   static const char* service_name() { return "UsbDeviceResourceManager"; }
 
+  void OnConnectionError();
+
   const std::string guid_;
   device::mojom::UsbDevicePtr device_;
 
