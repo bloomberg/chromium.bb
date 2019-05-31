@@ -949,6 +949,7 @@ class DnsTransactionImpl : public DnsTransaction,
   // Makes another attempt at the current name, |qnames_.front()|, using the
   // next nameserver.
   AttemptResult MakeUDPAttempt() {
+    DCHECK(!secure_);
     doh_attempt_ = false;
     unsigned attempt_number = attempts_.size();
 
@@ -963,8 +964,7 @@ class DnsTransactionImpl : public DnsTransaction,
     const DnsConfig& config = session_->config();
 
     unsigned non_doh_server_index =
-        (first_server_index_ + attempt_number - doh_attempts_) %
-        config.nameservers.size();
+        (first_server_index_ + attempt_number) % config.nameservers.size();
     // Skip over known failed servers.
     non_doh_server_index = session_->NextGoodServerIndex(non_doh_server_index);
 
@@ -999,6 +999,7 @@ class DnsTransactionImpl : public DnsTransaction,
 
   AttemptResult MakeHTTPAttempt(
       const std::vector<DnsConfig::DnsOverHttpsServerConfig>& servers) {
+    DCHECK(secure_);
     doh_attempt_ = true;
     unsigned attempt_number = attempts_.size();
     uint16_t id = session_->NextQueryId();
@@ -1036,6 +1037,7 @@ class DnsTransactionImpl : public DnsTransaction,
   }
 
   AttemptResult MakeTCPAttempt(const DnsAttempt* previous_attempt) {
+    DCHECK(!secure_);
     DCHECK(previous_attempt);
     DCHECK(!had_tcp_attempt_);
 

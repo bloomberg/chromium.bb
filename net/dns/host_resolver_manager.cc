@@ -1102,7 +1102,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     DCHECK(transaction);
     if (net_error != OK && !(net_error == ERR_NAME_NOT_RESOLVED && response &&
                              response->IsValid())) {
-      OnFailure(net_error, DnsResponse::DNS_PARSE_OK, base::nullopt, secure_);
+      OnFailure(net_error, DnsResponse::DNS_PARSE_OK, base::nullopt);
       return;
     }
 
@@ -1130,8 +1130,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     DCHECK_LT(parse_result, DnsResponse::DNS_PARSE_RESULT_MAX);
 
     if (results.error() != OK && results.error() != ERR_NAME_NOT_RESOLVED) {
-      OnFailure(results.error(), parse_result, results.GetOptionalTtl(),
-                secure_);
+      OnFailure(results.error(), parse_result, results.GetOptionalTtl());
       return;
     }
 
@@ -1181,7 +1180,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       return;
     }
 
-    OnSuccess(results, secure_);
+    OnSuccess(results);
   }
 
   DnsResponse::Result ParseAddressDnsResponse(const DnsResponse* response,
@@ -1392,7 +1391,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
     if (!success) {
       OnFailure(ERR_DNS_SORT_ERROR, DnsResponse::DNS_PARSE_OK,
-                results.GetOptionalTtl(), secure);
+                results.GetOptionalTtl());
       return;
     }
 
@@ -1402,17 +1401,16 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         results.hostnames().value_or(std::vector<HostPortPair>()).empty()) {
       LOG(WARNING) << "Address list empty after RFC3484 sort";
       OnFailure(ERR_NAME_NOT_RESOLVED, DnsResponse::DNS_PARSE_OK,
-                results.GetOptionalTtl(), secure);
+                results.GetOptionalTtl());
       return;
     }
 
-    OnSuccess(results, secure);
+    OnSuccess(results);
   }
 
   void OnFailure(int net_error,
                  DnsResponse::Result parse_result,
-                 base::Optional<base::TimeDelta> ttl,
-                 bool secure) {
+                 base::Optional<base::TimeDelta> ttl) {
     DCHECK_NE(OK, net_error);
     HostCache::Entry results(net_error, HostCache::Entry::SOURCE_UNKNOWN);
 
@@ -1435,13 +1433,13 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       results.set_ttl(ttl.value());
     }
 
-    delegate_->OnDnsTaskComplete(task_start_time_, results, secure);
+    delegate_->OnDnsTaskComplete(task_start_time_, results, secure_);
   }
 
-  void OnSuccess(const HostCache::Entry& results, bool secure) {
+  void OnSuccess(const HostCache::Entry& results) {
     net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK,
                       results.CreateNetLogCallback());
-    delegate_->OnDnsTaskComplete(task_start_time_, results, secure);
+    delegate_->OnDnsTaskComplete(task_start_time_, results, secure_);
   }
 
   DnsClient* client_;
@@ -1450,7 +1448,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   URLRequestContext* const request_context_;
 
   // Whether lookups in this DnsTask should occur using DoH or plaintext.
-  bool secure_;
+  const bool secure_;
 
   // The listener to the results of this DnsTask.
   Delegate* delegate_;
@@ -1865,7 +1863,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   void OnProcTaskComplete(base::TimeTicks start_time,
                           int net_error,
                           const AddressList& addr_list) {
-    DCHECK(!!proc_task_);
+    DCHECK(proc_task_);
 
     if (dns_task_error_ != OK) {
       // This ProcTask was a fallback resolution after a failed DnsTask.
@@ -1974,7 +1972,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   void OnDnsTaskComplete(base::TimeTicks start_time,
                          const HostCache::Entry& results,
                          bool secure) override {
-    DCHECK(!!dns_task_);
+    DCHECK(dns_task_);
 
     base::TimeDelta duration = tick_clock_->NowTicks() - start_time;
     if (results.error() != OK) {
@@ -2044,7 +2042,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   }
 
   void OnMdnsTaskComplete() {
-    DCHECK(!!mdns_task_);
+    DCHECK(mdns_task_);
     // TODO(crbug.com/846423): Consider adding MDNS-specific logging.
 
     HostCache::Entry results = mdns_task_->GetResults();
@@ -2059,7 +2057,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   }
 
   void OnMdnsImmediateFailure(int rv) {
-    DCHECK(!!mdns_task_);
+    DCHECK(mdns_task_);
     DCHECK_NE(OK, rv);
 
     CompleteRequestsWithError(rv);
