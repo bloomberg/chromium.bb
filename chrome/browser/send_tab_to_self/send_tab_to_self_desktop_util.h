@@ -9,6 +9,7 @@
 #include "url/gurl.h"
 
 class GURL;
+class Profile;
 
 namespace content {
 class WebContents;
@@ -39,12 +40,16 @@ const char kTabMenu[] = "TabMenu";
 
 enum SendTabToSelfMenuType { kTab, kOmnibox, kContent, kLink };
 
-// Adds a new entry to SendTabToSelfModel when user click "Share to your
-// devices" option.
+// Adds a new entry to SendTabToSelfModel when user clicks a target device.
 void CreateNewEntry(content::WebContents* tab,
                     const std::string& target_device_name,
                     const std::string& target_device_guid,
                     const GURL& link_url = GURL());
+
+// Adds a new entry to SendTabToSelfModel when user clicks the single valid
+// device. Will be called when GetValidDeviceCount() == 1.
+void ShareToSingleTarget(content::WebContents* tab,
+                         const GURL& link_url = GURL());
 
 // Gets the icon for send tab to self menu item.
 gfx::ImageSkia* GetImageSkia();
@@ -57,9 +62,16 @@ const gfx::Image GetImageForNotification();
 void RecordSendTabToSelfClickResult(const std::string& entry_point,
                                     SendTabToSelfClickResult state);
 
-// Records the count of valid devices when the user see the device list.
+// Records the count of valid devices when user sees the device list.
 void RecordSendTabToSelfDeviceCount(const std::string& entry_point,
                                     const int& device_count);
+
+// Gets the count of valid device number.
+int GetValidDeviceCount(Profile* profile);
+
+// Gets the name of the single valid device. Will be called when
+// GetValidDeviceCount() == 1.
+std::string GetSingleTargetDeviceName(Profile* profile);
 
 }  // namespace send_tab_to_self
 

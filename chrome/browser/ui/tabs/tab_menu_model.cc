@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
@@ -86,14 +87,30 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     send_tab_to_self::RecordSendTabToSelfClickResult(
         send_tab_to_self::kTabMenu, SendTabToSelfClickResult::kShowItem);
     AddSeparator(ui::NORMAL_SEPARATOR);
-    send_tab_to_self_sub_menu_model_ =
-        std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-            tab_strip->GetActiveWebContents(),
-            send_tab_to_self::SendTabToSelfMenuType::kTab);
-    AddSubMenuWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
-                                  IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
-                                  send_tab_to_self_sub_menu_model_.get(),
-                                  *send_tab_to_self::GetImageSkia());
+
+    if (send_tab_to_self::GetValidDeviceCount(tab_strip->profile()) == 1) {
+      AddItemWithIcon(
+          TabStripModel::CommandSendTabToSelfSingleTarget,
+          l10n_util::GetStringFUTF16(
+              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+              base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
+                  tab_strip->profile()))),
+          *send_tab_to_self::GetImageSkia());
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kTabMenu,
+          SendTabToSelfClickResult::kShowDeviceList);
+      send_tab_to_self::RecordSendTabToSelfDeviceCount(
+          send_tab_to_self::kTabMenu, 1);
+    } else {
+      send_tab_to_self_sub_menu_model_ =
+          std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
+              tab_strip->GetActiveWebContents(),
+              send_tab_to_self::SendTabToSelfMenuType::kTab);
+      AddSubMenuWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
+                                    IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+                                    send_tab_to_self_sub_menu_model_.get(),
+                                    *send_tab_to_self::GetImageSkia());
+    }
   }
 
   AddSeparator(ui::NORMAL_SEPARATOR);

@@ -348,13 +348,15 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS, 101},
        {IDC_SEND_TAB_TO_SELF, 102},
        {IDC_CONTENT_LINK_SEND_TAB_TO_SELF, 103},
+       {IDC_SEND_TAB_TO_SELF_SINGLE_TARGET, 104},
+       {IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET, 105},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 104}});
+       {0, 106}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -1247,14 +1249,30 @@ void RenderViewContextMenu::AppendLinkItems() {
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kShowItem);
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-      send_tab_to_self_sub_menu_model_ =
-          std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-              browser->tab_strip_model()->GetActiveWebContents(),
-              send_tab_to_self::SendTabToSelfMenuType::kLink, params_.link_url);
-      menu_model_.AddSubMenuWithStringIdAndIcon(
-          IDC_CONTENT_LINK_SEND_TAB_TO_SELF, IDS_LINK_MENU_SEND_TAB_TO_SELF,
-          send_tab_to_self_sub_menu_model_.get(),
-          *send_tab_to_self::GetImageSkia());
+      if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
+        menu_model_.AddItemWithIcon(
+            IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,
+            l10n_util::GetStringFUTF16(
+                IDS_LINK_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
+                    GetBrowser()->profile()))),
+            *send_tab_to_self::GetImageSkia());
+        send_tab_to_self::RecordSendTabToSelfClickResult(
+            send_tab_to_self::kLinkMenu,
+            SendTabToSelfClickResult::kShowDeviceList);
+        send_tab_to_self::RecordSendTabToSelfDeviceCount(
+            send_tab_to_self::kLinkMenu, 1);
+      } else {
+        send_tab_to_self_sub_menu_model_ =
+            std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
+                browser->tab_strip_model()->GetActiveWebContents(),
+                send_tab_to_self::SendTabToSelfMenuType::kLink,
+                params_.link_url);
+        menu_model_.AddSubMenuWithStringIdAndIcon(
+            IDC_CONTENT_LINK_SEND_TAB_TO_SELF, IDS_LINK_MENU_SEND_TAB_TO_SELF,
+            send_tab_to_self_sub_menu_model_.get(),
+            *send_tab_to_self::GetImageSkia());
+      }
     }
 
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
@@ -1453,14 +1471,30 @@ void RenderViewContextMenu::AppendPageItems() {
     send_tab_to_self::RecordSendTabToSelfClickResult(
         send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kShowItem);
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    send_tab_to_self_sub_menu_model_ =
-        std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-            GetBrowser()->tab_strip_model()->GetActiveWebContents(),
-            send_tab_to_self::SendTabToSelfMenuType::kContent);
-    menu_model_.AddSubMenuWithStringIdAndIcon(
-        IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
-        send_tab_to_self_sub_menu_model_.get(),
-        *send_tab_to_self::GetImageSkia());
+    if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
+      menu_model_.AddItemWithIcon(
+          IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
+          l10n_util::GetStringFUTF16(
+              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+              base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
+                  GetBrowser()->profile()))),
+          *send_tab_to_self::GetImageSkia());
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kContentMenu,
+          SendTabToSelfClickResult::kShowDeviceList);
+      send_tab_to_self::RecordSendTabToSelfDeviceCount(
+          send_tab_to_self::kContentMenu, 1);
+    } else {
+      send_tab_to_self_sub_menu_model_ =
+          std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
+              GetBrowser()->tab_strip_model()->GetActiveWebContents(),
+              send_tab_to_self::SendTabToSelfMenuType::kContent);
+      menu_model_.AddSubMenuWithStringIdAndIcon(
+          IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+          send_tab_to_self_sub_menu_model_.get(),
+          *send_tab_to_self::GetImageSkia());
+    }
+
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
   if (TranslateService::IsTranslatableURL(params_.page_url)) {
@@ -1919,9 +1953,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
     case IDC_SEND_TAB_TO_SELF:
+    case IDC_SEND_TAB_TO_SELF_SINGLE_TARGET:
       return true;
 
     case IDC_CONTENT_LINK_SEND_TAB_TO_SELF:
+    case IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET:
       return send_tab_to_self::IsContentRequirementsMet(
           params_.link_url, GetBrowser()->profile());
 
@@ -2135,6 +2171,21 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_SAVE_PAGE:
       embedder_web_contents_->OnSavePage();
+      break;
+
+    case IDC_SEND_TAB_TO_SELF_SINGLE_TARGET:
+      send_tab_to_self::ShareToSingleTarget(
+          GetBrowser()->tab_strip_model()->GetActiveWebContents());
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kClickItem);
+      break;
+
+    case IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET:
+      send_tab_to_self::ShareToSingleTarget(
+          GetBrowser()->tab_strip_model()->GetActiveWebContents(),
+          params_.link_url);
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kClickItem);
       break;
 
     case IDC_RELOAD:

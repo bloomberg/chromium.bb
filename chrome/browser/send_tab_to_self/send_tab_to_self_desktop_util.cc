@@ -17,6 +17,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/send_tab_to_self/target_device_info.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -63,6 +64,17 @@ void CreateNewEntry(content::WebContents* tab,
   } else {
     DesktopNotificationHandler(profile).DisplayFailureMessage(url);
   }
+}
+
+void ShareToSingleTarget(content::WebContents* tab, const GURL& link_url) {
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  DCHECK(GetValidDeviceCount(profile) == 1);
+  std::map<std::string, TargetDeviceInfo> map =
+      SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+          ->GetSendTabToSelfModel()
+          ->GetTargetDeviceNameToCacheInfoMap();
+  CreateNewEntry(tab, map.begin()->first, map.begin()->second.cache_guid,
+                 link_url);
 }
 
 gfx::ImageSkia* GetImageSkia() {
@@ -121,6 +133,26 @@ void RecordSendTabToSelfDeviceCount(const std::string& entry_point,
                                     const int& device_count) {
   base::UmaHistogramCounts100("SendTabToSelf." + entry_point + ".DeviceCount",
                               device_count);
+}
+
+int GetValidDeviceCount(Profile* profile) {
+  SendTabToSelfSyncService* service =
+      SendTabToSelfSyncServiceFactory::GetForProfile(profile);
+  DCHECK(service);
+  SendTabToSelfModel* model = service->GetSendTabToSelfModel();
+  DCHECK(model);
+  std::map<std::string, TargetDeviceInfo> map =
+      model->GetTargetDeviceNameToCacheInfoMap();
+  return map.size();
+}
+
+std::string GetSingleTargetDeviceName(Profile* profile) {
+  DCHECK(GetValidDeviceCount(profile) == 1);
+  return SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+      ->GetSendTabToSelfModel()
+      ->GetTargetDeviceNameToCacheInfoMap()
+      .begin()
+      ->first;
 }
 
 }  // namespace send_tab_to_self

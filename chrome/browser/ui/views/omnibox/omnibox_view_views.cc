@@ -494,6 +494,13 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
       location_bar_view_->command_updater()->ExecuteCommand(command_id);
       return;
 
+    case IDC_SEND_TAB_TO_SELF_SINGLE_TARGET:
+      send_tab_to_self::ShareToSingleTarget(
+          location_bar_view_->GetWebContents());
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kOmniboxMenu, SendTabToSelfClickResult::kClickItem);
+      return;
+
     // These commands do invoke the popup.
     case IDS_APP_PASTE:
       ExecuteTextEditCommand(ui::TextEditCommand::PASTE);
@@ -1735,14 +1742,31 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
     // Add a separator if this is not the first item.
     if (index)
       menu_contents->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
-    send_tab_to_self_sub_menu_model_ =
-        std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-            location_bar_view_->GetWebContents(),
-            send_tab_to_self::SendTabToSelfMenuType::kOmnibox);
-    menu_contents->AddSubMenuWithStringIdAndIcon(
-        IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
-        send_tab_to_self_sub_menu_model_.get(),
-        *send_tab_to_self::GetImageSkia());
+
+    if (send_tab_to_self::GetValidDeviceCount(location_bar_view_->profile()) ==
+        1) {
+      menu_contents->InsertItemAt(
+          index, IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
+          l10n_util::GetStringFUTF16(
+              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+              base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
+                  location_bar_view_->profile()))));
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kOmniboxMenu,
+          SendTabToSelfClickResult::kShowDeviceList);
+      send_tab_to_self::RecordSendTabToSelfDeviceCount(
+          send_tab_to_self::kOmniboxMenu, 1);
+    } else {
+      send_tab_to_self_sub_menu_model_ =
+          std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
+              location_bar_view_->GetWebContents(),
+              send_tab_to_self::SendTabToSelfMenuType::kOmnibox);
+      menu_contents->InsertSubMenuWithStringIdAt(
+          index, IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+          send_tab_to_self_sub_menu_model_.get());
+    }
+    menu_contents->SetIcon(index,
+                           gfx::Image(*send_tab_to_self::GetImageSkia()));
     menu_contents->InsertSeparatorAt(++index, ui::NORMAL_SEPARATOR);
   }
 

@@ -94,6 +94,8 @@
 #define IDC_SEND_TAB_TO_SELF            35015
 #define IDC_FOCUS_THIS_TAB              35016
 #define IDC_CONTENT_LINK_SEND_TAB_TO_SELF 35017
+#define IDC_SEND_TAB_TO_SELF_SINGLE_TARGET  35018
+#define IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET  35019
 
 // Clipboard commands
 #define IDC_CUT                         36000

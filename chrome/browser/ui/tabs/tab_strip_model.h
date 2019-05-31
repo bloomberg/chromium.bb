@@ -421,6 +421,7 @@ class TabStripModel {
     CommandFocusMode,
     CommandToggleSiteMuted,
     CommandSendTabToSelf,
+    CommandSendTabToSelfSingleTarget,
     CommandBookmarkAllTabs,
     CommandAddToNewGroup,
     CommandAddToExistingGroup,

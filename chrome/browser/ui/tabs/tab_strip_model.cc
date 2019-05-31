@@ -1090,6 +1090,9 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandSendTabToSelf:
       return true;
 
+    case CommandSendTabToSelfSingleTarget:
+      return true;
+
     case CommandAddToNewGroup:
       return true;
 
@@ -1192,6 +1195,13 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     case CommandRestoreTab: {
       base::RecordAction(UserMetricsAction("TabContextMenu_RestoreTab"));
       delegate()->RestoreTab();
+      break;
+    }
+
+    case CommandSendTabToSelfSingleTarget: {
+      send_tab_to_self::ShareToSingleTarget(GetActiveWebContents());
+      send_tab_to_self::RecordSendTabToSelfClickResult(
+          send_tab_to_self::kTabMenu, SendTabToSelfClickResult::kClickItem);
       break;
     }
 
@@ -1301,6 +1311,9 @@ bool TabStripModel::ContextMenuCommandToBrowserCommand(int cmd_id,
       break;
     case CommandSendTabToSelf:
       *browser_cmd = IDC_SEND_TAB_TO_SELF;
+      break;
+    case CommandSendTabToSelfSingleTarget:
+      *browser_cmd = IDC_SEND_TAB_TO_SELF_SINGLE_TARGET;
       break;
     case CommandCloseTab:
       *browser_cmd = IDC_CLOSE_TAB;
