@@ -478,6 +478,28 @@ TEST_F('CrElementsRadioGroupTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsButtonTest() {}
+
+CrElementsButtonTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_button/cr_button.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_button_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsButtonTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsIconButtonTest() {}
 
 CrElementsIconButtonTest.prototype = {
