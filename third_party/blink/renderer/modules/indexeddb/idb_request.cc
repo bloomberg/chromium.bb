@@ -417,7 +417,6 @@ void IDBRequest::EnqueueResponse(DOMException* error) {
   SetResult(IDBAny::CreateUndefined());
   pending_cursor_.Clear();
   EnqueueEvent(Event::CreateCancelableBubble(event_type_names::kError));
-  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResponse(const Vector<String>& string_list) {
@@ -431,7 +430,6 @@ void IDBRequest::EnqueueResponse(const Vector<String>& string_list) {
   for (const auto& item : string_list)
     dom_string_list->Append(item);
   EnqueueResultInternal(IDBAny::Create(dom_string_list));
-  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
@@ -473,7 +471,6 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
   }
   SetResultCursor(cursor, std::move(key), std::move(primary_key),
                   std::move(value));
-  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResponse(std::unique_ptr<IDBKey> idb_key) {
@@ -487,7 +484,6 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<IDBKey> idb_key) {
     EnqueueResultInternal(IDBAny::Create(std::move(idb_key)));
   else
     EnqueueResultInternal(IDBAny::CreateUndefined());
-  metrics_.RecordAndReset();
 }
 
 namespace {
@@ -508,7 +504,6 @@ void IDBRequest::EnqueueResponse(Vector<std::unique_ptr<IDBValue>> values) {
   }
 
   EnqueueResultInternal(IDBAny::Create(std::move(values)));
-  metrics_.RecordAndReset();
 }
 
 #if DCHECK_IS_ON()
@@ -545,7 +540,6 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<IDBValue> value) {
 #endif
 
   EnqueueResultInternal(IDBAny::Create(std::move(value)));
-  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResponse(int64_t value) {
@@ -555,7 +549,6 @@ void IDBRequest::EnqueueResponse(int64_t value) {
     return;
   }
   EnqueueResultInternal(IDBAny::Create(value));
-  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResponse() {
@@ -565,7 +558,6 @@ void IDBRequest::EnqueueResponse() {
     return;
   }
   EnqueueResultInternal(IDBAny::CreateUndefined());
-  metrics_.RecordAndReset();
 }
 
 void IDBRequest::EnqueueResultInternal(IDBAny* result) {
@@ -696,6 +688,10 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
 
   if (event.type() == event_type_names::kError && transaction_)
     transaction_->IncrementNumErrorsHandled();
+
+  // Now that the event dispatching has been triggered, record that the metric
+  // has completed.
+  metrics_.RecordAndReset();
 
   event.SetTarget(this);
   DispatchEventResult dispatch_result =

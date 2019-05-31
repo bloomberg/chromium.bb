@@ -150,7 +150,6 @@ void IDBOpenDBRequest::EnqueueResponse(std::unique_ptr<WebIDBDatabase> backend,
   }
   idb_database->SetMetadata(metadata);
   EnqueueEvent(Event::Create(event_type_names::kSuccess));
-  metrics_.RecordAndReset();
 }
 
 void IDBOpenDBRequest::EnqueueResponse(int64_t old_version) {
@@ -166,7 +165,6 @@ void IDBOpenDBRequest::EnqueueResponse(int64_t old_version) {
   SetResult(IDBAny::CreateUndefined());
   EnqueueEvent(IDBVersionChangeEvent::Create(event_type_names::kSuccess,
                                              old_version, base::nullopt));
-  metrics_.RecordAndReset();
 }
 
 bool IDBOpenDBRequest::ShouldEnqueueEvent() const {
