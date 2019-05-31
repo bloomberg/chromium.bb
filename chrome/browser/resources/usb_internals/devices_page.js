@@ -225,6 +225,19 @@ cr.define('devices_page', function() {
           bosDescriptorPanel.renderBosDescriptor();
         }
       });
+
+      const testingToolPanelButton =
+          tabPanel.querySelector('#testing-tool-button');
+      const testingToolElement = tabPanel.querySelector('.testing-tool-panel');
+      const testingToolPanel = new descriptor_panel.DescriptorPanel(
+          usbDeviceProxy, testingToolElement);
+      testingToolPanel.initialTestingToolPanel();
+      testingToolPanelButton.addEventListener('click', () => {
+        testingToolElement.hidden = !testingToolElement.hidden;
+        // Clear the panel before rendering new data.
+        testingToolPanel.clearView();
+      });
+
       // window.deviceTabInitializedFn() provides a hook for the test suite to
       // perform test actions after the device tab query descriptors actions are
       // initialized.

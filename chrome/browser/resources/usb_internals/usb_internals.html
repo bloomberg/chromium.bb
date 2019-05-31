@@ -166,6 +166,76 @@
         </button>
       </div>
       <div class="bos-descriptor-panel" hidden></div>
+      <div class="descriptor-button">
+        <button id="testing-tool-button">Testing Tool Panel</button>
+      </div>
+      <div class="testing-tool-panel" hidden>
+        <select id="input-type">
+          <option label="Decimal with Dropdown Menu"></option>
+          <option label="Hex Bytes"></option>
+        </select>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>bmRequestType</th>
+              <th>bRequest</th>
+              <th>wValue</th>
+              <th>wIndex</th>
+              <th>wLength</th>
+            </tr>
+          </thead>
+          <tbody id="testing-tool">
+            <tr>
+              <td>
+                <select id="transfer-direction">
+                  <option label="Host-to-Device" value="Host-to-Device">
+                  </option>
+                  <option label="Device-to-Host" value="Device-to-Host">
+                  </option>
+                </select>
+                <select id="transfer-type">
+                  <option label="Standard" value="STANDARD"></option>
+                  <option label="Class" value="CLASS"></option>
+                  <option label="Vendor" value="VENDOR"></option>
+                </select>
+                <select id="transfer-recipient">
+                  <option label="Device" value="DEVICE"></option>
+                  <option label="Interface" value="INTERFACE"></option>
+                  <option label="Endpoint" value="ENDPOINT"></option>
+                  <option label="Other" value="OTHER"></option>
+                </select>
+              </td>
+              <td><input id="query-request" type="number" value="0"></td>
+              <td><input id="query-value" type="number" value="0"></td>
+              <td><input id="query-index" type="number" value="0"></td>
+              <td><input id="query-length" type="number" value="0"></td>
+              <td><button>Send</button></td>
+            </tr>
+            <tr hidden>
+              <td>
+                0x<input id="query-request-type" type="number" placeholder="00">
+              </td>
+              <td>
+                0x<input id="query-request" type="number" placeholder="00">
+              </td>
+              <td>
+                0x<input id="query-value" type="number" placeholder="0000">
+              </td>
+              <td>
+                0x<input id="query-index" type="number" placeholder="0000">
+              </td>
+              <td>
+                0x<input id="query-length" type="number" placeholder="0000">
+              </td>
+              <td><button>Send</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div id='data-input-area'>
+          Data (in Hex):
+          <textarea cols="31"></textarea>
+        </div>
+      </div>
     </tabpanel>
   </template>
 
@@ -190,6 +260,10 @@
 
   <template id="error">
     <error></error>
+  </template>
+
+  <template id="warn">
+    <warn></warn>
   </template>
 
   <template id="descriptor-panel-title">

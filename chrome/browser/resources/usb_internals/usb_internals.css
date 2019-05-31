@@ -134,9 +134,29 @@ descriptorpaneltitle {
   margin-inline-start: 16px;
 }
 
+#input-type {
+  display: block;
+}
+
+#testing-tool tr td select {
+  display: block;
+  width: 100%;
+}
+
+textarea {
+  display: block;
+  font-family: monospace;
+}
+
 error {
   color: red;
   display: block;
   font-size: 16px;
   padding-inline-start: 20px;
+}
+
+warn {
+  color: red;
+  display: block;
+  font-size: 24px;
 }

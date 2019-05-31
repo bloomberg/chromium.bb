@@ -8,8 +8,14 @@
  */
 
 cr.define('descriptor_panel', function() {
+  const INPUT_TYPE_DECIMAL_WITH_DROPDOWN = 0;
+  const INPUT_TYPE_HEX_BYTE = 1;
+
   // Standard USB requests and descriptor types:
   const GET_DESCRIPTOR_REQUEST = 0x06;
+
+  const CONTROL_TRANSFER_DIRECTION_HOST_TO_DEVICE = 0;
+  const CONTROL_TRANSFER_DIRECTION_DEVICE_TO_HOST = 1;
 
   const DEVICE_DESCRIPTOR_TYPE = 0x01;
   const CONFIGURATION_DESCRIPTOR_TYPE = 0x02;
@@ -408,12 +414,12 @@ cr.define('descriptor_panel', function() {
     }
 
     /**
-     * Checks if the status of a descriptor read indicates success.
+     * Checks if the status of a control transfer indicates success.
      * @param {number} status
      * @param {string} defaultMessage
      * @private
      */
-    checkDescriptorGetSuccess_(status, defaultMessage) {
+    checkTransferSuccess_(status, defaultMessage) {
       let failReason = '';
       switch (status) {
         case device.mojom.UsbTransferStatus.COMPLETED:
@@ -465,6 +471,22 @@ cr.define('descriptor_panel', function() {
     }
 
     /**
+     * Shows an warning message.
+     * @param {string} message
+     * @private
+     */
+    showWarn_(message) {
+      const warnTemplate = document.querySelector('#warn');
+
+      const clone = document.importNode(warnTemplate.content, true);
+
+      const warnText = clone.querySelector('warn');
+      warnText.textContent = message;
+
+      this.rootElement_.prepend(clone);
+    }
+
+    /**
      * Gets device descriptor of current device.
      * @return {!Uint8Array}
      * @private
@@ -484,7 +506,7 @@ cr.define('descriptor_panel', function() {
           usbControlTransferParams, DEVICE_DESCRIPTOR_LENGTH,
           CONTROL_TRANSFER_TIMEOUT_MS);
 
-      this.checkDescriptorGetSuccess_(
+      this.checkTransferSuccess_(
           response.status, 'Failed to read the device descriptor.');
 
       return new Uint8Array(response.data);
@@ -621,7 +643,7 @@ cr.define('descriptor_panel', function() {
           usbControlTransferParams, CONFIGURATION_DESCRIPTOR_LENGTH,
           CONTROL_TRANSFER_TIMEOUT_MS);
 
-      this.checkDescriptorGetSuccess_(
+      this.checkTransferSuccess_(
           response.status,
           'Failed to read the device configuration descriptor to determine ' +
               'the total descriptor length.');
@@ -633,7 +655,7 @@ cr.define('descriptor_panel', function() {
       response = await this.usbDeviceProxy_.controlTransferIn(
           usbControlTransferParams, length, CONTROL_TRANSFER_TIMEOUT_MS);
 
-      this.checkDescriptorGetSuccess_(
+      this.checkTransferSuccess_(
           response.status,
           'Failed to read the complete configuration descriptor.');
 
@@ -1008,7 +1030,7 @@ cr.define('descriptor_panel', function() {
             usbControlTransferParams, MAX_STRING_DESCRIPTOR_LENGTH,
             CONTROL_TRANSFER_TIMEOUT_MS);
 
-        this.checkDescriptorGetSuccess_(
+        this.checkTransferSuccess_(
             response.status,
             'Failed to read the device string descriptor to determine ' +
                 'all supported languages.');
@@ -1071,7 +1093,7 @@ cr.define('descriptor_panel', function() {
           CONTROL_TRANSFER_TIMEOUT_MS);
 
       const languageCodeStr = parseLanguageCode(languageCode);
-      this.checkDescriptorGetSuccess_(
+      this.checkTransferSuccess_(
           response.status,
           `Failed to read the device string descriptor of index: ${
               index}, language: ${languageCodeStr}.`);
@@ -1208,12 +1230,13 @@ cr.define('descriptor_panel', function() {
       button.addEventListener('click', () => {
         this.clearView();
         const index = Number.parseInt(this.indexInput_.value);
-        if (this.checkIndexValueValid_(index)) {
+        if (this.checkParamValid_(index, 'Index', 1, 255)) {
           if (languageCodeInput.value === 'All') {
             this.renderStringDescriptorForAllLanguages(index);
           } else {
             const languageCode = Number.parseInt(languageCodeInput.value);
-            if (this.checkLanguageCodeValueValid_(languageCode)) {
+            if (this.checkParamValid_(
+                    languageCode, 'Language Code', 0, 65535)) {
               this.renderStringDescriptorForLanguageCode(index, languageCode);
             }
           }
@@ -1228,36 +1251,6 @@ cr.define('descriptor_panel', function() {
       /** @type {!HTMLElement} */
       this.languageCodesListElement_ =
           this.rootElement_.querySelector(`#languages-${tabId}`);
-    }
-
-    /**
-     * Checks if the user input index is a valid uint8 number.
-     * @param {number} index
-     * @return {boolean}
-     * @private
-     */
-    checkIndexValueValid_(index) {
-      // index is 8 bit. 0 is reserved to query all supported language codes.
-      if (Number.isNaN(index) || index < 1 || index > 255) {
-        this.showError_('Invalid Index.');
-        return false;
-      }
-      return true;
-    }
-
-    /**
-     * Checks if the user input language code is a valid uint16 number.
-     * @param {number} languageCode
-     * @return {boolean}
-     * @private
-     */
-    checkLanguageCodeValueValid_(languageCode) {
-      if (Number.isNaN(languageCode) || languageCode < 0 ||
-          languageCode > 65535) {
-        this.showError_('Invalid Language Code.');
-        return false;
-      }
-      return true;
     }
 
     /**
@@ -1282,7 +1275,7 @@ cr.define('descriptor_panel', function() {
           usbControlTransferParams, BOS_DESCRIPTOR_HEADER_LENGTH,
           CONTROL_TRANSFER_TIMEOUT_MS);
 
-      this.checkDescriptorGetSuccess_(
+      this.checkTransferSuccess_(
           response.status,
           'Failed to read the device BOS descriptor to determine ' +
               'the total descriptor length.');
@@ -1294,7 +1287,7 @@ cr.define('descriptor_panel', function() {
       response = await this.usbDeviceProxy_.controlTransferIn(
           usbControlTransferParams, length, CONTROL_TRANSFER_TIMEOUT_MS);
 
-      this.checkDescriptorGetSuccess_(
+      this.checkTransferSuccess_(
           response.status, 'Failed to read the complete BOS descriptor.');
 
       return new Uint8Array(response.data);
@@ -1733,7 +1726,7 @@ cr.define('descriptor_panel', function() {
             usbControlTransferParams, MAX_URL_DESCRIPTOR_LENGTH,
             CONTROL_TRANSFER_TIMEOUT_MS);
 
-        this.checkDescriptorGetSuccess_(
+        this.checkTransferSuccess_(
             urlResponse.status, 'Failed to read the device URL descriptor.');
       } catch (e) {
         this.showError_(e.message);
@@ -1792,7 +1785,7 @@ cr.define('descriptor_panel', function() {
             usbControlTransferParams, msOs20DescriptorSetLength,
             CONTROL_TRANSFER_TIMEOUT_MS);
 
-        this.checkDescriptorGetSuccess_(
+        this.checkTransferSuccess_(
             response.status,
             'Failed to read the Microsoft OS 2.0 descriptor set.');
       } catch (e) {
@@ -1834,7 +1827,7 @@ cr.define('descriptor_panel', function() {
         const response = await this.usbDeviceProxy_.controlTransferOut(
             usbControlTransferParams, [], CONTROL_TRANSFER_TIMEOUT_MS);
 
-        this.checkDescriptorGetSuccess_(
+        this.checkTransferSuccess_(
             response.status,
             'Failed to read the Microsoft OS 2.0 ' +
                 'descriptor alternate enumeration set.');
@@ -2551,6 +2544,340 @@ cr.define('descriptor_panel', function() {
       }
 
       return offset;
+    }
+
+    /**
+     * Gets response of the given request.
+     * @param {!device.mojom.UsbControlTransferParams} usbControlTransferParams
+     * @param {number} length
+     * @param {number} direction
+     * @private
+     */
+    async sendTestingRequest_(usbControlTransferParams, length, direction) {
+      try {
+        await this.usbDeviceProxy_.open();
+
+        if (direction === 'Device-to-Host') {
+          const response = await this.usbDeviceProxy_.controlTransferIn(
+              usbControlTransferParams, length, CONTROL_TRANSFER_TIMEOUT_MS);
+          this.checkTransferSuccess_(
+              response.status, 'Failed to send request.');
+          this.renderTestingData_(new Uint8Array(response.data));
+        } else if (direction === 'Host-to-Device') {
+          const dataString = this.rootElement_.querySelector('textarea').value;
+
+          const data = [];
+          for (let i = 0; i < dataString.length; i += 2) {
+            data.push(Number.parseInt(dataString.substring(i, i + 2), 16));
+          }
+
+          const response = await this.usbDeviceProxy_.controlTransferOut(
+              usbControlTransferParams, new Uint8Array(data),
+              CONTROL_TRANSFER_TIMEOUT_MS);
+          this.checkTransferSuccess_(
+              response.status, 'Failed to send request.');
+        }
+      } catch (e) {
+        this.showError_(e.message);
+        return;
+      } finally {
+        await this.usbDeviceProxy_.close();
+      }
+    }
+
+    /**
+     * Renders a view to display response data in hex format.
+     * @param {!Uint8Array} rawData
+     * @private
+     */
+    async renderTestingData_(rawData) {
+      const displayElement = this.addNewDescriptorDisplayElement_();
+      /** @type {!cr.ui.Tree} */
+      const rawDataTreeRoot = displayElement.rawDataTreeRoot;
+      rawDataTreeRoot.style.display = 'none';
+      /** @type {!HTMLElement} */
+      const rawDataByteElement = displayElement.rawDataByteElement;
+      renderRawDataBytes(rawDataByteElement, rawData);
+    }
+
+    /**
+     * Initializes the testing tool panel for input and query functionality.
+     */
+    initialTestingToolPanel() {
+      this.showWarn_(
+          'Warning: This tool can send arbitrary commands to the device. ' +
+          'Invalid commands may cause unexpected results.');
+      const inputTableRows =
+          this.rootElement_.querySelector('tbody').querySelectorAll('tr');
+      const buttons =
+          this.rootElement_.querySelector('tbody').querySelectorAll('button');
+      const dataInputArea = this.rootElement_.querySelector('textarea');
+      dataInputArea.addEventListener('keypress', () => {
+        const index = dataInputArea.selectionStart;
+        dataInputArea.value = dataInputArea.value.substring(0, index) +
+            dataInputArea.value.substring(index + 1);
+        dataInputArea.selectionEnd = index;
+      });
+
+      const testingToolPanelInputTypeSelector =
+          this.rootElement_.querySelector('#input-type');
+      testingToolPanelInputTypeSelector.addEventListener('change', () => {
+        this.clearView();
+        const index = testingToolPanelInputTypeSelector.selectedIndex;
+        inputTableRows.forEach(row => row.hidden = true);
+        inputTableRows[index].hidden = false;
+
+        const direction = getRequestTypeDirection(inputTableRows[index], index);
+        const length = getRequestLength(inputTableRows[index], index);
+        this.rootElement_.querySelector('#data-input-area').hidden =
+            (direction !== 'Host-to-Device');
+        dataInputArea.value = '00'.repeat(length);
+        dataInputArea.maxLength = length * 2;
+      });
+
+      for (const [i, inputTableRow] of inputTableRows.entries()) {
+        let directionInputElement;
+        switch (i) {
+          case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
+            directionInputElement =
+                inputTableRow.querySelector('#transfer-direction');
+            break;
+          case INPUT_TYPE_HEX_BYTE:
+            directionInputElement =
+                inputTableRow.querySelector('#query-request-type');
+            break;
+        }
+        directionInputElement.addEventListener('change', () => {
+          this.rootElement_.querySelector('#data-input-area').hidden =
+              (getRequestTypeDirection(inputTableRow, i) !== 'Host-to-Device');
+        });
+
+        inputTableRow.querySelector('#query-length')
+            .addEventListener('blur', () => {
+              const length = getRequestLength(inputTableRow, i);
+              dataInputArea.value = '00'.repeat(length);
+              dataInputArea.maxLength = length * 2;
+            });
+      }
+
+      for (const [i, button] of buttons.entries()) {
+        button.addEventListener('click', () => {
+          this.clearView();
+
+          const direction = getRequestTypeDirection(inputTableRows[i], i);
+          const type = getRequestType(inputTableRows[i], i);
+          const recipient = getRequestTypeRecipient(inputTableRows[i], i);
+          const request = getRequestCode(inputTableRows[i], i);
+          const value = getRequestValue(inputTableRows[i], i);
+          const index = getRequestIndex(inputTableRows[i], i);
+          const dataLength = getRequestLength(inputTableRows[i], i);
+
+          if (this.checkEnumParamValid_(
+                  type, 'Transfer Type', device.mojom.UsbControlTransferType) &&
+              this.checkEnumParamValid_(
+                  recipient, 'Transfer Recipient',
+                  device.mojom.UsbControlTransferRecipient) &&
+              this.checkParamValid_(request, 'Transfer Request', 0, 255) &&
+              this.checkParamValid_(value, 'wValue', 0, 65535) &&
+              this.checkParamValid_(index, 'wIndex', 0, 65535) &&
+              this.checkParamValid_(dataLength, 'Length', 0, 65535)) {
+            /** @type {!device.mojom.UsbControlTransferParams} */
+            const usbControlTransferParams = {
+              type: device.mojom.UsbControlTransferType[type],
+              recipient: device.mojom.UsbControlTransferRecipient[recipient],
+              request,
+              value,
+              index,
+            };
+            this.sendTestingRequest_(
+                usbControlTransferParams, dataLength, direction);
+          }
+        });
+      }
+    }
+
+    /**
+     * Checks if the user input is a valid number.
+     * @param {number} paramValue
+     * @param {string} paramName
+     * @param {number} min
+     * @param {number} max
+     * @return {boolean}
+     * @private
+     */
+    checkParamValid_(paramValue, paramName, min, max) {
+      if (Number.isNaN(paramValue) || paramValue < min || paramValue > max) {
+        this.showError_(`Invalid ${paramName}.`);
+        return false;
+      }
+      return true;
+    }
+
+    /**
+     * Checks if the user input for a enum field is valid.
+     * @param {string} enumString
+     * @param {string} paramName
+     * @param {!Object} enumObject
+     * @return {boolean}
+     * @private
+     */
+    checkEnumParamValid_(enumString, paramName, enumObject) {
+      if (enumObject[enumString] !== undefined) {
+        return true;
+      }
+      this.showError_(`Invalid ${paramName}`);
+      return false;
+    }
+  }
+
+  /**
+   * Get the USB control transfer type.
+   * @param {!HTMLElement} inputRow
+   * @param {number} inputType
+   * @return {string}
+   */
+  function getRequestType(inputRow, inputType) {
+    switch (inputType) {
+      case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
+        return inputRow.querySelector('#transfer-type').value;
+      case INPUT_TYPE_HEX_BYTE:
+        const value = Number.parseInt(
+            inputRow.querySelector('#query-request-type').value, 16);
+        switch (value >> 5 & 0x03) {
+          case 0:
+            return 'STANDARD';
+          case 1:
+            return 'CLASS';
+          case 2:
+            return 'VENDOR';
+        }
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Get the USB control transfer recipient.
+   * @param {!HTMLElement} inputRow
+   * @param {number} inputType
+   * @return {string}
+   */
+  function getRequestTypeRecipient(inputRow, inputType) {
+    switch (inputType) {
+      case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
+        return inputRow.querySelector('#transfer-recipient').value;
+      case INPUT_TYPE_HEX_BYTE:
+        const value = Number.parseInt(
+            inputRow.querySelector('#query-request-type').value, 16);
+        switch (value & 0x1F) {
+          case 0:
+            return 'DEVICE';
+          case 1:
+            return 'INTERFACE';
+          case 2:
+            return 'ENDPOINT';
+          case 3:
+            return 'OTHER';
+        }
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Get the USB control transfer direction. 0 for device-to-host, 1 for
+   * host-to-device.
+   * @param {!HTMLElement} inputRow
+   * @param {number} inputType
+   * @return {number}
+   */
+  function getRequestTypeDirection(inputRow, inputType) {
+    switch (inputType) {
+      case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
+        return inputRow.querySelector('#transfer-direction').value;
+      case INPUT_TYPE_HEX_BYTE:
+        const value = Number.parseInt(
+            inputRow.querySelector('#query-request-type').value, 16);
+        switch (value >> 7) {
+          case CONTROL_TRANSFER_DIRECTION_HOST_TO_DEVICE:
+            return 'Host-to-Device';
+          case CONTROL_TRANSFER_DIRECTION_DEVICE_TO_HOST:
+            return 'Device-to-Host';
+        }
+      default:
+        return 'Device-to-Host';
+    }
+  }
+
+  /**
+   * Get the USB control transfer request code.
+   * @param {!HTMLElement} inputRow
+   * @param {number} inputType
+   * @return {number}
+   */
+  function getRequestCode(inputRow, inputType) {
+    switch (inputType) {
+      case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
+        return Number.parseInt(inputRow.querySelector('#query-request').value);
+      case INPUT_TYPE_HEX_BYTE:
+        return Number.parseInt(
+            inputRow.querySelector('#query-request').value, 16);
+      default:
+        return Number.NaN;
+    }
+  }
+
+  /**
+   * Get the value of USB control transfer request wValue field.
+   * @param {!HTMLElement} inputRow
+   * @param {number} inputType
+   * @return {number}
+   */
+  function getRequestValue(inputRow, inputType) {
+    switch (inputType) {
+      case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
+        return Number.parseInt(inputRow.querySelector('#query-value').value);
+      case INPUT_TYPE_HEX_BYTE:
+        return Number.parseInt(
+            inputRow.querySelector('#query-value').value, 16);
+      default:
+        return Number.NaN;
+    }
+  }
+
+  /**
+   * Get the value of USB control transfer request wIndex field.
+   * @param {!HTMLElement} inputRow
+   * @param {number} inputType
+   * @return {number}
+   */
+  function getRequestIndex(inputRow, inputType) {
+    switch (inputType) {
+      case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
+        return Number.parseInt(inputRow.querySelector('#query-index').value);
+      case INPUT_TYPE_HEX_BYTE:
+        return Number.parseInt(
+            inputRow.querySelector('#query-index').value, 16);
+      default:
+        return Number.NaN;
+    }
+  }
+
+  /**
+   * Get the length of the data transferred during USB control transfer.
+   * @param {!HTMLElement} inputRow
+   * @param {number} inputType
+   * @return {number}
+   */
+  function getRequestLength(inputRow, inputType) {
+    switch (inputType) {
+      case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
+        return Number.parseInt(inputRow.querySelector('#query-length').value);
+      case INPUT_TYPE_HEX_BYTE:
+        return Number.parseInt(
+            inputRow.querySelector('#query-length').value, 16);
+      default:
+        return Number.NaN;
     }
   }
 
