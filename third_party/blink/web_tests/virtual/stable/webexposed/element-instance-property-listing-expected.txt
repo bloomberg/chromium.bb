@@ -30,6 +30,7 @@ namespace http://www.w3.org/1999/xhtml
     property append
     property appendChild
     property assignedSlot
+    property attachInternals
     property attachShadow
     property attributeStyleMap
     property attributes

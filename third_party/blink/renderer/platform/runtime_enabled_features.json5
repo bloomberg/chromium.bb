@@ -478,6 +478,7 @@
     {
       // http://crbug.com/905922
       name: "ElementInternals",
+      status: "stable",
       implied_by: ["FormAssociatedCustomElements"],
     },
     {
@@ -628,7 +629,7 @@
     },
     {
       name: "FormAssociatedCustomElements",
-      status: "experimental",
+      status: "stable",
     },
     // This is to communicate features::FormControlsRefresh from ui (and can be
     // removed when the feature launches).
