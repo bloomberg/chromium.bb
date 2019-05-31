@@ -105,17 +105,14 @@ HeartbeatSender::HeartbeatClient::~HeartbeatClient() = default;
 void HeartbeatSender::HeartbeatClient::Heartbeat(
     const apis::v1::HeartbeatRequest& request,
     HeartbeatResponseCallback callback) {
-  HOST_LOG << "Sending outgoing heartbeat:\n"
-           << "signature: " << request.signature() << "\n"
-           << "host_id: " << request.host_id() << "\n"
-           << "jabber_id: " << request.jabber_id() << "\n"
-           << "tachyon_id: " << request.tachyon_id() << "\n"
-           << "sequence_id: " << request.sequence_id() << "\n"
-           << "host_version: " << request.host_version() << "\n"
-           << "host_offline_reason: " << request.host_offline_reason() << "\n"
-           << "host_os_name: " << request.host_os_name() << "\n"
-           << "host_os_version: " << request.host_os_version() << "\n"
-           << "=========================================================";
+  std::string host_offline_reason_or_empty_log =
+      request.has_host_offline_reason()
+          ? (", host_offline_reason: " + request.host_offline_reason())
+          : "";
+  HOST_LOG << "Sending outgoing heartbeat."
+           << " jabber_id: " << request.jabber_id()
+           << ", tachyon_id: " << request.tachyon_id()
+           << host_offline_reason_or_empty_log;
 
   auto client_context = std::make_unique<grpc::ClientContext>();
   auto async_request = CreateGrpcAsyncUnaryRequest(
