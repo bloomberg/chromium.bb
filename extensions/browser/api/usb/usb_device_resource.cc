@@ -34,14 +34,19 @@ ApiResourceManager<UsbDeviceResource>::GetFactoryInstance() {
 UsbDeviceResource::UsbDeviceResource(const std::string& owner_extension_id,
                                      const std::string& guid,
                                      device::mojom::UsbDevicePtr device)
-    : ApiResource(owner_extension_id),
-      guid_(guid),
-      device_(std::move(device)) {}
+    : ApiResource(owner_extension_id), guid_(guid), device_(std::move(device)) {
+  device_.set_connection_error_handler(base::BindOnce(
+      &UsbDeviceResource::OnConnectionError, base::Unretained(this)));
+}
 
 UsbDeviceResource::~UsbDeviceResource() {}
 
 bool UsbDeviceResource::IsPersistent() const {
   return false;
+}
+
+void UsbDeviceResource::OnConnectionError() {
+  device_.reset();
 }
 
 }  // namespace extensions
