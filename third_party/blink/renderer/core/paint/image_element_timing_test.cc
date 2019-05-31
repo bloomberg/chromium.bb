@@ -128,10 +128,8 @@ TEST_F(ImageElementTimingTest, BackgroundImageRemoved) {
     <div id="target">/div>
   )HTML");
   LayoutObject* object = GetLayoutObjectByElementId("target");
-  ImageResourceContent* content = object->MutableStyle()
-                                      ->AccessBackgroundLayers()
-                                      .GetImage()
-                                      ->CachedImage();
+  ImageResourceContent* content =
+      object->Style()->BackgroundLayers().GetImage()->CachedImage();
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(GetBackgroundImagesNotified().size(), 1u);
   EXPECT_TRUE(

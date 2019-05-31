@@ -451,20 +451,19 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorBadTarget) {
       MakeGarbageCollected<KeyframeEffect>(element, effect_model, timing);
 
   // If the target has a CSS offset we can't composite it.
+  element->SetInlineStyleProperty(CSSPropertyID::kOffsetPosition, "50px 50px");
   UpdateAllLifecyclePhasesForTest();
-  element->MutableComputedStyle()->SetOffsetPosition(
-      LengthPoint(Length::Percent(50.0), Length::Auto()));
+
   ASSERT_TRUE(element->GetComputedStyle()->HasOffset());
   EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
                   nullptr, animation_playback_rate) &
               CompositorAnimations::kTargetHasCSSOffset);
 
   // If the target has multiple transform properties we can't composite it.
+  element->SetInlineStyleProperty(CSSPropertyID::kRotate, "90deg");
+  element->SetInlineStyleProperty(CSSPropertyID::kScale, "2 1");
   UpdateAllLifecyclePhasesForTest();
-  element->MutableComputedStyle()->SetRotate(
-      RotateTransformOperation::Create(100, TransformOperation::kRotateX));
-  element->MutableComputedStyle()->SetScale(
-      ScaleTransformOperation::Create(2, 1, TransformOperation::kScaleX));
+
   EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
                   nullptr, animation_playback_rate) &
               CompositorAnimations::kTargetHasMultipleTransformProperties);
