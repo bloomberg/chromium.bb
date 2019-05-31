@@ -1526,9 +1526,13 @@ void HostProcess::InitializeSignaling() {
     signal_strategy_ = std::move(xmpp_signal_strategy);
     log_to_server_ = std::make_unique<XmppLogToServer>(
         ServerLogEntry::ME2ME, signal_strategy_.get(), directory_bot_jid_);
-    host_change_notification_listener_.reset(new HostChangeNotificationListener(
-        this, host_id_, unowned_xmpp_signal_strategy, directory_bot_jid_));
   }
+
+  // XMPP based HostChangeNotificationListener is still needed by double
+  // signaling hosts so that they can handle host deletion triggered by an old
+  // client talking to the legacy directory backend.
+  host_change_notification_listener_.reset(new HostChangeNotificationListener(
+      this, host_id_, unowned_xmpp_signal_strategy, directory_bot_jid_));
 
 #if defined(USE_GCD)
   // Create objects to manage GCD state.
