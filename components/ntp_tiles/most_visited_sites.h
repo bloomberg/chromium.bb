@@ -309,6 +309,11 @@ class MostVisitedSites : public history::TopSitesObserver,
   NTPTilesVector InsertHomeTile(NTPTilesVector tiles,
                                 const base::string16& title) const;
 
+  // Adds the Google Search page as first tile to |tiles| and returns them as
+  // new vector. Drops existing tiles with the same host as the Google Search
+  // page and tiles that would exceed the maximum.
+  NTPTilesVector InsertSearchTile(NTPTilesVector tiles) const;
+
   void OnHomepageTitleDetermined(NTPTilesVector tiles,
                                  const base::Optional<base::string16>& title);
 
