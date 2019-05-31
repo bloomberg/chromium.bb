@@ -58,7 +58,8 @@ class CORE_EXPORT JankTracker {
       const Vector<IntRect>& int_rects,
       double granularity_scale);
   void SetLayoutShiftRects(const Vector<IntRect>& int_rects,
-                           double granularity_scale);
+                           double granularity_scale,
+                           bool using_sweep_line);
 
   // This owns us.
   UntracedMember<LocalFrameView> frame_view_;

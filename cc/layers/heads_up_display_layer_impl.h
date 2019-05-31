@@ -61,7 +61,9 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 
   gfx::Rect GetEnclosingRectInTargetSpace() const override;
 
-  bool IsAnimatingHUDContents() const { return fade_step_ > 0; }
+  bool IsAnimatingHUDContents() const {
+    return paint_rects_fade_step_ > 0 || layout_shift_rects_fade_step_ > 0;
+  }
 
   void SetHUDTypeface(sk_sp<SkTypeface> typeface);
   void SetLayoutShiftRects(const std::vector<gfx::Rect>& rects);
@@ -158,8 +160,10 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   Graph fps_graph_;
   Graph paint_time_graph_;
   MemoryHistory::Entry memory_entry_;
-  int fade_step_;
+  int paint_rects_fade_step_ = 0;
+  int layout_shift_rects_fade_step_ = 0;
   std::vector<DebugRect> paint_rects_;
+  std::vector<DebugRect> layout_shift_debug_rects_;
 
   base::TimeTicks time_of_last_graph_update_;
 };

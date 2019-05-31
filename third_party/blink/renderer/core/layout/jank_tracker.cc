@@ -322,12 +322,12 @@ void JankTracker::NotifyPrePaintFinished() {
 
   if (use_sweep_line) {
     if (!region_experimental_.IsEmpty()) {
-      SetLayoutShiftRects(region_experimental_.GetRects(), 1);
+      SetLayoutShiftRects(region_experimental_.GetRects(), 1, true);
     }
     region_experimental_.Reset();
   } else {
     if (!region_.IsEmpty()) {
-      SetLayoutShiftRects(region_.Rects(), granularity_scale);
+      SetLayoutShiftRects(region_.Rects(), granularity_scale, false);
     }
     region_ = Region();
   }
@@ -399,7 +399,8 @@ std::vector<gfx::Rect> JankTracker::ConvertIntRectsToGfxRects(
 }
 
 void JankTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
-                                      double granularity_scale) {
+                                      double granularity_scale,
+                                      bool using_sweep_line) {
   // Store the layout shift rects in the HUD layer.
   GraphicsLayer* root_graphics_layer =
       frame_view_->GetLayoutView()->Compositor()->RootGraphicsLayer();
@@ -413,8 +414,16 @@ void JankTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
     if (!cc_layer->layer_tree_host()->GetDebugState().show_layout_shift_regions)
       return;
     if (cc_layer->layer_tree_host()->hud_layer()) {
-      std::vector<gfx::Rect> rects =
-          ConvertIntRectsToGfxRects(int_rects, granularity_scale);
+      std::vector<gfx::Rect> rects;
+      if (using_sweep_line) {
+        Region old_region;
+        for (IntRect rect : int_rects)
+          old_region.Unite(Region(rect));
+        rects =
+            ConvertIntRectsToGfxRects(old_region.Rects(), granularity_scale);
+      } else {
+        rects = ConvertIntRectsToGfxRects(int_rects, granularity_scale);
+      }
       cc_layer->layer_tree_host()->hud_layer()->SetLayoutShiftRects(rects);
       cc_layer->layer_tree_host()->hud_layer()->SetNeedsPushProperties();
     }

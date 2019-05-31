@@ -107,8 +107,7 @@ HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl,
     : LayerImpl(tree_impl, id),
       internal_contents_scale_(1.f),
       fps_graph_(60.0, 80.0),
-      paint_time_graph_(16.0, 48.0),
-      fade_step_(0) {}
+      paint_time_graph_(16.0, 48.0) {}
 
 HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {
   ReleaseResources();
@@ -532,6 +531,7 @@ void HeadsUpDisplayLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   layer_impl->SetHUDTypeface(typeface_);
   layer_impl->SetLayoutShiftRects(layout_shift_rects_);
+  layout_shift_rects_.clear();
 }
 
 void HeadsUpDisplayLayerImpl::UpdateHudContents() {
@@ -983,6 +983,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
 
   const std::vector<DebugRect>& debug_rects = debug_rect_history->debug_rects();
   std::vector<DebugRect> new_paint_rects;
+  std::vector<DebugRect> new_layout_shift_rects;
 
   for (size_t i = 0; i < debug_rects.size(); ++i) {
     SkColor stroke_color = 0;
@@ -992,8 +993,8 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
 
     switch (debug_rects[i].type) {
       case LAYOUT_SHIFT_RECT_TYPE:
-        // TODO(rnasri@): Handle layout shift rects drawing.
-        break;
+        new_layout_shift_rects.push_back(debug_rects[i]);
+        continue;
       case PAINT_RECT_TYPE:
         new_paint_rects.push_back(debug_rects[i]);
         continue;
@@ -1051,15 +1052,30 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
 
   if (new_paint_rects.size()) {
     paint_rects_.swap(new_paint_rects);
-    fade_step_ = DebugColors::kFadeSteps;
+    paint_rects_fade_step_ = DebugColors::kFadeSteps;
   }
-  if (fade_step_ > 0) {
-    fade_step_--;
+  if (paint_rects_fade_step_ > 0) {
+    paint_rects_fade_step_--;
     for (size_t i = 0; i < paint_rects_.size(); ++i) {
       DrawDebugRect(canvas, &flags, paint_rects_[i],
-                    DebugColors::PaintRectBorderColor(fade_step_),
-                    DebugColors::PaintRectFillColor(fade_step_),
+                    DebugColors::PaintRectBorderColor(paint_rects_fade_step_),
+                    DebugColors::PaintRectFillColor(paint_rects_fade_step_),
                     DebugColors::PaintRectBorderWidth(), "");
+    }
+  }
+
+  if (new_layout_shift_rects.size()) {
+    layout_shift_debug_rects_.swap(new_layout_shift_rects);
+    layout_shift_rects_fade_step_ = DebugColors::kFadeSteps;
+  }
+  if (layout_shift_rects_fade_step_ > 0) {
+    layout_shift_rects_fade_step_--;
+    for (size_t i = 0; i < layout_shift_debug_rects_.size(); ++i) {
+      DrawDebugRect(
+          canvas, &flags, layout_shift_debug_rects_[i],
+          DebugColors::LayoutShiftRectBorderColor(),
+          DebugColors::LayoutShiftRectFillColor(layout_shift_rects_fade_step_),
+          DebugColors::LayoutShiftRectBorderWidth(), "");
     }
   }
 }
