@@ -30,6 +30,7 @@ per-file profiles_strings.grdp=file://chrome/browser/profiles/OWNERS
 per-file settings*strings*=file://chrome/browser/resources/settings/OWNERS
 
 per-file vr_strings.grdp=file://chrome/browser/vr/OWNERS
+per-file xr_support_ui_strings.grdp=file://chrome/browser/vr/OWNERS
 
 # Non-GRD rules.
 
