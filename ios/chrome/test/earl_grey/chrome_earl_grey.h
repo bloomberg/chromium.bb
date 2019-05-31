@@ -237,6 +237,20 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 #pragma mark - WebState Utilities (EG2)
 
+// Taps html element with |elementID| in the current web state.
+// A GREYAssert is induced on failure.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)tapWebStateElementWithID:(NSString*)elementID;
+
+// Attempts to tap the element with |element_id| within window.frames[0] of the
+// current WebState using a JavaScript click() event. This only works on
+// same-origin iframes.
+// A GREYAssert is induced on failure.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)tapWebStateElementInIFrameWithID:(const std::string&)elementID;
+
 // Waits for the current web state to contain an element matching |selector|.
 // If the condition is not met within a timeout a GREYAssert is induced.
 // TODO(crbug.com/963613): Change return type to void when
@@ -302,17 +316,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 - (NSError*)waitForErrorPage WARN_UNUSED_RESULT;
 
 #pragma mark - WebState Utilities
-
-// Taps html element with |elementID| in the current web state.
-- (NSError*)tapWebStateElementWithID:(NSString*)elementID WARN_UNUSED_RESULT;
-
-// Attempts to tap the element with |element_id| within window.frames[0] of the
-// current WebState using a JavaScript click() event. This only works on
-// same-origin iframes.
-// If the condition did not succeeded returns an NSError indicating
-// why the operation failed, otherwise nil.
-- (NSError*)tapWebStateElementInIFrameWithID:(const std::string&)elementID
-    WARN_UNUSED_RESULT;
 
 // Attempts to submit form with |formID| in the current WebState.
 - (NSError*)submitWebStateFormWithID:(const std::string&)formID

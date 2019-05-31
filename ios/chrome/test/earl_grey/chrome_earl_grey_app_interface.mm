@@ -19,6 +19,7 @@
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -133,8 +134,13 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::CloseAllTabsInCurrentMode();
 }
 
-+ (BOOL)closeAllIncognitoTabs {
-  return chrome_test_util::CloseAllIncognitoTabs();
++ (NSError*)closeAllIncognitoTabs {
+  bool success = chrome_test_util::CloseAllIncognitoTabs();
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Could not close all Incognito tabs");
+  }
+  return nil;
 }
 
 + (void)closeAllTabs {
@@ -150,6 +156,27 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 }
 
 #pragma mark - WebState Utilities (EG2)
+
++ (NSError*)tapWebStateElementInIFrameWithID:(NSString*)elementID {
+  bool success = web::test::TapWebViewElementWithIdInIframe(
+      chrome_test_util::GetCurrentWebState(),
+      base::SysNSStringToUTF8(elementID));
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:@"Failed to tap element with ID=%@", elementID]);
+  }
+
+  return nil;
+}
+
++ (BOOL)tapWebStateElementWithID:(NSString*)elementID error:(NSError*)error {
+  NSError* __autoreleasing autoreleasingError = nil;
+  bool success = web::test::TapWebViewElementWithId(
+      chrome_test_util::GetCurrentWebState(),
+      base::SysNSStringToUTF8(elementID), &autoreleasingError);
+  error = autoreleasingError;
+  return success;
+}
 
 + (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {
   bool success = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {

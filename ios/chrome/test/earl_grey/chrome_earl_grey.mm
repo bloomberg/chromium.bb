@@ -158,8 +158,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 - (NSError*)closeAllIncognitoTabs {
-  EG_TEST_HELPER_ASSERT_TRUE([ChromeEarlGreyAppInterface closeAllIncognitoTabs],
-                             @"Could not close all Incognito tabs");
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface closeAllIncognitoTabs]);
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   return nil;
@@ -184,8 +184,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 
 - (NSError*)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait {
-  [ChromeEarlGreyAppInterface
-      startLoadingURL:base::SysUTF8ToNSString(URL.spec())];
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  [ChromeEarlGreyAppInterface startLoadingURL:spec];
   if (wait) {
     [self waitForPageToFinishLoading];
     EG_TEST_HELPER_ASSERT_TRUE(
@@ -253,6 +253,25 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 #pragma mark - WebState Utilities (EG2)
+
+- (NSError*)tapWebStateElementWithID:(NSString*)elementID {
+  NSError* error = nil;
+  bool success = [ChromeEarlGreyAppInterface tapWebStateElementWithID:elementID
+                                                                error:error];
+  EG_TEST_HELPER_ASSERT_NO_ERROR(error);
+  NSString* description =
+      [NSString stringWithFormat:@"Failed to tap web state element with ID: %@",
+                                 elementID];
+  EG_TEST_HELPER_ASSERT_TRUE(success, description);
+  return nil;
+}
+
+- (NSError*)tapWebStateElementInIFrameWithID:(const std::string&)elementID {
+  NSString* NSElementID = base::SysUTF8ToNSString(elementID);
+  EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
+      tapWebStateElementInIFrameWithID:NSElementID]);
+  return nil;
+}
 
 - (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
@@ -475,37 +494,6 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 #pragma mark - WebState Utilities
-
-- (NSError*)tapWebStateElementWithID:(NSString*)elementID {
-  NSError* error = nil;
-  NSError* __autoreleasing tempError = error;
-  BOOL success = web::test::TapWebViewElementWithId(
-      chrome_test_util::GetCurrentWebState(),
-      base::SysNSStringToUTF8(elementID), &tempError);
-  error = tempError;
-
-  if (error != nil) {
-    return error;
-  }
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:@"Failed to tap web state element with ID: %@",
-                         elementID]);
-  }
-  return nil;
-}
-
-- (NSError*)tapWebStateElementInIFrameWithID:(const std::string&)elementID {
-  bool success = web::test::TapWebViewElementWithIdInIframe(
-      chrome_test_util::GetCurrentWebState(), elementID);
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        [NSString stringWithFormat:@"Failed to tap element with ID=%s",
-                                   elementID.c_str()]);
-  }
-
-  return nil;
-}
 
 - (NSError*)submitWebStateFormWithID:(const std::string&)formID {
   bool success = web::test::SubmitWebViewFormWithId(

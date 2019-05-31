@@ -90,8 +90,9 @@
 // normal after closing all tabs.
 + (void)closeAllTabsInCurrentMode;
 
-// Closes all incognito tabs. Return YES on success.
-+ (BOOL)closeAllIncognitoTabs;
+// Closes all incognito tabs. If not succeed returns an NSError indicating  why
+// the operation failed, otherwise nil.
++ (NSError*)closeAllIncognitoTabs;
 
 // Closes all tabs in all modes (incognito and main (non-incognito)) and does
 // not wait for the UI to complete. If current mode is Incognito, mode will be
@@ -105,6 +106,16 @@
 + (void)startGoingForward;
 
 #pragma mark - WebState Utilities (EG2)
+
+// Attempts to tap the element with |element_id| within window.frames[0] of the
+// current WebState using a JavaScript click() event. This only works on
+// same-origin iframes. If not succeed returns an NSError indicating why the
+// operation failed, otherwise nil.
++ (NSError*)tapWebStateElementInIFrameWithID:(NSString*)elementID;
+
+// Taps html element with |elementID| in the current web state.
+// On failure returns NO and |error| is set to include a message.
++ (BOOL)tapWebStateElementWithID:(NSString*)elementID error:(NSError*)error;
 
 // Waits for the current web state to contain an element matching |selector|.
 // If not succeed returns an NSError indicating  why the operation failed,
