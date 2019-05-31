@@ -35,7 +35,7 @@ class MODULES_EXPORT HtmlAudioElementCapturerSource final
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   HtmlAudioElementCapturerSource(
-      blink::WebAudioSourceProviderImpl* audio_source,
+      scoped_refptr<blink::WebAudioSourceProviderImpl> audio_source,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~HtmlAudioElementCapturerSource() override;
 

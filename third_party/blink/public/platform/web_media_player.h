@@ -39,6 +39,7 @@
 #include "third_party/blink/public/platform/web_media_source.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -54,7 +55,6 @@ class GLES2Interface;
 
 namespace blink {
 
-class WebAudioSourceProvider;
 class WebContentDecryptionModule;
 class WebMediaPlayerSource;
 class WebString;
@@ -337,7 +337,9 @@ class WebMediaPlayer {
     return false;
   }
 
-  virtual WebAudioSourceProvider* GetAudioSourceProvider() { return nullptr; }
+  virtual scoped_refptr<WebAudioSourceProviderImpl> GetAudioSourceProvider() {
+    return nullptr;
+  }
 
   virtual void SetContentDecryptionModule(
       WebContentDecryptionModule* cdm,

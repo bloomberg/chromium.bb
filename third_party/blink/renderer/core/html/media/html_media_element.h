@@ -32,6 +32,7 @@
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_audio_source_provider_client.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
+#include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -77,7 +78,6 @@ class TextTrackList;
 class TimeRanges;
 class VideoTrack;
 class VideoTrackList;
-class WebAudioSourceProvider;
 class WebInbandTextTrack;
 class WebRemotePlaybackClient;
 
@@ -707,12 +707,11 @@ class CORE_EXPORT HTMLMediaElement
     DISALLOW_NEW();
 
    public:
-    AudioSourceProviderImpl() : web_audio_source_provider_(nullptr) {}
-
+    AudioSourceProviderImpl() = default;
     ~AudioSourceProviderImpl() override = default;
 
     // Wraps the given WebAudioSourceProvider.
-    void Wrap(WebAudioSourceProvider*);
+    void Wrap(scoped_refptr<WebAudioSourceProviderImpl>);
 
     // AudioSourceProvider
     void SetClient(AudioSourceProviderClient*) override;
@@ -721,7 +720,7 @@ class CORE_EXPORT HTMLMediaElement
     void Trace(Visitor*);
 
    private:
-    WebAudioSourceProvider* web_audio_source_provider_;
+    scoped_refptr<WebAudioSourceProviderImpl> web_audio_source_provider_;
     Member<AudioClientImpl> client_;
     Mutex provide_input_lock;
   };

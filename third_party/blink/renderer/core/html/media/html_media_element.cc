@@ -4101,13 +4101,13 @@ void HTMLMediaElement::DefaultEventHandler(Event& event) {
 }
 
 void HTMLMediaElement::AudioSourceProviderImpl::Wrap(
-    WebAudioSourceProvider* provider) {
+    scoped_refptr<WebAudioSourceProviderImpl> provider) {
   MutexLocker locker(provide_input_lock);
 
   if (web_audio_source_provider_ && provider != web_audio_source_provider_)
     web_audio_source_provider_->SetClient(nullptr);
 
-  web_audio_source_provider_ = provider;
+  web_audio_source_provider_ = std::move(provider);
   if (web_audio_source_provider_)
     web_audio_source_provider_->SetClient(client_.Get());
 }

@@ -2737,8 +2737,9 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
   client_->ReadyStateChanged();
 }
 
-blink::WebAudioSourceProvider* WebMediaPlayerImpl::GetAudioSourceProvider() {
-  return audio_source_provider_.get();
+scoped_refptr<blink::WebAudioSourceProviderImpl>
+WebMediaPlayerImpl::GetAudioSourceProvider() {
+  return audio_source_provider_;
 }
 
 scoped_refptr<VideoFrame> WebMediaPlayerImpl::GetCurrentFrameFromCompositor()

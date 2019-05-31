@@ -207,7 +207,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       int already_uploaded_id,
       VideoFrameUploadMetadata* out_metadata);
 
-  blink::WebAudioSourceProvider* GetAudioSourceProvider() override;
+  scoped_refptr<blink::WebAudioSourceProviderImpl> GetAudioSourceProvider()
+      override;
 
   void SetContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
