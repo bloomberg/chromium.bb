@@ -82,7 +82,7 @@ var PiexRequestCallbacks;
 
 /**
  * @param {{id:number, thumbnail:!ArrayBuffer, orientation:number,
- *          colorSpace: ColorSpace}}
+ *          colorSpace: ColorSpace, ifd:?string}}
  *     data Data directly returned from NaCl module.
  * @constructor
  * @struct
@@ -112,6 +112,13 @@ function PiexLoaderResponse(data) {
    * @const
    */
   this.colorSpace = data.colorSpace;
+
+  /**
+   * JSON encoded RAW image photographic details (Piex Wasm module only).
+   * @public {?string}
+   * @const
+   */
+  this.ifd = data.ifd || null;
 }
 
 /**
@@ -432,13 +439,13 @@ function readFromFileSystem(url) {
 /**
  * Piex wasm extacts the preview image metadata from a raw image. The preview
  * image |format| is either 0 (JPEG) or 1 (RGB), and has a |colorSpace| (sRGB
- * or AdobeRGB1998) and a JETA EXIF image |orientation|.
+ * or AdobeRGB1998) and a JEITA EXIF image |orientation|.
  *
  * An RGB format preview image has both |width| and |height|, but JPEG format
- * previews have neither (PIEX C++ does not attempt to parse/decode JPEG).
+ * previews have neither (piex wasm C++ does not parse/decode JPEG).
  *
  * The |offset| to, and |length| of, the preview image relative to the source
- * data is indicated by those fields, and they are never 0. Note their values
+ * data is indicated by those fields. They are positive > 0. Note: the values
  * are controlled by a third-party and are untrustworthy (Security).
  *
  * @typedef {{
@@ -455,7 +462,8 @@ var PiexWasmPreviewImageMetadata;
 
 /**
  * The piex wasm Module.image(<raw image source>,...) API returns |error|, or
- * else the source |preview| and/or |thumbnail| image metadata.
+ * else the source |preview| and/or |thumbnail| image metadata along with the
+ * photographic |details| derived from the RAW image EXIF.
  *
  * FilesApp (and related) only use |preview| images. Preview images are JPEG.
  * The |thumbnail| images are small, lower-quality, JPEG or RGB format images
@@ -464,7 +472,8 @@ var PiexWasmPreviewImageMetadata;
  * @typedef {{
  *  error:?string,
  *  preview:?PiexWasmPreviewImageMetadata,
- *  thumbnail:?PiexWasmPreviewImageMetadata
+ *  thumbnail:?PiexWasmPreviewImageMetadata,
+ *  details:?Object
  * }}
  */
 var PiexWasmImageResult;
@@ -507,7 +516,8 @@ class ImageBuffer {
   }
 
   /**
-   * Calls Module.image() to process |this.source|, and returns the result.
+   * Calls Module.image() to process |this.source| and return the result.
+   *
    * @return {!PiexWasmImageResult}
    * @throws {!Error}
    */
@@ -519,7 +529,6 @@ class ImageBuffer {
 
     Module.HEAP8.set(this.source, this.memory);
     const result = Module.image(this.memory, this.length);
-
     if (result.error) {
       throw new Error(result.error);
     }
@@ -536,7 +545,7 @@ class ImageBuffer {
    * @throws {!Error} Data access security error.
    *
    * @return {{id:number, thumbnail:!ArrayBuffer, orientation:number,
-   *          colorSpace: ColorSpace}}
+   *          colorSpace: ColorSpace, ifd:?string}}
    */
   preview(result) {
     const preview = result.preview;
@@ -546,6 +555,7 @@ class ImageBuffer {
         colorSpace: ColorSpace.SRGB,
         orientation: 1,
         id: this.id,
+        ifd: null,
       };
     }
 
@@ -560,8 +570,40 @@ class ImageBuffer {
       thumbnail: new Uint8Array(view).buffer,
       orientation: preview.orientation,
       colorSpace: preview.colorSpace,
+      ifd: this.details(result),
       id: this.id,
     };
+  }
+
+  /**
+   * Returns the RAW image photographic |details| in a JSON-encoded string.
+   * Only number and string values are retained, and they are formatted for
+   * presentation to the user.
+   *
+   * @private
+   * @param {!PiexWasmImageResult} result
+   * @return {?string}
+   */
+  details(result) {
+    const details = result.details;
+    if (!details) {
+      return null;
+    }
+
+    let format = {};
+    for (const [key, value] of Object.entries(details)) {
+      if (typeof value === 'string') {
+        format[key] = value.replace(/\0+$/, '').trim();
+      } else if (typeof value === 'number') {
+        if (!Number.isInteger(value)) {
+          format[key] = Number(value.toFixed(3).replace(/0+$/, ''));
+        } else {
+          format[key] = value;
+        }
+      }
+    }
+
+    return JSON.stringify(format);
   }
 
   /**
