@@ -621,6 +621,7 @@
     kevin64-release
     kip-release
     kukui-release
+    kumo-release
     lakitu-gpu-release
     lakitu-nc-release
     lakitu-release
@@ -2951,6 +2952,7 @@
     kevin64-release-tryjob
     kip-release-tryjob
     kukui-release-tryjob
+    kumo-release-tryjob
     lakitu-gpu-release-tryjob
     lakitu-nc-release-tryjob
     lakitu-release-tryjob
