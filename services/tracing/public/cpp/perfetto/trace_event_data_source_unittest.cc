@@ -916,7 +916,7 @@ TEST_F(TraceEventDataSourceTest, InternedStrings) {
 
     // Resetting the interning state causes ThreadDescriptor and interning
     // entries to be emitted again, with the same interning IDs.
-    TraceEventDataSource::GetInstance()->ResetIncrementalStateForTesting();
+    TraceEventDataSource::GetInstance()->ClearIncrementalState();
   }
 }
 

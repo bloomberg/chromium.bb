@@ -73,6 +73,20 @@ class StructTraits<tracing::mojom::PerfettoBuiltinDataSourceDataView,
                    perfetto::TraceConfig::BuiltinDataSource* out);
 };
 
+// perfetto::TraceConfig::IncrementalStateConfig
+template <>
+class StructTraits<tracing::mojom::IncrementalStateConfigDataView,
+                   perfetto::TraceConfig::IncrementalStateConfig> {
+ public:
+  static uint32_t clear_period_ms(
+      const perfetto::TraceConfig::IncrementalStateConfig& src) {
+    return src.clear_period_ms();
+  }
+
+  static bool Read(tracing::mojom::IncrementalStateConfigDataView data,
+                   perfetto::TraceConfig::IncrementalStateConfig* out);
+};
+
 // perfetto::TraceConfig
 template <>
 class StructTraits<tracing::mojom::TraceConfigDataView, perfetto::TraceConfig> {
@@ -90,6 +104,11 @@ class StructTraits<tracing::mojom::TraceConfigDataView, perfetto::TraceConfig> {
   static const std::vector<perfetto::TraceConfig::BufferConfig>& buffers(
       const perfetto::TraceConfig& src) {
     return src.buffers();
+  }
+
+  static const perfetto::TraceConfig::IncrementalStateConfig&
+  incremental_state_config(const perfetto::TraceConfig& src) {
+    return src.incremental_state_config();
   }
 
   static uint32_t duration_ms(const perfetto::TraceConfig& src) {

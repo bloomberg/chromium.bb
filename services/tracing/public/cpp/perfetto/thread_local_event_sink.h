@@ -44,8 +44,6 @@ class COMPONENT_EXPORT(TRACING_CPP) ThreadLocalEventSink {
 
   virtual void Flush() = 0;
 
-  virtual void ResetIncrementalState();
-
   uint32_t session_id() const { return session_id_; }
 
  protected:

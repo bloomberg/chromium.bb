@@ -367,12 +367,8 @@ void TraceEventDataSource::Flush(
       std::move(flush_complete_callback)));
 }
 
-void TraceEventDataSource::ResetIncrementalStateForTesting() {
-  auto* thread_local_event_sink =
-      static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
-  if (thread_local_event_sink) {
-    thread_local_event_sink->ResetIncrementalState();
-  }
+void TraceEventDataSource::ClearIncrementalState() {
+  TrackEventThreadLocalEventSink::ClearIncrementalState();
 }
 
 ThreadLocalEventSink* TraceEventDataSource::CreateThreadLocalEventSink(

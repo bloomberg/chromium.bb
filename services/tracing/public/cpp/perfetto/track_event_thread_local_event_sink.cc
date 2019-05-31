@@ -34,12 +34,6 @@ namespace {
 constexpr uint32_t kMagicChunkIndex =
     base::trace_event::TraceBufferChunk::kMaxChunkIndex;
 
-// Force an incremental state reset every 1000 events on each thread. This
-// limits the maximum number of events we lose when trace buffers wrap.
-// TODO(eseckler): Tune this value experimentally and/or replace it with a
-// signal by the service.
-constexpr int kMaxEventsBeforeIncrementalStateReset = 1000;
-
 // Replacement string for names of events with TRACE_EVENT_FLAG_COPY.
 const char* const kPrivacyFiltered = "PRIVACY_FILTERED";
 
@@ -119,6 +113,10 @@ void WriteDebugAnnotations(
 // static
 constexpr size_t TrackEventThreadLocalEventSink::kMaxCompleteEventDepth;
 
+// static
+std::atomic<uint32_t>
+    TrackEventThreadLocalEventSink::incremental_state_reset_id_{0};
+
 TrackEventThreadLocalEventSink::TrackEventThreadLocalEventSink(
     std::unique_ptr<perfetto::StartupTraceWriter> trace_writer,
     uint32_t session_id,
@@ -138,11 +136,9 @@ TrackEventThreadLocalEventSink::TrackEventThreadLocalEventSink(
 
 TrackEventThreadLocalEventSink::~TrackEventThreadLocalEventSink() {}
 
-// TODO(eseckler): Trigger this upon a signal from the perfetto, once perfetto
-// supports this.
-void TrackEventThreadLocalEventSink::ResetIncrementalState() {
-  reset_incremental_state_ = true;
-  events_since_last_incremental_state_reset_ = 0;
+// static
+void TrackEventThreadLocalEventSink::ClearIncrementalState() {
+  incremental_state_reset_id_.fetch_add(1u, std::memory_order_relaxed);
 }
 
 void TrackEventThreadLocalEventSink::AddTraceEvent(
@@ -175,6 +171,15 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   uint32_t flags = trace_event->flags();
   bool copy_strings = flags & TRACE_EVENT_FLAG_COPY;
   bool explicit_timestamp = flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP;
+
+  // We access |incremental_state_reset_id_| atomically but racily. It's OK if
+  // we don't notice the reset request immediately, as long as we will notice
+  // and service it eventually.
+  auto reset_id = incremental_state_reset_id_.load(std::memory_order_relaxed);
+  if (reset_id != last_incremental_state_reset_id_) {
+    reset_incremental_state_ = true;
+    last_incremental_state_reset_id_ = reset_id;
+  }
 
   if (reset_incremental_state_) {
     interned_event_categories_.ResetEmittedState();
@@ -452,12 +457,6 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     interned_event_names_.Clear();
     interned_annotation_names_.Clear();
     interned_source_locations_.Clear();
-  }
-
-  events_since_last_incremental_state_reset_++;
-  if (events_since_last_incremental_state_reset_ >=
-      kMaxEventsBeforeIncrementalStateReset) {
-    ResetIncrementalState();
   }
 }
 

@@ -90,6 +90,7 @@ struct DataSourceRegistration {
   string name;
   bool will_notify_on_start;
   bool will_notify_on_stop;
+  bool handles_incremental_state_clear;
 };
 
 // This is implemented by the tracing service and represents the service-
@@ -127,6 +128,7 @@ interface ProducerClient {
   // sent in the StartDataSource call.
   StopDataSource(uint64 id) => ();
   Flush(uint64 flush_request_id, array<uint64> data_source_ids);
+  ClearIncrementalState();
 };
 
 // This is implemented by the tracing service, and is essentially a singleton
@@ -155,6 +157,12 @@ struct PerfettoBuiltinDataSource {
   bool disable_system_info;
 };
 
+struct IncrementalStateConfig {
+  // If set to a value > 0, this enables periodical ClearIncrementalState
+  // messages to be sent to the producers registered for the session.
+  uint32 clear_period_ms;
+};
+
 // The configuration provided by a Consumer to the Perfetto service which
 // primarily configures which named data sources it would like to enable and
 // receive tracing data from, and how large the destination buffers should be.
@@ -162,6 +170,7 @@ struct TraceConfig {
   array<DataSource> data_sources;
   PerfettoBuiltinDataSource perfetto_builtin_data_source;
   array<BufferConfig> buffers;
+  IncrementalStateConfig incremental_state_config;
 
   uint32 duration_ms;
 };

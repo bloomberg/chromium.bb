@@ -34,8 +34,11 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
       bool proto_writer_filtering_enabled);
   ~TrackEventThreadLocalEventSink() override;
 
+  // Resets emitted incremental state on all threads and causes incremental data
+  // (e.g. interning index entries and a ThreadDescriptor) to be emitted again.
+  static void ClearIncrementalState();
+
   // ThreadLocalEventSink implementation:
-  void ResetIncrementalState() override;
   void AddTraceEvent(base::trace_event::TraceEvent* trace_event,
                      base::trace_event::TraceEventHandle* handle) override;
   void UpdateDuration(base::trace_event::TraceEventHandle handle,
@@ -54,12 +57,14 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   InterningIndex<std::pair<const char*, const char*>>
       interned_source_locations_;
 
+  static std::atomic<uint32_t> incremental_state_reset_id_;
+
   bool reset_incremental_state_ = true;
+  uint32_t last_incremental_state_reset_id_ = 0;
   base::TimeTicks last_timestamp_;
   base::ThreadTicks last_thread_time_;
   int process_id_;
   int thread_id_;
-  int events_since_last_incremental_state_reset_ = 0;
 
   base::trace_event::TraceEvent complete_event_stack_[kMaxCompleteEventDepth];
   uint32_t current_stack_depth_ = 0;
