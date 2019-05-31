@@ -491,7 +491,11 @@ INSTANTIATE_TEST_SUITE_P(
             DM_STATUS_SERVICE_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE,
             net::OK,
             417,
-            PROTO_STRING(kResponseEmpty))));
+            PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(DM_STATUS_REQUEST_TOO_LARGE,
+                            net::OK,
+                            413,
+                            PROTO_STRING(kResponseEmpty))));
 
 // Simple query parameter parser for testing.
 class QueryParams {

@@ -51,6 +51,7 @@ const int kDomainMismatch = 406;
 const int kDeviceIdConflict = 409;
 const int kDeviceNotFound = 410;
 const int kPendingApproval = 412;
+const int kRequestTooLarge = 413;
 const int kConsumerAccountWithPackagedLicense = 417;
 const int kInternalServerError = 500;
 const int kServiceUnavailable = 503;
@@ -330,6 +331,9 @@ void DeviceManagementRequestJobImpl::HandleResponse(int net_error,
       return;
     case kPendingApproval:
       ReportError(DM_STATUS_SERVICE_ACTIVATION_PENDING);
+      return;
+    case kRequestTooLarge:
+      ReportError(DM_STATUS_REQUEST_TOO_LARGE);
       return;
     case kConsumerAccountWithPackagedLicense:
       ReportError(DM_STATUS_SERVICE_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE);

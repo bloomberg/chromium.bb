@@ -308,6 +308,7 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
     case DM_STATUS_HTTP_STATUS_ERROR:
     case DM_STATUS_RESPONSE_DECODING_ERROR:
     case DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED:
+    case DM_STATUS_REQUEST_TOO_LARGE:
       RefreshAfter(kUnmanagedRefreshDelayMs);
       return;
     case DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID:

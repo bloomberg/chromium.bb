@@ -465,6 +465,7 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
           UMA(policy::kMetricEnrollmentRegisterPolicyTempUnavailable);
           break;
         case policy::DM_STATUS_HTTP_STATUS_ERROR:
+        case policy::DM_STATUS_REQUEST_TOO_LARGE:
           UMA(policy::kMetricEnrollmentRegisterPolicyHttpError);
           break;
         case policy::DM_STATUS_RESPONSE_DECODING_ERROR:

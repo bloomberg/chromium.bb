@@ -128,6 +128,7 @@ DemoSetupController::DemoSetupError CreateFromClientStatus(
           ErrorCode::kTemporaryUnavailable, RecoveryMethod::kRetry,
           debug_message);
     case policy::DM_STATUS_HTTP_STATUS_ERROR:
+    case policy::DM_STATUS_REQUEST_TOO_LARGE:
       return DemoSetupController::DemoSetupError(
           ErrorCode::kResponseError, RecoveryMethod::kUnknown, debug_message);
     case policy::DM_STATUS_RESPONSE_DECODING_ERROR:
