@@ -148,10 +148,11 @@ class OAuth2TokenServiceDelegate {
     load_credentials_state_ = state;
   }
 
-  // Called by subclasses to notify observers. Some are virtual to allow Android
-  // to broadcast the notifications to Java code.
-  virtual void FireRefreshTokenAvailable(const std::string& account_id);
-  virtual void FireRefreshTokenRevoked(const std::string& account_id);
+  // Called by subclasses to notify observers.
+  void FireRefreshTokenAvailable(const std::string& account_id);
+  void FireRefreshTokenRevoked(const std::string& account_id);
+  // FireRefreshTokensLoaded is virtual and overridden in android implementation
+  // where additional actions are required.
   virtual void FireRefreshTokensLoaded();
   void FireAuthErrorChanged(const std::string& account_id,
                             const GoogleServiceAuthError& error);

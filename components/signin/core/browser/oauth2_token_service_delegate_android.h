@@ -89,10 +89,6 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
                              const OAuth2TokenService::ScopeSet& scopes,
                              const std::string& access_token) override;
 
-  // Called to notify observers when a refresh token is available.
-  void FireRefreshTokenAvailable(const std::string& account_id) override;
-  // Called to notify observers when a refresh token has been revoked.
-  void FireRefreshTokenRevoked(const std::string& account_id) override;
   // Called to notify observers when refresh tokans have been loaded.
   void FireRefreshTokensLoaded() override;
 

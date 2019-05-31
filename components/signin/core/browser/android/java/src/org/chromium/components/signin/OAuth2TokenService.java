@@ -11,7 +11,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ObserverList;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -60,21 +59,10 @@ public final class OAuth2TokenService
         void onGetTokenFailure(boolean isTransientError);
     }
 
-    /**
-     * Classes that want to listen for refresh token availability should
-     * implement this interface and register with {@link #addObserver}.
-     */
-    public interface OAuth2TokenServiceObserver {
-        void onRefreshTokenAvailable(Account account);
-        void onRefreshTokenRevoked(Account account);
-        void onRefreshTokensLoaded();
-    }
-
     private static final String OAUTH2_SCOPE_PREFIX = "oauth2:";
 
     private final long mNativeOAuth2TokenServiceDelegate;
     private final AccountTrackerService mAccountTrackerService;
-    private final ObserverList<OAuth2TokenServiceObserver> mObservers = new ObserverList<>();
 
     private boolean mPendingUpdate;
 
@@ -91,18 +79,6 @@ public final class OAuth2TokenService
             long nativeOAuth2TokenServiceDelegate, AccountTrackerService accountTrackerService) {
         ThreadUtils.assertOnUiThread();
         return new OAuth2TokenService(nativeOAuth2TokenServiceDelegate, accountTrackerService);
-    }
-
-    @VisibleForTesting
-    public void addObserver(OAuth2TokenServiceObserver observer) {
-        ThreadUtils.assertOnUiThread();
-        mObservers.addObserver(observer);
-    }
-
-    @VisibleForTesting
-    public void removeObserver(OAuth2TokenServiceObserver observer) {
-        ThreadUtils.assertOnUiThread();
-        mObservers.removeObserver(observer);
     }
 
     private static Account getAccountOrNullFromUsername(String username) {
@@ -314,31 +290,6 @@ public final class OAuth2TokenService
             if (accountName.equals(signedInAccountName)) return false;
         }
         return true;
-    }
-
-    @CalledByNative
-    private void notifyRefreshTokenAvailable(String accountName) {
-        assert accountName != null;
-        Account account = AccountManagerFacade.createAccountFromName(accountName);
-        for (OAuth2TokenServiceObserver observer : mObservers) {
-            observer.onRefreshTokenAvailable(account);
-        }
-    }
-
-    @CalledByNative
-    public void notifyRefreshTokenRevoked(String accountName) {
-        assert accountName != null;
-        Account account = AccountManagerFacade.createAccountFromName(accountName);
-        for (OAuth2TokenServiceObserver observer : mObservers) {
-            observer.onRefreshTokenRevoked(account);
-        }
-    }
-
-    @CalledByNative
-    public void notifyRefreshTokensLoaded() {
-        for (OAuth2TokenServiceObserver observer : mObservers) {
-            observer.onRefreshTokensLoaded();
-        }
     }
 
     private static String[] getStoredAccounts() {

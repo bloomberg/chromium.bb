@@ -420,54 +420,10 @@ bool OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
   return keep_accounts;
 }
 
-void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable(
-    const std::string& account_id) {
-  DCHECK(!account_id.empty());
-  DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable id="
-           << account_id;
-  std::string account_name = MapAccountIdToAccountName(account_id);
-  DCHECK(!account_name.empty())
-      << "Cannot find account name for account id " << account_id;
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_account_name =
-      ConvertUTF8ToJavaString(env, account_name);
-  Java_OAuth2TokenService_notifyRefreshTokenAvailable(env, java_ref_,
-                                                      j_account_name);
-  OAuth2TokenServiceDelegate::FireRefreshTokenAvailable(account_id);
-}
-
-void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked(
-    const std::string& account_id) {
-  DCHECK(!account_id.empty());
-  DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked id="
-           << account_id;
-  std::string account_name = MapAccountIdToAccountName(account_id);
-  if (!account_name.empty()) {
-    JNIEnv* env = AttachCurrentThread();
-    ScopedJavaLocalRef<jstring> j_account_name =
-        ConvertUTF8ToJavaString(env, account_name);
-    Java_OAuth2TokenService_notifyRefreshTokenRevoked(env, java_ref_,
-                                                      j_account_name);
-  } else {
-    // Current prognosis is that we have an unmigrated account which is due for
-    // deletion. Record a histogram to debug this.
-    UMA_HISTOGRAM_ENUMERATION("OAuth2Login.AccountRevoked.MigrationState",
-                              account_tracker_service_->GetMigrationState(),
-                              AccountTrackerService::NUM_MIGRATION_STATES);
-    bool is_email_id = account_id.find('@') != std::string::npos;
-    UMA_HISTOGRAM_BOOLEAN("OAuth2Login.AccountRevoked.IsEmailId", is_email_id);
-  }
-  OAuth2TokenServiceDelegate::FireRefreshTokenRevoked(account_id);
-}
-
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoaded() {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoaded";
-
   DCHECK_EQ(LOAD_CREDENTIALS_IN_PROGRESS, load_credentials_state());
   set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
-
-  JNIEnv* env = AttachCurrentThread();
-  Java_OAuth2TokenService_notifyRefreshTokensLoaded(env, java_ref_);
   OAuth2TokenServiceDelegate::FireRefreshTokensLoaded();
 }
 
