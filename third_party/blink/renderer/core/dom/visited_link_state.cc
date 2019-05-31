@@ -69,10 +69,10 @@ static void InvalidateStyleForAllLinksRecursively(
     if (node.IsLink()) {
       if (invalidate_visited_link_hashes && IsHTMLAnchorElement(node))
         ToHTMLAnchorElement(node).InvalidateCachedVisitedLinkHash();
-      ToElement(node).PseudoStateChanged(CSSSelector::kPseudoLink);
-      ToElement(node).PseudoStateChanged(CSSSelector::kPseudoVisited);
-      ToElement(node).PseudoStateChanged(CSSSelector::kPseudoWebkitAnyLink);
-      ToElement(node).PseudoStateChanged(CSSSelector::kPseudoAnyLink);
+      To<Element>(node).PseudoStateChanged(CSSSelector::kPseudoLink);
+      To<Element>(node).PseudoStateChanged(CSSSelector::kPseudoVisited);
+      To<Element>(node).PseudoStateChanged(CSSSelector::kPseudoWebkitAnyLink);
+      To<Element>(node).PseudoStateChanged(CSSSelector::kPseudoAnyLink);
     }
     if (ShadowRoot* root = node.GetShadowRoot()) {
       InvalidateStyleForAllLinksRecursively(*root,
@@ -91,11 +91,11 @@ void VisitedLinkState::InvalidateStyleForAllLinks(
 static void InvalidateStyleForLinkRecursively(Node& root_node,
                                               LinkHash link_hash) {
   for (Node& node : NodeTraversal::StartsAt(root_node)) {
-    if (node.IsLink() && LinkHashForElement(ToElement(node)) == link_hash) {
-      ToElement(node).PseudoStateChanged(CSSSelector::kPseudoLink);
-      ToElement(node).PseudoStateChanged(CSSSelector::kPseudoVisited);
-      ToElement(node).PseudoStateChanged(CSSSelector::kPseudoWebkitAnyLink);
-      ToElement(node).PseudoStateChanged(CSSSelector::kPseudoAnyLink);
+    if (node.IsLink() && LinkHashForElement(To<Element>(node)) == link_hash) {
+      To<Element>(node).PseudoStateChanged(CSSSelector::kPseudoLink);
+      To<Element>(node).PseudoStateChanged(CSSSelector::kPseudoVisited);
+      To<Element>(node).PseudoStateChanged(CSSSelector::kPseudoWebkitAnyLink);
+      To<Element>(node).PseudoStateChanged(CSSSelector::kPseudoAnyLink);
     }
     if (ShadowRoot* root = node.GetShadowRoot())
       InvalidateStyleForLinkRecursively(*root, link_hash);

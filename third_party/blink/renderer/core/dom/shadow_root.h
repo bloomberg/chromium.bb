@@ -67,7 +67,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
 
   Element& host() const {
     DCHECK(ParentOrShadowHostNode());
-    return *ToElement(ParentOrShadowHostNode());
+    return *To<Element>(ParentOrShadowHostNode());
   }
   ShadowRootType GetType() const { return static_cast<ShadowRootType>(type_); }
   String mode() const {
@@ -210,9 +210,10 @@ inline void ShadowRoot::DistributeIfNeeded() {
 }
 
 inline ShadowRoot* Node::GetShadowRoot() const {
-  if (!IsElementNode())
+  auto* this_element = DynamicTo<Element>(this);
+  if (!this_element)
     return nullptr;
-  return ToElement(this)->GetShadowRoot();
+  return this_element->GetShadowRoot();
 }
 
 inline ShadowRoot* Element::ShadowRootIfV1() const {

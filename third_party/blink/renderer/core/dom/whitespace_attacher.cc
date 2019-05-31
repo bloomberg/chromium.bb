@@ -165,8 +165,8 @@ void WhitespaceAttacher::UpdateLastTextNodeFromDisplayContents() {
     return;
   }
 
-  DCHECK(!sibling->IsElementNode() ||
-         !ToElement(sibling)->HasDisplayContentsStyle());
+  auto* sibling_element = DynamicTo<Element>(sibling);
+  DCHECK(!sibling_element || !sibling_element->HasDisplayContentsStyle());
 
   for (; sibling && sibling != last_text_node_;
        sibling = LayoutTreeBuilderTraversal::NextLayoutSibling(*sibling)) {

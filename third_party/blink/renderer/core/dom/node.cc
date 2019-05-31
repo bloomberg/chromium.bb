@@ -224,9 +224,9 @@ void Node::DumpStatistics() {
     for (Node* node : liveNodeSet()) {
       if (node->hasRareData()) {
         ++nodesWithRareData;
-        if (node->isElementNode()) {
+        if (auto* element = DynamicTo<Element>(node)) {
           ++elementsWithRareData;
-          if (toElement(node)->hasNamedNodeMap())
+          if (element->hasNamedNodeMap())
             ++elementsWithNamedNodeMap;
         }
       }
@@ -236,7 +236,7 @@ void Node::DumpStatistics() {
           ++elementNodes;
 
           // Tag stats
-          Element* element = toElement(node);
+          auto* element = To<Element>(node);
           HashMap<String, size_t>::AddResult result =
               perTagCount.add(element->tagName(), 1);
           if (!result.isNewEntry)
@@ -423,8 +423,7 @@ Node* Node::PseudoAwareNextSibling() const {
 }
 
 Node* Node::PseudoAwareFirstChild() const {
-  if (IsElementNode()) {
-    const Element* current_element = ToElement(this);
+  if (const auto* current_element = DynamicTo<Element>(this)) {
     Node* first = current_element->GetPseudoElement(kPseudoIdBefore);
     if (first)
       return first;
@@ -438,8 +437,7 @@ Node* Node::PseudoAwareFirstChild() const {
 }
 
 Node* Node::PseudoAwareLastChild() const {
-  if (IsElementNode()) {
-    const Element* current_element = ToElement(this);
+  if (const auto* current_element = DynamicTo<Element>(this)) {
     Node* last = current_element->GetPseudoElement(kPseudoIdAfter);
     if (last)
       return last;
@@ -1058,7 +1056,7 @@ void Node::RecalcDistribution() {
 }
 
 void Node::SetIsLink(bool is_link) {
-  SetFlag(is_link && !SVGImage::IsInSVGImage(ToElement(this)), kIsLinkFlag);
+  SetFlag(is_link && !SVGImage::IsInSVGImage(To<Element>(this)), kIsLinkFlag);
 }
 
 void Node::SetNeedsStyleInvalidation() {
@@ -1111,9 +1109,9 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
     // If we reach a locked ancestor, we should abort since the ancestor marking
     // will be done when the lock is committed.
     if (RuntimeEnabledFeatures::DisplayLockingEnabled()) {
-      if (ancestor->IsElementNode() &&
-          ToElement(ancestor)->StyleRecalcBlockedByDisplayLock(
-              DisplayLockContext::kChildren)) {
+      auto* ancestor_element = DynamicTo<Element>(ancestor);
+      if (ancestor_element && ancestor_element->StyleRecalcBlockedByDisplayLock(
+                                  DisplayLockContext::kChildren)) {
         break;
       }
     }
@@ -1133,10 +1131,10 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
       GetDocument().LockedDisplayLockCount() > 0) {
     for (auto* ancestor_copy = ancestor; ancestor_copy;
          ancestor_copy = ancestor_copy->ParentOrShadowHostNode()) {
-      if (ancestor_copy->IsElementNode() &&
-          ToElement(ancestor_copy)
-              ->StyleRecalcBlockedByDisplayLock(
-                  DisplayLockContext::kChildren)) {
+      auto* ancestor_copy_element = DynamicTo<Element>(ancestor_copy);
+      if (ancestor_copy_element &&
+          ancestor_copy_element->StyleRecalcBlockedByDisplayLock(
+              DisplayLockContext::kChildren)) {
         return;
       }
     }
@@ -1208,13 +1206,14 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   if (change_type > existing_change_type)
     SetStyleChange(change_type);
 
+  auto* this_element = DynamicTo<Element>(this);
   if (existing_change_type == kNoStyleChange &&
-      (!IsElementNode() || !ToElement(this)->StyleRecalcBlockedByDisplayLock(
-                               DisplayLockContext::kSelf)))
+      (!this_element || !this_element->StyleRecalcBlockedByDisplayLock(
+                            DisplayLockContext::kSelf)))
     MarkAncestorsWithChildNeedsStyleRecalc();
 
-  if (IsElementNode() && HasRareData())
-    ToElement(*this).SetAnimationStyleChange(false);
+  if (this_element && HasRareData())
+    this_element->SetAnimationStyleChange(false);
 
   if (auto* svg_element = DynamicTo<SVGElement>(this))
     svg_element->SetNeedsStyleRecalcForInstances(change_type, reason);
@@ -1224,8 +1223,9 @@ void Node::ClearNeedsStyleRecalc() {
   node_flags_ &= ~kStyleChangeMask;
   ClearFlag(kForceReattachLayoutTree);
 
-  if (IsElementNode() && HasRareData())
-    ToElement(*this).SetAnimationStyleChange(false);
+  auto* element = DynamicTo<Element>(this);
+  if (element && HasRareData())
+    element->SetAnimationStyleChange(false);
 }
 
 bool Node::InActiveDocument() const {
@@ -1258,9 +1258,10 @@ bool Node::IsInert() const {
   }
 
   if (RuntimeEnabledFeatures::InertAttributeEnabled()) {
-    const Element* element = IsElementNode()
-                                 ? ToElement(this)
-                                 : FlatTreeTraversal::ParentElement(*this);
+    const auto* element = DynamicTo<Element>(this);
+    if (!element)
+      element = FlatTreeTraversal::ParentElement(*this);
+
     while (element) {
       if (element->hasAttribute(html_names::kInertAttr))
         return true;
@@ -1492,9 +1493,10 @@ bool Node::CanStartSelection() const {
 // eliminate all the checks since those elements will never have class names,
 // inline style, or other things that this apparently guards against.
 bool Node::IsStyledElement() const {
+  auto* this_element = DynamicTo<Element>(this);
   return IsHTMLElement() || IsSVGElement() ||
-         (IsElementNode() &&
-          ToElement(this)->namespaceURI() == mathml_names::kNamespaceURI);
+         (this_element &&
+          this_element->namespaceURI() == mathml_names::kNamespaceURI);
 }
 
 bool Node::CanParticipateInFlatTree() const {
@@ -1511,7 +1513,7 @@ AtomicString Node::SlotName() const {
   DCHECK(IsSlotable());
   if (IsElementNode()) {
     return HTMLSlotElement::NormalizeSlotName(
-        ToElement(*this).FastGetAttribute(html_names::kSlotAttr));
+        To<Element>(*this).FastGetAttribute(html_names::kSlotAttr));
   }
   DCHECK(IsTextNode());
   return g_empty_atom;
@@ -1586,10 +1588,7 @@ Element* Node::ParentOrShadowHostElement() const {
   if (auto* shadow_root = DynamicTo<ShadowRoot>(parent))
     return &shadow_root->host();
 
-  if (!parent->IsElementNode())
-    return nullptr;
-
-  return ToElement(parent);
+  return DynamicTo<Element>(parent);
 }
 
 ContainerNode* Node::ParentOrShadowHostOrTemplateHostNode() const {
@@ -1626,11 +1625,12 @@ bool Node::isEqualNode(Node* other) const {
 
     if (this_attr->namespaceURI() != other_attr->namespaceURI())
       return false;
-  } else if (IsElementNode()) {
-    if (ToElement(this)->TagQName() != ToElement(other)->TagQName())
+  } else if (auto* this_element = DynamicTo<Element>(this)) {
+    auto* other_element = DynamicTo<Element>(other);
+    if (this_element->TagQName() != other_element->TagQName())
       return false;
 
-    if (!ToElement(this)->HasEquivalentAttributes(ToElement(*other)))
+    if (!this_element->HasEquivalentAttributes(*other_element))
       return false;
   } else if (nodeName() != other->nodeName()) {
     return false;
@@ -1693,7 +1693,7 @@ const AtomicString& Node::lookupPrefix(
 
   switch (getNodeType()) {
     case kElementNode:
-      context = ToElement(this);
+      context = To<Element>(this);
       break;
     case kDocumentNode:
       context = To<Document>(this)->documentElement();
@@ -1732,7 +1732,7 @@ const AtomicString& Node::lookupNamespaceURI(
   // https://dom.spec.whatwg.org/#locate-a-namespace
   switch (getNodeType()) {
     case kElementNode: {
-      const Element& element = ToElement(*this);
+      const auto& element = To<Element>(*this);
 
       // 1. If its namespace is not null and its namespace prefix is prefix,
       // then return namespace.
@@ -2008,20 +2008,19 @@ uint16_t Node::compareDocumentPosition(const Node* other_node,
 String Node::DebugName() const {
   StringBuilder name;
   AppendUnsafe(name, DebugNodeName());
-  if (IsElementNode()) {
-    const Element& this_element = ToElement(*this);
-    if (this_element.HasID()) {
+  if (const auto* this_element = DynamicTo<Element>(this)) {
+    if (this_element->HasID()) {
       name.Append(" id=\'");
-      AppendUnsafe(name, this_element.GetIdAttribute());
+      AppendUnsafe(name, this_element->GetIdAttribute());
       name.Append('\'');
     }
 
-    if (this_element.HasClass()) {
+    if (this_element->HasClass()) {
       name.Append(" class=\'");
-      for (wtf_size_t i = 0; i < this_element.ClassNames().size(); ++i) {
+      for (wtf_size_t i = 0; i < this_element->ClassNames().size(); ++i) {
         if (i > 0)
           name.Append(' ');
-        AppendUnsafe(name, this_element.ClassNames()[i]);
+        AppendUnsafe(name, this_element->ClassNames()[i]);
       }
       name.Append('\'');
     }
@@ -2036,9 +2035,10 @@ String Node::DebugNodeName() const {
 static void DumpAttributeDesc(const Node& node,
                               const QualifiedName& name,
                               StringBuilder& builder) {
-  if (!node.IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return;
-  const AtomicString& value = ToElement(node).getAttribute(name);
+  const AtomicString& value = element->getAttribute(name);
   if (value.IsEmpty())
     return;
   builder.Append(' ');
@@ -2116,7 +2116,7 @@ void Node::PrintNodePathTo(std::ostream& stream) const {
       case kElementNode: {
         stream << "/" << node->nodeName().Utf8().data();
 
-        const Element* element = ToElement(node);
+        const auto* element = To<Element>(node);
         const AtomicString& idattr = element->GetIdAttribute();
         bool has_id_attr = !idattr.IsNull() && !idattr.IsEmpty();
         if (node->previousSibling() || node->nextSibling()) {
@@ -2171,18 +2171,17 @@ static void AppendMarkedTree(const String& base_indent,
     builder.Append("\n");
     indent.Append('\t');
 
-    if (node.IsElementNode()) {
-      const Element& element = ToElement(node);
-      if (Element* pseudo = element.GetPseudoElement(kPseudoIdBefore))
+    if (const auto* element = DynamicTo<Element>(node)) {
+      if (Element* pseudo = element->GetPseudoElement(kPseudoIdBefore))
         AppendMarkedTree(indent.ToString(), pseudo, marked_node1, marked_label1,
                          marked_node2, marked_label2, builder);
-      if (Element* pseudo = element.GetPseudoElement(kPseudoIdAfter))
+      if (Element* pseudo = element->GetPseudoElement(kPseudoIdAfter))
         AppendMarkedTree(indent.ToString(), pseudo, marked_node1, marked_label1,
                          marked_node2, marked_label2, builder);
-      if (Element* pseudo = element.GetPseudoElement(kPseudoIdFirstLetter))
+      if (Element* pseudo = element->GetPseudoElement(kPseudoIdFirstLetter))
         AppendMarkedTree(indent.ToString(), pseudo, marked_node1, marked_label1,
                          marked_node2, marked_label2, builder);
-      if (Element* pseudo = element.GetPseudoElement(kPseudoIdBackdrop))
+      if (Element* pseudo = element->GetPseudoElement(kPseudoIdBackdrop))
         AppendMarkedTree(indent.ToString(), pseudo, marked_node1, marked_label1,
                          marked_node2, marked_label2, builder);
     }
@@ -2303,7 +2302,7 @@ Element* Node::EnclosingLinkEventParentOrSelf() const {
     if (node->IsLink() && !IsHTMLImageElement(*node)) {
       // Casting to Element is safe because only HTMLAnchorElement,
       // HTMLImageElement and SVGAElement can return true for isLink().
-      return ToElement(const_cast<Node*>(node));
+      return To<Element>(const_cast<Node*>(node));
     }
   }
 
@@ -2326,11 +2325,11 @@ void Node::WillMoveToNewDocument(Document& old_document,
 
   old_document.GetFrame()->GetEventHandlerRegistry().DidMoveOutOfPage(*this);
 
-  if (IsElementNode()) {
+  if (auto* this_element = DynamicTo<Element>(this)) {
     StylePropertyMapReadOnly* computed_style_map_item =
-        old_document.RemoveComputedStyleMapItem(ToElement(this));
+        old_document.RemoveComputedStyleMapItem(this_element);
     if (computed_style_map_item) {
-      new_document.AddComputedStyleMapItem(ToElement(this),
+      new_document.AddComputedStyleMapItem(this_element,
                                            computed_style_map_item);
     }
   }
@@ -2933,7 +2932,7 @@ void Node::SetCustomElementState(CustomElementState new_state) {
   DCHECK(IsHTMLElement());
   DCHECK_NE(kV0Upgraded, GetV0CustomElementState());
 
-  Element* element = ToElement(this);
+  auto* element = To<Element>(this);
   bool was_defined = element->IsDefined();
 
   node_flags_ = (node_flags_ & ~kCustomElementStateMask) |
@@ -2971,8 +2970,8 @@ void Node::SetV0CustomElementState(V0CustomElementState new_state) {
   SetFlag(new_state == kV0Upgraded, kV0CustomElementUpgradedFlag);
 
   if (old_state == kV0NotCustomElement || new_state == kV0Upgraded) {
-    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
-    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoDefined);
+    To<Element>(this)->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
+    To<Element>(this)->PseudoStateChanged(CSSSelector::kPseudoDefined);
   }
 }
 

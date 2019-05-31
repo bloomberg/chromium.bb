@@ -91,8 +91,7 @@ class CORE_EXPORT LayoutTreeBuilderTraversal {
   static LayoutObject* NextInTopLayer(const Element&);
 
   static inline Element* ParentElement(const Node& node) {
-    ContainerNode* found = Parent(node);
-    return found && found->IsElementNode() ? ToElement(found) : nullptr;
+    return DynamicTo<Element>(Parent(node));
   }
 
  private:

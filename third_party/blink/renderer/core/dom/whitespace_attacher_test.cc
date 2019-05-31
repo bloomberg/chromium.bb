@@ -256,7 +256,7 @@ TEST_F(WhitespaceAttacherTest,
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = GetDocument().getElementById("block");
-  Element* contents = ToElement(div->nextSibling());
+  auto* contents = To<Element>(div->nextSibling());
   auto* text = To<Text>(contents->firstChild());
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_FALSE(text->GetLayoutObject());
@@ -282,7 +282,7 @@ TEST_F(WhitespaceAttacherTest,
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
-  Element* contents = ToElement(span->nextSibling());
+  auto* contents = To<Element>(span->nextSibling());
   auto* text = To<Text>(contents->firstChild());
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_TRUE(text->GetLayoutObject());
@@ -307,7 +307,7 @@ TEST_F(WhitespaceAttacherTest,
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = GetDocument().getElementById("block");
-  Element* contents = ToElement(div->nextSibling());
+  auto* contents = To<Element>(div->nextSibling());
   auto* text = To<Text>(contents->nextSibling());
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_FALSE(text->GetLayoutObject());
@@ -335,7 +335,7 @@ TEST_F(WhitespaceAttacherTest,
   UpdateAllLifecyclePhasesForTest();
 
   Element* div = GetDocument().getElementById("block");
-  Element* contents = ToElement(div->nextSibling());
+  auto* contents = To<Element>(div->nextSibling());
   auto* text = To<Text>(contents->nextSibling());
   EXPECT_FALSE(contents->GetLayoutObject());
   EXPECT_FALSE(text->GetLayoutObject());
@@ -363,7 +363,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceDeepInsideDisplayContents) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
-  Element* contents = ToElement(span->nextSibling());
+  auto* contents = To<Element>(span->nextSibling());
   auto* text = To<Text>(GetDocument().getElementById("inner")->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
@@ -389,9 +389,9 @@ TEST_F(WhitespaceAttacherTest, MultipleDisplayContents) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = GetDocument().getElementById("inline");
-  Element* first_contents = ToElement(span->nextSibling());
-  Element* second_contents = ToElement(first_contents->nextSibling());
-  Element* last_contents = ToElement(second_contents->nextSibling());
+  auto* first_contents = To<Element>(span->nextSibling());
+  auto* second_contents = To<Element>(first_contents->nextSibling());
+  auto* last_contents = To<Element>(second_contents->nextSibling());
   auto* text = To<Text>(last_contents->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 
@@ -423,7 +423,7 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceInsideDisplayContents) {
   UpdateAllLifecyclePhasesForTest();
 
   Element* span = shadow_root.getElementById("inline");
-  Element* contents = ToElement(span->nextSibling());
+  auto* contents = To<Element>(span->nextSibling());
   auto* text = To<Text>(host->firstChild());
   EXPECT_TRUE(text->GetLayoutObject());
 

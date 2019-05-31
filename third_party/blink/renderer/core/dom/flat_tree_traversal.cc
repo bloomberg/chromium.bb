@@ -40,9 +40,8 @@ void FlatTreeTraversal::AssertFlatTreeNodeDataUpdated(
     int& assigned_nodes_in_slot_count,
     int& nodes_which_have_assigned_slot_count) {
   for (Node& node : NodeTraversal::StartsAt(root)) {
-    if (node.IsElementNode()) {
-      Element& element = ToElement(node);
-      if (ShadowRoot* shadow_root = element.ShadowRootIfV1()) {
+    if (auto* element = DynamicTo<Element>(node)) {
+      if (ShadowRoot* shadow_root = element->ShadowRootIfV1()) {
         DCHECK(!shadow_root->NeedsSlotAssignmentRecalc());
         AssertFlatTreeNodeDataUpdated(*shadow_root,
                                       assigned_nodes_in_slot_count,

@@ -265,7 +265,7 @@ Element* TreeScope::HitTestPointInternal(Node* node,
   if (node->IsPseudoElement() || node->IsTextNode())
     element = node->ParentOrShadowHostElement();
   else
-    element = ToElement(node);
+    element = To<Element>(node);
   if (!element)
     return nullptr;
   if (type == HitTestPointType::kWebExposed)
@@ -302,8 +302,8 @@ HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
     if (node == last_node)
       continue;
 
-    if (node && node->IsElementNode()) {
-      elements.push_back(ToElement(node));
+    if (auto* element = DynamicTo<Element>(node)) {
+      elements.push_back(element);
       last_node = node;
     }
   }
@@ -489,8 +489,8 @@ Element* TreeScope::AdjustedFocusedElement() const {
       // - InsertionPoint
       // - shadow host
       // - Document::focusedElement()
-      // So, it's safe to do toElement().
-      return ToElement(context.Target()->ToNode());
+      // So, it's safe to do To<Element>().
+      return To<Element>(context.Target()->ToNode());
     }
   }
   return nullptr;

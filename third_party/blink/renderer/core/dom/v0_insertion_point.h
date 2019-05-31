@@ -112,8 +112,8 @@ inline ShadowRoot* ShadowRootWhereNodeCanBeDistributedForV0(const Node& node) {
     return nullptr;
   if (IsActiveV0InsertionPoint(*parent))
     return node.ContainingShadowRoot();
-  if (parent->IsElementNode())
-    return ToElement(parent)->GetShadowRoot();
+  if (auto* parent_element = DynamicTo<Element>(parent))
+    return parent_element->GetShadowRoot();
   return nullptr;
 }
 

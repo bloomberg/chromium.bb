@@ -34,13 +34,15 @@
 namespace blink {
 
 inline static bool HasDisplayContentsStyle(const Node& node) {
-  return node.IsElementNode() && ToElement(node).HasDisplayContentsStyle();
+  auto* element = DynamicTo<Element>(node);
+  return element && element->HasDisplayContentsStyle();
 }
 
 static bool IsLayoutObjectReparented(const LayoutObject* layout_object) {
-  if (!layout_object->GetNode()->IsElementNode())
+  auto* element = DynamicTo<Element>(layout_object->GetNode());
+  if (!element)
     return false;
-  return ToElement(layout_object->GetNode())->IsInTopLayer();
+  return element->IsInTopLayer();
 }
 
 void LayoutTreeBuilderTraversal::ParentDetails::DidTraverseInsertionPoint(
@@ -97,9 +99,9 @@ Node* LayoutTreeBuilderTraversal::NextSibling(const Node& node) {
       return next;
   }
 
-  Node* parent = FlatTreeTraversal::Parent(node);
-  if (parent && parent->IsElementNode())
-    return ToElement(parent)->GetPseudoElement(kPseudoIdAfter);
+  if (auto* parent_element =
+          DynamicTo<Element>(FlatTreeTraversal::Parent(node)))
+    return parent_element->GetPseudoElement(kPseudoIdAfter);
 
   return nullptr;
 }
@@ -116,24 +118,24 @@ Node* LayoutTreeBuilderTraversal::PreviousSibling(const Node& node) {
       return previous;
   }
 
-  Node* parent = FlatTreeTraversal::Parent(node);
-  if (parent && parent->IsElementNode())
-    return ToElement(parent)->GetPseudoElement(kPseudoIdBefore);
+  if (auto* parent_element =
+          DynamicTo<Element>(FlatTreeTraversal::Parent(node)))
+    return parent_element->GetPseudoElement(kPseudoIdBefore);
 
   return nullptr;
 }
 
 Node* LayoutTreeBuilderTraversal::LastChild(const Node& node) {
-  if (!node.IsElementNode())
+  const auto* current_element = DynamicTo<Element>(node);
+  if (!current_element)
     return FlatTreeTraversal::LastChild(node);
 
-  const Element& current_element = ToElement(node);
-  Node* last = current_element.GetPseudoElement(kPseudoIdAfter);
+  Node* last = current_element->GetPseudoElement(kPseudoIdAfter);
   if (last)
     return last;
-  last = FlatTreeTraversal::LastChild(current_element);
+  last = FlatTreeTraversal::LastChild(*current_element);
   if (!last)
-    last = current_element.GetPseudoElement(kPseudoIdBefore);
+    last = current_element->GetPseudoElement(kPseudoIdBefore);
   return last;
 }
 
@@ -151,16 +153,16 @@ Node* LayoutTreeBuilderTraversal::Previous(const Node& node,
 }
 
 Node* LayoutTreeBuilderTraversal::FirstChild(const Node& node) {
-  if (!node.IsElementNode())
+  const auto* current_element = DynamicTo<Element>(node);
+  if (!current_element)
     return FlatTreeTraversal::FirstChild(node);
 
-  const Element& current_element = ToElement(node);
-  Node* first = current_element.GetPseudoElement(kPseudoIdBefore);
+  Node* first = current_element->GetPseudoElement(kPseudoIdBefore);
   if (first)
     return first;
   first = FlatTreeTraversal::FirstChild(node);
   if (!first)
-    first = current_element.GetPseudoElement(kPseudoIdAfter);
+    first = current_element->GetPseudoElement(kPseudoIdAfter);
   return first;
 }
 

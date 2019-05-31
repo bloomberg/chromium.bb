@@ -207,8 +207,7 @@ inline ContainerNode* FlatTreeTraversal::Parent(
 }
 
 inline Element* FlatTreeTraversal::ParentElement(const Node& node) {
-  ContainerNode* parent = FlatTreeTraversal::Parent(node);
-  return parent && parent->IsElementNode() ? ToElement(parent) : nullptr;
+  return DynamicTo<Element>(FlatTreeTraversal::Parent(node));
 }
 
 inline Node* FlatTreeTraversal::NextSibling(const Node& node) {

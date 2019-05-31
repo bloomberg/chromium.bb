@@ -267,7 +267,7 @@ inline Element* Traversal<Element>::NextTemplate(NodeType& current) {
   Node* node = NodeTraversal::Next(current);
   while (node && !node->IsElementNode())
     node = NodeTraversal::NextSkippingChildren(*node);
-  return ToElement(node);
+  return To<Element>(node);
 }
 
 template <>
@@ -277,7 +277,7 @@ inline Element* Traversal<Element>::NextTemplate(NodeType& current,
   Node* node = NodeTraversal::Next(current, stay_within);
   while (node && !node->IsElementNode())
     node = NodeTraversal::NextSkippingChildren(*node, stay_within);
-  return ToElement(node);
+  return To<Element>(node);
 }
 
 // Generic versions.

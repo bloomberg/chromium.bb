@@ -994,8 +994,8 @@ DocumentFragment* Range::createContextualFragmentFromString(
   if (!start_.Offset() &&
       (node->IsDocumentNode() || node->IsDocumentFragment()))
     element = nullptr;
-  else if (node->IsElementNode())
-    element = ToElement(node);
+  else if (auto* node_element = DynamicTo<Element>(node))
+    element = node_element;
   else
     element = node->parentElement();
 
@@ -1676,11 +1676,12 @@ void Range::GetBorderAndTextQuads(Vector<FloatQuad>& quads) const {
 
   for (const Node* node = FirstNode(); node != stop_node;
        node = NodeTraversal::Next(*node)) {
-    if (node->IsElementNode()) {
+    auto* element_node = DynamicTo<Element>(node);
+    if (element_node) {
       if (!selected_elements.Contains(node) ||
           selected_elements.Contains(node->parentNode()))
         continue;
-      LayoutObject* const layout_object = ToElement(node)->GetLayoutObject();
+      LayoutObject* const layout_object = element_node->GetLayoutObject();
       if (!layout_object)
         continue;
       Vector<FloatQuad> element_quads;

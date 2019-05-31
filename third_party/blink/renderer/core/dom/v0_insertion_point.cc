@@ -147,8 +147,8 @@ void V0InsertionPoint::DidRecalcStyle(const StyleRecalcChange change) {
     Node* node = distributed_nodes_.at(i);
     if (!change.TraverseChild(*node))
       continue;
-    if (node->IsElementNode())
-      ToElement(node)->RecalcStyle(change);
+    if (auto* this_element = DynamicTo<Element>(node))
+      this_element->RecalcStyle(change);
     else if (auto* text_node = DynamicTo<Text>(node))
       text_node->RecalcTextStyle(change);
   }
