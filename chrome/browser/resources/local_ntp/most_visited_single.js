@@ -317,6 +317,9 @@ class Grid {
     this.itemToReorder_ = -1;
     /** @private {number} The index to move the tile we're reordering to. */
     this.newIndexOfItemToReorder_ = -1;
+
+    /** @private {boolean} True if the user is currently touching a tile. */
+    this.touchStarted_ = false;
   }
 
 
@@ -523,17 +526,64 @@ class Grid {
    */
   setupReorder_(tile, index) {
     tile.setAttribute('index', index);
+
+    // Set up mouse support.
     // Listen for the drag event on the tile instead of the tile container. The
     // tile container remains static during the reorder flow.
     tile.firstChild.draggable = true;
     tile.firstChild.addEventListener('dragstart', (event) => {
-      this.startReorder_(tile, event);
+      this.startReorder_(tile, event, /*mouseMode=*/ true);
     });
     // Listen for the mouseover event on the tile container. If this is placed
     // on the tile instead, it can be triggered while the tile is translated to
     // its new position.
     tile.addEventListener('mouseover', (event) => {
       this.reorderToIndex_(index);
+    });
+
+    // Set up touch support.
+    tile.firstChild.addEventListener('touchstart', (startEvent) => {
+      // Ignore subsequent touchstart events, which can be triggered if a
+      // different finger is placed on this tile.
+      if (this.touchStarted_) {
+        return;
+      }
+      this.touchStarted_ = true;
+
+      // Start the reorder flow once the user moves their finger.
+      const startReorder = (moveEvent) => {
+        // Use the cursor position from 'touchstart' as the starting location.
+        this.startReorder_(tile, startEvent, /*mouseMode=*/ false);
+      };
+      // Insert the held tile at the index we are hovering over.
+      const moveOver = (moveEvent) => {
+        // Touch events do not have a 'mouseover' equivalent, so we need to
+        // manually check if we are hovering over a tile.
+        // Note: The first item in |changedTouches| is the current position.
+        const x = moveEvent.changedTouches[0].pageX;
+        const y = moveEvent.changedTouches[0].pageY;
+        const elements = document.elementsFromPoint(x, y);
+        for (let i = 0; i < elements.length; i++) {
+          if (elements[i].classList.contains('grid-tile-container')) {
+            this.reorderToIndex_(Number(elements[i].getAttribute('index')));
+            break;
+          }
+        }
+      };
+      // Allow 'touchstart' events again when reordering stops/was never
+      // started.
+      const touchEnd = (endEvent) => {
+        tile.firstChild.removeEventListener('touchmove', startReorder);
+        tile.firstChild.removeEventListener('touchmove', moveOver);
+        tile.firstChild.removeEventListener('touchend', touchEnd);
+        tile.firstChild.removeEventListener('touchcancel', touchEnd);
+        this.touchStarted_ = false;
+      };
+
+      tile.firstChild.addEventListener('touchmove', startReorder, {once: true});
+      tile.firstChild.addEventListener('touchmove', moveOver);
+      tile.firstChild.addEventListener('touchend', touchEnd, {once: true});
+      tile.firstChild.addEventListener('touchcancel', touchEnd, {once: true});
     });
   }
 
@@ -542,11 +592,12 @@ class Grid {
    * Starts the reorder flow. Updates the visual style of the held tile to
    * indicate that it is being moved and sets up the relevant event listeners.
    * @param {!Element} tile Tile that is being moved.
-   * @param {!Event} event The 'dragstart' event. Used to obtain the current
-   *     cursor position
+   * @param {!Event} event The 'dragstart'/'touchmove' event. Used to obtain the
+   *     current cursor position
+   * @param {boolean} mouseMode True if the user is using a mouse.
    * @private
    */
-  startReorder_(tile, event) {
+  startReorder_(tile, event, mouseMode) {
     const index = Number(tile.getAttribute('index'));
 
     this.itemToReorder_ = index;
@@ -557,13 +608,31 @@ class Grid {
     // Disable other hover/active styling for all tiles.
     document.body.classList.add(CLASSES.REORDERING);
 
-    // Set up event listeners for the reorder flow.
-    const mouseMove = this.trackCursor_(tile, event.pageX, event.pageY);
-    document.addEventListener('mousemove', mouseMove);
-    document.addEventListener('mouseup', () => {
-      document.removeEventListener('mousemove', mouseMove);
-      this.stopReorder_(tile);
-    }, {once: true});
+    // Set up event listeners for the reorder flow. Listen for mouse events if
+    // |mouseMode|, touch events otherwise.
+    if (mouseMode) {
+      const mouseMove = this.trackCursor_(tile, event.pageX, event.pageY, true);
+      document.addEventListener('mousemove', mouseMove);
+      document.addEventListener('mouseup', () => {
+        document.removeEventListener('mousemove', mouseMove);
+        this.stopReorder_(tile);
+      }, {once: true});
+    } else {
+      // Track the cursor on subsequent 'touchmove' events (the first
+      // 'touchmove' event that starts the reorder flow is ignored).
+      const trackCursor = this.trackCursor_(
+          tile, event.changedTouches[0].pageX, event.changedTouches[0].pageY,
+          false);
+      const touchEnd = (event) => {
+        tile.firstChild.removeEventListener('touchmove', trackCursor);
+        tile.firstChild.removeEventListener('touchend', touchEnd);
+        tile.firstChild.removeEventListener('touchcancel', touchEnd);
+        this.stopReorder_(tile);  // Stop the reorder flow.
+      };
+      tile.firstChild.addEventListener('touchmove', trackCursor);
+      tile.firstChild.addEventListener('touchend', touchEnd, {once: true});
+      tile.firstChild.addEventListener('touchcancel', touchEnd, {once: true});
+    }
   }
 
 
@@ -646,9 +715,10 @@ class Grid {
    * @param {!Element} tile Tile that is being moved.
    * @param {number} origCursorX Original x cursor position.
    * @param {number} origCursorY Original y cursor position.
+   * @param {boolean} mouseMode True if the user is using a mouse.
    * @private
    */
-  trackCursor_(tile, origCursorX, origCursorY) {
+  trackCursor_(tile, origCursorX, origCursorY, mouseMode) {
     const index = Number(tile.getAttribute('index'));
     // RTL positions align with the right side of the grid. Therefore, the x
     // value must be recalculated to align with the left.
@@ -668,9 +738,11 @@ class Grid {
     const minY = 0 - origPosY;
 
     return (event) => {
+      const currX = mouseMode ? event.pageX : event.changedTouches[0].pageX;
+      const currY = mouseMode ? event.pageY : event.changedTouches[0].pageY;
       // Do not exceed the iframe borders.
-      const x = Math.max(Math.min(event.pageX - origCursorX, maxX), minX);
-      const y = Math.max(Math.min(event.pageY - origCursorY, maxY), minY);
+      const x = Math.max(Math.min(currX - origCursorX, maxX), minX);
+      const y = Math.max(Math.min(currY - origCursorY, maxY), minY);
       tile.firstChild.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
     };
   }
