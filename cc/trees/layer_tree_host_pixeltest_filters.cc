@@ -81,14 +81,6 @@ INSTANTIATE_TEST_SUITE_P(,
                                            LayerTreeTest::RENDERER_SKIA_GL,
                                            LayerTreeTest::RENDERER_SOFTWARE));
 
-using LayerTreeHostFiltersPixelTestNonSkia = LayerTreeHostFiltersPixelTest;
-
-// TODO(crbug.com/948128): Enable these tests for Skia.
-INSTANTIATE_TEST_SUITE_P(,
-                         LayerTreeHostFiltersPixelTestNonSkia,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SOFTWARE));
-
 using LayerTreeHostFiltersPixelTestGL = LayerTreeHostFiltersPixelTest;
 
 // TODO(crbug.com/948128): Enable these tests for Skia.
@@ -662,7 +654,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageRenderSurfaceScaled) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestNonSkia, ZoomFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, ZoomFilter) {
   scoped_refptr<SolidColorLayer> root =
       CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorWHITE);
 

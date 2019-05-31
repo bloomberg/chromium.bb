@@ -1632,8 +1632,19 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   // Convert CC image filters for the backdrop into a SkImageFilter root node
   if (backdrop_filters) {
     DCHECK(!backdrop_filters->IsEmpty());
+
+    // Must account for clipping that occurs for backdrop filters, since their
+    // input content has already been clipped to the output rect.
+    gfx::Rect deviceRect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
+        params->content_device_transform, gfx::RectF(quad->rect)));
+    gfx::Rect outRect = MoveFromDrawToWindowSpace(
+        current_frame()->current_render_pass->output_rect);
+    outRect.Intersect(deviceRect);
+    gfx::Vector2dF offset = (deviceRect.top_right() - outRect.top_right()) +
+                            (deviceRect.bottom_left() - outRect.bottom_left());
+
     auto bg_paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-        *backdrop_filters, filter_size);
+        *backdrop_filters, gfx::SizeF(outRect.size()), offset);
     auto sk_bg_filter =
         bg_paint_filter ? bg_paint_filter->cached_sk_filter_ : nullptr;
 
