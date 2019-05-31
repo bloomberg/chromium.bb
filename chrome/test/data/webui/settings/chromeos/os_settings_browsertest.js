@@ -59,6 +59,13 @@ var OSSettingsSmbPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsSmbPageTest', 'All', function() {
+// OSSettingsSmbPageTest.All is flaky on debug. See https://crbug.com/968608.
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+
+TEST_F('OSSettingsSmbPageTest', 'MAYBE_All', function() {
   mocha.run();
 });
