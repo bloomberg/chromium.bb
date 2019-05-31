@@ -85,8 +85,8 @@ struct BLINK_COMMON_EXPORT Manifest {
     };
 
     enum class Enctype {
-      kApplication,
-      kMultipart,
+      kFormUrlEncoded,
+      kMultipartFormData,
     };
 
     ShareTarget();

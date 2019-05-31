@@ -1662,7 +1662,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kGet);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kApplication);
+              mojom::blink::ManifestShareTarget::Enctype::kFormUrlEncoded);
   }
 
   // Auto-fill in "GET" for method and "application/x-www-form-urlencoded" for
@@ -1677,7 +1677,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kGet);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kApplication);
+              mojom::blink::ManifestShareTarget::Enctype::kFormUrlEncoded);
   }
 
   // Invalid method values, return undefined.
@@ -1743,7 +1743,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kPost);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kApplication);
+              mojom::blink::ManifestShareTarget::Enctype::kFormUrlEncoded);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1759,7 +1759,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kPost);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kMultipart);
+              mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1775,7 +1775,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kPost);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kMultipart);
+              mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1791,7 +1791,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kPost);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kMultipart);
+              mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData);
     EXPECT_EQ(0u, GetErrorCount());
   }
 

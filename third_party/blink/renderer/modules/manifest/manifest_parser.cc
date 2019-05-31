@@ -519,7 +519,7 @@ ManifestParser::ParseShareTargetEnctype(const JSONObject* share_target_object) {
         "Enctype should be set to either application/x-www-form-urlencoded or "
         "multipart/form-data. It currently defaults to "
         "application/x-www-form-urlencoded");
-    return mojom::blink::ManifestShareTarget::Enctype::kApplication;
+    return mojom::blink::ManifestShareTarget::Enctype::kFormUrlEncoded;
   }
 
   String value;
@@ -528,10 +528,10 @@ ManifestParser::ParseShareTargetEnctype(const JSONObject* share_target_object) {
 
   String enctype = value.LowerASCII();
   if (enctype == "application/x-www-form-urlencoded")
-    return mojom::blink::ManifestShareTarget::Enctype::kApplication;
+    return mojom::blink::ManifestShareTarget::Enctype::kFormUrlEncoded;
 
   if (enctype == "multipart/form-data")
-    return mojom::blink::ManifestShareTarget::Enctype::kMultipart;
+    return mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData;
 
   return base::nullopt;
 }
@@ -603,7 +603,7 @@ ManifestParser::ParseShareTarget(const JSONObject* object) {
 
   if (share_target->method == mojom::blink::ManifestShareTarget::Method::kGet) {
     if (share_target->enctype ==
-        mojom::blink::ManifestShareTarget::Enctype::kMultipart) {
+        mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData) {
       AddErrorInfo(
           "invalid enctype for GET method. Only "
           "application/x-www-form-urlencoded is allowed.");
@@ -615,7 +615,7 @@ ManifestParser::ParseShareTarget(const JSONObject* object) {
     if (share_target->method !=
             mojom::blink::ManifestShareTarget::Method::kPost ||
         share_target->enctype !=
-            mojom::blink::ManifestShareTarget::Enctype::kMultipart) {
+            mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData) {
       AddErrorInfo("files are only supported with multipart/form-data POST.");
       return base::nullopt;
     }

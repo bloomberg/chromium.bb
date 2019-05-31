@@ -92,18 +92,8 @@ void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
   if (manifest.share_target) {
     share_target = ShareTarget();
     share_target->action = manifest.share_target->action;
-    if (manifest.share_target->method ==
-        blink::Manifest::ShareTarget::Method::kPost) {
-      share_target->method = ShareTarget::Method::kPost;
-    } else {
-      share_target->method = ShareTarget::Method::kGet;
-    }
-    if (manifest.share_target->enctype ==
-        blink::Manifest::ShareTarget::Enctype::kMultipart) {
-      share_target->enctype = ShareTarget::Enctype::kMultipart;
-    } else {
-      share_target->enctype = ShareTarget::Enctype::kApplication;
-    }
+    share_target->method = manifest.share_target->method;
+    share_target->enctype = manifest.share_target->enctype;
     if (!manifest.share_target->params.text.is_null())
       share_target->params.text = manifest.share_target->params.text.string();
     if (!manifest.share_target->params.title.is_null())

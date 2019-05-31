@@ -48,6 +48,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -210,13 +211,14 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   if (shortcut_info.share_target) {
     webapk::ShareTarget* share_target = web_app_manifest->add_share_targets();
     share_target->set_action(shortcut_info.share_target->action.spec());
-    if (shortcut_info.share_target->method == ShareTarget::Method::kPost) {
+    if (shortcut_info.share_target->method ==
+        blink::Manifest::ShareTarget::Method::kPost) {
       share_target->set_method("POST");
     } else {
       share_target->set_method("GET");
     }
     if (shortcut_info.share_target->enctype ==
-        ShareTarget::Enctype::kMultipart) {
+        blink::Manifest::ShareTarget::Enctype::kMultipartFormData) {
       share_target->set_enctype("multipart/form-data");
     } else {
       share_target->set_enctype("application/x-www-form-urlencoded");

@@ -139,8 +139,8 @@ struct ManifestShareTarget {
   // to application/x-www-url-encoded and kMultipart corresponds to
   // multipart/form-data.
   enum Enctype {
-    kApplication,
-    kMultipart,
+    kFormUrlEncoded,
+    kMultipartFormData,
   };
 
   // The URL that will be opened when the share target is invoked.

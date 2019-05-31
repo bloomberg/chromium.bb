@@ -25,8 +25,8 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
 
-using base::android::JavaRef;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 
 namespace {
@@ -108,13 +108,14 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     info.share_target->params.url =
         ConvertJavaStringToUTF16(java_share_target_param_url);
     info.share_target->method =
-        java_share_target_param_is_method_post == JNI_TRUE ? ShareTarget::kPost
-                                                           : ShareTarget::kGet;
+        java_share_target_param_is_method_post == JNI_TRUE
+            ? blink::Manifest::ShareTarget::Method::kPost
+            : blink::Manifest::ShareTarget::Method::kGet;
 
     info.share_target->enctype =
         java_share_target_param_is_enctype_multipart == JNI_TRUE
-            ? ShareTarget::kMultipart
-            : ShareTarget::kApplication;
+            ? blink::Manifest::ShareTarget::Enctype::kMultipartFormData
+            : blink::Manifest::ShareTarget::Enctype::kFormUrlEncoded;
 
     std::vector<base::string16> fileNames;
     base::android::AppendJavaStringArrayToStringVector(
