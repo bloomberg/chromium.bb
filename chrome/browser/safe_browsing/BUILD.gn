@@ -112,8 +112,6 @@ jumbo_static_library("safe_browsing") {
       sources += [
         "../download/download_completion_blocker.cc",
         "../download/download_completion_blocker.h",
-        "../loader/safe_browsing_resource_throttle.cc",
-        "../loader/safe_browsing_resource_throttle.h",
         "browser_feature_extractor.cc",
         "browser_feature_extractor.h",
         "browser_features.cc",
@@ -219,8 +217,6 @@ jumbo_static_library("safe_browsing") {
       }
     } else if (safe_browsing_mode == 2) {
       sources += [
-        "../loader/safe_browsing_resource_throttle.cc",
-        "../loader/safe_browsing_resource_throttle.h",
         "android/file_type_policies.cc",
         "android/services_delegate_android.cc",
         "android/services_delegate_android.h",
@@ -233,8 +229,6 @@ jumbo_static_library("safe_browsing") {
       ]
     } else if (safe_browsing_mode == 3) {
       sources += [
-        "../loader/safe_browsing_resource_throttle.cc",
-        "../loader/safe_browsing_resource_throttle.h",
         "android/file_type_policies.cc",
         "android/services_delegate_android.cc",
         "android/services_delegate_android.h",
