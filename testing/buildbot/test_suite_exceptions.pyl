@@ -1071,6 +1071,20 @@
       'ToTAndroidCFI',
     ],
   },
+  'non_network_service_content_browsertests': {
+    # Don't run on trybots; waterfall is enough.
+    'remove_from': [
+      'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-rel'
+    ],
+  },
+  'non_network_service_content_shell_test_apk': {
+    # Don't run on trybots; waterfall is enough.
+    'remove_from': [
+      'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-rel'
+    ],
+  },
   'non_network_service_webkit_layout_tests' : {
     'remove_from': [
       'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported

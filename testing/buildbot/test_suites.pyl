@@ -4041,6 +4041,29 @@
       'crashpad_tests': {},
     },
 
+    # These tests will be run on the main Android waterfall since Android
+    # WebView hasn't switched to network service on stable yet.
+    'non_network_service_android_gtests': {
+      'non_network_service_content_browsertests': {
+        'args': [
+          '--disable-features=NetworkService',
+        ],
+        'swarming': {
+          'shards': 5,
+        },
+        'test': 'content_browsertests',
+      },
+      'non_network_service_content_shell_test_apk': {
+        'swarming': {
+          'shards': 5,
+        },
+        'args': [
+          '--disable-features=NetworkService',
+        ],
+        'test': 'content_shell_test_apk',
+      },
+    },
+
     'non_network_service_isolated_scripts': {
       'non_network_service_webkit_layout_tests': {
         'args': [
@@ -4477,6 +4500,7 @@
       'linux_flavor_specific_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'network_service_android_gtests',
+      'non_network_service_android_gtests',
     ],
 
     'chromium_code_coverage_isolated_scripts_and_fuzzers': [
@@ -5163,6 +5187,7 @@
 
     'mojo_android_gtests': [
       'network_service_android_gtests',
+      'non_network_service_android_gtests',
     ],
 
     'mojo_chromiumos_fyi_gtests': [
