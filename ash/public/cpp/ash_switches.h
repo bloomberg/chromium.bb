@@ -44,6 +44,7 @@ ASH_PUBLIC_EXPORT extern const char kAshShelfColorSchemeNormalMuted[];
 ASH_PUBLIC_EXPORT extern const char kAshShelfColorSchemeNormalVibrant[];
 ASH_PUBLIC_EXPORT extern const char kAshShelfColorSchemeDarkMuted[];
 ASH_PUBLIC_EXPORT extern const char kAshShelfColorSchemeDarkVibrant[];
+ASH_PUBLIC_EXPORT extern const char kAshSideVolumeButtonPosition[];
 ASH_PUBLIC_EXPORT extern const char kAshTouchHud[];
 ASH_PUBLIC_EXPORT extern const char kAuraLegacyPowerButton[];
 ASH_PUBLIC_EXPORT extern const char kForceTabletPowerButton[];

@@ -32,6 +32,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
@@ -69,6 +70,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -1941,19 +1943,26 @@ void AcceleratorControllerImpl::MaybeShowConfirmationDialog(
 }
 
 void AcceleratorControllerImpl::ParseSideVolumeButtonLocationInfo() {
-  if (!base::PathExists(side_volume_button_location_file_path_))
-    return;
-
   std::string location_info;
-  if (!base::ReadFileToString(side_volume_button_location_file_path_,
-                              &location_info) ||
-      location_info.empty()) {
+  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kAshSideVolumeButtonPosition)) {
+    location_info =
+        cl->GetSwitchValueASCII(switches::kAshSideVolumeButtonPosition);
+  } else if (!base::PathExists(side_volume_button_location_file_path_) ||
+             !base::ReadFileToString(side_volume_button_location_file_path_,
+                                     &location_info) ||
+             location_info.empty()) {
     return;
   }
 
   std::unique_ptr<base::DictionaryValue> info_in_dict =
       base::DictionaryValue::From(
           base::JSONReader::ReadDeprecated(location_info));
+  if (!info_in_dict) {
+    LOG(ERROR) << "JSONReader failed reading side volume button location info: "
+               << location_info;
+    return;
+  }
   info_in_dict->GetString(kVolumeButtonRegion,
                           &side_volume_button_location_.region);
   info_in_dict->GetString(kVolumeButtonSide,
