@@ -10,10 +10,10 @@
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/shelf_test_api.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shelf_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"                                  // mash-ok
 #include "ash/wm/overview/overview_controller.h"        // mash-ok
@@ -131,18 +131,11 @@ void ExitFullscreenModeAndWait(BrowserView* browser_view) {
 }
 
 void ToggleOverview() {
-    ash::Shell::Get()->overview_controller()->ToggleOverview();
+  ash::Shell::Get()->overview_controller()->ToggleOverview();
 }
 
 bool IsShelfVisible() {
-  ash::mojom::ShelfTestApiPtr shelf_test_api;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &shelf_test_api);
-  ash::mojom::ShelfTestApiAsyncWaiter shelf(shelf_test_api.get());
-  bool shelf_visible = true;
-  shelf.IsVisible(&shelf_visible);
-  return shelf_visible;
+  return ash::ShelfTestApi::Create()->IsVisible();
 }
 
 BrowserNonClientFrameViewAsh* GetFrameViewAsh(BrowserView* browser_view) {

@@ -2058,6 +2058,7 @@ static_library("test_support") {
     "//components/exo/wayland:*",
   ]
   public = [
+    "public/cpp/shelf_test_api.h",
     "public/cpp/system_tray_test_api.h",
   ]
   sources = [
@@ -2098,6 +2099,7 @@ static_library("test_support") {
     "metrics/user_metrics_recorder_test_api.h",
     "mojo_test_interface_factory.cc",
     "mojo_test_interface_factory.h",
+    "public/cpp/shelf_test_api.cc",
     "public/cpp/test/shell_test_api.h",
     "rotator/screen_rotation_animator_test_api.cc",
     "rotator/screen_rotation_animator_test_api.h",
@@ -2109,8 +2111,8 @@ static_library("test_support") {
     "shelf/overflow_bubble_view_test_api.h",
     "shelf/shelf_button_pressed_metric_tracker_test_api.cc",
     "shelf/shelf_button_pressed_metric_tracker_test_api.h",
-    "shelf/shelf_test_api.cc",
-    "shelf/shelf_test_api.h",
+    "shelf/shelf_test_api_impl.cc",
+    "shelf/shelf_test_api_impl.h",
     "shelf/shelf_view_test_api.cc",
     "shelf/shelf_view_test_api.h",
     "shell/toplevel_window.cc",

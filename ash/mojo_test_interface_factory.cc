@@ -8,9 +8,7 @@
 
 #include "ash/login/login_screen_test_api.h"
 #include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
-#include "ash/public/interfaces/shelf_test_api.test-mojom.h"
 #include "ash/public/interfaces/status_area_widget_test_api.test-mojom.h"
-#include "ash/shelf/shelf_test_api.h"
 #include "ash/system/status_area_widget_test_api.h"
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
@@ -27,10 +25,6 @@ void BindLoginScreenTestApiOnMainThread(
   LoginScreenTestApi::BindRequest(std::move(request));
 }
 
-void BindShelfTestApiOnMainThread(mojom::ShelfTestApiRequest request) {
-  ShelfTestApi::BindRequest(std::move(request));
-}
-
 void BindStatusAreaWidgetTestApiOnMainThread(
     mojom::StatusAreaWidgetTestApiRequest request) {
   StatusAreaWidgetTestApi::BindRequest(std::move(request));
@@ -42,8 +36,6 @@ void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
   registry->AddInterface(base::Bind(&BindLoginScreenTestApiOnMainThread),
-                         main_thread_task_runner);
-  registry->AddInterface(base::Bind(&BindShelfTestApiOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindStatusAreaWidgetTestApiOnMainThread),
                          main_thread_task_runner);
