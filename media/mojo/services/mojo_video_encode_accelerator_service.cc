@@ -50,8 +50,9 @@ void MojoVideoEncodeAcceleratorService::Initialize(
   DVLOG(1) << __func__ << " " << config.AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!encoder_);
-  DCHECK_EQ(PIXEL_FORMAT_I420, config.input_format)
-      << "Only I420 format supported";
+  DCHECK(config.input_format == PIXEL_FORMAT_I420 ||
+         config.input_format == PIXEL_FORMAT_NV12)
+      << "Only I420 or NV12 format supported";
 
   if (!client) {
     DLOG(ERROR) << __func__ << "null |client|";

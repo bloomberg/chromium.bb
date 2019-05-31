@@ -8,9 +8,12 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/values_mojom_traits.h"
+#include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/mojo/color_space_mojom_traits.h"
 
 namespace mojo {
@@ -45,6 +48,23 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
             mojo_frame->PlaneOffset(media::VideoFrame::kUPlane),
             mojo_frame->PlaneOffset(media::VideoFrame::kVPlane)));
   }
+
+#if defined(OS_LINUX)
+  if (input->storage_type() == media::VideoFrame::STORAGE_DMABUFS) {
+    std::vector<mojo::ScopedHandle> dmabuf_fds;
+
+    const size_t num_planes = media::VideoFrame::NumPlanes(input->format());
+    dmabuf_fds.reserve(num_planes);
+    for (size_t i = 0; i < num_planes; i++) {
+      const int dmabuf_fd = HANDLE_EINTR(dup(input->DmabufFds()[i].get()));
+      dmabuf_fds.emplace_back(mojo::WrapPlatformFile(dmabuf_fd));
+      DCHECK(dmabuf_fds.back().is_valid());
+    }
+
+    return media::mojom::VideoFrameData::NewDmabufData(
+        media::mojom::DmabufVideoFrameData::New(std::move(dmabuf_fds)));
+  }
+#endif
 
   if (input->HasTextures()) {
     std::vector<gpu::MailboxHolder> mailbox_holder(
@@ -122,6 +142,46 @@ bool StructTraits<media::mojom::VideoFrameDataView,
         shared_buffer_data.u_offset(), shared_buffer_data.v_offset(),
         shared_buffer_data.y_stride(), shared_buffer_data.u_stride(),
         shared_buffer_data.v_stride(), timestamp);
+#if defined(OS_LINUX)
+  } else if (data.is_dmabuf_data()) {
+    media::mojom::DmabufVideoFrameDataDataView dmabuf_data;
+    data.GetDmabufDataDataView(&dmabuf_data);
+
+    std::vector<mojo::ScopedHandle> dmabuf_fds_data;
+    if (!dmabuf_data.ReadDmabufFds(&dmabuf_fds_data))
+      return false;
+
+    const size_t num_planes = media::VideoFrame::NumPlanes(format);
+
+    std::vector<int> strides =
+        media::VideoFrame::ComputeStrides(format, coded_size);
+    std::vector<size_t> buffer_sizes;
+    buffer_sizes.reserve(num_planes);
+    for (size_t i = 0; i < num_planes; i++) {
+      buffer_sizes.emplace_back(static_cast<size_t>(
+          media::VideoFrame::PlaneSize(format, i, coded_size).GetArea()));
+    }
+
+    DCHECK_EQ(num_planes, dmabuf_fds_data.size());
+    DCHECK_EQ(num_planes, strides.size());
+    DCHECK_EQ(num_planes, buffer_sizes.size());
+
+    auto layout = media::VideoFrameLayout::CreateWithStrides(
+        format, coded_size, std::move(strides), std::move(buffer_sizes));
+    if (!layout)
+      return false;
+
+    std::vector<base::ScopedFD> dmabuf_fds;
+    dmabuf_fds.reserve(num_planes);
+    for (size_t i = 0; i < num_planes; i++) {
+      base::PlatformFile platform_file;
+      mojo::UnwrapPlatformFile(std::move(dmabuf_fds_data[i]), &platform_file);
+      dmabuf_fds.emplace_back(platform_file);
+      DCHECK(dmabuf_fds.back().is_valid());
+    }
+    frame = media::VideoFrame::WrapExternalDmabufs(
+        *layout, visible_rect, natural_size, std::move(dmabuf_fds), timestamp);
+#endif
   } else if (data.is_mailbox_data()) {
     media::mojom::MailboxVideoFrameDataDataView mailbox_data;
     data.GetMailboxDataDataView(&mailbox_data);

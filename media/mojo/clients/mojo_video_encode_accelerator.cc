@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
@@ -119,6 +120,21 @@ void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
                                         bool force_keyframe) {
   DVLOG(2) << __func__ << " tstamp=" << frame->timestamp();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(VideoFrame::NumPlanes(frame->format()),
+            frame->layout().num_planes());
+  DCHECK(vea_.is_bound());
+
+#if defined(OS_LINUX)
+  if (frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
+    DCHECK(frame->HasDmaBufs());
+    vea_->Encode(
+        std::move(frame), force_keyframe,
+        base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),
+                       frame));
+    return;
+  }
+#endif
+
   DCHECK_EQ(PIXEL_FORMAT_I420, frame->format());
   DCHECK_EQ(VideoFrame::STORAGE_SHMEM, frame->storage_type());
   DCHECK(frame->shared_memory_handle().IsValid());
@@ -154,7 +170,6 @@ void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
   // Encode() is synchronous: clients will assume full ownership of |frame| when
   // this gets destroyed and probably recycle its shared_memory_handle(): keep
   // the former alive until the remote end is actually finished.
-  DCHECK(vea_.is_bound());
   vea_->Encode(
       std::move(mojo_frame), force_keyframe,
       base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),

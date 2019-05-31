@@ -272,6 +272,7 @@ struct VideoFrame {
 union VideoFrameData {
   EosVideoFrameData eos_data;
   SharedBufferVideoFrameData shared_buffer_data;
+  DmabufVideoFrameData dmabuf_data;
   MailboxVideoFrameData mailbox_data;
 };
 
@@ -293,6 +294,12 @@ struct SharedBufferVideoFrameData {
   uint64 y_offset;
   uint64 u_offset;
   uint64 v_offset;
+};
+
+// This defines video frame data stored in dmabuf.
+struct DmabufVideoFrameData {
+  // Size depends on media::VideoFrame::NumPlanes with frame format.
+  array<handle> dmabuf_fds;
 };
 
 // This defines video frame data stored in texture mailboxes.
