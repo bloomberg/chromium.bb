@@ -261,8 +261,10 @@ void AwSettings::UpdateRendererPreferencesLocked(
     // AndroidWebview does not use per-site storage partitions.
     content::StoragePartition* storage_partition =
         content::BrowserContext::GetDefaultStoragePartition(aw_browser_context);
+    std::string expanded_language_list =
+        net::HttpUtil::ExpandLanguageList(prefs->accept_languages);
     storage_partition->GetNetworkContext()->SetAcceptLanguage(
-        net::HttpUtil::ExpandLanguageList(prefs->accept_languages));
+        net::HttpUtil::GenerateAcceptLanguageHeader(expanded_language_list));
   }
 }
 

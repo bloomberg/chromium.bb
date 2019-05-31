@@ -121,8 +121,11 @@ public class AcceptLanguageTest {
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
         // Note that we extend the base language from language-region pair.
-        String[] acceptLanguages = getAcceptLanguages(
-                mActivityTestRule.getJavaScriptResultBodyTextContent(mAwContents, mContentsClient));
+        String rawAcceptLanguages =
+                mActivityTestRule.getJavaScriptResultBodyTextContent(mAwContents, mContentsClient);
+        Assert.assertTrue("Accept-Language header should contain at least 1 q-value",
+                rawAcceptLanguages.contains(";q="));
+        String[] acceptLanguages = getAcceptLanguages(rawAcceptLanguages);
         Assert.assertArrayEquals(new String[] {"en-US", "en"}, acceptLanguages);
 
         // Our accept language list in user agent is different from navigator.languages, which is

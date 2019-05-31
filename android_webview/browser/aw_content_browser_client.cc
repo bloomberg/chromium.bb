@@ -90,6 +90,7 @@
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "net/android/network_library.h"
+#include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
@@ -342,7 +343,8 @@ AwContentBrowserClient::GetNetworkContextParams() {
   // preferred locales (http://crbug.com/898555). For now, set this to
   // "en-US,en" instead of "en-us,en", since Android guarantees region codes
   // will be uppercase.
-  context_params->accept_language = "en-US,en";
+  context_params->accept_language =
+      net::HttpUtil::GenerateAcceptLanguageHeader("en-US,en");
 
   // HTTP cache
   context_params->http_cache_enabled = true;
