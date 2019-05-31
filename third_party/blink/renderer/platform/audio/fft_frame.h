@@ -145,10 +145,28 @@ class PLATFORM_EXPORT FFTFrame {
   AudioFloatArray imag_data_;
 
 #if defined(OS_MACOSX)
+  // Thin wrapper around FFTSetup so we can call the appropriate routines to
+  // construct or release the FFTSetup objects.
+  class FFTSetupDatum {
+   public:
+    FFTSetupDatum(unsigned fft_size);
+    ~FFTSetupDatum();
+    FFTSetup GetSetup() const { return setup_; }
+
+   private:
+    FFTSetup setup_;
+  };
+
+  // Returns the vector that holds all of the possible FFTSetupData
+  // objects. This should be set up in the |Initialize()| method that is called
+  // when the context is created.
+  static Vector<std::unique_ptr<FFTSetupDatum>>& FFTSetups();
+
+  static void InitializeFFTSetupForSize(wtf_size_t fft_order);
+
   DSPSplitComplex& DspSplitComplex() { return frame_; }
   DSPSplitComplex DspSplitComplex() const { return frame_; }
   static FFTSetup FftSetupForSize(unsigned fft_size);
-  static FFTSetup* fft_setups_;
   FFTSetup fft_setup_;
   DSPSplitComplex frame_;
 #elif defined(WTF_USE_WEBAUDIO_FFMPEG)
