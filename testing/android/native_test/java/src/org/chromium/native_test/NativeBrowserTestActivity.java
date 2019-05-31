@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 
 import java.io.File;
 
@@ -71,7 +72,10 @@ public abstract class NativeBrowserTestActivity extends Activity {
     private static boolean deleteRecursive(File file) {
         if (file == null) return true;
 
-        File[] children = file.listFiles();
+        File[] children;
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            children = file.listFiles();
+        }
         if (children != null) {
             for (File child : children) {
                 if (!deleteRecursive(child)) {
@@ -79,7 +83,9 @@ public abstract class NativeBrowserTestActivity extends Activity {
                 }
             }
         }
-        return file.delete();
+        try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+            return file.delete();
+        }
     }
 
     private void deletePrivateDataDirectory() {

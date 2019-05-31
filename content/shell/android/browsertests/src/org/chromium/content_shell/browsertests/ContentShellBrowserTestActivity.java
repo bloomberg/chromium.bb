@@ -8,6 +8,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -33,7 +34,7 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
      */
     @Override
     protected void initializeBrowserProcess() {
-        try {
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Cannot load content_browsertests.", e);
