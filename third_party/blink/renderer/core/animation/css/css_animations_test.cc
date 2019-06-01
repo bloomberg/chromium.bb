@@ -81,13 +81,13 @@ TEST_F(CSSAnimationsTest, RetargetedTransition) {
   element->setAttribute(html_names::kClassAttr, "contrast2");
   GetPage().Animator().ServiceScriptedAnimations(CurrentTimeTicks());
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_NEAR(0.6, GetContrastFilterAmount(element), 0.00000000001);
+  EXPECT_NEAR(0.6, GetContrastFilterAmount(element), 0.0000000001);
 
   // As it has been retargeted, advancing halfway should go to 0.3.
   AdvanceClockSeconds(0.5);
   GetPage().Animator().ServiceScriptedAnimations(CurrentTimeTicks());
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_NEAR(0.3, GetContrastFilterAmount(element), 0.00000000001);
+  EXPECT_NEAR(0.3, GetContrastFilterAmount(element), 0.0000000001);
 }
 
 // Test that when an incompatible in progress compositor transition
