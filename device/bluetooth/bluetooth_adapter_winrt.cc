@@ -21,6 +21,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/scoped_native_library.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -467,13 +468,6 @@ void ExtractAndUpdateAdvertisementData(
                                   ExtractManufacturerData(advertisement.Get()));
 }
 
-decltype(&::RoGetAgileReference) LoadGetAgileReference() {
-  auto funcptr = reinterpret_cast<decltype(&::RoGetAgileReference)>(
-      ::GetProcAddress(::GetModuleHandle(L"Ole32.dll"), "RoGetAgileReference"));
-  CHECK(funcptr);
-  return funcptr;
-}
-
 }  // namespace
 
 std::string BluetoothAdapterWinrt::GetAddress() const {
@@ -686,27 +680,10 @@ void BluetoothAdapterWinrt::InitForTests(
   if (!radio_statics)
     statics.radio_statics->Resolve(IID_IRadioStatics, &radio_statics);
 
-  auto getAgileReferenceFunc = LoadGetAgileReference();
-
-  ComPtr<IAgileReference> radio_statics_agileref;
-  HRESULT hr =
-      getAgileReferenceFunc(AGILEREFERENCE_DEFAULT, IID_IRadioStatics,
-                            radio_statics.Get(), &radio_statics_agileref);
-  DCHECK(SUCCEEDED(hr));
-  ComPtr<IAgileReference> device_information_statics_agileref;
-  hr = getAgileReferenceFunc(
-      AGILEREFERENCE_DEFAULT, IID_IDeviceInformationStatics,
-      device_information_statics.Get(), &device_information_statics_agileref);
-  DCHECK(SUCCEEDED(hr));
-  ComPtr<IAgileReference> adapter_statics_agileref;
-  hr = getAgileReferenceFunc(
-      AGILEREFERENCE_DEFAULT, IID_IBluetoothAdapterStatics,
-      bluetooth_adapter_statics.Get(), &adapter_statics_agileref);
-  DCHECK(SUCCEEDED(hr));
-  CompleteInitAgile(std::move(init_cb),
-                    StaticsInterfaces(adapter_statics_agileref,
-                                      device_information_statics_agileref,
-                                      radio_statics_agileref));
+  StaticsInterfaces agile_statics = GetAgileReferencesForStatics(
+      std::move(bluetooth_adapter_statics),
+      std::move(device_information_statics), std::move(radio_statics));
+  CompleteInitAgile(std::move(init_cb), std::move(agile_statics));
 }
 
 // static
@@ -746,34 +723,51 @@ BluetoothAdapterWinrt::PerformSlowInitTasks() {
     return BluetoothAdapterWinrt::StaticsInterfaces();
   }
 
-  auto getAgileReferenceFunc = LoadGetAgileReference();
+  return GetAgileReferencesForStatics(std::move(adapter_statics),
+                                      std::move(device_information_statics),
+                                      std::move(radio_statics));
+}
 
-  ComPtr<IAgileReference> radio_statics_agileref;
-  hr = getAgileReferenceFunc(AGILEREFERENCE_DEFAULT,
-                             ABI::Windows::Devices::Radios::IID_IRadioStatics,
-                             radio_statics.Get(), &radio_statics_agileref);
-  if (FAILED(hr))
-    return BluetoothAdapterWinrt::StaticsInterfaces();
+// static
+BluetoothAdapterWinrt::StaticsInterfaces
+BluetoothAdapterWinrt::GetAgileReferencesForStatics(
+    ComPtr<IBluetoothAdapterStatics> adapter_statics,
+    ComPtr<IDeviceInformationStatics> device_information_statics,
+    ComPtr<IRadioStatics> radio_statics) {
+  base::ScopedNativeLibrary ole32_library(base::FilePath(L"Ole32.dll"));
+  CHECK(ole32_library.is_valid());
 
-  ComPtr<IAgileReference> device_information_statics_agileref;
-  hr = getAgileReferenceFunc(
-      AGILEREFERENCE_DEFAULT,
-      ABI::Windows::Devices::Enumeration::IID_IDeviceInformationStatics,
-      device_information_statics.Get(), &device_information_statics_agileref);
-  if (FAILED(hr))
-    return BluetoothAdapterWinrt::StaticsInterfaces();
+  auto ro_get_agile_reference =
+      reinterpret_cast<decltype(&::RoGetAgileReference)>(
+          ole32_library.GetFunctionPointer("RoGetAgileReference"));
+  CHECK(ro_get_agile_reference);
 
   ComPtr<IAgileReference> adapter_statics_agileref;
-  hr = getAgileReferenceFunc(
+  HRESULT hr = ro_get_agile_reference(
       AGILEREFERENCE_DEFAULT,
       ABI::Windows::Devices::Bluetooth::IID_IBluetoothAdapterStatics,
       adapter_statics.Get(), &adapter_statics_agileref);
   if (FAILED(hr))
-    return BluetoothAdapterWinrt::StaticsInterfaces();
+    return StaticsInterfaces();
 
-  return BluetoothAdapterWinrt::StaticsInterfaces(
-      adapter_statics_agileref, device_information_statics_agileref,
-      radio_statics_agileref);
+  ComPtr<IAgileReference> device_information_statics_agileref;
+  hr = ro_get_agile_reference(
+      AGILEREFERENCE_DEFAULT,
+      ABI::Windows::Devices::Enumeration::IID_IDeviceInformationStatics,
+      device_information_statics.Get(), &device_information_statics_agileref);
+  if (FAILED(hr))
+    return StaticsInterfaces();
+
+  ComPtr<IAgileReference> radio_statics_agileref;
+  hr = ro_get_agile_reference(AGILEREFERENCE_DEFAULT,
+                              ABI::Windows::Devices::Radios::IID_IRadioStatics,
+                              radio_statics.Get(), &radio_statics_agileref);
+  if (FAILED(hr))
+    return StaticsInterfaces();
+
+  return StaticsInterfaces(std::move(adapter_statics_agileref),
+                           std::move(device_information_statics_agileref),
+                           std::move(radio_statics_agileref));
 }
 
 void BluetoothAdapterWinrt::CompleteInitAgile(InitCallback init_cb,
