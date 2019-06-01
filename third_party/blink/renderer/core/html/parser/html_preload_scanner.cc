@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
@@ -297,21 +298,21 @@ class TokenPreloadScanner::StartTagScanner {
     }
     switch (effective_loading_attr_value) {
       case LoadingAttrValue::kEager:
-        request->SetLazyLoadImageEligibility(
-            PreloadRequest::LazyLoadImageEligibility::kDisabled);
+        request->SetIsLazyLoadImageEnabled(false);
         break;
       case LoadingAttrValue::kLazy:
-        request->SetLazyLoadImageEligibility(
-            PreloadRequest::LazyLoadImageEligibility::kEnabledExplicit);
+        request->SetIsLazyLoadImageEnabled(
+            document_parameters.lazy_load_image_enabled_state !=
+            LocalFrame::LazyLoadImageEnabledState::kDisabled);
         break;
       case LoadingAttrValue::kAuto:
         if ((width_attr_small_absolute_ && height_attr_small_absolute_) ||
             inline_style_dimensions_small_) {
-          request->SetLazyLoadImageEligibility(
-              PreloadRequest::LazyLoadImageEligibility::kDisabled);
+          request->SetIsLazyLoadImageEnabled(false);
         } else {
-          request->SetLazyLoadImageEligibility(
-              PreloadRequest::LazyLoadImageEligibility::kEnabledAutomatic);
+          request->SetIsLazyLoadImageEnabled(
+              document_parameters.lazy_load_image_enabled_state ==
+              LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic);
         }
         break;
     }
@@ -1063,6 +1064,13 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   referrer_policy = document->GetReferrerPolicy();
   integrity_features = SubresourceIntegrityHelper::GetFeatures(document);
   lazyload_policy_enforced = document->IsLazyLoadPolicyEnforced();
+  if (document->Loader() && document->Loader()->GetFrame()) {
+    lazy_load_image_enabled_state =
+        document->Loader()->GetFrame()->GetLazyLoadImageEnabledState();
+  } else {
+    lazy_load_image_enabled_state =
+        LocalFrame::LazyLoadImageEnabledState::kDisabled;
+  }
 }
 
 }  // namespace blink
