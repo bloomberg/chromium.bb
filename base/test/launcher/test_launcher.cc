@@ -799,7 +799,10 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
     tests_to_retry_.insert(result.full_name);
   }
 
-  results_tracker_.AddTestResult(result);
+  // There are no results for this tests,
+  // most likley due to another test failing in the same batch.
+  if (result.status != TestResult::TEST_SKIPPED)
+    results_tracker_.AddTestResult(result);
 
   // TODO(phajdan.jr): Align counter (padding).
   std::string status_line(StringPrintf("[%zu/%zu] %s ", test_finished_count_,
@@ -826,11 +829,8 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
   // We just printed a status line, reset the watchdog timer.
   watchdog_timer_.Reset();
 
-  // Do not waste time on timeouts. We include tests with unknown results here
-  // because sometimes (e.g. hang in between unit tests) that's how a timeout
-  // gets reported.
-  if (result.status == TestResult::TEST_TIMEOUT ||
-      result.status == TestResult::TEST_UNKNOWN) {
+  // Do not waste time on timeouts.
+  if (result.status == TestResult::TEST_TIMEOUT) {
     test_broken_count_++;
   }
   if (!force_run_broken_tests_ && test_broken_count_ >= broken_threshold_) {
@@ -1381,15 +1381,6 @@ bool TestLauncher::RunRetryTests() {
   // Number of retries in this iteration.
   size_t retry_count = 0;
   while (!tests_to_retry_.empty() && retry_count < retry_limit_) {
-    if (!force_run_broken_tests_ &&
-        tests_to_retry_.size() >= broken_threshold_) {
-      fprintf(stdout, "Too many failing tests (%zu), skipping retries.\n",
-              tests_to_retry_.size());
-      fflush(stdout);
-
-      results_tracker_.AddGlobalTag("BROKEN_TEST_SKIPPED_RETRIES");
-      return false;
-    }
     std::vector<std::string> test_names(tests_to_retry_.begin(),
                                         tests_to_retry_.end());
     tests_to_retry_.clear();

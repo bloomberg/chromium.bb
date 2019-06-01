@@ -124,12 +124,6 @@ class NonSfiUnitTestPlatformDelegate : public base::UnitTestPlatformDelegate {
     return cmd_line;
   }
 
-  void RelaunchTests(base::TestLauncher* test_launcher,
-                     const std::vector<std::string>& test_names,
-                     int launch_flags) override {
-    RunUnitTestsBatch(test_launcher, this, test_names, launch_flags);
-  }
-
   base::FilePath test_path_;
 };
 

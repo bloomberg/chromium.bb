@@ -208,139 +208,138 @@ void InitGoogleTestWChar(int* argc, wchar_t** argv) {
 }
 #endif  // defined(OS_WIN)
 
-// Interprets test results and reports to the test launcher. Returns true
-// on success.
-bool ProcessTestResults(
-    TestLauncher* test_launcher,
-    const std::vector<std::string>& test_names,
-    const base::FilePath& output_file,
-    const std::string& output,
-    int exit_code,
-    bool was_timeout,
-    std::vector<std::string>* tests_to_relaunch) {
+// Called if there are no test results, populates results with UNKNOWN results.
+// If There is only one test, will try to determine status by exit_code and
+// was_timeout.
+void ProcessMissingTestResults(const std::vector<std::string>& test_names,
+                               const std::string& output,
+                               bool was_timeout,
+                               bool exit_code,
+                               std::vector<TestResult>* results) {
+  // We do not have reliable details about test results (parsing test
+  // stdout is known to be unreliable).
+  fprintf(stdout,
+          "Failed to get out-of-band test success data, "
+          "dumping full stdio below:\n%s\n",
+          output.c_str());
+  fflush(stdout);
+
+  // There is only one test and no results.
+  // Try to determine status by exit code.
+  if (test_names.size() == 1) {
+    const std::string& test_name = test_names.front();
+    TestResult test_result;
+    test_result.full_name = test_name;
+
+    if (was_timeout) {
+      test_result.status = TestResult::TEST_TIMEOUT;
+    } else if (exit_code != 0) {
+      test_result.status = TestResult::TEST_FAILURE;
+    } else {
+      // It's strange case when test executed successfully,
+      // but we failed to read machine-readable report for it.
+      test_result.status = TestResult::TEST_UNKNOWN;
+    }
+
+    results->push_back(test_result);
+    return;
+  }
+  for (auto& test_name : test_names) {
+    TestResult test_result;
+    test_result.full_name = test_name;
+    test_result.status = TestResult::TEST_SKIPPED;
+    results->push_back(test_result);
+  }
+}
+
+// Interprets test results and reports to the test launcher.
+void ProcessTestResults(TestLauncher* test_launcher,
+                        const std::vector<std::string>& test_names,
+                        const base::FilePath& output_file,
+                        const std::string& output,
+                        int exit_code,
+                        bool was_timeout) {
   std::vector<TestResult> test_results;
   bool crashed = false;
   bool have_test_results =
       ProcessGTestOutput(output_file, &test_results, &crashed);
 
-  bool called_any_callback = false;
-
-  if (have_test_results) {
-    // TODO(phajdan.jr): Check for duplicates and mismatches between
-    // the results we got from XML file and tests we intended to run.
-    std::map<std::string, TestResult> results_map;
-    for (const auto& i : test_results)
-      results_map[i.full_name] = i;
-
-    bool had_interrupted_test = false;
-
-    // Results to be reported back to the test launcher.
-    std::vector<TestResult> final_results;
-
-    for (const auto& i : test_names) {
-      if (ContainsKey(results_map, i)) {
-        TestResult test_result = results_map[i];
-        if (test_result.status == TestResult::TEST_CRASH) {
-          had_interrupted_test = true;
-
-          if (was_timeout) {
-            // Fix up the test status: we forcibly kill the child process
-            // after the timeout, so from XML results it looks just like
-            // a crash.
-            test_result.status = TestResult::TEST_TIMEOUT;
-          }
-        } else if (test_result.status == TestResult::TEST_SUCCESS ||
-                   test_result.status == TestResult::TEST_FAILURE) {
-          // We run multiple tests in a batch with a timeout applied
-          // to the entire batch. It is possible that with other tests
-          // running quickly some tests take longer than the per-test timeout.
-          // For consistent handling of tests independent of order and other
-          // factors, mark them as timing out.
-          if (test_result.elapsed_time >
-              TestTimeouts::test_launcher_timeout()) {
-            test_result.status = TestResult::TEST_TIMEOUT;
-          }
-        }
-        test_result.output_snippet = GetTestOutputSnippet(test_result, output);
-        final_results.push_back(test_result);
-      } else if (had_interrupted_test) {
-        tests_to_relaunch->push_back(i);
-      } else {
-        // TODO(phajdan.jr): Explicitly pass the info that the test didn't
-        // run for a mysterious reason.
-        LOG(ERROR) << "no test result for " << i;
-        TestResult test_result;
-        test_result.full_name = i;
-        test_result.status = TestResult::TEST_UNKNOWN;
-        test_result.output_snippet = GetTestOutputSnippet(test_result, output);
-        final_results.push_back(test_result);
-      }
-    }
-
-    // TODO(phajdan.jr): Handle the case where processing XML output
-    // indicates a crash but none of the test results is marked as crashing.
-
-    if (final_results.empty())
-      return false;
-
-    bool has_non_success_test = false;
-    for (const auto& i : final_results) {
-      if (i.status != TestResult::TEST_SUCCESS) {
-        has_non_success_test = true;
-        break;
-      }
-    }
-
-    if (!has_non_success_test && exit_code != 0) {
-      // This is a bit surprising case: all tests are marked as successful,
-      // but the exit code was not zero. This can happen e.g. under memory
-      // tools that report leaks this way. Mark all tests as a failure on exit,
-      // and for more precise info they'd need to be retried serially.
-      for (auto& i : final_results)
-        i.status = TestResult::TEST_FAILURE_ON_EXIT;
-    }
-
-    for (auto& i : final_results) {
-      // Fix the output snippet after possible changes to the test result.
-      i.output_snippet = GetTestOutputSnippet(i, output);
-      test_launcher->OnTestFinished(i);
-      called_any_callback = true;
-    }
-  } else {
-    fprintf(stdout,
-            "Failed to get out-of-band test success data, "
-            "dumping full stdio below:\n%s\n",
-            output.c_str());
-    fflush(stdout);
-
-    // We do not have reliable details about test results (parsing test
-    // stdout is known to be unreliable).
-    if (test_names.size() == 1) {
-      // There is only one test. Try to determine status by exit code.
-      const std::string& test_name = test_names.front();
-      TestResult test_result;
-      test_result.full_name = test_name;
-
-      if (was_timeout) {
-        test_result.status = TestResult::TEST_TIMEOUT;
-      } else if (exit_code != 0) {
-        test_result.status = TestResult::TEST_FAILURE;
-      } else {
-        // It's strange case when test executed successfully,
-        // but we failed to read machine-readable report for it.
-        test_result.status = TestResult::TEST_UNKNOWN;
-      }
-
+  if (!have_test_results) {
+    ProcessMissingTestResults(test_names, output, was_timeout, exit_code,
+                              &test_results);
+    for (auto& test_result : test_results)
       test_launcher->OnTestFinished(test_result);
-      called_any_callback = true;
+    return;
+  }
+
+  // TODO(phajdan.jr): Check for duplicates and mismatches between
+  // the results we got from XML file and tests we intended to run.
+  std::map<std::string, TestResult> results_map;
+  for (const auto& i : test_results)
+    results_map[i.full_name] = i;
+
+  // Results to be reported back to the test launcher.
+  std::vector<TestResult> final_results;
+
+  for (const auto& i : test_names) {
+    if (ContainsKey(results_map, i)) {
+      TestResult test_result = results_map[i];
+      if (test_result.status == TestResult::TEST_CRASH) {
+        if (was_timeout) {
+          // Fix up the test status: we forcibly kill the child process
+          // after the timeout, so from XML results it looks just like
+          // a crash.
+          test_result.status = TestResult::TEST_TIMEOUT;
+        }
+      } else if (test_result.status == TestResult::TEST_SUCCESS ||
+                 test_result.status == TestResult::TEST_FAILURE) {
+        // We run multiple tests in a batch with a timeout applied
+        // to the entire batch. It is possible that with other tests
+        // running quickly some tests take longer than the per-test timeout.
+        // For consistent handling of tests independent of order and other
+        // factors, mark them as timing out.
+        if (test_result.elapsed_time > TestTimeouts::test_launcher_timeout()) {
+          test_result.status = TestResult::TEST_TIMEOUT;
+        }
+      }
+      test_result.output_snippet = GetTestOutputSnippet(test_result, output);
+      final_results.push_back(test_result);
     } else {
-      // There is more than one test. Retry them individually.
-      for (const std::string& test_name : test_names)
-        tests_to_relaunch->push_back(test_name);
+      // TODO(phajdan.jr): Explicitly pass the info that the test didn't
+      // run for a mysterious reason.
+      LOG(ERROR) << "no test result for " << i;
+      TestResult test_result;
+      test_result.full_name = i;
+      test_result.status = TestResult::TEST_SKIPPED;
+      test_result.output_snippet = GetTestOutputSnippet(test_result, output);
+      final_results.push_back(test_result);
+    }
+  }
+  // TODO(phajdan.jr): Handle the case where processing XML output
+  // indicates a crash but none of the test results is marked as crashing.
+
+  bool has_non_success_test = false;
+  for (const auto& i : final_results) {
+    if (i.status != TestResult::TEST_SUCCESS) {
+      has_non_success_test = true;
+      break;
     }
   }
 
-  return called_any_callback;
+  if (!has_non_success_test && exit_code != 0) {
+    // This is a bit surprising case: all tests are marked as successful,
+    // but the exit code was not zero. This can happen e.g. under memory
+    // tools that report leaks this way. Mark all tests as a failure on exit,
+    // and for more precise info they'd need to be retried serially.
+    for (auto& i : final_results)
+      i.status = TestResult::TEST_FAILURE_ON_EXIT;
+  }
+
+  for (auto& i : final_results) {
+    // Fix the output snippet after possible changes to the test result.
+    i.output_snippet = GetTestOutputSnippet(i, output);
+    test_launcher->OnTestFinished(i);
+  }
 }
 
 class UnitTestProcessLifetimeObserver : public ProcessLifetimeObserver {
@@ -418,14 +417,8 @@ void ParallelUnitTestProcessLifetimeObserver::OnCompleted(
     bool was_timeout,
     const std::string& output) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::vector<std::string> tests_to_relaunch;
   ProcessTestResults(test_launcher(), test_names(), output_file(), output,
-                     exit_code, was_timeout, &tests_to_relaunch);
-
-  if (!tests_to_relaunch.empty()) {
-    platform_delegate()->RelaunchTests(test_launcher(), tests_to_relaunch,
-                                       launch_flags());
-  }
+                     exit_code, was_timeout);
 
   // The temporary file's directory is also temporary.
   DeleteFile(output_file().DirName(), true);
@@ -471,17 +464,8 @@ void SerialUnitTestProcessLifetimeObserver::OnCompleted(
     bool was_timeout,
     const std::string& output) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::vector<std::string> tests_to_relaunch;
-  bool called_any_callbacks =
-      ProcessTestResults(test_launcher(), test_names(), output_file(), output,
-                         exit_code, was_timeout, &tests_to_relaunch);
-
-  // There is only one test, there cannot be other tests to relaunch
-  // due to a crash.
-  DCHECK(tests_to_relaunch.empty());
-
-  // There is only one test, we should have called back with its result.
-  DCHECK(called_any_callbacks);
+  ProcessTestResults(test_launcher(), test_names(), output_file(), output,
+                     exit_code, was_timeout);
 
   // The temporary file's directory is also temporary.
   DeleteFile(output_file().DirName(), true);
@@ -664,19 +648,6 @@ CommandLine DefaultUnitTestPlatformDelegate::GetCommandLineForChildGTestProcess(
 
 std::string DefaultUnitTestPlatformDelegate::GetWrapperForChildGTestProcess() {
   return std::string();
-}
-
-void DefaultUnitTestPlatformDelegate::RelaunchTests(
-    TestLauncher* test_launcher,
-    const std::vector<std::string>& test_names,
-    int launch_flags) {
-  // Relaunch requested tests in parallel, but only use single
-  // test per batch for more precise results (crashes, etc).
-  for (const std::string& test_name : test_names) {
-    std::vector<std::string> batch;
-    batch.push_back(test_name);
-    RunUnitTestsBatch(test_launcher, this, batch, launch_flags);
-  }
 }
 
 UnitTestLauncherDelegate::UnitTestLauncherDelegate(

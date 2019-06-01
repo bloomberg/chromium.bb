@@ -78,11 +78,6 @@ class UnitTestPlatformDelegate {
   // no wrapper.
   virtual std::string GetWrapperForChildGTestProcess() = 0;
 
-  // Relaunch tests, e.g. after a crash.
-  virtual void RelaunchTests(TestLauncher* test_launcher,
-                             const std::vector<std::string>& test_names,
-                             int launch_flags) = 0;
-
  protected:
   ~UnitTestPlatformDelegate() = default;
 };
@@ -110,10 +105,6 @@ class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
       const base::FilePath& flag_file) override;
 
   std::string GetWrapperForChildGTestProcess() override;
-
-  void RelaunchTests(TestLauncher* test_launcher,
-                     const std::vector<std::string>& test_names,
-                     int launch_flags) override;
 
   ScopedTempDir temp_dir_;
 
