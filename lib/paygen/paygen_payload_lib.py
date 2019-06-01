@@ -95,6 +95,7 @@ class PaygenPayload(object):
     self.work_dir = work_dir
     self._verify = verify
     self._private_key = private_key
+    self._public_key = None
 
     self.src_image_file = os.path.join(work_dir, 'src_image.bin')
     self.tgt_image_file = os.path.join(work_dir, 'tgt_image.bin')
@@ -168,6 +169,10 @@ class PaygenPayload(object):
                                          'testing_rsa')
       self.signer = signer_payloads_client.UnofficialSignerPayloadsClient(
           self._private_key, self.work_dir)
+
+    if self._private_key and self.signer:
+      self._public_key = os.path.join(self.work_dir, 'public_key.pem')
+      self.signer.ExtractPublicKey(self._public_key)
 
   def _GetDlcImageParams(self, tgt_image, src_image=None):
     """Returns parameters related to target and source DLC images.
@@ -706,6 +711,11 @@ class PaygenPayload(object):
 
     props_map['appid'] = self._appid
 
+    # Add the public key if it exists.
+    if self._public_key:
+      props_map['public_key'] = base64.b64encode(
+          osutils.ReadFile(self._public_key))
+
     # TODO(b/131762584): Remove these completely once they are deprecated from
     # the Goldeneye. The client doesn't even check for these, so there is no
     # point in calculating and sending them over. Better keep them like this so
@@ -855,10 +865,8 @@ class PaygenPayload(object):
       cmd.extend(path_util.ToChrootPath(x) for x in self.src_partitions)
 
     # We signed it with the private key, now verify it with the public key.
-    if self._private_key and self.signer:
-      public_key = os.path.join(self.work_dir, 'public_key.pem')
-      self.signer.ExtractPublicKey(public_key)
-      cmd += ['--key', path_util.ToChrootPath(public_key)]
+    if self._public_key:
+      cmd += ['--key', path_util.ToChrootPath(self._public_key)]
 
     self._RunGeneratorCmd(cmd)
 

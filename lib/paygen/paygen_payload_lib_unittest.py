@@ -188,14 +188,27 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(gen._JsonUri('gs://foo/bar'),
                      'gs://foo/bar.json')
 
-  def testSetupSigner(self):
-    """Tests that signers are being setup properly."""
+  def testSetupOfficialSigner(self):
+    """Tests that official signer is being setup properly."""
     gen = self._GetStdGenerator(work_dir='/foo', sign=True)
+    gen._private_key = 'foo-private-key'
 
     gen._SetupSigner(self.new_build)
     self.assertIsInstance(
         gen.signer, signer_payloads_client.SignerPayloadsClientGoogleStorage)
-    self.assertFalse(gen._private_key)
+    self.assertIsNone(gen._private_key)
+    self.assertIsNone(gen._public_key)
+
+  def testSetupUnofficialSigner(self):
+    """Tests that unofficial signer is being setup properly.
+
+    And private key is set to the default correctly.
+    """
+    gen = self._GetStdGenerator(work_dir='/foo', sign=True)
+
+    pubkey_extract_mock = self.PatchObject(
+        signer_payloads_client.UnofficialSignerPayloadsClient,
+        'ExtractPublicKey')
 
     build = self.new_build
     build.bucket = "foo-bucket"
@@ -204,8 +217,16 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
         gen.signer, signer_payloads_client.UnofficialSignerPayloadsClient)
     self.assertEqual(gen._private_key, os.path.join(constants.CHROMITE_DIR,
                                                     'ssh_keys', 'testing_rsa'))
+    pubkey_extract_mock.assert_called_once_with('/foo/public_key.pem')
 
+  def testSetupUnofficialSignerPassedPrivateKey(self):
+    """Tests that setting signers use correct passed private key."""
+    gen = self._GetStdGenerator(work_dir='/foo', sign=True)
     gen._private_key = 'some-foo-private-key'
+
+    build = self.new_build
+    build.bucket = "foo-bucket"
+
     gen._SetupSigner(build)
     self.assertIsInstance(
         gen.signer, signer_payloads_client.UnofficialSignerPayloadsClient)
@@ -646,7 +667,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Stub out the required functions.
     run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
-    pubkey_extract_mock = self.PatchObject(gen.signer, 'ExtractPublicKey')
     gen.metadata_size = 10
     gen._private_key = "foo-private-key"
 
@@ -658,7 +678,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     public_key = os.path.join('/work/public_key.pem')
     cmd.extend(['--key', public_key])
     run_mock.assert_called_once_with(cmd)
-    pubkey_extract_mock.assert_called_once_with(public_key)
 
   def testSignPayload(self):
     """Test the overall payload signature process."""
@@ -791,6 +810,8 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     props_file = os.path.join(self.tempdir, 'properties.json')
     osutils.WriteFile(props_file, json.dumps({'metadata_signature': 'foo-sig',
                                               'metadata_size': 10}))
+    gen._public_key = os.path.join(self.tempdir, 'public_key.pem')
+    osutils.WriteFile(gen._public_key, 'foo-pubkey')
 
     payload_path = '/foo'
     props_map = gen.GetPayloadPropertiesMap(payload_path)
@@ -800,6 +821,8 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                        # This tests that appid key is always added to the
                        # properties file even if it is empty.
                        'appid': '',
+                       # This is the base64 encode of 'foo-pubkey'.
+                       'public_key': 'Zm9vLXB1YmtleQ==',
                        'md5_hex': 'deprecated',
                        'sha1_hex': 'deprecated'})
 
