@@ -41,8 +41,13 @@ constexpr base::TimeDelta kHeartbeatResponseTimeout =
     base::TimeDelta::FromSeconds(30);
 constexpr base::TimeDelta kResendDelayOnHostNotFound =
     base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kResendDelayOnUnauthenticated =
+    base::TimeDelta::FromSeconds(10);
 
-const int kMaxResendOnHostNotFoundCount = 12;  // 2 minutes (12 x 10 seconds).
+constexpr int kMaxResendOnHostNotFoundCount =
+    12;  // 2 minutes (12 x 10 seconds).
+constexpr int kMaxResendOnUnauthenticatedCount =
+    6;  // 1 minute (10 x 6 seconds).
 
 const net::BackoffEntry::Policy kBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before applying
@@ -138,6 +143,7 @@ void HeartbeatSender::HeartbeatClient::SetChannelForTest(
 HeartbeatSender::HeartbeatSender(
     base::OnceClosure on_heartbeat_successful_callback,
     base::OnceClosure on_unknown_host_id_error,
+    base::OnceClosure on_auth_error,
     const std::string& host_id,
     MuxingSignalStrategy* signal_strategy,
     const scoped_refptr<const RsaKeyPair>& host_key_pair,
@@ -146,11 +152,13 @@ HeartbeatSender::HeartbeatSender(
     : on_heartbeat_successful_callback_(
           std::move(on_heartbeat_successful_callback)),
       on_unknown_host_id_error_(std::move(on_unknown_host_id_error)),
+      on_auth_error_(std::move(on_auth_error)),
       host_id_(host_id),
       signal_strategy_(signal_strategy),
       host_key_pair_(host_key_pair),
       client_(std::make_unique<HeartbeatClient>(oauth_token_getter)),
       log_to_server_(log_to_server),
+      oauth_token_getter_(oauth_token_getter),
       backoff_(&kBackoffPolicy) {
   DCHECK(host_key_pair_.get());
   DCHECK(log_to_server_);
@@ -291,6 +299,16 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
     return;
   }
 
+  if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
+    oauth_token_getter_->InvalidateCache();
+    if (backoff_.failure_count() > kMaxResendOnUnauthenticatedCount) {
+      if (on_auth_error_) {
+        std::move(on_auth_error_).Run();
+      }
+      return;
+    }
+  }
+
   // Calculate delay before sending the next message.
   base::TimeDelta delay;
   // See CoreErrorDomainTranslator.java for the mapping
@@ -307,8 +325,9 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
     case grpc::StatusCode::NOT_FOUND:
       delay = kResendDelayOnHostNotFound;
       break;
-    // TODO(yuweih): Handle sequence ID mismatch case. This is not implemented
-    // in the server yet.
+    case grpc::StatusCode::UNAUTHENTICATED:
+      delay = kResendDelayOnUnauthenticated;
+      break;
     default:
       delay = backoff_.GetTimeUntilRelease();
       LOG(ERROR) << "Heartbeat failed due to unexpected error: "
