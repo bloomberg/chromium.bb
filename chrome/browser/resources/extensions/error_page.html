@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -12,7 +12,6 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="code_section.html">
 <link rel="import" href="item_util.html">
@@ -21,7 +20,7 @@
 
 <dom-module id="extensions-error-page">
   <template>
-    <style include="paper-button-style cr-icons cr-shared-style shared-style">
+    <style include="cr-icons cr-shared-style shared-style">
       :host {
         display: block;
         height: 100%;
@@ -144,9 +143,9 @@
               aria-label="$i18n{back}" on-click="onCloseButtonTap_">
           </cr-icon-button>
           <span>$i18n{errorsPageHeading}</span>
-          <paper-button on-click="onClearAllTap_" hidden="[[!entries_.length]]">
+          <cr-button on-click="onClearAllTap_" hidden="[[!entries_.length]]">
             $i18n{clearAll}
-          </paper-button>
+          </cr-button>
         </div>
         <div class="section">
           <div id="errorsList">

@@ -1,12 +1,12 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_tooltip_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -16,7 +16,6 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="item_behavior.html">
@@ -31,7 +30,8 @@
 
 <dom-module id="extensions-detail-view">
   <template>
-    <style include="iron-flex cr-shared-style cr-icons action-link paper-button-style shared-style">
+    <style include="iron-flex cr-shared-style cr-icons action-link
+        shared-style">
       :host {
         --iron-icon-fill-color: var(--cr-secondary-text-color);
         display: block;
@@ -189,10 +189,10 @@
                 icon-aria-label="[[data.controlledInfo.type]]">
             </cr-tooltip-icon>
             <template is="dom-if" if="[[isTerminated_(data.state)]]">
-              <paper-button id="terminated-reload-button" class="action-button"
+              <cr-button id="terminated-reload-button" class="action-button"
                   on-click="onReloadTap_">
                 $i18n{itemReload}
-              </paper-button>
+              </cr-button>
             </template>
             <cr-toggle id="enable-toggle"
                 aria-label$="[[appOrExtension(
@@ -217,10 +217,10 @@
               </template>
             </span>
             <template is="dom-if" if="[[!isTerminated_(data.state)]]">
-              <paper-button id="warnings-reload-button" class="action-button"
+              <cr-button id="warnings-reload-button" class="action-button"
                   on-click="onReloadTap_">
                 $i18n{itemReload}
-              </paper-button>
+              </cr-button>
             </template>
           </div>
           <div class="section continuation warning" id="suspicious-warning"
@@ -238,10 +238,10 @@
               hidden$="[[!data.disableReasons.corruptInstall]]">
             <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
             <span>$i18n{itemCorruptInstall}</span>
-            <paper-button id="repair-button" class="action-button"
+            <cr-button id="repair-button" class="action-button"
                 on-click="onRepairTap_">
               $i18n{itemRepair}
-            </paper-button>
+            </cr-button>
           </div>
           <div class="section continuation warning" id="blacklisted-warning"
               hidden$="[[!data.blacklistText]]">

@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
@@ -25,7 +25,8 @@
 
 <dom-module id="extensions-item">
   <template>
-    <style include="iron-flex cr-hidden-style cr-icons action-link paper-button-style shared-style">
+    <style include="iron-flex cr-hidden-style cr-icons action-link
+        shared-style">
       .bounded-text,
       .multiline-clippable-text,
       .clippable-flex-text {
@@ -145,7 +146,7 @@
         padding-top: 8px;
       }
 
-      #button-strip paper-button {
+      #button-strip cr-button {
         margin-inline-start: 8px;
       }
 
@@ -304,20 +305,20 @@
       </div>
       <div id="button-strip" class="layout horizontal center">
         <div class="layout flex horizontal center">
-          <paper-button id="detailsButton" on-click="onDetailsTap_"
+          <cr-button id="detailsButton" on-click="onDetailsTap_"
               aria-describedby="a11yAssociation">
             $i18n{itemDetails}
-          </paper-button>
-          <paper-button id="remove-button" on-click="onRemoveTap_"
+          </cr-button>
+          <cr-button id="remove-button" on-click="onRemoveTap_"
               aria-describedby="a11yAssociation"
               hidden="[[isControlled_(data.controlledInfo)]]">
             $i18n{remove}
-          </paper-button>
+          </cr-button>
           <template is="dom-if" if="[[shouldShowErrorsButton_(data.*)]]">
-            <paper-button id="errors-button" on-click="onErrorsTap_"
+            <cr-button id="errors-button" on-click="onErrorsTap_"
                 aria-describedby="a11yAssociation">
               $i18n{itemErrors}
-            </paper-button>
+            </cr-button>
           </template>
         </div>
         <template is="dom-if" if="[[!computeDevReloadButtonHidden_(data.*)]]">
@@ -326,16 +327,16 @@
               on-click="onReloadTap_"></cr-icon-button>
         </template>
         <template is="dom-if" if="[[data.disableReasons.corruptInstall]]">
-          <paper-button id="repair-button" class="action-button"
+          <cr-button id="repair-button" class="action-button"
               aria-describedby="a11yAssociation" on-click="onRepairTap_">
             $i18n{itemRepair}
-          </paper-button>
+          </cr-button>
         </template>
         <template is="dom-if" if="[[isTerminated_(data.state)]]">
-          <paper-button id="terminated-reload-button" on-click="onReloadTap_"
+          <cr-button id="terminated-reload-button" on-click="onReloadTap_"
               aria-describedby="a11yAssociation" class="action-button">
             $i18n{itemReload}
-          </paper-button>
+          </cr-button>
         </template>
         <cr-toggle id="enable-toggle"
             aria-label$="[[appOrExtension(

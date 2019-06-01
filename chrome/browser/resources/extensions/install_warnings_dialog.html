@@ -1,17 +1,16 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="code_section.html">
 
 <dom-module id="extensions-install-warnings-dialog">
   <template>
-    <style include="cr-shared-style paper-button-style">
+    <style include="cr-shared-style">
       div[slot='body'] ul {
         background-color: var(--paper-red-50);
         margin: 0;
@@ -36,9 +35,9 @@
         </ul>
       </div>
       <div slot="button-container">
-        <paper-button class="action-button" on-click="onOkTap_">
+        <cr-button class="action-button" on-click="onOkTap_">
           $i18n{ok}
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
   </template>

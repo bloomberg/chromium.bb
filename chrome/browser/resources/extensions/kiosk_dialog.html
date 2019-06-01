@@ -1,23 +1,22 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="item_behavior.html">
 <link rel="import" href="kiosk_browser_proxy.html">
 
 <dom-module id="extensions-kiosk-dialog">
   <template>
-    <style include="cr-shared-style paper-button-style cr-icons">
+    <style include="cr-shared-style cr-icons">
       #add-kiosk-app {
         margin-bottom: 10px;
         margin-top: 20px;
@@ -27,7 +26,7 @@
         width: 350px;
       }
 
-      #add-kiosk-app paper-button {
+      #add-kiosk-app cr-button {
         margin-inline-start: 10px;
       }
 
@@ -88,12 +87,12 @@
                 </span>
               </div>
               <div class="item-controls">
-                <paper-button hidden="[[!canEditAutoLaunch_]]"
+                <cr-button hidden="[[!canEditAutoLaunch_]]"
                     on-click="onAutoLaunchButtonTap_">
                   [[getAutoLaunchButtonLabel_(item.autoLaunch,
                       '$i18nPolymer{kioskDisableAutoLaunch}',
                       '$i18nPolymer{kioskEnableAutoLaunch}')]]
-                </paper-button>
+                </cr-button>
                 <cr-icon-button class="icon-delete-gray"
                     on-click="onDeleteAppTap_"></cr-icon-button>
               </div>
@@ -106,10 +105,10 @@
               invalid="[[errorAppId_]]" on-keydown="clearInputInvalid_"
               error-message="[[getErrorMessage_(
                   '$i18nPolymer{kioskInvalidApp}', errorAppId_)]]">
-            <paper-button id="add-button" on-click="onAddAppTap_"
+            <cr-button id="add-button" on-click="onAddAppTap_"
                 disabled="[[!addAppInput_]]" slot="suffix">
               $i18n{add}
-            </paper-button>
+            </cr-button>
           </cr-input>
         </div>
         <cr-checkbox disabled="[[!canEditBailout_]]" id="bailout"
@@ -119,9 +118,9 @@
         </cr-checkbox>
       </div>
       <div slot="button-container">
-        <paper-button class="action-button" on-click="onDoneTap_">
+        <cr-button class="action-button" on-click="onDoneTap_">
           $i18n{done}
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
     <cr-dialog id="confirm-dialog" close-text="$i18n{close}"
@@ -129,14 +128,12 @@
       <div slot="title">$i18n{kioskDisableBailoutWarningTitle}</div>
       <div slot="body">$i18n{kioskDisableBailoutWarningBody}</div>
       <div slot="button-container">
-        <paper-button class="cancel-button"
-            on-click="onBailoutDialogCancelTap_">
+        <cr-button class="cancel-button" on-click="onBailoutDialogCancelTap_">
           $i18n{cancel}
-        </paper-button>
-        <paper-button class="action-button"
-            on-click="onBailoutDialogConfirmTap_">
+        </cr-button>
+        <cr-button class="action-button" on-click="onBailoutDialogConfirmTap_">
           $i18n{confirm}
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
   </template>

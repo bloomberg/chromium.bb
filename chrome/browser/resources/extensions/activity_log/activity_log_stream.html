@@ -1,16 +1,15 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="activity_log_stream_item.html">
 <link rel="import" href="../shared_style.html">
 
 <dom-module id="activity-log-stream">
   <template>
-    <style include="shared-style paper-button-style">
+    <style include="shared-style">
       :host {
         --activity-log-call-and-time-width: 575px;
         --activity-type-width: 85px;
@@ -50,18 +49,17 @@
       <cr-search-field label="$i18n{activityLogSearchLabel}"
         on-search-changed="onSearchChanged_">
       </cr-search-field >
-      <paper-button id="toggle-stream-button" on-click="onToggleButtonClick_">
+      <cr-button id="toggle-stream-button" on-click="onToggleButtonClick_">
         <span hidden$="[[isStreamOn_]]">
           $i18n{startActivityStream}
         </span>
         <span hidden$="[[!isStreamOn_]]">
           $i18n{stopActivityStream}
         </span>
-      </paper-button>
-      <paper-button class="clear-activities-button"
-          on-click="clearStream">
+      </cr-button>
+      <cr-button class="clear-activities-button" on-click="clearStream">
         $i18n{clearActivities}
-      </paper-button>
+      </cr-button>
     </div>
     <div id="empty-stream-message" class="activity-message"
         hidden$="[[!isStreamEmpty_(activityStream_.length)]]">
