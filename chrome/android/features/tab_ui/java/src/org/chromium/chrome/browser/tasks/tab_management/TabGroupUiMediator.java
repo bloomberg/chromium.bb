@@ -97,14 +97,11 @@ public class TabGroupUiMediator {
             @Override
             public void willCloseTab(Tab tab, boolean animate) {
                 if (!mIsTabGroupUiVisible) return;
-                Tab currentTab = mTabModelSelector.getCurrentTab();
-                if (currentTab == null) mResetHandler.resetSheetWithListOfTabs(null);
-                int tabsCount = mTabModelSelector.getTabModelFilterProvider()
-                                        .getCurrentTabModelFilter()
-                                        .getRelatedTabList(currentTab.getId())
-                                        .size();
+                List<Tab> group = mTabModelSelector.getTabModelFilterProvider()
+                                          .getCurrentTabModelFilter()
+                                          .getRelatedTabList(tab.getId());
 
-                mIsClosingAGroup = tabsCount == 0;
+                mIsClosingAGroup = group.size() == 0;
             }
 
             @Override
