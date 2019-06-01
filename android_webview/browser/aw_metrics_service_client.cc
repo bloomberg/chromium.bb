@@ -5,27 +5,20 @@
 #include "android_webview/browser/aw_metrics_service_client.h"
 
 #include <jni.h>
-#include <stdint.h>
-#include <utility>
-#include <vector>
+#include <cstdint>
+#include <memory>
 
 #include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/aw_metrics_log_uploader.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/jni/AwMetricsServiceClient_jni.h"
-#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/bind.h"
-#include "base/files/file_util.h"
-#include "base/guid.h"
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
-#include "base/path_service.h"
 #include "base/strings/string16.h"
-#include "base/task/post_task.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
@@ -35,12 +28,10 @@
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
-#include "components/metrics/url_constants.h"
 #include "components/metrics/version_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 
 namespace android_webview {
@@ -48,14 +39,6 @@ namespace android_webview {
 base::LazyInstance<AwMetricsServiceClient>::Leaky g_lazy_instance_;
 
 namespace {
-
-const int kUploadIntervalMinutes = 30;
-
-// A GUID in text form is composed of 32 hex digits and 4 hyphens.
-const size_t kGuidSize = 32 + 4;
-// The legacy file where WebView used to store the client ID, before it was
-// moved to prefs.
-const char* const kGuidFileName = "metrics_guid";
 
 // Callbacks for metrics::MetricsStateManager::Create. Store/LoadClientInfo
 // allow Windows Chrome to back up ClientInfo. They're no-ops for WebView.
@@ -87,56 +70,26 @@ bool IsInSample(const std::string& client_id) {
   return hash < UINT32_MAX / 50u;
 }
 
-// Load the client ID from the legacy file, if any, store it in |id|, and then
-// delete the file.
-// TODO(crbug/939002): Remove this after ~all clients have migrated the ID.
-void LoadLegacyClientId(std::unique_ptr<std::string>* id) {
-  base::FilePath path;
-  if (!internal::GetLegacyClientIdPath(&path))
-    return;
-  std::string contents;
-  if (base::ReadFileToStringWithMaxSize(path, &contents, kGuidSize)) {
-    if (base::IsValidGUID(contents))
-      *id = std::make_unique<std::string>(std::move(contents));
-  }
-  base::DeleteFile(path, /*recursive=*/false);
-}
-
-std::unique_ptr<::metrics::MetricsService> CreateMetricsService(
-    ::metrics::MetricsStateManager* state_manager,
-    ::metrics::MetricsServiceClient* client,
+std::unique_ptr<metrics::MetricsService> CreateMetricsService(
+    metrics::MetricsStateManager* state_manager,
+    metrics::MetricsServiceClient* client,
     PrefService* prefs) {
   auto service =
-      std::make_unique<::metrics::MetricsService>(state_manager, client, prefs);
+      std::make_unique<metrics::MetricsService>(state_manager, client, prefs);
   service->RegisterMetricsProvider(
-      std::make_unique<::metrics::NetworkMetricsProvider>(
+      std::make_unique<metrics::NetworkMetricsProvider>(
           content::CreateNetworkConnectionTrackerAsyncGetter()));
   service->RegisterMetricsProvider(
-      std::make_unique<::metrics::GPUMetricsProvider>());
+      std::make_unique<metrics::GPUMetricsProvider>());
   service->RegisterMetricsProvider(
-      std::make_unique<::metrics::ScreenInfoMetricsProvider>());
+      std::make_unique<metrics::ScreenInfoMetricsProvider>());
   service->RegisterMetricsProvider(
-      std::make_unique<::metrics::CallStackProfileMetricsProvider>());
+      std::make_unique<metrics::CallStackProfileMetricsProvider>());
   service->InitializeMetricsRecordingState();
   return service;
 }
 
 }  // namespace
-
-namespace internal {
-
-// Get the path to the file where WebView used to store the client ID, before
-// it was moved to prefs. Return true/false on success/failure.
-// TODO(crbug/939002): Remove this after ~all clients have migrated the ID.
-bool GetLegacyClientIdPath(base::FilePath* path) {
-  base::FilePath dir;
-  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &dir))
-    return false;
-  *path = dir.Append(FILE_PATH_LITERAL(kGuidFileName));
-  return true;
-}
-
-}  // namespace internal
 
 // static
 AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
@@ -150,7 +103,6 @@ AwMetricsServiceClient::~AwMetricsServiceClient() {}
 
 void AwMetricsServiceClient::Initialize(PrefService* pref_service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(pref_service_ == nullptr);  // Initialize should only happen once.
   DCHECK(!init_finished_);
 
   pref_service_ = pref_service;
@@ -160,11 +112,8 @@ void AwMetricsServiceClient::Initialize(PrefService* pref_service) {
       base::BindRepeating(&StoreClientInfo),
       base::BindRepeating(&LoadClientInfo));
 
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&LoadLegacyClientId, &legacy_client_id_),
-      base::BindOnce(&AwMetricsServiceClient::InitializeWithClientId,
-                     base::Unretained(this)));
+  init_finished_ = true;
+  MaybeStartMetrics();
 }
 
 void AwMetricsServiceClient::MaybeStartMetrics() {
@@ -223,7 +172,7 @@ metrics::MetricsService* AwMetricsServiceClient::GetMetricsService() {
 void AwMetricsServiceClient::SetMetricsClientId(const std::string& client_id) {}
 
 int32_t AwMetricsServiceClient::GetProduct() {
-  return ::metrics::ChromeUserMetricsExtension::ANDROID_WEBVIEW;
+  return metrics::ChromeUserMetricsExtension::ANDROID_WEBVIEW;
 }
 
 std::string AwMetricsServiceClient::GetApplicationLocale() {
@@ -255,17 +204,17 @@ AwMetricsServiceClient::CreateUploader(
     base::StringPiece mime_type,
     metrics::MetricsLogUploader::MetricServiceType service_type,
     const metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {
-  // |server_url|, |insecure_server_url| and |mime_type| are unused because
-  // WebView uses the platform logging mechanism instead of the normal UMA
-  // server.
-  return std::unique_ptr<::metrics::MetricsLogUploader>(
-      new AwMetricsLogUploader(on_upload_complete));
+  // |server_url|, |insecure_server_url|, and |mime_type| are unused because
+  // WebView sends metrics to the platform logging mechanism rather than to
+  // Chrome's metrics server.
+  return std::make_unique<AwMetricsLogUploader>(on_upload_complete);
 }
 
 base::TimeDelta AwMetricsServiceClient::GetStandardUploadInterval() {
   // The platform logging mechanism is responsible for upload frequency; this
-  // just specifies how frequently to provide logs to the platform.
-  return base::TimeDelta::FromMinutes(kUploadIntervalMinutes);
+  // just specifies how frequently to provide logs to the platform. 30 minutes
+  // was chosen arbitrarily.
+  return base::TimeDelta::FromMinutes(30);
 }
 
 std::string AwMetricsServiceClient::GetAppPackageName() {
@@ -278,20 +227,6 @@ std::string AwMetricsServiceClient::GetAppPackageName() {
   if (j_app_name)
     return ConvertJavaStringToUTF8(env, j_app_name);
   return std::string();
-}
-
-void AwMetricsServiceClient::InitializeWithClientId() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!init_finished_);
-
-  if (legacy_client_id_) {
-    pref_service_->SetString(metrics::prefs::kMetricsClientID,
-                             *legacy_client_id_);
-    legacy_client_id_.reset();
-  }
-
-  init_finished_ = true;
-  MaybeStartMetrics();
 }
 
 bool AwMetricsServiceClient::IsInSample() {

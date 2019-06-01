@@ -18,20 +18,11 @@
 
 class PrefService;
 
-namespace base {
-class FilePath;
-}
-
 namespace metrics {
 class MetricsStateManager;
 }
 
 namespace android_webview {
-
-// Exposed for testing.
-namespace internal {
-bool GetLegacyClientIdPath(base::FilePath* path);
-}
 
 // AwMetricsServiceClient is a singleton which manages WebView metrics
 // collection.
@@ -44,17 +35,12 @@ bool GetLegacyClientIdPath(base::FilePath* path);
 // SetHaveMetricsConsent(). The last is recorded in |is_in_sample_|.
 //
 // Metrics are pseudonymously identified by a randomly-generated "client ID".
-// WebView stores this in the app's data directory. There's a different such
-// directory for each user, for each app, on each device. So the ID should be
-// unique per (device, app, user) tuple.
-//
-// The client ID should be stored in prefs. But as a vestige from before WebView
-// persisted prefs across runs, it may be stored in a separate file named
-// "metrics_guid". If such a file is found, it should be deleted and the ID
-// moved into prefs.
+// WebView stores this in prefs, written to the app's data directory. There's a
+// different such directory for each user, for each app, on each device. So the
+// ID should be unique per (device, app, user) tuple.
 //
 // To avoid the appearance that we're doing anything sneaky, the client ID
-// should only be created or persisted when neither the user nor the app have
+// should only be created and retained when neither the user nor the app have
 // opted out. Otherwise, the presence of the ID could give the impression that
 // metrics were being collected.
 //
@@ -62,43 +48,36 @@ bool GetLegacyClientIdPath(base::FilePath* path);
 //
 //   startup
 //      │
-//      ├──────────────────────────┐
-//      │                          ▼
-//      ▼                       query GMS for consent
-//   Initialize()                  │
-//      │                          │
-//      ▼                          │
-//   LoadLegacyClientId()          │
-//      │                          │
-//      ▼                          │
-//   InitializeWithClientId()      ▼
-//      │                       SetHaveMetricsConsent()
-//      │                          │
-//      │ ┌────────────────────────┘
+//      ├────────────┐
+//      │            ▼
+//      │         query GMS for consent
+//      ▼            │
+//   Initialize()    │
+//      │            ▼
+//      │         SetHaveMetricsConsent()
+//      │            │
+//      │ ┌──────────┘
 //      ▼ ▼
 //   MaybeStartMetrics()
 //      │
 //      ▼
 //   MetricsService::Start()
 //
-// LoadLegacyClientId() is the only function in this diagram that happens off
-// the UI thread. It checks for the legacy metrics_guid file. If it contains a
-// client ID, it stores the ID in |legacy_client_id_|. Then it deletes the file.
-// Once ~all clients have deleted the file, LoadLegacyClientId() can be removed,
-// and Initialize() and InitializeWithClientId() can be merged.
-//
-// Querying GMS is slow, so SetHaveMetricsConsent() typically happens after
-// InitializeWithClientId(). But it may happen before Initialize(), or between
-// Initialize() and InitializeWithClientId().
+// All the named functions in this diagram happen on the UI thread. Querying GMS
+// happens in the background, and the result is posted back to the UI thread, to
+// SetHaveMetricsConsent(). Querying GMS is slow, so SetHaveMetricsConsent()
+// typically happens after Initialize(), but it may happen before.
 //
 // Each path sets a flag, |init_finished_| or |set_consent_finished_|, to show
 // that path has finished, and then calls MaybeStartMetrics(). When
-// MaybeStartMetrics() is called the second time, it sees both flags true,
-// meaning we have both the client ID (if any) and the user/app opt-out status.
+// MaybeStartMetrics() is called the first time, it sees only one flag is true,
+// and does nothing. When MaybeStartMetrics() is called the second time, it
+// decides whether to start metrics.
 //
-// If consent is granted, MaybeStartMetrics() then determines sampling by
-// hashing the ID (generating a new ID if there was none), and may then enable
-// metrics. Otherwise, it clears the client ID.
+// If consent was granted, MaybeStartMetrics() determines sampling by hashing
+// the client ID (generating a new ID if there was none). If this client is in
+// the sample, it then calls MetricsService::Start(). If consent was not
+// granted, MaybeStartMetrics() instead clears the client ID, if any.
 class AwMetricsServiceClient : public metrics::MetricsServiceClient,
                                public metrics::EnabledStateProvider {
   friend struct base::LazyInstanceTraitsBase<AwMetricsServiceClient>;
@@ -138,17 +117,10 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   std::string GetAppPackageName() override;
 
  protected:
-  // virtual for testing
-  virtual void InitializeWithClientId();
-  virtual bool IsInSample();
+  virtual bool IsInSample();  // virtual for testing
 
  private:
   void MaybeStartMetrics();
-
-  // Temporarily stores a client ID loaded from the legacy file, to pass it from
-  // LoadLegacyClientId() to InitializeWithClientId().
-  // TODO(crbug/939002): Remove this after ~all clients have migrated the ID.
-  std::unique_ptr<std::string> legacy_client_id_;
 
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
   std::unique_ptr<metrics::MetricsService> metrics_service_;
