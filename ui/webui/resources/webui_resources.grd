@@ -327,9 +327,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_CR_UI_ARRAY_DATA_MODEL"
                  file="js/cr/ui/array_data_model.js"
                  type="chrome_html" compress="gzip" flattenhtml="true" />
-      <structure name="IDR_WEBUI_JS_CR_UI_AUTOCOMPLETE_LIST"
-                 file="js/cr/ui/autocomplete_list.js"
-                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_BUBBLE"
                  file="js/cr/ui/bubble.js" type="chrome_html"
                  compress="gzip" />
@@ -414,23 +411,6 @@ without changes to the corresponding grd file. -->
                  type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_GRID"
                  file="js/cr/ui/grid.js" type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_TABLE"
-                 file="js/cr/ui/table.js" type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_TABLE_COLUMN"
-                 file="js/cr/ui/table/table_column.js"
-                 type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_TABLE_COLUMN_MODEL"
-                 file="js/cr/ui/table/table_column_model.js"
-                 type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_TABLE_HEADER"
-                 file="js/cr/ui/table/table_header.js"
-                 type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_TABLE_LIST"
-                 file="js/cr/ui/table/table_list.js"
-                 type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_TABLE_SPLITTER"
-                 file="js/cr/ui/table/table_splitter.js"
-                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_TABS"
                  file="js/cr/ui/tabs.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_TREE"
