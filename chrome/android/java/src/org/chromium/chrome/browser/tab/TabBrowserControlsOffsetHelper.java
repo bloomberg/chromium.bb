@@ -103,7 +103,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
         mPreviousContentOffsetY = contentOffsetY;
         mAreOffsetsInitialized = true;
 
-        if (FullscreenManager.from(mTab) == null) return;
+        if (mTab.isHidden()) return;
         if (SadTab.isShowing(mTab) || mTab.isNativePage()) {
             showAndroidControls(false);
         } else {

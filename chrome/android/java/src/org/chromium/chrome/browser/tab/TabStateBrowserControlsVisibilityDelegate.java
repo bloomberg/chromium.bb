@@ -159,7 +159,7 @@ public class TabStateBrowserControlsVisibilityDelegate
         enableHidingBrowserControls &= !mTab.isShowingErrorPage();
         enableHidingBrowserControls &= !webContents.isShowingInterstitialPage();
         enableHidingBrowserControls &= !mTab.isRendererUnresponsive();
-        enableHidingBrowserControls &= (FullscreenManager.from(mTab) != null);
+        enableHidingBrowserControls &= !mTab.isHidden();
         enableHidingBrowserControls &= DeviceClassManager.enableFullscreen();
         enableHidingBrowserControls &= !mIsFullscreenWaitingForLoad;
         enableHidingBrowserControls &= !TabModalPresenter.isDialogShowing(mTab);

@@ -87,7 +87,7 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
 
             @Override
             public void onRendererResponsiveStateChanged(Tab tab, boolean isResponsive) {
-                if (FullscreenManager.from(mTab) == null) return;
+                if (mTab.isHidden()) return;
                 if (isResponsive) {
                     updateEnabledState();
                 } else {
@@ -198,7 +198,7 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
 
     @Override
     public void onNodeAttributeUpdated(boolean editable, boolean password) {
-        if (FullscreenManager.from(mTab) == null) return;
+        if (mTab.isHidden()) return;
         updateEnabledState();
     }
 
