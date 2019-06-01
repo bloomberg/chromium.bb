@@ -1641,6 +1641,7 @@ test("ash_unittests") {
     "keyboard/ash_keyboard_controller_unittest.cc",
     "keyboard/virtual_keyboard_controller_unittest.cc",
     "keyboard/virtual_keyboard_unittest.cc",
+    "kiosk_next/kiosk_next_home_controller_unittest.cc",
     "kiosk_next/kiosk_next_shell_controller_unittest.cc",
     "kiosk_next/kiosk_next_shell_test_util.cc",
     "kiosk_next/kiosk_next_shell_test_util.h",

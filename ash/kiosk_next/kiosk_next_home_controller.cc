@@ -11,13 +11,18 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/container_finder.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/toplevel_window_event_handler.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/logging.h"
 #include "ui/aura/window.h"
+#include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
+#include "ui/events/event_target.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -111,16 +116,44 @@ void KioskNextHomeController::OnWindowAdded(aura::Window* new_window) {
 
   Shell::Get()->screen_orientation_controller()->LockOrientationForWindow(
       home_screen_window_, OrientationLockType::kLandscape);
+  Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
 }
 
 void KioskNextHomeController::OnWillRemoveWindow(aura::Window* window) {
   DCHECK_EQ(home_screen_window_, window);
+  Shell::Get()->RemovePreTargetHandler(this);
   home_screen_window_ = nullptr;
 }
 
 void KioskNextHomeController::OnWindowDestroying(aura::Window* window) {
   if (window == home_screen_container_)
     home_screen_container_ = nullptr;
+}
+
+void KioskNextHomeController::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() != ui::EventType::ET_GESTURE_SCROLL_BEGIN)
+    return;
+
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  int component = wm::GetNonClientComponent(target, event->location());
+
+  aura::Window* new_target =
+      ToplevelWindowEventHandler::GetTargetForClientAreaGesture(event, target);
+
+  if (new_target)
+    target = new_target;
+
+  if (target != home_screen_container_ && target != home_screen_window_)
+    return;
+
+  if (component == HTCLIENT) {
+    event->SetHandled();
+    event->StopPropagation();
+
+    auto* overview_controller = Shell::Get()->overview_controller();
+    if (!overview_controller->InOverviewSession())
+      overview_controller->ToggleOverview();
+  }
 }
 
 }  // namespace ash

@@ -37,65 +37,6 @@ namespace {
 // window from the top of the screen in tablet mode.
 constexpr int kDragStartTopEdgeInset = 8;
 
-// Returns the toplevel window that should be dragged for a gesture event that
-// occurs in the HTCLIENT area of a window. Returns null if there shouldn't be
-// special casing for this HTCLIENT area gesture. This is used to drag app
-// windows which are fullscreened/maximized in tablet mode from the top of the
-// screen, which don't have a window frame.
-aura::Window* GetTargetForClientAreaGesture(ui::GestureEvent* event,
-                                            aura::Window* target) {
-  if (event->type() != ui::ET_GESTURE_SCROLL_BEGIN)
-    return nullptr;
-
-  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(target);
-  if (!widget)
-    return nullptr;
-
-  aura::Window* toplevel = widget->GetNativeWindow();
-
-  if (!Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled()) {
-    return nullptr;
-  }
-  wm::WindowState* window_state = wm::GetWindowState(toplevel);
-  if (!window_state ||
-      (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
-       !window_state->IsSnapped())) {
-    return nullptr;
-  }
-
-  if (toplevel->GetProperty(aura::client::kAppType) ==
-      static_cast<int>(AppType::BROWSER)) {
-    return nullptr;
-  }
-
-  if (event->details().scroll_y_hint() < 0)
-    return nullptr;
-
-  const gfx::Point location_in_screen =
-      event->target()->GetScreenLocation(*event);
-  const gfx::Rect work_area_bounds =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(static_cast<aura::Window*>(event->target()))
-          .work_area();
-
-  gfx::Rect hit_bounds_in_screen(work_area_bounds);
-  hit_bounds_in_screen.set_height(kDragStartTopEdgeInset);
-
-  // There may be a bezel sensor off screen logically above
-  // |hit_bounds_in_screen|. Handles the ET_GESTURE_SCROLL_BEGIN event
-  // triggered in the bezel area too.
-  bool in_bezel = location_in_screen.y() < hit_bounds_in_screen.y() &&
-                  location_in_screen.x() >= hit_bounds_in_screen.x() &&
-                  location_in_screen.x() < hit_bounds_in_screen.right();
-
-  if (hit_bounds_in_screen.Contains(location_in_screen) || in_bezel)
-    return toplevel;
-
-  return nullptr;
-}
-
 // Returns whether |window| can be moved via a two finger drag given
 // the hittest results of the two fingers.
 bool CanStartTwoFingerMove(aura::Window* window,
@@ -556,6 +497,61 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
 
 void ToplevelWindowEventHandler::RevertDrag() {
   CompleteDrag(DragResult::REVERT);
+}
+
+aura::Window* ToplevelWindowEventHandler::GetTargetForClientAreaGesture(
+    ui::GestureEvent* event,
+    aura::Window* target) {
+  if (event->type() != ui::ET_GESTURE_SCROLL_BEGIN)
+    return nullptr;
+
+  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(target);
+  if (!widget)
+    return nullptr;
+
+  aura::Window* toplevel = widget->GetNativeWindow();
+
+  if (!Shell::Get()
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled()) {
+    return nullptr;
+  }
+  wm::WindowState* window_state = wm::GetWindowState(toplevel);
+  if (!window_state ||
+      (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
+       !window_state->IsSnapped())) {
+    return nullptr;
+  }
+
+  if (toplevel->GetProperty(aura::client::kAppType) ==
+      static_cast<int>(AppType::BROWSER)) {
+    return nullptr;
+  }
+
+  if (event->details().scroll_y_hint() < 0)
+    return nullptr;
+
+  const gfx::Point location_in_screen =
+      event->target()->GetScreenLocation(*event);
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(static_cast<aura::Window*>(event->target()))
+          .work_area();
+
+  gfx::Rect hit_bounds_in_screen(work_area_bounds);
+  hit_bounds_in_screen.set_height(kDragStartTopEdgeInset);
+
+  // There may be a bezel sensor off screen logically above
+  // |hit_bounds_in_screen|. Handles the ET_GESTURE_SCROLL_BEGIN event
+  // triggered in the bezel area too.
+  bool in_bezel = location_in_screen.y() < hit_bounds_in_screen.y() &&
+                  location_in_screen.x() >= hit_bounds_in_screen.x() &&
+                  location_in_screen.x() < hit_bounds_in_screen.right();
+
+  if (hit_bounds_in_screen.Contains(location_in_screen) || in_bezel)
+    return toplevel;
+
+  return nullptr;
 }
 
 ::wm::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
