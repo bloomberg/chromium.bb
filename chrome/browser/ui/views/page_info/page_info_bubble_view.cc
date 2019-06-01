@@ -558,9 +558,15 @@ void PageInfoBubbleView::OnChosenObjectDeleted(
 
 void PageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
   PageInfoBubbleViewBase::OnWidgetDestroying(widget);
+
   bool reload_prompt;
   presenter_->OnUIClosing(&reload_prompt);
-  std::move(closing_callback_).Run(widget->closed_reason(), reload_prompt);
+
+  // This method mostly shouldn't be re-entrant but there are a few cases where
+  // it can be (see crbug/966308). In that case, we have already run the closing
+  // callback so should not attempt to do it again.
+  if (closing_callback_)
+    std::move(closing_callback_).Run(widget->closed_reason(), reload_prompt);
 }
 
 void PageInfoBubbleView::ButtonPressed(views::Button* button,
