@@ -640,6 +640,10 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
   if (space <= 0)
     return false;
 
+  // Can't justify an empty string.
+  if (end_offset == line_info->StartOffset())
+    return false;
+
   // Construct the line text to compute spacing for.
   StringBuilder line_text_builder;
   line_text_builder.Append(StringView(line_info->ItemsData().text_content,
@@ -656,6 +660,8 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
 
   // Compute the spacing to justify.
   String line_text = line_text_builder.ToString();
+  DCHECK_GT(line_text.length(), 0u);
+
   ShapeResultSpacing<String> spacing(line_text);
   spacing.SetExpansion(space, line_info->BaseDirection(),
                        line_info->LineStyle().GetTextJustify());
