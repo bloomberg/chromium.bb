@@ -34,6 +34,7 @@
 #include "content/common/buildflags.h"
 #include "content/common/download/mhtml_file_writer.mojom.h"
 #include "content/common/frame.mojom.h"
+#include "content/common/frame_delete_intention.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/host_zoom.mojom.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
@@ -1111,7 +1112,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSwapOut(int proxy_routing_id,
                  bool is_loading,
                  const FrameReplicationState& replicated_frame_state);
-  void OnDeleteFrame();
+  void OnDeleteFrame(FrameDeleteIntention intent);
   void OnStop();
   void OnCollapse(bool collapse);
   void OnShowContextMenu(const gfx::Point& location);

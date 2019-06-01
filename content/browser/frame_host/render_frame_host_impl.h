@@ -41,6 +41,7 @@
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/csp_context.h"
 #include "content/common/frame.mojom.h"
+#include "content/common/frame_delete_intention.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/image_downloader/image_downloader.mojom.h"
@@ -328,7 +329,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Deletes the RenderFrame in the renderer process.
   // Postcondition: |is_active()| will return false.
-  void DeleteRenderFrame();
+  void DeleteRenderFrame(FrameDeleteIntention intent);
 
   // Tracks whether the RenderFrame for this RenderFrameHost has been created in
   // the renderer process.  This is currently only used for subframes.

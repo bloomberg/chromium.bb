@@ -6300,6 +6300,11 @@ crbug.com/953153 external/wpt/speech-api/idlharness.window.html [ Pass Failure ]
 # portals-adopt-predecessor occasionally times out.
 crbug.com/952584 external/wpt/portals/portals-adopt-predecessor.html [ Pass Timeout ]
 
+# portals/csp/frame-src.sub.html crashes because of a race between cancelling a
+# speculative navigation in the browser, and committing the navigation in the
+# renderer.
+crbug.com/838348 external/wpt/portals/csp/frame-src.sub.html [ Pass Crash ]
+
 # Sheriff 2019-04-17
 crbug.com/953534 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
 

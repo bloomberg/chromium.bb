@@ -26,6 +26,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/content_security_policy/csp_context.h"
 #include "content/common/content_security_policy_header.h"
+#include "content/common/frame_delete_intention.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
@@ -101,6 +102,8 @@ using FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap =
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START FrameMsgStart
+IPC_ENUM_TRAITS_MAX_VALUE(content::FrameDeleteIntention,
+                          content::FrameDeleteIntention::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::FrameOwnerElementType,
                           blink::FrameOwnerElementType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(
@@ -804,7 +807,7 @@ IPC_MESSAGE_ROUTED1(FrameMsg_UpdateOpener, int /* opener_routing_id */)
 IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64_t /* id */)
 
 // Instructs the renderer to delete the RenderFrame.
-IPC_MESSAGE_ROUTED0(FrameMsg_Delete)
+IPC_MESSAGE_ROUTED1(FrameMsg_Delete, content::FrameDeleteIntention)
 
 // Instructs the renderer to invoke the frame's beforeunload event handler.
 // Expects the result to be returned via FrameHostMsg_BeforeUnload_ACK.
