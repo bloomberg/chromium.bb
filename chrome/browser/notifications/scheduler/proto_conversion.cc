@@ -284,6 +284,7 @@ void ClientStateFromProto(proto::ClientState* proto,
     impression.task_start_time =
         FromSchedulerTaskTime(proto_impression.task_start_time());
     impression.guid = proto_impression.guid();
+    impression.type = client_state->type;
     client_state->impressions.emplace_back(std::move(impression));
   }
 

@@ -96,12 +96,17 @@ TEST(ProtoConversionTest, ClientStateProtoConversion) {
 // Verifies impression proto conversion.
 TEST(ProtoConversionTest, ImpressionProtoConversion) {
   ClientState client_state;
+  client_state.type = SchedulerClientType::kTest1;
   base::Time create_time;
   bool success = base::Time::FromString("03/25/19 00:00:00 AM", &create_time);
   DCHECK(success);
-  Impression impression{
-      create_time, UserFeedback::kHelpful,      ImpressionResult::kPositive,
-      true,        SchedulerTaskTime::kMorning, kGuid};
+  Impression impression{create_time,
+                        UserFeedback::kHelpful,
+                        ImpressionResult::kPositive,
+                        true /*integrated*/,
+                        SchedulerTaskTime::kMorning,
+                        kGuid,
+                        SchedulerClientType::kTest1};
   client_state.impressions.emplace_back(impression);
   TestClientStateConversion(&client_state);
 

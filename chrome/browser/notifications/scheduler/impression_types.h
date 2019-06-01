@@ -48,6 +48,11 @@ struct Impression {
 
   // The unique identifier of the notification.
   std::string guid;
+
+  // The type of the notification. Not persisted to disk, set after database
+  // initialized.
+  // TODO(xingliu): Consider to persist this as well.
+  SchedulerClientType type = SchedulerClientType::kUnknown;
 };
 
 // Contains details about supression and recovery after suppression expired.

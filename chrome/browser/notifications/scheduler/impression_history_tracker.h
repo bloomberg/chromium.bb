@@ -8,6 +8,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -16,26 +17,41 @@
 #include "chrome/browser/notifications/scheduler/collection_store.h"
 #include "chrome/browser/notifications/scheduler/impression_types.h"
 #include "chrome/browser/notifications/scheduler/scheduler_config.h"
+#include "chrome/browser/notifications/scheduler/user_action_handler.h"
 
 namespace notifications {
 
 // Provides functionalities to update notification impression history and adjust
 // maximum daily notification shown to the user.
-class ImpressionHistoryTracker {
+class ImpressionHistoryTracker : public UserActionHandler {
  public:
   using ClientStates =
       std::map<SchedulerClientType, std::unique_ptr<ClientState>>;
   using InitCallback = base::OnceCallback<void(bool)>;
 
+  class Delegate {
+   public:
+    Delegate() = default;
+    virtual ~Delegate() = default;
+
+    // Called when the impression data is updated.
+    virtual void OnImpressionUpdated() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
   // Initializes the impression tracker.
-  virtual void Init(InitCallback callback) = 0;
+  virtual void Init(Delegate* delegate, InitCallback callback) = 0;
 
   // Analyzes the impression history for all notification clients, and adjusts
   // the |current_max_daily_show|.
   virtual void AnalyzeImpressionHistory() = 0;
 
   // Queries the client states.
-  virtual const ClientStates& GetClientStates() const = 0;
+  virtual void GetClientStates(
+      std::map<SchedulerClientType, const ClientState*>* client_states)
+      const = 0;
 
   virtual ~ImpressionHistoryTracker() = default;
 
@@ -56,9 +72,14 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
 
  private:
   // ImpressionHistoryTracker implementation.
-  void Init(InitCallback callback) override;
+  void Init(Delegate* delegate, InitCallback callback) override;
   void AnalyzeImpressionHistory() override;
-  const ClientStates& GetClientStates() const override;
+  void GetClientStates(std::map<SchedulerClientType, const ClientState*>*
+                           client_states) const override;
+  void OnClick(const std::string& notification_id) override;
+  void OnActionClick(const std::string& notification_id,
+                     ActionButtonType button_type) override;
+  void OnDismiss(const std::string& notification_id) override;
 
   // Called after |store_| is initialized.
   void OnStoreInitialized(InitCallback callback,
@@ -67,8 +88,8 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
 
   // Helper method to prune impressions created before |start_time|. Assumes
   // |impressions| are sorted by creation time.
-  static void PruneImpression(std::deque<Impression*>* impressions,
-                              const base::Time& start_time);
+  static void PruneImpressionByCreateTime(std::deque<Impression*>* impressions,
+                                          const base::Time& start_time);
 
   // Analyzes the impression history for a particular client.
   void AnalyzeImpressionHistory(ClientState* client_state);
@@ -87,12 +108,37 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   void ApplyNegativeImpression(ClientState* client_state,
                                Impression* impression);
 
-  // Recovers from suppression caused by negative impressions.
-  void SuppressionRecovery(ClientState* client_state);
+  // Checks if suppression is expired and recover to a certain daily quota.
+  void CheckSuppressionExpiration(ClientState* client_state);
+
+  // Tries to update the database records for |type|. Returns whether the db is
+  // actually updated.
+  bool MaybeUpdateDb(SchedulerClientType type);
+  bool MaybeUpdateAllDb();
+
+  // Sets/Gets the flag if impression data for |type| needs update in the
+  // database.
+  void SetNeedsUpdate(SchedulerClientType type, bool needs_update);
+  bool NeedsUpdate(SchedulerClientType type) const;
+
+  // Notifies the delegate about impression data update.
+  void NotifyImpressionUpdate();
+
+  // Finds an impression that needs to update based on notification id.
+  Impression* FindImpressionNeedsUpdate(const std::string& notification_guid);
+
+  void OnClickInternal(const std::string& notification_guid, bool update_db);
+  void OnButtonClickInternal(const std::string& notification_guid,
+                             ActionButtonType button_type,
+                             bool update_db);
+  void OnDismissInternal(const std::string& notification_guid, bool update_db);
 
   // Impression history and global states for all notification scheduler
   // clients.
   ClientStates client_states_;
+
+  // Notification guid to Impression map.
+  std::map<std::string, Impression*> impression_map_;
 
   // The storage that persists data.
   std::unique_ptr<CollectionStore<ClientState>> store_;
@@ -102,6 +148,11 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
 
   // Whether the impression tracker is successfully initialized.
   bool initialized_;
+
+  // If the database needs an update when any of the impression data is updated.
+  std::map<SchedulerClientType, bool> need_update_db_;
+
+  Delegate* delegate_;
 
   base::WeakPtrFactory<ImpressionHistoryTrackerImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ImpressionHistoryTrackerImpl);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/scheduler/notification_scheduler.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -22,6 +23,7 @@
 #include "chrome/browser/notifications/scheduler/notification_scheduler_client_registrar.h"
 #include "chrome/browser/notifications/scheduler/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/scheduled_notification_manager.h"
+#include "chrome/browser/notifications/scheduler/user_action_handler.h"
 
 namespace notifications {
 namespace {
@@ -40,19 +42,22 @@ class InitHelper {
   // Initializes subsystems in notification scheduler, |callback| will be
   // invoked if all initializations finished or anyone of them failed. The
   // object should be destroyed along with the |callback|.
-  void Init(NotificationSchedulerContext* context,
-            ScheduledNotificationManager::Delegate* delegate,
-            InitCallback callback) {
+  void Init(
+      NotificationSchedulerContext* context,
+      ScheduledNotificationManager::Delegate* notification_manager_delegate,
+      ImpressionHistoryTracker::Delegate* impression_tracker_delegate,
+      InitCallback callback) {
     callback_ = std::move(callback);
     context->icon_store()->Init(base::BindOnce(
         &InitHelper::OnIconStoreInitialized, weak_ptr_factory_.GetWeakPtr()));
     context->impression_tracker()->Init(
+        impression_tracker_delegate,
         base::BindOnce(&InitHelper::OnImpressionTrackerInitialized,
                        weak_ptr_factory_.GetWeakPtr()));
-
     context->notification_manager()->Init(
-        delegate, base::BindOnce(&InitHelper::OnNotificationManagerInitialized,
-                                 weak_ptr_factory_.GetWeakPtr()));
+        notification_manager_delegate,
+        base::BindOnce(&InitHelper::OnNotificationManagerInitialized,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -98,7 +103,9 @@ class InitHelper {
 class NotificationSchedulerImpl
     : public NotificationScheduler,
       public NotificationBackgroundTaskScheduler::Handler,
-      public ScheduledNotificationManager::Delegate {
+      public ScheduledNotificationManager::Delegate,
+      public ImpressionHistoryTracker::Delegate,
+      public UserActionHandler {
  public:
   NotificationSchedulerImpl(
       std::unique_ptr<NotificationSchedulerContext> context)
@@ -112,7 +119,7 @@ class NotificationSchedulerImpl
     auto helper = std::make_unique<InitHelper>();
     auto* helper_ptr = helper.get();
     helper_ptr->Init(
-        context_.get(), this,
+        context_.get(), this, this,
         base::BindOnce(&NotificationSchedulerImpl::OnInitialized,
                        weak_ptr_factory_.GetWeakPtr(), std::move(helper),
                        std::move(init_callback)));
@@ -153,22 +160,23 @@ class NotificationSchedulerImpl
     NOTIMPLEMENTED();
   }
 
+  // ImpressionHistoryTracker::Delegate implementation.
+  void OnImpressionUpdated() override { ScheduleBackgroundTask(); }
+
   void FindNotificationToShow(SchedulerTaskTime task_start_time) {
     DisplayDecider::Results results;
     ScheduledNotificationManager::Notifications notifications;
     context_->notification_manager()->GetAllNotifications(&notifications);
-    const auto& client_states =
-        context_->impression_tracker()->GetClientStates();
-    DisplayDecider::ClientStates client_state_ptrs;
-    for (const auto& client_state : client_states) {
-      client_state_ptrs.emplace(client_state.first, client_state.second.get());
-    }
+
+    DisplayDecider::ClientStates client_states;
+    context_->impression_tracker()->GetClientStates(&client_states);
+
     std::vector<SchedulerClientType> clients;
     context_->client_registrar()->GetRegisteredClients(&clients);
 
     context_->display_decider()->FindNotificationsToShow(
         context_->config(), std::move(clients), DistributionPolicy::Create(),
-        task_start_time, std::move(notifications), std::move(client_state_ptrs),
+        task_start_time, std::move(notifications), std::move(client_states),
         &results);
 
     // TODO(xingliu): Update impression data after notification shown.
@@ -182,6 +190,19 @@ class NotificationSchedulerImpl
     // TODO(xingliu): Implements a class to determine the next background task
     // based on scheduled notification data.
     NOTIMPLEMENTED();
+  }
+
+  void OnClick(const std::string& notification_id) override {
+    context_->impression_tracker()->OnClick(notification_id);
+  }
+
+  void OnActionClick(const std::string& notification_id,
+                     ActionButtonType button_type) override {
+    context_->impression_tracker()->OnActionClick(notification_id, button_type);
+  }
+
+  void OnDismiss(const std::string& notification_id) override {
+    context_->impression_tracker()->OnDismiss(notification_id);
   }
 
   std::unique_ptr<NotificationSchedulerContext> context_;

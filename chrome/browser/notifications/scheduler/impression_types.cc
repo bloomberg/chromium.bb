@@ -14,7 +14,8 @@ namespace notifications {
 bool Impression::operator==(const Impression& other) const {
   return create_time == other.create_time && feedback == other.feedback &&
          impression == other.impression && integrated == other.integrated &&
-         task_start_time == other.task_start_time && guid == other.guid;
+         task_start_time == other.task_start_time && guid == other.guid &&
+         type == other.type;
 }
 
 SuppressionInfo::SuppressionInfo(const base::Time& last_trigger,
@@ -55,14 +56,27 @@ std::string ClientState::DebugPrint() const {
 
   for (const auto& impression : impressions) {
     std::ostringstream stream;
-    stream << "Impression, create_time:" << impression.create_time << " \n"
-           << "feedback: " << static_cast<int>(impression.feedback) << " \n"
+    stream << "Impression, create_time:" << impression.create_time << "\n"
+           << " create_time in microseconds:"
+           << impression.create_time.ToDeltaSinceWindowsEpoch().InMicroseconds()
+           << "\n"
+           << "feedback: " << static_cast<int>(impression.feedback) << "\n"
            << "impression result: " << static_cast<int>(impression.impression)
            << " \n"
-           << "integrated: " << impression.integrated << " \n"
+           << "integrated: " << impression.integrated << "\n"
            << "task start time: "
            << static_cast<int>(impression.task_start_time) << "\n"
-           << "guid: " << impression.guid << "\n";
+           << "guid: " << impression.guid << "\n"
+           << "type: " << static_cast<int>(impression.type);
+    log += stream.str();
+  }
+
+  if (suppression_info.has_value()) {
+    std::ostringstream stream;
+    stream << "Suppression info, last_trigger_time:"
+           << suppression_info->last_trigger_time << "\n"
+           << "duration:" << suppression_info->duration << "\n"
+           << "recover_goal:" << suppression_info->recover_goal;
     log += stream.str();
   }
 
