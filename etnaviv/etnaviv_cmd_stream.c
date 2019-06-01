@@ -150,11 +150,7 @@ static uint32_t bo2idx(struct etna_cmd_stream *stream, struct etna_bo *bo,
 
 	pthread_mutex_lock(&idx_lock);
 
-	if (!bo->current_stream) {
-		idx = append_bo(stream, bo);
-		bo->current_stream = stream;
-		bo->idx = idx;
-	} else if (bo->current_stream == stream) {
+	if (bo->current_stream == stream) {
 		idx = bo->idx;
 	} else {
 		/* slow-path: */
@@ -165,6 +161,8 @@ static uint32_t bo2idx(struct etna_cmd_stream *stream, struct etna_bo *bo,
 			/* not found */
 			idx = append_bo(stream, bo);
 		}
+		bo->current_stream = stream;
+		bo->idx = idx;
 	}
 	pthread_mutex_unlock(&idx_lock);
 
