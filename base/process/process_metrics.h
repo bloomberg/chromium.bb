@@ -99,16 +99,10 @@ class BASE_EXPORT ProcessMetrics {
 #endif
 
 #if defined(OS_CHROMEOS)
-  // /proc/<pid>/totmaps is a syscall that returns memory summary statistics for
-  // the process.
-  // totmaps is a Linux specific concept, currently only being used on ChromeOS.
-  // Do not attempt to extend this to other platforms.
-  //
   struct TotalsSummary {
-    size_t private_clean_kb;
-    size_t private_dirty_kb;
     size_t swap_kb;
   };
+  // Returns memory stats for the process.
   BASE_EXPORT TotalsSummary GetTotalsSummary() const;
 #endif
 
