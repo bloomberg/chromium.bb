@@ -676,4 +676,37 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, PrefersColorScheme) {
 
 INSTANTIATE_TEST_SUITE_P(All, PrefersColorSchemeTest, testing::Bool());
 
+#if defined(OS_CHROMEOS)
+class ProtocolHandlerTest : public InProcessBrowserTest {
+ public:
+  ProtocolHandlerTest() = default;
+
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerTest);
+};
+
+// Tests that if a protocol handler is registered for a scheme, an external
+// program (another Chrome tab in this case) is not launched to handle the
+// navigation.
+IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, ExternalProgramNotLaunched) {
+  ui_test_utils::NavigateToURL(browser(), GURL("mailto:bob@example.com"));
+
+  // If an external program (Chrome) was launched, it will result in a second
+  // tab being opened.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // Make sure the protocol handler redirected the navigation.
+  base::string16 expected_title = base::ASCIIToUTF16("mail.google.com");
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+#endif
+
 }  // namespace content
