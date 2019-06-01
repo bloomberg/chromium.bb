@@ -28,8 +28,7 @@ function assertApproximatelyEqual(a, b, step, epsilon = FLOAT_EPSILON) {
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
   session.updateRenderState({
-    baseLayer: new XRWebGLLayer(session, gl),
-    outputContext: getOutputContext()
+    baseLayer: new XRWebGLLayer(session, gl, { compositionDisabled: true })
   });
 
   // Helper method because the renderState does not (per the spec) get updated

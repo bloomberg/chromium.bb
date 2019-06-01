@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane_detection_state.h"
-#include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewport.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
@@ -510,8 +509,6 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
       presentation_provider_.get(), webgl_context->ContextGL(), webgl_context,
       std::move(image_ref), std::move(image_release_callback), frame_id_,
       needs_copy);
-  // If this layer is being mirrored, try to update the mirror.
-  layer->UpdateWebXRMirror();
 
   // Reset our frame id, since anything we'd want to do (resizing/etc) can
   // no-longer happen to this frame.

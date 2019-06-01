@@ -142,23 +142,27 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           gl = createWebGLContext({
             xrCompatible: true
           });
+          document.body.appendChild(gl.canvas);
+
+          function onResize () {
+            gl.canvas.width = (gl.canvas.offsetWidth * window.devicePixelRatio);
+            gl.canvas.height = (gl.canvas.offsetHeight * window.devicePixelRatio);
+          }
+          window.addEventListener('resize', onResize);
+          onResize();
 
           renderer = new Renderer(gl);
 
           scene.setRenderer(renderer);
         }
 
-        // In order for a non-immersive session to be used we must provide
-        // an outputContext, which indicates the canvas that will contain
-        // results of the session's rendering.
-        let outputCanvas = document.createElement('canvas');
-
-        // Add the canvas to the document.
-        document.body.appendChild(outputCanvas);
-
+        // In order for an inline session to be used we must set the GL layer's
+        // compositionDisabled option to "true", which indicates that WebGL
+        // commands will draw to the canvas like normal.
         session.updateRenderState({
-          baseLayer: new XRWebGLLayer(session, gl),
-          outputContext: outputCanvas.getContext('xrpresent')
+          baseLayer: new XRWebGLLayer(session, gl, {
+              compositionDisabled: session.mode == 'inline'
+            })
         });
 
         if (session.mode === 'inline')
@@ -194,11 +198,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // Only reset the button when the immersive session ends.
         if (event.session.mode.startsWith('immersive')) {
           xrButton.setSession(null);
-        }
-
-        // Remove the output canvas from the document.
-        if (event.session.renderState.outputContext) {
-          document.body.removeChild(event.session.renderState.outputContext.canvas);
         }
       }
 

@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_sources_change_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
-#include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_ray.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_render_state.h"
@@ -190,16 +189,16 @@ void XRSession::updateRenderState(XRRenderStateInit* init,
       xr_->frameProvider()->RequestFrame(this);
       pending_frame_ = true;
     }
-  }
 
-  if (!immersive() && init->hasOutputContext() && init->outputContext()) {
-    // If the outputContext was previously null and there are outstanding rAF
-    // callbacks, kick off a new frame request to flush them out.
-    if (!render_state_->outputContext() && !pending_frame_ &&
-        !callback_collection_->IsEmpty()) {
-      // Kick off a request for a new XR frame.
-      xr_->frameProvider()->RequestFrame(this);
-      pending_frame_ = true;
+    if (!immersive() && init->baseLayer()->output_canvas()) {
+      // If the output canvas was previously null and there are outstanding rAF
+      // callbacks, kick off a new frame request to flush them out.
+      if (!render_state_->output_canvas() && !pending_frame_ &&
+          !callback_collection_->IsEmpty()) {
+        // Kick off a request for a new XR frame.
+        xr_->frameProvider()->RequestFrame(this);
+        pending_frame_ = true;
+      }
     }
   }
 
@@ -530,15 +529,11 @@ DoubleSize XRSession::DefaultFramebufferSize() const {
 }
 
 DoubleSize XRSession::OutputCanvasSize() const {
-  if (!render_state_->outputContext()) {
+  if (!render_state_->output_canvas()) {
     return DoubleSize();
   }
 
   return DoubleSize(output_width_, output_height_);
-}
-
-XRPresentationContext* XRSession::outputContext() const {
-  return render_state_->outputContext();
 }
 
 void XRSession::OnFocus() {
@@ -572,32 +567,25 @@ void XRSession::OnFocusChanged() {
   }
 }
 
-void XRSession::DetachOutputContext(XRPresentationContext* output_context) {
-  if (!output_context)
+void XRSession::DetachOutputCanvas(HTMLCanvasElement* canvas) {
+  if (!canvas)
     return;
 
-  // Remove anything in this session observing the given output context.
-  HTMLCanvasElement* canvas = output_context->canvas();
-  if (canvas) {
-    if (resize_observer_) {
-      resize_observer_->unobserve(canvas);
-    }
-
-    if (canvas_input_provider_ && canvas_input_provider_->canvas() == canvas) {
-      canvas_input_provider_->Stop();
-      canvas_input_provider_ = nullptr;
-    }
+  // Remove anything in this session observing the given output canvas.
+  if (resize_observer_) {
+    resize_observer_->unobserve(canvas);
   }
 
-  if (render_state_->outputContext() == output_context) {
-    render_state_->removeOutputContext();
+  if (canvas_input_provider_ && canvas_input_provider_->canvas() == canvas) {
+    canvas_input_provider_->Stop();
+    canvas_input_provider_ = nullptr;
   }
 }
 
 void XRSession::ApplyPendingRenderState() {
   if (pending_render_state_.size() > 0) {
     XRLayer* prev_base_layer = render_state_->baseLayer();
-    XRPresentationContext* prev_output_context = render_state_->outputContext();
+    HTMLCanvasElement* prev_ouput_canvas = render_state_->output_canvas();
     update_views_next_frame_ = true;
 
     // Loop through each pending render state and apply it to the active one.
@@ -613,33 +601,32 @@ void XRSession::ApplyPendingRenderState() {
       render_state_->baseLayer()->OnResize();
     }
 
-    // If the output context changed, remove listeners from the old one and add
+    // If the output canvas changed, remove listeners from the old one and add
     // listeners to the new one as appropriate.
-    if (render_state_->outputContext() != prev_output_context) {
-      // If we had an output context previously remove anything observing it.
-      DetachOutputContext(prev_output_context);
+    if (prev_ouput_canvas != render_state_->output_canvas()) {
+      // Remove anything observing the previous canvas.
+      if (prev_ouput_canvas) {
+        DetachOutputCanvas(prev_ouput_canvas);
+      }
 
-      // When a new output context is provided, monitor it for resize events.
-      if (render_state_->outputContext()) {
-        render_state_->outputContext()->BindToSession(this);
-        HTMLCanvasElement* canvas = render_state_->outputContext()->canvas();
-        if (canvas) {
-          if (!resize_observer_) {
-            resize_observer_ = ResizeObserver::Create(
-                canvas->GetDocument(),
-                MakeGarbageCollected<XRSessionResizeObserverDelegate>(this));
-          }
-          resize_observer_->observe(canvas);
-
-          // Begin processing input events on the output context's canvas.
-          if (!immersive()) {
-            canvas_input_provider_ =
-                MakeGarbageCollected<XRCanvasInputProvider>(this, canvas);
-          }
-
-          // Get the new canvas dimensions
-          UpdateCanvasDimensions(canvas);
+      // Monitor the new canvas for resize/input events.
+      HTMLCanvasElement* canvas = render_state_->output_canvas();
+      if (canvas) {
+        if (!resize_observer_) {
+          resize_observer_ = ResizeObserver::Create(
+              canvas->GetDocument(),
+              MakeGarbageCollected<XRSessionResizeObserverDelegate>(this));
         }
+        resize_observer_->observe(canvas);
+
+        // Begin processing input events on the output context's canvas.
+        if (!immersive()) {
+          canvas_input_provider_ =
+              MakeGarbageCollected<XRCanvasInputProvider>(this, canvas);
+        }
+
+        // Get the new canvas dimensions
+        UpdateCanvasDimensions(canvas);
       }
     }
   }
@@ -674,8 +661,8 @@ void XRSession::OnFrame(
       return;
 
     // Don't allow frames to be processed if an inline session doesn't have an
-    // output context.
-    if (!immersive() && !render_state_->outputContext())
+    // output canvas.
+    if (!immersive() && !render_state_->output_canvas())
       return;
 
     XRFrame* presentation_frame = CreatePresentationFrame();

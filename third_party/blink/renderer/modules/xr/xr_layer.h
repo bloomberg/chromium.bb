@@ -13,6 +13,7 @@
 namespace blink {
 
 class XRSession;
+class HTMLCanvasElement;
 
 enum XRLayerType { kXRWebGLLayerType };
 
@@ -24,6 +25,8 @@ class XRLayer : public ScriptWrappable {
 
   XRSession* session() const { return session_; }
   XRLayerType layerType() const { return layer_type_; }
+
+  virtual HTMLCanvasElement* output_canvas() const { return nullptr; }
 
   virtual void OnFrameStart(const base::Optional<gpu::MailboxHolder>&);
   virtual void OnFrameEnd();

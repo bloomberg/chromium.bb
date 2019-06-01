@@ -12,5 +12,4 @@
   readonly attribute double depthFar;
   readonly attribute double? inlineVerticalFieldOfView;
   readonly attribute XRLayer? baseLayer;
-  readonly attribute XRPresentationContext? outputContext;
 };

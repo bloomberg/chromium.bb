@@ -167,9 +167,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // Use an inline canvas for "magic window" mode?
         magicWindow: getBoolParam('magicWindow', true),
 
-        // Use a mirror canvas during immersive mode?
-        mirrorCanvas: getBoolParam('mirrorCanvas', true),
-
         // Don't produce frames at all. Simulates a broken app.
         noFrames: getBoolParam('noFrames', false),
 
@@ -216,8 +213,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           getParamSaver('arMode', () => { window.location.reload(false); }));
       folderRender.add(appSettings, 'magicWindow').onFinishChange(
           getParamSaver('magicWindow', () => { window.location.reload(false); }));
-      folderRender.add(appSettings, 'mirrorCanvas').onFinishChange(
-          getParamSaver('mirrorCanvas'));
       folderRender.open();
 
       var folderTest = gui.addFolder('Regression testing');
@@ -286,7 +281,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function initFallback() {
         initGL();
-        document.body.appendChild(gl.canvas);
         let fallbackHelper = new FallbackHelper(scene, gl);
       }
 
@@ -297,6 +291,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         gl = createWebGLContext({
           xrCompatible: true
         });
+        document.body.appendChild(gl.canvas);
+
+        function onResize () {
+          gl.canvas.width = (gl.canvas.offsetWidth * window.devicePixelRatio);
+          gl.canvas.height = (gl.canvas.offsetHeight * window.devicePixelRatio);
+        }
+        window.addEventListener('resize', onResize);
+        onResize();
 
         // Set up a non-black clear color so that we can see if something renders wrong.
         gl.clearColor(0.1, 0.2, 0.3, 1.0);
@@ -323,15 +325,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         initGL();
 
         let webglLayer = new XRWebGLLayer(session, gl, {
+          compositionDisabled: session.mode == 'inline',
           framebufferScaleFactor: appSettings.framebufferScale,
           antialias: appSettings.antialias});
         session.updateRenderState({ baseLayer: webglLayer });
-
-        if (session.mode.startsWith('immersive') && appSettings.mirrorCanvas) {
-          let outputCanvas = document.createElement('canvas');
-          document.body.appendChild(outputCanvas);
-          session.updateRenderState({ outputContext: outputCanvas.getContext('xrpresent') });
-        }
 
         session.requestReferenceSpace('local').then((refSpace) => {
           return refSpace;
@@ -359,10 +356,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onSessionEnded(event) {
         xrButton.setSession(null);
-
-        if (event.session.renderState.outputContext) {
-          document.body.removeChild(event.session.renderState.outputContext.canvas);
-        }
       }
 
       let frameNum = 0;

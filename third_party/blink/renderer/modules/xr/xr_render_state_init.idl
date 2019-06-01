@@ -8,5 +8,4 @@ dictionary XRRenderStateInit {
   double depthFar;
   double inlineVerticalFieldOfView;
   XRLayer? baseLayer;
-  XRPresentationContext? outputContext;
 };

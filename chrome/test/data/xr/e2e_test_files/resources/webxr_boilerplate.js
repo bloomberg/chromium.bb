@@ -134,10 +134,15 @@ function onSessionStarted(session) {
     onSessionStartedCallback(session);
   }
 
-  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
-  session.requestReferenceSpace(referenceSpaceMap[getSessionType(session)])
+  let sessionType = getSessionType(session);
+
+  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl, {
+      compositionDisabled: sessionType == sessionTypes.MAGIC_WINDOW
+    })
+  });
+  session.requestReferenceSpace(referenceSpaceMap[sessionType])
       .then( (refSpace) => {
-        sessionInfos[getSessionType(session)].currentRefSpace = refSpace;
+        sessionInfos[sessionType].currentRefSpace = refSpace;
         session.requestAnimationFrame(onXRFrame);
       });
 }
@@ -192,13 +197,9 @@ function onXRFrame(t, frame) {
 function requestMagicWindowSession() {
   // Set up an inline session (magic window) drawing into the full screen canvas
   // on the page
-  let ctx = webglCanvas.getContext('xrpresent');
   navigator.xr.requestSession('inline')
   .then((session) => {
     session.mode = 'inline';
-    session.updateRenderState({
-      outputContext: ctx
-    });
     sessionInfos[sessionTypes.MAGIC_WINDOW].currentSession = session;
     onSessionStarted(session);
   })

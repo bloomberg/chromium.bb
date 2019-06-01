@@ -20,16 +20,24 @@ let requestSessionModes = [
 let testFunction =
   (session, t, fakeDeviceController) => new Promise((resolve, reject) => {
   // Session must have a baseLayer or frame requests will be ignored.
-  let webglLayer = new XRWebGLLayer(session, gl);
+  let webglLayer = new XRWebGLLayer(session, gl, {
+      compositionDisabled: session.mode == 'inline' });
   session.updateRenderState({
-    baseLayer: webglLayer,
-    outputContext: getOutputContext()
+    baseLayer: webglLayer
   });
 
   let xrFramebuffer = webglLayer.framebuffer;
 
   // Make sure we're starting with a clean error slate.
   assert_equals(gl.getError(), gl.NO_ERROR);
+
+  if (session.mode == 'inline') {
+    // Creating a layer with compositionDisabled should return a framebuffer of
+    // null, and as such most of these tests won't apply.
+    assert_equals(xrFramebuffer, null);
+    resolve();
+    return;
+  }
 
   assert_not_equals(xrFramebuffer, null);
   assert_greater_than(webglLayer.framebufferWidth, 0);

@@ -445,9 +445,9 @@ def shorten_union_name(union_type):
         'CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas': 'CanvasImageSource',
         # modules/canvas/htmlcanvas/html_canvas_element_module_support_webgl2_compute.idl
         # Due to html_canvas_element_module_support_webgl2_compute.idl and html_canvas_element_module.idl are exclusive in modules_idl_files.gni, they have same shorten name.
-        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContextOrGPUCanvasContext': 'RenderingContext',
+        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrGPUCanvasContext': 'RenderingContext',
         # modules/canvas/htmlcanvas/html_canvas_element_module.idl
-        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrXRPresentationContextOrGPUCanvasContext': 'RenderingContext',
+        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrGPUCanvasContext': 'RenderingContext',
         # core/frame/window_or_worker_global_scope.idl
         'HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas': 'ImageBitmapSource',
         # bindings/tests/idls/core/TestTypedefs.idl

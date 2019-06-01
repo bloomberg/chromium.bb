@@ -21,6 +21,8 @@ input such a user tapping on the canvas for an inline session.
       var currentIteration = 0;
       var finishAfterEachInput = true;
 
+      gl = webglCanvas.getContext('webgl', { xrCompatible: true });
+
       var inputSourceAdded = false;
       function onInputSourcesChange() {
         // Toggle whether or not we are "inside" a pair of input events

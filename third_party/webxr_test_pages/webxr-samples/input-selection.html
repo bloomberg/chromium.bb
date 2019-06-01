@@ -419,7 +419,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function initFallback() {
         initGL();
-        document.body.appendChild(gl.canvas);
         let fallbackHelper = new FallbackHelper(scene, gl);
         fallbackHelper.emulateStage = true;
       }
@@ -450,6 +449,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         gl = createWebGLContext({
           xrCompatible: true
         });
+        document.body.appendChild(gl.canvas);
+
+        function onResize () {
+          gl.canvas.width = (gl.canvas.offsetWidth * window.devicePixelRatio);
+          gl.canvas.height = (gl.canvas.offsetHeight * window.devicePixelRatio);
+        }
+        window.addEventListener('resize', onResize);
+        onResize();
 
         renderer = new Renderer(gl);
 
@@ -503,12 +510,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         initGL();
 
-        let outputCanvas = document.createElement('canvas');
-        document.body.appendChild(outputCanvas);
-
         session.updateRenderState({
-            baseLayer: new XRWebGLLayer(session, gl),
-            outputContext: outputCanvas.getContext('xrpresent')
+            baseLayer: new XRWebGLLayer(session, gl, {
+              compositionDisabled: session.mode == 'inline'
+            })
         });
 
         // Same logic for establishing a reference space as in room-scale.html
@@ -643,10 +648,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onSessionEnded(event) {
         if (event.session.mode.startsWith('immersive')) {
           xrButton.setSession(null);
-        }
-
-        if (event.session.renderState.outputContext) {
-          document.body.removeChild(event.session.renderState.outputContext.canvas);
         }
       }
 

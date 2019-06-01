@@ -82,12 +82,6 @@ function webglCanvasSetup() {
   gl = webglCanvas.getContext(webgl2 ? 'webgl2' : 'webgl', glAttributes);
 }
 
-function getOutputContext() {
-  let outputCanvas = document.createElement('canvas');
-  document.body.appendChild(outputCanvas);
-  return outputCanvas.getContext('xrpresent');
-}
-
 function perspectiveFromFieldOfView(fov, near, far) {
   let upTan = Math.tan(fov.upDegrees * Math.PI / 180.0);
   let downTan = Math.tan(fov.downDegrees * Math.PI / 180.0);
