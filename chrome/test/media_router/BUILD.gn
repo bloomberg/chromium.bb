@@ -156,17 +156,7 @@ if (enable_downstream_media_tests) {
       "//tools/perf:perf",
     ]
     data_deps = [
-      ":telemetry_extension_resources",
+      "//tools/perf/contrib/media_router_benchmarks:telemetry_extension_resources",
     ]
   }
-}
-
-copy("telemetry_extension_resources") {
-  sources = [
-    "telemetry/extension/manifest.json",
-    "telemetry/extension/script.js",
-  ]
-  outputs = [
-    "$root_out_dir/media_router/telemetry_extension/{{source_file_part}}",
-  ]
 }
