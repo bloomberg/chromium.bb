@@ -14,8 +14,8 @@
 #include "base/time/time.h"
 #include "services/tracing/public/cpp/perfetto/interning_index.h"
 #include "services/tracing/public/cpp/perfetto/thread_local_event_sink.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/include/perfetto/protozero/message_handle.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
 
 namespace perfetto {
 class StartupTraceWriter;

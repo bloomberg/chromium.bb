@@ -12,8 +12,8 @@
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/chrome_config.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/data_source_config.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/chrome_config.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/data_source_config.h"
 
 namespace mojo {
 template <>

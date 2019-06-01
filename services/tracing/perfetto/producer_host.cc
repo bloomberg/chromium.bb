@@ -12,9 +12,9 @@
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/cpp/tracing_features.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/data_source_descriptor.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/data_source_descriptor.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_config.h"
 
 namespace tracing {
 

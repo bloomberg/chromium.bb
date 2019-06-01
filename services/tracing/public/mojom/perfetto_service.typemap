@@ -1,10 +1,10 @@
 mojom = "//services/tracing/public/mojom/perfetto_service.mojom"
 public_headers = [
-  "//third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h",
-  "//third_party/perfetto/include/perfetto/tracing/core/data_source_config.h",
-  "//third_party/perfetto/include/perfetto/tracing/core/data_source_descriptor.h",
-  "//third_party/perfetto/include/perfetto/tracing/core/chrome_config.h",
-  "//third_party/perfetto/include/perfetto/tracing/core/trace_config.h",
+  "//third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h",
+  "//third_party/perfetto/include/perfetto/ext/tracing/core/data_source_config.h",
+  "//third_party/perfetto/include/perfetto/ext/tracing/core/data_source_descriptor.h",
+  "//third_party/perfetto/include/perfetto/ext/tracing/core/chrome_config.h",
+  "//third_party/perfetto/include/perfetto/ext/tracing/core/trace_config.h",
 ]
 traits_headers = [
   "//services/tracing/public/mojom/commit_data_request_mojom_traits.h",

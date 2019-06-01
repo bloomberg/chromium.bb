@@ -13,10 +13,10 @@
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/shared_memory_arbiter.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer_registry.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer_registry.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 
 namespace tracing {
 

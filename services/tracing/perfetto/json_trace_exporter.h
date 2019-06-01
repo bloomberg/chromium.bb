@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 
 namespace perfetto {
 namespace protos {

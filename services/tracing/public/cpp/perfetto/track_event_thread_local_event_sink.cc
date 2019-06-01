@@ -12,7 +12,7 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/interned_data/interned_data.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/debug_annotation.pbzero.h"

@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "services/tracing/perfetto/json_trace_exporter.h"
 #include "services/tracing/perfetto/track_event_json_exporter.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace.pbzero.h"
 
 // Tool to convert a given proto trace into json.

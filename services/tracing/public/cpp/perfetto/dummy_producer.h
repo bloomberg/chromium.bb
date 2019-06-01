@@ -6,7 +6,7 @@
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_DUMMY_PRODUCER_H_
 
 #include "services/tracing/public/cpp/perfetto/system_producer.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/producer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/producer.h"
 
 namespace tracing {
 

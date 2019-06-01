@@ -316,12 +316,14 @@ void TrackEventJSONExporter::HandleThreadDescriptor(
   switch (thread.chrome_thread_type()) {
     // TODO(nuskos): As we add more thread types we will add handling here to
     // switch the enum to a string and call |emit_thread_name()|
-    case perfetto::protos::ThreadDescriptor::THREAD_UNSPECIFIED:
+    case perfetto::protos::ThreadDescriptor::THREAD_TYPE_UNSPECIFIED:
       // No thread type enum so check to see if a explicit thread name was
       // provided..
       if (thread.has_thread_name()) {
         emit_thread_name(thread.thread_name().c_str());
       }
+      break;
+    default:
       break;
   }
 }

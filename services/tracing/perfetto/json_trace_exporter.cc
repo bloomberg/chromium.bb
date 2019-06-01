@@ -11,7 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_packet.pb.h"
 

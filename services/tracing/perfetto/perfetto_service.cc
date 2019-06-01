@@ -15,7 +15,7 @@
 #include "services/tracing/perfetto/consumer_host.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/tracing_service.h"
 
 namespace tracing {
 
