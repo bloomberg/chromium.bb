@@ -386,8 +386,8 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   // 2. Now paint the foreground, including text and decorations.
   int ascent = font_data ? font_data->GetFontMetrics().Ascent() : 0;
   PhysicalOffset text_origin(box_origin.left, box_origin.top + ascent);
-  NGTextPainter text_painter(context, font, text_fragment, text_origin,
-                             box_rect, text_fragment.IsHorizontal());
+  NGTextPainter text_painter(context, font, fragment_, text_origin, box_rect,
+                             text_fragment.IsHorizontal());
 
   if (style.GetTextEmphasisMark() != TextEmphasisMark::kNone) {
     text_painter.SetEmphasisMark(style.TextEmphasisMarkString(),

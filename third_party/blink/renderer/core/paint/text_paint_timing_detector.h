@@ -42,17 +42,6 @@ class TextRecord : public base::SupportsWeakPtr<TextRecord> {
   DISALLOW_COPY_AND_ASSIGN(TextRecord);
 };
 
-class BlockInfo {
- public:
-  void Aggregate(FloatRect new_text_rect) {
-    aggregated_text_rect_.UniteIfNonZero(new_text_rect);
-  }
-  uint64_t AggregatedTextSize() { return aggregated_text_rect_.Size().Area(); }
-
- private:
-  FloatRect aggregated_text_rect_;
-};
-
 class TextRecordsManager {
   DISALLOW_NEW();
   using TextRecordSetComparator = bool (*)(const base::WeakPtr<TextRecord>&,
@@ -146,11 +135,10 @@ class CORE_EXPORT TextPaintTimingDetector final
 
  public:
   TextPaintTimingDetector(LocalFrameView* frame_view);
-  // TODO(crbug.com/960946): we should document the text aggregation.
-  void AggregateText(const LayoutObject&, const PropertyTreeState&);
-  void WillWalkTextAggregatingNode();
-  void DidWalkTextAggregatingNode(
-      const LayoutBoxModelObject& text_aggregating_block);
+  bool ShouldWalkObject(const LayoutBoxModelObject&) const;
+  void RecordAggregatedText(const LayoutBoxModelObject& aggregator,
+                            const IntRect& aggregated_visual_rect,
+                            const PropertyTreeState&);
   void OnPaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   TextRecord* FindLargestPaintCandidate();
@@ -163,13 +151,9 @@ class CORE_EXPORT TextPaintTimingDetector final
   void Trace(blink::Visitor*);
 
  private:
-  void AggregateTextToClosestBlock(const LayoutObject&,
-                                   const PropertyTreeState&);
   void PopulateTraceValue(TracedValue&, const TextRecord& first_text_paint);
   void TimerFired(TimerBase*);
   void UpdateCandidate();
-  void RecordAggregatedText(const LayoutObject& aggregating_object,
-                            uint64_t aggregated_size);
 
   void ReportSwapTime(WebWidgetClient::SwapResult result,
                       base::TimeTicks timestamp);
@@ -188,10 +172,6 @@ class CORE_EXPORT TextPaintTimingDetector final
 
   bool has_records_changed_ = true;
   bool need_update_timing_at_frame_end_ = false;
-
-  HashSet<const LayoutObject*> visited_text_objects_;
-
-  Vector<BlockInfo> walking_block_stack_;
 
   TaskRunnerTimer<TextPaintTimingDetector> timer_;
   Member<LocalFrameView> frame_view_;

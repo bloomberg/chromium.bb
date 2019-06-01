@@ -720,7 +720,9 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
       RuntimeEnabledFeatures::ElementTimingEnabled(
           &layout_block.GetDocument())) {
-    scoped_paint_timing_detector_block_paint_hook.emplace(layout_block);
+    scoped_paint_timing_detector_block_paint_hook.emplace(
+        layout_block,
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
 
   const bool is_horizontal = box_fragment_.Style().IsHorizontalWritingMode();
