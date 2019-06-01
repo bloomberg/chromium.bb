@@ -13,9 +13,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "google_apis/google_api_keys.h"
+#include "net/base/url_util.h"
 
 namespace previews {
 
@@ -47,7 +49,6 @@ const char kSessionMaxECTTrigger[] = "session_max_ect_trigger";
 const char kNoScriptInflationPercent[] = "NoScriptInflationPercent";
 const char kNoScriptInflationBytes[] = "NoScriptInflationBytes";
 
-const char kOptimizationGuideServiceURL[] = "";
 
 // Inflation parameters for estimating ResourceLoadingHints data savings.
 const char kResourceLoadingHintsInflationPercent[] =
@@ -251,8 +252,13 @@ GURL GetOptimizationGuideServiceURL() {
 
   std::string url = base::GetFieldTrialParamValueByFeature(
       features::kOptimizationHintsFetching, "optimization_guide_service_url");
-  if (url.empty())
-    return GURL(kOptimizationGuideServiceURL);
+  if (url.empty() || !GURL(url).SchemeIs(url::kHttpsScheme)) {
+    if (!url.empty())
+      LOG(WARNING)
+          << "Empty or invalid optimization_guide_service_url provided: "
+          << url;
+    return GURL(previews::kOptimizationGuideServiceDefaultURL);
+  }
 
   return GURL(url);
 }

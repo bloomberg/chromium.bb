@@ -12,4 +12,7 @@ const char kPreviewsOptimizationGuideUpdateHintsResultHistogramString[] =
 const char kPreviewsOptimizationGuideOnLoadedHintResultHistogramString[] =
     "PreviewsOptimizationGuide.OnLoadedHint.Result";
 
+extern const char kOptimizationGuideServiceDefaultURL[] =
+    "https://optimizationguide-pa.googleapis.com/v1:GetHints";
+
 }  // namespace previews
