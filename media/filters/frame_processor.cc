@@ -653,6 +653,8 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
         << "us";
 
     // Mark the overlapping portion of the buffer for discard.
+    // TODO(wolenetz): Is this correct to ignore any pre-existing discard
+    // padding (e.g. WebM discard padding)? See https://crbug.com/969195.
     buffer->set_discard_padding(std::make_pair(
         append_window_start - buffer->timestamp(), base::TimeDelta()));
 
@@ -678,6 +680,8 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
                                             : "");
 
     // Mark the overlapping portion of the buffer for discard.
+    // TODO(wolenetz): Is this correct to ignore any pre-existing discard
+    // padding (e.g. WebM discard padding)? See https://crbug.com/969195.
     buffer->set_discard_padding(
         std::make_pair(buffer->discard_padding().first,
                        frame_end_timestamp - append_window_end));

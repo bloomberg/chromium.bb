@@ -422,8 +422,11 @@ bool WebMClusterParser::OnBinary(int id, const uint8_t* data, int size) {
 
       // Read in the big-endian integer.
       discard_padding_ = static_cast<int8_t>(data[0]);
-      for (int i = 1; i < size; ++i)
-        discard_padding_ = (discard_padding_ << 8) | data[i];
+      for (int i = 1; i < size; ++i) {
+        // Multiplying instead of shifting, since the padding may be negative,
+        // and shifting a negative value is undefined.
+        discard_padding_ = (discard_padding_ * 256) | data[i];
+      }
 
       return true;
     }
@@ -611,6 +614,8 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
     buffer->set_duration(track->default_duration());
   }
 
+  // TODO(wolenetz): Is this correct for negative |discard_padding|? See
+  // https://crbug.com/969195.
   if (discard_padding != 0) {
     buffer->set_discard_padding(std::make_pair(
         base::TimeDelta(),
