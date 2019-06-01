@@ -49,7 +49,7 @@ class ServiceTestSuite : public base::TestSuite {
 #if defined(OS_ANDROID)
     ASSERT_TRUE(base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &path));
 #else
-    ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &path));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_ASSETS, &path));
 #endif
     base::FilePath bluetooth_test_strings =
         path.Append(FILE_PATH_LITERAL("bluetooth_test_strings.pak"));

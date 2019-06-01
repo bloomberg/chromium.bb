@@ -76,6 +76,11 @@ test("services_unittests") {
     # standalone services must be added here.
     deps += [ "//services/video_capture:tests" ]
   }
+
+  if (is_fuchsia) {
+    # Enable the test HTTP server for use by NetworkServiceTestWithService.*
+    use_test_server = true
+  }
 }
 
 if (!is_ios) {

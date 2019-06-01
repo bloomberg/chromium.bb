@@ -2670,6 +2670,11 @@
       },
       'perfetto_unittests': {},
       'service_manager_unittests': {},
+      'services_unittests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.services_unittests.filter',
+        ],
+      },
       'skia_unittests': {},
       'sql_unittests': {},
       'ui_base_unittests': {
