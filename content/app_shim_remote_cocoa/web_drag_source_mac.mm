@@ -49,15 +49,15 @@ using content::DropData;
 
 @implementation WebDragSource
 
-- (id)initWithClient:(content::mojom::WebContentsNSViewClient*)client
-                view:(NSView*)contentsView
-            dropData:(const DropData*)dropData
-               image:(NSImage*)image
-              offset:(NSPoint)offset
-          pasteboard:(NSPasteboard*)pboard
-   dragOperationMask:(NSDragOperation)dragOperationMask {
+- (id)initWithHost:(remote_cocoa::mojom::WebContentsNSViewHost*)host
+              view:(NSView*)contentsView
+          dropData:(const DropData*)dropData
+             image:(NSImage*)image
+            offset:(NSPoint)offset
+        pasteboard:(NSPasteboard*)pboard
+ dragOperationMask:(NSDragOperation)dragOperationMask {
   if ((self = [super init])) {
-    client_ = client;
+    host_ = host;
 
     contentsView_ = contentsView;
     DCHECK(contentsView_);
@@ -79,8 +79,8 @@ using content::DropData;
   return self;
 }
 
-- (void)clearClientAndWebContentsView {
-  client_ = nullptr;
+- (void)clearHostAndWebContentsView {
+  host_ = nullptr;
   contentsView_ = nil;
 }
 
@@ -206,7 +206,7 @@ using content::DropData;
 
 - (void)endDragAt:(NSPoint)screenPoint
         operation:(NSDragOperation)operation {
-  if (!client_ || !contentsView_)
+  if (!host_ || !contentsView_)
     return;
 
   if (dragImage_) {
@@ -229,7 +229,7 @@ using content::DropData;
   if (operation == (NSDragOperationMove | NSDragOperationCopy))
     operation &= ~NSDragOperationMove;
 
-  client_->EndDrag(
+  host_->EndDrag(
       operation,
       gfx::PointF(localPoint.x, viewFrame.size.height - localPoint.y),
       gfx::PointF(screenPoint.x, screenFrame.size.height - screenPoint.y));
@@ -239,7 +239,7 @@ using content::DropData;
 }
 
 - (NSString*)dragPromisedFileTo:(NSString*)path {
-  if (!client_)
+  if (!host_)
     return nil;
   // Be extra paranoid; avoid crashing.
   if (!dropData_) {
@@ -248,7 +248,7 @@ using content::DropData;
   }
   base::FilePath filePath(SysNSStringToUTF8(path));
   filePath = filePath.Append(downloadFileName_);
-  client_->DragPromisedFileTo(filePath, *dropData_, downloadURL_, &filePath);
+  host_->DragPromisedFileTo(filePath, *dropData_, downloadURL_, &filePath);
   return SysUTF8ToNSString(filePath.BaseName().value());
 }
 

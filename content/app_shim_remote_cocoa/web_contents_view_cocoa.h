@@ -12,20 +12,23 @@
 
 namespace content {
 struct DropData;
-namespace mojom {
-class WebContentsNSViewClient;
-}  // namespace mojom
 }  // namespace content
+
+namespace remote_cocoa {
+namespace mojom {
+class WebContentsNSViewHost;
+}  // namespace mojom
+}  // namespace remote_cocoa
 
 @class WebDragSource;
 
 CONTENT_EXPORT
 @interface WebContentsViewCocoa : BaseView <ViewsHostable> {
  @private
-  // Instances of this class are owned by both client_ and AppKit. It is
-  // possible for an instance to outlive its webContentsView_. The client_ must
-  // call -clearClientAndView in its destructor.
-  content::mojom::WebContentsNSViewClient* client_;
+  // Instances of this class are owned by both host_ and AppKit. It is
+  // possible for an instance to outlive its webContentsView_. The host_ must
+  // call -clearHostAndView in its destructor.
+  remote_cocoa::mojom::WebContentsNSViewHost* host_;
 
   // The interface exported to views::Views that embed this as a sub-view.
   ui::ViewsHostableView* viewsHostableView_;
@@ -36,7 +39,7 @@ CONTENT_EXPORT
 
 // Set or un-set the mojo interface through which to communicate with the
 // browser process.
-- (void)setClient:(content::mojom::WebContentsNSViewClient*)client;
+- (void)setHost:(remote_cocoa::mojom::WebContentsNSViewHost*)host;
 
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove;
 

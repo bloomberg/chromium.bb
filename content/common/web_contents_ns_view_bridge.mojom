@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module remote_cocoa.mojom;
 
 import "content/public/common/drop_data.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
@@ -12,7 +12,7 @@ import "url/mojom/url.mojom";
 
 // Interface through which a WebContentsViewMac communicates with its NSView in
 // another process.
-interface WebContentsNSViewBridge {
+interface WebContentsNSView {
   // Set this to be a child NSView of the NSView mapped to by
   // |parent_ns_view_id|.
   SetParentNSView(uint64 parent_ns_view_id);
@@ -35,7 +35,7 @@ interface WebContentsNSViewBridge {
   TakeFocus(bool reverse);
 
   // Initiate a drag from the web contents area.
-  StartDrag(DropData drop_data,
+  StartDrag(content.mojom.DropData drop_data,
             uint32 operation_mask,
             gfx.mojom.ImageSkia? image,
             gfx.mojom.Vector2d image_offset);
@@ -83,7 +83,7 @@ struct DraggingInfo {
 // Interface through which the NSView in another process communicates with its
 // owning WebContentsViewMac. This interface has no methods yet, but is included
 // for symmetry and future use.
-interface WebContentsNSViewClient {
+interface WebContentsNSViewHost {
   // Notification that there was a mouse event, along with the type of event.
   // If |motion| is true, this is a normal motion event. If |exited| is true,
   // the pointer left the contents area.
@@ -99,7 +99,7 @@ interface WebContentsNSViewClient {
 
   // Transmit the data that is being dropped on the NSView. This is called prior
   // to DraggingEntered.
-  SetDropData(DropData drop_data);
+  SetDropData(content.mojom.DropData drop_data);
 
   // Called in response to the -[NSDraggingDestination draggingEntered] method
   // being called on the NSView. Returns the resulting operation in |result|.
@@ -126,7 +126,7 @@ interface WebContentsNSViewClient {
   // destination file.
   [Sync]
   DragPromisedFileTo(mojo_base.mojom.FilePath file_path,
-                     DropData drop_data,
+                     content.mojom.DropData drop_data,
                      url.mojom.Url download_url) =>
                          (mojo_base.mojom.FilePath file_path);
 

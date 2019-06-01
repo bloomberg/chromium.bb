@@ -18,26 +18,27 @@
 @class WebContentsViewCocoa;
 
 namespace content {
-
 class WebContentsViewMac;
+}  // namespace content
+
+namespace remote_cocoa {
 
 // A wrapper around a WebContentsViewCocoa, to be accessed via the mojo
 // interface WebContentsNSViewBridge.
-class CONTENT_EXPORT WebContentsNSViewBridge
-    : public mojom::WebContentsNSViewBridge {
+class CONTENT_EXPORT WebContentsNSViewBridge : public mojom::WebContentsNSView {
  public:
   // Create a bridge that will access its client in another process via a mojo
   // interface.
   WebContentsNSViewBridge(uint64_t view_id,
-                          mojom::WebContentsNSViewClientAssociatedPtr client);
+                          mojom::WebContentsNSViewHostAssociatedPtr client);
   // Create a bridge that will access its client directly in-process.
   // TODO(ccameron): Change this to expose only the mojom::WebContentsNSView
   // when all communication is through mojo.
   WebContentsNSViewBridge(uint64_t view_id,
-                          WebContentsViewMac* web_contents_view);
+                          content::WebContentsViewMac* web_contents_view);
   ~WebContentsNSViewBridge() override;
 
-  WebContentsViewCocoa* cocoa_view() const { return cocoa_view_.get(); }
+  WebContentsViewCocoa* GetNSView() const { return ns_view_.get(); }
 
   // mojom::WebContentsNSViewBridge:
   void SetParentNSView(uint64_t parent_ns_view_id) override;
@@ -46,16 +47,16 @@ class CONTENT_EXPORT WebContentsNSViewBridge
   void SetVisible(bool visible) override;
   void MakeFirstResponder() override;
   void TakeFocus(bool reverse) override;
-  void StartDrag(const DropData& drop_data,
+  void StartDrag(const content::DropData& drop_data,
                  uint32_t operation_mask,
                  const gfx::ImageSkia& image,
                  const gfx::Vector2d& image_offset) override;
 
  private:
-  base::scoped_nsobject<WebContentsViewCocoa> cocoa_view_;
-  mojom::WebContentsNSViewClientAssociatedPtr client_;
+  base::scoped_nsobject<WebContentsViewCocoa> ns_view_;
+  mojom::WebContentsNSViewHostAssociatedPtr host_;
 
-  std::unique_ptr<remote_cocoa::ScopedNSViewIdMapping> view_id_;
+  std::unique_ptr<ScopedNSViewIdMapping> view_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsNSViewBridge);
 };

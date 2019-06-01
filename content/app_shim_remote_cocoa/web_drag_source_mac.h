@@ -18,19 +18,22 @@
 
 namespace content {
 struct DropData;
-namespace mojom {
-class WebContentsNSViewClient;
-}  // namespace mojom
 }  // namespace content
+
+namespace remote_cocoa {
+namespace mojom {
+class WebContentsNSViewHost;
+}  // namespace mojom
+}  // namespace remote_cocoa
 
 // A class that handles tracking and event processing for a drag and drop
 // originating from the content area.
 CONTENT_EXPORT
 @interface WebDragSource : NSObject {
  @private
-  // The client through which to communicate with the WebContentsImpl. Owns
-  // |self| and resets |client_| via clearClientAndWebContentsView.
-  content::mojom::WebContentsNSViewClient* client_;
+  // The host through which to communicate with the WebContentsImpl. Owns
+  // |self| and resets |host_| via clearHostAndWebContentsView.
+  remote_cocoa::mojom::WebContentsNSViewHost* host_;
 
   // The view from which the drag was initiated. Weak reference.
   // An instance of this class may outlive |contentsView_|. The destructor of
@@ -65,16 +68,16 @@ CONTENT_EXPORT
 // Initialize a WebDragSource object for a drag (originating on the given
 // contentsView and with the given dropData and pboard). Fill the pasteboard
 // with data types appropriate for dropData.
-- (id)initWithClient:(content::mojom::WebContentsNSViewClient*)client
-                view:(NSView*)contentsView
-            dropData:(const content::DropData*)dropData
-               image:(NSImage*)image
-              offset:(NSPoint)offset
-          pasteboard:(NSPasteboard*)pboard
-   dragOperationMask:(NSDragOperation)dragOperationMask;
+- (id)initWithHost:(remote_cocoa::mojom::WebContentsNSViewHost*)host
+              view:(NSView*)contentsView
+          dropData:(const content::DropData*)dropData
+             image:(NSImage*)image
+            offset:(NSPoint)offset
+        pasteboard:(NSPasteboard*)pboard
+ dragOperationMask:(NSDragOperation)dragOperationMask;
 
 // Call when the web contents is gone.
-- (void)clearClientAndWebContentsView;
+- (void)clearHostAndWebContentsView;
 
 // Returns a mask of the allowed drag operations.
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal;

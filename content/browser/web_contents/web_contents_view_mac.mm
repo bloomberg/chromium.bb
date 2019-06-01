@@ -37,6 +37,8 @@
 
 using blink::WebDragOperation;
 using blink::WebDragOperationsMask;
+using remote_cocoa::mojom::DraggingInfoPtr;
+using remote_cocoa::mojom::SelectionDirection;
 
 // Ensure that the blink::WebDragOperation enum values stay in sync with
 // NSDragOperation constants, since the code below static_casts between 'em.
@@ -90,22 +92,23 @@ WebContentsViewMac::WebContentsViewMac(WebContentsImpl* web_contents,
     : web_contents_(web_contents),
       delegate_(delegate),
       ns_view_id_(remote_cocoa::GetNewNSViewId()),
-      ns_view_client_binding_(this),
+      remote_ns_view_host_binding_(this),
       deferred_close_weak_ptr_factory_(this) {}
 
 WebContentsViewMac::~WebContentsViewMac() {
   if (views_host_)
     views_host_->OnHostableViewDestroying();
   DCHECK(!views_host_);
-  ns_view_bridge_local_.reset();
+  in_process_ns_view_bridge_.reset();
 }
 
-WebContentsViewCocoa* WebContentsViewMac::cocoa_view() const {
-  return ns_view_bridge_local_ ? ns_view_bridge_local_->cocoa_view() : nil;
+WebContentsViewCocoa* WebContentsViewMac::GetInProcessNSView() const {
+  return in_process_ns_view_bridge_ ? in_process_ns_view_bridge_->GetNSView()
+                                    : nil;
 }
 
 gfx::NativeView WebContentsViewMac::GetNativeView() const {
-  return cocoa_view();
+  return GetInProcessNSView();
 }
 
 gfx::NativeView WebContentsViewMac::GetContentNativeView() const {
@@ -116,16 +119,16 @@ gfx::NativeView WebContentsViewMac::GetContentNativeView() const {
 }
 
 gfx::NativeWindow WebContentsViewMac::GetTopLevelNativeWindow() const {
-  NSWindow* window = [cocoa_view() window];
+  NSWindow* window = [GetInProcessNSView() window];
   return window ? window : delegate_->GetNativeWindow();
 }
 
 void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
-  NSWindow* window = [cocoa_view() window];
-  NSRect bounds = [cocoa_view() bounds];
+  NSWindow* window = [GetInProcessNSView() window];
+  NSRect bounds = [GetInProcessNSView() bounds];
   if (window)  {
     // Convert bounds to window coordinate space.
-    bounds = [cocoa_view() convertRect:bounds toView:nil];
+    bounds = [GetInProcessNSView() convertRect:bounds toView:nil];
 
     // Convert bounds to screen coordinate space.
     bounds = [window convertRectToScreen:bounds];
@@ -156,13 +159,12 @@ void WebContentsViewMac::StartDragging(
   [drag_dest_ setDragStartTrackersForProcess:source_rwh->GetProcess()->GetID()];
   drag_source_start_rwh_ = source_rwh->GetWeakPtr();
 
-  if (ns_view_bridge_remote_) {
+  if (remote_ns_view_) {
     // TODO(https://crbug.com/898608): Non-trivial gfx::ImageSkias fail to
     // serialize.
-    ns_view_bridge_remote_->StartDrag(drop_data, mask, gfx::ImageSkia(),
-                                      image_offset);
+    remote_ns_view_->StartDrag(drop_data, mask, gfx::ImageSkia(), image_offset);
   } else {
-    ns_view_bridge_local_->StartDrag(drop_data, mask, image, image_offset);
+    in_process_ns_view_bridge_->StartDrag(drop_data, mask, image, image_offset);
   }
 }
 
@@ -262,12 +264,12 @@ void WebContentsViewMac::TakeFocus(bool reverse) {
   if (delegate() && delegate()->TakeFocus(reverse))
     return;
   if (reverse) {
-    [[cocoa_view() window] selectPreviousKeyView:cocoa_view()];
+    [[GetInProcessNSView() window] selectPreviousKeyView:GetInProcessNSView()];
   } else {
-    [[cocoa_view() window] selectNextKeyView:cocoa_view()];
+    [[GetInProcessNSView() window] selectNextKeyView:GetInProcessNSView()];
   }
-  if (ns_view_bridge_remote_)
-    ns_view_bridge_remote_->TakeFocus(reverse);
+  if (remote_ns_view_)
+    remote_ns_view_->TakeFocus(reverse);
 }
 
 void WebContentsViewMac::ShowContextMenu(
@@ -305,17 +307,19 @@ void WebContentsViewMac::OnMenuClosed() {
 }
 
 gfx::Rect WebContentsViewMac::GetViewBounds() const {
-  NSRect window_bounds = [cocoa_view() convertRect:[cocoa_view() bounds]
-                                            toView:nil];
+  NSRect window_bounds =
+      [GetInProcessNSView() convertRect:[GetInProcessNSView() bounds]
+                                 toView:nil];
   window_bounds.origin = ui::ConvertPointFromWindowToScreen(
-      [cocoa_view() window], window_bounds.origin);
+      [GetInProcessNSView() window], window_bounds.origin);
   return gfx::ScreenRectFromNSRect(window_bounds);
 }
 
 void WebContentsViewMac::CreateView(
     const gfx::Size& initial_size, gfx::NativeView context) {
-  ns_view_bridge_local_ =
-      std::make_unique<WebContentsNSViewBridge>(ns_view_id_, this);
+  in_process_ns_view_bridge_ =
+      std::make_unique<remote_cocoa::WebContentsNSViewBridge>(ns_view_id_,
+                                                              this);
 
   drag_dest_.reset([[WebDragDest alloc] initWithWebContentsImpl:web_contents_]);
   if (delegate_)
@@ -362,18 +366,20 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
   // to make sure the content area is on the bottom so other things draw over
   // it.
   NSView* view_view = view->GetNativeView().GetNativeNSView();
-  [view_view setFrame:[cocoa_view() bounds]];
+  [view_view setFrame:[GetInProcessNSView() bounds]];
   [view_view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   // Add the new view below all other views; this also keeps it below any
   // overlay view installed.
-  [cocoa_view() addSubview:view_view positioned:NSWindowBelow relativeTo:nil];
+  [GetInProcessNSView() addSubview:view_view
+                        positioned:NSWindowBelow
+                        relativeTo:nil];
   // For some reason known only to Cocoa, the autorecalculation of the key view
   // loop set on the window doesn't set the next key view when the subview is
   // added. On 10.6 things magically work fine; on 10.5 they fail
   // <http://crbug.com/61493>. Digging into Cocoa key view loop code yielded
   // madness; TODO(avi,rohit): look at this again and figure out what's really
   // going on.
-  [cocoa_view() setNextKeyView:view_view];
+  [GetInProcessNSView() setNextKeyView:view_view];
   return view;
 }
 
@@ -446,7 +452,7 @@ std::list<RenderWidgetHostViewMac*> WebContentsViewMac::GetChildViews() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebContentsViewMac, mojom::WebContentsNSViewClient:
+// WebContentsViewMac, mojom::WebContentsNSViewHost:
 
 void WebContentsViewMac::OnMouseEvent(bool motion, bool exited) {
   if (!web_contents_ || !web_contents_->GetDelegate())
@@ -456,32 +462,31 @@ void WebContentsViewMac::OnMouseEvent(bool motion, bool exited) {
                                                    exited);
 }
 
-void WebContentsViewMac::OnBecameFirstResponder(
-    mojom::SelectionDirection direction) {
+void WebContentsViewMac::OnBecameFirstResponder(SelectionDirection direction) {
   if (!web_contents_)
     return;
-  if (direction == mojom::SelectionDirection::kDirect)
+  if (direction == SelectionDirection::kDirect)
     return;
 
   web_contents_->FocusThroughTabTraversal(direction ==
-                                          mojom::SelectionDirection::kReverse);
+                                          SelectionDirection::kReverse);
 }
 
 void WebContentsViewMac::OnWindowVisibilityChanged(
-    mojom::Visibility mojo_visibility) {
+    remote_cocoa::mojom::Visibility mojo_visibility) {
   if (!web_contents_ || web_contents_->IsBeingDestroyed())
     return;
 
   // TODO: make content use the mojo type for visibility.
   Visibility visibility = Visibility::VISIBLE;
   switch (mojo_visibility) {
-    case mojom::Visibility::kVisible:
+    case remote_cocoa::mojom::Visibility::kVisible:
       visibility = Visibility::VISIBLE;
       break;
-    case mojom::Visibility::kOccluded:
+    case remote_cocoa::mojom::Visibility::kOccluded:
       visibility = Visibility::OCCLUDED;
       break;
-    case mojom::Visibility::kHidden:
+    case remote_cocoa::mojom::Visibility::kHidden:
       visibility = Visibility::HIDDEN;
       break;
   }
@@ -493,7 +498,7 @@ void WebContentsViewMac::SetDropData(const DropData& drop_data) {
   [drag_dest_ setDropData:drop_data];
 }
 
-bool WebContentsViewMac::DraggingEntered(mojom::DraggingInfoPtr dragging_info,
+bool WebContentsViewMac::DraggingEntered(DraggingInfoPtr dragging_info,
                                          uint32_t* out_result) {
   *out_result = [drag_dest_ draggingEntered:dragging_info.get()];
   return true;
@@ -503,15 +508,14 @@ void WebContentsViewMac::DraggingExited() {
   [drag_dest_ draggingExited];
 }
 
-bool WebContentsViewMac::DraggingUpdated(mojom::DraggingInfoPtr dragging_info,
+bool WebContentsViewMac::DraggingUpdated(DraggingInfoPtr dragging_info,
                                          uint32_t* out_result) {
   *out_result = [drag_dest_ draggingUpdated:dragging_info.get()];
   return true;
 }
 
-bool WebContentsViewMac::PerformDragOperation(
-    mojom::DraggingInfoPtr dragging_info,
-    bool* out_result) {
+bool WebContentsViewMac::PerformDragOperation(DraggingInfoPtr dragging_info,
+                                              bool* out_result) {
   *out_result = [drag_dest_ performDragOperation:dragging_info.get()];
   return true;
 }
@@ -585,14 +589,14 @@ void WebContentsViewMac::EndDrag(uint32_t drag_operation,
       drag_source_start_rwh_.get());
 }
 
-void WebContentsViewMac::DraggingEntered(mojom::DraggingInfoPtr dragging_info,
+void WebContentsViewMac::DraggingEntered(DraggingInfoPtr dragging_info,
                                          DraggingEnteredCallback callback) {
   uint32_t result = 0;
   DraggingEntered(std::move(dragging_info), &result);
   std::move(callback).Run(result);
 }
 
-void WebContentsViewMac::DraggingUpdated(mojom::DraggingInfoPtr dragging_info,
+void WebContentsViewMac::DraggingUpdated(DraggingInfoPtr dragging_info,
                                          DraggingUpdatedCallback callback) {
   uint32_t result = false;
   DraggingUpdated(std::move(dragging_info), &result);
@@ -600,7 +604,7 @@ void WebContentsViewMac::DraggingUpdated(mojom::DraggingInfoPtr dragging_info,
 }
 
 void WebContentsViewMac::PerformDragOperation(
-    mojom::DraggingInfoPtr dragging_info,
+    DraggingInfoPtr dragging_info,
     PerformDragOperationCallback callback) {
   bool result = false;
   PerformDragOperation(std::move(dragging_info), &result);
@@ -620,41 +624,42 @@ void WebContentsViewMac::DragPromisedFileTo(
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewMac, ViewsHostableView:
 
-void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
-  views_host_ = host;
+void WebContentsViewMac::ViewsHostableAttach(
+    ViewsHostableView::Host* views_host) {
+  views_host_ = views_host;
   // Create an NSView in the target process, if one exists.
   auto* remote_cocoa_application = views_host_->GetRemoteCocoaApplication();
   if (remote_cocoa_application) {
-    mojom::WebContentsNSViewClientAssociatedPtr client;
-    ns_view_client_binding_.Bind(mojo::MakeRequest(&client));
-    mojom::WebContentsNSViewBridgeAssociatedRequest bridge_request =
-        mojo::MakeRequest(&ns_view_bridge_remote_);
+    remote_cocoa::mojom::WebContentsNSViewHostAssociatedPtr host;
+    remote_ns_view_host_binding_.Bind(mojo::MakeRequest(&host));
+    remote_cocoa::mojom::WebContentsNSViewAssociatedRequest ns_view_request =
+        mojo::MakeRequest(&remote_ns_view_);
 
-    // Cast from mojom::WebContentsNSViewClientPtr and
+    // Cast from mojom::WebContentsNSViewHostPtr and
     // mojom::WebContentsNSViewBridgeRequest to the public interfaces
     // accepted by the application.
     // TODO(ccameron): Remove the need for this cast.
     // https://crbug.com/888290
     mojo::AssociatedInterfacePtrInfo<remote_cocoa::mojom::StubInterface>
-        stub_client(client.PassInterface().PassHandle(), 0);
-    remote_cocoa::mojom::StubInterfaceAssociatedRequest stub_bridge_request(
-        bridge_request.PassHandle());
+        stub_host(host.PassInterface().PassHandle(), 0);
+    remote_cocoa::mojom::StubInterfaceAssociatedRequest stub_ns_view_request(
+        ns_view_request.PassHandle());
 
     remote_cocoa_application->CreateWebContentsNSView(
-        ns_view_id_, std::move(stub_client), std::move(stub_bridge_request));
-    ns_view_bridge_remote_->SetParentNSView(views_host_->GetNSViewId());
+        ns_view_id_, std::move(stub_host), std::move(stub_ns_view_request));
+    remote_ns_view_->SetParentNSView(views_host_->GetNSViewId());
 
     // Because this view is being displayed from a remote process, reset the
     // in-process NSView's client pointer, so that the in-process NSView will
     // not call back into |this|.
-    [cocoa_view() setClient:nullptr];
+    [GetInProcessNSView() setHost:nullptr];
   }
 
   // TODO(https://crbug.com/933679): WebContentsNSViewBridge::SetParentView
   // will look up the parent NSView by its id, but this has been observed to
   // fail in the field, so assume that the caller handles updating the NSView
   // hierarchy.
-  // ns_view_bridge_local_->SetParentNSView(views_host_->GetNSViewId());
+  // in_process_ns_view_bridge_->SetParentNSView(views_host_->GetNSViewId());
 
   for (auto* rwhv_mac : GetChildViews()) {
     rwhv_mac->MigrateNSViewBridge(remote_cocoa_application, ns_view_id_);
@@ -666,16 +671,16 @@ void WebContentsViewMac::ViewsHostableDetach() {
   DCHECK(views_host_);
   // Disconnect from the remote bridge, if it exists. This will have the effect
   // of destroying the associated bridge instance with its NSView.
-  if (ns_view_bridge_remote_) {
-    ns_view_bridge_remote_->SetVisible(false);
-    ns_view_bridge_remote_->ResetParentNSView();
-    ns_view_client_binding_.Close();
-    ns_view_bridge_remote_.reset();
+  if (remote_ns_view_) {
+    remote_ns_view_->SetVisible(false);
+    remote_ns_view_->ResetParentNSView();
+    remote_ns_view_host_binding_.Close();
+    remote_ns_view_.reset();
     // Permit the in-process NSView to call back into |this| again.
-    [cocoa_view() setClient:this];
+    [GetInProcessNSView() setHost:this];
   }
-  ns_view_bridge_local_->SetVisible(false);
-  ns_view_bridge_local_->ResetParentNSView();
+  in_process_ns_view_bridge_->SetVisible(false);
+  in_process_ns_view_bridge_->ResetParentNSView();
   views_host_ = nullptr;
 
   for (auto* rwhv_mac : GetChildViews()) {
@@ -688,24 +693,24 @@ void WebContentsViewMac::ViewsHostableDetach() {
 void WebContentsViewMac::ViewsHostableSetBounds(
     const gfx::Rect& bounds_in_window) {
   // Update both the in-process and out-of-process NSViews' bounds.
-  ns_view_bridge_local_->SetBounds(bounds_in_window);
-  if (ns_view_bridge_remote_)
-    ns_view_bridge_remote_->SetBounds(bounds_in_window);
+  in_process_ns_view_bridge_->SetBounds(bounds_in_window);
+  if (remote_ns_view_)
+    remote_ns_view_->SetBounds(bounds_in_window);
 }
 
 void WebContentsViewMac::ViewsHostableSetVisible(bool visible) {
   // Update both the in-process and out-of-process NSViews' visibility.
-  ns_view_bridge_local_->SetVisible(visible);
-  if (ns_view_bridge_remote_)
-    ns_view_bridge_remote_->SetVisible(visible);
+  in_process_ns_view_bridge_->SetVisible(visible);
+  if (remote_ns_view_)
+    remote_ns_view_->SetVisible(visible);
 }
 
 void WebContentsViewMac::ViewsHostableMakeFirstResponder() {
   // Only make the true NSView become the first responder.
-  if (ns_view_bridge_remote_)
-    ns_view_bridge_remote_->MakeFirstResponder();
+  if (remote_ns_view_)
+    remote_ns_view_->MakeFirstResponder();
   else
-    ns_view_bridge_local_->MakeFirstResponder();
+    in_process_ns_view_bridge_->MakeFirstResponder();
 }
 
 void WebContentsViewMac::ViewsHostableSetParentAccessible(

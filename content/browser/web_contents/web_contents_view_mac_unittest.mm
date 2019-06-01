@@ -19,12 +19,11 @@ namespace content {
 
 namespace {
 
-class WebContentsViewCocoaTest : public ui::CocoaTest {
-};
+class WebContentsNSViewTest : public ui::CocoaTest {};
 
 }  // namespace
 
-TEST_F(WebContentsViewCocoaTest, NonWebDragSourceTest) {
+TEST_F(WebContentsNSViewTest, NonWebDragSourceTest) {
   // The designated initializer is private but init should be fine in this case.
   base::scoped_nsobject<WebContentsViewCocoa> view(
       [[WebContentsViewCocoa alloc] init]);

@@ -26,7 +26,7 @@ TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
 
   scoped_refptr<ui::UniquePasteboard> pasteboard1 = new ui::UniquePasteboard;
   base::scoped_nsobject<WebDragSource> source([[WebDragSource alloc]
-         initWithClient:nullptr
+           initWithHost:nullptr
                    view:view
                dropData:dropData.get()
                   image:nil

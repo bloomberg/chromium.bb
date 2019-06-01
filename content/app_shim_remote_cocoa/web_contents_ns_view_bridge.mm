@@ -9,27 +9,27 @@
 #include "content/browser/web_contents/web_contents_view_mac.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 
-namespace content {
+namespace remote_cocoa {
 
 WebContentsNSViewBridge::WebContentsNSViewBridge(
     uint64_t view_id,
-    mojom::WebContentsNSViewClientAssociatedPtr client)
-    : client_(std::move(client)) {
-  cocoa_view_.reset(
+    mojom::WebContentsNSViewHostAssociatedPtr client)
+    : host_(std::move(client)) {
+  ns_view_.reset(
       [[WebContentsViewCocoa alloc] initWithViewsHostableView:nullptr]);
-  [cocoa_view_ setClient:client_.get()];
+  [ns_view_ setHost:host_.get()];
   view_id_ = std::make_unique<remote_cocoa::ScopedNSViewIdMapping>(
-      view_id, cocoa_view_.get());
+      view_id, ns_view_.get());
 }
 
 WebContentsNSViewBridge::WebContentsNSViewBridge(
     uint64_t view_id,
-    WebContentsViewMac* web_contents_view) {
-  cocoa_view_.reset([[WebContentsViewCocoa alloc]
+    content::WebContentsViewMac* web_contents_view) {
+  ns_view_.reset([[WebContentsViewCocoa alloc]
       initWithViewsHostableView:web_contents_view]);
-  [cocoa_view_ setClient:web_contents_view];
+  [ns_view_ setHost:web_contents_view];
   view_id_ = std::make_unique<remote_cocoa::ScopedNSViewIdMapping>(
-      view_id, cocoa_view_.get());
+      view_id, ns_view_.get());
 }
 
 WebContentsNSViewBridge::~WebContentsNSViewBridge() {
@@ -37,24 +37,24 @@ WebContentsNSViewBridge::~WebContentsNSViewBridge() {
   // while the user was operating a UI control which resulted in a
   // close.  In that case, the Cocoa view outlives the
   // WebContentsViewMac instance due to Cocoa retain count.
-  [cocoa_view_ setClient:nullptr];
-  [cocoa_view_ clearViewsHostableView];
-  [cocoa_view_ removeFromSuperview];
+  [ns_view_ setHost:nullptr];
+  [ns_view_ clearViewsHostableView];
+  [ns_view_ removeFromSuperview];
 }
 
 void WebContentsNSViewBridge::SetParentNSView(uint64_t parent_ns_view_id) {
   NSView* parent_ns_view = remote_cocoa::GetNSViewFromId(parent_ns_view_id);
   // If the browser passed an invalid handle, then there is no recovery.
   CHECK(parent_ns_view);
-  [parent_ns_view addSubview:cocoa_view_];
+  [parent_ns_view addSubview:ns_view_];
 }
 
 void WebContentsNSViewBridge::ResetParentNSView() {
-  [cocoa_view_ removeFromSuperview];
+  [ns_view_ removeFromSuperview];
 }
 
 void WebContentsNSViewBridge::SetBounds(const gfx::Rect& bounds_in_window) {
-  NSWindow* window = [cocoa_view_ window];
+  NSWindow* window = [ns_view_ window];
   NSRect window_content_rect = [window contentRectForFrameRect:[window frame]];
   NSRect ns_bounds_in_window =
       NSMakeRect(bounds_in_window.x(),
@@ -62,36 +62,36 @@ void WebContentsNSViewBridge::SetBounds(const gfx::Rect& bounds_in_window) {
                      bounds_in_window.height(),
                  bounds_in_window.width(), bounds_in_window.height());
   NSRect ns_bounds_in_superview =
-      [[cocoa_view_ superview] convertRect:ns_bounds_in_window fromView:nil];
-  [cocoa_view_ setFrame:ns_bounds_in_superview];
+      [[ns_view_ superview] convertRect:ns_bounds_in_window fromView:nil];
+  [ns_view_ setFrame:ns_bounds_in_superview];
 }
 
 void WebContentsNSViewBridge::SetVisible(bool visible) {
-  [cocoa_view_ setHidden:!visible];
+  [ns_view_ setHidden:!visible];
 }
 
 void WebContentsNSViewBridge::MakeFirstResponder() {
-  if ([cocoa_view_ acceptsFirstResponder])
-    [[cocoa_view_ window] makeFirstResponder:cocoa_view_];
+  if ([ns_view_ acceptsFirstResponder])
+    [[ns_view_ window] makeFirstResponder:ns_view_];
 }
 
 void WebContentsNSViewBridge::TakeFocus(bool reverse) {
   if (reverse)
-    [[cocoa_view_ window] selectPreviousKeyView:cocoa_view_];
+    [[ns_view_ window] selectPreviousKeyView:ns_view_];
   else
-    [[cocoa_view_ window] selectNextKeyView:cocoa_view_];
+    [[ns_view_ window] selectNextKeyView:ns_view_];
 }
 
-void WebContentsNSViewBridge::StartDrag(const DropData& drop_data,
+void WebContentsNSViewBridge::StartDrag(const content::DropData& drop_data,
                                         uint32_t operation_mask,
                                         const gfx::ImageSkia& image,
                                         const gfx::Vector2d& image_offset) {
   NSPoint offset = NSPointFromCGPoint(
       gfx::PointAtOffsetFromOrigin(image_offset).ToCGPoint());
-  [cocoa_view_ startDragWithDropData:drop_data
-                   dragOperationMask:operation_mask
-                               image:gfx::NSImageFromImageSkia(image)
-                              offset:offset];
+  [ns_view_ startDragWithDropData:drop_data
+                dragOperationMask:operation_mask
+                            image:gfx::NSImageFromImageSkia(image)
+                           offset:offset];
 }
 
-}  // namespace content
+}  // namespace remote_cocoa
