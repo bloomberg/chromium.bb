@@ -1014,19 +1014,19 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
       (float)(avg_sr_coded_error / num_mbs),
       (float)(avg_tr_coded_error / num_mbs),
       (float)(avg_wavelet_energy / num_mbs),
-      rc->constrained_gf_group,
+      (float)(rc->constrained_gf_group),
       (float)decay_accumulator,
       (float)(first_frame_coded_error / num_mbs),
       (float)(first_frame_sr_coded_error / num_mbs),
       (float)(first_frame_tr_coded_error / num_mbs),
       (float)(gf_first_frame_err / num_mbs),
-      twopass->kf_zeromotion_pct,
+      (float)(twopass->kf_zeromotion_pct),
       (float)(last_frame_coded_error / num_mbs),
       (float)(last_frame_sr_coded_error / num_mbs),
       (float)(last_frame_tr_coded_error / num_mbs),
-      i,
+      (float)i,
       (float)mv_ratio_accumulator,
-      non_zero_stdev_count
+      (float)non_zero_stdev_count
     };
     /* clang-format on */
     // Infer using ML model.
