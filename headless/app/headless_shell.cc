@@ -70,7 +70,8 @@ const char kDefaultPDFFileName[] = "output.pdf";
 
 bool ParseWindowSize(const std::string& window_size,
                      gfx::Size* parsed_window_size) {
-  int width, height = 0;
+  int width = 0;
+  int height = 0;
   if (sscanf(window_size.c_str(), "%d%*[x,]%d", &width, &height) >= 2 &&
       width >= 0 && height >= 0) {
     parsed_window_size->set_width(width);
@@ -140,7 +141,7 @@ base::FilePath GetSSLKeyLogFile(const base::CommandLine* command_line) {
 #endif
 }
 
-#endif
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 int RunContentMain(
     HeadlessBrowser::Options options,
@@ -159,15 +160,61 @@ int RunContentMain(
   // TODO(skyostil): Implement custom message pumps.
   DCHECK(!options.message_pump);
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-  std::unique_ptr<HeadlessBrowserImpl> browser(new HeadlessBrowserImpl(
-      std::move(on_browser_start_callback), std::move(options)));
-  HeadlessContentMainDelegate delegate(std::move(browser));
-#else
+#if defined(CHROME_MULTIPLE_DLL_CHILD)
   HeadlessContentMainDelegate delegate(std::move(options));
+#else
+  auto browser = std::make_unique<HeadlessBrowserImpl>(
+      std::move(on_browser_start_callback), std::move(options));
+  HeadlessContentMainDelegate delegate(std::move(browser));
 #endif
   params.delegate = &delegate;
   return content::ContentMain(params);
+}
+
+bool ValidateCommandLine(const base::CommandLine& command_line) {
+  if (!command_line.HasSwitch(switches::kRemoteDebuggingPort) &&
+      !command_line.HasSwitch(switches::kRemoteDebuggingPipe)) {
+    if (command_line.GetArgs().size() <= 1)
+      return true;
+    LOG(ERROR) << "Open multiple tabs is only supported when "
+               << "remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kDefaultBackgroundColor)) {
+    LOG(ERROR) << "Setting default background color is disabled "
+               << "when remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kDumpDom)) {
+    LOG(ERROR) << "Dump DOM is disabled when remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kPrintToPDF)) {
+    LOG(ERROR) << "Print to PDF is disabled "
+               << "when remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kRepl)) {
+    LOG(ERROR) << "Evaluate Javascript is disabled "
+               << "when remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kScreenshot)) {
+    LOG(ERROR) << "Capture screenshot is disabled "
+               << "when remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kTimeout)) {
+    LOG(ERROR) << "Navigation timeout is disabled "
+               << "when remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kVirtualTimeBudget)) {
+    LOG(ERROR) << "Virtual time budget is disabled "
+               << "when remote debugging is enabled.";
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -587,52 +634,6 @@ bool HeadlessShell::RemoteDebuggingEnabled() const {
       *base::CommandLine::ForCurrentProcess();
   return (command_line.HasSwitch(switches::kRemoteDebuggingPort) ||
           command_line.HasSwitch(switches::kRemoteDebuggingPipe));
-}
-
-bool ValidateCommandLine(const base::CommandLine& command_line) {
-  if (!command_line.HasSwitch(switches::kRemoteDebuggingPort) &&
-      !command_line.HasSwitch(switches::kRemoteDebuggingPipe)) {
-    if (command_line.GetArgs().size() <= 1)
-      return true;
-    LOG(ERROR) << "Open multiple tabs is only supported when "
-               << "remote debugging is enabled.";
-    return false;
-  }
-  if (command_line.HasSwitch(switches::kDefaultBackgroundColor)) {
-    LOG(ERROR) << "Setting default background color is disabled "
-               << "when remote debugging is enabled.";
-    return false;
-  }
-  if (command_line.HasSwitch(switches::kDumpDom)) {
-    LOG(ERROR) << "Dump DOM is disabled when remote debugging is enabled.";
-    return false;
-  }
-  if (command_line.HasSwitch(switches::kPrintToPDF)) {
-    LOG(ERROR) << "Print to PDF is disabled "
-               << "when remote debugging is enabled.";
-    return false;
-  }
-  if (command_line.HasSwitch(switches::kRepl)) {
-    LOG(ERROR) << "Evaluate Javascript is disabled "
-               << "when remote debugging is enabled.";
-    return false;
-  }
-  if (command_line.HasSwitch(switches::kScreenshot)) {
-    LOG(ERROR) << "Capture screenshot is disabled "
-               << "when remote debugging is enabled.";
-    return false;
-  }
-  if (command_line.HasSwitch(switches::kTimeout)) {
-    LOG(ERROR) << "Navigation timeout is disabled "
-               << "when remote debugging is enabled.";
-    return false;
-  }
-  if (command_line.HasSwitch(switches::kVirtualTimeBudget)) {
-    LOG(ERROR) << "Virtual time budget is disabled "
-               << "when remote debugging is enabled.";
-    return false;
-  }
-  return true;
 }
 
 #if defined(OS_WIN)
