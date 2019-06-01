@@ -525,9 +525,8 @@ class TabListMediator {
                 mModel.get(i).set(TabProperties.IS_SELECTED, isSelected);
 
                 if (mThumbnailProvider != null && isSelected) {
-                    // TODO(crbug.com/964406): should force update but it's too slow.
-                    ThumbnailFetcher callback =
-                            new ThumbnailFetcher(mThumbnailProvider, tab, false);
+                    // TODO(crbug.com/968829): make force updating faster.
+                    ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, true);
                     mModel.get(i).set(TabProperties.THUMBNAIL_FETCHER, callback);
                 }
 
