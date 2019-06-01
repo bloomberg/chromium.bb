@@ -870,29 +870,38 @@ void HTMLImageElement::AssociateWith(HTMLFormElement* form) {
 // Minimum height or width of the image to start lazyloading.
 constexpr int kMinDimensionToLazyLoad = 10;
 
-bool HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
+HTMLImageElement::LazyLoadDimensionType
+HTMLImageElement::GetAttributeLazyLoadDimensionType(
     const String& attribute_value) {
   HTMLDimension dimension;
-  return ParseDimensionValue(attribute_value, dimension) &&
-         dimension.IsAbsolute() && dimension.Value() <= kMinDimensionToLazyLoad;
+  if (ParseDimensionValue(attribute_value, dimension) &&
+      dimension.IsAbsolute()) {
+    return dimension.Value() <= kMinDimensionToLazyLoad
+               ? LazyLoadDimensionType::kAbsoluteSmall
+               : LazyLoadDimensionType::kAbsoluteNotSmall;
+  }
+  return LazyLoadDimensionType::kNotAbsolute;
 }
 
-bool HTMLImageElement::IsInlineStyleDimensionsSmall(
+HTMLImageElement::LazyLoadDimensionType
+HTMLImageElement::GetInlineStyleDimensionsType(
     const CSSPropertyValueSet* property_set) {
   if (!property_set)
-    return false;
+    return LazyLoadDimensionType::kNotAbsolute;
   const CSSValue* height =
       property_set->GetPropertyCSSValue(CSSPropertyID::kHeight);
   const CSSValue* width =
       property_set->GetPropertyCSSValue(CSSPropertyID::kWidth);
   const auto* width_prim = DynamicTo<CSSPrimitiveValue>(width);
   const auto* height_prim = DynamicTo<CSSPrimitiveValue>(height);
-  if (!width_prim || !height_prim)
-    return false;
-  return height_prim->IsPx() &&
-         (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
-         width_prim->IsPx() &&
-         (width_prim->GetDoubleValue() <= kMinDimensionToLazyLoad);
+  if (!width_prim || !height_prim || !width_prim->IsPx() ||
+      !height_prim->IsPx()) {
+    return LazyLoadDimensionType::kNotAbsolute;
+  }
+  return (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
+                 (width_prim->GetDoubleValue() <= kMinDimensionToLazyLoad)
+             ? LazyLoadDimensionType::kAbsoluteSmall
+             : LazyLoadDimensionType::kAbsoluteNotSmall;
 }
 
 }  // namespace blink

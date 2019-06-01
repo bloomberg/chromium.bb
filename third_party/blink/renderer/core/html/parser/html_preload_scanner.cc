@@ -152,9 +152,12 @@ class TokenPreloadScanner::StartTagScanner {
         integrity_attr_set_(false),
         integrity_features_(features),
         loading_attr_value_(LoadingAttrValue::kAuto),
-        width_attr_small_absolute_(false),
-        height_attr_small_absolute_(false),
-        inline_style_dimensions_small_(false),
+        width_attr_dimension_type_(
+            HTMLImageElement::LazyLoadDimensionType::kNotAbsolute),
+        height_attr_dimension_type_(
+            HTMLImageElement::LazyLoadDimensionType::kNotAbsolute),
+        inline_style_dimensions_type_(
+            HTMLImageElement::LazyLoadDimensionType::kNotAbsolute),
         scanner_type_(scanner_type),
         priority_hints_origin_trial_enabled_(
             priority_hints_origin_trial_enabled) {
@@ -296,26 +299,44 @@ class TokenPreloadScanner::StartTagScanner {
         document_parameters.lazyload_policy_enforced) {
       effective_loading_attr_value = LoadingAttrValue::kAuto;
     }
+    bool is_lazy_load_image_enabled = false;
     switch (effective_loading_attr_value) {
       case LoadingAttrValue::kEager:
-        request->SetIsLazyLoadImageEnabled(false);
+        is_lazy_load_image_enabled = false;
         break;
       case LoadingAttrValue::kLazy:
-        request->SetIsLazyLoadImageEnabled(
+        is_lazy_load_image_enabled =
             document_parameters.lazy_load_image_enabled_state !=
-            LocalFrame::LazyLoadImageEnabledState::kDisabled);
+            LocalFrame::LazyLoadImageEnabledState::kDisabled;
         break;
       case LoadingAttrValue::kAuto:
-        if ((width_attr_small_absolute_ && height_attr_small_absolute_) ||
-            inline_style_dimensions_small_) {
-          request->SetIsLazyLoadImageEnabled(false);
+        if ((width_attr_dimension_type_ ==
+                 HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
+             height_attr_dimension_type_ ==
+                 HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) ||
+            inline_style_dimensions_type_ ==
+                HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
+          is_lazy_load_image_enabled = false;
         } else {
-          request->SetIsLazyLoadImageEnabled(
+          is_lazy_load_image_enabled =
               document_parameters.lazy_load_image_enabled_state ==
-              LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic);
+              LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic;
         }
         break;
     }
+    // LazyLoad: Do not preload if absolute dimensions are mentioned in width
+    // and height attributes or in the inline style, and the dimensions are not
+    // small enough.
+    if (is_lazy_load_image_enabled &&
+        ((width_attr_dimension_type_ ==
+              HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall &&
+          height_attr_dimension_type_ ==
+              HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) ||
+         inline_style_dimensions_type_ ==
+             HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall)) {
+      return nullptr;
+    }
+    request->SetIsLazyLoadImageEnabled(is_lazy_load_image_enabled);
 
     // The only link tags that should keep the integrity metadata are
     // stylesheets until crbug.com/677022 is resolved.
@@ -396,19 +417,20 @@ class TokenPreloadScanner::StartTagScanner {
               : EqualIgnoringASCIICase(attribute_value, "lazy")
                     ? LoadingAttrValue::kLazy
                     : LoadingAttrValue::kAuto;
-    } else if (!width_attr_small_absolute_ &&
+    } else if (width_attr_dimension_type_ ==
+                   HTMLImageElement::LazyLoadDimensionType::kNotAbsolute &&
                Match(attribute_name, kWidthAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
-      width_attr_small_absolute_ =
-          HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
-              attribute_value);
-    } else if (!height_attr_small_absolute_ &&
+      width_attr_dimension_type_ =
+          HTMLImageElement::GetAttributeLazyLoadDimensionType(attribute_value);
+    } else if (height_attr_dimension_type_ ==
+                   HTMLImageElement::LazyLoadDimensionType::kNotAbsolute &&
                Match(attribute_name, kHeightAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
-      height_attr_small_absolute_ =
-          HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
-              attribute_value);
-    } else if (!inline_style_dimensions_small_ &&
+      height_attr_dimension_type_ =
+          HTMLImageElement::GetAttributeLazyLoadDimensionType(attribute_value);
+    } else if (inline_style_dimensions_type_ ==
+                   HTMLImageElement::LazyLoadDimensionType::kNotAbsolute &&
                Match(attribute_name, kStyleAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
       CSSParserMode mode =
@@ -416,8 +438,8 @@ class TokenPreloadScanner::StartTagScanner {
       const ImmutableCSSPropertyValueSet* property_set =
           CSSParser::ParseInlineStyleDeclaration(
               attribute_value, mode, SecureContextMode::kInsecureContext);
-      inline_style_dimensions_small_ =
-          HTMLImageElement::IsInlineStyleDimensionsSmall(property_set);
+      inline_style_dimensions_type_ =
+          HTMLImageElement::GetInlineStyleDimensionsType(property_set);
     }
   }
 
@@ -718,9 +740,9 @@ class TokenPreloadScanner::StartTagScanner {
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
   LoadingAttrValue loading_attr_value_;
-  bool width_attr_small_absolute_;
-  bool height_attr_small_absolute_;
-  bool inline_style_dimensions_small_;
+  HTMLImageElement::LazyLoadDimensionType width_attr_dimension_type_;
+  HTMLImageElement::LazyLoadDimensionType height_attr_dimension_type_;
+  HTMLImageElement::LazyLoadDimensionType inline_style_dimensions_type_;
   TokenPreloadScanner::ScannerType scanner_type_;
   // For explanation, see TokenPreloadScanner's declaration.
   bool priority_hints_origin_trial_enabled_;

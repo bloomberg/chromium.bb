@@ -101,19 +101,43 @@ LazyLoadImageEligibility DetermineLazyLoadImageEligibility(
 
   // Avoid automatically lazyloading if width and height attributes are small.
   // This heuristic helps avoid double fetching tracking pixels.
-  if (HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
-          html_image.FastGetAttribute(html_names::kWidthAttr)) &&
-      HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
-          html_image.FastGetAttribute(html_names::kHeightAttr))) {
+  if (HTMLImageElement::GetAttributeLazyLoadDimensionType(
+          html_image.FastGetAttribute(html_names::kWidthAttr)) ==
+          HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
+      HTMLImageElement::GetAttributeLazyLoadDimensionType(
+          html_image.FastGetAttribute(html_names::kHeightAttr)) ==
+          HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
     return LazyLoadImageEligibility::kDisabled;
   }
   // Avoid automatically lazyloading if width or height is specified in inline
   // style and is small enough. This heuristic helps avoid double fetching
   // tracking pixels.
-  if (HTMLImageElement::IsInlineStyleDimensionsSmall(html_image.InlineStyle()))
+  if (HTMLImageElement::GetInlineStyleDimensionsType(
+          html_image.InlineStyle()) ==
+      HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
     return LazyLoadImageEligibility::kDisabled;
+  }
 
   return LazyLoadImageEligibility::kEnabledAutomatic;
+}
+
+// Returns true if absolute dimension is specified in the width and height
+// attributes or in the inline style.
+bool IsDimensionAbsoluteLarge(const HTMLImageElement& html_image) {
+  if (HTMLImageElement::GetAttributeLazyLoadDimensionType(
+          html_image.FastGetAttribute(html_names::kWidthAttr)) ==
+          HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall ||
+      HTMLImageElement::GetAttributeLazyLoadDimensionType(
+          html_image.FastGetAttribute(html_names::kHeightAttr)) ==
+          HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) {
+    return true;
+  }
+  if (HTMLImageElement::GetInlineStyleDimensionsType(
+          html_image.InlineStyle()) ==
+      HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) {
+    return true;
+  }
+  return false;
 }
 
 bool CheckForUnoptimizedImagePolicy(const Document& document,
@@ -549,7 +573,11 @@ void ImageLoader::DoUpdateFromElement(
                  LazyLoadImageEligibility::kEnabledAutomatic &&
              lazy_load_image_enabled_state ==
                  LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic)) {
-          params.SetLazyImagePlaceholder();
+          if (IsDimensionAbsoluteLarge(*html_image)) {
+            params.SetLazyImageDeferred();
+          } else {
+            params.SetLazyImagePlaceholder();
+          }
           lazy_image_load_state_ = LazyImageLoadState::kDeferred;
         }
 

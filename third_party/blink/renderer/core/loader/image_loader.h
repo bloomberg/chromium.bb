@@ -143,9 +143,10 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   // https://docs.google.com/document/d/1Ym0EOwyZJmaB5afnCVPu0SFb8EWLBj_facm2fK9kgC0/
   enum class LazyImageLoadState {
     kNone,      // LazyImages not active.
-    kDeferred,  // Placeholder is loading/loaded. Full image load not started.
-                // Once the placeholder is loaded, document load event is
-                // unblocked, but image load event is not fired yet.
+    kDeferred,  // Full image load not started, and image load event will not be
+                // fired. If image dimensions is present, document load event
+                // will be unblocked. Otherwise placeholder fetch will start,
+                // and once its done document load event is unblocked.
     kFullImage  // Full image is loading/loaded, due to element coming near the
                 // viewport or if a placeholder load actually fetched the full
                 // image. image_complete_ can differentiate if the fetch is

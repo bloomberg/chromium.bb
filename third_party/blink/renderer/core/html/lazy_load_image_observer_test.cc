@@ -38,29 +38,22 @@ Vector<char> ReadTestImage() {
       ->CopyAs<Vector<char>>();
 }
 
-class LazyLoadCSSImagesTest : public SimTest {
+class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
+                              public SimTest {
  protected:
-  LazyLoadCSSImagesTest()
-      : scoped_lazy_image_loading_for_test_(true),
-        scoped_automatic_lazy_image_loading_for_test_(true) {}
+  LazyLoadImagesSimTest()
+      : scoped_lazy_image_loading_for_test_(GetParam()),
+        scoped_automatic_lazy_image_loading_for_test_(GetParam()) {}
+
   void SetLazyLoadEnabled(bool enabled) {
     WebView().GetPage()->GetSettings().SetLazyLoadEnabled(enabled);
   }
 
-  void LoadMainResource() {
+  void LoadMainResource(const String& html_body) {
     SimRequest main_resource("https://example.com/", "text/html");
     LoadURL("https://example.com/");
 
-    main_resource.Complete(String::Format(R"HTML(
-          <style>
-          #deferred_image {
-            height:200px;
-            background-image: url('img.png');
-          }
-          </style>
-          <div style='height:10000px;'></div>
-          <div id="deferred_image"></div>
-        )HTML"));
+    main_resource.Complete(html_body);
     GetDocument().UpdateStyleAndLayoutTree();
   }
 
@@ -82,39 +75,107 @@ class LazyLoadCSSImagesTest : public SimTest {
     EXPECT_TRUE(is_background_image_found);
   }
 
+  void VerifyImageElementWithDimensionDeferred(const char* img_attribute) {
+    bool is_lazyload_image_enabled = GetParam();
+    SetLazyLoadEnabled(is_lazyload_image_enabled);
+    SimRequest image_resource("https://example.com/img.png", "image/png");
+    LoadMainResource(String::Format(R"HTML(
+        <body onload='console.log("main body onload");'>
+          <div style='height:10000px;'></div>
+          <img src="img.png" %s
+               onload= 'console.log("deferred_image onload");'>
+        </body>)HTML",
+                                    img_attribute));
+
+    if (!is_lazyload_image_enabled)
+      image_resource.Complete(ReadTestImage());
+
+    Compositor().BeginFrame();
+    test::RunPendingTasks();
+
+    EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+    if (!is_lazyload_image_enabled)
+      EXPECT_TRUE(ConsoleMessages().Contains("deferred_image onload"));
+
+    if (is_lazyload_image_enabled) {
+      // Scroll down until the image element is visible.
+      GetDocument().View()->LayoutViewport()->SetScrollOffset(
+          ScrollOffset(0, 10000), kProgrammaticScroll);
+      Compositor().BeginFrame();
+      test::RunPendingTasks();
+      image_resource.Complete(ReadTestImage());
+      test::RunPendingTasks();
+      EXPECT_TRUE(ConsoleMessages().Contains("deferred_image onload"));
+    }
+  }
+
  private:
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test_;
   ScopedAutomaticLazyImageLoadingForTest
       scoped_automatic_lazy_image_loading_for_test_;
 };
 
-TEST_F(LazyLoadCSSImagesTest, CSSBackgroundImageLoadedWithoutLazyLoad) {
-  SetLazyLoadEnabled(false);
+TEST_P(LazyLoadImagesSimTest, CSSBackgroundImage) {
+  bool is_lazyload_image_enabled = GetParam();
+  SetLazyLoadEnabled(is_lazyload_image_enabled);
   SimRequest image_resource("https://example.com/img.png", "image/png");
-  LoadMainResource();
-  image_resource.Complete(ReadTestImage());
+  LoadMainResource(String::Format(R"HTML(
+        <style>
+        #deferred_image {
+          height:200px;
+          background-image: url('img.png');
+        }
+        </style>
+        <div style='height:10000px;'></div>
+        <div id="deferred_image"></div>
+      )HTML"));
+
+  if (!is_lazyload_image_enabled)
+    image_resource.Complete(ReadTestImage());
+
   Compositor().BeginFrame();
   test::RunPendingTasks();
-  ExpectCSSBackgroundImageDeferredState(false);
+  ExpectCSSBackgroundImageDeferredState(is_lazyload_image_enabled);
+
+  if (is_lazyload_image_enabled) {
+    // Scroll down until the background image is visible.
+    GetDocument().View()->LayoutViewport()->SetScrollOffset(
+        ScrollOffset(0, 10000), kProgrammaticScroll);
+    Compositor().BeginFrame();
+    test::RunPendingTasks();
+    image_resource.Complete(ReadTestImage());
+    ExpectCSSBackgroundImageDeferredState(false);
+  }
 }
 
-TEST_F(LazyLoadCSSImagesTest, CSSBackgroundImageDeferredWithLazyLoad) {
-  SetLazyLoadEnabled(true);
-  LoadMainResource();
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-
-  ExpectCSSBackgroundImageDeferredState(true);
-
-  // Scroll down until the background image is visible.
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 10000), kProgrammaticScroll);
-  SimRequest image_resource("https://example.com/img.png", "image/png");
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-  image_resource.Complete(ReadTestImage());
-  ExpectCSSBackgroundImageDeferredState(false);
+TEST_P(LazyLoadImagesSimTest, LargeImageHeight100Width100) {
+  VerifyImageElementWithDimensionDeferred("height='100px' width='100px'");
 }
+
+TEST_P(LazyLoadImagesSimTest, LargeImageHeight1Width100) {
+  VerifyImageElementWithDimensionDeferred("height='1px' width='100px'");
+}
+
+TEST_P(LazyLoadImagesSimTest, LargeImageHeight100Width1) {
+  VerifyImageElementWithDimensionDeferred("height='100px' width='1px'");
+}
+
+TEST_P(LazyLoadImagesSimTest, LargeImageStyleHeight100Width100) {
+  VerifyImageElementWithDimensionDeferred(
+      "style='height: 100px; width: 100px;'");
+}
+
+TEST_P(LazyLoadImagesSimTest, LargeImageStyleHeight100Width1) {
+  VerifyImageElementWithDimensionDeferred("style='height: 100px; width: 1px;'");
+}
+
+TEST_P(LazyLoadImagesSimTest, LargeImageStyleHeight1Width100) {
+  VerifyImageElementWithDimensionDeferred("style='height: 1px; width: 100px;'");
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         LazyLoadImagesSimTest,
+                         ::testing::Bool() /*is_lazyload_image_enabled*/);
 
 SimRequestBase::Params BuildRequestParamsForRangeResponse() {
   SimRequestBase::Params params;
@@ -614,6 +675,30 @@ class LazyLoadAutomaticImagesTest : public SimTest {
     EXPECT_FALSE(ConsoleMessages().Contains("image onload"));
   }
 
+  void TestLoadImageExpectingLazyLoadWithoutPlaceholder(
+      const char* image_attributes) {
+    SimSubresourceRequest full_resource("https://example.com/image.png",
+                                        "image/png");
+
+    LoadMainResourceWithImageFarFromViewport(image_attributes);
+
+    EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+    EXPECT_FALSE(ConsoleMessages().Contains("image onload"));
+
+    // Scrolling down should trigger the fetch of the image.
+    GetDocument().View()->LayoutViewport()->SetScrollOffset(
+        ScrollOffset(0, kLoadingDistanceThreshold + kViewportHeight),
+        kProgrammaticScroll);
+    Compositor().BeginFrame();
+    full_resource.Complete(ReadTestImage());
+    ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
+        KURL("https://example.com/image.png")));
+    test::RunPendingTasks();
+
+    EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+    EXPECT_TRUE(ConsoleMessages().Contains("image onload"));
+  }
+
   void TestLoadImageExpectingFullImageLoad(const char* image_attributes) {
     SimSubresourceRequest full_resource("https://example.com/image.png",
                                         "image/png");
@@ -729,7 +814,7 @@ TEST_F(LazyLoadAutomaticImagesTest, TinyImageWidth10Height10) {
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, TinyImageWidth1Height11) {
-  TestLoadImageExpectingLazyLoad("width='1px' height='11px'");
+  TestLoadImageExpectingLazyLoadWithoutPlaceholder("width='1px' height='11px'");
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, TinyImageViaStyleWidth1Height1) {
@@ -741,7 +826,8 @@ TEST_F(LazyLoadAutomaticImagesTest, TinyImageViaStyleWidth10Height10) {
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, TinyImageViaStyleWidth11Height1) {
-  TestLoadImageExpectingLazyLoad("style='width:11px;height:1px;'");
+  TestLoadImageExpectingLazyLoadWithoutPlaceholder(
+      "style='width:11px;height:1px;'");
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, JavascriptCreatedImageFarFromViewport) {
