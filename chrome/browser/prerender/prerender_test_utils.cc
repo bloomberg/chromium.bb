@@ -276,10 +276,16 @@ TestPrerenderContents::TestPrerenderContents(
     Profile* profile,
     const GURL& url,
     const content::Referrer& referrer,
+    const base::Optional<url::Origin>& initiator_origin,
     Origin origin,
     FinalStatus expected_final_status,
     bool ignore_final_status)
-    : PrerenderContents(prerender_manager, profile, url, referrer, origin),
+    : PrerenderContents(prerender_manager,
+                        profile,
+                        url,
+                        referrer,
+                        initiator_origin,
+                        origin),
       expected_final_status_(expected_final_status),
       observer_(this),
       new_render_view_host_(nullptr),
@@ -529,15 +535,16 @@ PrerenderContents* TestPrerenderContentsFactory::CreatePrerenderContents(
     Profile* profile,
     const GURL& url,
     const content::Referrer& referrer,
+    const base::Optional<url::Origin>& initiator_origin,
     Origin origin) {
   ExpectedContents expected;
   if (!expected_contents_queue_.empty()) {
     expected = expected_contents_queue_.front();
     expected_contents_queue_.pop_front();
   }
-  TestPrerenderContents* contents =
-      new TestPrerenderContents(prerender_manager, profile, url, referrer,
-                                origin, expected.final_status, expected.ignore);
+  TestPrerenderContents* contents = new TestPrerenderContents(
+      prerender_manager, profile, url, referrer, initiator_origin, origin,
+      expected.final_status, expected.ignore);
   if (expected.handle)
     expected.handle->OnPrerenderCreated(contents);
   return contents;

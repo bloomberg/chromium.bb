@@ -359,6 +359,66 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookieCrossDomain) {
   loop.Run();
 }
 
+// Check cookie loading for a cross-domain prefetched pages.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       PrefetchCookieCrossDomainSameSiteStrict) {
+  constexpr char kSecondaryDomain[] = "www.foo.com";
+  GURL cross_domain_url =
+      embedded_test_server()->GetURL(kSecondaryDomain, "/echoall");
+
+  EXPECT_TRUE(SetCookie(current_browser()->profile(), cross_domain_url,
+                        "cookie_A=A; SameSite=Strict;"));
+  EXPECT_TRUE(SetCookie(current_browser()->profile(), cross_domain_url,
+                        "cookie_B=B; SameSite=Lax;"));
+
+  std::unique_ptr<TestPrerender> test_prerender =
+      PrefetchFromURL(cross_domain_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  ui_test_utils::NavigateToURL(current_browser(), cross_domain_url);
+
+  EXPECT_TRUE(WaitForLoadStop(
+      current_browser()->tab_strip_model()->GetActiveWebContents()));
+
+  std::string html_content;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      current_browser()->tab_strip_model()->GetActiveWebContents(),
+      "domAutomationController.send(document.body.innerHTML)", &html_content));
+
+  // For any cross origin navigation (including prerender), SameSite Strict
+  // cookies should not be sent, but Lax should.
+  EXPECT_EQ(std::string::npos, html_content.find("cookie_A=A"));
+  EXPECT_NE(std::string::npos, html_content.find("cookie_B=B"));
+}
+
+// Check cookie loading for a same-domain prefetched pages.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       PrefetchCookieSameDomainSameSiteStrict) {
+  GURL same_domain_url = embedded_test_server()->GetURL("/echoall");
+
+  EXPECT_TRUE(SetCookie(current_browser()->profile(), same_domain_url,
+                        "cookie_A=A; SameSite=Strict;"));
+  EXPECT_TRUE(SetCookie(current_browser()->profile(), same_domain_url,
+                        "cookie_B=B; SameSite=Lax;"));
+
+  std::unique_ptr<TestPrerender> test_prerender =
+      PrefetchFromURL(same_domain_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  ui_test_utils::NavigateToURL(current_browser(), same_domain_url);
+
+  EXPECT_TRUE(WaitForLoadStop(
+      current_browser()->tab_strip_model()->GetActiveWebContents()));
+
+  std::string html_content;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      current_browser()->tab_strip_model()->GetActiveWebContents(),
+      "domAutomationController.send(document.body.innerHTML)", &html_content));
+
+  // For any same origin navigation (including prerender), SameSite Strict
+  // cookies should not be sent, but Lax should.
+  EXPECT_NE(std::string::npos, html_content.find("cookie_A=A"));
+  EXPECT_NE(std::string::npos, html_content.find("cookie_B=B"));
+}
+
 // Check that the LOAD_PREFETCH flag is set.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
   GURL prefetch_page = src_server()->GetURL(kPrefetchPage);

@@ -70,6 +70,7 @@ class DummyPrerenderContents : public PrerenderContents {
   DummyPrerenderContents(UnitTestPrerenderManager* test_prerender_manager,
                          const GURL& url,
                          Origin origin,
+                         const base::Optional<url::Origin>& initiator_origin,
                          FinalStatus expected_final_status);
 
   ~DummyPrerenderContents() override;
@@ -190,15 +191,17 @@ class UnitTestPrerenderManager : public PrerenderManager {
       FinalStatus expected_final_status) {
     return SetNextPrerenderContents(std::make_unique<DummyPrerenderContents>(
         this, url, ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN,
+        url::Origin::Create(GURL("https://uniquedifferentorigin.com")),
         expected_final_status));
   }
 
   DummyPrerenderContents* CreateNextPrerenderContents(
       const GURL& url,
+      const base::Optional<url::Origin>& initiator_origin,
       Origin origin,
       FinalStatus expected_final_status) {
     return SetNextPrerenderContents(std::make_unique<DummyPrerenderContents>(
-        this, url, origin, expected_final_status));
+        this, url, origin, initiator_origin, expected_final_status));
   }
 
   DummyPrerenderContents* CreateNextPrerenderContents(
@@ -207,6 +210,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
       FinalStatus expected_final_status) {
     auto prerender_contents = std::make_unique<DummyPrerenderContents>(
         this, url, ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN,
+        url::Origin::Create(GURL("https://uniquedifferentorigin.com")),
         expected_final_status);
     for (const GURL& alias : alias_urls)
       EXPECT_TRUE(prerender_contents->AddAliasURL(alias));
@@ -258,6 +262,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
   std::unique_ptr<PrerenderContents> CreatePrerenderContents(
       const GURL& url,
       const Referrer& referrer,
+      const base::Optional<url::Origin>& initiator_origin,
       Origin origin) override {
     CHECK(next_prerender_contents_);
     EXPECT_EQ(url, next_prerender_contents_->prerender_url());
@@ -286,11 +291,13 @@ DummyPrerenderContents::DummyPrerenderContents(
     UnitTestPrerenderManager* test_prerender_manager,
     const GURL& url,
     Origin origin,
+    const base::Optional<url::Origin>& initiator_origin,
     FinalStatus expected_final_status)
     : PrerenderContents(test_prerender_manager,
                         nullptr,
                         url,
                         Referrer(),
+                        initiator_origin,
                         origin),
       route_id_(g_next_route_id_++),
       test_prerender_manager_(test_prerender_manager),
@@ -388,7 +395,7 @@ class PrerenderTest : public testing::Test {
   bool AddSimplePrerender(const GURL& url) {
     prerender_link_manager()->OnAddPrerender(
         kDefaultChildId, GetNextPrerenderID(), url, kDefaultRelTypes,
-        content::Referrer(), kSize, kDefaultRenderViewRouteId);
+        content::Referrer(), url::Origin(), kSize, kDefaultRenderViewRouteId);
     return LauncherHasRunningPrerender(kDefaultChildId, last_prerender_id());
   }
 
@@ -401,7 +408,7 @@ class PrerenderTest : public testing::Test {
     referrer.url = GURL("https://www.google.com");
     prerender_link_manager()->OnAddPrerender(
         kDefaultChildId, GetNextPrerenderID(), url, kDefaultRelTypes, referrer,
-        kSize, kDefaultRenderViewRouteId);
+        url::Origin::Create(referrer.url), kSize, kDefaultRenderViewRouteId);
     return LauncherHasRunningPrerender(kDefaultChildId, last_prerender_id());
   }
 
@@ -496,7 +503,8 @@ TEST_F(PrerenderTest, GWSPrefetchHoldbackGWSReferrer) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kGWSPrefetchHoldback);
   prerender_manager()->CreateNextPrerenderContents(
-      url, ORIGIN_GWS_PRERENDER, FINAL_STATUS_MANAGER_SHUTDOWN);
+      url, url::Origin::Create(GURL("www.google.com")), ORIGIN_GWS_PRERENDER,
+      FINAL_STATUS_MANAGER_SHUTDOWN);
 
   EXPECT_FALSE(AddSimpleGWSPrerender(url));
 }
@@ -526,7 +534,8 @@ TEST_F(PrerenderTest, GWSPrefetchHoldbackOffGWSReferrer) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(kGWSPrefetchHoldback);
   prerender_manager()->CreateNextPrerenderContents(
-      url, ORIGIN_GWS_PRERENDER, FINAL_STATUS_MANAGER_SHUTDOWN);
+      url, url::Origin::Create(GURL("www.google.com")), ORIGIN_GWS_PRERENDER,
+      FINAL_STATUS_MANAGER_SHUTDOWN);
 
   EXPECT_TRUE(AddSimpleGWSPrerender(url));
 }
@@ -760,15 +769,15 @@ TEST_F(PrerenderTest, NoStatePrefetchDuplicate) {
   prerender_manager()->SetTickClockForTesting(tick_clock());
 
   // Prefetch the url once.
-  prerender_manager()->CreateNextPrerenderContents(kUrl, ORIGIN_OMNIBOX,
-                                                   FINAL_STATUS_CANCELLED);
+  prerender_manager()->CreateNextPrerenderContents(
+      kUrl, base::nullopt, ORIGIN_OMNIBOX, FINAL_STATUS_CANCELLED);
   EXPECT_TRUE(
       prerender_manager()->AddPrerenderFromOmnibox(kUrl, nullptr, gfx::Size()));
   // Cancel the prerender so that it is not reused.
   prerender_manager()->CancelAllPrerenders();
 
   prerender_manager()->CreateNextPrerenderContents(
-      kUrl, ORIGIN_OMNIBOX, FINAL_STATUS_MANAGER_SHUTDOWN);
+      kUrl, base::nullopt, ORIGIN_OMNIBOX, FINAL_STATUS_MANAGER_SHUTDOWN);
 
   // Prefetching again before time_to_live aborts, because it is a duplicate.
   tick_clock()->Advance(base::TimeDelta::FromSeconds(1));
@@ -937,12 +946,12 @@ TEST_F(PrerenderTest, PendingPrerenderTest) {
   // Schedule a pending prerender launched from the prerender.
   DummyPrerenderContents* pending_prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          pending_url,
-          ORIGIN_GWS_PRERENDER,
-          FINAL_STATUS_USED);
+          pending_url, url::Origin::Create(GURL("https://www.google.com")),
+          ORIGIN_GWS_PRERENDER, FINAL_STATUS_USED);
   prerender_link_manager()->OnAddPrerender(
       child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
-      Referrer(url, network::mojom::ReferrerPolicy::kDefault), kSize, route_id);
+      Referrer(url, network::mojom::ReferrerPolicy::kDefault),
+      url::Origin::Create(pending_url), kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
   EXPECT_FALSE(pending_prerender_contents->prerendering_has_started());
 
@@ -979,12 +988,12 @@ TEST_F(PrerenderTest, InvalidPendingPrerenderTest) {
   // Schedule a pending prerender launched from the prerender.
   DummyPrerenderContents* pending_prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          pending_url,
-          ORIGIN_GWS_PRERENDER,
-          FINAL_STATUS_UNSUPPORTED_SCHEME);
+          pending_url, url::Origin::Create(GURL("https://www.google.com")),
+          ORIGIN_GWS_PRERENDER, FINAL_STATUS_UNSUPPORTED_SCHEME);
   prerender_link_manager()->OnAddPrerender(
       child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
-      Referrer(url, network::mojom::ReferrerPolicy::kDefault), kSize, route_id);
+      Referrer(url, network::mojom::ReferrerPolicy::kDefault),
+      url::Origin::Create(pending_url), kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
   EXPECT_FALSE(pending_prerender_contents->prerendering_has_started());
 
@@ -1017,7 +1026,8 @@ TEST_F(PrerenderTest, CancelPendingPrerenderTest) {
   // Schedule a pending prerender launched from the prerender.
   prerender_link_manager()->OnAddPrerender(
       child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
-      Referrer(url, network::mojom::ReferrerPolicy::kDefault), kSize, route_id);
+      Referrer(url, network::mojom::ReferrerPolicy::kDefault),
+      url::Origin::Create(pending_url), kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
 
   // Cancel the pending prerender.
@@ -1042,7 +1052,8 @@ TEST_F(PrerenderTest, SourceRenderViewClosed) {
       url,
       FINAL_STATUS_MANAGER_SHUTDOWN);
   prerender_link_manager()->OnAddPrerender(
-      100, GetNextPrerenderID(), url, kDefaultRelTypes, Referrer(), kSize, 200);
+      100, GetNextPrerenderID(), url, kDefaultRelTypes, Referrer(),
+      url::Origin::Create(url), kSize, 200);
   EXPECT_FALSE(LauncherHasRunningPrerender(100, last_prerender_id()));
 }
 
@@ -1141,7 +1152,7 @@ TEST_F(PrerenderTest, CancelAllTest) {
 TEST_F(PrerenderTest, OmniboxAllowedWhenNotDisabled) {
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          GURL("http://www.example.com"), ORIGIN_OMNIBOX,
+          GURL("http://www.example.com"), base::nullopt, ORIGIN_OMNIBOX,
           FINAL_STATUS_MANAGER_SHUTDOWN);
 
   EXPECT_TRUE(prerender_manager()->AddPrerenderFromOmnibox(
@@ -1205,7 +1216,8 @@ TEST_F(PrerenderTest, LinkRelStillAllowedWhenDisabled) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_USED);
+          url, url::Origin::Create(GURL("https://www.notgoogle.com")),
+          ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_USED);
   EXPECT_TRUE(AddSimplePrerender(url));
   EXPECT_TRUE(prerender_contents->prerendering_has_started());
   std::unique_ptr<PrerenderContents> entry =
@@ -1222,7 +1234,8 @@ TEST_F(PrerenderTest, LinkRelAllowedOnCellular) {
       net::NetworkChangeNotifier::GetConnectionType()));
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_USED);
+          url, url::Origin::Create(GURL("https://www.notexample.com")),
+          ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_USED);
   EXPECT_TRUE(AddSimplePrerender(url));
   EXPECT_TRUE(prerender_contents->prerendering_has_started());
   std::unique_ptr<PrerenderContents> entry =
@@ -1242,8 +1255,7 @@ TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          url,
-          ORIGIN_EXTERNAL_REQUEST,
+          url, base::nullopt, ORIGIN_EXTERNAL_REQUEST,
           FINAL_STATUS_MANAGER_SHUTDOWN);
   std::unique_ptr<PrerenderHandle> prerender_handle(
       prerender_manager()->AddPrerenderFromExternalRequest(
@@ -1271,7 +1283,7 @@ TEST_F(
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_EXTERNAL_REQUEST, FINAL_STATUS_USED);
+          url, base::nullopt, ORIGIN_EXTERNAL_REQUEST, FINAL_STATUS_USED);
   std::unique_ptr<PrerenderHandle> prerender_handle(
       prerender_manager()->AddPrerenderFromExternalRequest(
           url, content::Referrer(), nullptr, gfx::Rect(kSize)));
@@ -1293,7 +1305,8 @@ TEST_F(PrerenderTest, PrerenderAllowedForForcedCellular) {
   DummyPrerenderContents* prerender_contents = nullptr;
   std::unique_ptr<PrerenderHandle> prerender_handle;
   prerender_contents = prerender_manager()->CreateNextPrerenderContents(
-      url, ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER, FINAL_STATUS_USED);
+      url, base::nullopt, ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER,
+      FINAL_STATUS_USED);
   prerender_handle = prerender_manager()->AddForcedPrerenderFromExternalRequest(
       url, content::Referrer(), nullptr, gfx::Rect(kSize));
   EXPECT_TRUE(prerender_handle);
@@ -1700,7 +1713,7 @@ TEST_F(PrerenderTest, LinkManagerClearOnPendingAbandon) {
   GURL pending_url("http://www.neverlaunched.com");
   prerender_link_manager()->OnAddPrerender(
       child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
-      content::Referrer(), kSize, route_id);
+      content::Referrer(), url::Origin::Create(pending_url), kSize, route_id);
   const int second_prerender_id = last_prerender_id();
 
   EXPECT_FALSE(IsEmptyPrerenderLinkManager());
@@ -1841,7 +1854,7 @@ TEST_F(PrerenderTest, PrerenderContentsIncrementsByteCount) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER,
+          url, base::nullopt, ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER,
           FINAL_STATUS_MANAGER_SHUTDOWN);
   std::unique_ptr<PrerenderHandle> prerender_handle =
       prerender_manager()->AddForcedPrerenderFromExternalRequest(

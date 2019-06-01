@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -28,6 +29,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 class Profile;
 
@@ -119,6 +121,7 @@ class PrerenderManager : public content::NotificationObserver,
       const GURL& url,
       uint32_t rel_types,
       const content::Referrer& referrer,
+      const url::Origin& initiator_origin,
       const gfx::Size& size);
 
   // Adds a prerender for |url| if valid. As the prerender request is coming
@@ -444,6 +447,7 @@ class PrerenderManager : public content::NotificationObserver,
       Origin origin,
       const GURL& url,
       const content::Referrer& referrer,
+      const base::Optional<url::Origin>& initiator_origin,
       const gfx::Rect& bounds,
       content::SessionStorageNamespace* session_storage_namespace);
 
@@ -474,6 +478,7 @@ class PrerenderManager : public content::NotificationObserver,
   virtual std::unique_ptr<PrerenderContents> CreatePrerenderContents(
       const GURL& url,
       const content::Referrer& referrer,
+      const base::Optional<url::Origin>& initiator_origin,
       Origin origin);
 
   // Insures the |active_prerenders_| are sorted by increasing expiry time. Call

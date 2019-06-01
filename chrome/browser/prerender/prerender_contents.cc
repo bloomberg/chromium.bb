@@ -63,9 +63,10 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
       Profile* profile,
       const GURL& url,
       const content::Referrer& referrer,
+      const base::Optional<url::Origin>& initiator_origin,
       Origin origin) override {
     return new PrerenderContents(prerender_manager, profile, url, referrer,
-                                 origin);
+                                 initiator_origin, origin);
   }
 };
 
@@ -169,17 +170,20 @@ class PrerenderContents::WebContentsDelegateImpl
 
 PrerenderContents::Observer::~Observer() {}
 
-PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
-                                     Profile* profile,
-                                     const GURL& url,
-                                     const content::Referrer& referrer,
-                                     Origin origin)
+PrerenderContents::PrerenderContents(
+    PrerenderManager* prerender_manager,
+    Profile* profile,
+    const GURL& url,
+    const content::Referrer& referrer,
+    const base::Optional<url::Origin>& initiator_origin,
+    Origin origin)
     : prerender_mode_(DEPRECATED_FULL_PRERENDER),
       prerendering_has_started_(false),
       prerender_canceler_binding_(this),
       prerender_manager_(prerender_manager),
       prerender_url_(url),
       referrer_(referrer),
+      initiator_origin_(initiator_origin),
       profile_(profile),
       has_finished_loading_(false),
       final_status_(FINAL_STATUS_UNKNOWN),
@@ -190,6 +194,24 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       origin_(origin),
       network_bytes_(0),
       weak_factory_(this) {
+  switch (origin) {
+    case ORIGIN_OMNIBOX:
+    case ORIGIN_EXTERNAL_REQUEST:
+    case ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER:
+      DCHECK(!initiator_origin_.has_value());
+      break;
+
+    case ORIGIN_GWS_PRERENDER:
+    case ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN:
+    case ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN:
+    case ORIGIN_LINK_REL_NEXT:
+      DCHECK(initiator_origin_.has_value());
+      break;
+    case ORIGIN_NONE:
+    case ORIGIN_MAX:
+      NOTREACHED();
+  }
+
   DCHECK(prerender_manager);
   registry_.AddInterface(base::Bind(
       &PrerenderContents::OnPrerenderCancelerRequest, base::Unretained(this)));
@@ -281,6 +303,7 @@ void PrerenderContents::StartPrerendering(
   content::NavigationController::LoadURLParams load_url_params(
       prerender_url_);
   load_url_params.referrer = referrer_;
+  load_url_params.initiator_origin = initiator_origin_;
   load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
   if (origin_ == ORIGIN_OMNIBOX) {
     load_url_params.transition_type = ui::PageTransitionFromInt(

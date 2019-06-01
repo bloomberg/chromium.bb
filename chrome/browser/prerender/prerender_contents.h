@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -28,6 +29,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/origin.h"
 
 class Profile;
 
@@ -71,6 +73,7 @@ class PrerenderContents : public content::NotificationObserver,
         Profile* profile,
         const GURL& url,
         const content::Referrer& referrer,
+        const base::Optional<url::Origin>& initiator_origin,
         Origin origin) = 0;
 
    private:
@@ -240,6 +243,7 @@ class PrerenderContents : public content::NotificationObserver,
                     Profile* profile,
                     const GURL& url,
                     const content::Referrer& referrer,
+                    const base::Optional<url::Origin>& initiator_origin,
                     Origin origin);
 
   // Set the final status for how the PrerenderContents was used. This
@@ -310,6 +314,10 @@ class PrerenderContents : public content::NotificationObserver,
 
   // The referrer.
   content::Referrer referrer_;
+
+  // The origin of the page requesting the prerender. Empty when the prerender
+  // is browser initiated.
+  base::Optional<url::Origin> initiator_origin_;
 
   // The profile being used
   Profile* profile_;

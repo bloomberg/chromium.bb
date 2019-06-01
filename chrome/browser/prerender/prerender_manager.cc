@@ -220,6 +220,7 @@ PrerenderManager::AddPrerenderFromLinkRelPrerender(
     const GURL& url,
     const uint32_t rel_types,
     const content::Referrer& referrer,
+    const url::Origin& initiator_origin,
     const gfx::Size& size) {
   Origin origin = rel_types & blink::kPrerenderRelTypePrerender
                       ? ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN
@@ -244,8 +245,9 @@ PrerenderManager::AddPrerenderFromLinkRelPrerender(
         source_web_contents->GetController()
             .GetDefaultSessionStorageNamespace();
   }
-  return AddPrerenderWithPreconnectFallback(
-      origin, url, referrer, gfx::Rect(size), session_storage_namespace);
+  return AddPrerenderWithPreconnectFallback(origin, url, referrer,
+                                            initiator_origin, gfx::Rect(size),
+                                            session_storage_namespace);
 }
 
 std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderFromOmnibox(
@@ -259,7 +261,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderFromOmnibox(
     return nullptr;
   }
   return AddPrerenderWithPreconnectFallback(
-      ORIGIN_OMNIBOX, url, content::Referrer(), gfx::Rect(size),
+      ORIGIN_OMNIBOX, url, content::Referrer(), base::nullopt, gfx::Rect(size),
       session_storage_namespace);
 }
 
@@ -270,7 +272,7 @@ PrerenderManager::AddPrerenderFromExternalRequest(
     SessionStorageNamespace* session_storage_namespace,
     const gfx::Rect& bounds) {
   return AddPrerenderWithPreconnectFallback(ORIGIN_EXTERNAL_REQUEST, url,
-                                            referrer, bounds,
+                                            referrer, base::nullopt, bounds,
                                             session_storage_namespace);
 }
 
@@ -281,8 +283,8 @@ PrerenderManager::AddForcedPrerenderFromExternalRequest(
     SessionStorageNamespace* session_storage_namespace,
     const gfx::Rect& bounds) {
   return AddPrerenderWithPreconnectFallback(
-      ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER, url, referrer, bounds,
-      session_storage_namespace);
+      ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER, url, referrer, base::nullopt,
+      bounds, session_storage_namespace);
 }
 
 void PrerenderManager::CancelAllPrerenders() {
@@ -769,6 +771,7 @@ PrerenderManager::AddPrerenderWithPreconnectFallback(
     Origin origin,
     const GURL& url_arg,
     const content::Referrer& referrer,
+    const base::Optional<url::Origin>& initiator_origin,
     const gfx::Rect& bounds,
     SessionStorageNamespace* session_storage_namespace) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -877,7 +880,7 @@ PrerenderManager::AddPrerenderWithPreconnectFallback(
   }
 
   std::unique_ptr<PrerenderContents> prerender_contents =
-      CreatePrerenderContents(url, referrer, origin);
+      CreatePrerenderContents(url, referrer, initiator_origin, origin);
   DCHECK(prerender_contents);
   PrerenderContents* prerender_contents_ptr = prerender_contents.get();
   if (IsNoStatePrefetchEnabled())
@@ -1026,10 +1029,11 @@ void PrerenderManager::AddObserver(
 std::unique_ptr<PrerenderContents> PrerenderManager::CreatePrerenderContents(
     const GURL& url,
     const content::Referrer& referrer,
+    const base::Optional<url::Origin>& initiator_origin,
     Origin origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return base::WrapUnique(prerender_contents_factory_->CreatePrerenderContents(
-      this, profile_, url, referrer, origin));
+      this, profile_, url, referrer, initiator_origin, origin));
 }
 
 void PrerenderManager::SortActivePrerenders() {

@@ -54,7 +54,8 @@ PrerenderHandle* PrerenderHandle::Create(Document& document,
   auto* prerender = MakeGarbageCollected<Prerender>(
       client, url, prerender_rel_types,
       SecurityPolicy::GenerateReferrer(document.GetReferrerPolicy(), url,
-                                       document.OutgoingReferrer()));
+                                       document.OutgoingReferrer()),
+      document.GetSecurityOrigin());
 
   PrerendererClient* prerenderer_client =
       PrerendererClient::From(document.GetPage());

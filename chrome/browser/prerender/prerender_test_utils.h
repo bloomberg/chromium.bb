@@ -108,6 +108,7 @@ class TestPrerenderContents : public PrerenderContents,
                         Profile* profile,
                         const GURL& url,
                         const content::Referrer& referrer,
+                        const base::Optional<url::Origin>& initiator_origin,
                         Origin origin,
                         FinalStatus expected_final_status,
                         bool ignore_final_status);
@@ -288,6 +289,7 @@ class TestPrerenderContentsFactory : public PrerenderContents::Factory {
       Profile* profile,
       const GURL& url,
       const content::Referrer& referrer,
+      const base::Optional<url::Origin>& initiator_origin,
       Origin origin) override;
 
  private:
