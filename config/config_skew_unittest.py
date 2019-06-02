@@ -22,7 +22,11 @@ BUILDER_CONFIG_FILENAME = os.path.join(
 # Builders that we generally leave out of old versus new config comparisons
 # as these builders existing in new config have no equivalent in the old
 # config world.
-POSTSUBMIT_EXCLUDE_BUILDERS = ["chromite-postsubmit", "test_vm-postsubmit"]
+POSTSUBMIT_EXCLUDE_BUILDERS = [
+    "chromite-postsubmit",
+    "grunt-unittest-only-postsubmit",
+    "test_vm-postsubmit"
+]
 
 class ErrorWrapper(Exception):
   """Simple exception wrapper to provide more failure context."""
