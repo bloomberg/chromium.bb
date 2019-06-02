@@ -1510,6 +1510,7 @@ void HostProcess::InitializeSignaling() {
                        base::Unretained(this)),
         base::BindOnce(&HostProcess::OnUnknownHostIdError,
                        base::Unretained(this)),
+        base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)),
         host_id_, muxing_signal_strategy.get(), key_pair_,
         oauth_token_getter_.get(), log_to_server_.get());
     ftl_host_change_notification_listener_ =

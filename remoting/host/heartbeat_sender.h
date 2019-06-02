@@ -70,8 +70,12 @@ class HeartbeatSender final : public SignalStrategy::Listener {
   //
   // |on_unknown_host_id_error| is invoked when the host ID is permanently not
   // recognized by the server.
+  //
+  // |on_auth_error| is invoked when the heartbeat sender permanently fails to
+  // authenticate the requests.
   HeartbeatSender(base::OnceClosure on_heartbeat_successful_callback,
                   base::OnceClosure on_unknown_host_id_error,
+                  base::OnceClosure on_auth_error,
                   const std::string& host_id,
                   MuxingSignalStrategy* signal_strategy,
                   const scoped_refptr<const RsaKeyPair>& host_key_pair,
@@ -120,11 +124,13 @@ class HeartbeatSender final : public SignalStrategy::Listener {
 
   base::OnceClosure on_heartbeat_successful_callback_;
   base::OnceClosure on_unknown_host_id_error_;
+  base::OnceClosure on_auth_error_;
   std::string host_id_;
   MuxingSignalStrategy* const signal_strategy_;
   scoped_refptr<const RsaKeyPair> host_key_pair_;
   std::unique_ptr<HeartbeatClient> client_;
   LogToServer* const log_to_server_;
+  OAuthTokenGetter* const oauth_token_getter_;
 
   base::OneShotTimer heartbeat_timer_;
 

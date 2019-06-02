@@ -138,7 +138,8 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
 
     heartbeat_sender_ = std::make_unique<HeartbeatSender>(
         mock_heartbeat_successful_callback_.Get(),
-        mock_unknown_host_id_error_callback_.Get(), kHostId,
+        mock_unknown_host_id_error_callback_.Get(),
+        mock_unauthenticated_error_callback_.Get(), kHostId,
         muxing_signal_strategy_.get(), key_pair, &oauth_token_getter_, this);
     heartbeat_sender_->SetGrpcChannelForTest(
         test_server_.CreateInProcessChannel());
@@ -160,6 +161,7 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
 
   base::MockCallback<base::OnceClosure> mock_heartbeat_successful_callback_;
   base::MockCallback<base::OnceClosure> mock_unknown_host_id_error_callback_;
+  base::MockCallback<base::OnceClosure> mock_unauthenticated_error_callback_;
 
   std::vector<ServerLogEntry> received_log_entries_;
 
@@ -460,6 +462,36 @@ TEST_F(HeartbeatSenderTest, FailedToHeartbeat_Backoff) {
       }));
   run_loop.Run();
   ASSERT_EQ(0, GetBackoff().failure_count());
+}
+
+TEST_F(HeartbeatSenderTest, Unauthenticated) {
+  base::RunLoop run_loop;
+
+  int heartbeat_count = 0;
+  EXPECT_CALL(*test_server_, Heartbeat(_, _, _))
+      .WillRepeatedly([&](grpc::ServerContext*,
+                          const apis::v1::HeartbeatRequest* request,
+                          apis::v1::HeartbeatResponse* response) {
+        ValidateHeartbeat(*request, /* ftl */ true, /* xmpp */ true,
+                          kExpectedSequenceIdUnset);
+        heartbeat_count++;
+        return grpc::Status(grpc::StatusCode::UNAUTHENTICATED,
+                            "unauthenticated");
+      });
+
+  EXPECT_CALL(mock_unauthenticated_error_callback_, Run()).WillOnce([&]() {
+    run_loop.Quit();
+  });
+
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        ftl_signal_strategy_->Connect();
+        xmpp_signal_strategy_->Connect();
+      }));
+  run_loop.Run();
+
+  // Should retry heartbeating at least once.
+  ASSERT_LT(1, heartbeat_count);
 }
 
 }  // namespace remoting
