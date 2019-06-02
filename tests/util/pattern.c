@@ -457,6 +457,79 @@ static void fill_smpte_rgb32(const struct util_rgb_info *rgb, void *mem,
 	}
 }
 
+static void fill_smpte_c8(void *mem, unsigned int width, unsigned int height,
+			  unsigned int stride)
+{
+	unsigned int x;
+	unsigned int y;
+
+	for (y = 0; y < height * 6 / 9; ++y) {
+		for (x = 0; x < width; ++x)
+			((uint8_t *)mem)[x] = x * 7 / width;
+		mem += stride;
+	}
+
+	for (; y < height * 7 / 9; ++y) {
+		for (x = 0; x < width; ++x)
+			((uint8_t *)mem)[x] = 7 + (x * 7 / width);
+		mem += stride;
+	}
+
+	for (; y < height; ++y) {
+		for (x = 0; x < width * 5 / 7; ++x)
+			((uint8_t *)mem)[x] =
+				14 + (x * 4 / (width * 5 / 7));
+		for (; x < width * 6 / 7; ++x)
+			((uint8_t *)mem)[x] =
+				14 + ((x - width * 5 / 7) * 3
+					      / (width / 7) + 4);
+		for (; x < width; ++x)
+			((uint8_t *)mem)[x] = 14 + 7;
+		mem += stride;
+	}
+}
+
+void util_smpte_c8_gamma(unsigned size, struct drm_color_lut *lut)
+{
+	if (size < 7 + 7 + 8) {
+		printf("Error: gamma too small: %d < %d\n", size, 7 + 7 + 8);
+		return;
+	}
+	memset(lut, size * sizeof(struct drm_color_lut), 0);
+
+#define FILL_COLOR(idx, r, g, b) \
+	lut[idx].red = (r) << 8; \
+	lut[idx].green = (g) << 8; \
+	lut[idx].blue = (b) << 8
+
+	FILL_COLOR( 0, 192, 192, 192);	/* grey */
+	FILL_COLOR( 1, 192, 192, 0  );	/* yellow */
+	FILL_COLOR( 2, 0,   192, 192);	/* cyan */
+	FILL_COLOR( 3, 0,   192, 0  );	/* green */
+	FILL_COLOR( 4, 192, 0,   192);	/* magenta */
+	FILL_COLOR( 5, 192, 0,   0  );	/* red */
+	FILL_COLOR( 6, 0,   0,   192);	/* blue */
+
+	FILL_COLOR( 7, 0,   0,   192);	/* blue */
+	FILL_COLOR( 8, 19,  19,  19 );	/* black */
+	FILL_COLOR( 9, 192, 0,   192);	/* magenta */
+	FILL_COLOR(10, 19,  19,  19 );	/* black */
+	FILL_COLOR(11, 0,   192, 192);	/* cyan */
+	FILL_COLOR(12, 19,  19,  19 );	/* black */
+	FILL_COLOR(13, 192, 192, 192);	/* grey */
+
+	FILL_COLOR(14, 0,   33,  76);	/* in-phase */
+	FILL_COLOR(15, 255, 255, 255);	/* super white */
+	FILL_COLOR(16, 50,  0,   106);	/* quadrature */
+	FILL_COLOR(17, 19,  19,  19);	/* black */
+	FILL_COLOR(18, 9,   9,   9);	/* 3.5% */
+	FILL_COLOR(19, 19,  19,  19);	/* 7.5% */
+	FILL_COLOR(20, 29,  29,  29);	/* 11.5% */
+	FILL_COLOR(21, 19,  19,  19);	/* black */
+
+#undef FILL_COLOR
+}
+
 static void fill_smpte(const struct util_format_info *info, void *planes[3],
 		       unsigned int width, unsigned int height,
 		       unsigned int stride)
@@ -464,6 +537,8 @@ static void fill_smpte(const struct util_format_info *info, void *planes[3],
 	unsigned char *u, *v;
 
 	switch (info->format) {
+	case DRM_FORMAT_C8:
+		return fill_smpte_c8(planes[0], width, height, stride);
 	case DRM_FORMAT_UYVY:
 	case DRM_FORMAT_VYUY:
 	case DRM_FORMAT_YUYV:

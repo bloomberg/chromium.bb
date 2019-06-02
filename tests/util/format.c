@@ -39,6 +39,8 @@
 	.yuv = { (order), (xsub), (ysub), (chroma_stride) }
 
 static const struct util_format_info format_info[] = {
+	/* Indexed */
+	{ DRM_FORMAT_C8, "C8" },
 	/* YUV packed */
 	{ DRM_FORMAT_UYVY, "UYVY", MAKE_YUV_INFO(YUV_YCbCr | YUV_CY, 2, 2, 2) },
 	{ DRM_FORMAT_VYUY, "VYUY", MAKE_YUV_INFO(YUV_YCrCb | YUV_CY, 2, 2, 2) },

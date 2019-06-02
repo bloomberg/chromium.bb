@@ -26,6 +26,8 @@
 #ifndef UTIL_PATTERN_H
 #define UTIL_PATTERN_H
 
+#include <drm/drm_mode.h>
+
 enum util_fill_pattern {
 	UTIL_PATTERN_TILES,
 	UTIL_PATTERN_PLAIN,
@@ -35,5 +37,7 @@ enum util_fill_pattern {
 void util_fill_pattern(uint32_t format, enum util_fill_pattern pattern,
 		       void *planes[3], unsigned int width,
 		       unsigned int height, unsigned int stride);
+
+void util_smpte_c8_gamma(unsigned size, struct drm_color_lut *lut);
 
 #endif /* UTIL_PATTERN_H */
