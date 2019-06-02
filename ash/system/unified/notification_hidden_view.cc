@@ -10,7 +10,7 @@
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/unified/sign_out_button.h"
+#include "ash/system/unified/rounded_label_button.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "ui/base/l10n/l10n_util.h"
