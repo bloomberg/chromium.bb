@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/modules/payments/payment_request.h"
 #include "third_party/blink/renderer/modules/payments/payment_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 namespace {
@@ -17,11 +18,12 @@ using payments::mojom::blink::HasEnrolledInstrumentQueryResult;
 using payments::mojom::blink::PaymentErrorReason;
 using payments::mojom::blink::PaymentRequestClient;
 
-class HasEnrolledInstrumentTest : public testing::Test {
-  void SetUp() override {
-    testing::Test::SetUp();
-    RuntimeEnabledFeatures::SetPaymentRequestHasEnrolledInstrumentEnabled(true);
-  }
+class HasEnrolledInstrumentTest
+    : public testing::Test,
+      private ScopedPaymentRequestHasEnrolledInstrumentForTest {
+ public:
+  HasEnrolledInstrumentTest()
+      : ScopedPaymentRequestHasEnrolledInstrumentForTest(true) {}
 };
 
 TEST_F(HasEnrolledInstrumentTest, RejectPromiseOnUserCancel) {
@@ -123,12 +125,12 @@ enum class HasEnrolledInstrumentEnabled { kYes, kNo };
 
 class CanMakePaymentTest
     : public testing::Test,
-      public testing::WithParamInterface<HasEnrolledInstrumentEnabled> {
-  void SetUp() override {
-    testing::Test::SetUp();
-    RuntimeEnabledFeatures::SetPaymentRequestHasEnrolledInstrumentEnabled(
-        GetParam() == HasEnrolledInstrumentEnabled::kYes);
-  }
+      public testing::WithParamInterface<HasEnrolledInstrumentEnabled>,
+      private ScopedPaymentRequestHasEnrolledInstrumentForTest {
+ public:
+  CanMakePaymentTest()
+      : ScopedPaymentRequestHasEnrolledInstrumentForTest(
+            GetParam() == HasEnrolledInstrumentEnabled::kYes) {}
 };
 
 TEST_P(CanMakePaymentTest, RejectPromiseOnUserCancel) {
