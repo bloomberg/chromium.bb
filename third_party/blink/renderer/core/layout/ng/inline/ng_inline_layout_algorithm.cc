@@ -391,7 +391,7 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
     case kZeroWidthSpaceCharacter:
       // Don't generate fragments if this is a generated (not in DOM) break
       // opportunity during the white space collapsing in NGInlineItemBuilder.
-      if (item.IsGenerated())
+      if (item.IsGeneratedForLineBreak())
         return;
       type = NGPhysicalTextFragment::kFlowControl;
       break;

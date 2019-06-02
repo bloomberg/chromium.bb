@@ -1074,7 +1074,11 @@ void NGLineBreaker::HandleControlItem(const NGInlineItem& item,
     case kZeroWidthSpaceCharacter: {
       // <wbr> tag creates break opportunities regardless of auto_wrap.
       NGInlineItemResult* item_result = AddItem(item, line_info);
-      item_result->should_create_line_box = true;
+      // A generated break opportunity doesn't generate fragments, but we still
+      // need to add this for rewind to find this opportunity. This will be
+      // discarded in |NGInlineLayoutAlgorithm| when it generates fragments.
+      if (!item.IsGeneratedForLineBreak())
+        item_result->should_create_line_box = true;
       item_result->can_break_after = true;
       break;
     }

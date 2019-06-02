@@ -271,7 +271,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
                                                        nullptr);
   AppendBreakOpportunity(layout_object);
   NGInlineItem* item = &items_->back();
-  item->SetIsGenerated();
+  item->SetIsGeneratedForLineBreak();
   item->SetEndCollapseType(NGInlineItem::kOpaqueToCollapsing);
 }
 

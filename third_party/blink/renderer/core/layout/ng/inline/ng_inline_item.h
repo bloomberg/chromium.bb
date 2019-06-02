@@ -175,8 +175,8 @@ class CORE_EXPORT NGInlineItem {
   // context that are lost during the whitespace collapsing. This item is used
   // during the line breaking and layout, but is not supposed to generate
   // fragments.
-  bool IsGenerated() const { return is_generated_; }
-  void SetIsGenerated() { is_generated_ = true; }
+  bool IsGeneratedForLineBreak() const { return is_generated_for_line_break_; }
+  void SetIsGeneratedForLineBreak() { is_generated_for_line_break_ = true; }
 
   // Whether the end collapsible space run contains a newline.
   // Valid only when kCollapsible or kCollapsed.
@@ -243,7 +243,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned end_collapse_type_ : 2;  // NGCollapseType
   unsigned is_end_collapsible_newline_ : 1;
   unsigned is_symbol_marker_ : 1;
-  unsigned is_generated_ : 1;
+  unsigned is_generated_for_line_break_ : 1;
   friend class NGInlineNode;
 };
 
