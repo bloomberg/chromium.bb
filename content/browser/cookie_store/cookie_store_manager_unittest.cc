@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/test/bind_test_util.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -45,12 +46,10 @@ class CookieStoreSync {
     base::RunLoop run_loop;
     cookie_store_service_->AppendSubscriptions(
         service_worker_registration_id, std::move(subscriptions),
-        base::BindOnce(
-            [](base::RunLoop* run_loop, bool* success, bool service_success) {
-              *success = service_success;
-              run_loop->Quit();
-            },
-            &run_loop, &success));
+        base::BindLambdaForTesting([&](bool service_success) {
+          success = service_success;
+          run_loop.Quit();
+        }));
     run_loop.Run();
     return success;
   }
@@ -61,14 +60,12 @@ class CookieStoreSync {
     base::RunLoop run_loop;
     cookie_store_service_->GetSubscriptions(
         service_worker_registration_id,
-        base::BindOnce(
-            [](base::RunLoop* run_loop, base::Optional<Subscriptions>* result,
-               Subscriptions service_result, bool service_success) {
+        base::BindLambdaForTesting(
+            [&](Subscriptions service_result, bool service_success) {
               if (service_success)
-                *result = std::move(service_result);
-              run_loop->Quit();
-            },
-            &run_loop, &result));
+                result = std::move(service_result);
+              run_loop.Quit();
+            }));
     run_loop.Run();
     return result;
   }
@@ -297,18 +294,15 @@ class CookieStoreManagerTest
     base::RunLoop run_loop;
     worker_test_helper_->context()->RegisterServiceWorker(
         GURL(script_url), options,
-        base::BindOnce(
-            [](base::RunLoop* run_loop, bool* success, int64_t* registration_id,
-               blink::ServiceWorkerStatusCode status,
-               const std::string& status_message,
-               int64_t service_worker_registration_id) {
-              *success = (status == blink::ServiceWorkerStatusCode::kOk);
-              *registration_id = service_worker_registration_id;
-              EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
-                  << blink::ServiceWorkerStatusToString(status);
-              run_loop->Quit();
-            },
-            &run_loop, &success, &registration_id));
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status,
+                                       const std::string& status_message,
+                                       int64_t service_worker_registration_id) {
+          success = (status == blink::ServiceWorkerStatusCode::kOk);
+          registration_id = service_worker_registration_id;
+          EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
+              << blink::ServiceWorkerStatusToString(status);
+          run_loop.Quit();
+        }));
     run_loop.Run();
     if (!success)
       return kInvalidRegistrationId;
@@ -325,14 +319,12 @@ class CookieStoreManagerTest
     options.set_include_httponly();
     cookie_manager_->SetCanonicalCookie(
         cookie, "https", options,
-        base::BindOnce(
-            [](base::RunLoop* run_loop, bool* success,
-               net::CanonicalCookie::CookieInclusionStatus service_success) {
-              *success = (service_success ==
-                          net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-              run_loop->Quit();
-            },
-            &run_loop, &success));
+        base::BindLambdaForTesting(
+            [&](net::CanonicalCookie::CookieInclusionStatus service_success) {
+              success = (service_success ==
+                         net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+              run_loop.Quit();
+            }));
     run_loop.Run();
     return success;
   }
