@@ -24,6 +24,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "ipc/ipc_message.h"
 #include "net/base/net_errors.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "url/gurl.h"
@@ -225,9 +226,10 @@ void CastWebViewDefault::RequestMediaAccessPermission(
   if (!chromecast::IsFeatureEnabled(kAllowUserMediaAccess) &&
       !allow_media_access_) {
     LOG(WARNING) << __func__ << ": media access is disabled.";
-    std::move(callback).Run(blink::MediaStreamDevices(),
-                            blink::MEDIA_DEVICE_NOT_SUPPORTED,
-                            std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED,
+        std::unique_ptr<content::MediaStreamUI>());
     return;
   }
 
@@ -259,7 +261,7 @@ void CastWebViewDefault::RequestMediaAccessPermission(
     }
   }
 
-  std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK,
+  std::move(callback).Run(devices, blink::mojom::MediaStreamRequestResult::OK,
                           std::unique_ptr<content::MediaStreamUI>());
 }
 

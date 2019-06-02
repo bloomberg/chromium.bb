@@ -515,7 +515,7 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
 
 void PepperMediaStreamVideoTrackHost::OnTrackStarted(
     blink::WebPlatformMediaStreamSource* source,
-    blink::MediaStreamRequestResult result,
+    blink::mojom::MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   DVLOG(3) << "OnTrackStarted result: " << result;
 }

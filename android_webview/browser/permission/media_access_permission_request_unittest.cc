@@ -5,6 +5,7 @@
 #include "android_webview/browser/permission/media_access_permission_request.h"
 #include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 namespace android_webview {
 
@@ -65,11 +66,11 @@ class MediaAccessPermissionRequestTest : public testing::Test {
   std::string first_audio_device_id_;
   std::string first_video_device_id_;
   blink::MediaStreamDevices devices_;
-  blink::MediaStreamRequestResult result_;
+  blink::mojom::MediaStreamRequestResult result_;
 
  private:
   void Callback(const blink::MediaStreamDevices& devices,
-                blink::MediaStreamRequestResult result,
+                blink::mojom::MediaStreamRequestResult result,
                 std::unique_ptr<content::MediaStreamUI> ui) {
     devices_ = devices;
     result_ = result;
@@ -82,7 +83,7 @@ TEST_F(MediaAccessPermissionRequestTest, TestGrantPermissionRequest) {
   request->NotifyRequestResult(true);
 
   EXPECT_EQ(2u, devices_.size());
-  EXPECT_EQ(blink::MEDIA_DEVICE_OK, result_);
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result_);
 
   bool audio_exist = false;
   bool video_exist = false;
@@ -106,7 +107,7 @@ TEST_F(MediaAccessPermissionRequestTest, TestGrantPermissionRequestWithoutID) {
   request->NotifyRequestResult(true);
 
   EXPECT_EQ(2u, devices_.size());
-  EXPECT_EQ(blink::MEDIA_DEVICE_OK, result_);
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result_);
 
   bool audio_exist = false;
   bool video_exist = false;
@@ -129,7 +130,7 @@ TEST_F(MediaAccessPermissionRequestTest, TestDenyPermissionRequest) {
       CreateRequest(std::string(), std::string());
   request->NotifyRequestResult(false);
   EXPECT_TRUE(devices_.empty());
-  EXPECT_EQ(blink::MEDIA_DEVICE_PERMISSION_DENIED, result_);
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED, result_);
 }
 
 }  // namespace android_webview

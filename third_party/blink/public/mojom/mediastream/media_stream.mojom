@@ -22,7 +22,8 @@ enum MediaStreamType {
   NUM_MEDIA_TYPES
 };
 
-// See public/common/media_stream_request.h.
+// Elements in this enum should not be deleted or rearranged; the only
+// permitted operation is to add new elements before NUM_MEDIA_REQUEST_RESULTS.
 enum MediaStreamRequestResult {
   OK,
   PERMISSION_DENIED,
@@ -39,7 +40,8 @@ enum MediaStreamRequestResult {
   NOT_SUPPORTED,
   FAILED_DUE_TO_SHUTDOWN,
   KILL_SWITCH_ON,
-  SYSTEM_PERMISSION_DENIED
+  SYSTEM_PERMISSION_DENIED,
+  NUM_MEDIA_REQUEST_RESULTS
 };
 
 // See public/common/media_stream_request.h.

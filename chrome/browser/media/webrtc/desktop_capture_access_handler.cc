@@ -45,6 +45,7 @@
 #include "extensions/common/switches.h"
 #include "net/base/url_util.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -174,14 +175,15 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
   // it after checking permission.
   // TODO(grunell): It would be good to change this result for something else,
   // probably a new one.
-  blink::MediaStreamRequestResult result = blink::MEDIA_DEVICE_INVALID_STATE;
+  blink::mojom::MediaStreamRequestResult result =
+      blink::mojom::MediaStreamRequestResult::INVALID_STATE;
 
 #if defined(OS_CHROMEOS)
   if (features::IsMultiProcessMash()) {
     // TODO(crbug.com/806366): Screen capture support for mash.
     NOTIMPLEMENTED() << "Screen capture not yet implemented in --mash";
     screen_capture_enabled = false;
-    result = blink::MEDIA_DEVICE_NOT_SUPPORTED;
+    result = blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED;
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -255,8 +257,9 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
 
     // The only case when devices can be empty is if the user has denied
     // permission.
-    result = devices.empty() ? blink::MEDIA_DEVICE_PERMISSION_DENIED
-                             : blink::MEDIA_DEVICE_OK;
+    result = devices.empty()
+                 ? blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED
+                 : blink::mojom::MediaStreamRequestResult::OK;
   }
 
   std::move(callback).Run(devices, result, std::move(ui));
@@ -295,8 +298,9 @@ void DesktopCaptureAccessHandler::HandleRequest(
   std::unique_ptr<content::MediaStreamUI> ui;
 
   if (request.video_type != blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
-    std::move(callback).Run(devices, blink::MEDIA_DEVICE_INVALID_STATE,
-                            std::move(ui));
+    std::move(callback).Run(
+        devices, blink::mojom::MediaStreamRequestResult::INVALID_STATE,
+        std::move(ui));
     return;
   }
 
@@ -336,8 +340,9 @@ void DesktopCaptureAccessHandler::HandleRequest(
 
   // Received invalid device id.
   if (media_id.type == content::DesktopMediaID::TYPE_NONE) {
-    std::move(callback).Run(devices, blink::MEDIA_DEVICE_INVALID_STATE,
-                            std::move(ui));
+    std::move(callback).Run(
+        devices, blink::mojom::MediaStreamRequestResult::INVALID_STATE,
+        std::move(ui));
     return;
   }
 
@@ -381,7 +386,8 @@ void DesktopCaptureAccessHandler::HandleRequest(
       GetApplicationTitle(web_contents, extension),
       GetApplicationTitle(web_contents, extension));
   UpdateExtensionTrusted(request, extension);
-  std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK, std::move(ui));
+  std::move(callback).Run(devices, blink::mojom::MediaStreamRequestResult::OK,
+                          std::move(ui));
 }
 
 void DesktopCaptureAccessHandler::ProcessChangeSourceRequest(
@@ -393,8 +399,9 @@ void DesktopCaptureAccessHandler::ProcessChangeSourceRequest(
 
   std::unique_ptr<DesktopMediaPicker> picker = picker_factory_->CreatePicker();
   if (!picker) {
-    std::move(callback).Run(blink::MediaStreamDevices(),
-                            blink::MEDIA_DEVICE_INVALID_STATE, nullptr);
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::INVALID_STATE, nullptr);
     return;
   }
 
@@ -482,14 +489,14 @@ void DesktopCaptureAccessHandler::OnPickerDialogResults(
 
   PendingAccessRequest& pending_request = *queue.front();
   blink::MediaStreamDevices devices;
-  blink::MediaStreamRequestResult request_result =
-      blink::MEDIA_DEVICE_PERMISSION_DENIED;
+  blink::mojom::MediaStreamRequestResult request_result =
+      blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
   const extensions::Extension* extension = pending_request.extension;
   std::unique_ptr<content::MediaStreamUI> ui;
   if (media_id.is_null()) {
-    request_result = blink::MEDIA_DEVICE_PERMISSION_DENIED;
+    request_result = blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
   } else {
-    request_result = blink::MEDIA_DEVICE_OK;
+    request_result = blink::mojom::MediaStreamRequestResult::OK;
     // Determine if the extension is required to display a notification.
     const bool display_notification =
         display_notification_ && ShouldDisplayNotification(extension);

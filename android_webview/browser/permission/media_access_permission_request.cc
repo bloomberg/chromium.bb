@@ -8,6 +8,7 @@
 
 #include "android_webview/browser/permission/aw_permission_request.h"
 #include "content/public/browser/media_capture_devices.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 using blink::MediaStreamDevice;
 using blink::MediaStreamDevices;
@@ -48,8 +49,9 @@ void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
   std::unique_ptr<content::MediaStreamUI> ui;
   MediaStreamDevices devices;
   if (!allowed) {
-    std::move(callback_).Run(devices, blink::MEDIA_DEVICE_PERMISSION_DENIED,
-                             std::move(ui));
+    std::move(callback_).Run(
+        devices, blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+        std::move(ui));
     return;
   }
 
@@ -74,10 +76,11 @@ void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
     if (device)
       devices.push_back(*device);
   }
-  std::move(callback_).Run(devices,
-                           devices.empty() ? blink::MEDIA_DEVICE_NO_HARDWARE
-                                           : blink::MEDIA_DEVICE_OK,
-                           std::move(ui));
+  std::move(callback_).Run(
+      devices,
+      devices.empty() ? blink::mojom::MediaStreamRequestResult::NO_HARDWARE
+                      : blink::mojom::MediaStreamRequestResult::OK,
+      std::move(ui));
 }
 
 const GURL& MediaAccessPermissionRequest::GetOrigin() {

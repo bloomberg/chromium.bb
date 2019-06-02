@@ -11,6 +11,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
@@ -174,7 +175,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
  protected:
   void OnConstraintsApplied(WebPlatformMediaStreamSource* source,
-                            MediaStreamRequestResult result,
+                            mojom::blink::MediaStreamRequestResult result,
                             const WebString& result_name) {}
 
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;

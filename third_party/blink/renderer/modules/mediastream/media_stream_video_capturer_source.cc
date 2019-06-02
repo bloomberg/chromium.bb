@@ -199,10 +199,11 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(
       if (is_running) {
         state_ = STARTED;
         DCHECK(capture_params_ == new_capture_params);
-        OnStartDone(MEDIA_DEVICE_OK);
+        OnStartDone(mojom::blink::MediaStreamRequestResult::OK);
       } else {
         state_ = STOPPED;
-        OnStartDone(MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO);
+        OnStartDone(
+            mojom::blink::MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO);
       }
       break;
     case STARTED:
