@@ -43,7 +43,7 @@ void ReportingContext::QueueReport(Report* report,
 
   // Buffer the report.
   if (!report_buffer_.Contains(report->type()))
-    report_buffer_.insert(report->type(), HeapLinkedHashSet<Member<Report>>());
+    report_buffer_.insert(report->type(), HeapListHashSet<Member<Report>>());
   report_buffer_.find(report->type())->value.insert(report);
 
   // Only the most recent 100 reports will remain buffered, per report type.
