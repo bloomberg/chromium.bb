@@ -10,7 +10,6 @@ include_rules = [
     "+base/cpu.h",
     "+base/feature_list.h",
     "+base/files",
-    "+base/containers/adapters.h",
     "+base/containers/flat_map.h",
     "+base/guid.h",
     "+base/json",
