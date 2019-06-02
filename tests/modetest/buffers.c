@@ -194,6 +194,13 @@ bo_create(int fd, unsigned int format,
 		bpp = 32;
 		break;
 
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
+		bpp = 64;
+		break;
+
 	default:
 		fprintf(stderr, "unsupported format 0x%08x\n",  format);
 		return NULL;
@@ -313,6 +320,10 @@ bo_create(int fd, unsigned int format,
 	case DRM_FORMAT_RGBX1010102:
 	case DRM_FORMAT_BGRA1010102:
 	case DRM_FORMAT_BGRX1010102:
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
 		offsets[0] = 0;
 		handles[0] = bo->handle;
 		pitches[0] = bo->pitch;
