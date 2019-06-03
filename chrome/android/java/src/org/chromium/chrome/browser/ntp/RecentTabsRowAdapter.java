@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
@@ -22,6 +23,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.DefaultFaviconHelper;
@@ -505,6 +507,9 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                 Drawable drawable = getRoundedFavicon(historyIcon,
                         mActivity.getResources().getDimensionPixelSize(
                                 R.dimen.tile_view_icon_size_modern));
+                drawable.setColorFilter(ApiCompatibilityUtils.getColor(mActivity.getResources(),
+                                                R.color.default_icon_color),
+                        PorterDuff.Mode.SRC_IN);
                 viewHolder.imageView.setImageDrawable(drawable);
                 viewHolder.itemLayout.getLayoutParams().height =
                         mActivity.getResources().getDimensionPixelSize(
