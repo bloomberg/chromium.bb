@@ -377,6 +377,7 @@ int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
 }
 
 int av1_get_deltaq_offset(const AV1_COMP *cpi, int qindex, double beta) {
+  assert(beta > 0.0);
   int q = av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
   int newq = (int)rint(q / sqrt(beta));
   int orig_qindex = qindex;
@@ -395,6 +396,7 @@ int av1_get_deltaq_offset(const AV1_COMP *cpi, int qindex, double beta) {
 }
 
 int av1_get_adaptive_rdmult(const AV1_COMP *cpi, double beta) {
+  assert(beta > 0.0);
   const AV1_COMMON *cm = &cpi->common;
   int64_t q =
       av1_dc_quant_Q3(cm->base_qindex, 0, cpi->common.seq_params.bit_depth);
