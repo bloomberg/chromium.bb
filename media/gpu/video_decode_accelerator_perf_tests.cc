@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <vector>
 
 #include "base/command_line.h"
@@ -62,6 +63,8 @@ struct PerformanceMetrics {
   // The number of frames dropped because of the decoder running behind, only
   // relevant for capped performance tests.
   size_t frames_dropped_ = 0;
+  // The rate at which frames are dropped: dropped frames / non-dropped frames.
+  double dropped_frame_rate_ = 0;
   // The average time between subsequent frame deliveries.
   double avg_frame_delivery_time_ms_ = 0.0;
   // The median time between decode start and frame delivery.
@@ -138,6 +141,13 @@ void PerformanceEvaluator::StopMeasuring() {
                                      perf_metrics_.total_duration_.InSecondsF();
   perf_metrics_.frames_dropped_ = frame_renderer_->FramesDropped();
 
+  // Calculate the frame drop rate.
+  // TODO(dstaessens@) Find a better metric for dropped frames.
+  size_t frames_rendered =
+      perf_metrics_.frames_decoded_ - perf_metrics_.frames_dropped_;
+  perf_metrics_.dropped_frame_rate_ =
+      perf_metrics_.frames_dropped_ / std::max<size_t>(frames_rendered, 1ul);
+
   perf_metrics_.avg_frame_delivery_time_ms_ =
       perf_metrics_.total_duration_.InMillisecondsF() /
       perf_metrics_.frames_decoded_;
@@ -151,11 +161,12 @@ void PerformanceEvaluator::StopMeasuring() {
              frame_decode_times_[median_index]) /
                 2.0;
 
-  VLOG(0) << "Frames decoded: " << perf_metrics_.frames_decoded_;
-  VLOG(0) << "Total duration: "
+  VLOG(0) << "Frames decoded:     " << perf_metrics_.frames_decoded_;
+  VLOG(0) << "Total duration:     "
           << perf_metrics_.total_duration_.InMillisecondsF() << "ms";
-  VLOG(0) << "FPS:            " << perf_metrics_.frames_per_second_;
-  VLOG(0) << "Frames Dropped: " << perf_metrics_.frames_dropped_;
+  VLOG(0) << "FPS:                " << perf_metrics_.frames_per_second_;
+  VLOG(0) << "Frames Dropped:     " << perf_metrics_.frames_dropped_;
+  VLOG(0) << "Dropped frame rate: " << perf_metrics_.dropped_frame_rate_;
   VLOG(0) << "Avg. frame delivery time:   "
           << perf_metrics_.avg_frame_delivery_time_ms_ << "ms";
   VLOG(0) << "Median frame decode time:   "
@@ -165,11 +176,12 @@ void PerformanceEvaluator::StopMeasuring() {
 void PerformanceEvaluator::WriteMetricsToFile() const {
   std::string str = base::StringPrintf(
       "Frames decoded: %zu\nTotal duration: %fms\nFPS: %f\n"
-      "Frames dropped: %zu\nAvg. frame delivery time: %fms\n"
-      "Median frame decode time: %fms\n",
+      "Frames dropped: %zu\nDropped frame rate: %f\n"
+      "Avg. frame delivery time: %fms\nMedian frame decode time: %fms\n",
       perf_metrics_.frames_decoded_,
       perf_metrics_.total_duration_.InMillisecondsF(),
       perf_metrics_.frames_per_second_, perf_metrics_.frames_dropped_,
+      perf_metrics_.dropped_frame_rate_,
       perf_metrics_.avg_frame_delivery_time_ms_,
       perf_metrics_.median_frame_decode_time_ms_);
 
