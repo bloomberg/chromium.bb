@@ -301,6 +301,20 @@ LoginScreenModel* LoginScreenController::GetModel() {
   return &login_data_dispatcher_;
 }
 
+void LoginScreenController::ShowGuestButtonInOobe(bool show) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->ShowGuestButtonInOobe(show);
+}
+
+void LoginScreenController::ShowParentAccessButton(bool show) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->ShowParentAccessButton(show);
+}
+
 void LoginScreenController::ShowParentAccessWidget(
     const AccountId& child_account_id,
     base::RepeatingCallback<void(bool success)> callback) {
@@ -314,7 +328,7 @@ void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {
 
 void LoginScreenController::ShowLockScreen(ShowLockScreenCallback on_shown) {
   OnShow();
-  ash::LockScreen::Show(ash::LockScreen::ScreenType::kLock);
+  LockScreen::Show(LockScreen::ScreenType::kLock);
   std::move(on_shown).Run(true);
 }
 
@@ -330,20 +344,9 @@ void LoginScreenController::ShowLoginScreen(ShowLoginScreenCallback on_shown) {
   }
 
   OnShow();
-  // TODO(jdufault): rename ash::LockScreen to ash::LoginScreen.
-  ash::LockScreen::Show(ash::LockScreen::ScreenType::kLogin);
+  // TODO(jdufault): rename LockScreen to LoginScreen.
+  LockScreen::Show(LockScreen::ScreenType::kLogin);
   std::move(on_shown).Run(true);
-}
-
-void LoginScreenController::ShowErrorMessage(int32_t login_attempts,
-                                             const std::string& error_text,
-                                             const std::string& help_link_text,
-                                             int32_t help_topic_id) {
-  NOTIMPLEMENTED();
-}
-
-void LoginScreenController::ClearErrors() {
-  NOTIMPLEMENTED();
 }
 
 void LoginScreenController::IsReadyForPassword(
@@ -364,24 +367,6 @@ void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {
       ->shelf_widget()
       ->login_shelf_view()
       ->SetAllowLoginAsGuest(allow_guest);
-}
-
-void LoginScreenController::SetShowGuestButtonInOobe(bool show) {
-  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
-      ->shelf_widget()
-      ->login_shelf_view()
-      ->SetShowGuestButtonInOobe(show);
-}
-
-void LoginScreenController::SetShowParentAccessButton(bool show) {
-  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
-      ->shelf_widget()
-      ->login_shelf_view()
-      ->SetShowParentAccessButton(show);
-}
-
-void LoginScreenController::SetShowParentAccessDialog(bool show) {
-  login_data_dispatcher_.SetShowParentAccessDialog(show);
 }
 
 void LoginScreenController::FocusLoginShelf(bool reverse) {

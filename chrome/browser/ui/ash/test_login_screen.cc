@@ -41,13 +41,6 @@ void TestLoginScreen::ShowLoginScreen(ShowLoginScreenCallback callback) {
   std::move(callback).Run(true);
 }
 
-void TestLoginScreen::ShowErrorMessage(int32_t login_attempts,
-                                       const std::string& error_text,
-                                       const std::string& help_link_text,
-                                       int32_t help_topic_id) {}
-
-void TestLoginScreen::ClearErrors() {}
-
 void TestLoginScreen::IsReadyForPassword(IsReadyForPasswordCallback callback) {
   std::move(callback).Run(true);
 }
@@ -60,21 +53,19 @@ void TestLoginScreen::SetShutdownButtonEnabled(bool enable) {}
 
 void TestLoginScreen::SetAllowLoginAsGuest(bool allow_guest) {}
 
-void TestLoginScreen::SetShowGuestButtonInOobe(bool show) {}
-
-void TestLoginScreen::SetShowParentAccessButton(bool show) {}
-
-void TestLoginScreen::SetShowParentAccessDialog(bool show) {}
-
 void TestLoginScreen::FocusLoginShelf(bool reverse) {}
-
-void TestLoginScreen::ShowParentAccessWidget(
-    const AccountId& child_account_id,
-    base::RepeatingCallback<void(bool success)> callback) {}
 
 ash::LoginScreenModel* TestLoginScreen::GetModel() {
   return &test_screen_model_;
 }
+
+void TestLoginScreen::ShowGuestButtonInOobe(bool show) {}
+
+void TestLoginScreen::ShowParentAccessButton(bool show) {}
+
+void TestLoginScreen::ShowParentAccessWidget(
+    const AccountId& child_account_id,
+    base::RepeatingCallback<void(bool success)> callback) {}
 
 void TestLoginScreen::Bind(mojo::ScopedMessagePipeHandle handle) {
   binding_.Bind(ash::mojom::LoginScreenRequest(std::move(handle)));

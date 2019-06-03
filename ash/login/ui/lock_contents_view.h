@@ -124,6 +124,7 @@ class ASH_EXPORT LockContentsView
 
   void FocusNextUser();
   void FocusPreviousUser();
+  void ShowParentAccessDialog(bool show);
 
   // views::View:
   void Layout() override;
@@ -172,7 +173,6 @@ class ASH_EXPORT LockContentsView
       bool show_full_management_disclosure) override;
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override;
-  void OnSetShowParentAccessDialog(bool show) override;
   void OnFocusLeavingLockScreenApps(bool reverse) override;
   void OnOobeDialogStateChanged(OobeDialogState state) override;
 

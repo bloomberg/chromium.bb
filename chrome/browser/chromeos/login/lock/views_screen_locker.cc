@@ -142,13 +142,11 @@ void ViewsScreenLocker::ShowErrorMessage(
     int error_msg_id,
     HelpAppLauncher::HelpTopic help_topic_id) {
   // TODO(xiaoyinh): Complete the implementation here.
-  LoginScreenClient::Get()->login_screen()->ShowErrorMessage(
-      0 /* login_attempts */, std::string(), std::string(),
-      static_cast<int>(help_topic_id));
+  NOTIMPLEMENTED();
 }
 
 void ViewsScreenLocker::ClearErrors() {
-  LoginScreenClient::Get()->login_screen()->ClearErrors();
+  NOTIMPLEMENTED();
 }
 
 void ViewsScreenLocker::OnAshLockAnimationFinished() {

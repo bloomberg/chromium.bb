@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/time/clock.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/media_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -286,7 +286,7 @@ void ScreenTimeController::OnScreenLockByPolicy(
 
   // Add parent access code button.
   if (base::FeatureList::IsEnabled(features::kParentAccessCode))
-    LoginScreenClient::Get()->login_screen()->SetShowParentAccessButton(true);
+    ash::LoginScreen::Get()->ShowParentAccessButton(true);
 
   // Prevent media from continuing to play after device is locked.
   MediaClient::Get()->SuspendMediaSessions();
@@ -302,7 +302,7 @@ void ScreenTimeController::OnScreenLockByPolicyEnd() {
           ->GetAccountId();
   ScreenLocker::default_screen_locker()->EnableAuthForUser(account_id);
   if (base::FeatureList::IsEnabled(features::kParentAccessCode))
-    LoginScreenClient::Get()->login_screen()->SetShowParentAccessButton(false);
+    ash::LoginScreen::Get()->ShowParentAccessButton(false);
 }
 
 void ScreenTimeController::OnPolicyChanged() {

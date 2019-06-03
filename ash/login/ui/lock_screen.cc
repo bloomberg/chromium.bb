@@ -145,6 +145,10 @@ void LockScreen::FocusPreviousUser() {
   contents_view_->FocusPreviousUser();
 }
 
+void LockScreen::ShowParentAccessDialog() {
+  contents_view_->ShowParentAccessDialog(true);
+}
+
 void LockScreen::OnLockScreenNoteStateChanged(mojom::TrayActionState state) {
   Shell::Get()
       ->login_screen_controller()

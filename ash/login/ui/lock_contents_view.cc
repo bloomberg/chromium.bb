@@ -545,6 +545,18 @@ void LockContentsView::FocusPreviousUser() {
   }
 }
 
+void LockContentsView::ShowParentAccessDialog(bool show) {
+  if (!primary_big_view_)
+    return;
+
+  if (show)
+    primary_big_view_->ShowParentAccessView();
+  else
+    primary_big_view_->HideParentAccessView();
+
+  Layout();
+}
+
 void LockContentsView::Layout() {
   View::Layout();
   LayoutTopHeader();
@@ -1072,19 +1084,6 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
   // the password without seeing the warning about detachable base change.
   if (GetWidget()->IsActive())
     GetWidget()->GetFocusManager()->ClearFocus();
-}
-
-void LockContentsView::OnSetShowParentAccessDialog(bool show) {
-  if (!primary_big_view_)
-    return;
-
-  if (show) {
-    primary_big_view_->ShowParentAccessView();
-  } else {
-    primary_big_view_->HideParentAccessView();
-  }
-
-  Layout();
 }
 
 void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
@@ -1735,7 +1734,7 @@ void LockContentsView::OnEasyUnlockIconTapped() {
 }
 
 void LockContentsView::OnParentAccessValidationFinished(bool access_granted) {
-  OnSetShowParentAccessDialog(false);
+  ShowParentAccessDialog(false);
 }
 
 keyboard::KeyboardController* LockContentsView::GetKeyboardControllerForView()

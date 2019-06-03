@@ -1036,7 +1036,7 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   // Toggle parent access view.
   if (sender->GetID() == ButtonId::kGlobalToggleParentAccess) {
     is_parent_access_shown_ = !is_parent_access_shown_;
-    lock_->OnSetShowParentAccessDialog(is_parent_access_shown_);
+    lock_->ShowParentAccessDialog(is_parent_access_shown_);
   }
 }
 
