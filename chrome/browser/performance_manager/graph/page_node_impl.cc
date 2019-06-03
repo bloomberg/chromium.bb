@@ -42,9 +42,6 @@ void ForFrameAndDescendents(FrameNodeImpl* frame_node,
 
 }  // namespace
 
-PageNodeImplObserver::PageNodeImplObserver() = default;
-PageNodeImplObserver::~PageNodeImplObserver() = default;
-
 PageNodeImpl::PageNodeImpl(GraphImpl* graph,
                            const WebContentsProxy& contents_proxy,
                            bool is_visible)
@@ -113,12 +110,16 @@ void PageNodeImpl::OnFaviconUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnFaviconUpdated(this);
+  for (auto* observer : GetObservers())
+    observer->OnFaviconUpdated(this);
 }
 
 void PageNodeImpl::OnTitleUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnTitleUpdated(this);
+  for (auto* observer : GetObservers())
+    observer->OnTitleUpdated(this);
 }
 
 void PageNodeImpl::OnMainFrameNavigationCommitted(
@@ -131,6 +132,8 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
   navigation_id_ = navigation_id;
   for (auto& observer : observers())
     observer.OnMainFrameNavigationCommitted(this);
+  for (auto* observer : GetObservers())
+    observer->OnMainFrameNavigationCommitted(this);
 }
 
 base::flat_set<ProcessNodeImpl*> PageNodeImpl::GetAssociatedProcessNodes()
@@ -440,8 +443,5 @@ void PageNodeImpl::ForAllFrameNodes(MapFunction map_function) const {
   for (auto* main_frame_node : main_frame_nodes_)
     ForFrameAndDescendents(main_frame_node, map_function);
 }
-
-PageNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
-PageNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

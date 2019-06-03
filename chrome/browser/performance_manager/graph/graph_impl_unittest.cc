@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -127,6 +129,36 @@ TEST(GraphImplTest, SerializationId) {
   EXPECT_NE(0, NodeBase::GetSerializationId(system));
   EXPECT_EQ(NodeBase::GetSerializationId(system),
             NodeBase::GetSerializationId(system));
+}
+
+namespace {
+
+class LenientMockObserver : public GraphObserver {
+ public:
+  LenientMockObserver() {}
+  ~LenientMockObserver() override {}
+
+  MOCK_METHOD1(OnBeforeGraphDestroyed, void(const Graph*));
+};
+
+using MockObserver = ::testing::StrictMock<LenientMockObserver>;
+
+using testing::_;
+using testing::Invoke;
+
+}  // namespace
+
+TEST(GraphImplTest, ObserverWorks) {
+  std::unique_ptr<GraphImpl> graph = base::WrapUnique(new GraphImpl());
+  const Graph* raw_graph = graph.get();
+
+  MockObserver obs;
+  graph->AddGraphObserver(&obs);
+  graph->RemoveGraphObserver(&obs);
+  graph->AddGraphObserver(&obs);
+
+  EXPECT_CALL(obs, OnBeforeGraphDestroyed(raw_graph));
+  graph.reset();
 }
 
 }  // namespace performance_manager

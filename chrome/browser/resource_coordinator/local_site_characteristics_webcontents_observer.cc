@@ -36,7 +36,7 @@ performance_manager::TabVisibility ContentVisibilityToRCVisibility(
 }  // namespace
 
 class LocalSiteCharacteristicsWebContentsObserver::GraphObserver
-    : public performance_manager::GraphObserverDefaultImpl {
+    : public performance_manager::GraphImplObserverDefaultImpl {
  public:
   using NodeBase = performance_manager::NodeBase;
   using FrameNodeImpl = performance_manager::FrameNodeImpl;

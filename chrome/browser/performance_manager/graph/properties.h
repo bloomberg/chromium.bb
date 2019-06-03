@@ -7,19 +7,26 @@
 
 namespace performance_manager {
 
+// TODO(chrisha): Deprecate the private observer type and have everyone use the
+// public observers!
+
 // Helper classes for setting properties and invoking observer callbacks based
 // on the value change. Note that by contract the NodeType must have a member
 // function "observers()" that returns an iterable collection of
 // ObserverType pointers. This is templated on the observer type to allow
 // easy testing.
-template <typename NodeType, typename ObserverType>
+template <typename NodeImplType,
+          typename ImplObserverType,
+          typename NodeType,
+          typename ObserverType>
 class ObservedPropertyImpl {
  public:
   // Helper class for node properties that represent measurements that are taken
   // periodically, and for which a notification should be sent every time a
   // new sample is recorded, even if identical in value to the last.
   template <typename PropertyType,
-            void (ObserverType::*NotifyFunctionPtr)(NodeType*)>
+            void (ImplObserverType::*ImplNotifyFunctionPtr)(NodeImplType*),
+            void (ObserverType::*NotifyFunctionPtr)(const NodeType*)>
   class NotifiesAlways {
    public:
     NotifiesAlways() {}
@@ -29,10 +36,12 @@ class ObservedPropertyImpl {
     ~NotifiesAlways() {}
 
     // Sets the property and sends a notification.
-    void SetAndNotify(NodeType* node, PropertyType value) {
+    void SetAndNotify(NodeImplType* node, PropertyType value) {
       value_ = value;
       for (auto& observer : node->observers())
-        ((observer).*(NotifyFunctionPtr))(node);
+        ((observer).*(ImplNotifyFunctionPtr))(node);
+      for (auto* observer : node->GetObservers())
+        ((observer)->*(NotifyFunctionPtr))(node);
     }
 
     const PropertyType& value() const { return value_; }
@@ -46,7 +55,8 @@ class ObservedPropertyImpl {
   // changes. Calls to SetAndMaybeNotify do not notify if the provided value is
   // the same as the current value.
   template <typename PropertyType,
-            void (ObserverType::*NotifyFunctionPtr)(NodeType*)>
+            void (ImplObserverType::*ImplNotifyFunctionPtr)(NodeImplType*),
+            void (ObserverType::*NotifyFunctionPtr)(const NodeType*)>
   class NotifiesOnlyOnChanges {
    public:
     NotifiesOnlyOnChanges() {}
@@ -57,12 +67,14 @@ class ObservedPropertyImpl {
 
     // Sets the property and sends a notification if needed. Returns true if a
     // notification was sent, false otherwise.
-    bool SetAndMaybeNotify(NodeType* node, PropertyType value) {
+    bool SetAndMaybeNotify(NodeImplType* node, PropertyType value) {
       if (value_ == value)
         return false;
       value_ = value;
       for (auto& observer : node->observers())
-        ((observer).*(NotifyFunctionPtr))(node);
+        ((observer).*(ImplNotifyFunctionPtr))(node);
+      for (auto* observer : node->GetObservers())
+        ((observer)->*(NotifyFunctionPtr))(node);
       return true;
     }
 

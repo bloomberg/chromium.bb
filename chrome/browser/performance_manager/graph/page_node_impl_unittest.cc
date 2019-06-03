@@ -12,6 +12,7 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -389,6 +390,108 @@ TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
   ExpectInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kOptIn, page.get());
+}
+
+namespace {
+
+class LenientMockObserver : public PageNodeImpl::Observer {
+ public:
+  LenientMockObserver() {}
+  ~LenientMockObserver() override {}
+
+  MOCK_METHOD1(OnPageNodeAdded, void(const PageNode*));
+  MOCK_METHOD1(OnBeforePageNodeRemoved, void(const PageNode*));
+  MOCK_METHOD1(OnIsVisibleChanged, void(const PageNode*));
+  MOCK_METHOD1(OnIsLoadingChanged, void(const PageNode*));
+  MOCK_METHOD1(OnUkmSourceIdChanged, void(const PageNode*));
+  MOCK_METHOD1(OnLifecycleStateChanged, void(const PageNode*));
+  MOCK_METHOD1(OnPageAlmostIdleChanged, void(const PageNode*));
+  MOCK_METHOD1(OnMainFrameNavigationCommitted, void(const PageNode*));
+  MOCK_METHOD1(OnTitleUpdated, void(const PageNode*));
+  MOCK_METHOD1(OnFaviconUpdated, void(const PageNode*));
+
+  void SetNotifiedPageNode(const PageNode* page_node) {
+    notified_page_node_ = page_node;
+  }
+
+  const PageNode* TakeNotifiedPageNode() {
+    const PageNode* node = notified_page_node_;
+    notified_page_node_ = nullptr;
+    return node;
+  }
+
+ private:
+  const PageNode* notified_page_node_ = nullptr;
+};
+
+using MockObserver = ::testing::StrictMock<LenientMockObserver>;
+
+using testing::_;
+using testing::Invoke;
+
+}  // namespace
+
+TEST_F(PageNodeImplTest, ObserverWorks) {
+  auto process = CreateNode<ProcessNodeImpl>();
+
+  MockObserver obs;
+  graph()->AddPageNodeObserver(&obs);
+
+  // Create a page node and expect a matching call to "OnPageNodeAdded".
+  EXPECT_CALL(obs, OnPageNodeAdded(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  auto page_node = CreateNode<PageNodeImpl>();
+  const PageNode* raw_page_node = page_node.get();
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnIsVisibleChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetIsVisible(true);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnIsLoadingChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetIsLoading(true);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnUkmSourceIdChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetUkmSourceId(static_cast<ukm::SourceId>(0x1234));
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnLifecycleStateChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetLifecycleStateForTesting(PageNodeImpl::LifecycleState::kFrozen);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnPageAlmostIdleChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetPageAlmostIdleForTesting(true);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnMainFrameNavigationCommitted(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), 0x1234ull,
+                                            GURL("https://foo.com/"));
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnTitleUpdated(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->OnTitleUpdated();
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnFaviconUpdated(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->OnFaviconUpdated();
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  // Release the page node and expect a call to "OnBeforePageNodeRemoved".
+  EXPECT_CALL(obs, OnBeforePageNodeRemoved(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node.reset();
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  graph()->RemovePageNodeObserver(&obs);
 }
 
 }  // namespace performance_manager

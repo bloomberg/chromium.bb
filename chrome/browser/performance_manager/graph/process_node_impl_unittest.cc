@@ -107,4 +107,74 @@ TEST_F(ProcessNodeImplTest, GetPageNodeIfExclusive) {
   }
 }
 
+namespace {
+
+class LenientMockObserver : public ProcessNodeImpl::Observer {
+ public:
+  LenientMockObserver() {}
+  ~LenientMockObserver() override {}
+
+  MOCK_METHOD1(OnProcessNodeAdded, void(const ProcessNode*));
+  MOCK_METHOD1(OnBeforeProcessNodeRemoved, void(const ProcessNode*));
+  MOCK_METHOD1(OnExpectedTaskQueueingDurationSample, void(const ProcessNode*));
+  MOCK_METHOD1(OnMainThreadTaskLoadIsLow, void(const ProcessNode*));
+  MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNode*));
+
+  void SetNotifiedProcessNode(const ProcessNode* process_node) {
+    notified_process_node_ = process_node;
+  }
+
+  const ProcessNode* TakeNotifiedProcessNode() {
+    const ProcessNode* node = notified_process_node_;
+    notified_process_node_ = nullptr;
+    return node;
+  }
+
+ private:
+  const ProcessNode* notified_process_node_ = nullptr;
+};
+
+using MockObserver = ::testing::StrictMock<LenientMockObserver>;
+
+using testing::_;
+using testing::Invoke;
+
+}  // namespace
+
+TEST_F(ProcessNodeImplTest, ObserverWorks) {
+  MockObserver obs;
+  graph()->AddProcessNodeObserver(&obs);
+
+  // Create a page node and expect a matching call to "OnProcessNodeAdded".
+  EXPECT_CALL(obs, OnProcessNodeAdded(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
+  auto process_node = CreateNode<ProcessNodeImpl>();
+  const ProcessNode* raw_process_node = process_node.get();
+  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  EXPECT_CALL(obs, OnExpectedTaskQueueingDurationSample(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
+  process_node->SetExpectedTaskQueueingDuration(
+      base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  EXPECT_CALL(obs, OnMainThreadTaskLoadIsLow(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
+  process_node->SetMainThreadTaskLoadIsLow(true);
+  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  EXPECT_CALL(obs, OnAllFramesInProcessFrozen(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
+  process_node->OnAllFramesInProcessFrozenForTesting();
+  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  // Release the page node and expect a call to "OnBeforeProcessNodeRemoved".
+  EXPECT_CALL(obs, OnBeforeProcessNodeRemoved(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
+  process_node.reset();
+  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  graph()->RemoveProcessNodeObserver(&obs);
+}
+
 }  // namespace performance_manager

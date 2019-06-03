@@ -24,8 +24,8 @@
 
 namespace performance_manager {
 
-// TODO(chrisha): Remove all of these when GraphObserver is killed.
-class GraphObserver;
+// TODO(chrisha): Remove this when GraphImplObserver is killed.
+class GraphImplObserver;
 
 // NodeBase implements shared functionality among different types of graph
 // nodes. A specific type of graph node will derive from this class and can
@@ -35,6 +35,9 @@ class GraphObserver;
 // All methods not documented otherwise are single-threaded.
 class NodeBase {
  public:
+  using ObserverList =
+      typename base::ObserverList<GraphImplObserver>::Unchecked;
+
   // TODO(siggi): Don't store the node type, expose it on a virtual function
   //    instead.
   NodeBase(NodeTypeEnum type, GraphImpl* graph);
@@ -51,13 +54,26 @@ class NodeBase {
   // provide a stable ID for serialization.
   static int64_t GetSerializationId(NodeBase* node);
 
-  // TODO(chrisha): Remove this after observer migration.
-  // Implementations of these are provided in the *_node_impl.cc translation
-  // units for now.
-  void RemoveObserver(GraphObserver* observer);
+  // TODO(chrisha): Remove these functions once we've moved to typed observers.
+  void AddObserver(GraphImplObserver* observer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    observers_.AddObserver(observer);
+  }
+  void RemoveObserver(GraphImplObserver* observer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    observers_.RemoveObserver(observer);
+  }
+  const ObserverList& observers() const { return observers_; }
 
  protected:
   friend class GraphImpl;
+
+  // Helper function for TypedNodeBase to access the list of typed observers
+  // stored in the graph.
+  template <typename Observer>
+  static const std::vector<Observer*>& GetObservers(const GraphImpl* graph) {
+    return graph->GetObservers<Observer>();
+  }
 
   // Called just before joining |graph_|, a good opportunity to initialize
   // node state.
@@ -75,6 +91,9 @@ class NodeBase {
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
+  // TODO(chrisha): Remove this once we've moved to typed observers.
+  ObserverList observers_;
+
   DISALLOW_COPY_AND_ASSIGN(NodeBase);
 };
 
@@ -95,14 +114,16 @@ class PublicNodeImpl : public PublicNodeClass {
   }
 };
 
-template <class NodeImplClass, class NodeImplObserverClass>
+template <class NodeImplClass,
+          class NodeImplObserverClass,
+          class NodeClass,
+          class NodeObserverClass>
 class TypedNodeBase : public NodeBase {
  public:
-  using Observer = NodeImplObserverClass;
-  using ObserverList =
-      typename base::ObserverList<NodeImplObserverClass>::Unchecked;
-  using ObservedProperty =
-      ObservedPropertyImpl<NodeImplClass, NodeImplObserverClass>;
+  using ObservedProperty = ObservedPropertyImpl<NodeImplClass,
+                                                NodeImplObserverClass,
+                                                NodeClass,
+                                                NodeObserverClass>;
 
   explicit TypedNodeBase(GraphImpl* graph)
       : NodeBase(NodeImplClass::Type(), graph) {}
@@ -117,21 +138,15 @@ class TypedNodeBase : public NodeBase {
     return static_cast<NodeImplClass*>(node);
   }
 
-  void AddObserver(Observer* observer) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    observers_.AddObserver(observer);
+  // Convenience accessor to the per-node-class list of observers that is stored
+  // in the graph.
+  const std::vector<NodeObserverClass*>& GetObservers() const {
+    // Mediate through NodeBase, as it's the class that is friended by the
+    // GraphImpl in order to provide access.
+    return NodeBase::GetObservers<NodeObserverClass>(graph());
   }
-
-  void RemoveObserver(Observer* observer) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    observers_.RemoveObserver(observer);
-  }
-
-  const ObserverList& observers() const { return observers_; }
 
  private:
-  ObserverList observers_;
-
   DISALLOW_COPY_AND_ASSIGN(TypedNodeBase);
 };
 

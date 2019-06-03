@@ -110,7 +110,7 @@ class PerformanceManager {
   // resource_coordinator migration, so do not use this unless you know what
   // you're doing! Must be called from the performance manager sequence.
   // TODO(chrisha): Kill this dead.
-  void RegisterObserver(std::unique_ptr<GraphObserver> observer);
+  void RegisterObserver(std::unique_ptr<GraphImplObserver> observer);
 
  private:
   using InterfaceRegistry = service_manager::BinderRegistryWithArgs<
@@ -146,7 +146,7 @@ class PerformanceManager {
   GraphImpl graph_;
 
   // The registered graph observers.
-  std::vector<std::unique_ptr<GraphObserver>> observers_;
+  std::vector<std::unique_ptr<GraphImplObserver>> observers_;
 
   // Provided to |graph_|.
   // TODO(siggi): This no longer needs to go through mojo.

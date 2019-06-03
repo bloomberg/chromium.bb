@@ -13,6 +13,7 @@
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -20,14 +21,9 @@ namespace performance_manager {
 namespace {
 
 // Observer used to make sure that signals are dispatched correctly.
-class SystemAndProcessObserver : public GraphObserverDefaultImpl {
+class SystemObserver : public SystemNodeImpl::ObserverDefaultImpl {
  public:
-  // GraphObserver implementation:
-  bool ShouldObserve(const NodeBase* node) override {
-    return node->type() == SystemNodeImpl::Type();
-  }
-
-  void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {
+  void OnProcessCPUUsageReady(const SystemNode* system_node) override {
     ++system_event_seen_count_;
   }
 
@@ -87,11 +83,9 @@ TEST_F(SystemNodeImplTest, GetIndexingKey) {
 }
 
 TEST_F(SystemNodeImplTest, DistributeMeasurementBatch) {
-  SystemAndProcessObserver observer;
+  SystemObserver observer;
   MockMultiplePagesWithMultipleProcessesGraph mock_graph(graph());
-  mock_graph.system->AddObserver(&observer);
-  mock_graph.process->AddObserver(&observer);
-  mock_graph.other_process->AddObserver(&observer);
+  graph()->AddSystemNodeObserver(&observer);
 
   EXPECT_EQ(0u, observer.system_event_seen_count());
 
@@ -168,7 +162,60 @@ TEST_F(SystemNodeImplTest, DistributeMeasurementBatch) {
             mock_graph.other_page->cumulative_cpu_usage_estimate());
   EXPECT_EQ(50u, mock_graph.other_page->private_footprint_kb_estimate());
 
-  mock_graph.system->RemoveObserver(&observer);
+  graph()->RemoveSystemNodeObserver(&observer);
+}
+
+namespace {
+
+class LenientMockObserver : public SystemNodeImpl::Observer {
+ public:
+  LenientMockObserver() {}
+  ~LenientMockObserver() override {}
+
+  MOCK_METHOD1(OnSystemNodeAdded, void(const SystemNode*));
+  MOCK_METHOD1(OnBeforeSystemNodeRemoved, void(const SystemNode*));
+  MOCK_METHOD1(OnProcessCPUUsageReady, void(const SystemNode*));
+
+  void SetNotifiedSystemNode(const SystemNode* system_node) {
+    notified_system_node_ = system_node;
+  }
+
+  const SystemNode* TakeNotifiedSystemNode() {
+    const SystemNode* node = notified_system_node_;
+    notified_system_node_ = nullptr;
+    return node;
+  }
+
+ private:
+  const SystemNode* notified_system_node_ = nullptr;
+};
+
+using MockObserver = ::testing::StrictMock<LenientMockObserver>;
+
+using testing::_;
+using testing::Invoke;
+
+}  // namespace
+
+TEST_F(SystemNodeImplTest, ObserverWorks) {
+  MockObserver obs;
+  graph()->AddSystemNodeObserver(&obs);
+
+  // Fetch the system node and expect a matching call to "OnSystemNodeAdded".
+  EXPECT_CALL(obs, OnSystemNodeAdded(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedSystemNode));
+  const SystemNode* system_node = graph()->FindOrCreateSystemNode();
+  EXPECT_EQ(system_node, obs.TakeNotifiedSystemNode());
+
+  // "OnProcessCPUUsageReady" is tested explicitly in the above unittests.
+
+  // Release the system node and expect a call to "OnBeforeSystemNodeRemoved".
+  EXPECT_CALL(obs, OnBeforeSystemNodeRemoved(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedSystemNode));
+  graph()->ReleaseSystemNodeForTesting();
+  EXPECT_EQ(system_node, obs.TakeNotifiedSystemNode());
+
+  graph()->RemoveSystemNodeObserver(&obs);
 }
 
 }  // namespace performance_manager

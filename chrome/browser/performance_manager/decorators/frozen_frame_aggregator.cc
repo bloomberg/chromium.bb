@@ -34,8 +34,7 @@ class FrozenFrameAggregatorAccess {
   }
 
   static void NotifyAllFramesInProcessFrozen(ProcessNodeImpl* process_node) {
-    for (auto& observer : process_node->observers())
-      observer.OnAllFramesInProcessFrozen(process_node);
+    process_node->OnAllFramesInProcessFrozen();
   }
 };
 

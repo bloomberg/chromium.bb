@@ -19,7 +19,7 @@ namespace performance_manager {
 // reached an "almost idle" state after initial load, based on CPU and network
 // quiescence, as well as an absolute timeout. This state is then updated on
 // PageNodes in a graph.
-class PageAlmostIdleDecorator : public GraphObserverDefaultImpl {
+class PageAlmostIdleDecorator : public GraphImplObserverDefaultImpl {
  public:
   class Data;
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -107,6 +108,99 @@ TEST_F(FrameNodeImplTest, IsAdFrame) {
   EXPECT_TRUE(frame_node->is_ad_frame());
   frame_node->SetIsAdFrame();
   EXPECT_TRUE(frame_node->is_ad_frame());
+}
+
+namespace {
+
+class LenientMockObserver : public FrameNodeImpl::Observer {
+ public:
+  LenientMockObserver() {}
+  ~LenientMockObserver() override {}
+
+  MOCK_METHOD1(OnFrameNodeAdded, void(const FrameNode*));
+  MOCK_METHOD1(OnBeforeFrameNodeRemoved, void(const FrameNode*));
+  MOCK_METHOD1(OnIsCurrentChanged, void(const FrameNode*));
+  MOCK_METHOD1(OnNetworkAlmostIdleChanged, void(const FrameNode*));
+  MOCK_METHOD1(OnLifecycleStateChanged, void(const FrameNode*));
+  MOCK_METHOD1(OnNonPersistentNotificationCreated, void(const FrameNode*));
+  MOCK_METHOD1(OnURLChanged, void(const FrameNode*));
+
+  void SetNotifiedFrameNode(const FrameNode* frame_node) {
+    notified_frame_node_ = frame_node;
+  }
+
+  const FrameNode* TakeNotifiedFrameNode() {
+    const FrameNode* node = notified_frame_node_;
+    notified_frame_node_ = nullptr;
+    return node;
+  }
+
+ private:
+  const FrameNode* notified_frame_node_ = nullptr;
+};
+
+using MockObserver = ::testing::StrictMock<LenientMockObserver>;
+
+using testing::_;
+using testing::Invoke;
+
+}  // namespace
+
+TEST_F(FrameNodeImplTest, ObserverWorks) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>();
+
+  MockObserver obs;
+  graph()->AddFrameNodeObserver(&obs);
+
+  // Create a frame node and expect a matching call to "OnFrameNodeAdded".
+  EXPECT_CALL(obs, OnFrameNodeAdded(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  const FrameNode* raw_frame_node = frame_node.get();
+  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+
+  // Invoke "SetIsCurrent" and expect a "OnIsCurrentChanged" callback.
+  EXPECT_CALL(obs, OnIsCurrentChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  frame_node->SetIsCurrent(true);
+  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+
+  // Invoke "SetNetworkAlmostIdle" and expect an "OnNetworkAlmostIdleChanged"
+  // callback.
+  EXPECT_CALL(obs, OnNetworkAlmostIdleChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  frame_node->SetNetworkAlmostIdle();
+  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+
+  // Invoke "SetLifecycleState" and expect an "OnLifecycleStateChanged"
+  // callback.
+  EXPECT_CALL(obs, OnLifecycleStateChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  frame_node->SetLifecycleState(
+      resource_coordinator::mojom::LifecycleState::kFrozen);
+  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+
+  // Invoke "OnNonPersistentNotificationCreated" and expect an
+  // "OnNonPersistentNotificationCreated" callback.
+  EXPECT_CALL(obs, OnNonPersistentNotificationCreated(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  frame_node->OnNonPersistentNotificationCreated();
+  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+
+  // Invoke "OnNavigationCommitted" and expect an "OnURLChanged" callback.
+  EXPECT_CALL(obs, OnURLChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  frame_node->OnNavigationCommitted(GURL("https://foo.com/"), true);
+  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+
+  // Release the frame node and expect a call to "OnBeforeFrameNodeRemoved".
+  EXPECT_CALL(obs, OnBeforeFrameNodeRemoved(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  frame_node.reset();
+  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+
+  graph()->RemoveFrameNodeObserver(&obs);
 }
 
 }  // namespace performance_manager

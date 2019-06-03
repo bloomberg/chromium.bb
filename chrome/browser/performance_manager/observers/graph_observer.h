@@ -6,14 +6,16 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_GRAPH_OBSERVER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 namespace performance_manager {
+
+class FrameNodeImpl;
+class GraphImpl;
+class NodeBase;
+class PageNodeImpl;
+class ProcessNodeImpl;
+class SystemNodeImpl;
 
 // An observer API for the graph.
 //
@@ -27,16 +29,12 @@ namespace performance_manager {
 //   (3) Before destruction, unregister by calling on
 //       |graph().UnregisterObserver|.
 //
-// NOTE: This interface is deprecated. Please use the individual interfaces
-// that this class is implementing.
-class GraphObserver : public GraphImpl::Observer,
-                      public FrameNodeImpl::Observer,
-                      public PageNodeImpl::Observer,
-                      public ProcessNodeImpl::Observer,
-                      public SystemNodeImpl::Observer {
+// NOTE: This interface is deprecated. Please use the public observer interfaces
+// directly!
+class GraphImplObserver {
  public:
-  GraphObserver();
-  ~GraphObserver() override;
+  GraphImplObserver();
+  virtual ~GraphImplObserver();
 
   // Determines whether or not the observer should be registered with, and
   // invoked for, the |node|.
@@ -44,17 +42,61 @@ class GraphObserver : public GraphImpl::Observer,
   // actual observer implementations.
   virtual bool ShouldObserve(const NodeBase* node) = 0;
 
+  // Invoked when an observer is added to or removed from the graph. This is a
+  // convenient place for observers to initialize any necessary state, validate
+  // graph invariants, etc.
+  virtual void OnRegistered() = 0;
+  virtual void OnUnregistered() = 0;
+
+  // Called whenever a node has been added to the graph.
+  virtual void OnNodeAdded(NodeBase* node) = 0;
+
+  // Called when the |node| is about to be removed from the graph.
+  virtual void OnBeforeNodeRemoved(NodeBase* node) = 0;
+
+  // This will be called with a non-null |graph| when the observer is attached
+  // to a graph, and then again with a null |graph| when the observer is
+  // removed.
+  virtual void SetGraph(GraphImpl* graph) = 0;
+
+  // FrameNodeObserver analogs:
+  virtual void OnIsCurrentChanged(FrameNodeImpl* frame_node) = 0;
+  virtual void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) = 0;
+  virtual void OnLifecycleStateChanged(FrameNodeImpl* frame_node) = 0;
+  virtual void OnURLChanged(FrameNodeImpl* frame_node) = 0;
+  virtual void OnNonPersistentNotificationCreated(
+      FrameNodeImpl* frame_node) = 0;
+
+  // PageNodeObserver analogs:
+  virtual void OnIsVisibleChanged(PageNodeImpl* page_node) = 0;
+  virtual void OnIsLoadingChanged(PageNodeImpl* page_node) = 0;
+  virtual void OnUkmSourceIdChanged(PageNodeImpl* page_node) = 0;
+  virtual void OnLifecycleStateChanged(PageNodeImpl* page_node) = 0;
+  virtual void OnPageAlmostIdleChanged(PageNodeImpl* page_node) = 0;
+  virtual void OnFaviconUpdated(PageNodeImpl* page_node) = 0;
+  virtual void OnTitleUpdated(PageNodeImpl* page_node) = 0;
+  virtual void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) = 0;
+
+  // ProcessNodeObserver analogs:
+  virtual void OnExpectedTaskQueueingDurationSample(
+      ProcessNodeImpl* process_node) = 0;
+  virtual void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) = 0;
+  virtual void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) = 0;
+
+  // SystemNodeObserver analogs:
+  virtual void OnProcessCPUUsageReady(SystemNodeImpl* system_node) = 0;
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(GraphObserver);
+  DISALLOW_COPY_AND_ASSIGN(GraphImplObserver);
 };
 
 // An empty implementation of the interface.
-class GraphObserverDefaultImpl : public GraphObserver {
+class GraphImplObserverDefaultImpl : public GraphImplObserver {
  public:
-  GraphObserverDefaultImpl();
-  ~GraphObserverDefaultImpl() override;
+  GraphImplObserverDefaultImpl();
+  ~GraphImplObserverDefaultImpl() override;
 
-  // GraphImplObserver implementation:
+  // GraphObserver implementation:
   void OnRegistered() override {}
   void OnUnregistered() override {}
   void OnNodeAdded(NodeBase* node) override {}
@@ -92,7 +134,7 @@ class GraphObserverDefaultImpl : public GraphObserver {
  private:
   GraphImpl* graph_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(GraphObserverDefaultImpl);
+  DISALLOW_COPY_AND_ASSIGN(GraphImplObserverDefaultImpl);
 };
 
 }  // namespace performance_manager

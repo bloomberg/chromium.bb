@@ -11,9 +11,6 @@
 
 namespace performance_manager {
 
-ProcessNodeImplObserver::ProcessNodeImplObserver() = default;
-ProcessNodeImplObserver::~ProcessNodeImplObserver() = default;
-
 ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph)
     : TypedNodeBase(graph), binding_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -131,6 +128,13 @@ void ProcessNodeImpl::SetProcessImpl(base::Process process,
   cumulative_cpu_usage_ = base::TimeDelta();
 }
 
+void ProcessNodeImpl::OnAllFramesInProcessFrozen() {
+  for (auto& observer : observers())
+    observer.OnAllFramesInProcessFrozen(this);
+  for (auto* observer : GetObservers())
+    observer->OnAllFramesInProcessFrozen(this);
+}
+
 void ProcessNodeImpl::LeaveGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NodeBase::LeaveGraph();
@@ -143,8 +147,5 @@ void ProcessNodeImpl::LeaveGraph() {
   // All child frames should have been removed before the process is removed.
   DCHECK(frame_nodes_.empty());
 }
-
-ProcessNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
-ProcessNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

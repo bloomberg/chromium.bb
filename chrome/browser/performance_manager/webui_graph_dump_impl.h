@@ -16,7 +16,8 @@ namespace performance_manager {
 
 class GraphImpl;
 
-class WebUIGraphDumpImpl : public mojom::WebUIGraphDump, public GraphObserver {
+class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
+                           public GraphImplObserver {
  public:
   explicit WebUIGraphDumpImpl(GraphImpl* graph);
   ~WebUIGraphDumpImpl() override;
@@ -29,41 +30,44 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump, public GraphObserver {
   void SubscribeToChanges(
       mojom::WebUIGraphChangeStreamPtr change_subscriber) override;
 
-  // GraphObserver implementation.
   void OnRegistered() override {}
   void OnUnregistered() override {}
   bool ShouldObserve(const NodeBase* node) override;
   void OnNodeAdded(NodeBase* node) override;
   void OnBeforeNodeRemoved(NodeBase* node) override;
+  void SetGraph(GraphImpl* graph) override;
+
+  // Frame node functions.
   void OnIsCurrentChanged(FrameNodeImpl* frame_node) override;
   void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override;
   void OnLifecycleStateChanged(FrameNodeImpl* frame_node) override;
   void OnURLChanged(FrameNodeImpl* frame_node) override;
   // Event notification.
   void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override {}
+
+  // Page node functions.
   void OnIsVisibleChanged(PageNodeImpl* page_node) override;
   void OnIsLoadingChanged(PageNodeImpl* page_node) override;
   void OnUkmSourceIdChanged(PageNodeImpl* page_node) override;
   void OnLifecycleStateChanged(PageNodeImpl* page_node) override;
   void OnPageAlmostIdleChanged(PageNodeImpl* page_node) override;
-
   // Event notification.
   void OnFaviconUpdated(PageNodeImpl* page_node) override;
   // Event notification.
   void OnTitleUpdated(PageNodeImpl* page_node) override {}
-
   // Event notification that also implies the main_frame_url changed.
   void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) override;
+
+  // Process node functions.
   void OnExpectedTaskQueueingDurationSample(
       ProcessNodeImpl* process_node) override;
   void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) override;
   // Event notification.
   void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) override {}
 
-  // Ignored
+  // System node functions.
+  // Ignored.
   void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {}
-
-  void SetGraph(GraphImpl* graph) override;
 
  private:
   // The favicon requests happen on the UI thread. This helper class

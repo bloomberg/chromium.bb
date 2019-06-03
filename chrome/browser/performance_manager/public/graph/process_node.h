@@ -10,6 +10,7 @@
 namespace performance_manager {
 
 class Graph;
+class ProcessNodeObserver;
 
 // A process node follows the lifetime of a RenderProcessHost.
 // It may reference zero or one processes at a time, but during its lifetime, it
@@ -23,6 +24,9 @@ class Graph;
 // 4. Back to 2.
 class ProcessNode {
  public:
+  using Observer = ProcessNodeObserver;
+  class ObserverDefaultImpl;
+
   ProcessNode();
   virtual ~ProcessNode();
 
@@ -35,6 +39,59 @@ class ProcessNode {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProcessNode);
+};
+
+// Pure virtual observer interface. Derive from this if you want to be forced to
+// implement the entire interface.
+class ProcessNodeObserver {
+ public:
+  ProcessNodeObserver();
+  virtual ~ProcessNodeObserver();
+
+  // Node lifetime notifications.
+
+  // Called when a |process_node| is added to the graph.
+  virtual void OnProcessNodeAdded(const ProcessNode* process_node) = 0;
+
+  // Called before a |process_node| is removed from the graph.
+  virtual void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) = 0;
+
+  // Notifications of property changes.
+
+  // Invoked when a new |expected_task_queueing_duration| sample is available.
+  virtual void OnExpectedTaskQueueingDurationSample(
+      const ProcessNode* process_node) = 0;
+
+  // Invoked when the |main_thread_task_load_is_low| property changes.
+  virtual void OnMainThreadTaskLoadIsLow(const ProcessNode* process_node) = 0;
+
+  // Events with no property changes.
+
+  // Fired when all frames in a process have transitioned to being frozen.
+  virtual void OnAllFramesInProcessFrozen(const ProcessNode* process_node) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProcessNodeObserver);
+};
+
+// Default implementation of observer that provides dummy versions of each
+// function. Derive from this if you only need to implement a few of the
+// functions.
+class ProcessNode::ObserverDefaultImpl : public ProcessNodeObserver {
+ public:
+  ObserverDefaultImpl();
+  ~ObserverDefaultImpl() override;
+
+  // ProcessNodeObserver implementation:
+  void OnProcessNodeAdded(const ProcessNode* process_node) override {}
+  void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) override {}
+  void OnExpectedTaskQueueingDurationSample(
+      const ProcessNode* process_node) override {}
+  void OnMainThreadTaskLoadIsLow(const ProcessNode* process_node) override {}
+  void OnAllFramesInProcessFrozen(const ProcessNode* process_node) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);
 };
 
 }  // namespace performance_manager

@@ -20,7 +20,7 @@ namespace {
 
 class GraphObserverTest : public GraphTestHarness {};
 
-class TestGraphObserver : public GraphObserverDefaultImpl {
+class TestGraphObserver : public GraphImplObserverDefaultImpl {
  public:
   TestGraphObserver() {}
   ~TestGraphObserver() override {}

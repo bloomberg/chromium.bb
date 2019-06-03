@@ -17,7 +17,7 @@ namespace resource_coordinator {
 // TODO(chrisha): Kill this thing entirely and move all of tab manager into the
 // performance manager.
 class TabManager::ResourceCoordinatorSignalObserver
-    : public performance_manager::GraphObserverDefaultImpl {
+    : public performance_manager::GraphImplObserverDefaultImpl {
  public:
   using NodeBase = performance_manager::NodeBase;
   using PageNodeImpl = performance_manager::PageNodeImpl;

@@ -17,9 +17,6 @@
 
 namespace performance_manager {
 
-SystemNodeImplObserver::SystemNodeImplObserver() = default;
-SystemNodeImplObserver::~SystemNodeImplObserver() = default;
-
 ProcessResourceMeasurement::ProcessResourceMeasurement() = default;
 ProcessResourceMeasurementBatch::ProcessResourceMeasurementBatch() = default;
 ProcessResourceMeasurementBatch::~ProcessResourceMeasurementBatch() = default;
@@ -156,9 +153,8 @@ void SystemNodeImpl::DistributeMeasurementBatch(
 
   for (auto& observer : observers())
     observer.OnProcessCPUUsageReady(this);
+  for (auto* observer : GetObservers())
+    observer->OnProcessCPUUsageReady(this);
 }
-
-SystemNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
-SystemNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

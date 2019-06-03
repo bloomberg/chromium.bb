@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -24,56 +25,12 @@ class FrameNodeImpl;
 class PageNodeImpl;
 class ProcessNodeImpl;
 
-// Observer interface for PageNodeImpl objects. This must be declared first as
-// the type is referenced by members of PageNodeImpl.
-class PageNodeImplObserver {
- public:
-  PageNodeImplObserver();
-  virtual ~PageNodeImplObserver();
-
-  // Notifications of property changes.
-
-  // Invoked when the |is_visible| property changes.
-  virtual void OnIsVisibleChanged(PageNodeImpl* page_node) = 0;
-
-  // Invoked when the |is_loading| property changes.
-  virtual void OnIsLoadingChanged(PageNodeImpl* page_node) = 0;
-
-  // Invoked when the |ukm_source_id| property changes.
-  virtual void OnUkmSourceIdChanged(PageNodeImpl* page_node) = 0;
-
-  // Invoked when the |lifecycle_state| property changes.
-  virtual void OnLifecycleStateChanged(PageNodeImpl* page_node) = 0;
-
-  // Invoked when the |page_almost_idle| property changes.
-  virtual void OnPageAlmostIdleChanged(PageNodeImpl* page_node) = 0;
-
-  // This is fired when a main frame navigation commits. It indicates that the
-  // |navigation_id| and |main_frame_url| properties have changed.
-  virtual void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) = 0;
-
-  // Events with no property changes.
-
-  // Fired when the tab title associated with a page changes. This property is
-  // not directly reflected on the node.
-  virtual void OnTitleUpdated(PageNodeImpl* page_node) = 0;
-
-  // Fired when the favicon associated with a page is updated. This property is
-  // not directly reflected on the node.
-  virtual void OnFaviconUpdated(PageNodeImpl* page_node) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PageNodeImplObserver);
-};
-
 class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
-                     public TypedNodeBase<PageNodeImpl, PageNodeImplObserver> {
+                     public TypedNodeBase<PageNodeImpl,
+                                          GraphImplObserver,
+                                          PageNode,
+                                          PageNodeObserver> {
  public:
-  // A do-nothing implementation of the observer. Derive from this if you want
-  // to selectively override a few methods and not have to worry about
-  // continuously updating your implementation as new methods are added.
-  class ObserverDefaultImpl;
-
   using LifecycleState = resource_coordinator::mojom::LifecycleState;
 
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kPage; }
@@ -170,6 +127,10 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
 
   size_t GetInterventionPolicyFramesReportedForTesting() const {
     return intervention_policy_frames_reported_;
+  }
+
+  void SetLifecycleStateForTesting(LifecycleState lifecycle_state) {
+    SetLifecycleState(lifecycle_state);
   }
 
   void SetPageAlmostIdleForTesting(bool page_almost_idle) {
@@ -270,25 +231,37 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
 
   // Page almost idle state. This is the output that is driven by the
   // PageAlmostIdleDecorator.
-  ObservedProperty::NotifiesOnlyOnChanges<bool,
-                                          &Observer::OnPageAlmostIdleChanged>
+  ObservedProperty::NotifiesOnlyOnChanges<
+      bool,
+      &GraphImplObserver::OnPageAlmostIdleChanged,
+      &PageNodeObserver::OnPageAlmostIdleChanged>
       page_almost_idle_{false};
   // Whether or not the page is visible. Driven by browser instrumentation.
   // Initialized on construction.
-  ObservedProperty::NotifiesOnlyOnChanges<bool, &Observer::OnIsVisibleChanged>
-      is_visible_;
+  ObservedProperty::NotifiesOnlyOnChanges<
+      bool,
+      &GraphImplObserver::OnIsVisibleChanged,
+      &PageNodeObserver::OnIsVisibleChanged>
+      is_visible_{false};
   // The loading state. This is driven by instrumentation in the browser
   // process.
-  ObservedProperty::NotifiesOnlyOnChanges<bool, &Observer::OnIsLoadingChanged>
+  ObservedProperty::NotifiesOnlyOnChanges<
+      bool,
+      &GraphImplObserver::OnIsLoadingChanged,
+      &PageNodeObserver::OnIsLoadingChanged>
       is_loading_{false};
   // The UKM source ID associated with the URL of the main frame of this page.
-  ObservedProperty::NotifiesOnlyOnChanges<ukm::SourceId,
-                                          &Observer::OnUkmSourceIdChanged>
+  ObservedProperty::NotifiesOnlyOnChanges<
+      ukm::SourceId,
+      &GraphImplObserver::OnUkmSourceIdChanged,
+      &PageNodeObserver::OnUkmSourceIdChanged>
       ukm_source_id_{ukm::kInvalidSourceId};
   // The lifecycle state of this page. This is aggregated from the lifecycle
   // state of each frame in the frame tree.
-  ObservedProperty::NotifiesOnlyOnChanges<LifecycleState,
-                                          &Observer::OnLifecycleStateChanged>
+  ObservedProperty::NotifiesOnlyOnChanges<
+      LifecycleState,
+      &GraphImplObserver::OnLifecycleStateChanged,
+      &PageNodeObserver::OnLifecycleStateChanged>
       lifecycle_state_{LifecycleState::kRunning};
 
   // Storage for PageAlmostIdle user data.
@@ -298,26 +271,6 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PageNodeImpl);
-};
-
-// A do-nothing default implementation of a PageNodeImpl::Observer.
-class PageNodeImpl::ObserverDefaultImpl : public PageNodeImpl::Observer {
- public:
-  ObserverDefaultImpl();
-  ~ObserverDefaultImpl() override;
-
-  // PageNodeImpl::Observer implementation:
-  void OnIsVisibleChanged(PageNodeImpl* page_node) override {}
-  void OnIsLoadingChanged(PageNodeImpl* page_node) override {}
-  void OnUkmSourceIdChanged(PageNodeImpl* page_node) override {}
-  void OnLifecycleStateChanged(PageNodeImpl* page_node) override {}
-  void OnPageAlmostIdleChanged(PageNodeImpl* page_node) override {}
-  void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) override {}
-  void OnTitleUpdated(PageNodeImpl* page_node) override {}
-  void OnFaviconUpdated(PageNodeImpl* page_node) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);
 };
 
 }  // namespace performance_manager

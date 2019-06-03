@@ -20,7 +20,7 @@ namespace {
 
 using LifecycleState = PageNodeImpl::LifecycleState;
 
-class LenientMockGraphObserver : public GraphObserverDefaultImpl {
+class LenientMockGraphObserver : public GraphImplObserverDefaultImpl {
  public:
   LenientMockGraphObserver() = default;
   ~LenientMockGraphObserver() override = default;

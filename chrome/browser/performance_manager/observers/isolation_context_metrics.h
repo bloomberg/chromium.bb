@@ -24,7 +24,7 @@ namespace performance_manager {
 // (2) How common it is for pages to be in browsing instances with other pages,
 //     as opposed to in browsing instances on their own. This is for estimating
 //     the impact of extending freezing logic to entire browsing instances.
-class IsolationContextMetrics : public GraphObserverDefaultImpl {
+class IsolationContextMetrics : public GraphImplObserverDefaultImpl {
  public:
   IsolationContextMetrics();
   ~IsolationContextMetrics() override;

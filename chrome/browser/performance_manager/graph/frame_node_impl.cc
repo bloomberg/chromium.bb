@@ -11,9 +11,6 @@
 
 namespace performance_manager {
 
-FrameNodeImplObserver::FrameNodeImplObserver() = default;
-FrameNodeImplObserver::~FrameNodeImplObserver() = default;
-
 FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              ProcessNodeImpl* process_node,
                              PageNodeImpl* page_node,
@@ -104,6 +101,8 @@ void FrameNodeImpl::OnNonPersistentNotificationCreated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnNonPersistentNotificationCreated(this);
+  for (auto* observer : GetObservers())
+    observer->OnNonPersistentNotificationCreated(this);
 }
 
 FrameNodeImpl* FrameNodeImpl::parent_frame_node() const {
@@ -362,8 +361,5 @@ void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
   // Network is busy on navigation.
   network_almost_idle.SetAndMaybeNotify(frame_node, false);
 }
-
-FrameNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
-FrameNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

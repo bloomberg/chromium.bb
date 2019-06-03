@@ -10,11 +10,15 @@
 namespace performance_manager {
 
 class Graph;
+class SystemNodeObserver;
 
 // The SystemNode represents system-wide state. There is at most one system node
 // in a graph.
 class SystemNode {
  public:
+  using Observer = SystemNodeObserver;
+  class ObserverDefaultImpl;
+
   SystemNode();
   virtual ~SystemNode();
 
@@ -27,6 +31,49 @@ class SystemNode {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemNode);
+};
+
+// Pure virtual observer interface. Derive from this if you want to be forced to
+// implement the entire interface.
+class SystemNodeObserver {
+ public:
+  SystemNodeObserver();
+  virtual ~SystemNodeObserver();
+
+  // Node lifetime notifications.
+
+  // Called when the |system_node| is added to the graph.
+  virtual void OnSystemNodeAdded(const SystemNode* system_node) = 0;
+
+  // Called before the |system_node| is removed from the graph.
+  virtual void OnBeforeSystemNodeRemoved(const SystemNode* system_node) = 0;
+
+  // Events with no property changes.
+
+  // Fired when a batch of consistent process CPU measurements is available on
+  // the graph.
+  // TODO(siggi): Deprecate this as the CPU measurement code is reworked.
+  virtual void OnProcessCPUUsageReady(const SystemNode* system_node) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SystemNodeObserver);
+};
+
+// Default implementation of observer that provides dummy versions of each
+// function. Derive from this if you only need to implement a few of the
+// functions.
+class SystemNode::ObserverDefaultImpl : public SystemNodeObserver {
+ public:
+  ObserverDefaultImpl();
+  ~ObserverDefaultImpl() override;
+
+  // SystemNodeObserver implementation:
+  void OnSystemNodeAdded(const SystemNode* system_node) override {}
+  void OnBeforeSystemNodeRemoved(const SystemNode* system_node) override {}
+  void OnProcessCPUUsageReady(const SystemNode* system_node) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);
 };
 
 }  // namespace performance_manager

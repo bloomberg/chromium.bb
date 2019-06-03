@@ -37,22 +37,6 @@ int64_t NodeBase::GetSerializationId(NodeBase* node) {
   return node->serialization_id_;
 }
 
-// TODO(chrisha): Remove this!
-void NodeBase::RemoveObserver(GraphObserver* observer) {
-  switch (type()) {
-    case NodeTypeEnum::kFrame:
-      return FrameNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
-    case NodeTypeEnum::kPage:
-      return PageNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
-    case NodeTypeEnum::kProcess:
-      return ProcessNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
-    case NodeTypeEnum::kSystem:
-      return SystemNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
-    case NodeTypeEnum::kInvalidType:
-      NOTREACHED();
-  }
-}
-
 void NodeBase::JoinGraph() {
   DCHECK(graph_->NodeInGraph(this));
 }

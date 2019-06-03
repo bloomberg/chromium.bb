@@ -4,12 +4,15 @@
 
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/flat_set.h"
+#include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
@@ -28,6 +31,30 @@ namespace {
 // A unique type ID for this implementation.
 const uintptr_t kGraphImplType = reinterpret_cast<uintptr_t>(&kGraphImplType);
 
+template <typename NodeObserverType>
+void AddObserverImpl(std::vector<NodeObserverType*>* observers,
+                     NodeObserverType* observer) {
+  DCHECK(observers);
+  DCHECK(observer);
+  auto it = std::find(observers->begin(), observers->end(), observer);
+  DCHECK(it == observers->end());
+  observers->push_back(observer);
+}
+
+template <typename NodeObserverType>
+void RemoveObserverImpl(std::vector<NodeObserverType*>* observers,
+                        NodeObserverType* observer) {
+  DCHECK(observers);
+  DCHECK(observer);
+  // We expect to find the observer in the array.
+  auto it = std::find(observers->begin(), observers->end(), observer);
+  DCHECK(it != observers->end());
+  observers->erase(it);
+  // There should only have been one copy of the observer.
+  it = std::find(observers->begin(), observers->end(), observer);
+  DCHECK(it == observers->end());
+}
+
 }  // namespace
 
 GraphImpl::GraphImpl() {
@@ -37,18 +64,85 @@ GraphImpl::GraphImpl() {
 GraphImpl::~GraphImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Notify graph observers that the graph is being destroyed.
+  for (auto* observer : graph_observers_)
+    observer->OnBeforeGraphDestroyed(this);
+
   // All observers should have been removed before the graph is deleted.
+  // TODO(chrisha): This will disappear, as new observers are allowed to stay
+  // attached at graph death.
   DCHECK(observers_.empty());
   // All process nodes should have been removed already.
   DCHECK(processes_by_pid_.empty());
 
   // Remove the system node from the graph, this should be the only node left.
-  if (system_node_.get()) {
-    RemoveNode(system_node_.get());
-    system_node_.reset();
-  }
+  ReleaseSystemNode();
 
   DCHECK(nodes_.empty());
+}
+
+void GraphImpl::AddGraphObserver(GraphObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  AddObserverImpl(&graph_observers_, observer);
+}
+
+void GraphImpl::AddFrameNodeObserver(FrameNodeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  AddObserverImpl(&frame_node_observers_, observer);
+}
+
+void GraphImpl::AddPageNodeObserver(PageNodeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  AddObserverImpl(&page_node_observers_, observer);
+}
+
+void GraphImpl::AddProcessNodeObserver(ProcessNodeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  AddObserverImpl(&process_node_observers_, observer);
+}
+
+void GraphImpl::AddSystemNodeObserver(SystemNodeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  AddObserverImpl(&system_node_observers_, observer);
+}
+
+void GraphImpl::RemoveGraphObserver(GraphObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RemoveObserverImpl(&graph_observers_, observer);
+}
+
+void GraphImpl::RemoveFrameNodeObserver(FrameNodeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RemoveObserverImpl(&frame_node_observers_, observer);
+}
+
+void GraphImpl::RemovePageNodeObserver(PageNodeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RemoveObserverImpl(&page_node_observers_, observer);
+}
+
+void GraphImpl::RemoveProcessNodeObserver(ProcessNodeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RemoveObserverImpl(&process_node_observers_, observer);
+}
+
+void GraphImpl::RemoveSystemNodeObserver(SystemNodeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RemoveObserverImpl(&system_node_observers_, observer);
+}
+
+void GraphImpl::RegisterObserver(GraphImplObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  observer->SetGraph(this);
+  AddObserverImpl(&observers_, observer);
+  observer->OnRegistered();
+}
+
+void GraphImpl::UnregisterObserver(GraphImplObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RemoveObserverImpl(&observers_, observer);
+  observer->OnUnregistered();
+  observer->SetGraph(nullptr);
 }
 
 uintptr_t GraphImpl::GetImplType() const {
@@ -65,30 +159,10 @@ GraphImpl* GraphImpl::FromGraph(const Graph* graph) {
   return reinterpret_cast<GraphImpl*>(const_cast<void*>(graph->GetImpl()));
 }
 
-void GraphImpl::RegisterObserver(GraphObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observer->SetGraph(this);
-  observers_.push_back(observer);
-  observer->OnRegistered();
-}
-
-void GraphImpl::UnregisterObserver(GraphObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bool removed = false;
-  for (auto it = observers_.begin(); it != observers_.end(); ++it) {
-    if (*it == observer) {
-      observers_.erase(it);
-      removed = true;
-      observer->OnUnregistered();
-      observer->SetGraph(nullptr);
-      break;
-    }
-  }
-  DCHECK(removed);
-}
-
 void GraphImpl::OnNodeAdded(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // This handles legacy GraphImplObserver implementation.
   for (auto* observer : observers_) {
     if (observer->ShouldObserve(node)) {
       // TODO(chrisha): Remove this logic once all observers have been migrated.
@@ -112,51 +186,72 @@ void GraphImpl::OnNodeAdded(NodeBase* node) {
       observer->OnNodeAdded(node);
     }
   }
+
+  // This handles the strongly typed observer notifications.
+  switch (node->type()) {
+    case NodeTypeEnum::kFrame: {
+      auto* frame_node = FrameNodeImpl::FromNodeBase(node);
+      for (auto* observer : frame_node_observers_)
+        observer->OnFrameNodeAdded(frame_node);
+    } break;
+    case NodeTypeEnum::kPage: {
+      auto* page_node = PageNodeImpl::FromNodeBase(node);
+      for (auto* observer : page_node_observers_)
+        observer->OnPageNodeAdded(page_node);
+    } break;
+    case NodeTypeEnum::kProcess: {
+      auto* process_node = ProcessNodeImpl::FromNodeBase(node);
+      for (auto* observer : process_node_observers_)
+        observer->OnProcessNodeAdded(process_node);
+    } break;
+    case NodeTypeEnum::kSystem: {
+      auto* system_node = SystemNodeImpl::FromNodeBase(node);
+      for (auto* observer : system_node_observers_)
+        observer->OnSystemNodeAdded(system_node);
+    } break;
+    case NodeTypeEnum::kInvalidType: {
+      NOTREACHED();
+    } break;
+  }
 }
 
 void GraphImpl::OnBeforeNodeRemoved(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(chrisha): Kill this logic once observer implementations use distinct
-  // interfaces.
+  // This handles the strongly typed observer notifications.
   switch (node->type()) {
     case NodeTypeEnum::kFrame: {
-      OnBeforeNodeRemovedImpl(FrameNodeImpl::FromNodeBase(node));
+      auto* frame_node = FrameNodeImpl::FromNodeBase(node);
+      for (auto* observer : frame_node_observers_)
+        observer->OnBeforeFrameNodeRemoved(frame_node);
     } break;
     case NodeTypeEnum::kPage: {
-      OnBeforeNodeRemovedImpl(PageNodeImpl::FromNodeBase(node));
+      auto* page_node = PageNodeImpl::FromNodeBase(node);
+      for (auto* observer : page_node_observers_)
+        observer->OnBeforePageNodeRemoved(page_node);
     } break;
     case NodeTypeEnum::kProcess: {
-      OnBeforeNodeRemovedImpl(ProcessNodeImpl::FromNodeBase(node));
+      auto* process_node = ProcessNodeImpl::FromNodeBase(node);
+      for (auto* observer : process_node_observers_)
+        observer->OnBeforeProcessNodeRemoved(process_node);
     } break;
     case NodeTypeEnum::kSystem: {
-      OnBeforeNodeRemovedImpl(SystemNodeImpl::FromNodeBase(node));
+      auto* system_node = SystemNodeImpl::FromNodeBase(node);
+      for (auto* observer : system_node_observers_)
+        observer->OnBeforeSystemNodeRemoved(system_node);
     } break;
     case NodeTypeEnum::kInvalidType: {
       NOTREACHED();
     } break;
   }
 
+  // Dispatch to the legacy observers.
+  for (auto& observer : node->observers())
+    observer.OnBeforeNodeRemoved(node);
+
   // Leave the graph only after the OnBeforeNodeRemoved notification so that the
   // node still observes the graph invariant during that callback.
   node->LeaveGraph();
-}
-
-template <typename NodeType>
-void GraphImpl::OnBeforeNodeRemovedImpl(NodeType* node) {
-  // The current observer logic ensures that OnBeforeNodeRemoved is only fired
-  // for nodes that had an observer added via ShouldObserve. This logic will
-  // be disappearing entirely, but emulate it for correctness right now.
-
-  base::flat_set<typename NodeType::Observer*> node_observers;
-  for (auto& observer : node->observers())
-    node_observers.insert(&observer);
-
-  for (auto* observer : observers_) {
-    typename NodeType::Observer* node_observer = observer;
-    if (base::ContainsKey(node_observers, node_observer))
-      observer->OnBeforeNodeRemoved(node);
-  }
 }
 
 int64_t GraphImpl::GetNextNodeSerializationId() {
@@ -275,14 +370,11 @@ std::vector<NodeType*> GraphImpl::GetAllNodesOfType() {
   return ret;
 }
 
-GraphImpl::Observer::Observer() = default;
-GraphImpl::Observer::~Observer() = default;
-
-GraphImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
-GraphImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
-
-void GraphImpl::ObserverDefaultImpl::SetGraph(GraphImpl* graph) {
-  graph_ = graph;
+void GraphImpl::ReleaseSystemNode() {
+  if (!system_node_.get())
+    return;
+  RemoveNode(system_node_.get());
+  system_node_.reset();
 }
 
 }  // namespace performance_manager

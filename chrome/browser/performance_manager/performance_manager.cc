@@ -130,7 +130,7 @@ void PerformanceManager::BatchDeleteNodes(
 }
 
 void PerformanceManager::RegisterObserver(
-    std::unique_ptr<GraphObserver> observer) {
+    std::unique_ptr<GraphImplObserver> observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   graph_.RegisterObserver(observer.get());
   observers_.push_back(std::move(observer));
@@ -263,7 +263,7 @@ void PerformanceManager::OnStartImpl(
     std::unique_ptr<service_manager::Connector> connector) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Register new |GraphObserver| implementations here.
+  // Register new |GraphImplObserver| implementations here.
   RegisterObserver(std::make_unique<MetricsCollector>());
   RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
   RegisterObserver(std::make_unique<FrozenFrameAggregator>());

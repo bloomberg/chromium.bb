@@ -65,7 +65,7 @@ WEB_CONTENTS_USER_DATA_KEY_IMPL(TabLifecycleUnitSource::TabLifecycleUnitHolder)
 // TabLifecycleUnitSource on the UI thread. This is created on the UI thread
 // and ownership passed to the performance manager.
 class TabLifecycleStateObserver
-    : public performance_manager::GraphObserverDefaultImpl {
+    : public performance_manager::GraphImplObserverDefaultImpl {
  public:
   using NodeBase = performance_manager::NodeBase;
   using PageNodeImpl = performance_manager::PageNodeImpl;
