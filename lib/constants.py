@@ -390,13 +390,14 @@ ANDROID_PI_BUILD_TARGETS = {
     # We put it in two buckets because we have separate ACLs for arm and x86.
     # http://b/128405786
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
+    'ARM64': ('linux-cheets_arm64-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86': ('linux-cheets_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
     'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
+    'ARM64_USERDEBUG': ('linux-cheets_arm64-userdebug', r'\.zip$'),
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
-    'SDK_GOOGLE_X86_USERDEBUG': ('linux-sdk_cheets_x86-userdebug',
-                                 r'\.zip$'),
+    'SDK_GOOGLE_X86_USERDEBUG': ('linux-sdk_cheets_x86-userdebug', r'\.zip$'),
     'SDK_GOOGLE_X86_64_USERDEBUG': ('linux-sdk_cheets_x86_64-userdebug',
                                     r'\.zip$'),
 }
@@ -1278,12 +1279,18 @@ MOCK_BUILD_ID = 31337
 
 # Topology dictionary copied from CIDB.
 TOPOLOGY_DICT = {
-    '/buildbucket/host':'cr-buildbucket.appspot.com',
-    '/chrome_swarming_proxy/host':'chromeos-swarming.appspot.com',
-    '/datastore/creds_file':('/creds/service_accounts/service-account-chromeos'
-                             '-datastore-writer-prod.json'),
-    '/sheriffomatic/host':'sheriff-o-matic.appspot.com',
-    '/statsd/es_host':'104.154.79.237',
-    '/statsd/host':'104.154.79.237',
-    '/swarming_proxy/host':'chromeos-proxy.appspot.com',
+    '/buildbucket/host':
+        'cr-buildbucket.appspot.com',
+    '/chrome_swarming_proxy/host':
+        'chromeos-swarming.appspot.com',
+    '/datastore/creds_file': ('/creds/service_accounts/service-account-chromeos'
+                              '-datastore-writer-prod.json'),
+    '/sheriffomatic/host':
+        'sheriff-o-matic.appspot.com',
+    '/statsd/es_host':
+        '104.154.79.237',
+    '/statsd/host':
+        '104.154.79.237',
+    '/swarming_proxy/host':
+        'chromeos-proxy.appspot.com',
 }
