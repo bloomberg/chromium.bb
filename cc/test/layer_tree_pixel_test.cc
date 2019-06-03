@@ -17,7 +17,6 @@
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
-#include "cc/test/test_in_process_context_provider.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -28,6 +27,7 @@
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_gpu_service_holder.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/ipc/gl_in_process_context.h"
@@ -49,13 +49,15 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
     double refresh_rate,
     scoped_refptr<viz::ContextProvider>,
     scoped_refptr<viz::RasterContextProvider>) {
-  scoped_refptr<TestInProcessContextProvider> compositor_context_provider;
-  scoped_refptr<TestInProcessContextProvider> worker_context_provider;
+  scoped_refptr<viz::TestInProcessContextProvider> compositor_context_provider;
+  scoped_refptr<viz::TestInProcessContextProvider> worker_context_provider;
   if (renderer_type_ == RENDERER_GL || renderer_type_ == RENDERER_SKIA_GL) {
-    compositor_context_provider = new TestInProcessContextProvider(
-        /*enable_oop_rasterization=*/false, /*support_locking=*/false);
-    worker_context_provider = new TestInProcessContextProvider(
-        /*enable_oop_rasterization=*/false, /*support_locking=*/true);
+    compositor_context_provider =
+        base::MakeRefCounted<viz::TestInProcessContextProvider>(
+            /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+    worker_context_provider =
+        base::MakeRefCounted<viz::TestInProcessContextProvider>(
+            /*enable_oop_rasterization=*/false, /*support_locking=*/true);
     // Bind worker context to main thread like it is in production. This is
     // needed to fully initialize the context. Compositor context is bound to
     // the impl thread in LayerTreeFrameSink::BindToCurrentThread().
@@ -98,7 +100,7 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     // mimic texture transport from the renderer process to the Display
     // compositor.
     auto display_context_provider =
-        base::MakeRefCounted<TestInProcessContextProvider>(
+        base::MakeRefCounted<viz::TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     gpu::ContextResult result = display_context_provider->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
@@ -339,7 +341,7 @@ SkBitmap LayerTreePixelTest::CopyMailboxToBitmap(
     const gfx::ColorSpace& color_space) {
   SkBitmap bitmap;
   std::unique_ptr<gpu::GLInProcessContext> context =
-      CreateTestInProcessContext();
+      viz::CreateTestInProcessContext();
   GLES2Interface* gl = context->GetImplementation();
 
   if (sync_token.HasData())
@@ -392,7 +394,7 @@ SkBitmap LayerTreePixelTest::CopyMailboxToBitmap(
 
 void LayerTreePixelTest::Finish() {
   std::unique_ptr<gpu::GLInProcessContext> context =
-      CreateTestInProcessContext();
+      viz::CreateTestInProcessContext();
   GLES2Interface* gl = context->GetImplementation();
   gl->Finish();
 }

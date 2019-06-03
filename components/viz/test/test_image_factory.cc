@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/test_image_factory.h"
+#include "components/viz/test/test_image_factory.h"
 
 #include <stddef.h>
 
 #include "base/numerics/safe_conversions.h"
 #include "ui/gl/gl_image_shared_memory.h"
 
-namespace cc {
+namespace viz {
 
 TestImageFactory::TestImageFactory() = default;
 
@@ -31,4 +31,4 @@ scoped_refptr<gl::GLImage> TestImageFactory::CreateImageForGpuMemoryBuffer(
   return image;
 }
 
-}  // namespace cc
+}  // namespace viz

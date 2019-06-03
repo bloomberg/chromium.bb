@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_TEST_IMAGE_FACTORY_H_
-#define CC_TEST_TEST_IMAGE_FACTORY_H_
+#ifndef COMPONENTS_VIZ_TEST_TEST_IMAGE_FACTORY_H_
+#define COMPONENTS_VIZ_TEST_TEST_IMAGE_FACTORY_H_
 
 #include "gpu/command_buffer/service/image_factory.h"
 
-namespace cc {
+namespace viz {
 
 class TestImageFactory : public gpu::ImageFactory {
  public:
@@ -26,6 +26,6 @@ class TestImageFactory : public gpu::ImageFactory {
       gpu::SurfaceHandle surface_handle) override;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_TEST_TEST_IMAGE_FACTORY_H_
+#endif  // COMPONENTS_VIZ_TEST_TEST_IMAGE_FACTORY_H_

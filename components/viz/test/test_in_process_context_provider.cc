@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/test_in_process_context_provider.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 
 #include <stdint.h>
 #include <utility>
@@ -30,12 +30,12 @@
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace cc {
+namespace viz {
 
 namespace {
 
 std::unique_ptr<gpu::GLInProcessContext> CreateGLInProcessContext(
-    viz::TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
+    TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
     TestImageFactory* image_factory,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     bool oop_raster) {
@@ -52,7 +52,7 @@ std::unique_ptr<gpu::GLInProcessContext> CreateGLInProcessContext(
 
   auto context = std::make_unique<gpu::GLInProcessContext>();
   auto result = context->Initialize(
-      viz::TestGpuServiceHolder::GetInstance()->task_executor(), nullptr,
+      TestGpuServiceHolder::GetInstance()->task_executor(), nullptr,
       is_offscreen, gpu::kNullSurfaceHandle, attribs, gpu::SharedMemoryLimits(),
       gpu_memory_buffer_manager, image_factory, std::move(task_runner));
 
@@ -97,7 +97,7 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
     attribs.enable_gles2_interface = false;
 
     raster_context_ = std::make_unique<gpu::RasterInProcessContext>();
-    auto* holder = viz::TestGpuServiceHolder::GetInstance();
+    auto* holder = TestGpuServiceHolder::GetInstance();
     auto result = raster_context_->Initialize(
         holder->task_executor(), attribs, gpu::SharedMemoryLimits(),
         &gpu_memory_buffer_manager_, &image_factory_,
@@ -106,15 +106,15 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
 
     cache_controller_.reset(
-        new viz::ContextCacheController(raster_context_->GetContextSupport(),
-                                        base::ThreadTaskRunnerHandle::Get()));
+        new ContextCacheController(raster_context_->GetContextSupport(),
+                                   base::ThreadTaskRunnerHandle::Get()));
   } else {
     gles2_context_ = CreateGLInProcessContext(
         &gpu_memory_buffer_manager_, &image_factory_,
         base::ThreadTaskRunnerHandle::Get(), false /* oop_raster */);
     cache_controller_.reset(
-        new viz::ContextCacheController(gles2_context_->GetImplementation(),
-                                        base::ThreadTaskRunnerHandle::Get()));
+        new ContextCacheController(gles2_context_->GetImplementation(),
+                                   base::ThreadTaskRunnerHandle::Get()));
     raster_implementation_gles2_ =
         std::make_unique<gpu::raster::RasterImplementationGLES>(
             gles2_context_->GetImplementation());
@@ -172,7 +172,7 @@ TestInProcessContextProvider::SharedImageInterface() {
   }
 }
 
-viz::ContextCacheController* TestInProcessContextProvider::CacheController() {
+ContextCacheController* TestInProcessContextProvider::CacheController() {
   return cache_controller_.get();
 }
 
@@ -201,4 +201,4 @@ void TestInProcessContextProvider::ExecuteOnGpuThread(base::OnceClosure task) {
       ->ScheduleOutOfOrderTask(std::move(task));
 }
 
-}  // namespace cc
+}  // namespace viz

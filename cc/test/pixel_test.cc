@@ -19,7 +19,6 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
-#include "cc/test/test_in_process_context_provider.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -37,6 +36,7 @@
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/paths.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -241,8 +241,9 @@ viz::ResourceId PixelTest::AllocateAndFillSoftwareResource(
 void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
   enable_pixel_output_ = std::make_unique<gl::DisableNullDrawGLBindings>();
 
-  auto context_provider = base::MakeRefCounted<TestInProcessContextProvider>(
-      /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+  auto context_provider =
+      base::MakeRefCounted<viz::TestInProcessContextProvider>(
+          /*enable_oop_rasterization=*/false, /*support_locking=*/false);
   gpu::ContextResult result = context_provider->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   output_surface_ = std::make_unique<PixelTestOutputSurface>(
@@ -254,8 +255,9 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
       viz::DisplayResourceProvider::kGpu, output_surface_->context_provider(),
       shared_bitmap_manager_.get());
 
-  child_context_provider_ = base::MakeRefCounted<TestInProcessContextProvider>(
-      /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+  child_context_provider_ =
+      base::MakeRefCounted<viz::TestInProcessContextProvider>(
+          /*enable_oop_rasterization=*/false, /*support_locking=*/false);
   result = child_context_provider_->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   constexpr bool sync_token_verification = false;

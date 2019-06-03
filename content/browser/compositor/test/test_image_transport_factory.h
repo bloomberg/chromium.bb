@@ -11,12 +11,12 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
-#include "cc/test/test_image_factory.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/test/test_image_factory.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
 #include "ui/compositor/compositor.h"
@@ -95,7 +95,7 @@ class TestImageTransportFactory : public ui::ContextFactory,
   const bool enable_viz_;
 
   cc::TestTaskGraphRunner task_graph_runner_;
-  cc::TestImageFactory image_factory_;
+  viz::TestImageFactory image_factory_;
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   viz::RendererSettings renderer_settings_;
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;

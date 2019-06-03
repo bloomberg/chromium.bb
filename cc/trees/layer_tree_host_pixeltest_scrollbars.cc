@@ -13,8 +13,8 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/pixel_comparator.h"
-#include "cc/test/test_in_process_context_provider.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 #if !defined(OS_ANDROID)
@@ -167,9 +167,9 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   layer->SetBounds(gfx::Size(10, 400));
   background->AddChild(layer);
 
-  scoped_refptr<TestInProcessContextProvider> context(
-      new TestInProcessContextProvider(/*enable_oop_rasterization=*/false,
-                                       /*support_locking=*/false));
+  auto context = base::MakeRefCounted<viz::TestInProcessContextProvider>(
+      /*enable_oop_rasterization=*/false,
+      /*support_locking=*/false);
   gpu::ContextResult result = context->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   int max_texture_size = 0;
