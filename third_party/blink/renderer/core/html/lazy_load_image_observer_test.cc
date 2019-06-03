@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -57,9 +58,18 @@ class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
     GetDocument().UpdateStyleAndLayoutTree();
   }
 
-  void ExpectCSSBackgroundImageDeferredState(bool deferred) {
-    const ComputedStyle* deferred_image_style =
-        GetDocument().getElementById("deferred_image")->GetComputedStyle();
+  const ComputedStyle* GetElementComputedStyle(const Element& element,
+                                               PseudoId pseudo_id) {
+    if (pseudo_id == kPseudoIdNone)
+      return element.GetComputedStyle();
+    return element.GetPseudoElement(pseudo_id)->GetComputedStyle();
+  }
+
+  void ExpectCSSBackgroundImageDeferredState(const char* element_id,
+                                             PseudoId pseudo_id,
+                                             bool deferred) {
+    const ComputedStyle* deferred_image_style = GetElementComputedStyle(
+        *GetDocument().getElementById(element_id), pseudo_id);
     EXPECT_TRUE(deferred_image_style->HasBackgroundImage());
     bool is_background_image_found = false;
     for (const FillLayer* background_layer =
@@ -73,6 +83,51 @@ class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
       }
     }
     EXPECT_TRUE(is_background_image_found);
+  }
+
+  void VerifyCSSBackgroundImageInPseudoStyleDeferred(
+      const char* style,
+      const char* deferred_div_classes,
+      const Vector<PseudoId>& background_pseudo_ids) {
+    bool is_lazyload_image_enabled = GetParam();
+    SetLazyLoadEnabled(is_lazyload_image_enabled);
+    SimRequest image_resource("https://example.com/img.png", "image/png");
+    LoadMainResource(String::Format(R"HTML(
+      <html>
+      <head>
+      <style>
+      %s
+      </style>
+      </head>
+      <body>
+      <div style='height:10000px;'></div>
+      <div id="deferred_image" class="%s"></div>
+      </body>
+      </html>
+    )HTML",
+                                    style, deferred_div_classes));
+
+    if (!is_lazyload_image_enabled)
+      image_resource.Complete(ReadTestImage());
+
+    Compositor().BeginFrame();
+    test::RunPendingTasks();
+    for (const auto& pseudo_id : background_pseudo_ids) {
+      ExpectCSSBackgroundImageDeferredState("deferred_image", pseudo_id,
+                                            is_lazyload_image_enabled);
+    }
+    if (is_lazyload_image_enabled) {
+      // Scroll down until the background image is visible.
+      GetDocument().View()->LayoutViewport()->SetScrollOffset(
+          ScrollOffset(0, 10000), kProgrammaticScroll);
+      Compositor().BeginFrame();
+      test::RunPendingTasks();
+      image_resource.Complete(ReadTestImage());
+      for (const auto& pseudo_id : background_pseudo_ids) {
+        ExpectCSSBackgroundImageDeferredState("deferred_image", pseudo_id,
+                                              false);
+      }
+    }
   }
 
   void VerifyImageElementWithDimensionDeferred(const char* img_attribute) {
@@ -135,7 +190,8 @@ TEST_P(LazyLoadImagesSimTest, CSSBackgroundImage) {
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
-  ExpectCSSBackgroundImageDeferredState(is_lazyload_image_enabled);
+  ExpectCSSBackgroundImageDeferredState("deferred_image", kPseudoIdNone,
+                                        is_lazyload_image_enabled);
 
   if (is_lazyload_image_enabled) {
     // Scroll down until the background image is visible.
@@ -144,8 +200,58 @@ TEST_P(LazyLoadImagesSimTest, CSSBackgroundImage) {
     Compositor().BeginFrame();
     test::RunPendingTasks();
     image_resource.Complete(ReadTestImage());
-    ExpectCSSBackgroundImageDeferredState(false);
+    ExpectCSSBackgroundImageDeferredState("deferred_image", kPseudoIdNone,
+                                          false);
   }
+}
+
+TEST_P(LazyLoadImagesSimTest, CSSBackgroundImagePseudoStyleBefore) {
+  VerifyCSSBackgroundImageInPseudoStyleDeferred(R"HTML(
+    .pseudo-element::before {
+      content: '';
+      height: 50px;
+      background-image: url('img.png');
+    })HTML",
+                                                "pseudo-element",
+                                                {kPseudoIdBefore});
+}
+
+TEST_P(LazyLoadImagesSimTest, CSSBackgroundImagePseudoStyleAfter) {
+  VerifyCSSBackgroundImageInPseudoStyleDeferred(R"HTML(
+    .pseudo-element::after {
+      content: '';
+      height: 50px;
+      background-image: url('img.png');
+    })HTML",
+                                                "pseudo-element",
+                                                {kPseudoIdAfter});
+}
+
+TEST_P(LazyLoadImagesSimTest, CSSBackgroundImagePseudoStyleBeforeBlock) {
+  VerifyCSSBackgroundImageInPseudoStyleDeferred(R"HTML(
+    .pseudo-element::before {
+      content: '';
+      display: block;
+      height: 50px;
+      width: 50px;
+      background-image: url('img.png');
+    })HTML",
+                                                "pseudo-element",
+                                                {kPseudoIdBefore});
+}
+
+TEST_P(LazyLoadImagesSimTest,
+       CSSBackgroundImagePseudoStyleBeforeAndAfterBlock) {
+  VerifyCSSBackgroundImageInPseudoStyleDeferred(R"HTML(
+    .pseudo-element::before {
+      content: '';
+      display: block;
+      height: 50px;
+      width: 50px;
+      background-image: url('img.png');
+    })HTML",
+                                                "pseudo-element",
+                                                {kPseudoIdBefore});
 }
 
 TEST_P(LazyLoadImagesSimTest, LargeImageHeight100Width100) {

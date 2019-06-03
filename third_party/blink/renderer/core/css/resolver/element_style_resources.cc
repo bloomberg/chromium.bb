@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/css_uri_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -54,8 +55,11 @@ namespace blink {
 using namespace cssvalue;
 
 ElementStyleResources::ElementStyleResources(Element& element,
-                                             float device_scale_factor)
-    : element_(&element), device_scale_factor_(device_scale_factor) {}
+                                             float device_scale_factor,
+                                             PseudoElement* pseudo_element)
+    : element_(&element),
+      device_scale_factor_(device_scale_factor),
+      pseudo_element_(pseudo_element) {}
 
 StyleImage* ElementStyleResources::GetStyleImage(CSSPropertyID property,
                                                  const CSSValue& value) {
@@ -217,8 +221,10 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
             StyleImage* new_image =
                 LoadPendingImage(style, To<StylePendingImage>(background_image),
                                  image_request_optimization);
-            if (new_image && new_image->IsLazyloadPossiblyDeferred())
-              LazyLoadImageObserver::StartMonitoring(element_);
+            if (new_image && new_image->IsLazyloadPossiblyDeferred()) {
+              LazyLoadImageObserver::StartMonitoring(
+                  pseudo_element_ ? pseudo_element_ : element_.Get());
+            }
             background_layer->SetImage(new_image);
           }
         }

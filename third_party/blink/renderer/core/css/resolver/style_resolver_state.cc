@@ -33,6 +33,7 @@ namespace blink {
 StyleResolverState::StyleResolverState(
     Document& document,
     const ElementResolveContext& element_context,
+    PseudoElement* pseudo_element,
     const ComputedStyle* parent_style,
     const ComputedStyle* layout_parent_style)
     : element_context_(element_context),
@@ -46,7 +47,9 @@ StyleResolverState::StyleResolverState(
       apply_property_to_visited_link_style_(false),
       has_dir_auto_attribute_(false),
       font_builder_(&document),
-      element_style_resources_(*GetElement(), document.DevicePixelRatio()) {
+      element_style_resources_(*GetElement(),
+                               document.DevicePixelRatio(),
+                               pseudo_element) {
   DCHECK(!!parent_style_ == !!layout_parent_style_);
 
   if (!parent_style_) {
@@ -64,11 +67,13 @@ StyleResolverState::StyleResolverState(
 
 StyleResolverState::StyleResolverState(Document& document,
                                        Element* element,
+                                       PseudoElement* pseudo_element,
                                        const ComputedStyle* parent_style,
                                        const ComputedStyle* layout_parent_style)
     : StyleResolverState(document,
                          element ? ElementResolveContext(*element)
                                  : ElementResolveContext(document),
+                         pseudo_element,
                          parent_style,
                          layout_parent_style) {}
 
