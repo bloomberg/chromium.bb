@@ -265,8 +265,9 @@ bool MimeHandlerViewGuest::ShouldDestroyOnDetach() const {
 WebContents* MimeHandlerViewGuest::OpenURLFromTab(
     WebContents* source,
     const content::OpenURLParams& params) {
-  return embedder_web_contents()->GetDelegate()->OpenURLFromTab(
-      embedder_web_contents(), params);
+  auto* delegate = embedder_web_contents()->GetDelegate();
+  return delegate ? delegate->OpenURLFromTab(embedder_web_contents(), params)
+                  : nullptr;
 }
 
 void MimeHandlerViewGuest::NavigationStateChanged(
@@ -288,8 +289,9 @@ void MimeHandlerViewGuest::NavigationStateChanged(
   if (last_committed_entry) {
     embedder_web_contents()->UpdateTitleForEntry(last_committed_entry,
                                                  source->GetTitle());
-    embedder_web_contents()->GetDelegate()->NavigationStateChanged(
-        embedder_web_contents(), changed_flags);
+    auto* delegate = embedder_web_contents()->GetDelegate();
+    if (delegate)
+      delegate->NavigationStateChanged(embedder_web_contents(), changed_flags);
   }
 }
 
@@ -322,8 +324,9 @@ MimeHandlerViewGuest::GetJavaScriptDialogManager(
   // So we pretend to be our owner WebContents, but only for the request to
   // obtain the JavaScriptDialogManager. During calls to the
   // JavaScriptDialogManager we will be honest about who we are.
-  return owner_web_contents()->GetDelegate()->GetJavaScriptDialogManager(
-      owner_web_contents());
+  auto* delegate = owner_web_contents()->GetDelegate();
+  return delegate ? delegate->GetJavaScriptDialogManager(owner_web_contents())
+                  : nullptr;
 }
 
 bool MimeHandlerViewGuest::PluginDoSave() {
@@ -371,15 +374,19 @@ void MimeHandlerViewGuest::EnterFullscreenModeForTab(
     const GURL& origin,
     const blink::WebFullscreenOptions& options) {
   if (SetFullscreenState(true)) {
-    embedder_web_contents()->GetDelegate()->EnterFullscreenModeForTab(
-        embedder_web_contents(), origin, options);
+    auto* delegate = embedder_web_contents()->GetDelegate();
+    if (delegate) {
+      delegate->EnterFullscreenModeForTab(embedder_web_contents(), origin,
+                                          options);
+    }
   }
 }
 
 void MimeHandlerViewGuest::ExitFullscreenModeForTab(content::WebContents*) {
   if (SetFullscreenState(false)) {
-    embedder_web_contents()->GetDelegate()->ExitFullscreenModeForTab(
-        embedder_web_contents());
+    auto* delegate = embedder_web_contents()->GetDelegate();
+    if (delegate)
+      delegate->ExitFullscreenModeForTab(embedder_web_contents());
   }
 }
 
@@ -408,8 +415,9 @@ bool MimeHandlerViewGuest::ShouldCreateWebContents(
   // Extensions are allowed to open popups under circumstances covered by
   // running as a mime handler.
   open_params.user_gesture = true;
-  embedder_web_contents()->GetDelegate()->OpenURLFromTab(
-      embedder_web_contents(), open_params);
+  auto* delegate = embedder_web_contents()->GetDelegate();
+  if (delegate)
+    delegate->OpenURLFromTab(embedder_web_contents(), open_params);
   return false;
 }
 
