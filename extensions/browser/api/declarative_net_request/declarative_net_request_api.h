@@ -180,6 +180,23 @@ class DeclarativeNetRequestGetDynamicRulesFunction
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetDynamicRulesFunction);
 };
 
+class DeclarativeNetRequestGetMatchedRulesFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DeclarativeNetRequestGetMatchedRulesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getMatchedRules",
+                             DECLARATIVENETREQUEST_GETMATCHEDRULES)
+
+ protected:
+  ~DeclarativeNetRequestGetMatchedRulesFunction() override;
+
+  // ExtensionFunction override:
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetMatchedRulesFunction);
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_DECLARATIVE_NET_REQUEST_API_H_

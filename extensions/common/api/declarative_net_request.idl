@@ -150,9 +150,57 @@ namespace declarativeNetRequest {
     RuleAction action;
   };
 
+  [nodoc]
+  enum SourceType {
+    // The rule is specified in a JSON file within the extension's package.
+    manifest,
+    // The rule is a dynamic rule added by the extension using
+    // $(ref:declarativeNetRequest.addDynamicRules).
+    dynamic
+  };
+
+  [nodoc]
+  dictionary MatchedRule {
+    // A matching rule's ID.
+    long ruleId;
+
+    // The source of the rule.
+    SourceType sourceType;
+  };
+
+  [nodoc]
+  dictionary MatchedRuleInfo {
+    MatchedRule rule;
+
+    // The time the rule was matched. Timestamps will correspond to the
+    // Javascript convention for times, i.e. number of milliseconds since the
+    // epoch.
+    double timeStamp;
+
+    // The tabId of the tab from which the request originated if the tab is
+    // still active. Else -1.
+    long tabId;
+  };
+
+  [nodoc]
+  dictionary MatchedRulesFilter {
+    // If specified, only matches rules for the given tab.
+    long? tabId;
+
+    // If specified, only matches rules after the given timestamp.
+    long? minTimeStamp;
+  };
+
+  [nodoc]
+  dictionary RulesMatchedDetails {
+     // Rules matching the given filter.
+     MatchedRuleInfo[] rulesMatchedInfo;
+  };
+
   callback EmptyCallback = void();
   callback GetAllowedPagesCallback = void(DOMString[] result);
   callback GetRulesCallback = void(Rule[] rules);
+  callback GetMatchedRulesCallback = void(RulesMatchedDetails details);
 
   interface Functions {
 
@@ -216,6 +264,12 @@ namespace declarativeNetRequest {
     // Returns the current set of allowed pages.
     // |callback|: Called with the set of currently allowed pages.
     static void getAllowedPages(GetAllowedPagesCallback callback);
+
+    // TODO(crbug.com/967942): Add documentation once implementation is
+    // complete.
+    [nodoc]
+    static void getMatchedRules(optional MatchedRulesFilter filter,
+        GetMatchedRulesCallback callback);
   };
 
   interface Properties {

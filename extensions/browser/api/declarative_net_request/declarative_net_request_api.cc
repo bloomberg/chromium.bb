@@ -327,4 +327,14 @@ void DeclarativeNetRequestGetDynamicRulesFunction::OnDynamicRulesFetched(
       dnr_api::GetDynamicRules::Results::Create(read_json_result.rules)));
 }
 
+DeclarativeNetRequestGetMatchedRulesFunction::
+    DeclarativeNetRequestGetMatchedRulesFunction() = default;
+DeclarativeNetRequestGetMatchedRulesFunction::
+    ~DeclarativeNetRequestGetMatchedRulesFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeclarativeNetRequestGetMatchedRulesFunction::Run() {
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions

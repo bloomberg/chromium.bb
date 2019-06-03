@@ -19550,6 +19550,7 @@ Called by update_net_error_codes.py.-->
   <int value="1340" label="BLUETOOTHPRIVATE_RECORDRECONNECTION"/>
   <int value="1341" label="LOGINSCREENUI_SHOW"/>
   <int value="1342" label="LOGINSCREENUI_CLOSE"/>
+  <int value="1343" label="DECLARATIVENETREQUEST_GETMATCHEDRULES"/>
 </enum>
 
 <enum name="ExtensionIconState">
