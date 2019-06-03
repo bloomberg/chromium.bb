@@ -15,6 +15,7 @@ include_rules = [
   "+third_party/libjingle_xmpp/xmpp",
   "+third_party/protobuf/src",
   "+third_party/webrtc",
+  "+third_party/webrtc_overrides",
   "+ui/events/keycodes/dom",
   "+services/network/test",
   "+services/network/public/cpp",

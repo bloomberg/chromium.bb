@@ -33,9 +33,14 @@
 #include "third_party/webrtc/api/audio_codecs/audio_encoder_factory_template.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_decoder_opus.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_encoder_opus.h"
-#include "third_party/webrtc/api/create_peerconnection_factory.h"
+#include "third_party/webrtc/api/call/call_factory_interface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/rtc_event_log/rtc_event_log_factory.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
 #include "third_party/webrtc/api/video_codecs/builtin_video_decoder_factory.h"
+#include "third_party/webrtc/media/engine/webrtc_media_engine.h"
+#include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
+#include "third_party/webrtc_overrides/task_queue_factory.h"
 
 using jingle_xmpp::QName;
 using jingle_xmpp::XmlElement;
@@ -246,16 +251,28 @@ class WebrtcTransport::PeerConnectionWrapper
       : transport_(transport) {
     audio_module_ = new rtc::RefCountedObject<WebrtcAudioModule>();
 
-    peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
-        worker_thread,  // network_thread
-        worker_thread,
-        rtc::Thread::Current(),  // signaling_thread
-        audio_module_,
-        webrtc::CreateAudioEncoderFactory<webrtc::AudioEncoderOpus>(),
-        webrtc::CreateAudioDecoderFactory<webrtc::AudioDecoderOpus>(),
-        std::move(encoder_factory), webrtc::CreateBuiltinVideoDecoderFactory(),
-        nullptr,   // audio_mixer
-        nullptr);  // audio_processing
+    webrtc::PeerConnectionFactoryDependencies pcf_deps;
+    pcf_deps.network_thread = worker_thread;
+    pcf_deps.worker_thread = worker_thread;
+    pcf_deps.signaling_thread = rtc::Thread::Current();
+    pcf_deps.task_queue_factory = CreateWebRtcTaskQueueFactory();
+    pcf_deps.call_factory = webrtc::CreateCallFactory();
+    pcf_deps.event_log_factory = std::make_unique<webrtc::RtcEventLogFactory>(
+        pcf_deps.task_queue_factory.get());
+    cricket::MediaEngineDependencies media_deps;
+    media_deps.task_queue_factory = pcf_deps.task_queue_factory.get();
+    media_deps.adm = audio_module_;
+    media_deps.audio_encoder_factory =
+        webrtc::CreateAudioEncoderFactory<webrtc::AudioEncoderOpus>();
+    media_deps.audio_decoder_factory =
+        webrtc::CreateAudioDecoderFactory<webrtc::AudioDecoderOpus>();
+    media_deps.video_encoder_factory = std::move(encoder_factory);
+    media_deps.video_decoder_factory =
+        webrtc::CreateBuiltinVideoDecoderFactory();
+    media_deps.audio_processing = webrtc::AudioProcessingBuilder().Create();
+    pcf_deps.media_engine = cricket::CreateMediaEngine(std::move(media_deps));
+    peer_connection_factory_ =
+        webrtc::CreateModularPeerConnectionFactory(std::move(pcf_deps));
 
     webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
     rtc_config.enable_dtls_srtp = true;
