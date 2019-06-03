@@ -104,8 +104,8 @@ void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
       PaintWorklet::kNumGlobalScopes) {
     const Vector<AtomicString>& custom_properties =
         definition->CustomInvalidationProperties();
-    // AtomicString cannot be passed cross thread, which is why we need to make
-    // a String copy of it.
+    // Make a deep copy of the |custom_properties| into a Vector<String> so that
+    // CrossThreadCopier can pass that cross thread boundaries.
     Vector<String> passed_custom_properties;
     for (const auto& property : custom_properties)
       passed_custom_properties.push_back(property.GetString());
