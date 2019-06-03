@@ -59,7 +59,7 @@ class Controller : public ScriptExecutorDelegate,
   bool NeedsUI() const;
 
   // Called when autofill assistant can start executing scripts.
-  void Start(const GURL& initial_url,
+  void Start(const GURL& deeplink_url,
              std::unique_ptr<TriggerContext> trigger_context);
 
   // Lets the controller know it's about to be deleted. This is normally called
@@ -69,6 +69,7 @@ class Controller : public ScriptExecutorDelegate,
   // Overrides ScriptExecutorDelegate:
   const ClientSettings& GetSettings() override;
   const GURL& GetCurrentURL() override;
+  const GURL& GetDeeplinkURL() override;
   Service* GetService() override;
   UiController* GetUiController() override;
   WebController* GetWebController() override;
@@ -236,7 +237,9 @@ class Controller : public ScriptExecutorDelegate,
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
 
   // The URL passed to Start(). Used only as long as there's no committed URL.
-  GURL initial_url_;
+  // Note that this is the deeplink passed by a caller and reported to the
+  // backend in an initial get action request.
+  GURL deeplink_url_;
 
   // Domain of the last URL the controller requested scripts from.
   std::string script_domain_;
