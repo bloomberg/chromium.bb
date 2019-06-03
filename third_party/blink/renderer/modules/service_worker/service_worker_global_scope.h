@@ -276,6 +276,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   mojom::blink::CacheStoragePtrInfo TakeCacheStorage();
 
+  mojom::blink::ServiceWorkerHost* GetServiceWorkerHost();
+
   // Called when a task is going to be scheduled on the service worker.
   // The service worker shouldn't request to be terminated until the task is
   // finished. Returns an id for the task. The caller must call DidEndTask()
@@ -435,6 +437,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // doesn't need to be used. Taken at the initial call to
   // ServiceWorkerGlobalScope#caches.
   mojom::blink::CacheStoragePtrInfo cache_storage_info_;
+
+  // Bound by the first Mojo call received on the service worker thread
+  // mojom::blink::ServiceWorker::InitializeGlobalScope().
+  mojom::blink::ServiceWorkerHostAssociatedPtr service_worker_host_;
 
   mojo::Binding<mojom::blink::ServiceWorker> binding_;
 

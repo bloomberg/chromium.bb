@@ -378,9 +378,8 @@ void ServiceWorkerGlobalScope::RunInstalledModuleScript(
 
 void ServiceWorkerGlobalScope::Dispose() {
   DCHECK(IsContextThread());
-  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->WillDestroyWorkerContext();
   timeout_timer_.reset();
+  service_worker_host_.reset();
   binding_.Close();
   controller_.reset();
   WorkerGlobalScope::Dispose();
@@ -608,8 +607,8 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* script_state) {
     return ScriptPromise();
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ServiceWorkerGlobalScopeClient::From(execution_context)
-      ->SkipWaiting(WTF::Bind(&DidSkipWaiting, WrapPersistent(resolver)));
+  GetServiceWorkerHost()->SkipWaiting(
+      WTF::Bind(&DidSkipWaiting, WrapPersistent(resolver)));
   return resolver->Promise();
 }
 
@@ -1249,6 +1248,12 @@ mojom::blink::CacheStoragePtrInfo ServiceWorkerGlobalScope::TakeCacheStorage() {
   return std::move(cache_storage_info_);
 }
 
+mojom::blink::ServiceWorkerHost*
+ServiceWorkerGlobalScope::GetServiceWorkerHost() {
+  DCHECK(service_worker_host_);
+  return service_worker_host_.get();
+}
+
 int ServiceWorkerGlobalScope::WillStartTask() {
   DCHECK(IsContextThread());
   DCHECK(timeout_timer_);
@@ -1348,9 +1353,10 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
     mojom::blink::FetchHandlerExistence fetch_hander_existence) {
   DCHECK(IsContextThread());
 
-  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->BindServiceWorkerHost(std::move(service_worker_host),
-                              GetTaskRunner(TaskType::kInternalDefault));
+  DCHECK(service_worker_host.is_valid());
+  DCHECK(!service_worker_host_);
+  service_worker_host_.Bind(std::move(service_worker_host),
+                            GetTaskRunner(TaskType::kInternalDefault));
 
   // Set ServiceWorkerGlobalScope#registration.
   DCHECK_NE(registration_info->registration_id,

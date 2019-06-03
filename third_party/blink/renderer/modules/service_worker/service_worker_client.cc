@@ -14,8 +14,9 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
@@ -100,8 +101,9 @@ void ServiceWorkerClient::postMessage(ScriptState* script_state,
   if (exception_state.HadException())
     return;
 
-  ServiceWorkerGlobalScopeClient::From(context)->PostMessageToClient(
-      uuid_, std::move(msg));
+  To<ServiceWorkerGlobalScope>(context)
+      ->GetServiceWorkerHost()
+      ->PostMessageToClient(uuid_, std::move(msg));
 }
 
 }  // namespace blink

@@ -15,7 +15,8 @@
 #include "third_party/blink/renderer/modules/payments/payment_method_change_response.h"
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
 #include "third_party/blink/renderer/modules/service_worker/respond_with_observer.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_window_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -139,8 +140,12 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
   }
   context->ConsumeWindowInteraction();
 
-  ServiceWorkerGlobalScopeClient::From(context)->OpenWindowForPaymentHandler(
-      parsed_url_to_open, resolver);
+  To<ServiceWorkerGlobalScope>(context)
+      ->GetServiceWorkerHost()
+      ->OpenPaymentHandlerWindow(
+          parsed_url_to_open,
+          ServiceWorkerWindowClient::CreateResolveWindowClientCallback(
+              resolver));
   return promise;
 }
 
