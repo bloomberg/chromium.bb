@@ -683,16 +683,16 @@ TEST_F(MP4StreamParserTest, MediaTrackInfoSourcing) {
   const MediaTrack& video_track = *(media_tracks_->tracks()[0]);
   EXPECT_EQ(video_track.type(), MediaTrack::Video);
   EXPECT_EQ(video_track.bytestream_track_id(), 1);
-  EXPECT_EQ(video_track.kind(), "main");
-  EXPECT_EQ(video_track.label(), "VideoHandler");
-  EXPECT_EQ(video_track.language(), "und");
+  EXPECT_EQ(video_track.kind().value(), "main");
+  EXPECT_EQ(video_track.label().value(), "VideoHandler");
+  EXPECT_EQ(video_track.language().value(), "und");
 
   const MediaTrack& audio_track = *(media_tracks_->tracks()[1]);
   EXPECT_EQ(audio_track.type(), MediaTrack::Audio);
   EXPECT_EQ(audio_track.bytestream_track_id(), 2);
-  EXPECT_EQ(audio_track.kind(), "main");
-  EXPECT_EQ(audio_track.label(), "SoundHandler");
-  EXPECT_EQ(audio_track.language(), "und");
+  EXPECT_EQ(audio_track.kind().value(), "main");
+  EXPECT_EQ(audio_track.label().value(), "SoundHandler");
+  EXPECT_EQ(audio_track.language().value(), "und");
 }
 
 TEST_F(MP4StreamParserTest, TextTrackDetection) {
@@ -720,30 +720,30 @@ TEST_F(MP4StreamParserTest, MultiTrackFile) {
   const MediaTrack& video_track1 = *(media_tracks_->tracks()[0]);
   EXPECT_EQ(video_track1.type(), MediaTrack::Video);
   EXPECT_EQ(video_track1.bytestream_track_id(), 1);
-  EXPECT_EQ(video_track1.kind(), "main");
-  EXPECT_EQ(video_track1.label(), "VideoHandler");
-  EXPECT_EQ(video_track1.language(), "und");
+  EXPECT_EQ(video_track1.kind().value(), "main");
+  EXPECT_EQ(video_track1.label().value(), "VideoHandler");
+  EXPECT_EQ(video_track1.language().value(), "und");
 
   const MediaTrack& audio_track1 = *(media_tracks_->tracks()[1]);
   EXPECT_EQ(audio_track1.type(), MediaTrack::Audio);
   EXPECT_EQ(audio_track1.bytestream_track_id(), 2);
-  EXPECT_EQ(audio_track1.kind(), "main");
-  EXPECT_EQ(audio_track1.label(), "SoundHandler");
-  EXPECT_EQ(audio_track1.language(), "und");
+  EXPECT_EQ(audio_track1.kind().value(), "main");
+  EXPECT_EQ(audio_track1.label().value(), "SoundHandler");
+  EXPECT_EQ(audio_track1.language().value(), "und");
 
   const MediaTrack& video_track2 = *(media_tracks_->tracks()[2]);
   EXPECT_EQ(video_track2.type(), MediaTrack::Video);
   EXPECT_EQ(video_track2.bytestream_track_id(), 3);
-  EXPECT_EQ(video_track2.kind(), "");
-  EXPECT_EQ(video_track2.label(), "VideoHandler");
-  EXPECT_EQ(video_track2.language(), "und");
+  EXPECT_EQ(video_track2.kind().value(), "");
+  EXPECT_EQ(video_track2.label().value(), "VideoHandler");
+  EXPECT_EQ(video_track2.language().value(), "und");
 
   const MediaTrack& audio_track2 = *(media_tracks_->tracks()[3]);
   EXPECT_EQ(audio_track2.type(), MediaTrack::Audio);
   EXPECT_EQ(audio_track2.bytestream_track_id(), 4);
-  EXPECT_EQ(audio_track2.kind(), "");
-  EXPECT_EQ(audio_track2.label(), "SoundHandler");
-  EXPECT_EQ(audio_track2.language(), "und");
+  EXPECT_EQ(audio_track2.kind().value(), "");
+  EXPECT_EQ(audio_track2.label().value(), "SoundHandler");
+  EXPECT_EQ(audio_track2.language().value(), "und");
 }
 
 // <cos(θ), sin(θ), θ expressed as a rotation Enum>

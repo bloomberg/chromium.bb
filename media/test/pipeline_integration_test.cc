@@ -832,7 +832,7 @@ TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
 
   // Re-enable audio.
   std::vector<MediaTrack::Id> audio_track_id;
-  audio_track_id.push_back("2");
+  audio_track_id.push_back(MediaTrack::Id("2"));
   OnEnabledAudioTracksChanged(audio_track_id);
 
   // Restart playback from 500ms position.
@@ -896,7 +896,7 @@ TEST_F(PipelineIntegrationTest, TrackStatusChangesAfterPipelineEnded) {
   // Disable audio track.
   OnEnabledAudioTracksChanged(track_ids);
   // Re-enable audio track.
-  track_ids.push_back("2");
+  track_ids.push_back(MediaTrack::Id("2"));
   OnEnabledAudioTracksChanged(track_ids);
   // Disable video track.
   OnSelectedVideoTrackChanged(base::nullopt);
@@ -924,7 +924,7 @@ TEST_F(PipelineIntegrationTest, TrackStatusChangesWhileSuspended) {
   ASSERT_TRUE(Suspend());
 
   // Re-enable audio track.
-  track_ids.push_back("2");
+  track_ids.push_back(MediaTrack::Id("2"));
   OnEnabledAudioTracksChanged(track_ids);
   ASSERT_TRUE(Resume(TimestampMs(200)));
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(300)));
@@ -961,7 +961,7 @@ TEST_F(PipelineIntegrationTest, ReinitRenderersWhileAudioTrackIsDisabled) {
   ASSERT_TRUE(Resume(TimestampMs(100)));
   // Now re-enable the audio track, playback should continue successfully.
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH)).Times(1);
-  track_ids.push_back("2");
+  track_ids.push_back(MediaTrack::Id("2"));
   OnEnabledAudioTracksChanged(track_ids);
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(200)));
 
@@ -1001,7 +1001,7 @@ TEST_F(PipelineIntegrationTest, PipelineStoppedWhileAudioRestartPending) {
 
   // Playback is paused while all audio tracks are disabled.
 
-  track_ids.push_back("2");
+  track_ids.push_back(MediaTrack::Id("2"));
   OnEnabledAudioTracksChanged(track_ids);
   Stop();
 }
@@ -1026,7 +1026,7 @@ TEST_F(PipelineIntegrationTest, SwitchAudioTrackDuringPlayback) {
   // The first audio track (TrackId=4) is enabled by default. This should
   // disable TrackId=4 and enable TrackId=5.
   std::vector<MediaTrack::Id> track_ids;
-  track_ids.push_back("5");
+  track_ids.push_back(MediaTrack::Id("5"));
   OnEnabledAudioTracksChanged(track_ids);
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(200)));
   Stop();

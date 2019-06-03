@@ -967,7 +967,7 @@ void WebMediaPlayerImpl::EnabledAudioTracksChanged(
   std::ostringstream logstr;
   std::vector<MediaTrack::Id> enabledMediaTrackIds;
   for (const auto& blinkTrackId : enabledTrackIds) {
-    MediaTrack::Id track_id = blinkTrackId.Utf8().data();
+    const auto track_id = MediaTrack::Id(blinkTrackId.Utf8().data());
     logstr << track_id << " ";
     enabledMediaTrackIds.push_back(track_id);
   }
@@ -984,8 +984,8 @@ void WebMediaPlayerImpl::SelectedVideoTrackChanged(
   if (selectedTrackId && !video_track_disabled_)
     selected_video_track_id = MediaTrack::Id(selectedTrackId->Utf8().data());
   MEDIA_LOG(INFO, media_log_.get())
-      << "Selected video track: [" << selected_video_track_id.value_or("")
-      << "]";
+      << "Selected video track: ["
+      << selected_video_track_id.value_or(MediaTrack::Id()) << "]";
   pipeline_controller_->OnSelectedVideoTrackChanged(selected_video_track_id);
 }
 
@@ -1418,18 +1418,20 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
   bool is_first_video_track = true;
   for (const auto& track : tracks->tracks()) {
     if (track->type() == MediaTrack::Audio) {
-      client_->AddAudioTrack(blink::WebString::FromUTF8(track->id()),
-                             blink::WebMediaPlayerClient::kAudioTrackKindMain,
-                             blink::WebString::FromUTF8(track->label()),
-                             blink::WebString::FromUTF8(track->language()),
-                             is_first_audio_track);
+      client_->AddAudioTrack(
+          blink::WebString::FromUTF8(track->id().value()),
+          blink::WebMediaPlayerClient::kAudioTrackKindMain,
+          blink::WebString::FromUTF8(track->label().value()),
+          blink::WebString::FromUTF8(track->language().value()),
+          is_first_audio_track);
       is_first_audio_track = false;
     } else if (track->type() == MediaTrack::Video) {
-      client_->AddVideoTrack(blink::WebString::FromUTF8(track->id()),
-                             blink::WebMediaPlayerClient::kVideoTrackKindMain,
-                             blink::WebString::FromUTF8(track->label()),
-                             blink::WebString::FromUTF8(track->language()),
-                             is_first_video_track);
+      client_->AddVideoTrack(
+          blink::WebString::FromUTF8(track->id().value()),
+          blink::WebMediaPlayerClient::kVideoTrackKindMain,
+          blink::WebString::FromUTF8(track->label().value()),
+          blink::WebString::FromUTF8(track->language().value()),
+          is_first_video_track);
       is_first_video_track = false;
     } else {
       // Text tracks are not supported through this code path yet.

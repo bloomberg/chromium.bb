@@ -658,12 +658,14 @@ std::unique_ptr<MediaTracks> GenerateMediaTrackInfo(
   // TODO(servolk): Implement proper sourcing of media track info as described
   // in crbug.com/590085
   if (audio_config.IsValidConfig()) {
-    media_tracks->AddAudioTrack(audio_config, kMp2tAudioTrackId, "main", "",
-                                "");
+    media_tracks->AddAudioTrack(audio_config, kMp2tAudioTrackId,
+                                MediaTrack::Kind("main"), MediaTrack::Label(""),
+                                MediaTrack::Language(""));
   }
   if (video_config.IsValidConfig()) {
-    media_tracks->AddVideoTrack(video_config, kMp2tVideoTrackId, "main", "",
-                                "");
+    media_tracks->AddVideoTrack(video_config, kMp2tVideoTrackId,
+                                MediaTrack::Kind("main"), MediaTrack::Label(""),
+                                MediaTrack::Language(""));
   }
   return media_tracks;
 }

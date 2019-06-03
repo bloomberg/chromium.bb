@@ -343,7 +343,8 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
     switch (type) {
       case DemuxerStream::AUDIO: {
         ASSERT_FALSE(audio_);
-        audio_.reset(new ChunkDemuxerStream(DemuxerStream::AUDIO, "1"));
+        audio_.reset(
+            new ChunkDemuxerStream(DemuxerStream::AUDIO, MediaTrack::Id("1")));
         AudioDecoderConfig decoder_config(kCodecVorbis, kSampleFormatPlanarF32,
                                           CHANNEL_LAYOUT_STEREO, 1000,
                                           EmptyExtraData(), Unencrypted());
@@ -356,7 +357,8 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
       }
       case DemuxerStream::VIDEO: {
         ASSERT_FALSE(video_);
-        video_.reset(new ChunkDemuxerStream(DemuxerStream::VIDEO, "2"));
+        video_.reset(
+            new ChunkDemuxerStream(DemuxerStream::VIDEO, MediaTrack::Id("2")));
         ASSERT_TRUE(video_->UpdateVideoConfig(TestVideoConfig::Normal(), false,
                                               &media_log_));
         stream = video_.get();

@@ -1449,16 +1449,16 @@ TEST_F(FFmpegDemuxerTest, Read_Mp4_Media_Track_Info) {
   const MediaTrack& audio_track = *(media_tracks_->tracks()[1]);
   EXPECT_EQ(audio_track.type(), MediaTrack::Audio);
   EXPECT_EQ(audio_track.bytestream_track_id(), 2);
-  EXPECT_EQ(audio_track.kind(), "main");
-  EXPECT_EQ(audio_track.label(), "SoundHandler");
-  EXPECT_EQ(audio_track.language(), "und");
+  EXPECT_EQ(audio_track.kind().value(), "main");
+  EXPECT_EQ(audio_track.label().value(), "SoundHandler");
+  EXPECT_EQ(audio_track.language().value(), "und");
 
   const MediaTrack& video_track = *(media_tracks_->tracks()[0]);
   EXPECT_EQ(video_track.type(), MediaTrack::Video);
   EXPECT_EQ(video_track.bytestream_track_id(), 1);
-  EXPECT_EQ(video_track.kind(), "main");
-  EXPECT_EQ(video_track.label(), "VideoHandler");
-  EXPECT_EQ(video_track.language(), "und");
+  EXPECT_EQ(video_track.kind().value(), "main");
+  EXPECT_EQ(video_track.label().value(), "VideoHandler");
+  EXPECT_EQ(video_track.language().value(), "und");
 }
 
 TEST_F(FFmpegDemuxerTest, Read_Mp4_Multiple_Tracks) {
@@ -1470,30 +1470,30 @@ TEST_F(FFmpegDemuxerTest, Read_Mp4_Multiple_Tracks) {
   const MediaTrack& video_track = *(media_tracks_->tracks()[0]);
   EXPECT_EQ(video_track.type(), MediaTrack::Video);
   EXPECT_EQ(video_track.bytestream_track_id(), 1);
-  EXPECT_EQ(video_track.kind(), "main");
-  EXPECT_EQ(video_track.label(), "VideoHandler");
-  EXPECT_EQ(video_track.language(), "und");
+  EXPECT_EQ(video_track.kind().value(), "main");
+  EXPECT_EQ(video_track.label().value(), "VideoHandler");
+  EXPECT_EQ(video_track.language().value(), "und");
 
   const MediaTrack& audio_track = *(media_tracks_->tracks()[1]);
   EXPECT_EQ(audio_track.type(), MediaTrack::Audio);
   EXPECT_EQ(audio_track.bytestream_track_id(), 2);
-  EXPECT_EQ(audio_track.kind(), "main");
-  EXPECT_EQ(audio_track.label(), "SoundHandler");
-  EXPECT_EQ(audio_track.language(), "und");
+  EXPECT_EQ(audio_track.kind().value(), "main");
+  EXPECT_EQ(audio_track.label().value(), "SoundHandler");
+  EXPECT_EQ(audio_track.language().value(), "und");
 
   const MediaTrack& video_track2 = *(media_tracks_->tracks()[2]);
   EXPECT_EQ(video_track2.type(), MediaTrack::Video);
   EXPECT_EQ(video_track2.bytestream_track_id(), 3);
-  EXPECT_EQ(video_track2.kind(), "main");
-  EXPECT_EQ(video_track2.label(), "VideoHandler");
-  EXPECT_EQ(video_track2.language(), "und");
+  EXPECT_EQ(video_track2.kind().value(), "main");
+  EXPECT_EQ(video_track2.label().value(), "VideoHandler");
+  EXPECT_EQ(video_track2.language().value(), "und");
 
   const MediaTrack& audio_track2 = *(media_tracks_->tracks()[3]);
   EXPECT_EQ(audio_track2.type(), MediaTrack::Audio);
   EXPECT_EQ(audio_track2.bytestream_track_id(), 4);
-  EXPECT_EQ(audio_track2.kind(), "main");
-  EXPECT_EQ(audio_track2.label(), "SoundHandler");
-  EXPECT_EQ(audio_track2.language(), "und");
+  EXPECT_EQ(audio_track2.kind().value(), "main");
+  EXPECT_EQ(audio_track2.label().value(), "SoundHandler");
+  EXPECT_EQ(audio_track2.language().value(), "und");
 }
 
 TEST_F(FFmpegDemuxerTest, Read_Mp4_Crbug657437) {
@@ -1539,16 +1539,16 @@ TEST_F(FFmpegDemuxerTest, Read_Webm_Media_Track_Info) {
   const MediaTrack& video_track = *(media_tracks_->tracks()[0]);
   EXPECT_EQ(video_track.type(), MediaTrack::Video);
   EXPECT_EQ(video_track.bytestream_track_id(), 1);
-  EXPECT_EQ(video_track.kind(), "main");
-  EXPECT_EQ(video_track.label(), "");
-  EXPECT_EQ(video_track.language(), "");
+  EXPECT_EQ(video_track.kind().value(), "main");
+  EXPECT_EQ(video_track.label().value(), "");
+  EXPECT_EQ(video_track.language().value(), "");
 
   const MediaTrack& audio_track = *(media_tracks_->tracks()[1]);
   EXPECT_EQ(audio_track.type(), MediaTrack::Audio);
   EXPECT_EQ(audio_track.bytestream_track_id(), 2);
-  EXPECT_EQ(audio_track.kind(), "main");
-  EXPECT_EQ(audio_track.label(), "");
-  EXPECT_EQ(audio_track.language(), "");
+  EXPECT_EQ(audio_track.kind().value(), "main");
+  EXPECT_EQ(audio_track.label().value(), "");
+  EXPECT_EQ(audio_track.language().value(), "");
 }
 
 // UTCDateToTime_* tests here assume FFmpegDemuxer's ExtractTimelineOffset

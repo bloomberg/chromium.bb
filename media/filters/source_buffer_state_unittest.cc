@@ -41,11 +41,13 @@ VideoDecoderConfig CreateVideoConfig(VideoCodec codec, int w, int h) {
 }
 
 void AddAudioTrack(std::unique_ptr<MediaTracks>& t, AudioCodec codec, int id) {
-  t->AddAudioTrack(CreateAudioConfig(codec), id, "", "", "");
+  t->AddAudioTrack(CreateAudioConfig(codec), id, MediaTrack::Kind(),
+                   MediaTrack::Label(), MediaTrack::Language());
 }
 
 void AddVideoTrack(std::unique_ptr<MediaTracks>& t, VideoCodec codec, int id) {
-  t->AddVideoTrack(CreateVideoConfig(codec, 16, 16), id, "", "", "");
+  t->AddVideoTrack(CreateVideoConfig(codec, 16, 16), id, MediaTrack::Kind(),
+                   MediaTrack::Label(), MediaTrack::Language());
 }
 
 void InvokeCbAndSaveResult(const base::Callback<bool()>& cb, bool* result) {
@@ -141,8 +143,8 @@ class SourceBufferStateTest : public ::testing::Test {
 
   ChunkDemuxerStream* CreateDemuxerStream(DemuxerStream::Type type) {
     static unsigned track_id = 0;
-    demuxer_streams_.push_back(base::WrapUnique(
-        new ChunkDemuxerStream(type, base::NumberToString(++track_id))));
+    demuxer_streams_.push_back(base::WrapUnique(new ChunkDemuxerStream(
+        type, MediaTrack::Id(base::NumberToString(++track_id)))));
     return demuxer_streams_.back().get();
   }
 
@@ -231,7 +233,8 @@ TEST_F(SourceBufferStateTest, MissingExpectedVideoStream) {
   std::unique_ptr<SourceBufferState> sbs =
       CreateAndInitSourceBufferState("opus,vp9");
   std::unique_ptr<MediaTracks> tracks(new MediaTracks());
-  tracks->AddAudioTrack(CreateAudioConfig(kCodecOpus), 1, "", "", "");
+  tracks->AddAudioTrack(CreateAudioConfig(kCodecOpus), 1, MediaTrack::Kind(),
+                        MediaTrack::Label(), MediaTrack::Language());
   EXPECT_MEDIA_LOG(FoundStream("audio"));
   EXPECT_MEDIA_LOG(CodecName("audio", "opus"));
   EXPECT_MEDIA_LOG(InitSegmentMissesExpectedTrack("vp9"));

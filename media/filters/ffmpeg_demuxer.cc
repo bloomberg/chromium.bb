@@ -1400,12 +1400,14 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
 
     StreamParser::TrackId track_id =
         static_cast<StreamParser::TrackId>(media_tracks->tracks().size() + 1);
-    std::string track_label = streams_[i]->GetMetadata("handler_name");
-    std::string track_language = streams_[i]->GetMetadata("language");
+    auto track_label =
+        MediaTrack::Label(streams_[i]->GetMetadata("handler_name"));
+    auto track_language =
+        MediaTrack::Language(streams_[i]->GetMetadata("language"));
 
     // Some metadata is named differently in FFmpeg for webm files.
     if (glue_->container() == container_names::CONTAINER_WEBM)
-      track_label = streams_[i]->GetMetadata("title");
+      track_label = MediaTrack::Label(streams_[i]->GetMetadata("title"));
 
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
       ++supported_audio_track_count;
@@ -1437,9 +1439,10 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
       AudioDecoderConfig audio_config = streams_[i]->audio_decoder_config();
       RecordAudioCodecStats(audio_config);
 
-      media_track = media_tracks->AddAudioTrack(audio_config, track_id, "main",
+      media_track = media_tracks->AddAudioTrack(audio_config, track_id,
+                                                MediaTrack::Kind("main"),
                                                 track_label, track_language);
-      media_track->set_id(base::NumberToString(track_id));
+      media_track->set_id(MediaTrack::Id(base::NumberToString(track_id)));
       DCHECK(track_id_to_demux_stream_map_.find(media_track->id()) ==
              track_id_to_demux_stream_map_.end());
       track_id_to_demux_stream_map_[media_track->id()] = streams_[i].get();
@@ -1449,9 +1452,10 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
       RecordVideoCodecStats(glue_->container(), video_config,
                             stream->codecpar->color_range, media_log_);
 
-      media_track = media_tracks->AddVideoTrack(video_config, track_id, "main",
+      media_track = media_tracks->AddVideoTrack(video_config, track_id,
+                                                MediaTrack::Kind("main"),
                                                 track_label, track_language);
-      media_track->set_id(base::NumberToString(track_id));
+      media_track->set_id(MediaTrack::Id(base::NumberToString(track_id)));
       DCHECK(track_id_to_demux_stream_map_.find(media_track->id()) ==
              track_id_to_demux_stream_map_.end());
       track_id_to_demux_stream_map_[media_track->id()] = streams_[i].get();
