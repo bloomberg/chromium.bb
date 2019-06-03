@@ -34,7 +34,8 @@ class MockUiController : public UiController {
   MOCK_METHOD1(OnInfoBoxChanged, void(const InfoBox* info_box));
   MOCK_METHOD1(OnProgressChanged, void(int progress));
   MOCK_METHOD1(OnProgressVisibilityChanged, void(bool visible));
-  MOCK_METHOD1(OnTouchableAreaChanged, void(const std::vector<RectF>& areas));
+  MOCK_METHOD2(OnTouchableAreaChanged,
+               void(const RectF&, const std::vector<RectF>& areas));
   MOCK_CONST_METHOD0(Terminate, bool());
   MOCK_CONST_METHOD0(GetDropOutReason, Metrics::DropOutReason());
   MOCK_METHOD1(OnResizeViewportChanged, void(bool resize_viewport));

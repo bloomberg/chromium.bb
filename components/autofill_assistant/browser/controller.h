@@ -127,6 +127,7 @@ class Controller : public ScriptExecutorDelegate,
   void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
+  void GetVisualViewport(RectF* visual_viewport) const override;
   void OnFatalError(const std::string& error_message,
                     Metrics::DropOutReason reason) override;
   bool GetResizeViewport() override;
@@ -206,7 +207,8 @@ class Controller : public ScriptExecutorDelegate,
   void OnWebContentsFocused(
       content::RenderWidgetHost* render_widget_host) override;
 
-  void OnTouchableAreaChanged(const std::vector<RectF>& areas);
+  void OnTouchableAreaChanged(const RectF& visual_viewport,
+                              const std::vector<RectF>& areas);
 
   void SelectChip(std::vector<Chip>* chips, int chip_index);
   void SetOverlayColors(std::unique_ptr<OverlayColors> colors);

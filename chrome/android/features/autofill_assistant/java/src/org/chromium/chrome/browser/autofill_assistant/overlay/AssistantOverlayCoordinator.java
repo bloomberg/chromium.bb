@@ -39,6 +39,10 @@ public class AssistantOverlayCoordinator {
         model.addObserver((source, propertyKey) -> {
             if (AssistantOverlayModel.STATE == propertyKey) {
                 setState(model.get(AssistantOverlayModel.STATE));
+            } else if (AssistantOverlayModel.VISUAL_VIEWPORT == propertyKey) {
+                RectF rect = model.get(AssistantOverlayModel.VISUAL_VIEWPORT);
+                mEventFilter.setVisualViewport(rect);
+                mDrawable.setVisualViewport(rect);
             } else if (AssistantOverlayModel.TOUCHABLE_AREA == propertyKey) {
                 List<RectF> area = model.get(AssistantOverlayModel.TOUCHABLE_AREA);
                 mEventFilter.setTouchableArea(area);
@@ -47,8 +51,6 @@ public class AssistantOverlayCoordinator {
                 AssistantOverlayDelegate delegate = model.get(AssistantOverlayModel.DELEGATE);
                 mEventFilter.setDelegate(delegate);
                 mDrawable.setDelegate(delegate);
-            } else if (AssistantOverlayModel.WEB_CONTENTS == propertyKey) {
-                mDrawable.setWebContents(model.get(AssistantOverlayModel.WEB_CONTENTS));
             } else if (AssistantOverlayModel.BACKGROUND_COLOR == propertyKey) {
                 mDrawable.setBackgroundColor(model.get(AssistantOverlayModel.BACKGROUND_COLOR));
             } else if (AssistantOverlayModel.HIGHLIGHT_BORDER_COLOR == propertyKey) {

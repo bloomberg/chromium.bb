@@ -59,6 +59,16 @@ class AssistantOverlayEventFilter extends EventFilter {
      */
     private boolean mPartial;
 
+    /**
+     * Coordinates of the visual viewport within the page, if known, in CSS pixels relative to the
+     * origin of the page. This is used to convert pixel coordinates to CSS coordinates.
+     *
+     * The visual viewport includes the portion of the page that is really visible, excluding any
+     * area not fully visible because of the current zoom value.
+     */
+    private final RectF mVisualViewport = new RectF();
+
+    /** Touchable area, expressed in CSS pixels relative to the layout viewport. */
     private List<RectF> mTouchableArea = Collections.emptyList();
 
     /**
@@ -139,6 +149,11 @@ class AssistantOverlayEventFilter extends EventFilter {
      */
     void setTouchableArea(List<RectF> touchableArea) {
         mTouchableArea = touchableArea;
+    }
+
+    /** Sets the visual viewport. */
+    void setVisualViewport(RectF visualViewport) {
+        mVisualViewport.set(visualViewport);
     }
 
     @Override
@@ -297,8 +312,7 @@ class AssistantOverlayEventFilter extends EventFilter {
     private boolean shouldLetEventThrough(MotionEvent event) {
         int yTop = (int) mFullscreenManager.getContentOffset();
         int height = mCompositorView.getHeight() - getBottomBarHeight() - yTop;
-        return isInTouchableArea(((float) event.getX()) / mCompositorView.getWidth(),
-                (((float) event.getY() - yTop) / height));
+        return isInTouchableArea(event.getX(), event.getY() - yTop);
     }
 
     /** Considers whether to let the client know about unexpected taps. */
@@ -317,17 +331,18 @@ class AssistantOverlayEventFilter extends EventFilter {
         }
     }
 
-    private void askForTouchableAreaUpdate() {
-        if (mDelegate != null) {
-            mDelegate.updateTouchableArea();
-        }
-    }
-
     private boolean isInTouchableArea(float x, float y) {
+        if (mVisualViewport.isEmpty() || mTouchableArea.isEmpty()) return false;
+
+        // Ratio of to use to convert physical pixels to zoomed CSS pixels. Aspect ratio is
+        // conserved, so width and height are always converted with the same value. Using width
+        // here, since viewport width always corresponds to the overlay width.
+        float physicalPixelsToCss =
+                ((float) mVisualViewport.width()) / ((float) mCompositorView.getWidth());
+        float absoluteXCss = (x * physicalPixelsToCss) + mVisualViewport.left;
+        float absoluteYCss = (y * physicalPixelsToCss) + mVisualViewport.top;
         for (RectF rect : mTouchableArea) {
-            if (rect.contains(x, y, x, y)) {
-                return true;
-            }
+            if (rect.contains(absoluteXCss, absoluteYCss)) return true;
         }
         return false;
     }

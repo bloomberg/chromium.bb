@@ -120,8 +120,6 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
                                                     java_web_contents);
   Java_AssistantPaymentRequestModel_setWebContents(
       env, GetPaymentRequestModel(), java_web_contents);
-  Java_AssistantOverlayModel_setWebContents(env, GetOverlayModel(),
-                                            java_web_contents);
   if (ui_delegate->GetState() != AutofillAssistantState::INACTIVE) {
     // The UI was created for an existing Controller.
     OnStatusMessageChanged(ui_delegate->GetStatusMessage());
@@ -137,7 +135,9 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
 
     std::vector<RectF> area;
     ui_delegate->GetTouchableArea(&area);
-    OnTouchableAreaChanged(area);
+    RectF visual_viewport;
+    ui_delegate->GetVisualViewport(&visual_viewport);
+    OnTouchableAreaChanged(visual_viewport, area);
     OnResizeViewportChanged(ui_delegate->GetResizeViewport());
     OnPeekModeChanged(ui_delegate->GetPeekMode());
     OnFormChanged(ui_delegate->GetForm());
@@ -529,8 +529,13 @@ void UiControllerAndroid::SetOverlayState(OverlayState state) {
 }
 
 void UiControllerAndroid::OnTouchableAreaChanged(
+    const RectF& visual_viewport,
     const std::vector<RectF>& areas) {
   JNIEnv* env = AttachCurrentThread();
+  Java_AssistantOverlayModel_setVisualViewport(
+      env, GetOverlayModel(), visual_viewport.left, visual_viewport.top,
+      visual_viewport.right, visual_viewport.bottom);
+
   std::vector<float> flattened;
   for (const auto& rect : areas) {
     flattened.emplace_back(rect.left);

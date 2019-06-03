@@ -10,7 +10,6 @@ import android.support.annotation.ColorInt;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -23,15 +22,13 @@ import java.util.List;
 public class AssistantOverlayModel extends PropertyModel {
     public static final WritableIntPropertyKey STATE = new WritableIntPropertyKey();
 
-    // Skipping equality as a way of fixing offset issues. See b/129048184.
-    // TODO(b/129050125): Handle offsets properly and remove.
     public static final WritableObjectPropertyKey<List<RectF>> TOUCHABLE_AREA =
-            new WritableObjectPropertyKey<>(/* skipEquality= */ true);
-
-    public static final WritableObjectPropertyKey<AssistantOverlayDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<WebContents> WEB_CONTENTS =
+    public static final WritableObjectPropertyKey<RectF> VISUAL_VIEWPORT =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<AssistantOverlayDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<Integer> BACKGROUND_COLOR =
@@ -41,13 +38,18 @@ public class AssistantOverlayModel extends PropertyModel {
             new WritableObjectPropertyKey<>();
 
     public AssistantOverlayModel() {
-        super(STATE, TOUCHABLE_AREA, DELEGATE, WEB_CONTENTS, BACKGROUND_COLOR,
+        super(STATE, TOUCHABLE_AREA, VISUAL_VIEWPORT, DELEGATE, BACKGROUND_COLOR,
                 HIGHLIGHT_BORDER_COLOR);
     }
 
     @CalledByNative
     private void setState(@AssistantOverlayState int state) {
         set(STATE, state);
+    }
+
+    @CalledByNative
+    private void setVisualViewport(float left, float top, float right, float bottom) {
+        set(VISUAL_VIEWPORT, new RectF(left, top, right, bottom));
     }
 
     @CalledByNative
@@ -63,11 +65,6 @@ public class AssistantOverlayModel extends PropertyModel {
     @CalledByNative
     private void setDelegate(AssistantOverlayDelegate delegate) {
         set(DELEGATE, delegate);
-    }
-
-    @CalledByNative
-    private void setWebContents(WebContents webContents) {
-        set(WEB_CONTENTS, webContents);
     }
 
     @CalledByNative
