@@ -29,6 +29,7 @@
 #include <memory>
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_destination_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_callback_metric_reporter.h"
 #include "third_party/blink/renderer/platform/audio/audio_destination.h"
 #include "third_party/blink/renderer/platform/audio/audio_io_callback.h"
 
@@ -71,7 +72,7 @@ class RealtimeAudioDestinationHandler final : public AudioDestinationHandler,
   void Render(AudioBus* destination_bus,
               uint32_t number_of_frames,
               const AudioIOPosition& output_position,
-              const AudioIOCallbackMetric& metric) final;
+              const AudioCallbackMetric& metric) final;
 
   // Returns a hadrware callback buffer size from audio infra.
   uint32_t GetCallbackBufferSize() const;

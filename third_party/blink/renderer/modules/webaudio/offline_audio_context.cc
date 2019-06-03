@@ -389,10 +389,13 @@ void OfflineAudioContext::FireCompletionEvent() {
 
 bool OfflineAudioContext::HandlePreRenderTasks(
     const AudioIOPosition* output_position,
-    const AudioIOCallbackMetric* metric) {
-  DCHECK(IsAudioThread());
+    const AudioCallbackMetric* metric) {
+  // TODO(hongchan, rtoy): passing |nullptr| as an argument is not a good
+  // pattern. Consider rewriting this method/interface.
   DCHECK_EQ(output_position, nullptr);
   DCHECK_EQ(metric, nullptr);
+
+  DCHECK(IsAudioThread());
 
   // OfflineGraphAutoLocker here locks the audio graph for this scope. Note
   // that this locker does not use tryLock() inside because the timing of

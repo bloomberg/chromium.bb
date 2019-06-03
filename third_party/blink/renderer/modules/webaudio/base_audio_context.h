@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/modules/webaudio/deferred_task_handler.h"
 #include "third_party/blink/renderer/modules/webaudio/iir_filter_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_callback_metric_reporter.h"
 #include "third_party/blink/renderer/platform/audio/audio_io_callback.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -249,7 +250,7 @@ class MODULES_EXPORT BaseAudioContext
   //   - The return value indicates whether the context needs to be suspended or
   //   not after rendering.
   virtual bool HandlePreRenderTasks(const AudioIOPosition* output_position,
-                                    const AudioIOCallbackMetric* metric) = 0;
+                                    const AudioCallbackMetric* metric) = 0;
 
   // Called at the end of each render quantum.
   virtual void HandlePostRenderTasks() = 0;

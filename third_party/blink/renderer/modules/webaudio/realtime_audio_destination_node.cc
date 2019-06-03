@@ -165,7 +165,7 @@ void RealtimeAudioDestinationHandler::Render(
     AudioBus* destination_bus,
     uint32_t number_of_frames,
     const AudioIOPosition& output_position,
-    const AudioIOCallbackMetric& metric) {
+    const AudioCallbackMetric& metric) {
   TRACE_EVENT0("webaudio", "RealtimeAudioDestinationHandler::Render");
 
   // Denormals can seriously hurt performance of audio processing. This will

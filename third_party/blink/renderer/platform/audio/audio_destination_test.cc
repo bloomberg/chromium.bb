@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
+#include "third_party/blink/renderer/platform/audio/audio_callback_metric_reporter.h"
 #include "third_party/blink/renderer/platform/audio/audio_io_callback.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -53,10 +54,10 @@ class TestPlatform : public TestingPlatformSupport {
 
 class AudioCallback : public blink::AudioIOCallback {
  public:
-  void Render(AudioBus* destination_bus,
+  void Render(AudioBus*,
               uint32_t frames_to_process,
-              const AudioIOPosition& output_position,
-              const AudioIOCallbackMetric& metric) override {
+              const AudioIOPosition&,
+              const AudioCallbackMetric&) override {
     frames_processed_ += frames_to_process;
   }
 

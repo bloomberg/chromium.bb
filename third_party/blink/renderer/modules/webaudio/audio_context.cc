@@ -529,7 +529,7 @@ bool AudioContext::HasPendingActivity() const {
 }
 
 bool AudioContext::HandlePreRenderTasks(const AudioIOPosition* output_position,
-                                        const AudioIOCallbackMetric* metric) {
+                                        const AudioCallbackMetric* metric) {
   DCHECK(IsAudioThread());
 
   // At the beginning of every render quantum, try to update the internal
@@ -677,7 +677,7 @@ void AudioContext::OnAudioContextManagerServiceConnectionError() {
 double AudioContext::RenderCapacity() {
   DCHECK(IsMainThread());
   GraphAutoLocker locker(this);
-  return callback_metric_.render_duration / callback_metric_.callback_interval;
+  return callback_metric_.render_capacity;
 }
 
 }  // namespace blink

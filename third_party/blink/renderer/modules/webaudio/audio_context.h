@@ -73,7 +73,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   void set_was_audible_for_testing(bool value) { was_audible_ = value; }
 
   bool HandlePreRenderTasks(const AudioIOPosition* output_position,
-                            const AudioIOCallbackMetric* metric) final;
+                            const AudioCallbackMetric* metric) final;
 
   // Called at the end of each render quantum.
   void HandlePostRenderTasks() final;
@@ -152,7 +152,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   Member<ScriptPromiseResolver> close_resolver_;
 
   AudioIOPosition output_position_;
-  AudioIOCallbackMetric callback_metric_;
+  AudioCallbackMetric callback_metric_;
 
   // Whether a user gesture is required to start this AudioContext.
   bool user_gesture_required_ = false;

@@ -291,6 +291,8 @@ jumbo_component("platform") {
     "audio/audio_array.h",
     "audio/audio_bus.cc",
     "audio/audio_bus.h",
+    "audio/audio_callback_metric_reporter.cc",
+    "audio/audio_callback_metric_reporter.h",
     "audio/audio_channel.cc",
     "audio/audio_channel.h",
     "audio/audio_delay_dsp_kernel.cc",
