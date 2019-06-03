@@ -17,15 +17,18 @@
 @class CRWPendingNavigationInfo;
 @class CRWWKNavigationStates;
 @class CRWJSInjector;
+@class CRWLegacyNativeContentController;
 class GURL;
 namespace base {
 class RepeatingTimer;
 }
 namespace web {
 enum class WKNavigationState;
+enum class ErrorRetryCommand;
 struct Referrer;
 class WebStateImpl;
 class NavigationContextImpl;
+class NavigationItemImpl;
 class UserInteractionState;
 class WKBackForwardListItemHolder;
 }
@@ -49,6 +52,11 @@ class WKBackForwardListItemHolder;
 // Returns the associated js injector.
 - (CRWJSInjector*)JSInjectorForNavigationHandler:
     (CRWWKNavigationHandler*)navigationHandler;
+
+// Returns the associated legacy native content controller.
+- (CRWLegacyNativeContentController*)
+    legacyNativeContentControllerForNavigationHandler:
+        (CRWWKNavigationHandler*)navigationHandler;
 
 // Returns YES if WKWebView is halted.
 - (BOOL)navigationHandlerWebViewIsHalted:
@@ -148,6 +156,18 @@ class WKBackForwardListItemHolder;
 // the current NavigationItem.
 - (void)navigationHandlerUpdateHTML5HistoryState:
     (CRWWKNavigationHandler*)navigationHandler;
+
+// Instructs the delegate to execute the command specified by the
+// ErrorRetryStateMachine.
+- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+    handleErrorRetryCommand:(web::ErrorRetryCommand)command
+             navigationItem:(web::NavigationItemImpl*)item
+          navigationContext:(web::NavigationContextImpl*)context
+         originalNavigation:(WKNavigation*)originalNavigation;
+
+// Notifies the delegate that navigation has finished.
+- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+      didFinishNavigation:(web::NavigationContextImpl*)context;
 
 @end
 

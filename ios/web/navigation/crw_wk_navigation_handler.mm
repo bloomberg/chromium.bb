@@ -12,9 +12,11 @@
 #include "ios/web/common/features.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
+#import "ios/web/js_messaging/web_view_js_utils.h"
 #import "ios/web/navigation/crw_pending_navigation_info.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
+#include "ios/web/navigation/error_retry_state_machine.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/navigation/navigation_manager_util.h"
@@ -28,6 +30,7 @@
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/security/wk_web_view_security_util.h"
+#import "ios/web/web_state/ui/controller/crw_legacy_native_content_controller.h"
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
 #include "ios/web/web_view/content_type_util.h"
@@ -41,6 +44,7 @@
 
 using web::wk_navigation_util::IsPlaceholderUrl;
 using web::wk_navigation_util::CreatePlaceholderUrlForUrl;
+using web::wk_navigation_util::ExtractUrlFromPlaceholderUrl;
 using web::wk_navigation_util::kReferrerHeaderName;
 using web::wk_navigation_util::IsRestoreSessionUrl;
 using web::wk_navigation_util::IsWKInternalUrl;
@@ -78,6 +82,8 @@ using web::wk_navigation_util::IsWKInternalUrl;
 @property(nonatomic, readonly, weak) CRWSessionController* sessionController;
 // Returns the js injector from self.delegate.
 @property(nonatomic, readonly, weak) CRWJSInjector* JSInjector;
+@property(nonatomic, readonly, weak)
+    CRWLegacyNativeContentController* legacyNativeContentController;
 
 @end
 
@@ -913,6 +919,144 @@ using web::wk_navigation_util::IsWKInternalUrl;
 - (void)webView:(WKWebView*)webView
     didFinishNavigation:(WKNavigation*)navigation {
   [self didReceiveWKNavigationDelegateCallback];
+
+  // Sometimes |webView:didFinishNavigation| arrives before
+  // |webView:didCommitNavigation|. Explicitly trigger post-commit processing.
+  bool navigationCommitted =
+      [self.navigationStates stateForNavigation:navigation] ==
+      web::WKNavigationState::COMMITTED;
+  UMA_HISTOGRAM_BOOLEAN("IOS.WKWebViewFinishBeforeCommit",
+                        !navigationCommitted);
+  if (!navigationCommitted) {
+    [self webView:webView didCommitNavigation:navigation];
+    DCHECK_EQ(web::WKNavigationState::COMMITTED,
+              [self.navigationStates stateForNavigation:navigation]);
+  }
+
+  // Sometimes |didFinishNavigation| callback arrives after |stopLoading| has
+  // been called. Abort in this case.
+  if ([self.navigationStates stateForNavigation:navigation] ==
+      web::WKNavigationState::NONE) {
+    return;
+  }
+
+  GURL webViewURL = net::GURLWithNSURL(webView.URL);
+  GURL currentWKItemURL =
+      net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
+  UMA_HISTOGRAM_BOOLEAN("IOS.FinishedURLMatchesCurrentItem",
+                        webViewURL == currentWKItemURL);
+
+  web::NavigationContextImpl* context =
+      [self.navigationStates contextForNavigation:navigation];
+  web::NavigationItemImpl* item =
+      context ? web::GetItemWithUniqueID(self.navigationManagerImpl, context)
+              : nullptr;
+
+  // Invariant: every |navigation| should have a |context| and a |item|.
+  // TODO(crbug.com/899383) Fix invariant violation when a new pending item is
+  // created before a placeholder load finishes.
+  if (IsPlaceholderUrl(webViewURL)) {
+    GURL originalURL = ExtractUrlFromPlaceholderUrl(webViewURL);
+    if (self.currentNavItem != item &&
+        self.currentNavItem->GetVirtualURL() != originalURL) {
+      // The |didFinishNavigation| callback for placeholder navigation can
+      // arrive after another navigation has started. Abort in this case.
+      return;
+    }
+  }
+  DCHECK(context);
+  DCHECK(item);
+  UMA_HISTOGRAM_BOOLEAN("IOS.FinishedNavigationHasContext", context);
+  UMA_HISTOGRAM_BOOLEAN("IOS.FinishedNavigationHasItem", item);
+
+  // TODO(crbug.com/864769): Remove this guard after fixing root cause of
+  // invariant violation in production.
+  if (context && item) {
+    GURL navigationURL = context->IsPlaceholderNavigation()
+                             ? CreatePlaceholderUrlForUrl(context->GetUrl())
+                             : context->GetUrl();
+    if (navigationURL == currentWKItemURL) {
+      // If webView.backForwardList.currentItem.URL matches |context|, then this
+      // is a known edge case where |webView.URL| is wrong.
+      // TODO(crbug.com/826013): Remove this workaround.
+      webViewURL = currentWKItemURL;
+    }
+
+    if (!IsWKInternalUrl(currentWKItemURL) && currentWKItemURL == webViewURL &&
+        currentWKItemURL != context->GetUrl() &&
+        item == self.navigationManagerImpl->GetLastCommittedItem() &&
+        item->GetURL().GetOrigin() == currentWKItemURL.GetOrigin()) {
+      // WKWebView sometimes changes URL on the same navigation, likely due to
+      // location.replace() or history.replaceState in onload handler that does
+      // not change the origin. It's safe to update |item| and |context| URL
+      // because they are both associated to WKNavigation*, which is a stable ID
+      // for the navigation. See https://crbug.com/869540 for a real-world case.
+      item->SetURL(currentWKItemURL);
+      context->SetUrl(currentWKItemURL);
+    }
+
+    if (IsPlaceholderUrl(webViewURL)) {
+      if (item->GetURL() == webViewURL) {
+        // Current navigation item is restored from a placeholder URL as part
+        // of session restoration. It is now safe to update the navigation
+        // item URL to the original app-specific URL.
+        item->SetURL(ExtractUrlFromPlaceholderUrl(webViewURL));
+      }
+
+      if ([self.legacyNativeContentController
+              shouldLoadURLInNativeView:item->GetURL()]) {
+        [self.legacyNativeContentController
+            webViewDidFinishNavigationWithContext:context
+                                          andItem:item];
+      } else if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+                 item->error_retry_state_machine().state() ==
+                     web::ErrorRetryState::kNoNavigationError) {
+        // Offline pages can leave the WKBackForwardList current item as a
+        // placeholder with no saved content.  In this case, trigger a retry
+        // on that navigation with an update |item| url and |context| error.
+        item->SetURL(
+            ExtractUrlFromPlaceholderUrl(net::GURLWithNSURL(webView.URL)));
+        item->SetVirtualURL(item->GetURL());
+        context->SetError([NSError
+            errorWithDomain:NSURLErrorDomain
+                       code:NSURLErrorNetworkConnectionLost
+                   userInfo:@{
+                     NSURLErrorFailingURLStringErrorKey :
+                         base::SysUTF8ToNSString(item->GetURL().spec())
+                   }]);
+        item->error_retry_state_machine().SetRetryPlaceholderNavigation();
+      }
+    }
+
+    web::ErrorRetryCommand command =
+        item->error_retry_state_machine().DidFinishNavigation(webViewURL);
+    [self.delegate navigationHandler:self
+             handleErrorRetryCommand:command
+                      navigationItem:item
+                   navigationContext:context
+                  originalNavigation:navigation];
+  }
+
+  [self.navigationStates setState:web::WKNavigationState::FINISHED
+                    forNavigation:navigation];
+
+  DCHECK(![self.delegate navigationHandlerWebViewIsHalted:self]);
+  // Trigger JavaScript driven post-document-load-completion tasks.
+  // TODO(crbug.com/546350): Investigate using
+  // WKUserScriptInjectionTimeAtDocumentEnd to inject this material at the
+  // appropriate time rather than invoking here.
+  web::ExecuteJavaScript(webView, @"__gCrWeb.didFinishNavigation()", nil);
+  [self.delegate navigationHandler:self didFinishNavigation:context];
+
+  if (web::features::StorePendingItemInContext()) {
+    // Remove the navigation to immediately get rid of pending item.
+    if (web::WKNavigationState::NONE !=
+        [self.navigationStates stateForNavigation:navigation]) {
+      [self.navigationStates removeNavigation:navigation];
+    }
+  } else {
+    [self forgetNullWKNavigation:navigation];
+  }
 }
 
 - (void)webView:(WKWebView*)webView
@@ -953,6 +1097,10 @@ using web::wk_navigation_util::IsWKInternalUrl;
 
 - (CRWJSInjector*)JSInjector {
   return [self.delegate JSInjectorForNavigationHandler:self];
+}
+
+- (CRWLegacyNativeContentController*)legacyNativeContentController {
+  return [self.delegate legacyNativeContentControllerForNavigationHandler:self];
 }
 
 - (GURL)documentURL {
