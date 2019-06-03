@@ -114,6 +114,7 @@
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
+#import "ios/web/web_view/content_type_util.h"
 #import "ios/web/web_view/error_translation_util.h"
 #import "ios/web/web_view/wk_web_view_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -857,12 +858,14 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 - (BOOL)contentIsHTML {
-  if (!self.webView)
-    return NO;
+  return self.webView &&
+         web::IsContentTypeHtml(self.webState->GetContentsMimeType());
+}
 
-  std::string MIMEType = self.webState->GetContentsMimeType();
-  return MIMEType == "text/html" || MIMEType == "application/xhtml+xml" ||
-         MIMEType == "application/xml";
+// Returns YES if the current live view is a web view with an image MIME type.
+- (BOOL)contentIsImage {
+  return self.webView &&
+         web::IsContentTypeImage(self.webState->GetContentsMimeType());
 }
 
 - (GURL)currentURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
@@ -4230,16 +4233,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return NO;
 
   return provisionalLoad;
-}
-
-// Returns YES if the current live view is a web view with an image MIME type.
-- (BOOL)contentIsImage {
-  if (!self.webView)
-    return NO;
-
-  const std::string image = "image";
-  std::string MIMEType = self.webState->GetContentsMimeType();
-  return MIMEType.compare(0, image.length(), image) == 0;
 }
 
 #pragma mark - CRWSSLStatusUpdaterDataSource
