@@ -962,6 +962,21 @@ endemphword transnote 6-3
 If emphasis ends in the middle of a word the Braille dot pattern
 defined in this opcode is also used.
 
+@opcode{emphmodechars, characters}
+
+Normally, only space characters will cancel the
+@opcoderef{begemphword} indicator. However, by using the
+@code{emphmodechars} opcode, you can specify the list of characters
+that are legal within a emphasized word. If @code{emphmodechars} is
+specified, any character that is not in this list and is not a
+@code{letter} will cancel the @opcoderef{begemphword} indicator.
+
+Example:
+
+@example
+emphmodechars -
+@end example
+
 @end table
 
 @node Phrase

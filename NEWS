@@ -6,6 +6,8 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 issues]].
 
 ** New features
+- Add a new opcode ~emphmodechars~. Thanks to Bert Frees and Davy
+  Kager.
 
 ** Bug fixes
 - Remove memoization in ~checkAttr~. It wasn't implemented correctly,
@@ -43,6 +45,10 @@ issues]].
   Datray from Freedom Scientific.
 - Numerous back-translation fixes to Grade 2 of UK English and Unified
   English Braille thanks to Anthony Tibbs.
+- Updates to Dutch Braille thanks to Bert Frees
+  - Hyphen cancels the effect of emphasis indicator
+  - Left/right curly brackets
+  - Write currency symbols in full if they come after the number
 
 ** Other changes
 - Remove some code duplication in pattern.c thanks to Bert Frees

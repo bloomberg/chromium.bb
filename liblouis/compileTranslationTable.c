@@ -124,19 +124,18 @@ static const char *opcodeNames[CTO_None] = {
 	"midendnumericmodechars", "numericnocontchars", "seqdelimiter", "seqbeforechars",
 	"seqafterchars", "seqafterpattern", "seqafterexpression", "emphclass", "emphletter",
 	"begemphword", "endemphword", "begemph", "endemph", "begemphphrase", "endemphphrase",
-	"lenemphphrase", "capsmodechars",
-	// "emphmodechars",
-	"begcomp", "compbegemph1", "compendemph1", "compbegemph2", "compendemph2",
-	"compbegemph3", "compendemph3", "compcapsign", "compbegcaps", "compendcaps",
-	"endcomp", "nocontractsign", "multind", "compdots", "comp6", "class", "after",
-	"before", "noback", "nofor", "empmatchbefore", "empmatchafter", "swapcc", "swapcd",
-	"swapdd", "space", "digit", "punctuation", "math", "sign", "letter", "uppercase",
-	"lowercase", "grouping", "uplow", "litdigit", "display", "replace", "context",
-	"correct", "pass2", "pass3", "pass4", "repeated", "repword", "capsnocont", "always",
-	"exactdots", "nocross", "syllable", "nocont", "compbrl", "literal", "largesign",
-	"word", "partword", "joinnum", "joinword", "lowword", "contraction", "sufword",
-	"prfword", "begword", "begmidword", "midword", "midendword", "endword", "prepunc",
-	"postpunc", "begnum", "midnum", "endnum", "decpoint", "hyphen",
+	"lenemphphrase", "capsmodechars", "emphmodechars", "begcomp", "compbegemph1",
+	"compendemph1", "compbegemph2", "compendemph2", "compbegemph3", "compendemph3",
+	"compcapsign", "compbegcaps", "compendcaps", "endcomp", "nocontractsign", "multind",
+	"compdots", "comp6", "class", "after", "before", "noback", "nofor", "empmatchbefore",
+	"empmatchafter", "swapcc", "swapcd", "swapdd", "space", "digit", "punctuation",
+	"math", "sign", "letter", "uppercase", "lowercase", "grouping", "uplow", "litdigit",
+	"display", "replace", "context", "correct", "pass2", "pass3", "pass4", "repeated",
+	"repword", "capsnocont", "always", "exactdots", "nocross", "syllable", "nocont",
+	"compbrl", "literal", "largesign", "word", "partword", "joinnum", "joinword",
+	"lowword", "contraction", "sufword", "prfword", "begword", "begmidword", "midword",
+	"midendword", "endword", "prepunc", "postpunc", "begnum", "midnum", "endnum",
+	"decpoint", "hyphen",
 	// "apostrophe",
 	// "initial",
 	"nobreak", "match", "backmatch", "attribute",
@@ -3215,6 +3214,25 @@ doOpcode:
 				}
 			}
 		}
+		break;
+
+	case CTO_EmphModeChars:
+
+		c = NULL;
+		ok = 1;
+		if (getRuleCharsText(nested, &ruleChars, &lastToken)) {
+			for (k = 0; k < ruleChars.length; k++) {
+				c = compile_findCharOrDots(ruleChars.chars[k], 0, *table);
+				if (c)
+					c->attributes |= CTC_EmphMode;
+				else {
+					compileError(nested, "Emphasis mode character undefined");
+					ok = 0;
+					break;
+				}
+			}
+		}
+		(*table)->usesEmphMode = 1;
 		break;
 
 	case CTO_BegComp:

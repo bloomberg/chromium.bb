@@ -3,7 +3,7 @@
 # Autoriteit, 2018) http://liblouis.org/braille-specs/dutch
 #
 # Copyright © 2010-2011 by DocArch <http://www.docarch.be>
-# Copyright © 2014-2015 by Bert Frees
+# Copyright © 2014-2015, 2019 by Bert Frees
 # Copyright © 2015-2016, 2018 by Dedicon <http://www.dedicon.nl>
 #
 # Copying and distribution of this file, with or without modification,
@@ -67,7 +67,7 @@ tests:
   - ['''enkele aanhalingstekens''', ⠄⠑⠝⠅⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠄]
   - ['"dubbele aanhalingstekens"', ⠶⠙⠥⠃⠃⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠶]
   - [“dubbele aanhalingstekens”, ⠶⠙⠥⠃⠃⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠶]
-  - [SMS'je, ⠘⠎⠍⠎⠄⠠⠚⠑]
+  - ["SMS'je", ⠘⠎⠍⠎⠄⠠⠚⠑]
   - [SMS’je, ⠘⠎⠍⠎⠄⠠⠚⠑]
   # §2.10 Haakjes
   - [(ronde haakjes), ⠦⠗⠕⠝⠙⠑ ⠓⠁⠁⠅⠚⠑⠎⠴]
@@ -78,10 +78,10 @@ tests:
   - [registered ®, ⠗⠑⠛⠊⠎⠞⠑⠗⠑⠙ ⠐⠗]
   - [trademark ™, ⠞⠗⠁⠙⠑⠍⠁⠗⠅ ⠐⠞⠍]
   # §2.17 Muntsymbolen/valutatekens
-  - [dollar $, ⠙⠕⠇⠇⠁⠗ ⠙]
-  - [euro €, ⠑⠥⠗⠕ ⠑]
-  - [pond £, ⠏⠕⠝⠙ ⠏]
-  - [yen ¥, ⠽⠑⠝ ⠽]
+  - [dollar $, ⠙⠕⠇⠇⠁⠗ ⠙⠕⠇⠇⠁⠗]
+  - [euro €, ⠑⠥⠗⠕ ⠑⠥⠗⠕]
+  - [pond £, ⠏⠕⠝⠙ ⠏⠕⠝⠙]
+  - [yen ¥, ⠽⠑⠝ ⠽⠑⠝]
   - ['€ 12,35', ⠑⠼⠁⠃⠂⠉⠑]
   - ['€12,35', ⠑⠼⠁⠃⠂⠉⠑]
   - ['$ 10,00', ⠙⠼⠁⠚⠂⠚⠚]
@@ -124,7 +124,7 @@ tests:
   - [8 / 4 = 2, ⠼⠓ ⠌ ⠼⠙ ⠶ ⠼⠃]
   - [8 ÷ 4 = 2, ⠼⠓ ⠲ ⠼⠙ ⠶ ⠼⠃]
   - [65+-kaart, ⠼⠋⠑⠐⠖⠤⠅⠁⠁⠗⠞]
-  - [65+'er, ⠼⠋⠑⠐⠖⠄⠑⠗]
+  - ["65+'er", ⠼⠋⠑⠐⠖⠄⠑⠗]
   - [40-jarige, ⠼⠙⠚⠤⠚⠁⠗⠊⠛⠑]
   # §2.18 Procent- en promilleteken
   # §3.4 Procent- en promilleteken
@@ -134,9 +134,9 @@ tests:
   - [15‰, ⠼⠁⠑ ⠿⠿]
   # §3.6 Graad-, minuut- en secondeteken
   - ['37,8° C', ⠼⠉⠛⠂⠓⠈⠴ ⠨⠉]
-  - [Een hoek van 27° 30'., ⠨⠑⠑⠝ ⠓⠕⠑⠅ ⠧⠁⠝ ⠼⠃⠛⠈⠴ ⠼⠉⠚⠈⠔⠲]
-  - [Het record is 3' 5''., ⠨⠓⠑⠞ ⠗⠑⠉⠕⠗⠙ ⠊⠎ ⠼⠉⠈⠔ ⠼⠑⠈⠔⠔⠲]
-  - [57° 38' noorderbreedte, ⠼⠑⠛⠈⠴ ⠼⠉⠓⠈⠔ ⠝⠕⠕⠗⠙⠑⠗⠃⠗⠑⠑⠙⠞⠑]
+  - ["Een hoek van 27° 30'.", ⠨⠑⠑⠝ ⠓⠕⠑⠅ ⠧⠁⠝ ⠼⠃⠛⠈⠴ ⠼⠉⠚⠈⠔⠲]
+  - ["Het record is 3' 5''.", ⠨⠓⠑⠞ ⠗⠑⠉⠕⠗⠙ ⠊⠎ ⠼⠉⠈⠔ ⠼⠑⠈⠔⠔⠲]
+  - ["57° 38' noorderbreedte", ⠼⠑⠛⠈⠴ ⠼⠉⠓⠈⠔ ⠝⠕⠕⠗⠙⠑⠗⠃⠗⠑⠑⠙⠞⠑]
   # §3.5 Oppervlakte- en inhoudsmaten
   - [65 m², ⠼⠋⠑ ⠍⠬⠼⠃]
   - [65 m^2, ⠼⠋⠑ ⠍⠬⠼⠃]
@@ -161,10 +161,9 @@ tests:
   - [Jozef II-straat, ⠨⠚⠕⠵⠑⠋ ⠘⠊⠊⠤⠎⠞⠗⠁⠁⠞]
   - [WO II, ⠘⠺⠕ ⠘⠊⠊]
   - [E.T.A., ⠘⠑⠲⠞⠲⠁⠲]
-  - - Complex numbers mixed with letters (not fully implemented)
+  - - Complex numbers mixed with letters
     - Zie refertes D-NE004W, D-NB007B en D-NB007BDK.
-    - ⠨⠵⠊⠑ ⠗⠑⠋⠑⠗⠞⠑⠎ ⠨⠙⠤⠘⠝⠑⠼⠚⠚⠙⠺⠂ ⠨⠙⠤⠘⠝⠃⠼⠚⠚⠛⠨⠃ ⠑⠝ ⠨⠙⠤⠘⠝⠃⠼⠚⠚⠛⠘⠃⠙⠅⠲
-    - xfail: true
+    - ⠨⠵⠊⠑ ⠗⠑⠋⠑⠗⠞⠑⠎ ⠨⠙⠤⠘⠝⠑⠼⠚⠚⠙⠨⠺⠂ ⠨⠙⠤⠘⠝⠃⠼⠚⠚⠛⠨⠃ ⠑⠝ ⠨⠙⠤⠘⠝⠃⠼⠚⠚⠛⠘⠃⠙⠅⠲
   - [EEN woord in hoofdletters, ⠘⠑⠑⠝ ⠺⠕⠕⠗⠙ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎]
   - [TWEE WOORDEN in hoofdletters, ⠘⠞⠺⠑⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎]
   - [DRIE WOORDEN IN hoofdletters, ⠘⠙⠗⠊⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠘⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎]
@@ -239,24 +238,21 @@ tests:
     - ⠸⠺⠁⠞⠑⠗⠠⠏⠇⠁⠝⠞
     - typeform:
         underline: '+++++     '
-  - - Emphasis and hyphens (not implemented)
+  - - Koppelteken heft werking op van zowel drukwijzigingsteken als permanent hoofdletterteken
     - ZUID-AFRIKA was zijn droom.
     - ⠸⠘⠵⠥⠊⠙⠤⠸⠘⠁⠋⠗⠊⠅⠁ ⠺⠁⠎ ⠵⠊⠚⠝ ⠙⠗⠕⠕⠍⠲
     - typeform:
         {bold: '+++++++++++                '}
-      xfail: true
-  - - Emphasis and hyphens (not implemented)
+  - - Koppelteken heft werking op van zowel drukwijzigingsteken dus geen herstelteken nodig
     - BTW-tarieven
     - ⠸⠘⠃⠞⠺⠤⠞⠁⠗⠊⠑⠧⠑⠝
     - typeform:
         {italic: '+++         '}
-      xfail: true
-  - - Emphasis and hyphens (not implemented)
+  - - Koppelteken heft werking op van drukwijzigingsteken
     - Zuid-Afrika
     - ⠸⠨⠵⠥⠊⠙⠤⠸⠨⠁⠋⠗⠊⠅⠁
     - typeform:
         {bold: '+++++++++++'}
-      xfail: true
   - - 3de
     - ⠼⠉⠸⠙⠑
     - typeform:
@@ -278,14 +274,20 @@ tests:
     - 'CO₂-uitstoot: 158 g CO₂/km'
     - ⠘⠉⠕⠡⠆⠤⠥⠊⠞⠎⠞⠕⠕⠞⠒ ⠼⠁⠑⠓ ⠛ ⠘⠉⠕⠡⠆⠌⠅⠍
 
-table:
-  locale: nl
-  grade: 0
-  __assert-match: nl.tbl # nl-NL-g0.utb
-table:
-  locale: nl-BE
-  grade: 0
-  __assert-match: nl_BE.tbl # nl-BE-g0.utb
+  # Regels uit toekomstige 2019 standaard (niet officiëel goedgekeurd, maar vrijwel zeker dat dit zal gebeuren)
+  - - Klemtoon en nadruk / accenten (RFC-000367 - https://braille-autoriteit.org/changerequest/klemtoon_en_nadruk)
+    - á é í ó ú
+    - ⠷ ⠿ ⠌ ⠬ ⠾
+  - ["Dáár!", "⠨⠙⠷⠷⠗⠖"]
+  - ["Geef het hém.", "⠨⠛⠑⠑⠋ ⠓⠑⠞ ⠓⠿⠍⠲"]
+  - ["Dat is léúk.", "⠨⠙⠁⠞ ⠊⠎ ⠇⠿⠾⠅⠲"]
+  - ["Je móét komen.", "⠨⠚⠑ ⠍⠬⠿⠞ ⠅⠕⠍⠑⠝⠲"]
+  - ["Ga búíten spelen.", "⠨⠛⠁ ⠃⠾⠌⠞⠑⠝ ⠎⠏⠑⠇⠑⠝⠲"]
+  - ["Móéilijk gaat óók.", "⠨⠍⠬⠿⠊⠇⠊⠚⠅ ⠛⠁⠁⠞ ⠬⠬⠅⠲"]
+  - - Accolades (RFC-000390 - https://braille-autoriteit.org/changerequest/accolades)
+    - "{ }"
+    - ⠐⠷ ⠐⠾
+
 flags: {testmode: backward}
 tests:
   - - Digits followed by lowercase letters

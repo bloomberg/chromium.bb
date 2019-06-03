@@ -1,6 +1,6 @@
 #
 #  Copyright (C) 2010-2011 by DocArch <http://www.docarch.be>
-#  Copyright (C) 2014-2015 by Bert Frees
+#  Copyright (C) 2014-2015, 2019 by Bert Frees
 #  Copyright (C) 2014 by CBB <http://www.cbb.nl>
 #  Copyright (C) 2015, 2016, 2018 by Dedicon <http://www.dedicon.nl>
 #
@@ -78,20 +78,37 @@ begword \x00D7   236-0
 midword \x00D7 0-236-0
 endword \x00D7 0-236
 
-# §1.5 euroteken € (zonder spatie vóór het getal) [1]
+# §2.17 Muntsymbolen/valutatekens [1]
+# Als de munteenheid na het getal wordt geplaatst, dan wordt ze bij voorkeur voluit geschreven
+noback correct ["€"]$s.!$d "euro"
+noback correct ["$"]$s.!$d "dollar"
+noback correct ["£"]$s.!$d "pond"
+noback correct ["¥"]$s.!$d "yen"
+noback correct ["€"]$s.~   "euro"
+noback correct ["$"]$s.~   "dollar"
+noback correct ["£"]$s.~   "pond"
+noback correct ["¥"]$s.~   "yen"
+noback correct ["€"]!$ds   "euro"
+noback correct ["$"]!$ds   "dollar"
+noback correct ["£"]!$ds   "pond"
+noback correct ["¥"]!$ds   "yen"
+noback correct ["€"]~      "euro"
+noback correct ["$"]~      "dollar"
+noback correct ["£"]~      "pond"
+noback correct ["¥"]~      "yen"
 
+# Geplaatst vóór het getal wordt de munteenheid door haar beginletter weergegeven, zonder spatie tussen letter en cijfer
+
+# §1.5 euroteken € (zonder spatie vóór het getal) [1]
 noback joinnum \x20AC 15
 
 # §1.4 dollarteken $ (zonder spatie vóór het getal) [1]
-
 noback joinnum \x0024 145
 
 # §1.16 pondteken £ (zonder spatie vóór het getal) [1]
-
 noback joinnum \x00A3 1234
 
 # §1.24 yenteken ¥ (zonder spatie vóór het getal) [1]
-
 noback joinnum \x00A5 13456
 
 # §1.34 verticale streep | (spatie voor en na) [1]
@@ -175,9 +192,8 @@ emphletter underline 456
 # . (FULL STOP), ' (APOSTROPHE), ‘ (LEFT SINGLE QUOTATION MARK)
 # and ’ (RIGHT SINGLE QUOTATION MARK).
 capsmodechars +&.'‘’
-# The same goes for the emphasis "state". This is not yet supported.
-# See: https://github.com/liblouis/liblouis/issues/116
-#emphmodechars +&.'
+# The same goes for the emphasis "state".
+emphmodechars +&.'
 
 lencapsphrase 4
 begcapsword 45
