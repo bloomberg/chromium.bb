@@ -129,10 +129,8 @@ typedef struct {
   int ref_frame_gop_idx[MAX_STATIC_GF_GROUP_LENGTH][REF_FRAMES];
   unsigned char pyramid_height;
   unsigned char pyramid_lvl_nodes[MAX_PYRAMID_LVL];
-  // These are currently only populated for AOM_Q mode
+  // This is currently only populated for AOM_Q mode
   unsigned char q_val[MAX_STATIC_GF_GROUP_LENGTH];
-  unsigned char q_upper[MAX_STATIC_GF_GROUP_LENGTH];
-  unsigned char q_lower[MAX_STATIC_GF_GROUP_LENGTH];
   int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH];
   int size;
 } GF_GROUP;

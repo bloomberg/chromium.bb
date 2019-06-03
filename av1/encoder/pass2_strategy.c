@@ -739,21 +739,18 @@ static void assign_q_and_bounds_q_mode(AV1_COMP *cpi) {
   const int last_boosted_q = rc->last_boosted_qindex;
   const int last_kf_q = rc->last_kf_qindex;
   const int avg_frame_qindex = rc->avg_frame_qindex[INTER_FRAME];
-  int bottom_index, top_index;
   int q;
 
   for (int cur_index = 0; cur_index < gf_group->size; ++cur_index) {
     const FRAME_UPDATE_TYPE cur_update_type = gf_group->update_type[cur_index];
     int arf_q = -1;  // Initialize to invalid value, for sanity check later.
 
-    q = av1_get_q_and_bounds_constant_quality_two_pass(
-        cpi, width, height, &bottom_index, &top_index, &arf_q, cur_index);
+    q = av1_estimate_q_constant_quality_two_pass(cpi, width, height, &arf_q,
+                                                 cur_index);
     if (cur_update_type == ARF_UPDATE) {
       cpi->rc.arf_q = arf_q;
     }
     gf_group->q_val[cur_index] = q;
-    gf_group->q_upper[cur_index] = top_index;
-    gf_group->q_lower[cur_index] = bottom_index;
 
     // Update the rate control state necessary to accuratly compute q for
     // the next frames.
