@@ -382,7 +382,6 @@
     betty-arc64-nyc-android-pfq
     betty-nyc-android-pfq
     bob-nyc-android-pfq
-    caroline-nyc-android-pfq
     cyan-nyc-android-pfq
     hana-nyc-android-pfq
     reef-nyc-android-pfq
@@ -393,6 +392,7 @@
   master-pi-android-pfq
     betty-arcnext-pi-android-pfq
     caroline-arcnext-pi-android-pfq
+    caroline-pi-android-pfq
     coral-pi-android-pfq
     eve-pi-android-pfq
     grunt-pi-android-pfq
@@ -1198,9 +1198,9 @@
   caroline-ndktranslation-tot-chromium-pfq-informational-tryjob
   caroline-ndktranslation-unittest-stress
   caroline-no-vmtest-pre-cq
-  caroline-nyc-android-pfq-tryjob
   caroline-paladin-tryjob
   caroline-payloads-tryjob
+  caroline-pi-android-pfq-tryjob
   caroline-postsubmit-tryjob
   caroline-pre-cq
   caroline-release-afdo-generate-tryjob
@@ -2607,7 +2607,6 @@
     betty-arc64-nyc-android-pfq-tryjob
     betty-nyc-android-pfq-tryjob
     bob-nyc-android-pfq-tryjob
-    caroline-nyc-android-pfq-tryjob
     cyan-nyc-android-pfq-tryjob
     hana-nyc-android-pfq-tryjob
     reef-nyc-android-pfq-tryjob
@@ -2717,6 +2716,7 @@
   master-pi-android-pfq-tryjob
     betty-arcnext-pi-android-pfq-tryjob
     caroline-arcnext-pi-android-pfq-tryjob
+    caroline-pi-android-pfq-tryjob
     coral-pi-android-pfq-tryjob
     eve-pi-android-pfq-tryjob
     grunt-pi-android-pfq-tryjob

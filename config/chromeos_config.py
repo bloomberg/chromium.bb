@@ -1684,6 +1684,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   _pi_no_hwtest_boards = frozenset([
+      'caroline',
       'coral',
   ])
   _pi_no_hwtest_experimental_boards = frozenset([])
@@ -1741,7 +1742,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   ])
   _nyc_no_hwtest_boards = frozenset([
       'bob',
-      'caroline',
       'hana',
       'reef',
   ])
