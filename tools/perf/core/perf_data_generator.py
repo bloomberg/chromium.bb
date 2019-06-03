@@ -135,6 +135,11 @@ FYI_BUILDERS = {
 # build/scripts/slave/recipe_modules/chromium_tests and must be kept in sync
 # to generate the correct json for each tester
 #
+# The dimensions in pinpoint configs, excluding the dimension "pool",
+# must be kept in sync with the dimensions here.
+# This is to make sure the same type of machines are used between waterfall
+# tests and pinpoint jobs
+#
 # On desktop builders, chromedriver is added as an additional compile target.
 # The perf waterfall builds this target for each commit, and the resulting
 # ChromeDriver is archived together with Chrome for use in bisecting.
@@ -472,8 +477,10 @@ BUILDERS = {
     'target_bits': 64,
     'dimension': {
       'pool': 'chrome.tests.perf',
+      # TODO Add more specific windows version.
+      # See crbug.com/966238 for more detail
       'os': 'Windows-10',
-      'gpu': '8086:5912'
+      'synthetic_product_name': 'OptiPlex 7050 (Dell Inc.)'
     },
   },
   'Win 7 Perf': {

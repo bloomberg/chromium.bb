@@ -11,7 +11,8 @@ from core import bot_platforms
 
 _VALID_SWARMING_DIMENSIONS = {
     'gpu', 'device_ids', 'os', 'pool', 'perf_tests', 'perf_tests_with_args',
-    'device_os', 'device_type', 'device_os_flavor', 'id'}
+    'device_os', 'device_type', 'device_os_flavor', 'id',
+    'synthetic_product_name'}
 _DEFAULT_VALID_PERF_POOLS = {
     'chrome.tests.perf', 'chrome.tests.perf-webview',
     'chrome.tests.perf-fyi', 'chrome.tests.perf-webview-fyi'}
