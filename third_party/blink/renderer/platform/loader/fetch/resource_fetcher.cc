@@ -133,8 +133,8 @@ ResourceLoadPriority TypeToPriority(ResourceType type) {
       return ResourceLoadPriority::kHigh;
     case ResourceType::kManifest:
     case ResourceType::kMock:
-      // Also late-body scripts discovered by the preload scanner (set
-      // explicitly in loadPriority)
+      // Also late-body scripts and stylesheets discovered by the
+      // preload scanner (set explicitly in loadPriority)
       return ResourceLoadPriority::kMedium;
     case ResourceType::kImage:
     case ResourceType::kTextTrack:
@@ -439,6 +439,18 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   if (type == ResourceType::kImage && !is_link_preload)
     image_fetched_ = true;
 
+  // Check for late-in-document resources discovered by the preload scanner.
+  // kInDocument means it was found in the document by the preload scanner.
+  // image_fetched_ is used as the divider between "early" and "late" where
+  // anything after the first image is considered "late" in the document.
+  // This is used for lowering the priority of late-body scripts/stylesheets.
+  bool late_document_from_preload_scanner = false;
+  if (speculative_preload_type ==
+          FetchParameters::SpeculativePreloadType::kInDocument &&
+      image_fetched_) {
+    late_document_from_preload_scanner = true;
+  }
+
   // A preloaded font should not take precedence over critical CSS or
   // parser-blocking scripts.
   if (type == ResourceType::kFont && is_link_preload)
@@ -454,13 +466,17 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     // Preload late in document: Medium
     if (FetchParameters::kLazyLoad == defer_option) {
       priority = ResourceLoadPriority::kLow;
-    } else if (speculative_preload_type ==
-                   FetchParameters::SpeculativePreloadType::kInDocument &&
-               image_fetched_) {
-      // Speculative preload is used as a signal for scripts at the bottom of
-      // the document.
+    } else if (late_document_from_preload_scanner) {
       priority = ResourceLoadPriority::kMedium;
     }
+  } else if (type == ResourceType::kCSSStyleSheet &&
+             late_document_from_preload_scanner) {
+    // Lower the priority of late-body stylesheets discovered by the preload
+    // scanner. They do not block render and this gives them the same behavior
+    // as late-body scripts. If the main parser reaches the stylesheet before
+    // it is loaded, a non-speculative fetch will be made and the priority will
+    // be boosted (just like with scripts).
+    priority = ResourceLoadPriority::kMedium;
   } else if (FetchParameters::kLazyLoad == defer_option) {
     priority = ResourceLoadPriority::kVeryLow;
   } else if (resource_request.GetRequestContext() ==
