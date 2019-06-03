@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
@@ -120,6 +121,9 @@ void PaletteWelcomeBubble::ShowIfNeeded() {
                     *user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT)) {
     return;
   }
+
+  if (Shell::Get()->kiosk_next_shell_controller()->IsEnabled())
+    return;
 
   if (!HasBeenShown())
     Show();
