@@ -699,6 +699,16 @@ void ShelfLayoutManager::OnHomeLauncherAnimationComplete(bool shown,
   is_home_launcher_shown_ = shown;
   is_home_launcher_target_position_shown_ = false;
   MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
+
+  // Cancel ongoing drag when self is hidden on home screen to prevent
+  // visibility issues.
+  if (shown && drag_status_ != kDragNone &&
+      !Shell::Get()
+           ->home_screen_controller()
+           ->delegate()
+           ->ShouldShowShelfOnHomeScreen()) {
+    CancelDrag();
+  }
 }
 
 void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
