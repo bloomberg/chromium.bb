@@ -379,6 +379,18 @@ bool CrostiniRegistryService::Registration::NoDisplay() const {
   return false;
 }
 
+std::string CrostiniRegistryService::Registration::PackageId() const {
+  if (is_terminal_app_)
+    return std::string();
+  if (pref_.is_none())
+    return std::string();
+  const base::Value* package_id =
+      pref_.FindKeyOfType(kAppPackageIdKey, base::Value::Type::STRING);
+  if (!package_id)
+    return std::string();
+  return package_id->GetString();
+}
+
 bool CrostiniRegistryService::Registration::CanUninstall() const {
   if (pref_.is_none())
     return false;

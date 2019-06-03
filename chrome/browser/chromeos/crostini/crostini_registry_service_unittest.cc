@@ -79,6 +79,8 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   std::set<std::string> mime_types = {"text/plain", "text/x-python"};
   bool no_display = true;
   std::string executable_file_name = "execName";
+  std::string package_id =
+      "vim;2:8.0.0197-4+deb9u1;amd64;installed:debian-stable";
 
   std::string app_id = CrostiniTestHelper::GenerateAppId(
       desktop_file_id, vm_name, container_name);
@@ -92,6 +94,7 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   app->set_desktop_file_id(desktop_file_id);
   app->set_no_display(no_display);
   app->set_executable_file_name(executable_file_name);
+  app->set_package_id(package_id);
 
   for (const auto& localized_name : name) {
     App::LocaleString::Entry* entry = app->mutable_name()->add_values();
@@ -129,6 +132,7 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   EXPECT_EQ(result->MimeTypes(), mime_types);
   EXPECT_EQ(result->NoDisplay(), no_display);
   EXPECT_EQ(result->ExecutableFileName(), executable_file_name);
+  EXPECT_EQ(result->PackageId(), package_id);
 }
 
 TEST_F(CrostiniRegistryServiceTest, Observer) {
@@ -506,6 +510,29 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistrationExecutableFileName) {
       service()->GetRegistration(app_id_no_exec);
   EXPECT_EQ(result_valid_exec->ExecutableFileName(), executable_file_name);
   EXPECT_EQ(result_no_exec->ExecutableFileName(), "");
+}
+
+TEST_F(CrostiniRegistryServiceTest, SetAndGetPackageId) {
+  std::string package_id =
+      "vim;2:8.0.0197-4+deb9u1;amd64;installed:debian-stable";
+  std::string app_id_valid_package_id =
+      CrostiniTestHelper::GenerateAppId("app", "vm", "container");
+  std::string app_id_no_package_id =
+      CrostiniTestHelper::GenerateAppId("noPackageId", "vm", "container");
+  ApplicationList app_list =
+      CrostiniTestHelper::BasicAppList("app", "vm", "container");
+  *app_list.add_apps() = CrostiniTestHelper::BasicApp("noPackageId");
+
+  app_list.mutable_apps(0)->set_package_id(package_id);
+  service()->UpdateApplicationList(app_list);
+
+  base::Optional<CrostiniRegistryService::Registration>
+      result_valid_package_id =
+          service()->GetRegistration(app_id_valid_package_id);
+  base::Optional<CrostiniRegistryService::Registration> result_no_package_id =
+      service()->GetRegistration(app_id_no_package_id);
+  EXPECT_EQ(result_valid_package_id->PackageId(), package_id);
+  EXPECT_EQ(result_no_package_id->PackageId(), "");
 }
 
 }  // namespace crostini

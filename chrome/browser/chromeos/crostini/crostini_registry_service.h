@@ -87,6 +87,8 @@ class CrostiniRegistryService : public KeyedService {
     std::set<std::string> Keywords() const;
     bool NoDisplay() const;
 
+    std::string PackageId() const;
+
     base::Time InstallTime() const;
     base::Time LastLaunchTime() const;
 
