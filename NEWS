@@ -51,6 +51,8 @@ issues]].
   - Write currency symbols in full if they come after the number
 
 ** Other changes
+- Remove various restrictions on which characters and braille cells
+  can be used in translation rules, thanks to Bert Frees.
 - Remove some code duplication in pattern.c thanks to Bert Frees
 - It is now also possible to define inline tables when a display table
   has been defined thanks to Bert Frees

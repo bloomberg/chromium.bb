@@ -445,8 +445,7 @@ order of entries is generally unimportant. Thus the translation
 entries can be grouped alphabetically or in any other order that is
 convenient. Hyphenation tables may be specified either with an 
 @code{include} opcode or as part of a table list. They should come after 
-everything else. Character-definition opcodes are necessary for 
-hyphenation tables to work.
+everything else.
 
 @node Hyphenation Tables
 @section Hyphenation Tables
@@ -473,22 +472,7 @@ the dot pattern is a single cell, it is used to define the mapping
 between dot patterns and characters, unless a @opcoderef{display} for
 that character-dot-pattern pair has been used previously. If only a
 single-cell dot pattern has been given for a character, that dot
-pattern is defined with the character's own attributes. If more than
-one cell is given and some of them have not previously been defined as
-single cells, the undefined cells are entered into the dots table with
-the space attribute. This is done for backward compatibility with
-old tables, but it may cause problems with the above opcodes or
-back-translation. For this reason, every single-cell dot pattern
-should be defined before it is used in a multi-cell character
-representation. The best way to do this is to use the 8-dot computer
-braille representation for the particular braille code. If a character
-or dot pattern used in any rule, except those with the @code{display}
-opcode, the @opcoderef{repeated} or the @opcoderef{replace}, is not
-defined by one of the character-definition opcodes, liblouis will give
-an error message and refuse to continue until the problem is fixed. If
-the translator or back-translator encounters an undefined character in
-its input it produces a succinct error indication in its output, and
-the character is treated as a space.
+pattern is defined with the character's own attributes.
 
 You may have multiple definitions of a character using the same or
 different dot patterns. If you use different dot patterns for the same
@@ -1144,8 +1128,9 @@ The dots operand defines the braille representation for the characters
 operand. It may also be specified as an equals sign (@samp{=}). This
 means that the the default representation for each character
 (@pxref{Character-Definition Opcodes}) within the sequence is to be
-used. Note however that the @samp{=} shortcut for dot patterns has a
-known bug@footnote{See
+used. It is an error if not all the characters in the rule have been
+previously defined in a character-definition rule. Note that the
+@samp{=} shortcut for dot patterns has a known bug@footnote{See
 @url{https://github.com/liblouis/liblouis/issues/500#issuecomment-365753137}.}
 that might cause problems when back-translating.
 
@@ -1916,7 +1901,7 @@ as the main table, use a full path name for filename.
 
 @opcode{undefined, dots}
 If this opcode is used in a table any characters which have not been
-defined in the table but are encountered in the text will be replaced
+handled in the table but are encountered in the text will be replaced
 by the dot pattern. If this opcode is not used, any undefined
 characters are replaced by @code{'\xhhhh'}, where the h's are
 hexadecimal digits.
