@@ -3755,7 +3755,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <if expr="enable_vr">
-        <part file="../../../app/xr_consent_ui_strings.grdp" />
+        <part file="xr_consent_ui_strings_java.grdp" />
       </if>
 
       <if expr="enable_arcore">
