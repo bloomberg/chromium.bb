@@ -16,7 +16,6 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_util.h"
@@ -466,8 +465,6 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
         // Reset the |enter_animation_type_| to DEFAULT it if is STEP_END, which
         // is set for non-top windows when entering tablet mode.
         set_enter_animation_type(DEFAULT);
-        Shell::Get()->tablet_mode_controller()->MaybeObserveBoundsAnimation(
-            window_state->window());
         return;
       }
       // If we animate (to) tablet mode, we want to use the cross fade to
@@ -478,18 +475,13 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
         window_state->SetBoundsDirect(bounds_in_parent);
       else
         window_state->SetBoundsDirectAnimated(bounds_in_parent);
-
-      Shell::Get()->tablet_mode_controller()->MaybeObserveBoundsAnimation(
-          window_state->window());
     }
   }
 }
 
 bool TabletModeWindowState::IsTopWindow(aura::Window* window) {
-  MruWindowTracker::WindowList windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
-
-  return !windows.empty() && window == windows[0];
+  DCHECK(window);
+  return window == creator_->GetTopWindow();
 }
 
 }  // namespace ash

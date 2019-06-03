@@ -31,6 +31,7 @@
 #include "base/time/tick_clock.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/compositor/layer_animation_sequence.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/devices/input_device.h"
@@ -136,6 +137,11 @@ bool HasActiveInternalDisplay() {
   return display::Display::HasInternalDisplay() &&
          Shell::Get()->display_manager()->IsActiveDisplayId(
              display::Display::InternalDisplayId());
+}
+
+bool IsTransformAnimationSequence(ui::LayerAnimationSequence* sequence) {
+  DCHECK(sequence);
+  return sequence->properties() & ui::LayerAnimationElement::TRANSFORM;
 }
 
 }  // namespace
@@ -332,34 +338,31 @@ bool TabletModeController::TriggerRecordLidAngleTimerForTesting() {
 }
 
 void TabletModeController::MaybeObserveBoundsAnimation(aura::Window* window) {
+  StopObservingAnimation(/*record_stats=*/false);
+
   if (state_ != State::kEnteringTabletMode &&
       state_ != State::kExitingTabletMode) {
     return;
   }
 
-  // A window may not be tracked by |tablet_mode_window_manager_|. Do not
-  // observe the animations of these windows.
-  if (tablet_mode_window_manager_ &&
-      !tablet_mode_window_manager_->IsTrackingWindow(window)) {
-    return;
-  }
-
-  // If |fps_counter_| exists and is of the same mode do nothing, as we only
-  // need to observe one window animation.
-  bool entering_tablet_mode = state_ == State::kEnteringTabletMode;
-  if (fps_counter_ &&
-      fps_counter_->enter_tablet_mode() == entering_tablet_mode) {
-    return;
-  }
-
-  if (!window->layer()->GetAnimator()->is_animating())
-    return;
-
   observed_window_ = window;
+  observed_layer_ = window->layer();
   window->AddObserver(this);
-  window->layer()->GetAnimator()->AddObserver(this);
-  fps_counter_ = std::make_unique<TabletModeTransitionFpsCounter>(
-      window->layer()->GetCompositor(), entering_tablet_mode);
+  observed_layer_->GetAnimator()->AddObserver(this);
+}
+
+void TabletModeController::StopObservingAnimation(bool record_stats) {
+  StopObserving();
+
+  if (observed_layer_)
+    observed_layer_->GetAnimator()->RemoveObserver(this);
+  observed_layer_ = nullptr;
+  if (observed_window_)
+    observed_window_->RemoveObserver(this);
+  observed_window_ = nullptr;
+  if (record_stats && fps_counter_)
+    fps_counter_->LogUma();
+  fps_counter_.reset();
 }
 
 void TabletModeController::SetTabletModeToggleObserver(
@@ -574,16 +577,31 @@ void TabletModeController::OnLayerAnimationStarted(
 
 void TabletModeController::OnLayerAnimationAborted(
     ui::LayerAnimationSequence* sequence) {
+  if (!fps_counter_ || !IsTransformAnimationSequence(sequence))
+    return;
+
   StopObservingAnimation(/*record_stats=*/false);
 }
 
 void TabletModeController::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* sequence) {
+  if (!fps_counter_ || !IsTransformAnimationSequence(sequence))
+    return;
+
   StopObservingAnimation(/*record_stats=*/true);
 }
 
 void TabletModeController::OnLayerAnimationScheduled(
     ui::LayerAnimationSequence* sequence) {
+  if (!IsTransformAnimationSequence(sequence))
+    return;
+
+  if (!fps_counter_) {
+    fps_counter_ = std::make_unique<TabletModeTransitionFpsCounter>(
+        observed_layer_->GetCompositor(), state_ == State::kEnteringTabletMode);
+    return;
+  }
+
   // If another animation is scheduled while the animation we were originally
   // watching is still animating, abort and do not log stats as the stats will
   // not be accurate.
@@ -862,18 +880,6 @@ void TabletModeController::SuspendOcclusionTracker() {
 
 void TabletModeController::ResetPauser() {
   occlusion_tracker_pauser_.reset();
-}
-
-void TabletModeController::StopObservingAnimation(bool record_stats) {
-  DCHECK(observed_window_);
-  DCHECK(fps_counter_);
-  StopObserving();
-  observed_window_->layer()->GetAnimator()->RemoveObserver(this);
-  observed_window_->RemoveObserver(this);
-  observed_window_ = nullptr;
-  if (record_stats)
-    fps_counter_->LogUma();
-  fps_counter_.reset();
 }
 
 }  // namespace ash

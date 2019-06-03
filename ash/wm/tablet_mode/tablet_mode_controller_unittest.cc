@@ -1583,7 +1583,6 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   base::HistogramTester histogram_tester;
-
   // We have two windows, which both animated into tablet mode, but we only
   // observe and record smoothness for one.
   auto window = CreateTestWindow(gfx::Rect(200, 200));
@@ -1591,20 +1590,23 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
 
   // Tests that we get one enter and one exit animation smoothess histogram when
   // entering and exiting tablet mode with a normal window.
+  ui::Layer* layer = window->layer();
+  ui::Layer* layer2 = window2->layer();
   tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(window->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
-  window->layer()->GetAnimator()->StopAnimating();
-  window2->layer()->GetAnimator()->StopAnimating();
+  layer->GetAnimator()->StopAnimating();
+  layer2->GetAnimator()->StopAnimating();
   histogram_tester.ExpectTotalCount(kEnterHistogram, 1);
   histogram_tester.ExpectTotalCount(kExitHistogram, 0);
 
-  // Only |window2| animates on exit because on animation start |window| is
-  // fully covered by |window2|.
+  layer = window->layer();
+  layer2 = window2->layer();
   tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
-  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
-  window2->layer()->GetAnimator()->StopAnimating();
+  EXPECT_TRUE(layer->GetAnimator()->is_animating());
+  EXPECT_TRUE(layer2->GetAnimator()->is_animating());
+  layer->GetAnimator()->StopAnimating();
+  layer2->GetAnimator()->StopAnimating();
   histogram_tester.ExpectTotalCount(kEnterHistogram, 1);
   histogram_tester.ExpectTotalCount(kExitHistogram, 1);
 }

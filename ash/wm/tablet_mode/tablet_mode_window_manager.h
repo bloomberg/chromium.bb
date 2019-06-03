@@ -17,7 +17,6 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/window_state_observer.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
@@ -46,8 +45,7 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                                            public display::DisplayObserver,
                                            public OverviewObserver,
                                            public ShellObserver,
-                                           public SessionObserver,
-                                           public wm::WindowStateObserver {
+                                           public SessionObserver {
  public:
   // This should only be deleted by the creator (TabletModeController).
   ~TabletModeWindowManager() override;
@@ -74,6 +72,8 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // Called from a window state object when it gets destroyed.
   void WindowStateDestroyed(aura::Window* window);
 
+  aura::Window* GetTopWindow();
+
   // OverviewObserver:
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
@@ -98,10 +98,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
-
-  // wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   WindowStateType old_type) override;
 
   // Tell all managing windows not to handle WM events.
   void SetIgnoreWmEventsForExit();
