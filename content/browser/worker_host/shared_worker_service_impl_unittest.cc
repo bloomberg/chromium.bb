@@ -685,7 +685,9 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase) {
   EXPECT_TRUE(worker.CheckReceivedTerminate());
 }
 
-TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
+// TODO(https://crbug.com/968971): Flaky fails on all bots.
+TEST_F(SharedWorkerServiceImplTest,
+       DISABLED_CreateWorkerTest_PendingCase_URLMismatch) {
   const GURL kUrl0("http://example.com/w0.js");
   const GURL kUrl1("http://example.com/w1.js");
   const char kName[] = "name";
@@ -776,7 +778,9 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
   EXPECT_TRUE(worker1.CheckReceivedTerminate());
 }
 
-TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_NameMismatch) {
+// TODO(https://crbug.com/968971): Flaky fails on all bots.
+TEST_F(SharedWorkerServiceImplTest,
+       DISABLED_CreateWorkerTest_PendingCase_NameMismatch) {
   const GURL kUrl("http://example.com/w.js");
   const char kName0[] = "name0";
   const char kName1[] = "name1";
