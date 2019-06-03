@@ -121,16 +121,6 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onIconKeydown_: function(e) {
-    if (e.shiftKey && e.key === 'Tab') {
-      this.focus();
-    }
-  },
-
-  /**
-   * @param {!KeyboardEvent} e
-   * @private
-   */
   onKeyDown_: function(e) {
     if (e.key != ' ' && e.key != 'Enter') {
       return;
