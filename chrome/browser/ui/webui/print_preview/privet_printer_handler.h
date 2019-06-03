@@ -66,8 +66,7 @@ class PrivetPrinterHandler
 
  private:
   void StartLister(
-      const scoped_refptr<local_discovery::ServiceDiscoverySharedClient>&
-          client);
+      scoped_refptr<local_discovery::ServiceDiscoverySharedClient> client);
   void StopLister();
   void CapabilitiesUpdateClient(
       std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);

@@ -132,8 +132,7 @@ void PrivetPrinterHandler::OnPrivetPrintingError(
 }
 
 void PrivetPrinterHandler::StartLister(
-    const scoped_refptr<local_discovery::ServiceDiscoverySharedClient>&
-        client) {
+    scoped_refptr<local_discovery::ServiceDiscoverySharedClient> client) {
   DCHECK(!service_discovery_client_.get() ||
          service_discovery_client_.get() == client.get());
   service_discovery_client_ = client;

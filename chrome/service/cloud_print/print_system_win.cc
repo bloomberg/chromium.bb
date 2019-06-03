@@ -438,7 +438,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         const gfx::Rect& render_area,
         const gfx::Size& render_dpi,
         bool use_color,
-        const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
+        scoped_refptr<base::SingleThreadTaskRunner> client_task_runner) {
       DCHECK(CurrentlyOnServiceIOThread());
       auto utility_host = std::make_unique<ServiceUtilityProcessHost>(
           this, client_task_runner.get());

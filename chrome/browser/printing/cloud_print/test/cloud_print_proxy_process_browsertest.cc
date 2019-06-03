@@ -148,7 +148,7 @@ class MockServiceIPCServer : public ServiceIPCServer {
 
   MockServiceIPCServer(
       ServiceIPCServer::Client* client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       base::WaitableEvent* shutdown_event)
       : ServiceIPCServer(client, io_task_runner, shutdown_event) {}
 

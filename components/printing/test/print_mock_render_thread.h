@@ -43,7 +43,7 @@ class PrintMockRenderThread : public content::MockRenderThread {
   // The following functions are called by the test itself.
 
   void set_io_task_runner(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
 #if BUILDFLAG(ENABLE_PRINTING)
   // Returns the pseudo-printer instance.

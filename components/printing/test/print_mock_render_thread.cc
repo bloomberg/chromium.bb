@@ -41,7 +41,7 @@ PrintMockRenderThread::GetIOTaskRunner() {
 }
 
 void PrintMockRenderThread::set_io_task_runner(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   io_task_runner_ = task_runner;
 }
 
