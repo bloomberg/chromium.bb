@@ -45,6 +45,7 @@ const char kNativeMessagingBlacklist[] = "native_messaging.blacklist";
 const char kNativeMessagingWhitelist[] = "native_messaging.whitelist";
 const char kNativeMessagingUserLevelHosts[] =
     "native_messaging.user_level_hosts";
+const char kPinnedExtensions[] = "extensions.pinned_extensions";
 const char kStorageGarbageCollect[] = "extensions.storage.garbagecollect";
 const char kToolbar[] = "extensions.toolbar";
 const char kToolbarSize[] = "extensions.toolbarsize";

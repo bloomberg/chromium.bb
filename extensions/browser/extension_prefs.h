@@ -186,6 +186,13 @@ class ExtensionPrefs : public KeyedService {
   ExtensionIdList GetToolbarOrder() const;
   void SetToolbarOrder(const ExtensionIdList& extension_ids);
 
+  // Get/Set the set of extensions that are pinned to the toolbar. Only used
+  // when the experiment ExtensionsMenu is active."
+  // TODO(crbug.com/943702): Remove reference to experiment when it launches or
+  // remove code if it does not.
+  ExtensionIdList GetPinnedExtensions() const;
+  void SetPinnedExtensions(const ExtensionIdList& extension_ids);
+
   // Called when an extension is installed, so that prefs get created.
   // If |page_ordinal| is invalid then a page will be found for the App.
   // |install_flags| are a bitmask of extension::InstallFlags.

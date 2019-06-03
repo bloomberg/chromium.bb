@@ -794,6 +794,10 @@ void ToolbarActionsBar::OnToolbarModelInitialized() {
   ResizeDelegate(gfx::Tween::EASE_OUT);
 }
 
+void ToolbarActionsBar::OnToolbarPinnedActionsChanged() {
+  NOTREACHED();
+}
+
 void ToolbarActionsBar::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,

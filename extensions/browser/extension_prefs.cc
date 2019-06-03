@@ -1130,6 +1130,17 @@ void ExtensionPrefs::SetToolbarOrder(const ExtensionIdList& extension_ids) {
   SetExtensionPrefFromContainer(pref_names::kToolbar, extension_ids);
 }
 
+ExtensionIdList ExtensionPrefs::GetPinnedExtensions() const {
+  ExtensionIdList id_list_out;
+  GetUserExtensionPrefIntoContainer(pref_names::kPinnedExtensions,
+                                    &id_list_out);
+  return id_list_out;
+}
+
+void ExtensionPrefs::SetPinnedExtensions(const ExtensionIdList& extension_ids) {
+  SetExtensionPrefFromContainer(pref_names::kPinnedExtensions, extension_ids);
+}
+
 void ExtensionPrefs::OnExtensionInstalled(
     const Extension* extension,
     Extension::State initial_state,
@@ -1857,6 +1868,8 @@ void ExtensionPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(pref_names::kExtensions);
   registry->RegisterListPref(pref_names::kToolbar,
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterListPref(pref_names::kPinnedExtensions,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(pref_names::kToolbarSize, -1);
   registry->RegisterDictionaryPref(kExtensionsBlacklistUpdate);

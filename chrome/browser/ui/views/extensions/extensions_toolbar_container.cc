@@ -43,7 +43,8 @@ ToolbarActionViewController* ExtensionsToolbarContainer::GetPoppedOutAction()
 
 bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(
     const ToolbarActionViewController* action) const {
-  return false;
+  return model_->IsActionPinned(action->GetId()) ||
+         action == popped_out_action_;
 }
 
 void ExtensionsToolbarContainer::UndoPopOut() {
@@ -135,8 +136,17 @@ void ExtensionsToolbarContainer::OnToolbarModelInitialized() {
   CreateActions();
 }
 
+void ExtensionsToolbarContainer::OnToolbarPinnedActionsChanged() {
+  for (auto& it : icons_)
+    it.second->SetVisible(IsActionVisibleOnToolbar(GetActionForId(it.first)));
+  ReorderViews();
+}
+
 void ExtensionsToolbarContainer::ReorderViews() {
   // TODO(pbos): Reorder pinned actions here once they exist.
+  const auto& pinned_action_ids = model_->pinned_action_ids();
+  for (size_t i = 0; i < pinned_action_ids.size(); ++i)
+    ReorderChildView(icons_[pinned_action_ids[i]].get(), i);
 
   // Popped out actions should be at the end.
   if (popped_out_action_)

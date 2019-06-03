@@ -81,6 +81,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   void OnToolbarVisibleCountChanged() override;
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
+  void OnToolbarPinnedActionsChanged() override;
 
   // ToolbarActionView::Delegate:
   content::WebContents* GetCurrentWebContents() override;

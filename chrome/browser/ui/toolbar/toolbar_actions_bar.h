@@ -270,6 +270,7 @@ class ToolbarActionsBar : public ExtensionsContainer,
   void OnToolbarVisibleCountChanged() override;
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
+  void OnToolbarPinnedActionsChanged() override;
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(

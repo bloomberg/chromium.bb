@@ -199,29 +199,40 @@ void ExtensionsMenuView::OnToolbarActionAdded(
     int index) {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarActionRemoved(
     const ToolbarActionsModel::ActionId& action_id) {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarActionMoved(
     const ToolbarActionsModel::ActionId& action_id,
     int index) {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarActionLoadFailed() {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarActionUpdated(
     const ToolbarActionsModel::ActionId& action_id) {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarVisibleCountChanged() {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarHighlightModeChanged(bool is_highlighting) {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarModelInitialized() {
+  Repopulate();
+}
+
+void ExtensionsMenuView::OnToolbarPinnedActionsChanged() {
   Repopulate();
 }
 
