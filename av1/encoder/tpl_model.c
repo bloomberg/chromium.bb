@@ -253,14 +253,20 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
     }
   }
   best_intra_cost = AOMMAX(best_intra_cost, 1);
-  best_inter_cost = AOMMIN(best_intra_cost, (int64_t)best_inter_cost_weighted);
+  if (frame_idx == 0)
+    best_inter_cost = 0;
+  else
+    best_inter_cost =
+        AOMMIN(best_intra_cost, (int64_t)best_inter_cost_weighted);
   tpl_stats->inter_cost = best_inter_cost << TPL_DEP_COST_SCALE_LOG2;
   tpl_stats->intra_cost = best_intra_cost << TPL_DEP_COST_SCALE_LOG2;
 
-  const int idx = gf_group->ref_frame_gop_idx[frame_idx][best_rf_idx];
-  tpl_stats->ref_frame_index = idx;
-  tpl_stats->ref_disp_frame_index = cpi->twopass.gf_group.frame_disp_idx[idx];
-  tpl_stats->mv.as_int = best_mv.as_int;
+  if (frame_idx) {
+    const int idx = gf_group->ref_frame_gop_idx[frame_idx][best_rf_idx];
+    tpl_stats->ref_frame_index = idx;
+    tpl_stats->ref_disp_frame_index = cpi->twopass.gf_group.frame_disp_idx[idx];
+    tpl_stats->mv.as_int = best_mv.as_int;
+  }
 }
 
 static int round_floor(int ref_pos, int bsize_pix) {
@@ -466,6 +472,8 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
       &sf, this_frame->y_crop_width, this_frame->y_crop_height,
       this_frame->y_crop_width, this_frame->y_crop_height);
 
+  xd->cur_buf = this_frame;
+
   if (is_cur_buf_hbd(xd))
     predictor = CONVERT_TO_BYTEPTR(predictor16);
   else
@@ -490,7 +498,7 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
 
   xd->mi = cm->mi_grid_visible;
   xd->mi[0] = cm->mi;
-  xd->cur_buf = this_frame;
+  xd->block_ref_scale_factors[0] = &sf;
 
   const int base_qindex = gf_group->q_val[frame_idx];
   // Get rd multiplier set up.
@@ -528,8 +536,9 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
       tpl_model_store(tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
                       tpl_frame->stride, &tpl_stats);
 
-      tpl_model_update(cpi->tpl_stats, tpl_frame->tpl_stats_ptr, mi_row, mi_col,
-                       bsize);
+      if (frame_idx)
+        tpl_model_update(cpi->tpl_stats, tpl_frame->tpl_stats_ptr, mi_row,
+                         mi_col, bsize);
     }
   }
 }
@@ -539,7 +548,8 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
 static void init_gop_frames_for_tpl(AV1_COMP *cpi,
                                     YV12_BUFFER_CONFIG **gf_picture,
                                     GF_GROUP *gf_group, int *tpl_group_frames,
-                                    const EncodeFrameInput *const frame_input) {
+                                    const EncodeFrameInput *const frame_input,
+                                    int is_for_kf) {
   AV1_COMMON *cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
   int frame_idx = 0;
@@ -564,16 +574,20 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi,
 
   *tpl_group_frames = 0;
 
-  // Initialize Golden reference frame.
-  RefCntBuffer *ref_buf = get_ref_frame_buf(cm, GOLDEN_FRAME);
-  gf_picture[0] = &ref_buf->buf;
-  ++*tpl_group_frames;
+  if (!is_for_kf) {
+    // Initialize Golden reference frame.
+    RefCntBuffer *ref_buf = get_ref_frame_buf(cm, GOLDEN_FRAME);
+    gf_picture[0] = &ref_buf->buf;
+    ++*tpl_group_frames;
+  }
+
+  int start_idx = !is_for_kf;
 
   // Initialize frames in the GF group
-  for (frame_idx = 1;
+  for (frame_idx = start_idx;
        frame_idx <= AOMMIN(gf_group->size, MAX_LENGTH_TPL_FRAME_STATS - 1);
        ++frame_idx) {
-    if (frame_idx == 1) {
+    if (frame_idx == start_idx) {
       gf_picture[frame_idx] = frame_input->source;
       frame_disp_idx = gf_group->frame_disp_idx[frame_idx];
     } else {
@@ -598,6 +612,8 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi,
 
     ++*tpl_group_frames;
   }
+
+  if (is_for_kf) return;
 
   if (frame_idx < MAX_LENGTH_TPL_FRAME_STATS) {
     ++frame_disp_idx;
@@ -663,8 +679,7 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi,
 }
 
 static void init_tpl_stats(AV1_COMP *cpi) {
-  int frame_idx;
-  for (frame_idx = 0; frame_idx < MAX_LENGTH_TPL_FRAME_STATS; ++frame_idx) {
+  for (int frame_idx = 0; frame_idx < MAX_LENGTH_TPL_FRAME_STATS; ++frame_idx) {
     TplDepFrame *tpl_frame = &cpi->tpl_stats[frame_idx];
     memset(tpl_frame->tpl_stats_ptr, 0,
            tpl_frame->height * tpl_frame->width *
@@ -674,19 +689,20 @@ static void init_tpl_stats(AV1_COMP *cpi) {
 }
 
 void av1_tpl_setup_stats(AV1_COMP *cpi,
-                         const EncodeFrameInput *const frame_input) {
+                         const EncodeFrameInput *const frame_input,
+                         int is_for_kf) {
   YV12_BUFFER_CONFIG *gf_picture[MAX_LENGTH_TPL_FRAME_STATS];
   GF_GROUP *gf_group = &cpi->twopass.gf_group;
-  int frame_idx;
 
   init_gop_frames_for_tpl(cpi, gf_picture, gf_group, &cpi->tpl_gf_group_frames,
-                          frame_input);
+                          frame_input, is_for_kf);
 
   init_tpl_stats(cpi);
 
   if (cpi->oxcf.enable_tpl_model == 1) {
     // Backward propagation from tpl_group_frames to 1.
-    for (frame_idx = cpi->tpl_gf_group_frames - 1; frame_idx > 0; --frame_idx) {
+    for (int frame_idx = cpi->tpl_gf_group_frames - 1; frame_idx >= !is_for_kf;
+         --frame_idx) {
       if (gf_group->update_type[frame_idx] == OVERLAY_UPDATE ||
           gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE)
         continue;
@@ -733,6 +749,7 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   xd->left_mbmi = NULL;
   xd->mi[0]->sb_type = bsize;
   xd->mi[0]->motion_mode = SIMPLE_TRANSLATION;
+  xd->block_ref_scale_factors[0] = &sf;
 
   for (int mi_row = 0; mi_row < cm->mi_rows; mi_row += mi_height) {
     // Motion estimation row boundary

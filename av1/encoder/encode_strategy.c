@@ -1100,20 +1100,6 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   // parameter should be used with caution.
   frame_params.speed = oxcf->speed;
 
-  if (!frame_params.show_existing_frame) {
-    cm->using_qmatrix = cpi->oxcf.using_qm;
-    cm->min_qmlevel = cpi->oxcf.qm_minlevel;
-    cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
-    if (oxcf->pass == 2) {
-      if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
-        av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
-        av1_set_frame_size(cpi, cm->width, cm->height);
-        av1_tpl_setup_stats(cpi, &frame_input);
-        assert(cpi->num_gf_group_show_frames == 1);
-      }
-    }
-  }
-
   // Work out some encoding parameters specific to the pass:
   if (oxcf->pass == 0) {
     if (cpi->oxcf.rc_mode == AOM_CBR) {
@@ -1177,6 +1163,29 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   // cm->remapped_ref_idx then update_ref_frame_map() will have no effect.
   memcpy(frame_params.remapped_ref_idx, cm->remapped_ref_idx,
          REF_FRAMES * sizeof(*cm->remapped_ref_idx));
+
+#if ENABLE_KF_TPL
+  if (oxcf->pass == 2 && frame_params.frame_type == KEY_FRAME &&
+      frame_params.show_frame) {
+    av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
+    av1_set_frame_size(cpi, cm->width, cm->height);
+    av1_tpl_setup_stats(cpi, &frame_input, 1);
+  }
+#endif  // ENABLE_KF_TPL
+
+  if (!frame_params.show_existing_frame) {
+    cm->using_qmatrix = cpi->oxcf.using_qm;
+    cm->min_qmlevel = cpi->oxcf.qm_minlevel;
+    cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
+    if (oxcf->pass == 2) {
+      if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
+        av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
+        av1_set_frame_size(cpi, cm->width, cm->height);
+        av1_tpl_setup_stats(cpi, &frame_input, 0);
+        assert(cpi->num_gf_group_show_frames == 1);
+      }
+    }
+  }
 
   if (av1_encode(cpi, dest, &frame_input, &frame_params, &frame_results) !=
       AOM_CODEC_OK) {
