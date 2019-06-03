@@ -57,22 +57,6 @@ const int k3GThroughput = 750 * 1024;
 const int k2GLatency = 300;
 const int k2GThroughput = 250 * 1024;
 
-const char kWindowHandlePrefix[] = "CDwindow-";
-
-std::string WebViewIdToWindowHandle(const std::string& web_view_id) {
-  return kWindowHandlePrefix + web_view_id;
-}
-
-bool WindowHandleToWebViewId(const std::string& window_handle,
-                             std::string* web_view_id) {
-  if (!base::StartsWith(window_handle, kWindowHandlePrefix,
-                        base::CompareCase::SENSITIVE)) {
-    return false;
-  }
-  *web_view_id = window_handle.substr(sizeof(kWindowHandlePrefix) - 1);
-  return true;
-}
-
 Status EvaluateScriptAndIgnoreResult(Session* session, std::string expression) {
   WebView* web_view = nullptr;
   Status status = session->GetTargetWindow(&web_view);

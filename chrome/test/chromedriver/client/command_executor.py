@@ -83,6 +83,8 @@ class Command(object):
   GET_WINDOW_RECT = (_Method.GET, '/session/:sessionId/window/rect')
   GET_WINDOW_SIZE = (
       _Method.GET, '/session/:sessionId/window/:windowHandle/size')
+  NEW_WINDOW = (
+      _Method.POST, '/session/:sessionId/window/new')
   GET_WINDOW_POSITION = (
       _Method.GET, '/session/:sessionId/window/:windowHandle/position')
   SET_WINDOW_SIZE = (

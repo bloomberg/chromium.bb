@@ -159,6 +159,8 @@ _INTEGRATION_NEGATIVE_FILTER = [
     'PerfTest.*',
     # HeadlessInvalidCertificateTest is sometimes flaky.
     'HeadlessInvalidCertificateTest.*',
+    # Similar issues with HeadlessChromeDriverTest.
+    'HeadlessChromeDriverTest.*',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2277
     # RemoteBrowserTest requires extra setup. TODO(johnchen@chromium.org):
     # Modify the test so it runs correctly as isolated test.
@@ -213,6 +215,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testCloseWindowUsingJavascript',
         # Android doesn't support headless mode
         'HeadlessInvalidCertificateTest.*',
+        'HeadlessChromeDriverTest.*',
         # Tests of the desktop Chrome launch process.
         'LaunchDesktopTest.*',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2737
@@ -412,6 +415,23 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testGetCurrentWindowHandle(self):
     self._driver.GetCurrentWindowHandle()
+
+  def _newWindowDoesNotFocus(self, window_type='window'):
+    current_handles = self._driver.GetWindowHandles()
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/focus_blur_test.html'))
+    new_window = self._driver.NewWindow(window_type=window_type)
+    text = self._driver.FindElement('css selector', '#result').GetText()
+
+    self.assertTrue(new_window['handle'] not in current_handles)
+    self.assertTrue(new_window['handle'] in self._driver.GetWindowHandles())
+    self.assertEquals(text, 'PASS')
+
+  def testNewWindowDoesNotFocus(self):
+    self._newWindowDoesNotFocus(window_type='window')
+
+  def testNewTabDoesNotFocus(self):
+    self._newWindowDoesNotFocus(window_type='tab')
 
   def testCloseWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
@@ -3404,6 +3424,29 @@ class HeadlessInvalidCertificateTest(ChromeDriverBaseTest):
     # Verify that page content loaded in new window.
     self._driver.FindElement('css selector', '#link')
 
+
+class HeadlessChromeDriverTest(ChromeDriverBaseTestWithWebServer):
+  """End to end tests for ChromeDriver."""
+
+  def setUp(self):
+    self._driver = self.CreateDriver(chrome_switches=['--headless'])
+
+  def _newWindowDoesNotFocus(self, window_type='window'):
+    current_handles = self._driver.GetWindowHandles()
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/focus_blur_test.html'))
+    new_window = self._driver.NewWindow(window_type=window_type)
+    text = self._driver.FindElement('css selector', '#result').GetText()
+
+    self.assertTrue(new_window['handle'] not in current_handles)
+    self.assertTrue(new_window['handle'] in self._driver.GetWindowHandles())
+    self.assertEquals(text, 'PASS')
+
+  def testNewWindowDoesNotFocus(self):
+    self._newWindowDoesNotFocus(window_type='window')
+
+  def testNewTabDoesNotFocus(self):
+    self._newWindowDoesNotFocus(window_type='tab')
 
 class SupportIPv4AndIPv6(ChromeDriverBaseTest):
   def testSupportIPv4AndIPv6(self):

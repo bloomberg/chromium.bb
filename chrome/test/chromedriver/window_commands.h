@@ -56,6 +56,13 @@ Status ExecuteExecuteAsyncScript(Session* session,
                                  std::unique_ptr<base::Value>* value,
                                  Timeout* timeout);
 
+// Creates a new window/tab.
+Status ExecuteNewWindow(Session* session,
+                        WebView* web_view,
+                        const base::DictionaryValue& params,
+                        std::unique_ptr<base::Value>* value,
+                        Timeout* timeout);
+
 // Changes the targeted frame for the given session.
 Status ExecuteSwitchToFrame(Session* session,
                             WebView* web_view,

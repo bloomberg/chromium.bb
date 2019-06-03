@@ -520,6 +520,10 @@ class ChromeDriver(object):
                                {'windowHandle': 'current'})
     return [size['width'], size['height']]
 
+  def NewWindow(self, window_type="window"):
+    return self.ExecuteCommand(Command.NEW_WINDOW,
+                               {'type': window_type})
+
   def GetWindowRect(self):
     rect = self.ExecuteCommand(Command.GET_WINDOW_RECT)
     return [rect['width'], rect['height'], rect['x'], rect['y']]

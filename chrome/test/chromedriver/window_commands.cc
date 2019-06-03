@@ -608,6 +608,38 @@ Status ExecuteExecuteAsyncScript(Session* session,
   return status;
 }
 
+Status ExecuteNewWindow(Session* session,
+                        WebView* web_view,
+                        const base::DictionaryValue& params,
+                        std::unique_ptr<base::Value>* value,
+                        Timeout* timeout) {
+  std::string type = "";
+  // "type" can either be None or a string.
+  auto* type_param = params.FindKey("type");
+  if (!(!type_param || type_param->is_none() ||
+        params.GetString("type", &type)))
+    return Status(kInvalidArgument, "missing or invalid 'type'");
+
+  // By default, creates new tab.
+  Chrome::WindowType window_type = (type == "window")
+                                       ? Chrome::WindowType::kWindow
+                                       : Chrome::WindowType::kTab;
+
+  std::string handle = "";
+  Status status =
+      session->chrome->NewWindow(session->window, window_type, &handle);
+
+  if (status.IsError())
+    return status;
+
+  auto results = std::make_unique<base::DictionaryValue>();
+  results->SetString("handle", WebViewIdToWindowHandle(handle));
+  results->SetString(
+      "type", (window_type == Chrome::WindowType::kWindow) ? "window" : "tab");
+  *value = std::move(results);
+  return Status(kOk);
+}
+
 Status ExecuteSwitchToFrame(Session* session,
                             WebView* web_view,
                             const base::DictionaryValue& params,

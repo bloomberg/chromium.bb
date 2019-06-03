@@ -117,6 +117,34 @@ Status ChromeImpl::GetWebViewById(const std::string& id, WebView** web_view) {
   return Status(kUnknownError, "web view not found");
 }
 
+Status ChromeImpl::NewWindow(const std::string& target_id,
+                             WindowType type,
+                             std::string* window_handle) {
+  Status status = devtools_websocket_client_->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  Window window;
+  status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return Status(kNoSuchWindow);
+
+  base::DictionaryValue params;
+  params.SetString("url", "about:blank");
+  params.SetBoolean("newWindow", type == WindowType::kWindow);
+  params.SetBoolean("background", true);
+  std::unique_ptr<base::DictionaryValue> result;
+  status = devtools_websocket_client_->SendCommandAndGetResult(
+      "Target.createTarget", params, &result);
+  if (status.IsError())
+    return status;
+
+  if (!result->GetString("targetId", window_handle))
+    return Status(kUnknownError, "no targetId from createTarget");
+
+  return Status(kOk);
+}
+
 Status ChromeImpl::GetWindow(const std::string& target_id, Window* window) {
   Status status = devtools_websocket_client_->ConnectIfNecessary();
   if (status.IsError())

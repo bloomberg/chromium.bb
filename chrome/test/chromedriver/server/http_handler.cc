@@ -185,6 +185,9 @@ HttpHandler::HttpHandler(
           kDelete, "session/:sessionId/window",
           WrapToCommand("CloseWindow", base::BindRepeating(&ExecuteClose))),
       CommandMapping(
+          kPost, "session/:sessionId/window/new",
+          WrapToCommand("NewWindow", base::BindRepeating(&ExecuteNewWindow))),
+      CommandMapping(
           kPost, "session/:sessionId/window",
           WrapToCommand("SwitchToWindow",
                         base::BindRepeating(&ExecuteSwitchToWindow))),
