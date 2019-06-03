@@ -24,6 +24,10 @@
 #include "ui/base/buildflags.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif  // OS_WIN
+
 namespace content {
 
 class ContentBrowserTestSuite : public ContentTestSuiteBase {
@@ -86,6 +90,11 @@ int main(int argc, char** argv) {
   if (parallel_jobs > 1U) {
     parallel_jobs /= 2U;
   }
+#if defined(OS_WIN)
+  // Load and pin user32.dll to avoid having to load it once tests start while
+  // on the main thread loop where blocking calls are disallowed.
+  base::win::PinUser32();
+#endif  // OS_WIN
   content::ContentTestLauncherDelegate launcher_delegate;
   return LaunchTests(&launcher_delegate, parallel_jobs, argc, argv);
 }
