@@ -10,7 +10,6 @@
 
 #oauth-enrollment.saml {
   padding-top: 44px;
-  width: 562px;
 }
 
 #oauth-enroll-step-contents {
@@ -65,7 +64,7 @@
 .oauth-enroll-step-message {
   display: inline-block;
   padding-top: 20px;
-  text-align: left;
+  text-align: start;
   vertical-align: top;
 }
 
@@ -117,14 +116,3 @@
   top: 0;
   z-index: 1;
 }
-
-.oauth-enroll-state-signin #oauth-enroll-navigation,
-.oauth-enroll-state-ad-join #oauth-enroll-navigation,
-.oauth-enroll-state-working #oauth-enroll-navigation {
-  color: white;
-}
-
-#oauth-enrollment.saml #oauth-enroll-navigation {
-  color: rgba(0, 0, 0, .54);
-}
-

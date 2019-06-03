@@ -220,11 +220,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.navigation_.addEventListener('close', this.cancel.bind(this));
       this.navigation_.addEventListener('refresh', this.cancel.bind(this));
 
-      this.navigation_.addEventListener(
-          'back', this.onBackButtonClicked_.bind(this, false));
-
       $('oobe-signin-back-button')
-          .addEventListener('tap', this.onBackButtonClicked_.bind(this, true));
+          .addEventListener('tap', this.onBackButtonClicked_.bind(this));
 
 
       $('oauth-enroll-learn-more-link')
@@ -472,13 +469,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * Skips the device attribute update,
      * shows the successful enrollment step.
      */
-    onBackButtonClicked_: function(cancelOnClick) {
-      this.navigation_.backVisible = false;
+    onBackButtonClicked_: function() {
       if (this.currentStep_ == STEP_SIGNIN) {
         if (this.lastBackMessageValue_) {
           this.lastBackMessageValue_ = false;
           $('oauth-enroll-auth-view').back();
-        } else if (cancelOnClick) {
+        } else {
           this.cancel();
         }
       }
@@ -502,17 +498,15 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * @type {boolean}
      */
     isAtTheBeginning: function() {
-      return !this.navigation_.backVisible && this.currentStep_ == STEP_SIGNIN;
+      return !this.lastBackMessageValue_ && this.currentStep_ == STEP_SIGNIN;
     },
 
     /**
      * Updates visibility of navigation buttons.
      */
     updateControlsState: function() {
-      this.navigation_.backVisible =
-          this.currentStep_ == STEP_SIGNIN && this.lastBackMessageValue_;
       this.navigation_.refreshVisible =
-          this.isAtTheBeginning() && !this.isManualEnrollment_;
+          this.isAtTheBeginning() && this.isManualEnrollment_ === false;
       this.navigation_.closeVisible =
           (this.currentStep_ == STEP_ERROR && !this.navigation_.refreshVisible)
           || this.currentStep_ == STEP_LICENSE_TYPE;
