@@ -1773,11 +1773,10 @@
                   'media/gpu/',
     },
     'virtual_keyboard': {
-      'filepath': 'ui/keyboard/'\
+      'filepath': 'ash/keyboard/'\
                   '|chrome/test/data/chromeos/virtual_keyboard/'\
                   '|extensions/browser/api/virtual_keyboard_private/'\
-                  '|ash/system/virtual_keyboard/'\
-                  '|ash/virtual_keyboard',
+                  '|ash/system/virtual_keyboard/',
     },
     'virtual_reality': {
       # Includes VR, AR, and XR.
@@ -2634,8 +2633,7 @@
     'video': ['posciak+watch@chromium.org'],
     'video_capture': ['chfremer+watch@chromium.org'],
     'video_gpu': ['acourbot+watch@chromium.org'],
-    'virtual_keyboard': ['blakeo+virtualkb@chromium.org',
-                         'dfaden+virtualkb@google.com',
+    'virtual_keyboard': ['dfaden+virtualkb@google.com',
                          'yhanada+watchvk@chromium.org',
                          'shend+watch@chromium.org'],
     'virtual_reality': ['feature-vr-reviews@chromium.org'],
