@@ -494,8 +494,13 @@ TEST_P(NGTrailingSpaceWidthTest, TrailingSpaceWidth) {
   )HTML");
 
   Vector<NGLineInfo> line_infos = BreakToLineInfo(node, LayoutUnit(50));
-  EXPECT_EQ(line_infos[0].ComputeTrailingSpaceWidth(),
-            LayoutUnit(10) * data.trailing_space_width);
+  const NGLineInfo& line_info = line_infos[0];
+  if (line_info.ShouldHangTrailingSpaces()) {
+    EXPECT_EQ(line_info.HangWidth(),
+              LayoutUnit(10) * data.trailing_space_width);
+  } else {
+    EXPECT_EQ(line_info.HangWidth(), LayoutUnit());
+  }
 }
 
 TEST_F(NGLineBreakerTest, MinMaxWithTrailingSpaces) {

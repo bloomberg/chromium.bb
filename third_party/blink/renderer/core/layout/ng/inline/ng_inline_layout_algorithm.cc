@@ -293,6 +293,14 @@ void NGInlineLayoutAlgorithm::CreateLine(
     box_states_->UpdateAfterReorder(&line_box_);
   }
   LayoutUnit inline_size = box_states_->ComputeInlinePositions(&line_box_);
+  if (LayoutUnit hang_width = line_info->HangWidth()) {
+    inline_size -= hang_width;
+    container_builder_.SetHangInlineSize(hang_width);
+
+    if (IsRtl(line_info->BaseDirection())) {
+      line_box_.MoveInInlineDirection(-hang_width);
+    }
+  }
 
   // Truncate the line if 'text-overflow: ellipsis' is set.
   if (UNLIKELY(inline_size > line_info->AvailableWidth() &&
@@ -631,10 +639,7 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
     return false;
 
   // Justify the end of visible text, ignoring preserved trailing spaces.
-  unsigned end_offset;
-  LayoutUnit trailing_spaces_width =
-      line_info->ComputeTrailingSpaceWidth(&end_offset);
-  space += trailing_spaces_width;
+  unsigned end_offset = line_info->EndOffsetForJustify();
 
   // If this line overflows, fallback to 'text-align: start'.
   if (space <= 0)
@@ -708,8 +713,7 @@ LayoutUnit NGInlineLayoutAlgorithm::ApplyTextAlign(NGLineInfo* line_info) {
   LayoutUnit space =
       line_info->AvailableWidth() - line_info->WidthForAlignment();
 
-  const ComputedStyle& line_style = line_info->LineStyle();
-  ETextAlign text_align = line_style.GetTextAlign(line_info->IsLastLine());
+  ETextAlign text_align = line_info->TextAlign();
   if (text_align == ETextAlign::kJustify) {
     // If justification succeeds, no offset is needed. Expansions are set to
     // each |NGInlineItemResult| in |line_info|.

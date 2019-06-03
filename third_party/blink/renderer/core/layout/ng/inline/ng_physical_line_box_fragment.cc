@@ -64,6 +64,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
   // A line box must have a metrics unless it's an empty line box.
   DCHECK(!metrics_.IsEmpty() || IsEmptyLineBox());
   base_direction_ = static_cast<unsigned>(builder->base_direction_);
+  has_hanging_ = builder->hang_inline_size_ != 0;
   has_propagated_descendants_ = has_floating_descendants_ ||
                                 !oof_positioned_descendants_.IsEmpty() ||
                                 builder->unpositioned_list_marker_;
@@ -88,6 +89,24 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     PhysicalRect child_scroll_overflow =
         child->ScrollableOverflowForPropagation(container);
     child_scroll_overflow.offset += child.Offset();
+
+    // Chop the hanging part from scrollable overflow. Children overflow in
+    // inline direction should hang, which should not cause scroll.
+    // TODO(kojii): Should move to text fragment to make this more accurate.
+    if (UNLIKELY(has_hanging_ && !child->IsFloatingOrOutOfFlowPositioned())) {
+      if (IsHorizontalWritingMode(container_writing_mode)) {
+        if (child_scroll_overflow.offset.left < 0)
+          child_scroll_overflow.offset.left = LayoutUnit();
+        if (child_scroll_overflow.Right() > Size().width)
+          child_scroll_overflow.ShiftRightEdgeTo(Size().width);
+      } else {
+        if (child_scroll_overflow.offset.top < 0)
+          child_scroll_overflow.offset.top = LayoutUnit();
+        if (child_scroll_overflow.Bottom() > Size().height)
+          child_scroll_overflow.ShiftBottomEdgeTo(Size().height);
+      }
+    }
+
     // If child has the same style as parent, parent will compute relative
     // offset.
     if (&child->Style() != container_style) {

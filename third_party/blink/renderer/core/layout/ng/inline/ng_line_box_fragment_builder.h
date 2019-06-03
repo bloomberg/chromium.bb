@@ -50,6 +50,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     size_.inline_size = inline_size;
   }
 
+  void SetHangInlineSize(LayoutUnit hang_inline_size) {
+    hang_inline_size_ = hang_inline_size;
+  }
+
   // Mark this line box is an "empty" line box. See NGLineBoxType.
   void SetIsEmptyLineBox();
 
@@ -218,6 +222,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
                                     inline_size, bidi_level});
     }
 
+    void MoveInInlineDirection(LayoutUnit);
     void MoveInInlineDirection(LayoutUnit, unsigned start, unsigned end);
     void MoveInBlockDirection(LayoutUnit);
     void MoveInBlockDirection(LayoutUnit, unsigned start, unsigned end);
@@ -234,6 +239,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
  private:
   NGLineHeightMetrics metrics_;
+  LayoutUnit hang_inline_size_;
   NGPhysicalLineBoxFragment::NGLineBoxType line_box_type_;
   TextDirection base_direction_;
 
