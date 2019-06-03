@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_JS_CRW_JS_WINDOW_ID_MANAGER_H_
-#define IOS_WEB_WEB_STATE_JS_CRW_JS_WINDOW_ID_MANAGER_H_
+#ifndef IOS_WEB_JS_MESSAGING_CRW_JS_WINDOW_ID_MANAGER_H_
+#define IOS_WEB_JS_MESSAGING_CRW_JS_WINDOW_ID_MANAGER_H_
 
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
@@ -26,4 +26,4 @@
 
 @end
 
-#endif  // IOS_WEB_WEB_STATE_JS_CRW_JS_WINDOW_ID_MANAGER_H_
+#endif  // IOS_WEB_JS_MESSAGING_CRW_JS_WINDOW_ID_MANAGER_H_

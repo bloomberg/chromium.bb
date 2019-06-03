@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/web/js_messaging/page_script_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
-#import "ios/web/web_state/js/page_script_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

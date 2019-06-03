@@ -10,7 +10,6 @@ source_set("ui") {
     ":crw_web_view_navigation_proxy",
     ":crw_wk_script_message_router",
     ":favicon_util",
-    ":web_view_js_utils",
     "//base",
     "//ios/net",
     "//ios/web:core",
@@ -48,8 +47,6 @@ source_set("ui") {
   ]
 
   sources = [
-    "crw_js_injector.h",
-    "crw_js_injector.mm",
     "crw_swipe_recognizer_provider.h",
     "crw_touch_tracking_recognizer.h",
     "crw_touch_tracking_recognizer.mm",
@@ -125,9 +122,9 @@ source_set("wk_web_view_configuration_provider") {
     ":crw_wk_script_message_router",
     "//base",
     "//ios/web/common",
+    "//ios/web/js_messaging",
     "//ios/web/public",
     "//ios/web/web_state/js",
-    "//ios/web/web_state/js:script_util",
     "//ios/web/webui",
   ]
 
@@ -135,22 +132,6 @@ source_set("wk_web_view_configuration_provider") {
     "wk_web_view_configuration_provider.h",
     "wk_web_view_configuration_provider.mm",
     "wk_web_view_configuration_provider_observer.h",
-  ]
-
-  libs = [ "WebKit.framework" ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("web_view_js_utils") {
-  deps = [
-    "//base",
-    "//ios/web/public",
-  ]
-
-  sources = [
-    "web_view_js_utils.h",
-    "web_view_js_utils.mm",
   ]
 
   libs = [ "WebKit.framework" ]

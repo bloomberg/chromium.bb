@@ -32,8 +32,8 @@ source_set("test_doubles") {
 
   deps = [
     ":deprecated",
+    "//ios/web/js_messaging",
     "//ios/web/public",
-    "//ios/web/web_state/ui:web_view_js_utils",
     "//url",
   ]
 

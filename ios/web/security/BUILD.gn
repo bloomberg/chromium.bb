@@ -10,12 +10,12 @@ source_set("security") {
   deps = [
     "//base",
     "//ios/web/common",
+    "//ios/web/js_messaging",
     "//ios/web/navigation:core",
     "//ios/web/navigation:navigation_manager_util",
     "//ios/web/public",
     "//ios/web/public/security",
     "//ios/web/web_state:web_state_impl_header",
-    "//ios/web/web_state/ui:web_view_js_utils",
     "//net",
     "//ui/gfx/geometry",
   ]

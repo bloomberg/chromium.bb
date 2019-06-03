@@ -10,6 +10,7 @@ source_set("web_state") {
     ":web_state_impl_header",
     "//base",
     "//ios/web/common",
+    "//ios/web/js_messaging",
     "//ios/web/navigation",
     "//ios/web/navigation:core",
     "//ios/web/navigation:wk_navigation_util",

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/js/crw_js_window_id_manager.h"
+#import "ios/web/js_messaging/crw_js_window_id_manager.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "crypto/random.h"
-#import "ios/web/web_state/js/page_script_util.h"
+#import "ios/web/js_messaging/page_script_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

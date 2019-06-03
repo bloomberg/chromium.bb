@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/js/page_script_util.h"
+#import "ios/web/js_messaging/page_script_util.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -45,10 +45,9 @@ NSString* MakeScriptInjectableOnce(NSString* script_identifier,
 // UTF-16 to UTF-8, which can cause problems when injecting scripts depending
 // on the page encoding (see crbug.com/302741).
 NSString* EscapedQuotedString(NSString* string) {
-  string =
-      [string stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+  string = [string stringByReplacingOccurrencesOfString:@"\\"
+                                             withString:@"\\\\"];
   return [string stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
-  ;
 }
 
 }  // namespace

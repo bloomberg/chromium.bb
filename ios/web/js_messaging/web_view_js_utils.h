@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_UI_WEB_VIEW_JS_UTILS_H_
-#define IOS_WEB_WEB_STATE_UI_WEB_VIEW_JS_UTILS_H_
+#ifndef IOS_WEB_JS_MESSAGING_WEB_VIEW_JS_UTILS_H_
+#define IOS_WEB_JS_MESSAGING_WEB_VIEW_JS_UTILS_H_
 
 #import <Foundation/Foundation.h>
 #include <memory>
@@ -41,4 +41,4 @@ void ExecuteJavaScript(WKWebView* web_view,
 
 }  // namespace web
 
-#endif  // IOS_WEB_WEB_STATE_UI_WEB_VIEW_JS_UTILS_H_
+#endif  // IOS_WEB_JS_MESSAGING_WEB_VIEW_JS_UTILS_H_

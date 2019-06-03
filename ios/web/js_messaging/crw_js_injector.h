@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_UI_CRW_JS_INJECTOR_H_
-#define IOS_WEB_WEB_STATE_UI_CRW_JS_INJECTOR_H_
+#ifndef IOS_WEB_JS_MESSAGING_CRW_JS_INJECTOR_H_
+#define IOS_WEB_JS_MESSAGING_CRW_JS_INJECTOR_H_
 
 #import <UIKit/UIKit.h>
 
@@ -49,4 +49,4 @@
 
 @end
 
-#endif  // IOS_WEB_WEB_STATE_UI_CRW_JS_INJECTOR_H_
+#endif  // IOS_WEB_JS_MESSAGING_CRW_JS_INJECTOR_H_

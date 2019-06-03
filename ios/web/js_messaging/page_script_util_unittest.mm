@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/js/page_script_util.h"
+#import "ios/web/js_messaging/page_script_util.h"
 
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>

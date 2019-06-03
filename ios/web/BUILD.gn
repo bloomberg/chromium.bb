@@ -497,6 +497,7 @@ source_set("ios_web_web_state_js_unittests") {
     "//ios/net",
     "//ios/testing:ocmock_support",
     "//ios/web/find_in_page",
+    "//ios/web/js_messaging",
     "//ios/web/public",
     "//ios/web/public/deprecated",
     "//ios/web/public/js_messaging",
@@ -507,7 +508,6 @@ source_set("ios_web_web_state_js_unittests") {
     "//ios/web/test:test_support",
     "//ios/web/web_state:context_menu",
     "//ios/web/web_state/js",
-    "//ios/web/web_state/js:script_util",
     "//ios/web/web_state/ui:crw_wk_script_message_router",
     "//net:test_support",
     "//services/service_manager/public/cpp",
@@ -521,10 +521,8 @@ source_set("ios_web_web_state_js_unittests") {
     "web_state/js/common_js_unittest.mm",
     "web_state/js/context_menu_js_unittest.mm",
     "web_state/js/crw_js_injection_manager_unittest.mm",
-    "web_state/js/crw_js_window_id_manager_unittest.mm",
     "web_state/js/find_in_page_js_unittest.mm",
     "web_state/js/message_js_unittest.mm",
-    "web_state/js/page_script_util_unittest.mm",
   ]
 }
 
@@ -540,6 +538,7 @@ source_set("ios_web_web_state_ui_unittests") {
     "//ios/net",
     "//ios/testing:ocmock_support",
     "//ios/web/common",
+    "//ios/web/js_messaging",
     "//ios/web/navigation",
     "//ios/web/navigation:block_universal_links_buildflags",
     "//ios/web/navigation:core",
@@ -555,11 +554,9 @@ source_set("ios_web_web_state_ui_unittests") {
     "//ios/web/test/fakes:fakes",
     "//ios/web/web_state:context_menu",
     "//ios/web/web_state/js",
-    "//ios/web/web_state/js:script_util",
     "//ios/web/web_state/ui:crw_context_menu_controller",
     "//ios/web/web_state/ui:crw_wk_script_message_router",
     "//ios/web/web_state/ui:favicon_util",
-    "//ios/web/web_state/ui:web_view_js_utils",
     "//net:test_support",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
@@ -693,12 +690,12 @@ js_compile_bundle("all_frames_web_bundle") {
   closure_entry_point = "__crWeb.allFramesWebBundle"
 
   sources = [
+    "js_messaging/resources/message.js",
     "web_state/js/resources/all_frames_context_menu.js",
     "web_state/js/resources/all_frames_web_bundle.js",
     "web_state/js/resources/base.js",
     "web_state/js/resources/common.js",
     "web_state/js/resources/find_in_page.js",
-    "web_state/js/resources/message.js",
   ]
 }
 
@@ -707,9 +704,9 @@ js_compile_bundle("all_frames_document_end_web_bundle") {
   closure_entry_point = "__crWeb.allFramesDocumentEndWebBundle"
 
   sources = [
+    "js_messaging/resources/setup_frame.js",
     "web_state/js/resources/all_frames_document_end_web_bundle.js",
     "web_state/js/resources/plugin_placeholder.js",
-    "web_state/js/resources/setup_frame.js",
   ]
 }
 
@@ -731,7 +728,7 @@ js_compile_checked("js_resources") {
   ]
 
   sources = [
-    "web_state/js/resources/window_id.js",
+    "js_messaging/resources/window_id.js",
   ]
 }
 

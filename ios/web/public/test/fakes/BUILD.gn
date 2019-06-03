@@ -19,7 +19,6 @@ source_set("fakes") {
     "//ios/web/public/session",
     "//ios/web/test:test_constants",
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
-    "//ios/web/web_state/ui:web_view_js_utils",
     "//ios/web/webui:webui",
     "//net:test_support",
     "//testing/gtest",
