@@ -11,7 +11,7 @@
 
 namespace remote_cocoa {
 
-// Interface between the content view of a BridgedNativeWidgetImpl and a
+// Interface between the content view of a NativeWidgetNSWindowBridge and a
 // DragDropClientMac in the browser process. This interface should eventually
 // become mojo-ified, but at the moment only passes raw pointers (consequently,
 // drag-drop behavior does not work in RemoteMacViews).

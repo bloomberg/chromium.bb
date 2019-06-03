@@ -60,7 +60,7 @@ enum VisibilityTransition {
   kNone = 4,
 };
 
-struct BridgedNativeWidgetInitParams {
+struct NativeWidgetNSWindowInitParams {
   ui.mojom.ModalType modal_type;
   // If true, the underlying window potentially be seen through.
   bool is_translucent;
@@ -80,15 +80,15 @@ struct BridgedNativeWidgetInitParams {
 
 // The interface through which a NativeWidgetMac may interact with an NSWindow
 // (possibly in a process separate from the browser process).
-interface BridgedNativeWidget {
+interface NativeWidgetNSWindow {
   // Create and set the NSWindow for the bridge.
   CreateWindow(CreateWindowParams params);
 
-  // Set the BridgedNativeWidget indicated by |parent_id| to be the parent of
-  // this BridgedNativeWidget.
+  // Set the NativeWidgetNSWindow indicated by |parent_id| to be the parent of
+  // this NativeWidgetNSWindow.
   SetParent(uint64 parent_id);
 
-  // Places this BridgedNativeWidget in front of the BridgedNativeWidget
+  // Places this NativeWidgetNSWindow in front of the NativeWidgetNSWindow
   // indicated by |sibling_id| in z-order.
   StackAbove(uint64 sibling_id);
 
@@ -98,11 +98,11 @@ interface BridgedNativeWidget {
   ShowEmojiPanel();
 
   // Initialize the window's style.
-  InitWindow(BridgedNativeWidgetInitParams params);
+  InitWindow(NativeWidgetNSWindowInitParams params);
 
   // Initialize the view to display compositor output. This will send the
   // current visibility and dimensions (and any future updates) to the
-  // BridgedNativeWidgetHost.
+  // NativeWidgetNSWindowHost.
   InitCompositorView();
 
   // Create the NSView to be the content view for the window. Use |ns_view_id|

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 
 #import <Cocoa/Cocoa.h>
 #include <objc/runtime.h>
@@ -29,7 +29,7 @@
 #import "ui/base/test/cocoa_helper.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
-#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 #import "ui/views/cocoa/text_input_host.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -295,7 +295,7 @@ NSTextInputContext* g_fake_current_input_context = nullptr;
 namespace views {
 namespace test {
 
-// Provides the |parent| argument to construct a BridgedNativeWidgetImpl.
+// Provides the |parent| argument to construct a NativeWidgetNSWindowBridge.
 class MockNativeWidgetMac : public NativeWidgetMac {
  public:
   explicit MockNativeWidgetMac(internal::NativeWidgetDelegate* delegate)
@@ -315,7 +315,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
                           defer:NO]);
     bridge_host()->CreateLocalBridge(window);
     if (auto* parent =
-            BridgedNativeWidgetHostImpl::GetFromNativeView(params.parent)) {
+            NativeWidgetMacNSWindowHost::GetFromNativeView(params.parent)) {
       bridge_host()->SetParent(parent);
     }
     bridge_host()->InitWindow(params);
@@ -336,7 +336,8 @@ class MockNativeWidgetMac : public NativeWidgetMac {
   DISALLOW_COPY_AND_ASSIGN(MockNativeWidgetMac);
 };
 
-// Helper test base to construct a BridgedNativeWidgetImpl with a valid parent.
+// Helper test base to construct a NativeWidgetNSWindowBridge with a valid
+// parent.
 class BridgedNativeWidgetTestBase : public ui::CocoaTest {
  public:
   struct SkipInitialization {};
@@ -348,10 +349,10 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   explicit BridgedNativeWidgetTestBase(SkipInitialization tag)
       : native_widget_mac_(nullptr) {}
 
-  BridgedNativeWidgetImpl* bridge() {
+  remote_cocoa::NativeWidgetNSWindowBridge* bridge() {
     return native_widget_mac_->bridge_impl();
   }
-  BridgedNativeWidgetHostImpl* bridge_host() {
+  NativeWidgetMacNSWindowHost* bridge_host() {
     return native_widget_mac_->bridge_host();
   }
 
@@ -873,7 +874,7 @@ class BridgedNativeWidgetInitTest : public BridgedNativeWidgetTestBase {
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetInitTest);
 };
 
-// Test that BridgedNativeWidgetImpl remains sane if Init() is never called.
+// Test that NativeWidgetNSWindowBridge remains sane if Init() is never called.
 TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
   // Don't use a Widget* as the delegate. ~Widget() checks for Widget::
   // |native_widget_destroyed_| being set to true. That can only happen with a
@@ -1751,7 +1752,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
   bool saw_update_windows = false;
   base::RepeatingClosure update_windows_closure = base::BindRepeating(
       [](bool* saw_update_windows, BridgedContentView* view,
-         BridgedNativeWidgetHostImpl* host, Textfield* textfield) {
+         NativeWidgetMacNSWindowHost* host, Textfield* textfield) {
         // Ensure updateWindows is not invoked recursively.
         EXPECT_FALSE(*saw_update_windows);
         *saw_update_windows = true;
@@ -1781,7 +1782,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
 
   SetHandleKeyEventCallback(base::BindRepeating(
       [](int* saw_return_count, BridgedContentView* view,
-         BridgedNativeWidgetHostImpl* host, Textfield* textfield,
+         NativeWidgetMacNSWindowHost* host, Textfield* textfield,
          const ui::KeyEvent& event) {
         if (event.key_code() == ui::VKEY_RETURN) {
           *saw_return_count += 1;
@@ -1880,8 +1881,8 @@ TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
                         object:window];
 
   // On a failure, Cocoa starts by sending an unexpected *exit* fullscreen, and
-  // BridgedNativeWidgetImpl will think it's just a delayed transition and try
-  // to go back into fullscreen but get ignored by Cocoa.
+  // NativeWidgetNSWindowBridge will think it's just a delayed transition and
+  // try to go back into fullscreen but get ignored by Cocoa.
   EXPECT_EQ(0, [window ignoredToggleFullScreenCount]);
   EXPECT_TRUE(bridge()->target_fullscreen_state());
   [center postNotificationName:NSWindowDidExitFullScreenNotification

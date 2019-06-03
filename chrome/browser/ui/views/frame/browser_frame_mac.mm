@@ -23,17 +23,17 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #import "components/remote_cocoa/app_shim/window_touch_bar_delegate.h"
 #include "components/remote_cocoa/common/application.mojom.h"
-#include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
-#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
+#include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
+#include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 
 namespace {
 

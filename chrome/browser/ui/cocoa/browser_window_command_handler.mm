@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
-#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
+#include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
+#include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 
@@ -42,13 +42,14 @@ void SetToggleState(bool toggled, id item) {
 // Some senders don't have this problem (for example, menus only operate on the
 // foreground window), so this is only an issue for senders that are part of
 // windows.
-views::BridgedNativeWidgetImpl* FindBridgeForSender(id sender,
-                                                    NSWindow* window) {
+remote_cocoa::NativeWidgetNSWindowBridge* FindBridgeForSender(
+    id sender,
+    NSWindow* window) {
   NSWindow* targetWindow = window;
   if ([sender respondsToSelector:@selector(window)])
     targetWindow = [sender window];
-  auto* bridge =
-      views::BridgedNativeWidgetImpl::GetFromNativeWindow(targetWindow);
+  auto* bridge = remote_cocoa::NativeWidgetNSWindowBridge::GetFromNativeWindow(
+      targetWindow);
   DCHECK(bridge);
   return bridge;
 }
@@ -72,7 +73,8 @@ views::BridgedNativeWidgetImpl* FindBridgeForSender(id sender,
     return YES;
   }
 
-  auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
+  auto* bridge =
+      remote_cocoa::NativeWidgetNSWindowBridge::GetFromNativeWindow(window);
   DCHECK(bridge);
 
   remote_cocoa::mojom::ValidateUserInterfaceItemResultPtr result;

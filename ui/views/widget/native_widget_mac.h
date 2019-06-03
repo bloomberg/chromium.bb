@@ -17,12 +17,13 @@ class NativeWidgetMacNSWindow;
 #endif
 
 namespace remote_cocoa {
-class ApplicationHost;
 namespace mojom {
-class BridgedNativeWidget;
 class CreateWindowParams;
+class NativeWidgetNSWindow;
 class ValidateUserInterfaceItemResult;
 }  // namespace mojom
+class ApplicationHost;
+class NativeWidgetNSWindowBridge;
 }  // namespace remote_cocoa
 
 namespace views {
@@ -31,9 +32,7 @@ class HitTestNativeWidgetMac;
 class MockNativeWidgetMac;
 class WidgetTest;
 }
-
-class BridgedNativeWidgetImpl;
-class BridgedNativeWidgetHostImpl;
+class NativeWidgetMacNSWindowHost;
 
 class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
  public:
@@ -41,7 +40,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   ~NativeWidgetMac() override;
 
   // Informs |delegate_| that the native widget is about to be destroyed.
-  // BridgedNativeWidgetImpl::OnWindowWillClose() invokes this early when the
+  // NativeWidgetNSWindowBridge::OnWindowWillClose() invokes this early when the
   // NSWindowDelegate informs the bridge that the window is being closed (later,
   // invoking OnWindowDestroyed()).
   void WindowDestroying();
@@ -187,7 +186,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
       const Widget::InitParams& widget_params,
       remote_cocoa::mojom::CreateWindowParams* params) {}
 
-  // Creates the NSWindow that will be passed to the BridgedNativeWidgetImpl.
+  // Creates the NSWindow that will be passed to the NativeWidgetNSWindowBridge.
   // Called by InitNativeWidget. The return value will be autoreleased.
   // Note that some tests (in particular, views_unittests that interact
   // with ScopedFakeNSWindowFullscreen, on 10.10) assume that these windows
@@ -209,9 +208,9 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   virtual void OnWindowDestroying(gfx::NativeWindow window) {}
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
-  remote_cocoa::mojom::BridgedNativeWidget* bridge() const;
-  BridgedNativeWidgetImpl* bridge_impl() const;
-  BridgedNativeWidgetHostImpl* bridge_host() const {
+  remote_cocoa::mojom::NativeWidgetNSWindow* bridge() const;
+  remote_cocoa::NativeWidgetNSWindowBridge* bridge_impl() const;
+  NativeWidgetMacNSWindowHost* bridge_host() const {
     return bridge_host_.get();
   }
 
@@ -221,7 +220,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   friend class views::test::WidgetTest;
 
   internal::NativeWidgetDelegate* delegate_;
-  std::unique_ptr<BridgedNativeWidgetHostImpl> bridge_host_;
+  std::unique_ptr<NativeWidgetMacNSWindowHost> bridge_host_;
 
   Widget::InitParams::Ownership ownership_;
 

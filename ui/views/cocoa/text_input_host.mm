@@ -4,11 +4,11 @@
 
 #include "ui/views/cocoa/text_input_host.h"
 
-#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#include "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 
 namespace {
 
@@ -131,7 +131,7 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // TextInputHost, public:
 
-TextInputHost::TextInputHost(BridgedNativeWidgetHostImpl* host_impl)
+TextInputHost::TextInputHost(NativeWidgetMacNSWindowHost* host_impl)
     : host_impl_(host_impl), mojo_binding_(this) {}
 
 TextInputHost::~TextInputHost() = default;

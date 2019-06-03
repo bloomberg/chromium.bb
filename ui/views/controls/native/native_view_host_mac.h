@@ -18,7 +18,7 @@ class ViewsHostableView;
 
 namespace views {
 
-class BridgedNativeWidgetHostImpl;
+class NativeWidgetMacNSWindowHost;
 class NativeViewHost;
 
 // Mac implementation of NativeViewHostWrapper.
@@ -56,8 +56,8 @@ class NativeViewHostMac : public NativeViewHostWrapper,
   void SetParentAccessible(gfx::NativeViewAccessible) override;
 
  private:
-  // Return the BridgedNativeWidgetHostImpl for this hosted view.
-  BridgedNativeWidgetHostImpl* GetBridgedNativeWidgetHost() const;
+  // Return the NativeWidgetMacNSWindowHost for this hosted view.
+  NativeWidgetMacNSWindowHost* GetBridgedNativeWidgetHost() const;
 
   // Our associated NativeViewHost. Owns this.
   NativeViewHost* host_;

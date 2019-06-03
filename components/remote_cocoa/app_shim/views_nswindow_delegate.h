@@ -10,16 +10,16 @@
 #import "base/mac/scoped_nsobject.h"
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 
-namespace views {
-class BridgedNativeWidgetImpl;
-}
+namespace remote_cocoa {
+class NativeWidgetNSWindowBridge;
+}  // namespace remote_cocoa
 
-// The delegate set on the NSWindow when a views::BridgedNativeWidgetImpl is
-// initialized.
+// The delegate set on the NSWindow when a
+// remote_cocoa::NativeWidgetNSWindowBridge is initialized.
 REMOTE_COCOA_APP_SHIM_EXPORT
 @interface ViewsNSWindowDelegate : NSObject <NSWindowDelegate> {
  @private
-  views::BridgedNativeWidgetImpl* parent_;  // Weak. Owns this.
+  remote_cocoa::NativeWidgetNSWindowBridge* parent_;  // Weak. Owns this.
   base::scoped_nsobject<NSCursor> cursor_;
 }
 
@@ -29,7 +29,7 @@ REMOTE_COCOA_APP_SHIM_EXPORT
 
 // Initialize with the given |parent|.
 - (instancetype)initWithBridgedNativeWidget:
-    (views::BridgedNativeWidgetImpl*)parent;
+    (remote_cocoa::NativeWidgetNSWindowBridge*)parent;
 
 // Notify that the window has been reordered in (or removed from) the window
 // server's screen list. This is a substitute for -[NSWindowDelegate

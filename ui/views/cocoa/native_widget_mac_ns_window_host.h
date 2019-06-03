@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_HOST_IMPL_H_
-#define UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_HOST_IMPL_H_
+#ifndef UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NS_WINDOW_HOST_H_
+#define UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NS_WINDOW_HOST_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
+#include "components/remote_cocoa/app_shim/native_widget_ns_window_host_helper.h"
 #include "components/remote_cocoa/app_shim/ns_view_ids.h"
 #include "components/remote_cocoa/browser/application_host.h"
-#include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
-#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
+#include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
+#include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
@@ -31,23 +31,26 @@
 @class NSAccessibilityRemoteUIElement;
 @class NSView;
 
+namespace remote_cocoa {
+class NativeWidgetNSWindowBridge;
+}  // namespace remote_cocoa
+
 namespace ui {
 class RecyclableCompositorMac;
 }  // namespace ui
 
 namespace views {
 
-class BridgedNativeWidgetImpl;
 class NativeWidgetMac;
 class TextInputHost;
 
 // The portion of NativeWidgetMac that lives in the browser process. This
-// communicates to the BridgedNativeWidgetImpl, which interacts with the Cocoa
-// APIs, and which may live in an app shim process.
-class VIEWS_EXPORT BridgedNativeWidgetHostImpl
-    : public remote_cocoa::BridgedNativeWidgetHostHelper,
+// communicates to the NativeWidgetNSWindowBridge, which interacts with the
+// Cocoa APIs, and which may live in an app shim process.
+class VIEWS_EXPORT NativeWidgetMacNSWindowHost
+    : public remote_cocoa::NativeWidgetNSWindowHostHelper,
       public remote_cocoa::ApplicationHost::Observer,
-      public remote_cocoa::mojom::BridgedNativeWidgetHost,
+      public remote_cocoa::mojom::NativeWidgetNSWindowHost,
       public DialogObserver,
       public FocusChangeListener,
       public ui::internal::InputMethodDelegate,
@@ -58,27 +61,27 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
  public:
   // Retrieves the bridge host associated with the given NativeWindow. Returns
   // null if the supplied handle has no associated Widget.
-  static BridgedNativeWidgetHostImpl* GetFromNativeWindow(
+  static NativeWidgetMacNSWindowHost* GetFromNativeWindow(
       gfx::NativeWindow window);
-  static BridgedNativeWidgetHostImpl* GetFromNativeView(gfx::NativeView view);
+  static NativeWidgetMacNSWindowHost* GetFromNativeView(gfx::NativeView view);
 
   // Unique integer id handles are used to bridge between the
-  // BridgedNativeWidgetHostImpl in one process and the BridgedNativeWidgetHost
+  // NativeWidgetMacNSWindowHost in one process and the NativeWidgetNSWindowHost
   // potentially in another.
-  static BridgedNativeWidgetHostImpl* GetFromId(
+  static NativeWidgetMacNSWindowHost* GetFromId(
       uint64_t bridged_native_widget_id);
   uint64_t bridged_native_widget_id() const { return widget_id_; }
 
   // Creates one side of the bridge. |owner| must not be NULL.
-  explicit BridgedNativeWidgetHostImpl(NativeWidgetMac* owner);
-  ~BridgedNativeWidgetHostImpl() override;
+  explicit NativeWidgetMacNSWindowHost(NativeWidgetMac* owner);
+  ~NativeWidgetMacNSWindowHost() override;
 
   // The NativeWidgetMac that owns |this|.
   views::NativeWidgetMac* native_widget_mac() const {
     return native_widget_mac_;
   }
-  BridgedNativeWidgetHostImpl* parent() const { return parent_; }
-  std::vector<BridgedNativeWidgetHostImpl*> children() const {
+  NativeWidgetMacNSWindowHost* parent() const { return parent_; }
+  std::vector<NativeWidgetMacNSWindowHost*> children() const {
     return children_;
   }
 
@@ -103,12 +106,14 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // The mojo interface through which to communicate with the underlying
   // NSWindow and NSView.
-  remote_cocoa::mojom::BridgedNativeWidget* bridge() const;
+  remote_cocoa::mojom::NativeWidgetNSWindow* bridge() const;
 
-  // Direct access to the BridgedNativeWidgetImpl that this is hosting.
+  // Direct access to the NativeWidgetNSWindowBridge that this is hosting.
   // TODO(ccameron): Remove all accesses to this member, and replace them
   // with methods that may be sent across processes.
-  BridgedNativeWidgetImpl* bridge_impl() const { return bridge_impl_.get(); }
+  remote_cocoa::NativeWidgetNSWindowBridge* bridge_impl() const {
+    return bridge_impl_.get();
+  }
 
   TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
 
@@ -191,7 +196,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // Set |parent_| and update the old and new parents' |children_|. It is valid
   // to set |new_parent| to nullptr. Propagate this to the BridgedNativeWidget.
-  void SetParent(BridgedNativeWidgetHostImpl* new_parent);
+  void SetParent(NativeWidgetMacNSWindowHost* new_parent);
 
   // Properties set and queried by views. Not actually native.
   void SetNativeWindowProperty(const char* name, void* value);
@@ -225,7 +230,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // calls that may use it (e.g, for context menu positioning).
   void UpdateLocalWindowFrame(const gfx::Rect& frame);
 
-  // BridgedNativeWidgetHostHelper:
+  // NativeWidgetNSWindowHostHelper:
   id GetNativeViewAccessible() override;
   void DispatchKeyEvent(ui::KeyEvent* event) override;
   bool DispatchKeyEventToMenuController(ui::KeyEvent* event) override;
@@ -240,7 +245,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void OnApplicationHostDestroying(
       remote_cocoa::ApplicationHost* host) override;
 
-  // remote_cocoa::mojom::BridgedNativeWidgetHost:
+  // remote_cocoa::mojom::NativeWidgetNSWindowHost:
   void OnVisibilityChanged(bool visible) override;
   void OnWindowNativeThemeChanged() override;
   void OnViewSizeChanged(const gfx::Size& new_size) override;
@@ -307,7 +312,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                          bool require_priority_handler,
                          bool* was_handled) override;
 
-  // remote_cocoa::mojom::BridgedNativeWidgetHost, synchronous callbacks:
+  // remote_cocoa::mojom::NativeWidgetNSWindowHost, synchronous callbacks:
   void GetSheetOffsetY(GetSheetOffsetYCallback callback) override;
   void DispatchKeyEventRemote(std::unique_ptr<ui::Event> event,
                               DispatchKeyEventRemoteCallback callback) override;
@@ -377,8 +382,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   views::NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |this_|.
 
   // Parent and child widgets.
-  BridgedNativeWidgetHostImpl* parent_ = nullptr;
-  std::vector<BridgedNativeWidgetHostImpl*> children_;
+  NativeWidgetMacNSWindowHost* parent_ = nullptr;
+  std::vector<NativeWidgetMacNSWindowHost*> children_;
 
   // The factory that was used to create |bridge_ptr_|. This must be the same
   // as |parent_->application_host_|.
@@ -396,7 +401,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // The mojo pointer to a BridgedNativeWidget, which may exist in another
   // process.
-  remote_cocoa::mojom::BridgedNativeWidgetAssociatedPtr bridge_ptr_;
+  remote_cocoa::mojom::NativeWidgetNSWindowAssociatedPtr bridge_ptr_;
 
   // Remote accessibility objects corresponding to the NSWindow and its root
   // NSView.
@@ -408,10 +413,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // views::Views accessibility tree when the NSView for this is focused.
   ui::AccessibilityFocusOverrider accessibility_focus_overrider_;
 
-  // TODO(ccameron): Rather than instantiate a BridgedNativeWidgetImpl here,
-  // we will instantiate a mojo BridgedNativeWidgetImpl interface to a Cocoa
+  // TODO(ccameron): Rather than instantiate a NativeWidgetNSWindowBridge here,
+  // we will instantiate a mojo NativeWidgetNSWindowBridge interface to a Cocoa
   // instance that may be in another process.
-  std::unique_ptr<BridgedNativeWidgetImpl> bridge_impl_;
+  std::unique_ptr<remote_cocoa::NativeWidgetNSWindowBridge> bridge_impl_;
 
   // Window that is guaranteed to exist in this process (see GetLocalNSWindow).
   base::scoped_nsobject<NativeWidgetMacNSWindow> local_window_;
@@ -457,11 +462,11 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // Contains NativeViewHost->gfx::NativeView associations.
   std::map<const views::View*, NSView*> associated_views_;
 
-  mojo::AssociatedBinding<remote_cocoa::mojom::BridgedNativeWidgetHost>
+  mojo::AssociatedBinding<remote_cocoa::mojom::NativeWidgetNSWindowHost>
       host_mojo_binding_;
-  DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetHostImpl);
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetMacNSWindowHost);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_COCOA_BRIDGED_NATIVE_WIDGET_HOST_IMPL_H_
+#endif  // UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NS_WINDOW_HOST_H_

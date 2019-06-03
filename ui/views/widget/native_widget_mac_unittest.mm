@@ -20,8 +20,8 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #import "testing/gtest_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -33,7 +33,7 @@
 #include "ui/events/test/event_generator.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#include "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -92,12 +92,12 @@
 namespace views {
 namespace test {
 
-// BridgedNativeWidgetImpl friend to access private members.
+// NativeWidgetNSWindowBridge friend to access private members.
 class BridgedNativeWidgetTestApi {
  public:
   explicit BridgedNativeWidgetTestApi(NSWindow* window) {
     bridge_ =
-        BridgedNativeWidgetHostImpl::GetFromNativeWindow(window)->bridge_impl();
+        NativeWidgetMacNSWindowHost::GetFromNativeWindow(window)->bridge_impl();
   }
 
   // Simulate a frame swap from the compositor.
@@ -116,7 +116,7 @@ class BridgedNativeWidgetTestApi {
   }
 
  private:
-  BridgedNativeWidgetImpl* bridge_;
+  remote_cocoa::NativeWidgetNSWindowBridge* bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTestApi);
 };
@@ -152,7 +152,7 @@ class TestWindowNativeWidgetMac : public NativeWidgetMac {
   DISALLOW_COPY_AND_ASSIGN(TestWindowNativeWidgetMac);
 };
 
-// Tests for parts of NativeWidgetMac not covered by BridgedNativeWidgetImpl,
+// Tests for parts of NativeWidgetMac not covered by NativeWidgetNSWindowBridge,
 // which need access to Cocoa APIs.
 class NativeWidgetMacTest : public WidgetTest {
  public:
@@ -782,8 +782,8 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   EXPECT_NE(child, top_level_widget->GetWidget());
 
   // To verify the parent, we need to use NativeWidgetMac APIs.
-  BridgedNativeWidgetHostImpl* bridged_native_widget_host =
-      BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+  NativeWidgetMacNSWindowHost* bridged_native_widget_host =
+      NativeWidgetMacNSWindowHost::GetFromNativeWindow(
           child->GetNativeWindow());
   EXPECT_EQ(bridged_native_widget_host->parent()
                 ->native_widget_mac()
@@ -1331,7 +1331,7 @@ TEST_F(NativeWidgetMacTest, ShowAnimationControl) {
   EXPECT_TRUE([retained_animation isAnimating]);
 
   // Hide without waiting for the animation to complete. Animation should cancel
-  // and clear references from BridgedNativeWidgetImpl.
+  // and clear references from NativeWidgetNSWindowBridge.
   modal_dialog_widget->Hide();
   EXPECT_FALSE([retained_animation isAnimating]);
   EXPECT_FALSE(test_api.show_animation());
@@ -1434,12 +1434,12 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
 
   // TODO(tapted): Ideally [native_parent orderOut:nil] would also work here.
   // But it does not. AppKit's childWindow management breaks down after an
-  // -orderOut: (see BridgedNativeWidgetImpl::OnVisibilityChanged()). For
-  // regular child windows, BridgedNativeWidgetImpl fixes the behavior with its
-  // own management. However, it can't do that for sheets without encountering
-  // http://crbug.com/605098 and http://crbug.com/667602. -[NSApp hide:] makes
-  // the NSWindow hidden in a different way, which does not break like
-  // -orderOut: does. Which is good, because a user can always do -[NSApp
+  // -orderOut: (see NativeWidgetNSWindowBridge::OnVisibilityChanged()). For
+  // regular child windows, NativeWidgetNSWindowBridge fixes the behavior with
+  // its own management. However, it can't do that for sheets without
+  // encountering http://crbug.com/605098 and http://crbug.com/667602. -[NSApp
+  // hide:] makes the NSWindow hidden in a different way, which does not break
+  // like -orderOut: does. Which is good, because a user can always do -[NSApp
   // hide:], e.g., with Cmd+h, and that needs to work correctly.
   [NSApp hide:nil];
 
@@ -1620,8 +1620,8 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
   NSWindow* parent = MakeBorderlessNativeParent();
   Widget* dialog = views::DialogDelegate::CreateDialogWidget(
       new DialogDelegateView, nullptr, [parent contentView]);
-  BridgedNativeWidgetHostImpl* bridge_host =
-      BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+  NativeWidgetMacNSWindowHost* bridge_host =
+      NativeWidgetMacNSWindowHost::GetFromNativeWindow(
           dialog->GetNativeWindow());
 
   EXPECT_EQ(bridge_host->parent()->native_widget_mac()->GetNativeWindow(),
@@ -1636,7 +1636,7 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
   parent = parent_widget->GetNativeWindow().GetNativeNSWindow();
   dialog = views::DialogDelegate::CreateDialogWidget(
       new DialogDelegateView, nullptr, [parent contentView]);
-  bridge_host = BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+  bridge_host = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
       dialog->GetNativeWindow());
 
   EXPECT_EQ(bridge_host->parent()->native_widget_mac()->GetNativeWindow(),
@@ -2202,7 +2202,7 @@ class NativeWidgetMacFullKeyboardAccessTest : public NativeWidgetMacTest {
     NativeWidgetMacTest::SetUp();
 
     widget_ = CreateTopLevelPlatformWidget();
-    bridge_ = BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+    bridge_ = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
                   widget_->GetNativeWindow())
                   ->bridge_impl();
     fake_full_keyboard_access_ =
@@ -2217,7 +2217,7 @@ class NativeWidgetMacFullKeyboardAccessTest : public NativeWidgetMacTest {
   }
 
   Widget* widget_ = nullptr;
-  BridgedNativeWidgetImpl* bridge_ = nullptr;
+  remote_cocoa::NativeWidgetNSWindowBridge* bridge_ = nullptr;
   ui::test::ScopedFakeFullKeyboardAccess* fake_full_keyboard_access_ = nullptr;
 };
 

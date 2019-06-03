@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_HOST_HELPER_H_
-#define COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_HOST_HELPER_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_NS_WINDOW_HOST_HELPER_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_NS_WINDOW_HOST_HELPER_H_
 
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "ui/base/ui_base_types.h"
@@ -21,13 +21,13 @@ namespace remote_cocoa {
 
 class DragDropClient;
 
-// This is a helper class for the mojo interface BridgedNativeWidgetHost.
+// This is a helper class for the mojo interface NativeWidgetNSWindowHost.
 // This provides an easier-to-use interface than the mojo for selected
 // functions. It also is temporarily exposing functionality that is not yet
 // implemented over mojo.
-class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetHostHelper {
+class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowHostHelper {
  public:
-  virtual ~BridgedNativeWidgetHostHelper() = default;
+  virtual ~NativeWidgetNSWindowHostHelper() = default;
 
   // Retrieve the NSObject for accessibility for this widget.
   virtual id GetNativeViewAccessible() = 0;
@@ -63,4 +63,4 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetHostHelper {
 
 }  // namespace remote_cocoa
 
-#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_HOST_HELPER_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_NS_WINDOW_HOST_HELPER_H_

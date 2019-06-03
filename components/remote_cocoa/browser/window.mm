@@ -6,15 +6,15 @@
 
 #import <Cocoa/Cocoa.h>
 
-// An NSWindow is using RemoteMacViews if it has no BridgedNativeWidgetImpl.
+// An NSWindow is using RemoteMacViews if it has no NativeWidgetNSWindowBridge.
 // This is the most expedient method of determining if an NSWindow uses
 // RemoteMacViews.
 namespace remote_cocoa {
-class BridgedNativeWidgetImpl;
+class NativeWidgetNSWindowBridge;
 }  // namespace remote_cocoa
 
 @interface NSWindow (Private)
-- (remote_cocoa::BridgedNativeWidgetImpl*)bridgeImpl;
+- (remote_cocoa::NativeWidgetNSWindowBridge*)bridgeImpl;
 @end
 
 namespace remote_cocoa {

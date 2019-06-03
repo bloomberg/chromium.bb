@@ -6,11 +6,11 @@
 
 #include "base/mac/foundation_util.h"
 #import "base/mac/sdk_forward_declarations.h"
-#include "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
+#include "components/remote_cocoa/app_shim/native_widget_ns_window_host_helper.h"
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
 #import "components/remote_cocoa/app_shim/window_touch_bar_delegate.h"
-#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
+#include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
 #import "ui/base/cocoa/window_size_constants.h"
 
@@ -82,7 +82,7 @@
   base::scoped_nsprotocol<id<UserInterfaceItemCommandHandler>> commandHandler_;
   id<WindowTouchBarDelegate> touchBarDelegate_;  // Weak.
   uint64_t bridgedNativeWidgetId_;
-  views::BridgedNativeWidgetImpl* bridgeImpl_;
+  remote_cocoa::NativeWidgetNSWindowBridge* bridgeImpl_;
 }
 @synthesize bridgedNativeWidgetId = bridgedNativeWidgetId_;
 @synthesize bridgeImpl = bridgeImpl_;
@@ -116,7 +116,7 @@
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)returnCode
         contextInfo:(void*)contextInfo {
-  // Note BridgedNativeWidgetImpl may have cleared [self delegate], in which
+  // Note NativeWidgetNSWindowBridge may have cleared [self delegate], in which
   // case this will no-op. This indirection is necessary to handle AppKit
   // invoking this selector via a posted task. See https://crbug.com/851376.
   [[self viewsNSWindowDelegate] sheetDidEnd:sheet

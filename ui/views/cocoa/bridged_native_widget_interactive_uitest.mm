@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -15,7 +15,7 @@
 #include "ui/base/test/ui_controls.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-#include "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#include "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/window/native_frame_view.h"
@@ -251,13 +251,13 @@ void WaitForEvent(NSUInteger mask) {
 }  // namespace
 
 // This is used to inject test versions of NativeFrameView and
-// BridgedNativeWidgetImpl.
+// NativeWidgetNSWindowBridge.
 class HitTestNativeWidgetMac : public NativeWidgetMac {
  public:
   HitTestNativeWidgetMac(internal::NativeWidgetDelegate* delegate,
                          NativeFrameView* native_frame_view)
       : NativeWidgetMac(delegate), native_frame_view_(native_frame_view) {
-    bridge_host_ = std::make_unique<BridgedNativeWidgetHostImpl>(this);
+    bridge_host_ = std::make_unique<NativeWidgetMacNSWindowHost>(this);
   }
 
   // internal::NativeWidgetPrivate:

@@ -10,16 +10,16 @@
 
 namespace remote_cocoa {
 namespace mojom {
-class BridgedNativeWidget;
+class NativeWidgetNSWindow;
 }  // namespace mojom
 }  // namespace remote_cocoa
 
 namespace views {
 
-// Manages native Cocoa tooltips for the given BridgedNativeWidgetHostImpl.
+// Manages native Cocoa tooltips for the given NativeWidgetNSWindowHostImpl.
 class TooltipManagerMac : public TooltipManager {
  public:
-  explicit TooltipManagerMac(remote_cocoa::mojom::BridgedNativeWidget* bridge);
+  explicit TooltipManagerMac(remote_cocoa::mojom::NativeWidgetNSWindow* bridge);
   ~TooltipManagerMac() override;
 
   // TooltipManager:
@@ -29,7 +29,7 @@ class TooltipManagerMac : public TooltipManager {
   void TooltipTextChanged(View* view) override;
 
  private:
-  remote_cocoa::mojom::BridgedNativeWidget*
+  remote_cocoa::mojom::NativeWidgetNSWindow*
       bridge_;  // Weak. Owned by the owner of this.
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerMac);

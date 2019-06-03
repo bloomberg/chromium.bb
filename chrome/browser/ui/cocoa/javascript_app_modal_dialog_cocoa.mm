@@ -26,7 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#include "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 
 using remote_cocoa::mojom::AlertDisposition;
 
@@ -145,7 +145,7 @@ void JavaScriptAppModalDialogCocoa::ShowAppModalDialog() {
   // Otherwise create an AlertBridge in-process (but still communicate with it
   // over mojo).
   auto* bridged_native_widget_host =
-      views::BridgedNativeWidgetHostImpl::GetFromNativeView(
+      views::NativeWidgetMacNSWindowHost::GetFromNativeView(
           dialog_->web_contents()->GetNativeView());
   remote_cocoa::ApplicationHost* application_host =
       bridged_native_widget_host

@@ -12,10 +12,10 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/gfx/image/image_unittest_util.h"
-#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_mac.h"
@@ -189,7 +189,7 @@ class DragDropClientMacTest : public WidgetTest {
     gfx::Rect bounds(0, 0, 100, 100);
     widget_->SetBounds(bounds);
 
-    bridge_host_ = BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+    bridge_host_ = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
         widget_->GetNativeWindow());
     bridge_ = bridge_host_->bridge_impl();
     widget_->Show();
@@ -209,8 +209,8 @@ class DragDropClientMacTest : public WidgetTest {
 
  protected:
   Widget* widget_ = nullptr;
-  BridgedNativeWidgetImpl* bridge_ = nullptr;
-  BridgedNativeWidgetHostImpl* bridge_host_ = nullptr;
+  remote_cocoa::NativeWidgetNSWindowBridge* bridge_ = nullptr;
+  NativeWidgetMacNSWindowHost* bridge_host_ = nullptr;
   DragDropView* target_ = nullptr;
   base::scoped_nsobject<MockDraggingInfo> dragging_info_;
 

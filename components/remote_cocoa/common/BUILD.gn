@@ -10,8 +10,8 @@ mojom("mojo") {
   sources = [
     "alert.mojom",
     "application.mojom",
-    "bridged_native_widget.mojom",
-    "bridged_native_widget_host.mojom",
+    "native_widget_ns_window.mojom",
+    "native_widget_ns_window_host.mojom",
     "text_input_host.mojom",
   ]
 

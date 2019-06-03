@@ -5,8 +5,8 @@
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_views.h"
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
-#include "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
+#include "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 
 @implementation FullscreenToolbarControllerViews
 
@@ -27,8 +27,8 @@
 }
 
 - (BOOL)isFullscreenTransitionInProgress {
-  views::BridgedNativeWidgetHostImpl* bridge_host =
-      views::BridgedNativeWidgetHostImpl::GetFromNativeWindow([self window]);
+  views::NativeWidgetMacNSWindowHost* bridge_host =
+      views::NativeWidgetMacNSWindowHost::GetFromNativeWindow([self window]);
   if (bridge_host->bridge_impl())
     return bridge_host->bridge_impl()->in_fullscreen_transition();
   DLOG(ERROR) << "TODO(https://crbug.com/915110): Support fullscreen "
@@ -39,8 +39,8 @@
 - (NSWindow*)window {
   NSWindow* ns_window = browserView_->GetNativeWindow().GetNativeNSWindow();
   if (!ns_view_) {
-    views::BridgedNativeWidgetHostImpl* bridge_host =
-        views::BridgedNativeWidgetHostImpl::GetFromNativeWindow(ns_window);
+    views::NativeWidgetMacNSWindowHost* bridge_host =
+        views::NativeWidgetMacNSWindowHost::GetFromNativeWindow(ns_window);
     if (bridge_host) {
       if (bridge_host->bridge_impl())
         ns_view_.reset([bridge_host->bridge_impl()->ns_view() retain]);

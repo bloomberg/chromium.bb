@@ -12,13 +12,13 @@
 #import "ui/base/cocoa/tool_tip_base_view.h"
 #import "ui/base/cocoa/tracking_area.h"
 
+namespace remote_cocoa {
+class NativeWidgetNSWindowBridge;
+}  // namespace remote_cocoa
+
 namespace ui {
 class TextInputClient;
-}
-
-namespace views {
-class BridgedNativeWidgetImpl;
-}
+}  // namespace ui
 
 // The NSView that sits as the root contentView of the NSWindow, whilst it has
 // a views::RootView present. Bridges requests from Cocoa to the hosted
@@ -30,7 +30,7 @@ REMOTE_COCOA_APP_SHIM_EXPORT
                                                  NSServicesMenuRequestor> {
  @private
   // Weak, reset by clearView.
-  views::BridgedNativeWidgetImpl* bridge_;
+  remote_cocoa::NativeWidgetNSWindowBridge* bridge_;
 
   // A tracking area installed to enable mouseMoved events.
   ui::ScopedCrTrackingArea cursorTrackingArea_;
@@ -50,11 +50,11 @@ REMOTE_COCOA_APP_SHIM_EXPORT
   base::string16 lastTooltipText_;
 }
 
-@property(readonly, nonatomic) views::BridgedNativeWidgetImpl* bridge;
+@property(readonly, nonatomic) remote_cocoa::NativeWidgetNSWindowBridge* bridge;
 @property(assign, nonatomic) BOOL drawMenuBackgroundForBlur;
 
 // Initialize the NSView -> views::View bridge. |viewToHost| must be non-NULL.
-- (instancetype)initWithBridge:(views::BridgedNativeWidgetImpl*)bridge
+- (instancetype)initWithBridge:(remote_cocoa::NativeWidgetNSWindowBridge*)bridge
                         bounds:(gfx::Rect)rect;
 
 // Clear the hosted view. For example, if it is about to be destroyed.

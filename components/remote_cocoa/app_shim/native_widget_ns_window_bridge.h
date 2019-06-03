@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_IMPL_H_
-#define COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_IMPL_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_NS_WINDOW_BRIDGE_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_NS_WINDOW_BRIDGE_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -15,7 +15,7 @@
 #import "components/remote_cocoa/app_shim/mouse_capture_delegate.h"
 #include "components/remote_cocoa/app_shim/ns_view_ids.h"
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
-#include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
+#include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
 #include "components/remote_cocoa/common/text_input_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
@@ -29,36 +29,33 @@
 @class NativeWidgetMacNSWindow;
 @class ViewsNSWindowDelegate;
 
-namespace remote_cocoa {
-
-namespace mojom {
-class BridgedNativeWidgetHost;
-class TextInputHost;
-}  // namespace mojom
-
-class BridgedNativeWidgetHostHelper;
-class CocoaMouseCapture;
-class DragDropClient;
-
-}  // namespace remote_cocoa
-
 namespace views {
 namespace test {
 class BridgedNativeWidgetTestApi;
-}
+}  // namespace test
+}  // namespace views
 
+namespace remote_cocoa {
+namespace mojom {
+class NativeWidgetNSWindowHost;
+class TextInputHost;
+}  // namespace mojom
+
+class NativeWidgetNSWindowHostHelper;
+class CocoaMouseCapture;
 class CocoaWindowMoveLoop;
+class DragDropClient;
 
-using remote_cocoa::mojom::BridgedNativeWidgetHost;
-using remote_cocoa::BridgedNativeWidgetHostHelper;
+using remote_cocoa::mojom::NativeWidgetNSWindowHost;
+using remote_cocoa::NativeWidgetNSWindowHostHelper;
 using remote_cocoa::CocoaMouseCapture;
 using remote_cocoa::CocoaMouseCaptureDelegate;
 
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
-class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
-    : public remote_cocoa::mojom::BridgedNativeWidget,
+class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
+    : public remote_cocoa::mojom::NativeWidgetNSWindow,
       public display::DisplayObserver,
       public ui::CATransactionCoordinator::PreCommitObserver,
       public CocoaMouseCaptureDelegate {
@@ -68,30 +65,33 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   static gfx::Size GetWindowSizeForClientSize(NSWindow* window,
                                               const gfx::Size& size);
 
-  // Retrieve a BridgedNativeWidgetImpl* from its id or window.
-  static BridgedNativeWidgetImpl* GetFromId(uint64_t bridged_native_widget_id);
-  static BridgedNativeWidgetImpl* GetFromNativeWindow(gfx::NativeWindow window);
+  // Retrieve a NativeWidgetNSWindowBridge* from its id or window.
+  static NativeWidgetNSWindowBridge* GetFromId(
+      uint64_t bridged_native_widget_id);
+  static NativeWidgetNSWindowBridge* GetFromNativeWindow(
+      gfx::NativeWindow window);
 
   // Create an NSWindow for the specified parameters.
   static base::scoped_nsobject<NativeWidgetMacNSWindow> CreateNSWindow(
       const remote_cocoa::mojom::CreateWindowParams* params);
 
   // Creates one side of the bridge. |host| and |parent| must not be NULL.
-  BridgedNativeWidgetImpl(uint64_t bridged_native_widget_id,
-                          BridgedNativeWidgetHost* host,
-                          BridgedNativeWidgetHostHelper* host_helper,
-                          remote_cocoa::mojom::TextInputHost* text_input_host);
-  ~BridgedNativeWidgetImpl() override;
+  NativeWidgetNSWindowBridge(
+      uint64_t bridged_native_widget_id,
+      NativeWidgetNSWindowHost* host,
+      NativeWidgetNSWindowHostHelper* host_helper,
+      remote_cocoa::mojom::TextInputHost* text_input_host);
+  ~NativeWidgetNSWindowBridge() override;
 
   // Bind |bridge_mojo_binding_| to |request|, and set the connection error
   // callback for |bridge_mojo_binding_| to |connection_closed_callback| (which
   // will delete |this| when the connection is closed).
   void BindRequest(
-      remote_cocoa::mojom::BridgedNativeWidgetAssociatedRequest request,
+      remote_cocoa::mojom::NativeWidgetNSWindowAssociatedRequest request,
       base::OnceClosure connection_closed_callback);
 
   // Initialize the NSWindow by taking ownership of the specified object.
-  // TODO(ccameron): When a BridgedNativeWidgetImpl is allocated across a
+  // TODO(ccameron): When a NativeWidgetNSWindowBridge is allocated across a
   // process boundary, it will not be possible to explicitly set an NSWindow in
   // this way.
   void SetWindow(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
@@ -155,8 +155,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   void SortSubviews(std::map<NSView*, int> rank);
 
   BridgedContentView* ns_view() { return bridged_view_; }
-  BridgedNativeWidgetHost* host() { return host_; }
-  BridgedNativeWidgetHostHelper* host_helper() { return host_helper_; }
+  NativeWidgetNSWindowHost* host() { return host_; }
+  NativeWidgetNSWindowHostHelper* host_helper() { return host_helper_; }
   remote_cocoa::mojom::TextInputHost* text_input_host() const {
     return text_input_host_;
   }
@@ -168,8 +168,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   // The parent widget specified in Widget::InitParams::parent. If non-null, the
   // parent will close children before the parent closes, and children will be
   // raised above their parent when window z-order changes.
-  BridgedNativeWidgetImpl* parent() { return parent_; }
-  const std::vector<BridgedNativeWidgetImpl*>& child_windows() {
+  NativeWidgetNSWindowBridge* parent() { return parent_; }
+  const std::vector<NativeWidgetNSWindowBridge*>& child_windows() {
     return child_windows_;
   }
 
@@ -198,14 +198,14 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   bool ShouldWaitInPreCommit() override;
   base::TimeDelta PreCommitTimeout() override;
 
-  // remote_cocoa::mojom::BridgedNativeWidget:
+  // remote_cocoa::mojom::NativeWidgetNSWindow:
   void CreateWindow(remote_cocoa::mojom::CreateWindowParamsPtr params) override;
   void SetParent(uint64_t parent_id) override;
   void StackAbove(uint64_t sibling_id) override;
   void StackAtTop() override;
   void ShowEmojiPanel() override;
   void InitWindow(
-      remote_cocoa::mojom::BridgedNativeWidgetInitParamsPtr params) override;
+      remote_cocoa::mojom::NativeWidgetNSWindowInitParamsPtr params) override;
   void InitCompositorView() override;
   void CreateContentView(uint64_t ns_view_id, const gfx::Rect& bounds) override;
   void DestroyContentView() override;
@@ -259,14 +259,14 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   gfx::Vector2d GetChildWindowOffset() const;
 
  private:
-  friend class test::BridgedNativeWidgetTestApi;
+  friend class views::test::BridgedNativeWidgetTestApi;
 
-  // Closes all child windows. BridgedNativeWidgetImpl children will be
+  // Closes all child windows. NativeWidgetNSWindowBridge children will be
   // destroyed.
   void RemoveOrDestroyChildren();
 
   // Remove the specified child window without closing it.
-  void RemoveChildWindow(BridgedNativeWidgetImpl* child);
+  void RemoveChildWindow(NativeWidgetNSWindowBridge* child);
 
   // Notify descendants of a visibility change.
   void NotifyVisibilityChangeDown();
@@ -291,8 +291,9 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   NSWindow* GetWindow() const override;
 
   const uint64_t id_;
-  BridgedNativeWidgetHost* const host_;               // Weak. Owns this.
-  BridgedNativeWidgetHostHelper* const host_helper_;  // Weak, owned by |host_|.
+  NativeWidgetNSWindowHost* const host_;  // Weak. Owns this.
+  NativeWidgetNSWindowHostHelper* const
+      host_helper_;  // Weak, owned by |host_|.
   remote_cocoa::mojom::TextInputHost* const
       text_input_host_;  // Weak, owned by |host_|.
 
@@ -312,8 +313,9 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   bool widget_is_top_level_ = false;
   bool position_window_in_screen_coords_ = false;
 
-  BridgedNativeWidgetImpl* parent_ = nullptr;  // Weak. If non-null, owns this.
-  std::vector<BridgedNativeWidgetImpl*> child_windows_;
+  NativeWidgetNSWindowBridge* parent_ =
+      nullptr;  // Weak. If non-null, owns this.
+  std::vector<NativeWidgetNSWindowBridge*> child_windows_;
 
   // The size of the content area of the window most recently sent to |host_|
   // (and its compositor).
@@ -367,11 +369,11 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   // shadow needs to be invalidated when a frame is received for the new shape.
   bool invalidate_shadow_on_frame_swap_ = false;
 
-  mojo::AssociatedBinding<remote_cocoa::mojom::BridgedNativeWidget>
+  mojo::AssociatedBinding<remote_cocoa::mojom::NativeWidgetNSWindow>
       bridge_mojo_binding_;
-  DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetImpl);
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetNSWindowBridge);
 };
 
-}  // namespace views
+}  // namespace remote_cocoa
 
-#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_IMPL_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_NS_WINDOW_BRIDGE_H_

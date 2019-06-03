@@ -11,9 +11,9 @@
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #import "ui/base/cocoa/command_dispatcher.h"
 
-namespace views {
-class BridgedNativeWidgetImpl;
-}  // namespace views
+namespace remote_cocoa {
+class NativeWidgetNSWindowBridge;
+}  // namespace remote_cocoa
 
 @protocol WindowTouchBarDelegate;
 
@@ -53,12 +53,13 @@ REMOTE_COCOA_APP_SHIM_EXPORT
 - (void)setWindowTouchBarDelegate:(id<WindowTouchBarDelegate>)delegate;
 
 // Identifier for the NativeWidgetMac from which this window was created. This
-// may be used to look up the BridgedNativeWidgetHostImpl in the browser process
-// or the BridgedNativeWidgetImpl in a display process.
+// may be used to look up the NativeWidgetMacNSWindowHost in the browser process
+// or the NativeWidgetNSWindowBridge in a display process.
 @property(assign, nonatomic) uint64_t bridgedNativeWidgetId;
 
-// The BridgedNativeWidgetImpl that this will use to call back to the host.
-@property(assign, nonatomic) views::BridgedNativeWidgetImpl* bridgeImpl;
+// The NativeWidgetNSWindowBridge that this will use to call back to the host.
+@property(assign, nonatomic)
+    remote_cocoa::NativeWidgetNSWindowBridge* bridgeImpl;
 @end
 
 #endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_MAC_NSWINDOW_H_

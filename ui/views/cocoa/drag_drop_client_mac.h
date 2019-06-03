@@ -19,14 +19,17 @@
 
 namespace gfx {
 class Point;
-}
+}  // namespace gfx
+
+namespace remote_cocoa {
+class NativeWidgetNSWindowBridge;
+}  // namespace remote_cocoa
 
 namespace views {
 namespace test {
 class DragDropClientMacTest;
-}
+}  // namespace test
 
-class BridgedNativeWidgetImpl;
 class View;
 
 // Implements drag and drop on MacViews. This class acts as a bridge between
@@ -34,7 +37,8 @@ class View;
 // DesktopDragDropClientAuraX11.
 class VIEWS_EXPORT DragDropClientMac : public remote_cocoa::DragDropClient {
  public:
-  DragDropClientMac(BridgedNativeWidgetImpl* bridge, View* root_view);
+  DragDropClientMac(remote_cocoa::NativeWidgetNSWindowBridge* bridge,
+                    View* root_view);
   ~DragDropClientMac() override;
 
   // Initiates a drag and drop session. Returns the drag operation that was
@@ -69,7 +73,7 @@ class VIEWS_EXPORT DragDropClientMac : public remote_cocoa::DragDropClient {
   int last_operation_ = 0;
 
   // The bridge between the content view and the drag drop client.
-  BridgedNativeWidgetImpl* bridge_;  // Weak. Owns |this|.
+  remote_cocoa::NativeWidgetNSWindowBridge* bridge_;  // Weak. Owns |this|.
 
   // The closure for the drag and drop's run loop.
   base::OnceClosure quit_closure_;

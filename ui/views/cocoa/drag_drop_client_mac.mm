@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #import "ui/base/dragdrop/os_exchange_data_provider_mac.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/views/drag_utils.h"
@@ -16,8 +16,9 @@
 
 namespace views {
 
-DragDropClientMac::DragDropClientMac(BridgedNativeWidgetImpl* bridge,
-                                     View* root_view)
+DragDropClientMac::DragDropClientMac(
+    remote_cocoa::NativeWidgetNSWindowBridge* bridge,
+    View* root_view)
     : drop_helper_(root_view), bridge_(bridge) {
   DCHECK(bridge);
 }

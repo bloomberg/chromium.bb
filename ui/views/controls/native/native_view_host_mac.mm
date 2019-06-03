@@ -8,7 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
-#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
@@ -40,9 +40,9 @@ NativeViewHostMac::NativeViewHostMac(NativeViewHost* host) : host_(host) {
 NativeViewHostMac::~NativeViewHostMac() {
 }
 
-BridgedNativeWidgetHostImpl* NativeViewHostMac::GetBridgedNativeWidgetHost()
+NativeWidgetMacNSWindowHost* NativeViewHostMac::GetBridgedNativeWidgetHost()
     const {
-  return BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+  return NativeWidgetMacNSWindowHost::GetFromNativeWindow(
       host_->GetWidget()->GetNativeWindow());
 }
 
@@ -132,7 +132,7 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
 
   EnsureNativeViewHasNoChildWidgets(native_view_);
   auto* bridge_host = GetBridgedNativeWidgetHost();
-  // BridgedNativeWidgetImpl can be null when Widget is closing.
+  // NativeWidgetNSWindowBridge can be null when Widget is closing.
   if (bridge_host)
     bridge_host->ClearAssociationForView(host_);
 

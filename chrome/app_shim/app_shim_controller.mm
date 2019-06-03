@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "components/remote_cocoa/app_shim/application_bridge.h"
-#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "content/public/browser/remote_cocoa.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -312,7 +312,8 @@ void AppShimController::CreateRemoteCocoaApplication(
 }
 
 void AppShimController::CreateCommandDispatcherForWidget(uint64_t widget_id) {
-  if (auto* bridge = views::BridgedNativeWidgetImpl::GetFromId(widget_id)) {
+  if (auto* bridge =
+          remote_cocoa::NativeWidgetNSWindowBridge::GetFromId(widget_id)) {
     bridge->SetCommandDispatcher(
         [[[ChromeCommandDispatcherDelegate alloc] init] autorelease],
         [[[BrowserWindowCommandHandler alloc] init] autorelease]);

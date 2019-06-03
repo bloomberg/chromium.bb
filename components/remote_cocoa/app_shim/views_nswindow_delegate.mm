@@ -9,14 +9,14 @@
 #include "base/mac/mac_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
-#include "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
-#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
+#include "components/remote_cocoa/app_shim/native_widget_ns_window_host_helper.h"
+#include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 
 @implementation ViewsNSWindowDelegate
 
 - (instancetype)initWithBridgedNativeWidget:
-    (views::BridgedNativeWidgetImpl*)parent {
+    (remote_cocoa::NativeWidgetNSWindowBridge*)parent {
   DCHECK(parent);
   if ((self = [super init])) {
     parent_ = parent;

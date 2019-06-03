@@ -38,7 +38,7 @@ struct ValidateUserInterfaceItemResult {
 
 // The interface through which an NSWindow (possibly in a process separate from
 // the browser process) may interact with a NativeWidgetMac.
-interface BridgedNativeWidgetHost {
+interface NativeWidgetNSWindowHost {
   // Update the views::Widget, ui::Compositor and ui::Layer's visibility.
   OnVisibilityChanged(bool visible);
 
@@ -74,7 +74,7 @@ interface BridgedNativeWidgetHost {
 
   // Synchronously dispatch a key event and return in |event_handled| whether
   // or not the event was handled. This method is to be used only via the
-  // BridgedNativeWidgetHostHelper interface.
+  // NativeWidgetNSWindowHostHelper interface.
   [Sync]
   DispatchKeyEventRemote(ui.mojom.Event event) => (bool event_handled);
 
@@ -84,7 +84,7 @@ interface BridgedNativeWidgetHost {
   // returned POST_DISPATCH_NONE). Return in |event_handled| whether or not the
   // event was handled (that is, if the event in the caller's scope should be
   // marked as handled). This method is to be used only via the
-  // BridgedNativeWidgetHostHelper interface.
+  // NativeWidgetNSWindowHostHelper interface.
   [Sync]
   DispatchKeyEventToMenuControllerRemote(ui.mojom.Event event) =>
       (bool event_swallowed, bool event_handled);

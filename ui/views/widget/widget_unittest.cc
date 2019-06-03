@@ -4201,7 +4201,7 @@ class CompositingWidgetTest : public DesktopWidgetTest {
       const Widget::InitParams::WindowOpacity opacity) {
     for (const auto& widget_type : widget_types_) {
 #if defined(OS_MACOSX)
-      // Tooltips are native on Mac. See BridgedNativeWidgetImpl::Init.
+      // Tooltips are native on Mac. See NativeWidgetNSWindowBridge::Init.
       if (widget_type == Widget::InitParams::TYPE_TOOLTIP)
         continue;
 #elif defined(OS_WIN)

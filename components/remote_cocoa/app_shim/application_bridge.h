@@ -8,8 +8,8 @@
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "components/remote_cocoa/common/alert.mojom.h"
 #include "components/remote_cocoa/common/application.mojom.h"
-#include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
-#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
+#include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
+#include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace remote_cocoa {
@@ -41,10 +41,10 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ApplicationBridge
 
   // mojom::Application:
   void CreateAlert(mojom::AlertBridgeRequest bridge_request) override;
-  void CreateBridgedNativeWidget(
+  void CreateNativeWidgetNSWindow(
       uint64_t bridge_id,
-      mojom::BridgedNativeWidgetAssociatedRequest bridge_request,
-      mojom::BridgedNativeWidgetHostAssociatedPtrInfo host,
+      mojom::NativeWidgetNSWindowAssociatedRequest bridge_request,
+      mojom::NativeWidgetNSWindowHostAssociatedPtrInfo host,
       mojom::TextInputHostAssociatedPtrInfo text_input_host) override;
   void CreateRenderWidgetHostNSView(
       mojom::StubInterfaceAssociatedPtrInfo host,
