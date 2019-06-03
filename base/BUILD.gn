@@ -2961,6 +2961,7 @@ test("base_unittests") {
       "files/file_descriptor_watcher_posix_unittest.cc",
       "fuchsia/file_utils_unittest.cc",
       "fuchsia/filtered_service_directory_unittest.cc",
+      "fuchsia/scoped_service_binding_unittest.cc",
       "fuchsia/service_directory_test_base.cc",
       "fuchsia/service_directory_test_base.h",
       "fuchsia/service_directory_unittest.cc",

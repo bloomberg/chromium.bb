@@ -7,10 +7,16 @@
 #include <lib/fdio/directory.h>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/test/test_timeouts.h"
+
 namespace base {
 namespace fuchsia {
 
-ServiceDirectoryTestBase::ServiceDirectoryTestBase() {
+ServiceDirectoryTestBase::ServiceDirectoryTestBase()
+    : run_timeout_(TestTimeouts::action_timeout(), BindRepeating([]() {
+                     ADD_FAILURE() << "Run() timed out.";
+                   })) {
   // TODO(https://crbug.com/920920): Remove the ServiceDirectory's implicit
   // "public" sub-directory and update this setup logic.
 
@@ -61,7 +67,7 @@ void ServiceDirectoryTestBase::VerifyTestInterface(
     fidl::InterfacePtr<testfidl::TestInterface>* stub,
     zx_status_t expected_error) {
   // Call the service and wait for response.
-  base::RunLoop run_loop;
+  RunLoop run_loop;
   zx_status_t actual_error = ZX_OK;
 
   stub->set_error_handler([&run_loop, &actual_error](zx_status_t status) {
