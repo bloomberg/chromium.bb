@@ -47,7 +47,6 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
   ~SyncableServiceBasedBridge() override;
 
   // ModelTypeSyncBridge implementation.
-  void OnSyncStarting(const DataTypeActivationRequest& request) override;
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
   base::Optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
@@ -76,14 +75,14 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
                                        ModelTypeChangeProcessor* other);
 
  private:
-  void OnSyncableServiceReady();
   void OnStoreCreated(const base::Optional<ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
   void OnReadAllDataForInit(std::unique_ptr<InMemoryStore> in_memory_store,
                             const base::Optional<ModelError>& error);
   void OnReadAllMetadataForInit(const base::Optional<ModelError>& error,
                                 std::unique_ptr<MetadataBatch> metadata_batch);
-  base::Optional<ModelError> MaybeStartSyncableService() WARN_UNUSED_RESULT;
+  void OnSyncableServiceReady(std::unique_ptr<MetadataBatch> metadata_batch);
+  base::Optional<ModelError> StartSyncableService() WARN_UNUSED_RESULT;
   SyncChangeList StoreAndConvertRemoteChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList input_entity_change_list);
@@ -101,7 +100,6 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
 
   const ModelType type_;
   SyncableService* const syncable_service_;
-  OnceModelTypeStoreFactory store_factory_;
 
   std::unique_ptr<ModelTypeStore> store_;
   bool syncable_service_started_;

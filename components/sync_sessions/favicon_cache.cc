@@ -238,7 +238,8 @@ FaviconCache::FaviconCache(favicon::FaviconService* favicon_service,
 FaviconCache::~FaviconCache() {}
 
 void FaviconCache::WaitUntilReadyToSync(base::OnceClosure done) {
-  if (history_service_->backend_loaded()) {
+  // |history_service_| can be null in tests. In that case, no point in waiting.
+  if (!history_service_ || history_service_->backend_loaded()) {
     std::move(done).Run();
   } else {
     // Wait until HistoryService's backend loads, reported via

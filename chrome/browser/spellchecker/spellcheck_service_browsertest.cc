@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/constants.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
@@ -52,6 +53,16 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     renderer_.reset(new content::MockRenderProcessHost(GetContext()));
     renderer_->Init();
     prefs_ = user_prefs::UserPrefs::Get(GetContext());
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Sync causes the SpellcheckService to be instantiated (and initialized)
+    // during startup. However, several tests rely on control over when exactly
+    // the SpellcheckService gets created (e.g. by calling
+    // GetEnableSpellcheckState() after InitSpellcheck(), which will wait
+    // forever if the service already existed). So disable sync of the custom
+    // dictionary for these tests.
+    command_line->AppendSwitchASCII(switches::kDisableSyncTypes, "Dictionary");
   }
 
   void TearDownOnMainThread() override {

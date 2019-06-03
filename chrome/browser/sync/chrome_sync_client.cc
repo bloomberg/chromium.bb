@@ -152,6 +152,11 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
   return disabled_types;
 }
 
+base::WeakPtr<syncer::SyncableService> GetWeakPtrOrNull(
+    syncer::SyncableService* service) {
+  return service ? service->AsWeakPtr() : nullptr;
+}
+
 }  // namespace
 
 ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
@@ -438,21 +443,21 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
                    profile_web_data_service_.get())
             ->AsWeakPtr();
       }
-      return base::WeakPtr<syncer::SyncableService>();
-    case syncer::AUTOFILL_WALLET_METADATA: {
+      return nullptr;
+    case syncer::AUTOFILL_WALLET_METADATA:
       if (profile_web_data_service_) {
         return autofill::AutofillWalletMetadataSyncableService::
             FromWebDataService(profile_web_data_service_.get())
                 ->AsWeakPtr();
       }
-      return base::WeakPtr<syncer::SyncableService>();
-    }
+      return nullptr;
     case syncer::SEARCH_ENGINES:
-      return TemplateURLServiceFactory::GetForProfile(profile_)->AsWeakPtr();
+      return GetWeakPtrOrNull(
+          TemplateURLServiceFactory::GetForProfile(profile_));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     case syncer::APPS:
     case syncer::EXTENSIONS:
-      return ExtensionSyncService::Get(profile_)->AsWeakPtr();
+      return GetWeakPtrOrNull(ExtensionSyncService::Get(profile_));
     // TODO(crbug.com/933874): Remove these two from here once the old
     // controllers are deleted.
     case syncer::APP_SETTINGS:
@@ -462,8 +467,8 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #if BUILDFLAG(ENABLE_APP_LIST)
     case syncer::APP_LIST:
-      return app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->
-          AsWeakPtr();
+      return GetWeakPtrOrNull(
+          app_list::AppListSyncableServiceFactory::GetForProfile(profile_));
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 #if !defined(OS_ANDROID)
     case syncer::THEMES:
@@ -472,36 +477,35 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 #endif  // !defined(OS_ANDROID)
     case syncer::HISTORY_DELETE_DIRECTIVES: {
       history::HistoryService* history = GetHistoryService();
-      return history ? history->GetDeleteDirectivesSyncableService()
-                     : base::WeakPtr<syncer::SyncableService>();
+      return history ? history->GetDeleteDirectivesSyncableService() : nullptr;
     }
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-    case syncer::DICTIONARY:
-      return SpellcheckServiceFactory::GetForContext(profile_)->
-          GetCustomDictionary()->AsWeakPtr();
+    case syncer::DICTIONARY: {
+      SpellcheckService* spellcheck_service =
+          SpellcheckServiceFactory::GetForContext(profile_);
+      return spellcheck_service
+                 ? spellcheck_service->GetCustomDictionary()->AsWeakPtr()
+                 : nullptr;
+    }
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
     case syncer::FAVICON_IMAGES:
-    case syncer::FAVICON_TRACKING: {
-      sync_sessions::FaviconCache* favicons =
-          SessionSyncServiceFactory::GetForProfile(profile_)->GetFaviconCache();
-      return favicons ? favicons->AsWeakPtr()
-                      : base::WeakPtr<syncer::SyncableService>();
-    }
+    case syncer::FAVICON_TRACKING:
+      return GetWeakPtrOrNull(SessionSyncServiceFactory::GetForProfile(profile_)
+                                  ->GetFaviconCache());
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::SUPERVISED_USER_SETTINGS:
       return SupervisedUserSettingsServiceFactory::GetForKey(
                  profile_->GetProfileKey())
           ->AsWeakPtr();
-    case syncer::SUPERVISED_USER_WHITELISTS: {
-      SupervisedUserService* supervised_user_service =
-          SupervisedUserServiceFactory::GetForProfile(profile_);
-      return supervised_user_service->GetWhitelistService()->AsWeakPtr();
-    }
+    case syncer::SUPERVISED_USER_WHITELISTS:
+      return SupervisedUserServiceFactory::GetForProfile(profile_)
+          ->GetWhitelistService()
+          ->AsWeakPtr();
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::PASSWORDS: {
       return password_store_.get()
                  ? password_store_->GetPasswordSyncableService()
-                 : base::WeakPtr<syncer::SyncableService>();
+                 : nullptr;
     }
 #if defined(OS_CHROMEOS)
     case syncer::ARC_PACKAGE:
@@ -512,7 +516,7 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       // syncer::SyncableService API:
       // Bookmarks
       NOTREACHED();
-      return base::WeakPtr<syncer::SyncableService>();
+      return nullptr;
   }
 }
 

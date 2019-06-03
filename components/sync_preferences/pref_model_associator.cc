@@ -171,7 +171,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
 
 void PrefModelAssociator::WaitUntilReadyToSync(base::OnceClosure done) {
   // Prefs are loaded very early during profile initialization.
-  DCHECK_NE(pref_service_->GetAllPrefStoresInitializationStatus(),
+  DCHECK_NE(pref_service_->GetInitializationStatus(),
             PrefService::INITIALIZATION_STATUS_WAITING);
   std::move(done).Run();
 }

@@ -26,54 +26,55 @@ class ControllerDelegate : public ModelTypeControllerDelegate {
                      const base::RepeatingClosure& dump_stack)
       : type_(type),
         store_factory_(std::move(store_factory)),
-        syncable_service_provider_(std::move(syncable_service_provider)),
         dump_stack_(dump_stack) {
     DCHECK(store_factory_);
-    DCHECK(syncable_service_provider_);
-  }
+    DCHECK(syncable_service_provider);
 
-  ~ControllerDelegate() override {}
-
-  void OnSyncStarting(const DataTypeActivationRequest& request,
-                      StartCallback callback) override {
-    BuildOrGetBridgeDelegate()->OnSyncStarting(request, std::move(callback));
-  }
-
-  void OnSyncStopping(SyncStopMetadataFate metadata_fate) override {
-    BuildOrGetBridgeDelegate()->OnSyncStopping(metadata_fate);
-  }
-
-  void GetAllNodesForDebugging(AllNodesCallback callback) override {
-    BuildOrGetBridgeDelegate()->GetAllNodesForDebugging(std::move(callback));
-  }
-
-  void GetStatusCountersForDebugging(StatusCountersCallback callback) override {
-    BuildOrGetBridgeDelegate()->GetStatusCountersForDebugging(
-        std::move(callback));
-  }
-
-  void RecordMemoryUsageAndCountsHistograms() override {
-    BuildOrGetBridgeDelegate()->RecordMemoryUsageAndCountsHistograms();
-  }
-
- private:
-  ModelTypeControllerDelegate* BuildOrGetBridgeDelegate() {
-    if (!bridge_) {
-      base::WeakPtr<SyncableService> syncable_service =
-          std::move(syncable_service_provider_).Run();
-      DCHECK(syncable_service);
+    // TODO(crbug.com/906995): Inject the SyncableService directly instead of
+    // indirectly via a provider callback.
+    base::WeakPtr<SyncableService> syncable_service =
+        std::move(syncable_service_provider).Run();
+    // The |syncable_service| can be null in tests.
+    if (syncable_service) {
       bridge_ = std::make_unique<SyncableServiceBasedBridge>(
           type_, std::move(store_factory_),
           std::make_unique<ClientTagBasedModelTypeProcessor>(type_,
                                                              dump_stack_),
           syncable_service.get());
     }
+  }
+
+  ~ControllerDelegate() override {}
+
+  void OnSyncStarting(const DataTypeActivationRequest& request,
+                      StartCallback callback) override {
+    GetBridgeDelegate()->OnSyncStarting(request, std::move(callback));
+  }
+
+  void OnSyncStopping(SyncStopMetadataFate metadata_fate) override {
+    GetBridgeDelegate()->OnSyncStopping(metadata_fate);
+  }
+
+  void GetAllNodesForDebugging(AllNodesCallback callback) override {
+    GetBridgeDelegate()->GetAllNodesForDebugging(std::move(callback));
+  }
+
+  void GetStatusCountersForDebugging(StatusCountersCallback callback) override {
+    GetBridgeDelegate()->GetStatusCountersForDebugging(std::move(callback));
+  }
+
+  void RecordMemoryUsageAndCountsHistograms() override {
+    GetBridgeDelegate()->RecordMemoryUsageAndCountsHistograms();
+  }
+
+ private:
+  ModelTypeControllerDelegate* GetBridgeDelegate() {
+    DCHECK(bridge_);
     return bridge_->change_processor()->GetControllerDelegate().get();
   }
 
   const ModelType type_;
   OnceModelTypeStoreFactory store_factory_;
-  SyncableServiceProvider syncable_service_provider_;
   const base::RepeatingClosure dump_stack_;
   std::unique_ptr<ModelTypeSyncBridge> bridge_;
 
