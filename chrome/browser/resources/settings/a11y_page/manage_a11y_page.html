@@ -133,10 +133,11 @@
     </settings-toggle-button>
     <template is="dom-if" if="[[showExperimentalSwitchAccess_]]">
       <settings-toggle-button
-          pref="{{prefs.settings.a11y.switch_access}}"
+          pref="{{prefs.settings.a11y.switch_access.enabled}}"
           label="$i18n{switchAccessLabel}">
       </settings-toggle-button>
-      <iron-collapse opened="[[prefs.settings.a11y.switch_access.value]]">
+      <iron-collapse
+          opened="[[prefs.settings.a11y.switch_access.enabled.value]]">
         <cr-link-row label="$i18n{switchAccessOptionsLabel}"
             on-click="onSwitchAccessSettingsTap_" embedded external>
         </cr-link-row>

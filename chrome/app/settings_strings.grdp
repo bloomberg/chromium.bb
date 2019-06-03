@@ -190,6 +190,42 @@
     <message name="IDS_SETTINGS_TTS_LINK_DESCRIPTION" desc="Description of link to manage text-to-speech settings">
       Select and customize text-to-speech voices
     </message>
+    <message name="IDS_SETTINGS_MANAGE_SWITCH_ACCESS_SETTINGS" desc="Title of the page to manage Switch Access settings.">
+      Switch Access settings
+    </message>
+    <message name="IDS_SETTINGS_SWITCH_ASSIGNMENT_HEADING" desc="Heading for the settings section for Switch Access to assign switches to actions">
+      Switch action assignment
+    </message>
+    <message name="IDS_SETTINGS_SWITCH_ASSIGN_OPTION_SPACE" desc="Label for the option to assign the spacebar as a switch.">
+      Space
+    </message>
+    <message name="IDS_SETTINGS_SWITCH_ASSIGN_OPTION_ENTER" desc="Label for the option to assign the enter key as a switch.">
+      Enter
+    </message>
+    <message name="IDS_SETTINGS_SWITCH_ASSIGN_OPTION_NONE" desc="Label for the option to have no switch assigned to an action.">
+      None
+    </message>
+    <message name="IDS_SETTINGS_ASSIGN_SELECT_SWITCH_LABEL" desc="Label for the setting to assign a switch to the action 'Select', which selects the currently focused element and begins an interaction (which varies depending on the element/other settings).">
+      Select
+    </message>
+    <message name="IDS_SETTINGS_ASSIGN_NEXT_SWITCH_LABEL" desc="Label for the setting to assign a switch to the action 'Next', which moves focus to the next element.">
+      Next
+    </message>
+    <message name="IDS_SETTINGS_ASSIGN_PREVIOUS_SWITCH_LABEL" desc="Label for the setting to assign a switch to the action 'Previous', which moves focus to the previous element.">
+      Previous
+    </message>
+    <message name="IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_HEADING" desc="Heading for the settings section containing preferences around Switch Access automatically scanning between elements.">
+      Auto-scan
+    </message>
+    <message name="IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_LABEL" desc="Label for the toggle which enables automatic scanning between elements in Switch Access.">
+      Enable auto-scan
+    </message>
+    <message name="IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_SPEED_LABEL" desc="Label for slider which sets the time interval for automatically scanning to the next element. Will be immediately followed by the numeric value of the interval.">
+      Scanning speed: <ph name="SPEED_WITH_UNITS">$1<ex>1.5s</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_DURATION_IN_SECONDS" desc="A duration in seconds. Should be short.">
+      <ph name="DURATION">$1<ex>1.5</ex></ph>s
+    </message>
     <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL" desc="Label for checkbox which enables showing a larger mouse cursor than normal.">
       Show large mouse cursor
     </message>

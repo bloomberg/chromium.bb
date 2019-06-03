@@ -355,6 +355,22 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessSelectKeyCodes] =
+      settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessSelectSetting] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessNextKeyCodes] =
+      settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessNextSetting] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessPreviousKeyCodes] =
+      settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessPreviousSetting] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessAutoScanEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessAutoScanSpeedMs] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[ash::prefs::kAccessibilityVirtualKeyboardEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kAccessibilityMonoAudioEnabled] =

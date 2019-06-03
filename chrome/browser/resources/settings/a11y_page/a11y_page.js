@@ -65,6 +65,18 @@ Polymer({
         return loadTimeData.getBoolean('showExperimentalA11yFeatures');
       },
     },
+
+    /**
+     * Whether to show Switch Access.
+     * @private {boolean}
+     */
+    showExperimentalSwitchAccess_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean(
+            'showExperimentalAccessibilitySwitchAccess');
+      },
+    },
     // </if>
   },
 

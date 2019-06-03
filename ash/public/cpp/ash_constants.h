@@ -37,6 +37,15 @@ constexpr int kFocusBorderThickness = 2;
 
 constexpr int kDefaultLargeCursorSize = 64;
 
+// The option in the Switch Access settings for no switch assigned.
+constexpr int kSwitchAccessAssignmentNone = 0;
+
+// The default delay before Switch Access automatically moves to the next
+// element on the page that is interesting, based on the Switch Access
+// predicates.
+constexpr base::TimeDelta kDefaultSwitchAccessAutoScanSpeed =
+    base::TimeDelta::FromMilliseconds(1200);
+
 // The default wait time between last mouse movement and sending autoclick.
 constexpr int kDefaultAutoclickDelayMs = 1000;
 

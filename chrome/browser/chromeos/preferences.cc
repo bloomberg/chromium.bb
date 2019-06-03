@@ -333,6 +333,37 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilitySwitchAccessEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterListPref(
+      ash::prefs::kAccessibilitySwitchAccessSelectKeyCodes,
+      base::Value(std::vector<base::Value>()),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(
+      ash::prefs::kAccessibilitySwitchAccessSelectSetting,
+      ash::kSwitchAccessAssignmentNone,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterListPref(
+      ash::prefs::kAccessibilitySwitchAccessNextKeyCodes,
+      base::Value(std::vector<base::Value>()),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(
+      ash::prefs::kAccessibilitySwitchAccessNextSetting,
+      ash::kSwitchAccessAssignmentNone,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterListPref(
+      ash::prefs::kAccessibilitySwitchAccessPreviousKeyCodes,
+      base::Value(std::vector<base::Value>()),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(
+      ash::prefs::kAccessibilitySwitchAccessPreviousSetting,
+      ash::kSwitchAccessAssignmentNone,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(
+      ash::prefs::kAccessibilitySwitchAccessAutoScanEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(
+      ash::prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
+      ash::kDefaultSwitchAccessAutoScanSpeed.InMilliseconds(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
       ash::prefs::kShouldAlwaysShowAccessibilityMenu, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

@@ -56,6 +56,7 @@
  *   LOCK_SCREEN: (undefined|!settings.Route),
  *   MANAGE_ACCESSIBILITY: (undefined|!settings.Route),
  *   MANAGE_PROFILE: (undefined|!settings.Route),
+ *   MANAGE_SWITCH_ACCESS_SETTINGS: (undefined|!settings.Route),
  *   MANAGE_TTS_SETTINGS: (undefined|!settings.Route),
  *   MULTIDEVICE: (undefined|!settings.Route),
  *   MULTIDEVICE_FEATURES: (undefined|!settings.Route),
@@ -456,6 +457,8 @@ cr.define('settings', function() {
       // <if expr="chromeos">
       r.MANAGE_ACCESSIBILITY =
           r.ACCESSIBILITY.createChild('/manageAccessibility');
+      r.MANAGE_SWITCH_ACCESS_SETTINGS = r.MANAGE_ACCESSIBILITY.createChild(
+          '/manageAccessibility/switchAccess');
       r.MANAGE_TTS_SETTINGS =
           r.MANAGE_ACCESSIBILITY.createChild('/manageAccessibility/tts');
       // </if>

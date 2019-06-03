@@ -81,7 +81,34 @@ const char kAccessibilityFocusHighlightEnabled[] =
 const char kAccessibilitySelectToSpeakEnabled[] =
     "settings.a11y.select_to_speak";
 // A boolean pref which determines whether switch access is enabled.
-const char kAccessibilitySwitchAccessEnabled[] = "settings.a11y.switch_access";
+const char kAccessibilitySwitchAccessEnabled[] =
+    "settings.a11y.switch_access.enabled";
+// A pref that stores the key code for the "select" action.
+const char kAccessibilitySwitchAccessSelectKeyCodes[] =
+    "settings.a11y.switch_access.select.key_codes";
+// A pref that stores the setting value for the "select" action.
+const char kAccessibilitySwitchAccessSelectSetting[] =
+    "settings.a11y.switch_access.select.setting";
+// A pref that stores the key code for the "next" action.
+const char kAccessibilitySwitchAccessNextKeyCodes[] =
+    "settings.a11y.switch_access.next.key_codes";
+// A pref that stores the setting value for the "next" action.
+const char kAccessibilitySwitchAccessNextSetting[] =
+    "settings.a11y.switch_access.next.setting";
+// A pref that stores the key code for the "previous" action.
+const char kAccessibilitySwitchAccessPreviousKeyCodes[] =
+    "settings.a11y.switch_access.previous.key_codes";
+// A pref that stores the setting value for the "previous" action.
+const char kAccessibilitySwitchAccessPreviousSetting[] =
+    "settings.a11y.switch_access.previous.setting";
+// A boolean pref which determines whether auto-scanning is enabled within
+// switch access.
+const char kAccessibilitySwitchAccessAutoScanEnabled[] =
+    "settings.a11y.switch_access.auto_scan.enabled";
+// An integer pref which determines time delay in ms before automatically
+// scanning forward (when auto-scan is enabled).
+const char kAccessibilitySwitchAccessAutoScanSpeedMs[] =
+    "settings.a11y.switch_access.auto_scan.speed_ms";
 // A boolean pref which determines whether dictation is enabled.
 const char kAccessibilityDictationEnabled[] = "settings.a11y.dictation";
 // A boolean pref which determines whether the accessibility menu shows

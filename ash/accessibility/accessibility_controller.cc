@@ -18,6 +18,7 @@
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/policy/policy_recommendation_restorer.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -300,6 +301,26 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilitySwitchAccessEnabled,
                                   false);
+    registry->RegisterListPref(prefs::kAccessibilitySwitchAccessSelectKeyCodes,
+                               base::Value(std::vector<base::Value>()));
+    registry->RegisterIntegerPref(
+        prefs::kAccessibilitySwitchAccessSelectSetting,
+        kSwitchAccessAssignmentNone);
+    registry->RegisterListPref(prefs::kAccessibilitySwitchAccessNextKeyCodes,
+                               base::Value(std::vector<base::Value>()));
+    registry->RegisterIntegerPref(prefs::kAccessibilitySwitchAccessNextSetting,
+                                  kSwitchAccessAssignmentNone);
+    registry->RegisterListPref(
+        prefs::kAccessibilitySwitchAccessPreviousKeyCodes,
+        base::Value(std::vector<base::Value>()));
+    registry->RegisterIntegerPref(
+        prefs::kAccessibilitySwitchAccessPreviousSetting,
+        kSwitchAccessAssignmentNone);
+    registry->RegisterBooleanPref(
+        prefs::kAccessibilitySwitchAccessAutoScanEnabled, false);
+    registry->RegisterIntegerPref(
+        prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
+        kDefaultSwitchAccessAutoScanSpeed.InMilliseconds());
     registry->RegisterBooleanPref(prefs::kAccessibilityVirtualKeyboardEnabled,
                                   false);
     registry->RegisterBooleanPref(
