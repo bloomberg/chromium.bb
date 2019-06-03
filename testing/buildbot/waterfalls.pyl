@@ -103,6 +103,7 @@
               'os': 'Android',
             },
           ],
+          'expiration': 10800,
         },
         'use_swarming': True,
         'os_type': 'android',
