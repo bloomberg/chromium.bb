@@ -1335,8 +1335,8 @@ static void atomic_set_mode(struct device *dev, struct pipe_arg *pipes, unsigned
 		if (pipe->mode == NULL)
 			continue;
 
-		printf("setting mode %s-%dHz@%s on connectors ",
-		       pipe->mode_str, pipe->mode->vrefresh, pipe->format_str);
+		printf("setting mode %s-%dHz on connectors ",
+		       pipe->mode_str, pipe->mode->vrefresh);
 		for (j = 0; j < pipe->num_cons; ++j) {
 			printf("%s, ", pipe->cons[j]);
 			add_property(dev, pipe->con_ids[j], "CRTC_ID", pipe->crtc->crtc->crtc_id);
