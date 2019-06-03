@@ -41,23 +41,21 @@ void TestLoginScreen::ShowLoginScreen(ShowLoginScreenCallback callback) {
   std::move(callback).Run(true);
 }
 
-void TestLoginScreen::IsReadyForPassword(IsReadyForPasswordCallback callback) {
-  std::move(callback).Run(true);
+ash::LoginScreenModel* TestLoginScreen::GetModel() {
+  return &test_screen_model_;
 }
 
 void TestLoginScreen::ShowKioskAppError(const std::string& message) {}
 
-void TestLoginScreen::SetAddUserButtonEnabled(bool enable) {}
-
-void TestLoginScreen::SetShutdownButtonEnabled(bool enable) {}
-
-void TestLoginScreen::SetAllowLoginAsGuest(bool allow_guest) {}
-
 void TestLoginScreen::FocusLoginShelf(bool reverse) {}
 
-ash::LoginScreenModel* TestLoginScreen::GetModel() {
-  return &test_screen_model_;
+bool TestLoginScreen::IsReadyForPassword() {
+  return true;
 }
+
+void TestLoginScreen::EnableAddUserButton(bool enable) {}
+
+void TestLoginScreen::EnableShutdownButton(bool enable) {}
 
 void TestLoginScreen::ShowGuestButtonInOobe(bool show) {}
 
@@ -66,6 +64,8 @@ void TestLoginScreen::ShowParentAccessButton(bool show) {}
 void TestLoginScreen::ShowParentAccessWidget(
     const AccountId& child_account_id,
     base::RepeatingCallback<void(bool success)> callback) {}
+
+void TestLoginScreen::SetAllowLoginAsGuest(bool allow_guest) {}
 
 void TestLoginScreen::Bind(mojo::ScopedMessagePipeHandle handle) {
   binding_.Bind(ash::mojom::LoginScreenRequest(std::move(handle)));

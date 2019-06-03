@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/kiosk_app_menu.h"
+#include "ash/public/cpp/login_screen.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_data.h"
@@ -99,7 +100,7 @@ void KioskAppMenuController::SendKioskApps() {
   // Clear any old pending Kiosk launch errors
   KioskAppLaunchError::RecordMetricAndClear();
 
-  LoginScreenClient::Get()->login_screen()->ShowKioskAppError(
+  ash::LoginScreen::Get()->ShowKioskAppError(
       KioskAppLaunchError::GetErrorMessage(error));
 }
 

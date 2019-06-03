@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
@@ -50,7 +51,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/views/crostini/crostini_installer_view.h"
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
@@ -263,13 +263,6 @@ AutotestPrivateLoginStatusFunction::~AutotestPrivateLoginStatusFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateLoginStatusFunction::Run() {
   DVLOG(1) << "AutotestPrivateLoginStatusFunction";
-
-  LoginScreenClient::Get()->login_screen()->IsReadyForPassword(base::BindOnce(
-      &AutotestPrivateLoginStatusFunction::OnIsReadyForPassword, this));
-  return RespondLater();
-}
-
-void AutotestPrivateLoginStatusFunction::OnIsReadyForPassword(bool is_ready) {
   auto result = std::make_unique<base::DictionaryValue>();
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
@@ -284,7 +277,8 @@ void AutotestPrivateLoginStatusFunction::OnIsReadyForPassword(bool is_ready) {
     result->SetBoolean("isLoggedIn", user_manager->IsUserLoggedIn());
     result->SetBoolean("isOwner", user_manager->IsCurrentUserOwner());
     result->SetBoolean("isScreenLocked", is_screen_locked);
-    result->SetBoolean("isReadyForPassword", is_ready);
+    result->SetBoolean("isReadyForPassword",
+                       ash::LoginScreen::Get()->IsReadyForPassword());
     if (user_manager->IsUserLoggedIn()) {
       result->SetBoolean("isRegularUser",
                          user_manager->IsLoggedInAsUserWithGaiaAccount());
@@ -312,7 +306,7 @@ void AutotestPrivateLoginStatusFunction::OnIsReadyForPassword(bool is_ready) {
       result->SetString("userImage", user_image);
     }
   }
-  Respond(OneArgument(std::move(result)));
+  return RespondNow(OneArgument(std::move(result)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

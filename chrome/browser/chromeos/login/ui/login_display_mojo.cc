@@ -73,7 +73,7 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
     ash::LoginScreen::Get()->GetModel()->SetUserList(
         user_selection_screen->UpdateAndReturnUserListForAsh());
   }
-  client->login_screen()->SetAllowLoginAsGuest(show_guest);
+  ash::LoginScreen::Get()->SetAllowLoginAsGuest(show_guest);
   user_selection_screen->SetUsersLoaded(true /*loaded*/);
 
   // Enable pin for any users who can use it.

@@ -11,7 +11,6 @@
 
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/session/user_info.h"
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"

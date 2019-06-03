@@ -127,8 +127,7 @@ void ViewsScreenLocker::OnLockScreenReady() {
 
   ash::LoginScreen::Get()->GetModel()->SetUserList(
       user_selection_screen_->UpdateAndReturnUserListForAsh());
-  LoginScreenClient::Get()->login_screen()->SetAllowLoginAsGuest(
-      false /*show_guest*/);
+  ash::LoginScreen::Get()->SetAllowLoginAsGuest(false /*show_guest*/);
 
   user_selection_screen_->InitEasyUnlock();
   UMA_HISTOGRAM_TIMES("LockScreen.LockReady",

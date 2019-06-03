@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/macros.h"
