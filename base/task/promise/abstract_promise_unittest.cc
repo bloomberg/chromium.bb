@@ -13,6 +13,76 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(crbug.com/968302): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_DetectCatchCallbackDoubleMoveHazardInChainIntermediateThensCanReject \
+  DISABLED_DetectCatchCallbackDoubleMoveHazardInChainIntermediateThensCanReject
+#define MAYBE_CancelationPrerequisitePolicyALL \
+  DISABLED_CancelationPrerequisitePolicyALL
+#define MAYBE_MultipleRejectPrerequisitePolicyALL \
+  DISABLED_MultipleRejectPrerequisitePolicyALL
+#define MAYBE_DoubleMoveDoNothingPromise DISABLED_DoubleMoveDoNothingPromise
+#define MAYBE_SomeAlreadyCanceledPrerequisitePolicyANY \
+  DISABLED_SomeAlreadyCanceledPrerequisitePolicyANY
+#define MAYBE_AlreadyCanceledPrerequisitePolicyALL \
+  DISABLED_AlreadyCanceledPrerequisitePolicyALL
+#define MAYBE_MultipleNonMoveCatchCallbacksAreOK \
+  DISABLED_MultipleNonMoveCatchCallbacksAreOK
+#define MAYBE_MutipleThreadsAddingDependants \
+  DISABLED_MutipleThreadsAddingDependants
+#define MAYBE_DetectCatchCallbackDoubleMoveHazard \
+  DISABLED_DetectCatchCallbackDoubleMoveHazard
+#define MAYBE_AllAlreadyCanceledPrerequisitePolicyANY \
+  DISABLED_AllAlreadyCanceledPrerequisitePolicyANY
+#define MAYBE_DetectMixedCatchCallbackMoveAndNonMoveHazard \
+  DISABLED_DetectMixedCatchCallbackMoveAndNonMoveHazard
+#define MAYBE_DetectCatchCallbackDoubleMoveHazardInChain \
+  DISABLED_DetectCatchCallbackDoubleMoveHazardInChain
+#define MAYBE_SingleRejectPrerequisitePolicyANY \
+  DISABLED_SingleRejectPrerequisitePolicyANY
+#define MAYBE_SingleRejectPrerequisitePolicyALL \
+  DISABLED_SingleRejectPrerequisitePolicyALL
+#define MAYBE_DetectResolveDoubleMoveHazard \
+  DISABLED_DetectResolveDoubleMoveHazard
+#define MAYBE_MoveAtEndOfChain DISABLED_MoveAtEndOfChain
+#define MAYBE_DetectMixedResolveCallbackMoveAndNonMoveHazard \
+  DISABLED_DetectMixedResolveCallbackMoveAndNonMoveHazard
+#define MAYBE_DetectThenCallbackDoubleMoveHazardInChain \
+  DISABLED_DetectThenCallbackDoubleMoveHazardInChain
+#else
+#define MAYBE_DetectCatchCallbackDoubleMoveHazardInChainIntermediateThensCanReject \
+  DetectCatchCallbackDoubleMoveHazardInChainIntermediateThensCanReject
+#define MAYBE_CancelationPrerequisitePolicyALL CancelationPrerequisitePolicyALL
+#define MAYBE_MultipleRejectPrerequisitePolicyALL \
+  MultipleRejectPrerequisitePolicyALL
+#define MAYBE_DoubleMoveDoNothingPromise DoubleMoveDoNothingPromise
+#define MAYBE_SomeAlreadyCanceledPrerequisitePolicyANY \
+  SomeAlreadyCanceledPrerequisitePolicyANY
+#define MAYBE_AlreadyCanceledPrerequisitePolicyALL \
+  AlreadyCanceledPrerequisitePolicyALL
+#define MAYBE_MultipleNonMoveCatchCallbacksAreOK \
+  MultipleNonMoveCatchCallbacksAreOK
+#define MAYBE_MutipleThreadsAddingDependants MutipleThreadsAddingDependants
+#define MAYBE_DetectCatchCallbackDoubleMoveHazard \
+  DetectCatchCallbackDoubleMoveHazard
+#define MAYBE_AllAlreadyCanceledPrerequisitePolicyANY \
+  AllAlreadyCanceledPrerequisitePolicyANY
+#define MAYBE_DetectMixedCatchCallbackMoveAndNonMoveHazard \
+  DetectMixedCatchCallbackMoveAndNonMoveHazard
+#define MAYBE_DetectCatchCallbackDoubleMoveHazardInChain \
+  DetectCatchCallbackDoubleMoveHazardInChain
+#define MAYBE_SingleRejectPrerequisitePolicyANY \
+  SingleRejectPrerequisitePolicyANY
+#define MAYBE_SingleRejectPrerequisitePolicyALL \
+  SingleRejectPrerequisitePolicyALL
+#define MAYBE_DetectResolveDoubleMoveHazard DetectResolveDoubleMoveHazard
+#define MAYBE_MoveAtEndOfChain MoveAtEndOfChain
+#define MAYBE_DetectMixedResolveCallbackMoveAndNonMoveHazard \
+  DetectMixedResolveCallbackMoveAndNonMoveHazard
+#define MAYBE_DetectThenCallbackDoubleMoveHazardInChain \
+  DetectThenCallbackDoubleMoveHazardInChain
+#endif
+
 // Even trivial DCHECK_DEATH_TESTs like
 // AbstractPromiseTest.CantRejectIfpromiseDeclaredAsNonRejecting can flakily
 // timeout on the chromeos bots.
@@ -574,7 +644,7 @@ TEST_F(AbstractPromiseTest, MixedMoveAndNormalExecutionChain) {
   EXPECT_TRUE(p5->IsResolved());
 }
 
-TEST_F(AbstractPromiseTest, MoveAtEndOfChain) {
+TEST_F(AbstractPromiseTest, MAYBE_MoveAtEndOfChain) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
@@ -718,7 +788,7 @@ TEST_F(AbstractPromiseTest,
   }
 }
 
-TEST_F(AbstractPromiseTest, SingleRejectPrerequisitePolicyALL) {
+TEST_F(AbstractPromiseTest, MAYBE_SingleRejectPrerequisitePolicyALL) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanReject(true).SetCanResolve(
           false);
@@ -756,7 +826,7 @@ TEST_F(AbstractPromiseTest, SingleRejectPrerequisitePolicyALL) {
   EXPECT_TRUE(p5->IsResolved());
 }
 
-TEST_F(AbstractPromiseTest, MultipleRejectPrerequisitePolicyALL) {
+TEST_F(AbstractPromiseTest, MAYBE_MultipleRejectPrerequisitePolicyALL) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanReject(true).SetCanResolve(
           false);
@@ -832,7 +902,7 @@ TEST_F(AbstractPromiseTest, SingleResolvedPrerequisitesPrerequisitePolicyANY) {
   EXPECT_TRUE(any_promise->IsResolved());
 }
 
-TEST_F(AbstractPromiseTest, SingleRejectPrerequisitePolicyANY) {
+TEST_F(AbstractPromiseTest, MAYBE_SingleRejectPrerequisitePolicyANY) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanReject(true).SetCanResolve(
           false);
@@ -972,7 +1042,7 @@ TEST_F(AbstractPromiseTest, CancelChainCanReject) {
   RunLoop().RunUntilIdle();
 }
 
-TEST_F(AbstractPromiseTest, CancelationPrerequisitePolicyALL) {
+TEST_F(AbstractPromiseTest, MAYBE_CancelationPrerequisitePolicyALL) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
   scoped_refptr<AbstractPromise> p2 =
@@ -1018,7 +1088,7 @@ TEST_F(AbstractPromiseTest, CancelationPrerequisitePolicyANY) {
   EXPECT_TRUE(any_promise->IsCanceled());
 }
 
-TEST_F(AbstractPromiseTest, AlreadyCanceledPrerequisitePolicyALL) {
+TEST_F(AbstractPromiseTest, MAYBE_AlreadyCanceledPrerequisitePolicyALL) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
   scoped_refptr<AbstractPromise> p2 =
@@ -1039,7 +1109,7 @@ TEST_F(AbstractPromiseTest, AlreadyCanceledPrerequisitePolicyALL) {
   EXPECT_TRUE(all_promise->IsCanceled());
 }
 
-TEST_F(AbstractPromiseTest, SomeAlreadyCanceledPrerequisitePolicyANY) {
+TEST_F(AbstractPromiseTest, MAYBE_SomeAlreadyCanceledPrerequisitePolicyANY) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
   scoped_refptr<AbstractPromise> p2 =
@@ -1060,7 +1130,7 @@ TEST_F(AbstractPromiseTest, SomeAlreadyCanceledPrerequisitePolicyANY) {
   EXPECT_FALSE(any_promise->IsCanceled());
 }
 
-TEST_F(AbstractPromiseTest, AllAlreadyCanceledPrerequisitePolicyANY) {
+TEST_F(AbstractPromiseTest, MAYBE_AllAlreadyCanceledPrerequisitePolicyANY) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
   scoped_refptr<AbstractPromise> p2 =
@@ -1084,7 +1154,7 @@ TEST_F(AbstractPromiseTest, AllAlreadyCanceledPrerequisitePolicyANY) {
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DetectResolveDoubleMoveHazard)) {
+       ABSTRACT_PROMISE_DEATH_TEST(MAYBE_DetectResolveDoubleMoveHazard)) {
   scoped_refptr<AbstractPromise> p0 = ThenPromise(FROM_HERE, nullptr);
 
   scoped_refptr<AbstractPromise> p1 =
@@ -1098,7 +1168,7 @@ TEST_F(AbstractPromiseTest,
 
 TEST_F(AbstractPromiseTest,
        ABSTRACT_PROMISE_DEATH_TEST(
-           DetectMixedResolveCallbackMoveAndNonMoveHazard)) {
+           MAYBE_DetectMixedResolveCallbackMoveAndNonMoveHazard)) {
   scoped_refptr<AbstractPromise> p0 = ThenPromise(FROM_HERE, nullptr);
 
   scoped_refptr<AbstractPromise> p1 =
@@ -1108,7 +1178,7 @@ TEST_F(AbstractPromiseTest,
       { scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p0); });
 }
 
-TEST_F(AbstractPromiseTest, MultipleNonMoveCatchCallbacksAreOK) {
+TEST_F(AbstractPromiseTest, MAYBE_MultipleNonMoveCatchCallbacksAreOK) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1133,7 +1203,7 @@ TEST_F(AbstractPromiseTest, MultipleNonMoveCatchCallbacksAreOK) {
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DetectCatchCallbackDoubleMoveHazard)) {
+       ABSTRACT_PROMISE_DEATH_TEST(MAYBE_DetectCatchCallbackDoubleMoveHazard)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1159,9 +1229,9 @@ TEST_F(AbstractPromiseTest,
   });
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(DetectCatchCallbackDoubleMoveHazardInChain)) {
+TEST_F(AbstractPromiseTest,
+       ABSTRACT_PROMISE_DEATH_TEST(
+           MAYBE_DetectCatchCallbackDoubleMoveHazardInChain)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1197,7 +1267,7 @@ TEST_F(
 TEST_F(
     AbstractPromiseTest,
     ABSTRACT_PROMISE_DEATH_TEST(
-        DetectCatchCallbackDoubleMoveHazardInChainIntermediateThensCanReject)) {
+        MAYBE_DetectCatchCallbackDoubleMoveHazardInChainIntermediateThensCanReject)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1233,9 +1303,9 @@ TEST_F(
   });
 }
 
-TEST_F(
-    AbstractPromiseTest,
-    ABSTRACT_PROMISE_DEATH_TEST(DetectMixedCatchCallbackMoveAndNonMoveHazard)) {
+TEST_F(AbstractPromiseTest,
+       ABSTRACT_PROMISE_DEATH_TEST(
+           MAYBE_DetectMixedCatchCallbackMoveAndNonMoveHazard)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1268,7 +1338,8 @@ TEST_F(
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DetectThenCallbackDoubleMoveHazardInChain)) {
+       ABSTRACT_PROMISE_DEATH_TEST(
+           MAYBE_DetectThenCallbackDoubleMoveHazardInChain)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1747,7 +1818,7 @@ TEST_F(AbstractPromiseTest,
 }
 
 TEST_F(AbstractPromiseTest,
-       ABSTRACT_PROMISE_DEATH_TEST(DoubleMoveDoNothingPromise)) {
+       ABSTRACT_PROMISE_DEATH_TEST(MAYBE_DoubleMoveDoNothingPromise)) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -2133,7 +2204,7 @@ TEST_F(AbstractPromiseTest, ThreadHopping) {
   thread_c->Stop();
 }
 
-TEST_F(AbstractPromiseTest, MutipleThreadsAddingDependants) {
+TEST_F(AbstractPromiseTest, MAYBE_MutipleThreadsAddingDependants) {
   constexpr int num_threads = 4;
   constexpr int num_promises = 10000;
 

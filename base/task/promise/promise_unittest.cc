@@ -18,6 +18,23 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(crbug.com/968302): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_ThenRejectWithTuple DISABLED_ThenRejectWithTuple
+#define MAYBE_TargetTaskRunnerClearsTasks DISABLED_TargetTaskRunnerClearsTasks
+#define MAYBE_MoveOnlyTypeMultipleThensNotAllowed \
+  DISABLED_MoveOnlyTypeMultipleThensNotAllowed
+#define MAYBE_MoveOnlyTypeMultipleCatchesNotAllowed \
+  DISABLED_MoveOnlyTypeMultipleCatchesNotAllowed
+#else
+#define MAYBE_ThenRejectWithTuple ThenRejectWithTuple
+#define MAYBE_TargetTaskRunnerClearsTasks TargetTaskRunnerClearsTasks
+#define MAYBE_MoveOnlyTypeMultipleThensNotAllowed \
+  MoveOnlyTypeMultipleThensNotAllowed
+#define MAYBE_MoveOnlyTypeMultipleCatchesNotAllowed \
+  MoveOnlyTypeMultipleCatchesNotAllowed
+#endif
+
 using testing::ElementsAre;
 
 namespace base {
@@ -75,7 +92,7 @@ class PromiseTest : public testing::Test {
   test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST(PromiseMemoryLeakTest, TargetTaskRunnerClearsTasks) {
+TEST(PromiseMemoryLeakTest, MAYBE_TargetTaskRunnerClearsTasks) {
   scoped_refptr<TestMockTimeTaskRunner> post_runner =
       MakeRefCounted<TestMockTimeTaskRunner>();
   scoped_refptr<TestMockTimeTaskRunner> reply_runner =
@@ -259,7 +276,7 @@ TEST_F(PromiseTest, CreateResolvedThen) {
   run_loop.Run();
 }
 
-TEST_F(PromiseTest, ThenRejectWithTuple) {
+TEST_F(PromiseTest, MAYBE_ThenRejectWithTuple) {
   ManualPromiseResolver<void> p(FROM_HERE);
   p.Resolve();
 
@@ -1458,7 +1475,7 @@ TEST_F(PromiseTest, CatchNotRequired) {
   run_loop.Run();
 }
 
-TEST_F(PromiseTest, MoveOnlyTypeMultipleThensNotAllowed) {
+TEST_F(PromiseTest, MAYBE_MoveOnlyTypeMultipleThensNotAllowed) {
 #if DCHECK_IS_ON()
   Promise<std::unique_ptr<int>> p =
       Promise<std::unique_ptr<int>>::CreateResolved(FROM_HERE,
@@ -1474,7 +1491,7 @@ TEST_F(PromiseTest, MoveOnlyTypeMultipleThensNotAllowed) {
 #endif
 }
 
-TEST_F(PromiseTest, MoveOnlyTypeMultipleCatchesNotAllowed) {
+TEST_F(PromiseTest, MAYBE_MoveOnlyTypeMultipleCatchesNotAllowed) {
 #if DCHECK_IS_ON()
   auto p = Promise<void, std::unique_ptr<int>>::CreateRejected(
       FROM_HERE, std::make_unique<int>(123));
