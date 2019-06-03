@@ -104,10 +104,16 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
           usage = CanvasResourceProvider::kSoftwareCompositedResourceUsage;
         }
 
-        const CanvasResourceProvider::PresentationMode presentation_mode =
-            RuntimeEnabledFeatures::WebGLImageChromiumEnabled()
-                ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
-                : CanvasResourceProvider::kDefaultPresentationMode;
+        CanvasResourceProvider::PresentationMode presentation_mode;
+        if (RuntimeEnabledFeatures::WebGLSwapChainEnabled()) {
+          presentation_mode =
+              CanvasResourceProvider::kAllowSwapChainPresentationMode;
+        } else if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
+          presentation_mode =
+              CanvasResourceProvider::kAllowImageChromiumPresentationMode;
+        } else {
+          presentation_mode = CanvasResourceProvider::kDefaultPresentationMode;
+        }
 
         const bool is_origin_top_left =
             !SharedGpuContext::IsGpuCompositingEnabled();

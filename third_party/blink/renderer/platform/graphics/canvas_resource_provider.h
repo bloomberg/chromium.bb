@@ -58,8 +58,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
   };
 
   enum PresentationMode {
-    kDefaultPresentationMode,            // GPU Texture or shared memory bitmap
-    kAllowImageChromiumPresentationMode  // Use CHROMIUM_image gl extension
+    kDefaultPresentationMode,             // GPU Texture or shared memory bitmap
+    kAllowImageChromiumPresentationMode,  // Use CHROMIUM_image gl extension
+    kAllowSwapChainPresentationMode       // Use swap chains (only on Windows)
   };
 
   // These values are persisted to logs. Entries should not be renumbered and

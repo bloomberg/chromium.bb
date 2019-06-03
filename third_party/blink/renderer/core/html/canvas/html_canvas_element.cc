@@ -430,10 +430,13 @@ void HTMLCanvasElement::FinalizeFrame() {
 
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
     if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+      const bool webgl_overlay_enabled =
+          RuntimeEnabledFeatures::WebGLImageChromiumEnabled() ||
+          RuntimeEnabledFeatures::WebGLSwapChainEnabled();
       // TryEnableSingleBuffering() the first time we FinalizeFrame().
       if (!ResourceProvider()->IsSingleBuffered()) {
         ResourceProvider()->TryEnableSingleBuffering();
-        if (Is3d() && RuntimeEnabledFeatures::WebGLImageChromiumEnabled())
+        if (Is3d() && webgl_overlay_enabled)
           context_->ProvideBackBufferToResourceProvider();
       }
 
@@ -441,7 +444,7 @@ void HTMLCanvasElement::FinalizeFrame() {
         canvas2d_bridge_->FlushRecording();
       } else {
         DCHECK(Is3d());
-        if (!RuntimeEnabledFeatures::WebGLImageChromiumEnabled())
+        if (!webgl_overlay_enabled)
           context_->PaintRenderingResultsToCanvas(kBackBuffer);
       }
 

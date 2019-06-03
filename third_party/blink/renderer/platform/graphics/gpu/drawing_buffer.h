@@ -118,6 +118,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   static scoped_refptr<DrawingBuffer> Create(
       std::unique_ptr<WebGraphicsContext3DProvider>,
       bool using_gpu_compositing,
+      bool using_swap_chain,
       Client*,
       const IntSize&,
       bool premultiplied_alpha,
@@ -247,6 +248,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // Restore all state that may have been dirtied by any call.
   void RestoreAllState();
 
+  void PresentSwapChain();
+
   // This class helps implement correct semantics for BlitFramebuffer
   // when the DrawingBuffer is using a CHROMIUM image for its backing
   // store and RGB emulation is in use (basically, macOS only).
@@ -269,6 +272,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
  protected:  // For unittests
   DrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider>,
                 bool using_gpu_compositing,
+                bool using_swap_chain,
                 std::unique_ptr<Extensions3DUtil>,
                 Client*,
                 bool discard_framebuffer_supported,
@@ -495,6 +499,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   bool have_alpha_channel_ = false;
   const bool premultiplied_alpha_;
   const bool using_gpu_compositing_;
+  const bool using_swap_chain_;
   bool has_implicit_stencil_buffer_ = false;
   bool storage_texture_supported_ = false;
 

@@ -642,6 +642,7 @@ enum class CanvasResourceType {
   kDirect2DGpuMemoryBuffer,
   kTextureGpuMemoryBuffer,
   kBitmapGpuMemoryBuffer,
+  kDirect3DSwapChain,
   kSharedBitmap,
   kTexture,
   kBitmap,
@@ -711,6 +712,7 @@ const std::vector<CanvasResourceType>& GetResourceTypeFallbackList(
           // from an external source. The external site should take care of
           // using SharedImages since the resource will be used by the display
           // compositor.
+          CanvasResourceType::kDirect3DSwapChain,
           CanvasResourceType::kDirect3DGpuMemoryBuffer,
           CanvasResourceType::kDirect2DGpuMemoryBuffer,
           // The rest is equal to |kAcceleratedCompositedFallbackList|.
@@ -723,7 +725,7 @@ const std::vector<CanvasResourceType>& GetResourceTypeFallbackList(
           // Fallback to no direct compositing support
           CanvasResourceType::kBitmap,
       });
-  DCHECK(std::equal(kAcceleratedDirect3DFallbackList.begin() + 1,
+  DCHECK(std::equal(kAcceleratedDirect3DFallbackList.begin() + 2,
                     kAcceleratedDirect3DFallbackList.end(),
                     kAcceleratedDirect2DFallbackList.begin(),
                     kAcceleratedDirect2DFallbackList.end()));
@@ -768,11 +770,21 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
           color_params.GetBufferFormat(),
           context_provider_wrapper->ContextProvider()->GetCapabilities());
 
+  // TODO(ashithasantosh): Include checks for capabilities, format and size.
+  const bool is_swap_chain_allowed =
+      presentation_mode == kAllowSwapChainPresentationMode;
+
   for (CanvasResourceType resource_type : fallback_list) {
     // Note: We are deliberately not using std::move() on
     // |context_provider_wrapper| and |resource_dispatcher| to ensure that the
     // pointers remain valid for the next iteration of this loop if necessary.
     switch (resource_type) {
+      case CanvasResourceType::kDirect3DSwapChain:
+        if (!is_swap_chain_allowed)
+          continue;
+        provider = std::make_unique<CanvasResourceProviderPassThrough>(
+            size, color_params, context_provider_wrapper, resource_dispatcher);
+        break;
       case CanvasResourceType::kTextureGpuMemoryBuffer:
         if (!is_gpu_memory_buffer_image_allowed)
           continue;

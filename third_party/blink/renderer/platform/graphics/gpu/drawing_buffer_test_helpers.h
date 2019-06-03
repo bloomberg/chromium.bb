@@ -446,6 +446,7 @@ class DrawingBufferForTests : public DrawingBuffer {
       : DrawingBuffer(
             std::move(context_provider),
             using_gpu_compositing,
+            false /* usingSwapChain */,
             std::move(extensions_util),
             client,
             false /* discardFramebufferSupported */,

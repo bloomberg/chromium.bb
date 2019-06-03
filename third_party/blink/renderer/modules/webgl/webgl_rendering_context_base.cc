@@ -1075,6 +1075,8 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
 scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     bool using_gpu_compositing) {
+  bool using_swap_chain = RuntimeEnabledFeatures::WebGLSwapChainEnabled() &&
+                          CreationAttributes().desynchronized;
   bool premultiplied_alpha = CreationAttributes().premultiplied_alpha;
   bool want_alpha_channel = CreationAttributes().alpha;
   bool want_depth_buffer = CreationAttributes().depth;
@@ -1107,8 +1109,8 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
                                   : DrawingBuffer::kAllowChromiumImage;
 
   return DrawingBuffer::Create(
-      std::move(context_provider), using_gpu_compositing, this,
-      ClampedCanvasSize(), premultiplied_alpha, want_alpha_channel,
+      std::move(context_provider), using_gpu_compositing, using_swap_chain,
+      this, ClampedCanvasSize(), premultiplied_alpha, want_alpha_channel,
       want_depth_buffer, want_stencil_buffer, want_antialiasing, preserve,
       web_gl_version, chromium_image_usage, ColorParams());
 }
@@ -1409,6 +1411,8 @@ void WebGLRenderingContextBase::PushFrame() {
 }
 
 void WebGLRenderingContextBase::FinalizeFrame() {
+  if (GetDrawingBuffer())
+    GetDrawingBuffer()->PresentSwapChain();
   marked_canvas_dirty_ = false;
 }
 

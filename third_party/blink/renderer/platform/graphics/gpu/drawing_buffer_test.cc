@@ -720,10 +720,11 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
     bool want_stencil_buffer = cases[i].request_stencil;
     bool want_antialiasing = false;
     bool gpu_compositing = true;
+    bool using_swap_chain = false;
     scoped_refptr<DrawingBuffer> drawing_buffer = DrawingBuffer::Create(
-        std::move(provider), gpu_compositing, nullptr, IntSize(10, 10),
-        premultiplied_alpha, want_alpha_channel, want_depth_buffer,
-        want_stencil_buffer, want_antialiasing, preserve,
+        std::move(provider), gpu_compositing, using_swap_chain, nullptr,
+        IntSize(10, 10), premultiplied_alpha, want_alpha_channel,
+        want_depth_buffer, want_stencil_buffer, want_antialiasing, preserve,
         DrawingBuffer::kWebGL1, DrawingBuffer::kAllowChromiumImage,
         CanvasColorParams());
 
@@ -792,9 +793,10 @@ TEST_F(DrawingBufferTest,
   IntSize too_big_size(1, (v8::TypedArray::kMaxLength / 4) + 1);
   bool gpu_compositing = true;
   scoped_refptr<DrawingBuffer> too_big_drawing_buffer = DrawingBuffer::Create(
-      nullptr, gpu_compositing, nullptr, too_big_size, false, false, false,
-      false, false, DrawingBuffer::kDiscard, DrawingBuffer::kWebGL1,
-      DrawingBuffer::kAllowChromiumImage, CanvasColorParams());
+      nullptr, gpu_compositing, false /* using_swap_chain */, nullptr,
+      too_big_size, false, false, false, false, false, DrawingBuffer::kDiscard,
+      DrawingBuffer::kWebGL1, DrawingBuffer::kAllowChromiumImage,
+      CanvasColorParams());
   EXPECT_EQ(too_big_drawing_buffer, nullptr);
   drawing_buffer_->BeginDestruction();
 }
