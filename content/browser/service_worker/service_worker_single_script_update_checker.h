@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace network {
@@ -39,6 +40,16 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
     kDifferent,
   };
 
+  // This contains detailed error info of update check when it failed.
+  struct CONTENT_EXPORT FailureInfo {
+    FailureInfo(blink::ServiceWorkerStatusCode status,
+                const std::string& error_message);
+    ~FailureInfo();
+
+    const blink::ServiceWorkerStatusCode status;
+    const std::string error_message;
+  };
+
   // The paused state consists of Mojo endpoints and a cache writer
   // detached/paused in the middle of loading script body and would be used in
   // the left steps of the update process.
@@ -66,9 +77,12 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   // It notifies the check result to the callback and the ownership of
   // internal state variables (the cache writer and Mojo endpoints for loading)
   // is transferred to the callback in the PausedState only when the result is
-  // Result::kDifferent. Otherwise it's set to nullptr.
-  using ResultCallback = base::OnceCallback<
-      void(const GURL&, Result, std::unique_ptr<PausedState>)>;
+  // Result::kDifferent. Otherwise it's set to nullptr. FailureInfo is set to a
+  // valid value if the result is Result::kFailed, otherwise it'll be nullptr.
+  using ResultCallback = base::OnceCallback<void(const GURL&,
+                                                 Result,
+                                                 std::unique_ptr<FailureInfo>,
+                                                 std::unique_ptr<PausedState>)>;
 
   // Both |compare_reader| and |copy_reader| should be created from the same
   // resource ID, and this ID should locate where the script specified with
@@ -76,6 +90,7 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   ServiceWorkerSingleScriptUpdateChecker(
       const GURL& url,
       bool is_main_script,
+      const GURL& scope,
       bool force_bypass_cache,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       base::TimeDelta time_since_last_check,
@@ -118,9 +133,18 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
       scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer,
       uint32_t bytes_written,
       net::Error error);
-  void Finish(Result result);
+
+  // Called when the update check for this script failed. It calls Finish().
+  void Fail(blink::ServiceWorkerStatusCode status,
+            const std::string& error_message);
+
+  // Called when the update check for this script succeeded. It calls Finish().
+  void Succeed(Result result);
+  void Finish(Result result, std::unique_ptr<FailureInfo> failure_info);
 
   const GURL script_url_;
+  const bool is_main_script_;
+  const GURL scope_;
   const bool force_bypass_cache_;
   const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   const base::TimeDelta time_since_last_check_;

@@ -349,12 +349,27 @@ ServiceWorkerRegisterJob::GetUpdateCheckType() const {
              : UpdateCheckType::kMainScriptDuringStartWorker;
 }
 
-void ServiceWorkerRegisterJob::OnUpdateCheckFinished(bool script_changed) {
+void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
+    ServiceWorkerSingleScriptUpdateChecker::Result result,
+    std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+        failure_info) {
   DCHECK_EQ(GetUpdateCheckType(),
             UpdateCheckType::kAllScriptsBeforeStartWorker);
+
+  // Update check failed.
+  if (result == ServiceWorkerSingleScriptUpdateChecker::Result::kFailed) {
+    DCHECK(failure_info);
+    ResolvePromise(failure_info->status, failure_info->error_message, nullptr);
+    // This terminates the current job (|this|).
+    Complete(failure_info->status, failure_info->error_message);
+    return;
+  }
+
+  // Update the last update check time.
   BumpLastUpdateCheckTimeIfNeeded();
-  if (!script_changed) {
-    // TODO(momohatt): Set phase correctly.
+
+  // Update check succeeded.
+  if (result == ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical) {
     ResolvePromise(blink::ServiceWorkerStatusCode::kOk, std::string(),
                    registration());
     // This terminates the current job (|this|).

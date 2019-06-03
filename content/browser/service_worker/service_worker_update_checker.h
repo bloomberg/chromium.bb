@@ -44,7 +44,18 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
         paused_state;
   };
 
-  using UpdateStatusCallback = base::OnceCallback<void(bool)>;
+  // This is to notify the update check result. Value of |result| can be:
+  // 1. ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical
+  //    All the scripts are identical with existing version, no need to update.
+  //    |failure_info| is nullptr.
+  // 2. ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent
+  //    Some script changed, update is needed. |failure_info| is nullptr.
+  // 3. ServiceWorkerSingleScriptUpdateChecker::Result::kFailed
+  //    The update check failed, detailed error info is in |failure_info|.
+  using UpdateStatusCallback = base::OnceCallback<void(
+      ServiceWorkerSingleScriptUpdateChecker::Result result,
+      std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+          failure_info)>;
 
   ServiceWorkerUpdateChecker(
       std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare,
@@ -57,9 +68,7 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
       base::TimeDelta time_since_last_check);
   ~ServiceWorkerUpdateChecker();
 
-  // |callback| is always triggered when Start() finishes. If the scripts are
-  // found to have any changes, the argument of |callback| is true and otherwise
-  // false.
+  // |callback| is always triggered when Start() finishes.
   void Start(UpdateStatusCallback callback);
 
   // This transfers the ownership of the check result to the caller. It only
@@ -70,6 +79,8 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
       int64_t old_resource_id,
       const GURL& script_url,
       ServiceWorkerSingleScriptUpdateChecker::Result result,
+      std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+          failure_info,
       std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
           paused_state);
 

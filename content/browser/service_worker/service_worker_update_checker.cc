@@ -42,8 +42,23 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
     int64_t old_resource_id,
     const GURL& script_url,
     ServiceWorkerSingleScriptUpdateChecker::Result result,
+    std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+        failure_info,
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
         paused_state) {
+  bool is_main_script = script_url == main_script_url_;
+  // We only cares about the failures on the main script because an imported
+  // script might not exist anymore and fail to be loaded because it's not
+  // imported in a new script.
+  // See also https://github.com/w3c/ServiceWorker/issues/1374 for more details.
+  if (is_main_script &&
+      result == ServiceWorkerSingleScriptUpdateChecker::Result::kFailed) {
+    std::move(callback_).Run(
+        ServiceWorkerSingleScriptUpdateChecker::Result::kFailed,
+        std::move(failure_info));
+    return;
+  }
+
   script_check_results_[script_url] =
       ComparedScriptInfo(old_resource_id, result, std::move(paused_state));
   if (running_checker_->network_accessed())
@@ -55,14 +70,18 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
     // Found an updated script. Stop the comparison of scripts here and
     // return to ServiceWorkerRegisterJob to continue the update.
     // Note that running |callback_| will delete |this|.
-    std::move(callback_).Run(true);
+    std::move(callback_).Run(
+        ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent,
+        nullptr /* failure_info */);
     return;
   }
 
   if (next_script_index_to_compare_ >= scripts_to_compare_.size()) {
     // None of scripts had any updates.
     // Running |callback_| will delete |this|.
-    std::move(callback_).Run(false);
+    std::move(callback_).Run(
+        ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical,
+        nullptr /* failure_info */);
     return;
   }
 
@@ -73,7 +92,9 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
     if (next_script_index_to_compare_ >= scripts_to_compare_.size()) {
       // None of scripts had any updates.
       // Running |callback_| will delete |this|.
-      std::move(callback_).Run(false);
+      std::move(callback_).Run(
+          ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical,
+          nullptr /* failure_info */);
       return;
     }
   }
@@ -105,9 +126,9 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
 
   auto writer = storage->CreateResponseWriter(storage->NewResourceId());
   running_checker_ = std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
-      url, is_main_script, force_bypass_cache_, update_via_cache_,
-      time_since_last_check_, loader_factory_, std::move(compare_reader),
-      std::move(copy_reader), std::move(writer),
+      url, is_main_script, version_to_update_->scope(), force_bypass_cache_,
+      update_via_cache_, time_since_last_check_, loader_factory_,
+      std::move(compare_reader), std::move(copy_reader), std::move(writer),
       base::BindOnce(&ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished,
                      weak_factory_.GetWeakPtr(), resource_id));
 }

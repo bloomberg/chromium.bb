@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -70,6 +72,7 @@ namespace content {
 ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     const GURL& url,
     bool is_main_script,
+    const GURL& scope,
     bool force_bypass_cache,
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
     base::TimeDelta time_since_last_check,
@@ -79,6 +82,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     std::unique_ptr<ServiceWorkerResponseWriter> writer,
     ResultCallback callback)
     : script_url_(url),
+      is_main_script_(is_main_script),
+      scope_(scope),
       force_bypass_cache_(force_bypass_cache),
       update_via_cache_(update_via_cache),
       time_since_last_check_(time_since_last_check),
@@ -93,11 +98,11 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   resource_request.resource_type = static_cast<int>(
       is_main_script ? ResourceType::kServiceWorker : ResourceType::kScript);
   resource_request.do_not_prompt_for_login = true;
-  if (is_main_script)
+  if (is_main_script_)
     resource_request.headers.SetHeader("Service-Worker", "script");
 
   if (ServiceWorkerUtils::ShouldValidateBrowserCacheForScript(
-          is_main_script, force_bypass_cache_, update_via_cache_,
+          is_main_script_, force_bypass_cache_, update_via_cache_,
           time_since_last_check_)) {
     resource_request.load_flags |= net::LOAD_VALIDATE_CACHE;
   }
@@ -143,11 +148,53 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
   response_info->connection_info = response_head.connection_info;
   response_info->remote_endpoint = response_head.remote_endpoint;
 
-  // TODO(momohatt): Check for header errors.
-
   network_loader_state_ =
       ServiceWorkerNewScriptLoader::NetworkLoaderState::kWaitingForBody;
   network_accessed_ = response_head.network_accessed;
+
+  if (response_head.headers->response_code() / 100 != 2) {
+    std::string error_message =
+        base::StringPrintf(kServiceWorkerBadHTTPResponseError,
+                           response_head.headers->response_code());
+    Fail(blink::ServiceWorkerStatusCode::kErrorNetwork, error_message);
+    return;
+  }
+
+  // Check the certificate error.
+  if (net::IsCertStatusError(response_head.cert_status) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreCertificateErrors)) {
+    Fail(blink::ServiceWorkerStatusCode::kErrorSecurity,
+         kServiceWorkerSSLError);
+    return;
+  }
+
+  if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type)) {
+    std::string error_message =
+        response_head.mime_type.empty()
+            ? kServiceWorkerNoMIMEError
+            : base::StringPrintf(kServiceWorkerBadMIMEError,
+                                 response_head.mime_type.c_str());
+    Fail(blink::ServiceWorkerStatusCode::kErrorSecurity, error_message);
+    return;
+  }
+
+  // Check the path restriction defined in the spec:
+  // https://w3c.github.io/ServiceWorker/#service-worker-script-response
+  // Only main script needs the following check.
+  if (is_main_script_) {
+    std::string service_worker_allowed;
+    bool has_header = response_head.headers->EnumerateHeader(
+        nullptr, kServiceWorkerAllowed, &service_worker_allowed);
+    std::string error_message;
+    if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
+            scope_, script_url_, has_header ? &service_worker_allowed : nullptr,
+            &error_message)) {
+      Fail(blink::ServiceWorkerStatusCode::kErrorSecurity, error_message);
+      return;
+    }
+  }
+
   WriteHeaders(
       base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(response_info)));
 }
@@ -192,7 +239,8 @@ void ServiceWorkerSingleScriptUpdateChecker::OnComplete(
   network_loader_state_ =
       ServiceWorkerNewScriptLoader::NetworkLoaderState::kCompleted;
   if (status.error_code != net::OK) {
-    Finish(Result::kFailed);
+    Fail(blink::ServiceWorkerStatusCode::kErrorNetwork,
+         kServiceWorkerFetchScriptError);
     return;
   }
 
@@ -241,7 +289,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnComplete(
       case ServiceWorkerNewScriptLoader::WriterState::kCompleted:
         DCHECK_EQ(header_writer_state_,
                   ServiceWorkerNewScriptLoader::WriterState::kCompleted);
-        Finish(Result::kIdentical);
+        Succeed(Result::kIdentical);
         return;
     }
   }
@@ -278,7 +326,8 @@ void ServiceWorkerSingleScriptUpdateChecker::OnWriteHeadersComplete(
   DCHECK_NE(error, net::ERR_IO_PENDING);
   header_writer_state_ = ServiceWorkerNewScriptLoader::WriterState::kCompleted;
   if (error != net::OK) {
-    Finish(Result::kFailed);
+    Fail(blink::ServiceWorkerStatusCode::kErrorFailed,
+         kServiceWorkerFetchScriptError);
     return;
   }
 
@@ -395,31 +444,47 @@ void ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete(
     // |cache_writer_| can be pausing only when it finds difference between
     // stored body and network body.
     DCHECK_EQ(error, net::ERR_IO_PENDING);
-    Finish(Result::kDifferent);
+    Succeed(Result::kDifferent);
     return;
   }
   if (!pending_buffer || error != net::OK) {
-    Finish(Result::kIdentical);
+    Succeed(Result::kIdentical);
     return;
   }
   DCHECK(pending_buffer);
   network_watcher_.ArmOrNotify();
 }
 
-void ServiceWorkerSingleScriptUpdateChecker::Finish(Result result) {
+void ServiceWorkerSingleScriptUpdateChecker::Fail(
+    blink::ServiceWorkerStatusCode status,
+    const std::string& error_message) {
+  Finish(Result::kFailed, std::make_unique<FailureInfo>(status, error_message));
+}
+
+void ServiceWorkerSingleScriptUpdateChecker::Succeed(Result result) {
+  DCHECK_NE(result, Result::kFailed);
+  Finish(result, nullptr);
+}
+
+void ServiceWorkerSingleScriptUpdateChecker::Finish(
+    Result result,
+    std::unique_ptr<FailureInfo> failure_info) {
   network_watcher_.Cancel();
   if (Result::kDifferent == result) {
     auto paused_state = std::make_unique<PausedState>(
         std::move(cache_writer_), std::move(network_loader_),
         network_client_binding_.Unbind(), std::move(network_consumer_),
         network_loader_state_, body_writer_state_);
-    std::move(callback_).Run(script_url_, result, std::move(paused_state));
+    std::move(callback_).Run(script_url_, result, nullptr,
+                             std::move(paused_state));
     return;
   }
+
   network_loader_.reset();
   network_client_binding_.Close();
   network_consumer_.reset();
-  std::move(callback_).Run(script_url_, result, nullptr);
+  std::move(callback_).Run(script_url_, result, std::move(failure_info),
+                           nullptr);
 }
 
 ServiceWorkerSingleScriptUpdateChecker::PausedState::PausedState(
@@ -437,5 +502,11 @@ ServiceWorkerSingleScriptUpdateChecker::PausedState::PausedState(
       body_writer_state(body_writer_state) {}
 
 ServiceWorkerSingleScriptUpdateChecker::PausedState::~PausedState() = default;
+
+ServiceWorkerSingleScriptUpdateChecker::FailureInfo::FailureInfo(
+    blink::ServiceWorkerStatusCode status,
+    const std::string& error_message)
+    : status(status), error_message(error_message) {}
+ServiceWorkerSingleScriptUpdateChecker::FailureInfo::~FailureInfo() = default;
 
 }  // namespace content

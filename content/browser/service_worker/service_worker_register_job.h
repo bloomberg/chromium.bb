@@ -125,9 +125,12 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   UpdateCheckType GetUpdateCheckType() const;
 
   // This method is only called when ServiceWorkerImportedScriptUpdateCheck is
-  // enabled. When some script changed, the parameter |script_changed| is set
-  // to true.
-  void OnUpdateCheckFinished(bool script_changed);
+  // enabled. Refer ServiceWorkerUpdateChecker::UpdateStatusCallback for the
+  // meaning of the parameters.
+  void OnUpdateCheckFinished(
+      ServiceWorkerSingleScriptUpdateChecker::Result result,
+      std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+          failure_info);
 
   void RegisterAndContinue();
   void ContinueWithUninstallingRegistration(
