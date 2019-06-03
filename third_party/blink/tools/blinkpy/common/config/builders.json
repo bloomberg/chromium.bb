@@ -64,6 +64,11 @@
         "port_name": "win-win10",
         "specifiers": ["Win10", "Debug"]
     },
+    "fuchsia_x64": {
+        "port_name": "fuchsia",
+        "specifiers": ["Fuchsia", "Release"],
+        "is_try_builder": true
+    },
     "linux-blink-rel": {
         "port_name": "linux-trusty",
         "specifiers": ["Trusty", "Release"],
