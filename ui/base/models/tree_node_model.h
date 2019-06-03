@@ -108,14 +108,6 @@ class TreeNode : public TreeModelNode {
     return ptr;
   }
 
-  // Removes the given node. Prefer to remove by index if you know it to avoid
-  // the search for the node to remove.
-  std::unique_ptr<NodeType> Remove(NodeType* node) {
-    int i = GetIndexOf(node);
-    DCHECK_NE(-1, i);
-    return Remove(i);
-  }
-
   // Removes all the children from this node.
   void DeleteAll() { children_.clear(); }
 

@@ -41,7 +41,8 @@ std::unique_ptr<BookmarkNode> UrlIndex::Remove(BookmarkNode* node,
       }
     }
   }
-  return node->parent()->Remove(node);
+  BookmarkNode* parent = node->parent();
+  return parent->Remove(parent->GetIndexOf(node));
 }
 
 void UrlIndex::SetUrl(BookmarkNode* node, const GURL& url) {

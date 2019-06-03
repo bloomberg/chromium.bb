@@ -1043,10 +1043,10 @@ TEST_F(BookmarkModelTest, DISABLED_Sort) {
 
   BookmarkNode* child1 = AsMutable(parent->GetChild(1));
   child1->SetTitle(ASCIIToUTF16("a"));
-  child1->Remove(child1->GetChild(0));
+  child1->Remove(0);
   BookmarkNode* child3 = AsMutable(parent->GetChild(3));
   child3->SetTitle(ASCIIToUTF16("C"));
-  child3->Remove(child3->GetChild(0));
+  child3->Remove(0);
 
   ClearCounts();
 

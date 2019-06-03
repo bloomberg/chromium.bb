@@ -272,11 +272,11 @@ TEST_F(TreeNodeModelTest, BasicOperations) {
   EXPECT_EQ(2, root.child_count());
   EXPECT_EQ(child1->parent(), child2->parent());
 
-  std::unique_ptr<TestNode> c2 = root.Remove(child2);
+  std::unique_ptr<TestNode> c2 = root.Remove(1);
   EXPECT_EQ(1, root.child_count());
   EXPECT_EQ(NULL, child2->parent());
 
-  std::unique_ptr<TestNode> c1 = root.Remove(child1);
+  std::unique_ptr<TestNode> c1 = root.Remove(0);
   EXPECT_EQ(0, root.child_count());
 }
 

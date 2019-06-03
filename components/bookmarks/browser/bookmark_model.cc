@@ -294,7 +294,7 @@ void BookmarkModel::Move(const BookmarkNode* node,
 
   BookmarkNode* mutable_old_parent = AsMutable(old_parent);
   std::unique_ptr<BookmarkNode> owned_node =
-      mutable_old_parent->Remove(AsMutable(node));
+      mutable_old_parent->Remove(old_index);
   BookmarkNode* mutable_new_parent = AsMutable(new_parent);
   mutable_new_parent->Add(std::move(owned_node), index);
 
