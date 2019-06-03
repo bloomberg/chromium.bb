@@ -230,6 +230,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [currentTab setWebState:webStateImpl_];
     tabModel_.webStateList->InsertWebState(0, std::move(webState), 0,
                                            WebStateOpener());
+    tabModel_.webStateList->ActivateWebStateAt(0);
 
     // Load TemplateURLService.
     TemplateURLService* template_url_service =

@@ -77,7 +77,6 @@
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
@@ -393,7 +392,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      SideSwipeControllerDelegate,
                                      SigninPresenter,
                                      SnapshotGeneratorDelegate,
-                                     TabModelObserver,
                                      TabStripPresentation,
                                      ToolbarHeightProviderForFullscreen,
                                      WebStateListObserving,
@@ -1106,7 +1104,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (web::WebState*)currentWebState {
-  return self.tabModel.currentTab.webState;
+  return self.tabModel.webStateList->GetActiveWebState();
 }
 
 - (BOOL)usesSafeInsetsForViewportAdjustments {
@@ -1464,7 +1462,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // SideSwipeController is a tab model observer, so it needs to stop observing
   // before self.tabModel is released.
   _sideSwipeController = nil;
-  [self.tabModel removeObserver:self];
   self.tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
   _webStateListObserver.reset();
   _allWebStateObservationForwarder = nullptr;
@@ -1933,7 +1930,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       ->GetForBrowserState(_browserState)
       ->SetWebStateList(self.tabModel.webStateList);
 
-  [self.tabModel addObserver:self];
   _webStateObserverBridge = std::make_unique<web::WebStateObserverBridge>(self);
   _allWebStateObservationForwarder =
       std::make_unique<AllWebStateObservationForwarder>(
@@ -3519,6 +3515,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - CRWWebStateObserver methods.
 
+- (void)webState:(web::WebState*)webState
+    didStartNavigation:(web::NavigationContext*)navigation {
+  if (webState == self.currentWebState)
+    [self updateToolbar];
+}
+
 // TODO(crbug.com/918934): This call to closeFindInPage incorrectly triggers for
 // all navigations, not just navigations in the active WebState.
 - (void)webState:(web::WebState*)webState
@@ -4488,15 +4490,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   [self initiateNewTabAnimationForWebState:webState
                       willOpenInBackground:!activating];
-}
-
-#pragma mark - TabModelObserver methods
-
-- (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {
-  DCHECK(tab && ([self.tabModel indexOfTab:tab] != NSNotFound));
-  if (tab == self.tabModel.currentTab) {
-    [self updateToolbar];
-  }
 }
 
 #pragma mark - WebStateListObserver helpers (new tab animations)
