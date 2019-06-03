@@ -226,7 +226,7 @@
 <translation id="4272631900155121838">QR 코드를 스캔하려면 설정에서 카메라를 사용하도록 설정하세요.</translation>
 <translation id="4281844954008187215">서비스 약관</translation>
 <translation id="430793432425771671">모두 동기화</translation>
-<translation id="4338650699862464074">방문한 페이지의 URL을 Google에 전송</translation>
+<translation id="4338650699862464074">방문한 페이지의 URL을 Google에 전송합니다.</translation>
 <translation id="4359125752503270327">이 페이지는 다른 애플리케이션에서 열립니다.</translation>
 <translation id="4370827530403103842">동기화가 작동하지 않습니다. 탭하여 수정하세요.</translation>
 <translation id="4375040482473363939">QR 코드 검색</translation>
@@ -258,7 +258,7 @@
 
 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />하세요.</translation>
 <translation id="4807020197310989387">읽기 목록에 읽지 않은 기사가 1개 있습니다.</translation>
-<translation id="4818522717893377262">언어 추가 중...</translation>
+<translation id="4818522717893377262">언어 추가...</translation>
 <translation id="481968316161811770">쿠키, 사이트 데이터</translation>
 <translation id="4833786495304741580">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 전송합니다.</translation>
 <translation id="4840495572919996524">북마크, 방문 기록, 비밀번호 등이 더 이상 Google 계정과 동기화되지 않습니다.</translation>

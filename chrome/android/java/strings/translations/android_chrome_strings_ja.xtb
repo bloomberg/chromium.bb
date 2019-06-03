@@ -20,6 +20,7 @@
 <translation id="1145536944570833626">既存のデータを削除します。</translation>
 <translation id="1146678959555564648">VR を入力</translation>
 <translation id="116280672541001035">使用量</translation>
+<translation id="1171770572613082465">人気のウェブサイトを表示するには、[上位のサイト] ボタンをタップします</translation>
 <translation id="1172593791219290334">起動ページ</translation>
 <translation id="1173894706177603556">名前を変更</translation>
 <translation id="1175310183703641346">ブックマーク、履歴、パスワードなどの設定は Google アカウントと同期されなくなります</translation>
@@ -257,6 +258,7 @@
 <translation id="2836148919159985482">全画面表示を終了するには戻るボタンをタップします。</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2845873210977809562">開いているタブが閉じられました</translation>
+<translation id="2858138569776157458">上位のサイト</translation>
 <translation id="2870560284913253234">サイト</translation>
 <translation id="2874939134665556319">前のトラック</translation>
 <translation id="2876369937070532032">セキュリティ上のリスクがある場合に、アクセスした一部のページの URL が Google に送信されます</translation>
@@ -973,6 +975,7 @@
 <translation id="8058746566562539958">新しい Chrome タブで開く</translation>
 <translation id="8063895661287329888">ブックマークを追加できませんでした。</translation>
 <translation id="806745655614357130">データを別に保持する</translation>
+<translation id="8067883171444229417">動画を再生します</translation>
 <translation id="8068648041423924542">証明書を選択できません</translation>
 <translation id="8073388330009372546">新しいタブで画像を開く</translation>
 <translation id="8076492880354921740">タブ</translation>
@@ -1009,6 +1012,7 @@
 <translation id="8327155640814342956">快適にご利用いただけるよう、Chrome を開いて更新することをおすすめします</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />のページは翻訳されません</translation>
 <translation id="8349013245300336738">データ使用量で並べ替え</translation>
+<translation id="8364299278605033898">人気のウェブサイトを表示します</translation>
 <translation id="8372893542064058268">特定のサイトに対してバックグラウンド同期を許可します。</translation>
 <translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>
 <translation id="8378714024927312812">組織によって管理されています</translation>

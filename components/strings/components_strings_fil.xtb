@@ -178,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Pangalan ng Cardholder</translation>
 <translation id="1821930232296380041">Di-wastong kahilingan o mga parameter ng kahilingan</translation>
+<translation id="1822370876374026111">Para mas mabilis na makapagbayad sa susunod, idagdag ang iyong card at billing address sa Google Account mo at sa device na ito.</translation>
 <translation id="1822540298136254167">Mga website na binibisita mo at oras na ginugugol dito</translation>
 <translation id="1826516787628120939">Sinusuri</translation>
 <translation id="1834321415901700177">Naglalaman ng mga mapanirang program ang site na ito</translation>
@@ -596,6 +597,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> pang item}one{<ph name="ITEM_COUNT" /> pang item}other{<ph name="ITEM_COUNT" /> pang item}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Para mas mabilis na makapagbayad sa susunod, idagdag ang iyong card at billing address sa Google Account mo.</translation>
 <translation id="4196861286325780578">&amp;Gawing muli ang paglilipat</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Suriin ang mga configuration ng firewall at antivirus<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -1010,6 +1012,7 @@
 <translation id="6451458296329894277">Muling pagsusumite ng Form sa Pagkumpirma</translation>
 <translation id="6465306955648956876">Pamahalaan ang mga password...</translation>
 <translation id="647261751007945333">Mga patakaran sa device</translation>
+<translation id="6476284679642588870">Pamahalaan ang mga paraan ng pagbabayad</translation>
 <translation id="6477321094435799029">May natukoy na kakaibang code ang Chrome sa page na ito at na-block ito upang protektahan ang iyong personal na impormasyon (halimbawa, mga password, numero ng telepono at credit card).</translation>
 <translation id="6489534406876378309">Simulang mag-upload ng mga pag-crash</translation>
 <translation id="6499038740797743453">I-reset ang password?</translation>
@@ -1150,6 +1153,7 @@ Mga karagdagang detalye:
 <translation id="7298195798382681320">Inirerekomenda</translation>
 <translation id="7300012071106347854">Cobalt Blue</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
+<translation id="7303701124147721189">Para mas mabilis na makapagbayad sa susunod, i-store ang iyong card at billing address sa iyong Google Account at sa device na ito.</translation>
 <translation id="7309308571273880165">Ulat ng pag-crash na nakuha noong <ph name="CRASH_TIME" /> (humiling ng pag-upload ang user, hindi pa naa-upload)</translation>
 <translation id="7313965965371928911">Mga babala sa <ph name="BEGIN_LINK" />Ligtas na Pag-browse<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1378,6 +1382,7 @@ Mga karagdagang detalye:
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8433057134996913067">Masa-sign out ka sa karamihan ng mga website.</translation>
 <translation id="8437238597147034694">&amp;I-undo ang paglilipat</translation>
+<translation id="8440508849222143646">Para mas mabilis na makapagbayad sa susunod, i-store ang iyong card at billing address sa iyong Google Account.</translation>
 <translation id="8461694314515752532">I-encrypt ang naka-sync na data gamit ang iyong sariling passphrase sa pag-sync</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 credit card}one{# credit card}other{# na credit card}}</translation>
 <translation id="8473863474539038330">Mga address at higit pa</translation>
@@ -1483,6 +1488,7 @@ Mga karagdagang detalye:
 <translation id="9128870381267983090">Kumonekta sa network</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
 <translation id="9137248913990643158">Magsimula at mag-sign in sa Chrome bago gamitin ang app na ito.</translation>
+<translation id="9141013498910525015">Pamahalaan ang mga address</translation>
 <translation id="9148088599418889305">Pumili ng Paraan ng Pagpapadala</translation>
 <translation id="9148507642005240123">&amp;I-undo ang pag-e-edit</translation>
 <translation id="9154194610265714752">Na-update</translation>

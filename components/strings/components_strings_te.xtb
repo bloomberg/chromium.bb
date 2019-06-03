@@ -178,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">కార్డుదారుని పేరు</translation>
 <translation id="1821930232296380041">చెల్లని అభ్యర్థన లేదా అభ్యర్థన పారామీట‌ర్‌లు</translation>
+<translation id="1822370876374026111">తర్వాతిసారి మరింత వేగంగా చెల్లించడానికి, మీ కార్డ్, బిల్లింగ్ చిరునామాలను మీ Google ఖాతాకు, అలాగే ఈ పరికరానికి కూడా జోడించండి.</translation>
 <translation id="1822540298136254167">మీరు సందర్శించిన వెబ్‌సైట్‌లు, వాటిపై వెచ్చించిన సమయం</translation>
 <translation id="1826516787628120939">తనిఖీ చేస్తోంది</translation>
 <translation id="1834321415901700177">ఈ సైట్‌లో హానికరమైన ప్రోగ్రామ్‌లు ఉన్నాయి</translation>
@@ -590,6 +591,7 @@
 <translation id="4173315687471669144">ఫుల్‌స్కేప్</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{మరో <ph name="ITEM_COUNT" /> అంశం}other{మరో <ph name="ITEM_COUNT" /> అంశాలు}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">తర్వాతిసారి మరింత వేగంగా చెల్లించడానికి, మీ కార్డ్, బిల్లింగ్ చిరునామాలను మీ Google ఖాతాకు జోడించండి.</translation>
 <translation id="4196861286325780578">&amp;తరలించడాన్ని పునరావృతం చేయి</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ఫైర్‌వాల్ మరియు యాంటీవైరస్ కాన్ఫిగరేషన్‌లను తనిఖీ చేయడం<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (ఎన్వలప్)</translation>
@@ -1004,6 +1006,7 @@
 <translation id="6451458296329894277">ఫారమ్ పునఃసమర్పణను నిర్థారించండి</translation>
 <translation id="6465306955648956876">పాస్‌వర్డ్‌లను నిర్వహించండి...</translation>
 <translation id="647261751007945333">పరికర విధానాలు</translation>
+<translation id="6476284679642588870">చెల్లింపు పద్ధతులను నిర్వహించండి</translation>
 <translation id="6477321094435799029">Chrome ఈ పేజీలో అసాధారణ కోడ్‌ను గుర్తించింది, మీ వ్యక్తిగత సమాచారాన్ని (ఉదాహరణకు, పాస్‌వర్డ్‌లు, ఫోన్ నంబర్‌లు మరియు క్రెడిట్ కార్డ్‌లు) రక్షించడానికి దానిని బ్లాక్ చేసింది.</translation>
 <translation id="6489534406876378309">క్రాష్‌లను అప్‌లోడ్ చేయడాన్ని ప్రారంభించండి</translation>
 <translation id="6499038740797743453">పాస్‌వర్డ్‌ను రీసెట్ చేయాలా?</translation>
@@ -1141,6 +1144,7 @@
 <translation id="7298195798382681320">సిఫార్సు చేయబడినవి</translation>
 <translation id="7300012071106347854">నల్ల కావిరాయి నీలం</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
+<translation id="7303701124147721189">తర్వాతిసారి మరింత వేగంగా చెల్లించడానికి, మీ కార్డ్, బిల్లింగ్ చిరునామాలను మీ Google ఖాతాలో, అలాగే ఈ పరికరంలో నిల్వ చేయండి.</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" /> తేదీన క్యాప్చ‌ర్ చేయ‌బ‌డిన‌ క్రాష్ నివేదిక (అప్‌లోడ్ చేయాల్సిందిగా వినియోగదారుకు అభ్యర్థన, ఇంకా అప్‌లోడ్ చేయలేదు)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />సురక్షిత బ్రౌజింగ్<ph name="END_LINK" /> హెచ్చరికలు</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1369,6 +1373,7 @@
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
 <translation id="8433057134996913067">దీని వలన మీరు చాలా వెబ్‌సైట్‌ల నుండి సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="8437238597147034694">&amp;తరలించడాన్ని రద్దు చేయి</translation>
+<translation id="8440508849222143646">తర్వాతిసారి మరింత వేగంగా చెల్లించడానికి, మీ కార్డ్, బిల్లింగ్ చిరునామాలను మీ Google ఖాతాలో నిల్వ చేయండి.</translation>
 <translation id="8461694314515752532">మీ స్వంత సమకాలీకరణ రహస్య పదబంధంతో సమకాలీకరించబడిన డేటాని ఎన్‌క్రిప్ట్ చేయండి</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 క్రెడిట్ కార్డ్}other{# క్రెడిట్ కార్డ్‌లు}}</translation>
 <translation id="8473863474539038330">చిరునామాలు మరియు మరిన్ని</translation>
@@ -1474,6 +1479,7 @@
 <translation id="9128870381267983090">నెట్‌వర్క్‌కి కనెక్ట్ చేయి</translation>
 <translation id="9137013805542155359">అసలును చూపించు</translation>
 <translation id="9137248913990643158">ఈ యాప్‌ను ఉపయోగించే ముందు, దయచేసి Chromeను ప్రారంభించి, దానికి సైన్ ఇన్ చేయండి.</translation>
+<translation id="9141013498910525015">చిరునామాలను నిర్వహించండి</translation>
 <translation id="9148088599418889305">షిప్పింగ్ పద్ధతిని ఎంచుకోండి</translation>
 <translation id="9148507642005240123">&amp;సవరించడాన్ని రద్దు చేయి</translation>
 <translation id="9154194610265714752">నవీకరించబడింది</translation>

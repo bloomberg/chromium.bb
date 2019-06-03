@@ -2640,7 +2640,7 @@
 <translation id="504561833207953641">기존 브라우저 세션에서 여는 중입니다.</translation>
 <translation id="5047421709274785093">사이트에서 모션 및 조도 센서 사용 차단</translation>
 <translation id="5050042263972837708">그룹 이름</translation>
-<translation id="5051836348807686060">선택한 언어로 맞춤법 검사가 지원되지 않습니다.</translation>
+<translation id="5051836348807686060">선택한 언어의 맞춤법 검사가 지원되지 않습니다.</translation>
 <translation id="5052499409147950210">사이트 수정</translation>
 <translation id="5053604404986157245">임의로 생성된 TPM 비밀번호는 사용할 수 없습니다. Powerwash 이후에는 정상입니다.</translation>
 <translation id="5057110919553308744">확장 프로그램을 클릭할 경우</translation>
@@ -5168,7 +5168,7 @@
 <translation id="8898840733695078011">신호 강도</translation>
 <translation id="8899851313684471736">새 창에서 링크 열기(&amp;W)</translation>
 <translation id="8902667442496790482">텍스트 읽어주기 설정 열기</translation>
-<translation id="8903263458134414071">로그인할 계정을 선택하세요.</translation>
+<translation id="8903263458134414071">로그인 계정 선택</translation>
 <translation id="8904976895050290827">Chrome 동기화</translation>
 <translation id="890616557918890486">소스 변경</translation>
 <translation id="8909833622202089127">사이트에서 내 위치를 추적하고 있습니다.</translation>

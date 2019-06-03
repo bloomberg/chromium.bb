@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">スウェーデン語</translation>
 <translation id="4693155481716051732">お寿司</translation>
 <translation id="4694604912444486114">サル</translation>
+<translation id="4697043402264950621">ファイルの一覧は <ph name="COLUMN_NAME" /> の昇順で並べ替えられています。</translation>
 <translation id="4711094779914110278">トルコ語</translation>
 <translation id="4713544552769165154">このファイルは Macintosh ソフトウェアを使用するパソコン向けのもので、Chrome OS を実行するデバイスとは互換性がありません。<ph name="BEGIN_LINK" />Chrome ウェブストア<ph name="END_LINK" />で、このデバイスで使用できる代わりのアプリをお探しください。<ph name="BEGIN_LINK_HELP" />詳細<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> 枚の写真をバックアップしました</translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">新しいウィンドウ</translation>
 <translation id="7348749398828259943">US Workman インターナショナル キーボード</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムをコピーしています...</translation>
+<translation id="7375951387215729722">ファイルの一覧は <ph name="COLUMN_NAME" /> の降順で並べ替えられています。</translation>
 <translation id="7389722738210761877">タイ語キーボード（TIS 820～2531）</translation>
 <translation id="7396038720194014279">ヒンディー語キーボード（表音）</translation>
 <translation id="7417453074306512035">エチオピア語キーボード</translation>

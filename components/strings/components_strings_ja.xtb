@@ -176,6 +176,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">カード名義人</translation>
 <translation id="1821930232296380041">無効なリクエストまたはリクエスト パラメータです</translation>
+<translation id="1822370876374026111">カードと請求先住所を Google アカウントとこのデバイスに追加すると、次回のお支払いが簡単になります。</translation>
 <translation id="1822540298136254167">アクセスしたウェブサイトと閲覧時間</translation>
 <translation id="1826516787628120939">確認中</translation>
 <translation id="1834321415901700177">このサイトには有害なプログラムが含まれています</translation>
@@ -588,6 +589,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{他 <ph name="ITEM_COUNT" /> 件のアイテム}other{他 <ph name="ITEM_COUNT" /> 件のアイテム}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">カードと請求先住所を Google アカウントに追加すると、次回のお支払いが簡単になります。</translation>
 <translation id="4196861286325780578">移動のやり直し（&amp;R）</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ファイアウォールとウイルス対策の設定を確認する<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9（封筒）</translation>
@@ -1002,6 +1004,7 @@
 <translation id="6451458296329894277">フォーム再送信の確認</translation>
 <translation id="6465306955648956876">パスワードを管理...</translation>
 <translation id="647261751007945333">デバイス ポリシー</translation>
+<translation id="6476284679642588870">お支払い方法を管理</translation>
 <translation id="6477321094435799029">このページで通常と異なるコードを検出したため、個人情報（例: パスワード、電話番号、クレジット カード番号）を保護するために、ページをブロックしました。</translation>
 <translation id="6489534406876378309">クラッシュのアップロードを開始</translation>
 <translation id="6499038740797743453">パスワードを再設定しますか？</translation>
@@ -1139,6 +1142,7 @@
 <translation id="7298195798382681320">推奨</translation>
 <translation id="7300012071106347854">コバルトブルー</translation>
 <translation id="7302712225291570345">「<ph name="TEXT" />」</translation>
+<translation id="7303701124147721189">カードと請求先住所を Google アカウントとこのデバイスに保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" /> にクラッシュ レポートが作成されました（ユーザーからアップロードがリクエストされましたが、まだアップロードされていません）</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />セーフ ブラウジング<ph name="END_LINK" />の警告</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1367,6 +1371,7 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">ほとんどのウェブサイトからログアウトします。</translation>
 <translation id="8437238597147034694">移動の取り消し（&amp;U）</translation>
+<translation id="8440508849222143646">カードと請求先住所を Google アカウントに保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="8461694314515752532">同期データを同期パスフレーズで暗号化する</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 件のクレジット カード}other{# 件のクレジット カード}}</translation>
 <translation id="8473863474539038330">住所やその他の情報</translation>
@@ -1473,6 +1478,7 @@
 <translation id="9128870381267983090">ネットワークに接続する</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9137248913990643158">このアプリを使用するには、Chrome を起動してログインしてください。</translation>
+<translation id="9141013498910525015">住所を管理</translation>
 <translation id="9148088599418889305">配送方法を選択</translation>
 <translation id="9148507642005240123">編集の取り消し（&amp;U）</translation>
 <translation id="9154194610265714752">更新完了</translation>

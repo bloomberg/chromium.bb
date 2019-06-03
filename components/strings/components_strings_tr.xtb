@@ -178,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Kart Sahibinin Adı</translation>
 <translation id="1821930232296380041">Geçersiz istek veya istek parametreleri</translation>
+<translation id="1822370876374026111">Gelecek sefer daha hızlı ödeme yapabilmek için kartınızı ve fatura adresinizi Google hesabınıza ve bu cihaza ekleyin.</translation>
 <translation id="1822540298136254167">Ziyaret ettiğiniz web siteleri ve bu sitelerde geçirdiğiniz zaman</translation>
 <translation id="1826516787628120939">Kontrol ediliyor</translation>
 <translation id="1834321415901700177">Bu site zararlı programlar içeriyor</translation>
@@ -596,6 +597,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> öğe daha}other{<ph name="ITEM_COUNT" /> öğe daha}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Bir dahaki sefere daha hızlı ödeme yapmak için kartınızı ve fatura adresinizi Google Hesabınıza ekleyin.</translation>
 <translation id="4196861286325780578">Taşımayı &amp;yeniden yap</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Güvenlik duvarı ve virüsten korunma yapılandırmalarını kontrol etme<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Zarf)</translation>
@@ -1010,6 +1012,7 @@
 <translation id="6451458296329894277">Yeniden Form Gönderme İşlemini Onayla</translation>
 <translation id="6465306955648956876">Şifreleri yönet...</translation>
 <translation id="647261751007945333">Cihaz politikaları</translation>
+<translation id="6476284679642588870">Ödeme yöntemlerini yönet</translation>
 <translation id="6477321094435799029">Chrome, bu sayfada olağan dışı kod tespit etti ve kişisel bilgilerinizi (örneğin, şifreler, telefon numaraları ve kredi kartları) korumak için sayfayı engelledi.</translation>
 <translation id="6489534406876378309">Kilitlenmeleri yüklemeye başla</translation>
 <translation id="6499038740797743453">Şifre sıfırlansın mı?</translation>
@@ -1150,6 +1153,7 @@ Ek ayrıntılar:
 <translation id="7298195798382681320">Önerilenler</translation>
 <translation id="7300012071106347854">Çini Mavisi</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
+<translation id="7303701124147721189">Gelecek sefer daha hızlı ödeme yapabilmek için kartınızı ve fatura adresinizi Google hesabınızda ve bu cihazda depolayın.</translation>
 <translation id="7309308571273880165">Kilitlenme raporu yakalandı (<ph name="CRASH_TIME" />) (yükleme kullanıcı tarafından istendi, ancak henüz yüklenmedi)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Güvenli Tarama<ph name="END_LINK" /> uyarıları</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1378,6 +1382,7 @@ Ek ayrıntılar:
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433057134996913067">Bu işlem, çoğu web sitesinden çıkış yapmanıza neden olacak.</translation>
 <translation id="8437238597147034694">Taşımayı &amp;geri al</translation>
+<translation id="8440508849222143646">Bir dahaki sefere daha hızlı ödeme yapmak için kartınızı ve fatura adresinizi Google Hesabınızda depolayın.</translation>
 <translation id="8461694314515752532">Senkronize edilen verileri senkronizasyon parolanızı kullanarak şifrele</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredi kartı}other{# kredi kartı}}</translation>
 <translation id="8473863474539038330">Adresler ve daha fazlası</translation>
@@ -1484,6 +1489,7 @@ Ek ayrıntılar:
 <translation id="9128870381267983090">Ağa bağlan</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
 <translation id="9137248913990643158">Lütfen bu uygulamayı kullanmadan önce Chrome'u başlatıp oturum açın.</translation>
+<translation id="9141013498910525015">Adresleri yönet</translation>
 <translation id="9148088599418889305">Gönderim Yöntemi Seç</translation>
 <translation id="9148507642005240123">Düzenlemeyi &amp;geri al</translation>
 <translation id="9154194610265714752">Güncellendi</translation>

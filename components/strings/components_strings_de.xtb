@@ -176,6 +176,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Name des Karteninhabers</translation>
 <translation id="1821930232296380041">Anfrage oder Anfrageparameter ungültig</translation>
+<translation id="1822370876374026111">Damit Zahlungen zukünftig schneller abgewickelt werden können, fügen Sie Ihre Kreditkartendaten und Ihre Rechnungsadresse in Ihrem Google-Konto und auf diesem Gerät hinzu.</translation>
 <translation id="1822540298136254167">Von Ihnen besuchte Websites und Dauer des Besuchs</translation>
 <translation id="1826516787628120939">Überprüfung läuft</translation>
 <translation id="1834321415901700177">Diese Website enthält schädliche Programme</translation>
@@ -586,6 +587,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> weiteres Element}other{<ph name="ITEM_COUNT" /> weitere Elemente}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" />: <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Damit Zahlungen zukünftig schneller abgewickelt werden können, fügen Sie Ihre Kreditkartendaten und Ihre Rechnungsadresse in Ihrem Google-Konto hinzu.</translation>
 <translation id="4196861286325780578">&amp;Verschieben wiederholen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Firewall und Antivirenkonfiguration prüfen<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Umschlag)</translation>
@@ -1000,6 +1002,7 @@
 <translation id="6451458296329894277">Erneute Formular-Übermittlung bestätigen</translation>
 <translation id="6465306955648956876">Passwörter verwalten…</translation>
 <translation id="647261751007945333">Geräterichtlinien</translation>
+<translation id="6476284679642588870">Zahlungsmethoden verwalten</translation>
 <translation id="6477321094435799029">Chrome hat auf dieser Seite ungewöhnlichen Code erfasst und diese Seite daher blockiert, um Ihre personenbezogenen Daten wie Passwörter, Telefonnummern oder Kreditkarteninformationen zu schützen.</translation>
 <translation id="6489534406876378309">Hochladen von Abstürzen starten</translation>
 <translation id="6499038740797743453">Passwort zurücksetzen?</translation>
@@ -1137,6 +1140,7 @@ Weitere Details:
 <translation id="7298195798382681320">Empfohlen</translation>
 <translation id="7300012071106347854">Kobaltblau</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
+<translation id="7303701124147721189">Damit Zahlungen zukünftig schneller abgewickelt werden können, speichern Sie Ihre Kreditkartendaten und Ihre Rechnungsadresse in Ihrem Google-Konto.</translation>
 <translation id="7309308571273880165">Absturzbericht erfasst: <ph name="CRASH_TIME" /> (Upload wurde vom Nutzer angefordert, aber noch nicht abgeschlossen)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" />-Warnmeldungen</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1365,6 +1369,7 @@ Weitere Details:
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433057134996913067">Dadurch werden Sie von den meisten Websites abgemeldet.</translation>
 <translation id="8437238597147034694">&amp;Verschieben rückgängig machen</translation>
+<translation id="8440508849222143646">Damit Zahlungen zukünftig schneller abgewickelt werden können, speichern Sie Ihre Kreditkartendaten und Ihre Rechnungsadresse in Ihrem Google-Konto.</translation>
 <translation id="8461694314515752532">Synchronisierte Daten mit eigener Synchronisierungspassphrase verschlüsseln</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 Kreditkarte}other{# Kreditkarten}}</translation>
 <translation id="8473863474539038330">AutoFill-Einstellungen</translation>
@@ -1472,6 +1477,7 @@ Weitere Details:
 <translation id="9128870381267983090">Mit Netzwerk verbinden</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9137248913990643158">Melden Sie sich in Chrome an, bevor Sie diese App nutzen.</translation>
+<translation id="9141013498910525015">Adressen verwalten</translation>
 <translation id="9148088599418889305">Versandart auswählen</translation>
 <translation id="9148507642005240123">&amp;Bearbeiten rückgängig machen</translation>
 <translation id="9154194610265714752">Aktualisiert</translation>

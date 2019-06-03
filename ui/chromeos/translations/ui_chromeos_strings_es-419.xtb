@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">Sueco</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694604912444486114">Mono</translation>
+<translation id="4697043402264950621">La lista de archivos se organiza por <ph name="COLUMN_NAME" /> en orden ascendente.</translation>
 <translation id="4711094779914110278">Turco</translation>
 <translation id="4713544552769165154">Este archivo se diseñó para una computadora con software Macintosh. No es compatible con tu dispositivo que ejecuta el Sistema operativo Chrome. Busca en <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> para encontrar una aplicación equivalente. <ph name="BEGIN_LINK_HELP" />Más información<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">Se guardaron <ph name="FILE_COUNT" /> fotos en una copia de seguridad.</translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="7348749398828259943">Teclado internacional Workman (EE. UU.)</translation>
 <translation id="7359359531237882347">Copiando <ph name="NUMBER_OF_ITEMS" /> elementos…</translation>
+<translation id="7375951387215729722">La lista de archivos se organiza por <ph name="COLUMN_NAME" /> en orden descendente.</translation>
 <translation id="7389722738210761877">Teclado tailandés (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Teclado hindi (fonético)</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>

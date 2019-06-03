@@ -79,6 +79,7 @@
 <translation id="1513352483775369820">புத்தகக்குறிகளும் இணைய வரலாறும்</translation>
 <translation id="1513858653616922153">கடவுச்சொல்லை நீக்கு</translation>
 <translation id="1516229014686355813">"தேடுவதற்குத் தட்டு" எனும் அம்சமானது தேர்ந்தெடுத்த சொல்லையும், அதனுடைய பின்னணிச் சூழலாக நடப்புப் பக்கத்தையும் Google தேடலுக்கு அனுப்பும். இதை <ph name="BEGIN_LINK" />அமைப்புகளில்<ph name="END_LINK" /> முடக்கலாம்.</translation>
+<translation id="1521774566618522728">இன்று பயன்படுத்தியுள்ளார்</translation>
 <translation id="1539064842193522527">Chrome இல் இணைப்பு திறந்தது</translation>
 <translation id="1549000191223877751">வேறு சாளரத்திற்கு நகர்த்து</translation>
 <translation id="1553358976309200471">Chromeஐப் புதுப்பி</translation>
@@ -581,6 +582,7 @@
 <translation id="5324858694974489420">பெற்றோர் அமைப்புகள்</translation>
 <translation id="5327248766486351172">பெயர்</translation>
 <translation id="5335288049665977812">JavaScriptஐ இயக்குவதற்கு, தளங்களை அனுமதி (பரிந்துரைக்கப்படுகிறது)</translation>
+<translation id="5357811892247919462">பகிர்ந்த தாவல் பெறப்பட்டது</translation>
 <translation id="5363230136052241468">புதிய தாவல் பக்கத்தை ஏற்ற, முகப்பு பட்டனைத் தட்டவும்</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> திறந்துள்ள தாவல், தாவல்களை மாற்ற, தட்டவும்}other{<ph name="OPEN_TABS_MANY" /> திறந்துள்ள தாவல்கள், தாவல்களை மாற்ற, தட்டவும்}}</translation>
 <translation id="5391532827096253100">இந்தத் தளத்திற்கான இணைப்பு பாதுகாப்பானதல்ல. தளத் தகவல்</translation>
