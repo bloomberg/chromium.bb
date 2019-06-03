@@ -132,7 +132,7 @@ void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
       overview_session_->GetGridWithRootWindow(item_->root_window())
           ->StartNudge(item_);
       did_move_ = true;
-    } else {
+    } else if (should_allow_split_view_ || virtual_desks_enabled_) {
       StartNormalDragMode(location_in_screen);
     }
   }
@@ -183,6 +183,8 @@ OverviewWindowDragController::CompleteDrag(
 
 void OverviewWindowDragController::StartNormalDragMode(
     const gfx::PointF& location_in_screen) {
+  DCHECK(should_allow_split_view_ || virtual_desks_enabled_);
+
   did_move_ = true;
   current_drag_behavior_ = DragBehavior::kNormalDrag;
   Shell::Get()->mouse_cursor_filter()->ShowSharedEdgeIndicator(
