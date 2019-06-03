@@ -887,13 +887,13 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryNullPointer) {
 
   uint64_t instruction_pointer;
   ASSERT_TRUE(exception_context->GetInstructionPointer(&instruction_pointer));
-  EXPECT_EQ(instruction_pointer, 0);
+  EXPECT_EQ(instruction_pointer, 0u);
 
   MinidumpMemoryList* memory_list = minidump.GetMemoryList();
   ASSERT_TRUE(memory_list);
 
   unsigned int region_count = memory_list->region_count();
-  ASSERT_GE(region_count, 1);
+  ASSERT_GE(region_count, 1u);
 
   for (unsigned int region_index = 0;
        region_index < region_count;

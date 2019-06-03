@@ -426,7 +426,7 @@ TEST_F(LinuxPtraceDumperChildTest, FileIDsMatch) {
 #undef TestBody
 
 TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
-  static const int kNumberOfThreadsInHelperProgram = 5;
+  static const size_t kNumberOfThreadsInHelperProgram = 5;
 
   pid_t child_pid = SetupChildProcess(kNumberOfThreadsInHelperProgram);
   ASSERT_NE(child_pid, -1);
@@ -484,7 +484,7 @@ TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
 }
 
 TEST_F(LinuxPtraceDumperTest, SanitizeStackCopy) {
-  static const int kNumberOfThreadsInHelperProgram = 1;
+  static const size_t kNumberOfThreadsInHelperProgram = 1;
 
   pid_t child_pid = SetupChildProcess(kNumberOfThreadsInHelperProgram);
   ASSERT_NE(child_pid, -1);
