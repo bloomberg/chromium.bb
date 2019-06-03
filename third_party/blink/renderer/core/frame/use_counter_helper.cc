@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/use_counter_helper.h"
 
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
