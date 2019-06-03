@@ -19,12 +19,10 @@
 #include "ui/message_center/vector_icons.h"
 #include "ui/message_center/views/relative_time_formatter.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/painter.h"
@@ -199,27 +197,35 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   AddChildView(app_name_view_);
   layout->SetFlexForView(app_name_view_, kAppNameFlex);
 
+  // Detail views which will be hidden in settings mode.
+  detail_views_ = new views::View();
+  auto* detail_layout =
+      detail_views_->SetLayoutManager(std::make_unique<views::FlexLayout>());
+  detail_layout->SetCollapseMargins(true);
+  detail_layout->SetDefaultChildMargins(kHeaderSpacing);
+  AddChildView(detail_views_);
+
   // Summary text divider
   summary_text_divider_ = create_label();
   summary_text_divider_->SetText(base::WideToUTF16(kNotificationHeaderDivider));
   summary_text_divider_->SetVisible(false);
-  AddChildView(summary_text_divider_);
+  detail_views_->AddChildView(summary_text_divider_);
 
   // Summary text view
   summary_text_view_ = create_label();
   summary_text_view_->SetVisible(false);
-  AddChildView(summary_text_view_);
+  detail_views_->AddChildView(summary_text_view_);
 
   // Timestamp divider
   timestamp_divider_ = create_label();
   timestamp_divider_->SetText(base::WideToUTF16(kNotificationHeaderDivider));
   timestamp_divider_->SetVisible(false);
-  AddChildView(timestamp_divider_);
+  detail_views_->AddChildView(timestamp_divider_);
 
   // Timestamp view
   timestamp_view_ = create_label();
   timestamp_view_->SetVisible(false);
-  AddChildView(timestamp_view_);
+  detail_views_->AddChildView(timestamp_view_);
 
   // Expand button view
   expand_button_ = new ExpandButton();
@@ -228,7 +234,7 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   expand_button_->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   expand_button_->SetImageSize(gfx::Size(kExpandIconSize, kExpandIconSize));
   DCHECK_EQ(kInnerHeaderHeight, expand_button_->GetPreferredSize().height());
-  AddChildView(expand_button_);
+  detail_views_->AddChildView(expand_button_);
 
   // Spacer between left-aligned views and right-aligned views
   views::View* spacer = new views::View;
@@ -321,8 +327,8 @@ void NotificationHeaderView::SetTimestamp(base::Time timestamp) {
                      base::Unretained(this), timestamp));
 }
 
-void NotificationHeaderView::SetTimestampVisible(bool visible) {
-  timestamp_visible_ = visible;
+void NotificationHeaderView::SetDetailViewsVisible(bool visible) {
+  detail_views_->SetVisible(visible);
 
   if (visible && timestamp_)
     SetTimestamp(timestamp_.value());
@@ -333,11 +339,6 @@ void NotificationHeaderView::SetTimestampVisible(bool visible) {
 }
 
 void NotificationHeaderView::SetExpandButtonEnabled(bool enabled) {
-  // SetInkDropMode iff. the visibility changed.
-  // Otherwise, the ink drop animation cannot finish.
-  if (expand_button_->GetVisible() != enabled)
-    SetInkDropMode(enabled ? InkDropMode::ON : InkDropMode::OFF);
-
   expand_button_->SetVisible(enabled);
 }
 
@@ -373,20 +374,12 @@ void NotificationHeaderView::SetBackgroundColor(SkColor color) {
   timestamp_view_->SetBackgroundColor(color);
 }
 
-bool NotificationHeaderView::IsExpandButtonEnabled() {
-  return expand_button_->GetVisible();
-}
-
 void NotificationHeaderView::SetSubpixelRenderingEnabled(bool enabled) {
   app_name_view_->SetSubpixelRenderingEnabled(enabled);
   summary_text_divider_->SetSubpixelRenderingEnabled(enabled);
   summary_text_view_->SetSubpixelRenderingEnabled(enabled);
   timestamp_divider_->SetSubpixelRenderingEnabled(enabled);
   timestamp_view_->SetSubpixelRenderingEnabled(enabled);
-}
-
-std::unique_ptr<views::InkDrop> NotificationHeaderView::CreateInkDrop() {
-  return std::make_unique<views::InkDropStub>();
 }
 
 const base::string16& NotificationHeaderView::app_name_for_testing() const {
@@ -406,12 +399,9 @@ void NotificationHeaderView::UpdateSummaryTextVisibility() {
   summary_text_divider_->SetVisible(summary_visible);
   summary_text_view_->SetVisible(summary_visible);
 
-  const bool timestamp_visible =
-      !has_progress_ && timestamp_visible_ && timestamp_;
+  const bool timestamp_visible = !has_progress_ && timestamp_;
   timestamp_divider_->SetVisible(timestamp_visible);
   timestamp_view_->SetVisible(timestamp_visible);
-
-  Layout();
 }
 
 }  // namespace message_center

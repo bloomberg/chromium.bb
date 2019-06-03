@@ -1255,7 +1255,7 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
 
   settings_row_->SetVisible(inline_settings_visible);
   content_row_->SetVisible(!inline_settings_visible);
-  header_row_->SetTimestampVisible(!inline_settings_visible);
+  header_row_->SetDetailViewsVisible(!inline_settings_visible);
 
   // Always check "Don't block" when inline settings is shown.
   // If it's already blocked, users should not see inline settings.

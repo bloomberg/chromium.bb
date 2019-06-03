@@ -28,6 +28,9 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   void SetAppName(const base::string16& name);
   void SetAppNameElideBehavior(gfx::ElideBehavior elide_behavior);
 
+  // Only show AppIcon and AppName in settings mode.
+  void SetDetailViewsVisible(bool visible);
+
   // Progress, summary and overflow indicator are all the same UI element so are
   // mutually exclusive.
   void SetProgress(int progress);
@@ -35,12 +38,8 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   void SetOverflowIndicator(int count);
 
   void SetTimestamp(base::Time timestamp);
-  void SetTimestampVisible(bool visible);
   void SetExpandButtonEnabled(bool enabled);
   void SetExpanded(bool expanded);
-  void SetSettingsButtonEnabled(bool enabled);
-  void SetCloseButtonEnabled(bool enabled);
-  void SetControlButtonsVisible(bool visible);
 
   // Set the unified theme color used among the app icon, app name, and expand
   // button.
@@ -52,14 +51,10 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
 
   void ClearAppIcon();
   void ClearProgress();
-  bool IsExpandButtonEnabled();
   void SetSubpixelRenderingEnabled(bool enabled);
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-
-  // Button override:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
 
   views::ImageView* expand_button() { return expand_button_; }
 
@@ -76,6 +71,8 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   const base::string16& timestamp_for_testing() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NotificationHeaderViewTest, SettingsMode);
+
   // Update visibility for both |summary_text_view_| and |timestamp_view_|.
   void UpdateSummaryTextVisibility();
 
@@ -85,17 +82,16 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   base::OneShotTimer timestamp_update_timer_;
   base::Optional<base::Time> timestamp_;
 
+  views::ImageView* app_icon_view_ = nullptr;
   views::Label* app_name_view_ = nullptr;
+  views::View* detail_views_ = nullptr;
   views::Label* summary_text_divider_ = nullptr;
   views::Label* summary_text_view_ = nullptr;
   views::Label* timestamp_divider_ = nullptr;
   views::Label* timestamp_view_ = nullptr;
-  views::ImageView* app_icon_view_ = nullptr;
   views::ImageView* expand_button_ = nullptr;
 
-  bool settings_button_enabled_ = false;
   bool has_progress_ = false;
-  bool timestamp_visible_ = true;
   bool is_expanded_ = false;
   bool using_default_app_icon_ = false;
 
