@@ -81,7 +81,7 @@ class PiexReader {
     object.set("aperture", GetRational(image.fnumber));
     object.set("focalLength", GetRational(image.focal_length));
     object.set("exposureTime", GetRational(image.exposure_time));
-    object.set("isoSpeed", emscripten::val(image.iso));
+    object.set("isoSpeed", GetNonZeroValue(image.iso));
 
     object.set("width", emscripten::val(image.full_width));
     object.set("height", emscripten::val(image.full_height));
@@ -142,6 +142,10 @@ class PiexReader {
     if (space == piex::PreviewImageData::kAdobeRgb)
       return emscripten::val("adobeRgb");
     return emscripten::val("sRgb");
+  }
+
+  static emscripten::val GetNonZeroValue(const uint32_t value) {
+    return value > 0 ? emscripten::val(value) : emscripten::val::undefined();
   }
 
   static float GetRational(const piex::PreviewImageData::Rational& number) {

@@ -21,10 +21,10 @@ test: images/FUJI_E550_RAW.RAF details hash 160f59c0e {"cameraMaker":"FUJIFILM",
 test: images/FUJI_E550_RAW.RAF preview hash ada7914438 {"colorSpace":"sRgb","orientation":1,"format":0,"offset":148,"length":667499,"width":0,"height":0,"type":"preview"}
 test: images/FUJI_E550_RAW.RAF thumbnail hash 136fb97598 {"colorSpace":"sRgb","orientation":1,"format":0,"offset":1466,"length":9312,"width":0,"height":0,"type":"thumbnail"}
 test: images/NIKON_UB20_O35.NEF
-test: images/NIKON_UB20_O35.NEF details hash 5b4583c3 {"cameraMaker":"NIKON CORPORATION","cameraModel":"NIKON D1X","aperture":11,"focalLength":24,"exposureTime":0.006,"isoSpeed":0,"width":4028,"height":1324,"orientation":1,"colorSpace":"sRGB","date":"2004:07:30 12:23:24"}
+test: images/NIKON_UB20_O35.NEF details hash 731decb73 {"cameraMaker":"NIKON CORPORATION","cameraModel":"NIKON D1X","aperture":11,"focalLength":24,"exposureTime":0.006,"width":4028,"height":1324,"orientation":1,"colorSpace":"sRGB","date":"2004:07:30 12:23:24"}
 test: images/NIKON_UB20_O35.NEF thumbnail hash 71591f3c17 {"colorSpace":"sRgb","orientation":1,"format":1,"offset":32418,"length":57600,"width":160,"height":120,"size":57600,"type":"thumbnail"}
 test: images/NIKON_GDN0447.NEF
-test: images/NIKON_GDN0447.NEF details hash 30a7e5c1c {"cameraMaker":"NIKON CORPORATION","cameraModel":"NIKON D700","aperture":8,"focalLength":20,"exposureTime":0.5,"isoSpeed":0,"width":4256,"height":2832,"orientation":1,"colorSpace":"sRGB","date":"2018:01:17 12:31:01"}
+test: images/NIKON_GDN0447.NEF details hash 601825b88 {"cameraMaker":"NIKON CORPORATION","cameraModel":"NIKON D700","aperture":8,"focalLength":20,"exposureTime":0.5,"width":4256,"height":2832,"orientation":1,"colorSpace":"sRGB","date":"2018:01:17 12:31:01"}
 test: images/NIKON_GDN0447.NEF preview hash a49796a236 {"colorSpace":"sRgb","orientation":1,"format":0,"offset":175616,"length":1747382,"width":4256,"height":2832,"type":"preview"}
 test: images/NIKON_GDN0447.NEF thumbnail hash ec18fa833 {"colorSpace":"sRgb","orientation":1,"format":1,"offset":117638,"length":57600,"width":160,"height":120,"size":57600,"type":"thumbnail"}
 test: images/OLYMPUS_SC877.ORF
