@@ -766,9 +766,11 @@ void ChromeMetricsServiceClient::CollectFinalHistograms() {
       new MetricsMemoryDetails(callback));
   details->StartFetch();
 
-  scoped_refptr<ProcessMemoryMetricsEmitter> emitter(
-      new ProcessMemoryMetricsEmitter);
-  emitter->FetchAndEmitProcessMemoryMetrics();
+  if (base::FeatureList::IsEnabled(kMemoryMetricsOldTiming)) {
+    scoped_refptr<ProcessMemoryMetricsEmitter> emitter(
+        new ProcessMemoryMetricsEmitter);
+    emitter->FetchAndEmitProcessMemoryMetrics();
+  }
 }
 
 void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {

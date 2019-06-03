@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 
+#include <cmath>
 #include <string>
 
 #include "base/bind.h"
@@ -13,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/rand_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/metrics/bluetooth_available_utility.h"
+#include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -66,6 +69,32 @@
 #endif  // defined(OS_WIN)
 
 namespace {
+
+void RecordMemoryMetrics();
+
+// Records memory metrics after a delay, with a fixed mean interval but randomly
+// distributed samples using a poisson process.
+void RecordMemoryMetricsAfterDelay() {
+#if defined(OS_ANDROID)
+  base::TimeDelta mean_time = base::TimeDelta::FromMinutes(5);
+#else
+  base::TimeDelta mean_time = base::TimeDelta::FromMinutes(30);
+#endif
+
+  // Compute the actual delay before sampling using a Poisson process.
+  double uniform = base::RandDouble();
+  base::TimeDelta delay = -std::log(uniform) * mean_time;
+  base::PostDelayedTask(FROM_HERE, base::BindOnce(&RecordMemoryMetrics), delay);
+}
+
+// Records memory metrics, and then triggers memory colleciton after a delay.
+void RecordMemoryMetrics() {
+  scoped_refptr<ProcessMemoryMetricsEmitter> emitter(
+      new ProcessMemoryMetricsEmitter);
+  emitter->FetchAndEmitProcessMemoryMetrics();
+
+  RecordMemoryMetricsAfterDelay();
+}
 
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
@@ -531,6 +560,8 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
+  if (!base::FeatureList::IsEnabled(kMemoryMetricsOldTiming))
+    RecordMemoryMetricsAfterDelay();
   RecordLinuxGlibcVersion();
 #if defined(USE_X11)
   UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager", GetLinuxWindowManager(),

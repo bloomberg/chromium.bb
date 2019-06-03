@@ -41,6 +41,9 @@ using base::trace_event::MemoryAllocatorDump;
 using memory_instrumentation::GlobalMemoryDump;
 using ukm::builders::Memory_Experimental;
 
+const base::Feature kMemoryMetricsOldTiming{"MemoryMetricsOldTiming",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 namespace {
 
 const char kEffectiveSize[] = "effective_size";

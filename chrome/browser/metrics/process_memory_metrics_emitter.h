@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/process/process_handle.h"
@@ -24,6 +25,8 @@ class UkmRecorder;
 namespace performance_manager {
 class GraphImpl;
 }
+
+extern const base::Feature kMemoryMetricsOldTiming;
 
 // This class asynchronously fetches memory metrics for each process, and then
 // emits UMA metrics from those metrics.
