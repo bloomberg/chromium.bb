@@ -170,14 +170,14 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     ClientStatus result;
     web_controller_->SelectOption(
         selector, option,
-        base::BindOnce(&WebControllerBrowserTest::OnSelectOption,
+        base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
     run_loop.Run();
     return result;
   }
 
-  void OnSelectOption(base::Closure done_callback,
+  void OnClientStatus(base::Closure done_callback,
                       ClientStatus* result_output,
                       const ClientStatus& status) {
     *result_output = status;
@@ -188,18 +188,11 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     base::RunLoop run_loop;
     ClientStatus result;
     web_controller_->HighlightElement(
-        selector, base::BindOnce(&WebControllerBrowserTest::OnHighlightElement,
+        selector, base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
                                  base::Unretained(this), run_loop.QuitClosure(),
                                  &result));
     run_loop.Run();
     return result;
-  }
-
-  void OnHighlightElement(base::Closure done_callback,
-                          ClientStatus* result_output,
-                          const ClientStatus& status) {
-    *result_output = status;
-    std::move(done_callback).Run();
   }
 
   ClientStatus GetOuterHtml(const Selector& selector,
@@ -1087,6 +1080,19 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, HighlightElement) {
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetCookie) {
   EXPECT_FALSE(HasCookie());
   EXPECT_TRUE(SetCookie());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, WaitForHeightChange) {
+  base::RunLoop run_loop;
+  ClientStatus result;
+  web_controller_->WaitForWindowHeightChange(
+      base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
+                     base::Unretained(this), run_loop.QuitClosure(), &result));
+
+  EXPECT_TRUE(
+      content::ExecJs(shell(), "window.dispatchEvent(new Event('resize'))"));
+  run_loop.Run();
+  EXPECT_EQ(ACTION_APPLIED, result.proto_status());
 }
 
 }  // namespace

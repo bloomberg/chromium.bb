@@ -161,6 +161,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "actions/autofill_action_unittest.cc",
+    "actions/configure_bottom_sheet_action_unittest.cc",
     "actions/mock_action_delegate.cc",
     "actions/mock_action_delegate.h",
     "actions/prompt_action_unittest.cc",

@@ -48,7 +48,9 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;
   void SetResizeViewport(bool resize_viewport) override;
+  bool GetResizeViewport() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
+  ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
   bool SetForm(std::unique_ptr<FormProto> form,
                base::RepeatingCallback<void(const FormProto::Result*)> callback)
       override;
@@ -113,6 +115,9 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   bool navigating_to_new_document_ = false;
   bool navigation_error_ = false;
   std::set<ScriptExecutorDelegate::Listener*> listeners_;
+  bool resize_viewport_ = false;
+  ConfigureBottomSheetProto::PeekMode peek_mode_ =
+      ConfigureBottomSheetProto::HANDLE;
 
   DISALLOW_COPY_AND_ASSIGN(FakeScriptExecutorDelegate);
 };

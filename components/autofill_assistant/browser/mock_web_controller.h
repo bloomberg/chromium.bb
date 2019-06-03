@@ -89,6 +89,14 @@ class MockWebController : public WebController {
   }
 
   MOCK_METHOD0(ClearCookie, void());
+
+  void WaitForWindowHeightChange(
+      base::OnceCallback<void(const ClientStatus&)> callback) {
+    OnWaitForWindowHeightChange(callback);
+  }
+
+  MOCK_METHOD1(OnWaitForWindowHeightChange,
+               void(base::OnceCallback<void(const ClientStatus&)>& callback));
 };
 
 }  // namespace autofill_assistant
