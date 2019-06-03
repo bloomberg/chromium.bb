@@ -164,6 +164,7 @@ table_files = \
 	hu-backtranslate-correction.dis \
 	hu-chardefs.cti \
 	hu-exceptionwords.cti \
+	hu-hu-g1_braille_input.cti \
 	hu-hu-comp8.ctb \
 	hu-hu-g1.ctb \
 	hu-hu-g2.ctb \

@@ -42,6 +42,7 @@
 # If you found bugs with hungarian grade1 table, report it with following address:
 # Attila Hammer <hammer.attila@infoalap.hu
 #If you have a Launchpad account, report table related requests with following bug tracker address: https://bugs.launchpad.net/belin
+
 include hu-backtranslate-correction.dis
 include hu-chardefs.cti
 include hu-exceptionwords.cti
@@ -89,6 +90,7 @@ always ! 235
 endnum . 3
 always • 6-35
 endnum % 3456-245-356
+endnum / 5-2
 # literary forms of the decimal digits
 include litdigits6Dots.uti
 midendnumericmodechars ,:.-

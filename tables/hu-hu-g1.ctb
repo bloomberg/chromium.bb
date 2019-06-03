@@ -71,6 +71,7 @@ always ! 235
 endnum . 3
 always • 6-35
 endnum % 3456-245-356
+endnum / 5-2
 # literary forms of the decimal digits
 include litdigits6Dots.uti
 midendnumericmodechars ,:.-
@@ -107,7 +108,7 @@ always " 236	Need this rule to present one left quotation mark if the user first
 prepunc ( 2346	Opening left parenthese
 postpunc ) 1356	Closing right parenthese
 always ( 2346	Need this rule to the user always see 2346 dot combination if type first ( character a text
-always ) 1356	Need this rule to the user always see 2346 dot combination if type first ) character a text
+always ) 1356	Need this rule to the user always see 1356 dot combination if type first ) character a text
 prepunc « 236
 postpunc » 356
 prepunc ‘ 236
@@ -143,9 +144,14 @@ always ` 4
 always Æ 1
 always lyú 456-346
 always lysz 456-156
+space \x000c 0
+space \x001b 1b
+space \e 1b
+space \f 0
 always ä 5-1
 noback context $l$p["–"] @36-36
 noback context $l["–"] @36-36
 noback always \\_ 6 letter sign before Roman page numbers
 noback pass2 @3456-356 @356-3456
+include hu-hu-g1_braille_input.cti
 undefined 26
