@@ -23,9 +23,8 @@ HistoryDeleteDirectivesModelTypeController::
     : SyncableServiceBasedModelTypeController(
           syncer::HISTORY_DELETE_DIRECTIVES,
           model_type_store_service->GetStoreFactory(),
-          base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
-                         base::Unretained(sync_client),
-                         syncer::HISTORY_DELETE_DIRECTIVES),
+          sync_client->GetSyncableServiceForType(
+              syncer::HISTORY_DELETE_DIRECTIVES),
           dump_stack),
       sync_service_(sync_service) {}
 

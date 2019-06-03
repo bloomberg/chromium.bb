@@ -17,23 +17,15 @@ namespace {
 // reference to SyncableService in a lazy way, which is convenient for tests.
 class ControllerDelegate : public ModelTypeControllerDelegate {
  public:
-  using SyncableServiceProvider =
-      SyncableServiceBasedModelTypeController::SyncableServiceProvider;
-
   ControllerDelegate(ModelType type,
                      OnceModelTypeStoreFactory store_factory,
-                     SyncableServiceProvider syncable_service_provider,
+                     base::WeakPtr<SyncableService> syncable_service,
                      const base::RepeatingClosure& dump_stack)
       : type_(type),
         store_factory_(std::move(store_factory)),
         dump_stack_(dump_stack) {
     DCHECK(store_factory_);
-    DCHECK(syncable_service_provider);
 
-    // TODO(crbug.com/906995): Inject the SyncableService directly instead of
-    // indirectly via a provider callback.
-    base::WeakPtr<SyncableService> syncable_service =
-        std::move(syncable_service_provider).Run();
     // The |syncable_service| can be null in tests.
     if (syncable_service) {
       bridge_ = std::make_unique<SyncableServiceBasedBridge>(
@@ -87,14 +79,14 @@ SyncableServiceBasedModelTypeController::
     SyncableServiceBasedModelTypeController(
         ModelType type,
         OnceModelTypeStoreFactory store_factory,
-        SyncableServiceProvider syncable_service_provider,
+        base::WeakPtr<SyncableService> syncable_service,
         const base::RepeatingClosure& dump_stack)
-    : ModelTypeController(type,
-                          std::make_unique<ControllerDelegate>(
-                              type,
-                              std::move(store_factory),
-                              std::move(syncable_service_provider),
-                              dump_stack)) {}
+    : ModelTypeController(
+          type,
+          std::make_unique<ControllerDelegate>(type,
+                                               std::move(store_factory),
+                                               syncable_service,
+                                               dump_stack)) {}
 
 SyncableServiceBasedModelTypeController::
     ~SyncableServiceBasedModelTypeController() {}

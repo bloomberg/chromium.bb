@@ -282,17 +282,13 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
           std::make_unique<SyncableServiceBasedModelTypeController>(
               syncer::FAVICON_IMAGES,
               sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-              base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
-                             base::Unretained(sync_client_),
-                             syncer::FAVICON_IMAGES),
+              sync_client_->GetSyncableServiceForType(syncer::FAVICON_IMAGES),
               dump_stack));
       controllers.push_back(
           std::make_unique<SyncableServiceBasedModelTypeController>(
               syncer::FAVICON_TRACKING,
               sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-              base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
-                             base::Unretained(sync_client_),
-                             syncer::FAVICON_TRACKING),
+              sync_client_->GetSyncableServiceForType(syncer::FAVICON_TRACKING),
               dump_stack));
     }
   }
@@ -317,8 +313,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         std::make_unique<SyncableServiceBasedModelTypeController>(
             syncer::PREFERENCES,
             sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-            base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
-                           base::Unretained(sync_client_), syncer::PREFERENCES),
+            sync_client_->GetSyncableServiceForType(syncer::PREFERENCES),
             dump_stack));
   }
 
@@ -327,9 +322,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         std::make_unique<SyncableServiceBasedModelTypeController>(
             syncer::PRIORITY_PREFERENCES,
             sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-            base::BindOnce(&syncer::SyncClient::GetSyncableServiceForType,
-                           base::Unretained(sync_client_),
-                           syncer::PRIORITY_PREFERENCES),
+            sync_client_->GetSyncableServiceForType(
+                syncer::PRIORITY_PREFERENCES),
             dump_stack));
   }
 

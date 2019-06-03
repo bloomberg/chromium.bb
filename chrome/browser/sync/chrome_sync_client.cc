@@ -308,9 +308,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   if (!disabled_types.Has(syncer::APPS)) {
     controllers.push_back(std::make_unique<ExtensionModelTypeController>(
         syncer::APPS, GetModelTypeStoreService()->GetStoreFactory(),
-        base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
-                       base::Unretained(this), syncer::APPS),
-        dump_stack, profile_));
+        GetSyncableServiceForType(syncer::APPS), dump_stack, profile_));
   }
 
   // Extension sync is enabled by default.  Register unless explicitly
@@ -318,9 +316,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   if (!disabled_types.Has(syncer::EXTENSIONS)) {
     controllers.push_back(std::make_unique<ExtensionModelTypeController>(
         syncer::EXTENSIONS, GetModelTypeStoreService()->GetStoreFactory(),
-        base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
-                       base::Unretained(this), syncer::EXTENSIONS),
-        dump_stack, profile_));
+        GetSyncableServiceForType(syncer::EXTENSIONS), dump_stack, profile_));
   }
 
   // Extension setting sync is enabled by default.  Register unless explicitly
@@ -350,9 +346,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   if (!disabled_types.Has(syncer::THEMES)) {
     controllers.push_back(std::make_unique<ExtensionModelTypeController>(
         syncer::THEMES, GetModelTypeStoreService()->GetStoreFactory(),
-        base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
-                       base::Unretained(this), syncer::THEMES),
-        dump_stack, profile_));
+        GetSyncableServiceForType(syncer::THEMES), dump_stack, profile_));
   }
 
   // Search Engine sync is enabled by default.  Register unless explicitly
@@ -362,9 +356,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
         std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
             syncer::SEARCH_ENGINES,
             GetModelTypeStoreService()->GetStoreFactory(),
-            base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
-                           base::Unretained(this), syncer::SEARCH_ENGINES),
-            dump_stack));
+            GetSyncableServiceForType(syncer::SEARCH_ENGINES), dump_stack));
   }
 #endif  // !defined(OS_ANDROID)
 
@@ -372,9 +364,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   controllers.push_back(
       std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
           syncer::APP_LIST, GetModelTypeStoreService()->GetStoreFactory(),
-          base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
-                         base::Unretained(this), syncer::APP_LIST),
-          dump_stack));
+          GetSyncableServiceForType(syncer::APP_LIST), dump_stack));
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if defined(OS_LINUX) || defined(OS_WIN)
@@ -383,9 +373,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
     controllers.push_back(
         std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
             syncer::DICTIONARY, GetModelTypeStoreService()->GetStoreFactory(),
-            base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
-                           base::Unretained(this), syncer::DICTIONARY),
-            dump_stack));
+            GetSyncableServiceForType(syncer::DICTIONARY), dump_stack));
   }
 #endif  // defined(OS_LINUX) || defined(OS_WIN)
 
@@ -394,9 +382,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       !arc::IsArcAppSyncFlowDisabled()) {
     controllers.push_back(std::make_unique<ArcPackageSyncModelTypeController>(
         GetModelTypeStoreService()->GetStoreFactory(),
-        base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
-                       base::Unretained(this), syncer::ARC_PACKAGE),
-        dump_stack, sync_service, profile_));
+        GetSyncableServiceForType(syncer::ARC_PACKAGE), dump_stack,
+        sync_service, profile_));
   }
 #endif  // defined(OS_CHROMEOS)
 
