@@ -11609,9 +11609,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           },
@@ -11640,9 +11645,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -11672,9 +11682,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -11701,9 +11716,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -11729,9 +11749,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -11757,9 +11782,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -11782,9 +11812,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -11811,9 +11846,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -11836,9 +11876,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -11875,9 +11920,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -11911,9 +11961,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -11947,9 +12002,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -11983,9 +12043,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12023,9 +12088,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12066,9 +12136,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12117,9 +12192,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12154,9 +12234,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12190,9 +12275,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12228,9 +12318,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           },
@@ -12265,9 +12360,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           },
@@ -12299,9 +12399,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           },
@@ -12330,9 +12435,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12362,9 +12472,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12391,9 +12506,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12419,9 +12539,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12447,9 +12572,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12472,9 +12602,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12501,9 +12636,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12526,9 +12666,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12565,9 +12710,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12601,9 +12751,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12637,9 +12792,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12673,9 +12833,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12713,9 +12878,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12756,9 +12926,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12807,9 +12982,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12844,9 +13024,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12880,9 +13065,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -12918,9 +13108,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           },
@@ -12955,9 +13150,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           },
@@ -12989,9 +13189,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           },
@@ -13020,9 +13225,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13052,9 +13262,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13081,9 +13296,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13109,9 +13329,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13137,9 +13362,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13162,9 +13392,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13191,9 +13426,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13216,9 +13456,14 @@
           ],
           "expiration": 21600,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13255,9 +13500,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13291,9 +13541,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13327,9 +13582,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13363,9 +13623,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13403,9 +13668,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13446,9 +13716,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13497,9 +13772,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13534,9 +13814,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13570,9 +13855,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           }
@@ -13608,9 +13898,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           },
@@ -13645,9 +13940,14 @@
           "expiration": 21600,
           "idempotent": false,
           "optional_dimensions": {
-            "600": [
+            "300": [
               {
                 "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
               }
             ]
           },
