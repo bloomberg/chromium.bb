@@ -378,41 +378,6 @@ static char *
 unknownDots(widechar dots);
 
 static TranslationTableCharacter *
-definedCharOrDots(FileInfo *nested, widechar c, int m, TranslationTableHeader *table) {
-	static TranslationTableCharacter noChar = {
-		.next = 0,
-		.definitionRule = 0,
-		.otherRules = 0,
-		.attributes = CTC_Space,
-		.realchar = 32,
-		.uppercase = 32,
-		.lowercase = 32,
-	};
-	static TranslationTableCharacter noDots = {
-		.next = 0,
-		.definitionRule = 0,
-		.otherRules = 0,
-		.attributes = CTC_Space,
-		.realchar = B16,
-		.uppercase = B16,
-		.lowercase = B16,
-	};
-	TranslationTableCharacter *notFound;
-	TranslationTableCharacter *charOrDots = compile_findCharOrDots(c, m, table);
-	if (charOrDots) return charOrDots;
-	if (m == 0) {
-		notFound = &noChar;
-		compileError(nested, "character %s should be defined at this point but is not",
-				_lou_showString(&c, 1));
-	} else {
-		notFound = &noDots;
-		compileError(nested, "cell %s should be defined at this point but is not",
-				unknownDots(c));
-	}
-	return notFound;
-}
-
-static TranslationTableCharacter *
 addCharOrDots(FileInfo *nested, widechar c, int m, TranslationTableHeader **table) {
 	/* See if a character or dot pattern is in the appropriate table. If not,
 	 * insert it. In either
@@ -543,42 +508,6 @@ unknownDots(widechar dots) {
 static TranslationTableOffset gNewRuleOffset = 0;
 static TranslationTableRule *gNewRule = NULL;
 
-static int
-charactersDefined(
-		FileInfo *nested, TranslationTableRule *newRule, TranslationTableHeader *table) {
-	/* Check that all characters are defined by character-definition
-	 * opcodes */
-	int noErrors = 1;
-	int k;
-	if ((newRule->opcode >= CTO_Space && newRule->opcode <= CTO_LitDigit) ||
-			newRule->opcode == CTO_SwapDd || newRule->opcode == CTO_Replace ||
-			newRule->opcode == CTO_MultInd || newRule->opcode == CTO_Repeated ||
-			((newRule->opcode >= CTO_Context && newRule->opcode <= CTO_Pass4) &&
-					newRule->opcode != CTO_Correct) ||
-			newRule->opcode == CTO_Match)
-		return 1;
-	for (k = 0; k < newRule->charslen; k++)
-		if (!compile_findCharOrDots(newRule->charsdots[k], 0, table)) {
-			compileError(nested, "Character %s is not defined",
-					_lou_showString(&newRule->charsdots[k], 1));
-			noErrors = 0;
-		}
-	if (!(newRule->opcode == CTO_Correct || newRule->opcode == CTO_SwapCc ||
-				newRule->opcode == CTO_SwapCd)
-			// TODO: these just need to know there is a way to get from dots to a char
-			&&
-			!(newRule->opcode >= CTO_CapsLetterRule &&
-					newRule->opcode <= CTO_EndEmph10PhraseAfterRule)) {
-		for (k = newRule->charslen; k < newRule->charslen + newRule->dotslen; k++)
-			if (!compile_findCharOrDots(newRule->charsdots[k], 1, table)) {
-				compileError(nested, "Dot pattern %s is not defined.",
-						unknownDots(newRule->charsdots[k]));
-				noErrors = 0;
-			}
-	}
-	return noErrors;
-}
-
 static inline const char *
 getPartName(int actionPart) {
 	return actionPart ? "action" : "test";
@@ -677,7 +606,7 @@ NOT_FOUND:
 
 static void
 addForwardRuleWithSingleChar(FileInfo *nested, TranslationTableOffset *newRuleOffset,
-		TranslationTableRule *newRule, TranslationTableHeader *table) {
+		TranslationTableRule *newRule, TranslationTableHeader **table) {
 	/* direction = 0, newRule->charslen = 1 */
 	TranslationTableRule *currentRule;
 	TranslationTableOffset *currentOffsetPtr;
@@ -685,17 +614,27 @@ addForwardRuleWithSingleChar(FileInfo *nested, TranslationTableOffset *newRuleOf
 	int m = 0;
 	if (newRule->opcode == CTO_CompDots || newRule->opcode == CTO_Comp6) return;
 	if (newRule->opcode >= CTO_Pass2 && newRule->opcode <= CTO_Pass4) m = 1;
-	character = definedCharOrDots(nested, newRule->charsdots[0], m, table);
+	// get the character from the table, or if the character is not defined yet, define it
+	// (without adding attributes)
+	character = addCharOrDots(nested, newRule->charsdots[0], m, table);
 	if (m != 1 && character->attributes & CTC_Letter &&
 			(newRule->opcode == CTO_WholeWord || newRule->opcode == CTO_LargeSign)) {
-		if (table->noLetsignCount < LETSIGNSIZE)
-			table->noLetsign[table->noLetsignCount++] = newRule->charsdots[0];
+		if ((*table)->noLetsignCount < LETSIGNSIZE)
+			(*table)->noLetsign[(*table)->noLetsignCount++] = newRule->charsdots[0];
 	}
+	// if the new rule is a character definition rule, set the main definition rule of
+	// this character to it
+	// (possibly overwriting previous definition rules)
+	// adding the attributes to the character has already been done elsewhere
 	if (newRule->opcode >= CTO_Space && newRule->opcode < CTO_UpLow)
 		character->definitionRule = *newRuleOffset;
+	// add the new rule to the list of rules associated with this character
+	// if the new rule is a character definition rule, it is inserted at the end of the
+	// list
+	// otherwise it is inserted before the first character definition rule
 	currentOffsetPtr = &character->otherRules;
 	while (*currentOffsetPtr) {
-		currentRule = (TranslationTableRule *)&table->ruleArea[*currentOffsetPtr];
+		currentRule = (TranslationTableRule *)&(*table)->ruleArea[*currentOffsetPtr];
 		if (currentRule->charslen == 0) break;
 		if (currentRule->opcode >= CTO_Space && currentRule->opcode < CTO_UpLow)
 			if (!(newRule->opcode >= CTO_Space && newRule->opcode < CTO_UpLow)) break;
@@ -727,7 +666,7 @@ addForwardRuleWithMultipleChars(TranslationTableOffset *newRuleOffset,
 static void
 addBackwardRuleWithSingleCell(FileInfo *nested, widechar cell,
 		TranslationTableOffset *newRuleOffset, TranslationTableRule *newRule,
-		TranslationTableHeader *table) {
+		TranslationTableHeader **table) {
 	/* direction = 1, newRule->dotslen = 1 */
 	TranslationTableRule *currentRule;
 	TranslationTableOffset *currentOffsetPtr;
@@ -735,12 +674,14 @@ addBackwardRuleWithSingleCell(FileInfo *nested, widechar cell,
 	if (newRule->opcode == CTO_SwapCc || newRule->opcode == CTO_Repeated ||
 			(newRule->opcode == CTO_Always && newRule->charslen == 1))
 		return; /* too ambiguous */
-	dots = definedCharOrDots(nested, cell, 1, table);
+	// get the cell from the table, or if the cell is not defined yet, define it (without
+	// adding attributes)
+	dots = addCharOrDots(nested, cell, 1, table);
 	if (newRule->opcode >= CTO_Space && newRule->opcode < CTO_UpLow)
 		dots->definitionRule = *newRuleOffset;
 	currentOffsetPtr = &dots->otherRules;
 	while (*currentOffsetPtr) {
-		currentRule = (TranslationTableRule *)&table->ruleArea[*currentOffsetPtr];
+		currentRule = (TranslationTableRule *)&(*table)->ruleArea[*currentOffsetPtr];
 		if (newRule->charslen > currentRule->charslen || currentRule->dotslen == 0) break;
 		if (currentRule->opcode >= CTO_Space && currentRule->opcode < CTO_UpLow)
 			if (!(newRule->opcode >= CTO_Space && newRule->opcode < CTO_UpLow)) break;
@@ -870,7 +811,6 @@ addRule(FileInfo *nested, TranslationTableOpcode opcode, CharsString *ruleChars,
 				CHARSIZE * (rule->dotslen = ruleDots->length));
 	else
 		rule->dotslen = 0;
-	if (!charactersDefined(nested, rule, *table)) return 0;
 
 	/* link new rule into table. */
 	if (opcode == CTO_SwapCc || opcode == CTO_SwapCd || opcode == CTO_SwapDd) return 1;
@@ -884,7 +824,7 @@ addRule(FileInfo *nested, TranslationTableOpcode opcode, CharsString *ruleChars,
 		}
 	if (!nofor) {
 		if (rule->charslen == 1)
-			addForwardRuleWithSingleChar(nested, newRuleOffset, rule, *table);
+			addForwardRuleWithSingleChar(nested, newRuleOffset, rule, table);
 		else if (rule->charslen > 1)
 			addForwardRuleWithMultipleChars(newRuleOffset, rule, *table);
 	}
@@ -901,7 +841,7 @@ addRule(FileInfo *nested, TranslationTableOpcode opcode, CharsString *ruleChars,
 		}
 
 		if (count == 1)
-			addBackwardRuleWithSingleCell(nested, *cells, newRuleOffset, rule, *table);
+			addBackwardRuleWithSingleCell(nested, *cells, newRuleOffset, rule, table);
 		else if (count > 1)
 			addBackwardRuleWithMultipleCells(cells, count, newRuleOffset, rule, *table);
 	}
@@ -1391,7 +1331,7 @@ findRuleName(const CharsString *name, RuleName *ruleNames) {
 
 static int
 addRuleName(FileInfo *nested, CharsString *name, TranslationTableOffset *newRuleOffset,
-		RuleName **ruleNames, TranslationTableHeader *table) {
+		RuleName **ruleNames) {
 	int k;
 	struct RuleName *nameRule;
 	if (!(nameRule = malloc(sizeof(*nameRule) + CHARSIZE * (name->length - 1)))) {
@@ -1399,14 +1339,15 @@ addRuleName(FileInfo *nested, CharsString *name, TranslationTableOffset *newRule
 		_lou_outOfMemory();
 	}
 	memset(nameRule, 0, sizeof(*nameRule));
+	// a name is a sequence of characters in the ranges 'a'..'z' and 'A'..'Z'
 	for (k = 0; k < name->length; k++) {
-		TranslationTableCharacter *ch =
-				definedCharOrDots(nested, name->chars[k], 0, table);
-		if (!(ch->attributes & CTC_Letter)) {
+		widechar c = name->chars[k];
+		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+			nameRule->name[k] = c;
+		else {
 			compileError(nested, "a name may contain only letters");
 			return 0;
 		}
-		nameRule->name[k] = name->chars[k];
 	}
 	nameRule->length = name->length;
 	nameRule->ruleOffset = *newRuleOffset;
@@ -1472,7 +1413,7 @@ compileSwap(FileInfo *nested, TranslationTableOpcode opcode, int *lastToken,
 	if (!addRule(nested, opcode, &ruleChars, &ruleDots, 0, 0, newRuleOffset, newRule,
 				noback, nofor, table))
 		return 0;
-	if (!addRuleName(nested, &name, newRuleOffset, ruleNames, *table)) return 0;
+	if (!addRuleName(nested, &name, newRuleOffset, ruleNames)) return 0;
 	return 1;
 }
 
@@ -1609,22 +1550,17 @@ passGetVariableNumber(FileInfo *nested, CharsString *passLine, int *passLinepos,
 }
 
 static int
-passGetName(CharsString *passLine, int *passLinepos, CharsString *passHoldString,
-		FileInfo *passNested, TranslationTableHeader *table) {
-	TranslationTableCharacterAttributes attr;
+passGetName(CharsString *passLine, int *passLinepos, CharsString *passHoldString) {
 	passHoldString->length = 0;
+	// a name is a sequence of characters in the ranges 'a'..'z' and 'A'..'Z'
 	do {
-		attr = definedCharOrDots(passNested, passLine->chars[*passLinepos], 0,
-				table)->attributes;
-		if (passHoldString->length == 0) {
-			if (!(attr & CTC_Letter)) {
-				(*passLinepos)++;
-				continue;
-			}
+		widechar c = passLine->chars[*passLinepos];
+		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+			passHoldString->chars[passHoldString->length++] = c;
+			(*passLinepos)++;
+		} else {
+			break;
 		}
-		if (!(attr & CTC_Letter)) break;
-		passHoldString->chars[passHoldString->length++] = passLine->chars[*passLinepos];
-		(*passLinepos)++;
 	} while (*passLinepos < passLine->length);
 	return 1;
 }
@@ -1829,7 +1765,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 		case pass_groupstart:
 		case pass_groupend:
 			passLinepos++;
-			passGetName(&passLine, &passLinepos, &passHoldString, passNested, *table);
+			passGetName(&passLine, &passLinepos, &passHoldString);
 			ruleOffset = findRuleName(&passHoldString, ruleNames);
 			if (ruleOffset)
 				rule = (TranslationTableRule *)&(*table)->ruleArea[ruleOffset];
@@ -1845,7 +1781,8 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 			}
 			break;
 		case pass_swap:
-			passGetName(&passLine, &passLinepos, &passHoldString, passNested, *table);
+			passLinepos++;
+			passGetName(&passLine, &passLinepos, &passHoldString);
 			if ((class = findCharacterClass(&passHoldString, characterClasses))) {
 				passAttributes = class->attribute;
 				goto insertAttributes;
@@ -1950,7 +1887,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 		case pass_groupstart:
 		case pass_groupend:
 			passLinepos++;
-			passGetName(&passLine, &passLinepos, &passHoldString, passNested, *table);
+			passGetName(&passLine, &passLinepos, &passHoldString);
 			ruleOffset = findRuleName(&passHoldString, ruleNames);
 			if (ruleOffset)
 				rule = (TranslationTableRule *)&(*table)->ruleArea[ruleOffset];
@@ -1965,7 +1902,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 			return 0;
 		case pass_swap:
 			passLinepos++;
-			passGetName(&passLine, &passLinepos, &passHoldString, passNested, *table);
+			passGetName(&passLine, &passLinepos, &passHoldString);
 			ruleOffset = findRuleName(&passHoldString, ruleNames);
 			if (ruleOffset)
 				rule = (TranslationTableRule *)&(*table)->ruleArea[ruleOffset];
@@ -2088,7 +2025,7 @@ compileGrouping(FileInfo *nested, int *lastToken, TranslationTableOffset *newRul
 	if (!addRule(nested, CTO_Grouping, &groupChars, &dotsParsed, 0, 0, newRuleOffset,
 				newRule, noback, nofor, table))
 		return 0;
-	if (!addRuleName(nested, &name, newRuleOffset, ruleNames, *table)) return 0;
+	if (!addRuleName(nested, &name, newRuleOffset, ruleNames)) return 0;
 	putCharAndDots(nested, groupChars.chars[0], dotsParsed.chars[0], table);
 	putCharAndDots(nested, groupChars.chars[1], dotsParsed.chars[1], table);
 	endChar = groupChars.chars[1];
@@ -2347,8 +2284,6 @@ compileHyphenation(FileInfo *nested, CharsString *encoding, int *lastToken,
 		if (hyph.length == 0 || hyph.chars[0] == '#' || hyph.chars[0] == '%' ||
 				hyph.chars[0] == '<')
 			continue; /* comment */
-		for (i = 0; i < hyph.length; i++)
-			definedCharOrDots(nested, hyph.chars[i], 0, *table);
 		j = 0;
 		pattern[j] = '0';
 		for (i = 0; i < hyph.length; i++) {
@@ -3395,15 +3330,21 @@ doOpcode:
 					int index;
 					for (index = 0; index < characters.length; ++index) {
 						TranslationTableRule *defRule;
-						TranslationTableCharacter *character = definedCharOrDots(
-								nested, characters.chars[index], 0, *table);
+						// get the character from the table and add the new class to its
+						// attributes
+						// if the character is not defined yet, define it
+						TranslationTableCharacter *character =
+								addCharOrDots(nested, characters.chars[index], 0, table);
 						character->attributes |= class->attribute;
-						defRule = (TranslationTableRule *)&(
-								*table)->ruleArea[character->definitionRule];
-						if (defRule->dotslen == 1) {
-							character = definedCharOrDots(nested,
-									defRule->charsdots[defRule->charslen], 1, *table);
-							character->attributes |= class->attribute;
+						// also add the attribute to the associated dots (if any)
+						if (character->definitionRule) {
+							defRule = (TranslationTableRule *)&(
+									*table)->ruleArea[character->definitionRule];
+							if (defRule->dotslen == 1) {
+								character = compile_findCharOrDots(
+										defRule->charsdots[defRule->charslen], 1, *table);
+								if (character) character->attributes |= class->attribute;
+							}
 						}
 					}
 				}
