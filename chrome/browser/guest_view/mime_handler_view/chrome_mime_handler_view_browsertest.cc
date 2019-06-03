@@ -25,8 +25,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/stream_handle.h"
-#include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -150,34 +148,19 @@ class ChromeMimeHandlerViewTestBase : public extensions::ExtensionApiTest {
       const GURL& url,
       std::string* view_id) {
     *view_id = base::GenerateGUID();
-    auto stream_info = std::make_unique<content::StreamInfo>();
-    stream_info->handle = std::make_unique<FakeStreamHandle>(url);
-    stream_info->original_url = url;
-    stream_info->mime_type = "application/pdf";
-    stream_info->response_headers =
+    auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
+    transferrable_loader->url = url;
+    transferrable_loader->head.mime_type = "application/pdf";
+    transferrable_loader->head.headers =
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/2 200 OK");
     return std::make_unique<extensions::StreamContainer>(
-        std::move(stream_info), 0 /* tab_id */, false /* embedded */,
+        0 /* tab_id */, false /* embedded */,
         GURL(std::string(extensions::kExtensionScheme) +
              kTestExtensionId) /* handler_url */,
-        kTestExtensionId, nullptr /* transferrable_loader */, url);
+        kTestExtensionId, std::move(transferrable_loader), url);
   }
 
  private:
-  class FakeStreamHandle : public content::StreamHandle {
-   public:
-    explicit FakeStreamHandle(const GURL& url) : url_(url) {}
-    ~FakeStreamHandle() override {}
-
-    const GURL& GetURL() override { return url_; }
-    void AddCloseListener(const base::RepeatingClosure& callback) override {}
-
-   private:
-    const GURL url_;
-
-    DISALLOW_COPY_AND_ASSIGN(FakeStreamHandle);
-  };
-
   TestGuestViewManagerFactory factory_;
   content::WebContents* guest_web_contents_;
   content::WebContents* embedder_web_contents_;

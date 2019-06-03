@@ -1585,9 +1585,6 @@
     'startup': {
       'filepath': 'chrome/browser/ui/startup/',
     },
-    'streams': {
-      'filepath': 'content/browser/streams/',
-    },
     'styleguide': {
       'filepath': '^styleguide/',
     },
@@ -2566,7 +2563,6 @@
                    'timvolodine@chromium.org'],
     'startup': ['grt+watch@chromium.org',
                 'pastarmovj+watch@chromium.org'],
-    'streams': ['zork+watch@chromium.org'],
     'styleguide': ['danakj+watch@chromium.org',
                    'jbroman+cpp@chromium.org',
                    'vmpstr+watch@chromium.org'],

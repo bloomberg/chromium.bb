@@ -456,7 +456,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
       const GlobalRequestID& request_id,
       bool is_download,
       NavigationDownloadPolicy download_policy,
-      bool is_stream,
       base::Optional<SubresourceLoaderParams> subresource_loader_params)
       override;
   void OnRequestFailed(
@@ -741,7 +740,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints_;
   base::Optional<net::SSLInfo> ssl_info_;
   bool is_download_ = false;
-  bool is_stream_ = false;
   GlobalRequestID request_id_;
 
   // Holds information for the navigation while the WillFailRequest

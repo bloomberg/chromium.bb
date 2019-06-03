@@ -16,7 +16,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mime_handler_view_mode.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -239,7 +238,7 @@ void ExtensionsGuestViewMessageFilter::CreateEmbeddedMimeHandlerViewGuest(
 
   std::string view_id = base::GenerateGUID();
   std::unique_ptr<StreamContainer> stream_container(new StreamContainer(
-      nullptr, tab_id, true /* embedded */, handler_url, extension_id,
+      tab_id, true /* embedded */, handler_url, extension_id,
       std::move(transferrable_url_loader), original_url));
   MimeHandlerStreamManager::Get(browser_context)
       ->AddStream(view_id, std::move(stream_container),

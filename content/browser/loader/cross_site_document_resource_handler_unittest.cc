@@ -1142,14 +1142,6 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
     return std::make_unique<TestResourceHandler>();
   }
 
-  std::unique_ptr<ResourceHandler> MaybeInterceptAsStream(
-      net::URLRequest* request,
-      network::ResourceResponse* response,
-      std::string* payload) override {
-    NOTREACHED();
-    return std::make_unique<TestResourceHandler>();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcherHost);
 };

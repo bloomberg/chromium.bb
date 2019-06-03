@@ -35,7 +35,6 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/browser/stream_handle.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_states.h"
@@ -188,22 +187,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       bool is_content_initiated,
       bool must_download,
       bool is_new_request);
-
-  // Called to determine whether the response to |request| should be intercepted
-  // and handled as a stream. Streams are used to pass direct access to a
-  // resource response to another application (e.g. a web page) without being
-  // handled by the browser itself. If the request should be intercepted as a
-  // stream, a StreamResourceHandler is returned which provides access to the
-  // response.
-  //
-  // This function must be called after the ResourceRequestInfo has been created
-  // and associated with the request. If |payload| is set to a non-empty value,
-  // the caller must send it to the old resource handler instead of cancelling
-  // it.
-  virtual std::unique_ptr<ResourceHandler> MaybeInterceptAsStream(
-      net::URLRequest* request,
-      network::ResourceResponse* response,
-      std::string* payload);
 
   network::ResourceScheduler* scheduler() { return scheduler_.get(); }
 

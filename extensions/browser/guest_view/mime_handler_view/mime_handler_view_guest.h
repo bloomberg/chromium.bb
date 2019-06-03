@@ -18,18 +18,16 @@
 namespace content {
 class WebContents;
 struct ContextMenuParams;
-struct StreamInfo;
 }  // namespace content
 
 namespace extensions {
 class MimeHandlerViewGuestDelegate;
 
-// A container for a StreamHandle and any other information necessary for a
-// MimeHandler to handle a resource stream.
+// A container for a information necessary for a MimeHandler to handle a
+// resource stream.
 class StreamContainer {
  public:
   StreamContainer(
-      std::unique_ptr<content::StreamInfo> stream,
       int tab_id,
       bool embedded,
       const GURL& handler_url,
@@ -58,7 +56,6 @@ class StreamContainer {
   }
 
  private:
-  const std::unique_ptr<content::StreamInfo> stream_;
   const bool embedded_;
   const int tab_id_;
   const GURL handler_url_;

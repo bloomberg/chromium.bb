@@ -53,7 +53,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       ResourceType resource_type,
       ui::PageTransition transition_type,
       bool is_download,
-      bool is_stream,
       ResourceInterceptPolicy resource_intercept_policy,
       bool has_user_gesture,
       bool enable_load_timing,
@@ -137,10 +136,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   // Whether this is a download.
   void set_is_download(bool download) { is_download_ = download; }
-
-  // Whether this is a stream.
-  bool is_stream() const { return is_stream_; }
-  void set_is_stream(bool stream) { is_stream_ = stream; }
 
   // Whether this request has been counted towards the number of in flight
   // requests, which is only true for requests that require a file descriptor
@@ -229,7 +224,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool is_main_frame_;
   base::UnguessableToken fetch_window_id_;
   bool is_download_;
-  bool is_stream_;
   ResourceInterceptPolicy resource_intercept_policy_;
   bool has_user_gesture_;
   bool enable_load_timing_;

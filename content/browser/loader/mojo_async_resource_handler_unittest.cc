@@ -29,7 +29,6 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
-#include "content/public/browser/stream_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_context.h"
@@ -127,19 +126,6 @@ class TestResourceDispatcherHostDelegate final
       bool is_new_request,
       std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     ADD_FAILURE() << "DownloadStarting should not be called.";
-  }
-
-  bool ShouldInterceptResourceAsStream(net::URLRequest* request,
-                                       const std::string& mime_type,
-                                       GURL* origin,
-                                       std::string* payload) override {
-    ADD_FAILURE() << "ShouldInterceptResourceAsStream should not be called.";
-    return false;
-  }
-
-  void OnStreamCreated(net::URLRequest* request,
-                       std::unique_ptr<content::StreamInfo> stream) override {
-    ADD_FAILURE() << "OnStreamCreated should not be called.";
   }
 
   void OnResponseStarted(net::URLRequest* request,

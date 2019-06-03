@@ -1067,7 +1067,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     bool is_download;
-    bool is_stream;
 
     std::unique_ptr<NavigationData> cloned_navigation_data;
 
@@ -1090,7 +1089,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // When a plugin intercepted the response, we don't want to download it.
     is_download =
         !head.intercepted_by_plugin && (must_download || !known_mime_type);
-    is_stream = false;
 
     // If NetworkService is on, or an interceptor handled the request, the
     // request doesn't use ResourceDispatcherHost so
@@ -1098,8 +1096,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
         !default_loader_used_) {
       CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                             std::move(cloned_navigation_data), is_download,
-                             is_stream);
+                             std::move(cloned_navigation_data), is_download);
       return;
     }
 
@@ -1114,7 +1111,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       ResourceRequestInfoImpl* info =
           ResourceRequestInfoImpl::ForRequest(url_request);
       is_download = !head.intercepted_by_plugin && info->IsDownload();
-      is_stream = info->is_stream();
       if (rdh->delegate()) {
         NavigationData* navigation_data =
             rdh->delegate()->GetNavigationData(url_request);
@@ -1125,12 +1121,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           cloned_navigation_data = navigation_data->Clone();
       }
     } else {
-      is_download = is_stream = false;
+      is_download = false;
     }
 
     CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                           std::move(cloned_navigation_data), is_download,
-                           is_stream);
+                           std::move(cloned_navigation_data), is_download);
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1164,7 +1159,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     bool is_download = !has_plugin && is_download_if_not_handled_by_plugin;
 
     CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                           nullptr, is_download, false /* is_stream */);
+                           nullptr, is_download);
   }
 #endif
 
@@ -1172,8 +1167,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       const network::ResourceResponseHead& head,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<NavigationData> cloned_navigation_data,
-      bool is_download,
-      bool is_stream) {
+      bool is_download) {
     scoped_refptr<network::ResourceResponse> response(
         new network::ResourceResponse());
     response->head = head;
@@ -1186,11 +1180,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // response. https://crbug.com/416050
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            &NavigationURLLoaderImpl::OnReceiveResponse, owner_,
-            response->DeepCopy(), std::move(url_loader_client_endpoints),
-            std::move(cloned_navigation_data), global_request_id_, is_download,
-            is_stream, ui_to_io_time_, base::Time::Now()));
+        base::BindOnce(&NavigationURLLoaderImpl::OnReceiveResponse, owner_,
+                       response->DeepCopy(),
+                       std::move(url_loader_client_endpoints),
+                       std::move(cloned_navigation_data), global_request_id_,
+                       is_download, ui_to_io_time_, base::Time::Now()));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -1688,7 +1682,6 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& global_request_id,
     bool is_download,
-    bool is_stream,
     base::TimeDelta total_ui_to_io_time,
     base::Time io_post_time) {
   const base::TimeDelta kMinTime = base::TimeDelta::FromMicroseconds(1);
@@ -1710,8 +1703,7 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
   delegate_->OnResponseStarted(
       std::move(response), std::move(url_loader_client_endpoints),
       std::move(navigation_data), global_request_id, is_download,
-      download_policy_, is_stream,
-      request_controller_->TakeSubresourceLoaderParams());
+      download_policy_, request_controller_->TakeSubresourceLoaderParams());
 }
 
 void NavigationURLLoaderImpl::OnReceiveRedirect(

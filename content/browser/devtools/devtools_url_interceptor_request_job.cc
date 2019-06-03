@@ -149,7 +149,7 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
       resource_request_info->fetch_window_id(),
       resource_request_info->GetResourceType(),
       resource_request_info->GetPageTransition(),
-      resource_request_info->IsDownload(), resource_request_info->is_stream(),
+      resource_request_info->IsDownload(),
       resource_request_info->resource_intercept_policy(),
       resource_request_info->HasUserGesture(),
       resource_request_info->is_load_timing_enabled(),

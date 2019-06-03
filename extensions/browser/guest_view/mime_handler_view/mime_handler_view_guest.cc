@@ -14,8 +14,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/stream_handle.h"
-#include "content/public/browser/stream_info.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/url_constants.h"
@@ -45,41 +43,28 @@ using guest_view::GuestViewBase;
 namespace extensions {
 
 StreamContainer::StreamContainer(
-    std::unique_ptr<content::StreamInfo> stream,
     int tab_id,
     bool embedded,
     const GURL& handler_url,
     const std::string& extension_id,
     content::mojom::TransferrableURLLoaderPtr transferrable_loader,
     const GURL& original_url)
-    : stream_(std::move(stream)),
-      embedded_(embedded),
+    : embedded_(embedded),
       tab_id_(tab_id),
       handler_url_(handler_url),
       extension_id_(extension_id),
       transferrable_loader_(std::move(transferrable_loader)),
-      mime_type_(stream_ ? stream_->mime_type
-                         : transferrable_loader_->head.mime_type),
-      original_url_(stream_ ? stream_->original_url : original_url),
-      stream_url_(stream_ ? stream_->handle->GetURL()
-                          : transferrable_loader_->url),
-      response_headers_(stream_ ? stream_->response_headers
-                                : transferrable_loader_->head.headers),
-      weak_factory_(this) {
-  DCHECK(stream_ || transferrable_loader_);
-}
+      mime_type_(transferrable_loader_->head.mime_type),
+      original_url_(original_url),
+      stream_url_(transferrable_loader_->url),
+      response_headers_(transferrable_loader_->head.headers),
+      weak_factory_(this) {}
 
 StreamContainer::~StreamContainer() {
 }
 
 void StreamContainer::Abort(const base::Closure& callback) {
-  if (!stream_ || !stream_->handle) {
-    callback.Run();
-    return;
-  }
-  stream_->handle->AddCloseListener(callback);
-  stream_->handle.reset();
-  stream_url_ = GURL();
+  callback.Run();
 }
 
 base::WeakPtr<StreamContainer> StreamContainer::GetWeakPtr() {

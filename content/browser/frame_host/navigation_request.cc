@@ -1218,7 +1218,6 @@ void NavigationRequest::OnResponseStarted(
     const GlobalRequestID& request_id,
     bool is_download,
     NavigationDownloadPolicy download_policy,
-    bool is_stream,
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
   // The |loader_|'s job is finished. It must not call the NavigationRequest
   // anymore from now.
@@ -1228,7 +1227,6 @@ void NavigationRequest::OnResponseStarted(
   is_download_ = is_download && download_policy.IsDownloadAllowed();
   if (is_download_)
     RecordDownloadUseCountersPostPolicyCheck();
-  is_stream_ = is_stream;
   request_id_ = request_id;
 
   DCHECK_EQ(state_, STARTED);

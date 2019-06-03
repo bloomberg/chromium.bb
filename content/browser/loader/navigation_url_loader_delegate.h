@@ -58,7 +58,6 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
       const GlobalRequestID& request_id,
       bool is_download,
       NavigationDownloadPolicy download_policy,
-      bool is_stream,
       base::Optional<SubresourceLoaderParams> subresource_loader_params) = 0;
 
   // Called if the request fails before receving a response. Specific

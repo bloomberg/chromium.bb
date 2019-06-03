@@ -6,7 +6,6 @@
 
 #include "base/time/time.h"
 #include "content/browser/loader/prefetched_signed_exchange_cache.h"
-#include "content/public/browser/stream_handle.h"
 
 namespace content {
 

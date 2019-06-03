@@ -63,7 +63,6 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
     const GlobalRequestID& request_id,
     bool is_download,
     NavigationDownloadPolicy download_policy,
-    bool is_stream,
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
   response_ = response;
   url_loader_client_endpoints_ = std::move(url_loader_client_endpoints);

@@ -57,13 +57,7 @@ class TestContentBrowserClient : public ContentBrowserClient {
 
 class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
  public:
-  explicit TestResourceDispatcherHost(bool stream_has_handler)
-      : stream_has_handler_(stream_has_handler),
-        intercepted_as_stream_(false),
-        intercepted_as_stream_count_(0),
-        new_resource_handler_(nullptr) {}
-
-  bool intercepted_as_stream() const { return intercepted_as_stream_; }
+  TestResourceDispatcherHost() : new_resource_handler_(nullptr) {}
 
   std::unique_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
@@ -71,20 +65,6 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
       bool must_download,
       bool is_new_request) override {
     return CreateNewResourceHandler();
-  }
-
-  std::unique_ptr<ResourceHandler> MaybeInterceptAsStream(
-      net::URLRequest* request,
-      network::ResourceResponse* response,
-      std::string* payload) override {
-    intercepted_as_stream_count_++;
-    if (stream_has_handler_)
-      intercepted_as_stream_ = true;
-    return CreateNewResourceHandler();
-  }
-
-  int intercepted_as_stream_count() const {
-    return intercepted_as_stream_count_;
   }
 
   TestResourceHandler* new_resource_handler() const {
@@ -99,16 +79,6 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
     new_resource_handler_ = new_resource_handler.get();
     return std::move(new_resource_handler);
   }
-
-  // Whether the URL request should be intercepted as a stream.
-  bool stream_has_handler_;
-
-  // Whether the URL request has been intercepted as a stream.
-  bool intercepted_as_stream_;
-
-  // Count of number of times MaybeInterceptAsStream function get called in a
-  // test.
-  int intercepted_as_stream_count_;
 
   // The last alternative TestResourceHandler created by this
   // TestResourceDispatcherHost.
@@ -161,9 +131,7 @@ class TestFakePluginService : public FakePluginService {
 class MimeSniffingResourceHandlerTest : public testing::Test {
  public:
   MimeSniffingResourceHandlerTest()
-      : stream_has_handler_(false),
-        plugin_available_(false),
-        plugin_stale_(false) {}
+      : plugin_available_(false), plugin_stale_(false) {}
 
   // Tests that the MimeSniffingHandler properly sets the accept field in the
   // header. Returns the accept header value.
@@ -172,20 +140,11 @@ class MimeSniffingResourceHandlerTest : public testing::Test {
       ResourceType request_resource_type,
       net::URLRequest* request);
 
-  void set_stream_has_handler(bool stream_has_handler) {
-    stream_has_handler_ = stream_has_handler;
-  }
-
   void set_plugin_available(bool plugin_available) {
     plugin_available_ = plugin_available;
   }
 
   void set_plugin_stale(bool plugin_stale) { plugin_stale_ = plugin_stale; }
-
-  bool TestStreamIsIntercepted(
-      ResourceInterceptPolicy resource_intercept_policy,
-      bool must_download,
-      ResourceType request_resource_type);
 
   // Tests the operation of the MimeSniffingHandler when it needs to buffer
   // data (example case: the response is text/plain).
@@ -206,8 +165,6 @@ class MimeSniffingResourceHandlerTest : public testing::Test {
                              bool defer_read_completed);
 
  private:
-  // Whether the URL request should be intercepted as a stream.
-  bool stream_has_handler_;
   bool plugin_available_;
   bool plugin_stale_;
 
@@ -257,66 +214,6 @@ MimeSniffingResourceHandlerTest::TestAcceptHeaderSettingWithURLRequest(
   return accept_header;
 }
 
-bool MimeSniffingResourceHandlerTest::TestStreamIsIntercepted(
-    ResourceInterceptPolicy resource_intercept_policy,
-    bool must_download,
-    ResourceType request_resource_type) {
-  net::URLRequestContext context;
-  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  bool is_main_frame = request_resource_type == ResourceType::kMainFrame;
-  ResourceRequestInfo::AllocateForTesting(request.get(), request_resource_type,
-                                          nullptr,        // context
-                                          0,              // render_process_id
-                                          0,              // render_view_id
-                                          0,              // render_frame_id
-                                          is_main_frame,  // is_main_frame
-                                          resource_intercept_policy,
-                                          true,          // is_async
-                                          PREVIEWS_OFF,  // previews_state
-                                          nullptr);      // navigation_ui_data
-
-  TestResourceDispatcherHost host(stream_has_handler_);
-  TestContentBrowserClient new_client(must_download);
-  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
-
-  TestFakePluginService plugin_service(plugin_available_, plugin_stale_);
-
-  std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
-      new InterceptingResourceHandler(std::make_unique<TestResourceHandler>(),
-                                      nullptr));
-  std::unique_ptr<TestResourceHandler> scoped_test_handler(
-      new TestResourceHandler());
-  scoped_test_handler->set_on_response_started_result(false);
-  MimeSniffingResourceHandler mime_sniffing_handler(
-      std::unique_ptr<ResourceHandler>(std::move(scoped_test_handler)), &host,
-      &plugin_service, intercepting_handler.get(), request.get(),
-      blink::mojom::RequestContextType::UNSPECIFIED);
-
-  MockResourceLoader mock_loader(&mime_sniffing_handler);
-
-  scoped_refptr<network::ResourceResponse> response(
-      new network::ResourceResponse);
-  // The MIME type isn't important but it shouldn't be empty.
-  response->head.mime_type = "application/pdf";
-
-  EXPECT_EQ(MockResourceLoader::Status::IDLE,
-            mock_loader.OnWillStart(request->url()));
-
-  mock_loader.OnResponseStarted(std::move(response));
-  mock_loader.WaitUntilIdleOrCanceled();
-  EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader.status());
-  EXPECT_EQ(net::ERR_ABORTED, mock_loader.error_code());
-
-  content::RunAllPendingInMessageLoop();
-  EXPECT_LT(host.intercepted_as_stream_count(), 2);
-  if (resource_intercept_policy != ResourceInterceptPolicy::kAllowNone)
-    EXPECT_TRUE(intercepting_handler->new_handler_for_testing());
-  SetBrowserClientForTesting(old_client);
-  return host.intercepted_as_stream();
-}
-
 void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
     bool response_started,
     bool defer_response_started,
@@ -340,7 +237,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
                                           PREVIEWS_OFF,  // previews_state
                                           nullptr);      // navigation_ui_data
 
-  TestResourceDispatcherHost host(false);
+  TestResourceDispatcherHost host;
 
   TestFakePluginService plugin_service(plugin_available_, plugin_stale_);
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
@@ -504,7 +401,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
                                           PREVIEWS_OFF,  // previews_state
                                           nullptr);      // navigation_ui_data
 
-  TestResourceDispatcherHost host(false);
+  TestResourceDispatcherHost host;
 
   TestFakePluginService plugin_service(plugin_available_, plugin_stale_);
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
@@ -627,104 +524,6 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
   // Process all messages to ensure proper test teardown.
   content::RunAllPendingInMessageLoop();
 }
-
-// Test that stream requests are correctly intercepted under the right
-// circumstances. Test is not relevent when plugins are disabled.
-#if BUILDFLAG(ENABLE_PLUGINS)
-TEST_F(MimeSniffingResourceHandlerTest, StreamHandling) {
-  ResourceInterceptPolicy resource_intercept_policy;
-  bool must_download;
-  ResourceType resource_type;
-
-  // Ensure the stream is handled by MaybeInterceptAsStream in the
-  // ResourceDispatcherHost.
-  set_stream_has_handler(true);
-  set_plugin_available(true);
-
-  // Main frame request with no download allowed. Stream shouldn't be
-  // intercepted.
-  resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
-  must_download = false;
-  resource_type = ResourceType::kMainFrame;
-  EXPECT_FALSE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
-                                       resource_type));
-
-  // Main frame request with no download allowed only after plugin handler is
-  // checked. Stream should be intercepted.
-  resource_intercept_policy = ResourceInterceptPolicy::kAllowPluginOnly;
-  must_download = false;
-  resource_type = ResourceType::kMainFrame;
-  EXPECT_TRUE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
-                                      resource_type));
-
-  // Main frame request with download allowed. Stream should be intercepted.
-  resource_intercept_policy = ResourceInterceptPolicy::kAllowAll;
-  must_download = false;
-  resource_type = ResourceType::kMainFrame;
-  EXPECT_TRUE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
-                                      resource_type));
-
-  // Main frame request with download forced. Stream shouldn't be intercepted.
-  resource_intercept_policy = ResourceInterceptPolicy::kAllowAll;
-  must_download = true;
-  resource_type = ResourceType::kMainFrame;
-  EXPECT_FALSE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
-                                       resource_type));
-
-  // Sub-resource request with download not allowed. Stream shouldn't be
-  // intercepted.
-  resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
-  must_download = false;
-  resource_type = ResourceType::kSubResource;
-  EXPECT_FALSE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
-                                       resource_type));
-
-  // Plugin resource request with download not allowed. Stream shouldn't be
-  // intercepted.
-  resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
-  must_download = false;
-  resource_type = ResourceType::kPluginResource;
-  EXPECT_FALSE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
-                                       resource_type));
-
-  // Object request with download not allowed. Stream should be intercepted.
-  resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
-  must_download = false;
-  resource_type = ResourceType::kObject;
-  EXPECT_TRUE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
-                                      resource_type));
-
-  // Test the cases where the stream isn't handled by MaybeInterceptAsStream
-  // in the ResourceDispatcherHost.
-  set_stream_has_handler(false);
-  resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
-  must_download = false;
-  resource_type = ResourceType::kObject;
-  EXPECT_FALSE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
-                                       resource_type));
-
-  // Test the cases where the stream handled by MaybeInterceptAsStream
-  // with plugin not available. This is the case when intercepting streams for
-  // the streamsPrivate extensions API.
-  set_stream_has_handler(true);
-  set_plugin_available(false);
-  resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
-  must_download = false;
-  resource_type = ResourceType::kObject;
-  EXPECT_TRUE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
-                                      resource_type));
-
-  // Test the cases where the stream handled by MaybeInterceptAsStream
-  // with plugin not available. This is the case when intercepting streams for
-  // the streamsPrivate extensions API with stale plugin.
-  set_plugin_stale(true);
-  resource_intercept_policy = ResourceInterceptPolicy::kAllowNone;
-  must_download = false;
-  resource_type = ResourceType::kObject;
-  EXPECT_TRUE(TestStreamIsIntercepted(resource_intercept_policy, must_download,
-                                      resource_type));
-}
-#endif
 
 // Test that the MimeSniffingHandler operates properly when it doesn't sniff
 // resources.
@@ -854,7 +653,7 @@ TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
                                           PREVIEWS_OFF,  // previews_state
                                           nullptr);      // navigation_ui_data
 
-  TestResourceDispatcherHost host(false);
+  TestResourceDispatcherHost host;
 
   TestFakePluginService plugin_service(false, false);
   std::unique_ptr<ResourceHandler> intercepting_handler(
@@ -905,7 +704,7 @@ TEST_F(MimeSniffingResourceHandlerTest, FetchShouldDisableMimeSniffing) {
                                           PREVIEWS_OFF,  // previews_state
                                           nullptr);      // navigation_ui_data
 
-  TestResourceDispatcherHost host(false);
+  TestResourceDispatcherHost host;
 
   TestFakePluginService plugin_service(false, false);
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
@@ -965,7 +764,7 @@ TEST_F(MimeSniffingResourceHandlerTest, NonEmptyPayloadEndsBeforeDecision) {
                                           PREVIEWS_OFF,  // previews_state
                                           nullptr);      // navigation_ui_data
 
-  TestResourceDispatcherHost host(false);
+  TestResourceDispatcherHost host;
 
   TestFakePluginService plugin_service(false, false);
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
@@ -1043,7 +842,7 @@ TEST_F(MimeSniffingResourceHandlerTest, EmptyPayload) {
                                           PREVIEWS_OFF,  // previews_state
                                           nullptr);      // navigation_ui_data
 
-  TestResourceDispatcherHost host(false);
+  TestResourceDispatcherHost host;
 
   TestFakePluginService plugin_service(false, false);
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(

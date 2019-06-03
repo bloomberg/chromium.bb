@@ -61,7 +61,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& global_request_id,
       bool is_download,
-      bool is_stream,
       base::TimeDelta total_ui_to_io_time,
       base::Time io_post_time);
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,

@@ -11,18 +11,13 @@
 #include "base/macros.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 
-namespace content {
-struct StreamInfo;
-}
-
 namespace extensions {
 
 // TODO(devlin): This is now only used for the MimeTypesHandler API. We should
 // rename and move it to make that clear. https://crbug.com/890401.
 class StreamsPrivateAPI {
  public:
-  // Send the onExecuteMimeTypeHandler event to |extension_id|.
-  // The data for the document will be readable from |stream|. If the viewer is
+  // Send the onExecuteMimeTypeHandler event to |extension_id|. If the viewer is
   // being opened in a BrowserPlugin, specify a non-empty |view_id| of the
   // plugin. |embedded| should be set to whether the document is embedded
   // within another document. The |frame_tree_node_id| parameter is used for
@@ -41,7 +36,6 @@ class StreamsPrivateAPI {
       int frame_tree_node_id,
       int render_process_id,
       int render_frame_id,
-      std::unique_ptr<content::StreamInfo> stream,
       content::mojom::TransferrableURLLoaderPtr transferrable_loader,
       const GURL& original_url);
 };

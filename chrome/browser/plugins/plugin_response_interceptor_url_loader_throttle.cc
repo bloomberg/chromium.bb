@@ -13,7 +13,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_utils.h"
-#include "content/public/browser/stream_info.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
@@ -121,7 +120,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
           &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
           extension_id, view_id, embedded, frame_tree_node_id_,
           -1 /* render_process_id */, -1 /* render_frame_id */,
-          nullptr /* stream */, std::move(transferrable_loader), response_url));
+          std::move(transferrable_loader), response_url));
 }
 
 void PluginResponseInterceptorURLLoaderThrottle::ResumeLoad() {

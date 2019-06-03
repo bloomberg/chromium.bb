@@ -53,13 +53,9 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/sec_fetch_site_resource_handler.h"
-#include "content/browser/loader/stream_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
 #include "content/browser/resource_context_impl.h"
-#include "content/browser/streams/stream.h"
-#include "content/browser/streams/stream_context.h"
-#include "content/browser/streams/stream_registry.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/net/url_request_service_worker_data.h"
@@ -75,7 +71,6 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/site_isolation_policy.h"
-#include "content/public/browser/stream_info.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -473,14 +468,13 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
 #ifndef NDEBUG
   for (const auto& loader : loaders_to_cancel) {
     // There is no strict requirement that this be the case, but currently
-    // downloads, streams, detachable requests, transferred requests, and
+    // downloads, detachable requests, transferred requests, and
     // browser-owned requests are the only requests that aren't cancelled when
     // the associated processes go away. It may be OK for this invariant to
     // change in the future, but if this assertion fires without the invariant
     // changing, then it's indicative of a leak.
     DCHECK(
         loader->GetRequestInfo()->IsDownload() ||
-        loader->GetRequestInfo()->is_stream() ||
         (loader->GetRequestInfo()->detachable_handler() &&
          loader->GetRequestInfo()->detachable_handler()->is_detached()) ||
         loader->GetRequestInfo()->requester_info()->IsBrowserSideNavigation() ||
@@ -538,44 +532,6 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
       HandleDownloadStarted(request, std::move(handler), is_content_initiated,
                             must_download, is_new_request);
   return handler;
-}
-
-std::unique_ptr<ResourceHandler>
-ResourceDispatcherHostImpl::MaybeInterceptAsStream(
-    net::URLRequest* request,
-    network::ResourceResponse* response,
-    std::string* payload) {
-  payload->clear();
-  const std::string& mime_type = response->head.mime_type;
-
-  GURL origin;
-  if (!delegate_ || !delegate_->ShouldInterceptResourceAsStream(
-                        request, mime_type, &origin, payload)) {
-    return nullptr;
-  }
-
-  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
-  StreamContext* stream_context =
-      GetStreamContextForResourceContext(info->GetContext());
-
-  auto handler = std::make_unique<StreamResourceHandler>(
-      request, stream_context->registry(), origin, false);
-
-  info->set_is_stream(true);
-  auto stream_info = std::make_unique<StreamInfo>();
-  stream_info->handle = handler->stream()->CreateHandle();
-  stream_info->original_url = request->url();
-  stream_info->mime_type = mime_type;
-  // Make a copy of the response headers so it is safe to pass across threads;
-  // the old handler (AsyncResourceHandler) may modify it in parallel via the
-  // ResourceDispatcherHostDelegate.
-  if (response->head.headers.get()) {
-    stream_info->response_headers =
-        base::MakeRefCounted<net::HttpResponseHeaders>(
-            response->head.headers->raw_headers());
-  }
-  delegate_->OnStreamCreated(request, std::move(stream_info));
-  return std::move(handler);
 }
 
 std::unique_ptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(
@@ -1014,7 +970,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       static_cast<ResourceType>(request_data.resource_type),
       static_cast<ui::PageTransition>(request_data.transition_type),
       false,  // is download
-      false,  // is stream
       ResourceInterceptPolicy::kAllowNone, request_data.has_user_gesture,
       request_data.enable_load_timing, request_data.enable_upload_progress,
       request_data.do_not_prompt_for_login, request_data.keepalive,
@@ -1202,7 +1157,6 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       {},     // fetch_window_id
       ResourceType::kSubResource, ui::PAGE_TRANSITION_LINK,
       download,  // is_download
-      false,     // is_stream
       download ? ResourceInterceptPolicy::kAllowAll
                : ResourceInterceptPolicy::kAllowNone,
       false,  // has_user_gesture
@@ -1283,7 +1237,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
         // deliberately, so we don't cancel it here.
       } else if (info->detachable_handler()) {
         info->detachable_handler()->Detach();
-      } else if (!info->IsDownload() && !info->is_stream()) {
+      } else if (!info->IsDownload()) {
         matching_requests.push_back(id);
       }
     }
@@ -1542,7 +1496,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       info.is_main_frame, {},  // fetch_window_id
       resource_type, info.common_params.transition,
       false,  // is download
-      false,  // is stream
       info.common_params.download_policy.GetResourceInterceptPolicy(),
       info.common_params.has_user_gesture,
       true,   // enable_load_timing

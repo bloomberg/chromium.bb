@@ -74,7 +74,6 @@ void ResourceRequestInfo::AllocateForTesting(
       resource_type,                             // resource_type
       ui::PAGE_TRANSITION_LINK,                  // transition_type
       false,                                     // is_download
-      false,                                     // is_stream
       resource_intercept_policy,                 // resource_intercept_policy
       false,                                     // has_user_gesture
       false,                                     // enable load timing
@@ -137,7 +136,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     ResourceType resource_type,
     ui::PageTransition transition_type,
     bool is_download,
-    bool is_stream,
     ResourceInterceptPolicy resource_intercept_policy,
     bool has_user_gesture,
     bool enable_load_timing,
@@ -163,7 +161,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       is_main_frame_(is_main_frame),
       fetch_window_id_(fetch_window_id),
       is_download_(is_download),
-      is_stream_(is_stream),
       resource_intercept_policy_(resource_intercept_policy),
       has_user_gesture_(has_user_gesture),
       enable_load_timing_(enable_load_timing),

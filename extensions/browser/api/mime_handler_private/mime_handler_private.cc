@@ -9,8 +9,6 @@
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string_util.h"
-#include "content/public/browser/stream_handle.h"
-#include "content/public/browser/stream_info.h"
 #include "content/public/common/content_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/constants.h"
