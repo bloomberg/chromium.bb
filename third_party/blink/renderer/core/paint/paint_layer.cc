@@ -214,8 +214,10 @@ PaintLayer::~PaintLayer() {
 
   // Child layers will be deleted by their corresponding layout objects, so
   // we don't need to delete them ourselves.
-
-  ClearCompositedLayerMapping(true);
+  {
+    DisableCompositingQueryAsserts disabler;
+    ClearCompositedLayerMapping(true);
+  }
 
   if (scrollable_area_)
     scrollable_area_->Dispose();
@@ -2793,7 +2795,7 @@ GraphicsLayer* PaintLayer::GraphicsLayerBacking(const LayoutObject* obj) const {
 }
 
 void PaintLayer::EnsureCompositedLayerMapping() {
-  if (rare_data_ && rare_data_->composited_layer_mapping)
+  if (HasCompositedLayerMapping())
     return;
 
   EnsureRareData().composited_layer_mapping =
@@ -2803,7 +2805,25 @@ void PaintLayer::EnsureCompositedLayerMapping() {
 }
 
 void PaintLayer::ClearCompositedLayerMapping(bool layer_being_destroyed) {
-  if (!layer_being_destroyed) {
+  if (!HasCompositedLayerMapping())
+    return;
+
+  if (layer_being_destroyed) {
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      // The visual rects will be in a different coordinate space after losing
+      // their compositing container. Clear them before prepaint to avoid
+      // spurious layout shift reports from JankTracker.
+      // If the PaintLayer were not being destroyed, this would happen during
+      // the compositing update (PaintLayerCompositor::UpdateIfNeeded).
+      // TODO: JankTracker's reliance on having visual rects cleared before
+      // prepaint in the case of compositing changes is not ideal, and will not
+      // work with CompositeAfterPaint. Some transform tree changes may still
+      // produce incorrect behavior from JankTracker (see discussion on review
+      // thread of http://crrev.com/c/1636403).
+      Compositor()->ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
+          layout_object_);
+    }
+  } else {
     // We need to make sure our decendants get a geometry update. In principle,
     // we could call setNeedsGraphicsLayerUpdate on our children, but that would
     // require walking the z-order lists to find them. Instead, we
@@ -2813,9 +2833,8 @@ void PaintLayer::ClearCompositedLayerMapping(bool layer_being_destroyed) {
       compositing_parent->GetCompositedLayerMapping()
           ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
   }
-
-  if (rare_data_)
-    rare_data_->composited_layer_mapping.reset();
+  DCHECK(rare_data_);
+  rare_data_->composited_layer_mapping.reset();
 }
 
 void PaintLayer::SetGroupedMapping(CompositedLayerMapping* grouped_mapping,

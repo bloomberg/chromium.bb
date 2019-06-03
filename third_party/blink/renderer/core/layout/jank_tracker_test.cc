@@ -331,4 +331,55 @@ TEST_F(JankTrackerSimTest, SubframeWeighting) {
   EXPECT_FLOAT_EQ(0.15, jank_tracker.WeightedScore());
 }
 
+TEST_F(JankTrackerTest, StableCompositingChanges) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #outer {
+        margin-left: 50px;
+        margin-top: 50px;
+        width: 200px;
+        height: 200px;
+        background: #dde;
+      }
+      .tr {
+        will-change: transform;
+      }
+      .pl {
+        position: relative;
+        z-index: 0;
+        left: 0;
+        top: 0;
+      }
+      #inner {
+        display: inline-block;
+        width: 100px;
+        height: 100px;
+        background: #666;
+        margin-left: 50px;
+        margin-top: 50px;
+      }
+    </style>
+    <div id=outer><div id=inner></div></div>
+  )HTML");
+
+  Element* element = GetDocument().getElementById("outer");
+  size_t state = 0;
+  auto advance = [this, element, &state]() -> bool {
+    //
+    // Test each of the following transitions:
+    // - add/remove a PaintLayer
+    // - add/remove a cc::Layer when there is already a PaintLayer
+    // - add/remove a cc::Layer and a PaintLayer together
+
+    static const char* states[] = {"", "pl", "pl tr", "pl", "", "tr", ""};
+    element->setAttribute(html_names::kClassAttr, AtomicString(states[state]));
+    UpdateAllLifecyclePhases();
+    return ++state < sizeof states / sizeof *states;
+  };
+  while (advance()) {
+  }
+  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+}
+
 }  // namespace blink

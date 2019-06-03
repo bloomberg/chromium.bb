@@ -381,8 +381,9 @@ void PaintLayerCompositor::UpdateWithoutAcceleratedCompositing(
 #endif
 }
 
-static void ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
-    LayoutObject& layout_object) {
+void PaintLayerCompositor::
+    ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
+        LayoutObject& layout_object) {
   // We clear the previous visual rect as it's wrong (paint invalidation
   // container changed, ...). Forcing a full invalidation will make us recompute
   // it. Also we are not changing the previous position from our paint
