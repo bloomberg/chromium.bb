@@ -36,6 +36,7 @@
             android:id="@+id/profile_image"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:contentDescription="@string/preferences"
             app:srcCompat="@drawable/logo_avatar_anonymous"/>
     </LinearLayout>
 
