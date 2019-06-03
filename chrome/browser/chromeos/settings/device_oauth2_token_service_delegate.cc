@@ -83,19 +83,32 @@ void DeviceOAuth2TokenServiceDelegate::SetAndSaveRefreshToken(
 
 bool DeviceOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
     const std::string& account_id) const {
+  auto accounts = GetAccounts();
+  return std::find(accounts.begin(), accounts.end(), account_id) !=
+         accounts.end();
+}
+
+std::vector<std::string> DeviceOAuth2TokenServiceDelegate::GetAccounts() {
+  return static_cast<const DeviceOAuth2TokenServiceDelegate&>(*this)
+      .GetAccounts();
+}
+
+std::vector<std::string> DeviceOAuth2TokenServiceDelegate::GetAccounts() const {
+  std::vector<std::string> accounts;
   switch (state_) {
     case STATE_NO_TOKEN:
     case STATE_TOKEN_INVALID:
-      return false;
+      return accounts;
     case STATE_LOADING:
     case STATE_VALIDATION_PENDING:
     case STATE_VALIDATION_STARTED:
     case STATE_TOKEN_VALID:
-      return account_id == GetRobotAccountId();
+      accounts.push_back(GetRobotAccountId());
+      return accounts;
   }
 
   NOTREACHED() << "Unhandled state " << state_;
-  return false;
+  return accounts;
 }
 
 std::string DeviceOAuth2TokenServiceDelegate::GetRobotAccountId() const {

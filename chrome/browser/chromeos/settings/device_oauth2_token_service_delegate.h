@@ -61,6 +61,8 @@ class DeviceOAuth2TokenServiceDelegate
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
+  std::vector<std::string> GetAccounts() override;
+
   // gaia::GaiaOAuthClient::Delegate implementation.
   void OnRefreshTokenResponse(const std::string& access_token,
                               int expires_in_seconds) override;
@@ -93,6 +95,8 @@ class DeviceOAuth2TokenServiceDelegate
     // Refresh token is valid.
     STATE_TOKEN_VALID,
   };
+
+  std::vector<std::string> GetAccounts() const;
 
   // Invoked by CrosSettings when the robot account ID becomes available.
   void OnServiceAccountIdentityChanged();
