@@ -149,7 +149,6 @@ class CreditCardAccessManagerTest : public testing::Test {
             autofill_client_.GetIdentityManager(), &personal_data_manager_);
     autofill_client_.set_test_payments_client(
         std::unique_ptr<payments::TestPaymentsClient>(payments_client));
-    form_structure_ = new FormStructure(FormData());
     credit_card_access_manager_ = std::make_unique<CreditCardAccessManager>(
         &autofill_client_, &personal_data_manager_, nullptr);
   }
@@ -210,7 +209,6 @@ class CreditCardAccessManagerTest : public testing::Test {
   scoped_refptr<AutofillWebDataService> database_;
   TestPersonalDataManager personal_data_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  FormStructure* form_structure_;
   std::unique_ptr<CreditCardAccessManager> credit_card_access_manager_;
 };
 
@@ -256,14 +254,14 @@ TEST_F(CreditCardAccessManagerTest, LocalCardGetDeletionConfirmationText) {
   CreateLocalCard(kTestGUID);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
 
-  base::string16* title = new base::string16();
-  base::string16* body = new base::string16();
+  base::string16 title = base::string16();
+  base::string16 body = base::string16();
   EXPECT_TRUE(credit_card_access_manager_->GetDeletionConfirmationText(
-      card, title, body));
+      card, &title, &body));
 
   // |title| and |body| should be updated appropriately.
-  EXPECT_EQ(*title, card->NetworkOrBankNameAndLastFourDigits());
-  EXPECT_EQ(*body,
+  EXPECT_EQ(title, card->NetworkOrBankNameAndLastFourDigits());
+  EXPECT_EQ(body,
             l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_DELETE_CREDIT_CARD_SUGGESTION_CONFIRMATION_BODY));
 }
@@ -273,14 +271,14 @@ TEST_F(CreditCardAccessManagerTest, ServerCardGetDeletionConfirmationText) {
   CreateServerCard(kTestGUID);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
 
-  base::string16* title = new base::string16();
-  base::string16* body = new base::string16();
+  base::string16 title = base::string16();
+  base::string16 body = base::string16();
   EXPECT_FALSE(credit_card_access_manager_->GetDeletionConfirmationText(
-      card, title, body));
+      card, &title, &body));
 
   // |title| and |body| should remain unchanged.
-  EXPECT_EQ(*title, base::string16());
-  EXPECT_EQ(*body, base::string16());
+  EXPECT_EQ(title, base::string16());
+  EXPECT_EQ(body, base::string16());
 }
 
 // Tests retrieving local cards.
