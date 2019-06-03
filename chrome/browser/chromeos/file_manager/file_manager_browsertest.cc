@@ -894,7 +894,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("showGridViewDownloads"),
                       TestCase("showGridViewDownloads").InGuestMode(),
                       TestCase("showGridViewDrive").DisableDriveFs(),
-                      TestCase("showGridViewDrive").EnableDriveFs()));
+                      TestCase("showGridViewDrive").EnableDriveFs(),
+                      TestCase("showGridViewButtonSwitches")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Providers, /* providers.js */

@@ -292,6 +292,10 @@ MainWindowComponent.prototype.onToggleViewButtonClick_ = function(event) {
       ListContainer.ListType.THUMBNAIL :
       ListContainer.ListType.DETAIL;
   this.ui_.setCurrentListType(listType);
+  const msgId = listType === ListContainer.ListType.DETAIL ?
+      'FILE_LIST_CHANGED_TO_LIST_VIEW' :
+      'FILE_LIST_CHANGED_TO_LIST_THUMBNAIL_VIEW';
+  this.ui_.speakA11yMessage(str(msgId));
   this.appStateController_.saveViewOptions();
 
   this.ui_.listContainer.focus();

@@ -587,6 +587,12 @@
   <message name="IDS_FILE_BROWSER_CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL" desc="Label for button that changes the view mode to 'thumbnail view' mode.">
     Switch to thumbnail view
   </message>
+  <message name="IDS_FILE_BROWSER_FILE_LIST_CHANGED_TO_LIST_VIEW" desc="Message spoken by ChromeVox/screen reader after clicking on button to switch to list view mode.">
+    File list has changed to list view.
+  </message>
+  <message name="IDS_FILE_BROWSER_FILE_LIST_CHANGED_TO_THUMBNAIL_VIEW" desc="Message spoken by ChromeVox/screen reader after clicking on button to switch to thumbnail view mode.">
+    File list has changed to thumbnail view.
+  </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TITLE" desc="Title of the cloud import feature.">
     Cloud backup
   </message>
