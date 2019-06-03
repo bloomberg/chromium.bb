@@ -63,8 +63,8 @@ void TestHelper::OnPresentedFrame(ID3D11Texture2D* texture,
   size_t buffer_size = sizeof(device::SubmittedFrameData::raw_buffer);
   size_t buffer_size_pixels = buffer_size / sizeof(device::Color);
 
-  desc.Width = 1;
-  desc.Height = buffer_size_pixels;
+  desc.Width = buffer_size_pixels;
+  desc.Height = 1;
   desc.MiscFlags = 0;
   desc.BindFlags = 0;
   desc.Usage = D3D11_USAGE_STAGING;
@@ -75,7 +75,9 @@ void TestHelper::OnPresentedFrame(ID3D11Texture2D* texture,
     return;
   }
 
-  D3D11_BOX box = {0, 0, 0, buffer_size_pixels, 1, 1};  // a 1-pixel box
+  // A strip of pixels along the top of the texture, however many will fit into
+  // our buffer.
+  D3D11_BOX box = {0, 0, 0, buffer_size_pixels, 1, 1};
   context->CopySubresourceRegion(texture_copy.Get(), 0, 0, 0, 0, texture, 0,
                                  &box);
 

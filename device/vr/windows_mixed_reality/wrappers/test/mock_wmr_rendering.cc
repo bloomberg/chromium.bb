@@ -157,24 +157,27 @@ MockWMRRenderingParameters::~MockWMRRenderingParameters() = default;
 
 Microsoft::WRL::ComPtr<ID3D11Texture2D>
 MockWMRRenderingParameters::TryGetBackbufferAsTexture2D() {
+  if (backbuffer_texture_)
+    return backbuffer_texture_;
   if (!d3d11_device_)
     return nullptr;
   auto desc = CD3D11_TEXTURE2D_DESC();
   desc.ArraySize = 2;
   desc.Width = kDefaultWmrRenderWidth;
   desc.Height = kDefaultWmrRenderHeight;
+  desc.MipLevels = 1;
   desc.SampleDesc = {1, 0};
   desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
   desc.Usage = D3D11_USAGE_DEFAULT;
   desc.BindFlags = D3D11_BIND_RENDER_TARGET;
   desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
 
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture = nullptr;
-  auto hr = d3d11_device_->CreateTexture2D(&desc, nullptr, &texture);
+  auto hr =
+      d3d11_device_->CreateTexture2D(&desc, nullptr, &backbuffer_texture_);
   if (FAILED(hr))
     return nullptr;
 
-  return texture;
+  return backbuffer_texture_;
 }
 
 }  // namespace device

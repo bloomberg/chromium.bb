@@ -52,6 +52,7 @@ class MockWMRRenderingParameters : public WMRRenderingParameters {
 
  private:
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_ = nullptr;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> backbuffer_texture_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(MockWMRRenderingParameters);
 };
 
