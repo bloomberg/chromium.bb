@@ -77,9 +77,22 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info);
 
+  // Clones this fetch context for a nested worker.
+  // For non-PlzDedicatedWorker. This will be removed once PlzDedicatedWorker is
+  // enabled by default.
+  scoped_refptr<WebWorkerFetchContextImpl> CloneForNestedWorkerDeprecated(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  // For PlzDedicatedWorker. The cloned fetch context does not inherit some
+  // fields (e.g., ServiceWorkerProviderContext) from this fetch context, and
+  // instead that takes values passed from the browser process.
+  scoped_refptr<WebWorkerFetchContextImpl> CloneForNestedWorker(
+      ServiceWorkerProviderContext* service_worker_provider_context,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          fallback_factory_info,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
   // blink::WebWorkerFetchContext implementation:
-  scoped_refptr<blink::WebWorkerFetchContext> CloneForNestedWorker(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
   void InitializeOnWorkerThread(blink::AcceptLanguagesWatcher*) override;
   blink::WebURLLoaderFactory* GetURLLoaderFactory() override;
@@ -165,6 +178,17 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       std::unique_ptr<service_manager::Connector> service_manager_connection);
 
   ~WebWorkerFetchContextImpl() override;
+
+  scoped_refptr<WebWorkerFetchContextImpl> CloneForNestedWorkerInternal(
+      blink::mojom::ServiceWorkerWorkerClientRequest
+          service_worker_client_request,
+      blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+          service_worker_worker_client_registry_ptr_info,
+      blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          fallback_factory_info,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   bool Send(IPC::Message* message);
 

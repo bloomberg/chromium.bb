@@ -5,11 +5,18 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DEDICATED_WORKER_HOST_FACTORY_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DEDICATED_WORKER_HOST_FACTORY_CLIENT_H_
 
+#include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/platform/web_url.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace blink {
+
+class WebSecurityOrigin;
+class WebURL;
+class WebWorkerFetchContext;
 
 // PlzDedicatedWorker:
 // WebDedicatedWorkerHostFactoryClient is the interface to access
@@ -28,6 +35,11 @@ class WebDedicatedWorkerHostFactoryClient {
       const blink::WebURL& script_url,
       const blink::WebSecurityOrigin& script_origin,
       mojo::ScopedMessagePipeHandle blob_url_token) = 0;
+
+  // Clones the given WebWorkerFetchContext for nested workers.
+  virtual scoped_refptr<WebWorkerFetchContext> CloneWorkerFetchContext(
+      WebWorkerFetchContext*,
+      scoped_refptr<base::SingleThreadTaskRunner>) = 0;
 };
 
 }  // namespace blink

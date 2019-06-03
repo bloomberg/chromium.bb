@@ -475,12 +475,11 @@ DedicatedWorker::CreateWebWorkerFetchContext() {
 
   // This worker is being created by an existing worker (i.e., nested workers).
   // Clone the worker fetch context from the parent's one.
-  // TODO(nhiroki): Create WebWorkerFetchContext using |factory_client_| when
-  // PlzDedicatedWorker is enabled (https://crbug.com/906991).
   auto* scope = To<WorkerGlobalScope>(GetExecutionContext());
-  return static_cast<WorkerFetchContext&>(scope->Fetcher()->Context())
-      .GetWebWorkerFetchContext()
-      ->CloneForNestedWorker(scope->GetTaskRunner(TaskType::kNetworking));
+  return factory_client_->CloneWorkerFetchContext(
+      static_cast<WorkerFetchContext&>(scope->Fetcher()->Context())
+          .GetWebWorkerFetchContext(),
+      scope->GetTaskRunner(TaskType::kNetworking));
 }
 
 const AtomicString& DedicatedWorker::InterfaceName() const {

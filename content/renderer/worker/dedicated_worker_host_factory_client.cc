@@ -15,6 +15,8 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 #include "third_party/blink/public/platform/web_dedicated_worker.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace content {
 
@@ -50,6 +52,29 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
       blink::mojom::BlobURLTokenPtr(blink::mojom::BlobURLTokenPtrInfo(
           std::move(blob_url_token), blink::mojom::BlobURLToken::Version_)),
       std::move(client_ptr));
+}
+
+scoped_refptr<blink::WebWorkerFetchContext>
+DedicatedWorkerHostFactoryClient::CloneWorkerFetchContext(
+    blink::WebWorkerFetchContext* web_worker_fetch_context,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context;
+  if (blink::features::IsPlzDedicatedWorkerEnabled()) {
+    worker_fetch_context =
+        static_cast<WebWorkerFetchContextImpl*>(web_worker_fetch_context)
+            ->CloneForNestedWorker(service_worker_provider_context_.get(),
+                                   subresource_loader_factory_bundle_->Clone(),
+                                   subresource_loader_factory_bundle_
+                                       ->CloneWithoutAppCacheFactory(),
+                                   std::move(task_runner));
+    worker_fetch_context->SetResponseOverrideForMainScript(
+        std::move(response_override_for_main_script_));
+  } else {
+    worker_fetch_context =
+        static_cast<WebWorkerFetchContextImpl*>(web_worker_fetch_context)
+            ->CloneForNestedWorkerDeprecated(std::move(task_runner));
+  }
+  return worker_fetch_context;
 }
 
 scoped_refptr<WebWorkerFetchContextImpl>

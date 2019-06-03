@@ -15,6 +15,7 @@
 
 namespace blink {
 class WebDedicatedWorker;
+class WebWorkerFetchContext;
 }  // namespace blink
 
 namespace content {
@@ -44,6 +45,9 @@ class DedicatedWorkerHostFactoryClient final
   void CreateWorkerHost(const blink::WebURL& script_url,
                         const blink::WebSecurityOrigin& script_origin,
                         mojo::ScopedMessagePipeHandle blob_url_token) override;
+  scoped_refptr<blink::WebWorkerFetchContext> CloneWorkerFetchContext(
+      blink::WebWorkerFetchContext* web_worker_fetch_context,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
   scoped_refptr<WebWorkerFetchContextImpl> CreateWorkerFetchContext(
       blink::mojom::RendererPreferences renderer_preference,
