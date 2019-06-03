@@ -470,13 +470,10 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
   // TODO(npm): Check that there are non-whitespace characters. See
   // crbug.com/788444.
   context.GetPaintController().SetTextPainted();
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-      RuntimeEnabledFeatures::ElementTimingEnabled(
-          &InlineLayoutObject().GetDocument())) {
-    if (!scaled_font.ShouldSkipDrawing()) {
-      PaintTimingDetector::NotifyTextPaint(
-          InlineLayoutObject().FragmentsVisualRectBoundingBox());
-    }
+
+  if (!scaled_font.ShouldSkipDrawing()) {
+    PaintTimingDetector::NotifyTextPaint(
+        InlineLayoutObject().FragmentsVisualRectBoundingBox());
   }
 }
 

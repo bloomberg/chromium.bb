@@ -62,13 +62,13 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
           paint_info.GetCullRect(), paint_offset))
     return;
 
-  base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
+  ScopedPaintTimingDetectorBlockPaintHook
       scoped_paint_timing_detector_block_paint_hook;
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
       RuntimeEnabledFeatures::ElementTimingEnabled(
           &layout_object.GetDocument())) {
     if (paint_info.phase == PaintPhase::kForeground) {
-      scoped_paint_timing_detector_block_paint_hook.emplace(
+      scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
           layout_object, paint_info.context.GetPaintController()
                              .CurrentPaintChunkProperties());
     }

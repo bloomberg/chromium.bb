@@ -64,12 +64,9 @@ void NGTextPainter::PaintInternalFragment(
     // TODO(npm): Check that there are non-whitespace characters. See
     // crbug.com/788444.
     graphics_context_.GetPaintController().SetTextPainted();
-    if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-        RuntimeEnabledFeatures::ElementTimingEnabled(
-            &fragment_.GetLayoutObject()->GetDocument())) {
-      if (!font_.ShouldSkipDrawing())
-        PaintTimingDetector::NotifyTextPaint(paint_fragment_.VisualRect());
-    }
+
+    if (!font_.ShouldSkipDrawing())
+      PaintTimingDetector::NotifyTextPaint(paint_fragment_.VisualRect());
   }
 }
 

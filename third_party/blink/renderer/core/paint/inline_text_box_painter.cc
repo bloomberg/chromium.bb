@@ -431,13 +431,9 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     context.ConcatCTM(TextPainterBase::Rotation(
         PhysicalRectToBeNoop(box_rect), TextPainterBase::kCounterclockwise));
   }
-  if ((RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-       RuntimeEnabledFeatures::ElementTimingEnabled(
-           &InlineLayoutObject().GetDocument()))) {
-    if (!font.ShouldSkipDrawing() &&
-        paint_info.phase == PaintPhase::kForeground)
-      PaintTimingDetector::NotifyTextPaint(inline_text_box_.VisualRect());
-  }
+
+  if (!font.ShouldSkipDrawing())
+    PaintTimingDetector::NotifyTextPaint(inline_text_box_.VisualRect());
 }
 
 bool InlineTextBoxPainter::ShouldPaintTextBox(const PaintInfo& paint_info) {

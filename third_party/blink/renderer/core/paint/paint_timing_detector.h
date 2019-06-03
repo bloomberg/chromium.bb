@@ -46,7 +46,7 @@ class CORE_EXPORT PaintTimingDetector
       const IntSize& intrinsic_size,
       const ImageResourceContent* cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
-  inline static void NotifyTextPaint(const IntRect&);
+  inline static void NotifyTextPaint(const IntRect& text_visual_rect);
 
   void NotifyNodeRemoved(const LayoutObject&);
   void NotifyBackgroundImageRemoved(const LayoutObject&,
@@ -85,8 +85,8 @@ class CORE_EXPORT PaintTimingDetector
   // This member lives until the end of the paint phase after the largest text
   // paint is found.
   Member<TextPaintTimingDetector> text_paint_timing_detector_;
-  // This member lives until the end of the paint phase after the largest image
-  // paint is found.
+  // This member lives until the end of the paint phase after the largest
+  // image paint is found.
   Member<ImagePaintTimingDetector> image_paint_timing_detector_;
 
   // Largest image information.
@@ -112,20 +112,36 @@ class ScopedPaintTimingDetectorBlockPaintHook {
   STACK_ALLOCATED();
 
  public:
-  ScopedPaintTimingDetectorBlockPaintHook(const LayoutBoxModelObject&,
-                                          const PropertyTreeState&);
+  // This sets |top_| to |this|, and will restore |top_| to the previous
+  // value when this object destructs.
+  ScopedPaintTimingDetectorBlockPaintHook() : reset_top_(&top_, this) {}
 
+  void EmplaceIfNeeded(const LayoutBoxModelObject&, const PropertyTreeState&);
   ~ScopedPaintTimingDetectorBlockPaintHook();
 
  private:
   friend class PaintTimingDetector;
+  inline static void AggregateTextPaint(const IntRect& visual_rect) {
+    DCHECK(top_);
+    if (top_->data_)
+      top_->data_->aggregated_visual_rect_.Unite(visual_rect);
+  }
 
-  const LayoutBoxModelObject& aggregator_;
-  const PropertyTreeState& property_tree_state_;
-  IntRect aggregated_visual_rect_;
   base::AutoReset<ScopedPaintTimingDetectorBlockPaintHook*> reset_top_;
-  Member<TextPaintTimingDetector> detector_;
-  bool is_recording_;
+  struct Data {
+    STACK_ALLOCATED();
+
+   public:
+    Data(const LayoutBoxModelObject& aggregator,
+         const PropertyTreeState&,
+         TextPaintTimingDetector*);
+
+    const LayoutBoxModelObject& aggregator_;
+    const PropertyTreeState& property_tree_state_;
+    Member<TextPaintTimingDetector> detector_;
+    IntRect aggregated_visual_rect_;
+  };
+  base::Optional<Data> data_;
   static ScopedPaintTimingDetectorBlockPaintHook* top_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedPaintTimingDetectorBlockPaintHook);
@@ -134,10 +150,7 @@ class ScopedPaintTimingDetectorBlockPaintHook {
 // static
 inline void PaintTimingDetector::NotifyTextPaint(
     const IntRect& text_visual_rect) {
-  auto* top = ScopedPaintTimingDetectorBlockPaintHook::top_;
-  DCHECK(top);
-  if (top->is_recording_)
-    top->aggregated_visual_rect_.Unite(text_visual_rect);
+  ScopedPaintTimingDetectorBlockPaintHook::AggregateTextPaint(text_visual_rect);
 }
 
 }  // namespace blink
