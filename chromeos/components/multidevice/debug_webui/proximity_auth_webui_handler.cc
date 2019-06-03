@@ -328,9 +328,15 @@ void ProximityAuthWebUIHandler::GetLocalState(const base::ListValue* args) {
 
 std::unique_ptr<base::Value>
 ProximityAuthWebUIHandler::GetTruncatedLocalDeviceId() {
-  return std::make_unique<base::Value>(
-      device_sync_client_->GetLocalDeviceMetadata()
-          ->GetTruncatedDeviceIdForLogs());
+  base::Optional<multidevice::RemoteDeviceRef> local_device_metadata =
+      device_sync_client_->GetLocalDeviceMetadata();
+
+  std::string device_id =
+      local_device_metadata
+          ? local_device_metadata->GetTruncatedDeviceIdForLogs()
+          : "Missing Device ID";
+
+  return std::make_unique<base::Value>(device_id);
 }
 
 std::unique_ptr<base::ListValue>
