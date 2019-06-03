@@ -29,6 +29,7 @@
 #include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/net/aw_proxy_config_monitor.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
+#include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
 #include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
 #include "android_webview/browser/network_service/aw_url_loader_throttle.h"
 #include "android_webview/browser/network_service/net_helpers.h"
@@ -1041,6 +1042,23 @@ void AwContentBrowserClient::WillCreateWebSocket(
   } else if (!third_party_cookie_policy) {
     *options |= network::mojom::kWebSocketOptionBlockThirdPartyCookies;
   }
+}
+
+void AwContentBrowserClient::WillCreateRestrictedCookieManager(
+    const url::Origin& origin,
+    bool is_service_worker,
+    int process_id,
+    int routing_id,
+    network::mojom::RestrictedCookieManagerRequest* request) {
+  network::mojom::RestrictedCookieManagerRequest orig_request =
+      std::move(*request);
+
+  network::mojom::RestrictedCookieManagerPtrInfo target_rcm_info;
+  *request = mojo::MakeRequest(&target_rcm_info);
+
+  AwProxyingRestrictedCookieManager::CreateAndBind(
+      std::move(target_rcm_info), is_service_worker, process_id, routing_id,
+      std::move(orig_request));
 }
 
 std::string AwContentBrowserClient::GetProduct() const {

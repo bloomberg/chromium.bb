@@ -1252,6 +1252,29 @@ class CONTENT_EXPORT ContentBrowserClient {
       network::mojom::TrustedHeaderClientPtr* header_client,
       uint32_t* options);
 
+  // Allows the embedder to intercept the mojo object vended to renderer
+  // processes for limited, origin-locked (to |origin|), access to
+  // script-accessible cookies.  |*request| is always valid upon entry and MUST
+  // be valid upon return. The embedder may swap out the value of |*request| for
+  // its own.
+  //
+  // Currently this only affects the (hidden by default, experimental)
+  // CookieStore API, but may affect all JavaScript cookie operations in the
+  // future.
+  //
+  // If |is_service_worker| is false, then |process_id| and |routing_id|
+  // describe the frame the result is to be used from. If it's true, operations
+  // are not bound to a particular frame, but are in context of a service worker
+  // appropriate for |origin|.
+  //
+  // This is called on the UI thread.
+  virtual void WillCreateRestrictedCookieManager(
+      const url::Origin& origin,
+      bool is_service_worker,
+      int process_id,
+      int routing_id,
+      network::mojom::RestrictedCookieManagerRequest* request);
+
   // Allows the embedder to returns a list of request interceptors that can
   // intercept a navigation request.
   //

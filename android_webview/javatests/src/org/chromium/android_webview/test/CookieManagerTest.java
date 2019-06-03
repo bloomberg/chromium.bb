@@ -23,6 +23,7 @@ import org.chromium.android_webview.test.util.CookieUtils;
 import org.chromium.android_webview.test.util.CookieUtils.TestCallback;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
@@ -97,7 +98,8 @@ public class CookieManagerTest {
             throws Throwable {
         mCookieManager.setAcceptCookie(acceptCookieValue);
 
-        TestWebServer webServer = TestWebServer.start();
+        // Using SSL server here since CookieStore API requires a secure schema.
+        TestWebServer webServer = TestWebServer.startSsl();
         try {
             String path = "/cookie_test.html";
             String responseStr =
@@ -106,11 +108,21 @@ public class CookieManagerTest {
             mActivityTestRule.loadUrlSync(
                     mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
             final String jsCookieName = "js-test" + cookieSuffix;
-            setCookieWithJavaScript(jsCookieName, "value");
+            setCookieWithDocumentCookieAPI(jsCookieName, "value");
             if (acceptCookieValue) {
                 waitForCookie(url);
                 assertHasCookies(url);
                 validateCookies(url, jsCookieName);
+            } else {
+                assertNoCookies(url);
+            }
+
+            final String cookieStoreCookieName = "cookiestore-test" + cookieSuffix;
+            setCookieWithCookieStoreAPI(cookieStoreCookieName, "value");
+            if (acceptCookieValue) {
+                waitForCookie(url);
+                assertHasCookies(url);
+                validateCookies(url, jsCookieName, cookieStoreCookieName);
             } else {
                 assertNoCookies(url);
             }
@@ -126,7 +138,7 @@ public class CookieManagerTest {
             if (acceptCookieValue) {
                 waitForCookie(url);
                 assertHasCookies(url);
-                validateCookies(url, jsCookieName, headerCookieName);
+                validateCookies(url, jsCookieName, cookieStoreCookieName, headerCookieName);
             } else {
                 assertNoCookies(url);
             }
@@ -138,6 +150,8 @@ public class CookieManagerTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
+    @CommandLineFlags.Add({"enable-blink-features=CookieStore"})
+    // TODO(https://crbug.com/968649) Remove switch when CookieStore launched.
     public void testAcceptCookie_falseWontSetCookies() throws Throwable {
         testAcceptCookieHelper(false, "-disabled");
     }
@@ -145,6 +159,8 @@ public class CookieManagerTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
+    @CommandLineFlags.Add({"enable-blink-features=CookieStore"})
+    // TODO(https://crbug.com/968649) Remove switch when CookieStore launched.
     public void testAcceptCookie_trueWillSetCookies() throws Throwable {
         testAcceptCookieHelper(true, "-enabled");
     }
@@ -209,7 +225,7 @@ public class CookieManagerTest {
         }
     }
 
-    private void setCookieWithJavaScript(final String name, final String value)
+    private void setCookieWithDocumentCookieAPI(final String name, final String value)
             throws Throwable {
         JSUtils.executeJavaScriptAndWaitForResult(InstrumentationRegistry.getInstrumentation(),
                 mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
@@ -217,6 +233,16 @@ public class CookieManagerTest {
                         + "expirationDate.setDate(expirationDate.getDate() + 5);"
                         + "document.cookie='" + name + "=" + value
                         + "; expires=' + expirationDate.toUTCString();");
+    }
+
+    private void setCookieWithCookieStoreAPI(final String name, final String value)
+            throws Throwable {
+        JavaScriptUtils.runJavascriptWithAsyncResult(mAwContents.getWebContents(),
+                "async function doSet() {"
+                        + makeCookieStoreSetFragment("'" + name + "'", "'" + value + "'",
+                                "window.domAutomationController.send(true);")
+                        + "}\n"
+                        + "doSet()");
     }
 
     private String getCookieWithJavaScript(final String name) throws Throwable {
@@ -556,6 +582,51 @@ public class CookieManagerTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
+    @CommandLineFlags.Add({"enable-blink-features=CookieStore"})
+    // TODO(https://crbug.com/968649) Remove switch when CookieStore launched.
+    public void testCookieStoreListener() throws Throwable {
+        TestWebServer webServer = TestWebServer.startSsl();
+        try {
+            allowFirstPartyCookies();
+
+            String url = makeCookieScriptUrl(webServer, "/cookie_1.html", "test1", "value1");
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+
+            // Add a listener...
+            JSUtils.executeJavaScriptAndWaitForResult(InstrumentationRegistry.getInstrumentation(),
+                    mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
+                    "window.events = [];"
+                            + "cookieStore.addEventListener('change', (event) => {"
+                            + "  for (let d of event.deleted)"
+                            + "    window.events.push({'del': d.name});"
+                            + "  for (let c of event.changed)"
+                            + "    window.events.push({'change': c.name});"
+                            + "})");
+
+            // Clearing all cookies with cookies disabled shouldn't report anything.
+            blockAllCookies();
+            clearCookies();
+
+            // Re-enable cookies, set one.
+            allowFirstPartyCookies();
+            setCookieWithDocumentCookieAPI("test2", "value2");
+
+            // Look up the result. Should see the second set, but not the
+            // delete, based on whether cookie access was permitted or not
+            // at the time.
+            String reported = JSUtils.executeJavaScriptAndWaitForResult(
+                    InstrumentationRegistry.getInstrumentation(), mAwContents,
+                    mContentsClient.getOnEvaluateJavaScriptResultHelper(), "window.events");
+            Assert.assertEquals("[{\"change\":\"test2\"}]", reported);
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
     public void testThirdPartyCookie_redirectFromThirdPartyToFirst() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         try {
@@ -750,8 +821,11 @@ public class CookieManagerTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
+    @CommandLineFlags.Add({"enable-blink-features=CookieStore"})
+    // TODO(https://crbug.com/968649) Remove switch when CookieStore launched.
     public void testThirdPartyJavascriptCookie() throws Throwable {
-        TestWebServer webServer = TestWebServer.start();
+        // Using SSL server here since CookieStore API requires a secure schema.
+        TestWebServer webServer = TestWebServer.startSsl();
         try {
             // This test again uses 127.0.0.1/localhost trick to simulate a third party.
             ThirdPartyCookiesTestHelper thirdParty =
@@ -775,8 +849,11 @@ public class CookieManagerTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
+    @CommandLineFlags.Add({"enable-blink-features=CookieStore"})
+    // TODO(https://crbug.com/968649) Remove switch when CookieStore launched.
     public void testThirdPartyCookiesArePerWebview() throws Throwable {
-        TestWebServer webServer = TestWebServer.start();
+        // Using SSL server here since CookieStore API requires a secure schema.
+        TestWebServer webServer = TestWebServer.startSsl();
         try {
             allowFirstPartyCookies();
             mCookieManager.removeAllCookies();
@@ -905,6 +982,7 @@ public class CookieManagerTest {
         void assertThirdPartyIFrameCookieResult(String suffix, boolean expectedResult)
                 throws Throwable {
             String key = "test" + suffix;
+            String cookieStoreKey = "cookieStoreTest" + suffix;
             String value = "value" + suffix;
             String iframePath = "/iframe_" + suffix + ".html";
             String pagePath = "/content_" + suffix + ".html";
@@ -925,6 +1003,17 @@ public class CookieManagerTest {
                 assertNoCookies(cookieUrl);
             }
 
+            // Try to set via CookieStore API as well.
+            JavaScriptUtils.runJavascriptWithAsyncResult(
+                    mAwContents.getWebContents(), "callIframe('" + cookieStoreKey + "')");
+
+            if (expectedResult) {
+                assertHasCookies(cookieUrl);
+                validateCookies(cookieUrl, key, cookieStoreKey);
+            } else {
+                assertNoCookies(cookieUrl);
+            }
+
             // Clear the cookies.
             clearCookies();
             Assert.assertFalse(mCookieManager.hasCookies());
@@ -932,15 +1021,25 @@ public class CookieManagerTest {
     }
 
     /**
-     * Creates a response on the TestWebServer which attempts to set a cookie when fetched.
+     * Creates a response on the TestWebServer which load a given URL in an iframe,
+     * and provides helpers for forwarding JavaScript calls to that iframe via postMessage.
      * @param  webServer  the webServer on which to create the response
      * @param  path the path component of the url (e.g "/my_thing_with_iframe.html")
      * @param  url the url which which should appear as the src of the iframe.
      * @return  the url which gets the response
      */
     private String makeIframeUrl(TestWebServer webServer, String path, String url) {
-        String responseStr = "<html><head><title>Content!</title></head>"
-                + "<body><iframe src=" + url + "></iframe></body></html>";
+        String responseStr = "<html><head><title>Content!</title>"
+                + "<script>"
+                + "window.onmessage = function(ev) { "
+                + "  window.domAutomationController.send(ev.data); "
+                + "}\n"
+                + "function callIframe(data) { "
+                + "  document.getElementById('if').contentWindow.postMessage("
+                + "      data, '*'); "
+                + "}"
+                + "</script>"
+                + "</head><body><iframe id=if src=" + url + "></iframe></body></html>";
         return webServer.setResponse(path, responseStr, null);
     }
 
@@ -955,8 +1054,30 @@ public class CookieManagerTest {
     private String makeCookieScriptUrl(TestWebServer webServer, String path, String key,
             String value) {
         String response = "<html><head></head><body>"
-                + "<script>document.cookie = \"" + key + "=" + value + "\";</script></body></html>";
+                + "<script>document.cookie = \"" + key + "=" + value + "\";"
+                + "window.onmessage = async function(ev) {"
+                + makeCookieStoreSetFragment(
+                        "ev.data", "'" + value + "'", "ev.source.postMessage(true, '*');")
+                + "}"
+                + "</script></body></html>";
         return webServer.setResponse(path, response, null);
+    }
+
+    /**
+     * Returns code fragment to be embedded into an async function to set a cookie with CookieStore
+     * API
+     * @param name name of cookie to set
+     * @param value value to set the cookie to
+     * @param finallyAction code to run once set finishes, regardless of success or failure
+     */
+    private String makeCookieStoreSetFragment(String name, String value, String finallyAction) {
+        return "try {"
+                + "  await window.cookieStore.set("
+                + "      " + name + ", " + value + ", "
+                + "      { expires: Date.now() + 3600*1000,"
+                + "        sameSite: 'unrestricted' });"
+                + "} finally {"
+                + "  " + finallyAction + "}\n";
     }
 
     /**

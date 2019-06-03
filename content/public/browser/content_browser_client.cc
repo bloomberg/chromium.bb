@@ -759,6 +759,13 @@ void ContentBrowserClient::WillCreateWebSocket(
     network::mojom::TrustedHeaderClientPtr* header_client,
     uint32_t* options) {}
 
+void ContentBrowserClient::WillCreateRestrictedCookieManager(
+    const url::Origin& origin,
+    bool is_service_worker,
+    int process_id,
+    int frame_id,
+    network::mojom::RestrictedCookieManagerRequest* request) {}
+
 std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
 ContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
     content::NavigationUIData* navigation_ui_data,

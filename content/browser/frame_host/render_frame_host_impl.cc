@@ -466,6 +466,9 @@ void GetRestrictedCookieManager(
     int frame_id,
     StoragePartition* storage_partition,
     network::mojom::RestrictedCookieManagerRequest request) {
+  GetContentClient()->browser()->WillCreateRestrictedCookieManager(
+      frame_host->GetLastCommittedOrigin(),
+      /* is_service_worker = */ false, process_id, frame_id, &request);
   storage_partition->GetNetworkContext()->GetRestrictedCookieManager(
       std::move(request), frame_host->GetLastCommittedOrigin(),
       /* is_service_worker = */ false, process_id, frame_id);

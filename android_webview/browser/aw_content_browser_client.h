@@ -238,6 +238,12 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::AuthenticationHandlerPtr* authentication_handler,
       network::mojom::TrustedHeaderClientPtr* header_client,
       uint32_t* options) override;
+  void WillCreateRestrictedCookieManager(
+      const url::Origin& origin,
+      bool is_service_worker,
+      int process_id,
+      int routing_id,
+      network::mojom::RestrictedCookieManagerRequest* request) override;
   std::string GetProduct() const override;
   std::string GetUserAgent() const override;
   ContentBrowserClient::WideColorGamutHeuristic GetWideColorGamutHeuristic()
