@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Ocultar menú</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1419738280318246476">Desbloquea el dispositivo para hacer lo que indica la notificación</translation>
+<translation id="1426410128494586442">Sí</translation>
 <translation id="1455242230282523554">Mostrar los ajustes de idioma</translation>
 <translation id="1467432559032391204">Izquierda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> podrá iniciar sesión después de la eliminación.</translation>
 <translation id="3321628682574733415">Código parental incorrecto</translation>
 <translation id="332587331255250389">Cambia la batería</translation>
-<translation id="3335825575923019462">¿Seguro que quieres inhabilitar los clics automáticos?</translation>
 <translation id="3351879221545518001">Estás enviando la pantalla.</translation>
 <translation id="3364721542077212959">Herramientas del lápiz óptico</translation>
 <translation id="3368922792935385530">Con conexión</translation>
@@ -228,7 +228,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4378551569595875038">Conectando...</translation>
 <translation id="4379531060876907730">Estas son las herramientas del lápiz óptico</translation>
 <translation id="4389184120735010762">Has pulsado la combinación de teclas que activa la lupa fijada. ¿Quieres activarla?</translation>
-<translation id="4394049700291259645">Inhabilitar</translation>
 <translation id="4421231901400348175">Compartiendo control de la pantalla con <ph name="HELPER_NAME" /> a través de Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4450893287417543264">No volver a mostrar</translation>
@@ -297,7 +296,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" después de sincronizar tu configuración.</translation>
 <translation id="5691772641933328258">Huella digital no reconocida</translation>
 <translation id="5710450975648804523">Modo No molestar activado</translation>
-<translation id="574392208103952083">Mediano</translation>
+<translation id="574392208103952083">Mediana</translation>
 <translation id="5744083938413354016">Tocar y arrastrar</translation>
 <translation id="5750765938512549687">El Bluetooth está desactivado</translation>
 <translation id="5777841717266010279">¿Dejar de compartir la pantalla?</translation>
@@ -308,7 +307,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Mayús+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
-<translation id="5916664084637901428">Activar</translation>
+<translation id="5916664084637901428">Activado</translation>
 <translation id="5947494881799873997">Deshacer</translation>
 <translation id="595202126637698455">Se ha habilitado el control del rendimiento</translation>
 <translation id="5957083217255311415">Los datos móviles están desactivados.</translation>
@@ -451,7 +450,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
 <translation id="8098591350844501178">Dejar de enviar la pantalla a <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Activadas para todas las aplicaciones</translation>
+<translation id="8113423164597455979">Activadas, todas las aplicaciones</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8142441511840089262">Doble clic</translation>
@@ -486,7 +485,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8649101189709089199">Enunciar Selección</translation>
 <translation id="8652175077544655965">Cerrar ajustes</translation>
 <translation id="8653151467777939995">Muestra la configuración de notificaciones. Las notificaciones están activadas.</translation>
-<translation id="8664483332071009680">¿Quieres inhabilitar los clics automáticos?</translation>
 <translation id="8664753092453405566">Muestra la lista de redes. <ph name="STATE_TEXT" />.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>
@@ -512,7 +510,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8990809378771970590">Estás usando <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Desbloquea el dispositivo como <ph name="LOGIN_ID" /> para hacer lo que indica la notificación</translation>
 <translation id="8995603266996330174">Administrado por <ph name="DOMAIN" /></translation>
-<translation id="9017320285115481645">Introduce el código de acceso parental de Family Link</translation>
+<translation id="9017320285115481645">Introduce el código de acceso parental de Family Link.</translation>
 <translation id="9029474291399787231">Actualización de Adobe Flash Player disponible</translation>
 <translation id="9056839673611986238">Se va a instalar una versión anterior en el dispositivo</translation>
 <translation id="9070640332319875144">Ajustes del Asistente</translation>

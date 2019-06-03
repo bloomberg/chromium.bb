@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Πρόταση κωδ. πρόσβ…</translation>
 <translation id="1870148520156231997">Αποκάλυψη κωδικού πρόσβασης</translation>
 <translation id="1876721852596493031">Αποστ. δεδομ. χρήσης</translation>
-<translation id="1886928167269928266">Από την αρχή</translation>
 <translation id="1911619930368729126">Μεταφόρ.στο Google Drive</translation>
+<translation id="1923342640370224680">Τελευταία ώρα</translation>
 <translation id="1941314575388338491">Πατήστε δύο φορές για αντιγραφή.</translation>
 <translation id="1952172573699511566">Οι ιστότοποι θα εμφανίζουν κείμενο στην προτιμώμενη γλώσσα σας όταν υπάρχει αυτή η δυνατότητα.</translation>
 <translation id="1952728750904661634">Σύνδεση με διαχειριζόμενο λογαριασμό</translation>
 <translation id="1974060860693918893">Σύνθετες</translation>
 <translation id="1989112275319619282">Περιήγηση</translation>
 <translation id="2015722694326466240">Για να δείτε τους κωδικούς πρόσβασης, θα πρέπει πρώτα να ορίσετε έναν κωδικό πρόσβασης για τη συσκευή σας.</translation>
-<translation id="2068952045031577364">Τελευταία εβδομάδα</translation>
 <translation id="2074131957428911366">Μπορείτε πάντα να επιλέξετε τα στοιχεία που θέλετε να συγχρονίσετε στις <ph name="BEGIN_LINK" />ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="209018056901015185">Αίτηση ιστότ. για υπολογ.</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Κωδικοί πρόσβασης</translation>
 <translation id="2969979262385602596">Αποτυχία σύνδεσης. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="2989805286512600854">Άνοιγμα σε Νέα Καρτέλα</translation>
-<translation id="3024255823539804759">Τελευταία ημέρα</translation>
 <translation id="3037605927509011580">Όπα! Κάτι πήγε στραβά!</translation>
 <translation id="3112556859945124369">Επισήμανση…</translation>
 <translation id="3157684681743766797">Επισήμανση όλων…</translation>
@@ -382,7 +380,6 @@
 <translation id="6464071786529933911">Άνοιγ. σε καρτ. αν. περ.</translation>
 <translation id="6476800141292307438">Μετάφραση της σελίδας σε <ph name="LANGUAGE" />. Οι επιλογές είναι διαθέσιμες κοντά στο κάτω μέρος της οθόνης.</translation>
 <translation id="6482629121755362506">Διαγράφηκαν <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία</translation>
-<translation id="6541915733953096570">Τελευταία ώρα</translation>
 <translation id="6610002944194042868">Μετάφραση επιλογών</translation>
 <translation id="6642362222295953972">Εναλλαγή στην υπάρχουσα καρτέλα</translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
@@ -503,6 +500,7 @@
 <translation id="8532105204136943229">Έτος λήξης</translation>
 <translation id="8534481786647257214">Η ανάρτηση Google+ ολοκληρώθηκε.</translation>
 <translation id="8548878600947630424">Εύρεση στη σελίδα...</translation>
+<translation id="8583866649835978847">Αποστολή <ph name="TITLE" /> σε μία από τις συσκευές σας.</translation>
 <translation id="8605219856220328675">Κλείσιμο καρτέλας.</translation>
 <translation id="8620640915598389714">Επεξεργασία</translation>
 <translation id="8636825310635137004">Για να εμφανίζονται οι καρτέλες από τις άλλες συσκευές σας, ενεργοποιήστε τον συγχρονισμό.</translation>

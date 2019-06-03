@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Đề xuất mật khẩu...</translation>
 <translation id="1870148520156231997">Hiện mật khẩu</translation>
 <translation id="1876721852596493031">Gửi dữ liệu sử dụng</translation>
-<translation id="1886928167269928266">Mọi thứ</translation>
 <translation id="1911619930368729126">Tải lên Google Drive</translation>
+<translation id="1923342640370224680">Giờ vừa qua</translation>
 <translation id="1941314575388338491">Nhấn đúp để sao chép.</translation>
 <translation id="1952172573699511566">Các trang web sẽ hiển thị văn bản bằng ngôn ngữ ưu tiên của bạn khi có thể.</translation>
 <translation id="1952728750904661634">Đăng nhập bằng tài khoản được quản lý</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
 <translation id="1989112275319619282">Duyệt qua</translation>
 <translation id="2015722694326466240">Để xem mật khẩu, trước tiên bạn phải đặt mật mã trên thiết bị của mình.</translation>
-<translation id="2068952045031577364">Tuần trước</translation>
 <translation id="2074131957428911366">Bạn luôn có thể chọn nội dung muốn đồng bộ hóa trong phần <ph name="BEGIN_LINK" />cài đặt<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="209018056901015185">Yêu cầu trang web cho máy tính</translation>
@@ -112,7 +111,7 @@
 <translation id="2500374554657206846">Các tùy chọn lưu mật khẩu</translation>
 <translation id="2523363575747517183">Trang web này đang liên tục tìm cách mở một ứng dụng khác.</translation>
 <translation id="2529021024822217800">Mở tất cả</translation>
-<translation id="2570206273416014374">Gửi một số cookie và nội dung tìm kiếm từ thanh địa chỉ cũng như hộp tìm kiếm tới công cụ tìm kiếm mặc định.</translation>
+<translation id="2570206273416014374">Gửi một số cookie và nội dung tìm kiếm trên thanh địa chỉ cũng như hộp tìm kiếm tới công cụ tìm kiếm mặc định.</translation>
 <translation id="2572712655377361602">Chính sách thiết bị đã chặn quyền truy cập vào ảnh của bạn</translation>
 <translation id="2584132361465095047">Thêm tài khoản...</translation>
 <translation id="2625189173221582860">Đã sao chép mật khẩu</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Mật khẩu</translation>
 <translation id="2969979262385602596">Không đăng nhập được. Vui lòng thử lại sau.</translation>
 <translation id="2989805286512600854">Mở bằng Tab Mới</translation>
-<translation id="3024255823539804759">Ngày trước</translation>
 <translation id="3037605927509011580">Ôi, hỏng! </translation>
 <translation id="3112556859945124369">Đánh dấu...</translation>
 <translation id="3157684681743766797">Đánh dấu tất cả...</translation>
@@ -270,7 +268,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="4904877109095351937">Đánh dấu là đã đọc</translation>
 <translation id="4930268273022498155">Xóa dữ liệu hiện có. Bạn có thể truy xuất dữ liệu bằng cách chuyển về <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Rất tiếc, đã xảy ra sự cố khi chia sẻ mục của bạn.</translation>
-<translation id="4945756290001680296">Truy cập vào mục cài đặt mật khẩu</translation>
+<translation id="4945756290001680296">Truy cập vào phần cài đặt mật khẩu</translation>
 <translation id="4979397965658815378">Đăng nhập bằng Tài khoản Google để nhận dấu trang, mật khẩu, lịch sử và các cài đặt khác trên tất cả thiết bị của bạn</translation>
 <translation id="5005498671520578047">Sao chép mật khẩu</translation>
 <translation id="5010803260590204777">Mở tab ẩn danh để duyệt web một cách riêng tư.</translation>
@@ -381,7 +379,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6464071786529933911">Mở trong tab ẩn danh mới</translation>
 <translation id="6476800141292307438">Đang dịch trang sang <ph name="LANGUAGE" />. Các tùy chọn nằm ở gần cuối màn hình.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang đã bị xóa</translation>
-<translation id="6541915733953096570">Giờ trước</translation>
 <translation id="6610002944194042868">Tùy chọn dịch</translation>
 <translation id="6642362222295953972">Chuyển sang tab đang mở</translation>
 <translation id="6643016212128521049">Xóa</translation>
@@ -502,6 +499,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8532105204136943229">Năm hết hạn</translation>
 <translation id="8534481786647257214">Đã đăng lên Google+.</translation>
 <translation id="8548878600947630424">Tìm trong trang...</translation>
+<translation id="8583866649835978847">Gửi <ph name="TITLE" /> đến một trong những thiết bị của bạn.</translation>
 <translation id="8605219856220328675">Đóng tab.</translation>
 <translation id="8620640915598389714">Chỉnh sửa</translation>
 <translation id="8636825310635137004">Để có các tab từ các thiết bị khác của bạn, hãy bật đồng bộ hóa.</translation>

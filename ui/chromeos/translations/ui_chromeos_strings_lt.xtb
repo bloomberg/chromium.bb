@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">Švedų</translation>
 <translation id="4693155481716051732">Sušis</translation>
 <translation id="4694604912444486114">Beždžionė</translation>
+<translation id="4697043402264950621">Failų sąrašas surūšiuotas pagal stulpelį „<ph name="COLUMN_NAME" />“ didėjimo tvarka.</translation>
 <translation id="4711094779914110278">Turkų</translation>
 <translation id="4713544552769165154">Šis failas skirtas kompiuteriui, kuriame naudojama „Macintosh“ programinė įranga. Jis nesuderinamas su jūsų įrenginiu, kuriame veikia „Chrome“ OS. Tinkamos pakaitinės programos ieškokite <ph name="BEGIN_LINK" />„Chrome“ internetinėje parduotuvėje<ph name="END_LINK" />. <ph name="BEGIN_LINK_HELP" />Sužinokite daugiau<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">Sukurta atsarginių nuotraukų kopijų: <ph name="FILE_COUNT" /></translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">Naujas langas</translation>
 <translation id="7348749398828259943">JAV „Workman“ tarptautinė klaviatūra</translation>
 <translation id="7359359531237882347">Kopijuojama elementų: <ph name="NUMBER_OF_ITEMS" />...</translation>
+<translation id="7375951387215729722">Failų sąrašas surūšiuotas pagal stulpelį „<ph name="COLUMN_NAME" />“ mažėjimo tvarka.</translation>
 <translation id="7389722738210761877">Tailandietiška klaviatūra (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindi klaviatūra (fonetinė)</translation>
 <translation id="7417453074306512035">Etiopiška klaviatūra</translation>

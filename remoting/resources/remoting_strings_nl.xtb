@@ -126,8 +126,6 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="3695446226812920698">Meer informatie</translation>
 <translation id="3718805989288361841">Er is een probleem met de beleidsinstellingen voor Chrome Remote Desktop. Neem contact op met je systeembeheerder voor hulp.</translation>
 <translation id="3776024066357219166">Je Chrome Remote Desktop-sessie is beëindigd.</translation>
-<translation id="3846148461359626420">• Schuiven en zoomen is verbeterd op de iPhone X.
-• Stabiliteitsverbeteringen en bugfixes.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bevestig je account en pincode hieronder om toegang door Chrome Remote Desktop toe te staan.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -339,8 +337,6 @@ Als je deze functionaliteit wilt inschakelen, selecteer je '<ph name="BUTTON_NAM
 <translation id="8525306231823319788">Volledig scherm</translation>
 <translation id="8548209692293300397">Je bent eerder ingelogd als <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Als je toegang wilt tot je computers met dat account, <ph name="LINK_BEGIN" />log je in bij Google Chrome<ph name="LINK_END" /> met dat account en installeer je Chrome Remote Desktop opnieuw.</translation>
 <translation id="8642984861538780905">Redelijk</translation>
-<translation id="8705151241155781642">• Ondersteuning toegevoegd voor Android 9.0 Pie.
-• Ondersteuning om de resolutie van het externe bureaublad aan te passen aan het scherm van je Android-apparaat.</translation>
 <translation id="8712909229180978490">Ik kan mijn opgeslagen bestanden niet online zien in Google Drive.</translation>
 <translation id="8743328882720071828">Wil je toestaan dat <ph name="CLIENT_USERNAME" /> je computer ziet en beheert?</translation>
 <translation id="8747048596626351634">De sessie is gecrasht of kan niet worden gestart. Als ~/.chrome-remote-desktop-session bestaat op de externe computer, moet je ervoor zorgen dat hiermee een langdurig voorgrondproces wordt gestart, zoals een bureaubladomgeving of vensterbeheer.</translation>

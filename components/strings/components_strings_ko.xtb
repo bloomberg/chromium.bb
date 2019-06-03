@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">사용할 수 있는 카드</translation>
 <translation id="1032854598605920125">시계 방향으로 회전</translation>
 <translation id="1035334672863811645">Chrome에 로그인</translation>
+<translation id="1036348656032585052">사용 중지</translation>
 <translation id="1038842779957582377">알 수 없는 이름</translation>
 <translation id="1039626062703039346">Chrome을 통해 Google 계정을 보호하고 비밀번호를 변경할 수 있습니다. Google에 이 사이트에 관해 알리게 됩니다.</translation>
 <translation id="1050038467049342496">다른 앱 닫기</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">카드 소유자 이름</translation>
 <translation id="1821930232296380041">잘못된 요청 또는 요청 매개변수</translation>
+<translation id="1822370876374026111">다음번에 더 빠르게 결제할 수 있도록 Google 계정과 기기에 카드와 청구서 수신 주소를 추가하세요.</translation>
 <translation id="1822540298136254167">방문 웹사이트 및 접속 시간</translation>
 <translation id="1826516787628120939">확인 중</translation>
 <translation id="1834321415901700177">이 사이트에 유해한 프로그램이 있습니다.</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">시작 페이지 열기</translation>
 <translation id="1883255238294161206">접기 목록</translation>
 <translation id="1898423065542865115">필터링</translation>
+<translation id="1914326953223720820">압축 해제 서비스</translation>
 <translation id="1916770123977586577">이 사이트에 업데이트된 설정을 적용하려면 이 페이지를 다시 로드하세요.</translation>
 <translation id="1919345977826869612">광고</translation>
 <translation id="1919367280705858090">특정 오류 메시지에 관한 도움말 보기</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">어느 기기에서나 카드를 사용하려면 동기화를 사용 설정하세요.</translation>
 <translation id="2365563543831475020"><ph name="CRASH_TIME" />에 캡처된 비정상 종료 보고서가 업로드되지 않았습니다.</translation>
 <translation id="2367567093518048410">수준</translation>
-<translation id="2378238891085281592">시크릿 모드로 전환됨</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">엔터프라이즈 기본값</translation>
 <translation id="2386255080630008482">서버 인증서가 폐기되었습니다.</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">앗, 이런!</translation>
 <translation id="3041612393474885105">인증서 정보</translation>
 <translation id="3060227939791841287">C9(봉투)</translation>
+<translation id="3061707000357573562">서비스 패치</translation>
 <translation id="3064966200440839136">시크릿 모드를 종료하고 외부 애플리케이션에서 결제합니다. 계속하시겠습니까?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{없음}=1{비밀번호 1개}other{비밀번호 #개}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -593,6 +596,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{그 외 <ph name="ITEM_COUNT" />개 항목}other{그 외 <ph name="ITEM_COUNT" />개 항목}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">다음번에 더 빠르게 결제할 수 있도록 Google 계정에 카드와 청구서 수신 주소를 추가하세요.</translation>
 <translation id="4196861286325780578">이동 다시 실행(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />방화벽 및 바이러스 백신 소프트웨어 설정 확인<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9(봉투)</translation>
@@ -731,7 +735,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> 내용:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">검색결과가 없습니다.</translation>
-<translation id="4945672369594656571">기기 및 계정 데이터 처리 방식을 관리합니다. Google에서는 기기 및 계정 관리자가 지정한 목적만을 위해 기기 및 계정 관리자의 지시만을 따라 기기 및 계정 데이터를 처리합니다.</translation>
 <translation id="4950898438188848926">탭 전환 버튼, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /> 열린 탭으로 전환하려면 Enter를 누르세요</translation>
 <translation id="495170559598752135">작업</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -745,7 +748,6 @@
 <translation id="5017554619425969104">복사한 텍스트</translation>
 <translation id="5018422839182700155">이 페이지를 열 수 없음</translation>
 <translation id="5019198164206649151">보조 기억 장치 상태가 잘못됨</translation>
-<translation id="5020154601324912079">기기 데이터 처리 방식을 관리합니다. Google에서는 기기 관리자가 지정한 목적만을 위해 기기 관리자의 지시만을 따라 기기 데이터를 처리합니다.</translation>
 <translation id="5023310440958281426">관리자 정책을 확인하세요.</translation>
 <translation id="5029568752722684782">사본 지우기</translation>
 <translation id="503069730517007720">'<ph name="SOFTWARE_NAME" />'의 루트 인증서가 필요하지만 설치되어 있지 않습니다. IT 관리자가 '<ph name="SOFTWARE_NAME" />'의 설정 안내에 따라 이 문제를 해결해야 합니다. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -918,6 +920,7 @@
 <translation id="5921639886840618607">카드를 Google 계정에 저장하시겠습니까?</translation>
 <translation id="5922853866070715753">거의 완료되었습니다</translation>
 <translation id="5932224571077948991">사이트에서 방해가 되거나 사용자를 현혹하는 광고를 표시함</translation>
+<translation id="5939847200023027600">PDF 합성 서비스</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> 여는 중…</translation>
 <translation id="5947933617628957894">예, 추가합니다</translation>
 <translation id="5951495562196540101">일반 계정으로 등록할 수 없습니다(패키지 라이선스 사용 가능).</translation>
@@ -1008,6 +1011,7 @@
 <translation id="6451458296329894277">양식 다시 제출 확인</translation>
 <translation id="6465306955648956876">비밀번호 관리...</translation>
 <translation id="647261751007945333">기기 정책</translation>
+<translation id="6476284679642588870">결제 수단 관리</translation>
 <translation id="6477321094435799029">Chrome이 이 페이지에서 비정상적인 코드를 감지했으며 개인정보(예: 비밀번호, 전화번호, 신용카드) 보호를 위해 차단했습니다.</translation>
 <translation id="6489534406876378309">비정상 종료 업로드 시작하기</translation>
 <translation id="6499038740797743453">비밀번호를 재설정하시겠습니까?</translation>
@@ -1080,7 +1084,6 @@
 <translation id="6948701128805548767">수령 방법과 요구사항을 확인하려면 주소를 선택하세요.</translation>
 <translation id="6949872517221025916">비밀번호 재설정</translation>
 <translation id="6950684638814147129">JSON 값을 파싱하는 중에 오류가 발생했습니다. <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">새 시크릿 탭에서 페이지 열기</translation>
 <translation id="6957887021205513506">서버의 인증서가 위조된 것 같습니다.</translation>
 <translation id="6964255747740675745">네트워크 구성을 파싱하지 못했습니다(잘못된 JSON).</translation>
 <translation id="6965382102122355670">확인</translation>
@@ -1090,7 +1093,6 @@
 <translation id="6973932557599545801">죄송합니다. 더 이상 도와드릴 수 없습니다. 직접 계속해 주세요.</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="6979440798594660689">음소거(기본값)</translation>
-<translation id="6984479912851154518">시크릿 모드를 종료하고 외부 애플리케이션에서 결제합니다. 계속하시겠습니까?</translation>
 <translation id="6989763994942163495">고급 설정 표시</translation>
 <translation id="6993898126790112050">6x9(봉투)</translation>
 <translation id="6996312675313362352"><ph name="ORIGINAL_LANGUAGE" /> 항상 번역</translation>
@@ -1148,6 +1150,7 @@
 <translation id="7298195798382681320">권장</translation>
 <translation id="7300012071106347854">코발트 녹색</translation>
 <translation id="7302712225291570345">‘<ph name="TEXT" />’</translation>
+<translation id="7303701124147721189">다음번에 더 빠르게 결제할 수 있도록 Google 계정과 기기에 카드 및 청구서 수신 주소를 저장하세요.</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" />에 캡처된 비정상 종료 보고서(사용자가 업로드를 요청했으나 아직 업로드되지 않음)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />세이프 브라우징<ph name="END_LINK" /> 경고</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1177,7 +1180,6 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">비밀번호 관리...</translation>
 <translation id="7419106976560586862">프로필 경로</translation>
-<translation id="7424427397225027541">계정 데이터 처리 방식을 관리합니다. Google에서는 계정 관리자가 지정한 목적만을 위해 계정 관리자의 지시만을 따라 계정 데이터를 처리합니다.</translation>
 <translation id="7437289804838430631">연락처 정보 추가</translation>
 <translation id="7440140511386898319">오프라인 상태일 때 탐색</translation>
 <translation id="7441627299479586546">잘못된 정책 주체</translation>
@@ -1317,6 +1319,7 @@
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">유효하지 않은 카드가 삭제되었습니다.</translation>
 <translation id="8103161714697287722">결제 수단</translation>
+<translation id="8105368624971345109">사용 중지</translation>
 <translation id="8118489163946903409">결제 수단</translation>
 <translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />'이(가) 컴퓨터 또는 네트워크에 제대로 설치되지 않았습니다. IT 관리자에게 문제 해결을 요청해 보세요.</translation>
 <translation id="8131740175452115882">확인</translation>
@@ -1375,6 +1378,7 @@
 <translation id="8428213095426709021">설정</translation>
 <translation id="8433057134996913067">이 작업을 수행하면 대부분의 웹사이트에서 로그아웃됩니다.</translation>
 <translation id="8437238597147034694">이동 실행 취소(&amp;U)</translation>
+<translation id="8440508849222143646">다음번에 더 빠르게 결제할 수 있도록 Google 계정에 카드 및 청구서 수신 주소를 저장하세요.</translation>
 <translation id="8461694314515752532">나만의 동기화 암호로 동기화된 데이터 암호화</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{신용카드 1개}other{신용카드 #개}}</translation>
 <translation id="8473863474539038330">주소 및 기타</translation>
@@ -1480,6 +1484,7 @@
 <translation id="9128870381267983090">네트워크에 연결</translation>
 <translation id="9137013805542155359">원본 보기</translation>
 <translation id="9137248913990643158">이 앱을 사용하기 전에 Chrome을 시작하고 로그인하세요.</translation>
+<translation id="9141013498910525015">주소 관리</translation>
 <translation id="9148088599418889305">배송 방법 선택</translation>
 <translation id="9148507642005240123">수정 실행 취소(&amp;U)</translation>
 <translation id="9154194610265714752">업데이트됨</translation>

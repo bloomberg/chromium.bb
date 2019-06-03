@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">шведски</translation>
 <translation id="4693155481716051732">Суши</translation>
 <translation id="4694604912444486114">Маймуна</translation>
+<translation id="4697043402264950621">Списъкът с файлове е сортиран във възходящ ред по <ph name="COLUMN_NAME" />.</translation>
 <translation id="4711094779914110278">турски</translation>
 <translation id="4713544552769165154">Този файл е предназначен за компютри със софтуер Macintosh и не е съвместим с устройството ви с Chrome OS. Моля, потърсете в <ph name="BEGIN_LINK" />уеб магазина на Chrome<ph name="END_LINK" /> подходящо приложение със същата функционалност. <ph name="BEGIN_LINK_HELP" />Научете повече<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">На <ph name="FILE_COUNT" /> снимки бяха създадени резервни копия</translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">Нов прозорец</translation>
 <translation id="7348749398828259943">Американска (Уъркман) международна клавиатура</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> елемента се копират...</translation>
+<translation id="7375951387215729722">Списъкът с файлове е сортиран в низходящ ред по <ph name="COLUMN_NAME" />.</translation>
 <translation id="7389722738210761877">Тайландска клавиатура (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Клавиатура на хинди (фонетична)</translation>
 <translation id="7417453074306512035">Етиопска клавиатура</translation>

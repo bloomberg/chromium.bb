@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Скупи мени</translation>
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1419738280318246476">Откључајте уређај да бисте добили обавештење</translation>
+<translation id="1426410128494586442">Да</translation>
 <translation id="1455242230282523554">Прегледајте подешавања језика</translation>
 <translation id="1467432559032391204">Улево</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> ће и даље моћи да се пријави касније.</translation>
 <translation id="3321628682574733415">Нетачан кôд родитеља</translation>
 <translation id="332587331255250389">Замените батерију</translation>
-<translation id="3335825575923019462">Желите ли стварно да онемогућите аутоматске кликове?</translation>
 <translation id="3351879221545518001">Тренутно пребацујете екран.</translation>
 <translation id="3364721542077212959">Алатке за писаљку</translation>
 <translation id="3368922792935385530">Повезан</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">Повезује се...</translation>
 <translation id="4379531060876907730">Ово су алатке за писаљку</translation>
 <translation id="4389184120735010762">Притиснули сте тастерску пречицу за монтирану лупу екрана. Желите ли да је укључите?</translation>
-<translation id="4394049700291259645">Онемогући</translation>
 <translation id="4421231901400348175">Делите контролу над екраном са особом <ph name="HELPER_NAME" /> преко Даљинске помоћи.</translation>
 <translation id="4430019312045809116">Јачина звука</translation>
 <translation id="4450893287417543264">Не приказуј поново</translation>
@@ -485,7 +484,6 @@
 <translation id="8649101189709089199">Изаберите за говор</translation>
 <translation id="8652175077544655965">Затворите подешавања</translation>
 <translation id="8653151467777939995">Прегледајте подешавања обавештења. Обавештења су укључена</translation>
-<translation id="8664483332071009680">Желите ли да онемогућите аутоматске кликове?</translation>
 <translation id="8664753092453405566">Прегледајте листу мрежа. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Повезан је пуњач мале снаге</translation>

@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Sugerir contraseña…</translation>
 <translation id="1870148520156231997">Mostrar contraseña</translation>
 <translation id="1876721852596493031">Enviar datos de uso</translation>
-<translation id="1886928167269928266">Principio</translation>
 <translation id="1911619930368729126">Cargar a Google Drive</translation>
+<translation id="1923342640370224680">Última hora</translation>
 <translation id="1941314575388338491">Presiona dos veces para copiar.</translation>
 <translation id="1952172573699511566">Los sitios web mostrarán texto en tu idioma preferido, cuando sea posible.</translation>
 <translation id="1952728750904661634">Acceder con una cuenta administrada</translation>
 <translation id="1974060860693918893">Configuración avanzada</translation>
 <translation id="1989112275319619282">Navegar</translation>
 <translation id="2015722694326466240">Para ver las contraseñas, primero debes establecer una en tu dispositivo.</translation>
-<translation id="2068952045031577364">La semana pasada</translation>
 <translation id="2074131957428911366">En la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />, puedes elegir los datos para sincronizar en cualquier momento.</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="209018056901015185">Versión para escritorio</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Contraseñas</translation>
 <translation id="2969979262385602596">Error al iniciar la sesión. Inténtalo más tarde.</translation>
 <translation id="2989805286512600854">Abrir en una nueva pestaña</translation>
-<translation id="3024255823539804759">Ayer</translation>
 <translation id="3037605927509011580">¡Oh, no!</translation>
 <translation id="3112556859945124369">Marcar…</translation>
 <translation id="3157684681743766797">Marcar todas…</translation>
@@ -320,12 +318,12 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5854790677617711513">Hace más de 30 días</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="5857770089550859117">Se requiere la frase de contraseña para comenzar la sincronización.</translation>
-<translation id="5860033963881614850">Desactivado</translation>
+<translation id="5860033963881614850">No</translation>
 <translation id="5869029295770560994">Entendido</translation>
 <translation id="5871497086027727873">1 artículo movido</translation>
 <translation id="5897956970858271241">Visitar el vínculo copiado</translation>
 <translation id="5911030830365207728">Google Traductor</translation>
-<translation id="5916664084637901428">Activada</translation>
+<translation id="5916664084637901428">Sí</translation>
 <translation id="5938160824633642847">El dispositivo está casi lleno. Libera espacio y vuelve a intentarlo.</translation>
 <translation id="5948291296578561264">Esta acción te permite guardar fotos en tu biblioteca de fotos.</translation>
 <translation id="5955891643922670672">Vista de la versión sin conexión</translation>
@@ -381,7 +379,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6464071786529933911">Abrir en una pestaña de incógnito nueva</translation>
 <translation id="6476800141292307438">Se está traduciendo la página al <ph name="LANGUAGE" />. Las opciones disponibles se encuentran cerca de la parte inferior de la pantalla.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
-<translation id="6541915733953096570">La última hora</translation>
 <translation id="6610002944194042868">Opciones de traducción</translation>
 <translation id="6642362222295953972">Cambiar a la pestaña existente</translation>
 <translation id="6643016212128521049">Borrar</translation>
@@ -502,6 +499,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8532105204136943229">Año vencimiento</translation>
 <translation id="8534481786647257214">Entrada de Google+ publicada</translation>
 <translation id="8548878600947630424">Buscar en la página...</translation>
+<translation id="8583866649835978847">Envía <ph name="TITLE" /> a uno de tus dispositivos.</translation>
 <translation id="8605219856220328675">Cierra la pestaña.</translation>
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8636825310635137004">Activa la sincronización para obtener las pestañas de tus otros dispositivos.</translation>

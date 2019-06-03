@@ -330,7 +330,6 @@
 <translation id="1474273443907024088">Onemogoči funkcijo »False Start« protokola TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Omogoči blokiranje vstavljanja programske opreme tretjih oseb</translation>
-<translation id="1504431521196476721">Potrditev na daljavo</translation>
 <translation id="1507382822467487898">
           Konfigurira, kateri naslovi MAC (nadzor dostopa do medija) se uporabljajo, če je z napravo povezan nosilec.
 
@@ -2429,6 +2428,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj ga uvozi, ali pa bo uvoz izveden samodejno.</translation>
 <translation id="5423197884968724595">Ime omejitve za Android WebView:</translation>
 <translation id="5424147596523390018">Dovoli vse barvne načine</translation>
+<translation id="5427003226809696696">Ta pravilnik nadzira, ali se okno brskalnika odpre na začetku seje.
+
+          Če je ta pravilnik omogočen, se okno brskalnika ne odpre.
+
+          Če je ta pravilnik onemogočen ali ni nastavljen, se je oknu brskalnika dovoljeno odpreti. Upoštevajte, da se okno brskalnika morda ne bo odprlo zaradi drugih pravilnikov ali zastavic ukazne vrstice.</translation>
 <translation id="5427879482805712214">S tem pravilnikom lahko nastavite sliko avatarja, ki na zaslonu za prijavo predstavlja uporabnika. Pravilnik se nastavi tako, da določite URL, s katerega lahko operacijski sistem <ph name="PRODUCT_OS_NAME" /> prenese sliko za avatar, in kriptografsko zgoščeno vrednost za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 512 KB. URL mora biti dostopen brez preverjanja pristnosti.
 
       Slika za avatar se prenese in shrani v predpomnilnik. Če se spremeni URL ali zgoščena vrednost, se znova prenese.
@@ -3243,7 +3247,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj jih uvozi, ali pa bo uvoz izveden samodejno.</translation>
 <translation id="7003746348783715221">Nastavitve za <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Nastavitve vsebine</translation>
 <translation id="7007671350884342624">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje uporabniških podatkov.
 
       Če ta pravilnik nastavite, bo <ph name="PRODUCT_NAME" /> uporabljal navedeni imenik ne glede na to, ali je uporabnik določil zastavico »--user-data-dir«. Če se želite izogniti izgubi podatkov ali drugim nepričakovanim napakam, tega pravilnika ne nastavite na korenski imenik pogona ali imenik, ki ga uporabljate za druge namene, ker <ph name="PRODUCT_NAME" /> upravlja njegovo vsebino.
@@ -3613,8 +3616,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7617319494457709698">Ta pravilnik določa dovoljene razširitve, ki lahko uporabljajo metodo <ph name="CHALLENGE_USER_KEY_FUNCTION" /> API-ja <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> za potrjevanje na daljavo. Razširitve, ki lahko uporabljajo API, morate dodati na ta seznam.
 
           Če razširitve ni na seznamu ali seznam ni nastavljen, poziv API-ju ne bo uspel in bo vrnjena koda napake.</translation>
-<translation id="7618907117929117943">Povrnite na ciljno različico in ostanite na njej, če je različica operacijskega sistema novejša kot ciljna in je s povrnitvijo mogoče prenesti konfiguracijo na ravni naprave (vključno z omrežnimi poverilnicami), s čimer se tudi preskoči prvi zagon po povrnitvi. Ne izvedite povrnitve ali je ne prekinite, če to ni mogoče (ker ciljna različica ne podpira obnovitve podatkov ali zaradi spremembe, ki ni združljiva s prejšnjo različico).
-          Podprto v brskalniku <ph name="PRODUCT_OS_NAME" /> različice 70 in novejših. Pri starejših odjemalcih ta vrednost pomeni, da je povrnitev onemogočena.</translation>
 <translation id="7620869951155758729">Ta pravilnik določa konfiguracijo, ki se uporablja za ustvarjanje in preverjanje kode za starševski dostop.
 
       |current_config| se vedno uporablja za ustvarjanje kode za dostop in se uporablja za preverjanje kode za dostop samo, ko je ni mogoče preveriti s |future_config|.
@@ -3947,6 +3948,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če tega pravilnika ne nastavite, v pravilniku ne bo izjem za seznam blokiranih v pravilniku »URLBlacklist«.</translation>
 <translation id="8176035528522326671">Dovoli poslovnemu uporabniku, da je samo primarni uporabnik z več profili (privzeti način delovanja za uporabnike, ki jih upravlja podjetje)</translation>
+<translation id="8183108371184777472">Onemogočanje odpiranja okna brskalnika</translation>
 <translation id="8214600119442850823">Konfigurira upravitelja gesel.</translation>
 <translation id="8217516105848565518">Ta pravilnik je zastarel. Uporabite pravilnik RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Omogočanje šifrirnih zbirk RC4 v protokolu TLS</translation>
@@ -4161,11 +4163,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8661297125441579970">Prepoved selitve podatkov in ARC-ja.</translation>
 <translation id="8672321184841719703">Ciljna različica za samodejne posodobitve</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
-<translation id="8682611302223077049">Omogoči nastavitev časovnega obdobja v milisekundah, v katerem so uporabniki obveščeni, da mora biti brskalnik <ph name="PRODUCT_NAME" /> znova zagnan ali da mora biti naprava <ph name="PRODUCT_OS_NAME" /> znova zagnana za uveljavitev čakajoče posodobitve.
-
-      V tem časovnem obdobju je uporabnik večkrat obveščen glede potrebe po posodobitvi. Ko je zaznana nadgradnja, se za naprave <ph name="PRODUCT_OS_NAME" /> v sistemski vrstici pojavi obvestilo o vnovičnem zagonu. Za brskalnike <ph name="PRODUCT_NAME" /> se meni aplikacije spremeni, da ponazori, da je potreben vnovični zagon, ko mine ena tretjina obdobja za obveščanje. Barva tega obvestila se spremeni, ko mineta dve tretjini obdobja za obveščanje, in znova, ko mine celotno obdobje za obveščanje. Za dodatna obvestila, ki jih je omogočil pravilnik <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, prav tako velja ta pravilnik.
-
-      Če pravilnik ni nastavljen, se za naprave <ph name="PRODUCT_OS_NAME" /> kot privzeto časovno obdobje uporabi 345.600.000 milisekund (štirje dnevi), za brskalnike <ph name="PRODUCT_NAME" /> pa 604.800.000 milisekund (en teden).</translation>
 <translation id="8685024486845674965">Opozorilo zaščite z geslom sproži vnovična uporaba gesla</translation>
 <translation id="8693243869659262736">Uporaba vgrajenega odjemalca DNS</translation>
 <translation id="8698286761337647563">Koliko dni vnaprej naj se opozori uporabnike prijave SAML glede skorajšnjega poteka njihovega gesla</translation>
@@ -4183,7 +4180,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
           Ta pravilnik je izbiren. Če ni nastavljen, ključna beseda ne bo aktivirala ponudnika iskanja.
 
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
-<translation id="8731693562790917685">Z nastavitvami vsebine lahko določite, kako se obravnava vsebina različnih vrst (npr. piškotki, slike ali JavaScript).</translation>
 <translation id="8733448613597049197">Omogoča razširjeno poročanje za Varno brskanje za brskalnik <ph name="PRODUCT_NAME" /> in uporabnikom prepreči spreminjanje te nastavitve.
 
       Razširjeno poročanje pošilja nekatere informacije o sistemu in vsebino strani v Googlove strežnike zaradi zaznavanja nevarnih aplikacij in spletnih mest.
@@ -4264,6 +4260,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če omogočite ali onemogočite to nastavitev, uporabniki ne morejo spremeniti ali preglasiti te nastavitve v brskalniku <ph name="PRODUCT_NAME" />.
 
       Če te nastavitve ne določite, se lahko uporabnik odloči, ali bo uporabljal to funkcijo.</translation>
+<translation id="8871974300055371298">Nastavitve vsebine</translation>
 <translation id="8876188741456358123">Preglasi privzeti način obojestranskega tiskanja. Če način ni na voljo, je ta pravilnik prezrt.</translation>
 <translation id="8882006618241293596">Blokiraj vtičnik <ph name="FLASH_PLUGIN_NAME" /> na teh spletnih mestih</translation>
 <translation id="8906768759089290519">Omogoči način gosta</translation>
@@ -4387,8 +4384,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="9084985621503260744">Navedite, ali videodejavnost vpliva na upravljanje napajanja</translation>
 <translation id="9088433379343318874">Omogočanje ponudnika vsebine za zaščitene uporabnike</translation>
 <translation id="9088444059179765143">Konfiguriranje načina samodejnega zaznavanja časovnega pasu</translation>
-<translation id="9094064873808699479">Povrnite na ciljno različico in ostanite na njej, če je različica operacijskega sistema novejša kot ciljna. S povrnitvijo pokusite prenesti konfiguracijo na ravni naprave (vključno z omrežnimi poverilnicami), če je to mogoče, vendar ne izvedite povrnitve s popolnim Powerwashem, tudi če obnovitev podatkov ni mogoča (ker ciljna različica ne podpira obnovitve podatkov ali zaradi spremembe, ki ni združljiva s prejšnjo različico).
-          Podprto v brskalniku <ph name="PRODUCT_OS_NAME" /> različice 70 in novejših. Pri starejših odjemalcih ta vrednost pomeni, da je povrnitev onemogočena.</translation>
 <translation id="9096086085182305205">Seznam dovoljenih strežnikov za preverjanje pristnosti</translation>
 <translation id="9105265795073104888">Aplikacijam za Android je dan na voljo samo podnabor nastavitev strežnika proxy. Aplikacije za Android se lahko prostovoljno odločijo, da bodo uporabljale strežnik proxy. V to jih ni mogoče prisiliti.</translation>
 <translation id="9106865192244721694">Omogočanje WebUSB-ja na teh spletnih mestih</translation>

@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Komprimera menyn</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1419738280318246476">Lås upp enheten så att aviseringen kan göras</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="1455242230282523554">Visa språkinställningar</translation>
 <translation id="1467432559032391204">Vänster</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan ändå logga in igen senare.</translation>
 <translation id="3321628682574733415">Felaktig föräldrakod</translation>
 <translation id="332587331255250389">Byt batteri</translation>
-<translation id="3335825575923019462">Vill du inaktivera automatiska klick?</translation>
 <translation id="3351879221545518001">Skärmen castas.</translation>
 <translation id="3364721542077212959">Verktyg för e-penna</translation>
 <translation id="3368922792935385530">Ansluten</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">Ansluter ...</translation>
 <translation id="4379531060876907730">Här är dina verktyg för e-penna</translation>
 <translation id="4389184120735010762">Du tryckte på kortkommandot för dockad skärmförstoring. Vill du aktivera funktionen?</translation>
-<translation id="4394049700291259645">Inaktivera</translation>
 <translation id="4421231901400348175">Dela kontroll över skärmen med <ph name="HELPER_NAME" /> via Fjärrhjälp.</translation>
 <translation id="4430019312045809116">Volym</translation>
 <translation id="4450893287417543264">Visa inte igen</translation>
@@ -485,7 +484,6 @@
 <translation id="8649101189709089199">Textuppläsning</translation>
 <translation id="8652175077544655965">Stäng inställningarna</translation>
 <translation id="8653151467777939995">Visa aviseringsinställningar. Aviseringar har aktiverats</translation>
-<translation id="8664483332071009680">Vill du inaktivera automatiska klick?</translation>
 <translation id="8664753092453405566">Visa nätverkslista. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laddare med låg effekt ansluten</translation>

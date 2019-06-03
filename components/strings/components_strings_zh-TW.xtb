@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">接受的信用卡</translation>
 <translation id="1032854598605920125">順時針旋轉</translation>
 <translation id="1035334672863811645">登入 Chrome</translation>
+<translation id="1036348656032585052">關閉</translation>
 <translation id="1038842779957582377">不明名稱</translation>
 <translation id="1039626062703039346">Chrome 可協助你保護 Google 帳戶並變更密碼。這項服務會將此網站的相關資訊告知 Google。</translation>
 <translation id="1050038467049342496">關閉其他應用程式</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">持卡人姓名</translation>
 <translation id="1821930232296380041">要求或要求參數無效</translation>
+<translation id="1822370876374026111">只要將卡片資訊與帳單地址新增到你的 Google 帳戶和這部裝置上，下次即可更快完成付款程序。</translation>
 <translation id="1822540298136254167">你造訪的網站和瀏覽時間</translation>
 <translation id="1826516787628120939">檢查中</translation>
 <translation id="1834321415901700177">這個網站含有有害程式</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">開啟起始網頁</translation>
 <translation id="1883255238294161206">收合清單</translation>
 <translation id="1898423065542865115">篩選</translation>
+<translation id="1914326953223720820">解壓縮服務</translation>
 <translation id="1916770123977586577">如要將你更新過的設定套用到這個網站，請重新載入這個網頁</translation>
 <translation id="1919345977826869612">廣告</translation>
 <translation id="1919367280705858090">瞭解如何修正特定錯誤訊息指出的錯誤</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">如要將卡片同步到所有裝置，請開啟同步功能。</translation>
 <translation id="2365563543831475020">當機報告擷取時間：<ph name="CRASH_TIME" /> (尚未上傳)</translation>
 <translation id="2367567093518048410">等級</translation>
-<translation id="2378238891085281592">你已啟用私密模式</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">企業預設</translation>
 <translation id="2386255080630008482">伺服器憑證已遭撤銷。</translation>
@@ -343,7 +345,7 @@
 <translation id="2721148159707890343">要求成功</translation>
 <translation id="2728127805433021124">伺服器憑證是以防護力較弱的簽章演算法進行簽署。</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />執行連線診斷<ph name="END_LINK" /></translation>
-<translation id="2735043616039983645">這項政策有多個來源，且來源的值相互衝突！</translation>
+<translation id="2735043616039983645">這項政策有多個來源，且來源的值發生衝突！</translation>
 <translation id="2738330467931008676">選擇取件地址</translation>
 <translation id="2740531572673183784">確定</translation>
 <translation id="2742870351467570537">移除選取的項目</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">糟糕！</translation>
 <translation id="3041612393474885105">憑證資訊</translation>
 <translation id="3060227939791841287">C9 (信封)</translation>
+<translation id="3061707000357573562">修補服務</translation>
 <translation id="3064966200440839136">即將離開無痕模式，改為使用外部應用程式付款，要繼續嗎？</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{無}=1{1 組密碼}other{# 組密碼}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -593,6 +596,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{還有另外 <ph name="ITEM_COUNT" /> 個項目}other{還有另外 <ph name="ITEM_COUNT" /> 個項目}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">只要將卡片資訊與帳單地址新增到你的 Google 帳戶中，下次即可更快完成付款程序。</translation>
 <translation id="4196861286325780578">重做移動(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />檢查防火牆和防毒軟體設定<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (信封)</translation>
@@ -731,7 +735,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> 顯示</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">沒有結果</translation>
-<translation id="4945672369594656571">控管 Google 處理你裝置和帳戶資料的方式。Google 只會依照裝置和帳戶管理員的指示處理你的裝置和帳戶資料，且只會用於裝置和帳戶管理員指定的用途。</translation>
 <translation id="4950898438188848926">分頁切換按鈕，按下 Enter 鍵即可切換至開啟的分頁：<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">動作</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -745,7 +748,6 @@
 <translation id="5017554619425969104">你複製的文字</translation>
 <translation id="5018422839182700155">無法開啟這個網頁</translation>
 <translation id="5019198164206649151">備份儲存狀態不佳</translation>
-<translation id="5020154601324912079">控管 Google 如何處理你的裝置資料。Google 只會依照裝置管理員的指示處理你的裝置資料，且只會用於裝置管理員指定的用途。</translation>
 <translation id="5023310440958281426">請查看你的管理員政策</translation>
 <translation id="5029568752722684782">清除複本</translation>
 <translation id="503069730517007720">未安裝必要的「<ph name="SOFTWARE_NAME" />」根憑證。IT 管理員必須按照「<ph name="SOFTWARE_NAME" />」的設定說明修正這個問題。<ph name="FURTHER_EXPLANATION" /></translation>
@@ -918,6 +920,7 @@
 <translation id="5921639886840618607">要將這張卡片儲存到 Google 帳戶嗎？</translation>
 <translation id="5922853866070715753">即將完成</translation>
 <translation id="5932224571077948991">網站顯示干擾性或誤導性廣告</translation>
+<translation id="5939847200023027600">PDF 合成器服務</translation>
 <translation id="5946937721014915347">正在開啟 <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">是，我要新增</translation>
 <translation id="5951495562196540101">無法透過個人帳戶註冊 (有封裝授權)。</translation>
@@ -1001,13 +1004,14 @@
 <translation id="6433490469411711332">編輯聯絡資訊</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒絕連線。</translation>
 <translation id="6434309073475700221">捨棄</translation>
-<translation id="6440503408713884761">已略過</translation>
+<translation id="6440503408713884761">已忽略</translation>
 <translation id="6446163441502663861">Kahu (信封)</translation>
 <translation id="6446608382365791566">新增詳細資訊</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6451458296329894277">確認重新提交表單</translation>
 <translation id="6465306955648956876">管理密碼...</translation>
 <translation id="647261751007945333">裝置政策</translation>
+<translation id="6476284679642588870">管理付款方式</translation>
 <translation id="6477321094435799029">Chrome 在這個網頁上偵測到異常代碼。為了保護你的個人資訊 (包括密碼、電話號碼或信用卡資料)，Chrome 已封鎖這個網頁。</translation>
 <translation id="6489534406876378309">開始上傳當機報告</translation>
 <translation id="6499038740797743453">要重設密碼嗎？</translation>
@@ -1080,7 +1084,6 @@
 <translation id="6948701128805548767">如要查看取件方式和相關規定，請選取一個地址</translation>
 <translation id="6949872517221025916">重設密碼</translation>
 <translation id="6950684638814147129">剖析 JSON 值時發生錯誤：<ph name="ERROR" /></translation>
-<translation id="6957624206566198865">在新的私密分頁中開啟網頁</translation>
 <translation id="6957887021205513506">伺服器憑證疑似偽造。</translation>
 <translation id="6964255747740675745">無法剖析網路設定 (無效的 JSON)。</translation>
 <translation id="6965382102122355670">確定</translation>
@@ -1090,7 +1093,6 @@
 <translation id="6973932557599545801">抱歉，目前無法提供協助，請自行填入資料。</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6979440798594660689">靜音 (預設)</translation>
-<translation id="6984479912851154518">即將離開私密模式，改為使用外部應用程式付款，要繼續嗎？</translation>
 <translation id="6989763994942163495">顯示進階設定...</translation>
 <translation id="6993898126790112050">6x9 (信封)</translation>
 <translation id="6996312675313362352">一律翻譯<ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1148,6 +1150,7 @@
 <translation id="7298195798382681320">建議採用</translation>
 <translation id="7300012071106347854">鈷藍色</translation>
 <translation id="7302712225291570345">「<ph name="TEXT" />」</translation>
+<translation id="7303701124147721189">只要將你的卡片資訊與帳單地址儲存到你的 Google 帳戶和這部裝置上，下次即可更快完成付款程序。</translation>
 <translation id="7309308571273880165">當機報告擷取時間：<ph name="CRASH_TIME" /> (使用者要求上傳，但尚未上傳)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />安全瀏覽<ph name="END_LINK" />警告</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1178,7 +1181,6 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">管理密碼…</translation>
 <translation id="7419106976560586862">設定檔路徑</translation>
-<translation id="7424427397225027541">控管 Google 處理你帳戶資料的方式。Google 只會依照帳戶管理員的指示處理你的帳戶資料，且只會用於帳戶管理員指定的用途。</translation>
 <translation id="7437289804838430631">新增聯絡資訊</translation>
 <translation id="7440140511386898319">探索可供離線檢視的內容</translation>
 <translation id="7441627299479586546">政策主體有誤</translation>
@@ -1318,6 +1320,7 @@
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">已移除無效的卡片</translation>
 <translation id="8103161714697287722">付款方式</translation>
+<translation id="8105368624971345109">關閉</translation>
 <translation id="8118489163946903409">付款方式</translation>
 <translation id="8127301229239896662">「<ph name="SOFTWARE_NAME" />」未正確安裝在電腦或網路上。請通知 IT 管理員解決這個問題。</translation>
 <translation id="8131740175452115882">確認</translation>
@@ -1376,6 +1379,7 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">您會因此登出大多數網站。</translation>
 <translation id="8437238597147034694">復原移動(&amp;U)</translation>
+<translation id="8440508849222143646">只要將你的卡片資訊與帳單地址儲存到你的 Google 帳戶中，下次即可更快完成付款程序。</translation>
 <translation id="8461694314515752532">使用你自己的同步通關密語，加密保護同步資料</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 張信用卡}other{# 張信用卡}}</translation>
 <translation id="8473863474539038330">地址和其他資訊</translation>
@@ -1481,6 +1485,7 @@
 <translation id="9128870381267983090">連線至網路</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9137248913990643158">使用這個應用程式前，請先啟動 Chrome 並登入帳戶。</translation>
+<translation id="9141013498910525015">管理地址</translation>
 <translation id="9148088599418889305">選擇運送方式</translation>
 <translation id="9148507642005240123">復原編輯(&amp;U)</translation>
 <translation id="9154194610265714752">已更新</translation>

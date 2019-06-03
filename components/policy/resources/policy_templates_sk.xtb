@@ -312,7 +312,6 @@ servera, pretože objekty GPO sa znova sťahujú pri každom načítaní pravidi
 <translation id="1474273443907024088">Zakázať funkciu TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Povoliť blokovanie vkladania softvérom tretej strany</translation>
-<translation id="1504431521196476721">Diaľkové overenie</translation>
 <translation id="1507382822467487898">
           Konfiguruje, ktorá adresa MAC (media access control – ovládanie prístupu k médiám) sa použije, keď bude k zariadeniu pripojený dok.
 
@@ -2386,7 +2385,12 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce vyhľadávač importovať, alebo môže import prebehnúť automaticky.</translation>
 <translation id="5423197884968724595">Názov obmedzenia Android WebView:</translation>
 <translation id="5424147596523390018">Povoliť všetky farebné režimy</translation>
-<translation id="5427879482805712214">Toto pravidlo umožňuje konfigurovať obrázok avatara, ktorý na prihlasovacej obrazovke predstavuje používateľa. Pravidlo vytvoríte zadaním webovej adresy, z ktorej môže <ph name="PRODUCT_OS_NAME" /> stiahnuť obrázok avatara a kryptografické hašovanie, ktoré slúži na overenie integrity stiahnutého obsahu. Obrázok musí byť vo formáte JPEG a jeho veľkosť nesmie prekročiť 512 kB. Webová adresa musí byť prístupná bez overenia.
+<translation id="5427003226809696696">Toto pravidlo ovláda, či sa okno prehliadača má spustiť na začiatku relácie.
+
+          Ak je pravidlo povolené, okno prehliadača sa nespustí.
+
+          Ak pravidlo zakážete alebo nenastavíte, okno prehliadača sa môže otvoriť. Upozorňujeme, že okno prehliadača sa nemusí otvoriť z dôvodu iných pravidiel alebo príznakov príkazového riadka.</translation>
+<translation id="5427879482805712214">Toto pravidlo umožňuje konfigurovať obrázok avatara, ktorý na prihlasovacej obrazovke predstavuje používateľa. Pravidlo vytvoríte zadaním webovej adresy, z ktorej môže <ph name="PRODUCT_OS_NAME" /> stiahnuť obrázok avatara, a kryptografického hašovania, ktoré slúži na overenie integrity stiahnutého obsahu. Obrázok musí byť vo formáte JPEG a jeho veľkosť nesmie prekročiť 512 kB. Webová adresa musí byť prístupná bez overenia.
 
       Obrázok avatara sa stiahne a uloží do vyrovnávacej pamäte. Pri každej zmene webovej adresy alebo hašovania sa znova stiahne.
 
@@ -3186,7 +3190,6 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
       Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce uložené heslá importovať, alebo môže import prebehnúť automaticky.</translation>
 <translation id="7003746348783715221">Predvoľby prehliadača <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Nastavenia obsahu</translation>
 <translation id="7007671350884342624">Umožňuje nakonfigurovať adresár, ktorý <ph name="PRODUCT_NAME" /> použije na ukladanie údajov používateľa.
 
       Ak toto pravidlo nastavíte, <ph name="PRODUCT_NAME" /> bude používať zadaný adresár bez ohľadu na to, či používateľ uviedol príznak „--user-data-dir“. Ak chcete zabrániť strate dát alebo iným neočakávaných chybám, nemali by ste v rámci tohto pravidla nastaviť hlavný adresár zväzku alebo adresár používaný na iné účely, pretože <ph name="PRODUCT_NAME" /> spravuje jeho obsah.
@@ -3555,8 +3558,6 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 <translation id="7617319494457709698">Toto pravidlo určuje, pre ktoré rozšírenia bude povolené vzdialené prihlásenie pomocou metódy <ph name="CHALLENGE_USER_KEY_FUNCTION" /> rozhrania <ph name="ENTERPRISE_PLATFORM_KEYS_API" />. Rozšírenia môžu používať toto rozhranie API, keď sú pridané do tohto zoznamu.
 
           Ak sa rozšírenie v zozname nenachádza alebo zoznam nie je vytvorený, volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
-<translation id="7618907117929117943">Ak je verzia operačného systému novšia ako cieľová a môžete preniesť konfiguráciu na úrovni zariadenia (vrátane prihlasovacích údajov do siete) v rámci prechodu na nižšiu verziu a pritom po ňom preskočiť proces prvotnej konfigurácie, prejdite na nižšiu verziu. Ak to nie je možné (pretože cieľová verzia nepodporuje obnovu údajov alebo z dôvodu zmeny, ktorá neumožňuje prechod na nižšiu verziu), neprechádzajte na nižšiu verziu alebo tento proces prerušte.
-          Podporované v prehliadači <ph name="PRODUCT_OS_NAME" /> verzie 70 a novšej. V prípade starších klientov táto hodnota znamená, že prechod na nižšiu verziu je zakázaný.</translation>
 <translation id="7620869951155758729">Toto pravidlo určuje konfiguráciu, pomocou ktorej sa vytvára a overuje prístupový kód rodiča.
 
       Konfigurácia |current_config| sa vždy používa na vytváranie prístupového kódu a mala by sa použiť na overenie prístupového kódu iba v prípade, keď ho nie je možné overiť pomocou konfigurácie |future_config|.
@@ -3890,6 +3891,7 @@ Ak toto pravidlo ponecháte nenastavené, bude táto možnosť povolená, ale po
 
       Ak toto pravidlo ponecháte nenastavené, nebudú k dispozícii žiadne výnimky pre zoznam zakázaných adries uvedený v rámci pravidla URLBlacklist.</translation>
 <translation id="8176035528522326671">Povolí používateľovi v podnikovej sieti stať sa iba hlavným používateľom s viacerými profilmi (predvolené správanie pre používateľov spravovaných podnikom)</translation>
+<translation id="8183108371184777472">Potláča otváranie okna prehliadača</translation>
 <translation id="8214600119442850823">Umožňuje konfiguráciu správcu hesiel.</translation>
 <translation id="8217516105848565518">Podpora tohto pravidla bola ukončená. Použite namiesto neho pravidlo RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Povoliť šifrovacie súpravy RC4 v protokole TLS</translation>
@@ -4099,11 +4101,6 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
 <translation id="8661297125441579970">Zakázať migráciu údajov a ARC.</translation>
 <translation id="8672321184841719703">Cieľová verzia automatickej aktualizácie</translation>
 <translation id="867410340948518937">U2F (univerzálny druhý faktor)</translation>
-<translation id="8682611302223077049">Umožňuje nastaviť časové obdobie v milisekundách, po uplynutí ktorého budú používatelia upozornení, že <ph name="PRODUCT_NAME" /> sa musí znova spustiť alebo že zariadenie <ph name="PRODUCT_OS_NAME" /> musí byť reštartované, aby sa použila čakajúca aktualizácia.
-
-      V priebehu tohto časového obdobia bude používateľ opakovane informovaný o potrebe aktualizácie. V zariadeniach <ph name="PRODUCT_OS_NAME" /> sa po zistení inovácie objaví na paneli úloh systému upozornenie na reštartovanie. V prípade prehliadačov <ph name="PRODUCT_NAME" /> sa po uplynutí jednej tretiny časového obdobia upozornenia zmení ponuka aplikácie, ktorá označuje potrebu opätovného spustenia. Farba upozornenia sa zmení po uplynutí dvoch tretín obdobia a znova po uplynutí celého obdobia. Ďalšie upozornenia povolené pravidlom <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> sa po uplynutí jednej tretiny časového obdobia upozornenia zmení ponuka aplikácie, ktorá označuje potrebu opätovného spustenia. Farba upozornenia sa zmení po uplynutí dvoch tretín obdobia a znova po uplynutí celého obdobia. Ďalšie upozornenia povolené pravidlom.
-
-      Ak pravidlo nenastavíte, použije sa predvolené obdobie 345 600 000 milisekúnd (štyri dni) pre zariadenia <ph name="PRODUCT_OS_NAME" /> a 604 800 000 milisekúnd (jeden týždeň) pre prehliadače. <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Upozornenie ochrany heslom sa spúšťa po opätovnom použití hesla</translation>
 <translation id="8693243869659262736">Použiť vstavaného klienta DNS</translation>
 <translation id="8698286761337647563">Koľko dní vopred upozorniť používateľov SAML na vypršanie platnosti hesla</translation>
@@ -4121,7 +4118,6 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
           Ak nebude nastavené, poskytovateľ vyhľadávania nebude aktivovaný pomocou žiadneho kľúčového slova.
 
           Toto pravidlo sa vezme do úvahy len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
-<translation id="8731693562790917685">Nastavenia obsahu umožňujú určiť, akým spôsobom bude spracovávaný obsah určitého typu (napríklad súbory cookie, obrázky alebo kód JavaScript).</translation>
 <translation id="8733448613597049197">Umožňuje povoliť rozšírené hlásenia Bezpečného prehliadania v prehliadači <ph name="PRODUCT_NAME" /> a zabrániť používateľom toto nastavenie meniť.
 
       Prostredníctvom rozšírených hlásení sa na servery Googlu odosielajú niektoré informácie o systéme a obsah stránok, ktoré sa používajú na rozpoznávanie nebezpečných aplikácií a webov.
@@ -4202,6 +4198,7 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
       Ak toto nastavenie povolíte alebo zakážete, používatelia ho nebudú môcť v prehliadači <ph name="PRODUCT_NAME" /> zmeniť ani prepísať.
 
       Ak je toto nastavenie ponechané nenastavené, používateľ sa môže rozhodnúť, či chce túto funkciu použiť.</translation>
+<translation id="8871974300055371298">Nastavenia obsahu</translation>
 <translation id="8876188741456358123">Prepíše predvolený režim obojstrannej tlače. Ak daný režim nie je k dispozícii, toto pravidlo je ignorované.</translation>
 <translation id="8882006618241293596">Blokovať doplnok <ph name="FLASH_PLUGIN_NAME" /> na týchto weboch</translation>
 <translation id="8906768759089290519">Povoliť režim hosťa</translation>
@@ -4313,8 +4310,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
 <translation id="9084985621503260744">Určuje, či prehrávanie videa ovplyvňuje správu napájania</translation>
 <translation id="9088433379343318874">Povoliť poskytovateľa obsahu pre kontrolovaného používateľa</translation>
 <translation id="9088444059179765143">Konfigurovať spôsob automatického zisťovania časového pásma</translation>
-<translation id="9094064873808699479">Ak je verzia operačného systému novšia ako cieľová, vráťte sa na cieľovú verziu. Ak je to možné, vyskúšajte v rámci prechodu na nižšiu verziu preniesť konfiguráciu na úrovni zariadenia (vrátane prihlasovacích údajov do siete). Ak sa údaje nedajú obnoviť (pretože cieľová verzia nepodporuje obnovu údajov alebo ste vykonali zmenu, ktorá neumožňuje prechod na nižšiu verziu), prejdite na nižšiu verziu a vykonajte úplné obnovenie Powerwash.
-          Podporované v prehliadači <ph name="PRODUCT_OS_NAME" /> verzie 70 a novšej. V prípade starších klientov táto hodnota znamená, že prechod na nižšiu verziu je zakázaný.</translation>
 <translation id="9096086085182305205">Zoznam povolených overovacích serverov</translation>
 <translation id="9105265795073104888">Aplikácie pre Android majú k dispozícii iba podmnožinu možností konfigurácie proxy servera. Aplikácie pre Android sa môžu samostatne rozhodnúť, či budú proxy server používať. Nie je možné to vynútiť.</translation>
 <translation id="9106865192244721694">Povolenie WebUSB na týchto weboch</translation>

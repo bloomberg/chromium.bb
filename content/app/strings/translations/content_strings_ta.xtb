@@ -36,6 +36,7 @@
 <translation id="2148716181193084225">இன்று</translation>
 <translation id="2158401438286456825">பக்கப் பட்டியல்</translation>
 <translation id="2226276347425096477">இந்த உரையை <ph name="MAX_CHARACTERS" /> எழுத்துக்குறிகள் அல்லது அதற்கும் குறைவாக சுருக்கிடுங்கள் (நீங்கள் தற்போது <ph name="CURRENT_LENGTH" /> எழுத்துக்குறிகளைப் பயன்படுத்துகிறீர்கள்).</translation>
+<translation id="2246498165605549352">அகக் கோப்பு</translation>
 <translation id="2247351761944213033">வாரம் <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">ட்ராக் <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">செக்பாக்ஸ்</translation>
@@ -74,6 +75,7 @@
 <translation id="3685101356851116974">லேபிளிடப்படாத படம்</translation>
 <translation id="3706100364254443312">ஸ்விட்ச்</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">’பிக்ச்சர்-இன்-பிக்ச்சரில்' இருந்து வெளியேறு</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">சொல்</translation>
 <translation id="3822383571486410024">இந்த உரையை <ph name="MIN_CHARACTERS" /> எழுத்துக்குறிகள் அல்லது அதற்கும் அதிகமாக (தற்போது <ph name="CURRENT_LENGTH" /> எழுத்துக்குறிகளைப் பயன்படுத்துகிறீர்கள்) நீட்டிக்கவும்.</translation>
@@ -101,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' ஐத் தொடரும் பகுதியில், '<ph name="INVALIDCHARACTER" />' சின்னம் இருக்கக்கூடாது.</translation>
 <translation id="4668956016107839909">பிற்சேர்க்கை</translation>
+<translation id="4718048029184481307">’பிக்ச்சர்-இன்-பிக்ச்சர்' பயன்முறையில் பிளே ஆகிறது</translation>
 <translation id="4742539557769756338">அட்டை</translation>
 <translation id="4748357248530471599">டிஸ்ப்ளே கட்அவுட் முழுத்திரை நிலைமாற்ற பட்டன்</translation>
 <translation id="4757246831282535685">தாவல் பலகம்</translation>
@@ -175,6 +178,7 @@
 <translation id="6941933287844615239">மீடியாவைப் பதிவிறக்கு</translation>
 <translation id="6981594929165378967">செருகும்</translation>
 <translation id="6989848892321993519">இந்த உரையில் <ph name="MIN_CHARACTERS" /> அல்லது அதற்கு மேற்பட்ட எழுத்துக்குறிகளைப் பயன்படுத்தவும் (தற்போது 1 எழுத்துக்குறியைப் பயன்படுத்துகிறீர்கள்).</translation>
+<translation id="7033340931668032222">ஒலியளவை மாற்ற மேலும் கீழும் அசைக்கவும்</translation>
 <translation id="709897737746224366">கோரிய வடிவமைப்பில் தருக.</translation>
 <translation id="7118469954320184356">விவரம் எதுவுமில்லை.</translation>
 <translation id="7139483182332611405">முன்னுரை</translation>
@@ -226,6 +230,7 @@
 <translation id="8550857728288566671">கிராஃபிக்ஸ் சின்னம்</translation>
 <translation id="8583702881314752957">விளக்கப் பட்டியல்</translation>
 <translation id="8597182159515967513">தலைப்பு</translation>
+<translation id="8603553056539299761">நகர்த்த இடது புறமும் வலது புறமும் அசைக்கவும்</translation>
 <translation id="860475260694818407">உள்ளடக்க அட்டவணை</translation>
 <translation id="8613126697340063924">தொலைநிலை இயக்கத்தைக் கட்டுப்படுத்தவும்</translation>
 <translation id="862370744433916922">துணை தலைப்பு</translation>

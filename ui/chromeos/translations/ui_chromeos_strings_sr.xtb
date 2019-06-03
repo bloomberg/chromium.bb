@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">шведски</translation>
 <translation id="4693155481716051732">Суши</translation>
 <translation id="4694604912444486114">Мајмун</translation>
+<translation id="4697043402264950621">Листа датотека је сортирана по растућем редоследу по критеријуму <ph name="COLUMN_NAME" />.</translation>
 <translation id="4711094779914110278">турски</translation>
 <translation id="4713544552769165154">Ова датотека је дизајнирана за рачунар који користи Macintosh софтвер. Она није компатибилна са вашим уређајем који користи Chrome ОС. Претражите <ph name="BEGIN_LINK" />Chrome веб-продавницу<ph name="END_LINK" /> да бисте пронашли одговарајућу апликацију за замену.<ph name="BEGIN_LINK_HELP" />Сазнајте више<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">Направљена је резервна копија слика (<ph name="FILE_COUNT" />)</translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">Нови прозор</translation>
 <translation id="7348749398828259943">Америчка Workman интернационална тастатура</translation>
 <translation id="7359359531237882347">Копирају се ставке (<ph name="NUMBER_OF_ITEMS" />)...</translation>
+<translation id="7375951387215729722">Листа датотека је сортирана по опадајућем редоследу по критеријуму <ph name="COLUMN_NAME" />.</translation>
 <translation id="7389722738210761877">Тајска тастатура (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Хинди тастатура (фонетска)</translation>
 <translation id="7417453074306512035">Етиопљанска тастатура</translation>

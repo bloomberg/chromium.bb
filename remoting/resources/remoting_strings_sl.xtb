@@ -124,8 +124,6 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="3695446226812920698">Oglejte si navodila</translation>
 <translation id="3718805989288361841">Napaka z nastavitvami pravilnika za Oddaljeno namizje Chrome. Če želite pomoč, se obrnite na sistemskega skrbnika.</translation>
 <translation id="3776024066357219166">Seja Oddaljenega namizja za Chrome je končana.</translation>
-<translation id="3846148461359626420">• Boljša izkušnja premikanja in povečave/pomanjšave v iPhonu X.
-• Izboljšave stabilnosti delovanja in popravki napak.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Če želite dovoliti dostop prek Oddaljenega namizja za Chrome, spodaj potrdite račun in PIN.</translation>
 <translation id="3897092660631435901">Meni</translation>
@@ -324,8 +322,6 @@ PC</translation>
 <translation id="8525306231823319788">Celozaslonsko</translation>
 <translation id="8548209692293300397">V preteklosti ste se prijavljali kot <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Če želite dostopati do računalnikov v tistem računu, <ph name="LINK_BEGIN" />se prijavite v Google Chrome<ph name="LINK_END" /> s tistim računom in znova namestite Oddaljeno namizje za Chrome.</translation>
 <translation id="8642984861538780905">Zadovoljiva</translation>
-<translation id="8705151241155781642">• Dodana podpora za Android 9.0 Pie.
-• Podpora za spreminjanje ločljivosti oddaljenega namizja, da se ujema z zaslonom naprave Android.</translation>
 <translation id="8712909229180978490">V spletu ne vidim shranjenih datotek v Googlu Drive.</translation>
 <translation id="8743328882720071828">Ali želite dovoliti, da ima uporabnik <ph name="CLIENT_USERNAME" /> dostop do vašega računalnika in ga lahko nadzira?</translation>
 <translation id="8747048596626351634">Seja se je zrušila ali je ni bilo mogoče začeti. Če je v oddaljenem računalniku seja ~/.chrome-remote-desktop-session, poskrbite, da je v njej zagnan dolgotrajen proces v ospredju, kot je okolje namizja ali upravitelj oken.</translation>

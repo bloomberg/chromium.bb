@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Прийняті картки</translation>
 <translation id="1032854598605920125">Обернути за годинниковою стрілкою</translation>
 <translation id="1035334672863811645">увійдіть в обліковий запис Chrome</translation>
+<translation id="1036348656032585052">Вимкнути</translation>
 <translation id="1038842779957582377">Невідоме ім’я</translation>
 <translation id="1039626062703039346">Chrome допоможе захистити обліковий запис Google і змінити пароль. Ми отримаємо сповіщення про цей сайт.</translation>
 <translation id="1050038467049342496">Закрийте інші додатки</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Ім’я та прізвище власника картки</translation>
 <translation id="1821930232296380041">Недійсний запит або параметри запиту</translation>
+<translation id="1822370876374026111">Щоб наступного разу платити швидше, додайте дані картки та платіжну адресу в обліковий запис Google і на цей пристрій.</translation>
 <translation id="1822540298136254167">Відвідані веб-сайти й час перебування на них</translation>
 <translation id="1826516787628120939">Перевірка</translation>
 <translation id="1834321415901700177">Цей сайт містить шкідливі програми</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">Відкрити стартові сторінки</translation>
 <translation id="1883255238294161206">Згорнути список</translation>
 <translation id="1898423065542865115">Фільтрування</translation>
+<translation id="1914326953223720820">Сервіс розпакування</translation>
 <translation id="1916770123977586577">Щоб застосувати оновлені налаштування на цьому сайті, оновіть сторінку</translation>
 <translation id="1919345977826869612">Оголошення</translation>
 <translation id="1919367280705858090">Як виправити конкретну помилку</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">Щоб використовувати картки на всіх своїх пристроях, увімкніть синхронізацію.</translation>
 <translation id="2365563543831475020">Звіт про аварійне завершення роботи о <ph name="CRASH_TIME" /> не завантажено</translation>
 <translation id="2367567093518048410">Рівень</translation>
-<translation id="2378238891085281592">Ви перейшли в приватний режим</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Стандартне корпоративне правило</translation>
 <translation id="2386255080630008482">Сертифікат сервера відкликано.</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">От халепа!</translation>
 <translation id="3041612393474885105">Інформація про сертифікат</translation>
 <translation id="3060227939791841287">C9 (конверт)</translation>
+<translation id="3061707000357573562">Служба виправлень</translation>
 <translation id="3064966200440839136">Щоб оплатити в зовнішньому додатку, ви вийдете з режиму анонімного перегляду. Продовжити?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Немає}=1{1 пароль}one{# пароль}few{# паролі}many{# паролів}other{# пароля}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -593,6 +596,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{ще <ph name="ITEM_COUNT" /> елемент}one{ще <ph name="ITEM_COUNT" /> елемент}few{ще <ph name="ITEM_COUNT" /> елементи}many{ще <ph name="ITEM_COUNT" /> елементів}other{ще <ph name="ITEM_COUNT" /> елемента}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Щоб наступного разу платити швидше, додайте дані картки та платіжну адресу в обліковий запис Google.</translation>
 <translation id="4196861286325780578">&amp;Повторити переміщення</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />перевірити конфігурацію брандмауера й антивірусної програми<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (конверт)</translation>
@@ -731,7 +735,6 @@
 <translation id="4926159001844873046">Повідомлення із сайту <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" /> з <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Не знайдено жодного результату</translation>
-<translation id="4945672369594656571">Керує обробкою даних пристрою й облікового запису. Google обробляє дані пристрою й облікового запису виключно під керівництвом їх адміністратора та лише для вказаних ним цілей.</translation>
 <translation id="4950898438188848926">Кнопка перемикання вкладки: натисніть Enter, щоб перейти на відкриту вкладку, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Дії</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -745,7 +748,6 @@
 <translation id="5017554619425969104">Скопійований текст</translation>
 <translation id="5018422839182700155">Не вдається відкрити цю сторінку</translation>
 <translation id="5019198164206649151">Резервний носій пошкоджено</translation>
-<translation id="5020154601324912079">Керує обробкою даних пристрою. Google обробляє дані пристрою виключно під керівництвом його адміністратора та лише для вказаних ним цілей.</translation>
 <translation id="5023310440958281426">Перегляньте правила свого адміністратора</translation>
 <translation id="5029568752722684782">Видалити копію</translation>
 <translation id="503069730517007720">Для програмного забезпечення <ph name="SOFTWARE_NAME" /> потрібен кореневий сертифікат, однак його не встановлено. Вашому IT-адміністратору потрібно переглянути вказівки з налаштування <ph name="SOFTWARE_NAME" />, щоб вирішити цю проблему. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -918,6 +920,7 @@
 <translation id="5921639886840618607">Зберегти картку в обліковому записі Google?</translation>
 <translation id="5922853866070715753">Майже готово</translation>
 <translation id="5932224571077948991">Сайт показує нав’язливі чи оманливі оголошення</translation>
+<translation id="5939847200023027600">Служба компонування PDF</translation>
 <translation id="5946937721014915347">Відкривається <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Так, додати</translation>
 <translation id="5951495562196540101">Не вдається зареєструватися за допомогою особистого облікового запису користувача (ліцензію отримано в комплекті з пристроєм).</translation>
@@ -1008,6 +1011,7 @@
 <translation id="6451458296329894277">Підтвердити повторне надсилання форми</translation>
 <translation id="6465306955648956876">Керувати паролями…</translation>
 <translation id="647261751007945333">Правила пристрою</translation>
+<translation id="6476284679642588870">Керувати способами оплати</translation>
 <translation id="6477321094435799029">Chrome виявив на цій сторінці незвичний код і заблокував його, щоб захистити вашу особисту інформацію (наприклад, паролі, номери телефонів або кредитних карток).</translation>
 <translation id="6489534406876378309">Почати завантаження даних про аварійне завершення роботи</translation>
 <translation id="6499038740797743453">Скинути пароль?</translation>
@@ -1080,7 +1084,6 @@
 <translation id="6948701128805548767">Укажіть адресу, щоб переглянути способи отримання та вимоги.</translation>
 <translation id="6949872517221025916">Скидання пароля</translation>
 <translation id="6950684638814147129">Сталася помилка під час синтаксичного аналізу значення JSON: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Відкрийте сторінку в новій приватній вкладці</translation>
 <translation id="6957887021205513506">Схоже, що сертифікат сервера підроблено.</translation>
 <translation id="6964255747740675745">Не вдалося виконати синтаксичний аналіз конфігурації мережі (недійсний формат JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -1090,7 +1093,6 @@
 <translation id="6973932557599545801">На жаль, я не можу допомогти. Продовжуйте самостійно.</translation>
 <translation id="6979158407327259162">Диск Google</translation>
 <translation id="6979440798594660689">Без звуку (за умовчанням)</translation>
-<translation id="6984479912851154518">Щоб оплатити в зовнішньому додатку, ви вийдете з приватного режиму. Продовжити?</translation>
 <translation id="6989763994942163495">Показати розширені налаштування...</translation>
 <translation id="6993898126790112050">6x9 (конверт)</translation>
 <translation id="6996312675313362352">Завжди перекладати з такої мови: <ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1148,6 +1150,7 @@
 <translation id="7298195798382681320">Рекомендоване</translation>
 <translation id="7300012071106347854">Кобальтовий</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
+<translation id="7303701124147721189">Щоб наступного разу платити швидше, збережіть дані картки та платіжну адресу в обліковому записі Google і на цьому пристрої.</translation>
 <translation id="7309308571273880165">Звіт про аварійне завершення роботи створено <ph name="CRASH_TIME" /> (ще не завантажено)</translation>
 <translation id="7313965965371928911">Застереження <ph name="BEGIN_LINK" />Безпечного перегляду<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1178,7 +1181,6 @@
 <translation id="741007362987735528">Широкий формат</translation>
 <translation id="7416351320495623771">Керувати паролями…</translation>
 <translation id="7419106976560586862">Шлях до профілю</translation>
-<translation id="7424427397225027541">Керує обробкою даних облікового запису. Google обробляє дані облікового запису виключно під керівництвом його адміністратора та лише для вказаних ним цілей.</translation>
 <translation id="7437289804838430631">Додати контактну інформацію</translation>
 <translation id="7440140511386898319">Перегляд у режимі офлайн</translation>
 <translation id="7441627299479586546">Неправильна тема правила</translation>
@@ -1318,6 +1320,7 @@
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Недійсні картки видалено</translation>
 <translation id="8103161714697287722">Спосіб оплати</translation>
+<translation id="8105368624971345109">Вимкнути</translation>
 <translation id="8118489163946903409">Спосіб оплати</translation>
 <translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> неправильно встановлено на вашому комп’ютері або в мережі. Попросіть IT-адміністратора вирішити цю проблему.</translation>
 <translation id="8131740175452115882">Підтвердити</translation>
@@ -1376,6 +1379,7 @@
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8433057134996913067">Ви вийдете з облікового запису на більшості веб-сайтів.</translation>
 <translation id="8437238597147034694">&amp;Відмінити переміщення</translation>
+<translation id="8440508849222143646">Щоб наступного разу платити швидше, збережіть дані картки та платіжну адресу в обліковому записі Google.</translation>
 <translation id="8461694314515752532">Шифрувати синхронізовані дані за допомогою власної парольної фрази</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна картка}one{# кредитна картка}few{# кредитні картки}many{# кредитних карток}other{# кредитної картки}}</translation>
 <translation id="8473863474539038330">Адреси й інше</translation>
@@ -1482,6 +1486,7 @@
 <translation id="9128870381267983090">З'єднатися з мережею</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
 <translation id="9137248913990643158">Перш ніж користуватися додатком, увійдіть в обліковий запис Chrome.</translation>
+<translation id="9141013498910525015">Керувати адресами</translation>
 <translation id="9148088599418889305">Вибрати спосіб доставки</translation>
 <translation id="9148507642005240123">&amp;Відмінити редагування</translation>
 <translation id="9154194610265714752">Оновлено</translation>

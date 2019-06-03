@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">स्वीकारलेली कार्ड</translation>
 <translation id="1032854598605920125">घड्याळाच्या दिशेने फिरवा</translation>
 <translation id="1035334672863811645">Chrome मध्ये साइन इन करा</translation>
+<translation id="1036348656032585052">बंद करा</translation>
 <translation id="1038842779957582377">अज्ञात नाव</translation>
 <translation id="1039626062703039346">तुमच्या Google खात्याचे संरक्षण करण्यात आणि तुमचा पासवर्ड बदलण्यात Chrome तुम्हाला मदत करू शकते. हे Google ला या साइटबद्दल सूचित करेल.</translation>
 <translation id="1050038467049342496">अन्य ॲप्स बंद करा</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">कार्डधारकाचे नाव</translation>
 <translation id="1821930232296380041">अवैध विनंती किंवा विनंती मापदंड</translation>
+<translation id="1822370876374026111">पुढील वेळेस जलद पेमेंट करण्यासाठी , तुमच्या Google खात्यामध्ये आणि या डिव्हाइसवर तुमचे कार्ड आणि बिलिंग पत्ता जोडा.</translation>
 <translation id="1822540298136254167">तुम्ही भेट देत असलेल्या वेबसाइट आणि त्यावर व्यतीत केलेला वेळ</translation>
 <translation id="1826516787628120939">तपासत आहे</translation>
 <translation id="1834321415901700177">या साइटमध्ये धोकादायक प्रोग्राम आहेत</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">प्रारंभ पृष्ठ उघडा</translation>
 <translation id="1883255238294161206">सूची कोलॅप्स</translation>
 <translation id="1898423065542865115">फिल्टर करणे</translation>
+<translation id="1914326953223720820">अनझिप सेवा</translation>
 <translation id="1916770123977586577">तुमच्या सेटिंग्ज या साइटवर लागू करण्यासाठी, हे पेज रीलोड करा</translation>
 <translation id="1919345977826869612">जाहिराती</translation>
 <translation id="1919367280705858090">विशिष्ट एरर मेसेजच्या बाबतीत मदत मिळवा</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">सर्व डिव्हाइसवर तुमची कार्डे वापरण्यासाठी सिंक सुरू करा.</translation>
 <translation id="2365563543831475020"><ph name="CRASH_TIME" /> वाजता कॅप्चर केलेला क्रॅश अहवाल अपलोड केला नाही</translation>
 <translation id="2367567093518048410">दर्जा</translation>
-<translation id="2378238891085281592">तुम्ही खाजगी मोडमध्ये गेला आहात</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">एंटरप्राइझ डीफॉल्ट</translation>
 <translation id="2386255080630008482">सर्व्हरचे सर्टिफिकेट रिव्होक केले गेले.</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">च्चक!</translation>
 <translation id="3041612393474885105">सर्टिफिकेट माहिती</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
+<translation id="3061707000357573562">पॅच सेवा</translation>
 <translation id="3064966200440839136">बाह्य ॲप्लिकेशन द्वारे पेमेंट देण्यासाठी गुप्त मोड सोडत आहे. सुरु ठेवायचे?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{काहीही नाही}=1{1 पासवर्ड}other{# पासवर्ड}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -592,6 +595,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{आणखी <ph name="ITEM_COUNT" /> आयटम}other{आणखी <ph name="ITEM_COUNT" /> आयटम}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">पुढील वेळेस जलद पेमेंट करण्यासाठी, तुमच्या Google खात्यामध्ये तुमचे कार्ड आणि बिलिंग पत्ता जोडा.</translation>
 <translation id="4196861286325780578">&amp;हलवा पुन्हा करा</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />फायरवॉल आणि अँटीव्हायरस कॉन्फिगरेशन तपासणे<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -730,7 +734,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> चे म्हणणे हे आहे की</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">परिणाम नाहीत</translation>
-<translation id="4945672369594656571">तुमचे डिव्हाइस आणि खाते डेटा कसा हाताळला जातो यावर नियंत्रण ठेवा. Google विशेषत: तुमच्या डिव्हाइस आणि खाते व्यवस्थापकाच्या निर्देशानुसार आणि तुमच्या डिव्हाइस आणि खाते व्यवस्थापकाने नमूद केलेल्या उद्देशांतर्गत तुमच्या डिव्हाइस आणि खाते डेटाची प्रक्रिया करते.</translation>
 <translation id="4950898438188848926">टॅब स्विच बटण, उघड्या टॅबवर स्विच करण्यासाठी एंटर दाबा, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">क्रिया</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -744,7 +747,6 @@
 <translation id="5017554619425969104">तुम्ही कॉपी केलेला मजकूर</translation>
 <translation id="5018422839182700155">हे पृष्‍ठ उघडू शकत नाही</translation>
 <translation id="5019198164206649151">समर्थन संचयन खराब स्थितीत</translation>
-<translation id="5020154601324912079">तुमच्या डिव्हाइसचा डेटा कसा हाताळला जातो ते नियंत्रित करा. Google विशेषत: तुमच्या डिव्हाइस व्यवस्थापकाच्या निर्देशानुसार आणि तुमच्या डिव्हाइस व्यवस्थापकाने नमूद केलेल्या उद्देशांतर्गत तुमच्या डिव्हाइस डेटाची प्रक्रिया करते.</translation>
 <translation id="5023310440958281426">तुमच्या अॅडमिनिस्ट्रेटरची धोरणे तपासा</translation>
 <translation id="5029568752722684782">कॉपी साफ करा</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" साठी मूळ सर्टिफिकेट आवश्यक आहे परंतु ते इंस्टॉल केलेले नाही. तुमच्या IT अ‍ॅडमिनिस्ट्रेटरने ही समस्या सोडण्यासाठी "<ph name="SOFTWARE_NAME" />" साठीच्या कॉन्फिगरेशन सूचना पहाव्यात. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -917,6 +919,7 @@
 <translation id="5921639886840618607">Google खात्यात कार्ड सेव्ह करायचे?</translation>
 <translation id="5922853866070715753">जवळजवळ पूर्ण झाले</translation>
 <translation id="5932224571077948991">साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवते</translation>
+<translation id="5939847200023027600">पीडीएफ कंपोझिटर सेवा</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> उघडत आहे…</translation>
 <translation id="5947933617628957894">होय, जोडा</translation>
 <translation id="5951495562196540101">उपभोक्ता खात्याने नोंदणी करू शकत नाही (पॅकेज केलेला परवाना उपलब्ध).</translation>
@@ -1008,6 +1011,7 @@
 <translation id="6451458296329894277">फॉर्म रीसबमिशनची पुष्टी करा</translation>
 <translation id="6465306955648956876">पासवर्ड व्यवस्थापित करा...</translation>
 <translation id="647261751007945333">डिव्हाइस धोरणे</translation>
+<translation id="6476284679642588870">पेमेंट पद्धती व्यवस्थापित करा</translation>
 <translation id="6477321094435799029">Chrome ला या पृष्‍ठावर असमान्य कोड सापडला आहे आणि तुमची वैयक्तिक माहिती (उदा, पासवर्ड, फोन नंबर आणि क्रेडिट कार्ड) संरक्षित करण्‍यासाठी अवरोधित केला आहे.</translation>
 <translation id="6489534406876378309">क्रॅश अपलोड करणे प्रारंभ करा</translation>
 <translation id="6499038740797743453">पासवर्ड रीसेट करायचा?</translation>
@@ -1080,7 +1084,6 @@
 <translation id="6948701128805548767">पिकअप पद्धती आणि आवश्यकता पाहण्यासाठी, एक पत्ता निवडा</translation>
 <translation id="6949872517221025916">पासवर्ड रीसेट करा</translation>
 <translation id="6950684638814147129">JSON मूल्य पार्स करताना एरर आली: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">नवीन खाजगी टॅबमध्ये पेज उघडा</translation>
 <translation id="6957887021205513506">सर्व्हरचे सर्टिफिकेट बनावट असल्याचे दिसून येते.</translation>
 <translation id="6964255747740675745">नेटवर्क कॉन्फिगरेशन पार्स करता आले नाही (चुकीची JSON).</translation>
 <translation id="6965382102122355670">ठीक आहे</translation>
@@ -1090,7 +1093,6 @@
 <translation id="6973932557599545801">सॉरी मला मदत करता आली नाही कृपया तुम्ही स्वतःच सुरू ठेवा.</translation>
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
 <translation id="6979440798594660689">निःशब्द करा (डीफॉल्ट)</translation>
-<translation id="6984479912851154518">बाह्य ॲप्लिकेशनने पैसे भरण्यासाठी खाजगी मोड सोडत आहे. सुरू ठेवायचे का?</translation>
 <translation id="6989763994942163495">प्रगत सेटिंग्ज दर्शवा...</translation>
 <translation id="6993898126790112050">6x9 (Envelope)6x9 (Envelope)</translation>
 <translation id="6996312675313362352"><ph name="ORIGINAL_LANGUAGE" />चे नेहमी भाषांतर करा</translation>
@@ -1148,6 +1150,7 @@
 <translation id="7298195798382681320">शिफारस केलेले</translation>
 <translation id="7300012071106347854">गडद निळा</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
+<translation id="7303701124147721189">पुढील वेळेस जलद पेमेंट करण्यासाठी, तुमच्या Google खात्यामध्ये आणि या डिव्हाइसवर तुमचे कार्ड आणि बिलिंग पत्ता स्टोअर करा.</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" /> वाजता क्रॅश अहवाल कॅप्चर केला (वापरकर्त्याने विनंती केलेले अपलोड, अद्याप अपलोड केलेले नाही)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />सुरक्षित ब्राउझिंग<ph name="END_LINK" /> चेतावणी</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1178,7 +1181,6 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">पासवर्ड व्यवस्थापित करा…</translation>
 <translation id="7419106976560586862">प्रोफाइल पथ</translation>
-<translation id="7424427397225027541">तुमच्या खात्याचा डेटा कसा हाताळला जातो ते नियंत्रित करा. Google विशेषत: तुमच्या खाते व्यवस्थापकाच्या निर्देशानुसार आणि तुमच्या खाते व्यवस्थापकाने नमूद केलेल्या उद्देशांतर्गत तुमच्या खाते डेटाची प्रक्रिया करते.</translation>
 <translation id="7437289804838430631">संपर्क माहिती जोडा</translation>
 <translation id="7440140511386898319">ऑफलाइन असताना एक्सप्लोर करा</translation>
 <translation id="7441627299479586546">चुकीचे धोरण विषय</translation>
@@ -1318,6 +1320,7 @@
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">चुकीची कार्डे काढून टाकण्यात आली आहेत</translation>
 <translation id="8103161714697287722">पेमेंट पद्धत</translation>
+<translation id="8105368624971345109">बंद करा</translation>
 <translation id="8118489163946903409">पेमेंट पद्धत</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" तुमच्या काँप्युटरवर किंवा नेटवर्कवर योग्य रीतीने इंस्टॉल केले नव्हते. तुमच्या अ‍ॅडमिनिस्ट्रेटरला ही समस्या सोडवण्यास सांगा.</translation>
 <translation id="8131740175452115882">पुष्टी करा</translation>
@@ -1376,6 +1379,7 @@
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8433057134996913067">हे तुम्हाला बहुतांश वेबसाइट वरून साइन आउट करेल.</translation>
 <translation id="8437238597147034694">&amp;हलवा पूर्ववत करा</translation>
+<translation id="8440508849222143646">पुढील वेळेस जलद पेमेंट करण्यासाठी, तुमच्या Google खात्यामध्ये तुमचे कार्ड आणि बिलिंग पत्ता स्टोअर करा.</translation>
 <translation id="8461694314515752532">तुमच्या स्वतःच्या सिंक पासफ्रेजसह सिंक केलेला डेटा एंक्रिप्ट करा</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 क्रेडिट कार्ड}other{# क्रेडिट कार्ड}}</translation>
 <translation id="8473863474539038330">पत्ते आणि बरेच काही</translation>
@@ -1481,6 +1485,7 @@
 <translation id="9128870381267983090">नेटवर्कशी कनेक्ट करा</translation>
 <translation id="9137013805542155359">मूळ दर्शवा</translation>
 <translation id="9137248913990643158">कृपया हा ॲप वापरण्‍यापूर्वी प्रारंभ करा आणि Chrome मध्‍ये साइन इन करा.</translation>
+<translation id="9141013498910525015">पत्ते व्यवस्थापित करा</translation>
 <translation id="9148088599418889305">पाठवण्याची पद्धत निवडा</translation>
 <translation id="9148507642005240123">&amp;संपादित करा पूर्ववत करा</translation>
 <translation id="9154194610265714752">अपडेट केलेले</translation>

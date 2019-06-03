@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">הצעת סיסמה…</translation>
 <translation id="1870148520156231997">הצגת הסיסמה</translation>
 <translation id="1876721852596493031">שלח נתוני שימוש</translation>
-<translation id="1886928167269928266">משחר ההיסטוריה</translation>
 <translation id="1911619930368729126">‏העלה אל Google Drive</translation>
+<translation id="1923342640370224680">בשעה האחרונה</translation>
 <translation id="1941314575388338491">הקש פעמיים כדי להעתיק.</translation>
 <translation id="1952172573699511566">אתרים יציגו טקסט בשפה המועדפת שלך, כשזה אפשרי.</translation>
 <translation id="1952728750904661634">כניסה עם חשבון מנוהל</translation>
 <translation id="1974060860693918893">מתקדם</translation>
 <translation id="1989112275319619282">דפדף</translation>
 <translation id="2015722694326466240">רוצה להציג את הסיסמאות? תחילה עליך להגדיר קוד גישה במכשיר.</translation>
-<translation id="2068952045031577364">מהשבוע האחרון</translation>
 <translation id="2074131957428911366">אפשר לבחור מה לסנכרן בכל שלב דרך <ph name="BEGIN_LINK" />ההגדרות<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
 <translation id="209018056901015185">טען גירסת מחשב שולחני</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">סיסמאות</translation>
 <translation id="2969979262385602596">הכניסה נכשלה. נסה שוב מאוחר יותר.</translation>
 <translation id="2989805286512600854">פתיחה בכרטיסייה חדשה</translation>
-<translation id="3024255823539804759">מהיום האחרון</translation>
 <translation id="3037605927509011580">אוי, לא!</translation>
 <translation id="3112556859945124369">סמן…</translation>
 <translation id="3157684681743766797">סמן הכול…</translation>
@@ -381,7 +379,6 @@
 <translation id="6464071786529933911">פתיחה בכרטיסיית גלישה בסתר חדשה</translation>
 <translation id="6476800141292307438">הדפדפן מתרגם את הדף ל<ph name="LANGUAGE" />. האפשרויות מוצגות בחלק התחתון של המסך.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים נמחקו</translation>
-<translation id="6541915733953096570">מהשעה האחרונה</translation>
 <translation id="6610002944194042868">אפשרויות תרגום</translation>
 <translation id="6642362222295953972">מעבר אל כרטיסייה קיימת</translation>
 <translation id="6643016212128521049">ניקוי</translation>
@@ -502,6 +499,7 @@
 <translation id="8532105204136943229">שנת פקיעת התוקף</translation>
 <translation id="8534481786647257214">‏הפרסום ב-‏Google+‎ בוצע.</translation>
 <translation id="8548878600947630424">חיפוש בדף...</translation>
+<translation id="8583866649835978847">שליחת <ph name="TITLE" /> אל אחד מהמכשירים שלך.</translation>
 <translation id="8605219856220328675">סגור כרטיסייה.</translation>
 <translation id="8620640915598389714">עריכה</translation>
 <translation id="8636825310635137004">כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את הסנכרון.</translation>

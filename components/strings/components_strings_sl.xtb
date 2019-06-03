@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Sprejete kartice</translation>
 <translation id="1032854598605920125">Sukanje v smeri urnega kazalca</translation>
 <translation id="1035334672863811645">se prijavite v Chrome</translation>
+<translation id="1036348656032585052">Izklop</translation>
 <translation id="1038842779957582377">neznano ime</translation>
 <translation id="1039626062703039346">Chrome vam lahko pomaga zaščititi račun za Google in spremeniti geslo. S tem bo Google obveščen o tem spletnem mestu.</translation>
 <translation id="1050038467049342496">Zaprite druge aplikacije</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Ime imetnika kartice</translation>
 <translation id="1821930232296380041">Neveljavna zahteva ali parametri zahteve</translation>
+<translation id="1822370876374026111">Če želite naslednjič hitreje plačati, dodajte kartico in naslov za izstavitev računa v računu za Google in v tej napravi.</translation>
 <translation id="1822540298136254167">Spletna mesta, ki jih obiščete, in čas, ki ga porabite zanje</translation>
 <translation id="1826516787628120939">Preverjanje</translation>
 <translation id="1834321415901700177">Na tem spletnem mestu so škodljivi programi</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">Odpiranje strani ob zagonu</translation>
 <translation id="1883255238294161206">Strni seznam</translation>
 <translation id="1898423065542865115">Filtriranje</translation>
+<translation id="1914326953223720820">Storitev razširjanja datotek</translation>
 <translation id="1916770123977586577">Če želite uporabiti posodobljene nastavitve za to spletno mesto, znova naložite to stran</translation>
 <translation id="1919345977826869612">Oglasi</translation>
 <translation id="1919367280705858090">Pomoč pri določenem sporočilu o napaki</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">Če želite uporabljati kartice v vseh napravah, vklopite sinhronizacijo.</translation>
 <translation id="2365563543831475020">Poročilo o zrušitvi, zajeto takrat: <ph name="CRASH_TIME" />, ni bilo naloženo</translation>
 <translation id="2367567093518048410">Raven</translation>
-<translation id="2378238891085281592">Uporabljate zasebni način</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Privzeto za podjetja</translation>
 <translation id="2386255080630008482">Potrdilo strežnika je bilo preklicano.</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">Ti šment!</translation>
 <translation id="3041612393474885105">Informacije o potrdilu</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
+<translation id="3061707000357573562">Storitev za popravke</translation>
 <translation id="3064966200440839136">Zaradi plačila v zunanji aplikaciji boste zapustili način brez beleženja zgodovine. Želite nadaljevati?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Brez}=1{1 geslo}one{# geslo}two{# gesli}few{# gesla}other{# gesel}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -593,6 +596,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Še <ph name="ITEM_COUNT" /> element}one{Še <ph name="ITEM_COUNT" /> element}two{Še <ph name="ITEM_COUNT" /> elementa}few{Še <ph name="ITEM_COUNT" /> elementi}other{Še <ph name="ITEM_COUNT" /> elementov}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Če želite naslednjič hitreje plačati, dodajte kartico in naslov za izstavitev računa v računu za Google.</translation>
 <translation id="4196861286325780578">&amp;Uveljavi premik</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />preveriti požarni zid in konfiguracije protivirusnega programa<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -731,7 +735,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> sporoča:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Ni rezultatov</translation>
-<translation id="4945672369594656571">Nadzira obravnavo podatkov v napravi in računu. Google obdeluje podatke v napravi in računu izključno v skladu z usmeritvijo skrbnika naprave in računa ter zgolj za namene, ki jih določi skrbnik naprave in računa.</translation>
 <translation id="4950898438188848926">Gumb za preklop zavihkov, pritisnite Enter, če želite preklopiti na odprti zavihek, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Dejanja</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -745,7 +748,6 @@
 <translation id="5017554619425969104">Besedilo, ki ste ga kopirali</translation>
 <translation id="5018422839182700155">Te strani ni mogoče odpreti</translation>
 <translation id="5019198164206649151">Neprimerno stanje rezervne shrambe</translation>
-<translation id="5020154601324912079">Nadzira obravnavo podatkov v napravi. Google obdeluje podatke v napravi izključno v skladu z usmeritvijo skrbnika naprave in zgolj za namene, ki jih določi skrbnik naprave.</translation>
 <translation id="5023310440958281426">Preverite skrbnikove pravilnike</translation>
 <translation id="5029568752722684782">Počisti kopijo</translation>
 <translation id="503069730517007720">Korensko potrdilo za programsko opremo »<ph name="SOFTWARE_NAME" />« je obvezno, vendar ni nameščeno. Skrbnik za IT lahko za odpravo te težave upošteva navodila za konfiguracijo za programsko opremo »<ph name="SOFTWARE_NAME" />«. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -918,6 +920,7 @@
 <translation id="5921639886840618607">Ali želite kartico shraniti v Google Račun?</translation>
 <translation id="5922853866070715753">Skoraj končano</translation>
 <translation id="5932224571077948991">Spletno mesto prikazuje vsiljive ali zavajajoče oglase</translation>
+<translation id="5939847200023027600">Storitev sestavljalnika PDF-jev</translation>
 <translation id="5946937721014915347">Odpiranje spletnega mesta <ph name="SITE_NAME" /> …</translation>
 <translation id="5947933617628957894">Da, dodaj</translation>
 <translation id="5951495562196540101">S potrošniškim računom se ni mogoče včlaniti (na voljo je pridružena licenca).</translation>
@@ -1008,6 +1011,7 @@
 <translation id="6451458296329894277">Potrdite ponovno pošiljanje obrazca</translation>
 <translation id="6465306955648956876">Upravljanje gesel ...</translation>
 <translation id="647261751007945333">Pravilniki za naprave</translation>
+<translation id="6476284679642588870">Upravljanje plačilnih sredstev</translation>
 <translation id="6477321094435799029">Chrome je zaznal nenavadno kodo na tej strani in jo zaradi zaščite vaših osebnih podatkov (na primer gesel, telefonskih številk in kreditnih kartic) blokiral.</translation>
 <translation id="6489534406876378309">Začetek prenašanja zrušitev v storitev</translation>
 <translation id="6499038740797743453">Ali želite ponastaviti geslo?</translation>
@@ -1080,7 +1084,6 @@
 <translation id="6948701128805548767">Če si želite ogledati načine prevzema in zahteve, izberite naslov</translation>
 <translation id="6949872517221025916">Ponastavitev gesla</translation>
 <translation id="6950684638814147129">Napaka pri razčlenjevanju vrednosti JSON: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Odpiranje strani v novem zasebnem zavihku</translation>
 <translation id="6957887021205513506">Potrdilo strežnika je očitno ponaredek.</translation>
 <translation id="6964255747740675745">Omrežne konfiguracije ni bilo mogoče razčleniti (neveljaven JSON).</translation>
 <translation id="6965382102122355670">V redu</translation>
@@ -1090,7 +1093,6 @@
 <translation id="6973932557599545801">Ne morem vam pomagati. Nadaljujte sami.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Izklop zvoka (privzeto)</translation>
-<translation id="6984479912851154518">Zaradi plačila v zunanji aplikaciji boste zapustili zasebni način. Želite nadaljevati?</translation>
 <translation id="6989763994942163495">Prikaži dodatne nastavitve ...</translation>
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Vedno prevedi ta jezik: <ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1148,6 +1150,7 @@ Dodatne podrobnosti:
 <translation id="7298195798382681320">Priporočeni</translation>
 <translation id="7300012071106347854">Kobaltovo modra</translation>
 <translation id="7302712225291570345">»<ph name="TEXT" />«</translation>
+<translation id="7303701124147721189">Če želite naslednjič hitreje plačati, shranite kartico in naslov za izstavitev računa v računu za Google in tej napravi.</translation>
 <translation id="7309308571273880165">Poročilo o zrušitvi, zajeto takrat: <ph name="CRASH_TIME" /> (uporabnik je zahteval nalaganje; ni še bilo naloženo)</translation>
 <translation id="7313965965371928911">Opozorila za <ph name="BEGIN_LINK" />varno brskanje<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1178,7 +1181,6 @@ Dodatne podrobnosti:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Upravljaj gesla …</translation>
 <translation id="7419106976560586862">Pot profila</translation>
-<translation id="7424427397225027541">Nadzira obravnavo podatkov v računu. Google obdeluje podatke v računu izključno v skladu z usmeritvijo skrbnika računa in zgolj za namene, ki jih določi skrbnik računa.</translation>
 <translation id="7437289804838430631">Dodaj podatke o stiku</translation>
 <translation id="7440140511386898319">Raziskujte, ko ni povezave</translation>
 <translation id="7441627299479586546">Napačen subjekt pravilnika</translation>
@@ -1318,6 +1320,7 @@ Dodatne podrobnosti:
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Neveljavne kartice so odstranjene</translation>
 <translation id="8103161714697287722">Plačilno sredstvo</translation>
+<translation id="8105368624971345109">Izklop</translation>
 <translation id="8118489163946903409">Plačilno sredstvo</translation>
 <translation id="8127301229239896662">Programska oprema »<ph name="SOFTWARE_NAME" />« ni bila pravilno nameščena v računalniku ali omrežju. Obrnite se na skrbnika za IT glede odpravljanja te težave.</translation>
 <translation id="8131740175452115882">Potrdi</translation>
@@ -1376,6 +1379,7 @@ Dodatne podrobnosti:
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8433057134996913067">S tem boste odjavljeni z večine spletnih mest.</translation>
 <translation id="8437238597147034694">&amp;Razveljavi premik</translation>
+<translation id="8440508849222143646">Če želite naslednjič hitreje plačati, shranite kartico in naslov za izstavitev računa v računu za Google.</translation>
 <translation id="8461694314515752532">Šifriranje sinhroniziranih podatkov z vašim geslom za sinhronizacijo</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kreditna kartica}one{# kreditna kartica}two{# kreditni kartici}few{# kreditne kartice}other{# kreditnih kartic}}</translation>
 <translation id="8473863474539038330">Naslovi in drugo</translation>
@@ -1481,6 +1485,7 @@ Dodatne podrobnosti:
 <translation id="9128870381267983090">Vzpostavi povezavo z omrežjem</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
 <translation id="9137248913990643158">Začnite s prijavo v Chrome, preden začnete uporabljati to aplikacijo.</translation>
+<translation id="9141013498910525015">Upravljanje naslovov</translation>
 <translation id="9148088599418889305">Izbira načina pošiljanja</translation>
 <translation id="9148507642005240123">&amp;Razveljavi urejanje</translation>
 <translation id="9154194610265714752">Posodobljeno</translation>

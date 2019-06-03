@@ -312,7 +312,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="1474273443907024088">Slå av falsk start av TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Slå på blokkering av innsetting av tredjepartsprogramvare</translation>
-<translation id="1504431521196476721">Ekstern attestering</translation>
 <translation id="1507382822467487898">
           Konfigurerer hvilken MAC-adresse som skal brukes når en dokk kobles til enheten.
 
@@ -382,7 +381,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       samsvar, blir tilgangen avvist automatisk. Mønstre med jokertegn er ikke
       tillatt.</translation>
 <translation id="1634989431648355062">Tillat <ph name="FLASH_PLUGIN_NAME" />-programtillegget på disse nettstedene</translation>
-<translation id="1645793986494086629">Skjema:</translation>
+<translation id="1645793986494086629">Oppsett:</translation>
 <translation id="1653229475925941921">Hvis denne regelen er angitt, kontrollerer den hvilken type lupe som er slått på. Hvis du setter denne regelen til «None» (Ingen), blir lupen slått av.
 
           Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
@@ -1726,11 +1725,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Når denne regelen er angitt, prøver <ph name="PRODUCT_NAME" /> å finne en skriver som samsvarer med alle de spesifiserte attributtene, og velger den som standardskriver. Den første samsvarende skriveren som blir funnet, velges. Hvis flere skrivere oppfyller vilkårene, kan hvilken som helst av disse bli valgt, avhengig av rekkefølgen skriverne oppdages i.
 
-      Hvis denne regelen ikke er angitt eller en samsvarende skriver ikke blir funnet før tidsavbrudd, velges den innebygde PDF-skriveren som standard. Dersom PDF-skriveren ikke er tilgjengelig, blir ingen skriver valgt.
+      Hvis denne regelen ikke er angitt eller en samsvarende skriver ikke blir funnet før tidsavbruddet, velges den innebygde PDF-skriveren som standard. Dersom PDF-skriveren ikke er tilgjengelig, blir ingen skriver valgt.
 
       Skrivere som er koblet til <ph name="CLOUD_PRINT_NAME" />, behandles som <ph name="PRINTER_TYPE_CLOUD" />. Resten av skriverne klassifiseres som <ph name="PRINTER_TYPE_LOCAL" />.
-      Utelatelse av felter medfører at alle verdier gir treff. Hvis du for eksempel ikke angir tilkoblingstype, prøver forhåndsvisning av utskrift å oppdage alle typer skrivere – både lokale og i nettskyen.
-      Mønstre for regulære uttrykk må følge JavaScripts RegExp-syntaks, og det skilles mellom store og små bokstaver.</translation>
+      Utelatelse av felt medfører at alle verdier gir treff. Hvis du for eksempel ikke angir tilkoblingstype, prøver forhåndsvisningsfunksjonen å oppdage alle typer skrivere – både lokale og i nettskyen.
+      Mønstre for regulære uttrykk må følge RegExp-syntaksen som gjelder for JavaScript, og det skilles mellom store og små bokstaver.</translation>
 <translation id="4088589230932595924">Tvungen inkognitomodus</translation>
 <translation id="4088983553732356374">Gjør det mulig å velge om nettsteder kan angi lokale data. Dette kan enten tillates for alle nettsteder eller blokkeres for alle nettsteder.
 
@@ -2377,6 +2376,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis den ikke er angitt, kan det hende at brukeren blir spurt om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5423197884968724595">Navn på Android WebView-begrensning:</translation>
 <translation id="5424147596523390018">Tillat alle fargemoduser</translation>
+<translation id="5427003226809696696">Denne regelen styrer om nettleservinduet skal åpnes når økten starter.
+
+          Hvis denne regelen er slått på, åpnes ikke nettleservinduet.
+
+          Hvis regelen er slått av eller ikke er angitt, kan nettleservinduet åpnes. Merk at andre regler eller kommandolinjeflagg kan gjøre at nettleservinduet ikke nødvendigvis åpnes likevel.</translation>
 <translation id="5427879482805712214">Med denne regelen kan du konfigurere hvilket brukerbilde som representerer brukeren på påloggingsskjermen. Du angir denne regelen ved å spesifisere hvilken nettadresse <ph name="PRODUCT_OS_NAME" /> kan laste ned brukerbildet fra, og en kryptografisk hash som brukes til å bekrefte at ingen har tuklet med nedlastingen. Bildet må være i JPEG-format og ikke større enn 512 kB. Nettadressen må være tilgjengelig uten krav om autentisering.
 
       Brukerbildet blir lastet ned og bufret. Det lastes ned på nytt hver gang nettadressen eller hashen endres.
@@ -3180,7 +3184,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis den ikke er angitt, kan det hende brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importen skje automatisk.</translation>
 <translation id="7003746348783715221">Valg for <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Innholdsinnstillinger</translation>
 <translation id="7007671350884342624">Konfigurerer katalogen som <ph name="PRODUCT_NAME" /> skal bruke til å lagre bufrede filer på disken.
 
       Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uavhengig av om brukeren har spesifisert flagget «--disk-cache-dir» eller ikke. For å unngå tap av data eller andre uventede feil skal ikke denne regelen settes til rotkatalogen for et volum eller til en katalog som brukes til andre formål, fordi <ph name="PRODUCT_NAME" /> administrerer innholdet.
@@ -3545,8 +3548,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7617319494457709698">Med denne retningslinjen kan du spesifisere hvilke utvidelser som kan bruke <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funksjonen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> til ekstern attestering. Utvidelser må legges til i denne listen for å kunne bruke API-et.
 
           Hvis en utvidelse ikke er på listen, eller hvis listen ikke er angitt, kan ikke API-et kalles opp – i stedet vises en feilkode.</translation>
-<translation id="7618907117929117943">Rull tilbake og behold målversjonen hvis OS-versjonen er nyere enn målet og det er mulig å overføre konfigurering på enhetsnivå (inkludert nettverkslegitimasjon) gjennom rollback samt å unngå fabrikkny konfigurasjon etter rollback. Ikke gjennomfør eller avbryt rollback hvis dette ikke er mulig (fordi målversjonen ikke støtter gjenoppretting av data, eller på grunn av en bakover-inkompatibel endring). 
-          Støttes på <ph name="PRODUCT_OS_NAME" /> versjon 70 og nyere. For eldre klienter betyr denne verdien at rollback er deaktivert.</translation>
 <translation id="7620869951155758729">Denne regelen spesifiserer konfigurasjon som brukes for å generere og bekrefte tilgangskoden for foreldre.
 
       |current_config| brukes alltid for å generere tilgangskoden og bør bare brukes for å validere tilgangskoden når dette ikke kan gjøres med |future_config|.
@@ -3872,6 +3873,7 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
 
       Hvis denne retningslinjen ikke angis, er det ingen unntak fra retningslinjen URLBlacklist.</translation>
 <translation id="8176035528522326671">Tillat at bedriftsbrukeren bare er primær flerprofilbruker (standardatferd for bedriftsadministrerte brukere)</translation>
+<translation id="8183108371184777472">Hindre åpning av nettleservinduet</translation>
 <translation id="8214600119442850823">Konfigurerer passordlagring.</translation>
 <translation id="8217516105848565518">Denne regelen er avviklet. Bruk RemoteAccessHostDomainList i stedet.</translation>
 <translation id="8244171102276095471">Slå på RC4-chifferserier i TLS</translation>
@@ -4027,7 +4029,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="8566729013138025202">Spesifiserer et sett med regler som overleveres til ARC-kjøringen. Verdien må være gyldig JSON.
 
-      Denne regelen kan brukes til å konfigurere hvilke Android-apper som automatisk installeres på enheten.
+      Denne regelen kan brukes til å konfigurere hvilke Android-apper som installeres automatisk på enheten.
 
       For å feste apper i appoversikten, se «PinnedLauncherApps».</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
@@ -4085,11 +4087,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8661297125441579970">Ikke tillat dataoverføring og ARC.</translation>
 <translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
 <translation id="867410340948518937">Universal tofaktor-autentisering (U2F)</translation>
-<translation id="8682611302223077049">Du kan spesifisere tidsperioden (i millisekunder) før brukere blir varslet om at <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> må startes på nytt på grunn av en ventende oppdatering.
-
-      I denne tidsperioden blir brukeren gjentatte ganger informert om at oppdateringen må installeres. For <ph name="PRODUCT_OS_NAME" />-enheter vises omstartvarsler i systemfeltet når en oppdatering er tilgjengelig. For <ph name="PRODUCT_NAME" />-nettlesere endres appmenyen for å indikere at en omstart er nødvendig, etter at en tredjedel av varslingsprosessen er fullført. Dette varselet endrer farge når to tredjedeler av varslingsprosessen er fullført, og igjen når varslingsperioden er over fullstendig. Andre varsler som slås på av <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-regelen, følger den samme tidsplanen.
-
-      Hvis denne regelen ikke er angitt, brukes standardperioden på 345 600 000 millisekunder (fire dager) for <ph name="PRODUCT_OS_NAME" />-enheter og 604 800 000 millisekunder (én uke) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Advarselen om passordbeskyttelse utløses ved gjenbruk av passord</translation>
 <translation id="8693243869659262736">Bruk innebygd DNS-klient</translation>
 <translation id="8698286761337647563">Antall dager i forveien SAML-brukere skal varsles om at passordene deres snart utløper</translation>
@@ -4107,7 +4104,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
           Denne retningslinjen er valgfri. Hvis den ikke angis, aktiverer ingen søkeord søkeleverandøren.
 
           Denne retningslinjen tas bare i betraktning hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
-<translation id="8731693562790917685">Innholdsinnstillinger lar deg angi hvordan innholdet for spesifikke elementer (f.eks. informasjonskapsler, bilder eller JavaScript) skal håndteres.</translation>
 <translation id="8733448613597049197">Slår på utvidet rapportering for Safe Browsing i <ph name="PRODUCT_NAME" /> og hindrer at brukerne kan endre denne innstillingen.
 
       Utvidet rapportering sender noe systeminformasjon og sideinnhold til Googles tjenere for å bidra til å oppdage farlige apper og nettsteder.
@@ -4184,6 +4180,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Hvis du slår på eller av denne innstillingen, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME" />.
 
       Hvis denne innstillingen ikke angis, kan brukeren velge å bruke denne funksjonen eller ikke.</translation>
+<translation id="8871974300055371298">Innholdsinnstillinger</translation>
 <translation id="8876188741456358123">Overstyrer tosidig utskrift som standard. Hvis tosidig utskrift ikke er tilgjengelig, ignoreres regelen.</translation>
 <translation id="8882006618241293596">Blokkér <ph name="FLASH_PLUGIN_NAME" />-programtillegget på disse nettstedene</translation>
 <translation id="8906768759089290519">Aktiver gjestemodus</translation>
@@ -4227,7 +4224,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
           Denne regelen styrer flere innstillinger, inkludert innstillinger som styres av eksisterende regler knyttet til utvidelser. Denne regelen overstyrer eventuelle eldre regler hvis begge er angitt.
 
-          Denne regelen tilordner utvidelses-ID-er og oppdateringsnettadresser til konfigurasjonene sine. Med en utvidelses-ID blir konfigurasjonen kun brukt for den bestemte utvidelsen. En standardkonfigurasjon kan angis for den spesielle ID-en <ph name="DEFAULT_SCOPE" />, som gjelder for alle utvidelser uten tilpasset konfigurasjon i denne regelen. Med en oppdateringsnettadresse brukes konfigurasjonen for alle utvidelser med den nøyaktige oppdateringsnettadressen som står oppført i manifestet til denne utvidelsen, som beskrevet på <ph name="LINK_TO_EXTENSION_DOC1" />.
+          Denne regelen tilordner en utvidelses-ID eller en oppdateringsnettadresse til konfigurasjonen sin. Med en utvidelses-ID blir konfigurasjonen kun brukt på den bestemte utvidelsen. En standardkonfigurasjon kan angis for den spesielle ID-en <ph name="DEFAULT_SCOPE" />, som gjelder for alle utvidelser uten tilpasset konfigurasjon i denne regelen. Med en oppdateringsnettadresse brukes konfigurasjonen for alle utvidelser med den nøyaktige oppdateringsnettadressen som står oppført i manifestet til denne utvidelsen, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
 
           For Windows-forekomster som ikke er tilknyttet noe <ph name="MS_AD_NAME" />-domene, begrenses administratorinstallering til apper og utvidelser oppført i Chrome Nettmarked.
           </translation>
@@ -4292,8 +4289,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="9084985621503260744">Angi om videoaktivitet skal påvirke strømbehandling</translation>
 <translation id="9088433379343318874">Slå på innholdsleverandøren for administrerte brukere</translation>
 <translation id="9088444059179765143">Konfigurer metoden for automatisk påvisning av tidssoner</translation>
-<translation id="9094064873808699479">Rull tilbake til og behold målversjonen hvis OS-versjonen er nyere enn målet. Prøv å overføre konfigurering på enhetsnivå (inkludert nettverkslegitimasjon) gjennom rollback-prosessen, hvis mulig, men gjennomfør rollback med full powerwash selv om gjenoppretting av data ikke er mulig (fordi målversjonen ikke støtter gjenoppretting av data, eller på grunn av en bakover-inkompatibel endring).
-          Støttes på <ph name="PRODUCT_OS_NAME" /> versjon 70 og nyere. For eldre klienter betyr denne verdien at rollback er deaktivert.</translation>
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>
 <translation id="9105265795073104888">Bare en undergruppe av konfigurasjonsalternativer for proxy-tjenere er gjort tilgjengelig for Android-apper. Android-apper kan velge å bruke proxy-tjeneren frivillig. Du kan ikke tvinge dem til å bruke proxy-tjenere.</translation>
 <translation id="9106865192244721694">Tillat WebUSB på disse nettstedene</translation>

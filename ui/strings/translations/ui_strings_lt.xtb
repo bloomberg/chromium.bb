@@ -15,7 +15,6 @@
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="1398853756734560583">Išskleisti</translation>
 <translation id="1409544243779336081">Programos rekomendacija</translation>
-<translation id="1413622004203049571">Išjungti pranešimus nuo <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutė ir }one{# minutė ir }few{# minutės ir }many{# minutės ir }other{# minučių ir }}</translation>
 <translation id="1643823602425662293">Pranešimas</translation>
 <translation id="169515659049020177">Antrojo lygio klavišas</translation>
@@ -166,7 +165,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Liko 1 min.}one{Liko # min.}few{Liko # min.}many{Liko # min.}other{Liko # min.}}</translation>
 <translation id="7319740667687257810">Paleidimo priemonė, dalinis rodinys</translation>
-<translation id="732374792807444530">Siunčiama „<ph name="DEVICE_NAME" />“</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Prieš 1 min.}one{Prieš # min.}few{Prieš # min.}many{Prieš # min.}other{Prieš # min.}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Liko 1 minutė}one{Liko # minutė}few{Liko # minutės}many{Liko # minutės}other{Liko # minučių}}</translation>

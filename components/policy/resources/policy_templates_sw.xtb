@@ -309,7 +309,6 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
 <translation id="1474273443907024088">Zima kipengee cha TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Washa kipengele cha kuzuia uingizaji unaofanywa na programu za kampuni nyingine</translation>
-<translation id="1504431521196476721">Uthibitishaji wa Mbali</translation>
 <translation id="1507382822467487898">
           Huweka mipangilio ya anwani ya MAC (udhibiti wa kufikia maudhui) ambayo itatumiwa wakati kituo kimeunganishwa kwenye kifaa.
 
@@ -1663,9 +1662,9 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
 <translation id="3963602271515417124">Ikiwa ndivyo, ushuhuda wa mbali huruhusiwa kwa ajili ya kifaa na cheti kitazalishwa kiotomatiki na kupakiwa kwenye Seva ya Udhibiti wa Kifaa.
            
             Ikiwa imewekwa kuwa sivyo, au haijawekwa, hakuna cheti kitakachozalishwa na simu kwa API ya kiendelezi cha enterprise.platformKeys zitashindwa.</translation>
-<translation id="3964262920683972987">Weka mipangilio ya picha ya mandhari ya kiwango cha kifaa ambayo inaonyeshwa kwenye skrini ya kuingia katika akaunti ikiwa hakuna mtumiaji aliyeingia katika kifaa. Sera inawekwa kwa kubainisha URL ambapo kifaa cha Mfumo wa Uendeshaji wa Chrome kinaweza kupakua picha ya mandhari na hash ya kriptografia inayotumiwa kuthibitisha usalama wa kipakuliwa. Picha lazima iwe katika muundo wa JPEG, ukubwa wa faili yake usizidi MB 16. Ni sharti URL ifikiwe bila uthibitishaji wowote. Picha ya mandhari inapakuliwa na kuwekwa katika akiba. Itapakuliwa upya wakati URL au alama ya reli inabadilika.
+<translation id="3964262920683972987">Weka mipangilio ya picha ya mandhari ya kiwango cha kifaa ambayo inaonyeshwa kwenye skrini ya kuingia katika akaunti ikiwa hakuna mtumiaji aliyeingia katika kifaa. Sera inawekwa kwa kubainisha URL ambapo kifaa cha Mfumo wa Uendeshaji wa Chrome kinaweza kupakua picha ya mandhari na alama ya reli ya kriptografia inayotumiwa kuthibitisha usalama wa kipakuliwa. Picha lazima iwe katika muundo wa JPEG, ukubwa wa faili yake usizidi MB 16. Ni sharti URL ifikiwe bila uthibitishaji wowote. Picha ya mandhari inapakuliwa na kuwekwa katika akiba. Itapakuliwa upya wakati URL au alama ya reli inabadilika.
 
-      Ikiwa sera ya mandhari ya kifaa itawekwa, kifaa cha Mfumo wa Uendeshaji wa Chrome kitapakua na kutumia picha ya mandhari kwenye skrini ya kuingia katika akaunti ikiwa hakuna mtumiaji ambaye ameingia katika kifaa. Pindi tu mtumiaji anapoingia katika akaunti, sera ya mandhari ya mtumiaji itaanza kutumika.
+      Ikiwa sera ya mandhari ya kifaa itawekwa, kifaa cha Mfumo wa Uendeshaji wa Chrome kitapakua na kutumia picha ya mandhari kwenye skrini ya kuingia katika akaunti ikiwa hakuna mtumiaji ambaye ameingia katika akaunti ya kifaa. Pindi tu mtumiaji anapoingia katika akaunti, sera ya mandhari ya mtumiaji itaanza kutumika.
 
       Ikiwa sera ya mandhari ya kifaa itaachwa bila kuwekwa, ni sera ya mandhari ya mtumiaji itakayoamua kitu cha kuonyesha ikiwa sera ya mandhari ya mtumiaji imewekwa.</translation>
 <translation id="3965339130942650562">Muda umekwisha mpaka uondokaji wa kuingia kusikotumika kutekelezwe</translation>
@@ -2395,6 +2394,11 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Ikiwa haitawekwa, mtumiaji anaweza kuomba aingize, au huenda ungizaji ukatendeka kiotomatiki.</translation>
 <translation id="5423197884968724595">Jina la vikwazo la Android WebView:</translation>
 <translation id="5424147596523390018">Ruhusu hali zote za rangi</translation>
+<translation id="5427003226809696696">Sera hii hudhibiti ikiwa dirisha la kivinjari linapaswa kufunguliwa wakati kipindi kinaanza.
+
+          Sera hii ikiwashwa, dirisha la kivinjari halitafunguka.
+
+          Sera hii ikizimwa au isipowekwa, dirisha la kivinjari linaruhusiwa kufunguka. Kumbuka kwamba huenda dirisha la kivinjari lisifunguke kutokana na ripoti za mstari wa amri au sera zingine.</translation>
 <translation id="5427879482805712214">Sera hii inakuruhusu kuweka mipangilio ya picha ya ishara inayowakilisha mtumiaji kwenye skrini ya kuingia katika akaunti. Sera inawekwa kwa kubainisha URL ambayo <ph name="PRODUCT_OS_NAME" /> inaweza kupakua picha ya ishara na alama ya reli ya kriptografia inayotumika kuthibitisha kuaminika kwa kipakuliwa. Picha sharti iwe katika muundo wa JPEG, ukubwa wake usizidi kB 512. Ni sharti URL ifikiwe bila uthibitishaji wowote.
 
       Picha ya ishara inapakuliwa na kuwekwa katika akiba. Itapakuliwa upya wakati URL au alama ya reli inabadilika.
@@ -3199,7 +3203,6 @@ Ikiwa sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
 
       Ikiwa haitawekwa, huenda mtumiaji akaombwa kuleta, au huenda uletaji ukatendeka kiotomatiki.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> mapendeleo</translation>
-<translation id="7006788746334555276">Mipangilio ya Maudhui</translation>
 <translation id="7007671350884342624">Huweka mipangilio ya saraka ambayo <ph name="PRODUCT_NAME" /> itatumia kuhifadhi data ya mtumiaji.
 
       Ukiweka sera hii, <ph name="PRODUCT_NAME" /> itatumia saraka iliyotolewa bila kujali iwapo mtumiaji amebainisha ripoti ya '--user-data-dir' au la. Ili kuepuka kupoteza data au hitilafu zisizotarajiwa sera hii haipaswi kuwekwa kuwa thamani ya kipeo cha saraka au saraka iliyotumiwa kwa madhumuni mengine, kwa sababu <ph name="PRODUCT_NAME" /> inadhibiti maudhui yake.
@@ -3566,8 +3569,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7617319494457709698">Sera hii hubainisha viendelezi vinavyoruhusiwa kutumia utendaji wa <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> <ph name="CHALLENGE_USER_KEY_FUNCTION" /> kwa uthibitishaji wa mbali. Lazima viendelezi viongezwe kwenye orodha hii ili kutumia API.
 
           Ikiwa kiendelezi hakiko kwenye orodha, au orodha haijawekwa, mawasiliano na API hayatafanikiwa na kutakuwa na msimbo wa hitilafu.</translation>
-<translation id="7618907117929117943">Rejesha na uendelee kutumia toleo lengwa ikiwa toleo la mfumo wa uendeshaji ni jipya zaidi kuliko toleo lengwa na unaweza kuleta mipangilio ya kiwango cha kifaa (ikiwa ni pamoja na kitambulisho cha mtandao) unaporejesha. Pia, unaweza kuruka OOBE baada ya kurejesha. Usitekeleze wala kughairi urejeshaji ikiwa haiwezekani (kwa sababu toleo lengwa haliwezi kurejesha data au kutokana na mabadiliko ya urejeshaji yasiyooana).
-          Inaweza kutumika kwenye toleo la 70 na la juu zaidi la <ph name="PRODUCT_OS_NAME" />. Kwa viteja vya zamani zaidi, thamani hii ina maana kuwa urejeshaji umezimwa.</translation>
 <translation id="7620869951155758729">Sera hii inaeleza mipangilio inayotumika kuunda na kuthibitisha Msimbo wa Kufikia wa Mzazi.
 
       |current_config| hutumika kila mara kuunda msimbo wa kufikia na inapaswa kutumika kuthibitisha msimbo wa kufikia iwapo tu hauwezi kuthibitishwa na |future_config|.
@@ -3834,7 +3835,7 @@ Ukiwasha sera hii, usawazishaji kwenye wingu utazimwa.
       Ikiwa sera itawekwa kuwa kweli, kifaa kitatumia muundo wa saa ya saa 24. Ikiwa sera hii itawekwa kuwa uongo, kifaa kitatumia muundo wa saa ya saa 12.
 
       Ikiwa sera hii haitawekwa, kifaa kitapuuza kuwa muundo wa saa ya saa 24.</translation>
-<translation id="8113421140338762630">Hukuruhusu uweke kipindi cha muda, katika milisekunde, kati ya arifa ya kwanza ambapo kifaa cha <ph name="PRODUCT_OS_NAME" /> lazima kizimwe kisha kiwashwe ili sasisho linalosubiri litumike na mwisho wa kipindi cha muda uliobainishwa na sera ya <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+<translation id="8113421140338762630">Hukuruhusu uweke muda katika milisekunde, kati ya arifa ya kwanza ambapo kifaa cha <ph name="PRODUCT_OS_NAME" /> lazima kizimwe kisha kiwashwe ili sasisho lisilotekelezwa litumike na mwisho wa muda uliobainishwa na sera ya <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Ikiwa haijawekwa, kipindi chaguomsingi cha milisekunde 86400000 (siku moja) kinatumiwa kwa vifaa vya <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8114382167597081590">Usitekeleze Hali yenye Mipaka kwenye YouTube</translation>
@@ -3890,6 +3891,7 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 
       Iwapo sera hii haijawekwa hakutakuwa na ruhusa katika orodha ya kuondoa idhini kutoka sera ya 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Ruhusu mtumiaji wa biashara kuwa mtumiaji wa kwanza wa multiprofile pekee (Tabia ya chaguomsingi kwa watumiaji wanaosimamiwa kibiashara)</translation>
+<translation id="8183108371184777472">Bana hatua ya kufunguka kwa dirisha la kivinjari</translation>
 <translation id="8214600119442850823">Husanidi kidhibiti cha manenosiri.</translation>
 <translation id="8217516105848565518">Sera hii haitumiki tena. Badala yake, tafadhali tumia RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Washa mipangilio ya kriptografia ya RC4 katika TLS</translation>
@@ -4092,11 +4094,6 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
 <translation id="8661297125441579970">Usiruhusu uhamishaji wa data na ARC.</translation>
 <translation id="8672321184841719703">Toleo Lengwa la Kusasisha Otomatiki</translation>
 <translation id="867410340948518937">U2F (Uthibitishaji Jumla wa Hatua Mbili)</translation>
-<translation id="8682611302223077049">Hukuruhusu uweke kipindi katika milisekunde, ambapo watumiaji wanaarifiwa kwamba  <ph name="PRODUCT_NAME" /> lazima ifunguliwe upya au kifaa cha <ph name="PRODUCT_OS_NAME" /> lazima kizimwe kisha kiwashwe ili kukamilisha kuweka sasisho.
-
-      Katika kipindi hiki, mtumiaji ataarifiwa mara kwa mara kuhusu haja ya kusasisha. Kwa vifaa vya <ph name="PRODUCT_OS_NAME" />, arifa ya itakayokutaka uzime kisha uwashe kifaa itaonekana katika ubao wa aikoni wakati sasisho litatambuliwa. Kwa vivinjari vya <ph name="PRODUCT_NAME" />, mabadiliko ya menyu ya programu ya kuashiria kuwa unahitaji kufungua programu upya yanahitajika baada ya thuluthi ya kipindi cha arifa kuisha. Rangi ya arifa hizi itabadilika baada ya thuluthi mbili za kipindi cha kutoa arifa kuisha na itabadilika tena kipindi kamili cha arifa kitakapokwisha. Arifa za ziada zitakazowashwa na sera ya <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> zitafuata ratiba ii hii. 
-
-     Kama hujaweka kipindi, kipindi chaguomsingi cha milisekunde 345600000 (siku nne) itatumika kwa vifaa vya <ph name="PRODUCT_OS_NAME" /> na milisekunde 604800000 (wiki moja) itatumika kwa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Ilani ya ulinzi wa nenosiri husababishwa na hatua ya kutumia tena nenosiri lile lile</translation>
 <translation id="8693243869659262736">Tumia DNS teja ya kijenzi cha ndani</translation>
 <translation id="8698286761337647563">Idadi ya siku ambazo watumiaji wa SAML huarifiwa mapema muda wa kutumia manenosiri yao unapoelekea kuisha.</translation>
@@ -4114,7 +4111,6 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
           Sera hii ni ya hiari. Ikiwa haijawekwa, hakuna neno muhimu litakaloamilisha mtoa huduma ya utafutaji.
 
           Sera hii inazingatiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' imewezeshwa.</translation>
-<translation id="8731693562790917685">Mipangilio ya Maudhui inakuruhusu kubainisha namna maudhui ya aina maalum (kwa mfano Vidakuzi, Picha au JavaScript) yanavyoshughulikiwa.</translation>
 <translation id="8733448613597049197">Huwasha Kipengele cha Kuripoti kwa Upana Kuvinjari Salama cha <ph name="PRODUCT_NAME" /> na huzuia watumiaji wasibadilishe mipangilio hii.
 
       Kipengele cha Kuripoti kwa Upana hutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwenye seva za Google ili kusaidia kutambua programu na tovuti hatari.
@@ -4195,6 +4191,7 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
       Ukizima au kuwasha mipangilio hii, watumiaji hawataweza kubadilisha au kufuta mipangilio hii katika <ph name="PRODUCT_NAME" />.
 
       Kama mipangilio hii haitawekwa, mtumiaji anaweza kuamua kutumia kipengele hiki au asikitumie.</translation>
+<translation id="8871974300055371298">Mipangilio ya maudhui</translation>
 <translation id="8876188741456358123">Inabatilisha hali chaguomsingi ya kuchapisha kwenye pande mbili. Ikiwa hali haipatikani, sera hii haizingatiwi.</translation>
 <translation id="8882006618241293596">Zuia programu jalizi ya <ph name="FLASH_PLUGIN_NAME" /> kwenye tovuti hizi</translation>
 <translation id="8906768759089290519">Wezesha modi ya wageni</translation>
@@ -4306,8 +4303,6 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
 <translation id="9084985621503260744">Bainisha iwapo shughuli za video zinaathiri udhibiti wa nishati</translation>
 <translation id="9088433379343318874">Washa mtoa huduma za maudhui ya mtumiaji anayesimamiwa</translation>
 <translation id="9088444059179765143">Weka mbinu ya ugunduzi wa saa za eneo kiotomatiki</translation>
-<translation id="9094064873808699479">Rejesha na uendelee kutumia toleo lengwa ikiwa toleo la mfumo wa uendeshaji ni jipya zaidi kuliko toleo lengwa. Jaribu kuleta mipangilio kwenye kiwango cha kifaa (ikiwa ni pamoja na kitambulisho cha mtandao) kupitia mchakato wa urejeshaji, ikiwezekana, lakini usirejeshe katika hali kamili ya Powerwash hata kama urejeshaji wa data hauwezekani (kwa sababu toleo lengwa haliwezi kurejesha data au kutokana na mabadiliko ya urejeshaji yasiyooana).
-          Inaweza kutumika kwenye toleo la 70 na la juu zaidi la <ph name="PRODUCT_OS_NAME" />. Kwa viteja vya zamani zaidi, thamani hii ina maana kuwa urejeshaji umezimwa.</translation>
 <translation id="9096086085182305205">Orodha ya kuidhinisha ya seva ya uthibitishaji</translation>
 <translation id="9105265795073104888">Chaguo za kuweka mipangilio ya seva mbadala zinazofuata pekee hupatikana kwa programu za Android. Programu za Android zinaweza kuchagua kutumia seva mbadala. Huwezi kuzilazimisha zitumie seva mbadala.</translation>
 <translation id="9106865192244721694">Ruhusu WebUSB kwenye tovuti hizi</translation>

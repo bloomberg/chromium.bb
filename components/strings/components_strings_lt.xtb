@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Tinkamos kortelės</translation>
 <translation id="1032854598605920125">Pasukti pagal laikrodžio rodyklę</translation>
 <translation id="1035334672863811645">prisijunkite prie „Chrome“</translation>
+<translation id="1036348656032585052">Išjungti</translation>
 <translation id="1038842779957582377">nežinomas pavadinimas</translation>
 <translation id="1039626062703039346">„Chrome“ gali padėti apsaugoti „Google“ paskyrą ir pakeisti slaptažodį. Bus pranešama „Google“ apie šią svetainę.</translation>
 <translation id="1050038467049342496">Uždarykite kitas programas</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Kortelės savininko vardas</translation>
 <translation id="1821930232296380041">Netinkama užklausa arba jos parametrai</translation>
+<translation id="1822370876374026111">Kad kitą kartą galėtumėte greičiau atlikti mokėjimą, pridėkite kortelę ir atsiskaitymo adresą „Google“ paskyroje ir šiame įrenginyje.</translation>
 <translation id="1822540298136254167">Svetainės, kuriose lankotės, ir jose praleidžiamas laikas</translation>
 <translation id="1826516787628120939">Tikrinama</translation>
 <translation id="1834321415901700177">Šioje svetainėje yra kenkėjiškų programų</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">Atidaryti paleidimo puslapius</translation>
 <translation id="1883255238294161206">Sutraukti sąrašą</translation>
 <translation id="1898423065542865115">Filtravimas</translation>
+<translation id="1914326953223720820">Išpakavimo paslauga</translation>
 <translation id="1916770123977586577">Kad pritaikytumėte atnaujintus nustatymus šioje svetainėje, iš naujo įkelkite šį puslapį</translation>
 <translation id="1919345977826869612">Skelbimai</translation>
 <translation id="1919367280705858090">Gaukite pagalbos dėl konkretaus klaidos pranešimo</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">Norėdami naudoti korteles visuose įrenginiuose, įjunkite sinchronizavimą.</translation>
 <translation id="2365563543831475020"><ph name="CRASH_TIME" /> užfiksuota strigčių ataskaita nebuvo įkelta</translation>
 <translation id="2367567093518048410">Lygis</translation>
-<translation id="2378238891085281592">Įjungėte privatų režimą</translation>
 <translation id="2380886658946992094">Teisinis</translation>
 <translation id="2384307209577226199">Numatytieji įmonės nustatymai</translation>
 <translation id="2386255080630008482">Serverio sertifikatas panaikintas.</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">Oi!</translation>
 <translation id="3041612393474885105">Sertifikato informacija</translation>
 <translation id="3060227939791841287">C9 (vokas)</translation>
+<translation id="3061707000357573562">Pataisos paslauga</translation>
 <translation id="3064966200440839136">Išjungiate inkognito režimą, kad galėtumėte sumokėti naudodami išorinę programą. Tęsti?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Nėra}=1{1 slaptažodis}one{# slaptažodis}few{# slaptažodžiai}many{# slaptažodžio}other{# slaptažodžių}}</translation>
 <translation id="3095940652251934233">Ataskaita</translation>
@@ -594,6 +597,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Dar <ph name="ITEM_COUNT" /> elementas}one{Dar <ph name="ITEM_COUNT" /> elementas}few{Dar <ph name="ITEM_COUNT" /> elementai}many{Dar <ph name="ITEM_COUNT" /> elemento}other{Dar <ph name="ITEM_COUNT" /> elementų}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Kad kitą kartą galėtumėte greičiau atlikti mokėjimą, pridėkite kortelę ir atsiskaitymo adresą „Google“ paskyroje.</translation>
 <translation id="4196861286325780578">&amp;Perkelti dar kartą</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Patikrinti užkardos ir antivirusinės sistemos konfigūracijas<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7 x 9 (vokas)</translation>
@@ -732,7 +736,6 @@
 <translation id="4926159001844873046">Svetainėje <ph name="SITE" /> nurodyta:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" /> / <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Rezultatų nėra</translation>
-<translation id="4945672369594656571">Valdoma, kaip apdorojami jūsų įrenginio ir paskyros duomenys. „Google“ apdoroja įrenginio ir paskyros duomenis tik pagal įrenginio ir paskyros valdytojo nurodymus ir tik įrenginio bei paskyros valdytojo nurodytais tikslais.</translation>
 <translation id="4950898438188848926">Skirtuko perjungimo mygtukas. Paspauskite „Enter“, kad perjungtumėte į atidarytą skirtuką „<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />“</translation>
 <translation id="495170559598752135">Veiksmai</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -746,7 +749,6 @@
 <translation id="5017554619425969104">Nukopijuotas tekstas</translation>
 <translation id="5018422839182700155">Negalima atidaryti šio puslapio</translation>
 <translation id="5019198164206649151">Bloga atsarginio atminties įrenginio būsena</translation>
-<translation id="5020154601324912079">Valdoma, kaip apdorojami jūsų įrenginio duomenys. „Google“ apdoroja įrenginio duomenis tik pagal įrenginio valdytojo nurodymus ir tik įrenginio valdytojo nurodytais tikslais.</translation>
 <translation id="5023310440958281426">Patikrinkite savo administratoriaus politiką</translation>
 <translation id="5029568752722684782">Išvalyti kopiją</translation>
 <translation id="503069730517007720">Reikalingas „<ph name="SOFTWARE_NAME" />“ šakninis sertifikatas, bet jis nėra įdiegtas. Jūsų IT administratorius turėtų peržiūrėti „<ph name="SOFTWARE_NAME" />“ konfigūravimo instrukcijas, kad išspręstų šią problemą. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -919,6 +921,7 @@
 <translation id="5921639886840618607">Išsaugoti kortelę „Google“ paskyroje?</translation>
 <translation id="5922853866070715753">Beveik atlikta</translation>
 <translation id="5932224571077948991">Svetainėje rodomi nepageidaujami arba klaidinantys skelbimai</translation>
+<translation id="5939847200023027600">PDF rengyklės paslauga</translation>
 <translation id="5946937721014915347">Atidaroma „<ph name="SITE_NAME" />“…</translation>
 <translation id="5947933617628957894">Taip, pridėti</translation>
 <translation id="5951495562196540101">Nepavyko prisiregistruoti su kliento paskyra (galima įsigyti licencijos paketą).</translation>
@@ -1009,6 +1012,7 @@
 <translation id="6451458296329894277">Patvirtinkite pakartotiną formos pateikimą</translation>
 <translation id="6465306955648956876">Tvarkyti slaptažodžius...</translation>
 <translation id="647261751007945333">Įrenginio politika</translation>
+<translation id="6476284679642588870">Tvarkyti mokėjimo metodus</translation>
 <translation id="6477321094435799029">„Chrome“ šiame puslapyje aptiko neįprastą kodą ir jį užblokavo, kad apsaugotų asmens informaciją (pvz., slaptažodžius, telefonų numerius ir kredito korteles).</translation>
 <translation id="6489534406876378309">Pradėti įkelti strigtis</translation>
 <translation id="6499038740797743453">Iš naujo nustatyti slaptažodį?</translation>
@@ -1081,7 +1085,6 @@
 <translation id="6948701128805548767">Jei norite peržiūrėti paėmimo metodus ir reikalavimus, pasirinkite adresą</translation>
 <translation id="6949872517221025916">Slaptažodžio nustatymas iš naujo</translation>
 <translation id="6950684638814147129">Klaida analizuojant JSON vertę: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Atidarykite puslapį naujame privačiame skirtuke</translation>
 <translation id="6957887021205513506">Panašu, kad serverio sertifikatas yra suklastotas.</translation>
 <translation id="6964255747740675745">Analizuojant tinklo konfigūraciją įvyko klaida (netinkamas JSON).</translation>
 <translation id="6965382102122355670">Gerai</translation>
@@ -1091,7 +1094,6 @@
 <translation id="6973932557599545801">Deja, negaliu padėti, tolesnius veiksmus atlikite patys.</translation>
 <translation id="6979158407327259162">„Google“ diskas</translation>
 <translation id="6979440798594660689">Nutildyti (numatytasis)</translation>
-<translation id="6984479912851154518">Išjungiate privatų režimą, kad galėtumėte sumokėti naudodami išorinę programą. Tęsti?</translation>
 <translation id="6989763994942163495">Rodyti išplėstinius nustatymus...</translation>
 <translation id="6993898126790112050">6 x 9 (vokas)</translation>
 <translation id="6996312675313362352">Visada versti <ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1149,6 +1151,7 @@ Papildoma išsami informacija:
 <translation id="7298195798382681320">Rekomenduojama</translation>
 <translation id="7300012071106347854">Kobalto mėlyna</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />“</translation>
+<translation id="7303701124147721189">Kad kitą kartą galėtumėte greičiau atlikti mokėjimą, išsaugokite kortelę ir atsiskaitymo adresą „Google“ paskyroje ir šiame įrenginyje.</translation>
 <translation id="7309308571273880165">Strigčių ataskaita užfiksuota <ph name="CRASH_TIME" /> (įkėlimo užklausą pateikė naudotojas, dar neįkelta)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Saugaus naršymo<ph name="END_LINK" /> įspėjimai</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1179,7 +1182,6 @@ Papildoma išsami informacija:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Tvarkyti slaptažodžius…</translation>
 <translation id="7419106976560586862">Profilio kelias</translation>
-<translation id="7424427397225027541">Valdoma, kaip apdorojami jūsų paskyros duomenys. „Google“ apdoroja paskyros duomenis tik pagal paskyros valdytojo nurodymus ir tik paskyros valdytojo nurodytais tikslais.</translation>
 <translation id="7437289804838430631">Pridėti kontaktinę informaciją</translation>
 <translation id="7440140511386898319">Naršymas neprisijungus</translation>
 <translation id="7441627299479586546">Netinkamas politikos objektas</translation>
@@ -1319,6 +1321,7 @@ Papildoma išsami informacija:
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Netinkamos kortelės pašalintos</translation>
 <translation id="8103161714697287722">Mokėjimo metodas</translation>
+<translation id="8105368624971345109">Išjungti</translation>
 <translation id="8118489163946903409">Mokėjimo metodas</translation>
 <translation id="8127301229239896662">„<ph name="SOFTWARE_NAME" />“ nebuvo tinkamai įdiegta kompiuteryje ar tinkle. Kreipkitės į IT administratorių, kad ši problema būtų išspręsta.</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
@@ -1377,6 +1380,7 @@ Papildoma išsami informacija:
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8433057134996913067">Tai atlikę atsijungsite nuo daugumos svetainių.</translation>
 <translation id="8437238597147034694">&amp;Anuliuoti perkėlimą</translation>
+<translation id="8440508849222143646">Kad kitą kartą galėtumėte greičiau atlikti mokėjimą, išsaugokite kortelę ir atsiskaitymo adresą „Google“ paskyroje.</translation>
 <translation id="8461694314515752532">Šifruokite sinchronizuojamus duomenis taikydami savo sinchronizavimo slaptafrazę</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredito kortelė}one{# kredito kortelė}few{# kredito kortelės}many{# kredito kortelės}other{# kredito kortelių}}</translation>
 <translation id="8473863474539038330">Adresai ir dar daugiau</translation>
@@ -1483,6 +1487,7 @@ Papildoma išsami informacija:
 <translation id="9128870381267983090">Prisijungti prie tinklo</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="9137248913990643158">Prieš naudodami šią programą prisijunkite prie „Chrome“.</translation>
+<translation id="9141013498910525015">Tvarkyti adresus</translation>
 <translation id="9148088599418889305">Pasirinkti pristatymo metodą</translation>
 <translation id="9148507642005240123">&amp;Anuliuoti redagavimą</translation>
 <translation id="9154194610265714752">Atnaujinta</translation>

@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Godkjente kort</translation>
 <translation id="1032854598605920125">Rotér med klokken</translation>
 <translation id="1035334672863811645">logg på Chrome</translation>
+<translation id="1036348656032585052">Slå av</translation>
 <translation id="1038842779957582377">ukjent navn</translation>
 <translation id="1039626062703039346">Chrome kan hjelpe deg med å beskytte Google-kontoen din og endre passordet ditt. Dette varsler Google om dette nettstedet.</translation>
 <translation id="1050038467049342496">Lukk andre apper</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Kortinnehaverens navn</translation>
 <translation id="1821930232296380041">Ugyldig forespørsel eller forespørselsparametere</translation>
+<translation id="1822370876374026111">For å betale raskere neste gang, legg til kortet og faktureringsadressen i Google-kontoen din og på denne enheten.</translation>
 <translation id="1822540298136254167">Nettsteder du besøker, og hvor mye tid du bruker på dem</translation>
 <translation id="1826516787628120939">Kontrollerer</translation>
 <translation id="1834321415901700177">Dette nettstedet inneholder skadelige programmer</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">Åpne oppstartssidene</translation>
 <translation id="1883255238294161206">Skjul liste</translation>
 <translation id="1898423065542865115">Filtrering</translation>
+<translation id="1914326953223720820">Utpakkingstjeneste</translation>
 <translation id="1916770123977586577">Last inn denne siden på nytt for å ta i bruk de oppdaterte innstillingene dine på dette nettstedet.</translation>
 <translation id="1919345977826869612">Annonser</translation>
 <translation id="1919367280705858090">Få hjelp med spesifikke feilmeldinger</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">For å bruke kortene dine på alle enheter, slå på synkronisering.</translation>
 <translation id="2365563543831475020">Programstopprapporten fra <ph name="CRASH_TIME" /> ble ikke lastet opp</translation>
 <translation id="2367567093518048410">Nivå</translation>
-<translation id="2378238891085281592">Nå er du i privatmodus</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Bedriftsstandard</translation>
 <translation id="2386255080630008482">Tjenerens sertifikat er tilbakekalt.</translation>
@@ -343,7 +345,7 @@
 <translation id="2721148159707890343">Forespørselen var vellykket</translation>
 <translation id="2728127805433021124">Tjenerens sertifikat er signert med en usikker signaturalgoritme.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Kjør Tilkoblingsdiagnostikk<ph name="END_LINK" /></translation>
-<translation id="2735043616039983645">Denne regelen har mer enn én kilde med motstridende verdier!</translation>
+<translation id="2735043616039983645">Denne regelen har mer enn én kilde med motstridende verdier.</translation>
 <translation id="2738330467931008676">Velg henteadresse</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Fjern valgte elementer</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">Æsj!</translation>
 <translation id="3041612393474885105">Sertifikatinformasjon</translation>
 <translation id="3060227939791841287">C9 (konvolutt)</translation>
+<translation id="3061707000357573562">Feilrettingstjeneste</translation>
 <translation id="3064966200440839136">Går ut av inkognitomodus for å betale via en ekstern app. Vil du fortsette?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Ingen}=1{1 passord}other{# passord}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -593,6 +596,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> element til}other{<ph name="ITEM_COUNT" /> elementer til}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">For å betale raskere neste gang, legg til kortet og faktureringsadressen i Google-kontoen din.</translation>
 <translation id="4196861286325780578">&amp;Flytt likevel</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Sjekk brannmur- og antiviruskonfigurasjonen<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (konvolutt)</translation>
@@ -731,7 +735,6 @@
 <translation id="4926159001844873046">På <ph name="SITE" /> står det</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Ingen resultater</translation>
-<translation id="4945672369594656571">styre hvordan enhets- og kontodataene dine håndteres Google behandler enhets- og kontodataene dine utelukkende etter anvisning fra enhets- og kontoadministratoren og kun for de formålene som enhets- og kontoadministratoren har angitt.</translation>
 <translation id="4950898438188848926">Knappen for å bytte fane – trykk på Enter for å bytte til den åpne fanen, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -745,7 +748,6 @@
 <translation id="5017554619425969104">Teksten du kopierte</translation>
 <translation id="5018422839182700155">Kan ikke åpne denne siden</translation>
 <translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>
-<translation id="5020154601324912079">styre hvordan enhetsdataene dine håndteres Google behandler enhetsdataene dine utelukkende etter anvisning fra enhetsadministratoren og kun for de formålene som enhetsadministratoren har angitt.</translation>
 <translation id="5023310440958281426">Kontrollér retningslinjene til administratoren din</translation>
 <translation id="5029568752722684782">Slett kopi</translation>
 <translation id="503069730517007720">Et rotsertifikat for «<ph name="SOFTWARE_NAME" />» kreves, men er ikke installert. IT-administratoren din bør se på konfigurasjonsveiledningen for «<ph name="SOFTWARE_NAME" />» for å løse dette problemet. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -918,6 +920,7 @@
 <translation id="5921639886840618607">Vil du lagre kortet i Google-kontoen?</translation>
 <translation id="5922853866070715753">Nesten ferdig</translation>
 <translation id="5932224571077948991">Nettstedet viser forstyrrende eller villedende annonser</translation>
+<translation id="5939847200023027600">PDF-komposisjonstjeneste</translation>
 <translation id="5946937721014915347">Åpner <ph name="SITE_NAME" /> …</translation>
 <translation id="5947933617628957894">Ja, legg til</translation>
 <translation id="5951495562196540101">Kan ikke registrere med en forbrukerkonto (medfølgende lisens er tilgjengelig).</translation>
@@ -1008,6 +1011,7 @@
 <translation id="6451458296329894277">Bekreft ny innsending av skjema</translation>
 <translation id="6465306955648956876">Administrer passord…</translation>
 <translation id="647261751007945333">Enhetsinnstillinger</translation>
+<translation id="6476284679642588870">Administrer betalingsmåter</translation>
 <translation id="6477321094435799029">Chrome har oppdaget uvanlig kode på denne siden og blokkert den for å beskytte personopplysningene dine (for eksempel passord, telefonnumre og kredittkortinformasjon).</translation>
 <translation id="6489534406876378309">Start opplastingen av krasj</translation>
 <translation id="6499038740797743453">Vil du tilbakestille passordet?</translation>
@@ -1080,7 +1084,6 @@
 <translation id="6948701128805548767">For å se hentemetoder og -krav, velg en adresse</translation>
 <translation id="6949872517221025916">Tilbakestill passordet</translation>
 <translation id="6950684638814147129">Feil under parsering av JSON-verdi: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Åpne siden i en ny privat fane</translation>
 <translation id="6957887021205513506">Tjenersertifikatet ser ut til å være forfalsket.</translation>
 <translation id="6964255747740675745">Nettverkskonfigurasjonen kunne ikke parses (ugyldig JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -1090,7 +1093,6 @@
 <translation id="6973932557599545801">Beklager, jeg kan ikke hjelpe deg. Fortsett på egen hånd.</translation>
 <translation id="6979158407327259162">Google Disk</translation>
 <translation id="6979440798594660689">Kutt lyden (standard)</translation>
-<translation id="6984479912851154518">Går ut av privatmodus for å betale via en ekstern app. Vil du fortsette?</translation>
 <translation id="6989763994942163495">Vis avanserte innstillinger</translation>
 <translation id="6993898126790112050">6x9 (konvolutt)</translation>
 <translation id="6996312675313362352">Oversett alltid <ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1147,6 +1149,7 @@
 <translation id="7298195798382681320">Anbefalt</translation>
 <translation id="7300012071106347854">Koboltblå</translation>
 <translation id="7302712225291570345">«<ph name="TEXT" />»</translation>
+<translation id="7303701124147721189">For å betale raskere neste gang, lagre kortet og faktureringsadressen i Google-kontoen din og på denne enheten.</translation>
 <translation id="7309308571273880165">Programstopprapport opprettet <ph name="CRASH_TIME" /> (opplasting er forespurt av brukeren, men den har ikke blitt utført ennå)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" />-advarsler</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1177,7 +1180,6 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Administrer passord…</translation>
 <translation id="7419106976560586862">Profilbane</translation>
-<translation id="7424427397225027541">styre hvordan kontodataene dine håndteres Google behandler kontodataene dine utelukkende etter anvisning fra kontoadministratoren og kun for de formålene som kontoadministratoren har angitt.</translation>
 <translation id="7437289804838430631">Legg til kontaktinformasjon</translation>
 <translation id="7440140511386898319">Utforsk uten nett</translation>
 <translation id="7441627299479586546">Feil emne for innstillinger</translation>
@@ -1317,6 +1319,7 @@
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">De ugyldige kortene er fjernet</translation>
 <translation id="8103161714697287722">Betalingsmåte</translation>
+<translation id="8105368624971345109">Slå av</translation>
 <translation id="8118489163946903409">Betalingsmåte</translation>
 <translation id="8127301229239896662">«<ph name="SOFTWARE_NAME" />» er ikke riktig installert på datamaskinen eller på nettverket. Be IT-administratoren din om å løse problemet.</translation>
 <translation id="8131740175452115882">Bekreft</translation>
@@ -1375,6 +1378,7 @@ Mer informasjon:
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8433057134996913067">Dette logger deg av de fleste nettsteder.</translation>
 <translation id="8437238597147034694">&amp;Angre flyttingen</translation>
+<translation id="8440508849222143646">For å betale raskere neste gang, lagre kortet og faktureringsadressen i Google-kontoen din.</translation>
 <translation id="8461694314515752532">Kryptér synkroniserte data med din egen passordfrase for synkronisering</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredittkort}other{# kredittkort}}</translation>
 <translation id="8473863474539038330">Adresser med mer</translation>
@@ -1480,6 +1484,7 @@ Mer informasjon:
 <translation id="9128870381267983090">Koble til nettverk</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="9137248913990643158">Du må starte og logge på Chrome før du bruker denne appen.</translation>
+<translation id="9141013498910525015">Administrer adresser</translation>
 <translation id="9148088599418889305">Velg leveringsmåte</translation>
 <translation id="9148507642005240123">&amp;Angre endringen</translation>
 <translation id="9154194610265714752">Oppdatert</translation>

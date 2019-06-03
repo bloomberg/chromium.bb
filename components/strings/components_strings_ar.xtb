@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">البطاقات المقبولة</translation>
 <translation id="1032854598605920125">تدوير في اتجاه عقارب الساعة</translation>
 <translation id="1035334672863811645">‏تسجيل الدخول إلى Chrome</translation>
+<translation id="1036348656032585052">إيقاف</translation>
 <translation id="1038842779957582377">اسم غير معروف</translation>
 <translation id="1039626062703039346">‏يمكن أن يساعدك Chrome على حماية حسابك على Google وتغيير كلمة المرور. سيؤدي هذا الإجراء إلى إشعار Google بموقع الويب هذا.</translation>
 <translation id="1050038467049342496">إغلاق التطبيقات الأخرى</translation>
@@ -189,6 +190,7 @@
 <translation id="187918866476621466">فتح صفحات بدء التشغيل</translation>
 <translation id="1883255238294161206">تصغير القائمة</translation>
 <translation id="1898423065542865115">التصفية</translation>
+<translation id="1914326953223720820">خدمة "فك الضغط"</translation>
 <translation id="1916770123977586577">لتطبيق الإعدادات المُحدَّثة على موقع الويب هذا، أعِد تحميل هذه الصفحة</translation>
 <translation id="1919345977826869612">الإعلانات</translation>
 <translation id="1919367280705858090">الحصول على مساعدة بخصوص رسالة خطأ محددة</translation>
@@ -249,7 +251,7 @@
 <translation id="2230458221926704099">إصلاح الاتصال باستخدام <ph name="BEGIN_LINK" />تطبيق بيانات التشخيص<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">إرسال الآن</translation>
 <translation id="225207911366869382">تم تجاهل القيمة لهذه السياسة.</translation>
-<translation id="2257315177824333709">عفوًا، يتعذّر حفظ بطاقتك الآن</translation>
+<translation id="2257315177824333709">عفوًا، يتعذّر حفظ بطاقتك الآن.</translation>
 <translation id="2262243747453050782">‏خطأ HTTP</translation>
 <translation id="2263079731045660823">‏تحديث معلومات الملء التلقائي لبطاقة الائتمان في إعدادات Chrome</translation>
 <translation id="2270484714375784793">رقم الهاتف</translation>
@@ -272,7 +274,6 @@
 <translation id="2360873523816792727">لاستخدام بطاقاتك على جميع الأجهزة، يُرجى تفعيل المزامنة.</translation>
 <translation id="2365563543831475020">لم يتم تحميل تقرير الأعطال الذي تم الحصول عليه في <ph name="CRASH_TIME" /></translation>
 <translation id="2367567093518048410">المستوى</translation>
-<translation id="2378238891085281592">الانتقال إلى التصفّح المتخفي</translation>
 <translation id="2380886658946992094">قانوني</translation>
 <translation id="2384307209577226199">السياسة تلقائية في المؤسسة ويمكن إلغاؤها</translation>
 <translation id="2386255080630008482">تم إبطال شهادة الخادم.</translation>
@@ -343,7 +344,7 @@
 <translation id="2721148159707890343">تم إرسال الطلب بنجاح</translation>
 <translation id="2728127805433021124">شهادة الخادم موقّعة باستخدام خوارزمية توقيع ضعيفة.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />تشغيل بيانات تشخيص الاتصال<ph name="END_LINK" /></translation>
-<translation id="2735043616039983645">يتوفّر أكثر من مصدر واحد يتضمّن قيمًا متضاربة لهذه السياسة.</translation>
+<translation id="2735043616039983645">لهذه السياسة مصادر متعدّدة ذات قيم متضاربة.</translation>
 <translation id="2738330467931008676">اختيار عنوان الاستلام من المستخدم</translation>
 <translation id="2740531572673183784">موافق</translation>
 <translation id="2742870351467570537">إزالة العناصر المحددة</translation>
@@ -400,6 +401,7 @@
 <translation id="3037605927509011580">عذرًا!</translation>
 <translation id="3041612393474885105">معلومات الشهادة</translation>
 <translation id="3060227939791841287">‏C9 (مغلف)</translation>
+<translation id="3061707000357573562">خدمة رمز التصحيح</translation>
 <translation id="3064966200440839136">ستتم مغادرة وضع التصفح المتخفي للدفع عبر تطبيق خارجي. هل تريد المتابعة؟</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{بدون}=1{كلمة مرور واحدة}two{كلمتا مرور (#)}few{# كلمات مرور}many{# كلمة مرور}other{# كلمة مرور}}</translation>
 <translation id="3095940652251934233">كشف</translation>
@@ -731,7 +733,6 @@
 <translation id="4926159001844873046">يعرض موقع <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">لا نتائج</translation>
-<translation id="4945672369594656571">‏التحكّم في كيفية التعامل مع الجهاز وبيانات الحساب. ستعالج Google بيانات جهازك وحسابك حصريًا تحت إدارة مدير الحساب والجهاز ولتلبية الأغراض التي يحدّدها فقط.</translation>
 <translation id="4950898438188848926">‏زر التبديل بين علامات التبويب، اضغط على Enter للتبديل إلى علامة التبويب المفتوحة هذه <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">إجراءات</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -745,7 +746,6 @@
 <translation id="5017554619425969104">النص الذي نسخته</translation>
 <translation id="5018422839182700155">يتعذّر فتح هذه الصفحة</translation>
 <translation id="5019198164206649151">التخزين المساعد في حالة سيئة</translation>
-<translation id="5020154601324912079">‏التحكّم في كيفية التعامل مع بيانات الجهاز. ستعالج Google بيانات جهازك حصريًا تحت إدارة مدير الجهاز ولتلبية الأغراض المُحدّدة فقط من قبل مدير الجهاز.</translation>
 <translation id="5023310440958281426">التحقق من سياسات المشرف</translation>
 <translation id="5029568752722684782">محو النسخة</translation>
 <translation id="503069730517007720">يلزم شهادة جذر لـ "<ph name="SOFTWARE_NAME" />" ولكن لم يتم تثبيتها. ينبغي على مشرف تقنية المعلومات أن يلقي نظرة على تعليمات التهيئة لـ "<ph name="SOFTWARE_NAME" />" لإصلاح تلك المشكلة. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -918,6 +918,7 @@
 <translation id="5921639886840618607">‏هل تريد حفظ البطاقة في حساب Google؟</translation>
 <translation id="5922853866070715753">أوشكْت على الانتهاء.</translation>
 <translation id="5932224571077948991">يعرض موقع الويب إعلانات مضلِّلة أو غير مرغوب فيها</translation>
+<translation id="5939847200023027600">‏خدمة المكوّن بتنسيق ملف PDF</translation>
 <translation id="5946937721014915347">جارٍ فتح <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">نعم، إضافة</translation>
 <translation id="5951495562196540101">لا يمكن التسجيل باستخدام حساب المستهلك (الترخيص المجمّع متوفّر).</translation>
@@ -1042,7 +1043,7 @@
 <translation id="6670613747977017428">الرجوع</translation>
 <translation id="6671697161687535275">‏هل تريد إزالة اقتراح النموذج من Chromium؟</translation>
 <translation id="6685834062052613830">الخروج وإكمال الإعداد</translation>
-<translation id="6689271823431384964">‏يتيح لك Chrome حفظ بطاقاتك في حسابك على Google لأنك سجَّلت الدخول. يمكنك تغيير هذا السلوك في الإعدادات. يتم الحصول على اسم حامل البطاقة من حسابك.</translation>
+<translation id="6689271823431384964">‏يتيح لك Chrome حفظ بطاقاتك في حسابك على Google لأنك سجَّلت الدخول. يمكنك تغيير هذا السلوك في الإعدادات. ويتم الحصول على اسم حامل البطاقة من حسابك.</translation>
 <translation id="6710213216561001401">السابق</translation>
 <translation id="6710594484020273272">&lt;إدخال عبارة البحث&gt;</translation>
 <translation id="671076103358959139">الرمز المميّز للتسجيل:</translation>
@@ -1080,7 +1081,6 @@
 <translation id="6948701128805548767">لعرض طرق الاستلام ومتطلباته، حدِّد عنوانًا</translation>
 <translation id="6949872517221025916">إعادة تحديد كلمة المرور</translation>
 <translation id="6950684638814147129">‏حدث خطأ أثناء تحليل قيمة JSON: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">افتح صفحة في علامة التبويب الجديدة "التصفّح المتخفي".</translation>
 <translation id="6957887021205513506">يبدو أن شهادة الخادم مزيفة.</translation>
 <translation id="6964255747740675745">‏تعذّر تحليل ضبط الشبكة (JSON غير صالح).</translation>
 <translation id="6965382102122355670">موافق</translation>
@@ -1090,7 +1090,6 @@
 <translation id="6973932557599545801">عذرًا، لا يمكنني مساعدتك، يُرجى المتابعة بنفسك.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">كتم الصوت (تلقائي)</translation>
-<translation id="6984479912851154518">ستتم مغادرة وضع التصفّح المتخفي للدفع عبر تطبيق خارجي. هل تريد المتابعة؟</translation>
 <translation id="6989763994942163495">عرض الإعدادات المتقدمة...</translation>
 <translation id="6993898126790112050">‏6x9 (مغلف)</translation>
 <translation id="6996312675313362352">ترجمة اللغة <ph name="ORIGINAL_LANGUAGE" /> دائمًا</translation>
@@ -1178,7 +1177,6 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">إدارة كلمات المرور…</translation>
 <translation id="7419106976560586862">مسار الملف الشخصي</translation>
-<translation id="7424427397225027541">‏التحكم في كيفية التعامل مع بيانات الحساب. ستعالج Google بيانات حسابك حصريًا تحت إدارة مدير الحساب ولتلبية الأغراض التي يحدّدها فقط.</translation>
 <translation id="7437289804838430631">إضافة معلومات الاتصال</translation>
 <translation id="7440140511386898319">الاستكشاف أثناء عدم الاتصال بالإنترنت</translation>
 <translation id="7441627299479586546">موضوع السياسة غير صحيح</translation>
@@ -1318,6 +1316,7 @@
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">تمت إزالة البطاقات غير الصالحة</translation>
 <translation id="8103161714697287722">طريقة الدفع</translation>
+<translation id="8105368624971345109">إيقاف</translation>
 <translation id="8118489163946903409">طريقة الدفع</translation>
 <translation id="8127301229239896662">لم يتم تثبيت "<ph name="SOFTWARE_NAME" />" بطريقة صحيحة على جهاز الكمبيوتر أو الشبكة. اطلب من مشرف تقنية المعلومات حل هذه المشكلة.</translation>
 <translation id="8131740175452115882">التأكيد</translation>

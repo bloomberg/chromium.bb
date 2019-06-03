@@ -15,7 +15,6 @@
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1409544243779336081">Recomendação de apps</translation>
-<translation id="1413622004203049571">Desativar notificações de <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Um minuto e }one{# minutos e }other{# minutos e }}</translation>
 <translation id="1643823602425662293">Notificação</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -56,7 +55,7 @@
 <translation id="2583543531130364912">Calibrar a touchscreen</translation>
 <translation id="2666092431469916601">Parte superior</translation>
 <translation id="2701330563083355633">Compartilhada por <ph name="DEVICE_NAME" /></translation>
-<translation id="2743387203779672305">Copiar para a área de trabalho</translation>
+<translation id="2743387203779672305">Copiar para área de transferência</translation>
 <translation id="2803313416453193357">Abrir pasta</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 ano atrás}one{# ano atrás}other{# anos atrás}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{em 1 d}one{em # d}other{em # d}}</translation>
@@ -166,7 +165,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Um minuto restante}one{# minutos restantes}other{# minutos restantes}}</translation>
 <translation id="7319740667687257810">Iniciador, visualização parcial</translation>
-<translation id="732374792807444530">Enviando para <ph name="DEVICE_NAME" /></translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Um minuto atrás}one{# minutos atrás}other{# minutos atrás}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Um minuto restante}one{# minutos restantes}other{# minutos restantes}}</translation>
@@ -208,7 +206,7 @@
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}one{# h}other{# h}}</translation>
 <translation id="8798099450830957504">Padrão</translation>
 <translation id="8806053966018712535">Pasta <ph name="FOLDER_NAME" /></translation>
-<translation id="883911313571074303">Fazer anotações na imagem</translation>
+<translation id="883911313571074303">Nota na imagem</translation>
 <translation id="8841375032071747811">Botão "Voltar"</translation>
 <translation id="8876215549894133151">Formato:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

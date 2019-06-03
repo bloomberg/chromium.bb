@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Приемани карти</translation>
 <translation id="1032854598605920125">Завъртане по часовниковата стрелка</translation>
 <translation id="1035334672863811645">Влезте в Chrome</translation>
+<translation id="1036348656032585052">Изключване</translation>
 <translation id="1038842779957582377">неизвестно име</translation>
 <translation id="1039626062703039346">Chrome може да ви помогне да защитите профила си в Google и да промените паролата си. Ще получим известие за този сайт.</translation>
 <translation id="1050038467049342496">Затворете другите приложения.</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Име на титуляря на картата</translation>
 <translation id="1821930232296380041">Заявката или параметрите й са невалидни</translation>
+<translation id="1822370876374026111">За да платите по-бързо следващия път, добавете картата и адреса си за фактуриране към профила си в Google и към това устройство.</translation>
 <translation id="1822540298136254167">Уебсайтовете, които посещавате, и колко време прекарвате на тях</translation>
 <translation id="1826516787628120939">Извършва се проверка</translation>
 <translation id="1834321415901700177">Този сайт съдържа опасни програми</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">Отваряне на страниците при стартиране</translation>
 <translation id="1883255238294161206">Свиване на списъка</translation>
 <translation id="1898423065542865115">Филтриране</translation>
+<translation id="1914326953223720820">Услуга за разкомпресиране</translation>
 <translation id="1916770123977586577">Презаредете страницата, за да приложите актуализираните си настройки към този сайт</translation>
 <translation id="1919345977826869612">Реклами</translation>
 <translation id="1919367280705858090">Получаване на помощ за конкретно съобщение за грешка</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">За да използвате картите си на всичките си устройства, включете синхронизирането.</translation>
 <translation id="2365563543831475020">Сигналът за срив, записан в/ъв <ph name="CRASH_TIME" />, не бе качен</translation>
 <translation id="2367567093518048410">Ниво</translation>
-<translation id="2378238891085281592">Преминахте в режим на частно сърфиране</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Зададено по подразбиране в корпоративна среда</translation>
 <translation id="2386255080630008482">Сертификатът на сървъра е анулиран.</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">Ужас!</translation>
 <translation id="3041612393474885105">Информация за сертификата</translation>
 <translation id="3060227939791841287">C9 (плик)</translation>
+<translation id="3061707000357573562">Услуга за корекции</translation>
 <translation id="3064966200440839136">Ще напуснете режим „инкогнито“, за да платите във външно приложение. Искате ли да продължите?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Няма}=1{1 парола}other{# пароли}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -593,6 +596,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{още <ph name="ITEM_COUNT" /> елемент}other{още <ph name="ITEM_COUNT" /> елемента}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> – <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">За да платите по-бързо следващия път, добавете картата и адреса си за фактуриране към профила си в Google.</translation>
 <translation id="4196861286325780578">&amp;Възстановяване на преместването</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Проверете конфигурацията на защитната стена и антивирусния софтуер<ph name="END_LINK" />.</translation>
 <translation id="4215751373031079683">7 x 9 (плик)</translation>
@@ -731,7 +735,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> изпраща съобщение</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Няма резултати</translation>
-<translation id="4945672369594656571">Контролира обработката на данните от устройството и от профила ви. Google обработва данните от устройството и от профила ви изключително според указанията на мениджъра на устройството и профила ви и единствено за целите, посочени от него.</translation>
 <translation id="4950898438188848926">Бутон за превключване между раздели. Натиснете Enter, за да преминете към отворения раздел – <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Действия</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -745,7 +748,6 @@
 <translation id="5017554619425969104">Копиран от вас текст</translation>
 <translation id="5018422839182700155">Тази страница не може да се отвори</translation>
 <translation id="5019198164206649151">Допълнителното хранилище е в лошо състояние</translation>
-<translation id="5020154601324912079">Контролира обработката на данните от устройството ви. Google обработва данните от устройството ви изключително според указанията на мениджъра на профила ви и единствено за целите, посочени от него.</translation>
 <translation id="5023310440958281426">Проверете правилата на администратора</translation>
 <translation id="5029568752722684782">Изчистване на копието</translation>
 <translation id="503069730517007720">За <ph name="SOFTWARE_NAME" /> се изисква основен сертификат, но такъв не е инсталиран. Системният ви администратор трябва да прегледа инструкциите за конфигуриране на <ph name="SOFTWARE_NAME" />, за да отстрани проблема. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -918,6 +920,7 @@
 <translation id="5921639886840618607">Картата да се запази ли в профила в Google?</translation>
 <translation id="5922853866070715753">Почти готово</translation>
 <translation id="5932224571077948991">На сайта се показват натрапчиви или подвеждащи реклами</translation>
+<translation id="5939847200023027600">Услуга за създаване на PDF файлове</translation>
 <translation id="5946937721014915347">Отваря се <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Да, искам</translation>
 <translation id="5951495562196540101">Не е възможно регистриране с профил на потребител (налице е лиценз в пакет).</translation>
@@ -1008,6 +1011,7 @@
 <translation id="6451458296329894277">Потвърдете повторното изпращане на формуляра</translation>
 <translation id="6465306955648956876">Управление на паролите...</translation>
 <translation id="647261751007945333">Правила за устройството</translation>
+<translation id="6476284679642588870">Управление на начините на плащане</translation>
 <translation id="6477321094435799029">Chrome откри необичаен код на тази страница и я блокира, за да защити личната ви информация (например пароли, телефонни номера и номера на кредитни карти).</translation>
 <translation id="6489534406876378309">Стартиране на качването на сривове</translation>
 <translation id="6499038740797743453">Да се зададе ли повторно паролата?</translation>
@@ -1080,7 +1084,6 @@
 <translation id="6948701128805548767">За да видите начините на вземане и изискванията, изберете адрес</translation>
 <translation id="6949872517221025916">Задаване на нова парола</translation>
 <translation id="6950684638814147129">При синтактичния анализ на стойността в JSON възникна грешка: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Отворете страницата в нов частен раздел</translation>
 <translation id="6957887021205513506">Изглежда, че сертификатът на сървъра е подправен.</translation>
 <translation id="6964255747740675745">Синтактичният анализ на конфигурацията на мрежата не бе успешен (невалиден формат JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -1090,7 +1093,6 @@
 <translation id="6973932557599545801">За съжаление, не мога да помогна. Моля, продължете ръчно.</translation>
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="6979440798594660689">Заглушаване (стандартно)</translation>
-<translation id="6984479912851154518">Ще напуснете режима на частно сърфиране, за да платите във външно приложение. Искате ли да продължите?</translation>
 <translation id="6989763994942163495">Показване на разширените настройки...</translation>
 <translation id="6993898126790112050">6 x 9 (плик)</translation>
 <translation id="6996312675313362352">Винаги да се превежда от <ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1148,6 +1150,7 @@
 <translation id="7298195798382681320">Препоръчително</translation>
 <translation id="7300012071106347854">кобалтовосиньо</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />“</translation>
+<translation id="7303701124147721189">За да платите по-бързо следващия път, запазете картата и адреса си за фактуриране в профила си в Google и на това устройство.</translation>
 <translation id="7309308571273880165">Сигнал за срив, записан в/ъв <ph name="CRASH_TIME" /> (потребителят е заявил качване, което още не е извършено)</translation>
 <translation id="7313965965371928911">Предупреждения от <ph name="BEGIN_LINK" />Безопасно сърфиране<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1178,7 +1181,6 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Управление на паролите…</translation>
 <translation id="7419106976560586862">Път на потребителския профил</translation>
-<translation id="7424427397225027541">Контролира обработката на данните от профила ви. Google обработва данните от профила ви изключително според указанията на мениджъра на профила ви и единствено за целите, посочени от него.</translation>
 <translation id="7437289804838430631">Добавяне на информация за връзка</translation>
 <translation id="7440140511386898319">Разгледайте, докато сте офлайн</translation>
 <translation id="7441627299479586546">Грешен предмет на правилото</translation>
@@ -1318,6 +1320,7 @@
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Невалидните карти са премахнати</translation>
 <translation id="8103161714697287722">Начин на плащане</translation>
+<translation id="8105368624971345109">Изключване</translation>
 <translation id="8118489163946903409">Начин на плащане</translation>
 <translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> не се инсталира правилно на компютъра ви или в мрежата. Помолете системния си администратор да реши този проблем.</translation>
 <translation id="8131740175452115882">Потвърждаване</translation>
@@ -1376,6 +1379,7 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
 <translation id="8437238597147034694">&amp;Отмяна на преместването</translation>
+<translation id="8440508849222143646">За да платите по-бързо следващия път, запазете картата и адреса си за фактуриране в профила си в Google.</translation>
 <translation id="8461694314515752532">Шифроване на синхронизираните данни със собствения ви пропуск за синхронизиране</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна карта}other{# кредитни карти}}</translation>
 <translation id="8473863474539038330">Адреси и др.</translation>
@@ -1481,6 +1485,7 @@
 <translation id="9128870381267983090">Свързване към мрежа</translation>
 <translation id="9137013805542155359">Показване на оригинала</translation>
 <translation id="9137248913990643158">Моля, стартирайте браузъра Chrome и влезте в него, преди да използвате това приложение.</translation>
+<translation id="9141013498910525015">Управление на адресите</translation>
 <translation id="9148088599418889305">Избиране на начин на доставка</translation>
 <translation id="9148507642005240123">&amp;Отмяна на редактирането</translation>
 <translation id="9154194610265714752">Актуализирано</translation>

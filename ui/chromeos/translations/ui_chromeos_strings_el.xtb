@@ -300,6 +300,7 @@
 <translation id="4690246192099372265">Σουηδικά</translation>
 <translation id="4693155481716051732">Σούσι</translation>
 <translation id="4694604912444486114">Πίθηκος</translation>
+<translation id="4697043402264950621">Η λίστα αρχείων ταξινομήθηκε κατά <ph name="COLUMN_NAME" /> σε αύξουσα σειρά.</translation>
 <translation id="4711094779914110278">Τουρκικά
 </translation>
 <translation id="4713544552769165154">Αυτό το αρχείο έχει σχεδιαστεί για υπολογιστές που χρησιμοποιούν λογισμικό για υπολογιστές Macintosh. Δεν είναι συμβατό με τη συσκευή σας η οποία εκτελεί Chrome OS. Αναζητήστε μια εφαρμογή κατάλληλη για να το αντικαταστήσει στο <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" />.<ph name="BEGIN_LINK_HELP" />Μάθετε περισσότερα<ph name="END_LINK_HELP" /></translation>
@@ -544,6 +545,7 @@
 <translation id="7339898014177206373">Νέο παράθυρο</translation>
 <translation id="7348749398828259943">Διεθνές πληκτρολόγιο ΗΠΑ Workman</translation>
 <translation id="7359359531237882347">Αντιγραφή <ph name="NUMBER_OF_ITEMS" /> στοιχείων…</translation>
+<translation id="7375951387215729722">Η λίστα αρχείων ταξινομήθηκε κατά <ph name="COLUMN_NAME" /> σε φθίνουσα σειρά.</translation>
 <translation id="7389722738210761877">Πληκτρολόγιο Ταϊλανδικών (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Πληκτρολόγιο χίντι (Φωνητικό)</translation>
 <translation id="7417453074306512035">Πληκτρολόγιο Αιθιοπικών</translation>

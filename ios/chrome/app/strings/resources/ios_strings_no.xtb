@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Foreslå passord…</translation>
 <translation id="1870148520156231997">Vis passordet</translation>
 <translation id="1876721852596493031">Send bruksdata</translation>
-<translation id="1886928167269928266">Tidenes morgen</translation>
 <translation id="1911619930368729126">Last opp til Google Disk</translation>
+<translation id="1923342640370224680">Den siste timen</translation>
 <translation id="1941314575388338491">Dobbelttrykk for å kopiere.</translation>
 <translation id="1952172573699511566">Nettsteder viser tekst på språket du foretrekker, der dette er mulig.</translation>
 <translation id="1952728750904661634">Logg på med administrert konto</translation>
 <translation id="1974060860693918893">Avansert</translation>
 <translation id="1989112275319619282">Bla gjennom</translation>
 <translation id="2015722694326466240">For å se passordene må du først angi en adgangskode på enheten din.</translation>
-<translation id="2068952045031577364">Den siste uken</translation>
 <translation id="2074131957428911366">Du kan når som helst velge hva du vil synkronisere, i <ph name="BEGIN_LINK" />innstillingene<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="209018056901015185">Bruk skrivebordsversjon</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Passord</translation>
 <translation id="2969979262385602596">Kunne ikke logge på. Prøv igjen senere.</translation>
 <translation id="2989805286512600854">Åpne i ny fane</translation>
-<translation id="3024255823539804759">Det siste døgnet</translation>
 <translation id="3037605927509011580">Æsj!</translation>
 <translation id="3112556859945124369">Merk…</translation>
 <translation id="3157684681743766797">Merk alle…</translation>
@@ -381,7 +379,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6464071786529933911">Åpne i en ny inkognitofane</translation>
 <translation id="6476800141292307438">Oversetter siden til <ph name="LANGUAGE" />. Du finner alternativer på nedre del av skjermen.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementer slettet</translation>
-<translation id="6541915733953096570">Den siste timen</translation>
 <translation id="6610002944194042868">Alternativer for oversettelse</translation>
 <translation id="6642362222295953972">Bytt til den eksisterende fanen</translation>
 <translation id="6643016212128521049">Tøm</translation>
@@ -502,6 +499,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="8532105204136943229">Utløpsår</translation>
 <translation id="8534481786647257214">Google+-innlegget er fullført.</translation>
 <translation id="8548878600947630424">Finn på siden</translation>
+<translation id="8583866649835978847">Send <ph name="TITLE" /> til en av enhetene dine.</translation>
 <translation id="8605219856220328675">Lukk fanen.</translation>
 <translation id="8620640915598389714">Endre</translation>
 <translation id="8636825310635137004">For å få fanene dine fra de andre enhetene du bruker, slå på synkronisering.</translation>

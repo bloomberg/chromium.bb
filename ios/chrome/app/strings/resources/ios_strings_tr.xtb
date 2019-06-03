@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Şifre Öner...</translation>
 <translation id="1870148520156231997">Şifreyi Göster</translation>
 <translation id="1876721852596493031">Kull. Veril. Gönder</translation>
-<translation id="1886928167269928266">En Baştan</translation>
 <translation id="1911619930368729126">Google Drive'a yükle</translation>
+<translation id="1923342640370224680">Son Bir Saat</translation>
 <translation id="1941314575388338491">Kopyalamak için iki kez dokunun.</translation>
 <translation id="1952172573699511566">Web siteleri, mümkün olduğunda metni tercih ettiğiniz dilde gösterir.</translation>
 <translation id="1952728750904661634">Yönetilen hesapla oturum açın</translation>
 <translation id="1974060860693918893">Gelişmiş</translation>
 <translation id="1989112275319619282">Göz at</translation>
 <translation id="2015722694326466240">Şifreleri görmek için öncelikle cihazınızda bir şifre kodu ayarlamanız gerekir.</translation>
-<translation id="2068952045031577364">Geçen Hafta</translation>
 <translation id="2074131957428911366">Neyin senkronize edileceğini istediğiniz zaman <ph name="BEGIN_LINK" />ayarlardan<ph name="END_LINK" /> seçebilirsiniz.</translation>
 <translation id="2079545284768500474">Geri al</translation>
 <translation id="209018056901015185">Masaüstü Sitesi İste</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Şifreler</translation>
 <translation id="2969979262385602596">Oturum açılamadı. Daha sonra tekrar deneyin.</translation>
 <translation id="2989805286512600854">Yeni Sekmede Aç</translation>
-<translation id="3024255823539804759">Son 1 Gün</translation>
 <translation id="3037605927509011580">Hay aksi!</translation>
 <translation id="3112556859945124369">İşaretle…</translation>
 <translation id="3157684681743766797">Tümünü İşaretle…</translation>
@@ -245,7 +243,7 @@
 <translation id="461440297010471931">Google ile arama</translation>
 <translation id="4619615317237390068">Diğer cihazlardan sekmeler</translation>
 <translation id="4620246317052452550">Okumuş Olduğunuz Sayfalar</translation>
-<translation id="4630540211544979320">Sayfaları Çevirme</translation>
+<translation id="4630540211544979320">Sayfaları Çevir</translation>
 <translation id="4636930964841734540">Bilgi</translation>
 <translation id="4659667755519643272">Sekme Değiştirici'ye Geç</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> olarak oturum açıldı.
@@ -381,7 +379,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="6464071786529933911">Yeni Gizli Sekmede Aç</translation>
 <translation id="6476800141292307438">Sayfa <ph name="LANGUAGE" /> diline çevriliyor. Seçenekler ekranın alt kısmına yakın bir yerde bulunur.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> öğe silindi</translation>
-<translation id="6541915733953096570">Son 1 Saat</translation>
 <translation id="6610002944194042868">Çeviri Seçenekleri</translation>
 <translation id="6642362222295953972">Mevcut sekmeye geçiş yapın</translation>
 <translation id="6643016212128521049">Temizle</translation>
@@ -478,7 +475,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="8059533439631660104">Bölümü daraltır.</translation>
 <translation id="806745655614357130">Verilerimi ayrı tut</translation>
 <translation id="8073670137947914548">İndirme tamamlandı</translation>
-<translation id="8073872304774253879">Aramaları ve Göz Atmayı Daha İyi Yap</translation>
+<translation id="8073872304774253879">Aramaları ve Göz Atmayı İyileştir</translation>
 <translation id="8076014560081431679">Kayıtlı site ayarları silinmez ve web'e göz atma alışkanlıklarınızı yansıtabilir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Dosya indirme işlevi kullanılabilir. Seçenekler ekranın alt tarafındadır.</translation>
 <translation id="8131740175452115882">Onayla</translation>
@@ -502,6 +499,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="8532105204136943229">Son Kullanım Yılı</translation>
 <translation id="8534481786647257214">Google+ yayını tamamlandı.</translation>
 <translation id="8548878600947630424">Sayfada bul...</translation>
+<translation id="8583866649835978847"><ph name="TITLE" /> sayfasını cihazlarınızdan birine gönderin.</translation>
 <translation id="8605219856220328675">Sekmeyi kapat.</translation>
 <translation id="8620640915598389714">Düzenle</translation>
 <translation id="8636825310635137004">Diğer cihazlarınızdaki sekmelerinize ulaşmak için senkronizasyonu etkinleştirin.</translation>

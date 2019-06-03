@@ -14,11 +14,13 @@
 <translation id="1111673857033749125">Bookmarks saved on your other devices will appear here.</translation>
 <translation id="1113597929977215864">Show simplified view</translation>
 <translation id="1121094540300013208">Usage and crash reports</translation>
+<translation id="1124772482545689468">User</translation>
 <translation id="1129510026454351943">Details: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download pending.}other{# downloads pending.}}</translation>
 <translation id="1145536944570833626">Delete existing data.</translation>
 <translation id="1146678959555564648">Enter VR</translation>
 <translation id="116280672541001035">Used</translation>
+<translation id="1171770572613082465">See popular websites by tapping the 'Top sites' button</translation>
 <translation id="1172593791219290334">Startup Page</translation>
 <translation id="1173894706177603556">Rename</translation>
 <translation id="1175310183703641346">Your bookmarks, history, passwords and more will no longer be synced to your Google Account</translation>
@@ -78,6 +80,7 @@
 <translation id="1513352483775369820">Bookmarks and web history</translation>
 <translation id="1513858653616922153">Delete password</translation>
 <translation id="1516229014686355813">Tap to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
+<translation id="1521774566618522728">Active today</translation>
 <translation id="1539064842193522527">Link opened in Chrome</translation>
 <translation id="1549000191223877751">Move to other window</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
@@ -174,12 +177,12 @@
 <translation id="2154484045852737596">Edit card</translation>
 <translation id="2154710561487035718">Copy URL</translation>
 <translation id="2156074688469523661">Remaining sites (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2170088579611075216">Allow and enter VR</translation>
 <translation id="218608176142494674">Sharing</translation>
 <translation id="2227444325776770048">Continue as <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sync and Google services</translation>
 <translation id="2259659629660284697">Export passwords…</translation>
 <translation id="2268044343513325586">Refine</translation>
-<translation id="2280910239864711607">Open a new tab in private mode</translation>
 <translation id="2286841657746966508">Billing address</translation>
 <translation id="230115972905494466">No compatible devices found</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
@@ -230,7 +233,6 @@
 <translation id="2621115761605608342">Allow JavaScript for a specific site.</translation>
 <translation id="2625189173221582860">Password copied</translation>
 <translation id="2631006050119455616">Saved</translation>
-<translation id="2633278372998075009">Private tabs</translation>
 <translation id="2647434099613338025">Add language</translation>
 <translation id="2650751991977523696">Download file again?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audio file}other{# Audio files}}</translation>
@@ -255,6 +257,7 @@
 <translation id="2836148919159985482">Touch the back button to exit full screen.</translation>
 <translation id="2842985007712546952">Parent folder</translation>
 <translation id="2845873210977809562">Opened tabs closed</translation>
+<translation id="2858138569776157458">Top sites</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Previous track</translation>
 <translation id="2876369937070532032">Sends URLs of some pages that you visit to Google, when your security is at risk</translation>
@@ -300,7 +303,6 @@
 <translation id="321773570071367578">If you forgot your passphrase or want to change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Microphone</translation>
 <translation id="3232754137068452469">Web App</translation>
-<translation id="3234355010754616171">New private tab</translation>
 <translation id="3236059992281584593">1 min left</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Bookmark this page</translation>
@@ -323,7 +325,6 @@
 <translation id="3350687908700087792">Close all incognito tabs</translation>
 <translation id="3353615205017136254">Lite page provided by Google. Tap the load original button to load the original page.</translation>
 <translation id="3367813778245106622">Sign in again to start sync</translation>
-<translation id="3377025655491224618">Private tab</translation>
 <translation id="3384347053049321195">Share image</translation>
 <translation id="3386292677130313581">Ask before allowing sites to know your location (recommended)</translation>
 <translation id="3387650086002190359"><ph name="FILE_NAME" /> download failed due to file system errors.</translation>
@@ -415,6 +416,7 @@ To adjust your search term, long-press to select. To refine your search, slide t
 <translation id="4116038641877404294">Download pages to use them offline</translation>
 <translation id="4149994727733219643">Simplified view for web pages</translation>
 <translation id="4165986682804962316">Site settings</translation>
+<translation id="4169535189173047238">Don't allow</translation>
 <translation id="4170011742729630528">The service is not available; try again later.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> used</translation>
 <translation id="4181841719683918333">Languages</translation>
@@ -424,7 +426,6 @@ To adjust your search term, long-press to select. To refine your search, slide t
 <translation id="4226663524361240545">Notifications may vibrate the device</translation>
 <translation id="423219824432660969">Encrypt synced data with Google password as of <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Open settings</translation>
-<translation id="4243710787042215766">Open in private tab</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
 <translation id="4256782883801055595">Open-source licences</translation>
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
@@ -515,7 +516,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4881695831933465202">Open</translation>
 <translation id="488187801263602086">Rename file</translation>
 <translation id="4882831918239250449">Control how your browsing history is used to personalise Search, ads and more</translation>
-<translation id="4883379392681899581">Leave private mode</translation>
 <translation id="4883854917563148705">Managed settings cannot be reset</translation>
 <translation id="4885273946141277891">Unsupported number of Chrome instances.</translation>
 <translation id="4910889077668685004">Payment apps</translation>
@@ -561,6 +561,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 download failed.}other{# downloads failed.}}</translation>
 <translation id="5184329579814168207">Open in Chrome</translation>
 <translation id="5199929503336119739">Work profile</translation>
+<translation id="5202089186707505116">Allow this site to access your VR sensors?</translation>
 <translation id="5210286577605176222">Jump to the previous tab</translation>
 <translation id="5210365745912300556">Close tab</translation>
 <translation id="5222676887888702881">Sign out</translation>
@@ -653,7 +654,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="583281660410589416">Unknown</translation>
 <translation id="5833984609253377421">Share link</translation>
 <translation id="5836192821815272682">Downloading Chrome Update…</translation>
-<translation id="584427517463557805">Selected private tab</translation>
 <translation id="5853623416121554550">paused</translation>
 <translation id="5854790677617711513">Older than 30 days</translation>
 <translation id="5858741533101922242">Chrome is unable to turn on Bluetooth adaptor</translation>
@@ -684,7 +684,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">Edit home page</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> hours left</translation>
-<translation id="6099151465289169210">Switched to private tabs</translation>
 <translation id="6108923351542677676">Setup in progress…</translation>
 <translation id="6111020039983847643">data used</translation>
 <translation id="6112702117600201073">Refreshing page</translation>
@@ -717,7 +716,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6320088164292336938">Vibrate</translation>
 <translation id="6324034347079777476">Android system sync disabled</translation>
 <translation id="6333140779060797560">Share via <ph name="APPLICATION" /></translation>
-<translation id="6336451774241870485">New private tab</translation>
 <translation id="6337234675334993532">Encryption</translation>
 <translation id="6341580099087024258">Ask where to save files</translation>
 <translation id="6343192674172527289">No downloads found</translation>
@@ -760,7 +758,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6593061639179217415">Desktop site</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
-<translation id="6610147964972079463">Close private tabs</translation>
 <translation id="6612358246767739896">Protected content</translation>
 <translation id="6627583120233659107">Edit folder</translation>
 <translation id="6643016212128521049">Clear</translation>
@@ -882,13 +879,11 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7453467225369441013">Signs you out of most sites. You won't be signed out of your Google Account.</translation>
 <translation id="7454641608352164238">Not enough space</translation>
 <translation id="7455923816558154057">Tap to view</translation>
-<translation id="7465104139234185284">Close all private tabs</translation>
 <translation id="7473891865547856676">No, thanks</translation>
 <translation id="7475192538862203634">If you’re seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD card not found. Some of your files may be missing.</translation>
 <translation id="7479104141328977413">Tab management</translation>
 <translation id="7481312909269577407">Forward</translation>
-<translation id="7482697587265222445">Tab sent to your devices</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Updated <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">data saved</translation>
 <translation id="7498271377022651285">Please wait…</translation>
@@ -972,6 +967,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8058746566562539958">Open in new Chrome tab</translation>
 <translation id="8063895661287329888">Failed to add bookmark.</translation>
 <translation id="806745655614357130">Keep my data separate</translation>
+<translation id="8067883171444229417">Play video</translation>
 <translation id="8068648041423924542">Unable to select certificate.</translation>
 <translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="8076492880354921740">Tabs</translation>
@@ -1008,6 +1004,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8327155640814342956">For the best browsing experience, open to update Chrome</translation>
 <translation id="8339163506404995330">Pages in <ph name="LANGUAGE" /> will not be translated</translation>
 <translation id="8349013245300336738">Sort by amount of data used</translation>
+<translation id="8364299278605033898">See popular websites</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8378714024927312812">Managed by your organisation</translation>
@@ -1098,7 +1095,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9070377983101773829">Start voice search</translation>
 <translation id="9074336505530349563">To get personalised content suggested by Google, sign in and turn on sync</translation>
-<translation id="9080642952018487277">Enter private mode</translation>
 <translation id="9086455579313502267">Unable to access the network</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB downloaded</translation>
 <translation id="9100505651305367705">Offer to show articles in simplified view, when supported</translation>

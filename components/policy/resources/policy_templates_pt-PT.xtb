@@ -329,7 +329,6 @@
 <translation id="1474273443907024088">Desativar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Ativar o bloqueio de injeção de software de terceiros</translation>
-<translation id="1504431521196476721">Comprovação Remota</translation>
 <translation id="1507382822467487898">
           Configura o endereço MAC (media access control) que é utilizado quando o dispositivo está ligado a uma estação de ancoragem.
 
@@ -1730,11 +1729,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="408076456549153854">Ativar o início de sessão no navegador</translation>
 <translation id="40853027210512570">Substitui as regras de seleção da impressora predefinida do <ph name="PRODUCT_NAME" />.
 
-      Esta política determina as regras para a seleção da impressora predefinida no <ph name="PRODUCT_NAME" /> que ocorre quando a função de impressão é utilizada com um perfil pela primeira vez.
+      Esta política determina as regras para a seleção da impressora predefinida no <ph name="PRODUCT_NAME" />, que ocorre quando a função de impressão é utilizada com um perfil pela primeira vez.
 
       Quando esta política está definida, o <ph name="PRODUCT_NAME" /> tenta localizar uma impressora que corresponda a todos os atributos especificados e selecioná-la como impressora predefinida. É selecionada a primeira impressora localizada que corresponda à política. Se a correspondência não for única, pode ser selecionada qualquer impressora correspondente, consoante a ordem pela qual as impressoras são detetadas.
 
-      Se esta política não estiver definida ou não for encontrada uma impressora correspondente no limite de tempo, é predefinida a impressora PDF incorporada ou não é selecionada qualquer impressora quando a impressora PDF não está disponível.
+      Se esta política não estiver definida ou não for encontrada uma impressora correspondente no limite de tempo, será predefinida a impressora PDF incorporada ou não será selecionada qualquer impressora quando a impressora PDF não estiver disponível.
 
       As impressoras ligadas ao <ph name="CLOUD_PRINT_NAME" /> são consideradas como <ph name="PRINTER_TYPE_CLOUD" /> e as restantes são classificadas como <ph name="PRINTER_TYPE_LOCAL" />.
       Omitir um campo significa que todos os valores são correspondentes, por exemplo, não especificar a conetividade faz com que a Pré-visualização da impressão inicie a deteção de todos os tipos de impressoras: locais e na nuvem.
@@ -2367,24 +2366,29 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5423001109873148185">Se esta política estiver ativada, força a importação de motores de pesquisa a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, o motor de pesquisa predefinido não é importado. Se não for definida, o utilizador poderá ser questionado se pretende importá-lo ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="5423197884968724595">Nome da restrição WebView do Android:</translation>
 <translation id="5424147596523390018">Permitir todos os modos a cores</translation>
+<translation id="5427003226809696696">Esta política controla se a janela do navegador deve ser iniciada no início da sessão.
+
+          Se esta política estiver ativada, a janela do navegador não é iniciada.
+
+          Se esta política estiver desativada ou não for definida, a janela do navegador tem autorização para ser iniciada. Tenha em atenção que a janela do navegador pode não ser iniciada devido a outras políticas ou sinalizadores de linhas de comandos.</translation>
 <translation id="5427879482805712214">Esta política permite-lhe configurar a imagem do avatar que representa o utilizador no ecrã de início de sessão. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem do avatar e um hash criptográfico utilizado para validar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 512 kB. O URL tem de ser acessível sem qualquer autenticação.
 
       A imagem do avatar é transferida e colocada em cache. Será transferida novamente sempre que o URL ou o hash forem alterados.
 
       Se esta política estiver definida, o <ph name="PRODUCT_OS_NAME" /> transfere e utiliza a imagem do avatar.
 
-      Se definir esta política, os utilizadores não a podem alterar nem substituir.
+      Se definir esta política, os utilizadores não a poderão alterar nem substituir.
 
       Se não definir a política, o utilizador pode escolher a imagem do avatar que o representa no ecrã de início de sessão.</translation>
 <translation id="5432219358069697932">Esta política permite-lhe configurar a imagem de fundo apresentada no ambiente de trabalho e no fundo do ecrã de início de sessão do utilizador. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem de fundo e um hash criptográfico utilizado para confirmar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 16 MB. O URL tem de ser acessível sem qualquer autenticação.
 
       A imagem de fundo é transferida e colocada em cache. Será transferida novamente sempre que o URL ou o hash forem alterados.
 
-      Se esta política estiver definida, o <ph name="PRODUCT_OS_NAME" /> transfere e utiliza a imagem de fundo.
+      Se esta política estiver definida, o <ph name="PRODUCT_OS_NAME" /> irá transferir e utilizar a imagem de fundo.
 
-      Se definir esta política, os utilizadores não a podem alterar nem substituir.
+      Se definir esta política, os utilizadores não a poderão alterar nem substituir.
 
-      Se não definir a política, o utilizador pode escolher uma imagem para apresentação no ambiente de trabalho e no fundo do ecrã de início de sessão.</translation>
+      Se não definir a política, o utilizador poderá escolher uma imagem para apresentação no ambiente de trabalho e no fundo do ecrã de início de sessão.</translation>
 <translation id="5437733496511628148">A ativação desta definição impede que os cookies sejam definidos por elementos de páginas Web que não pertençam ao domínio indicado na barra de endereço do navegador.
 
       A desativação desta definição permite que os cookies sejam definidos por elementos de páginas Web que não pertençam ao domínio indicado na barra de endereço do navegador e impede que os utilizadores alterem esta definição.
@@ -3158,7 +3162,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se estiver selecionado "U2F_EXTENDED", o fator duplo integrado fornece as funções U2F mais algumas extensões para comprovação individual.</translation>
 <translation id="7003334574344702284">Se esta política estiver ativada, força a importação de palavras-passe guardadas a partir do anterior navegador predefinido e também afeta a caixa de diálogo de importação. Se estiver desativada, as palavras-passe não são importadas. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-las ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="7003746348783715221">Preferências do <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Definições de Conteúdo</translation>
 <translation id="7007671350884342624">Configura o diretório que o <ph name="PRODUCT_NAME" /> irá utilizar para armazenar dados do utilizador.
 
       Se definir esta política, o <ph name="PRODUCT_NAME" /> utiliza o diretório fornecido, independentemente de o utilizador ter especificado o sinalizador "--user-data-dir" ou não. Para evitar a perda de dados ou outros erros inesperados, esta política não deve ser definida para o diretório raiz de um volume nem para um diretório utilizado para outros fins porque o <ph name="PRODUCT_NAME" /> gere os respetivos conteúdos.
@@ -3512,8 +3515,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7617319494457709698">Esta política especifica as extensões com permissão para utilizar a função <ph name="CHALLENGE_USER_KEY_FUNCTION" /> da <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> para a comprovação remota. As extensões têm de ser adicionadas a esta lista para poderem utilizar a API.
 
           Se uma extensão não estiver na lista ou a lista não estiver definida, a chamada para a API falha e resulta num código de erro.</translation>
-<translation id="7618907117929117943">Reverta e continue com a versão de destino se a versão do SO for mais recente do que a do destino; também é possível transferir a configuração ao nível do dispositivo (incluindo as credenciais da rede) através da reversão e ignorando OOBE após a reversão. Não execute nem cancele se tal não for possível (porque a versão do destino não é compatível com o restauro de dados ou devido a uma alteração incompatível com a anterior).
-          Compatível com a versão 70 e superior do <ph name="PRODUCT_OS_NAME" />. Para clientes mais antigos, este valor significa que a reversão está desativada.</translation>
 <translation id="7620869951155758729">Esta política especifica a configuração que é utilizada para gerar e validar o Código de acesso parental.
 
       A |current_config| é sempre utilizada para gerar o código de acesso e deve ser utilizada para validar o código de acesso apenas quando não for possível validá-lo com a |future_config|.
@@ -3837,6 +3838,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não for definida, não existirão exceções à lista negra da política "URLBlacklist".</translation>
 <translation id="8176035528522326671">Permitir que o utilizador empresarial seja apenas um utilizador principal de vários perfis (comportamento predefinido para utilizadores geridos por empresas)</translation>
+<translation id="8183108371184777472">Suprimir a execução da janela do navegador</translation>
 <translation id="8214600119442850823">Configura o gestor de palavras-passe.</translation>
 <translation id="8217516105848565518">Esta política foi descontinuada. Em alternativa, utilize a política RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Ative os conjuntos de cifras RC4 no TLS</translation>
@@ -4050,11 +4052,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8661297125441579970">Não permitir a migração de dados nem ARC</translation>
 <translation id="8672321184841719703">Versão de Atualização Automática de Destino</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
-<translation id="8682611302223077049">Permite-lhe definir o período de tempo, em milissegundos, ao longo do qual os utilizadores são notificados de que o <ph name="PRODUCT_NAME" /> tem de ser reiniciado ou que um dispositivo <ph name="PRODUCT_OS_NAME" /> tem de ser reiniciado para aplicar uma atualização pendente.
-
-      Ao longo deste período de tempo, o utilizador é informado, repetidamente, de que é necessária uma atualização. Relativamente aos dispositivos <ph name="PRODUCT_OS_NAME" />, é apresentada uma notificação de reinício no tabuleiro do sistema quando é detetada uma atualização. Quanto aos navegadores do <ph name="PRODUCT_NAME" />, o menu da aplicação muda e passa a indicar que é necessário reiniciar assim que for ultrapassado um terço do período de notificação. A cor da notificação muda quando forem ultrapassados dois terços do período de notificação e volta a mudar quando o período terminar. As outras notificações que a política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> ativa seguem este mesmo horário.
-
-      Se não for definida, é utilizado o período predefinido de 345600000 milissegundos (quatro dias) para os dispositivos <ph name="PRODUCT_OS_NAME" /> e de 604800000 milissegundos (uma semana) para <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">O aviso de proteção por palavra-passe é acionado pela reutilização da palavra-passe.</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS incorporado</translation>
 <translation id="8698286761337647563">O número de dias de antecedência para notificar os utilizadores SAML de que a palavra-passe está prestes a expirar.</translation>
@@ -4068,7 +4065,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
           Nota: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> e <ph name="CHARGE_START_TIME_FIELD_NAME" /> são 0, 15, 30 e 45.</translation>
 <translation id="8704831857353097849">Lista de plug-ins desativados</translation>
 <translation id="8711086062295757690">Especifica a palavra-chave a utilizar como atalho na caixa geral para acionar a pesquisa para este fornecedor. Esta política é opcional. Se não for definida, não será utilizada nenhuma palavra-chave para ativar o fornecedor. Esta política é apenas considerada se a política DefaultSearchProviderEnabled" estiver ativada.</translation>
-<translation id="8731693562790917685">As Definições de Conteúdo permitem-lhe especificar como são processados os conteúdos de um determinado tipo (por exemplo, cookies, imagens ou JavaScript).</translation>
 <translation id="8733448613597049197">Ativa os relatórios alargados da Navegação segura do <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
 
       Os relatórios alargados enviam algumas informações do sistema e conteúdo de páginas para os servidores da Google, de modo a ajudar a detetar aplicações e sites perigosos.
@@ -4145,6 +4141,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Se ativar ou desativar esta definição, os utilizadores não a podem alterar ou substituir no <ph name="PRODUCT_NAME" />.
 
       Se deixar esta definição por definir, o utilizador pode optar por utilizar ou não esta função.</translation>
+<translation id="8871974300055371298">Definições de conteúdo</translation>
 <translation id="8876188741456358123">Substitui o modo de impressão duplex padrão. Se o modo não estiver disponível, esta política é ignorada.</translation>
 <translation id="8882006618241293596">Bloquear o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
 <translation id="8906768759089290519">Ativar o modo de convidado</translation>
@@ -4271,8 +4268,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="9084985621503260744">Especificar se a atividade do vídeo afeta a gestão da energia</translation>
 <translation id="9088433379343318874">Ativar o fornecedor de conteúdos do utilizador supervisionado</translation>
 <translation id="9088444059179765143">Configurar o método de deteção automática do fuso horário</translation>
-<translation id="9094064873808699479">Reverta e continue com a versão de destino se a versão do SO for mais recente do que a do destino. Tente transferir a configuração ao nível do dispositivo (incluindo as credenciais da rede) através do processo de reversão, se possível, mas efetue a reversão com Powerwash completo, mesmo que não seja possível restaurar os dados (por a versão do destino não ser compatível com o restauro de dados ou devido a uma alteração incompatível com anterior).
-          Compatível com a versão 70 e superior do <ph name="PRODUCT_OS_NAME" />. Para clientes mais antigos, este valor significa que a reversão está desativada.</translation>
 <translation id="9096086085182305205">Lista de permissões do servidor de autenticação</translation>
 <translation id="9105265795073104888">Apenas é disponibilizado um subconjunto de opções de configuração de proxy para aplicações para Android. As aplicações para Android podem optar voluntariamente por utilizar o proxy. Não as pode forçar a utilizar um proxy.</translation>
 <translation id="9106865192244721694">Permitir WebUSB nestes sites</translation>

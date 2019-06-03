@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Suggest  Password…</translation>
 <translation id="1870148520156231997">Reveal password</translation>
 <translation id="1876721852596493031">Send usage data</translation>
-<translation id="1886928167269928266">Beginning of Time</translation>
 <translation id="1911619930368729126">Upload to Google Drive</translation>
+<translation id="1923342640370224680">Last Hour</translation>
 <translation id="1941314575388338491">Double tap to copy.</translation>
 <translation id="1952172573699511566">Websites will show text in your preferred language, when possible.</translation>
 <translation id="1952728750904661634">Sign in with managed account</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1989112275319619282">Browse</translation>
 <translation id="2015722694326466240">To see passwords, you must first set a passcode on your device.</translation>
-<translation id="2068952045031577364">Past Week</translation>
 <translation id="2074131957428911366">You can always choose what to sync in <ph name="BEGIN_LINK" />settings<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="209018056901015185">Request Desktop Site</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Passwords</translation>
 <translation id="2969979262385602596">Failed to sign in. Please try again later.</translation>
 <translation id="2989805286512600854">Open in New Tab</translation>
-<translation id="3024255823539804759">Past Day</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
 <translation id="3112556859945124369">Mark…</translation>
 <translation id="3157684681743766797">Mark All…</translation>
@@ -381,7 +379,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
 <translation id="6476800141292307438">Translating the page to <ph name="LANGUAGE" />. Options available near bottom of the screen.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items deleted</translation>
-<translation id="6541915733953096570">Past Hour</translation>
 <translation id="6610002944194042868">Translate Options</translation>
 <translation id="6642362222295953972">Switch to existing tab</translation>
 <translation id="6643016212128521049">Clear</translation>
@@ -502,6 +499,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8532105204136943229">Year of Expiry</translation>
 <translation id="8534481786647257214">Google+ post completed.</translation>
 <translation id="8548878600947630424">Find in page...</translation>
+<translation id="8583866649835978847">Send <ph name="TITLE" /> to one of your devices.</translation>
 <translation id="8605219856220328675">Close tab.</translation>
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>

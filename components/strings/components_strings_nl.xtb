@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Geaccepteerde passen</translation>
 <translation id="1032854598605920125">Rechtsom draaien</translation>
 <translation id="1035334672863811645">inloggen bij Chrome</translation>
+<translation id="1036348656032585052">Uitschakelen</translation>
 <translation id="1038842779957582377">onbekende naam</translation>
 <translation id="1039626062703039346">Chrome kan je helpen je Google-account te beschermen en je wachtwoord te wijzigen. Hiermee ontvangt Google een melding over deze site.</translation>
 <translation id="1050038467049342496">Andere apps sluiten</translation>
@@ -175,6 +176,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Naam kaarthouder</translation>
 <translation id="1821930232296380041">Ongeldige aanvraag of aanvraagparameters</translation>
+<translation id="1822370876374026111">Voeg je kaartgegevens en factuuradres toe aan je Google-account en aan dit apparaat zodat je de volgende keer sneller kunt betalen.</translation>
 <translation id="1822540298136254167">Websites die je bezoekt en waarop je tijd doorbrengt</translation>
 <translation id="1826516787628120939">Controleren</translation>
 <translation id="1834321415901700177">Deze site bevat schadelijke programma's</translation>
@@ -187,6 +189,7 @@
 <translation id="187918866476621466">Startpagina's openen</translation>
 <translation id="1883255238294161206">Lijst samenvouwen</translation>
 <translation id="1898423065542865115">Filteren</translation>
+<translation id="1914326953223720820">Uitpakservice</translation>
 <translation id="1916770123977586577">Laad deze pagina opnieuw om je geüpdatete instellingen toe te passen op deze site</translation>
 <translation id="1919345977826869612">Advertenties</translation>
 <translation id="1919367280705858090">Hulp bij een specifieke foutmelding</translation>
@@ -267,11 +270,10 @@
 <translation id="2360873523816792727">Als je je passen op alle apparaten wilt gebruiken, moet je synchronisatie inschakelen.</translation>
 <translation id="2365563543831475020">Het crashrapport dat is vastgelegd op <ph name="CRASH_TIME" />, is niet geüpload</translation>
 <translation id="2367567093518048410">Niveau</translation>
-<translation id="2378238891085281592">Je gebruikt de privémodus</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Zakelijk standaard</translation>
 <translation id="2386255080630008482">Het servercertificaat is ingetrokken.</translation>
-<translation id="2392959068659972793">Beleid weergeven zonder waarde ingesteld</translation>
+<translation id="2392959068659972793">Beleid zonder ingestelde waarde weergeven</translation>
 <translation id="239429038616798445">Deze verzendmethode is niet beschikbaar. Kies een andere methode.</translation>
 <translation id="2396249848217231973">&amp;Verwijderen ongedaan maken</translation>
 <translation id="2409589295040002961">Je beheerder kan je browserinstellingen op afstand wijzigen. Activiteit op dit apparaat kan ook buiten Chrome worden beheerd. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
@@ -392,6 +394,7 @@
 <translation id="3037605927509011580">Helaas.</translation>
 <translation id="3041612393474885105">Certificaatgegevens</translation>
 <translation id="3060227939791841287">C9 (envelop)</translation>
+<translation id="3061707000357573562">Patchservice</translation>
 <translation id="3064966200440839136">Je verlaat de incognitomodus om te betalen via een externe app. Doorgaan?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Geen}=1{1 wachtwoord}other{# wachtwoorden}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -580,6 +583,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Nog <ph name="ITEM_COUNT" /> item}other{Nog <ph name="ITEM_COUNT" /> items}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Voeg je kaartgegevens en factuuradres toe aan je Google-account zodat je de volgende keer sneller kunt betalen.</translation>
 <translation id="4196861286325780578">&amp;Opnieuw verplaatsen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controleer firewall- en antivirusconfiguraties<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (envelop)</translation>
@@ -718,7 +722,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> meldt het volgende</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Geen resultaten</translation>
-<translation id="4945672369594656571">Bepalen hoe je apparaat- en accountgegevens worden verwerkt. Google verwerkt je apparaat- en accountgegevens uitsluitend op aanwijzing van je apparaat- en accountbeheerder en alleen voor de doeleinden die zijn opgegeven door je apparaat- en accountbeheerder.</translation>
 <translation id="4950898438188848926">Schakelknop voor tabbladen, druk op Enter om naar het geopende tabblad, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />, te schakelen</translation>
 <translation id="495170559598752135">Acties</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -732,7 +735,6 @@
 <translation id="5017554619425969104">Tekst die je hebt gekopieerd</translation>
 <translation id="5018422839182700155">Kan deze pagina niet openen</translation>
 <translation id="5019198164206649151">Backend-opslag in slechte staat</translation>
-<translation id="5020154601324912079">Bepalen hoe je apparaatgegevens worden verwerkt. Google verwerkt je apparaatgegevens uitsluitend op aanwijzing van je apparaatbeheerder en alleen voor de doeleinden die zijn opgegeven door je apparaatbeheerder.</translation>
 <translation id="5023310440958281426">Neem het beleid van je beheerder door</translation>
 <translation id="5029568752722684782">Kopie wissen</translation>
 <translation id="503069730517007720">Er is een rootcertificaat voor '<ph name="SOFTWARE_NAME" />' vereist, maar niet geïnstalleerd. Je IT-beheerder moet de configuratie-instructies voor '<ph name="SOFTWARE_NAME" />' raadplegen om dit probleem op te lossen. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -905,6 +907,7 @@
 <translation id="5921639886840618607">Pas opslaan in Google-account?</translation>
 <translation id="5922853866070715753">Bijna klaar</translation>
 <translation id="5932224571077948991">Site geeft opdringerige of misleidende advertenties weer</translation>
+<translation id="5939847200023027600">PDF-samenstellerservice</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> openen…</translation>
 <translation id="5947933617628957894">Ja, toevoegen</translation>
 <translation id="5951495562196540101">Kan consumentenaccount niet inschrijven (verpakte licentie beschikbaar).</translation>
@@ -994,6 +997,7 @@
 <translation id="6451458296329894277">Opnieuw indienen bevestigen</translation>
 <translation id="6465306955648956876">Wachtwoorden beheren...</translation>
 <translation id="647261751007945333">Apparaatbeleid</translation>
+<translation id="6476284679642588870">Betaalmethoden beheren</translation>
 <translation id="6477321094435799029">Chrome heeft ongebruikelijke code op deze pagina gedetecteerd en heeft de code geblokkeerd om je persoonlijke informatie (zoals wachtwoorden, telefoonnummers en creditcards) te beschermen.</translation>
 <translation id="6489534406876378309">Uploaden van crashes starten</translation>
 <translation id="6499038740797743453">Wachtwoord opnieuw instellen?</translation>
@@ -1066,7 +1070,6 @@
 <translation id="6948701128805548767">Selecteer een adres om ophaalmethoden en vereisten te bekijken</translation>
 <translation id="6949872517221025916">Wachtwoord opnieuw instellen</translation>
 <translation id="6950684638814147129">Fout bij het parseren van de JSON-waarde: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Pagina openen op een nieuw privétabblad</translation>
 <translation id="6957887021205513506">Het certificaat van de server lijkt vals te zijn.</translation>
 <translation id="6964255747740675745">Netwerkconfiguratie kan niet worden geparseerd (ongeldige json).</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -1076,7 +1079,6 @@
 <translation id="6973932557599545801">Ik kan je helaas niet helpen. Ga zelf verder.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Dempen (standaard)</translation>
-<translation id="6984479912851154518">Je verlaat de privémodus om te betalen via een externe app. Doorgaan?</translation>
 <translation id="6989763994942163495">Geavanceerde instellingen weergeven...</translation>
 <translation id="6993898126790112050">6x9 (envelop)</translation>
 <translation id="6996312675313362352"><ph name="ORIGINAL_LANGUAGE" /> altijd vertalen</translation>
@@ -1131,6 +1133,7 @@ Aanvullende informatie:
 <translation id="7298195798382681320">Aanbevolen</translation>
 <translation id="7300012071106347854">Kobaltblauw</translation>
 <translation id="7302712225291570345">'<ph name="TEXT" />'</translation>
+<translation id="7303701124147721189">Sla je kaartgegevens en factuuradres op in je Google-account en op dit apparaat zodat je de volgende keer sneller kunt betalen.</translation>
 <translation id="7309308571273880165">Crashrapport vastgelegd op <ph name="CRASH_TIME" /> (upload aangevraagd door gebruiker, nog niet geüpload)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" />-waarschuwingen</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1161,7 +1164,6 @@ Aanvullende informatie:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Wachtwoorden beheren…</translation>
 <translation id="7419106976560586862">Profielpad</translation>
-<translation id="7424427397225027541">Bepalen hoe je accountgegevens worden verwerkt. Google verwerkt je accountgegevens uitsluitend op aanwijzing van je accountbeheerder en alleen voor de doeleinden die zijn opgegeven door je accountbeheerder.</translation>
 <translation id="7437289804838430631">Contactgegevens toevoegen</translation>
 <translation id="7440140511386898319">Content bekijken wanneer je offline bent</translation>
 <translation id="7441627299479586546">Onjuist beleidsonderwerp</translation>
@@ -1301,6 +1303,7 @@ Aanvullende informatie:
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">De ongeldige passen zijn verwijderd</translation>
 <translation id="8103161714697287722">Betaalmethode</translation>
+<translation id="8105368624971345109">Uitschakelen</translation>
 <translation id="8118489163946903409">Betaalmethode</translation>
 <translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />' is niet correct geïnstalleerd op je computer of netwerk. Neem contact op met je IT-beheerder om dit probleem op te lossen.</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
@@ -1359,6 +1362,7 @@ Aanvullende informatie:
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8433057134996913067">Hiermee word je uitgelogd van de meeste websites.</translation>
 <translation id="8437238597147034694">&amp;Verplaatsen ongedaan maken</translation>
+<translation id="8440508849222143646">Sla je kaartgegevens en factuuradres op in je Google-account zodat je de volgende keer sneller kunt betalen.</translation>
 <translation id="8461694314515752532">Gesynchroniseerde gegevens versleutelen met een eigen wachtwoordzin</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 creditcard}other{# creditcards}}</translation>
 <translation id="8473863474539038330">Adressen en meer</translation>
@@ -1464,6 +1468,7 @@ Aanvullende informatie:
 <translation id="9128870381267983090">Verbinding maken met netwerk</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9137248913990643158">Start Chrome en log in voordat je deze app gebruikt.</translation>
+<translation id="9141013498910525015">Adressen beheren</translation>
 <translation id="9148088599418889305">Verzendmethode kiezen</translation>
 <translation id="9148507642005240123">&amp;Bewerken ongedaan maken</translation>
 <translation id="9154194610265714752">Bijgewerkt</translation>

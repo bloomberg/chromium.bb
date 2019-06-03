@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Carte di credito accettate</translation>
 <translation id="1032854598605920125">Ruota in senso orario</translation>
 <translation id="1035334672863811645">accedi a Chrome</translation>
+<translation id="1036348656032585052">Disattiva</translation>
 <translation id="1038842779957582377">nome sconosciuto</translation>
 <translation id="1039626062703039346">Chrome può aiutarti a proteggere il tuo Account Google e a modificare la password. Questa operazione invierà una notifica a Google a proposito di questo sito.</translation>
 <translation id="1050038467049342496">Chiudi altre app</translation>
@@ -107,7 +108,7 @@
 <translation id="1472675084647422956">Mostra altro</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Scegli l'indirizzo di spedizione</translation>
-<translation id="1492194039220927094">Push delle norme:</translation>
+<translation id="1492194039220927094">Push dei criteri:</translation>
 <translation id="1501859676467574491">Mostra le carte dall'Account Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Vedrai questo errore se stai utilizzando un portale Wi-Fi che richiede l'accesso per poterti connettere a Internet.&lt;/p&gt;
     &lt;p&gt;Per risolvere il problema, fai clic su &lt;strong&gt;Connetti&lt;/strong&gt; nella pagina che stai cercando di aprire.&lt;/p&gt;</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Nome del titolare della carta</translation>
 <translation id="1821930232296380041">Richiesta o parametri della richiesta non validi</translation>
+<translation id="1822370876374026111">Per pagare più velocemente la prossima volta, aggiungi la carta e l'indirizzo di fatturazione al tuo Account Google e su questo dispositivo.</translation>
 <translation id="1822540298136254167">Siti web visitati e tempo trascorso sui siti</translation>
 <translation id="1826516787628120939">Verifica in corso...</translation>
 <translation id="1834321415901700177">Il sito contiene programmi dannosi.</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">Apri pagine iniziali</translation>
 <translation id="1883255238294161206">Comprimi elenco</translation>
 <translation id="1898423065542865115">Filtri</translation>
+<translation id="1914326953223720820">Servizio di decompressione</translation>
 <translation id="1916770123977586577">Ricarica la pagina per applicare le impostazioni aggiornate a questo sito</translation>
 <translation id="1919345977826869612">Annunci</translation>
 <translation id="1919367280705858090">Assistenza per un messaggio di errore specifico</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">Attiva la sincronizzazione per utilizzare le tue carte su tutti i dispositivi.</translation>
 <translation id="2365563543831475020">Il rapporto sugli arresti anomali generato il giorno <ph name="CRASH_TIME" /> non è stato caricato</translation>
 <translation id="2367567093518048410">Livello</translation>
-<translation id="2378238891085281592">Navigazione privata attiva</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Valore predefinito aziendale</translation>
 <translation id="2386255080630008482">Il certificato del server è stato revocato.</translation>
@@ -343,7 +345,7 @@
 <translation id="2721148159707890343">Richiesta riuscita</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica della connettività<ph name="END_LINK" /></translation>
-<translation id="2735043616039983645">Ë presente più di un'origine con valori in conflitto per questo criterio.</translation>
+<translation id="2735043616039983645">È presente più di un'origine con valori in conflitto per questo criterio.</translation>
 <translation id="2738330467931008676">Scegli l'indirizzo di ritiro</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Rimuovi gli elementi selezionati</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">Uffa!</translation>
 <translation id="3041612393474885105">Informazioni certificato</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
+<translation id="3061707000357573562">Servizio di applicazione patch</translation>
 <translation id="3064966200440839136">Per procedere al pagamento tramite un'applicazione esterna, uscirai dalla modalità di navigazione in incognito. Continuare?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Nessuna}=1{1 password}other{# password}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -590,6 +593,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> altro elemento}other{Altri <ph name="ITEM_COUNT" /> elementi}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Per pagare più velocemente la prossima volta, aggiungi la carta e l'indirizzo di fatturazione al tuo Account Google.</translation>
 <translation id="4196861286325780578">&amp;Ripeti spostamento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controllare le configurazioni del firewall e antivirus<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -728,7 +732,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> dice</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Nessun risultato</translation>
-<translation id="4945672369594656571">Controlla in che modo vengono gestiti i dati del tuo dispositivo e del tuo account. Google elabora i dati del tuo dispositivo e del tuo account esclusivamente sotto la direzione del gestore dei tuoi dispositivi e account e unicamente per le finalità specificate dal gestore dei tuoi dispositivi e account.</translation>
 <translation id="4950898438188848926">Pulsante per cambiare scheda, premi INVIO per passare alla scheda aperta, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Azioni</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -742,7 +745,6 @@
 <translation id="5017554619425969104">Testo copiato</translation>
 <translation id="5018422839182700155">Impossibile aprire questa pagina</translation>
 <translation id="5019198164206649151">Archivio di backup in stato non valido</translation>
-<translation id="5020154601324912079">Controlla in che modo vengono gestiti i dati del tuo dispositivo. Google elabora i dati del tuo dispositivo esclusivamente sotto la direzione del gestore dei tuoi dispositivi e unicamente per le finalità specificate dal gestore dei tuoi dispositivi.</translation>
 <translation id="5023310440958281426">Consulta le norme dell'amministratore</translation>
 <translation id="5029568752722684782">Cancella copia</translation>
 <translation id="503069730517007720">Per "<ph name="SOFTWARE_NAME" />" è richiesto un certificato radice che non è installato. L'amministratore IT deve consultare le istruzioni di configurazione relative a "<ph name="SOFTWARE_NAME" />" per risolvere il problema. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -839,7 +841,7 @@
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Preferiti gestiti</translation>
 <translation id="5510766032865166053">Potrebbe essere stato spostato o eliminato.</translation>
-<translation id="5523118979700054094">Nome norma</translation>
+<translation id="5523118979700054094">Nome criterio</translation>
 <translation id="552553974213252141">Il testo è stato estratto correttamente?</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
 <translation id="5540224163453853">Impossibile trovare l'articolo richiesto.</translation>
@@ -915,6 +917,7 @@
 <translation id="5921639886840618607">Vuoi salvare la carta nell'Account Google?</translation>
 <translation id="5922853866070715753">Hai quasi finito.</translation>
 <translation id="5932224571077948991">Il sito mostra annunci invasivi o fuorvianti</translation>
+<translation id="5939847200023027600">Servizio compositore di PDF</translation>
 <translation id="5946937721014915347">Apertura di <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Sì, aggiungi</translation>
 <translation id="5951495562196540101">Impossibile effettuare la registrazione con l'account consumer (è disponibile la licenza inclusa).</translation>
@@ -1003,7 +1006,8 @@
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6451458296329894277">Conferma reinvio modulo</translation>
 <translation id="6465306955648956876">Gestisci password…</translation>
-<translation id="647261751007945333">Norme dispositivo</translation>
+<translation id="647261751007945333">Criteri dispositivo</translation>
+<translation id="6476284679642588870">Gestisci metodi di pagamento</translation>
 <translation id="6477321094435799029">Chrome ha rilevato un codice insolito su questa pagina e l'ha bloccata per proteggere le tue informazioni personali (ad esempio password, numeri di telefono e carte di credito).</translation>
 <translation id="6489534406876378309">Avvia caricamento arresti anomali</translation>
 <translation id="6499038740797743453">Reimpostare la password?</translation>
@@ -1030,7 +1034,7 @@
 <translation id="6626291197371920147">Aggiungi un numero di carta valido</translation>
 <translation id="6628463337424475685">Ricerca <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Gli utenti malintenzionati attualmente presenti sul sito <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> potrebbero cercare di installare sul tuo Mac programmi pericolosi che carpiscono o eliminano le tue informazioni (ad esempio, foto, password, messaggi e carte di credito). <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="6631202559048444592">Ë presente più di un'origine per questo criterio, ma i valori sono gli stessi.</translation>
+<translation id="6631202559048444592">È presente più di un'origine per questo criterio, ma i valori sono gli stessi.</translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6644283850729428850">Questa norma è obsoleta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nessuno}=1{Da 1 sito (non verrai disconnesso dal tuo Account Google)}other{Da # siti (non verrai disconnesso dal tuo Account Google)}}</translation>
@@ -1046,7 +1050,7 @@
 <translation id="6738516213925468394">I tuoi dati sono stati criptati con la tua <ph name="BEGIN_LINK" />passphrase di sincronizzazione<ph name="END_LINK" /> in data <ph name="TIME" />. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="674375294223700098">Errore sconosciuto del certificato del server.</translation>
 <translation id="6744009308914054259">In attesa di una connessione, puoi visitare la pagina Download per leggere gli articoli offline.</translation>
-<translation id="6753269504797312559">Valore norma</translation>
+<translation id="6753269504797312559">Valore criterio</translation>
 <translation id="6757797048963528358">Il dispositivo è entrato in modalità sospensione.</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)</translation>
 <translation id="6778737459546443941">Il tuo genitore non ha ancora approvato la richiesta</translation>
@@ -1076,7 +1080,6 @@
 <translation id="6948701128805548767">Seleziona un indirizzo per conoscere i requisiti e i metodi di ritiro</translation>
 <translation id="6949872517221025916">Reimposta la password</translation>
 <translation id="6950684638814147129">Errore durante l'analisi del valore JSON: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Apri la pagina in una nuova scheda di navigazione privata</translation>
 <translation id="6957887021205513506">Il certificato del server risulta essere un falso.</translation>
 <translation id="6964255747740675745">Analisi della configurazione di rete non riuscita (JSON non valido).</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -1086,7 +1089,6 @@
 <translation id="6973932557599545801">Mi spiace, non posso aiutarti. Continua autonomamente.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Disattivazione audio (impostazione predefinita)</translation>
-<translation id="6984479912851154518">Per procedere al pagamento tramite un'applicazione esterna, uscirai dalla modalità di navigazione privata. Vuoi continuare?</translation>
 <translation id="6989763994942163495">Mostra impostazioni avanzate...</translation>
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Traduci sempre questa lingua: <ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1144,6 +1146,7 @@ Ulteriori dettagli:
 <translation id="7298195798382681320">Consigliate</translation>
 <translation id="7300012071106347854">Blu cobalto</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
+<translation id="7303701124147721189">Per pagare più velocemente la prossima volta, memorizza la carta e l'indirizzo di fatturazione nel tuo Account Google e su questo dispositivo.</translation>
 <translation id="7309308571273880165">Rapporto sugli arresti anomali generato <ph name="CRASH_TIME" /> (caricamento richiesto dall'utente, ma non ancora eseguito)</translation>
 <translation id="7313965965371928911">Avvisi di <ph name="BEGIN_LINK" />Navigazione sicura<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1174,7 +1177,6 @@ Ulteriori dettagli:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Gestisci password…</translation>
 <translation id="7419106976560586862">Percorso profilo</translation>
-<translation id="7424427397225027541">Controlla in che modo vengono gestiti i dati del tuo account. Google elabora i dati del tuo account esclusivamente sotto la direzione del gestore del tuo account e unicamente per le finalità specificate dal gestore del tuo account.</translation>
 <translation id="7437289804838430631">Aggiungi informazioni di contatto</translation>
 <translation id="7440140511386898319">Esplora offline</translation>
 <translation id="7441627299479586546">Oggetto del criterio errato</translation>
@@ -1197,7 +1199,7 @@ Ulteriori dettagli:
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">La connessione a questo sito non è privata</translation>
 <translation id="7535087603100972091">Valore</translation>
-<translation id="7537536606612762813">Obbligatoria</translation>
+<translation id="7537536606612762813">Obbligatorio</translation>
 <translation id="7538364083937897561">A2 (Envelope)</translation>
 <translation id="7542403920425041731">Dopo essere stati confermati, i dati della carta saranno condivisi con questo sito.</translation>
 <translation id="7542995811387359312">La compilazione automatica della carta di credito è disattivata perché questo modulo non utilizza una connessione sicura.</translation>
@@ -1248,7 +1250,7 @@ Ulteriori dettagli:
 <translation id="7755287808199759310">Il tuo genitore può sbloccarlo per te</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">Il software antivirus o il firewall potrebbe avere bloccato la connessione.</translation>
-<translation id="7759163816903619567">Visualizza dominio:</translation>
+<translation id="7759163816903619567">Dominio visualizzato:</translation>
 <translation id="7761701407923456692">Il certificato del server non corrisponde all'URL.</translation>
 <translation id="7763386264682878361">Analizzatore sintattico dei file manifest dei pagamenti</translation>
 <translation id="7764225426217299476">Aggiungi indirizzo</translation>
@@ -1314,6 +1316,7 @@ Ulteriori dettagli:
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Le carte non valide sono state rimosse</translation>
 <translation id="8103161714697287722">Metodo di pagamento</translation>
+<translation id="8105368624971345109">Disattiva</translation>
 <translation id="8118489163946903409">Metodo di pagamento</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" non è stato installato correttamente sul computer o sulla rete. Chiedi all'amministratore IT di risolvere il problema.</translation>
 <translation id="8131740175452115882">Conferma</translation>
@@ -1372,6 +1375,7 @@ Ulteriori dettagli:
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8433057134996913067">In questo modo uscirai dalla maggior parte dei siti web.</translation>
 <translation id="8437238597147034694">&amp;Annulla spostamento</translation>
+<translation id="8440508849222143646">Per pagare più velocemente la prossima volta, memorizza la carta e l'indirizzo di fatturazione nel tuo Account Google.</translation>
 <translation id="8461694314515752532">Cripta i dati sincronizzati con la tua passphrase di sincronizzazione</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 carta di credito}other{# carte di credito}}</translation>
 <translation id="8473863474539038330">Indirizzi e altro</translation>
@@ -1477,6 +1481,7 @@ Ulteriori dettagli:
 <translation id="9128870381267983090">Collegati alla rete</translation>
 <translation id="9137013805542155359">Mostra originale</translation>
 <translation id="9137248913990643158">Accedi a Chrome prima di usare questa app.</translation>
+<translation id="9141013498910525015">Gestisci gli indirizzi</translation>
 <translation id="9148088599418889305">Scegli il metodo di spedizione</translation>
 <translation id="9148507642005240123">&amp;Annulla modifica</translation>
 <translation id="9154194610265714752">Aggiornato</translation>

@@ -318,7 +318,6 @@
 <translation id="1474273443907024088">Funkcijas TLS False Start atspējošana</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Trešās puses programmatūras ievietošanas bloķēšanas iespējošana</translation>
-<translation id="1504431521196476721">Attālinātā apstiprināšana</translation>
 <translation id="1507382822467487898">
           Konfigurē, kura multivides piekļuves kontroles (MAC — media access control) adrese tiek izmantota, kad doks ir savienots ar ierīci.
 
@@ -2414,6 +2413,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
 <translation id="5423197884968724595">Android WebView ierobežojuma nosaukums:</translation>
 <translation id="5424147596523390018">Atļaut visus krāsu režīmus</translation>
+<translation id="5427003226809696696">Šī politika nosaka, vai sesijas sākumā jāatver pārlūka logs.
+
+          Ja šī politika ir iespējota, pārlūka logs netiek atvērts.
+
+          Ja šī politika ir atspējota vai nav iestatīta, pārlūka logs var atvērties. Ņemiet vērā, ka pārlūka loga atvēršanos var novērst citas politikas vai komandrindas karodziņi.</translation>
 <translation id="5427879482805712214">Šī politika ļauj konfigurēt lietotāja iemiesojuma attēlu, kas tiek rādīts pieteikšanās ekrānā. Politika tiek iestatīta, norādot URL, no kura <ph name="PRODUCT_OS_NAME" /> var lejupielādēt iemiesojuma attēlu un šifrēšanas jaukšanu, kas tiek izmantota, lai apstiprinātu lejupielādes integritāti. Attēlam ir jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 512 KB. URL ir jābūt pieejamam bez autentifikācijas.
 
       Iemiesojuma attēls ir lejupielādēts un saglabāts kešatmiņā. Tas tiks lejupielādēts atkārtoti, kad mainīsies URL vai jaucējkods.
@@ -3212,7 +3216,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> preferences</translation>
-<translation id="7006788746334555276">Satura iestatījumi</translation>
 <translation id="7007671350884342624">Konfigurē direktoriju, ko <ph name="PRODUCT_NAME" /> izmantos lietotāja datu glabāšanai.
 
       Ja iestatīsiet šo politiku, <ph name="PRODUCT_NAME" /> izmantos nodrošināto direktoriju neatkarīgi no tā, vai lietotājs ir norādījis karodziņu “--user-data-dir”. Lai izvairītos no datu zaudējuma vai citām neparedzētām kļūdām, šai politikai nav jābūt iestatītai krājuma saknes direktorijam vai direktorijam, kas tiek izmantots citos nolūkos, jo <ph name="PRODUCT_NAME" /> pārvalda tā saturu.
@@ -3581,8 +3584,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7617319494457709698">Šajā politikā ir norādīti paplašinājumi, kuros atļauts attālajai apstiprināšanai izmantot platformas <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> funkciju <ph name="CHALLENGE_USER_KEY_FUNCTION" />. Lai varētu izmantot API, šim sarakstam ir jāpievieno paplašinājumi.
 
           Ja paplašinājums nav iekļauts sarakstā vai ja saraksts nav iestatīts, API izsaukums neizdosies un tiks rādīts kļūdas kods.</translation>
-<translation id="7618907117929117943">Veikt atriti un paturēt mērķa versiju, ja operētājsistēmas versija ir jaunāka nekā mērķa versija un ir iespējams pārnest konfigurāciju ierīces līmenī (tostarp tīkla akreditācijas datus) ar atrites palīdzību, pēc tās izlaižot OOBE. Neveiciet atriti vai nepārtrauciet to priekšlaikus, ja tas nav iespējams (jo mērķa versija neatbalsta atjaunošanas datus vai atpakaļ nesavietojamu izmaiņu dēļ).
-          Tiek atbalstīts <ph name="PRODUCT_OS_NAME" /> versijā 70 un jaunākās. Senākiem klientiem šī vērtība nozīmē to, ka atrite ir atspējota.</translation>
 <translation id="7620869951155758729">Šī politika norāda, kura konfigurācija tiek izmantota vecāku piekļuves koda ģenerēšanai un verifikācijai.
 
       Konfigurācija |current_config| vienmēr tiek izmantota piekļuves koda ģenerēšanai, un tā jāizmanto piekļuves koda validācijai tikai tad, ja kodu nevar validēt, izmantojot konfigurāciju |future_config|.
@@ -3916,6 +3917,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
       Ja šī politika nav iestatīta, netiek lietots neviens politikas URLBlacklist melnā saraksta izņēmums.</translation>
 <translation id="8176035528522326671">Atļaut korporatīvajam lietotājam būt tikai primārajam vairākprofilu lietotājam (noklusējuma rīcība attiecībā uz uzņēmuma pārvaldītiem lietotājiem)</translation>
+<translation id="8183108371184777472">Novērst pārlūka loga atvēršanu</translation>
 <translation id="8214600119442850823">Konfigurē paroļu pārvaldnieku.</translation>
 <translation id="8217516105848565518">Šī politika ir novecojusi. Tās vietā, lūdzu, izmantojiet RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Standartā TLS iespējot RC4 šifru komplektus</translation>
@@ -4129,11 +4131,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8661297125441579970">Aizliegt datu migrēšanu un ARC.</translation>
 <translation id="8672321184841719703">Automātiskā atjauninājuma vēlamā versija</translation>
 <translation id="867410340948518937">U2F (universālā divfaktoru autentificēšana)</translation>
-<translation id="8682611302223077049">Atļauj iestatīt laika periodu milisekundēs, kura laikā lietotājiem tiek paziņots par to, ka pārlūks <ph name="PRODUCT_NAME" /> ir atkārtoti jāpalaiž vai <ph name="PRODUCT_OS_NAME" /> ierīce ir jārestartē, lai veiktu nepabeigto atjaunināšanu.
-
-      Šajā periodā lietotājs tiks atkārtoti informēts par atjaunināšanu. <ph name="PRODUCT_OS_NAME" /> ierīcēs paziņojums par restartēšanu tiek rādīts sistēmas teknē, kad ir atrasts jauninājums. <ph name="PRODUCT_NAME" /> pārlūkos: kad ir pagājusi trešdaļa no perioda, lietotnes izvēlne tiek mainīta, lai norādītu, ka nepieciešama atkārtota lietotnes palaišana. Kad ir pagājusi puse no perioda, šī paziņojuma krāsa tiek mainīta. Kad ir pagājis viss periods, paziņojuma krāsa tiek mainīta vēl vienu reizi. Tādā pašā veidā tiek rādīti arī pārlūka <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikas papildu iespējotie paziņojumi.
-
-      Ja šī politika nav iestatīta, <ph name="PRODUCT_OS_NAME" /> ierīcēs tiek izmantots noklusējuma periods 345 600 000 milisekundes (četras dienas), savukārt pārlūkā <ph name="PRODUCT_NAME" /> — 604 800 000 milisekundes (viena nedēļa).</translation>
 <translation id="8685024486845674965">Paroles aizsardzības brīdinājums ir aktivizēts, atkārtoti izmantojot paroli</translation>
 <translation id="8693243869659262736">Iebūvētā DNS klienta izmantošana</translation>
 <translation id="8698286761337647563">Cik dienas iepriekš paziņot SAML lietotājiem, ka viņu parolei beigsies derīguma termiņš</translation>
@@ -4151,7 +4148,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
           Šī politika ir neobligāta. Ja tā nav iestatīta, neviens atslēgvārds neaktivizēs meklētājprogrammu.
 
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
-<translation id="8731693562790917685">Satura iestatījumi ļauj norādīt, kā jārīkojas ar noteikta veida saturu (piem., sīkfailiem, attēliem vai JavaScript).</translation>
 <translation id="8733448613597049197">Iespējo <ph name="PRODUCT_NAME" /> Drošas pārlūkošanas paplašināto ziņošanu un neļauj lietotājiem mainīt šo iestatījumu.
 
       Paplašinātā ziņošana nosūta Google serveriem noteiktu sistēmas informāciju un lapas saturu, lai palīdzētu konstatēt bīstamas lietotnes un vietnes.
@@ -4232,6 +4228,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Ja iespējosiet vai atspējosiet šo iestatījumu, lietotāji nevarēs mainīt vai ignorēt šo iestatījumu produktā <ph name="PRODUCT_NAME" />.
 
       Ja šis iestatījums nav iestatīts, lietotājs var izlemt, vai izmantot šo funkciju.</translation>
+<translation id="8871974300055371298">Satura iestatījumi</translation>
 <translation id="8876188741456358123">Tiek ignorēts noklusējuma divpusējas drukāšanas režīms. Ja režīms nav pieejams, šī politika tiek ignorēta.</translation>
 <translation id="8882006618241293596">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> bloķēšana šajās vietnēs</translation>
 <translation id="8906768759089290519">Iespējot viesa režīmu</translation>
@@ -4341,8 +4338,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="9084985621503260744">Video darbības ietekmes uz jaudas pārvaldību norādīšana</translation>
 <translation id="9088433379343318874">Iespējot uzraudzītā lietotāja satura nodrošinātāju</translation>
 <translation id="9088444059179765143">Automātiskās laika joslas noteikšanas metodes konfigurēšana</translation>
-<translation id="9094064873808699479">Veikt atriti un paturēt mērķa versiju, ja operētājsistēmas versija ir jaunāka nekā mērķa versija. Mēģiniet pārnest konfigurāciju ierīces līmenī (tostarp tīkla akreditācijas datus) ar atrites palīdzību, ja tas ir iespējams, taču veiciet atriti, pilnībā izmantojot funkciju Powerwash, pat ja datu atjaunošana nav iespējama (jo mērķa versija neatbalsta atjaunošanas datus vai atpakaļ nesavietojamu izmaiņu dēļ).
-          Tiek atbalstīts <ph name="PRODUCT_OS_NAME" /> versijā 70 un jaunākās. Senākiem klientiem šī vērtība nozīmē to, ka atrite ir atspējota.</translation>
 <translation id="9096086085182305205">Autentifikācijas serveru baltais saraksts</translation>
 <translation id="9105265795073104888">Android lietotnēm ir pieejama tikai starpniekservera konfigurācijas opciju apakškopa. Android lietotnes šo starpniekserveri var izmantot, ja tas ir nepieciešams. Jūs nevarat likt lietotnēm izmantot starpniekserveri.</translation>
 <translation id="9106865192244721694">WebUSB atļaušana šajās vietnēs</translation>

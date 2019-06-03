@@ -15,7 +15,6 @@
 <translation id="1383876407941801731">Search</translation>
 <translation id="1398853756734560583">Maximise</translation>
 <translation id="1409544243779336081">App recommendation</translation>
-<translation id="1413622004203049571">Disable notifications from <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute and }other{# minutes and }}</translation>
 <translation id="1643823602425662293">Notification</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -166,7 +165,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min left}other{# mins left}}</translation>
 <translation id="7319740667687257810">Launcher, partial view</translation>
-<translation id="732374792807444530">Sending to <ph name="DEVICE_NAME" /></translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min ago}other{# mins ago}}</translation>
 <translation id="7389409599945284130"><ph name="MESSAGE" />..</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minute left}other{# minutes left}}</translation>

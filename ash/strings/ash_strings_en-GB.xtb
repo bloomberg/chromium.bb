@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Collapse menu</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1419738280318246476">Unlock device to perform the notification action</translation>
+<translation id="1426410128494586442">Yes</translation>
 <translation id="1455242230282523554">Show language settings</translation>
 <translation id="1467432559032391204">Left</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> can still sign in later.</translation>
 <translation id="3321628682574733415">Incorrect parent code</translation>
 <translation id="332587331255250389">Please replace the battery</translation>
-<translation id="3335825575923019462">Are you sure that you want to disable automatic clicks?</translation>
 <translation id="3351879221545518001">You are currently casting the screen.</translation>
 <translation id="3364721542077212959">Stylus tools</translation>
 <translation id="3368922792935385530">Connected</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">Connecting...</translation>
 <translation id="4379531060876907730">These are your stylus tools</translation>
 <translation id="4389184120735010762">You pressed the keyboard shortcut for the docked magnifier. Do you want to turn it on?</translation>
-<translation id="4394049700291259645">Disable</translation>
 <translation id="4421231901400348175">Sharing control of your screen with <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">volume</translation>
 <translation id="4450893287417543264">Don't show again</translation>
@@ -485,7 +484,6 @@
 <translation id="8649101189709089199">Select to Speak</translation>
 <translation id="8652175077544655965">Close settings</translation>
 <translation id="8653151467777939995">Show notification settings. Notifications are on</translation>
-<translation id="8664483332071009680">Disable automatic clicks?</translation>
 <translation id="8664753092453405566">Show network list. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Low-power charger connected</translation>

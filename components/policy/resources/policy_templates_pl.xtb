@@ -321,7 +321,6 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
 <translation id="1474273443907024088">Wyłącz TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Włącz blokadę wstrzykiwania oprogramowania innych firm</translation>
-<translation id="1504431521196476721">Zdalne poświadczanie</translation>
 <translation id="1507382822467487898">
           Umożliwia wybranie adresu MAC używanego, gdy urządzenie jest podłączone do stacji dokującej.
 
@@ -2342,6 +2341,11 @@ Jeśli ta zasada pozostanie nieskonfigurowana, użytkownik może wyłączyć ka�
 <translation id="5423001109873148185">Po włączeniu tej zasady wymuszany jest import wyszukiwarek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia wyszukiwarka domyślna nie jest importowana. Jeśli zasada nie zostanie skonfigurowana, użytkownik może zobaczyć pytanie o zaimportowanie wyszukiwarki lub importowanie odbędzie się automatycznie.</translation>
 <translation id="5423197884968724595">Nazwa ograniczenia w Android WebView:</translation>
 <translation id="5424147596523390018">Zezwalaj na wszystkie tryby kolorów</translation>
+<translation id="5427003226809696696">Ta zasada określa, czy okno przeglądarki ma być otwierane na początku sesji.
+
+          Gdy ta zasada jest włączona, okno przeglądarki nie będzie otwierane.
+
+          Gdy zasada jest wyłączona albo nieskonfigurowana, okno przeglądarki może być otwierane. Otwieranie okna przeglądarki może być wyłączone również za pomocą innych zasad lub flag wiersza poleceń.</translation>
 <translation id="5427879482805712214">Ta zasada pozwala wskazać obraz awatara, który oznacza użytkownika na ekranie logowania. Aby ją skonfigurować, podaj URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać obraz awatara, oraz hash kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 512 KB. URL musi być dostępny bez uwierzytelniania.
 
       Po pobraniu obraz awatara jest zapisywany w pamięci podręcznej. Zostanie pobrany ponownie po każdej zmianie adresu URL lub hasha.
@@ -3127,7 +3131,6 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
       Jeśli wybierzesz „U2F_EXTENDED”, zintegrowany drugi składnik będzie zapewniał funkcje U2F oraz kilka rozszerzeń na potrzeby indywidualnego poświadczania.</translation>
 <translation id="7003334574344702284">Po włączeniu tej zasady wymuszany jest import zapisanych haseł z poprzedniej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zapisane hasła nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować hasła lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="7003746348783715221">Ustawienia przeglądarki <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Ustawienia treści</translation>
 <translation id="7007671350884342624">Pozwala skonfigurować katalog, w którym przeglądarka <ph name="PRODUCT_NAME" /> będzie przechowywać dane użytkownika.
 
       Jeśli włączysz tę zasadę, przeglądarka <ph name="PRODUCT_NAME" /> będzie używać wybranego katalogu bez względu na to, czy użytkownik określi parametr „--user-data-dir”. Aby uniknąć utraty danych i innych nieoczekiwanych błędów, nie należy podawać w tej zasadzie głównego katalogu woluminu ani katalogu używanego do innych celów, ponieważ zawartością zarządza przeglądarka <ph name="PRODUCT_NAME" />.
@@ -3219,7 +3222,7 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
       Jeśli zasada nie jest ustawiona, użytkownik może zmieniać listę aplikacji przypiętych w programie uruchamiającym.</translation>
 <translation id="713121532817834879">Ta zasada jest adresem URL, który wskazuje plik XML w formacie zgodnym z zasadą <ph name="IEEM_SITELIST_POLICY" /> w Internet Explorerze. Powoduje wczytanie reguł z pliku XML bez udostępniania ich Internet Explorerowi.
 
-      Reguły z tego pliku XML są stosowane w taki sam sposób jak zasada <ph name="GREYLIST_POLICY_NAME" />. Reguły uniemożliwiają <ph name="PRODUCT_NAME" /> otwieranie alternatywnej przeglądarki, a także uniemożliwiają alternatywnej przeglądarce otwieranie <ph name="PRODUCT_NAME" />.
+      Reguły z tego pliku XML są stosowane w taki sam sposób jak zasada <ph name="GREYLIST_POLICY_NAME" />. Oznacza to, że uniemożliwiają one <ph name="PRODUCT_NAME" /> otwieranie alternatywnej przeglądarki, a także uniemożliwiają alternatywnej przeglądarce otwieranie <ph name="PRODUCT_NAME" />.
 
       Gdy ta zasada jest nieskonfigurowana lub jej wartością nie jest prawidłowy URL, <ph name="PRODUCT_NAME" /> nie używa jej jako źródła reguł blokujących zmianę przeglądarki.
 
@@ -3484,8 +3487,6 @@ Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne o
 <translation id="7617319494457709698">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją <ph name="CHALLENGE_USER_KEY_FUNCTION" /> interfejsu <ph name="ENTERPRISE_PLATFORM_KEYS_API" />. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
 
           Jeśli rozszerzenie nie znajduje się na liście lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
-<translation id="7618907117929117943">Przywrócenie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa i jest możliwe zachowanie konfiguracji na poziomie urządzenia (w tym danych logowania do sieci) podczas przywracania danej wersji. Po jej przywróceniu pomijana jest procedura pierwszego uruchomienia (OOBE). Jeśli nie jest to możliwe (ponieważ wersja docelowa nie umożliwia przywrócenia danych lub z powodu niezgodnej wstecznie zmiany), wybrana wersja nie zostanie przywrócona lub jej przywrócenie zostanie przerwane.
-          Obsługiwane w <ph name="PRODUCT_OS_NAME" /> w wersji 70 lub nowszej. W przypadku starszych klientów ta wartość wyłącza możliwość przywrócenia wersji.</translation>
 <translation id="7620869951155758729">Ta zasada określa konfigurację używaną do generowania i weryfikacji kodu dostępu rodzica.
 
       Konfiguracja |current_config| służy zawsze do generowania kodu dostępu. Należy jej używać do weryfikacji kodu dostępu tylko wtedy, gdy nie można tego zrobić przy użyciu konfiguracji |future_config|.
@@ -3810,6 +3811,7 @@ Zakładki są umieszczane w folderze, którego użytkownik nie może modyfikowa
 
       W przypadku nieskonfigurowania tej zasady nie będzie wyjątków w zasadzie „URLBlacklist”.</translation>
 <translation id="8176035528522326671">Zezwól, by użytkownik korporacyjny był tylko głównym użytkownikiem korzystającym z wielu profili (domyślne zachowanie w przypadku użytkowników zarządzanych przez przedsiębiorstwo)</translation>
+<translation id="8183108371184777472">Zablokuj otwieranie okna przeglądarki</translation>
 <translation id="8214600119442850823">Pozwala skonfigurować menedżera haseł.</translation>
 <translation id="8217516105848565518">Ta zasada została wycofana. Zamiast niej użyj zasady RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Włącz mechanizmy szyfrowania RC4 w TLS</translation>
@@ -4026,11 +4028,6 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="8661297125441579970">Nie zezwalaj na migrację danych ani na działanie ARC.</translation>
 <translation id="8672321184841719703">Wersja docelowa automatycznych aktualizacji</translation>
 <translation id="867410340948518937">U2F (Uniwersalne uwierzytelnianie dwuskładnikowe)</translation>
-<translation id="8682611302223077049">Umożliwia określenie czasu (w milisekundach), przez który użytkownicy będą powiadamiani o konieczności ponownego uruchomienia <ph name="PRODUCT_NAME" /> lub urządzenia z <ph name="PRODUCT_OS_NAME" /> w celu zainstalowania oczekującej aktualizacji.
-
-      Przez ten czas użytkownik będzie wciąż informowany o konieczności aktualizacji. Na urządzeniach z <ph name="PRODUCT_OS_NAME" /> po wykryciu aktualizacji powiadomienie o konieczności ponownego uruchomienia będzie wyświetlane w obszarze powiadomień. W przeglądarkach <ph name="PRODUCT_NAME" /> po upływie jednej trzeciej okresu powiadamiania zmieni się menu aplikacji. Powiadomienie zmieni kolor po upływie dwóch trzecich okresu powiadamiania i ponownie po upływie całego tego okresu. Dodatkowe powiadomienia, które włącza zasada <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, mają ten sam harmonogram.
-
-      Jeśli zasada nie jest skonfigurowana, na urządzeniach z <ph name="PRODUCT_OS_NAME" /> stosowany jest domyślny czas 345 600 000 milisekund (cztery dni), a w <ph name="PRODUCT_NAME" /> – 604 800 000 milisekund (tydzień).</translation>
 <translation id="8685024486845674965">Ostrzeżenie dotyczące ochrony hasłem jest wyzwalane przez użycie tego samego hasła w innym miejscu</translation>
 <translation id="8693243869659262736">Użyj wbudowanego klienta DNS</translation>
 <translation id="8698286761337647563">Ile dni wcześniej powiadamiać użytkowników SAML o zbliżającym się wygaśnięciu hasła</translation>
@@ -4044,7 +4041,6 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
           Uwaga: w polu <ph name="MINUTE_FIELD_NAME" /> w <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> i <ph name="CHARGE_START_TIME_FIELD_NAME" /> dozwolone są tylko wartości 0, 15, 30 i 45.</translation>
 <translation id="8704831857353097849">Lista wyłączonych wtyczek</translation>
 <translation id="8711086062295757690">Pozwala określić słowo kluczowe będące skrótem umożliwiającym wywołanie w omniboksie usługi wyszukiwania od tego dostawcy. Ta zasada jest opcjonalna. Jeśli nie zostanie ustawiona, żadne słowo kluczowe nie będzie aktywować dostawcy wyszukiwania. Ta zasada jest uwzględniana tylko po włączeniu zasady „DefaultSearchProviderEnabled”.</translation>
-<translation id="8731693562790917685">Ustawienia treści umożliwiają określenie sposobu obsługi treści danego typu (na przykład plików cookie, grafik czy kodu JavaScript).</translation>
 <translation id="8733448613597049197">Włącza rozszerzone raporty w usłudze Bezpieczne przeglądanie w: <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
 
       Rozszerzone raportowanie wysyła na serwery Google niektóre informacje o systemie i zawartości stron w celu wykrywania niebezpiecznych aplikacji i witryn.
@@ -4120,6 +4116,7 @@ Pozostawienie tej zasady nieskonfigurowanej pozwoli użytkownikom samodzielnie w
       Jeśli włączysz lub wyłączysz to ustawienie, użytkownicy nie będą mogli zmienić go w <ph name="PRODUCT_NAME" />.
 
       Jeśli ustawienie pozostanie nieskonfigurowane, użytkownik może sam zdecydować, czy będzie korzystać z tej funkcji.</translation>
+<translation id="8871974300055371298">Ustawienia treści</translation>
 <translation id="8876188741456358123">Zastępuje domyślny tryb drukowania dwustronnego. Jeśli tryb jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="8882006618241293596">Blokuj uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /> w tych witrynach</translation>
 <translation id="8906768759089290519">Włącz tryb gościa</translation>
@@ -4242,8 +4239,6 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
 <translation id="9084985621503260744">Określ, czy aktywność związana z filmami wpływa na zarządzanie energią</translation>
 <translation id="9088433379343318874">Włącz dostawcę treści dla nadzorowanego użytkownika</translation>
 <translation id="9088444059179765143">Konfigurowanie metody automatycznego wykrywania strefy czasowej</translation>
-<translation id="9094064873808699479">Przywrócenie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. Jeśli to możliwe, konfiguracja na poziomie urządzenia (w tym dane logowania do sieci) zostanie zachowana, ale jeśli nie jest to możliwe (ponieważ wersja docelowa nie umożliwia przywrócenia danych lub z powodu niezgodnej wstecznie zmiany), wykonane zostanie przywrócenie z pełną procedurą Powerwash.
-          Obsługiwane w <ph name="PRODUCT_OS_NAME" /> w wersji 70 lub nowszej. W przypadku starszych klientów ta wartość wyłącza możliwość przywrócenia wersji.</translation>
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>
 <translation id="9105265795073104888">Aplikacje na Androida mają dostęp tylko do niektórych opcji konfiguracji serwera proxy. Nie można wymusić, by używały serwera proxy. Mogą go używać dobrowolnie.</translation>
 <translation id="9106865192244721694">Zezwalaj na WebUSB w tych witrynach</translation>

@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">Svedese</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694604912444486114">Scimmia</translation>
+<translation id="4697043402264950621">Elenco di file ordinato per <ph name="COLUMN_NAME" /> in ordine crescente.</translation>
 <translation id="4711094779914110278">Turco</translation>
 <translation id="4713544552769165154">Questo file è supportato su computer con software Macintosh. Non è compatibile con i dispositivi con Chrome OS. Cerca sul <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> un'app sostitutiva adatta.<ph name="BEGIN_LINK_HELP" />Ulteriori informazioni<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">Backup di <ph name="FILE_COUNT" /> foto completato</translation>
@@ -529,6 +530,7 @@
 <translation id="7339898014177206373">Nuova finestra</translation>
 <translation id="7348749398828259943">Tastiera internazionale Workman USA</translation>
 <translation id="7359359531237882347">Copia di <ph name="NUMBER_OF_ITEMS" /> elementi...</translation>
+<translation id="7375951387215729722">Elenco di file ordinato per <ph name="COLUMN_NAME" /> in ordine decrescente.</translation>
 <translation id="7389722738210761877">Tastiera Thailandese (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Tastiera Hindi (fonetica)</translation>
 <translation id="7417453074306512035">Tastiera Etiope</translation>

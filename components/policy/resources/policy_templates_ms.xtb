@@ -329,7 +329,6 @@
 <translation id="1474273443907024088">Lumpuhkan Mula Palsu TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Dayakan penyekatan suntikan perisian pihak ketiga</translation>
-<translation id="1504431521196476721">Pembuktian Jauh</translation>
 <translation id="1507382822467487898">
           Mengkonfigurasi alamat MAC (kawalan akses media) yang akan digunakan apabila dok disambungkan ke peranti.
 
@@ -1459,9 +1458,9 @@
 <translation id="3554984410014457319">Benarkan Google Assistant mendengar ungkapan pengaktifan suara</translation>
 <translation id="3557208865710006939">Mendayakan bahasa semak ejaan secara paksa. Bahasa tidak dikenali dalam senarai akan diabaikan.
 
-      Jika anda mendayakan dasar ini, semak ejaan akan didayakan untuk bahasa yang dinyatakan di samping bahasa yang pengguna telah dayakan semak ejaannya.
+      Jika anda mendayakan dasar ini, semak ejaan akan didayakan untuk bahasa yang dinyatakan di samping bahasa yang telah pengguna dayakan semak ejaannya.
 
-      Jika anda tidak menetapkan dasar ini atau anda melumpuhkan dasar ini, tiada perubahan akan berlaku kepada pilihan semak ejaan pengguna.
+      Jika anda tidak menetapkan dasar ini atau anda melumpuhkan dasar ini, tiada perubahan akan berlaku pada pilihan semak ejaan pengguna.
 
       Jika dasar <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> ditetapkan kepada palsu, dasar ini tidak akan memberikan kesan.
 
@@ -1685,11 +1684,11 @@
 <translation id="3963602271515417124">Jika benar, pembuktian jauh dibenarkan untuk peranti dan sijil akan dihasilkan secara automatik serta dimuat naik ke Pelayan Pengurusan Peranti.
 
           Jika ditetapkan kepada palsu atau jika tidak ditetapkan, sijil tidak akan dihasilkan dan panggilan kepada API sambungan enterprise.platformKeys akan gagal.</translation>
-<translation id="3964262920683972987">Mengkonfigurasikan imej kertas dinding tahap peranti yang dipaparkan pada skrin log masuk jika belum ada pengguna yang pernah log masuk ke peranti. Dasar ini ditetapkan dengan menentukan URL tempat peranti OS Chrome boleh memuat turun imej kertas dinding itu dan cincangan kriptografi digunakan untuk mengesahkan integriti muat turun itu. Imej mestilah dalam format JPEG dan saiznya tidak boleh melebihi 16MB. URL mestilah boleh diakses tanpa sebarang pengesahan. Imej kertas dinding dimuat turun dan dicache. Imej kertas dinding akan dimuat turun semula setiap kali URL atau cincangan berubah.
+<translation id="3964262920683972987">Mengkonfigurasikan imej kertas dinding tahap peranti yang dipaparkan pada skrin log masuk jika masih belum ada pengguna log masuk ke peranti. Dasar ini ditetapkan dengan menentukan URL tempat peranti OS Chrome boleh memuat turun imej kertas dinding itu dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun itu. Imej mestilah dalam format JPEG dan saiznya tidak boleh melebihi 16MB. URL mestilah boleh diakses tanpa sebarang pengesahan. Imej kertas dinding dimuat turun dan dicache. Imej akan dimuat turun semula setiap kali URL atau cincangan berubah.
 
-      Jika dasar kertas dinding peranti ditetapkan, peranti OS Chrome akan memuat turun dan menggunakan imej kertas dinding pada skrin log masuk jika belum ada pengguna yang pernah log masuk ke peranti. Sebaik sahaja pengguna log masuk, dasar kertas dinding pengguna akan berkuat kuasa.
+      Jika dasar kertas dinding peranti ditetapkan, peranti OS Chrome akan memuat turun dan menggunakan imej kertas dinding pada skrin log masuk jika masih belum ada pengguna log masuk ke peranti. Sebaik sahaja pengguna log masuk, dasar kertas dinding pengguna akan berkuat kuasa.
 
-      Jika dasar kertas dinding peranti dibiarkan tidak ditetapkan dan jika dasar kertas dinding pengguna ditetapkan, dasar kertas dinding pengguna akan menentukan item yang perlu dipaparkan.</translation>
+      Jika dasar kertas dinding peranti dibiarkan tidak ditetapkan dan jika dasar kertas dinding pengguna ditetapkan, dasar kertas dinding pengguna akan menentukan item yang akan dipaparkan.</translation>
 <translation id="3965339130942650562">Tamat masa sehingga log keluar pengguna melahu dilaksanakan</translation>
 <translation id="3973371701361892765">Jangan sekali-kali sembunyikan rak secara automatik</translation>
 <translation id="3984028218719007910">Memastikan sama ada <ph name="PRODUCT_OS_NAME" /> menyimpan data akaun setempat selepas log keluar. Jika ditetapkan kepada benar, tiada akaun berulang akan disimpan oleh <ph name="PRODUCT_OS_NAME" /> dan semua data dari sesi pengguna akan dibuang selepas log keluar. Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasi, peranti boleh menyimpan data pengguna setempat (disulitkan).</translation>
@@ -1755,13 +1754,13 @@
 <translation id="4056910949759281379">Lumpuhkan protokol SPDY</translation>
 <translation id="408029843066770167">Benarkan pertanyaan kepada perkhidmatan masa Google</translation>
 <translation id="408076456549153854">Dayakan log masuk penyemak imbas</translation>
-<translation id="40853027210512570">Membatalkan mod pencetakan PIN lalai <ph name="PRODUCT_NAME" />.
+<translation id="40853027210512570">Membatalkan peraturan pemilihan pencetak lalai <ph name="PRODUCT_NAME" />.
 
       Dasar ini menentukan peraturan untuk memilih pencetak lalai dalam <ph name="PRODUCT_NAME" /> yang berlaku apabila fungsi cetak mula-mula digunakan dengan suatu profil.
 
       Apabila dasar ini ditetapkan, <ph name="PRODUCT_NAME" /> akan cuba mencari pencetak yang sepadan dengan semua atribut yang dinyatakan dan memilihnya sebagai pencetak lalai. Pencetak pertama yang didapati sepadan dengan dasar akan dipilih. Sekiranya tiada padanan yang unik, sebarang pencetak yang sepadan boleh dipilih, bergantung pada tertib pencetak itu dijumpai.
 
-      Jika dasar ini tidak ditetapkan atau pencetak yang sepadan tidak dijumpai hingga tamat masa, pencetak PDF terbina dalam akan dipilih sebagai pencetak lalai atau apabila pencetak PDF tidak tersedia, tiada pencetak dipilih akan digunakan sebagai plilihan lalai.
+      Jika dasar ini tidak ditetapkan atau pencetak yang sepadan tidak dijumpai hingga tamat masa, pencetak PDF terbina dalam akan dipilih sebagai pencetak lalai dan sekiranya pencetak PDF tidak tersedia, tiada pencetak akan dipilih.
 
       Pencetak yang disambungkan ke <ph name="CLOUD_PRINT_NAME" /> dianggap sebagai <ph name="PRINTER_TYPE_CLOUD" />, pencetak yang selebihnya diklasifikasikan sebagai <ph name="PRINTER_TYPE_LOCAL" />.
       Apabila medan tidak dimasukkan, bermakna semua nilai sepadan, contohnya, tidak menentukan sambungan akan menyebabkan Pratonton Cetakan memulakan penemuan semua jenis pencetak, setempat dan awan.
@@ -2223,7 +2222,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
       Apabila dasar ini dibiarkan tidak ditetapkan, atau ditetapkan kepada benar, Chrome akan membiarkan sekurang-kurangnya satu tab terbuka, selepas bertukar kepada penyemak imbas alternatif.
 
       Apabila dasar ini ditetapkan kepada palsu, Chrome akan menutup tab selepas bertukar kepada penyemak imbas alternatif, walaupun tab itu ialah tab yang terakhir. Ini akan menyebabkan Chrome keluar sepenuhnya.</translation>
-<translation id="5102203758995933166">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka.</translation>
+<translation id="5102203758995933166">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka.</translation>
 <translation id="5105313908130842249">Kelewatan kunci skrin apabila dijalankan dengan kuasa bateri</translation>
 <translation id="5108031557082757679">Pencetak peranti perusahaan dilumpuhkan</translation>
 <translation id="5124368997194894978">Dayakan but AC (arus ulang-alik)</translation>
@@ -2421,9 +2420,14 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada untuk mengimport atau tidak, atau pengimportan mungkin berlaku secara automatik.</translation>
 <translation id="5423197884968724595">Nama sekatan Android WebView:</translation>
 <translation id="5424147596523390018">Benarkan semua mod warna</translation>
+<translation id="5427003226809696696">Dasar ini mengawal sama ada tetingkap penyemak imbas harus dilancarkan pada permulaan sesi.
+
+          Jika dasar ini didayakan, tetingkap penyemak imbas tidak akan dilancarkan.
+
+          Jika dasar ini dilumpuhkan atau tidak ditetapkan, tetingkap penyemak imbas dibenarkan untuk dilancarkan. Sila ambil perhatian bahawa tetingkap penyemak imbas mungkin tidak dilancarkan disebabkan oleh dasar atau bendera baris perintah lain.</translation>
 <translation id="5427879482805712214">Dasar ini membolehkan anda mengkonfigurasi imej avatar yang mewakili pengguna pada skrin log masuk. Dasar ini ditetapkan dengan menyatakan URL tempat <ph name="PRODUCT_OS_NAME" /> boleh memuat turun imej avatar dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun tersebut. Imej mestilah menggunakan format JPEG dan saiz imej tidak boleh melebihi 512kB. URL mestilah boleh diakses tanpa sebarang pengesahan.
 
-      Imej avatar dimuat turun dan dicache. Imej kertas dinding akan dimuat turun semula setiap kali URL atau cincangan berubah.
+      Imej avatar dimuat turun dan dicache. Imej akan dimuat turun semula setiap kali URL atau cincangan berubah.
 
       Jika dasar ini ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan memuat turun dan menggunakan imej avatar.
 
@@ -2432,7 +2436,7 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
       Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih imej avatar yang mewakili mereka pada skrin log masuk.</translation>
 <translation id="5432219358069697932">Dasar ini membolehkan anda mengkonfigurasi imej kertas dinding yang dipaparkan pada desktop dan pada latar belakang skrin log masuk untuk pengguna. Dasar ini ditetapkan dengan menyatakan URL tempat <ph name="PRODUCT_OS_NAME" /> boleh memuat turun imej kertas dinding dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun tersebut. Imej mestilah dalam format JPEG dan saiznya tidak boleh melebihi 16MB. URL mestilah boleh diakses tanpa sebarang pengesahan.
 
-      Imej kertas dinding dimuat turun dan dicache. Imej kertas dinding akan dimuat turun semula setiap kali URL atau cincangan berubah.
+      Imej kertas dinding dimuat turun dan dicache. Imej akan dimuat turun semula setiap kali URL atau cincangan berubah.
 
       Jika dasar ini ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan memuat turun dan menggunakan imej kertas dinding.
 
@@ -3175,7 +3179,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika anda mendayakan dasar ini, semak ejaan akan dilumpuhkan untuk bahasa yang dinyatakan. Pengguna masih boleh mendayakan atau melumpuhkan semak ejaan untuk bahasa yang tidak disenaraikan.
 
-      Jika anda tidak menetapkan dasar ini atau anda melumpuhkan dasar ini, tiada perubahan akan berlaku kepada pilihan semak ejaan pengguna.
+      Jika anda tidak menetapkan dasar ini atau anda melumpuhkan dasar ini, tiada perubahan akan berlaku pada pilihan semak ejaan pengguna.
 
       Jika dasar <ph name="SPELLCHECK_ENABLED_POLICY_NAME" />ditetapkan kepada palsu, dasar ini tidak akan memberikan kesan.
 
@@ -3234,7 +3238,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika ia tidak ditetapkan, pengguna boleh ditanya sama ada hendak mengimport atau pengimportan boleh berlaku secara automatik.</translation>
 <translation id="7003746348783715221">Keutamaan <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Tetapan Kandungan</translation>
 <translation id="7007671350884342624">Mengkonfigurasi direktori yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk menyimpan data pengguna.
 
       Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang diberikan tanpa mengambil kira sama ada pengguna telah menentukan bendera '--user-data-dir' atau tidak. Untuk mengelakkan kehilangan data atau ralat lain yang tidak dijangka, dasar ini tidak seharusnya ditetapkan pada direktori akar volum atau pada direkori yang digunakan untuk tujuan lain kerana <ph name="PRODUCT_NAME" /> mengurus kandungannya.
@@ -3605,8 +3608,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7617319494457709698">Dasar ini menentukan sambungan yang boleh menggunakan fungsi <ph name="CHALLENGE_USER_KEY_FUNCTION" /> <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> untuk pembuktian jauh. Sambungan hendaklah ditambahkan pada senarai ini supaya boleh menggunakan API tersebut.
 
           Jika sambungan tidak tersenarai atau senarai tidak ditetapkan, panggilan kepada API tersebut akan gagal dengan kod ralat.</translation>
-<translation id="7618907117929117943">Undur dan kekal pada versi sasaran jika versi OS lebih baharu daripada versi sasaran dan konfigurasi tahap peranti mungkin boleh dibawa ke depan (termasuk bukti kelayakan rangkaian) melalui pengunduran dan melangkau OOBE selepas pengunduran juga. Jangan lakukan atau batalkan pengunduran jika tidak boleh dilakukan (kerana versi sasaran tidak meyokong pemulihan data atau kerana perubahan undur yang tidak serasi).
-          Disokong pada <ph name="PRODUCT_OS_NAME" /> versi 70 ke atas. Untuk klien lama, nilai ini bermakna pengunduran telah dilumpuhkan.</translation>
 <translation id="7620869951155758729">Dasar ini menentukan konfigurasi yang digunakan untuk menjana dan mengesahkan Kod Akses Ibu Bapa.
 
       |current_config| sentiasa digunakan untuk menjana kod akses dan perlu digunakan untuk mengesahkan kod akses hanya apabila kod tersebut tidak dapat disahkan dengan |future_config|.
@@ -3940,6 +3941,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini tidak ditetapkan, tiada pengecualian untuk senarai hitam daripada dasar 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Membenarkan pengguna perusahaan untuk menjadi pengguna berbilang profil utama sahaja (Tingkah laku lalai untuk pengguna perusahaan yang dikendalikan)</translation>
+<translation id="8183108371184777472">Tahan pelancaran tetingkap penyemak imbas</translation>
 <translation id="8214600119442850823">Mengkonfigurasi pengurus kata laluan.</translation>
 <translation id="8217516105848565518">Dasar ini telah ditamatkan. Sebaliknya, sila gunakan RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Mendayakan suit sifer RC4 dalam TLS</translation>
@@ -4155,11 +4157,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8661297125441579970">Tidak membenarkan penghijrahan data dan ARC.</translation>
 <translation id="8672321184841719703">Versi Kemas Kini Auto Sasaran</translation>
 <translation id="867410340948518937">U2F (Faktor Kedua Universal)</translation>
-<translation id="8682611302223077049">Membenarkan anda menetapkan tempoh masa dalam milisaat. Sepanjang tempoh ini, pengguna akan dimaklumi bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula atau bahawa peranti <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula untuk menerapkan kemas kini yang belum selesai.
-
-      Sepanjang tempoh masa ini, pengguna akan dimaklumi berulang kali tentang keperluan mengemas kini. Untuk peranti <ph name="PRODUCT_OS_NAME" />, pemberitahuan mula semula akan dipaparkan dalam dulang sistem apabila peningkatan dikesan. Untuk penyemak imbas <ph name="PRODUCT_NAME" />, menu apl akan berubah untuk menunjukkan pelancaran semula diperlukan apabila satu pertiga daripada tempoh pemberitahuan telah berlalu. Pemberitahuan ini berubah warna apabila dua pertiga daripada tempoh pemberitahuan telah berlalu dan sekali lagi apabila tempoh penuh pemberitahuan telah tamat. Pemberitahuan tambahan yang didayakan oleh dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> akan mengikut jadual yang sama ini.
-
-      Jika tidak ditetapkan, tempoh lalai selama 345,600,000 milisaat (empat hari) digunakan untuk peranti <ph name="PRODUCT_OS_NAME" /> dan 604,800,000 milisaat (satu minggu) untuk <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Amaran perlindungan kata laluan dicetuskan oleh penggunaan semula kata laluan</translation>
 <translation id="8693243869659262736">Gunakan pelanggan DNS terbina dalam</translation>
 <translation id="8698286761337647563">Jumlah hari untuk memaklumi pengguna SAML lebih awal apabila kata laluan mereka akan tamat tempoh</translation>
@@ -4177,7 +4174,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
           Dasar ini merupakan pilihan. Jika tidak ditetapkan, tiada kata kunci akan mengaktifkan penyedia carian.
 
           Dasar ini hanya dipertimbangkan jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
-<translation id="8731693562790917685">Tetapan Kandungan membenarkan anda untuk menentukan cara kandungan bagi jenis tertentu (contohnya Kuki, Imej atau JavaScript) dikendalikan.</translation>
 <translation id="8733448613597049197">Mendayakan Pelaporan Lanjutan Penyemakan Imbas Selamat <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
 
       Pelaporan Lanjutan menghantar beberapa maklumat sistem dan kandungan halaman ke pelayan Google untuk membantu anda mengesan apl dan tapak berbahaya.
@@ -4258,6 +4254,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />.
 
       Jika tetapan ini dibiarkan tanpa ditetapkan, pengguna boleh menentukan sama ada hendak menggunakan fungsi ini atau tidak.</translation>
+<translation id="8871974300055371298">Tetapan kandungan</translation>
 <translation id="8876188741456358123">Mengatasi mod dupleks pencetakan lalai. Jika mod tidak tersedia, dasar ini akan diabaikan.</translation>
 <translation id="8882006618241293596">Sekat pemalam <ph name="FLASH_PLUGIN_NAME" /> pada tapak ini</translation>
 <translation id="8906768759089290519">Dayakan mod tetamu</translation>
@@ -4316,9 +4313,9 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika ditetapkan kepada benar atau tidak ditetapkan, Persetujuan Penyegerakan boleh dipaparkan.</translation>
 <translation id="894510252300143386">Mengkonfigurasikan tetapan pengurusan sambungan untuk <ph name="PRODUCT_NAME" />.
 
-          Dasar ini mengawal berbilang tetapan, termasuk tetapan yang dikawal oleh mana-mana dasar yang berkaitan sambungan sedia ada. Dasar ini akan membatalkan mana-mana dasar lama jika kedua-dua dasar ditetapkan.
+          Dasar ini mengawal berbilang tetapan, termasuk tetapan yang dikawal oleh mana-mana dasar berkaitan sambungan yang sedia ada. Dasar ini akan membatalkan mana-mana dasar lama jika kedua-dua dasar ditetapkan.
 
-          Dasar ini memetakan ID sambungan atau URL kemas kini pada konfigurasi dasar. Dengan ID sambungan, konfigurasi akan digunakan pada sambungan yang ditentukan sahaja. Konfigurasi lalai boleh ditetapkan untuk ID khas <ph name="DEFAULT_SCOPE" />, yang akan digunakan pada semua sambungan yang tidak ditetapkan konfigurasi tersuai dalam dasar ini. Dengan URL kemas kini, konfigurasi akan digunakan pada semua sambungan dengan URL kemas kini tepat seperti yang dinyatakan dalam manifes sambungan ini, seperti yang diterangkan di <ph name="LINK_TO_EXTENSION_DOC1" />.
+          Dasar ini memetakan ID sambungan atau URL kemas kini pada konfigurasi dasar. Dengan ID sambungan, konfigurasi akan digunakan pada sambungan yang ditentukan sahaja. Konfigurasi lalai boleh ditetapkan untuk ID khas <ph name="DEFAULT_SCOPE" />, yang akan digunakan pada semua sambungan yang tidak ditetapkan konfigurasi tersuai dalam dasar ini. Dengan URL kemas kini, konfigurasi akan digunakan pada semua sambungan dengan URL kemas kini tepat seperti yang dinyatakan dalam manifes sambungan ini, sebagaimana yang diterangkan di <ph name="LINK_TO_EXTENSION_DOC1" />.
 
           Untuk tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />, pemasangan paksa adalah terhad kepada apl dan sambungan yang disenaraikan dalam Gedung Web Chrome.
           </translation>
@@ -4383,8 +4380,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="9084985621503260744">Menyatakan sama ada aktiviti video menjejaskan pengurusan kuasa</translation>
 <translation id="9088433379343318874">Dayakan penyedia kandungan pengguna di bawah seliaan</translation>
 <translation id="9088444059179765143">Konfigurasi kaedah pengesanan zon waktu automatik</translation>
-<translation id="9094064873808699479">Undur dan kekal pada versi sasaran jika versi OS lebih baharu daripada versi sasaran. Cuba bawa ke depan konfigurasi tahap peranti (termasuk bukti kelayakan rangkaian) melalui proses pengunduran, jika boleh, tetapi lakukan pengunduran dengan powerwash penuh walaupun pemulihan data tidak boleh dilakukan (kerana versi sasaran tidak meyokong pemulihan data atau kerana perubahan undur yang tidak serasi).
-          Disokong pada <ph name="PRODUCT_OS_NAME" /> versi 70 ke atas. Untuk klien lama, nilai ini bermakna pengunduran telah dilumpuhkan.</translation>
 <translation id="9096086085182305205">Senarai putih pelayan pengesahan</translation>
 <translation id="9105265795073104888">Hanya subset pilihan konfigurasi proksi disediakan kepada apl Android. Apl Android boleh memilih untuk menggunakan proksi secara sukarela. Anda tidak boleh memaksanya untuk menggunakan proksi.</translation>
 <translation id="9106865192244721694">Benarkan WebUSB di tapak ini</translation>

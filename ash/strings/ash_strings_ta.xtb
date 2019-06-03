@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">மெனுவைச் சுருக்கு</translation>
 <translation id="1383876407941801731">தேடல்</translation>
 <translation id="1419738280318246476">அறிவிப்பில் வந்த செயலைச் செய்வதற்கு, சாதனத்தைத் திறங்கள்</translation>
+<translation id="1426410128494586442">ஆம்</translation>
 <translation id="1455242230282523554">மொழி அமைப்புகளைக் காட்டும்</translation>
 <translation id="1467432559032391204">இடது</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -171,6 +172,7 @@
 <translation id="3510164367642747937">மவுஸ் கர்சரைத் தனிப்படுத்து</translation>
 <translation id="3513798432020909783">கணக்கை நிர்வகிப்பது: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
+<translation id="3576141592585647168">நேரமண்டலத்தை மாற்றுக</translation>
 <translation id="3595596368722241419">பேட்டரி நிரம்பியது</translation>
 <translation id="3606978283550408104">பிரெய்ல் திரை இணைக்கப்பட்டது.</translation>
 <translation id="3621202678540785336">உள்ளீடு</translation>
@@ -225,7 +227,6 @@
 <translation id="4378551569595875038">இணைக்கிறது...</translation>
 <translation id="4379531060876907730">இவை உங்கள் ஸ்டைலஸ் கருவிகள்</translation>
 <translation id="4389184120735010762">டாக் செய்யப்பட்ட பெரிதாக்கியின் கீபோர்ட் ஷார்ட்கட்டை அழுத்தியுள்ளீர்கள். அதை இயக்க விரும்புகிறீர்களா?</translation>
-<translation id="4394049700291259645">முடக்கு</translation>
 <translation id="4421231901400348175">தொலைநிலை உதவி மூலம் <ph name="HELPER_NAME" /> உடன் உங்கள் திரையின் கட்டுப்பாட்டைப் பகிர்கிறது.</translation>
 <translation id="4430019312045809116">அளவு</translation>
 <translation id="4450893287417543264">மீண்டும் காட்டாதே</translation>
@@ -353,6 +354,7 @@
 <translation id="6559976592393364813">நிர்வாகியைக் கேட்கவும்</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும்.</translation>
 <translation id="6627638273713273709">தேடல்+Shift+K</translation>
+<translation id="6637729079642709226">நேரத்தை மாற்றுக</translation>
 <translation id="6650933572246256093">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்தக் கடவுச்சொல்லை உள்ளிடவும்: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">கடவுச்சொல்</translation>
 <translation id="6665545700722362599">இருப்பிடச் சேவைகள், சாதனத்தின் மைக்ரோஃபோன், கேமரா அல்லது பிற அம்சங்களை இணையதளங்கள், ஆப்ஸ், நீட்டிப்புகள் ஆகியவை பயன்படுத்த அனுமதி அளித்தல்</translation>
@@ -397,6 +399,7 @@
 <translation id="7348093485538360975">ஸ்கிரீன் கீபோர்ட்</translation>
 <translation id="735745346212279324">VPN துண்டிக்கப்பட்டது</translation>
 <translation id="7377169924702866686">Caps Lock இயக்கத்தில் உள்ளது.</translation>
+<translation id="7378594059915113390">மீடியா கட்டுப்பாடுகள்</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />வி</translation>
 <translation id="7398254312354928459">நெட்வொர்க் இணைப்பு மாற்றப்பட்டது</translation>
 <translation id="7405710164030118432">இந்தச் சாதனத்தைத் திறக்க உங்கள் Family Linkகின் முதல்நிலை அணுகல் குறியீட்டை உள்ளிடவும்</translation>
@@ -506,6 +509,7 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> பயன்படுத்தப்படுகிறது</translation>
 <translation id="899350903320462459">அறிவிப்பில் வந்த செயலைச் செய்வதற்கு, சாதனத்தை <ph name="LOGIN_ID" /> ஆகத் திறக்கவும்</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> ஆல் நிர்வகிக்கப்படுகிறது</translation>
+<translation id="9017320285115481645">Family Link பெற்றோர் அணுகல் குறியீட்டை உள்ளிடவும்.</translation>
 <translation id="9029474291399787231">Adobe Flash Player புதுப்பிப்பு உள்ளது</translation>
 <translation id="9056839673611986238">சாதனம் மீட்டமைக்கப்படும்</translation>
 <translation id="9070640332319875144">அசிஸ்டண்ட் அமைப்புகள்</translation>

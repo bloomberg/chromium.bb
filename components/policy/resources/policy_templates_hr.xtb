@@ -315,7 +315,6 @@
 <translation id="1474273443907024088">Onemogući TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Omogući blokiranje umetanja softvera treće strane</translation>
-<translation id="1504431521196476721">Daljinsko atestiranje</translation>
 <translation id="1507382822467487898">
           Konfigurira MAC adresu koja će se upotrebljavati kada je uređaj spojen na priključnu stanicu.
 
@@ -2168,7 +2167,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se pravilo ne postavi ili se postavi na True, Chrome će zadržati barem jednu otvorenu karticu nakon prebacivanja na zamjenski preglednik.
 
       Ako se pravilo postavi na False, Chrome će zatvoriti karticu nakon prebacivanja na zamjenski preglednik, čak i ako je to bila posljednja kartica. Chrome će se tako u potpunosti zatvoriti.</translation>
-<translation id="5102203758995933166">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na <ph name="PRODUCT_OS_NAME" /> uređaju. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom Open Network Configuration.</translation>
+<translation id="5102203758995933166">Omogućuje primjenu mrežne konfiguracije za svakog korisnika na <ph name="PRODUCT_OS_NAME" /> uređaju. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom Open Network Configuration.</translation>
 <translation id="5105313908130842249">Odgoda zaključavanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="5108031557082757679">Onemogućeni pisači za uređaje tvrtke</translation>
 <translation id="5124368997194894978">Omogući pokretanje na izmjeničnom napajanju</translation>
@@ -2355,6 +2354,11 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="5423001109873148185">Ako je omogućeno, ovo pravilo prisilno uvozi tražilice iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, zadana se tražilica ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti tražilicu ili do uvoza može doći automatski.</translation>
 <translation id="5423197884968724595">Naziv ograničenja za Android WebView:</translation>
 <translation id="5424147596523390018">Dopusti sve načine boje</translation>
+<translation id="5427003226809696696">Ovim pravilima kontrolira se treba li se prozor preglednika otvarati pri pokretanju sesije.
+
+          Ako su ova pravila omogućena, prozor preglednika neće se otvarati.
+
+          Ako su ova pravila onemogućena ili nisu postavljena, prozoru preglednika dopušteno je otvaranje. Imajte na umu da se prozor preglednika možda neće otvoriti zbog drugih pravila ili oznaka naredbenog retka.</translation>
 <translation id="5427879482805712214">To pravilo omogućuje vam da konfigurirate sliku avatara koji predstavlja korisnika na zaslonu za prijavu. Pravilo se postavlja tako da se navede URL s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti sliku avatara i kriptografsko hashiranje kojim se potvrđuje integritet preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 512 KB. URL-u se mora moći pristupiti bez autentifikacije.
 
       Slika avatara preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili hashiranje promijene.
@@ -3145,7 +3149,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Ako se odabere "U2F_EXTENDED", integrirana dvostruka autentifikacija pružat će funkcije U2F i neka proširenja za pojedinačno atestiranje.</translation>
 <translation id="7003334574344702284">Ako je omogućeno, ovo pravilo prisilno uvozi spremljene zaporke iz prethodno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, spremljene se zaporke ne uvoze. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti zaporke ili do uvoza može doći automatski.</translation>
 <translation id="7003746348783715221">Postavke za <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Postavke sadržaja</translation>
 <translation id="7007671350884342624">Konfigurira direktorij koji će <ph name="PRODUCT_NAME" /> koristiti za pohranu podataka korisnika.
 
       Ako postavite to pravilo, taj će direktorij <ph name="PRODUCT_NAME" /> upotrebljavati bez obzira na to je li korisnik naveo oznaku "--user-data-dir". Kako bi se spriječio gubitak podataka ili druge neočekivane pogreške, pravilo se ne smije postaviti na korijenski direktorij ili direktorij jedinice koji se koristi u druge svrhe jer njegovim sadržajem upravlja <ph name="PRODUCT_NAME" />.
@@ -3173,7 +3176,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Ti zapisnici mogu se putem ID-ja sesije povezati s drugim zapisnicima koje je prikupila sama Googleova usluga; to je namijenjeno lakšem otklanjanju pogrešaka.
       </translation>
 <translation id="706669471845501145">Dopusti web-lokaciji prikazivanje obavijesti radne površine</translation>
-<translation id="7068108874199666656">Omogućuje nametanje primjene mrežne konfiguracije za sve korisnike <ph name="PRODUCT_OS_NAME" /> uređaja. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom Open Network Configuration.</translation>
+<translation id="7068108874199666656">Omogućuje primjenu mrežne konfiguracije za sve korisnike <ph name="PRODUCT_OS_NAME" /> uređaja. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom Open Network Configuration.</translation>
 <translation id="7070525176564511548">Zaporku treba unijeti svaki tjedan (168 sati)</translation>
 <translation id="7072208053150563108">Stopa promjene zaporke računala</translation>
 <translation id="7079519252486108041">Blokiraj skočne prozore na ovim web-lokacijama</translation>
@@ -3499,8 +3502,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7617319494457709698">To pravilo određuje dopuštena proširenja za upotrebu funkcije <ph name="CHALLENGE_USER_KEY_FUNCTION" /> API-ja <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> za daljinsko atestiranje. Proširenja se moraju dodati na taj popis da bi upotrebljavala taj API.
 
           Ako proširenje nije na popisu ili ako popis nije postavljen, poziv API-ju vratit će kôd pogreške.</translation>
-<translation id="7618907117929117943">Vraća uređaj na ciljnu verziju i ostaje na njoj ako je verzija OS-a novija od ciljne i vraćanjem je moguće prenijeti konfiguraciju uređaja (uključujući mrežne vjerodajnice), čime se također preskače OOBE nakon vraćanja. Uređaj nemojte vraćati ili prekinite vraćanje ako to nije moguće (zato što ciljna verzija ne podržava oporavak podataka ili zbog promjene koja nije kompatibilna sa starijim verzijama).
-          Podržano u sustavu <ph name="PRODUCT_OS_NAME" /> verzije 70 i novijima. Za starije klijente ta vrijednost znači da vraćanje nije omogućeno.</translation>
 <translation id="7620869951155758729">Ovo pravilo navodi konfiguraciju koja se upotrebljava za generiranje i potvrđivanje koda za roditeljski pristup.
 
       |current_config| uvijek se upotrebljava za generiranje pristupnog koda i treba se upotrebljavati za potvrđivanje pristupnog koda samo kad ga nije moguće potvrditi pomoću |future_config|.
@@ -3825,6 +3826,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
       Ako to pravilo nije postavljeno, na popisu nedopuštenih stavki u pravilu 'URLBlacklist' neće biti iznimaka.</translation>
 <translation id="8176035528522326671">Dopuštanje poslovnom korisniku da bude samo primarni korisnik višestrukih profila (zadano ponašanje za korisnike kojima upravlja tvrtka)</translation>
+<translation id="8183108371184777472">Spriječi otvaranje prozora preglednika</translation>
 <translation id="8214600119442850823">Konfigurira upravitelja zaporki.</translation>
 <translation id="8217516105848565518">To je pravilo obustavljeno. Umjesto njega upotrijebite RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Omogući RC4 pakete šifri u TLS-u</translation>
@@ -4040,11 +4042,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="8661297125441579970">Onemogući premještanje podataka i ARC.</translation>
 <translation id="8672321184841719703">Ciljna verzija automatskog ažuriranja</translation>
 <translation id="867410340948518937">U2F (univerzalna dvostruka autentifikacija)</translation>
-<translation id="8682611302223077049">Omogućuje postavljanje razdoblja u milisekundama tijekom kojeg će se prikazivati obavijesti o ponovnom pokretanju preglednika <ph name="PRODUCT_NAME" /> ili da je potrebno ponovo pokrenuti <ph name="PRODUCT_OS_NAME" /> radi primjene ažuriranja na čekanju. 
-      Tijekom tog će se vremena korisniku prikazivati ponavljajuća obavijest o potrebnom ažuriranju. Za <ph name="PRODUCT_OS_NAME" /> uređaje obavijest o ponovnom pokretanju prikazuje se na traci sustava kada se otkrije nadogradnja. Za preglednike <ph name="PRODUCT_NAME" /> izbornik aplikacije mijenja se kada istekne trećina razdoblja obavijesti kako bi se naznačilo da je potrebno ponovno pokretanje. Boja te obavijesti mijenja se kada isteknu dvije trećine razdoblja i još jednom kada istekne cijelo razdoblje. Dodatne obavijesti omogućene pravilom <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 
-za preglednike imaju isti raspored.
-
-      Ako se ne postavi, za <ph name="PRODUCT_OS_NAME" /> uređaje upotrebljava se zadano razdoblje od 345.600.000 milisekundi (četiri dana), a za <ph name="PRODUCT_NAME" /> zadano razdoblje od 604.800.000 milisekundi (jedan tjedan).</translation>
 <translation id="8685024486845674965">Upozorenje o zaštiti zaporkom aktivira se ponovnom upotrebom zaporke</translation>
 <translation id="8693243869659262736">Upotreba ugrađenog DNS klijenta</translation>
 <translation id="8698286761337647563">Broj dana za prethodno obavještavanje korisnika SAML-a prije isteka zaporke</translation>
@@ -4058,7 +4055,6 @@ za preglednike imaju isti raspored.
           Napomena: dozvoljene vrijednosti za polje <ph name="MINUTE_FIELD_NAME" /> u polju <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> i <ph name="CHARGE_START_TIME_FIELD_NAME" /> su 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Popis onemogućenih dodataka</translation>
 <translation id="8711086062295757690">Određuje ključnu riječ koja je prečac u višenamjenskom okviru za pokretanje usluge pretraživanja ovog davatelja usluga. Ovo je pravilo izborno. Ako nije postavljeno, nijedna ključna riječ neće aktivirati davatelja usluga pretraživanja. Ovo se pravilo uzima u obzir samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
-<translation id="8731693562790917685">Postavke sadržaja omogućuju određivanje načina postupanja s određenim vrstama sadržaja (kao što su Kolačići, Slike i JavaScript).</translation>
 <translation id="8733448613597049197">Omogućuje prošireno izvješćivanje Sigurnog pregledavanja za <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da promijene tu postavku.
 
       Prošireno izvješćivanje šalje neke podatke o sustavu i sadržaj stranice Googleovim poslužiteljima radi otkrivanja opasnih aplikacija i web-lokacija.
@@ -4135,6 +4131,7 @@ za preglednike imaju isti raspored.
       Ako omogućite ili onemogućite tu postavku, korisnici je ne mogu mijenjati niti poništiti u proizvodu <ph name="PRODUCT_NAME" />.
 
       Ako ta postavka nije postavljena, korisnik može odlučiti hoće li upotrebljavati tu funkciju.</translation>
+<translation id="8871974300055371298">Postavke sadržaja</translation>
 <translation id="8876188741456358123">Nadjačava dvostruki način zadanog ispisa. Pravilo se zanemaruje ako način nije dostupan.</translation>
 <translation id="8882006618241293596">Blokiraj dodatak <ph name="FLASH_PLUGIN_NAME" /> na ovim web-lokacijama</translation>
 <translation id="8906768759089290519">Omogući način gosta</translation>
@@ -4244,8 +4241,6 @@ za preglednike imaju isti raspored.
 <translation id="9084985621503260744">Odredi utječe li aktivnost videozapisa na upravljanje napajanjem</translation>
 <translation id="9088433379343318874">Omogući davatelja sadržaja nadziranog korisnika</translation>
 <translation id="9088444059179765143">Konfiguriraj način automatskog otkrivanja vremenske zone</translation>
-<translation id="9094064873808699479">Vraća uređaj na ciljnu verziju i ostaje na njoj ako je verzija OS-a novija od ciljne. Pokušajte prenijeti konfiguraciju uređaja (uključujući mrežne vjerodajnice) ako je moguće, ali vraćanje izvršite uz potpuni powerwash čak i ako oporavak podataka nije moguć (zato što ciljna verzija ne podržava oporavak podataka ili zbog promjene koja nije kompatibilna sa starijim verzijama).
-          Podržano u sustavu <ph name="PRODUCT_OS_NAME" /> verzije 70 i novijima. Za starije klijente ta vrijednost znači da vraćanje nije omogućeno.</translation>
 <translation id="9096086085182305205">Bijela lista poslužitelja za autentifikaciju</translation>
 <translation id="9105265795073104888">Android aplikacijama dostupan je samo podskup opcija za konfiguraciju proxyja. Android aplikacije taj proxy mogu upotrebljavati dobrovoljno. Upotrebu proxyja ne možete im nametnuti.</translation>
 <translation id="9106865192244721694">Dopusti WebUSB na ovim web-lokacijama</translation>

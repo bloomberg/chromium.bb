@@ -324,7 +324,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 <translation id="1474273443907024088">TLS-Funktion "False Start" deaktivieren</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Blockieren von Codeeinschleusungen durch Drittanbieter-Software aktivieren</translation>
-<translation id="1504431521196476721">Remote-Bestätigung</translation>
 <translation id="1507382822467487898">
           Hiermit wird konfiguriert, welche MAC-Adresse (Media Access Control) verwendet wird, wenn das Gerät angedockt wird.
 
@@ -817,9 +816,9 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2463034609187171371">DHE-Verschlüsselungssammlungen in TLS aktivieren</translation>
 <translation id="2463365186486772703">Gebietsschema der App</translation>
 <translation id="2466131534462628618">Captive-Portal-Authentifizierung ignoriert Proxy</translation>
-<translation id="2471748297300970300">Ist diese Richtlinie deaktiviert, werden keine Sicherheitswarnungen angezeigt, wenn Chrome mit einigen potenziell schädlichen Befehlszeilenparametern gestartet wird.
+<translation id="2471748297300970300">Ist diese Richtlinie deaktiviert, werden keine Sicherheitswarnungen angezeigt, wenn Chrome mit einigen potenziell schädlichen Befehlszeilen-Flags gestartet wird.
 
-          Sollte sie aktiviert oder nicht konfiguriert sein, werden Sicherheitswarnungen angezeigt, wenn Chrome mit einigen Befehlszeilenparametern gestartet wird.
+          Sollte sie aktiviert oder nicht konfiguriert sein, werden Sicherheitswarnungen angezeigt, wenn Chrome mit einigen Befehlszeilen-Flags gestartet wird.
 
           Unter Windows steht diese Richtlinie nur bei Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Windows 10 Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung erfolgt ist.</translation>
 <translation id="2482676533225429905">Natives Messaging</translation>
@@ -1087,7 +1086,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
           |created_time_millis| ist der UTC-Zeitstempel für die Erstellung der Außerkraftsetzung. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde. Mit ihm wird festgestellt, ob diese Außerkraftsetzung weiterhin angewendet werden soll. Wenn das aktuelle aktive Zeitlimit (Nutzungszeitlimit oder Zeitfensterlimit) gestartet wurde, nachdem die Außerkraftsetzung erfolgt ist, sollte sie keine Auswirkungen haben. Entsprechend gilt: Wenn die Außerkraftsetzung vor der letzten Änderung des aktiven "time_window_limit" oder "time_usage_window" erstellt wurde, sollte sie nicht angewendet werden.
 
           Falls mehrere Außerkraftsetzungen gesendet werden, wird der neueste gültige Eintrag angewendet.</translation>
-<translation id="2901725272378498025">Sicherheitswarnungen für Befehlszeilenparameter aktivieren</translation>
+<translation id="2901725272378498025">Sicherheitswarnungen für Befehlszeilen-Flags aktivieren</translation>
 <translation id="2905984450136807296">Cachelebensdauer für Authentifizierungsdaten</translation>
 <translation id="2906874737073861391">Liste der AppPack-Erweiterungen</translation>
 <translation id="2907992746861405243">Legt fest, welche Drucker aus <ph name="BULK_PRINTERS_POLICY" /> Nutzern zur Verfügung stehen.
@@ -1432,7 +1431,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 
       Ist sie deaktiviert oder nicht konfiguriert, bleiben die Einstellungen des Nutzers für die Rechtschreibprüfung unverändert.
 
-      Falls die Richtlinie "<ph name="SPELLCHECK_ENABLED_POLICY_NAME" />" auf "false" gesetzt ist, hat sie keine Auswirkungen.
+      Wenn die Richtlinie "<ph name="SPELLCHECK_ENABLED_POLICY_NAME" />" auf "false" gesetzt ist, hat diese Richtlinie keine Auswirkungen.
 
       Sollte eine Sprache sowohl in dieser Richtlinie als auch in der Richtlinie "<ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />" enthalten sein, hat diese Richtlinie Vorrang und die Sprache wird für die Rechtschreibprüfung aktiviert.
 
@@ -2166,7 +2165,7 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
       Wenn die Richtlinie nicht konfiguriert oder auf "true" gesetzt ist, hält Chrome mindestens einen Tab offen, nachdem zu einem alternativen Browser gewechselt wurde.
 
       Falls diese Richtlinie auf "false" festgelegt ist, schließt Chrome den Tab nach dem Wechsel zu einem alternativen Browser, selbst wenn es der letzte Tab war. Dadurch wird Chrome vollständig beendet.</translation>
-<translation id="5102203758995933166">Diese Richtlinie ermöglicht, Netzwerkkonfigurationen auf <ph name="PRODUCT_OS_NAME" />-Geräten einzelner Nutzer zu übernehmen. Die Netzwerkkonfiguration ist ein String im JSON-Format, der der Definition des Open Network Configuration-Formats entspricht.</translation>
+<translation id="5102203758995933166">Diese Richtlinie ermöglicht, Netzwerkkonfigurationen auf <ph name="PRODUCT_OS_NAME" />-Geräten für einzelne Nutzer zu übernehmen. Die Netzwerkkonfiguration ist ein String im JSON-Format, der der Definition des Open Network Configuration-Formats entspricht.</translation>
 <translation id="5105313908130842249">Verzögerung für die Bildschirmsperre im Akkubetrieb</translation>
 <translation id="5108031557082757679">Deaktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="5124368997194894978">Starten bei anliegender Netzspannung aktivieren</translation>
@@ -2350,22 +2349,27 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5423001109873148185">Bei Aktivierung erzwingt diese Richtlinie den Import von Suchmaschinen aus dem aktuellen Standardbrowser. Wenn die Richtlinie aktiviert ist, wirkt sich das darüber hinaus auf den Importdialog aus. Wenn sie deaktiviert ist, wird die Standardsuchmaschine nicht importiert. Sollte Sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import stattfinden soll, oder der Import erfolgt automatisch.</translation>
 <translation id="5423197884968724595">Name der Android WebView-Einschränkung:</translation>
 <translation id="5424147596523390018">Alle Farbmodi zulassen</translation>
+<translation id="5427003226809696696">Mit dieser Richtlinie wird festgelegt, ob das Browserfenster zu Beginn der Sitzung geöffnet werden soll.
+
+          Ist sie aktiviert, wird das Browserfenster nicht geöffnet.
+
+          Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, kann das Browserfenster geöffnet werden. Unter Umständen verhindern andere Richtlinien oder Befehlszeilen-Flags, dass das Browserfenster geöffnet wird.</translation>
 <translation id="5427879482805712214">Über diese Richtlinie können Sie das Avatarbild des Nutzers für den Anmeldebildschirm konfigurieren. Zum Festlegen der Richtlinie muss die URL, über die <ph name="PRODUCT_OS_NAME" /> das Avatarbild herunterladen kann, sowie ein kryptografischer Hash angegeben werden, um die Integrität des Downloads zu verifizieren. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 512 KB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
 
       Das Avatarbild wird heruntergeladen und im Cache gespeichert. Sobald sich die URL oder der Hash ändert, wird es noch einmal heruntergeladen.
 
-      Wenn diese Richtlinie konfiguriert wird, lädt <ph name="PRODUCT_OS_NAME" /> das Avatarbild herunter und verwendet es.
+      Ist die Richtlinie konfiguriert, lädt <ph name="PRODUCT_OS_NAME" /> das Avatarbild herunter und verwendet es.
 
-      Falls Sie sie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+      Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
       Ist die Richtlinie nicht konfiguriert, kann der Nutzer sein Avatarbild für den Anmeldebildschirm selbst auswählen.</translation>
-<translation id="5432219358069697932">Mit dieser Richtlinie können Sie das Hintergrundbild konfigurieren, das dem Nutzer auf dem Desktop und auf dem Anmeldebildschirm angezeigt wird. Bei der Konfiguration der Richtlinie wird eine URL angegeben, über die <ph name="PRODUCT_OS_NAME" /> das Hintergrundbild und einen kryptografischen Hash zur Verifizierung der Integrität des Downloads herunterladen kann. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 16 MB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
+<translation id="5432219358069697932">Mit dieser Richtlinie können Sie das Hintergrundbild konfigurieren, das dem Nutzer auf dem Desktop und auf dem Anmeldebildschirm angezeigt wird. Bei der Konfiguration der Richtlinie wird eine URL, über die <ph name="PRODUCT_OS_NAME" /> das Hintergrundbild herunterladen kann, sowie ein kryptografischer Hash angegeben, mit dem die Integrität des Downloads verifiziert wird. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 16 MB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
 
       Das Hintergrundbild wird heruntergeladen und im Cache gespeichert. Sobald sich die URL oder der Hash ändert, wird es noch einmal heruntergeladen.
 
-      Wenn diese Richtlinie konfiguriert wird, lädt <ph name="PRODUCT_OS_NAME" /> das Hintergrundbild herunter und verwendet es.
+      Ist die Richtlinie konfiguriert, lädt <ph name="PRODUCT_OS_NAME" /> das Hintergrundbild herunter und verwendet es.
 
-      Falls Sie sie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+      Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
       Ist die Richtlinie nicht konfiguriert, kann der Nutzer ein Bild auswählen, das als Hintergrund auf dem Desktop und dem Anmeldebildschirm angezeigt wird.</translation>
 <translation id="5437733496511628148">Durch Aktivieren dieser Einstellung wird verhindert, dass Webseitenelemente, die nicht von der Domain in der Adressleiste des Browser stammen, Cookies setzen.
@@ -3072,7 +3076,7 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
       Ist die Richtlinie deaktiviert oder nicht konfiguriert, bleiben die Einstellungen des Nutzers für die Rechtschreibprüfung unverändert.
 
-      Falls die Richtlinie "<ph name="SPELLCHECK_ENABLED_POLICY_NAME" />" auf "false" gesetzt ist, hat sie keine Auswirkungen.
+      Wenn die Richtlinie "<ph name="SPELLCHECK_ENABLED_POLICY_NAME" />" auf "false" gesetzt ist, hat diese Richtlinie keine Auswirkungen.
 
       Sollte eine Sprache sowohl in dieser Richtlinie als auch in der Richtlinie "<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />" enthalten sein, hat letztere Vorrang und die Sprache wird für die Rechtschreibprüfung aktiviert.
 
@@ -3125,7 +3129,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Wenn "U2F_EXTENDED" ausgewählt ist, sind durch die integrierte Hardware die U2F-Funktionen plus einige Erweiterungen zur individuellen Bestätigung verfügbar.</translation>
 <translation id="7003334574344702284">Diese Richtlinie erzwingt, sofern aktiv, den Import von gespeicherten Passwörtern aus dem vorherigen Standardbrowser. Bei einer Aktivierung wirkt sich die Richtlinie auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import der gespeicherten Passwörter. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="7003746348783715221">Einstellungen für <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Inhaltseinstellungen</translation>
 <translation id="7007671350884342624">Konfiguriert das Verzeichnis, das von <ph name="PRODUCT_NAME" /> zur Speicherung von Nutzerdaten verwendet wird.
 
 Wenn Sie diese Richtlinie konfigurieren, wird das angegebene Verzeichnis auch dann von <ph name="PRODUCT_NAME" /> verwendet, wenn der Nutzer die Markierung "--user-data-dir" angibt. Um Datenverluste oder andere unerwartete Fehler zu vermeiden, darf diese Richtlinie nicht auf das Stammverzeichnis eines Datenträgers oder auf ein Verzeichnis, das für andere Zwecke verwendet wird, festgelegt werden, da <ph name="PRODUCT_NAME" /> die entsprechenden Inhalte verwaltet.
@@ -3217,7 +3220,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Wird diese Richtlinie nicht konfiguriert, können Nutzer die Liste der in der Übersicht angezeigten Apps ändern.</translation>
 <translation id="713121532817834879">Diese Richtlinie ist eine URL, die auf eine XML-Datei im selben Format wie die Richtlinie "<ph name="IEEM_SITELIST_POLICY" />" von Internet Explorer verweist. Dabei werden Regeln aus einer XML-Datei geladen, ohne diese Regeln mit Internet Explorer zu teilen.
 
-      Die Regeln in dieser XML-Datei gelten genauso wie "<ph name="GREYLIST_POLICY_NAME" />". Das bedeutet, dass diese Regeln verhindern, dass <ph name="PRODUCT_NAME" /> einen alternativen Browser öffnet und <ph name="PRODUCT_NAME" /> von einem alternativen Browser geöffnet wird.
+      Die Regeln in dieser XML-Datei gelten genauso wie "<ph name="GREYLIST_POLICY_NAME" />". Das bedeutet: Diese Regeln verhindern, dass <ph name="PRODUCT_NAME" /> einen alternativen Browser öffnet und <ph name="PRODUCT_NAME" /> von einem alternativen Browser geöffnet wird.
 
       Wenn diese Richtlinie nicht konfiguriert oder nicht auf eine gültige URL festgelegt ist, wird sie von <ph name="PRODUCT_NAME" /> nicht als Quelle für Regeln verwendet, die keinen Browserwechsel auslösen.
 
@@ -3479,8 +3482,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="7617319494457709698">Mit dieser Richtlinie wird festgelegt, welche Erweiterungen zum Zweck der Remote-Bestätigung mithilfe der <ph name="CHALLENGE_USER_KEY_FUNCTION" /> die <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> verwenden dürfen. Damit eine Erweiterung die API verwenden darf, muss sie zu dieser Liste hinzugefügt werden.
 
           Wenn eine Erweiterung nicht in der Liste enthalten ist oder keine Liste festgelegt wurde, treten beim API-Aufruf Fehler auf und ein Fehlercode wird angezeigt.</translation>
-<translation id="7618907117929117943">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion und Einstellungen auf Geräteebene (einschließlich den Anmeldedaten für das Netzwerk) per Rollback übertragen werden können. Überspringen Sie OOBE nach dem Rollback. Sie dürfen kein Rollback durchführen oder abbrechen, wenn das nicht möglich ist. Das ist zum Beispiel bei rückwärtsinkompatiblen Änderungen der Fall oder wenn die Zielversion das Wiederherstellen von Daten nicht unterstützt.
-Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älteren Clients bedeutet dieser Wert, dass das Rollback deaktiviert ist.</translation>
 <translation id="7620869951155758729">Anhand der in dieser Richtlinie angegebenen Konfiguration werden Elternzugriffscodes generiert und überprüft.
 
       |current_config| wird immer zum Generieren von Zugriffscodes verwendet und sollte nur für die Validierung verwendet werden, wenn dies mit |future_config| nicht möglich ist.
@@ -3745,7 +3746,7 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
       Ist die Richtlinie nicht konfiguriert, wird standardmäßig das 24-Stunden-Uhrzeitformat verwendet.</translation>
 <translation id="8113421140338762630">Diese Richtlinie ermöglicht, den Zeitraum zwischen der ersten Benachrichtigung zum Neustart eines <ph name="PRODUCT_OS_NAME" />-Geräts, um eine ausstehende Aktualisierung anzuwenden, und dem Ende des durch die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />" vorgegebenen Zeitraums in Millisekunden festzulegen.
 
-      Wenn Sie nicht konfiguriert wird, kommt der standardmäßige Zeitraum von 86.400.000 Millisekunden (ein Tag) für <ph name="PRODUCT_OS_NAME" />-Geräte zum Einsatz.</translation>
+      Wenn sie nicht konfiguriert wird, kommt der standardmäßige Zeitraum von 86.400.000 Millisekunden (ein Tag) für <ph name="PRODUCT_OS_NAME" />-Geräte zum Einsatz.</translation>
 <translation id="8114382167597081590">Eingeschränkten Modus auf YouTube nicht erzwingen</translation>
 <translation id="8118665053362250806">Cache-Größe für Mediendatenträger festlegen</translation>
 <translation id="8124468781472887384">Richtlinie für den Zugriff auf die Konfiguration von an Geräte gebundenen Druckern.</translation>
@@ -3803,6 +3804,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 
       Bleibt diese Richtlinie unkonfiguriert, gibt es keine Ausnahmen von der schwarzen Liste aus der Richtlinie "URLBlacklist".</translation>
 <translation id="8176035528522326671">Unternehmensnutzer nur als primären Nutzer mehrerer Profile zulassen (Standardverhalten für von Unternehmen verwaltete Nutzer)</translation>
+<translation id="8183108371184777472">Öffnen des Browserfensters verhindern</translation>
 <translation id="8214600119442850823">Konfiguriert den Passwortmanager.</translation>
 <translation id="8217516105848565518">Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "RemoteAccessHostDomainList".</translation>
 <translation id="8244171102276095471">RC4-Verschlüsselungssammlungen in TLS aktivieren</translation>
@@ -3902,9 +3904,9 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 <translation id="8465065632133292531">Parameter für URL der Suche im Voraus, die POST verwendet</translation>
 <translation id="8465746466645315861">Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer die Rechtschreibprüfung in den Spracheinstellungen aktivieren oder deaktivieren.
 
-      Falls sie auf "true" festgelegt wird, ist die Rechtschreibprüfung aktiviert und kann nicht vom Nutzer deaktiviert werden. Unter <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> und <ph name="LINUX_OS_NAME" /> können die Sprachen für die Rechtschreibprüfung einzeln aktiviert und deaktiviert werden. Dadurch hat der Nutzer die Möglichkeit, die Rechtschreibprüfung durch Deaktivieren aller Sprachen auszuschalten. Soll diese Möglichkeit nicht zur Verfügung stehen, kann die Richtlinie "<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />" genutzt werden, um die Aktivierung bestimmter Sprachen für die Rechtschreibprüfung zu erzwingen.
+      Wird sie auf "true" festgelegt, ist die Rechtschreibprüfung aktiviert und kann nicht vom Nutzer deaktiviert werden. Unter <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> und <ph name="LINUX_OS_NAME" /> können die Sprachen für die Rechtschreibprüfung einzeln aktiviert und deaktiviert werden. Dadurch hat der Nutzer die Möglichkeit, die Rechtschreibprüfung durch Deaktivieren aller Sprachen auszuschalten. Soll diese Möglichkeit nicht zur Verfügung stehen, kann die Richtlinie "<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />" genutzt werden, um die Aktivierung bestimmter Sprachen für die Rechtschreibprüfung zu erzwingen.
 
-      Sollte diese Richtlinie auf "false" gesetzt werden, ist die Rechtschreibprüfung deaktiviert und der Nutzer kann sie nicht aktivieren. Die Richtlinien "<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />" und "<ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />" haben keine Auswirkungen, wenn diese Richtlinie auf "false" eingestellt ist.
+      Wird diese Richtlinie auf "false" gesetzt, ist die Rechtschreibprüfung deaktiviert und der Nutzer kann sie nicht aktivieren. Die Richtlinien "<ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />" und "<ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />" haben keine Auswirkungen, wenn diese Richtlinie auf "false" eingestellt ist.
       </translation>
 <translation id="847472800012384958">Anzeige von Pop-ups für keine Website zulassen</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -4001,11 +4003,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8661297125441579970">Datenmigration und ARC nicht zulassen.</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
-<translation id="8682611302223077049">Mit dieser Einstellung kann der Zeitraum in Millisekunden festgelegt werden, in dem ein Nutzer benachrichtigt wird, dass <ph name="PRODUCT_NAME" /> neu gestartet werden muss oder ein <ph name="PRODUCT_OS_NAME" />-Gerät neu gestartet werden muss, um ein ausstehendes Update durchzuführen.
-
-      In diesem Zeitraum wird der Nutzer wiederholt darüber informiert, dass ein Update erforderlich ist. Auf <ph name="PRODUCT_OS_NAME" />-Geräten erscheint in der Taskleiste eine Neustartbenachrichtigung, wenn ein Upgrade gefunden wird. In <ph name="PRODUCT_NAME" />-Browsern ändert sich das App-Menü, sobald ein Drittel des Benachrichtigungszeitraums vorüber ist, um anzuzeigen, dass ein Neustart nötig ist. Die Farbe dieser Benachrichtigung ändert sich, sobald zwei Drittel des Benachrichtigungszeitraums vergangen sind. Sie ändert sich noch einmal, wenn der gesamte Benachrichtigungszeitraum verstrichen ist. Für die zusätzlichen Benachrichtigungen, die über die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />" aktiviert werden, gilt derselbe Zeitplan.
-
-      Wenn nichts festgelegt ist, wird für <ph name="PRODUCT_OS_NAME" />-Geräte der Standardzeitraum von 345.600.000 Millisekunden (vier Tagen) und für <ph name="PRODUCT_NAME" /> ein Zeitraum von 604.800.000 Millisekunden (einer Woche) verwendet.</translation>
 <translation id="8685024486845674965">Die Passwortschutzwarnung wird durch die Wiederverwendung eines Passworts ausgelöst</translation>
 <translation id="8693243869659262736">Integrierten DNS-Client verwenden</translation>
 <translation id="8698286761337647563">Gibt an, wie viele Tage SAML-Nutzer vorab benachrichtigt werden, wenn ihr Passwort bald abläuft</translation>
@@ -4019,7 +4016,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
           Hinweis: Zulässige Werte für das Feld "<ph name="MINUTE_FIELD_NAME" />" in "<ph name="START_TIME_FIELD_NAME" />", "<ph name="END_TIME_FIELD_NAME" />" und "<ph name="CHARGE_START_TIME_FIELD_NAME" />" sind 0, 15, 30 und 45.</translation>
 <translation id="8704831857353097849">Liste der deaktivierten Plug-ins</translation>
 <translation id="8711086062295757690">Gibt das Suchkürzel an, das als die Verknüpfung fungiert, die in der Omnibox als Auslöser der Suche für diesen Anbieter verwendet wird. Diese Richtlinie ist optional. Wenn sie nicht konfiguriert ist, so wird der Suchanbieter von keinem Suchkürzel aktiviert. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
-<translation id="8731693562790917685">Unter "Inhaltseinstellungen" können Sie angeben, wie Inhalte bestimmter Typen (z. B. Cookies, Bilder oder JavaScript) verarbeitet werden.</translation>
 <translation id="8733448613597049197">Hiermit wird die erweiterte Berichterstellung bei der Verwendung von Safe Browsing in <ph name="PRODUCT_NAME" /> aktiviert und verhindert, dass Nutzer diese Einstellung ändern.
 
       Bei der erweiterten Berichterstellung werden einige Systeminformationen und Seiteninhalte an die Server von Google gesendet, um bei der Erkennung von gefährlichen Apps und Websites zu helfen.
@@ -4096,6 +4092,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wird diese Einstellung aktiviert oder deaktiviert, können Nutzer diese Einstellung in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
 
       Wenn die Einstellung nicht konfiguriert ist, kann der Nutzer entscheiden, ob er die Funktion in Anspruch nehmen möchte oder nicht.</translation>
+<translation id="8871974300055371298">Inhaltseinstellungen</translation>
 <translation id="8876188741456358123">Dadurch wird der standardmäßige Duplexmodus überschrieben. Wenn der Modus nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
 <translation id="8882006618241293596">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" auf diesen Websites blockieren</translation>
 <translation id="8906768759089290519">Gastmodus aktivieren</translation>
@@ -4218,8 +4215,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="9084985621503260744">Angaben zum Einfluss von Videoaktivitäten auf den Energiesparmodus</translation>
 <translation id="9088433379343318874">Contentanbieter für betreute Nutzer aktivieren</translation>
 <translation id="9088444059179765143">Methode für die automatische Erkennung der Zeitzone konfigurieren</translation>
-<translation id="9094064873808699479">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Versuchen Sie nach Möglichkeit, die Einstellungen auf Geräteebene (einschließlich der Anmeldedaten für das Netzwerk) per Rollback zu übertragen. Führen Sie das Rollback jedoch mit einem vollständigen Powerwash durch, selbst wenn das Wiederherstellen von Daten nicht möglich ist, weil rückwärtsinkompatible Änderungen vorliegen oder die Zielversion dies nicht unterstützt.
-Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älteren Clients bedeutet dieser Wert, dass das Rollback deaktiviert ist.</translation>
 <translation id="9096086085182305205">Weiße Liste für Authentifizierungsserver</translation>
 <translation id="9105265795073104888">Android-Apps wird nur ein Teil der Proxykonfigurationsoptionen zur Verfügung gestellt. Der Proxy kann in Android-Apps auf freiwilliger Basis verwendet werden. Es ist nicht möglich, die Verwendung eines Proxys zu erzwingen.</translation>
 <translation id="9106865192244721694">WebUSB auf diesen Websites zulassen</translation>

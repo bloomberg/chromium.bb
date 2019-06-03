@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Sakļaut izvēlni</translation>
 <translation id="1383876407941801731">Meklēt</translation>
 <translation id="1419738280318246476">Atbloķējiet ierīci, lai veiktu paziņojuma darbību</translation>
+<translation id="1426410128494586442">Jā</translation>
 <translation id="1455242230282523554">Rādīt valodas iestatījumus</translation>
 <translation id="1467432559032391204">Pa kreisi</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> joprojām varēs pierakstīties vēlāk.</translation>
 <translation id="3321628682574733415">Nepareizs vecāku kods</translation>
 <translation id="332587331255250389">Lūdzu, nomainiet bateriju.</translation>
-<translation id="3335825575923019462">Vai tiešām vēlaties atspējot automātiskos klikšķus?</translation>
 <translation id="3351879221545518001">Jūsu ekrānā šobrīd tiek veikta apraide.</translation>
 <translation id="3364721542077212959">Skārienekrāna pildspalvas rīki</translation>
 <translation id="3368922792935385530">pievienots</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">Notiek pievienošana...</translation>
 <translation id="4379531060876907730">Šie ir jūsu skārienekrāna pildspalvas rīki</translation>
 <translation id="4389184120735010762">Jūs nospiedāt dokotās lupas īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
-<translation id="4394049700291259645">Atspējot</translation>
 <translation id="4421231901400348175">Ekrāna pārvaldības koplietošana ar <ph name="HELPER_NAME" />, izmantojot attālo palīdzību.</translation>
 <translation id="4430019312045809116">Skaļums</translation>
 <translation id="4450893287417543264">Vairs nerādīt</translation>
@@ -485,7 +484,6 @@
 <translation id="8649101189709089199">Atlasīt, lai izrunātu</translation>
 <translation id="8652175077544655965">Aizvērt iestatījumus</translation>
 <translation id="8653151467777939995">Rādīt paziņojumu iestatījumus. Paziņojumi ir ieslēgti</translation>
-<translation id="8664483332071009680">Vai atspējot automātiskos klikšķus?</translation>
 <translation id="8664753092453405566">Rādīt tīklu sarakstu. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pievienots lādētājs ar mazu strāvas padevi</translation>

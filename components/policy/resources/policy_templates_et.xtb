@@ -333,7 +333,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="1474273443907024088">TLS-i valekäivitamise keelamine</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Kolmanda osapoole tarkvara sisestamise blokeerimise lubamine</translation>
-<translation id="1504431521196476721">Kaugatesteerimine</translation>
 <translation id="1507382822467487898">
           Määrab, millist MAC-aadressi (meediumipöörduse juhtimise aadress) kasutatakse, kui dokk on seadmega ühendatud.
 
@@ -1689,9 +1688,9 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="3963602271515417124">Kui selle väärtuseks on määratud Tõene, on seadme kaugatesteerimine lubatud ning sertifikaat luuakse ja laaditakse seadmehaldusserverisse üles automaatselt.
 
           Kui selle väärtuseks on määratud Väär või kui väärtus on määramata, siis sertifikaati ei looda ja kõned üksuse enterprise.platformKeys laienduse API-le ebaõnnestuvad.</translation>
-<translation id="3964262920683972987">Seadistage seadme tasemel taustapildi kujutis, mis kuvatakse sisselogimisekraanil, kui ükski kasutaja pole veel seadmesse sisse loginud. Reegli seadistamiseks määrake URL, kust Chrome OS-i seade saab alla laadida taustapildi kujutise, ja krüptograafiline räsiväärtus, mida kasutatakse allalaadimise terviklikkuse kinnitamiseks. Pilt peab olema JPEG-vormingus ja faili maht ei tohi olla suurem kui 16 MB. URL peab olema juurdepääsetav autentimiseta. Taustapilt laaditakse alla ja talletatakse vahemällu. URL-i või räsi muutumisel laaditakse pilt uuesti alla.
+<translation id="3964262920683972987">Seadistage seadme tasemel taustapilt, mis kuvatakse sisselogimiskuval, kui ükski kasutaja pole veel seadmesse sisse loginud. Reegli seadistamiseks määrake URL, kust Chrome OS-i seade saab alla laadida taustapildi, ja krüptograafiline räsiväärtus, mida kasutatakse allalaadimise terviklikkuse kinnitamiseks. Pilt peab olema JPEG-vormingus ja faili maht ei tohi olla suurem kui 16 MB. URL peab olema juurdepääsetav autentimiseta. Taustapilt laaditakse alla ja talletatakse vahemällu. URL-i või räsi muutumisel laaditakse pilt uuesti alla.
 
-      Kui seadme taustapildi reegel on määratud, laadib Chrome OS-i seade taustapildi kujutise alla ja kasutab seda sisselogimisekraanil, kui ükski kasutaja pole veel seadmesse sisse loginud. Kui kasutaja sisse logib, rakendatakse kasutaja taustapildi reeglit.
+      Kui seadme taustapildi reegel on määratud, laadib Chrome OS-i seade taustapildi alla ja kasutab seda sisselogimiskuval, kui ükski kasutaja pole veel seadmesse sisse loginud. Kui kasutaja sisse logib, rakendatakse kasutaja taustapildi reeglit.
 
       Kui seadme taustapildi reegel on määramata, otsustab kasutaja taustapildi reegel, mida näidata, kui kasutaja taustapildi reegel on määratud.</translation>
 <translation id="3965339130942650562">Ajalõpp kuni jõudeolekus kasutaja väljalogimiseni</translation>
@@ -2425,7 +2424,12 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui reeglit ei määrata, siis võidakse automaatselt importida või kasutajalt küsida, kas ta soovib importida.</translation>
 <translation id="5423197884968724595">Android WebView' piirangu nimi:</translation>
 <translation id="5424147596523390018">Kõigi värvirežiimide lubamine</translation>
-<translation id="5427879482805712214">Selle reegliga saab seadistada avatari pildi, mis kujutab kasutajat sisselogimisekraanil. Reegli seadistamiseks määrake URL, kust <ph name="PRODUCT_OS_NAME" /> saab alla laadida avatari pildi, ja krüptograafiline räsiväärtus, mida kasutatakse allalaadimise terviklikkuse kinnitamiseks. Pilt peab olema JPEG-vormingus, mille maksimaalne maht on 512 kB. URL peab olema juurdepääsetav autentimiseta.
+<translation id="5427003226809696696">See reegel juhib seda, kas seanssi alguses tuleks brauseriaken käivitada.
+
+          Kui see reegel on lubatud, ei käivitata brauseriakent.
+
+          Kui see reegel on keelatud või see pole määratud, lubatakse brauseriaknal käivituda. Pange tähele, et brauseriaken ei pruugi käivituda muude reeglite või käsureamärgistuste tõttu.</translation>
+<translation id="5427879482805712214">Selle reegliga saab seadistada avatari pildi, mis kujutab kasutajat sisselogimiskuval. Reegli seadistamiseks määrake URL, kust <ph name="PRODUCT_OS_NAME" /> saab alla laadida avatari pildi, ja krüptograafiline räsiväärtus, mida kasutatakse allalaadimise terviklikkuse kinnitamiseks. Pilt peab olema JPEG-vormingus, mille maksimaalne maht on 512 kB. URL peab olema juurdepääsetav autentimiseta.
 
       Avatari pilt laaditakse alla ja talletatakse vahemällu. URL-i või räsi muutumisel laaditakse pilt uuesti alla.
 
@@ -2433,8 +2437,8 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Kui määrate selle reegli, ei saa kasutajad seda muuta ega alistada.
 
-      Kui jätate reegli määramata, saab kasutaja valida avatari pildi, mis neid sisselogimiskuval kujutab.</translation>
-<translation id="5432219358069697932">See reegel võimaldab seadistada taustapildi, mis kuvatakse kasutaja töölaual ja sisselogimisekraani taustal. Reegli seadistamiseks määrake URL, millelt <ph name="PRODUCT_OS_NAME" /> saab alla laadida taustapildi ja allalaaditava sisu terviklikkuse kinnitamiseks kasutatava krüptograafilise räsi. Pilt peab olema JPEG-vormingus ja faili maht ei tohi olla suurem kui 16 MB. URL peab olema juurdepääsetav autentimiseta.
+      Kui jätate reegli määramata, saab kasutaja valida avatari pildi, mis teda sisselogimiskuval kujutab.</translation>
+<translation id="5432219358069697932">See reegel võimaldab seadistada taustapildi, mis kuvatakse kasutaja töölaual ja sisselogimiskuva taustal. Reegli seadistamiseks määrake URL, millelt <ph name="PRODUCT_OS_NAME" /> saab alla laadida taustapildi ja allalaaditava sisu terviklikkuse kinnitamiseks kasutatava krüptograafilise räsi. Pilt peab olema JPEG-vormingus ja faili maht ei tohi olla suurem kui 16 MB. URL peab olema juurdepääsetav autentimiseta.
 
       Taustapilt laaditakse alla ja talletatakse vahemällu. URL-i või räsi muutumisel laaditakse pilt uuesti alla.
 
@@ -2442,7 +2446,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Kui määrate selle reegli, ei saa kasutajad seda muuta ega alistada.
 
-      Kui jätate reegli määramata, saab kasutaja valida töölaual ja sisselogimisekraani taustal kuvatava pildi.</translation>
+      Kui jätate reegli määramata, saab kasutaja valida töölaual ja sisselogimiskuva taustal kuvatava pildi.</translation>
 <translation id="5437733496511628148">Kui lubate seade, keelatakse veebilehtede elementidel, mis ei pärine brauseri aadressiribal olevast domeenist, küpsiste määramine.
 
       Kui keelate seade, saavad veebilehe elemendid, mis ei pärine brauseri aadressiribal olevast domeenist, küpsiseid määrata ja takistavad kasutajatel seade muutmist.
@@ -2915,7 +2919,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="6310223829319187614">Domeeni nime automaatse täitmise lubamine kasutaja sisselogimise ajal</translation>
 <translation id="6315673513957120120">Chrome kuvab hoiatuslehe, kui kasutajad liiguvad SSL-i vigadega saitidele. Vaikimisi või siis, kui selle reegli väärtuseks määratakse Tõene, lubatakse kasutajatel nendelt hoiatuslehtedelt kliki abil edasi liikuda.
       Kui selle reegli väärtuseks määratakse Väär, ei lubata kasutajatel hoiatuslehelt kliki abil edasi liikuda.</translation>
-<translation id="6319198883324703402">Määrake uue kasutaja taaskäivitamise märguande aeg</translation>
+<translation id="6319198883324703402">Määrake esimene taaskäivitusmärguande aeg</translation>
 <translation id="6352543686437322588">Seadme kohalik konto, kuhu pärast viivitust automaatselt sisse logida.
 
       Kui reegel on määratud, logitakse määratud seanssi automaatselt sisse, kui sisselogimiskuval on möödunud teatud ajavahemik, mille jooksul kasutaja ei tee ühtki toimingut. Seadme kohalik konto peab olema seadistatud (vt |DeviceLocalAccounts|).
@@ -3237,7 +3241,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Kui jätate selle reegli määramata, siis võib importimine toimuda automaatselt või kasutajalt võidakse küsida, kas ta soovib importida.</translation>
 <translation id="7003746348783715221">Rakenduse <ph name="PRODUCT_NAME" /> eelistused</translation>
-<translation id="7006788746334555276">Sisu seaded</translation>
 <translation id="7007671350884342624">Seadistab kataloogi, mida <ph name="PRODUCT_NAME" /> kasutab kasutajaandmete salvestamiseks.
 
       Kui määrate reegli, kasutab <ph name="PRODUCT_NAME" /> sisestatud kataloogi sellest olenemata, kas kasutaja on määranud märgistuse „--user-data-dir”. Andmekao ja muude ootamatute vigade vältimiseks ei tohi reegli jaoks valida ketta juurkataloogi ega muudel eesmärkidel kasutatavat kataloogi, kuna <ph name="PRODUCT_NAME" /> haldab selle kataloogi sisu.
@@ -3606,8 +3609,6 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
 <translation id="7617319494457709698">Reegel määrab lubatud laiendused, mis kasutavad kaugatesteerimisel API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> funktsiooni <ph name="CHALLENGE_USER_KEY_FUNCTION" />. API kasutamiseks tuleb laiendused sellesse loendisse lisada.
 
           Kui laiendust loendis pole või loendit pole koostatud, siis kõne API-le ebaõnnestub ja saate vastuseks veakoodi.</translation>
-<translation id="7618907117929117943">Võimaldab naasta ja jääda sihtversioonile, kui operatsioonisüsteemi versioon on sihtversioonist uuem ja seadme tasemel seadistuse (sh võrgumandaat) saab tagasimineku kaudu üle viia, jättes pärast tagasiminekut vahele ka OOBE. Vältige tagasiminekut või tühistage tagasiminek juhul, kui see ei ole võimalik (kuna sihtversioon ei toeta andmete taastamist või muudatus ei ole tagasiühilduv).
-          Seda toetatakse operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> 70. ja uuemates versioonides. Vanemate klientide puhul tähendab väärtus, et tagasiminek on keelatud.</translation>
 <translation id="7620869951155758729">See reegel määrab seadistuse, mida kasutatakse vanema pääsukoodi loomiseks ja kinnitamiseks.
 
       Reeglit |current_config| kasutatakse alati pääsukoodi loomiseks ja seda peaks pääsukoodi valideerimiseks kasutama vaid siis, kui seda ei saa valideerida reegliga |future_config|.
@@ -3881,7 +3882,7 @@ Vaadake ka reegleid „CookiesAllowedForUrls” ja „CookiesSessionOnlyForUrls�
       Kui reegel on määratud väärtusele Tõene, siis kasutab seade 24-tunnist kellaaja vormingut. Kui reegel on määratud väärtusele Väär, siis kasutab seade 12-tunnist kellaaja vormingut.
 
       Kui reegel on määramata, siis kasutab seade vaikevalikuna 24-tunnist kellaaja vormingut.</translation>
-<translation id="8113421140338762630">Lubab teil määrata ajavahemiku (millisekundites), mis jääb märguande, et seade <ph name="PRODUCT_OS_NAME" /> tuleb ooteloleva värskenduse rakendamiseks taaskäivitada, ja reegli <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> määratud ajavahemiku lõppemise vahele.
+<translation id="8113421140338762630">Lubab teil määrata ajavahemiku (millisekundites), mis jääb esimese märguande, et seade <ph name="PRODUCT_OS_NAME" /> tuleb ooteloleva värskenduse rakendamiseks taaskäivitada, ja reegli <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> määratud ajavahemiku lõppemise vahele.
 
       Kui see pole määratud, kasutatakse seadmete <ph name="PRODUCT_OS_NAME" /> jaoks vaikeperioodi 86 400 000 millisekundit (üks päev).</translation>
 <translation id="8114382167597081590">Ära jõusta YouTube'is piiratud režiimi</translation>
@@ -3941,6 +3942,7 @@ Vaadake ka reegleid „CookiesAllowedForUrls” ja „CookiesSessionOnlyForUrls�
 
       Kui seda reeglit ei määrata, siis ei ole reegli „URLBlacklist” mustas loendis erandeid.</translation>
 <translation id="8176035528522326671">Luba ettevõtte kasutajal olla ainult peamine mitme profiiliga kasutaja (vaikekäitumine ettevõtte hallatud kasutajate puhul)</translation>
+<translation id="8183108371184777472">Brauseriakna käivitamise blokeerimine</translation>
 <translation id="8214600119442850823">Seadistatakse paroolihaldur.</translation>
 <translation id="8217516105848565518">Selle reegli tugi on katkestatud. Kasutage selle asemel reeglit RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">TLS-is RC4 šifreerimiskomplektide lubamine</translation>
@@ -4157,11 +4159,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8661297125441579970">Keelab andmete üleviimise ja ARC.</translation>
 <translation id="8672321184841719703">Automaatse värskendamise sihtversioon</translation>
 <translation id="867410340948518937">U2F (universaalne teine tegur)</translation>
-<translation id="8682611302223077049">Võimaldab määrata ajavahemiku (millisekundites), mille jooksul antakse kasutajatele teada, et ootel oleva värskenduse rakendamiseks tuleb <ph name="PRODUCT_NAME" /> või operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seade taaskäivitada.
-
-      Selle vahemiku jooksul teavitatakse kasutajat värskendusest korduvalt. Operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete puhul kuvatakse värskenduse tuvastamisel taaskäivituse märguanne süsteemisalves. Brauseri <ph name="PRODUCT_NAME" /> puhul rakenduse menüü muutub, kui kolmandik ajavahemikust on möödunud, ja näitab, et rakendus on vaja taaskäivitada. Märguanne muudab esimest korda värvi siis, kui möödunud on kaks kolmandikku ajavahemikust, ja teist korda ajavahemiku lõpus. Reegliga <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> lubatud lisamärguanded järgivad sama ajakava.
-
-      Kui reegel on määramata, kasutatakse vaikeperioodi, mis on operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete puhul 345 600 000 millisekundit (neli päeva) ja brauseri <ph name="PRODUCT_NAME" /> puhul 604 800 000 millisekundit (üks nädal).</translation>
 <translation id="8685024486845674965">Paroolikaitse hoiatuse käivitab parooli uuesti kasutamine</translation>
 <translation id="8693243869659262736">Kasuta sisseehitatud DNS-i klienti</translation>
 <translation id="8698286761337647563">Määrab, mitu päeva enne teavitatakse SAML-i kasutajaid parooli aegumisest</translation>
@@ -4179,7 +4176,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
           Reegel on valikuline. Kui jätate selle määramata, siis ei saa märksõnaga otsingupakkujat aktiveerida.
 
          Reegel kehtib vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
-<translation id="8731693562790917685">Sisu seaded võimaldavad teil määrata, kuidas kindlat tüüpi sisu (näiteks küpsiseid, kujutisi või JavaScripti) käsitletakse.</translation>
 <translation id="8733448613597049197">Lubab teenuse <ph name="PRODUCT_NAME" /> ohutu sirvimise laiendatud aruandluse ega luba kasutajatel seadet muuta.
 
       Laiendatud aruandlus saadab Google'i serveritesse teatud süsteemiteavet ja lehe sisu, et aidata tuvastada ohtlikke rakendusi ja saite.
@@ -4260,6 +4256,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui selle seade lubate või keelate, ei saa kasutajad seda brauseris <ph name="PRODUCT_NAME" /> muuta ega alistada.
 
       Kui see seade jäetakse seadistamata, saab kasutaja otsustada, kas funktsiooni kasutada või mitte.</translation>
+<translation id="8871974300055371298">Sisu seaded</translation>
 <translation id="8876188741456358123">Alistab printimisel vaikimisi kasutatava dupleksrežiimi. Reeglit eiratakse, kui režiim ei ole saadaval.</translation>
 <translation id="8882006618241293596">Blokeeri nendel saitidel pistikprogramm <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="8906768759089290519">Luba külastajarežiim</translation>
@@ -4382,8 +4379,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="9084985621503260744">Määrake, kas videotoimingud mõjutavad toitehaldust</translation>
 <translation id="9088433379343318874">Jälgitava kasutaja sisupakkuja lubamine</translation>
 <translation id="9088444059179765143">Ajavööndi automaatse tuvastamise viisi seadistamine</translation>
-<translation id="9094064873808699479">Võimaldab naasta ja jääda sihtversioonile, kui operatsioonisüsteemi versioon on sihtversioonist uuem. Proovige võimaluse korral seadme tasemel seadistus (sh võrgumandaat) tagasiminekuprotsessi kaudu üle viia, ent tehke seejuures täielik Powerwash, isegi kui andmete taastamine ei ole võimalik (kuna sihtversioon ei toeta andmete taastamist või muudatus ei ole tagasiühilduv).
-          Seda toetatakse alates operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> 70. versioonist. Vanemate klientide puhul tähendab väärtus, et tagasiminek on keelatud.</translation>
 <translation id="9096086085182305205">Autentimisserveri lubatud nimekiri</translation>
 <translation id="9105265795073104888">Androidi rakendustele muudetakse kättesaadavaks ainult puhverserveri seadistuse valikute alamkomplekt. Androidi rakenduste jaoks on puhverserveri kasutamine vabatahtlik. Te ei saa puhverserveri kasutamist sundida.</translation>
 <translation id="9106865192244721694">Reegli WebUSB lubamine nendel saitidel</translation>

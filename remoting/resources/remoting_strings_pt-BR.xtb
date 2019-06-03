@@ -126,8 +126,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="3695446226812920698">Saiba como</translation>
 <translation id="3718805989288361841">Ocorreu um erro nas configurações de políticas da Área de trabalho remota do Google Chrome. Entre em contato com o administrador do sistema para receber ajuda.</translation>
 <translation id="3776024066357219166">Sua sessão na Área de trabalho remota do Google Chrome foi encerrada.</translation>
-<translation id="3846148461359626420">• Melhor experiência de movimentação e zoom no iPhone X.
-• Melhorias de estabilidade e correção de bugs.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirme sua conta e seu PIN abaixo para permitir acesso pela Área de trabalho remota do Google Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -214,7 +212,7 @@ Para ativar essa funcionalidade, selecione "<ph name="BUTTON_NAME" />" para exib
 <translation id="5397086374758643919">Desinstalador do host da Área de trabalho remota do Google Chrome</translation>
 <translation id="5419185025274123272">Não foi possível redefinir o aplicativo. Você ainda pode enviar um relatório de bug.</translation>
 <translation id="5419418238395129586">Última conexão: <ph name="DATE" /></translation>
-<translation id="544077782045763683">O host foi encerrado.</translation>
+<translation id="544077782045763683">O host foi desligado.</translation>
 <translation id="5510035215749041527">Desconectar agora</translation>
 <translation id="5593560073513909978">O serviço está temporariamente indisponível. Tente novamente mais tarde.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -339,8 +337,6 @@ Para ativar essa funcionalidade, selecione "<ph name="BUTTON_NAME" />" para exib
 <translation id="8525306231823319788">Tela cheia</translation>
 <translation id="8548209692293300397">Você fez login anteriormente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Para acessar seus computadores nessa conta, <ph name="LINK_BEGIN" />faça login no Google Chrome<ph name="LINK_END" /> usando essa conta e reinstale a Área de trabalho remota do Google Chrome.</translation>
 <translation id="8642984861538780905">Regular</translation>
-<translation id="8705151241155781642">• Compatibilidade com o Android 9.0 Pie adicionada.
-• Compatibilidade com redimensionamento da resolução da área de trabalho remota para correspondência com a tela do seu dispositivo Android.</translation>
 <translation id="8712909229180978490">Não consigo ver meus arquivos salvos on-line no Google Drive.</translation>
 <translation id="8743328882720071828">Quer permitir que <ph name="CLIENT_USERNAME" /> veja e controle seu computador?</translation>
 <translation id="8747048596626351634">Ocorreu uma falha na sessão ou não foi possível iniciá-la. Se ~/.chrome-remote-desktop-session existe no computador remoto, verifique se ele inicia um processo de execução longa em primeiro plano, como um ambiente de área de trabalho ou um gerenciador de janelas.</translation>

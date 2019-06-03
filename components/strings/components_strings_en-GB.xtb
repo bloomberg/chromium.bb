@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Accepted cards</translation>
 <translation id="1032854598605920125">Rotate clockwise</translation>
 <translation id="1035334672863811645">sign in to Chrome</translation>
+<translation id="1036348656032585052">Turn off</translation>
 <translation id="1038842779957582377">unknown name</translation>
 <translation id="1039626062703039346">Chrome can help you protect your Google account and change your password. This will notify Google about this site.</translation>
 <translation id="1050038467049342496">Close other apps</translation>
@@ -175,6 +176,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Cardholder Name</translation>
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
+<translation id="1822370876374026111">To pay faster next time, add your card and billing address to your Google account and to this device.</translation>
 <translation id="1822540298136254167">Websites that you visit and time spent on them</translation>
 <translation id="1826516787628120939">Checking</translation>
 <translation id="1834321415901700177">This site contains harmful programs</translation>
@@ -187,6 +189,7 @@
 <translation id="187918866476621466">Open startup pages</translation>
 <translation id="1883255238294161206">Collapse list</translation>
 <translation id="1898423065542865115">Filtering</translation>
+<translation id="1914326953223720820">Unzip Service</translation>
 <translation id="1916770123977586577">To apply your updated settings to this site, reload this page</translation>
 <translation id="1919345977826869612">Ads</translation>
 <translation id="1919367280705858090">Get help with a specific error message</translation>
@@ -267,7 +270,6 @@
 <translation id="2360873523816792727">To use your cards on all devices, turn on sync.</translation>
 <translation id="2365563543831475020">Crash report captured on <ph name="CRASH_TIME" /> was not uploaded</translation>
 <translation id="2367567093518048410">Level</translation>
-<translation id="2378238891085281592">You’ve gone private</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Enterprise default</translation>
 <translation id="2386255080630008482">Server's certificate has been revoked</translation>
@@ -392,6 +394,7 @@
 <translation id="3037605927509011580">Aw, Snap!</translation>
 <translation id="3041612393474885105">Certificate Information</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
+<translation id="3061707000357573562">Patch Service</translation>
 <translation id="3064966200440839136">Leaving incognito mode to pay via an external application. Continue?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{None}=1{1 password}other{# passwords}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -585,6 +588,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> more item}other{<ph name="ITEM_COUNT" /> more items}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">To pay faster next time, add your card and billing address to your Google account.</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Checking firewall and antivirus configurations<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -723,7 +727,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> says</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">No results</translation>
-<translation id="4945672369594656571">Controls how your device and account data is handled. Google processes your device and account data exclusively under the direction of your device and account manager and solely for the purposes specified by your device and account manager.</translation>
 <translation id="4950898438188848926">Tab switch button, press Enter to switch to the open tab, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -737,7 +740,6 @@
 <translation id="5017554619425969104">Text that you copied</translation>
 <translation id="5018422839182700155">Can't open this page</translation>
 <translation id="5019198164206649151">Backing store in bad state</translation>
-<translation id="5020154601324912079">Controls how your device data is handled. Google processes your device data exclusively under the direction of your device manager and solely for the purposes specified by your device manager.</translation>
 <translation id="5023310440958281426">Check your administrator's policies</translation>
 <translation id="5029568752722684782">Clear copy</translation>
 <translation id="503069730517007720">A root certificate for '<ph name="SOFTWARE_NAME" />' is required but isn’t installed. Your IT administrator should look at configuration instructions for '<ph name="SOFTWARE_NAME" />' to fix this problem. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -910,6 +912,7 @@
 <translation id="5921639886840618607">Save card to Google Account?</translation>
 <translation id="5922853866070715753">Almost finished</translation>
 <translation id="5932224571077948991">Site shows intrusive or misleading ads</translation>
+<translation id="5939847200023027600">PDF Compositor Service</translation>
 <translation id="5946937721014915347">Opening <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Yes, add</translation>
 <translation id="5951495562196540101">Can't enrol with consumer account (packaged licence available).</translation>
@@ -1000,6 +1003,7 @@
 <translation id="6451458296329894277">Confirm Form Resubmission</translation>
 <translation id="6465306955648956876">Manage passwords...</translation>
 <translation id="647261751007945333">Device policies</translation>
+<translation id="6476284679642588870">Manage payment methods</translation>
 <translation id="6477321094435799029">Chrome detected unusual code on this page and blocked it to protect your personal information (for example, passwords, phone numbers and credit cards).</translation>
 <translation id="6489534406876378309">Start uploading crashes</translation>
 <translation id="6499038740797743453">Reset password?</translation>
@@ -1072,7 +1076,6 @@
 <translation id="6948701128805548767">To see pickup methods and requirements, select an address</translation>
 <translation id="6949872517221025916">Reset password</translation>
 <translation id="6950684638814147129">Error while parsing JSON value: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Open page in a new Private tab</translation>
 <translation id="6957887021205513506">The server's certificate appears to be a forgery.</translation>
 <translation id="6964255747740675745">Network configuration failed to be parsed (invalid JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -1082,7 +1085,6 @@
 <translation id="6973932557599545801">Sorry I'm not able to help. Please continue on your own.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Mute (default)</translation>
-<translation id="6984479912851154518">Leaving private mode to pay via an external application. Continue?</translation>
 <translation id="6989763994942163495">+ Show advanced settings</translation>
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Always translate <ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1137,6 +1139,7 @@ Additional details:
 <translation id="7298195798382681320">Recommended</translation>
 <translation id="7300012071106347854">Cobalt blue</translation>
 <translation id="7302712225291570345">'<ph name="TEXT" />'</translation>
+<translation id="7303701124147721189">To pay faster next time, store your card and billing address in your Google account and on this device.</translation>
 <translation id="7309308571273880165">Crash report captured on <ph name="CRASH_TIME" /> (upload requested by user, not yet uploaded)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" /> warnings</translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1167,7 +1170,6 @@ Additional details:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Manage passwords...</translation>
 <translation id="7419106976560586862">Profile Path</translation>
-<translation id="7424427397225027541">Controls how your account data is handled. Google processes your account data exclusively under the direction of your account manager and solely for the purposes specified by your account manager.</translation>
 <translation id="7437289804838430631">Add contact info</translation>
 <translation id="7440140511386898319">Explore while offline</translation>
 <translation id="7441627299479586546">Wrong policy subject</translation>
@@ -1307,6 +1309,7 @@ Additional details:
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">The invalid cards have been removed</translation>
 <translation id="8103161714697287722">Payment Method</translation>
+<translation id="8105368624971345109">Turn Off</translation>
 <translation id="8118489163946903409">Payment method</translation>
 <translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />' wasn’t installed properly on your computer or network. Ask your IT administrator to resolve this issue.</translation>
 <translation id="8131740175452115882">Confirm</translation>
@@ -1365,6 +1368,7 @@ Additional details:
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433057134996913067">This will sign you out of most websites.</translation>
 <translation id="8437238597147034694">&amp;Undo move</translation>
+<translation id="8440508849222143646">To pay faster next time, store your card and billing address in your Google account.</translation>
 <translation id="8461694314515752532">Encrypt synced data with your own sync passphrase</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 credit card}other{# credit cards}}</translation>
 <translation id="8473863474539038330">Addresses and more</translation>
@@ -1470,6 +1474,7 @@ Additional details:
 <translation id="9128870381267983090">Connect to network</translation>
 <translation id="9137013805542155359">Show original</translation>
 <translation id="9137248913990643158">Please start and sign in to Chrome before using this app.</translation>
+<translation id="9141013498910525015">Manage addresses</translation>
 <translation id="9148088599418889305">Choose delivery method</translation>
 <translation id="9148507642005240123">&amp;Undo edit</translation>
 <translation id="9154194610265714752">Updated</translation>

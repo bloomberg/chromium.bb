@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">Влязохте в Chromium!</translation>
 <translation id="1502360822835740515">Задаване на Chromium като браузър по подразбиране</translation>
 <translation id="151962892725702025">Chromium OS не можа да синхронизира данните ви, защото тази функция не е налице за домейна ви.</translation>
+<translation id="1524282610922162960">Споделяне на раздел в Chromium</translation>
 <translation id="1585657529869845941">Кликнете върху бутона <ph name="BEGIN_BOLD" />Превключване въпреки това<ph name="END_BOLD" />, ако се показва</translation>
 <translation id="1668054258064581266">За да влезе в сила премахването на профила ви от Chromium, може да се наложи да презаредите отворените си раздели.</translation>
 <translation id="1688750314291223739">Настройте синхронизирането, за да запазите онлайн персонализираните функции на браузъра си и да осъществявате достъп до тях от Chromium на всеки компютър.</translation>
@@ -124,6 +125,7 @@
 <translation id="5479196819031988440">Chromium OS не може да отвори тази страница.</translation>
 <translation id="5480860683791598150">Chromium се нуждае от достъп до данните за местоположението ви, за да ги сподели с този сайт</translation>
 <translation id="549669000822060376">Моля, изчакайте, докато Chromium инсталира най-новите системни актуализации.</translation>
+<translation id="5623402015214259806">{0,plural, =0{Налице е актуализация за Chromium}=1{Налице е актуализация за Chromium}other{Налице е актуализация за Chromium от # дни}}</translation>
 <translation id="5631814766731275228">Име и снимка за Chromium</translation>
 <translation id="5634636535844844681">За Chromium се изисква Windows 7 или по-нова версия.</translation>
 <translation id="5680901439334282664">Влезте в Chromium</translation>
@@ -147,6 +149,7 @@
 <translation id="6120345080069858279">Chromium ще запази тази парола в профила ви в Google. Няма да се налага да я помните.</translation>
 <translation id="6129621093834146363">Chromium блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен.</translation>
 <translation id="6212496753309875659">На този компютър вече има по-скорошна версия на Chromium. Ако софтуерът не работи, моля, деинсталирайте Chromium и опитайте отново.</translation>
+<translation id="6219195342503754812">{0,plural, =0{Chromium ще се стартира отново сега}=1{Chromium ще се стартира отново след 1 секунда}other{Chromium ще се стартира отново след # секунди}}</translation>
 <translation id="6248213926982192922">Нека Chromium да е браузърът по подразбиране</translation>
 <translation id="6268381023930128611">Искате ли да излезете от Chromium?</translation>
 <translation id="6295779123002464101">Chromium блокира „<ph name="FILE_NAME" />“, тъй като файлът може да е опасен.</translation>
@@ -199,6 +202,7 @@
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium се нуждае от разрешение за достъп до камерата ви за този сайт</translation>
 <translation id="7483335560992089831">Не може да се инсталира същата версия на Chromium, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
+<translation id="753534427205733210">{0,plural, =1{Chromium ще се стартира отново след 1 минута}other{Chromium ще се стартира отново след # минути}}</translation>
 <translation id="7549178288319965365">Всичко за Chromium OS</translation>
 <translation id="7561906087460245826">Да се изчистят и данните от Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium използва камерата и микрофона ви.</translation>
@@ -226,6 +230,7 @@
 <translation id="8330519371938183845">Влезте в профила си, за да синхронизирате и персонализирате Chromium на всичките си устройства</translation>
 <translation id="8340674089072921962">По-рано <ph name="USER_EMAIL_ADDRESS" /> използва Chromium</translation>
 <translation id="8375950122744241554">От версия 70 на Chromium функцията за контролирани потребителски профили вече няма да е налична.</translation>
+<translation id="8417404458978023919">{0,plural, =1{Повторно стартиране на Chromium до 1 ден}other{Повторно стартиране на Chromium до # дни}}</translation>
 <translation id="8453117565092476964">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете отново Chromium.</translation>
 <translation id="8493179195440786826">Chromium не е актуален</translation>
 <translation id="85843667276690461">Получаване на помощ за използването на Chromium</translation>
@@ -252,6 +257,7 @@
 <translation id="9025992965467895364">Тази страница използва твърде много памет, така че Chromium я постави на пауза.</translation>
 <translation id="9036189287518468038">Стартов панел с приложения за Chromium</translation>
 <translation id="9089354809943900324">Chromium не е актуален</translation>
+<translation id="9093206154853821181">{0,plural, =1{Chromium ще се стартира отново след 1 час}other{Chromium ще се стартира отново след # часа}}</translation>
 <translation id="91086099826398415">Отваряне на връзката в нов &amp;раздел на Chromium</translation>
 <translation id="911206726377975832">Да се изтрият ли и данните от сърфирането?</translation>
 <translation id="9158494823179993217">Системният ви администратор е конфигурирал Chromium да отваря алтернативен браузър за достъп до <ph name="TARGET_URL_HOSTNAME" />.</translation>

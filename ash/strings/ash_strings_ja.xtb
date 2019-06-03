@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">メニューを折りたたむ</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1419738280318246476">通知に関する操作を行うには、デバイスのロックを解除してください</translation>
+<translation id="1426410128494586442">はい</translation>
 <translation id="1455242230282523554">言語設定を表示</translation>
 <translation id="1467432559032391204">左</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />（HDMI / DP）</translation>
@@ -49,7 +50,7 @@
 <translation id="1608626060424371292">このユーザーを削除</translation>
 <translation id="1654477262762802994">音声検索を開始</translation>
 <translation id="1658406695958299976">パスワードをまだ確認できません。注: パスワードを最近変更した場合、新しいパスワードはログアウトした後に適用されます。こちらでは古いパスワードを使用してください。</translation>
-<translation id="1677472565718498478">あと <ph name="TIME" /></translation>
+<translation id="1677472565718498478">残り <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 アドレス: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">認識されませんでした</translation>
 <translation id="1746730358044914197">入力方法は管理者によって設定されています。</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> が後でログインすることは引き続き可能です。</translation>
 <translation id="3321628682574733415">保護者のコードが間違っています</translation>
 <translation id="332587331255250389">バッテリーを交換してください</translation>
-<translation id="3335825575923019462">自動クリックを無効にしてもよろしいですか？</translation>
 <translation id="3351879221545518001">現在、画面をキャストしています。</translation>
 <translation id="3364721542077212959">タッチペン ツール</translation>
 <translation id="3368922792935385530">接続済み</translation>
@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
 <translation id="3513798432020909783">このアカウントは <ph name="MANAGER_EMAIL" /> により管理されています</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
+<translation id="3576141592585647168">タイムゾーンを変更</translation>
 <translation id="3595596368722241419">バッテリー残量: フル</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
 <translation id="3621202678540785336">入力</translation>
@@ -226,7 +227,6 @@
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4379531060876907730">タッチペン ツール</translation>
 <translation id="4389184120735010762">拡大鏡（ドッキング）のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
-<translation id="4394049700291259645">無効にする</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4450893287417543264">次回から表示しない</translation>
@@ -354,6 +354,7 @@
 <translation id="6559976592393364813">管理者に問い合わせる</translation>
 <translation id="6585808820553845416">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。</translation>
 <translation id="6627638273713273709">検索+Shift+K</translation>
+<translation id="6637729079642709226">時間を変更</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">パスワード</translation>
 <translation id="6665545700722362599">ウェブサイト、アプリ、拡張機能に対して、位置情報サービスまたはデバイスのマイクやカメラなどの機能の使用を許可する</translation>
@@ -449,7 +450,7 @@
 <translation id="8054466585765276473">バッテリーの残り時間を計算しています。</translation>
 <translation id="8061464966246066292">ハイコントラスト</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> への画面のキャストを停止する</translation>
-<translation id="8113423164597455979">すべてのアプリでオン</translation>
+<translation id="8113423164597455979">オン: 全アプリ</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> に接続しました</translation>
 <translation id="813913629614996137">初期化しています...</translation>
 <translation id="8142441511840089262">ダブルクリック</translation>
@@ -484,7 +485,6 @@
 <translation id="8649101189709089199">選択して読み上げ</translation>
 <translation id="8652175077544655965">設定を閉じます</translation>
 <translation id="8653151467777939995">通知設定を表示します。通知はオンです</translation>
-<translation id="8664483332071009680">自動クリックを無効にしますか？</translation>
 <translation id="8664753092453405566">ネットワーク リストを表示します。<ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">低電力の充電器に接続されています</translation>
@@ -510,6 +510,7 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> を使用しています</translation>
 <translation id="899350903320462459">通知に関する操作を行うには、<ph name="LOGIN_ID" /> でデバイスのロックを解除してください</translation>
 <translation id="8995603266996330174">管理ドメイン: <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">ファミリー リンクの保護者のアクセスコードを入力してください。</translation>
 <translation id="9029474291399787231">Adobe Flash Player のアップデートが利用可能</translation>
 <translation id="9056839673611986238">デバイスはロールバックされます</translation>
 <translation id="9070640332319875144">アシスタントの設定</translation>

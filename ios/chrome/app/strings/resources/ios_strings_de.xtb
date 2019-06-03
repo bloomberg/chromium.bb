@@ -39,7 +39,7 @@
 <translation id="1407135791313364759">Alle öffnen</translation>
 <translation id="1430915738399379752">Drucken</translation>
 <translation id="1436290164580597469">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten.</translation>
-<translation id="1449835205994625556">Passwort verbergen</translation>
+<translation id="1449835205994625556">Passwort ausblenden</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> Elemente</translation>
 <translation id="1491277525950327607">Zum Aktivieren bzw. Deaktivieren doppeltippen</translation>
 <translation id="152234381334907219">Nie speichern für...</translation>
@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Passwort vorschlagen…</translation>
 <translation id="1870148520156231997">Passwort einblenden</translation>
 <translation id="1876721852596493031">Nutzungsdaten senden</translation>
-<translation id="1886928167269928266">Für gesamten Zeitraum</translation>
 <translation id="1911619930368729126">Auf Google Drive hochladen</translation>
+<translation id="1923342640370224680">Letzte Stunde</translation>
 <translation id="1941314575388338491">Tippen Sie zum Kopieren hier doppelt.</translation>
 <translation id="1952172573699511566">Sofern dies möglich ist, wird Text auf Websites in Ihrer bevorzugten Sprache angezeigt.</translation>
 <translation id="1952728750904661634">Mit verwaltetem Konto anmelden</translation>
 <translation id="1974060860693918893">Erweitert</translation>
 <translation id="1989112275319619282">Durchsuchen</translation>
 <translation id="2015722694326466240">Um die Passwörter zu sehen, müssen Sie zuerst einen Passcode auf Ihrem Gerät einrichten.</translation>
-<translation id="2068952045031577364">Für die letzte Woche</translation>
 <translation id="2074131957428911366">Sie können in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> auswählen, was Sie synchronisieren möchten.</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="209018056901015185">Desktop-Version</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Passwörter</translation>
 <translation id="2969979262385602596">Anmeldefehler, bitte später erneut versuchen</translation>
 <translation id="2989805286512600854">In neuem Tab öffnen</translation>
-<translation id="3024255823539804759">Für den letzten Tag</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
 <translation id="3112556859945124369">Markieren…</translation>
 <translation id="3157684681743766797">Alle markieren…</translation>
@@ -262,7 +260,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4807020197310989387">1 ungelesener Artikel in Leseliste.</translation>
 <translation id="4818522717893377262">Sprache hinzufügen…</translation>
 <translation id="481968316161811770">Cookies, Websitedaten</translation>
-<translation id="4833786495304741580">Nutzungsstatistiken und Absturzberichte automatisch an Google senden.</translation>
+<translation id="4833786495304741580">Nutzungsstatistiken und Absturzberichte werden automatisch an Google gesendet.</translation>
 <translation id="4840495572919996524">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="4854345657858711387">Passcode einrichten</translation>
 <translation id="4860895144060829044">Anrufen</translation>
@@ -381,7 +379,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6464071786529933911">In neuem Inkognito-Tab öffnen</translation>
 <translation id="6476800141292307438">Die Seite wird in die Sprache <ph name="LANGUAGE" /> übersetzt. Optionen sind unten auf dem Bildschirm verfügbar.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen gelöscht</translation>
-<translation id="6541915733953096570">Für die letzte Stunde</translation>
 <translation id="6610002944194042868">Übersetzungsoptionen</translation>
 <translation id="6642362222295953972">Zu vorhandenem Tab wechseln</translation>
 <translation id="6643016212128521049">Löschen</translation>
@@ -502,6 +499,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8532105204136943229">Ablaufjahr</translation>
 <translation id="8534481786647257214">Google+ Beitrag gepostet</translation>
 <translation id="8548878600947630424">Auf Seite suchen...</translation>
+<translation id="8583866649835978847"><ph name="TITLE" /> an eines Ihrer Geräte senden.</translation>
 <translation id="8605219856220328675">Tab schließen.</translation>
 <translation id="8620640915598389714">Bearbeiten</translation>
 <translation id="8636825310635137004">Aktivieren Sie die Synchronisierung, um Tabs von Ihren anderen Geräten abzurufen.</translation>

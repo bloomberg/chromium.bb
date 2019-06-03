@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">Sweden</translation>
 <translation id="4693155481716051732">Susyi</translation>
 <translation id="4694604912444486114">Monyet</translation>
+<translation id="4697043402264950621">Senarai fail diisih mengikut <ph name="COLUMN_NAME" /> dalam tertib menaik.</translation>
 <translation id="4711094779914110278">Bahasa Turki</translation>
 <translation id="4713544552769165154">Fail ini direka bentuk untuk komputer menggunakan perisian Macintosh. Ini tidak serasi dengan peranti anda yang menjalankan OS Chrome. Sila cari <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> bagi apl ganti yang sesuai. <ph name="BEGIN_LINK_HELP" />Ketahui Lebih Lanjut<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> foto disandarkan</translation>
@@ -413,7 +414,7 @@
 <translation id="5818003990515275822">Bahasa Korea</translation>
 <translation id="5819442873484330149">Hangul 3 Set (Akhir)</translation>
 <translation id="5833610766403489739">Fail ini ada di tempat lain. Sila semak tetapan lokasi muat turun anda, kemudian cuba lagi.</translation>
-<translation id="5838051104334203064">Aplikasi Gedung Play tidak boleh mengakses peranti in</translation>
+<translation id="5838051104334203064">Aplikasi Gedung Play tidak boleh mengakses peranti ini</translation>
 <translation id="5838825566232597749">US Workman international</translation>
 <translation id="5850516540536751549">Jenis fail ini tidak disokong. Sila lawati<ph name="BEGIN_LINK" />Gedung Web Chrome<ph name="END_LINK" /> untuk mendapatkan apl yang boleh membuka jenis fail ini.
     <ph name="BEGIN_LINK_HELP" />Ketahui Lebih Lanjut<ph name="END_LINK_HELP" /></translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">Tetingkap baharu</translation>
 <translation id="7348749398828259943">Papan kekunci US Workman international</translation>
 <translation id="7359359531237882347">Menyalin <ph name="NUMBER_OF_ITEMS" /> item...</translation>
+<translation id="7375951387215729722">Senarai fail diisih mengikut <ph name="COLUMN_NAME" /> dalam tertib menurun.</translation>
 <translation id="7389722738210761877">Papan kekunci bahasa Thai (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Papan kekunci bahasa Hindi (Fonetik)</translation>
 <translation id="7417453074306512035">Papan kekunci bahasa Ethiopia</translation>

@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Kartu yang diterima</translation>
 <translation id="1032854598605920125">Putar searah jarum jam</translation>
 <translation id="1035334672863811645">login ke Chrome</translation>
+<translation id="1036348656032585052">Matikan</translation>
 <translation id="1038842779957582377">nama tidak diketahui</translation>
 <translation id="1039626062703039346">Chrome dapat membantu Anda melindungi Akun Google dan mengubah sandi Anda. Hal ini akan memberi tahu Google tentang situs ini.</translation>
 <translation id="1050038467049342496">Tutup aplikasi lain</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Nama Pemegang Kartu</translation>
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak valid</translation>
+<translation id="1822370876374026111">Agar selanjutnya dapat melakukan pembayaran lebih cepat, tambahkan kartu dan alamat penagihan ke Akun Google Anda dan perangkat ini.</translation>
 <translation id="1822540298136254167">Situs yang Anda kunjungi dan waktu yang dihabiskan untuk mengunjunginya</translation>
 <translation id="1826516787628120939">Memeriksa</translation>
 <translation id="1834321415901700177">Situs ini berisi program yang berbahaya</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">Buka halaman awal</translation>
 <translation id="1883255238294161206">Ciutkan daftar</translation>
 <translation id="1898423065542865115">Pemfilteran</translation>
+<translation id="1914326953223720820">Layanan Unzip</translation>
 <translation id="1916770123977586577">Untuk menerapkan setelan yang telah diupdate pada situs ini, muat ulang halaman ini</translation>
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1919367280705858090">Mendapatkan bantuan terkait pesan error tertentu</translation>
@@ -249,7 +252,7 @@
 <translation id="2230458221926704099">Perbaiki sambungan menggunakan <ph name="BEGIN_LINK" />aplikasi diagnosis<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Kirim sekarang</translation>
 <translation id="225207911366869382">Nilai ini sudah usang untuk kebijakan ini.</translation>
-<translation id="2257315177824333709">Maaf, saat ini kartu Anda tidak dapat disimpan</translation>
+<translation id="2257315177824333709">Maaf, saat ini informasi kartu Anda tidak dapat disimpan</translation>
 <translation id="2262243747453050782">Kesalahan HTTP</translation>
 <translation id="2263079731045660823">Perbarui info IsiOtomatis kartu kredit di setelan Chrome</translation>
 <translation id="2270484714375784793">Nomor telepon</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">Untuk menggunakan kartu di semua perangkat Anda, aktifkan sinkronisasi.</translation>
 <translation id="2365563543831475020">Laporan kerusakan yang diambil pada pukul <ph name="CRASH_TIME" /> tidak diupload</translation>
 <translation id="2367567093518048410">Tingkat</translation>
-<translation id="2378238891085281592">Anda telah masuk mode rahasia</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Default perusahaan</translation>
 <translation id="2386255080630008482">Sertifikat server telah dicabut.</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">Yah!</translation>
 <translation id="3041612393474885105">Informasi Sertifikat</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
+<translation id="3061707000357573562">Layanan Patch</translation>
 <translation id="3064966200440839136">Keluar dari mode penyamaran untuk membayar melalui aplikasi eksternal. Lanjutkan?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Tidak ada}=1{1 sandi}other{# sandi}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -592,6 +595,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> item lainnya}other{<ph name="ITEM_COUNT" /> item lainnya}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Agar selanjutnya dapat melakukan pembayaran lebih cepat, tambahkan kartu dan alamat penagihan ke Akun Google Anda dan perangkat ini.</translation>
 <translation id="4196861286325780578">&amp;Ulangi pemindahan</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Periksa konfigurasi antivirus dan firewall<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -730,7 +734,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> menyatakan</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Tidak ada hasil</translation>
-<translation id="4945672369594656571">Mengontrol penanganan data perangkat dan akun Anda. Google memproses data perangkat dan akun Anda secara eksklusif sesuai arahan pengelola perangkat dan akun Anda dan semata-mata untuk keperluan yang ditetapkan oleh pengelola perangkat dan akun Anda.</translation>
 <translation id="4950898438188848926">Tombol beralih tab, tekan Enter untuk beralih ke tab yang terbuka, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Tindakan</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -744,7 +747,6 @@
 <translation id="5017554619425969104">Teks yang Anda salin</translation>
 <translation id="5018422839182700155">Tidak dapat membuka halaman ini</translation>
 <translation id="5019198164206649151">Penyimpanan cadangan dalam kondisi buruk</translation>
-<translation id="5020154601324912079">Mengontrol penanganan data perangkat Anda. Google memproses data perangkat Anda secara eksklusif sesuai arahan pengelola perangkat dan semata-mata untuk keperluan yang ditentukan oleh pengelola perangkat Anda.</translation>
 <translation id="5023310440958281426">Periksa kebijakan administrator Anda</translation>
 <translation id="5029568752722684782">Hapus salinan</translation>
 <translation id="503069730517007720">Sertifikat root wajib untuk "<ph name="SOFTWARE_NAME" />" tidak diinstal. Administrator IT Anda harus melihat petunjuk konfigurasi untuk "<ph name="SOFTWARE_NAME" />" agar dapat menyelesaikan masalah ini. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -917,6 +919,7 @@
 <translation id="5921639886840618607">Simpan kartu ke Akun Google?</translation>
 <translation id="5922853866070715753">Hampir selesai</translation>
 <translation id="5932224571077948991">Situs menampilkan iklan yang mengganggu atau menyesatkan</translation>
+<translation id="5939847200023027600">Layanan Penggabung PDF</translation>
 <translation id="5946937721014915347">Membuka <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Ya, tambahkan</translation>
 <translation id="5951495562196540101">Tidak dapat mendaftar dengan akun konsumen (tersedia paket lisensi).</translation>
@@ -1007,6 +1010,7 @@
 <translation id="6451458296329894277">Konfirmasikan Pengiriman Ulang Formulir</translation>
 <translation id="6465306955648956876">Kelola sandi...</translation>
 <translation id="647261751007945333">Kebijakan perangkat</translation>
+<translation id="6476284679642588870">Kelola metode pembayaran</translation>
 <translation id="6477321094435799029">Chrome mendeteksi kode yang tidak biasa pada halaman ini dan memblokirnya untuk melindungi informasi pribadi Anda (misalnya, sandi, nomor telepon, dan kartu kredit).</translation>
 <translation id="6489534406876378309">Mulai mengupload kerusakan</translation>
 <translation id="6499038740797743453">Setel ulang sandi?</translation>
@@ -1079,7 +1083,6 @@
 <translation id="6948701128805548767">Untuk melihat persyaratan dan metode pengambilan, pilih alamat</translation>
 <translation id="6949872517221025916">Setel Ulang Sandi</translation>
 <translation id="6950684638814147129">Error saat mengurai nilai JSON: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Buka halaman dalam tab Rahasia baru</translation>
 <translation id="6957887021205513506">Sertifikat server tampaknya palsu.</translation>
 <translation id="6964255747740675745">Konfigurasi jaringan gagal diuraikan (JSON tidak valid).</translation>
 <translation id="6965382102122355670">Oke</translation>
@@ -1089,7 +1092,6 @@
 <translation id="6973932557599545801">Maaf, saya tidak bisa membantu lagi. Silakan lanjutkan sendiri.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Matikan (default)</translation>
-<translation id="6984479912851154518">Keluar dari mode rahasia untuk membayar melalui aplikasi eksternal. Lanjutkan?</translation>
 <translation id="6989763994942163495">Tampilkan setelan lanjutan...</translation>
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Selalu terjemahkan bahasa <ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1145,6 +1147,7 @@
 <translation id="7298195798382681320">Direkomendasikan</translation>
 <translation id="7300012071106347854">Biru Kobalt</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
+<translation id="7303701124147721189">Agar selanjutnya dapat melakukan pembayaran lebih cepat, tambahkan kartu dan alamat penagihan ke Akun Google Anda dan perangkat ini.</translation>
 <translation id="7309308571273880165">Laporan kerusakan diambil pada <ph name="CRASH_TIME" /> (upload yang diminta pengguna, belum diupload)</translation>
 <translation id="7313965965371928911">Peringatan <ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1175,7 +1178,6 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Kelola Sandi...</translation>
 <translation id="7419106976560586862">Jalur Profil</translation>
-<translation id="7424427397225027541">Mengontrol penanganan data akun Anda. Google memproses data akun Anda secara eksklusif sesuai arahan pengelola akun Anda dan semata-mata untuk keperluan yang ditetapkan oleh pengelola akun Anda.</translation>
 <translation id="7437289804838430631">Tambahkan Info Kontak</translation>
 <translation id="7440140511386898319">Jelajahi saat offline</translation>
 <translation id="7441627299479586546">Subjek kebijakan salah</translation>
@@ -1315,6 +1317,7 @@
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Kartu yang tidak valid telah dihapus</translation>
 <translation id="8103161714697287722">Metode Pembayaran</translation>
+<translation id="8105368624971345109">Nonaktifkan</translation>
 <translation id="8118489163946903409">Metode pembayaran</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" tidak diinstal dengan benar di komputer atau jaringan Anda. Mintalah administrator IT untuk menyelesaikan masalah ini.</translation>
 <translation id="8131740175452115882">Konfirmasi</translation>
@@ -1371,6 +1374,7 @@
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8433057134996913067">Tindakan ini akan mengeluarkan Anda dari sebagian besar situs web.</translation>
 <translation id="8437238597147034694">&amp;Urungkan pemindahan</translation>
+<translation id="8440508849222143646">Agar selanjutnya dapat melakukan pembayaran lebih cepat, tambahkan kartu dan alamat penagihan ke Akun Google Anda dan perangkat ini.</translation>
 <translation id="8461694314515752532">Enkripsikan data yang disinkronkan dengan frasa sandi sinkronisasi Anda sendiri</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kartu kredit}other{# kartu kredit}}</translation>
 <translation id="8473863474539038330">Alamat dan lain-lain</translation>
@@ -1476,6 +1480,7 @@
 <translation id="9128870381267983090">Sambungkan ke jaringan</translation>
 <translation id="9137013805542155359">Perlihatkan halaman asli</translation>
 <translation id="9137248913990643158">Mulai dan login ke Chrome sebelum menggunakan aplikasi ini.</translation>
+<translation id="9141013498910525015">Kelola alamat</translation>
 <translation id="9148088599418889305">Pilih Metode Pengiriman</translation>
 <translation id="9148507642005240123">&amp;Urungkan pengeditan</translation>
 <translation id="9154194610265714752">Diperbarui</translation>

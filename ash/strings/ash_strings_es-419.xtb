@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Contraer menú</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1419738280318246476">Desbloquea el dispositivo para llevar a cabo una acción con las notificaciones</translation>
+<translation id="1426410128494586442">Sí</translation>
 <translation id="1455242230282523554">Mostrar la configuración de idioma</translation>
 <translation id="1467432559032391204">Izquierda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> podrá acceder más tarde.</translation>
 <translation id="3321628682574733415">Código parental incorrecto</translation>
 <translation id="332587331255250389">Reemplaza la batería</translation>
-<translation id="3335825575923019462">¿Confirmas que quieres inhabilitar los clics automáticos?</translation>
 <translation id="3351879221545518001">Estás transmitiendo la pantalla.</translation>
 <translation id="3364721542077212959">Herramientas de pluma stylus</translation>
 <translation id="3368922792935385530">Conectado</translation>
@@ -228,7 +228,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4378551569595875038">Conectando…</translation>
 <translation id="4379531060876907730">Estas son las herramientas de la pluma stylus</translation>
 <translation id="4389184120735010762">Presionaste la combinación de teclas para activar la lupa con vista acoplada. ¿Quieres activarla?</translation>
-<translation id="4394049700291259645">Inhabilitar</translation>
 <translation id="4421231901400348175">Se está compartiendo el control de la pantalla con <ph name="HELPER_NAME" /> mediante la Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4450893287417543264">No volver a mostrar</translation>
@@ -297,18 +296,18 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" después de sincronizar tu configuración</translation>
 <translation id="5691772641933328258">No se reconoció la huella digital</translation>
 <translation id="5710450975648804523">"No interrumpir" activado</translation>
-<translation id="574392208103952083">Mediano</translation>
+<translation id="574392208103952083">Media</translation>
 <translation id="5744083938413354016">Función tocar y arrastrar</translation>
 <translation id="5750765938512549687">Se activó la conexión Bluetooth</translation>
 <translation id="5777841717266010279">¿Dejar de compartir la pantalla?</translation>
 <translation id="57838592816432529">Silenciar</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Detener <ph name="ROUTE_TITLE" /> en <ph name="RECEIVER_NAME" /></translation>
-<translation id="5860033963881614850">Desactivado</translation>
+<translation id="5860033963881614850">No</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Mayúscula + Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
-<translation id="5916664084637901428">Activada</translation>
+<translation id="5916664084637901428">Sí</translation>
 <translation id="5947494881799873997">Revertir</translation>
 <translation id="595202126637698455">Seguimiento de rendimiento habilitado</translation>
 <translation id="5957083217255311415">Los datos móviles están desactivados.</translation>
@@ -486,7 +485,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8649101189709089199">Seleccionar para pronunciar</translation>
 <translation id="8652175077544655965">Cerrar configuración</translation>
 <translation id="8653151467777939995">Mostrar la configuración de las notificaciones: Están activadas</translation>
-<translation id="8664483332071009680">¿Quieres inhabilitar los clics automáticos?</translation>
 <translation id="8664753092453405566">Mostrar la lista de redes: <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>

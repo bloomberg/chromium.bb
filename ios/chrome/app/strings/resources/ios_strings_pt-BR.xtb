@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Sugerir senha…</translation>
 <translation id="1870148520156231997">Mostrar senha</translation>
 <translation id="1876721852596493031">Enviar dados de uso</translation>
-<translation id="1886928167269928266">Desde o começo</translation>
 <translation id="1911619930368729126">Enviar para o Google Drive</translation>
+<translation id="1923342640370224680">Última hora</translation>
 <translation id="1941314575388338491">Toque duas vezes para copiar.</translation>
 <translation id="1952172573699511566">Os sites exibirão textos no idioma de sua preferência, quando for possível.</translation>
 <translation id="1952728750904661634">Fazer login com uma conta gerenciada</translation>
 <translation id="1974060860693918893">Avançado</translation>
 <translation id="1989112275319619282">Procurar</translation>
 <translation id="2015722694326466240">Para ver as senhas, defina uma senha no dispositivo primeiro.</translation>
-<translation id="2068952045031577364">Da última semana</translation>
 <translation id="2074131957428911366">Nas <ph name="BEGIN_LINK" />configurações<ph name="END_LINK" />, é possível escolher a qualquer momento o que é sincronizado.</translation>
 <translation id="2079545284768500474">Desfazer</translation>
 <translation id="209018056901015185">Versão para computador</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Senhas</translation>
 <translation id="2969979262385602596">Falha durante o login. Tente novamente mais tarde.</translation>
 <translation id="2989805286512600854">Abrir em uma nova guia</translation>
-<translation id="3024255823539804759">Do dia anterior</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
 <translation id="3112556859945124369">Marcar...</translation>
 <translation id="3157684681743766797">Marcar tudo...</translation>
@@ -381,7 +379,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6464071786529933911">Abrir em nova guia anônima</translation>
 <translation id="6476800141292307438">Tradução da página para <ph name="LANGUAGE" />. Opções disponíveis na parte inferior da tela.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens excluídos</translation>
-<translation id="6541915733953096570">Da última hora</translation>
 <translation id="6610002944194042868">Opções de tradução</translation>
 <translation id="6642362222295953972">Alternar para guia existente</translation>
 <translation id="6643016212128521049">Limpar</translation>
@@ -502,6 +499,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8532105204136943229">Ano de vencimento</translation>
 <translation id="8534481786647257214">A postagem no Google+ foi concluída.</translation>
 <translation id="8548878600947630424">Encontrar na página...</translation>
+<translation id="8583866649835978847">Enviar <ph name="TITLE" /> para um dos seus dispositivos.</translation>
 <translation id="8605219856220328675">Fechar guia.</translation>
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8636825310635137004">Para ver suas guias abertas em outros dispositivos, ative a sincronização.</translation>

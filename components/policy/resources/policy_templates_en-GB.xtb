@@ -327,7 +327,6 @@
 <translation id="1474273443907024088">Disable TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Enable third-party software injection blocking</translation>
-<translation id="1504431521196476721">Remote Attestation</translation>
 <translation id="1507382822467487898">
           Configures which MAC (media access control) address will be used when a dock is connected to the device.
 
@@ -2415,6 +2414,11 @@
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5423197884968724595">Android WebView restriction name:</translation>
 <translation id="5424147596523390018">Allow all colour modes</translation>
+<translation id="5427003226809696696">This policy controls whether the browser window should be launched at the start of the session.
+
+          If this policy is enabled, the browser window will not be launched.
+
+          If this policy is disabled or not set, the browser window is allowed to launch. Note that the browser window might not launch due to other policies or command-line flags.</translation>
 <translation id="5427879482805712214">This policy allows you to configure the avatar image representing the user on the login screen. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME" /> can download the avatar image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format and its size must not exceed 512 KB. The URL must be accessible without any authentication.
 
       The avatar image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
@@ -3221,7 +3225,6 @@
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> preferences</translation>
-<translation id="7006788746334555276">Content Settings</translation>
 <translation id="7007671350884342624">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing user data.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified the '--user-data-dir' flag or not. To avoid data loss or other unexpected errors this policy should not be set to a volume's root directory or to a directory used for other purposes, because <ph name="PRODUCT_NAME" /> manages its contents.
@@ -3590,8 +3593,6 @@
 <translation id="7617319494457709698">This policy specifies the allowed extensions to use the <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> function <ph name="CHALLENGE_USER_KEY_FUNCTION" /> for remote attestation. Extensions must be added to this list to use the API.
 
           If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.</translation>
-<translation id="7618907117929117943">Roll back and stay on target version if OS version is newer than target and it's possible to carry over device-level configuration (including network credentials) through rollback, also skipping OOBE after rollback. Don't do or abort rollback if that's not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
-          Supported on <ph name="PRODUCT_OS_NAME" /> version 70 and higher. For older clients, this value means that rollback is disabled.</translation>
 <translation id="7620869951155758729">This policy specifies configuration that is used to generate and verify Parent Access Code.
 
       |current_config| is always used for generating access code and should be used for validating access code only when it cannot be validated with |future_config|.
@@ -3925,6 +3926,7 @@
 
       If this policy is not set there will be no exceptions to the blacklist from the 'URLBlacklist' policy.</translation>
 <translation id="8176035528522326671">Allow enterprise user to be primary multi-profile user only (Default behaviour for enterprise-managed users)</translation>
+<translation id="8183108371184777472">Suppress launching of browser window</translation>
 <translation id="8214600119442850823">Configures the password manager.</translation>
 <translation id="8217516105848565518">This policy is deprecated. Please use RemoteAccessHostDomainList instead.</translation>
 <translation id="8244171102276095471">Enable RC4 cipher suites in TLS</translation>
@@ -4139,11 +4141,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8661297125441579970">Disallow data migration and ARC.</translation>
 <translation id="8672321184841719703">Target Auto-Update Version</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
-<translation id="8682611302223077049">Allows you to set the time period, in milliseconds, over which users are notified that <ph name="PRODUCT_NAME" /> must be relaunched or that a <ph name="PRODUCT_OS_NAME" /> device must be restarted to apply a pending update.
-
-      Over this time period, the user will be repeatedly informed of the need for an update. For <ph name="PRODUCT_OS_NAME" /> devices, a restart notification appears in the system tray when an upgrade is detected. For <ph name="PRODUCT_NAME" /> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes colour once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy follow this same schedule.
-
-      If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME" /> devices and 604800000 milliseconds (one week) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Password protection warning is triggered by password reuse</translation>
 <translation id="8693243869659262736">Use built-in DNS client</translation>
 <translation id="8698286761337647563">How many days in advance to notify SAML users when their password is due to expire</translation>
@@ -4161,7 +4158,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
           This policy is optional. If not set, no keyword will activate the search provider.
 
           This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
-<translation id="8731693562790917685">Content Settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.</translation>
 <translation id="8733448613597049197">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing Extended Reporting and prevents users from changing this setting.
 
       Extended Reporting sends some system information and page content to Google servers to help detect dangerous apps and sites.
@@ -4242,6 +4238,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
 
       If this setting is left not set the user can decide to use this function or not.</translation>
+<translation id="8871974300055371298">Content Settings ...</translation>
 <translation id="8876188741456358123">Overrides default printing duplex mode. If the mode is unavailable, this policy is ignored.</translation>
 <translation id="8882006618241293596">Block the <ph name="FLASH_PLUGIN_NAME" /> plug-in on these sites</translation>
 <translation id="8906768759089290519">Enable guest mode</translation>
@@ -4365,8 +4362,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9084985621503260744">Specify whether video activity affects power management</translation>
 <translation id="9088433379343318874">Enable the supervised user content provider</translation>
 <translation id="9088444059179765143">Configure the automatic timezone detection method</translation>
-<translation id="9094064873808699479">Roll back and stay on target version if OS version is newer than target. Try to carry over device-level configuration (including network credentials) through the rollback process, if possible, but do the rollback with full powerwash even if restoring the data is not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
-          Supported on <ph name="PRODUCT_OS_NAME" /> version 70 and higher. For older clients, this value means that rollback is disabled.</translation>
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="9105265795073104888">Only a subset of proxy configuration options are made available to Android apps. Android apps may voluntarily choose to use the proxy. You cannot force them to use a proxy.</translation>
 <translation id="9106865192244721694">Allow WebUSB on these sites</translation>

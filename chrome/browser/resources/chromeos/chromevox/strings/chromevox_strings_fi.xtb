@@ -603,7 +603,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="5184944171021383281">Ei seuraavia lomakkeen kenttiä.</translation>
 <translation id="5189244881767082992">Rivi</translation>
 <translation id="5203930734796605961"><ph name="KEY" /> on jo määritetty komennolle.</translation>
-<translation id="5205493599117157272"><ph name="TYPE" />luettelo.</translation>
+<translation id="5205493599117157272"><ph name="TYPE" />lista.</translation>
 <translation id="520883772648104506">Ei seuraavia valintanappeja.</translation>
 <translation id="5263034204789987535">Popkorni</translation>
 <translation id="5263344797180442561">h2</translation>
@@ -674,7 +674,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="5681643281275621376">kuv.</translation>
 <translation id="5682113568322255809">Maamerkki</translation>
 <translation id="5683155931978483559">Edellinen valintaruutu</translation>
-<translation id="5684277895745049190">Luettelo</translation>
+<translation id="5684277895745049190">Lista</translation>
 <translation id="5700650669149824506">Ei edellisiä tason 4 otsikoita.</translation>
 <translation id="5703716265115423771">Vähennä äänenvoimakkuutta.</translation>
 <translation id="5709192780268610569">Ei pitkää kuvausta</translation>

@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Cartões admitidos</translation>
 <translation id="1032854598605920125">Rodar para a direita</translation>
 <translation id="1035334672863811645">inicie sessão no Chrome</translation>
+<translation id="1036348656032585052">Desativar</translation>
 <translation id="1038842779957582377">nome desconhecido</translation>
 <translation id="1039626062703039346">O Chrome pode ajudá-lo a proteger a sua Conta Google e a alterar a palavra-passe. Isto notifica a Google sobre este site.</translation>
 <translation id="1050038467049342496">Fechar outras aplicações</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Nome do titular do cartão</translation>
 <translation id="1821930232296380041">Pedido ou parâmetros do pedido inválidos</translation>
+<translation id="1822370876374026111">Para pagar mais rapidamente da próxima vez, adicione o cartão e o endereço de faturação à sua Conta Google e a este dispositivo.</translation>
 <translation id="1822540298136254167">Os Websites que visita e o tempo despendido nos mesmos.</translation>
 <translation id="1826516787628120939">A verificar</translation>
 <translation id="1834321415901700177">Este site contém programas prejudiciais</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">Abrir páginas iniciais</translation>
 <translation id="1883255238294161206">Fechar lista</translation>
 <translation id="1898423065542865115">Filtragem</translation>
+<translation id="1914326953223720820">Serviço de descompressão de ficheiros</translation>
 <translation id="1916770123977586577">Para aplicar as definições atualizadas a este site, atualize esta página</translation>
 <translation id="1919345977826869612">Anúncios</translation>
 <translation id="1919367280705858090">Obter ajuda relativamente a uma mensagem de erro específica</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">Para utilizar os seus cartões em todos os dispositivos, ative a sincronização.</translation>
 <translation id="2365563543831475020">O relatório de falhas capturado <ph name="CRASH_TIME" /> não foi carregado</translation>
 <translation id="2367567093518048410">Nível</translation>
-<translation id="2378238891085281592">Entrou no modo privado</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Predefinição empresarial</translation>
 <translation id="2386255080630008482">O certificado do servidor foi revogado.</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">Ah, bolas!!</translation>
 <translation id="3041612393474885105">Informações do certificado</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
+<translation id="3061707000357573562">Serviço de patch</translation>
 <translation id="3064966200440839136">Está a sair do modo de navegação anónima para pagar através de uma aplicação externa. Pretende continuar?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Nenhuma}=1{1 palavra-passe}other{# palavras-passe}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -593,6 +596,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Mais <ph name="ITEM_COUNT" /> item}other{Mais <ph name="ITEM_COUNT" /> itens}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Para pagar mais rapidamente da próxima vez, adicione o cartão e o endereço de faturação à sua Conta Google.</translation>
 <translation id="4196861286325780578">&amp;Refazer movimentação</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Verificar as configurações da firewall e de antivírus<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -731,7 +735,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> diz</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
-<translation id="4945672369594656571">Controla de que forma são processados os dados do seu dispositivo e da sua conta. A Google processa os dados do seu dispositivo e da sua conta exclusivamente de acordo com as orientações do gestor do dispositivo e da conta e apenas para os fins especificados pelo mesmo.</translation>
 <translation id="4950898438188848926">Botão de mudança de separador: prima Enter para mudar para o separador aberto, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Ações</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -745,7 +748,6 @@
 <translation id="5017554619425969104">Texto que copiou</translation>
 <translation id="5018422839182700155">Não é possível abrir esta página</translation>
 <translation id="5019198164206649151">Armazenamento de segurança em mau estado</translation>
-<translation id="5020154601324912079">Controla de que forma são processados os dados do seu dispositivo. A Google processa os dados do seu dispositivo exclusivamente de acordo com as orientações do gestor do dispositivo e apenas para os fins especificados pelo mesmo.</translation>
 <translation id="5023310440958281426">Verificar as políticas do gestor</translation>
 <translation id="5029568752722684782">Limpar cópia</translation>
 <translation id="503069730517007720">É necessário um certificado de raiz para o "<ph name="SOFTWARE_NAME" />", que não está instalado. O gestor de TI deve consultar as instruções de configuração do "<ph name="SOFTWARE_NAME" />" para corrigir este problema. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -918,6 +920,7 @@
 <translation id="5921639886840618607">Pretende guardar o cartão na Conta Google?</translation>
 <translation id="5922853866070715753">Estamos quase a terminar</translation>
 <translation id="5932224571077948991">O site apresenta anúncios intrusivos ou enganadores.</translation>
+<translation id="5939847200023027600">Serviço do compositor de PDFs</translation>
 <translation id="5946937721014915347">A abrir <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Sim, adicionar</translation>
 <translation id="5951495562196540101">Não é possível inscrever-se com conta de consumidor (licença incluída disponível).</translation>
@@ -1008,6 +1011,7 @@
 <translation id="6451458296329894277">Confirmar nova submissão de formulário</translation>
 <translation id="6465306955648956876">Gerir palavras-passe…</translation>
 <translation id="647261751007945333">Políticas do dispositivo</translation>
+<translation id="6476284679642588870">Gerir métodos de pagamento</translation>
 <translation id="6477321094435799029">O Chrome detetou código estranho nesta página e bloqueou-a para proteger as suas informações pessoais (por exemplo, palavras-passe, números de telefone e números de cartões de crédito).</translation>
 <translation id="6489534406876378309">Começar a carregar falhas</translation>
 <translation id="6499038740797743453">Pretende repor a palavra-passe?</translation>
@@ -1080,7 +1084,6 @@
 <translation id="6948701128805548767">Para ver os métodos de recolha e os requisitos, selecione um endereço</translation>
 <translation id="6949872517221025916">Repor palavra-passe</translation>
 <translation id="6950684638814147129">Erro ao analisar o valor JSON: <ph name="ERROR" />.</translation>
-<translation id="6957624206566198865">Abrir a página num novo separador privado</translation>
 <translation id="6957887021205513506">O certificado do servidor parece ser uma falsificação.</translation>
 <translation id="6964255747740675745">Ocorreu uma falha ao analisar a configuração de rede (JSON inválido).</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -1090,7 +1093,6 @@
 <translation id="6973932557599545801">Lamento, mas não posso ajudar. Continue por sua conta.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Desativar som (predefinição)</translation>
-<translation id="6984479912851154518">Está a sair do modo privado para pagar através de uma aplicação externa. Pretende continuar?</translation>
 <translation id="6989763994942163495">Mostrar definições avançadas...</translation>
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Traduzir sempre do <ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1148,6 +1150,7 @@ Detalhes adicionais:
 <translation id="7298195798382681320">Recomendado</translation>
 <translation id="7300012071106347854">Azul cobalto</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
+<translation id="7303701124147721189">Para pagar mais rapidamente da próxima vez, armazene o cartão e o endereço de faturação na sua Conta Google e neste dispositivo.</translation>
 <translation id="7309308571273880165">Relatório de falhas capturado no(a) <ph name="CRASH_TIME" /> (carregamento pedido pelo utilizador, ainda não carregado)</translation>
 <translation id="7313965965371928911">Avisos da <ph name="BEGIN_LINK" />Navegação segura<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1177,7 +1180,6 @@ Detalhes adicionais:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Gerir palavras-passe…</translation>
 <translation id="7419106976560586862">Caminho do Perfil</translation>
-<translation id="7424427397225027541">Controla de que forma são processados os dados da sua conta. A Google processa os dados da sua conta exclusivamente de acordo com as orientações do gestor da conta e apenas para os fins especificados pelo mesmo.</translation>
 <translation id="7437289804838430631">Adicionar informações de contacto</translation>
 <translation id="7440140511386898319">Explorar offline</translation>
 <translation id="7441627299479586546">Assunto da política incorreto</translation>
@@ -1317,6 +1319,7 @@ Detalhes adicionais:
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Os cartões inválidos foram removidos.</translation>
 <translation id="8103161714697287722">Método de pagamento</translation>
+<translation id="8105368624971345109">Desativar</translation>
 <translation id="8118489163946903409">Método de pagamento</translation>
 <translation id="8127301229239896662">O "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede. Peça ao gestor de TI que resolva este problema.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
@@ -1375,6 +1378,7 @@ Detalhes adicionais:
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Sites.</translation>
 <translation id="8437238597147034694">&amp;Anular movimentação</translation>
+<translation id="8440508849222143646">Para pagar mais rapidamente da próxima vez, armazene o cartão e o endereço de faturação na sua Conta Google.</translation>
 <translation id="8461694314515752532">Encriptar dados sincronizados com a sua própria frase de acesso de sincronização</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 cartão de crédito}other{# cartões de crédito}}</translation>
 <translation id="8473863474539038330">Endereços e mais</translation>
@@ -1481,6 +1485,7 @@ Detalhes adicionais:
 <translation id="9128870381267983090">Ligar à rede</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137248913990643158">Comece e inicie sessão no Chrome antes de utilizar esta aplicação.</translation>
+<translation id="9141013498910525015">Gerir endereços</translation>
 <translation id="9148088599418889305">Escolher método de envio</translation>
 <translation id="9148507642005240123">&amp;Anular edição</translation>
 <translation id="9154194610265714752">Atualizado</translation>

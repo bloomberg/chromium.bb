@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Tarjetas aceptadas</translation>
 <translation id="1032854598605920125">Girar a la derecha</translation>
 <translation id="1035334672863811645">acceder a Chrome</translation>
+<translation id="1036348656032585052">Desactivar</translation>
 <translation id="1038842779957582377">nombre desconocido</translation>
 <translation id="1039626062703039346">Chrome puede ayudarte a proteger tu Cuenta de Google y cambiar tu contraseña. Esta acción enviará una notificación a Google sobre este sitio.</translation>
 <translation id="1050038467049342496">Cierra las demás apps.</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Nombre del titular de la tarjeta</translation>
 <translation id="1821930232296380041">Solicitud o parámetros de solicitud no válidos</translation>
+<translation id="1822370876374026111">Para realizar pagos de forma más rápida la próxima vez, agrega tu tarjeta y dirección de facturación a la Cuenta de Google y este dispositivo.</translation>
 <translation id="1822540298136254167">Los sitios web que visitas y el tiempo que pasas en ellos</translation>
 <translation id="1826516787628120939">Comprobando</translation>
 <translation id="1834321415901700177">Este sitio contiene programas dañinos</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">Abrir páginas de inicio</translation>
 <translation id="1883255238294161206">Ocultar lista</translation>
 <translation id="1898423065542865115">Filtrado</translation>
+<translation id="1914326953223720820">Servicio de descompresión</translation>
 <translation id="1916770123977586577">Para aplicar la configuración actualizada en este sitio, vuelve a cargar la página</translation>
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1919367280705858090">Cómo obtener ayuda con un mensaje de error específico</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">Para usar tus tarjetas en todos los dispositivos, activa la sincronización.</translation>
 <translation id="2365563543831475020">El informe de fallos que se capturó a las <ph name="CRASH_TIME" /> no se cargó</translation>
 <translation id="2367567093518048410">Nivel</translation>
-<translation id="2378238891085281592">Estás en modo privado</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Empresa (predeterminada)</translation>
 <translation id="2386255080630008482">Se ha revocado el certificado del servidor.</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">¡Oh, no!</translation>
 <translation id="3041612393474885105">Información sobre el certificado</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
+<translation id="3061707000357573562">Aplicar parche al servicio</translation>
 <translation id="3064966200440839136">Saldrás del modo de navegación incógnito para pagar mediante una aplicación externa. ¿Deseas continuar?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Ninguna}=1{1 contraseña}other{# contraseñas}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -594,6 +597,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> elemento más}other{<ph name="ITEM_COUNT" /> elementos más}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Para realizar pagos de forma más rápida la próxima vez, agrega tu tarjeta y dirección de facturación a tu Cuenta de Google.</translation>
 <translation id="4196861286325780578">&amp;Rehacer Mover</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar las configuraciones de firewall y antivirus<ph name="END_LINK" />.</translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -732,7 +736,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> dice</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Sin resultados</translation>
-<translation id="4945672369594656571">Controla la forma en que se administran los datos de tu cuenta y dispositivo. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu cuenta y dispositivo, y solo para los fines que se indiquen.</translation>
 <translation id="4950898438188848926">Botón para cambiar de pestaña; presiona Intro para cambiar a la pestaña abierta <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -746,7 +749,6 @@
 <translation id="5017554619425969104">Texto que copiaste</translation>
 <translation id="5018422839182700155">No se puede abrir esta página</translation>
 <translation id="5019198164206649151">La memoria auxiliar se encuentra en mal estado.</translation>
-<translation id="5020154601324912079">Controla la forma en que se administran los datos de tu dispositivo. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu dispositivo y solo para los fines que se indiquen.</translation>
 <translation id="5023310440958281426">Revisa las políticas del administrador.</translation>
 <translation id="5029568752722684782">Borrar la copia</translation>
 <translation id="503069730517007720">Se requiere un certificado raíz para "<ph name="SOFTWARE_NAME" />", pero no está instalado. Tu administrador de IT debe analizar las instrucciones de configuración de "<ph name="SOFTWARE_NAME" />" para corregir este problema. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -904,7 +906,7 @@
 <translation id="5813119285467412249">&amp;Rehacer Agregar</translation>
 <translation id="583281660410589416">Desconocido</translation>
 <translation id="5838278095973806738">No debes ingresar información confidencial en este sitio (p. ej., contraseñas o tarjetas de crédito), ya que los atacantes podrían robarla.</translation>
-<translation id="5860033963881614850">Desactivado</translation>
+<translation id="5860033963881614850">No</translation>
 <translation id="5863847714970149516">Es posible que la página siguiente intente cobrarte dinero</translation>
 <translation id="5865951947699094510">Puedes cambiar la configuración de tu cuenta de forma remota.</translation>
 <translation id="5866257070973731571">Agregar número de teléfono</translation>
@@ -914,11 +916,12 @@
 <translation id="5893752035575986141">Se aceptan tarjetas de crédito.</translation>
 <translation id="5901630391730855834">Amarillo</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
-<translation id="5916664084637901428">Activada</translation>
+<translation id="5916664084637901428">Sí</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">¿Quieres guardar la tarjeta en la Cuenta de Google?</translation>
 <translation id="5922853866070715753">Ya casi</translation>
 <translation id="5932224571077948991">El sitio muestra anuncios intrusivos o engañosos</translation>
+<translation id="5939847200023027600">Servicio para crear PDF</translation>
 <translation id="5946937721014915347">Abriendo <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Sí, agregar</translation>
 <translation id="5951495562196540101">No se puede realizar la inscripción con una cuenta personal (licencia de paquete disponible).</translation>
@@ -1009,6 +1012,7 @@
 <translation id="6451458296329894277">Confirmar reenvío del formulario</translation>
 <translation id="6465306955648956876">Administrar contraseñas…</translation>
 <translation id="647261751007945333">Políticas de dispositivos</translation>
+<translation id="6476284679642588870">Administrar las formas de pago</translation>
 <translation id="6477321094435799029">Chrome detectó código inusual en esta página y la bloqueó para proteger tu información personal (p. ej.: contraseñas, números de teléfono y tarjetas de crédito).</translation>
 <translation id="6489534406876378309">Comenzar a cargar fallos</translation>
 <translation id="6499038740797743453">¿Deseas restablecer la contraseña?</translation>
@@ -1081,7 +1085,6 @@
 <translation id="6948701128805548767">Para ver los requisitos y métodos de retiro, selecciona una dirección</translation>
 <translation id="6949872517221025916">Restablecer contraseña</translation>
 <translation id="6950684638814147129">Error al analizar el valor JSON: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Abre la página en una nueva pestaña del modo privado</translation>
 <translation id="6957887021205513506">El certificado del servidor parece falso.</translation>
 <translation id="6964255747740675745">No se pudo analizar la configuración de red (JSON no válido).</translation>
 <translation id="6965382102122355670">Aceptar</translation>
@@ -1091,7 +1094,6 @@
 <translation id="6973932557599545801">No puedo ayudarte. Continúa por tu cuenta.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Silenciar (predeterminado)</translation>
-<translation id="6984479912851154518">Saldrás del modo privado para pagar mediante una aplicación externa. ¿Deseas continuar?</translation>
 <translation id="6989763994942163495">Mostrar configuración avanzada...</translation>
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Siempre traducir <ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1149,6 +1151,7 @@ Detalles adicionales:
 <translation id="7298195798382681320">Recomendada</translation>
 <translation id="7300012071106347854">Azul cobalto</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
+<translation id="7303701124147721189">Para realizar pagos de forma más rápida la próxima vez, almacena tu tarjeta y dirección de facturación en la Cuenta de Google y este dispositivo.</translation>
 <translation id="7309308571273880165">El informe de fallos se capturó a las <ph name="CRASH_TIME" /> (el usuario solicitó la carga; todavía no se cargó)</translation>
 <translation id="7313965965371928911">Advertencias de <ph name="BEGIN_LINK" />Navegación segura<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1179,7 +1182,6 @@ Detalles adicionales:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Administrar contraseñas…</translation>
 <translation id="7419106976560586862">Ruta del perfil</translation>
-<translation id="7424427397225027541">Controla la forma en que administran los datos de tu cuenta. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu cuenta y solo para los fines que se indiquen.</translation>
 <translation id="7437289804838430631">Agregar información de contacto</translation>
 <translation id="7440140511386898319">Explorar sin conexión</translation>
 <translation id="7441627299479586546">Nombre de usuario o dominio de política incorrecto</translation>
@@ -1319,6 +1321,7 @@ Detalles adicionales:
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Se quitaron las tarjetas no válidas</translation>
 <translation id="8103161714697287722">Forma de pago</translation>
+<translation id="8105368624971345109">Desactivar</translation>
 <translation id="8118489163946903409">Forma de pago</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" no se instaló correctamente en tu computadora o red. Solicita al administrador de IT que corrija este problema.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
@@ -1377,6 +1380,7 @@ Detalles adicionales:
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8433057134996913067">Si realizas esta acción, saldrás de la mayoría de los sitios web.</translation>
 <translation id="8437238597147034694">&amp;Deshacer Mover</translation>
+<translation id="8440508849222143646">Para realizar pagos de forma más rápida la próxima vez, almacena tu tarjeta y dirección de facturación en la Cuenta de Google.</translation>
 <translation id="8461694314515752532">Encriptar los datos sincronizados con tu propia frase de contraseña de sincronización</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 tarjeta de crédito}other{# tarjetas de crédito}}</translation>
 <translation id="8473863474539038330">Direcciones y más</translation>
@@ -1483,6 +1487,7 @@ Detalles adicionales:
 <translation id="9128870381267983090">Conectarse a una red</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137248913990643158">Abre Chrome y accede a tu cuenta antes de usar esta app.</translation>
+<translation id="9141013498910525015">Administrar direcciones</translation>
 <translation id="9148088599418889305">Elegir método de envío</translation>
 <translation id="9148507642005240123">&amp;Deshacer Editar</translation>
 <translation id="9154194610265714752">Actualizado</translation>

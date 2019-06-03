@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">비밀번호 추천...</translation>
 <translation id="1870148520156231997">비밀번호 표시</translation>
 <translation id="1876721852596493031">사용 데이터 보내기</translation>
-<translation id="1886928167269928266">전체</translation>
 <translation id="1911619930368729126">Google 드라이브로 업로드</translation>
+<translation id="1923342640370224680">지난 1시간</translation>
 <translation id="1941314575388338491">복사하려면 두 번 탭하세요.</translation>
 <translation id="1952172573699511566">가능한 경우 웹사이트에서 텍스트를 선호하는 언어로 표시합니다.</translation>
 <translation id="1952728750904661634">관리 계정으로 로그인</translation>
 <translation id="1974060860693918893">고급</translation>
 <translation id="1989112275319619282">찾아보기</translation>
 <translation id="2015722694326466240">비밀번호를 보려면 먼저 기기에 비밀번호를 설정해야 합니다.</translation>
-<translation id="2068952045031577364">지난주</translation>
 <translation id="2074131957428911366">언제든지 <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 동기화할 항목을 선택할 수 있습니다.</translation>
 <translation id="2079545284768500474">실행취소</translation>
 <translation id="209018056901015185">데스크톱 버전으로 보기</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">비밀번호</translation>
 <translation id="2969979262385602596">로그인하지 못했습니다. 나중에 다시 시도하세요.</translation>
 <translation id="2989805286512600854">새 탭에서 열기</translation>
-<translation id="3024255823539804759">지난 1일</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
 <translation id="3112556859945124369">표시…</translation>
 <translation id="3157684681743766797">모두 표시...</translation>
@@ -228,7 +226,7 @@
 <translation id="4272631900155121838">QR 코드를 스캔하려면 설정에서 카메라를 사용하도록 설정하세요.</translation>
 <translation id="4281844954008187215">서비스 약관</translation>
 <translation id="430793432425771671">모두 동기화</translation>
-<translation id="4338650699862464074">방문한 페이지의 URL을 Google에 전송</translation>
+<translation id="4338650699862464074">방문한 페이지의 URL을 Google에 전송합니다.</translation>
 <translation id="4359125752503270327">이 페이지는 다른 애플리케이션에서 열립니다.</translation>
 <translation id="4370827530403103842">동기화가 작동하지 않습니다. 탭하여 수정하세요.</translation>
 <translation id="4375040482473363939">QR 코드 검색</translation>
@@ -260,7 +258,7 @@
 
 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />하세요.</translation>
 <translation id="4807020197310989387">읽기 목록에 읽지 않은 기사가 1개 있습니다.</translation>
-<translation id="4818522717893377262">언어 추가 중...</translation>
+<translation id="4818522717893377262">언어 추가...</translation>
 <translation id="481968316161811770">쿠키, 사이트 데이터</translation>
 <translation id="4833786495304741580">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 전송합니다.</translation>
 <translation id="4840495572919996524">북마크, 방문 기록, 비밀번호 등이 더 이상 Google 계정과 동기화되지 않습니다.</translation>
@@ -381,7 +379,6 @@
 <translation id="6464071786529933911">새 시크릿 탭에서 열기</translation>
 <translation id="6476800141292307438">페이지를 <ph name="LANGUAGE" />로 번역합니다. 화면 하단에 옵션이 있습니다.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 삭제함</translation>
-<translation id="6541915733953096570">지난 1시간</translation>
 <translation id="6610002944194042868">번역 옵션</translation>
 <translation id="6642362222295953972">기존 탭으로 전환</translation>
 <translation id="6643016212128521049">삭제</translation>
@@ -502,6 +499,7 @@
 <translation id="8532105204136943229">만료 연도</translation>
 <translation id="8534481786647257214">Google+ 게시가 완료되었습니다.</translation>
 <translation id="8548878600947630424">페이지에서 찾기...</translation>
+<translation id="8583866649835978847">기기 중 하나에 <ph name="TITLE" /> 보내기</translation>
 <translation id="8605219856220328675">탭 닫기</translation>
 <translation id="8620640915598389714">수정</translation>
 <translation id="8636825310635137004">다른 기기에서 탭을 가져오려면 동기화를 사용 설정하세요.</translation>

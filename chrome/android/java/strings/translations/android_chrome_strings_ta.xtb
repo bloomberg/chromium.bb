@@ -14,6 +14,7 @@
 <translation id="1111673857033749125">உங்கள் பிற சாதனங்களில் சேமிக்கும் புக்மார்க்குகள் இங்கே தோன்றும்.</translation>
 <translation id="1113597929977215864">எளிதாக்கப்பட்ட காட்சியைக் காட்டு</translation>
 <translation id="1121094540300013208">பயன்பாட்டு மற்றும் சிதைவு அறிக்கைகள்</translation>
+<translation id="1124772482545689468">பயனர்</translation>
 <translation id="1129510026454351943">விவரங்கள்: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{ஒரு பதிவிறக்கம் நிலுவையில் உள்ளது.}other{# பதிவிறக்கங்கள் நிலுவையில் உள்ளன.}}</translation>
 <translation id="1145536944570833626">ஏற்கனவே உள்ள தரவை நீக்கு.</translation>
@@ -78,6 +79,7 @@
 <translation id="1513352483775369820">புத்தகக்குறிகளும் இணைய வரலாறும்</translation>
 <translation id="1513858653616922153">கடவுச்சொல்லை நீக்கு</translation>
 <translation id="1516229014686355813">"தேடுவதற்குத் தட்டு" எனும் அம்சமானது தேர்ந்தெடுத்த சொல்லையும், அதனுடைய பின்னணிச் சூழலாக நடப்புப் பக்கத்தையும் Google தேடலுக்கு அனுப்பும். இதை <ph name="BEGIN_LINK" />அமைப்புகளில்<ph name="END_LINK" /> முடக்கலாம்.</translation>
+<translation id="1521774566618522728">இன்று பயன்படுத்தியுள்ளார்</translation>
 <translation id="1539064842193522527">Chrome இல் இணைப்பு திறந்தது</translation>
 <translation id="1549000191223877751">வேறு சாளரத்திற்கு நகர்த்து</translation>
 <translation id="1553358976309200471">Chromeஐப் புதுப்பி</translation>
@@ -174,12 +176,12 @@
 <translation id="2154484045852737596">கார்டைத் திருத்தவும்</translation>
 <translation id="2154710561487035718">URL ஐ நகலெடு</translation>
 <translation id="2156074688469523661">மீதமுள்ள தளங்கள் (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2170088579611075216">VRரை அனுமதித்துத் தொடங்கு</translation>
 <translation id="218608176142494674">பகிர்தல்</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> ஆகத் தொடர்க</translation>
 <translation id="2234876718134438132">ஒத்திசைவு &amp; Google சேவைகள்</translation>
 <translation id="2259659629660284697">கடவுச்சொற்களை ஏற்று…</translation>
 <translation id="2268044343513325586">துல்லியமாக்கு</translation>
-<translation id="2280910239864711607">புதிய தாவலை மறைநிலையில் திறக்கும்</translation>
 <translation id="2286841657746966508">பில்லிங் முகவரி</translation>
 <translation id="230115972905494466">இணக்கமான சாதனங்கள் இல்லை</translation>
 <translation id="2315043854645842844">க்ளையன்ட் சார்பாக சான்றிதழ் தேர்ந்தெடுப்பை இயக்க முறைமை ஆதரிக்கவில்லை.</translation>
@@ -230,7 +232,6 @@
 <translation id="2621115761605608342">குறிப்பிட்ட தளத்திற்கு JavaScriptஐ அனுமதி.</translation>
 <translation id="2625189173221582860">கடவுச்சொல் நகலெடுக்கப்பட்டது</translation>
 <translation id="2631006050119455616">சேமிக்கப்பட்டது</translation>
-<translation id="2633278372998075009">மறைநிலைத் தாவல்கள்</translation>
 <translation id="2647434099613338025">மொழியைச் சேர்</translation>
 <translation id="2650751991977523696">கோப்பை மீண்டும் பதிவிறக்கவா?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ஆடியோ கோப்பு}other{# ஆடியோ கோப்புகள்}}</translation>
@@ -300,7 +301,6 @@
 <translation id="321773570071367578">கடவுச்சொற்றொடரை மறந்துவிட்டால் அல்லது இந்த அமைப்பை மாற்ற விரும்பினால், <ph name="BEGIN_LINK" />ஒத்திசைவை மீட்டமைக்கவும்<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">மைக்ரோஃபோன்</translation>
 <translation id="3232754137068452469">இணைய ஆப்ஸ்</translation>
-<translation id="3234355010754616171">புதிய மறைநிலைத் தாவல்</translation>
 <translation id="3236059992281584593">1 நிமிடம் மீதமுள்ளது</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">இந்தப் பக்கத்தை புக்மார்க் செய்க</translation>
@@ -323,7 +323,6 @@
 <translation id="3350687908700087792">எல்லா மறைநிலைத் தாவல்களையும் மூடு</translation>
 <translation id="3353615205017136254">Google வழங்கும் Lite பக்கம். அசல் பக்கத்தை ஏற்ற, ‘அசல் பக்கத்தை ஏற்று’ பட்டனைத் தட்டவும்.</translation>
 <translation id="3367813778245106622">ஒத்திசைப்பதைத் தொடங்க, மீண்டும் உள்நுழையவும்</translation>
-<translation id="3377025655491224618">மறைநிலைத் தாவல்</translation>
 <translation id="3384347053049321195">படத்தைப் பகிர்</translation>
 <translation id="3386292677130313581">எனது இருப்பிடத்தை அறிய தளங்களை அனுமதிக்கும் முன் கேள் (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="3387650086002190359">கோப்பு முறைமைப் பிழைகளால் <ph name="FILE_NAME" />ஐப் பதிவிறக்க முடியவில்லை.</translation>
@@ -415,6 +414,7 @@
 <translation id="4116038641877404294">ஆஃப்லைனில் பார்க்க, பக்கங்களைப் பதிவிறக்கவும்</translation>
 <translation id="4149994727733219643">இணையப் பக்கங்களுக்கான எளிதாக்கப்பட்ட காட்சி</translation>
 <translation id="4165986682804962316">தள அமைப்புகள்</translation>
+<translation id="4169535189173047238">அனுமதிக்காதே</translation>
 <translation id="4170011742729630528">சேவை கிடைக்கவில்லை; பிறகு முயற்சிக்கவும்.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> பயன்படுத்தப்பட்டுள்ளது</translation>
 <translation id="4181841719683918333">மொழிகள்</translation>
@@ -424,7 +424,6 @@
 <translation id="4226663524361240545">அறிவிப்புகள் வரும் போது சாதனம் அதிர்வுறக்கூடும்</translation>
 <translation id="423219824432660969"><ph name="TIME" /> அன்றைக்கான Google கடவுச்சொல்லைப் பயன்படுத்தி  ஒத்திசைக்கப்பட்ட தரவை என்க்ரிப்ட் செய்</translation>
 <translation id="4242533952199664413">அமைப்புகளைத் திற</translation>
-<translation id="4243710787042215766">மறைநிலைத் தாவலில் திற</translation>
 <translation id="424864128008805179">Chrome இலிருந்து வெளியேறவா?</translation>
 <translation id="4256782883801055595">ஓப்பன் சோர்ஸ் உரிமங்கள்</translation>
 <translation id="4259722352634471385">செல்வது தடுக்கப்பட்டது: <ph name="URL" /></translation>
@@ -515,7 +514,6 @@
 <translation id="4881695831933465202">திற</translation>
 <translation id="488187801263602086">கோப்பின் பெயரை மாற்றவும்</translation>
 <translation id="4882831918239250449">தேடல், விளம்பரங்கள் மற்றும் பலவற்றைத் தனிப்பயனாக்க உங்கள் உலாவல் வரலாறு எப்படிப் பயன்படுத்தப்படுகிறது என்பதைக் கட்டுப்படுத்துதல்</translation>
-<translation id="4883379392681899581">மறைநிலையை விட்டு வெளியேறும்</translation>
 <translation id="4883854917563148705">நிர்வகிக்கப்பட்ட அமைப்புகளை மீட்டமைக்க முடியாது</translation>
 <translation id="4885273946141277891">ஆதரிக்கப்படாத Chrome நிகழ்வுகளின் எண்ணிக்கை.</translation>
 <translation id="4910889077668685004">கட்டணம் செலுத்துவதற்கான பயன்பாடுகள்</translation>
@@ -561,6 +559,7 @@
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{ஒரு பதிவிறக்கம் தோல்வியடைந்தது.}other{# பதிவிறக்கங்கள் தோல்வியடைந்தன.}}</translation>
 <translation id="5184329579814168207">Chrome இல் திற</translation>
 <translation id="5199929503336119739">பணி சுயவிவரம்</translation>
+<translation id="5202089186707505116">உங்கள் VR சென்சார்களைப் பயன்படுத்த இந்த இணையதளத்தை அனுமதிக்கவா?</translation>
 <translation id="5210286577605176222">முந்தைய தாவலுக்குச் செல்லும்</translation>
 <translation id="5210365745912300556">தாவலை மூடுக</translation>
 <translation id="5222676887888702881">வெளியேறு</translation>
@@ -580,6 +579,7 @@
 <translation id="5324858694974489420">பெற்றோர் அமைப்புகள்</translation>
 <translation id="5327248766486351172">பெயர்</translation>
 <translation id="5335288049665977812">JavaScriptஐ இயக்குவதற்கு, தளங்களை அனுமதி (பரிந்துரைக்கப்படுகிறது)</translation>
+<translation id="5357811892247919462">பகிர்ந்த தாவல் பெறப்பட்டது</translation>
 <translation id="5363230136052241468">புதிய தாவல் பக்கத்தை ஏற்ற, முகப்பு பட்டனைத் தட்டவும்</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> திறந்துள்ள தாவல், தாவல்களை மாற்ற, தட்டவும்}other{<ph name="OPEN_TABS_MANY" /> திறந்துள்ள தாவல்கள், தாவல்களை மாற்ற, தட்டவும்}}</translation>
 <translation id="5391532827096253100">இந்தத் தளத்திற்கான இணைப்பு பாதுகாப்பானதல்ல. தளத் தகவல்</translation>
@@ -652,7 +652,6 @@
 <translation id="583281660410589416">தெரியாதது</translation>
 <translation id="5833984609253377421">இணைப்பைப் பகிர்</translation>
 <translation id="5836192821815272682">Chrome புதுப்பிப்பைப் பதிவிறக்குகிறது…</translation>
-<translation id="584427517463557805">தேர்ந்தெடுத்துள்ள மறைநிலைத் தாவல்</translation>
 <translation id="5853623416121554550">இடைநிறுத்தப்பட்டது</translation>
 <translation id="5854790677617711513">30 நாட்களுக்கு முந்தையவை</translation>
 <translation id="5858741533101922242">Chrome ஆல் புளூடூத் அடாப்டரை இயக்க முடியவில்லை</translation>
@@ -683,7 +682,6 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075798973483050474">முகப்புப் பக்கத்தைத் திருத்து</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> மணிநேரம் மீதமுள்ளது</translation>
-<translation id="6099151465289169210">மறைநிலைத் தாவல்களுக்கு மாறியது</translation>
 <translation id="6108923351542677676">அமைவு செயலிலுள்ளது...</translation>
 <translation id="6111020039983847643">பயன்படுத்திய டேட்டா</translation>
 <translation id="6112702117600201073">பக்கத்தைப் புதுப்பிக்கிறது</translation>
@@ -716,7 +714,6 @@
 <translation id="6320088164292336938">அதிர்வுறு</translation>
 <translation id="6324034347079777476">Android அமைப்பின் ஒத்திசைவு முடக்கப்பட்டது</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> வழியாகப் பகிர்</translation>
-<translation id="6336451774241870485">புதிய மறைநிலைத் தாவல்</translation>
 <translation id="6337234675334993532">குறியாக்கம்</translation>
 <translation id="6341580099087024258">கோப்புகளை எங்கே சேமிக்க வேண்டும் என்று கேள்</translation>
 <translation id="6343192674172527289">பதிவிறக்கங்கள் எதுவுமில்லை</translation>
@@ -759,7 +756,6 @@
 <translation id="6593061639179217415">டெஸ்க்டாப் தளம்</translation>
 <translation id="6600954340915313787">Chromeக்கு நகலெடுக்கப்பட்டது</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ஜி.பை.</translation>
-<translation id="6610147964972079463">மறைநிலைத் தாவல்களை மூடு</translation>
 <translation id="6612358246767739896">பாதுகாக்கப்பட்ட உள்ளடக்கம்</translation>
 <translation id="6627583120233659107">கோப்புறையைத் திருத்து</translation>
 <translation id="6643016212128521049">அழி</translation>
@@ -830,6 +826,7 @@
 <translation id="7062545763355031412">சரி, கணக்குகளை மாற்று</translation>
 <translation id="7063006564040364415">ஒத்திசைவு சேவையகத்துடன் இணைக்க முடியவில்லை.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 தேர்ந்தெடுக்கப்பட்டது}other{# தேர்ந்தெடுக்கப்பட்டன}}</translation>
+<translation id="7071521146534760487">கணக்கை நிர்வகிக்கும்</translation>
 <translation id="7077143737582773186">SD கார்டு</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> தேர்ந்தெடுக்கப்பட்டன.  திரையின் மேற்பகுதிக்கு அருகில், விருப்பங்கள் உள்ளன</translation>
 <translation id="7121362699166175603">வரலாற்றையும் முகவரிப் பட்டியில் தன்னிரப்பிகளையும் அழிக்கும். உங்கள் Google கணக்கு, <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> என்ற இணைப்பில் உலாவல் வரலாறு தொடர்பான பிற தகவல்களைக் கொண்டிருக்கக்கூடும்.</translation>
@@ -880,13 +877,11 @@
 <translation id="7453467225369441013">பெரும்பாலான தளங்களிலிருந்து உங்களை வெளியேற்றும். உங்கள் Google கணக்கிலிருந்து வெளியேற்றாது.</translation>
 <translation id="7454641608352164238">போதுமான இடம் இல்லை</translation>
 <translation id="7455923816558154057">பார்க்க, தட்டவும்</translation>
-<translation id="7465104139234185284">அனைத்து மறைநிலைத் தாவல்களையும் மூடு</translation>
 <translation id="7473891865547856676">வேண்டாம் நன்றி</translation>
 <translation id="7475192538862203634">இதை அடிக்கடி காண்கிறீர்கள் எனில், இந்தப் <ph name="BEGIN_LINK" />பரிந்துரைகளைப்<ph name="END_LINK" /> பயன்படுத்திப் பார்க்கவும்.</translation>
 <translation id="7475688122056506577">SD கார்டு உள்ளது. உங்கள் கோப்புகளில் சில இல்லாமல் இருக்கலாம்.</translation>
 <translation id="7479104141328977413">தாவல் நிர்வாகம்</translation>
 <translation id="7481312909269577407">அடுத்த பக்கம்</translation>
-<translation id="7482697587265222445">தாவல் உங்கள் சாதனங்களுக்கு அனுப்பப்பட்டது</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (புதுப்பித்தது: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">சேமித்த டேட்டா</translation>
 <translation id="7498271377022651285">காத்திருக்கவும்…</translation>
@@ -1096,7 +1091,6 @@
 <translation id="9065203028668620118">திருத்து</translation>
 <translation id="9070377983101773829">குரல் தேடலைத் தொடங்கு</translation>
 <translation id="9074336505530349563">Google பரிந்துரைக்கும் பிரத்யேக உள்ளடக்கத்தைப் பெற, உள்நுழைந்து, ஒத்திசைவை இயக்கவும்</translation>
-<translation id="9080642952018487277">மறைநிலைக்குச் செல்லும்</translation>
 <translation id="9086455579313502267">நெட்வொர்க்கை அணுக முடியவில்லை</translation>
 <translation id="9099018167121903954">பதிவிறக்கங்கள் அளவு: <ph name="KILOBYTES" /> கி.பை.</translation>
 <translation id="9100505651305367705">கட்டுரைகளை எளிதாக்கிக் காட்டும் வசதி கிடைக்கும்போது, அவ்வாறு காட்ட வேண்டுமா எனக் கேள்</translation>

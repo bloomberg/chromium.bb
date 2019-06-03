@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">建議密碼...</translation>
 <translation id="1870148520156231997">顯示密碼</translation>
 <translation id="1876721852596493031">傳送使用情況資料</translation>
-<translation id="1886928167269928266">不限時間</translation>
 <translation id="1911619930368729126">上傳至 Google 雲端硬碟</translation>
+<translation id="1923342640370224680">前一個小時</translation>
 <translation id="1941314575388338491">輕觸兩下即可複製。</translation>
 <translation id="1952172573699511566">Chrome 會儘可能以你慣用的語言顯示網站文字。</translation>
 <translation id="1952728750904661634">使用受管理的帳戶登入</translation>
 <translation id="1974060860693918893">進階</translation>
 <translation id="1989112275319619282">瀏覽</translation>
 <translation id="2015722694326466240">你必須先在裝置上設定通行碼，才能查看密碼。</translation>
-<translation id="2068952045031577364">過去 1 週</translation>
 <translation id="2074131957428911366">你隨時可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中選擇要同步處理的資料。</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="209018056901015185">切換為電腦版網站</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">密碼</translation>
 <translation id="2969979262385602596">無法登入，請稍後再試。</translation>
 <translation id="2989805286512600854">在新分頁中開啟</translation>
-<translation id="3024255823539804759">過去 1 天</translation>
 <translation id="3037605927509011580">糟糕！</translation>
 <translation id="3112556859945124369">標示…</translation>
 <translation id="3157684681743766797">全部標示…</translation>
@@ -381,7 +379,6 @@
 <translation id="6464071786529933911">在新無痕式分頁中開啟</translation>
 <translation id="6476800141292307438">將網頁翻譯成<ph name="LANGUAGE" />。翻譯選項位於靠近畫面底部的位置。</translation>
 <translation id="6482629121755362506">已刪除 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
-<translation id="6541915733953096570">過去 1 小時</translation>
 <translation id="6610002944194042868">翻譯選項</translation>
 <translation id="6642362222295953972">切換至現有分頁</translation>
 <translation id="6643016212128521049">清除</translation>
@@ -502,6 +499,7 @@
 <translation id="8532105204136943229">到期年份</translation>
 <translation id="8534481786647257214">已順利發佈到 Google+。</translation>
 <translation id="8548878600947630424">在網頁中尋找...</translation>
+<translation id="8583866649835978847">將 <ph name="TITLE" /> 傳送到你的其中一部裝置。</translation>
 <translation id="8605219856220328675">關閉分頁。</translation>
 <translation id="8620640915598389714">編輯</translation>
 <translation id="8636825310635137004">如要存取您在其他裝置上開啟的分頁，請開啟同步處理功能。</translation>

@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Föreslå lösenord …</translation>
 <translation id="1870148520156231997">Visa lösenord</translation>
 <translation id="1876721852596493031">Skicka statistik</translation>
-<translation id="1886928167269928266">Tidens början</translation>
 <translation id="1911619930368729126">Ladda upp till Google Drive</translation>
+<translation id="1923342640370224680">Senaste timmen</translation>
 <translation id="1941314575388338491">Tryck snabbt två gånger om du vill kopiera informationen.</translation>
 <translation id="1952172573699511566">När det är möjligt visas text på webbplatser på önskat språk.</translation>
 <translation id="1952728750904661634">Logga in med ett hanterat konto</translation>
 <translation id="1974060860693918893">Avancerat</translation>
 <translation id="1989112275319619282">Bläddra</translation>
 <translation id="2015722694326466240">Du måste ställa in ett lösenord på enheten om du vill kunna se lösenorden.</translation>
-<translation id="2068952045031577364">Senaste veckan</translation>
 <translation id="2074131957428911366">Du kan alltid välja vad som ska synkroniseras i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="209018056901015185">Använd skrivbordsversion</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Lösenord</translation>
 <translation id="2969979262385602596">Det gick inte att logga in. Försök igen senare.</translation>
 <translation id="2989805286512600854">Öppna i ny flik</translation>
-<translation id="3024255823539804759">Senaste dagen</translation>
 <translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
 <translation id="3112556859945124369">Markera …</translation>
 <translation id="3157684681743766797">Markera alla …</translation>
@@ -381,7 +379,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="6464071786529933911">Öppna i ny inkognitoflik</translation>
 <translation id="6476800141292307438">Översätter sidan till <ph name="LANGUAGE" />. Alternativ finns längst ned på skärmen.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt har tagits bort</translation>
-<translation id="6541915733953096570">Senaste timmen</translation>
 <translation id="6610002944194042868">Översättningsalternativ</translation>
 <translation id="6642362222295953972">Byt till befintlig flik</translation>
 <translation id="6643016212128521049">Rensa</translation>
@@ -502,6 +499,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="8532105204136943229">Sista giltighetsår</translation>
 <translation id="8534481786647257214">Inlägg på Google+ klart.</translation>
 <translation id="8548878600947630424">Hitta på sidan ...</translation>
+<translation id="8583866649835978847">Skicka <ph name="TITLE" /> till en av dina enheter.</translation>
 <translation id="8605219856220328675">Stäng fliken.</translation>
 <translation id="8620640915598389714">Redigera</translation>
 <translation id="8636825310635137004">Aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter.</translation>

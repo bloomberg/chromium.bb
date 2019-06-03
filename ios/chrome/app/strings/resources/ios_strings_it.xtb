@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Suggerisci password...</translation>
 <translation id="1870148520156231997">Mostra password</translation>
 <translation id="1876721852596493031">Invia dati di utilizzo</translation>
-<translation id="1886928167269928266">Tutto</translation>
 <translation id="1911619930368729126">Carica su Google Drive</translation>
+<translation id="1923342640370224680">Ultima ora</translation>
 <translation id="1941314575388338491">Tocca due volte per copiare.</translation>
 <translation id="1952172573699511566">Se possibile, il testo dei siti web verrà mostrato nella tua lingua preferita.</translation>
 <translation id="1952728750904661634">Accedi con l'account gestito</translation>
 <translation id="1974060860693918893">Avanzate</translation>
 <translation id="1989112275319619282">Esplora</translation>
 <translation id="2015722694326466240">Per visualizzare le password, per prima cosa imposta un passcode sul tuo dispositivo.</translation>
-<translation id="2068952045031577364">Ultima settimana</translation>
 <translation id="2074131957428911366">Puoi scegliere in qualsiasi momento i dati da sincronizzare nelle <ph name="BEGIN_LINK" />impostazioni<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="209018056901015185">Richiedi sito desktop</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Password</translation>
 <translation id="2969979262385602596">Impossibile accedere. Riprova più tardi.</translation>
 <translation id="2989805286512600854">Apri in un'altra scheda</translation>
-<translation id="3024255823539804759">Ultimo giorno</translation>
 <translation id="3037605927509011580">Uffa!</translation>
 <translation id="3112556859945124369">Segna come…</translation>
 <translation id="3157684681743766797">Segna tutti come...</translation>
@@ -381,7 +379,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6464071786529933911">Apri in nuova scheda in incognito</translation>
 <translation id="6476800141292307438">Traduzione della pagina in <ph name="LANGUAGE" />. Opzioni disponibili nella parte inferiore dello schermo.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi eliminati</translation>
-<translation id="6541915733953096570">Ultima ora</translation>
 <translation id="6610002944194042868">Opzioni di Traduttore</translation>
 <translation id="6642362222295953972">Passa alla scheda esistente</translation>
 <translation id="6643016212128521049">Cancella</translation>
@@ -502,6 +499,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8532105204136943229">Anno di scadenza</translation>
 <translation id="8534481786647257214">Pubblicazione su Google+ completata.</translation>
 <translation id="8548878600947630424">Trova nella pagina...</translation>
+<translation id="8583866649835978847">Invia <ph name="TITLE" /> a uno dei tuoi dispositivi.</translation>
 <translation id="8605219856220328675">Chiudi la scheda.</translation>
 <translation id="8620640915598389714">Modifica</translation>
 <translation id="8636825310635137004">Attiva la sincronizzazione per trovare le tue schede degli altri dispositivi.</translation>

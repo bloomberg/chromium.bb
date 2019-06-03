@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Предложение за парола...</translation>
 <translation id="1870148520156231997">Показване на паролата</translation>
 <translation id="1876721852596493031">Send Usage Data</translation>
-<translation id="1886928167269928266">Самото начало</translation>
 <translation id="1911619930368729126">Качване в Google Диск</translation>
+<translation id="1923342640370224680">Последният час</translation>
 <translation id="1941314575388338491">Докоснете двукратно, за да копирате.</translation>
 <translation id="1952172573699511566">Когато е възможно, текстът на уебсайтовете ще се показва на предпочитания от вас език.</translation>
 <translation id="1952728750904661634">Влизане с управляван профил</translation>
 <translation id="1974060860693918893">Разширени</translation>
 <translation id="1989112275319619282">Сърфиране</translation>
 <translation id="2015722694326466240">За да видите паролите, трябва първо да зададете код за достъп на устройството си.</translation>
-<translation id="2068952045031577364">Последната седмица</translation>
 <translation id="2074131957428911366">Винаги можете да изберете какво да се синхронизира от <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="209018056901015185">Заявка за настолния сайт</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Пароли</translation>
 <translation id="2969979262385602596">Влизането не бе успешно. Моля, опитайте пак по-късно.</translation>
 <translation id="2989805286512600854">Отваряне в нов раздел</translation>
-<translation id="3024255823539804759">Последния ден</translation>
 <translation id="3037605927509011580">Ужас!</translation>
 <translation id="3112556859945124369">Означаване…</translation>
 <translation id="3157684681743766797">Означаване на всички…</translation>
@@ -381,7 +379,6 @@
 <translation id="6464071786529933911">Отв. в нов раздел „инкогнито“</translation>
 <translation id="6476800141292307438">Страницата се превежда на <ph name="LANGUAGE" />. Опциите са достъпни в долната част на екрана.</translation>
 <translation id="6482629121755362506">Изтрихте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> елемента</translation>
-<translation id="6541915733953096570">Последния час</translation>
 <translation id="6610002944194042868">Опции за превод</translation>
 <translation id="6642362222295953972">Превключване към съществуващия раздел</translation>
 <translation id="6643016212128521049">Изчистване</translation>
@@ -502,6 +499,7 @@
 <translation id="8532105204136943229">Година на валидност</translation>
 <translation id="8534481786647257214">Публикацията в Google+ е завършена.</translation>
 <translation id="8548878600947630424">Търсене в страницата...</translation>
+<translation id="8583866649835978847">Изпращане на <ph name="TITLE" /> до някое от устройствата ви.</translation>
 <translation id="8605219856220328675">Затваряне на раздела.</translation>
 <translation id="8620640915598389714">Редактиране</translation>
 <translation id="8636825310635137004">Включете синхронизирането, за да получите разделите си от другите си устройства.</translation>

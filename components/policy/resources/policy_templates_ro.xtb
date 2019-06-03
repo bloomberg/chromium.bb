@@ -315,7 +315,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="1474273443907024088">Dezactivează optimizarea False Start pentru TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Activează blocarea software-ului de la o terță parte</translation>
-<translation id="1504431521196476721">Atestare la distanță</translation>
 <translation id="1507382822467487898">
           Stabilește ce adresă MAC (Media Access Control) va fi folosită când este conectat un dispozitiv de andocare.
 
@@ -805,7 +804,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2463034609187171371">Activează suitele de codificare DHE în TLS</translation>
 <translation id="2463365186486772703">Limba aplicației</translation>
 <translation id="2466131534462628618">Autentificarea prin portalul captiv ignoră proxy-ul</translation>
-<translation id="2471748297300970300">Dacă este dezactivată, previne afișarea avertismentelor de securitate când Chrome este lansat cu unele semnalizatoare de linie de comandă potențial periculoase.
+<translation id="2471748297300970300">Dacă este dezactivată, împiedică afișarea avertismentelor de securitate când Chrome este lansat cu unele semnalizatoare de linie de comandă potențial periculoase.
 
           Dacă este activată sau nesetată, avertismentele de securitate sunt afișate când unele semnalizatoare de linie de comandă sunt folosite pentru a lansa Chrome.
 
@@ -1426,7 +1425,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă nu setezi sau dacă dezactivezi această politică, nu vor exista modificări în preferințele utilizatorului privind verificarea ortografică.
 
-      Când politica <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> este dezactivată, nu va avea niciun efect.
+      Dacă politica <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> este dezactivată, această politică nu va avea niciun efect.
 
       Dacă o limbă este inclusă și în această politică, și în politica <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, această politică are prioritate, iar verificarea ortografică pentru limbă este activată.
 
@@ -1719,7 +1718,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Această politică stabilește regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />, acțiune care are loc atunci când funcția de printare este folosită pentru prima dată cu un profil.
 
-      Dacă politica este configurată, <ph name="PRODUCT_NAME" /> va încerca să găsească o imprimantă care corespunde cu toate atributele specificate și o va selecta ca imprimantă prestabilită. Se va selecta prima imprimantă conformă cu politica; dacă mai multe imprimante sunt conforme cu politica oricare dintre acestea poate fi selectată în funcție de ordinea în care sunt descoperite.
+      Dacă politica este configurată, <ph name="PRODUCT_NAME" /> va încerca să găsească o imprimantă care corespunde cu toate atributele specificate și o va selecta ca imprimantă prestabilită. Se va selecta prima imprimantă conformă cu politica; dacă mai multe imprimante sunt conforme cu politica, oricare dintre acestea poate fi selectată în funcție de ordinea în care sunt descoperite.
 
       Dacă politica nu este configurată sau nu se găsește nicio imprimantă conformă cu politica în timpul limită, imprimanta prestabilită va fi imprimanta PDF încorporată sau, când imprimanta PDF nu este disponibilă, nu se va selecta nicio imprimantă.
 
@@ -1799,7 +1798,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă această politică nu este configurată, tastele adezive vor fi dezactivate inițial, dar pot fi activate oricând de utilizator.</translation>
 <translation id="4171331498167688968">Dacă politica este dezactivată, atunci software-ului de la o terță parte i se va permite să introducă un cod executabil în procesele Chrome. Dacă politica nu este configurată sau este activată, atunci software-ul de la o terță parte va fi împiedicat să introducă codul executabil în procesele Chrome.
 
-      Indiferent de valoarea acestei politici, browserul nu va bloca momentan ca un software de la o terță parte să introducă cod executabil în procesele sale pe un dispozitiv asociat unui domeniu <ph name="MS_AD_NAME" />.</translation>
+      Indiferent de valoarea acestei politici, browserul nu va împiedica momentan un software de la o terță parte să introducă cod executabil în procesele sale pe un dispozitiv asociat unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Setarea prestabilită pentru <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Adresa URL pentru validarea indicativului de autentificare al clientului cu acces la distanță</translation>
 <translation id="4203389617541558220">Limitați timpul de funcționare a dispozitivului, programând reporniri automate.
@@ -2358,11 +2357,16 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5423001109873148185">Dacă este activată, această politică forțează importarea motoarelor de căutare din browserul prestabilit. Dacă este activată, politica afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, motorul de căutare prestabilit nu este importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="5423197884968724595">Numele restricției Android WebView:</translation>
 <translation id="5424147596523390018">Permite toate modurile de culoare</translation>
+<translation id="5427003226809696696">Această politică stabilește dacă fereastra de browser trebuie lansată la începutul sesiunii.
+
+          Dacă politica este activată, fereastra de browser nu va fi lansată.
+
+          Dacă politica este dezactivată sau nu este setată, fereastra de browser poate fi lansată. Reține că este posibil ca fereastra de browser să nu fie lansată din cauza altor politici sau semnalizatoare de linie de comandă.</translation>
 <translation id="5427879482805712214">Cu această politică poți configura imaginea avatar a utilizatorului pe ecranul de conectare. Politica este setată prin specificarea adresei URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca imaginea avatar și a unui cod hash criptografic utilizat pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar mărimea nu trebuie să depășească 512 KB. Adresa URL trebuie să poată fi accesată fără autentificare.
 
       Imaginea avatar este descărcată și salvată în memoria cache. Aceasta va fi descărcată din nou ori de câte ori se modifică adresa URL sau codul hash.
 
-      Dacă politica este setată, <ph name="PRODUCT_OS_NAME" /> se va descărca și va folosi imaginea avatar.
+      Dacă politica este setată, <ph name="PRODUCT_OS_NAME" /> va descărca și va folosi imaginea avatar.
 
       Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
 
@@ -2371,7 +2375,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Imaginea de fundal este descărcată și salvată în memoria cache. Aceasta va fi descărcată din nou ori de câte ori se modifică adresa URL sau codul hash.
 
-      Dacă politica este setată, <ph name="PRODUCT_OS_NAME" /> se va descărca și va folosi imaginea de fundal.
+      Dacă politica este setată, <ph name="PRODUCT_OS_NAME" /> va descărca și va folosi imaginea de fundal.
 
       Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
 
@@ -3100,7 +3104,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă nu setezi sau dacă dezactivezi această politică, nu vor exista modificări în preferințele utilizatorului privind verificarea ortografică.
 
-      Când politica <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> este dezactivată, nu va avea niciun efect.
+      Dacă politica <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> este dezactivată, această politică nu va avea niciun efect.
 
       Dacă o limbă este inclusă și în această politică, și în politica <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, cea din urmă are prioritate, iar verificarea ortografică pentru limbă va fi activată.
 
@@ -3152,7 +3156,6 @@ Dacă politica este setată la True sau nu este setată, modelul inteligent de r
       Dacă selectezi „U2F_EXTENDED”, al doilea factor integrat va oferi funcțiile U2F și anumite extensii pentru atestarea individuală.</translation>
 <translation id="7003334574344702284">Dacă este activată, această politică forțează importarea parolelor salvate din browserul prestabilit anterior. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, parolele salvate nu sunt importate. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="7003746348783715221">Preferințe <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Setări privind conținutul</translation>
 <translation id="7007671350884342624">Configurează directorul pe care <ph name="PRODUCT_NAME" /> îl va folosi pentru a stoca datele utilizatorului.
 
       Dacă configurezi această politică, <ph name="PRODUCT_NAME" /> va folosi directorul indicat, indiferent dacă utilizatorul a specificat semnalizatorul „--user-data-dir”. Pentru a evita pierderea de date sau alte erori neașteptate, această politică nu ar trebui setată la un director rădăcină al volumului sau la un director folosit pentru alte scopuri, deoarece <ph name="PRODUCT_NAME" /> îi gestionează conținutul.
@@ -3180,7 +3183,7 @@ Dacă politica este setată la True sau nu este setată, modelul inteligent de r
       Google poate asocia aceste jurnale, prin intermediul unui ID de sesiune, cu alte jurnale colectate chiar de serviciile Google. Astfel, se poate simplifica remedierea erorilor.
       </translation>
 <translation id="706669471845501145">Permite site-urilor să afișeze notificări pe desktop</translation>
-<translation id="7068108874199666656">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru toți utilizatorii unui dispozitiv <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, așa cum este acesta definit de formatul Open Network Configuration.</translation>
+<translation id="7068108874199666656">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru toți utilizatorii unui dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, așa cum este acesta definit de formatul Open Network Configuration.</translation>
 <translation id="7070525176564511548">Introducerea parolei este necesară o dată pe săptămână (168 de ore).</translation>
 <translation id="7072208053150563108">Frecvența de schimbare a parolelor de computer</translation>
 <translation id="7079519252486108041">Blochează ferestrele pop-up de pe aceste site-uri</translation>
@@ -3245,7 +3248,7 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă această politică este lăsată nesetată, utilizatorul poate modifica lista cu aplicații fixate din lansator.</translation>
 <translation id="713121532817834879">Această politică este o adresă URL care direcționează spre un fișier XML cu același format ca cel al politicii <ph name="IEEM_SITELIST_POLICY" /> a Internet Explorer. Această politică încarcă reguli dintr-un fișier XML, fără să permită accesul Internet Explorer la ele.
 
-      Regulile din acest fișier XML se aplică în același fel ca <ph name="GREYLIST_POLICY_NAME" />. Cu alte cuvinte, aceste reguli previn <ph name="PRODUCT_NAME" /> să deschidă browserul secundar și previn browserul secundar să deschidă <ph name="PRODUCT_NAME" />.
+      Regulile din acest fișier XML se aplică în același fel ca <ph name="GREYLIST_POLICY_NAME" />. Cu alte cuvinte, aceste reguli împiedică <ph name="PRODUCT_NAME" /> să deschidă browserul secundar și împiedică browserul secundar să deschidă <ph name="PRODUCT_NAME" />.
 
       Când această politică nu este configurată sau nu este setată la o adresă URL validă, <ph name="PRODUCT_NAME" /> nu o folosește ca sursă de reguli pentru comutarea browserelor.
 
@@ -3511,8 +3514,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7617319494457709698">Această politică specifică extensiile cărora li se permite să folosească funcția <ph name="CHALLENGE_USER_KEY_FUNCTION" /> din <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> pentru atestarea la distanță. Extensiile trebuie să fie adăugate în această listă pentru a folosi API-ul.
 
           Dacă o extensie nu este în listă sau dacă lista nu este configurată, apelul către API nu va reuși și va genera un cod de eroare.</translation>
-<translation id="7618907117929117943">Revino și rămâi la versiunea țintă dacă versiunea sistemului de operare este mai nouă decât ținta și poți prelua configurația la nivel de dispozitiv (inclusiv acreditările de rețea) prin revenire, apoi omite OOBE. Nu aplica și nu abandona revenirea dacă nu poți prelua configurația (deoarece versiunea țintă nu acceptă restabilirea datelor sau din cauza unei schimbări care nu acceptă revenirea la starea anterioară).
-          Se acceptă în versiunea 70 și versiunile ulterioare de <ph name="PRODUCT_OS_NAME" />. Pentru clienții mai vechi, această valoare înseamnă că revenirea este dezactivată.</translation>
 <translation id="7620869951155758729">Această politică specifică ce configurație este utilizată pentru generarea și verificarea codului de acces parental.
 
       |current_config| este folosită întotdeauna pentru generarea codului de acces și trebuie folosită pentru validarea codului de acces numai atunci când nu poate fi validat cu |future_config|.
@@ -3776,9 +3777,9 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica este activată, dispozitivul va utiliza un format de ceas cu 24 de ore. Dacă politica este dezactivată, dispozitivul va utiliza formatul de ceas cu 12 ore.
 
       Dacă politica nu este configurată, dispozitivul va utiliza formatul prestabilit al ceasului cu 24 de ore.</translation>
-<translation id="8113421140338762630">Îți permite să setezi perioada de timp, în milisecunde, între prima notificare privind repornirea unui dispozitiv <ph name="PRODUCT_OS_NAME" /> pentru aplicarea unei actualizări în așteptare și sfârșitul perioadei de timp specificat de politica <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+<translation id="8113421140338762630">Îți permite să setezi intervalul de timp, în milisecunde, între prima notificare privind necesitatea repornirii unui dispozitiv cu <ph name="PRODUCT_OS_NAME" /> pentru aplicarea unei actualizări în așteptare și sfârșitul intervalului de timp specificat de politica <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
-      Dacă nu este setată, perioada prestabilită de 86400000 milisecunde (o zi) este folosită pentru dispozitivele <ph name="PRODUCT_OS_NAME" />.</translation>
+      Dacă nu este setată, perioada prestabilită de 86400000 milisecunde (o zi) este folosită pentru dispozitivele cu <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8114382167597081590">Nu impune Modul restricționat pe YouTube</translation>
 <translation id="8118665053362250806">Setați dimensiunea pentru memorare în cache pe disc pentru media</translation>
 <translation id="8124468781472887384">Politica privind accesul la configurarea imprimantelor asociate dispozitivelor.</translation>
@@ -3836,6 +3837,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă această politică nu este setată, nu vor exista excepții de la lista neagră din politica „URLBlacklist”.</translation>
 <translation id="8176035528522326671">Permiteți ca utilizatorul din companie să fie doar utilizatorul principal într-o sesiune cu mai multe profiluri (comportamentul prestabilit pentru utilizatorii gestionați de companie)</translation>
+<translation id="8183108371184777472">Suprimă lansarea unei ferestre de browser</translation>
 <translation id="8214600119442850823">Configurează managerul de parole.</translation>
 <translation id="8217516105848565518">Această politică este învechită. Folosește RemoteAccessHostDomainList în schimb.</translation>
 <translation id="8244171102276095471">Activează suitele de codificare RC4 în TLS</translation>
@@ -3933,11 +3935,11 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 
       Dacă politica este setată la „Înlocuiește”, politica privind utilizatorii din GPO-urile utilizatorilor este înlocuită de politica privind utilizatorii din GPO-urile de pe computer (GPO-urile utilizatorilor sunt ignorate).</translation>
 <translation id="8465065632133292531">Parametrii pentru adresa URL a căutării instant care utilizează POST</translation>
-<translation id="8465746466645315861">Dacă politica nu este configurată, utilizatorul poate activa sau dezactiva ortografia din setările limbii.
+<translation id="8465746466645315861">Dacă politica nu este configurată, utilizatorul poate activa sau dezactiva verificarea ortografică din setările limbii.
 
-      Dacă politica este activată, ortografia este activată și nu poate fi dezactivată de utilizator. În <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> și <ph name="LINUX_OS_NAME" />, verificarea ortografică pentru limbi poate fi activată sau dezactivată individual, astfel ca utilizatorul să poate dezactiva ortografia prin dezactivarea verificării ortografice pentru fiecare limbă. Pentru a evita acest lucru, politica <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> poate fi folosită pentru a forța activarea verificării ortografice pentru anumite limbi.
+      Dacă politica este activată, verificarea ortografică este activată și nu poate fi dezactivată de utilizator. În <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> și <ph name="LINUX_OS_NAME" />, limbile verificării ortografice pot fi activate sau dezactivate individual, astfel încât utilizatorul poate dezactiva verificarea ortografică prin dezactivarea fiecărei limbi. Pentru a evita acest lucru, politica <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> poate fi folosită pentru a forța activarea verificării ortografice pentru anumite limbi.
 
-      Dacă politica este dezactivată, ortografia este dezactivată și nu poate fi activată de utilizator. Politicile <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> și <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> nu au niciun efect când această politică este dezactivată.
+      Dacă politica este dezactivată, verificarea ortografică este dezactivată și nu poate fi activată de utilizator. Politicile <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> și <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> nu au niciun efect când această politică este dezactivată.
       </translation>
 <translation id="847472800012384958">Nu permite niciunui site să afișeze ferestre pop-up</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -4048,11 +4050,6 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8661297125441579970">Nu permite migrarea datelor și ARC.</translation>
 <translation id="8672321184841719703">Versiune țintă pentru actualizări automate</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
-<translation id="8682611302223077049">Îți permite să setezi perioada, în milisecunde, în care utilizatorii sunt informați că <ph name="PRODUCT_NAME" /> trebuie relansat sau că un dispozitiv <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru a aplica o actualizare în așteptare.
-
-      În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări. Pentru dispozitivele <ph name="PRODUCT_OS_NAME" />, notificarea privind repornirea apare în bara de sistem atunci când se detectează un upgrade. Pentru browserele <ph name="PRODUCT_NAME" />, meniul aplicației se modifică, indicând faptul că este necesară o relansare după expirarea unei treimi din perioada de notificare. Această notificare își schimbă culoarea după expirarea a două treimi din perioada de notificare și încă o dată, după încheierea întregii perioade de notificare. Notificările suplimentare activate de politica <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> urmează același program.
-
-      Dacă nu este configurată, se aplică o perioadă prestabilită de 345.600.000 de milisecunde (patru zile) pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> și 604.800.000 de milisecunde (o săptămână) pentru <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Avertismentul privind protecția prin parolă este declanșat de refolosirea parolei</translation>
 <translation id="8693243869659262736">Utilizați clientul DNS integrat</translation>
 <translation id="8698286761337647563">Cu câte zile în avans se notifică utilizatorii SAML când parola urmează să expire</translation>
@@ -4066,7 +4063,6 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
           Notă: valorile permise pentru câmpul <ph name="MINUTE_FIELD_NAME" /> în <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> și <ph name="CHARGE_START_TIME_FIELD_NAME" /> sunt: 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Lista pluginurilor dezactivate</translation>
 <translation id="8711086062295757690">Specifică cuvântul cheie care este comanda rapidă utilizată în caseta polivalentă pentru a declanșa căutarea pentru acest furnizor. Această politică este opțională. Dacă nu este setată, niciun cuvânt cheie nu va activa furnizorul de căutare. Această politică este luată în considerare numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
-<translation id="8731693562790917685">Folosind Setările privind conținutul, poți să specifici modul în care este gestionat conținutul de un anumit tip (de ex., cookie-uri, imagini sau JavaScript).</translation>
 <translation id="8733448613597049197">Activează Raportarea extinsă pentru Navigarea sigură din <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
 
       Raportarea extinsă trimite anumite informații de sistem și conținutul paginii la serverele Google pentru a detecta aplicațiile și site-urile periculoase.
@@ -4143,6 +4139,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
       Dacă activezi sau dezactivezi această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />.
 
       Dacă această setare este lăsată nesetată, utilizatorul poate decide dacă folosește sau nu această funcție.</translation>
+<translation id="8871974300055371298">Setări de conținut</translation>
 <translation id="8876188741456358123">Modifică modul duplex prestabilit pentru printare. Dacă modul nu este disponibil, această politică este ignorată.</translation>
 <translation id="8882006618241293596">Blochează plunginul <ph name="FLASH_PLUGIN_NAME" /> pe aceste site-uri</translation>
 <translation id="8906768759089290519">Activați modul pentru invitați</translation>
@@ -4251,8 +4248,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="9084985621503260744">Specificați dacă activitatea video afectează gestionarea consumului de energie</translation>
 <translation id="9088433379343318874">Activează furnizorul de conținut pentru utilizatori monitorizați</translation>
 <translation id="9088444059179765143">Configurează metoda de detectare automată a fusului orar</translation>
-<translation id="9094064873808699479">Revino și rămâi la versiunea țintă dacă versiunea sistemului de operare este mai nouă decât ținta. Încearcă să preiei configurația la nivel de dispozitiv (inclusiv acreditările de rețea) prin procesul de revenire, dacă este posibil, dar fă revenirea cu un Powerwash complet, chiar dacă restabilirea datelor nu este posibilă (deoarece versiunea țintă nu acceptă restabilirea datelor sau din cauza unei schimbări care nu acceptă revenirea la starea anterioară).
-          Se acceptă în versiunea 70 și versiunile ulterioare de <ph name="PRODUCT_OS_NAME" />. Pentru clienții mai vechi, această valoare înseamnă că revenirea este dezactivată.</translation>
 <translation id="9096086085182305205">Lista albă de autentificare a serverelor</translation>
 <translation id="9105265795073104888">Un singur subset de opțiuni pentru configurarea proxy-ului este pus la dispoziția aplicațiilor Android. Acestea pot alege în mod voluntar să folosească proxy-ul. Nu le poți forța să folosească un proxy.</translation>
 <translation id="9106865192244721694">Permite WebUSB pe aceste site-uri</translation>

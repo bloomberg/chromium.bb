@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">کوچک کردن منو</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1419738280318246476">برای اجرای کنش اعلان، قفل دستگاه را باز کنید</translation>
+<translation id="1426410128494586442">بله</translation>
 <translation id="1455242230282523554">نمایش تنظیمات زبان</translation>
 <translation id="1467432559032391204">چپ</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> همچنان می‌تواند بعداً به سیستم وارد شود.</translation>
 <translation id="3321628682574733415">کد والدین نادرست است</translation>
 <translation id="332587331255250389">لطفاً باتری را تعویض کنید</translation>
-<translation id="3335825575923019462">مطمئنید می‌خواهید کلیک‌های خودکار را غیرفعال کنید؟</translation>
 <translation id="3351879221545518001">درحال ارسال محتوای صفحه هستید.</translation>
 <translation id="3364721542077212959">ابزارهای قلم</translation>
 <translation id="3368922792935385530">متصل</translation>
@@ -228,7 +228,6 @@
 <translation id="4378551569595875038">در حال اتصال...</translation>
 <translation id="4379531060876907730">این‌ها ابزارهای قلم شما هستند</translation>
 <translation id="4389184120735010762">میان‌بر صفحه‌کلید مربوط به ذره‌بین متصل را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
-<translation id="4394049700291259645">غیر فعال کردن</translation>
 <translation id="4421231901400348175">هم‌رسانی کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی ازراه‌دور.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
 <translation id="4450893287417543264">دیگر نشان داده نشود</translation>
@@ -486,7 +485,6 @@
 <translation id="8649101189709089199">انتخاب برای شنیدن</translation>
 <translation id="8652175077544655965">بستن تنظیمات</translation>
 <translation id="8653151467777939995">نمایش تنظیمات اعلان. اعلان‌ها روشن است</translation>
-<translation id="8664483332071009680">کلیک‌های خودکار غیرفعال شود؟</translation>
 <translation id="8664753092453405566">نمایش فهرست شبکه. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">‎۲۷۰°‎</translation>
 <translation id="8676770494376880701">شارژر برق متصل شده ضعیف است</translation>

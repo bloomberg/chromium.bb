@@ -326,7 +326,6 @@
 <translation id="1474273443907024088">Poista TLS False Start käytöstä</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Ota käyttöön kolmannen osapuolen ohjelmistojen lisäämisen esto</translation>
-<translation id="1504431521196476721">Etätodennus</translation>
 <translation id="1507382822467487898">
           Määrittää, mitä MAC-osoitetta (media access control) käytetään, kun laite on telineessä.
 
@@ -2366,6 +2365,11 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="5423001109873148185">Tämä käytäntö pakottaa hakukoneiden tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, oletushakukonetta ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda hakukoneen, tai hakukone voidaan tuoda automaattisesti.</translation>
 <translation id="5423197884968724595">Android WebView -rajoituksen nimi:</translation>
 <translation id="5424147596523390018">Kaikkien väritilojen salliminen</translation>
+<translation id="5427003226809696696">Tämä käytäntö määrittää, avataanko selainikkuna käyttökerran alussa.
+
+          Jos käytäntö on käytössä, selainikkunaa ei avata.
+
+          Jos käytäntö on poistettu käytöstä tai sitä ei ole määritetty, selainikkuna voidaan avata. Huomaa, että selainikkunaa ei välttämättä avata muista käytännöistä tai komentorivin merkinnöistä johtuen.</translation>
 <translation id="5427879482805712214">Tämän käytännön avulla voit määrittää käyttäjän avatar-kuvan, joka näkyy kirjautumisnäytöllä. Määritä tämän käytännön arvoksi URL-osoite, josta <ph name="PRODUCT_OS_NAME" /> voi ladata avatarin, ja salauksen hajautusarvo, jonka avulla tarkistetaan latauksen eheys. Kuvan on oltava JPEG-muodossa, ja sen sallittu enimmäiskoko on 512 kt. URL-osoitteeseen pääsyn on toimittava ilman todennusta.
 
       Avatar ladataan ja tallennetaan välimuistiin. Se ladataan uudelleen aina, kun URL-osoite tai hajautusarvo muuttuu.
@@ -3158,7 +3162,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos valittuna on U2F_EXTENDED, sisäänrakennettu toinen taso tarjoaa U2F-ominaisuuksien lisäksi yksilöllisen todennuksen mahdollistavia laajennuksia.</translation>
 <translation id="7003334574344702284">Tämä käytäntö pakottaa tallennettujen salasanojen tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, tallennettuja salasanoja ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda salasanat, tai ne voidaan tuoda automaattisesti.</translation>
 <translation id="7003746348783715221">Tuotteen <ph name="PRODUCT_NAME" /> asetukset</translation>
-<translation id="7006788746334555276">Sisältöasetukset</translation>
 <translation id="7007671350884342624">Määrittää levyllä sijaitsevan hakemiston, johon <ph name="PRODUCT_NAME" /> tallentaa käyttäjätietoja.
 
       Jos otat tämän käytännön käyttöön, <ph name="PRODUCT_NAME" /> käyttää määritettyä hakemistoa, vaikka käyttäjä antaisi --user-data-dir-komennon. Älä määritä käytännön arvoksi juurihakemistoa tai muihin tarkoituksiin käytettävää hakemistoa, sillä <ph name="PRODUCT_NAME" /> hallinnoi sen sisältöä ja seurauksena voi olla tietojen katoamista tai muita odottamattomia ongelmia.
@@ -3186,7 +3189,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Nämä lokit voidaan yhdistää käyttökertatunnuksen avulla muihin lokeihin, jotka kyseessä oleva Googlen palvelu on kerännyt. Tämän tarkoituksena on helpottaa virheenkorjausta.
       </translation>
 <translation id="706669471845501145">Anna kaikkien sivustojen näyttää työpöytäilmoituksia</translation>
-<translation id="7068108874199666656">Sallii verkon määritystietojen käyttöönoton kaikille käyttäjille<ph name="PRODUCT_OS_NAME" /> ‑laitteessa. Verkon määritystiedot ovat Open Network Configuration ‑muodon mukaisessa JSON-merkkijonossa.</translation>
+<translation id="7068108874199666656">Sallii verkon määritystietojen käyttöönoton kaikille käyttäjille <ph name="PRODUCT_OS_NAME" /> ‑laitteessa. Verkon määritystiedot ovat Open Network Configuration ‑muodon mukaisessa JSON-merkkijonossa.</translation>
 <translation id="7070525176564511548">Salasana vaaditaan joka viikko (168 tunnin välein)</translation>
 <translation id="7072208053150563108">Laitteen salasanan muutostiheys</translation>
 <translation id="7079519252486108041">Estä ponnahdusikkunat näissä sivustoissa</translation>
@@ -3514,8 +3517,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7617319494457709698">Tämä käytäntö määrittää laajennukset, joilla on oikeus käyttää <ph name="ENTERPRISE_PLATFORM_KEYS_API" />n funktiota <ph name="CHALLENGE_USER_KEY_FUNCTION" /> etätodennukseen. Vain tässä luettelossa olevat laajennukset voivat käyttää sovellusliittymää.
 
           Jos laajennus ei ole luettelossa tai luetteloa ei ole määritetty, kutsujen lähettäminen sovellusliittymälle epäonnistuu ja palauttaa virhekoodin.</translation>
-<translation id="7618907117929117943">Palaa kohdeversioon ja pysy siinä, jos käyttöjärjestelmän versio on uudempi kuin kohde ja laitetason määritykset (mukaan lukien verkon kirjautumistiedot) on mahdollista siirtää palautuksessa. Ohita OOBE palautuksen jälkeen. Älä tee palautusta tai keskeytä sitä, jos tämä ei ole mahdollista (koska kohdeversio ei tue datan palautusta tai muutos on yhteensopimaton vanhemman version kanssa).
-          Tuettu versiossa 70 ja uudemmissa (<ph name="PRODUCT_OS_NAME" />). Palautus ei siis ole mahdollinen vanhempia versioita käyttäville asiakkaille.</translation>
 <translation id="7620869951155758729">Tässä käytännössä määritetään vanhemman käyttökoodin luomiseen ja vahvistukseen käytettävä määritys.
 
       |current_config| on aina käytössä käyttökoodin luomisessa, ja käyttökoodin voi vahvistaa sillä vain, jos |future_config| ei ole käytettävissä.
@@ -3840,6 +3841,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos tätä käytäntöä ei ole määritetty, URLBlacklist-käytännön luettelossa oleviin kiellettyihin osoitteisiin ei tehdä poikkeuksia.</translation>
 <translation id="8176035528522326671">Anna yrityskäyttäjän olla vain ensisijainen käyttäjä usean profiilin käyttökerralla (oletuskäyttäytyminen yrityksen hallinnoimille käyttäjille)</translation>
+<translation id="8183108371184777472">Estä selainikkunan avaaminen</translation>
 <translation id="8214600119442850823">Määrittää salasanan hallinnan.</translation>
 <translation id="8217516105848565518">Tämä käytäntö on poistettu käytöstä. Käytä tämän sijaan RemoteAccessHostDomainList-käytäntöä.</translation>
 <translation id="8244171102276095471">Ota käyttöön TLS:n RC4-salaustekniikat</translation>
@@ -4054,11 +4056,6 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
 <translation id="8661297125441579970">Estä datan siirto ja ARC.</translation>
 <translation id="8672321184841719703">Automaattisen päivityksen version määrittäminen</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
-<translation id="8682611302223077049">Voit määrittää ajanjakson (millisekunteina), jonka aikana käyttäjälle ilmoitetaan, että <ph name="PRODUCT_NAME" /> tai <ph name="PRODUCT_OS_NAME" /> ‑laite on käynnistettävä uudelleen odottavan päivityksen vuoksi.
-
-      Tänä aikana käyttäjä saa toistuvia muistutuksia päivittämisestä. <ph name="PRODUCT_OS_NAME" /> ‑laitteilla uudelleenkäynnistysilmoitus näkyy ilmaisinalueella, kun päivitys havaitaan. <ph name="PRODUCT_NAME" /> ‑selaimessa sovellusvalikon muutos kertoo uudelleenkäynnistyksen tarpeesta, kun kolmannes ilmoitusajasta on kulunut. Ilmoituksen väri muuttuu, kun kaksi kolmannesta ilmoitusajasta on kulunut, ja uudelleen, kun koko ilmoitusaika on kulunut. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-selainkäytännön sallimat lisäilmoitukset noudattavat samaa aikataulua.
-
-      Jos käytäntöä ei ole määritetty, <ph name="PRODUCT_OS_NAME" /> ‑laitteiden oletusajanjakso on 345 600 000 millisekuntia (neljä päivää) ja <ph name="PRODUCT_NAME" /> ‑selainten 604 800 000 millisekuntia (yksi viikko).</translation>
 <translation id="8685024486845674965">Salasanasuojauksen varoitus käynnistyy, kun salasanaa käytetään uudelleen</translation>
 <translation id="8693243869659262736">Käytä sisäänrakennettua DNS-asiakassovellusta</translation>
 <translation id="8698286761337647563">Kuinka monta päivää etukäteen SAML-käyttäjille ilmoitetaan, että heidän salasanansa on vanhenemassa</translation>
@@ -4072,7 +4069,6 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
           Huom. Sallitut arvot (<ph name="MINUTE_FIELD_NAME" />: <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> ja <ph name="CHARGE_START_TIME_FIELD_NAME" />) ovat 0, 15, 30 ja 45.</translation>
 <translation id="8704831857353097849">Luettelo käytöstä poistetuista laajennuksista</translation>
 <translation id="8711086062295757690">Määrittää avainsanan, joka käynnistää omniboxissa tämän hakupalvelun haun. Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, mikään avainsana ei käynnistä tätä hakupalvelua. Tämä käytäntö on voimassa vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
-<translation id="8731693562790917685">Sisältöasetuksien avulla voit määrittää, miten tietyn tyyppistä sisältöä (kuten evästeitä, kuvia tai JavaScriptiä) käsitellään.</translation>
 <translation id="8733448613597049197">Ota käyttöön tuotteen <ph name="PRODUCT_NAME" /> Selaussuojan laajennettu raportointi ja estä käyttäjiä muuttamasta tätä asetusta.
 
       Laajennettu raportointi lähettää Googlen palvelimille tietoja järjestelmästä ja sivujen sisällöstä vaarallisten sovellusten ja sivustojen tunnistamiseksi.
@@ -4149,6 +4145,7 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
       Jos otat tämän asetuksen käyttöön tai poistat sen käytöstä, käyttäjät eivät voi muuttaa tai ohittaa asetusta tuotteessa <ph name="PRODUCT_NAME" />.
 
       Jos asetusta ei ole määritetty, käyttäjä voi itse päättää, haluaako käyttää toimintoa.</translation>
+<translation id="8871974300055371298">Sisältöasetukset</translation>
 <translation id="8876188741456358123">Ohittaa kaksipuolisen tulostustilan. Jos tila ei ole käytettävissä, tämä käytäntö ohitetaan.</translation>
 <translation id="8882006618241293596">Estä <ph name="FLASH_PLUGIN_NAME" />-laajennus näillä sivustoilla.</translation>
 <translation id="8906768759089290519">Ota vierastila käyttöön</translation>
@@ -4271,8 +4268,6 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
 <translation id="9084985621503260744">Määritä, vaikuttaako videotoiminta virranhallintaan</translation>
 <translation id="9088433379343318874">Ota käyttöön valvotun käyttäjän sisällön tarjoaja</translation>
 <translation id="9088444059179765143">Määritä aikavyöhykkeen automaattinen tunnistamistapa.</translation>
-<translation id="9094064873808699479">Palaa kohdeversioon ja pysy siinä, jos käyttöjärjestelmän versio on uudempi kuin kohde. Pyri siirtämään laitetason määritykset (mukaan lukien verkon kirjautumistiedot) palautusprosessin yhteydessä, jos mahdollista, mutta tee palautuksessa täysi powerwash vaikka datan palautus ei olisi mahdollista (koska kohdeversio ei tue datan palautusta tai muutos on yhteensopimaton vanhemman version kanssa).
-          Tuettu versiossa 70 ja uudemmissa (<ph name="PRODUCT_OS_NAME" />). Palautus ei siis ole mahdollinen vanhempia versioita käyttäville asiakkaille.</translation>
 <translation id="9096086085182305205">Sallittujen todennuspalvelimien luettelo</translation>
 <translation id="9105265795073104888">Vain osa välityspalvelinasetuksista on Android-sovellusten käytettävissä. Android-sovellukset voivat käyttää välityspalvelinta halutessaan. Et voi pakottaa niitä käyttämään välityspalvelinta.</translation>
 <translation id="9106865192244721694">Salli WebUSB näillä sivustoilla</translation>

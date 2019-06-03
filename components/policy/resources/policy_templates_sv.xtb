@@ -330,7 +330,6 @@
 <translation id="1474273443907024088">Inaktivera falsk start i TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Aktivera blockering av kodinjektion från tredjepartsprogram</translation>
-<translation id="1504431521196476721">Fjärrattestering</translation>
 <translation id="1507382822467487898">
           Konfigurerar vilken MAC-adress (Media Access Control) som ska användas när en docka är ansluten till enheten.
 
@@ -2420,6 +2419,11 @@
       Om policyn inte är inställd kan användaren tillfrågas om importen ska göras eller inte, eller så kan importen göras automatiskt.</translation>
 <translation id="5423197884968724595">Begränsningsnamn för Android WebView:</translation>
 <translation id="5424147596523390018">Tillåt alla färginställningar</translation>
+<translation id="5427003226809696696">Principen styr om webbläsarfönstret ska öppnas när sessionen startar.
+
+          Om principen har aktiverats öppnas inte webbläsarfönstret.
+
+          Om principen har inaktiverats eller inte ställts in får webbläsarfönstret öppnas. Observera att webbläsarfönstret kanske inte öppnas på grund av andra principer eller flaggor på kommandoraden.</translation>
 <translation id="5427879482805712214">Med den här principen kan du konfigurera den avatarbild som representerar användaren på inloggningsskärmen. Du ställer in principen genom att ange en webbadress som avatarbilden kan laddas ned från i <ph name="PRODUCT_OS_NAME" /> och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och får inte vara större än 512 kB. Det måste gå att komma åt webbadressen utan autentisering.
 
       Avatarbilden laddas ned och cachelagras. Den laddas ned på nytt när webbadressen eller hashen ändras.
@@ -3234,7 +3238,6 @@
 
       Om policyn inte anges får användaren välja om lösenord ska importeras, eller så kan importen göras automatiskt.</translation>
 <translation id="7003746348783715221">Inställningar för <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Innehållsinställningar</translation>
 <translation id="7007671350884342624">Konfigurerar den katalog som <ph name="PRODUCT_NAME" /> använder för att lagring av användardata.
 
       Om du ställer in den här policyn använder <ph name="PRODUCT_NAME" /> den angivna katalogen, oavsett om användare har angett flaggan --user-data-dir eller inte. Undvik dataförlust eller oväntade fel genom att inte ställa in den här policyn på volymens rotkatalog eller på en katalog som används i andra syften eftersom <ph name="PRODUCT_NAME" /> hanterar dess innehåll.
@@ -3603,8 +3606,6 @@
 <translation id="7617319494457709698">Principen specificerar vilka tillägg som får använda <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funktionen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
 
           Om ett tillägg inte finns med på listan, eller om listan inte har fastställts misslyckas anslutningen till API:et och en felkod visas.</translation>
-<translation id="7618907117929117943">Återställ till målversionen om operativsystemet är nyare än målversionen och om det går att föra över konfigurationen på enhetsnivå (inklusive användaruppgifter i nätverket) vid återställningen, vilket också innebär att introduktionen vid första användningen (OOBE) hoppas över efter återställningen. Återställningen avbryts eller uteblir om detta inte går (därför att målversionen inte har stöd för att återställa data eller på grund av en ändring som inte är bakåtkompatibel).
-          Stöds i version 70 eller senare av <ph name="PRODUCT_OS_NAME" />. I äldre klienter än så innebär det här värdet att återställning inaktiveras.</translation>
 <translation id="7620869951155758729">Den här principen anger vilken konfiguration som ska användas för att generera och verifiera föräldraåtkomstkoder.
 
       |current_config| används alltid för att generera åtkomstkoder och bör endast användas för validering av åtkomstkoder när de inte kan valideras med hjälp av |future_config|.
@@ -3938,6 +3939,7 @@
 
       Om den här policyn inte anges görs inga undantag från policyn URLBlacklist.</translation>
 <translation id="8176035528522326671">Tillåt en företagsanvändare att vara enbart primär flerprofilsanvändare (standardbeteendet för företagshanterade användare)</translation>
+<translation id="8183108371184777472">Förhindra att webbläsarfönstret öppnas</translation>
 <translation id="8214600119442850823">Konfigurerar lösenordshanteraren.</translation>
 <translation id="8217516105848565518">Den här principen är utfasad. Använd RemoteAccessHostDomainList i stället.</translation>
 <translation id="8244171102276095471">Aktivera RC4-krypteringssviter i TLS</translation>
@@ -4153,11 +4155,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8661297125441579970">Tillåt inte datamigrering och ARC.</translation>
 <translation id="8672321184841719703">Målversion för automatisk uppdatering</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
-<translation id="8682611302223077049">Gör att du kan ställa in i millisekunder under hur lång tid in som användare aviseras om att <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" />-enheten måste startas om när en uppdatering väntar.
-
-      Under den tiden visas upprepade uppmaningar att starta om för användaren. På <ph name="PRODUCT_OS_NAME" />-enheter visas en avisering om att starta om i systemfältet när en uppgradering har upptäckts. I <ph name="PRODUCT_NAME" />-webbläsare ändras appmenyn för att visa att en omstart behövs när en tredjedel av tidsperioden har gått. Aviseringen byter färg när två tredjedelar av tidsperioden har gått och igen när tidsperioden har löpt ut. För ytterligare aviseringar som aktiveras med principen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> används samma schema.
-
-      Om principen inte ställs in används som standard tidsperioden 345 600 000 millisekunder (fyra dagar) för <ph name="PRODUCT_OS_NAME" />-enheter och 604 800 000 millisekunder (en vecka) för <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Lösenordsskyddets varningar utlöses av att lösenordet återanvänds</translation>
 <translation id="8693243869659262736">Använd en inbyggd DNS-klient</translation>
 <translation id="8698286761337647563">Hur många dagar i förväg ska SAML-användare aviseras när deras lösenord snart upphör att gälla</translation>
@@ -4175,7 +4172,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
           Policyn är valfri. Om den inte anges aktiverar inget nyckelord sökleverantören.
 
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
-<translation id="8731693562790917685">Med innehållsinställningarna kan du ange hur innehåll av en viss typ (till exempel cookies, bilder eller JavaScript) ska hanteras.</translation>
 <translation id="8733448613597049197">Aktiverar Utökad rapportering för Säker webbsökning för <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
 
       Med Utökad rapportering skickas viss systeminformation och sidinnehåll till Googles servrar i syfte att identifiera skadliga appar och webbplatser.
@@ -4256,6 +4252,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME" />.
 
       Om du inte anger inställningen kan användarna välja om de vill använda funktionen eller inte.</translation>
+<translation id="8871974300055371298">Innehållsinställningar</translation>
 <translation id="8876188741456358123">Åsidosätter standardinställningen för dubbelsidig utskrift. Om alternativet inte är tillgängligt ignoreras principen.</translation>
 <translation id="8882006618241293596">Blockera pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> på dessa webbplatser</translation>
 <translation id="8906768759089290519">Aktivera gästläge</translation>
@@ -4378,8 +4375,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
 <translation id="9088433379343318874">Aktiverar den kontrollerade användarens innehållsleverantör</translation>
 <translation id="9088444059179765143">Konfigurera metod för automatisk tidszonsangivelse</translation>
-<translation id="9094064873808699479">Återställ till målversionen om operativsystemet är nyare än målversionen. Försök att föra över konfigurationen på enhetsnivå (inklusive användaruppgifter i nätverket) vid återställningen om det går, men gör återställningen med fullständig powerwash även om det inte går att återställa data (därför att målversionen inte har stöd för att återställa data eller på grund av en ändring som inte är bakåtkompatibel).
-          Stöds i version 70 eller senare av <ph name="PRODUCT_OS_NAME" />. I äldre klienter än så innebär det här värdet att återställning inaktiveras.</translation>
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
 <translation id="9105265795073104888">Bara ett urval av konfigurationsalternativen för proxyserver är tillgängliga för Android-appar. De kan men måste inte använda proxyn. Det går inte att göra inställningen obligatorisk för dem.</translation>
 <translation id="9106865192244721694">Tillåt WebUSB på dessa webbplatser</translation>

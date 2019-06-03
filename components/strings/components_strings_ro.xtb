@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Carduri acceptate</translation>
 <translation id="1032854598605920125">Rotește în sensul acelor de ceasornic</translation>
 <translation id="1035334672863811645">conectează-te la Chrome</translation>
+<translation id="1036348656032585052">Dezactivează</translation>
 <translation id="1038842779957582377">nume necunoscut</translation>
 <translation id="1039626062703039346">Chrome te poate ajuta să îți protejezi Contul Google și să îți schimbi parola. Se va genera o notificare către Google despre acest site.</translation>
 <translation id="1050038467049342496">închide celelalte aplicații;</translation>
@@ -177,6 +178,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Numele titularului cardului</translation>
 <translation id="1821930232296380041">Solicitarea sau parametrii săi sunt greșiți</translation>
+<translation id="1822370876374026111">Pentru a plăti mai rapid data viitoare, adaugă cardul și adresa de facturare în Contul Google și pe acest dispozitiv.</translation>
 <translation id="1822540298136254167">Site-urile pe care le-ai accesat și timpul petrecut pe ele</translation>
 <translation id="1826516787628120939">Se verifică</translation>
 <translation id="1834321415901700177">Acest site conține programe dăunătoare</translation>
@@ -189,6 +191,7 @@
 <translation id="187918866476621466">Deschide paginile de pornire</translation>
 <translation id="1883255238294161206">Restrângeți lista</translation>
 <translation id="1898423065542865115">Filtrarea</translation>
+<translation id="1914326953223720820">Serviciu de dezarhivare</translation>
 <translation id="1916770123977586577">Ca să aplici setările actualizate pentru acest site, reîncarcă pagina</translation>
 <translation id="1919345977826869612">Anunțuri</translation>
 <translation id="1919367280705858090">Obține ajutor în privința unui anumit mesaj de eroare</translation>
@@ -272,7 +275,6 @@
 <translation id="2360873523816792727">Pentru a-ți folosi cardurile pe toate dispozitivele, activează sincronizarea.</translation>
 <translation id="2365563543831475020">Raportul de blocare creat <ph name="CRASH_TIME" /> nu a fost încărcat</translation>
 <translation id="2367567093518048410">Nivel</translation>
-<translation id="2378238891085281592">Ai trecut în modul privat</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Setare prestabilită la nivel de companie</translation>
 <translation id="2386255080630008482">Certificatul serverului a fost revocat.</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3041612393474885105">Informații despre certificat</translation>
 <translation id="3060227939791841287">C9 (Plic)</translation>
+<translation id="3061707000357573562">Serviciu de corecție</translation>
 <translation id="3064966200440839136">Vei părăsi modul incognito pentru a plăti folosind o aplicație externă. Continui?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Niciuna}=1{1 parolă}few{# parole}other{# de parole}}</translation>
 <translation id="3095940652251934233">Extras</translation>
@@ -593,6 +596,7 @@
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Încă <ph name="ITEM_COUNT" /> articol}few{Încă <ph name="ITEM_COUNT" /> articole}other{Încă <ph name="ITEM_COUNT" /> de articole}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4193750898749511769">Pentru a plăti mai rapid data viitoare, adaugă cardul și adresa de facturare în Contul Google.</translation>
 <translation id="4196861286325780578">&amp;Repetați mutarea</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />să verifici configurarea pentru firewall și antivirus;<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Plic)</translation>
@@ -731,7 +735,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> afișează mesajul</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Nu există rezultate</translation>
-<translation id="4945672369594656571">Stabilește modul în care sunt gestionate datele dispozitivului și ale contului. Google prelucrează datele dispozitivului și ale contului numai sub îndrumarea managerului de dispozitiv și de cont și numai în scopurile indicate de managerul de dispozitiv și de cont.</translation>
 <translation id="4950898438188848926">Butonul Comută între file, apasă pe Enter pentru a comuta la fila deschisă, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Acțiuni</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -745,7 +748,6 @@
 <translation id="5017554619425969104">Textul copiat de tine</translation>
 <translation id="5018422839182700155">Pagina nu poate fi deschisă</translation>
 <translation id="5019198164206649151">Depozit de fundal în stare nevalidă</translation>
-<translation id="5020154601324912079">Stabilește cum sunt gestionate datele dispozitivului. Google prelucrează datele dispozitivului numai sub îndrumarea managerului de dispozitiv și numai în scopurile indicate de acesta.</translation>
 <translation id="5023310440958281426">Consultați politicile administratorului</translation>
 <translation id="5029568752722684782">Șterge copia</translation>
 <translation id="503069730517007720">Un certificat rădăcină pentru „<ph name="SOFTWARE_NAME" />” este necesar, dar nu este instalat. Administratorul IT trebuie să verifice instrucțiunile de configurare pentru „<ph name="SOFTWARE_NAME" />” ca să remedieze problema. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -918,6 +920,7 @@
 <translation id="5921639886840618607">Salvezi cardul în Contul Google?</translation>
 <translation id="5922853866070715753">Aproape finalizat</translation>
 <translation id="5932224571077948991">Site-ul afișează anunțuri deranjante sau înșelătoare</translation>
+<translation id="5939847200023027600">Serviciul PDF Compositor</translation>
 <translation id="5946937721014915347">Se deschide <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Da, adaugă</translation>
 <translation id="5951495562196540101">Nu te poți înscrie cu contul de consumator (este disponibilă o licență din pachet).</translation>
@@ -1001,13 +1004,14 @@
 <translation id="6433490469411711332">Editează informațiile de contact</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> a refuzat conexiunea.</translation>
 <translation id="6434309073475700221">Renunță</translation>
-<translation id="6440503408713884761">Ignorată</translation>
+<translation id="6440503408713884761">Ignorat</translation>
 <translation id="6446163441502663861">Kahu (Plic)</translation>
 <translation id="6446608382365791566">Adaugă mai multe informații</translation>
 <translation id="6447842834002726250">Cookie-uri</translation>
 <translation id="6451458296329894277">Confirmă retrimiterea formularului</translation>
 <translation id="6465306955648956876">Gestionează parolele...</translation>
 <translation id="647261751007945333">Politici privind dispozitivele</translation>
+<translation id="6476284679642588870">Gestionează metodele de plată</translation>
 <translation id="6477321094435799029">Chrome a detectat un cod neobișnuit pe această pagină și l-a blocat pentru a-ți proteja informațiile cu caracter personal (de exemplu, parole, numere de telefon sau carduri de credit).</translation>
 <translation id="6489534406876378309">Începeți încărcarea rapoartelor de blocare</translation>
 <translation id="6499038740797743453">Resetezi parola?</translation>
@@ -1080,7 +1084,6 @@
 <translation id="6948701128805548767">Pentru a vedea metodele de preluare și cerințele, selectează o adresă</translation>
 <translation id="6949872517221025916">Resetează parola</translation>
 <translation id="6950684638814147129">Eroare la analizarea valorii JSON: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Deschide pagina într-o filă privată nouă</translation>
 <translation id="6957887021205513506">Certificatul serverului pare a fi un fals.</translation>
 <translation id="6964255747740675745">Configurația rețelei nu a putut fi analizată (JSON nevalid).</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -1090,7 +1093,6 @@
 <translation id="6973932557599545801">Nu te mai pot ajuta. Continuă personal.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Dezactivează sunetul (prestabilit)</translation>
-<translation id="6984479912851154518">Vei părăsi modul privat pentru a plăti folosind o aplicație externă. Continui?</translation>
 <translation id="6989763994942163495">Afișează setările avansate...</translation>
 <translation id="6993898126790112050">6x9 (Plic)</translation>
 <translation id="6996312675313362352">Tradu întotdeauna din <ph name="ORIGINAL_LANGUAGE" /></translation>
@@ -1148,6 +1150,7 @@ Detalii suplimentare:
 <translation id="7298195798382681320">Recomandate</translation>
 <translation id="7300012071106347854">Albastru cobalt</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />”</translation>
+<translation id="7303701124147721189">Pentru a plăti mai rapid data viitoare, stochează cardul și adresa de facturare în Contul Google și pe acest dispozitiv.</translation>
 <translation id="7309308571273880165">Raportul de blocare creat <ph name="CRASH_TIME" /> (utilizatorul a solicitat încărcarea, dar nu a fost încărcat încă)</translation>
 <translation id="7313965965371928911">Avertizări privind <ph name="BEGIN_LINK" />Navigarea sigură<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
@@ -1178,7 +1181,6 @@ Detalii suplimentare:
 <translation id="741007362987735528">Format-Larg</translation>
 <translation id="7416351320495623771">Gestionează parolele…</translation>
 <translation id="7419106976560586862">Calea profilului</translation>
-<translation id="7424427397225027541">Stabilește cum sunt gestionate datele contului. Google prelucrează datele contului numai sub îndrumarea managerului contului și numai în scopurile indicate de acesta.</translation>
 <translation id="7437289804838430631">Adaugă informații de contact</translation>
 <translation id="7440140511386898319">Explorează în timp ce ești offline</translation>
 <translation id="7441627299479586546">Subiectul politicii este greșit</translation>
@@ -1318,6 +1320,7 @@ Detalii suplimentare:
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Cardurile nevalide au fost eliminate</translation>
 <translation id="8103161714697287722">Metodă de plată</translation>
+<translation id="8105368624971345109">Dezactivează</translation>
 <translation id="8118489163946903409">Metodă de plată</translation>
 <translation id="8127301229239896662">„<ph name="SOFTWARE_NAME" />” nu a fost instalat corect pe computer sau în rețea. Contactează administratorul IT pentru a remedia această problemă.</translation>
 <translation id="8131740175452115882">Confirmați</translation>
@@ -1376,6 +1379,7 @@ Detalii suplimentare:
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8433057134996913067">Astfel, te vei deconecta de pe majoritatea site-urilor.</translation>
 <translation id="8437238597147034694">&amp;Anulați mutarea</translation>
+<translation id="8440508849222143646">Pentru a plăti mai rapid data viitoare, stochează cardul și adresa de facturare în Contul Google.</translation>
 <translation id="8461694314515752532">Criptează datele sincronizate folosind propria expresie de acces pentru sincronizare</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 card de credit}few{# carduri de credit}other{# de carduri de credit}}</translation>
 <translation id="8473863474539038330">Adrese și altele</translation>
@@ -1482,6 +1486,7 @@ Detalii suplimentare:
 <translation id="9128870381267983090">Conectați-vă la rețea</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9137248913990643158">Pornește și conectează-te la Chrome înainte de a folosi această aplicație.</translation>
+<translation id="9141013498910525015">Gestionează adresele</translation>
 <translation id="9148088599418889305">Alege metoda de expediere</translation>
 <translation id="9148507642005240123">&amp;Anulați editarea</translation>
 <translation id="9154194610265714752">Actualizat</translation>

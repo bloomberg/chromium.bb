@@ -312,7 +312,6 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 <translation id="1474273443907024088">Deaktiver TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Bloker for tilføjelse af software fra tredjeparter</translation>
-<translation id="1504431521196476721">Fjernattestering</translation>
 <translation id="1507382822467487898">
           Konfigurerer, hvilken MAC-adresse (Media Access Control) der skal anvendes, når enheden er tilsluttet en dockingstation.
 
@@ -2337,6 +2336,11 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5423001109873148185">Denne politik tvinger import af søgemaskiner fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis standardsøgemaskinen er deaktiveret, bliver den ikke importeret. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="5423197884968724595">Navn på Android WebView-begrænsning:</translation>
 <translation id="5424147596523390018">Tillad alle farvetilstande</translation>
+<translation id="5427003226809696696">Denne politik styrer, om browservinduet skal åbnes ved starten af sessionen.
+
+          Hvis denne politik er aktiveret, åbnes browservinduet ikke.
+
+          Hvis denne politik er deaktiveret, gives der tilladelse til, at browservinduet åbnes. Bemærk! Browservinduet åbnes muligvis ikke på grund af andre politikker eller markeringer i kommandolinjen.</translation>
 <translation id="5427879482805712214">Denne politik giver dig mulighed for at konfigurere det avatarbillede, der repræsenterer brugeren på loginskærmen. Politikken konfigureres ved at angive den webadresse, hvor <ph name="PRODUCT_OS_NAME" /> kan downloade avatarbilledet og en kryptografisk hash-værdi, som bruges til at bekræfte downloadens integritet. Billedet skal være i .jpeg-format, og dets størrelse må ikke overstige 512 kB. Webadressen skal være tilgængelig uden nogen form for godkendelse.
 
       Avatarbilledet downloades og cachelagres. Det downloades igen, når webadressen eller hash-værdien ændres.
@@ -3132,7 +3136,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       Hvis "U2F_EXTENDED" er valgt, vil den integrerede sekundære faktor levere U2F-funktionerne samt nogle udvidelser til individuel attestering.</translation>
 <translation id="7003334574344702284">Denne politik tvinger import af gemte adgangskoder fra den tidligere standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres de gemte adgangskoder ikke. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="7003746348783715221">Præferencer for <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Indstillinger for indhold</translation>
 <translation id="7007671350884342624">Konfigurerer det indeks, som <ph name="PRODUCT_NAME" /> anvender til at gemme brugerdata.
 
       Hvis du angiver denne politik, anvender <ph name="PRODUCT_NAME" /> det medfølgende indeks, uanset om brugeren har angivet markeringen "--user-data-dir" eller ej. For ikke at miste data eller få uventede fejl bør denne politik ikke angives som en mængdes rodindeks eller som et indeks, der bruges til andre formål, da <ph name="PRODUCT_NAME" /> administrerer indholdet.
@@ -3491,8 +3494,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 <translation id="7617319494457709698">Denne politik angiver de udvidelser, der har tilladelse til at bruge <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funktionen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> til fjernbekræftelse. Udvidelser skal føjes til denne liste for at kunne anvende API'en.
 
           Hvis en udvidelse ikke findes på listen, eller listen ikke er angivet, vil kaldet til API'en mislykkes og returnere en fejlkode.</translation>
-<translation id="7618907117929117943">Træk udgivelsen tilbage, og behold målversionen, hvis OS-versionen er nyere end målversionen, og hvis det er muligt at overføre konfiguration på enhedsniveau (herunder loginoplysninger til netværket) via tilbagetrækning, hvor OOBE også springes over efter tilbagetrækning. Udfør ikke eller annuller tilbagetrækningen, hvis dette ikke er muligt (fordi målversionen ikke understøtter gendannelse af data eller på grund af en ikke-kompatibel ændring tilbage).
-          Understøttes i <ph name="PRODUCT_OS_NAME" /> version 70 og nyere. Ved ældre klienter betyder denne værdi, at tilbagetrækning er deaktiveret.</translation>
 <translation id="7620869951155758729">Denne politik angiver en konfiguration, som bruges til at generere og bekræfte en forældreadgangskode.
 
       |current_config| bruges altid til at generere adgangskoder og bør kun anvendes til validering af adgangskoder, når disse ikke kan valideres ved hjælp af |future_config|.
@@ -3815,6 +3816,7 @@ Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver
 
       Hvis denne politik ikke angives, vil der ikke være nogen undtagelser til sortlisten fra politikken "URLBlacklist".</translation>
 <translation id="8176035528522326671">Tillad, at kun virksomhedsbrugeren er primær multiprofilbruger (standardadfærd for virksomhedsadministrerede brugere)</translation>
+<translation id="8183108371184777472">Tillad ikke, at browservinduet åbnes</translation>
 <translation id="8214600119442850823">Konfigurerer adgangskodeadministratoren.</translation>
 <translation id="8217516105848565518">Denne politik er udfaset. Brug RemoteAccessHostDomainList i stedet.</translation>
 <translation id="8244171102276095471">Aktivér RC4-krypteringspakker i TLS</translation>
@@ -4029,11 +4031,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8661297125441579970">Tillad ikke datamigrering og ARC.</translation>
 <translation id="8672321184841719703">Målversion for automatiske opdateringer</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
-<translation id="8682611302223077049">Giver dig mulighed for at angive et tidsrum i millisekunder, hvor brugerne underrettes om, at <ph name="PRODUCT_NAME" /> eller en <ph name="PRODUCT_OS_NAME" />-enhed skal genstartes for at anvende en afventende opdatering.
-
-      I dette tidsrum informeres brugeren gentagne gange om nødvendigheden af en opdatering. Når der registreres en opdatering til <ph name="PRODUCT_OS_NAME" />-enheder, vises en notifikation om genstart i systembakken. For <ph name="PRODUCT_NAME" />-browsere ændres appmenuen for at vise, at genstart er nødvendig, når en tredjedel af notifikationsperioden er gået. Notifikationen skifter farve, når to tredjedele af notifikationsperioden er gået, og igen når hele notifikationsperioden er udløbet. De yderligere notifikationer, der aktiveres af politikken <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, følger samme tidsplan.
-
-      Hvis politikken ikke konfigureres, anvendes standardtidsrummet på 345600000 millisekunder (fire dage) for <ph name="PRODUCT_OS_NAME" />-enheder og 604800000 millisekunder (én uge) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Advarsler via adgangskodebeskyttelse udløses ved genbrug af adgangskoder</translation>
 <translation id="8693243869659262736">Brug den indbyggede DNS-klient</translation>
 <translation id="8698286761337647563">Hvor mange dage i forvejen skal SAML-brugere underrettes om, at deres adgangskode er ved at udløbe</translation>
@@ -4047,7 +4044,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
           Bemærk! De tilladte værdier for feltet <ph name="MINUTE_FIELD_NAME" /> i <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> og <ph name="CHARGE_START_TIME_FIELD_NAME" /> er 0, 15, 30 og 45.</translation>
 <translation id="8704831857353097849">Liste over deaktiverede plugins</translation>
 <translation id="8711086062295757690">Angiver det nøgleord, som er den genvej, der bruges i omnifeltet til at aktivere søgningen for denne udbyder. Denne politik er valgfri. Hvis den ikke angives, vil ingen søgeord aktivere søgemaskinen. Denne politik tages kun i betragtning, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
-<translation id="8731693562790917685">Indstillinger for indhold giver dig mulighed for at angive, hvordan en bestemt type indhold (for eksempel cookies, billeder eller JavaScript) skal behandles.</translation>
 <translation id="8733448613597049197">Aktiverer udvidet rapportering af Beskyttet browsing for <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
 
       Udvidet rapportering sender visse former for systemoplysninger og sideindhold til Googles servere som en hjælp til at registrere skadelige apps og websites.
@@ -4124,6 +4120,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
       Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen i <ph name="PRODUCT_NAME" />.
 
       Hvis indstillingen ikke konfigureres, kan brugerne selv bestemme, om de vil bruge denne funktion eller ej.</translation>
+<translation id="8871974300055371298">Indstillinger for indhold</translation>
 <translation id="8876188741456358123">Tilsidesætter standardudskrivning i duplex-tilstand. Hvis tilstanden ikke er tilgængelig, ignoreres denne politik.</translation>
 <translation id="8882006618241293596">Bloker <ph name="FLASH_PLUGIN_NAME" />-pluginnet på disse websites</translation>
 <translation id="8906768759089290519">Aktivér gæstetilstand</translation>
@@ -4232,8 +4229,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="9084985621503260744">Angiv, om videoaktiviteten påvirker strømstyringen</translation>
 <translation id="9088433379343318874">Aktivér indholdsudbyderen for den administrerede bruger</translation>
 <translation id="9088444059179765143">Konfigurer metoden for automatisk registrering af tidszone.</translation>
-<translation id="9094064873808699479">Træk udgivelsen tilbage, og behold målversionen, hvis versionen af operativsystemet er nyere end målversionen. Forsøg at overføre konfigurationen på enhedsniveau (herunder loginoplysninger til netværket) via tilbagetrækningsprocessen, hvis det er muligt, men udfør tilbagetrækningen med en fuldstændig Powerwash, selvom det ikke er muligt at gendanne dataene (eftersom målversionen ikke understøtter gendannelse af data eller på grund af en ikke-kompatibel ændring tilbage).
-          Understøttes i <ph name="PRODUCT_OS_NAME" /> version 70 og nyere. Ved ældre klienter betyder denne værdi, at tilbagetrækning er deaktiveret.</translation>
 <translation id="9096086085182305205">Hvidliste til godkendelse af server</translation>
 <translation id="9105265795073104888">Det er kun bestemte muligheder for proxykonfiguration, der er tilgængelige for Android-apps. Android-apps kan vælge at anvende proxyen. Du kan ikke tvinge dem til at anvende en proxy.</translation>
 <translation id="9106865192244721694">Tillad WebUSB på disse websites</translation>
