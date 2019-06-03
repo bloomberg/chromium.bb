@@ -94,6 +94,7 @@ source_set("unit_tests") {
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
     "//components/send_tab_to_self",
+    "//components/sync/driver:driver",
     "//components/ui_metrics",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/bookmarks",

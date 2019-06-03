@@ -158,9 +158,13 @@ NSString* const kActivityServicesSnackbarCategory =
   BOOL canSendTabToSelf =
       send_tab_to_self::ShouldOfferFeature(browserState, data.shareURL);
 
-  send_tab_to_self::SendTabToSelfModel* sendTabToSelfModel =
-      SendTabToSelfSyncServiceFactory::GetForBrowserState(browserState)
-          ->GetSendTabToSelfModel();
+  send_tab_to_self::SendTabToSelfModel* sendTabToSelfModel = nil;
+  send_tab_to_self::SendTabToSelfSyncService* syncService =
+      SendTabToSelfSyncServiceFactory::GetForBrowserState(browserState);
+  // Users in incognito mode do not have a sync service set.
+  if (syncService) {
+    sendTabToSelfModel = syncService->GetSendTabToSelfModel();
+  }
 
   DCHECK(!activityViewController_);
   activityViewController_ = [[UIActivityViewController alloc]

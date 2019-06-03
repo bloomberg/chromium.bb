@@ -8,11 +8,14 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
@@ -31,7 +34,6 @@
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
-//#import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
@@ -918,6 +920,26 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
   EXPECT_FALSE(
       ArrayContainsObjectOfClass(items, [SendTabToSelfActivity class]));
 
+  // Verify searchable data with no send tab to self model.
+  data = [[ShareToData alloc]
+        initWithShareURL:GURL("https://chromium.org/printable")
+              visibleURL:GURL("https://chromium.org/printable")
+                   title:@"bar"
+         isOriginalTitle:YES
+         isPagePrintable:YES
+        isPageSearchable:YES
+               userAgent:web::UserAgentType::NONE
+      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+
+  items = [activityController applicationActivitiesForData:data
+                                                dispatcher:nil
+                                             bookmarkModel:bookmark_model_
+                                          canSendTabToSelf:true
+                                        sendTabToSelfModel:nil];
+  ASSERT_EQ(5U, [items count]);
+  EXPECT_FALSE(
+      ArrayContainsObjectOfClass(items, [SendTabToSelfActivity class]));
+
   // Verify non-searchable data with the send tab to self feature enabled.
   data = [[ShareToData alloc] initWithShareURL:GURL("chrome://version")
                                     visibleURL:GURL("chrome://version")
@@ -936,6 +958,34 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
   EXPECT_EQ(2U, [items count]);
   EXPECT_FALSE(
       ArrayContainsObjectOfClass(items, [SendTabToSelfActivity class]));
+}
+
+TEST_F(ActivityServiceControllerTest, PresentWhenOffTheRecord) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{switches::kSyncSendTabToSelf,
+                            send_tab_to_self::kSendTabToSelfShowSendingUI},
+      /*disabled_features=*/{});
+
+  UIViewController* parentController =
+      static_cast<UIViewController*>(parentController_);
+
+  FakeActivityServiceControllerTestProvider* provider =
+      [[FakeActivityServiceControllerTestProvider alloc]
+          initWithParentViewController:parentController];
+  ActivityServiceController* activityController =
+      [[ActivityServiceController alloc] init];
+  EXPECT_FALSE([activityController isActive]);
+
+  [activityController shareWithData:shareData_
+                       browserState:chrome_browser_state_
+                                        ->GetOffTheRecordChromeBrowserState()
+                         dispatcher:nil
+                   passwordProvider:provider
+                   positionProvider:provider
+               presentationProvider:provider];
+
+  EXPECT_TRUE([activityController isActive]);
 }
 
 }  // namespace
