@@ -59,7 +59,8 @@ void WebTestMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnUIThread::Destruct(this);
 }
 
-base::TaskRunner* WebTestMessageFilter::OverrideTaskRunnerForMessage(
+scoped_refptr<base::SequencedTaskRunner>
+WebTestMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   switch (message.type()) {
     case WebTestHostMsg_ClearAllDatabases::ID:
@@ -73,8 +74,7 @@ base::TaskRunner* WebTestMessageFilter::OverrideTaskRunnerForMessage(
     case WebTestHostMsg_InitiateCaptureDump::ID:
     case WebTestHostMsg_InspectSecondaryWindow::ID:
     case WebTestHostMsg_DeleteAllCookies::ID:
-      return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
-          .get();
+      return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
   }
   return nullptr;
 }

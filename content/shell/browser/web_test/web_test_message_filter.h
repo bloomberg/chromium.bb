@@ -55,7 +55,7 @@ class WebTestMessageFilter : public BrowserMessageFilter {
 
   // BrowserMessageFilter implementation.
   void OnDestruct() const override;
-  base::TaskRunner* OverrideTaskRunnerForMessage(
+  scoped_refptr<base::SequencedTaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 

@@ -40,8 +40,8 @@ bool JavaBridgeThread::CurrentlyOn() {
 }
 
 // static
-base::TaskRunner* JavaBridgeThread::GetTaskRunner() {
-  return g_background_thread.Get().message_loop()->task_runner().get();
+scoped_refptr<base::SingleThreadTaskRunner> JavaBridgeThread::GetTaskRunner() {
+  return g_background_thread.Get().message_loop()->task_runner();
 }
 
 }  // namespace content

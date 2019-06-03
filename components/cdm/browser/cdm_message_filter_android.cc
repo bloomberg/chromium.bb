@@ -119,7 +119,8 @@ bool CdmMessageFilterAndroid::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-base::TaskRunner* CdmMessageFilterAndroid::OverrideTaskRunnerForMessage(
+scoped_refptr<base::SequencedTaskRunner>
+CdmMessageFilterAndroid::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   // Move the IPC handling to FILE thread as it is not very cheap.
   if (message.type() == ChromeViewHostMsg_QueryKeySystemSupport::ID)
