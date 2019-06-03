@@ -108,24 +108,35 @@
    * @return {Promise} Promise fulfilled on success.
    */
   async function removeShortcut(appId, directory) {
-    // Focus the item first since actions are calculated asynchronously. The
-    // context menu wouldn't show if there are no visible items. Focusing first,
-    // will force the actions controller to refresh actions.
-    // TODO(mtomasz): Remove this hack (if possible).
-    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-        'focus', appId, [directory.navItem]));
+    const caller = getCaller();
+    const removeShortcutMenuItem =
+        '[command="#remove-folder-shortcut"]:not([hidden]):not([disabled])';
 
-    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-        'fakeMouseRightClick', appId, [directory.navItem]));
+    // Right-click for context menu with retry.
+    await repeatUntil(async () => {
+      // Right click.
+      chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, [directory.navItem]));
 
+      // Wait context menu to show.
+      await remoteCall.waitForElement(
+          appId, '#roots-context-menu:not([hidden])');
 
-    await remoteCall.waitForElement(appId, '#roots-context-menu:not([hidden])');
-    await remoteCall.waitForElement(
+      // Check menu item is visible and enabled.
+      const menuItem = await remoteCall.callRemoteTestUtil(
+          'queryAllElements', appId, [removeShortcutMenuItem]);
+      if (menuItem.length > 0) {
+        return true;
+      }
+
+      return pending(
+          caller,
+          `Waiting "remove shortcut" menu item to be available on ${appId}.`);
+    });
+
+    // Click the remove shortcut menu item.
+    await remoteCall.waitAndClickElement(
         appId,
-        '[command="#remove-folder-shortcut"]:not([hidden]):not([disabled])');
-
-    await remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', appId,
         ['#roots-context-menu [command="#remove-folder-shortcut"]:' +
          'not([hidden])']);
 
