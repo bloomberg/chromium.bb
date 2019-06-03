@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/remote_commands/crd_host_delegate.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/task/post_task.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -85,6 +87,10 @@ constexpr char kCloudDevicesOAuth2Scope[] =
     "https://www.googleapis.com/auth/clouddevices";
 constexpr char kChromotingOAuth2Scope[] =
     "https://www.googleapis.com/auth/chromoting";
+constexpr char kChromotingRemoteSupportOAuth2Scope[] =
+    "https://www.googleapis.com/auth/chromoting.remote.support";
+constexpr char kTachyonOAuth2Scope[] =
+    "https://www.googleapis.com/auth/tachyon";
 
 net::NetworkTrafficAnnotationTag CreateIceConfigRequestAnnotation() {
   return net::DefineNetworkTrafficAnnotation("CRD_ice_config_request", R"(
@@ -187,8 +193,16 @@ void CRDHostDelegate::FetchOAuthToken(
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
-  scopes.insert(GaiaConstants::kGoogleTalkOAuth2Scope);
   scopes.insert(kCloudDevicesOAuth2Scope);
+
+  if (base::FeatureList::IsEnabled(
+          features::kUseFtlSignalingForCrdHostDelegate)) {
+    scopes.insert(kChromotingRemoteSupportOAuth2Scope);
+    scopes.insert(kTachyonOAuth2Scope);
+  }
+
+  // TODO(joedow): Remove these scopes once we migrate to FTL signaling.
+  scopes.insert(GaiaConstants::kGoogleTalkOAuth2Scope);
   scopes.insert(kChromotingOAuth2Scope);
 
   oauth_success_callback_ = std::move(success_callback);
