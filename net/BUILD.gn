@@ -55,6 +55,18 @@ enable_python_utils =
 # won't get either.
 use_remote_test_server = !enable_python_utils && !is_ios
 
+# Whether //net should use an external GSSAPI library for implementing HTTP
+# Negotiate authentication. All platforms for which use_kerberos is true should
+# have some external implementation since //net doesn't have intrinsic support
+# for Kerberos. This implementation is an external GSSAPI library on all
+# platforms except on:
+#
+#    Windows : Uses SSPI for Negotiate authentication.
+#
+#    Android : Uses an external authenticator. See
+#              https://www.chromium.org/developers/design-documents/http-authentication/writing-a-spnego-authenticator-for-chrome-on-android
+use_external_gssapi = use_kerberos && !is_android && !is_win
+
 config("net_test_config") {
   if (use_remote_test_server) {
     defines = [ "USE_REMOTE_TEST_SERVER" ]
@@ -77,10 +89,7 @@ buildflag_header("buildflags") {
 }
 
 config("net_internal_config") {
-  defines = [
-    "DLOPEN_KERBEROS",
-    "NET_IMPLEMENTATION",
-  ]
+  defines = [ "NET_IMPLEMENTATION" ]
 
   if (use_kerberos && is_android) {
     include_dirs = [ "/usr/include/kerberosV" ]
@@ -88,6 +97,10 @@ config("net_internal_config") {
 
   if (enable_built_in_dns) {
     defines += [ "ENABLE_BUILT_IN_DNS" ]
+  }
+
+  if (use_external_gssapi) {
+    defines += [ "DLOPEN_KERBEROS" ]
   }
 }
 
@@ -1907,7 +1920,7 @@ component("net") {
       ]
     }
 
-    if (use_kerberos && ((is_posix && !is_android) || is_fuchsia)) {
+    if (use_external_gssapi) {
       sources += [
         "http/http_auth_gssapi_posix.cc",
         "http/http_auth_gssapi_posix.h",
@@ -5758,15 +5771,14 @@ test("net_unittests") {
     }
   }
 
-  # These are excluded on Android, because the actual Kerberos support, which
-  # these test, is in a separate app on Android.
-  if (use_kerberos && ((is_posix && !is_android) || is_fuchsia)) {
+  if (use_external_gssapi) {
     sources += [
       "http/http_auth_gssapi_posix_unittest.cc",
       "http/mock_gssapi_library_posix.cc",
       "http/mock_gssapi_library_posix.h",
     ]
   }
+
   if (!use_kerberos) {
     sources -= [ "http/http_auth_handler_negotiate_unittest.cc" ]
   }
