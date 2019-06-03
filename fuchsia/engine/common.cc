@@ -5,3 +5,4 @@
 #include "fuchsia/engine/common.h"
 
 constexpr char kIncognitoSwitch[] = "incognito";
+constexpr char kRemoteDebuggerHandles[] = "remote-debugger-handles";

@@ -115,6 +115,8 @@ component("web_engine_core") {
     "browser/web_engine_content_browser_client.h",
     "browser/web_engine_devtools_manager_delegate.cc",
     "browser/web_engine_devtools_manager_delegate.h",
+    "browser/web_engine_devtools_socket_factory.cc",
+    "browser/web_engine_devtools_socket_factory.h",
     "browser/web_engine_net_log.cc",
     "browser/web_engine_net_log.h",
     "browser/web_engine_screen.cc",
@@ -229,6 +231,31 @@ test("web_engine_unittests") {
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk:web",
   ]
+}
+
+test("web_engine_integration_tests") {
+  sandbox_policy = "integration_tests_sandbox_policy"
+  sources = [
+    "test_debug_listener.cc",
+    "test_debug_listener.h",
+    "web_engine_debug_integration_test.cc",
+  ]
+  data = [
+    "test/data",
+  ]
+  deps = [
+    "//base",
+    "//base/test:run_all_unittests",
+    "//fuchsia/base",
+    "//fuchsia/base:test_support",
+    "//net",
+    "//net:test_support",
+    "//third_party/fuchsia-sdk/sdk:web",
+  ]
+  package_deps = [ [
+        ":web_engine",
+        "chromium",
+      ] ]
 }
 
 if (is_official_build) {

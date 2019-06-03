@@ -922,6 +922,7 @@ _BANNED_CPP_FUNCTIONS = (
         r'.*_ios\.(cc|h)$',
         r'^net[\\/].*\.(cc|h)$',
         r'.*[\\/]tools[\\/].*\.(cc|h)$',
+        r'^fuchsia/engine/web_engine_debug_integration_test\.cc$',
       ),
     ),
     (

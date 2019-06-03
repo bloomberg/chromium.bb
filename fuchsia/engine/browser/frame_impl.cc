@@ -694,8 +694,9 @@ void FrameImpl::DocumentAvailableInMainFrame() {
 
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                               const GURL& validated_url) {
-  // The document and its statically-declared subresources are loaded.
+  context_->OnDevToolsPortReady();
 
+  // The document and its statically-declared subresources are loaded.
   is_main_document_loaded_ = true;
   OnNavigationEntryChanged();
 }

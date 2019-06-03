@@ -274,16 +274,17 @@ template("test") {
       ]
     }
 
+    fuchsia_package(_pkg_target) {
+      testonly = true
+      forward_variables_from(invoker, [ "sandbox_policy" ])
+      binary = ":$_exec_target"
+      package_name_override = _output_name
+    }
+
     executable(_exec_target) {
       forward_variables_from(invoker, "*")
       testonly = true
       output_name = _exec_target
-    }
-
-    fuchsia_package(_pkg_target) {
-      testonly = true
-      binary = ":$_exec_target"
-      package_name_override = _output_name
     }
   } else if (is_ios) {
     import("//build/config/ios/ios_sdk.gni")

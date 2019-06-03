@@ -1,0 +1,14 @@
+{
+  "features": [
+      "isolated-persistent-storage",
+      "shell",
+      "system-temp" ],
+  "services": [
+      "fuchsia.logger.LogSink",
+      "fuchsia.net.SocketProvider",
+      "fuchsia.netstack.Netstack",
+      "fuchsia.process.Launcher",
+      "fuchsia.sysmem.Allocator",
+      "fuchsia.web.ContextProvider"
+  ]
+}

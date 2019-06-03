@@ -22,6 +22,8 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "fuchsia/engine/common.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
 
@@ -110,12 +112,27 @@ void ContextProviderImpl::Create(
   }
   launch_options.job_handle = job.get();
 
-  const base::CommandLine* launch_command =
-      base::CommandLine::ForCurrentProcess();
+  base::CommandLine launch_command(*base::CommandLine::ForCurrentProcess());
+  if (devtools_listeners_.size() != 0) {
+    std::vector<std::string> handles_ids;
+    for (auto& devtools_listener : devtools_listeners_.ptrs()) {
+      fidl::InterfaceHandle<fuchsia::web::DevToolsPerContextListener>
+          client_listener;
+      devtools_listener.get()->get()->OnContextDevToolsAvailable(
+          client_listener.NewRequest());
+      handles_ids.push_back(
+          base::NumberToString(base::LaunchOptions::AddHandleToTransfer(
+              &launch_options.handles_to_transfer,
+              client_listener.TakeChannel().release())));
+    }
+    launch_command.AppendSwitchNative(kRemoteDebuggerHandles,
+                                      base::JoinString(handles_ids, ","));
+  }
+
   if (launch_for_test_)
-    launch_for_test_.Run(*launch_command, launch_options);
+    launch_for_test_.Run(launch_command, launch_options);
   else
-    base::LaunchProcess(*launch_command, launch_options);
+    base::LaunchProcess(launch_command, launch_options);
 
   // |context_handle| was transferred (not copied) to the Context process.
   ignore_result(context_handle.release());
@@ -124,4 +141,11 @@ void ContextProviderImpl::Create(
 void ContextProviderImpl::SetLaunchCallbackForTest(
     LaunchCallbackForTest launch) {
   launch_for_test_ = std::move(launch);
+}
+
+void ContextProviderImpl::EnableDevTools(
+    fidl::InterfaceHandle<fuchsia::web::DevToolsListener> listener,
+    EnableDevToolsCallback callback) {
+  devtools_listeners_.AddInterfacePtr(listener.Bind());
+  callback();
 }
