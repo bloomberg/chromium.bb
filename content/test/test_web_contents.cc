@@ -22,7 +22,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -369,13 +368,6 @@ void TestWebContents::SetHistoryOffsetAndLength(int history_offset,
             history_offset);
   EXPECT_EQ(expect_set_history_offset_and_length_history_length_,
             history_length);
-}
-
-void TestWebContents::SetNavigationData(
-    NavigationHandle* navigation_handle,
-    std::unique_ptr<NavigationData> navigation_data) {
-  static_cast<NavigationHandleImpl*>(navigation_handle)
-      ->set_navigation_data(std::move(navigation_data));
 }
 
 void TestWebContents::SetHttpResponseHeaders(

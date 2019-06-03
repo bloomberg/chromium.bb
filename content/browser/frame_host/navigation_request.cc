@@ -54,7 +54,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -1214,7 +1213,6 @@ void NavigationRequest::OnRequestRedirected(
 void NavigationRequest::OnResponseStarted(
     const scoped_refptr<network::ResourceResponse>& response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
     NavigationDownloadPolicy download_policy,
@@ -1335,9 +1333,6 @@ void NavigationRequest::OnResponseStarted(
       return;
     }
   }
-
-  if (navigation_data)
-    navigation_handle_->set_navigation_data(std::move(navigation_data));
 
   // This must be set before DetermineCommittedPreviews is called.
   navigation_handle_->set_proxy_server(response->head.proxy_server);

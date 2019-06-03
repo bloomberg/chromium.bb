@@ -59,7 +59,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_utils.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -1068,8 +1067,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     bool is_download;
 
-    std::unique_ptr<NavigationData> cloned_navigation_data;
-
     bool must_download =
         download_utils::MustDownload(url_, head.headers.get(), head.mime_type);
     bool known_mime_type = blink::IsSupportedMimeType(head.mime_type);
@@ -1096,7 +1093,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
         !default_loader_used_) {
       CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                             std::move(cloned_navigation_data), is_download);
+                             is_download);
       return;
     }
 
@@ -1111,21 +1108,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       ResourceRequestInfoImpl* info =
           ResourceRequestInfoImpl::ForRequest(url_request);
       is_download = !head.intercepted_by_plugin && info->IsDownload();
-      if (rdh->delegate()) {
-        NavigationData* navigation_data =
-            rdh->delegate()->GetNavigationData(url_request);
-
-        // Clone the embedder's NavigationData before moving it to the UI
-        // thread.
-        if (navigation_data)
-          cloned_navigation_data = navigation_data->Clone();
-      }
     } else {
       is_download = false;
     }
 
     CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                           std::move(cloned_navigation_data), is_download);
+                           is_download);
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1159,14 +1147,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     bool is_download = !has_plugin && is_download_if_not_handled_by_plugin;
 
     CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                           nullptr, is_download);
+                           is_download);
   }
 #endif
 
   void CallOnReceivedResponse(
       const network::ResourceResponseHead& head,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<NavigationData> cloned_navigation_data,
       bool is_download) {
     scoped_refptr<network::ResourceResponse> response(
         new network::ResourceResponse());
@@ -1183,8 +1170,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         base::BindOnce(&NavigationURLLoaderImpl::OnReceiveResponse, owner_,
                        response->DeepCopy(),
                        std::move(url_loader_client_endpoints),
-                       std::move(cloned_navigation_data), global_request_id_,
-                       is_download, ui_to_io_time_, base::Time::Now()));
+                       global_request_id_, is_download, ui_to_io_time_,
+                       base::Time::Now()));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -1679,7 +1666,6 @@ void NavigationURLLoaderImpl::ProceedWithResponse() {}
 void NavigationURLLoaderImpl::OnReceiveResponse(
     scoped_refptr<network::ResourceResponse> response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& global_request_id,
     bool is_download,
     base::TimeDelta total_ui_to_io_time,
@@ -1702,8 +1688,8 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
   // NavigationResourceHandler::OnResponseStarted() does.
   delegate_->OnResponseStarted(
       std::move(response), std::move(url_loader_client_endpoints),
-      std::move(navigation_data), global_request_id, is_download,
-      download_policy_, request_controller_->TakeSubresourceLoaderParams());
+      global_request_id, is_download, download_policy_,
+      request_controller_->TakeSubresourceLoaderParams());
 }
 
 void NavigationURLLoaderImpl::OnReceiveRedirect(

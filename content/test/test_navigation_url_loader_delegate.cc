@@ -8,7 +8,6 @@
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/navigation_data.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,7 +58,6 @@ void TestNavigationURLLoaderDelegate::OnRequestRedirected(
 void TestNavigationURLLoaderDelegate::OnResponseStarted(
     const scoped_refptr<network::ResourceResponse>& response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
     NavigationDownloadPolicy download_policy,

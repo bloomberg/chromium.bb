@@ -25,7 +25,6 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/appcache_service.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
@@ -141,11 +140,6 @@ class TestResourceDispatcherHostDelegate final
 
   void RequestComplete(net::URLRequest* url_request) override {
     ADD_FAILURE() << "RequestComplete should not be called.";
-  }
-
-  NavigationData* GetNavigationData(net::URLRequest* request) const override {
-    ADD_FAILURE() << "GetNavigationData should not be called.";
-    return nullptr;
   }
 
  private:

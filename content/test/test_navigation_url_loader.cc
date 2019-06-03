@@ -9,7 +9,6 @@
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/ssl_status.h"
@@ -68,8 +67,7 @@ void TestNavigationURLLoader::CallOnRequestRedirected(
 }
 
 void TestNavigationURLLoader::CallOnResponseStarted(
-    const scoped_refptr<network::ResourceResponse>& response,
-    std::unique_ptr<NavigationData> navigation_data) {
+    const scoped_refptr<network::ResourceResponse>& response) {
   // Start the request_ids at 1000 to avoid collisions with request ids from
   // network resources (it should be rare to compare these in unit tests).
   static int request_id = 1000;
@@ -94,8 +92,8 @@ void TestNavigationURLLoader::CallOnResponseStarted(
           url_loader_ptr.PassInterface(), std::move(url_loader_client_request));
 
   delegate_->OnResponseStarted(response, std::move(url_loader_client_endpoints),
-                               std::move(navigation_data), global_id, false,
-                               NavigationDownloadPolicy(), base::nullopt);
+                               global_id, false, NavigationDownloadPolicy(),
+                               base::nullopt);
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

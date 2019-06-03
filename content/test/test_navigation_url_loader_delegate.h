@@ -63,7 +63,6 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   void OnResponseStarted(
       const scoped_refptr<network::ResourceResponse>& response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& request_id,
       bool is_download,
       NavigationDownloadPolicy download_policy,

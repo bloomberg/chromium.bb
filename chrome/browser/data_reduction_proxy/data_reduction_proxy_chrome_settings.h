@@ -99,6 +99,11 @@ class DataReductionProxyChromeSettings
   CreateDataFromNavigationHandle(content::NavigationHandle* handle,
                                  const net::HttpResponseHeaders* headers);
 
+  // This data will be used on the next commit if it's HTTP/HTTPS and the page
+  // is not an error page..
+  void SetDataForNextCommitForTesting(
+      std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data);
+
  private:
   // Helper method for migrating the Data Reduction Proxy away from using the
   // proxy pref. Returns the ProxyPrefMigrationResult value indicating the
@@ -108,6 +113,8 @@ class DataReductionProxyChromeSettings
 
   // Null before InitDataReductionProxySettings is called.
   Profile* profile_;
+
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyData> test_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyChromeSettings);
 };

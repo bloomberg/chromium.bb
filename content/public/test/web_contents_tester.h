@@ -29,7 +29,6 @@ class HttpResponseHeaders;
 namespace content {
 
 class BrowserContext;
-class NavigationData;
 class NavigationHandle;
 class RenderFrameHost;
 
@@ -111,11 +110,6 @@ class WebContentsTester {
                                bool did_create_new_entry,
                                const GURL& url,
                                ui::PageTransition transition) = 0;
-
-  // Sets NavgationData on |navigation_handle|.
-  virtual void SetNavigationData(
-      NavigationHandle* navigation_handle,
-      std::unique_ptr<NavigationData> navigation_data) = 0;
 
   // Sets HttpResponseData on |navigation_handle|.
   virtual void SetHttpResponseHeaders(

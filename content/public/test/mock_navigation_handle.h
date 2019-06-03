@@ -91,7 +91,6 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD1(RegisterThrottleForTesting,
                void(std::unique_ptr<NavigationThrottle>));
   MOCK_METHOD0(IsDeferredForTesting, bool());
-  NavigationData* GetNavigationData() override { return nullptr; }
   MOCK_METHOD1(RegisterSubresourceOverride,
                void(mojom::TransferrableURLLoaderPtr));
   MOCK_METHOD0(IsSameProcess, bool());

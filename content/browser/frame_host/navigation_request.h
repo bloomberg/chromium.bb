@@ -46,7 +46,6 @@ class FrameNavigationEntry;
 class FrameTreeNode;
 class NavigationHandleImpl;
 class NavigationURLLoader;
-class NavigationData;
 class NavigationUIData;
 class NavigatorDelegate;
 class PrefetchedSignedExchangeCache;
@@ -452,7 +451,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   void OnResponseStarted(
       const scoped_refptr<network::ResourceResponse>& response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& request_id,
       bool is_download,
       NavigationDownloadPolicy download_policy,

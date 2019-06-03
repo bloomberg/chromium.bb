@@ -403,10 +403,6 @@ const GURL& NavigationHandleImpl::GetBaseURLForDataURL() {
   return navigation_request_->common_params().base_url_for_data_url;
 }
 
-NavigationData* NavigationHandleImpl::GetNavigationData() {
-  return navigation_data_.get();
-}
-
 void NavigationHandleImpl::RegisterSubresourceOverride(
     mojom::TransferrableURLLoaderPtr transferrable_loader) {
   if (!transferrable_loader)

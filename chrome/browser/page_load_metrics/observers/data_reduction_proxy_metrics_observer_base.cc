@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -25,7 +24,6 @@
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -131,11 +129,6 @@ DataReductionProxyMetricsObserverBase::OnCommitCalled(
     ukm::SourceId source_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // As documented in content/public/browser/navigation_handle.h, this
-  // NavigationData is a clone of the NavigationData instance returned from
-  // ResourceDispatcherHostDelegate::GetNavigationData during commit.
-  // Because ChromeResourceDispatcherHostDelegate always returns a
-  // ChromeNavigationData, it is safe to static_cast here.
   std::unique_ptr<DataReductionProxyData> data;
   auto* settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(

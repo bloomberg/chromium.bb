@@ -29,7 +29,6 @@ class HttpResponseHeaders;
 
 namespace content {
 struct GlobalRequestID;
-class NavigationData;
 class NavigationThrottle;
 class NavigationUIData;
 class RenderFrameHost;
@@ -320,6 +319,9 @@ class CONTENT_EXPORT NavigationHandle {
   //   navigation entry.
   virtual int GetNavigationEntryOffset() = 0;
 
+  virtual void RegisterSubresourceOverride(
+      mojom::TransferrableURLLoaderPtr transferrable_loader) = 0;
+
   // Testing methods ----------------------------------------------------------
   //
   // The following methods should be used exclusively for writing unit tests.
@@ -336,14 +338,6 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Returns whether this navigation is currently deferred.
   virtual bool IsDeferredForTesting() = 0;
-
-  // The NavigationData that the embedder returned from
-  // ResourceDispatcherHostDelegate::GetNavigationData during commit. This will
-  // be a clone of the NavigationData.
-  virtual NavigationData* GetNavigationData() = 0;
-
-  virtual void RegisterSubresourceOverride(
-      mojom::TransferrableURLLoaderPtr transferrable_loader) = 0;
 };
 
 }  // namespace content

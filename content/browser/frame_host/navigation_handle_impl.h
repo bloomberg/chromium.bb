@@ -26,7 +26,6 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/restore_type.h"
@@ -122,7 +121,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // deferring NavigationThrottle do the resuming.
   void CallResumeForTesting();
 
-  NavigationData* GetNavigationData() override;
   void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader) override;
 
@@ -186,13 +184,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Called when the navigation is ready to be committed. This will update the
   // |state_| and inform the delegate.
   void ReadyToCommitNavigation(bool is_error);
-
-  // Called during commit. Takes ownership of the embedder's NavigationData
-  // instance. This NavigationData may have been cloned prior to being added
-  // here.
-  void set_navigation_data(std::unique_ptr<NavigationData> navigation_data) {
-    navigation_data_ = std::move(navigation_data);
-  }
 
   NavigationUIData* navigation_ui_data() const {
     return navigation_request_->navigation_ui_data();
@@ -338,9 +329,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // navigation is ready to be committed, i.e we have a renderer process ready
   // to service the navigation request.
   std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
-
-  // Embedder data from the IO thread tied to this navigation.
-  std::unique_ptr<NavigationData> navigation_data_;
 
   // The unique id to identify this to navigation with.
   int64_t navigation_id_;

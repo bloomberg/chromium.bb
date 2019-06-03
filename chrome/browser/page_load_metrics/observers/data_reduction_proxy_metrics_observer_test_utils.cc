@@ -4,7 +4,6 @@
 
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h"
 
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -12,20 +11,6 @@
 #include "content/public/test/web_contents_tester.h"
 
 namespace data_reduction_proxy {
-
-DataReductionProxyData* DataForNavigationHandle(
-    content::WebContents* web_contents,
-    content::NavigationHandle* navigation_handle) {
-  auto chrome_navigation_data = std::make_unique<ChromeNavigationData>();
-
-  auto drp_data = std::make_unique<DataReductionProxyData>();
-  DataReductionProxyData* data = drp_data.get();
-  chrome_navigation_data->SetDataReductionProxyData(std::move(drp_data));
-
-  content::WebContentsTester::For(web_contents)
-      ->SetNavigationData(navigation_handle, std::move(chrome_navigation_data));
-  return data;
-}
 
 previews::PreviewsUserData* PreviewsDataForNavigationHandle(
     content::NavigationHandle* navigation_handle) {

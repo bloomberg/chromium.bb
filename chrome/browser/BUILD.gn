@@ -628,8 +628,6 @@ jumbo_split_static_library("browser") {
     "lifetime/application_lifetime_mac.mm",
     "lifetime/browser_shutdown.cc",
     "lifetime/browser_shutdown.h",
-    "loader/chrome_navigation_data.cc",
-    "loader/chrome_navigation_data.h",
     "lookalikes/lookalike_url_allowlist.cc",
     "lookalikes/lookalike_url_allowlist.h",
     "lookalikes/lookalike_url_controller_client.cc",

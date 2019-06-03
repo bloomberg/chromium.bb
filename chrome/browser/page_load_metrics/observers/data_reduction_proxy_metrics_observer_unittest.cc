@@ -10,12 +10,15 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/previews/content/previews_user_data.h"
+#include "content/public/browser/web_contents.h"
 
 namespace data_reduction_proxy {
 
@@ -43,13 +46,17 @@ class TestDataReductionProxyMetricsObserver
   // DataReductionProxyMetricsObserver:
   ObservePolicy OnCommitCalled(content::NavigationHandle* navigation_handle,
                                ukm::SourceId source_id) override {
-    DataReductionProxyData* data =
-        DataForNavigationHandle(web_contents_, navigation_handle);
+    auto data =
+        std::make_unique<data_reduction_proxy::DataReductionProxyData>();
+    data->set_request_url(navigation_handle->GetURL());
     data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
     data->set_was_cached_data_reduction_proxy_response(
         cached_data_reduction_proxy_used_);
     data->set_request_url(GURL(kDefaultTestUrl));
     data->set_lite_page_received(lite_page_used_);
+    DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+        web_contents_->GetBrowserContext())
+        ->SetDataForNextCommitForTesting(std::move(data));
 
     auto* previews_data = PreviewsDataForNavigationHandle(navigation_handle);
     previews_data->set_black_listed_for_lite_page(black_listed_);

@@ -428,7 +428,7 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   response->head.ssl_info = ssl_info;
   // TODO(carlosk): Ideally, it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
-  url_loader->CallOnResponseStarted(response, nullptr);
+  url_loader->CallOnResponseStarted(response);
 }
 
 void TestRenderFrameHost::SimulateCommitProcessed(

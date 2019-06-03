@@ -19,7 +19,6 @@
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -366,8 +365,7 @@ TEST_F(NavigatorTest, NoContent) {
   const char kNoContentHeaders[] = "HTTP/1.1 204 No Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
       std::string(kNoContentHeaders, base::size(kNoContentHeaders)));
-  GetLoaderForNavigationRequest(main_request)
-      ->CallOnResponseStarted(response, nullptr);
+  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(response);
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.
@@ -392,8 +390,7 @@ TEST_F(NavigatorTest, NoContent) {
   const char kResetContentHeaders[] = "HTTP/1.1 205 Reset Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
       std::string(kResetContentHeaders, base::size(kResetContentHeaders)));
-  GetLoaderForNavigationRequest(main_request)
-      ->CallOnResponseStarted(response, nullptr);
+  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(response);
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.

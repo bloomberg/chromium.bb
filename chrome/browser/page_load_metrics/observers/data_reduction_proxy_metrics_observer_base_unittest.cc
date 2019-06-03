@@ -11,7 +11,8 @@
 #include "base/process/kill.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/loader/chrome_navigation_data.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
@@ -26,6 +27,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/previews/content/previews_user_data.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/ip_endpoint.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
@@ -61,13 +63,17 @@ class TestDataReductionProxyMetricsObserverBase
   // DataReductionProxyMetricsObserverBase:
   ObservePolicy OnCommitCalled(content::NavigationHandle* navigation_handle,
                                ukm::SourceId source_id) override {
-    DataReductionProxyData* data =
-        DataForNavigationHandle(web_contents_, navigation_handle);
+    auto data =
+        std::make_unique<data_reduction_proxy::DataReductionProxyData>();
+    data->set_request_url(navigation_handle->GetURL());
     data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
     data->set_was_cached_data_reduction_proxy_response(
         cached_data_reduction_proxy_used_);
     data->set_request_url(GURL(kDefaultTestUrl));
     data->set_lite_page_received(lite_page_used_);
+    DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+        web_contents_->GetBrowserContext())
+        ->SetDataForNextCommitForTesting(std::move(data));
 
     auto* previews_data = PreviewsDataForNavigationHandle(navigation_handle);
     previews_data->set_black_listed_for_lite_page(black_listed_);

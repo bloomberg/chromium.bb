@@ -4,7 +4,6 @@
 
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_request_info.h"
 
 namespace content {
@@ -44,10 +43,5 @@ void ResourceDispatcherHostDelegate::RequestComplete(
 // Deprecated.
 void ResourceDispatcherHostDelegate::RequestComplete(
     net::URLRequest* url_request) {}
-
-NavigationData* ResourceDispatcherHostDelegate::GetNavigationData(
-    net::URLRequest* request) const {
-  return nullptr;
-}
 
 }  // namespace content
