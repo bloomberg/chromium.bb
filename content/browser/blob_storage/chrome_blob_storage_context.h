@@ -57,7 +57,7 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   void InitializeOnIOThread(base::FilePath blob_storage_dir,
                             scoped_refptr<base::TaskRunner> file_task_runner);
 
-  storage::BlobStorageContext* context() const { return context_.get(); }
+  storage::BlobStorageContext* context() const;
 
   // Returns a NULL scoped_ptr on failure.
   std::unique_ptr<BlobHandle> CreateMemoryBackedBlob(

@@ -61,6 +61,33 @@ namespace content {
 
 namespace {
 
+// Wrapper to call ChromeBlobStorageContext::context() on the IO thread.
+class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  explicit BlobProtocolHandler(ChromeBlobStorageContext* blob_storage_context)
+      : blob_storage_context_(blob_storage_context) {}
+
+  ~BlobProtocolHandler() override {}
+
+  net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    if (!blob_protocol_handler_) {
+      // Construction is deferred because 'this' is constructed on
+      // the main thread but we want blob_protocol_handler_ constructed
+      // on the IO thread.
+      blob_protocol_handler_.reset(
+          new storage::BlobProtocolHandler(blob_storage_context_->context()));
+    }
+    return blob_protocol_handler_->MaybeCreateJob(request, network_delegate);
+  }
+
+ private:
+  const scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
+  mutable std::unique_ptr<storage::BlobProtocolHandler> blob_protocol_handler_;
+  DISALLOW_COPY_AND_ASSIGN(BlobProtocolHandler);
+};
+
 // These constants are used to create the directory structure under the profile
 // where renderers with a non-default storage partition keep their persistent
 // state. This will contain a set of directories that partially mirror the
@@ -360,28 +387,27 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   StoragePartitionImpl* partition = partition_ptr.get();
   partitions_[partition_config] = std::move(partition_ptr);
 
-  ChromeBlobStorageContext* blob_storage_context =
-      ChromeBlobStorageContext::GetFor(browser_context_);
-  ProtocolHandlerMap protocol_handlers;
-  protocol_handlers[url::kBlobScheme] =
-      std::make_unique<storage::BlobProtocolHandler>(
-          blob_storage_context->context());
-  protocol_handlers[url::kFileSystemScheme] = CreateFileSystemProtocolHandler(
-      partition_domain, partition->GetFileSystemContext());
-  for (const auto& scheme : URLDataManagerBackend::GetWebUISchemes()) {
-    protocol_handlers[scheme] = URLDataManagerBackend::CreateProtocolHandler(
-        browser_context_->GetResourceContext(), blob_storage_context);
-  }
-
-  URLRequestInterceptorScopedVector request_interceptors;
-
-  auto devtools_interceptor =
-      DevToolsURLRequestInterceptor::MaybeCreate(browser_context_);
-  if (devtools_interceptor)
-    request_interceptors.push_back(std::move(devtools_interceptor));
-  request_interceptors.push_back(std::make_unique<AppCacheInterceptor>());
-
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    ChromeBlobStorageContext* blob_storage_context =
+        ChromeBlobStorageContext::GetFor(browser_context_);
+    ProtocolHandlerMap protocol_handlers;
+    protocol_handlers[url::kBlobScheme] =
+        std::make_unique<BlobProtocolHandler>(blob_storage_context);
+    protocol_handlers[url::kFileSystemScheme] = CreateFileSystemProtocolHandler(
+        partition_domain, partition->GetFileSystemContext());
+    for (const auto& scheme : URLDataManagerBackend::GetWebUISchemes()) {
+      protocol_handlers[scheme] = URLDataManagerBackend::CreateProtocolHandler(
+          browser_context_->GetResourceContext(), blob_storage_context);
+    }
+
+    URLRequestInterceptorScopedVector request_interceptors;
+
+    auto devtools_interceptor =
+        DevToolsURLRequestInterceptor::MaybeCreate(browser_context_);
+    if (devtools_interceptor)
+      request_interceptors.push_back(std::move(devtools_interceptor));
+    request_interceptors.push_back(std::make_unique<AppCacheInterceptor>());
+
     // These calls must happen after StoragePartitionImpl::Create().
     if (partition_domain.empty()) {
       partition->SetURLRequestContext(browser_context_->CreateRequestContext(
@@ -392,22 +418,14 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
               partition->GetPath(), in_memory, &protocol_handlers,
               std::move(request_interceptors)));
     }
-  }
 
-  // A separate media cache isn't used with the network service.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // A separate media cache isn't used with the network service.
     partition->SetMediaURLRequestContext(
         partition_domain.empty()
             ? browser_context_->CreateMediaRequestContext()
             : browser_context_->CreateMediaRequestContextForStoragePartition(
                   partition->GetPath(), in_memory));
-  }
 
-  // Arm the serviceworker cookie change observation API.
-  partition->GetCookieStoreContext()->ListenToCookieChanges(
-      partition->GetNetworkContext(), /*success_callback=*/base::DoNothing());
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // This needs to happen after SetURLRequestContext() since we need this
     // code path only for non-NetworkService cases where NetworkContext needs to
     // be initialized using |url_request_context_|, which is initialized by
@@ -416,6 +434,10 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
     DCHECK(partition->url_request_context_);
     partition->url_loader_factory_getter()->HandleFactoryRequests();
   }
+
+  // Arm the serviceworker cookie change observation API.
+  partition->GetCookieStoreContext()->ListenToCookieChanges(
+      partition->GetNetworkContext(), /*success_callback=*/base::DoNothing());
 
   PostCreateInitialization(partition, in_memory);
 
