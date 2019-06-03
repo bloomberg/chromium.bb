@@ -12,6 +12,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/identity_manager_wrapper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -62,11 +63,10 @@ std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
 std::unique_ptr<SigninManager> BuildSigninManager(
     ios::ChromeBrowserState* chrome_browser_state,
     AccountTrackerService* account_tracker_service,
-    ProfileOAuth2TokenService* token_service,
-    GaiaCookieManagerService* gaia_cookie_manager_service) {
+    ProfileOAuth2TokenService* token_service) {
   std::unique_ptr<SigninManager> service = std::make_unique<SigninManager>(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      token_service, account_tracker_service, gaia_cookie_manager_service,
+      token_service, account_tracker_service,
       signin::AccountConsistencyMethod::kMirror);
   service->Initialize(GetApplicationContext()->GetLocalState());
   return service;
@@ -140,8 +140,7 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
       SigninClientFactory::GetForBrowserState(browser_state));
 
   std::unique_ptr<SigninManager> signin_manager = BuildSigninManager(
-      browser_state, account_tracker_service.get(), token_service.get(),
-      gaia_cookie_manager_service.get());
+      browser_state, account_tracker_service.get(), token_service.get());
 
   auto primary_account_mutator =
       std::make_unique<identity::PrimaryAccountMutatorImpl>(

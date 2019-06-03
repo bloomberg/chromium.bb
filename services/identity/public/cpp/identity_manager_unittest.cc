@@ -20,6 +20,7 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/set_accounts_in_cookie_result.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -297,11 +298,11 @@ class IdentityManagerTest : public testing::Test {
         << "AccountConsistency is not used by SigninManagerBase";
     auto signin_manager = std::make_unique<SigninManagerBase>(
         &signin_client_, token_service.get(), account_tracker_service.get(),
-        gaia_cookie_manager_service.get(), account_consistency);
+        account_consistency);
 #else
     auto signin_manager = std::make_unique<SigninManager>(
         &signin_client_, token_service.get(), account_tracker_service.get(),
-        gaia_cookie_manager_service.get(), account_consistency);
+        account_consistency);
 #endif
 
     // Passing this switch ensures that the new SigninManager starts with a

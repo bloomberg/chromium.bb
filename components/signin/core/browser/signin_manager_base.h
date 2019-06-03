@@ -39,7 +39,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class AccountTrackerService;
-class GaiaCookieManagerService;
 class PrefRegistrySimple;
 class PrefService;
 class ProfileOAuth2TokenService;
@@ -85,7 +84,6 @@ class SigninManagerBase {
   SigninManagerBase(SigninClient* client,
                     ProfileOAuth2TokenService* token_service,
                     AccountTrackerService* account_tracker_service,
-                    GaiaCookieManagerService* cookie_manager_service,
                     signin::AccountConsistencyMethod account_consistency);
 #if !defined(OS_CHROMEOS)
  public:

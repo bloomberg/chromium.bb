@@ -202,18 +202,18 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
   std::unique_ptr<SigninManagerBase> signin_manager =
       std::make_unique<SigninManagerBase>(signin_client, token_service.get(),
                                           account_tracker_service.get(),
-                                          nullptr, account_consistency);
+                                          account_consistency);
 #else
   std::unique_ptr<SigninManagerBase> signin_manager =
       std::make_unique<SigninManager>(signin_client, token_service.get(),
-                                      account_tracker_service.get(), nullptr,
+                                      account_tracker_service.get(),
                                       account_consistency);
 #endif
   signin_manager->Initialize(pref_service);
 
-  std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service;
-    gaia_cookie_manager_service = std::make_unique<GaiaCookieManagerService>(
-        token_service.get(), signin_client);
+  std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service =
+      std::make_unique<GaiaCookieManagerService>(token_service.get(),
+                                                 signin_client);
 
   std::unique_ptr<PrimaryAccountMutator> primary_account_mutator;
   std::unique_ptr<AccountsMutator> accounts_mutator;

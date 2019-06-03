@@ -12,6 +12,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/identity_manager_wrapper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -73,8 +74,7 @@ std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
 std::unique_ptr<SigninManager> BuildSigninManager(
     WebViewBrowserState* browser_state,
     AccountTrackerService* account_tracker_service,
-    ProfileOAuth2TokenService* token_service,
-    GaiaCookieManagerService* gaia_cookie_manager_service) {
+    ProfileOAuth2TokenService* token_service) {
   // Clearing the sign in state on start up greatly simplifies the management of
   // ChromeWebView's signin state.
   PrefService* pref_service = browser_state->GetPrefs();
@@ -84,7 +84,7 @@ std::unique_ptr<SigninManager> BuildSigninManager(
 
   std::unique_ptr<SigninManager> service = std::make_unique<SigninManager>(
       WebViewSigninClientFactory::GetForBrowserState(browser_state),
-      token_service, account_tracker_service, gaia_cookie_manager_service,
+      token_service, account_tracker_service,
       signin::AccountConsistencyMethod::kDisabled);
   service->Initialize(ApplicationContext::GetInstance()->GetLocalState());
   return service;
@@ -142,8 +142,7 @@ WebViewIdentityManagerFactory::BuildServiceInstanceFor(
       WebViewSigninClientFactory::GetForBrowserState(browser_state));
 
   std::unique_ptr<SigninManager> signin_manager = BuildSigninManager(
-      browser_state, account_tracker_service.get(), token_service.get(),
-      gaia_cookie_manager_service.get());
+      browser_state, account_tracker_service.get(), token_service.get());
 
   auto primary_account_mutator =
       std::make_unique<identity::PrimaryAccountMutatorImpl>(

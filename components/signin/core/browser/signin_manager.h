@@ -56,7 +56,6 @@ class SigninManager : public SigninManagerBase,
   SigninManager(SigninClient* client,
                 ProfileOAuth2TokenService* token_service,
                 AccountTrackerService* account_tracker_service,
-                GaiaCookieManagerService* cookie_manager_service,
                 signin::AccountConsistencyMethod account_consistency);
   ~SigninManager() override;
 

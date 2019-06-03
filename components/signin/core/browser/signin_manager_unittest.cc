@@ -23,7 +23,6 @@
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/device_id_helper.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -63,7 +62,6 @@ class SigninManagerTest : public testing::Test {
       : test_signin_client_(&user_prefs_),
         token_service_(&user_prefs_,
                        std::make_unique<FakeOAuth2TokenServiceDelegate>()),
-        cookie_manager_service_(&token_service_, &test_signin_client_),
         account_consistency_(signin::AccountConsistencyMethod::kDisabled) {
     AccountFetcherService::RegisterPrefs(user_prefs_.registry());
     AccountTrackerService::RegisterPrefs(user_prefs_.registry());
@@ -82,7 +80,6 @@ class SigninManagerTest : public testing::Test {
     }
     token_service_.Shutdown();
     test_signin_client_.Shutdown();
-    cookie_manager_service_.Shutdown();
     account_tracker_.Shutdown();
     account_fetcher_.Shutdown();
   }
@@ -107,7 +104,7 @@ class SigninManagerTest : public testing::Test {
     DCHECK(!manager_);
     manager_ = std::make_unique<SigninManager>(
         &test_signin_client_, &token_service_, &account_tracker_,
-        &cookie_manager_service_, account_consistency_);
+        account_consistency_);
     manager_->Initialize(&local_state_);
     manager_->SetObserver(&test_observer_);
   }
@@ -137,7 +134,6 @@ class SigninManagerTest : public testing::Test {
   TestSigninClient test_signin_client_;
   ProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
-  GaiaCookieManagerService cookie_manager_service_;
   AccountFetcherService account_fetcher_;
   std::unique_ptr<SigninManager> manager_;
   TestSigninManagerObserver test_observer_;

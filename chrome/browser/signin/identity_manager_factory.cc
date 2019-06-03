@@ -16,6 +16,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/identity_manager_wrapper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
@@ -80,20 +81,17 @@ std::unique_ptr<identity::AccountsMutator> BuildAccountsMutator(
 std::unique_ptr<ConcreteSigninManager> BuildSigninManager(
     Profile* profile,
     AccountTrackerService* account_tracker_service,
-    ProfileOAuth2TokenService* token_service,
-    GaiaCookieManagerService* gaia_cookie_manager_service) {
+    ProfileOAuth2TokenService* token_service) {
   std::unique_ptr<ConcreteSigninManager> signin_manager;
   SigninClient* client =
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile);
 #if defined(OS_CHROMEOS)
   signin_manager = std::make_unique<ConcreteSigninManager>(
       client, token_service, account_tracker_service,
-      gaia_cookie_manager_service,
       AccountConsistencyModeManager::GetMethodForProfile(profile));
 #else
   signin_manager = std::make_unique<ConcreteSigninManager>(
       client, token_service, account_tracker_service,
-      gaia_cookie_manager_service,
       AccountConsistencyModeManager::GetMethodForProfile(profile));
 #endif
   signin_manager->Initialize(g_browser_process->local_state());
@@ -190,8 +188,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
       token_service.get(), ChromeSigninClientFactory::GetForProfile(profile));
 
   std::unique_ptr<ConcreteSigninManager> signin_manager = BuildSigninManager(
-      profile, account_tracker_service.get(), token_service.get(),
-      gaia_cookie_manager_service.get());
+      profile, account_tracker_service.get(), token_service.get());
 
   std::unique_ptr<identity::PrimaryAccountMutator> primary_account_mutator =
       BuildPrimaryAccountMutator(profile, account_tracker_service.get(),

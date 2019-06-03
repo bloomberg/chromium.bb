@@ -27,12 +27,10 @@ SigninManager::SigninManager(
     SigninClient* client,
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
-    GaiaCookieManagerService* cookie_manager_service,
     signin::AccountConsistencyMethod account_consistency)
     : SigninManagerBase(client,
                         token_service,
                         account_tracker_service,
-                        cookie_manager_service,
                         account_consistency),
       weak_pointer_factory_(this) {}
 
