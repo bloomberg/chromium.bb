@@ -2794,6 +2794,9 @@ crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/
 crbug.com/965409 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-backgrounds/border-radius-dynamic-from-no-radius.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-backgrounds/border-radius-dynamic-from-no-radius.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-backgrounds/border-radius-dynamic-from-no-radius.html [ Failure ]
