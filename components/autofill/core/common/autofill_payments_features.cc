@@ -111,13 +111,6 @@ const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{
     "AutofillSendExperimentIdsInPaymentsRPCs",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// If enabled, only countries of recently-used addresses are sent in the
-// GetUploadDetails call to Payments. If disabled, whole recently-used addresses
-// are sent.
-const base::Feature kAutofillSendOnlyCountryInGetUploadDetails{
-    "AutofillSendOnlyCountryInGetUploadDetails",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because it's a country-specific whitelist. There are
 // countries we simply can't turn this on for, and they change over time, so

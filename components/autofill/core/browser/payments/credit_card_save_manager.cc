@@ -218,21 +218,16 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     pending_upload_request_origin_ = url::Origin();
     return;
   }
-  // If the relevant feature is enabled, only send the country of the
-  // recently-used addresses. We make a copy here to avoid modifying
-  // |upload_request_.profiles|, which should always have full addresses even
-  // after this function goes out of scope.
-  bool send_only_country_in_addresses = base::FeatureList::IsEnabled(
-      features::kAutofillSendOnlyCountryInGetUploadDetails);
+  // Only send the country of the recently-used addresses. We make a copy here
+  // to avoid modifying |upload_request_.profiles|, which should always have
+  // full addresses even after this function goes out of scope.
   std::vector<AutofillProfile> country_only_profiles;
-  if (send_only_country_in_addresses) {
-    for (const AutofillProfile& address : upload_request_.profiles) {
-      AutofillProfile country_only;
-      country_only.SetInfo(ADDRESS_HOME_COUNTRY,
-                           address.GetInfo(ADDRESS_HOME_COUNTRY, app_locale_),
-                           app_locale_);
-      country_only_profiles.emplace_back(std::move(country_only));
-    }
+  for (const AutofillProfile& address : upload_request_.profiles) {
+    AutofillProfile country_only;
+    country_only.SetInfo(ADDRESS_HOME_COUNTRY,
+                         address.GetInfo(ADDRESS_HOME_COUNTRY, app_locale_),
+                         app_locale_);
+    country_only_profiles.emplace_back(std::move(country_only));
   }
 
   // All required data is available, start the upload process.
@@ -245,10 +240,8 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
       !GetCreditCardSaveStrikeDatabase()->IsMaxStrikesLimitReached(
           base::UTF16ToUTF8(upload_request_.card.LastFourDigits()));
   payments_client_->GetUploadDetails(
-      send_only_country_in_addresses ? country_only_profiles
-                                     : upload_request_.profiles,
-      upload_request_.detected_values, upload_request_.active_experiments,
-      app_locale_,
+      country_only_profiles, upload_request_.detected_values,
+      upload_request_.active_experiments, app_locale_,
       base::BindOnce(&CreditCardSaveManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr()),
       payments::kUploadCardBillableServiceNumber,
