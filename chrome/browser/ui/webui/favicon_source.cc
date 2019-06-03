@@ -171,7 +171,8 @@ void FaviconSource::StartDataRequest(
             &FaviconSource::OnFaviconDataAvailable, base::Unretained(this),
             IconRequest(callback, url, parsed.size_in_dip,
                         parsed.device_scale_factor, unsafe_request_origin)),
-        unsafe_request_origin, favicon_service,
+        unsafe_request_origin, favicon::FaviconRequestPlatform::kDesktop,
+        favicon_service,
         LargeIconServiceFactory::GetForBrowserContext(profile_),
         /*icon_url_for_uma=*/
         open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),

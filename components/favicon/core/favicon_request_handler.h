@@ -16,16 +16,18 @@
 
 namespace favicon {
 
+class FaviconServerFetcherParams;
 class FaviconService;
 class LargeIconService;
 
 // The UI origin of an icon request.
+// TODO(victorvianna): Rename to agree with the naming style of the other enums.
 enum class FaviconRequestOrigin {
   // Unknown origin.
   UNKNOWN,
-  // chrome://history.
+  // History page.
   HISTORY,
-  // chrome://history/syncedTabs.
+  // History synced tabs page (desktop only).
   HISTORY_SYNCED_TABS,
   // Recently closed tabs menu.
   RECENTLY_CLOSED_TABS,
@@ -40,6 +42,12 @@ enum class FaviconAvailability {
   // Icon not found.
   kNotAvailable = 2,
   kMaxValue = kNotAvailable,
+};
+
+// Platform making the request.
+enum class FaviconRequestPlatform {
+  kMobile,
+  kDesktop,
 };
 
 // Class for handling favicon requests by page url, forwarding them to local
@@ -69,10 +77,12 @@ class FaviconRequestHandler {
   // that history sync is enabled and no custom passphrase is set).
   // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
   // record UMA about the grouping of requests to the favicon server.
+  // |request_platform| specifies whether the caller is mobile or desktop code.
   void GetRawFaviconForPageURL(const GURL& page_url,
                                int desired_size_in_pixel,
                                favicon_base::FaviconRawBitmapCallback callback,
                                FaviconRequestOrigin request_origin,
+                               FaviconRequestPlatform request_platform,
                                FaviconService* favicon_service,
                                LargeIconService* large_icon_service,
                                const GURL& icon_url_for_uma,
@@ -88,6 +98,7 @@ class FaviconRequestHandler {
   // that history sync is enabled and no custom passphrase is set).
   // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
   // record UMA about the grouping of requests to the favicon server.
+  // This method is only called by desktop code.
   void GetFaviconImageForPageURL(const GURL& page_url,
                                  favicon_base::FaviconImageCallback callback,
                                  FaviconRequestOrigin request_origin,
@@ -99,10 +110,6 @@ class FaviconRequestHandler {
                                  base::CancelableTaskTracker* tracker);
 
  private:
-  static bool CanQueryGoogleServer(LargeIconService* large_icon_service,
-                                   FaviconRequestOrigin origin,
-                                   bool can_send_history_data);
-
   // Called after the first attempt to retrieve the icon bitmap from local
   // storage. If request succeeded, sends the result. Otherwise attempts to
   // retrieve from sync or the Google favicon server depending whether
@@ -112,6 +119,7 @@ class FaviconRequestHandler {
       int desired_size_in_pixel,
       favicon_base::FaviconRawBitmapCallback response_callback,
       FaviconRequestOrigin origin,
+      FaviconRequestPlatform platform,
       FaviconService* favicon_service,
       LargeIconService* large_icon_service,
       const GURL& icon_url_for_uma,
@@ -139,12 +147,14 @@ class FaviconRequestHandler {
   // Requests an icon from Google favicon server. Since requests work by
   // populating local storage, a |local_lookup_callback| will be needed in case
   // of success and an |empty_response_callback| in case of failure.
-  void RequestFromGoogleServer(const GURL& page_url,
-                               base::OnceClosure empty_response_callback,
-                               base::OnceClosure local_lookup_callback,
-                               LargeIconService* large_icon_service,
-                               const GURL& icon_url_for_uma,
-                               FaviconRequestOrigin origin);
+  void RequestFromGoogleServer(
+      const GURL& page_url,
+      std::unique_ptr<FaviconServerFetcherParams> server_parameters,
+      base::OnceClosure empty_response_callback,
+      base::OnceClosure local_lookup_callback,
+      LargeIconService* large_icon_service,
+      const GURL& icon_url_for_uma,
+      FaviconRequestOrigin origin);
 
   // Called once the request to the favicon server has finished. If the request
   // succeeded, |local_lookup_callback| is called to effectively retrieve the
