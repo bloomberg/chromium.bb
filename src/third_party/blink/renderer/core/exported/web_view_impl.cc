@@ -297,9 +297,9 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       chrome_client_(ChromeClientImpl::Create(this)),
       minimum_zoom_level_(ZoomFactorToZoomLevel(kMinTextSizeMultiplier)),
       maximum_zoom_level_(ZoomFactorToZoomLevel(kMaxTextSizeMultiplier)),
-      does_composite_(does_composite),
       isAltDragRubberbandingEnabled_(false),
       rubberbandingForcedOn_(false),
+      does_composite_(does_composite),
       fullscreen_controller_(FullscreenController::Create(this)) {
   if (!AsView().client) {
     DCHECK(!does_composite_);
