@@ -338,14 +338,6 @@ class ReceiverSetBase {
 template <typename Interface, typename ContextType = void>
 using ReceiverSet = ReceiverSetBase<Receiver<Interface>, ContextType>;
 
-// Helper for a set of Receivers where each bound Receiver is tied to an owned
-// implementation. The |Add()| method takes a std::unique_ptr<Interface> for
-// each bound implementation.
-template <typename Interface, typename ContextType = void>
-using OwnedReceiverSet =
-    ReceiverSetBase<Receiver<Interface, UniquePtrImplRefTraits<Interface>>,
-                    ContextType>;
-
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_RECEIVER_SET_H_
