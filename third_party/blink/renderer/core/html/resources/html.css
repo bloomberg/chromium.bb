@@ -1009,7 +1009,7 @@ nobr {
 /* states */
 
 :-internal-spatial-navigation-interest {
-    outline: auto 1px -webkit-focus-ring-color;
+    outline: auto 1px -webkit-focus-ring-color !important;
     box-shadow: none !important
 }
 
