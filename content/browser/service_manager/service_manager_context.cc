@@ -177,7 +177,7 @@ class ContentChildServiceProcessHost
       // should be packaged into the content_gpu manifest. Then this would be
       // unnecessary.
       GpuProcessHost* process_host = GpuProcessHost::Get();
-      if (!process_host || process_host->process_id() == base::kNullProcessId) {
+      if (!process_host) {
         DLOG(ERROR) << "GPU process host not available.";
         return mojo::NullRemote();
       }
@@ -187,7 +187,10 @@ class ContentChildServiceProcessHost
       // sure we handle these cases correctly.
       process_host->gpu_host()->RunService(identity.name(),
                                            std::move(receiver));
-      std::move(callback).Run(process_host->process_id());
+      base::ProcessId process_id = process_host->process_id();
+      std::move(callback).Run(process_id != base::kNullProcessId
+                                  ? process_id
+                                  : base::GetCurrentProcId());
       return remote;
     }
 
