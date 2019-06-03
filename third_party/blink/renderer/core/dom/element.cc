@@ -267,8 +267,14 @@ bool DefinitelyNewFormattingContext(const Node& node,
     return false;
   // The only block-container display types that potentially don't establish a
   // new formatting context, are 'block' and 'list-item'.
-  if (display != EDisplay::kBlock && display != EDisplay::kListItem)
-    return true;
+  if (display != EDisplay::kBlock && display != EDisplay::kListItem) {
+    // DETAILS and SUMMARY elements partially or completely ignore the display
+    // type, though, and may end up disregarding the display type and just
+    // create block containers. And those don't necessarily create a formatting
+    // context.
+    if (!IsHTMLDetailsElement(node) && !IsHTMLSummaryElement(node))
+      return true;
+  }
   if (!style.IsOverflowVisible())
     return node.GetDocument().ViewportDefiningElement() != &node;
   if (style.HasOutOfFlowPosition() || style.IsFloating() ||
