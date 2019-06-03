@@ -70,10 +70,6 @@ class SigninManager : public SigninManagerBase,
   void FinalizeInitBeforeLoadingRefreshTokens(
       PrefService* local_state) override;
 
-  // Signs a user in. SigninManager assumes that |username| can be used to look
-  // up the corresponding account_id and gaia_id for this email.
-  void SignIn(const std::string& username);
-
  private:
   friend class identity::IdentityManager;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, Prohibited);
@@ -81,9 +77,6 @@ class SigninManager : public SigninManagerBase,
 
   // Returns true if a signin to Chrome is allowed (by policy or pref).
   bool IsSigninAllowed() const;
-
-  // Send all observers |GoogleSigninSucceeded| notifications.
-  void FireGoogleSigninSucceeded();
 
   // OAuth2TokenService::Observer:
   void OnRefreshTokensLoaded() override;

@@ -120,34 +120,6 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
   return identity::IsUsernameAllowedByPattern(username, pattern);
 }
 
-void SigninManager::SignIn(const std::string& username) {
-  AccountInfo info =
-      account_tracker_service()->FindAccountInfoByEmail(username);
-  DCHECK(!info.gaia.empty());
-  DCHECK(!info.email.empty());
-
-  bool reauth_in_progress = IsAuthenticated();
-
-  signin_client()->GetPrefs()->SetInt64(
-      prefs::kSignedInTime,
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-
-  SetAuthenticatedAccountInfo(info.gaia, info.email);
-
-  if (!reauth_in_progress)
-    FireGoogleSigninSucceeded();
-
-  signin_metrics::LogSigninProfile(signin_client()->IsFirstRun(),
-                                   signin_client()->GetInstallDate());
-}
-
-void SigninManager::FireGoogleSigninSucceeded() {
-  const AccountInfo account_info = GetAuthenticatedAccountInfo();
-  if (observer_ != nullptr) {
-    observer_->GoogleSigninSucceeded(account_info);
-  }
-}
-
 void SigninManager::OnRefreshTokensLoaded() {
   token_service()->RemoveObserver(this);
 

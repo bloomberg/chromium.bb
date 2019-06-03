@@ -249,6 +249,27 @@ void SigninManagerBase::ClearObserver() {
 }
 
 #if !defined(OS_CHROMEOS)
+void SigninManagerBase::SignIn(const std::string& username) {
+  AccountInfo info =
+      account_tracker_service()->FindAccountInfoByEmail(username);
+  DCHECK(!info.gaia.empty());
+  DCHECK(!info.email.empty());
+
+  bool reauth_in_progress = IsAuthenticated();
+
+  signin_client()->GetPrefs()->SetInt64(
+      prefs::kSignedInTime,
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  SetAuthenticatedAccountInfo(info.gaia, info.email);
+
+  if (!reauth_in_progress && observer_ != nullptr)
+    observer_->GoogleSigninSucceeded(GetAuthenticatedAccountInfo());
+
+  signin_metrics::LogSigninProfile(signin_client()->IsFirstRun(),
+                                   signin_client()->GetInstallDate());
+}
+
 void SigninManagerBase::SignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
