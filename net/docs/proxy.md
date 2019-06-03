@@ -1,45 +1,47 @@
 # Proxy support in Chrome
 
-This document establishes basic proxy terminology, as well as describing
-behaviors specific to Chrome.
+This document establishes basic proxy terminology and describes Chrome-specific
+proxy behaviors.
 
-## Proxy Server
+[TOC]
 
-A proxy server is an intermediary used for network requests. It can be
-identified by the 3-tuple (scheme, host, port) where:
+## Proxy server identifiers
 
-* scheme - protocol used to communicate with the proxy (ex: SOCKSv5, HTTPS).
-* host - IP or hostname of the proxy server (ex: 192.168.0.1)
-* port - TCP/UDP port number (ex: 443)
+A proxy server is an intermediary used for network requests. A proxy server can
+be described by its address, along with the proxy scheme that should be used to
+communicate with it.
 
-There are a variety of proxy server schemes supported by Chrome. When using an
-explicit proxy in the browser, multiple layers of the network request are
-impacted.
+This can be written as a string using either the "PAC format" or the "URI
+format".
 
-Difference between proxy server schemes include:
+The PAC format is how one names a proxy server in [Proxy
+auto-config](https://en.wikipedia.org/wiki/Proxy_auto-config) scripts. For
+example:
+* `PROXY foo:2138`
+* `SOCKS5 foo:1080`
+* `DIRECT`
 
-* Is communication to the proxy done over a secure channel?
-* Is name resolution (ex: DNS) done client side, or proxy side?
-* What authentication schemes to the proxy server are supported?
-* What network traffic can be sent through the proxy?
+The "URI format" instead encodes the information as a URL. For example:
+* `foo:2138`
+* `http://foo:2138`
+* `socks5://foo:1080`
+* `direct://`
 
-Identifiers for proxy servers are often written as strings, using either the
-PAC format (ex: `PROXY foo`) or Chrome's URI format (ex: `http://foo`).
+The port number is optional in both formats. When omitted, a per-scheme default
+is used.
 
-When a proxy server's scheme is not stated, it's assumed to be HTTP in most
-contexts.
+See the [Proxy server schemes](#Proxy-server-schemes) section for details on
+what schemes Chrome supports, and how to write them in the PAC and URI formats.
 
-This can lead to some confusion, particularly when discussing system proxy
-settings. Major platform UIs have converged on the term "Secure proxy" to mean
-the host:port for an (insecure) HTTP proxy to use for proxying https:// URLs.
+Most UI surfaces in Chrome (including command lines and policy) expect URI
+formatted proxy server identifiers. However outside of Chrome, proxy servers
+are generally identified less precisely by just an address -- the proxy
+scheme is assumed based on context.
 
-So when someone refers to their "HTTPS proxy" be aware of this ambiguity. The
-intended meaning could be either "an HTTP proxy for https:// URLs", or "a proxy
-using the HTTPS scheme".
-
-In this document when we say "an HTTPS proxy", we always mean "a proxy
-that the browser speaks HTTPS to", and not "an (HTTP) proxy used to proxy
-https:// URLs".
+In Windows' proxy settings there are host and port fields for the
+"HTTP", "Secure", "FTP", and "SOCKS" proxy. With the exception of "SOCKS",
+those are all identifiers for insecure HTTP proxy servers (proxy scheme is
+assumed as HTTP).
 
 ## Proxy resolution
 
@@ -49,31 +51,42 @@ When the browser is asked to fetch a URL, it needs to decide which IP endpoint
 to send the request to. This can be either a proxy server, or the target host.
 
 This is called proxy resolution. The input to proxy resolution is a URL, and
-the output is an ordered list of proxy server options.
+the output is an ordered list of [proxy server
+identifiers](#Proxy-server-identifiers).
 
 What proxies to use can be described using either:
 
-* Manual proxy settings - proxy resolution is defined using a declarative set
-  of rules. These rules are expressed as a mapping from URL scheme to proxy
-  server(s), and a list of proxy bypass rules for when to go DIRECT instead of
-  using the mapped proxy.
+* [Manual proxy settings](#Manual-proxy-settings) - proxy resolution is defined
+  using a declarative set of rules. These rules are expressed as a mapping from
+  URL scheme to proxy server identifier(s), and a list of proxy bypass rules for
+  when to go DIRECT instead of using the mapped proxy.
 
 * PAC script - proxy resolution is defined using a JavaScript program, that is
-  invoked whenever fetching a URL to get the list of proxy servers to use.
+  invoked whenever fetching a URL to get the list of proxy server identifiers
+  to use.
 
 * Auto-detect - the WPAD protocol is used to probe the network (using DHCP/DNS)
   and possibly discover the URL of a PAC script.
 
 ## Proxy server schemes
 
-Chrome supports the following proxy server schemes:
+When using an explicit proxy in the browser, multiple layers of the network
+request are impacted, depending on the scheme that is used. Some implications
+of the proxy scheme are:
 
-* DIRECT
-* HTTP
-* HTTPS
-* SOCKSv4
-* SOCKSv5
-* QUIC
+* Is communication to the proxy done over a secure channel?
+* Is name resolution (ex: DNS) done client side, or proxy side?
+* What authentication schemes to the proxy server are supported?
+* What network traffic can be sent through the proxy?
+
+Chrome supports these proxy server schemes:
+
+* [DIRECT](#DIRECT-proxy-scheme)
+* [HTTP](#HTTP-proxy-scheme)
+* [HTTPS](#HTTPS-proxy-scheme)
+* [SOCKSv4](#SOCKSv4-proxy-scheme)
+* [SOCKSv5](#SOCKSv5-proxy-scheme)
+* [QUIC](#QUIC-proxy-scheme)
 
 ### DIRECT proxy scheme
 
@@ -107,7 +120,7 @@ tunnel, the hostname of the target URL is sent to the proxy server in the
 clear.
 
 HTTP proxies in Chrome support the same HTTP authentiation schemes as for
-target servers: Basic, Digest, Negotiate/NTLM.
+target servers: Basic, Digest, Negotiate, NTLM.
 
 ### HTTPS proxy scheme
 
@@ -115,12 +128,21 @@ target servers: Basic, Digest, Negotiate/NTLM.
 * Example identifier (PAC): `HTTPS proxy:8080`
 * Example identifier (URI): `https://proxy:8080`
 
-This works exactly like an HTTP proxy, except the communication to the proxy
-server is protected by TLS. Hence `http://` requests, and hostnames for
-`https://` requests are not sent in the clear as with HTTP proxies.
+This works like an [HTTP proxy](#HTTP-proxy-scheme), except the
+communication to the proxy server is protected by TLS, and may negotiate
+HTTP/2.
 
-In addition to HTTP authentication methods, one can also use client
-certificates to authenticate to HTTPS proxies.
+Because the connection to the proxy server is secure, https:// requests
+sent through the proxy are not sent in the clear as with an HTTP proxy.
+Similarly, since CONNECT requests are sent over a protected channel, the
+hostnames for proxied https:// URLs is also not revealed.
+
+In addition to the usual HTTP authentication methods, HTTPS proxies also
+support client certificates.
+
+HTTPS proxies using HTTP/2 can offer better performance in Chrome than a
+regular HTTP proxy due to higher connection limits (HTTP/1.1 proxies in Chrome
+are limited to 32 simultaneous connections across all domains).
 
 ### SOCKSv4 proxy scheme
 
@@ -183,18 +205,18 @@ TODO
 The simplest way to configure proxy resolution is by providing a static list of
 rules comprised of:
 
-1. A mapping of URL schemes to proxy servers
-2. A list of proxy bypass rules
+1. A mapping of URL schemes to [proxy server identifiers](#Proxy-server-identifiers).
+2. A list of [proxy bypass rules](#Proxy-bypass-rules)
 
 We refer to this mode of configuration as "manual proxy settings".
 
 Manual proxy settings can succinctly describe setups like:
 
-* Use HTTPS proxy `foo:8080` for all requests
-* Use HTTP proxy `foo:8080` for all requests except those to a `google.com`
+* Use proxy `http://foo:8080` for all requests
+* Use proxy `http://foo:8080` for all requests except those to a `google.com`
   subdomain.
-* Use HTTP proxy `foo:8080` for all `https://` requests, and the SOCKSv5 proxy
-  `mysocks:90` for everything else
+* Use proxy `http://foo:8080` for all `https://` requests, and proxy
+  `socsk5://mysocks:90` for everything else
 
 Although manual proxy settings are a ubiquituous way to configure proxies
 across platforms, there is no standard representation or feature set.
@@ -205,14 +227,14 @@ reversing the bypass list, or Gnome's interpretation of bypass patterns as
 suffix matches.
 
 When defining manual proxy settings in Chrome, we specify three (possibly
-empty) lists of proxy servers:
+empty) lists of [proxy server identifiers](#Proxy-server-identifiers).
 
-  * proxies for HTTP - A list of proxy servers to use for `http://` requests,
-    if non-empty.
-  * proxies for HTTPS - A list of proxy servers to use for `https://` requests,
-    if non-empty.
-  * other proxies - A list of proxy servers to use for everything else
-    (whatever isn't matched by the other two lists)
+  * proxies for HTTP - A list of proxy server identifiers to use for `http://`
+    requests, if non-empty.
+  * proxies for HTTPS - A list of proxy server identifiers to use for
+    `https://` requests, if non-empty.
+  * other proxies - A list of proxy server identifiers to use for everything
+    else (whatever isn't matched by the other two lists)
 
 There are a lot of ways to end up with manual proxy settings in Chrome
 (discussed in other sections).
@@ -220,8 +242,8 @@ There are a lot of ways to end up with manual proxy settings in Chrome
 The following examples will use the command line method. Launching Chrome with
 `--proxy-server=XXX` (and optionally `--proxy-bypass-list=YYY`)
 
-Example: To use the HTTP proxy `foo:8080` for all requests we can launch
-Chrome with `--proxy-server="http://foo:8080"`. This translates into:
+Example: To use proxy `http://foo:8080` for all requests we can launch
+Chrome with `--proxy-server="http://foo:8080"`. This translates to:
 
   * proxies for HTTP - *empty*
   * proxies for HTTPS - *empty*
@@ -238,8 +260,8 @@ This command line means:
   * other proxies - `http://foo:8080`, `direct://`
 
 If instead we wanted to proxy only `http://` URLs through the
-HTTPS proxy `foo:443`, and have everything else use the SOCKSv5 proxy
-`mysocks:1080` we could launch Chrome with
+HTTPS proxy `https://foo:443`, and have everything else use the SOCKSv5 proxy
+`socks5://mysocks:1080` we could launch Chrome with
 `--proxy-server="http=https://foo:443;socks=socks5://mysocks:1080"`. This now
 expands to:
 
@@ -247,18 +269,20 @@ expands to:
   * proxies for HTTPS - *empty*
   * other proxies - `socks5://mysocks:1080`
 
-The command line above uses WinInet's proxy map format, with two modifications:
+The command line above uses WinInet's proxy map format, with some additional
+features:
 
-* Proxy servers can be optionally prefixed with a scheme (i.e. Chrome's "URI
-  format" for proxy server identifiers)
-* The `socks=` mapping is understood as "other proxies". The subsequent proxy
-  list can include proxies of any scheme, however if the scheme is unspecified
-  it is understood to be `socks4://`.
+* Instead of naming proxy servers by just a hostname:port, you can use Chrome's
+  URI format for proxy server identifiers. In other words, you can prefix the
+  proxy scheme so it doesn't default to HTTP.
+* The `socks=` mapping is understood more broadly as "other proxies". The
+  subsequent proxy list can include proxies of any scheme, however if the
+  scheme is omitted it will be understood as SOCKSv4 rather than HTTP.
 
-## Mapping WebSockets URLs to a proxy
+### Mapping WebSockets URLs to a proxy
 
-Manual proxy settings don't have mappings for `ws://` or `wss://` URLs - you
-can't specify a separate proxy to use for those schemes.
+[Manual proxy settings](#Manual-proxy-settings) don't have mappings for `ws://`
+or `wss://` URLs.
 
 Selecting a proxy for these URL schemes is a bit different from other URL
 schemes. The algorithm that Chrome uses is:
@@ -272,19 +296,22 @@ This is per the recommendation in section 4.1.3 of [RFC
 
 It is possible to route `ws://` and `wss://` separately using a PAC script.
 
-## Proxy credentials in manual proxy settings
+### Proxy credentials in manual proxy settings
 
-Most platforms' manual proxy settings allow specifying a cleartext
-username/password for proxy sign in. Chrome does not implement this, and will
-not use any credentials embedded in the proxy settings.
+Most platforms' [manual proxy settings](#Manual-proxy-settings) allow
+specifying a cleartext username/password for proxy sign in. Chrome does not
+implement this, and will not use any credentials embedded in the proxy
+settings.
 
 Proxy authentication will instead go through the ordinary flow to find
 credentials.
 
 ## Proxy bypass rules
 
-In addition to specifying three lists of proxy servers, Chrome's manual proxy
-settings also lets you specify a list of "proxy bypass rules".
+In addition to specifying three lists of [proxy server
+identifiers](#proxy-server-identifiers), Chrome's [manual proxy
+settings](#Manual-proxy-settings) lets you specify a list of "proxy bypass
+rules".
 
 This ruleset determines whether a given URL should skip use of a proxy all
 together, even when a proxy is otherwise defined for it.
@@ -369,8 +396,8 @@ IPV4_LITERAL "/" PREFIX_LENGTH_IN_BITS
 Matches any URL whose hostname is an IPv4 literal, and falls between the given
 address range.
 
-Only applies to URLs that are IP literals - see "Meaning of IP address range
-bypass rules".
+Note this [only applies to URLs that are IP
+literals](#Meaning-of-IP-address-range-bypass-rules).
 
 Examples:
 
@@ -385,8 +412,8 @@ IPV6_LITERAL "/" PREFIX_LENGTH_IN_BITS
 Matches any URL that is an IPv6 literal that falls between the given range.
 Note that IPv6 literals must *not* be bracketed.
 
-Only applies to URLs that are IP literals - see "Meaning of IP address range
-bypass rules".
+Note this [only applies to URLs that are IP
+literals](#Meaning-of-IP-address-range-bypass-rules).
 
 Examples:
 
@@ -408,8 +435,8 @@ the "Don't use proxy server for local (intranet) addresses" on Windows.
 
 The rule name comes from WinInet, and can easily be confused with the concept
 of localhost. However the two concepts are completely orthogonal. In practice
-one wouldn't add rules to bypass localhost, as it is already done implicitly
-(see "Implicit bypass rules").
+one wouldn't add rules to bypass localhost, as it is [already done
+implicitly](#Implicit-bypass-rules).
 
 ### Bypass rule: Subtract implicit rules
 
@@ -417,10 +444,9 @@ one wouldn't add rules to bypass localhost, as it is already done implicitly
 <-loopback>
 ```
 
-*Subtracts* the implicit proxy bypass rules (localhost and link local
-addresses). See the "Implicit bypass rules" section for details on when/why to
-use this, and the security caveats to doing so. Generally this is used for test
-setups.
+*Subtracts* the [implicit proxy bypass rules](#Implicit-bypass-rules)
+(localhost and link local addresses). This is generally only needed for test
+setupe. Beware of the security implications to proxying localhost.
 
 Whereas regular bypass rules instruct the browser about URLs that should *not*
 use the proxy, this rule has the opposite effect and tells the browser to
@@ -432,8 +458,8 @@ than `127.0.0.1;<-loopback>`.
 
 ### Meaning of IP address range bypass rules
 
-The IP address range bypass rules in manual proxy settings applies ONLY TO URL
-LITERALS. This is not what one would intuitively expect!
+The IP address range bypass rules in manual proxy settings applies only to URL
+literals. This is not what one would intuitively expect.
 
 Example:
 
@@ -497,7 +523,7 @@ Historical support in Chrome:
 * In M72 Chrome generalized the implicit proxy bypass rules to manually
   configured proxies
 
-## Overriding the implicit bypass rules
+### Overriding the implicit bypass rules
 
 If you want traffic to `localhost` to be sent through a proxy despite the
 security concerns, it can be done by adding the special proxy bypass rule
@@ -516,8 +542,9 @@ proxy for localhost URLs.
 
 ## Evaluating proxy lists (proxy fallback)
 
-Proxy resolution results in a _list_ of proxy servers to use for a given
-request, not just a single proxy server.
+Proxy resolution results in a _list_ of [proxy server
+identifiers](#Proxy-server-identifiers) to use for a
+given request, not just a single proxy server identifier.
 
 For instance, consider this PAC script:
 
@@ -532,12 +559,13 @@ function FindProxyForURL(url, host) {
 ```
 
 What proxy will Chrome use for connections to `www.example.com`, given that
-we have a choice of 3 separate proxies, each of different type?
+we have a choice of three separate proxy server identifiers to choose from
+{`http://proxy1:80`, `https://proxy2:443`, `socks5://proxy3:1080`}?
 
-Initially, Chrome will try the proxies in order. This means first attempting the
-request through the HTTP WebProxy `proxy1`. If that "fails", the request is
-next attempted through the HTTPS proxy `proxy2`. Lastly if that fails, the
-request is attempted through the SOCKSv5 proxy `proxy3`.
+Initially, Chrome will try the proxies in order. This means first attempting
+the request through `http://proxy1:80`. If that "fails", the request is
+next attempted through `https://proxy2:443`. Lastly if that fails, the
+request is attempted through `socks5://proxy3:1080`.
 
 This process is referred to as _proxy fallback_. What constitutes a
 "failure" is described later.
@@ -546,26 +574,24 @@ Proxy fallback is stateful. The actual order of proxy attempts made be Chrome
 is influenced by the past responsiveness of proxy servers.
 
 Let's say we request `http://www.example.com/`. Per the PAC script this
-resolves to:
+resolves to a list of three proxy server identifiers:
 
-```
-"PROXY proxy1; HTTPS proxy2; SOCKS5 proxy3"
-```
+{`http://proxy1:80`, `https://proxy2:443`, `socks5://proxy3:1080`}
 
 Chrome will first attempt to issue the request through these proxies in the
-left-to-right order (`proxy1`, `proxy2`, `proxy3`).
+left-to-right order.
 
-Let's say that the attempt through `proxy1` fails, but then the attempt through
-`proxy2` succeeds. Chrome will mark `proxy1` as _bad_ for the next 5 minutes.
-Being marked as _bad_ means that `proxy1` is de-prioritized with respect to
-other proxies options (including DIRECT) that are not marked as bad.
+Let's say that the attempt through `http://proxy1:80` fails, but then the
+attempt through `https://proxy2:443` succeeds. Chrome will mark
+`http://proxy1:80` as _bad_ for the next 5 minutes. Being marked as _bad_
+means that `http://proxy1:80` is de-prioritized with respect to
+other proxy server identifiers (including `direct://`) that are not marked as
+bad.
 
 That means the next time `http://www.example.com/` is requested, the effective
 order for proxies to attempt will be:
 
-```
-HTTPS proxy2; SOCKS5 proxy3; "PROXY proxy1"
-```
+{`https://proxy2:443`, `socks5://proxy3:1080`, `http://proxy1:80`}
 
 Conceptually, _bad_ proxies are moved to the end of the list, rather than being
 removed from consideration all together.
@@ -615,7 +641,7 @@ button on
 will not give feedback that the bad proxies were cleared, however capturing a
 new NetLog dump can confirm it was cleared.
 
-## Arguments passed to `FindProxyForURL(url, host)` in PAC scripts
+## Arguments passed to FindProxyForURL() in PAC scripts
 
 PAC scripts in Chrome are expected to define a JavaScript function
 `FindProxyForURL`.
@@ -668,7 +694,7 @@ type, since future versions of Chrome may [deprecate that
 capability](https://bugs.chromium.org/p/chromium/issues/detail?id=882536) in
 favor of a consistent policy.
 
-## Resolving client's IP address within a PAC script using `myIpAddress()`
+## Resolving client's IP address within a PAC script using myIpAddress()
 
 PAC scripts can invoke `myIpAddress()` to obtain the client's IP address. This
 function returns a single IP literal, or `"127.0.0.1"` on failure.
@@ -705,10 +731,10 @@ This sequence of steps explicitly favors IPv4 over IPv6 results.
 *Historical note*: Prior to M72, Chrome's implementation of `myIpAddress()` was
 effectively just `getaddrinfo(gethostname)`. This is now step 2 of the heuristic.
 
-### What about `var pacUseMultihomedDNS`?
+### What about pacUseMultihomedDNS?
 
-In Firefox, if you define a global named `pacUseMultihomedDNS` in your PAC
-script, it causes `myIpAddress()` to report the IP address of the interface
+In Firefox, if you define a global variable named `pacUseMultihomedDNS` in your
+PAC script, it causes `myIpAddress()` to report the IP address of the interface
 that would (likely) have been used had we connected to it DIRECT.
 
 In particular, it will do a DNS resolution of the target host (the hostname of
@@ -720,7 +746,7 @@ meaning. A PAC script is free to define such a global, and it won't have
 side-effects. Chrome has no APIs or settings to change `myIpAddress()`'s
 algorithm.
 
-## Resolving client's IP address within a PAC script using `myIpAddressEx()`
+## Resolving client's IP address within a PAC script using myIpAddressEx()
 
 Chrome supports the [Microsoft PAC
 extension](https://docs.microsoft.com/en-us/windows/desktop/winhttp/myipaddressex)
