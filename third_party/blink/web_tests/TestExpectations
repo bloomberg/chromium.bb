@@ -13,6 +13,7 @@ Bug(intentional) external/wpt/infrastructure/expected-fail/timeout.html [ Timeou
 
 # WebGPU tests are only run with --enable-unsafe-webgpu
 Bug(none) webgpu/canvas_context.html [ Skip ]
+Bug(none) webgpu/buffer_mapping.html [ Skip ]
 Bug(none) webgpu/fence.html [ Skip ]
 
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
