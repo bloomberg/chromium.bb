@@ -140,7 +140,7 @@ message BaseReply {
   optional CryptohomeErrorCode error = 1;
 
   extensions 1000 to max;
-  // Next ID to use for extensions: 1013
+  // Next ID to use for extensions: 1015
 }
 
 // The MountRequest call may return more than just success or failure
@@ -511,3 +511,12 @@ message GetRsuDeviceIdReply {
 }
 
 message GetRsuDeviceIdRequest {}
+
+// Informs the caller the created data restore key in raw bytes.
+message AddDataRestoreKeyReply {
+  extend BaseReply {
+    optional AddDataRestoreKeyReply reply = 1014;
+  }
+  // 256 bits data restore key in raw bytes
+  optional bytes data_restore_key= 1;
+}
