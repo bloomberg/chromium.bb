@@ -551,6 +551,10 @@ enum BuiltIn {
     BuiltInHitTNV = 5332,
     BuiltInHitKindNV = 5333,
     BuiltInIncomingRayFlagsNV = 5351,
+    BuiltInWarpsPerSMNV = 5374,
+    BuiltInSMCountNV = 5375,
+    BuiltInWarpIDNV = 5376,
+    BuiltInSMIDNV = 5377,
     BuiltInMax = 0x7fffffff,
 };
 
@@ -829,6 +833,7 @@ enum Capability {
     CapabilityPhysicalStorageBufferAddressesEXT = 5347,
     CapabilityComputeDerivativeGroupLinearNV = 5350,
     CapabilityCooperativeMatrixNV = 5357,
+    CapabilityShaderSMBuiltinsNV = 5373,
     CapabilitySubgroupShuffleINTEL = 5568,
     CapabilitySubgroupBufferBlockIOINTEL = 5569,
     CapabilitySubgroupImageBlockIOINTEL = 5570,
