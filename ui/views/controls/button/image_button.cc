@@ -94,13 +94,6 @@ void ImageButton::SetImageVerticalAlignment(VerticalAlignment v_alignment) {
   OnPropertyChanged(&v_alignment_, kPropertyEffectsPaint);
 }
 
-void ImageButton::SetBackgroundImageAlignment(HorizontalAlignment h_align,
-                                              VerticalAlignment v_align) {
-  h_background_alignment_ = h_align;
-  v_background_alignment_ = v_align;
-  SchedulePaint();
-}
-
 gfx::Size ImageButton::GetMinimumImageSize() const {
   return minimum_image_size_;
 }
@@ -160,20 +153,14 @@ void ImageButton::PaintButtonContents(gfx::Canvas* canvas) {
     }
 
     if (!background_image_.isNull()) {
-      // If the background image alignment was not set, use the image
-      // alignment.
-      HorizontalAlignment h_alignment =
-          h_background_alignment_.value_or(GetImageHorizontalAlignment());
-      VerticalAlignment v_alignment =
-          v_background_alignment_.value_or(GetImageVerticalAlignment());
-      gfx::Point background_position = ComputeImagePaintPosition(
-          background_image_, h_alignment, v_alignment);
+      // The background image alignment is the same as for the image.
+      gfx::Point background_position =
+          ComputeImagePaintPosition(background_image_);
       canvas->DrawImageInt(background_image_, background_position.x(),
                            background_position.y());
     }
 
-    gfx::Point position = ComputeImagePaintPosition(
-        img, GetImageHorizontalAlignment(), GetImageVerticalAlignment());
+    gfx::Point position = ComputeImagePaintPosition(img);
     canvas->DrawImageInt(img, position.x(), position.y());
   }
 }
@@ -199,12 +186,9 @@ gfx::ImageSkia ImageButton::GetImageToPaint() {
 // ImageButton, private:
 
 const gfx::Point ImageButton::ComputeImagePaintPosition(
-    const gfx::ImageSkia& image,
-    HorizontalAlignment h_alignment,
-    VerticalAlignment v_alignment) {
-  int x = 0, y = 0;
-  gfx::Rect rect = GetContentsBounds();
-
+    const gfx::ImageSkia& image) const {
+  HorizontalAlignment h_alignment = GetImageHorizontalAlignment();
+  VerticalAlignment v_alignment = GetImageVerticalAlignment();
   if (draw_image_mirrored_) {
     if (h_alignment == ALIGN_RIGHT)
       h_alignment = ALIGN_LEFT;
@@ -212,20 +196,21 @@ const gfx::Point ImageButton::ComputeImagePaintPosition(
       h_alignment = ALIGN_RIGHT;
   }
 
+  const gfx::Rect rect = GetContentsBounds();
+
+  int x = 0;
   if (h_alignment == ALIGN_CENTER)
     x = (rect.width() - image.width()) / 2;
   else if (h_alignment == ALIGN_RIGHT)
     x = rect.width() - image.width();
 
+  int y = 0;
   if (v_alignment == ALIGN_MIDDLE)
     y = (rect.height() - image.height()) / 2;
   else if (v_alignment == ALIGN_BOTTOM)
     y = rect.height() - image.height();
 
-  x += rect.x();
-  y += rect.y();
-
-  return gfx::Point(x, y);
+  return rect.origin() + gfx::Vector2d(x, y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

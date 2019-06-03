@@ -37,8 +37,6 @@ CloseDeskButton::CloseDeskButton(views::ButtonListener* listener)
            gfx::CreateVectorIcon(kDesksCloseDeskButtonIcon, SK_ColorWHITE));
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-  SetBackgroundImageAlignment(views::ImageButton::ALIGN_CENTER,
-                              views::ImageButton::ALIGN_MIDDLE);
   SetBackground(
       CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
           kBackgroundColor, kCornerRadius)));

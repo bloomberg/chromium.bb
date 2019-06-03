@@ -53,7 +53,8 @@ class VIEWS_EXPORT ImageButton : public Button {
   // consolidated.
   virtual void SetImage(ButtonState state, const gfx::ImageSkia& image);
 
-  // Set the background details.
+  // Set the background details.  The background image uses the same alignment
+  // as the image.
   void SetBackgroundImage(SkColor color,
                           const gfx::ImageSkia* image,
                           const gfx::ImageSkia* mask);
@@ -63,10 +64,6 @@ class VIEWS_EXPORT ImageButton : public Button {
   VerticalAlignment GetImageVerticalAlignment() const;
   void SetImageHorizontalAlignment(HorizontalAlignment h_alignment);
   void SetImageVerticalAlignment(VerticalAlignment v_alignment);
-
-  // Sets how the background is laid out within the button's bounds.
-  void SetBackgroundImageAlignment(HorizontalAlignment h_align,
-                                   VerticalAlignment v_align);
 
   // The minimum size of the contents (not including the border). The contents
   // will be at least this size, but may be larger if the image itself is
@@ -110,19 +107,12 @@ class VIEWS_EXPORT ImageButton : public Button {
   FRIEND_TEST_ALL_PREFIXES(ImageButtonFactoryTest, CreateVectorImageButton);
 
   // Returns the correct position of the image for painting.
-  const gfx::Point ComputeImagePaintPosition(const gfx::ImageSkia& image,
-                                             HorizontalAlignment h_alignment,
-                                             VerticalAlignment v_alignment);
+  const gfx::Point ComputeImagePaintPosition(const gfx::ImageSkia& image) const;
 
   // Image alignment.
   HorizontalAlignment h_alignment_ = ALIGN_LEFT;
   VerticalAlignment v_alignment_ = ALIGN_TOP;
   gfx::Size minimum_image_size_;
-
-  // Background alignment. If these are not set, the background image uses the
-  // image alignment.
-  base::Optional<HorizontalAlignment> h_background_alignment_;
-  base::Optional<VerticalAlignment> v_background_alignment_;
 
   // Whether we draw our resources horizontally flipped. This can happen in the
   // linux titlebar, where image resources were designed to be flipped so a
