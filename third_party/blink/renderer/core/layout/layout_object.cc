@@ -797,6 +797,20 @@ LayoutBox* LayoutObject::EnclosingBox() const {
   return nullptr;
 }
 
+LayoutBlockFlow* LayoutObject::RootInlineFormattingContext() const {
+  DCHECK(IsInline());
+  for (LayoutObject* parent = Parent(); parent; parent = parent->Parent()) {
+    if (auto* block_flow = DynamicTo<LayoutBlockFlow>(parent)) {
+      // Skip |LayoutFlowThread| because it is skipped when finding the first
+      // child in |GetLayoutObjectForFirstChildNode|.
+      if (UNLIKELY(block_flow->IsLayoutFlowThread()))
+        return DynamicTo<LayoutBlockFlow>(block_flow->Parent());
+      return block_flow;
+    }
+  }
+  return nullptr;
+}
+
 LayoutBlockFlow* LayoutObject::ContainingNGBlockFlow() const {
   DCHECK(IsInline());
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())

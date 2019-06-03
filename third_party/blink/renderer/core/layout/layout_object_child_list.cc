@@ -47,6 +47,7 @@ void InvalidateInlineItems(LayoutObject* object) {
   if (auto* layout_text = ToLayoutTextOrNull(object)) {
     layout_text->SetFirstInlineFragment(nullptr);
     layout_text->InvalidateInlineItems();
+    layout_text->SetIsInLayoutNGInlineFormattingContext(false);
     return;
   }
 
@@ -61,10 +62,12 @@ void InvalidateInlineItems(LayoutObject* object) {
       if (child->IsInLayoutNGInlineFormattingContext())
         InvalidateInlineItems(child);
     }
+    layout_inline->SetIsInLayoutNGInlineFormattingContext(false);
     return;
   }
 
   object->SetFirstInlineFragment(nullptr);
+  object->SetIsInLayoutNGInlineFormattingContext(false);
 }
 
 }  // namespace

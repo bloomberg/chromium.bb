@@ -256,6 +256,10 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // Returns a range of NGPaintFragment in an inline formatting context that are
   // for a LayoutObject.
   static FragmentRange InlineFragmentsFor(const LayoutObject*);
+  // A safer version that returns empty if the block flow is dirty.
+  // TODO(kojii): If the block flow is dirty, children of these fragments maybe
+  // already deleted. crbug.com/963103
+  static FragmentRange SafeInlineFragmentsFor(const LayoutObject*);
 
   // Same as |InlineFragmentsFor()| but this function includes descendants if
   // the |layout_object| is culled (i.e., did not generate fragments.)

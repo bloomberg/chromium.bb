@@ -44,7 +44,7 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
 
   if (layout_inline_.IsInLayoutNGInlineFormattingContext()) {
     for (const NGPaintFragment* fragment :
-         NGPaintFragment::InlineFragmentsFor(&layout_inline_)) {
+         NGPaintFragment::SafeInlineFragmentsFor(&layout_inline_)) {
       auto child_offset = paint_offset +
                           fragment->InlineOffsetToContainerBox() -
                           fragment->Offset();
