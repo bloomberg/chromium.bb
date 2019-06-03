@@ -185,3 +185,22 @@ void DistillAndView(content::WebContents* source_web_contents,
   StartNavigationToDistillerViewer(destination_web_contents,
                                    source_web_contents->GetLastCommittedURL());
 }
+
+void ReturnToOriginalPage(content::WebContents* distilled_web_contents) {
+  DCHECK(distilled_web_contents);
+  DCHECK(dom_distiller::url_utils::IsDistilledPage(
+      distilled_web_contents->GetLastCommittedURL()));
+
+  GURL distilled_url = distilled_web_contents->GetLastCommittedURL();
+  GURL source_url =
+      dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(distilled_url);
+  DCHECK_NE(source_url, distilled_url)
+      << "Could not retrieve original page for distilled URL: "
+      << distilled_url;
+
+  // TODO(https://crbug.com/925965): Consider saving & retrieving the original
+  // page web contents instead of reloading the page.
+  content::NavigationController::LoadURLParams params(source_url);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  distilled_web_contents->GetController().LoadURLWithParams(params);
+}

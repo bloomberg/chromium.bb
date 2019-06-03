@@ -903,8 +903,8 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_SAVE_PAGE" desc="The text label of the Save Page As menu item">
             Save page &amp;as...
           </message>
-          <message name="IDS_DISTILL_PAGE" desc="The text label of the 'Distill page' menu item">
-            Distill page
+          <message name="IDS_DISTILL_PAGE" desc="The text label of the 'Toggle distilled page contents' menu item">
+            Toggle distilled page contents
           </message>
           <message name="IDS_MORE_TOOLS_MENU" desc="The text label of the Tools submenu for touch">
             More too&amp;ls

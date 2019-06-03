@@ -45,18 +45,43 @@ std::unique_ptr<content::WebContents> NewContentsWithSameParamsAs(
   return new_web_contents;
 }
 
-// DistilledPageObserver is used to detect if a distilled page has
-// finished loading. This is done by checking how many times the title has
-// been set rather than using "DidFinishLoad" directly due to the content
-// being set by JavaScript.
-class DistilledPageObserver : public content::WebContentsObserver {
+// Helper class that blocks test execution until |observed_contents| enters a
+// certain state. Subclasses specify the precise state by calling
+// |new_url_loaded_runner_|.QuitClosure().Run() when |observed_contents| is
+// ready.
+class NavigationObserver : public content::WebContentsObserver {
  public:
-  explicit DistilledPageObserver(content::WebContents* observed_contents)
-      : title_set_count_(0), loaded_distiller_page_(false) {
+  explicit NavigationObserver(content::WebContents* observed_contents) {
     content::WebContentsObserver::Observe(observed_contents);
   }
 
   void WaitUntilFinishedLoading() { new_url_loaded_runner_.Run(); }
+
+ protected:
+  base::RunLoop new_url_loaded_runner_;
+};
+
+class OriginalPageNavigationObserver : public NavigationObserver {
+ public:
+  using NavigationObserver::NavigationObserver;
+
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override {
+    if (!render_frame_host->GetParent())
+      new_url_loaded_runner_.QuitClosure().Run();
+  }
+};
+
+// DistilledPageObserver is used to detect if a distilled page has
+// finished loading. This is done by checking how many times the title has
+// been set rather than using "DidFinishLoad" directly due to the content
+// being set by JavaScript.
+class DistilledPageObserver : public NavigationObserver {
+ public:
+  explicit DistilledPageObserver(content::WebContents* observed_contents)
+      : NavigationObserver(observed_contents),
+        title_set_count_(0),
+        loaded_distiller_page_(false) {}
 
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override {
@@ -76,7 +101,6 @@ class DistilledPageObserver : public content::WebContentsObserver {
   }
 
  private:
-  base::RunLoop new_url_loaded_runner_;
   int title_set_count_;
   bool loaded_distiller_page_;
 };
@@ -162,6 +186,33 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
       destination_web_contents);
   browser()->tab_strip_model()->CloseWebContentsAt(1, 0);
   destroyed_watcher.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, ToggleOriginalPage) {
+  content::WebContents* source_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // This blocks until the navigation has completely finished.
+  ui_test_utils::NavigateToURL(browser(), article_url());
+
+  // Create and navigate to the distilled page.
+  browser()->tab_strip_model()->AppendWebContents(
+      NewContentsWithSameParamsAs(source_web_contents),
+      /* foreground = */ true);
+  content::WebContents* destination_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+
+  DistillAndView(source_web_contents, destination_web_contents);
+  DistilledPageObserver(destination_web_contents).WaitUntilFinishedLoading();
+  ASSERT_TRUE(url_utils::IsDistilledPage(
+      destination_web_contents->GetLastCommittedURL()));
+
+  // Now return to the original page.
+  ReturnToOriginalPage(destination_web_contents);
+  OriginalPageNavigationObserver(destination_web_contents)
+      .WaitUntilFinishedLoading();
+  EXPECT_EQ(source_web_contents->GetLastCommittedURL(),
+            destination_web_contents->GetLastCommittedURL());
 }
 
 }  // namespace

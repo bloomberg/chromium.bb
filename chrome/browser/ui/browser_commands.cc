@@ -66,6 +66,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/google/core/common/google_util.h"
@@ -1215,8 +1216,15 @@ void OpenUpdateChromeDialog(Browser* browser) {
   }
 }
 
-void DistillCurrentPage(Browser* browser) {
-  DistillCurrentPageAndView(browser->tab_strip_model()->GetActiveWebContents());
+void ToggleDistilledView(Browser* browser) {
+  auto* current_web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (dom_distiller::url_utils::IsDistilledPage(
+          current_web_contents->GetLastCommittedURL())) {
+    ReturnToOriginalPage(current_web_contents);
+  } else {
+    DistillCurrentPageAndView(current_web_contents);
+  }
 }
 
 bool CanRequestTabletSite(WebContents* current_tab) {

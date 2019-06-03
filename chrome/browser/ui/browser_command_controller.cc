@@ -713,7 +713,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
 #endif
     case IDC_DISTILL_PAGE:
-      DistillCurrentPage(browser_);
+      ToggleDistilledView(browser_);
       break;
     case IDC_ROUTE_MEDIA:
       RouteMedia(browser_);
