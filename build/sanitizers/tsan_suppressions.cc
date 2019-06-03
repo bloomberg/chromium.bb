@@ -128,9 +128,6 @@ char kTSanDefaultSuppressions[] =
     "race:sctp_express_handle_sack\n"
     "race:system_base_info\n"
 
-    // http://crbug.com/374135
-    "race:media::AlsaWrapper::PcmWritei\n"
-
     // False positive in libc's tzset_internal, http://crbug.com/379738.
     "race:tzset_internal\n"
 
