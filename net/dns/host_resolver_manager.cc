@@ -2678,9 +2678,10 @@ HostCache::Entry HostResolverManager::ResolveLocally(
 
   // TODO(crbug.com/878582): Respect the type of cache lookup that should be
   // performed.
-  if (out_tasks->front() == TaskType::SECURE_CACHE_LOOKUP ||
-      out_tasks->front() == TaskType::INSECURE_CACHE_LOOKUP ||
-      out_tasks->front() == TaskType::CACHE_LOOKUP) {
+  if (!out_tasks->empty() &&
+      (out_tasks->front() == TaskType::SECURE_CACHE_LOOKUP ||
+       out_tasks->front() == TaskType::INSECURE_CACHE_LOOKUP ||
+       out_tasks->front() == TaskType::CACHE_LOOKUP)) {
     out_tasks->pop_front();
     if (cache_usage == ResolveHostParameters::CacheUsage::ALLOWED ||
         cache_usage == ResolveHostParameters::CacheUsage::STALE_ALLOWED) {
