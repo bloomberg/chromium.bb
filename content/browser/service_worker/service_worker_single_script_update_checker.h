@@ -120,6 +120,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   bool network_accessed() const { return network_accessed_; }
 
  private:
+  class WrappedIOBuffer;
+
   void WriteHeaders(scoped_refptr<HttpResponseInfoIOBuffer> info_buffer);
   void OnWriteHeadersComplete(net::Error error);
 

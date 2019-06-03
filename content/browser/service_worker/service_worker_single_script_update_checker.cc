@@ -69,6 +69,20 @@ constexpr net::NetworkTrafficAnnotationTag kUpdateCheckTrafficAnnotation =
 
 namespace content {
 
+// This is for debugging https://crbug.com/959627.
+// The purpose is to see where the IOBuffer comes from by checking |__vfptr|.
+class ServiceWorkerSingleScriptUpdateChecker::WrappedIOBuffer
+    : public net::WrappedIOBuffer {
+ public:
+  WrappedIOBuffer(const char* data) : net::WrappedIOBuffer(data) {}
+
+ private:
+  ~WrappedIOBuffer() override = default;
+
+  // This is to make sure that the vtable is not merged with other classes.
+  virtual void dummy() { NOTREACHED(); }
+};
+
 ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     const GURL& url,
     bool is_main_script,
@@ -411,7 +425,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnNetworkDataAvailable(
 void ServiceWorkerSingleScriptUpdateChecker::CompareData(
     scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer,
     uint32_t bytes_to_compare) {
-  auto buffer = base::MakeRefCounted<net::WrappedIOBuffer>(
+  auto buffer = base::MakeRefCounted<WrappedIOBuffer>(
       pending_buffer ? pending_buffer->buffer() : nullptr);
 
   // Compare the network data and the stored data.
@@ -419,8 +433,7 @@ void ServiceWorkerSingleScriptUpdateChecker::CompareData(
       buffer.get(), bytes_to_compare,
       base::BindOnce(
           &ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete,
-          weak_factory_.GetWeakPtr(),
-          base::WrapRefCounted(pending_buffer.get()), bytes_to_compare));
+          weak_factory_.GetWeakPtr(), pending_buffer, bytes_to_compare));
 
   if (pending_buffer) {
     pending_buffer->CompleteRead(bytes_to_compare);

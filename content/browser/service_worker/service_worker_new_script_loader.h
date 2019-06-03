@@ -169,6 +169,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   const static uint32_t kReadBufferSize;
 
  private:
+  class WrappedIOBuffer;
+
   // This is for constructing network-only script loaders.
   // |loader_factory| is used to load the script, see class comments.
   ServiceWorkerNewScriptLoader(

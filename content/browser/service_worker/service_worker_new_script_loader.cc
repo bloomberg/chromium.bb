@@ -31,6 +31,20 @@ namespace content {
 // We chose this size because the AppCache uses this.
 const uint32_t ServiceWorkerNewScriptLoader::kReadBufferSize = 32768;
 
+// This is for debugging https://crbug.com/959627.
+// The purpose is to see where the IOBuffer comes from by checking |__vfptr|.
+class ServiceWorkerNewScriptLoader::WrappedIOBuffer
+    : public net::WrappedIOBuffer {
+ public:
+  WrappedIOBuffer(const char* data) : net::WrappedIOBuffer(data) {}
+
+ private:
+  ~WrappedIOBuffer() override = default;
+
+  // This is to make sure that the vtable is not merged with other classes.
+  virtual void dummy() { NOTREACHED(); }
+};
+
 std::unique_ptr<ServiceWorkerNewScriptLoader>
 ServiceWorkerNewScriptLoader::CreateForNetworkOnly(
     int32_t routing_id,
@@ -717,8 +731,7 @@ void ServiceWorkerNewScriptLoader::WriteData(
   // next time.
   uint32_t bytes_written = std::min<uint32_t>(kReadBufferSize, bytes_available);
 
-  auto buffer =
-      base::MakeRefCounted<net::WrappedIOBuffer>(pending_buffer->buffer());
+  auto buffer = base::MakeRefCounted<WrappedIOBuffer>(pending_buffer->buffer());
   MojoResult result = client_producer_->WriteData(
       buffer->data(), &bytes_written, MOJO_WRITE_DATA_FLAG_NONE);
   switch (result) {
@@ -747,8 +760,7 @@ void ServiceWorkerNewScriptLoader::WriteData(
   net::Error error = cache_writer_->MaybeWriteData(
       buffer.get(), base::strict_cast<size_t>(bytes_written),
       base::BindOnce(&ServiceWorkerNewScriptLoader::OnWriteDataComplete,
-                     weak_factory_.GetWeakPtr(),
-                     base::WrapRefCounted(pending_buffer.get()),
+                     weak_factory_.GetWeakPtr(), pending_buffer,
                      bytes_written));
   if (error == net::ERR_IO_PENDING) {
     // OnWriteDataComplete() will be called asynchronously.
