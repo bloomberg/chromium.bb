@@ -53,9 +53,14 @@ class TabStripLayoutHelper {
   // of the trailing edge of the trailing-most tab.
   int LayoutTabs(views::ViewModelT<Tab>* tabs,
                  std::vector<TabAnimationState> tab_states,
-                 int available_width);
+                 int available_width,
+                 int active_tab_model_index);
 
  private:
+  // Updates the value of either |active_tab_width_| or |inactive_tab_width_|,
+  // as appropriate.
+  void UpdateCachedTabWidth(int tab_index, int tab_width, int active_tab_index);
+
   // The current widths of tabs. If the space for tabs is not evenly divisible
   // into these widths, the initial tabs in the strip will be 1 px larger.
   int active_tab_width_;

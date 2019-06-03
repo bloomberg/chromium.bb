@@ -11,6 +11,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -184,6 +185,7 @@ class TabStripTest : public ChromeViewsTestBase,
     return &tab_strip_->bounds_animator_;
   }
 
+  int GetActiveTabWidth() { return tab_strip_->GetActiveTabWidth(); }
   int GetInactiveTabWidth() { return tab_strip_->GetInactiveTabWidth(); }
 
   // End any outstanding drag and animate tabs back to their ideal bounds.
@@ -757,6 +759,31 @@ TEST_P(TabStripTest, NewTabButtonStaysVisible) {
   EXPECT_LE(tab_strip_->new_tab_button_bounds().right(), kTabStripWidth);
 }
 
+// The cached widths are private, but if they give incorrect results it can
+// cause subtle errors in other tests. Therefore it's prudent to test them.
+TEST_P(TabStripTest, CachedWidthsReportCorrectSize) {
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, true);
+  controller_->AddTab(2, false);
+
+  const int standard_width = TabStyle::GetStandardWidth();
+
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+
+  EXPECT_EQ(standard_width, GetActiveTabWidth());
+  EXPECT_EQ(standard_width, GetInactiveTabWidth());
+
+  tab_strip_->SetBounds(0, 0, 240, 100);
+
+  EXPECT_LT(GetActiveTabWidth(), standard_width);
+  EXPECT_EQ(GetInactiveTabWidth(), GetActiveTabWidth());
+
+  tab_strip_->SetBounds(0, 0, 50, 100);
+
+  EXPECT_EQ(TabStyleViews::GetMinimumActiveWidth(), GetActiveTabWidth());
+  EXPECT_EQ(TabStyleViews::GetMinimumInactiveWidth(), GetInactiveTabWidth());
+}
+
 // The active tab should always be at least as wide as its minimum width.
 // http://crbug.com/587688
 TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
@@ -769,9 +796,9 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
   while (GetInactiveTabWidth() != min_inactive_width)
     controller_->CreateNewTab();
-
-  int active_index = controller_->GetActiveIndex();
   EXPECT_GT(tab_strip_->tab_count(), 1);
+
+  const int active_index = controller_->GetActiveIndex();
   EXPECT_EQ(tab_strip_->tab_count() - 1, active_index);
   EXPECT_LT(tab_strip_->ideal_bounds(0).width(),
             tab_strip_->ideal_bounds(active_index).width());

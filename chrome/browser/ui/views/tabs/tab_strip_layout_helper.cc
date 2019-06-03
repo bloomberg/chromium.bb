@@ -147,8 +147,7 @@ void TabStripLayoutHelper::UpdateIdealBounds(
   }
 
   const std::vector<gfx::Rect> bounds = CalculateTabBounds(
-      GetTabSizeInfo(), ideal_animation_states, available_width,
-      &active_tab_width_, &inactive_tab_width_);
+      GetTabSizeInfo(), ideal_animation_states, available_width);
   DCHECK_EQ(slots.size(), bounds.size());
 
   for (size_t i = 0; i < bounds.size(); ++i) {
@@ -156,6 +155,7 @@ void TabStripLayoutHelper::UpdateIdealBounds(
     switch (slot.type) {
       case TabSlotType::kTab:
         tabs->set_ideal_bounds(slot.GetTab(), bounds[i]);
+        UpdateCachedTabWidth(i, bounds[i].width(), active_index_in_slots);
         break;
       case TabSlotType::kGroupHeader:
         group_headers[slot.GetGroup()]->SetBoundsRect(bounds[i]);
@@ -190,21 +190,32 @@ void TabStripLayoutHelper::UpdateIdealBoundsForPinnedTabs(
 
 int TabStripLayoutHelper::LayoutTabs(views::ViewModelT<Tab>* tabs,
                                      std::vector<TabAnimationState> tab_states,
-                                     int available_width) {
-  std::vector<gfx::Rect> tab_bounds =
-      CalculateTabBounds(GetTabSizeInfo(), tab_states, available_width,
-                         &active_tab_width_, &inactive_tab_width_);
+                                     int available_width,
+                                     int active_tab_model_index) {
+  std::vector<gfx::Rect> bounds =
+      CalculateTabBounds(GetTabSizeInfo(), tab_states, available_width);
 
-  // TODO (958173): assume for now that there are no closing tabs.
-  // TODO (958173): assume for now that there are no group headers.
-  DCHECK_EQ(tab_bounds.size(), static_cast<size_t>(tabs->view_size()));
+  // TODO(958173): Assume for now that there are no closing tabs.
+  // TODO(958173): Assume for now that there are no group headers.
+  DCHECK_EQ(bounds.size(), static_cast<size_t>(tabs->view_size()));
   int trailing_x = 0;
-  for (size_t tab_animation_index = 0; tab_animation_index < tab_bounds.size();
-       tab_animation_index++) {
-    tabs->view_at(tab_animation_index)
-        ->SetBoundsRect(tab_bounds[tab_animation_index]);
-    trailing_x = std::max(trailing_x, tab_bounds[tab_animation_index].right());
+  for (size_t i = 0; i < bounds.size(); i++) {
+    tabs->view_at(i)->SetBoundsRect(bounds[i]);
+    trailing_x = std::max(trailing_x, bounds[i].right());
+    // TODO(958173): We shouldn't need to update the cached widths here, since
+    // they're also updated in UpdateIdealBounds. However, tests will fail
+    // without this line; we should investigate why.
+    UpdateCachedTabWidth(i, bounds[i].width(), active_tab_model_index);
   }
 
   return trailing_x;
+}
+
+void TabStripLayoutHelper::UpdateCachedTabWidth(int tab_index,
+                                                int tab_width,
+                                                int active_tab_index) {
+  if (tab_index == active_tab_index)
+    active_tab_width_ = tab_width;
+  else
+    inactive_tab_width_ = tab_width;
 }
