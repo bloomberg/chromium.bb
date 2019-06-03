@@ -3390,6 +3390,46 @@ TEST_F(WebFrameTest, CanOverrideScaleLimits) {
   EXPECT_EQ(2.0f, web_view_helper.GetWebView()->MaximumPageScaleFactor());
 }
 
+// Test that setting the "ignore viewport tag scale limits" override remembers
+// the current defaults and restores them when the override is removed.
+TEST_F(WebFrameTest, RestoreOriginalDefaultScaleLimits) {
+  RegisterMockedHttpURLLoad("simple_div.html");
+
+  FixedLayoutTestWebViewClient client;
+  client.screen_info_.device_scale_factor = 1;
+  int viewport_width = 640;
+  int viewport_height = 480;
+
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "simple_div.html", nullptr,
+                                    &client, nullptr, ConfigureAndroid);
+  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
+  web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.25f, 5);
+
+  const float minimum_scale_factor =
+      web_view_helper.GetWebView()->MinimumPageScaleFactor();
+
+  web_view_helper.GetWebView()->SetInitialPageScaleOverride(2.0f);
+
+  // Removing the override when none is set shouldn't change the initial scale.
+  web_view_helper.GetWebView()->SetIgnoreViewportTagScaleLimits(false);
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
+  EXPECT_EQ(2.0f, web_view_helper.GetWebView()->PageScaleFactor());
+
+  // Setting the override when will change the initial scale.
+  web_view_helper.GetWebView()->SetIgnoreViewportTagScaleLimits(true);
+  web_view_helper.GetWebView()->ResetScaleStateImmediately();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
+  EXPECT_EQ(minimum_scale_factor,
+            web_view_helper.GetWebView()->PageScaleFactor());
+
+  // Disable the override, we should now use the minimum scale factor
+  web_view_helper.GetWebView()->SetIgnoreViewportTagScaleLimits(false);
+  web_view_helper.GetWebView()->ResetScaleStateImmediately();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
+  EXPECT_EQ(2.0f, web_view_helper.GetWebView()->PageScaleFactor());
+}
+
 // Android doesn't have scrollbars on the main LocalFrameView
 #if defined(OS_ANDROID)
 TEST_F(WebFrameTest, DISABLED_updateOverlayScrollbarLayers)
@@ -11418,6 +11458,40 @@ class WebFrameSimTest : public SimTest {
     WebView().SetDefaultPageScaleLimits(0.25f, 5);
   }
 };
+
+// This test ensures that setting the "Force Ignore Zoom" accessibility setting
+// also causes us to override the initial scale set by the page so that we load
+// fully zoomed out. Since we're overriding the minimum-scale, we're making the
+// layout viewport larger. Since |position: fixed| elements are sized based on
+// the layout viewport size, they may be cut off when the page first loads.
+TEST_F(WebFrameSimTest, ForceIgnoreZoomShouldOverrideInitialScale) {
+  UseAndroidSettings();
+  WebView().MainFrameWidget()->Resize(WebSize(500, 300));
+  WebView().SetIgnoreViewportTagScaleLimits(true);
+
+  SimRequest r("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  r.Complete(R"HTML(
+      <!DOCTYPE html>
+      <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1">
+      <style>
+        body, html {
+          width: 100%;
+          height: 100%;
+          margin: 0;
+        }
+        #wide {
+          width: 1000px;
+          height: 10px;
+        }
+      </style>
+      <div id="wide"></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  EXPECT_EQ(0.5f, WebView().PageScaleFactor());
+}
 
 TEST_F(WebFrameSimTest, HitTestWithIgnoreClippingAtNegativeOffset) {
   WebView().MainFrameWidget()->Resize(WebSize(500, 300));
