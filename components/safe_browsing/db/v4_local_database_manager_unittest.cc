@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_tokenizer.h"
@@ -110,7 +109,7 @@ class FakeV4Database : public V4Database {
       bool stores_available) {
     // Mimics V4Database::Create
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner =
-        base::MessageLoopCurrent::Get()->task_runner();
+        base::ThreadTaskRunnerHandle::Get();
     db_task_runner->PostTask(
         FROM_HERE, base::BindOnce(&FakeV4Database::CreateOnTaskRunner,
                                   db_task_runner, std::move(store_map),
