@@ -106,23 +106,6 @@ class BASE_EXPORT ProcessMetrics {
   BASE_EXPORT TotalsSummary GetTotalsSummary() const;
 #endif
 
-#if defined(OS_MACOSX)
-  struct TaskVMInfo {
-    // Only available on macOS 10.12+.
-    // Anonymous, non-discardable memory, including non-volatile IOKit.
-    // Measured in bytes.
-    uint64_t phys_footprint = 0;
-
-    // Anonymous, non-discardable, non-compressed memory, excluding IOKit.
-    // Measured in bytes.
-    uint64_t internal = 0;
-
-    // Compressed memory measured in bytes.
-    uint64_t compressed = 0;
-  };
-  TaskVMInfo GetTaskVMInfo() const;
-#endif
-
   // Returns the percentage of time spent executing, across all threads of the
   // process, in the interval since the last time the method was called. Since
   // this considers the total execution time across all threads in a process,
