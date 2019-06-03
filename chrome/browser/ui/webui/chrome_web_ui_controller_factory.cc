@@ -415,8 +415,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host_piece() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
-  if (url.host_piece() == chrome::kChromeUISyncResourcesHost)
-    return &NewWebUI<WebDialogUI>;
   if (url.host_piece() == chrome::kChromeUITranslateInternalsHost)
     return &NewWebUI<TranslateInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIUkmHost)

@@ -149,7 +149,6 @@ extern const char kChromeUISyncConfirmationURL[];
 extern const char kChromeUISyncFileSystemInternalsHost[];
 extern const char kChromeUISyncHost[];
 extern const char kChromeUISyncInternalsHost[];
-extern const char kChromeUISyncResourcesHost[];
 extern const char kChromeUISystemInfoHost[];
 extern const char kChromeUITermsHost[];
 extern const char kChromeUITermsURL[];

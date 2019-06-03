@@ -19,10 +19,6 @@ bool IsDevToolsURL(const GURL& url) {
   return url.SchemeIs(content::kChromeDevToolsScheme);
 }
 
-bool DefaultIsInternalResourcesURL(const GURL& url) {
-  return url.SchemeIs(content::kChromeUIScheme);
-}
-
 }  // namespace
 
 ContextMenuContentType::ContextMenuContentType(
@@ -31,10 +27,7 @@ ContextMenuContentType::ContextMenuContentType(
     bool supports_custom_items)
     : params_(params),
       source_web_contents_(web_contents),
-      supports_custom_items_(supports_custom_items),
-      internal_resources_url_checker_(
-          base::Bind(&DefaultIsInternalResourcesURL)) {
-}
+      supports_custom_items_(supports_custom_items) {}
 
 ContextMenuContentType::~ContextMenuContentType() {
 }
@@ -91,14 +84,12 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       if (!is_candidate && params_.page_url.is_empty())
         DCHECK(params_.frame_url.is_empty());
 
-      return is_candidate && !params_.page_url.is_empty() &&
-          !IsInternalResourcesURL(params_.page_url);
+      return is_candidate && !params_.page_url.is_empty();
     }
 
     case ITEM_GROUP_FRAME: {
       bool page_group_supported = SupportsGroupInternal(ITEM_GROUP_PAGE);
-      return page_group_supported && !params_.frame_url.is_empty() &&
-          !IsInternalResourcesURL(params_.page_url);
+      return page_group_supported && !params_.frame_url.is_empty();
     }
 
     case ITEM_GROUP_LINK:
@@ -174,8 +165,4 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       NOTREACHED();
       return false;
   }
-}
-
-bool ContextMenuContentType::IsInternalResourcesURL(const GURL& url) {
-  return internal_resources_url_checker_.Run(url);
 }

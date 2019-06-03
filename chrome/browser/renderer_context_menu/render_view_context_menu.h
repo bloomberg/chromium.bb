@@ -120,7 +120,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   friend class FormatUrlForClipboardTest;
 
   static bool IsDevToolsURL(const GURL& url);
-  static bool IsInternalResourcesURL(const GURL& url);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   static bool ExtensionContextAndPatternMatch(
       const content::ContextMenuParams& params,

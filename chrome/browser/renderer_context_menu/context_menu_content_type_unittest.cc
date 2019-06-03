@@ -19,11 +19,7 @@ class ContextMenuContentTypeTest : public ChromeRenderViewHostTestHarness {
   static std::unique_ptr<ContextMenuContentType> Create(
       content::WebContents* web_contents,
       const content::ContextMenuParams& params) {
-    auto content_type =
-        std::make_unique<ContextMenuContentType>(web_contents, params, true);
-    ContextMenuContentTypeFactory::SetInternalResourcesURLChecker(
-        content_type.get());
-    return content_type;
+    return std::make_unique<ContextMenuContentType>(web_contents, params, true);
   }
 };
 

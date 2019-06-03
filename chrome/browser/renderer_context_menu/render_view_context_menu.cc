@@ -565,12 +565,6 @@ bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
 }
 
 // static
-bool RenderViewContextMenu::IsInternalResourcesURL(const GURL& url) {
-  return url.SchemeIs(content::kChromeUIScheme) &&
-         url.host_piece() == chrome::kChromeUISyncResourcesHost;
-}
-
-// static
 void RenderViewContextMenu::AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
                                                      bool is_checked) {
   // When the Google branding experiment is enabled, we want to show an icon
