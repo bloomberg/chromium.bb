@@ -35,6 +35,7 @@ class FontSupport : public gpu::ServiceFontManager::Client {
       return it->second;
     return CreateBuffer(shm_id);
   }
+  void ReportProgress() override {}
 
  private:
   scoped_refptr<gpu::Buffer> CreateBuffer(uint32_t shm_id) {

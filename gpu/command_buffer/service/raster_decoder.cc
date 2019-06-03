@@ -352,6 +352,7 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   // ServiceFontManager::Client implementation.
   scoped_refptr<Buffer> GetShmBuffer(uint32_t shm_id) override;
+  void ReportProgress() override;
 
  private:
   gles2::ContextState* state() const {
@@ -2124,6 +2125,11 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
 
 scoped_refptr<Buffer> RasterDecoderImpl::GetShmBuffer(uint32_t shm_id) {
   return GetSharedMemoryBuffer(shm_id);
+}
+
+void RasterDecoderImpl::ReportProgress() {
+  if (shared_context_state_->progress_reporter())
+    shared_context_state_->progress_reporter()->ReportProgress();
 }
 
 void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
