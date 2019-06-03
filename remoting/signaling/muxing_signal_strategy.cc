@@ -114,6 +114,7 @@ MuxingSignalStrategy::Core::~Core() {
 
 void MuxingSignalStrategy::Core::Invalidate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  wait_for_all_strategies_connected_timeout_timer_.AbandonAndStop();
   ftl_signal_strategy_->RemoveListener(this);
   xmpp_signal_strategy_->RemoveListener(this);
   ftl_signal_strategy_.reset();
