@@ -309,9 +309,7 @@ NET_ERROR(SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, -150)
 // Server request for client certificate did not contain any types we support.
 NET_ERROR(CLIENT_AUTH_CERT_TYPE_UNSUPPORTED, -151)
 
-// Server requested one type of cert, then requested a different type while the
-// first was still being generated.
-NET_ERROR(ORIGIN_BOUND_CERT_GENERATION_TYPE_MISMATCH, -152)
+// Error -152 was removed (ORIGIN_BOUND_CERT_GENERATION_TYPE_MISMATCH)
 
 // An SSL peer sent us a fatal decrypt_error alert. This typically occurs when
 // a peer could not correctly verify a signature (in CertificateVerify or
