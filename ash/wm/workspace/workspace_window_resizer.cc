@@ -487,6 +487,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
   ::wm::ConvertPointToScreen(GetTarget()->parent(),
                              &last_mouse_location_in_screen);
   window_state()->OnCompleteDrag(last_mouse_location_in_screen);
+  EndDragForAttachedWindows(/*revert_drag=*/false);
 
   if (!did_move_or_resize_)
     return;
@@ -550,6 +551,7 @@ void WorkspaceWindowResizer::RevertDrag() {
   ::wm::ConvertPointToScreen(GetTarget()->parent(),
                              &last_mouse_location_in_screen);
   window_state()->OnRevertDrag(last_mouse_location_in_screen);
+  EndDragForAttachedWindows(/*revert_drag=*/true);
   window_state()->set_bounds_changed_by_user(initial_bounds_changed_by_user_);
   snap_phantom_window_controller_.reset();
 
@@ -687,6 +689,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   pre_drag_window_bounds_ = window_state->window()->bounds();
 
   window_state->OnDragStarted(details().window_component);
+  StartDragForAttachedWindows();
 }
 
 void WorkspaceWindowResizer::LayoutAttachedWindows(gfx::Rect* bounds) {
@@ -1192,6 +1195,45 @@ void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(
       break;
     default:
       NOTREACHED();
+  }
+}
+
+void WorkspaceWindowResizer::StartDragForAttachedWindows() {
+  if (attached_windows_.empty())
+    return;
+
+  // The component of the attached windows is always the opposite component of
+  // the main window.
+  const int main_window_component = details().window_component;
+  DCHECK(main_window_component == HTRIGHT || main_window_component == HTBOTTOM);
+
+  int window_component = HTNOWHERE;
+  if (main_window_component == HTRIGHT)
+    window_component = HTLEFT;
+  else if (main_window_component == HTBOTTOM)
+    window_component = HTTOP;
+  DCHECK(window_component == HTLEFT || window_component == HTTOP);
+
+  for (auto* window : attached_windows_) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    window_state->CreateDragDetails(details().initial_location_in_parent,
+                                    window_component,
+                                    ::wm::WINDOW_MOVE_SOURCE_MOUSE);
+    window_state->OnDragStarted(window_component);
+  }
+}
+
+void WorkspaceWindowResizer::EndDragForAttachedWindows(bool revert_drag) {
+  if (attached_windows_.empty())
+    return;
+
+  for (auto* window : attached_windows_) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    if (revert_drag)
+      window_state->OnRevertDrag(last_mouse_location_);
+    else
+      window_state->OnCompleteDrag(last_mouse_location_);
+    window_state->DeleteDragDetails();
   }
 }
 

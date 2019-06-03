@@ -166,6 +166,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   void SetWindowStateTypeFromGesture(aura::Window* window,
                                      WindowStateType new_state_type);
 
+  // Start/End drag for attached windows if there is any.
+  void StartDragForAttachedWindows();
+  void EndDragForAttachedWindows(bool revert_drag);
+
   wm::WindowState* window_state() { return window_state_; }
 
   const std::vector<aura::Window*> attached_windows_;

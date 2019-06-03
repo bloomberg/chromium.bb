@@ -320,7 +320,25 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
   gfx::Rect bounds(resize_widget()->GetWindowBoundsInScreen());
   generator->MoveMouseTo(bounds.x() + 1, bounds.y() + 1);
   generator->PressLeftButton();
+
+  // Test that when drag starts, drag details are created for each window.
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->is_dragged());
+  EXPECT_TRUE(wm::GetWindowState(w2.get())->is_dragged());
+  EXPECT_TRUE(wm::GetWindowState(w3.get())->is_dragged());
+  // Test the window components for each window.
+  EXPECT_EQ(wm::GetWindowState(w1.get())->drag_details()->window_component,
+            HTRIGHT);
+  EXPECT_EQ(wm::GetWindowState(w2.get())->drag_details()->window_component,
+            HTLEFT);
+  EXPECT_EQ(wm::GetWindowState(w3.get())->drag_details()->window_component,
+            HTLEFT);
+
   generator->MoveMouseTo(bounds.x() + 11, bounds.y() + 10);
+
+  // Drag details should exist during dragging.
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->is_dragged());
+  EXPECT_TRUE(wm::GetWindowState(w2.get())->is_dragged());
+  EXPECT_TRUE(wm::GetWindowState(w3.get())->is_dragged());
 
   EXPECT_TRUE(HasTarget(w3.get()));
 
@@ -328,6 +346,12 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
   // press should not trigger a DCHECK.
   generator->ReleaseLeftButton();
   EXPECT_TRUE(IsShowing());
+
+  // Test that drag details are correctly deleted after dragging.
+  EXPECT_FALSE(wm::GetWindowState(w1.get())->is_dragged());
+  EXPECT_FALSE(wm::GetWindowState(w2.get())->is_dragged());
+  EXPECT_FALSE(wm::GetWindowState(w3.get())->is_dragged());
+
   generator->PressLeftButton();
 }
 
