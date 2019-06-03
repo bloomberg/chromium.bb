@@ -370,7 +370,8 @@ class CONTENT_EXPORT MediaStreamManager
       DeviceRequest* request,
       const blink::MediaStreamDevices& devices);
   void StopMediaStreamFromBrowser(const std::string& label);
-  void ChangeMediaStreamSourceFromBrowser(const std::string& label);
+  void ChangeMediaStreamSourceFromBrowser(const std::string& label,
+                                          const DesktopMediaID& media_id);
 
   // Helpers.
   // Checks if all devices that was requested in the request identififed by
@@ -411,7 +412,8 @@ class CONTENT_EXPORT MediaStreamManager
   // Prepare |request| for being posted to the UI to bring up the picker again
   // to change the desktop capture source.
   void SetUpDesktopCaptureChangeSourceRequest(DeviceRequest* request,
-                                              const std::string& label);
+                                              const std::string& label,
+                                              const DesktopMediaID& media_id);
 
   DesktopMediaID ResolveTabCaptureDeviceIdOnUIThread(
       const std::string& capture_device_id,

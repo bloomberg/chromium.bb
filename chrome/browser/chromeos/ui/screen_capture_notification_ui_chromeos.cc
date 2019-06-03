@@ -24,13 +24,15 @@ ScreenCaptureNotificationUIChromeOS::~ScreenCaptureNotificationUIChromeOS() {
 
 gfx::NativeViewId ScreenCaptureNotificationUIChromeOS::OnStarted(
     base::OnceClosure stop_callback,
-    base::RepeatingClosure source_callback) {
+    content::MediaStreamUI::SourceCallback source_callback) {
   stop_callback_ = std::move(stop_callback);
   ash::Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStart(
       base::BindRepeating(
           &ScreenCaptureNotificationUIChromeOS::ProcessStopRequestFromUI,
           base::Unretained(this)),
-      std::move(source_callback), text_);
+      base::BindRepeating(std::move(source_callback),
+                          content::DesktopMediaID()),
+      text_);
   return 0;
 }
 

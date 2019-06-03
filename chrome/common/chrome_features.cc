@@ -213,6 +213,10 @@ const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
 const base::Feature kWilcoDtc{"WilcoDtc", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enable using tab sharing infobars for desktop capture.
+const base::Feature kDesktopCaptureTabSharingInfobar{
+    "DesktopCaptureTabSharingInfobar", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables or disables Desktop PWAs capturing links.
 const base::Feature kDesktopPWAsLinkCapturing{
     "DesktopPWAsLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};

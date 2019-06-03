@@ -155,8 +155,9 @@ class MediaStreamCaptureIndicator::UIDelegate : public content::MediaStreamUI {
 
  private:
   // content::MediaStreamUI interface.
-  gfx::NativeViewId OnStarted(base::OnceClosure stop_callback,
-                              base::RepeatingClosure source_callback) override {
+  gfx::NativeViewId OnStarted(
+      base::OnceClosure stop_callback,
+      content::MediaStreamUI::SourceCallback source_callback) override {
     DCHECK(!started_);
     started_ = true;
 

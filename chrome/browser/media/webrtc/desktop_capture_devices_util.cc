@@ -11,6 +11,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
+#include "chrome/browser/ui/tab_sharing/tab_sharing_ui.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_device_description.h"
@@ -177,11 +179,18 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   }
 
   // If required, register to display the notification for stream capture.
-  std::unique_ptr<ScreenCaptureNotificationUI> notification_ui;
+  std::unique_ptr<MediaStreamUI> notification_ui;
   if (display_notification) {
-    notification_ui = ScreenCaptureNotificationUI::Create(
-        GetStopSharingUIString(application_title, registered_extension_name,
-                               capture_audio, media_id.type));
+    if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS &&
+        base::FeatureList::IsEnabled(
+            features::kDesktopCaptureTabSharingInfobar)) {
+      notification_ui =
+          std::make_unique<TabSharingUI>(media_id, application_title);
+    } else {
+      notification_ui = ScreenCaptureNotificationUI::Create(
+          GetStopSharingUIString(application_title, registered_extension_name,
+                                 capture_audio, media_id.type));
+    }
   }
 
   return MediaCaptureDevicesDispatcher::GetInstance()

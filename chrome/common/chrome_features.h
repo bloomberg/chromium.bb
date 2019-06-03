@@ -122,6 +122,9 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kWilcoDtc;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDesktopCaptureTabSharingInfobar;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsLinkCapturing;
 
 COMPONENT_EXPORT(CHROME_FEATURES)

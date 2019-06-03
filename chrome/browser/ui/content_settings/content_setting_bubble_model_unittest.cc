@@ -435,7 +435,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
         GetMediaStreamCaptureIndicator();
   std::unique_ptr<content::MediaStreamUI> media_stream_ui =
       indicator->RegisterMediaStream(web_contents(), audio_devices);
-  media_stream_ui->OnStarted(base::OnceClosure(), base::RepeatingClosure());
+  media_stream_ui->OnStarted(base::OnceClosure(),
+                             content::MediaStreamUI::SourceCallback());
   microphone_camera_state &= ~TabSpecificContentSettings::MICROPHONE_BLOCKED;
   content_settings->OnMediaStreamPermissionSet(url,
                                                microphone_camera_state,

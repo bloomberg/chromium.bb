@@ -79,7 +79,7 @@ class MediaStreamUIProxy::Core {
  private:
   friend class FakeMediaStreamUIProxy;
   void ProcessStopRequestFromUI();
-  void ProcessChangeSourceRequestFromUI();
+  void ProcessChangeSourceRequestFromUI(const DesktopMediaID& media_id);
   RenderFrameHostDelegate* GetRenderFrameHostDelegate(int render_process_id,
                                                       int render_frame_id);
 
@@ -136,7 +136,7 @@ void MediaStreamUIProxy::Core::OnStarted(gfx::NativeViewId* window_id,
                                          bool has_source_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::RepeatingClosure device_change_cb;
+  MediaStreamUI::SourceCallback device_change_cb;
   if (has_source_callback) {
     device_change_cb = base::BindRepeating(
         &Core::ProcessChangeSourceRequestFromUI, base::Unretained(this));
@@ -196,13 +196,14 @@ void MediaStreamUIProxy::Core::ProcessStopRequestFromUI() {
       base::BindOnce(&MediaStreamUIProxy::ProcessStopRequestFromUI, proxy_));
 }
 
-void MediaStreamUIProxy::Core::ProcessChangeSourceRequestFromUI() {
+void MediaStreamUIProxy::Core::ProcessChangeSourceRequestFromUI(
+    const DesktopMediaID& media_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MediaStreamUIProxy::ProcessChangeSourceRequestFromUI,
-                     proxy_));
+                     proxy_, media_id));
 }
 
 RenderFrameHostDelegate* MediaStreamUIProxy::Core::GetRenderFrameHostDelegate(
@@ -250,9 +251,10 @@ void MediaStreamUIProxy::RequestAccess(
                      std::move(request)));
 }
 
-void MediaStreamUIProxy::OnStarted(base::OnceClosure stop_callback,
-                                   base::RepeatingClosure source_callback,
-                                   WindowIdCallback window_id_callback) {
+void MediaStreamUIProxy::OnStarted(
+    base::OnceClosure stop_callback,
+    MediaStreamUI::SourceCallback source_callback,
+    WindowIdCallback window_id_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   stop_callback_ = std::move(stop_callback);
@@ -286,11 +288,12 @@ void MediaStreamUIProxy::ProcessStopRequestFromUI() {
   std::move(stop_callback_).Run();
 }
 
-void MediaStreamUIProxy::ProcessChangeSourceRequestFromUI() {
+void MediaStreamUIProxy::ProcessChangeSourceRequestFromUI(
+    const DesktopMediaID& media_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (source_callback_)
-    source_callback_.Run();
+    source_callback_.Run(media_id);
 }
 
 void MediaStreamUIProxy::OnWindowId(WindowIdCallback window_id_callback,
@@ -383,8 +386,9 @@ void FakeMediaStreamUIProxy::RequestAccess(
                      std::unique_ptr<MediaStreamUI>()));
 }
 
-void FakeMediaStreamUIProxy::OnStarted(base::OnceClosure stop_callback,
-                                       base::RepeatingClosure source_callback,
-                                       WindowIdCallback window_id_callback) {}
+void FakeMediaStreamUIProxy::OnStarted(
+    base::OnceClosure stop_callback,
+    MediaStreamUI::SourceCallback source_callback,
+    WindowIdCallback window_id_callback) {}
 
 }  // namespace content

@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 #include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -397,12 +398,18 @@ void DesktopCaptureAccessHandler::ProcessChangeSourceRequest(
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  std::unique_ptr<DesktopMediaPicker> picker = picker_factory_->CreatePicker();
-  if (!picker) {
-    std::move(callback).Run(
-        blink::MediaStreamDevices(),
-        blink::mojom::MediaStreamRequestResult::INVALID_STATE, nullptr);
-    return;
+  std::unique_ptr<DesktopMediaPicker> picker;
+
+  if (!base::FeatureList::IsEnabled(
+          features::kDesktopCaptureTabSharingInfobar) ||
+      request.requested_video_device_id.empty()) {
+    picker = picker_factory_->CreatePicker();
+    if (!picker) {
+      std::move(callback).Run(
+          blink::MediaStreamDevices(),
+          blink::mojom::MediaStreamRequestResult::INVALID_STATE, nullptr);
+      return;
+    }
   }
 
   RequestsQueue& queue = pending_requests_[web_contents];
@@ -444,6 +451,22 @@ void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const PendingAccessRequest& pending_request = *queue.front();
+
+  if (!pending_request.picker) {
+    DCHECK(!pending_request.request.requested_video_device_id.empty());
+    content::WebContentsMediaCaptureId web_contents_id;
+    if (content::WebContentsMediaCaptureId::Parse(
+            pending_request.request.requested_video_device_id,
+            &web_contents_id)) {
+      content::DesktopMediaID media_id(
+          content::DesktopMediaID::TYPE_WEB_CONTENTS,
+          content::DesktopMediaID::kNullId, web_contents_id);
+      media_id.audio_share =
+          pending_request.request.audio_type != blink::MEDIA_NO_SERVICE;
+      OnPickerDialogResults(web_contents, media_id);
+      return;
+    }
+  }
 
   std::vector<content::DesktopMediaID::Type> media_types = {
       content::DesktopMediaID::TYPE_WEB_CONTENTS};

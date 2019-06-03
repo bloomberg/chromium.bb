@@ -140,7 +140,7 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
     notification_ui_->OnStarted(
         base::BindOnce(&ArcScreenCaptureSession::NotificationStop,
                        weak_ptr_factory_.GetWeakPtr()),
-        base::RepeatingClosure());
+        content::MediaStreamUI::SourceCallback());
   }
 
   ash::Shell::Get()->display_manager()->inc_screen_capture_active_counter();

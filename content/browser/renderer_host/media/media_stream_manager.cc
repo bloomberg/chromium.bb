@@ -1429,7 +1429,8 @@ bool MediaStreamManager::SetUpScreenCaptureRequest(DeviceRequest* request) {
 
 void MediaStreamManager::SetUpDesktopCaptureChangeSourceRequest(
     DeviceRequest* request,
-    const std::string& label) {
+    const std::string& label,
+    const DesktopMediaID& media_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(IsDesktopCaptureMediaType(request->video_type()));
   DCHECK(request->request_type() == blink::MEDIA_GENERATE_STREAM ||
@@ -1438,8 +1439,10 @@ void MediaStreamManager::SetUpDesktopCaptureChangeSourceRequest(
   // Set up request type to bring up the picker again within a session.
   request->set_request_type(blink::MEDIA_DEVICE_UPDATE);
 
-  request->CreateUIRequest(std::string() /* requested_audio_device_id */,
-                           std::string() /* requested_video_device_id */);
+  request->CreateUIRequest(
+      std::string() /* requested_audio_device_id */,
+      media_id.is_null() ? std::string()
+                         : media_id.ToString() /* requested_video_device_id */);
 
   ReadOutputParamsAndPostRequestToUI(label, request, MediaDeviceEnumeration());
 }
@@ -1968,14 +1971,15 @@ void MediaStreamManager::StopMediaStreamFromBrowser(const std::string& label) {
 }
 
 void MediaStreamManager::ChangeMediaStreamSourceFromBrowser(
-    const std::string& label) {
+    const std::string& label,
+    const DesktopMediaID& media_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DeviceRequest* request = FindRequest(label);
   if (!request)
     return;
 
-  SetUpDesktopCaptureChangeSourceRequest(request, label);
+  SetUpDesktopCaptureChangeSourceRequest(request, label, media_id);
   IncrementDesktopCaptureCounter(DESKTOP_CAPTURE_NOTIFICATION_CHANGE_SOURCE);
 }
 
@@ -2230,7 +2234,7 @@ void MediaStreamManager::OnStreamStarted(const std::string& label) {
                media_id.type == DesktopMediaID::TYPE_WEB_CONTENTS;
       });
 
-  base::RepeatingClosure device_changed_cb;
+  MediaStreamUI::SourceCallback device_changed_cb;
   if (enable_change_source &&
       base::FeatureList::IsEnabled(features::kDesktopCaptureChangeSource)) {
     device_changed_cb = base::BindRepeating(

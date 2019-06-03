@@ -798,7 +798,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
   std::unique_ptr<content::MediaStreamUI> video_stream_ui =
       dispatcher->GetMediaStreamCaptureIndicator()->RegisterMediaStream(
           tab, video_devices);
-  video_stream_ui->OnStarted(base::OnceClosure(), base::RepeatingClosure());
+  video_stream_ui->OnStarted(base::OnceClosure(),
+                             content::MediaStreamUI::SourceCallback());
 
   // Should not be able to discard a tab.
   ASSERT_FALSE(

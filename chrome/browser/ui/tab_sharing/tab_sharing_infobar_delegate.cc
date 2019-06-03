@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/infobars/tab_sharing_infobar_delegate.h"
+#include "chrome/browser/ui/tab_sharing/tab_sharing_infobar_delegate.h"
 
 #include <utility>
 
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/ui/tab_sharing/tab_sharing_ui.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -15,18 +16,26 @@
 infobars::InfoBar* TabSharingInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     const base::string16& shared_tab_name,
-    const base::string16& app_name) {
+    const base::string16& app_name,
+    TabSharingUI* ui) {
   DCHECK(infobar_service);
   return infobar_service->AddInfoBar(
       infobar_service->CreateConfirmInfoBar(base::WrapUnique(
-          new TabSharingInfoBarDelegate(shared_tab_name, app_name))));
+          new TabSharingInfoBarDelegate(shared_tab_name, app_name, ui))));
 }
 
 TabSharingInfoBarDelegate::TabSharingInfoBarDelegate(
     base::string16 shared_tab_name,
-    base::string16 app_name)
+    base::string16 app_name,
+    TabSharingUI* ui)
     : shared_tab_name_(std::move(shared_tab_name)),
-      app_name_(std::move(app_name)) {}
+      app_name_(std::move(app_name)),
+      ui_(ui) {}
+
+bool TabSharingInfoBarDelegate::ShouldExpire(
+    const NavigationDetails& details) const {
+  return false;
+}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 TabSharingInfoBarDelegate::GetIdentifier() const {
@@ -52,6 +61,16 @@ base::string16 TabSharingInfoBarDelegate::GetButtonLabel(
 
 int TabSharingInfoBarDelegate::GetButtons() const {
   return shared_tab_name_.empty() ? BUTTON_CANCEL : BUTTON_OK | BUTTON_CANCEL;
+}
+
+bool TabSharingInfoBarDelegate::Accept() {
+  ui_->StartSharing(infobar());
+  return false;
+}
+
+bool TabSharingInfoBarDelegate::Cancel() {
+  ui_->StopSharing();
+  return false;
 }
 
 bool TabSharingInfoBarDelegate::IsCloseable() const {

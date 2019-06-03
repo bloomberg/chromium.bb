@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "ui/gfx/native_widget_types.h"
@@ -87,6 +88,9 @@ struct CONTENT_EXPORT MediaStreamRequest {
 // when MediaStream access is approved using MediaResponseCallback.
 class MediaStreamUI {
  public:
+  using SourceCallback =
+      base::RepeatingCallback<void(const DesktopMediaID& media_id)>;
+
   virtual ~MediaStreamUI() {}
 
   // Called when MediaStream capturing is started. Chrome layer can call |stop|
@@ -94,7 +98,7 @@ class MediaStreamUI {
   // Returns the platform-dependent window ID for the UI, or 0 if not
   // applicable.
   virtual gfx::NativeViewId OnStarted(base::OnceClosure stop,
-                                      base::RepeatingClosure source) = 0;
+                                      SourceCallback source) = 0;
 };
 
 // Callback used return results of media access requests.

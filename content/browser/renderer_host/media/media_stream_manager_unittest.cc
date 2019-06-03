@@ -683,7 +683,8 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceChanged) {
 
   // |request_label| is cached in the |device.name| for testing purpose.
   std::string request_label = video_device.name;
-  media_stream_manager_->ChangeMediaStreamSourceFromBrowser(request_label);
+  media_stream_manager_->ChangeMediaStreamSourceFromBrowser(request_label,
+                                                            DesktopMediaID());
 
   // Wait to check callbacks before stopping the device.
   base::RunLoop().RunUntilIdle();

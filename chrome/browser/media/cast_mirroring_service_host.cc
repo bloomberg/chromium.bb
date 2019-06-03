@@ -296,7 +296,8 @@ void CastMirroringServiceHost::ShowCaptureIndicator() {
   media_stream_ui_ = MediaCaptureDevicesDispatcher::GetInstance()
                          ->GetMediaStreamCaptureIndicator()
                          ->RegisterMediaStream(web_contents(), {device});
-  media_stream_ui_->OnStarted(base::OnceClosure(), base::RepeatingClosure());
+  media_stream_ui_->OnStarted(base::OnceClosure(),
+                              content::MediaStreamUI::SourceCallback());
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

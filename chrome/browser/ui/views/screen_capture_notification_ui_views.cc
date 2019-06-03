@@ -85,8 +85,9 @@ class ScreenCaptureNotificationUIViews
   ~ScreenCaptureNotificationUIViews() override;
 
   // ScreenCaptureNotificationUI interface.
-  gfx::NativeViewId OnStarted(base::OnceClosure stop_callback,
-                              base::RepeatingClosure source_callback) override;
+  gfx::NativeViewId OnStarted(
+      base::OnceClosure stop_callback,
+      content::MediaStreamUI::SourceCallback source_callback) override;
 
   // views::View overrides.
   void Layout() override;
@@ -115,7 +116,7 @@ class ScreenCaptureNotificationUIViews
 
   const base::string16 text_;
   base::OnceClosure stop_callback_;
-  base::RepeatingClosure source_callback_;
+  content::MediaStreamUI::SourceCallback source_callback_;
   NotificationBarClientView* client_view_;
   views::ImageView* gripper_;
   views::Label* label_;
@@ -176,7 +177,7 @@ ScreenCaptureNotificationUIViews::~ScreenCaptureNotificationUIViews() {
 
 gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
     base::OnceClosure stop_callback,
-    base::RepeatingClosure source_callback) {
+    content::MediaStreamUI::SourceCallback source_callback) {
   stop_callback_ = std::move(stop_callback);
   source_callback_ = std::move(source_callback);
 
@@ -305,7 +306,7 @@ void ScreenCaptureNotificationUIViews::LinkClicked(views::Link* source,
 
 void ScreenCaptureNotificationUIViews::NotifySourceChange() {
   if (!source_callback_.is_null())
-    source_callback_.Run();
+    source_callback_.Run(content::DesktopMediaID());
 }
 
 void ScreenCaptureNotificationUIViews::NotifyStopped() {

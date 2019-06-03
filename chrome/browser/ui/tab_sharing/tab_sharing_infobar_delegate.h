@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_INFOBARS_TAB_SHARING_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_UI_INFOBARS_TAB_SHARING_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_TAB_SHARING_TAB_SHARING_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_UI_TAB_SHARING_TAB_SHARING_INFOBAR_DELEGATE_H_
 
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
@@ -12,6 +12,7 @@ class InfoBar;
 }
 
 class InfoBarService;
+class TabSharingUI;
 
 // Creates an infobar for sharing a tab using desktopCapture() API; one delegate
 // per tab.
@@ -25,22 +26,30 @@ class TabSharingInfoBarDelegate : public ConfirmInfoBarDelegate {
   // infobar with "currently shared tab" layout (see class comment).
   static infobars::InfoBar* Create(InfoBarService* infobar_service,
                                    const base::string16& shared_tab_name,
-                                   const base::string16& app_name);
+                                   const base::string16& app_name,
+                                   TabSharingUI* ui);
   ~TabSharingInfoBarDelegate() override = default;
 
  private:
   TabSharingInfoBarDelegate(base::string16 shared_tab_name,
-                            base::string16 app_name);
+                            base::string16 app_name,
+                            TabSharingUI* ui);
 
   // ConfirmInfoBarDelegate:
+  bool ShouldExpire(const NavigationDetails& details) const override;
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   int GetButtons() const override;
+  bool Accept() override;
+  bool Cancel() override;
   bool IsCloseable() const override;
 
   const base::string16 shared_tab_name_;
   const base::string16 app_name_;
+
+  // |ui_| creates and removes delegate's infobar; outlives delegate.
+  TabSharingUI* ui_;
 };
 
-#endif  // CHROME_BROWSER_UI_INFOBARS_TAB_SHARING_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_TAB_SHARING_TAB_SHARING_INFOBAR_DELEGATE_H_

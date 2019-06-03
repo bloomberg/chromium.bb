@@ -36,13 +36,13 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/extensions/installation_error_infobar_delegate.h"
-#include "chrome/browser/ui/infobars/tab_sharing_infobar_delegate.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #include "chrome/browser/ui/startup/automation_infobar_delegate.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/google_api_keys_infobar_delegate.h"
 #include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
+#include "chrome/browser/ui/tab_sharing/tab_sharing_infobar_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_ui.h"
 #include "chrome/grit/generated_resources.h"
@@ -405,9 +405,9 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       FlashDeprecationInfoBarDelegate::Create(GetInfoBarService(), nullptr);
       break;
     case IBD::TAB_SHARING_INFOBAR_DELEGATE:
-      TabSharingInfoBarDelegate::Create(GetInfoBarService(),
-                                        base::ASCIIToUTF16("example.com"),
-                                        base::ASCIIToUTF16("application.com"));
+      TabSharingInfoBarDelegate::Create(
+          GetInfoBarService(), base::ASCIIToUTF16("example.com"),
+          base::ASCIIToUTF16("application.com"), nullptr);
       break;
 
     default:
