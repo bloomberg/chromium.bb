@@ -24,7 +24,6 @@ mojom("interfaces_internal") {
     "assistant_volume_control.mojom",
     "constants.mojom",
     "cros_display_config.mojom",
-    "event_rewriter_controller.mojom",
     "ime_controller.mojom",
     "ime_info.mojom",
     "keyboard_config.mojom",

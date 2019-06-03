@@ -145,6 +145,7 @@ component("cpp") {
     "shell_window_ids.h",
     "split_view.cc",
     "split_view.h",
+    "spoken_feedback_event_rewriter_delegate.h",
     "stylus_utils.cc",
     "stylus_utils.h",
     "system_tray.cc",

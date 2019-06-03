@@ -44,7 +44,7 @@
 #include "ash/display/screen_position_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
-#include "ash/events/event_rewriter_controller.h"
+#include "ash/events/event_rewriter_controller_impl.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/snap_controller_impl.h"
@@ -940,7 +940,7 @@ void Shell::Init(
   window_modality_controller_ =
       std::make_unique<::wm::WindowModalityController>(this, env);
 
-  event_rewriter_controller_ = std::make_unique<EventRewriterController>();
+  event_rewriter_controller_ = std::make_unique<EventRewriterControllerImpl>();
 
   env_filter_ = std::make_unique<::wm::CompoundEventFilter>();
   AddPreTargetHandler(env_filter_.get());

@@ -36,10 +36,10 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "ui/aura/window_tree_host.h"
@@ -201,13 +201,8 @@ AccessibilityPrivateSetKeyboardListenerFunction::Run() {
   manager->SetKeyboardListenerExtensionId(
       enabled ? extension()->id() : std::string(), details.GetProfile());
 
-  ash::mojom::EventRewriterControllerPtr event_rewriter_controller_ptr;
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                            &event_rewriter_controller_ptr);
-  event_rewriter_controller_ptr->CaptureAllKeysForSpokenFeedback(enabled &&
-                                                                 capture);
+  ash::EventRewriterController::Get()->CaptureAllKeysForSpokenFeedback(
+      enabled && capture);
   return RespondNow(NoArguments());
 #endif  // defined OS_CHROMEOS
 
@@ -298,12 +293,7 @@ ExtensionFunction::ResponseAction
 AccessibilityPrivateEnableChromeVoxMouseEventsFunction::Run() {
   bool enabled = false;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
-  ash::mojom::EventRewriterControllerPtr event_rewriter_controller_ptr;
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                            &event_rewriter_controller_ptr);
-  event_rewriter_controller_ptr->SetSendMouseEventsToDelegate(enabled);
+  ash::EventRewriterController::Get()->SetSendMouseEventsToDelegate(enabled);
   return RespondNow(NoArguments());
 }
 

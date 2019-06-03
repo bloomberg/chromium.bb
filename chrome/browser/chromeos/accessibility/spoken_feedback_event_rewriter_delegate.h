@@ -7,22 +7,21 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/event_rewriter_controller.mojom.h"
+#include "ash/public/cpp/spoken_feedback_event_rewriter_delegate.h"
 #include "base/macros.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 // Passes key events from Ash's EventRewriter to the ChromeVox extension code.
 // Reports ChromeVox's unhandled key events back to Ash for continued dispatch.
 // TODO(http://crbug.com/839541): Avoid reposting unhandled events.
 class SpokenFeedbackEventRewriterDelegate
-    : public ash::mojom::SpokenFeedbackEventRewriterDelegate,
+    : public ash::SpokenFeedbackEventRewriterDelegate,
       public content::WebContentsDelegate {
  public:
   SpokenFeedbackEventRewriterDelegate();
   ~SpokenFeedbackEventRewriterDelegate() override;
 
-  // ui::mojom::SpokenFeedbackEventRewriterDelegate:
+  // ash::SpokenFeedbackEventRewriterDelegate:
   void DispatchKeyEventToChromeVox(std::unique_ptr<ui::Event> event,
                                    bool capture) override;
   void DispatchMouseEventToChromeVox(std::unique_ptr<ui::Event> event) override;
@@ -38,10 +37,6 @@ class SpokenFeedbackEventRewriterDelegate
   bool HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-
-  ash::mojom::EventRewriterControllerPtr event_rewriter_controller_ptr_;
-
-  mojo::Binding<ash::mojom::SpokenFeedbackEventRewriterDelegate> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SpokenFeedbackEventRewriterDelegate);
 };

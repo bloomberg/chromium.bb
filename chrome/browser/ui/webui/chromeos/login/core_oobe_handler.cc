@@ -7,8 +7,8 @@
 #include <type_traits>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -323,13 +323,7 @@ void CoreOobeHandler::HandleUpdateCurrentScreen(
     const std::string& screen_name) {
   const OobeScreenId screen(screen_name);
   GetOobeUI()->CurrentScreenChanged(screen);
-
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  ash::mojom::EventRewriterControllerPtr event_rewriter_controller_ptr;
-  connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                            &event_rewriter_controller_ptr);
-  event_rewriter_controller_ptr->SetArrowToTabRewritingEnabled(
+  ash::EventRewriterController::Get()->SetArrowToTabRewritingEnabled(
       screen == EulaView::kScreenId);
 }
 

@@ -10,10 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/events/event_rewriter_controller.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/event_rewriter_controller.mojom.h"
+#include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "base/bind.h"
@@ -1012,30 +1010,20 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // Enable the KeyboardDrivenEventRewriter if the OEM manifest flag is on.
-  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation()) {
-    content::ServiceManagerConnection* connection =
-        content::ServiceManagerConnection::GetForProcess();
-    ash::mojom::EventRewriterControllerPtr event_rewriter_controller_ptr;
-    connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                              &event_rewriter_controller_ptr);
-    event_rewriter_controller_ptr->SetKeyboardDrivenEventRewriterEnabled(true);
-  }
+  auto* event_rewriter_controller = ash::EventRewriterController::Get();
+  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation())
+    event_rewriter_controller->SetKeyboardDrivenEventRewriterEnabled(true);
 
   // Construct a delegate to connect ChromeVox and SpokenFeedbackEventRewriter.
   spoken_feedback_event_rewriter_delegate_ =
       std::make_unique<SpokenFeedbackEventRewriterDelegate>();
 
-  if (!::features::IsMultiProcessMash()) {
-    // TODO(mash): Support EventRewriterController; see crbug.com/647781
-    ash::EventRewriterController* event_rewriter_controller =
-        ash::Shell::Get()->event_rewriter_controller();
-    event_rewriter_delegate_ = std::make_unique<EventRewriterDelegateImpl>(
-        ash::Shell::Get()->activation_client());
-    event_rewriter_controller->AddEventRewriter(
-        std::make_unique<ui::EventRewriterChromeOS>(
-            event_rewriter_delegate_.get(),
-            ash::Shell::Get()->sticky_keys_controller()));
-  }
+  event_rewriter_delegate_ = std::make_unique<EventRewriterDelegateImpl>(
+      ash::Shell::Get()->activation_client());
+  event_rewriter_controller->AddEventRewriter(
+      std::make_unique<ui::EventRewriterChromeOS>(
+          event_rewriter_delegate_.get(),
+          ash::Shell::Get()->sticky_keys_controller()));
 
   // In classic ash must occur after ash::Shell is initialized. Triggers a
   // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.

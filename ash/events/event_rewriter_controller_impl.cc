@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/events/event_rewriter_controller.h"
+#include "ash/events/event_rewriter_controller_impl.h"
 
 #include <utility>
 
@@ -13,13 +13,18 @@
 #include "ash/shell.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/events/event_rewriter.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_source.h"
 
 namespace ash {
 
-EventRewriterController::EventRewriterController() {
+// static
+EventRewriterController* EventRewriterController::Get() {
+  return Shell::HasInstance() ? Shell::Get()->event_rewriter_controller()
+                              : nullptr;
+}
+
+EventRewriterControllerImpl::EventRewriterControllerImpl() {
   // Add the controller as an observer for new root windows.
   aura::Env::GetInstance()->AddObserver(this);
 
@@ -34,7 +39,7 @@ EventRewriterController::EventRewriterController() {
   AddEventRewriter(std::move(spoken_feedback_event_rewriter));
 }
 
-EventRewriterController::~EventRewriterController() {
+EventRewriterControllerImpl::~EventRewriterControllerImpl() {
   aura::Env::GetInstance()->RemoveObserver(this);
   // Remove the rewriters from every root window EventSource and destroy them.
   for (const auto& rewriter : rewriters_) {
@@ -44,7 +49,7 @@ EventRewriterController::~EventRewriterController() {
   rewriters_.clear();
 }
 
-void EventRewriterController::AddEventRewriter(
+void EventRewriterControllerImpl::AddEventRewriter(
     std::unique_ptr<ui::EventRewriter> rewriter) {
   // Add the rewriters to each existing root window EventSource.
   for (auto* window : Shell::GetAllRootWindows())
@@ -60,40 +65,37 @@ void EventRewriterController::AddEventRewriter(
   rewriters_.push_back(std::move(rewriter));
 }
 
-void EventRewriterController::BindRequest(
-    mojom::EventRewriterControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
-void EventRewriterController::SetKeyboardDrivenEventRewriterEnabled(
+void EventRewriterControllerImpl::SetKeyboardDrivenEventRewriterEnabled(
     bool enabled) {
   keyboard_driven_event_rewriter_->set_enabled(enabled);
 }
 
-void EventRewriterController::SetArrowToTabRewritingEnabled(bool enabled) {
+void EventRewriterControllerImpl::SetArrowToTabRewritingEnabled(bool enabled) {
   keyboard_driven_event_rewriter_->set_arrow_to_tab_rewriting_enabled(enabled);
 }
 
-void EventRewriterController::SetSpokenFeedbackEventRewriterDelegate(
-    mojom::SpokenFeedbackEventRewriterDelegatePtr delegate) {
-  spoken_feedback_event_rewriter_->SetDelegate(std::move(delegate));
+void EventRewriterControllerImpl::SetSpokenFeedbackEventRewriterDelegate(
+    SpokenFeedbackEventRewriterDelegate* delegate) {
+  spoken_feedback_event_rewriter_->set_delegate(delegate);
 }
 
-void EventRewriterController::OnUnhandledSpokenFeedbackEvent(
+void EventRewriterControllerImpl::OnUnhandledSpokenFeedbackEvent(
     std::unique_ptr<ui::Event> event) {
   spoken_feedback_event_rewriter_->OnUnhandledSpokenFeedbackEvent(
       std::move(event));
 }
 
-void EventRewriterController::CaptureAllKeysForSpokenFeedback(bool capture) {
+void EventRewriterControllerImpl::CaptureAllKeysForSpokenFeedback(
+    bool capture) {
   spoken_feedback_event_rewriter_->set_capture_all_keys(capture);
 }
 
-void EventRewriterController::SetSendMouseEventsToDelegate(bool value) {
+void EventRewriterControllerImpl::SetSendMouseEventsToDelegate(bool value) {
   spoken_feedback_event_rewriter_->set_send_mouse_events(value);
 }
 
-void EventRewriterController::OnHostInitialized(aura::WindowTreeHost* host) {
+void EventRewriterControllerImpl::OnHostInitialized(
+    aura::WindowTreeHost* host) {
   for (const auto& rewriter : rewriters_)
     host->GetEventSource()->AddEventRewriter(rewriter.get());
 }

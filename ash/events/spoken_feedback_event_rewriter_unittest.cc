@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/public/cpp/spoken_feedback_event_rewriter_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
@@ -25,16 +26,10 @@ namespace ash {
 namespace {
 
 // A test implementation of the spoken feedback delegate interface.
-class TestDelegate : public mojom::SpokenFeedbackEventRewriterDelegate {
+class TestDelegate : public SpokenFeedbackEventRewriterDelegate {
  public:
-  TestDelegate() : binding_(this) {}
+  TestDelegate() = default;
   ~TestDelegate() override = default;
-
-  mojom::SpokenFeedbackEventRewriterDelegatePtr BindInterface() {
-    mojom::SpokenFeedbackEventRewriterDelegatePtr ptr;
-    binding_.Bind(MakeRequest(&ptr));
-    return ptr;
-  }
 
   // Count of events sent to the delegate.
   size_t recorded_event_count_ = 0;
@@ -50,27 +45,22 @@ class TestDelegate : public mojom::SpokenFeedbackEventRewriterDelegate {
     if (capture)
       captured_event_count_++;
   }
-
   void DispatchMouseEventToChromeVox(
       std::unique_ptr<ui::Event> event) override {
     recorded_event_count_++;
   }
-
-  // The binding that backs the interface pointer held by the event rewriter.
-  mojo::Binding<ash::mojom::SpokenFeedbackEventRewriterDelegate> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
 class SpokenFeedbackEventRewriterTest : public ash::AshTestBase {
  public:
-  SpokenFeedbackEventRewriterTest() {
-    spoken_feedback_event_rewriter_.SetDelegate(delegate_.BindInterface());
-  }
+  SpokenFeedbackEventRewriterTest() = default;
 
   void SetUp() override {
     ash::AshTestBase::SetUp();
     generator_ = AshTestBase::GetEventGenerator();
+    spoken_feedback_event_rewriter_.set_delegate(&delegate_);
     CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(
         &spoken_feedback_event_rewriter_);
     CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(
@@ -82,20 +72,16 @@ class SpokenFeedbackEventRewriterTest : public ash::AshTestBase {
         &event_recorder_);
     CurrentContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
         &spoken_feedback_event_rewriter_);
+    spoken_feedback_event_rewriter_.set_delegate(nullptr);
     generator_ = nullptr;
     ash::AshTestBase::TearDown();
   }
 
-  // Flush any messages to the test delegate and return events it has recorded.
-  size_t GetDelegateRecordedEventCount() {
-    spoken_feedback_event_rewriter_.get_delegate_for_testing()
-        ->FlushForTesting();
+  size_t delegate_recorded_event_count() {
     return delegate_.recorded_event_count_;
   }
 
-  size_t GetDelegateCapturedEventCount() {
-    spoken_feedback_event_rewriter_.get_delegate_for_testing()
-        ->FlushForTesting();
+  size_t delegate_captured_event_count() {
     return delegate_.captured_event_count_;
   }
 
@@ -108,8 +94,8 @@ class SpokenFeedbackEventRewriterTest : public ash::AshTestBase {
                     size_t expected_captured_count) {
     EXPECT_EQ(expected_recorded_count,
               static_cast<size_t>(event_recorder_.events_seen()));
-    EXPECT_EQ(expected_delegate_count, GetDelegateRecordedEventCount());
-    EXPECT_EQ(expected_captured_count, GetDelegateCapturedEventCount());
+    EXPECT_EQ(expected_delegate_count, delegate_recorded_event_count());
+    EXPECT_EQ(expected_captured_count, delegate_captured_event_count());
   }
 
  protected:
@@ -134,18 +120,18 @@ TEST_F(SpokenFeedbackEventRewriterTest, EventsNotConsumedWhenDisabled) {
 
   generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_EQ(1, event_recorder_.events_seen());
-  EXPECT_EQ(0U, GetDelegateRecordedEventCount());
+  EXPECT_EQ(0U, delegate_recorded_event_count());
   generator_->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_EQ(2, event_recorder_.events_seen());
-  EXPECT_EQ(0U, GetDelegateRecordedEventCount());
+  EXPECT_EQ(0U, delegate_recorded_event_count());
 
   generator_->ClickLeftButton();
   EXPECT_EQ(4, event_recorder_.events_seen());
-  EXPECT_EQ(0U, GetDelegateRecordedEventCount());
+  EXPECT_EQ(0U, delegate_recorded_event_count());
 
   generator_->GestureTapAt(gfx::Point());
   EXPECT_EQ(6, event_recorder_.events_seen());
-  EXPECT_EQ(0U, GetDelegateRecordedEventCount());
+  EXPECT_EQ(0U, delegate_recorded_event_count());
 }
 
 // The delegate should intercept key events when spoken feedback is enabled.
@@ -157,22 +143,22 @@ TEST_F(SpokenFeedbackEventRewriterTest, KeyEventsConsumedWhenEnabled) {
 
   generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_EQ(1, event_recorder_.events_seen());
-  EXPECT_EQ(1U, GetDelegateRecordedEventCount());
-  EXPECT_EQ(0U, GetDelegateCapturedEventCount());
+  EXPECT_EQ(1U, delegate_recorded_event_count());
+  EXPECT_EQ(0U, delegate_captured_event_count());
   generator_->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_EQ(2, event_recorder_.events_seen());
-  EXPECT_EQ(2U, GetDelegateRecordedEventCount());
-  EXPECT_EQ(0U, GetDelegateCapturedEventCount());
+  EXPECT_EQ(2U, delegate_recorded_event_count());
+  EXPECT_EQ(0U, delegate_captured_event_count());
 
   generator_->ClickLeftButton();
   EXPECT_EQ(4, event_recorder_.events_seen());
-  EXPECT_EQ(2U, GetDelegateRecordedEventCount());
-  EXPECT_EQ(0U, GetDelegateCapturedEventCount());
+  EXPECT_EQ(2U, delegate_recorded_event_count());
+  EXPECT_EQ(0U, delegate_captured_event_count());
 
   generator_->GestureTapAt(gfx::Point());
   EXPECT_EQ(6, event_recorder_.events_seen());
-  EXPECT_EQ(2U, GetDelegateRecordedEventCount());
-  EXPECT_EQ(0U, GetDelegateCapturedEventCount());
+  EXPECT_EQ(2U, delegate_recorded_event_count());
+  EXPECT_EQ(0U, delegate_captured_event_count());
 }
 
 // Asynchronously unhandled events should be sent to subsequent rewriters.
@@ -222,7 +208,7 @@ TEST_F(SpokenFeedbackEventRewriterTest, KeysNotEatenWithChromeVoxDisabled) {
   generator_->ReleaseKey(ui::VKEY_LWIN, 0);
   EXPECT_EQ(9, event_recorder_.events_seen());
 
-  EXPECT_EQ(0U, GetDelegateRecordedEventCount());
+  EXPECT_EQ(0U, delegate_recorded_event_count());
 }
 
 TEST_F(SpokenFeedbackEventRewriterTest, KeyEventsCaptured) {

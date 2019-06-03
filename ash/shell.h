@@ -117,7 +117,7 @@ class DisplaySpeakerController;
 class DockedMagnifierControllerImpl;
 class DragDropController;
 class EventClientImpl;
-class EventRewriterController;
+class EventRewriterControllerImpl;
 class EventTransformationHandler;
 class FocusCycler;
 class HighContrastController;
@@ -352,7 +352,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   DockedMagnifierControllerImpl* docked_magnifier_controller();
   ::wm::CompoundEventFilter* env_filter() { return env_filter_.get(); }
-  EventRewriterController* event_rewriter_controller() {
+  EventRewriterControllerImpl* event_rewriter_controller() {
     return event_rewriter_controller_.get();
   }
   EventClientImpl* event_client() { return event_client_.get(); }
@@ -634,7 +634,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   // The CompoundEventFilter owned by aura::Env object.
   std::unique_ptr<::wm::CompoundEventFilter> env_filter_;
 
-  std::unique_ptr<EventRewriterController> event_rewriter_controller_;
+  std::unique_ptr<EventRewriterControllerImpl> event_rewriter_controller_;
 
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
   std::unique_ptr<WindowPositioner> window_positioner_;

@@ -6,8 +6,8 @@
 
 #include <queue>
 
-#include "ash/events/event_rewriter_controller.h"
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -372,7 +372,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfIconFocusForward) {
 // Verifies that speaking text under mouse works for Shelf button and voice
 // announcements should not be stacked when mouse goes over many Shelf buttons
 // (see https://crbug.com/958120 and https://crbug.com/921182).
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
+// TODO(crbug.com/921182): Fix test correctness/reliability and re-enable.
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
+                       DISABLED_SpeakingTextUnderMouseForShelfItem) {
   // Add the ShelfItem to the ShelfModel after enabling the ChromeVox. Because
   // when an extension is enabled, the ShelfItems which are not recorded as
   // pinned apps in user preference will be removed.
@@ -393,8 +395,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
   base::RunLoop().RunUntilIdle();
 
   // Enable the function of speaking text under mouse.
-  ash::Shell::Get()->event_rewriter_controller()->SetSendMouseEventsToDelegate(
-      true);
+  ash::EventRewriterController::Get()->SetSendMouseEventsToDelegate(true);
 
   // Focus on the Shelf because voice text for focusing on Shelf is fixed. Wait
   // until voice announcements are finished.

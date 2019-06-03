@@ -11,7 +11,6 @@
 #include "ash/public/interfaces/assistant_volume_control.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
-#include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/public/interfaces/ime_controller.mojom.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "ash/public/interfaces/kiosk_next_shell.mojom.h"
@@ -64,8 +63,7 @@ const service_manager::Manifest& GetManifest() {
                   mojom::AssistantScreenContextController,
                   mojom::AssistantVolumeControl,
                   mojom::KioskNextShellController,
-                  mojom::CrosDisplayConfigController,
-                  mojom::EventRewriterController, mojom::ImeController,
+                  mojom::CrosDisplayConfigController, mojom::ImeController,
                   mojom::KeyboardController, mojom::LocaleUpdateController,
                   mojom::LoginScreen, mojom::MediaController,
                   mojom::NightLightController, mojom::ShutdownController,

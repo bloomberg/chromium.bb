@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/public/cpp/spoken_feedback_event_rewriter_delegate.h"
 #include "ash/shell.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
@@ -15,15 +16,8 @@
 
 namespace ash {
 
-SpokenFeedbackEventRewriter::SpokenFeedbackEventRewriter()
-    : continuation_(nullptr) {}
-
+SpokenFeedbackEventRewriter::SpokenFeedbackEventRewriter() = default;
 SpokenFeedbackEventRewriter::~SpokenFeedbackEventRewriter() = default;
-
-void SpokenFeedbackEventRewriter::SetDelegate(
-    mojom::SpokenFeedbackEventRewriterDelegatePtr delegate) {
-  delegate_ = std::move(delegate);
-}
 
 void SpokenFeedbackEventRewriter::OnUnhandledSpokenFeedbackEvent(
     std::unique_ptr<ui::Event> event) const {
@@ -56,7 +50,7 @@ ui::EventDispatchDetails SpokenFeedbackEventRewriter::RewriteEvent(
   // Save continuation for |OnUnhandledSpokenFeedbackEvent()|.
   continuation_ = continuation;
 
-  if (!delegate_.is_bound() ||
+  if (!delegate_ ||
       !Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
     return SendEvent(continuation, &event);
 
@@ -80,9 +74,8 @@ ui::EventDispatchDetails SpokenFeedbackEventRewriter::RewriteEvent(
                    : SendEvent(continuation, &event);
   }
 
-  if (send_mouse_events_ && event.IsMouseEvent()) {
+  if (send_mouse_events_ && event.IsMouseEvent())
     delegate_->DispatchMouseEventToChromeVox(ui::Event::Clone(event));
-  }
 
   return SendEvent(continuation, &event);
 }

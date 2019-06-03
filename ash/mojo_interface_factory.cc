@@ -16,7 +16,6 @@
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/autotest/shelf_integration_test_api.h"
 #include "ash/display/cros_display_config.h"
-#include "ash/events/event_rewriter_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
@@ -96,11 +95,6 @@ void BindCrosDisplayConfigControllerRequestOnMainThread(
 void BindAshMessageCenterControllerRequestOnMainThread(
     mojom::AshMessageCenterControllerRequest request) {
   Shell::Get()->message_center_controller()->BindRequest(std::move(request));
-}
-
-void BindEventRewriterControllerRequestOnMainThread(
-    mojom::EventRewriterControllerRequest request) {
-  Shell::Get()->event_rewriter_controller()->BindRequest(std::move(request));
 }
 
 void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
@@ -202,9 +196,6 @@ void RegisterInterfaces(
         base::BindRepeating(&BindKioskNextShellControllerRequestOnMainThread),
         main_thread_task_runner);
   }
-  registry->AddInterface(
-      base::BindRepeating(&BindEventRewriterControllerRequestOnMainThread),
-      main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindImeControllerRequestOnMainThread),
       main_thread_task_runner);
