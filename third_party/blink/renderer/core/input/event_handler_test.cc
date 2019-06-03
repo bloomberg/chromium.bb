@@ -12,6 +12,7 @@
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/dom_selection.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -2168,6 +2169,64 @@ TEST_F(EventHandlerSimTest, ElementTargetedGestureScrollViewport) {
   LocalFrameView* frame_view = GetDocument().View();
   ASSERT_EQ(frame_view->LayoutViewport()->GetScrollOffset().Height(), 400);
   ASSERT_EQ(visual_viewport.GetScrollOffset().Height(), 300);
+}
+
+TEST_F(EventHandlerSimTest, SelecteTransformedTextWhenCapturing) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+      <div id='target' style = "width:250px; transform: rotate(180deg)">
+      Some text to select
+      </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  WebMouseEvent mouse_down_event(WebInputEvent::kMouseDown,
+                                 WebFloatPoint(100, 20), WebFloatPoint(0, 0),
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::GetStaticTimeStampForTests());
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
+
+  ASSERT_TRUE(GetDocument()
+                  .GetFrame()
+                  ->GetEventHandler()
+                  .GetSelectionController()
+                  .MouseDownMayStartSelect());
+
+  Element* target = GetDocument().getElementById("target");
+  GetDocument().GetFrame()->GetEventHandler().SetPointerCapture(
+      PointerEventFactory::kMouseId, target);
+
+  WebMouseEvent mouse_move_event(WebInputEvent::kMouseMove,
+                                 WebFloatPoint(258, 20), WebFloatPoint(0, 0),
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::GetStaticTimeStampForTests());
+  mouse_move_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+  WebMouseEvent mouse_up_event(
+      WebMouseEvent::kMouseUp, WebFloatPoint(258, 20), WebFloatPoint(0, 0),
+      WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_up_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+      mouse_up_event);
+
+  ASSERT_FALSE(GetDocument()
+                   .GetFrame()
+                   ->GetEventHandler()
+                   .GetSelectionController()
+                   .MouseDownMayStartSelect());
+
+  ASSERT_TRUE(GetDocument().GetSelection());
+  EXPECT_EQ("Some text to select", GetDocument().GetSelection()->toString());
 }
 
 }  // namespace blink
