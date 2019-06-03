@@ -7,6 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/test/video_player/frame_renderer_dummy.h"
@@ -174,43 +175,62 @@ void PerformanceEvaluator::StopMeasuring() {
 }
 
 void PerformanceEvaluator::WriteMetricsToFile() const {
-  std::string str = base::StringPrintf(
-      "Frames decoded: %zu\nTotal duration: %fms\nFPS: %f\n"
-      "Frames dropped: %zu\nDropped frame rate: %f\n"
-      "Avg. frame delivery time: %fms\nMedian frame decode time: %fms\n",
-      perf_metrics_.frames_decoded_,
-      perf_metrics_.total_duration_.InMillisecondsF(),
-      perf_metrics_.frames_per_second_, perf_metrics_.frames_dropped_,
-      perf_metrics_.dropped_frame_rate_,
-      perf_metrics_.avg_frame_delivery_time_ms_,
-      perf_metrics_.median_frame_decode_time_ms_);
-
-  // Write performance metrics to file.
   base::FilePath output_folder_path = base::FilePath(kDefaultOutputFolder);
   if (!DirectoryExists(output_folder_path))
     base::CreateDirectory(output_folder_path);
-  base::FilePath output_file_path =
-      output_folder_path.Append(base::FilePath(g_env->GetTestName())
-                                    .AddExtension(FILE_PATH_LITERAL(".txt")));
-  base::File output_file(
-      base::FilePath(output_file_path),
-      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  output_file.WriteAtCurrentPos(str.data(), str.length());
-  VLOG(0) << "Wrote performance metrics to: " << output_file_path;
 
-  // Write frame decode times to file.
-  base::FilePath decode_times_file_path =
-      output_file_path.InsertBeforeExtension(FILE_PATH_LITERAL(".frame_times"));
-  base::File decode_times_output_file(
-      base::FilePath(decode_times_file_path),
+  // Write performance metrics to json file.
+  base::Value metrics(base::Value::Type::DICTIONARY);
+  metrics.SetKey(
+      "FramesDecoded",
+      base::Value(base::checked_cast<int>(perf_metrics_.frames_decoded_)));
+  metrics.SetKey("TotalDurationMs",
+                 base::Value(perf_metrics_.total_duration_.InMillisecondsF()));
+  metrics.SetKey("FPS", base::Value(perf_metrics_.frames_per_second_));
+  metrics.SetKey(
+      "FramesDropped",
+      base::Value(base::checked_cast<int>(perf_metrics_.frames_dropped_)));
+  metrics.SetKey("DroppedFrameRate",
+                 base::Value(perf_metrics_.dropped_frame_rate_));
+  metrics.SetKey("AvgFrameDeliveryTimeMs",
+                 base::Value(perf_metrics_.avg_frame_delivery_time_ms_));
+  metrics.SetKey("MedianFrameDecodeTimeMs",
+                 base::Value(perf_metrics_.median_frame_decode_time_ms_));
+  std::string metrics_str;
+  ASSERT_TRUE(base::JSONWriter::WriteWithOptions(
+      metrics, base::JSONWriter::OPTIONS_PRETTY_PRINT, &metrics_str));
+
+  base::FilePath metrics_file_path =
+      output_folder_path.Append(base::FilePath(g_env->GetTestName())
+                                    .AddExtension(FILE_PATH_LITERAL(".json")));
+  base::File metrics_output_file(
+      base::FilePath(metrics_file_path),
       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  for (double frame_decoded_time : frame_delivery_times_) {
-    std::string decode_time_str =
-        base::StringPrintf("%f\n", frame_decoded_time);
-    decode_times_output_file.WriteAtCurrentPos(decode_time_str.data(),
-                                               decode_time_str.length());
+  int bytes_written = metrics_output_file.WriteAtCurrentPos(
+      metrics_str.data(), metrics_str.length());
+  ASSERT_EQ(bytes_written, static_cast<int>(metrics_str.length()));
+  VLOG(0) << "Wrote performance metrics to: " << metrics_file_path;
+
+  // Write frame delivery times json to file.
+  base::Value delivery_times(base::Value::Type::LIST);
+  for (double frame_delivery_time : frame_delivery_times_) {
+    delivery_times.GetList().emplace_back(frame_delivery_time);
   }
-  VLOG(0) << "Wrote frame decode times to: " << decode_times_file_path;
+  std::string delivery_times_str;
+  ASSERT_TRUE(base::JSONWriter::WriteWithOptions(
+      delivery_times, base::JSONWriter::OPTIONS_PRETTY_PRINT,
+      &delivery_times_str));
+
+  base::FilePath delivery_times_file_path =
+      metrics_file_path.InsertBeforeExtension(
+          FILE_PATH_LITERAL(".frame_delivery_times"));
+  base::File delivery_times_output_file(
+      base::FilePath(delivery_times_file_path),
+      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  bytes_written = delivery_times_output_file.WriteAtCurrentPos(
+      delivery_times_str.data(), delivery_times_str.length());
+  ASSERT_EQ(bytes_written, static_cast<int>(delivery_times_str.length()));
+  VLOG(0) << "Wrote frame delivery times to: " << delivery_times_file_path;
 }
 
 // Video decode test class. Performs setup and teardown for each single test.
