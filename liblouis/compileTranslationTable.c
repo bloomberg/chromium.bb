@@ -3189,10 +3189,20 @@ doOpcode:
 	case CTO_Repeated:
 	case CTO_RepWord:
 		if (getRuleCharsText(nested, &ruleChars, &lastToken))
-			if (getRuleDotsPattern(nested, &ruleDots, &lastToken))
+			if (getRuleDotsPattern(nested, &ruleDots, &lastToken)) {
+				if (ruleDots.length == 0)  // `=`
+					for (k = 0; k < ruleChars.length; k++) {
+						c = compile_findCharOrDots(ruleChars.chars[k], 0, *table);
+						if (!c || !c->definitionRule) {
+							compileError(nested, "Character %s is not defined",
+									_lou_showString(&ruleChars.chars[k], 1));
+							return 0;
+						}
+					}
 				if (!addRule(nested, opcode, &ruleChars, &ruleDots, after, before,
 							newRuleOffset, newRule, noback, nofor, table))
 					ok = 0;
+			}
 		// if (opcode == CTO_MidNum)
 		// {
 		//   TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
@@ -3283,10 +3293,19 @@ doOpcode:
 	case CTO_NoCont:
 	case CTO_CompBrl:
 	case CTO_Literal:
-		if (getRuleCharsText(nested, &ruleChars, &lastToken))
+		if (getRuleCharsText(nested, &ruleChars, &lastToken)) {
+			for (k = 0; k < ruleChars.length; k++) {
+				c = compile_findCharOrDots(ruleChars.chars[k], 0, *table);
+				if (!c || !c->definitionRule) {
+					compileError(nested, "Character %s is not defined",
+							_lou_showString(&ruleChars.chars[k], 1));
+					return 0;
+				}
+			}
 			if (!addRule(nested, opcode, &ruleChars, NULL, after, before, newRuleOffset,
 						newRule, noback, nofor, table))
 				ok = 0;
+		}
 		break;
 	case CTO_MultInd: {
 		int t;
