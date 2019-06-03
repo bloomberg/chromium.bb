@@ -432,27 +432,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Called when a load ends in an SSL error and certificate chain.
 - (void)handleSSLCertError:(NSError*)error
              forNavigation:(WKNavigation*)navigation;
-
-// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to
-// reply with NSURLSessionAuthChallengeDisposition and credentials.
-- (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
-         forCertAcceptPolicy:(web::CertAcceptPolicy)policy
-                  certStatus:(net::CertStatus)certStatus
-           completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
-                                       NSURLCredential*))completionHandler;
-// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
-// with NSURLSessionAuthChallengeDisposition and credentials.
-- (void)handleHTTPAuthForChallenge:(NSURLAuthenticationChallenge*)challenge
-                 completionHandler:
-                     (void (^)(NSURLSessionAuthChallengeDisposition,
-                               NSURLCredential*))completionHandler;
-// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
-// with NSURLSessionAuthChallengeDisposition and credentials.
-+ (void)processHTTPAuthForUser:(NSString*)user
-                      password:(NSString*)password
-             completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
-                                         NSURLCredential*))completionHandler;
-
 // Loads request for the URL of the current navigation item. Subclasses may
 // choose to build a new NSURLRequest and call |loadRequest| on the underlying
 // web view, or use native web view navigation where possible (for example,
@@ -2885,83 +2864,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.webStateImpl->ClearWebUI();
 }
 
-#pragma mark - Auth Challenge
-
-- (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
-         forCertAcceptPolicy:(web::CertAcceptPolicy)policy
-                  certStatus:(net::CertStatus)certStatus
-           completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
-                                       NSURLCredential*))completionHandler {
-  SecTrustRef trust = challenge.protectionSpace.serverTrust;
-  if (policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_ACCEPTED_BY_USER) {
-    // Cert is invalid, but user agreed to proceed, override default behavior.
-    completionHandler(NSURLSessionAuthChallengeUseCredential,
-                      [NSURLCredential credentialForTrust:trust]);
-    return;
-  }
-
-  if (policy != web::CERT_ACCEPT_POLICY_ALLOW &&
-      SecTrustGetCertificateCount(trust)) {
-    // The cert is invalid and the user has not agreed to proceed. Cache the
-    // cert verification result in |_certVerificationErrors|, so that it can
-    // later be reused inside |didFailProvisionalNavigation:|.
-    // The leaf cert is used as the key, because the chain provided by
-    // |didFailProvisionalNavigation:| will differ (it is the server-supplied
-    // chain), thus if intermediates were considered, the keys would mismatch.
-    scoped_refptr<net::X509Certificate> leafCert =
-        net::x509_util::CreateX509CertificateFromSecCertificate(
-            SecTrustGetCertificateAtIndex(trust, 0),
-            std::vector<SecCertificateRef>());
-    if (leafCert) {
-      bool is_recoverable =
-          policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER;
-      std::string host =
-          base::SysNSStringToUTF8(challenge.protectionSpace.host);
-      _certVerificationErrors->Put(
-          web::CertHostPair(leafCert, host),
-          web::CertVerificationError(is_recoverable, certStatus));
-    }
-  }
-  completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
-}
-
-- (void)handleHTTPAuthForChallenge:(NSURLAuthenticationChallenge*)challenge
-                 completionHandler:
-                     (void (^)(NSURLSessionAuthChallengeDisposition,
-                               NSURLCredential*))completionHandler {
-  NSURLProtectionSpace* space = challenge.protectionSpace;
-  DCHECK(
-      [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPBasic] ||
-      [space.authenticationMethod isEqual:NSURLAuthenticationMethodNTLM] ||
-      [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPDigest]);
-
-  self.webStateImpl->OnAuthRequired(
-      space, challenge.proposedCredential,
-      base::BindRepeating(^(NSString* user, NSString* password) {
-        [CRWWebController processHTTPAuthForUser:user
-                                        password:password
-                               completionHandler:completionHandler];
-      }));
-}
-
-+ (void)processHTTPAuthForUser:(NSString*)user
-                      password:(NSString*)password
-             completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
-                                         NSURLCredential*))completionHandler {
-  DCHECK_EQ(user == nil, password == nil);
-  if (!user || !password) {
-    // Embedder cancelled authentication.
-    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
-    return;
-  }
-  completionHandler(
-      NSURLSessionAuthChallengeUseCredential,
-      [NSURLCredential
-          credentialWithUser:user
-                    password:password
-                 persistence:NSURLCredentialPersistenceForSession]);
-}
-
 #pragma mark - CRWWebViewScrollViewProxyObserver
 
 - (void)webViewScrollViewDidZoom:
@@ -3562,41 +3464,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self.navigationHandler webView:webView
       didReceiveAuthenticationChallenge:challenge
                       completionHandler:completionHandler];
-
-  NSString* authMethod = challenge.protectionSpace.authenticationMethod;
-  if ([authMethod isEqual:NSURLAuthenticationMethodHTTPBasic] ||
-      [authMethod isEqual:NSURLAuthenticationMethodNTLM] ||
-      [authMethod isEqual:NSURLAuthenticationMethodHTTPDigest]) {
-    [self handleHTTPAuthForChallenge:challenge
-                   completionHandler:completionHandler];
-    return;
-  }
-
-  if (![authMethod isEqual:NSURLAuthenticationMethodServerTrust]) {
-    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
-    return;
-  }
-
-  SecTrustRef trust = challenge.protectionSpace.serverTrust;
-  base::ScopedCFTypeRef<SecTrustRef> scopedTrust(trust,
-                                                 base::scoped_policy::RETAIN);
-  __weak CRWWebController* weakSelf = self;
-  [_certVerificationController
-      decideLoadPolicyForTrust:scopedTrust
-                          host:challenge.protectionSpace.host
-             completionHandler:^(web::CertAcceptPolicy policy,
-                                 net::CertStatus status) {
-               CRWWebController* strongSelf = weakSelf;
-               if (!strongSelf) {
-                 completionHandler(
-                     NSURLSessionAuthChallengeRejectProtectionSpace, nil);
-                 return;
-               }
-               [strongSelf processAuthChallenge:challenge
-                            forCertAcceptPolicy:policy
-                                     certStatus:status
-                              completionHandler:completionHandler];
-             }];
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
@@ -4385,6 +4252,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     certVerificationErrorsForNavigationHandler:
         (CRWWKNavigationHandler*)navigationHandler {
   return _certVerificationErrors.get();
+}
+
+- (CRWCertVerificationController*)
+    certVerificationControllerForNavigationHandler:
+        (CRWWKNavigationHandler*)navigationHandler {
+  return _certVerificationController;
 }
 
 - (GURL)navigationHandlerDocumentURL:

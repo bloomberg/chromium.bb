@@ -18,6 +18,7 @@
 @class CRWWKNavigationStates;
 @class CRWJSInjector;
 @class CRWLegacyNativeContentController;
+@class CRWCertVerificationController;
 class GURL;
 namespace base {
 class RepeatingTimer;
@@ -47,6 +48,11 @@ class WKBackForwardListItemHolder;
 // Returns associated certificate verification errors.
 - (web::CertVerificationErrorsCacheType*)
     certVerificationErrorsForNavigationHandler:
+        (CRWWKNavigationHandler*)navigationHandler;
+
+// Returns associated certificate verificatio controller.
+- (CRWCertVerificationController*)
+    certVerificationControllerForNavigationHandler:
         (CRWWKNavigationHandler*)navigationHandler;
 
 // Returns the associated js injector.

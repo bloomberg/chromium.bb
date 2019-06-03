@@ -29,6 +29,7 @@
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_client.h"
+#import "ios/web/security/crw_cert_verification_controller.h"
 #import "ios/web/security/wk_web_view_security_util.h"
 #import "ios/web/web_state/ui/controller/crw_legacy_native_content_controller.h"
 #import "ios/web/web_state/user_interaction_state.h"
@@ -36,6 +37,7 @@
 #include "ios/web/web_view/content_type_util.h"
 #import "ios/web/web_view/wk_web_view_util.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/cert/x509_util_ios.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -76,6 +78,9 @@ using web::wk_navigation_util::IsWKInternalUrl;
 // Returns the CertVerificationErrorsCacheType from self.delegate.
 @property(nonatomic, readonly, assign)
     web::CertVerificationErrorsCacheType* certVerificationErrors;
+// Returns the CRWCertVerificationController from self.delegate.
+@property(nonatomic, readonly, weak)
+    CRWCertVerificationController* certVerificationController;
 // Returns the docuemnt URL from self.delegate.
 @property(nonatomic, readonly, assign) GURL documentURL;
 // Returns the session controller from self.navigationManagerImpl.
@@ -1082,6 +1087,41 @@ using web::wk_navigation_util::IsWKInternalUrl;
                         (void (^)(NSURLSessionAuthChallengeDisposition,
                                   NSURLCredential*))completionHandler {
   [self didReceiveWKNavigationDelegateCallback];
+
+  NSString* authMethod = challenge.protectionSpace.authenticationMethod;
+  if ([authMethod isEqual:NSURLAuthenticationMethodHTTPBasic] ||
+      [authMethod isEqual:NSURLAuthenticationMethodNTLM] ||
+      [authMethod isEqual:NSURLAuthenticationMethodHTTPDigest]) {
+    [self handleHTTPAuthForChallenge:challenge
+                   completionHandler:completionHandler];
+    return;
+  }
+
+  if (![authMethod isEqual:NSURLAuthenticationMethodServerTrust]) {
+    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+    return;
+  }
+
+  SecTrustRef trust = challenge.protectionSpace.serverTrust;
+  base::ScopedCFTypeRef<SecTrustRef> scopedTrust(trust,
+                                                 base::scoped_policy::RETAIN);
+  __weak CRWWKNavigationHandler* weakSelf = self;
+  [self.certVerificationController
+      decideLoadPolicyForTrust:scopedTrust
+                          host:challenge.protectionSpace.host
+             completionHandler:^(web::CertAcceptPolicy policy,
+                                 net::CertStatus status) {
+               CRWWKNavigationHandler* strongSelf = weakSelf;
+               if (!strongSelf) {
+                 completionHandler(
+                     NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+                 return;
+               }
+               [strongSelf processAuthChallenge:challenge
+                            forCertAcceptPolicy:policy
+                                     certStatus:status
+                              completionHandler:completionHandler];
+             }];
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
@@ -1108,6 +1148,10 @@ using web::wk_navigation_util::IsWKInternalUrl;
 
 - (CRWJSInjector*)JSInjector {
   return [self.delegate JSInjectorForNavigationHandler:self];
+}
+
+- (CRWCertVerificationController*)certVerificationController {
+  return [self.delegate certVerificationControllerForNavigationHandler:self];
 }
 
 - (CRWLegacyNativeContentController*)legacyNativeContentController {
@@ -1406,6 +1450,89 @@ using web::wk_navigation_util::IsWKInternalUrl;
 - (void)forgetNullWKNavigation:(WKNavigation*)navigation {
   if (!navigation)
     [self.navigationStates removeNavigation:navigation];
+}
+
+#pragma mark - Auth Challenge
+
+// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to
+// reply with NSURLSessionAuthChallengeDisposition and credentials.
+- (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
+         forCertAcceptPolicy:(web::CertAcceptPolicy)policy
+                  certStatus:(net::CertStatus)certStatus
+           completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                       NSURLCredential*))completionHandler {
+  SecTrustRef trust = challenge.protectionSpace.serverTrust;
+  if (policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_ACCEPTED_BY_USER) {
+    // Cert is invalid, but user agreed to proceed, override default behavior.
+    completionHandler(NSURLSessionAuthChallengeUseCredential,
+                      [NSURLCredential credentialForTrust:trust]);
+    return;
+  }
+
+  if (policy != web::CERT_ACCEPT_POLICY_ALLOW &&
+      SecTrustGetCertificateCount(trust)) {
+    // The cert is invalid and the user has not agreed to proceed. Cache the
+    // cert verification result in |_certVerificationErrors|, so that it can
+    // later be reused inside |didFailProvisionalNavigation:|.
+    // The leaf cert is used as the key, because the chain provided by
+    // |didFailProvisionalNavigation:| will differ (it is the server-supplied
+    // chain), thus if intermediates were considered, the keys would mismatch.
+    scoped_refptr<net::X509Certificate> leafCert =
+        net::x509_util::CreateX509CertificateFromSecCertificate(
+            SecTrustGetCertificateAtIndex(trust, 0),
+            std::vector<SecCertificateRef>());
+    if (leafCert) {
+      bool is_recoverable =
+          policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER;
+      std::string host =
+          base::SysNSStringToUTF8(challenge.protectionSpace.host);
+      self.certVerificationErrors->Put(
+          web::CertHostPair(leafCert, host),
+          web::CertVerificationError(is_recoverable, certStatus));
+    }
+  }
+  completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+}
+
+// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
+// with NSURLSessionAuthChallengeDisposition and credentials.
+- (void)handleHTTPAuthForChallenge:(NSURLAuthenticationChallenge*)challenge
+                 completionHandler:
+                     (void (^)(NSURLSessionAuthChallengeDisposition,
+                               NSURLCredential*))completionHandler {
+  NSURLProtectionSpace* space = challenge.protectionSpace;
+  DCHECK(
+      [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPBasic] ||
+      [space.authenticationMethod isEqual:NSURLAuthenticationMethodNTLM] ||
+      [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPDigest]);
+
+  self.webStateImpl->OnAuthRequired(
+      space, challenge.proposedCredential,
+      base::BindRepeating(^(NSString* user, NSString* password) {
+        [CRWWKNavigationHandler processHTTPAuthForUser:user
+                                              password:password
+                                     completionHandler:completionHandler];
+      }));
+}
+
+// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
+// with NSURLSessionAuthChallengeDisposition and credentials.
++ (void)processHTTPAuthForUser:(NSString*)user
+                      password:(NSString*)password
+             completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                         NSURLCredential*))completionHandler {
+  DCHECK_EQ(user == nil, password == nil);
+  if (!user || !password) {
+    // Embedder cancelled authentication.
+    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+    return;
+  }
+  completionHandler(
+      NSURLSessionAuthChallengeUseCredential,
+      [NSURLCredential
+          credentialWithUser:user
+                    password:password
+                 persistence:NSURLCredentialPersistenceForSession]);
 }
 
 #pragma mark - Public methods
