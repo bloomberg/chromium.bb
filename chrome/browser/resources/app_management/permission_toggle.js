@@ -34,6 +34,22 @@ Polymer({
     return app_management.util.getPermissionValueBool(app, permissionType);
   },
 
+  /**
+   * @param {App} app
+   * @param {string} permissionType
+   * @return {boolean}
+   */
+  isPermissionManaged_: function(app, permissionType) {
+    if (app === undefined || permissionType === undefined) {
+      return false;
+    }
+
+    assert(app);
+
+    const permission = app_management.util.getPermission(app, permissionType);
+    assert(permission);
+    return permission.isManaged;
+  },
 
   togglePermission_: function() {
     assert(this.app);
@@ -67,8 +83,10 @@ Polymer({
    */
   getNewPermissionBoolean_: function(app, permissionType) {
     let newPermissionValue;
+    const currentPermission =
+        app_management.util.getPermission(app, permissionType);
 
-    switch (app_management.util.getPermission(app, permissionType).value) {
+    switch (currentPermission.value) {
       case Bool.kFalse:
         newPermissionValue = Bool.kTrue;
         break;
@@ -82,7 +100,8 @@ Polymer({
     assert(newPermissionValue !== undefined);
     return app_management.util.createPermission(
         app_management.util.permissionTypeHandle(app, permissionType),
-        PermissionValueType.kBool, newPermissionValue);
+        PermissionValueType.kBool, newPermissionValue,
+        currentPermission.isManaged);
   },
 
   /**
@@ -93,8 +112,10 @@ Polymer({
    */
   getNewPermissionTriState_: function(app, permissionType) {
     let newPermissionValue;
+    const currentPermission =
+        app_management.util.getPermission(app, permissionType);
 
-    switch (app_management.util.getPermission(app, permissionType).value) {
+    switch (currentPermission.value) {
       case TriState.kBlock:
         newPermissionValue = TriState.kAllow;
         break;
@@ -115,6 +136,7 @@ Polymer({
     assert(newPermissionValue !== undefined);
     return app_management.util.createPermission(
         app_management.util.permissionTypeHandle(app, permissionType),
-        PermissionValueType.kTriState, newPermissionValue);
+        PermissionValueType.kTriState, newPermissionValue,
+        currentPermission.isManaged);
   },
 });

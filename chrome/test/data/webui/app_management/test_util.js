@@ -5,6 +5,7 @@
 'use strict';
 
 /**
+ * Create an app for testing purpose.
  * @param {string} id
  * @param {Object=} optConfig
  * @return {!App}
@@ -47,16 +48,6 @@ function isHidden(element) {
 }
 
 /**
- * Create an app for testing purpose.
- * @param {string} id
- * @param {Object=} optConfig
- * @return {!App}
- */
-function createApp(id, config) {
-  return app_management.FakePageHandler.createApp(id, config);
-}
-
-/**
  * Replace the current body of the test with a new element.
  * @param {Element} element
  */
@@ -78,4 +69,33 @@ async function navigateTo(route) {
   window.history.replaceState({}, '', route);
   window.dispatchEvent(new CustomEvent('location-changed'));
   await PolymerTest.flushTasks();
+}
+
+/**
+ * @param {Element} element
+ * @param {Object} permissionType
+ * @return {Element}
+ */
+function getPermissionItemByType(view, permissionType) {
+  return view.root.querySelector('[permission-type=' + permissionType + ']');
+}
+
+/**
+ * @param {Element} element
+ * @param {Object} permissionType
+ * @return {Element}
+ */
+function getPermissionToggleByType(view, permissionType) {
+  return getPermissionItemByType(view, permissionType)
+      .root.querySelector('app-management-permission-toggle');
+}
+
+/**
+ * @param {Element} element
+ * @param {Object} permissionType
+ * @return {Element}
+ */
+function getPermissionCrToggleByType(view, permissionType) {
+  return getPermissionToggleByType(view, permissionType)
+      .root.querySelector('cr-toggle');
 }

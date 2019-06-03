@@ -134,7 +134,7 @@ class HostContentSettingsMap : public content_settings::Observer,
   // the |SETTING_SOURCE_WHITELIST| and the |primary_pattern| and
   // |secondary_pattern| are set to a wildcard pattern.  If there is no content
   // setting, NULL is returned and the |source| field of |info| is set to
-  // |SETTING_SOURCE_NONE|. The pattern fiels of |info| are set to empty
+  // |SETTING_SOURCE_NONE|. The pattern fields of |info| are set to empty
   // patterns.
   // May be called on any thread.
   std::unique_ptr<base::Value> GetWebsiteSetting(

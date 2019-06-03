@@ -65,7 +65,7 @@ constexpr char kName[] = "name";
 constexpr char kNotificationsEnabled[] = "notifications_enabled";
 constexpr char kPackageName[] = "package_name";
 constexpr char kPackageVersion[] = "package_version";
-constexpr char kPermissions[] = "permissions";
+constexpr char kPermissionStates[] = "permission_states";
 constexpr char kSticky[] = "sticky";
 constexpr char kShortcut[] = "shortcut";
 constexpr char kShouldSync[] = "should_sync";
@@ -73,6 +73,8 @@ constexpr char kSuspended[] = "suspended";
 constexpr char kSystem[] = "system";
 constexpr char kUninstalled[] = "uninstalled";
 constexpr char kVPNProvider[] = "vpnprovider";
+constexpr char kPermissionStateGranted[] = "granted";
+constexpr char kPermissionStateManaged[] = "managed";
 
 // Defines current version for app icons. This is used for invalidation icons in
 // case we change how app icons are produced on Android side. Can be updated in
@@ -627,7 +629,8 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
   bool should_sync = false;
   bool system = false;
   bool vpn_provider = false;
-  base::flat_map<arc::mojom::AppPermission, bool> permissions;
+  base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
+      permissions;
 
   GetInt64FromPref(package, kLastBackupAndroidId, &last_backup_android_id);
   GetInt64FromPref(package, kLastBackupTime, &last_backup_time);
@@ -635,7 +638,7 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
   package->GetBoolean(kShouldSync, &should_sync);
   package->GetBoolean(kSystem, &system);
   package->GetBoolean(kVPNProvider, &vpn_provider);
-  const base::Value* permission_val = package->FindKey(kPermissions);
+  const base::Value* permission_val = package->FindKey(kPermissionStates);
   if (permission_val) {
     const base::DictionaryValue* permission_dict = nullptr;
     permission_val->GetAsDictionary(&permission_dict);
@@ -647,18 +650,29 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
       base::StringToInt64(iter.key(), &permission_type);
       DCHECK_NE(-1, permission_type);
 
-      bool value = false;
-      iter.value().GetAsBoolean(&value);
+      const base::Value& permission_state = iter.value();
 
-      arc::mojom::AppPermission permission =
-          static_cast<arc::mojom::AppPermission>(permission_type);
-      permissions.insert(std::make_pair(permission, value));
+      const base::DictionaryValue* permission_state_dict;
+      if (permission_state.GetAsDictionary(&permission_state_dict)) {
+        bool granted =
+            permission_state_dict->FindBoolKey(kPermissionStateGranted)
+                .value_or(false);
+        bool managed =
+            permission_state_dict->FindBoolKey(kPermissionStateManaged)
+                .value_or(false);
+        arc::mojom::AppPermission permission =
+            static_cast<arc::mojom::AppPermission>(permission_type);
+        permissions.emplace(permission,
+                            arc::mojom::PermissionState::New(granted, managed));
+      } else {
+        LOG(ERROR) << "Permission state was not a dictionary.";
+      }
     }
   }
 
   return std::make_unique<PackageInfo>(
       package_name, package_version, last_backup_android_id, last_backup_time,
-      should_sync, system, vpn_provider, permissions);
+      should_sync, system, vpn_provider, std::move(permissions));
 }
 
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
@@ -1265,17 +1279,37 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
   package_dict->SetBoolean(kSystem, package.system);
   package_dict->SetBoolean(kUninstalled, false);
   package_dict->SetBoolean(kVPNProvider, package.vpn_provider);
-  if (package.permissions.has_value()) {
-    base::DictionaryValue permission_dict;
-    for (const auto& permission : package.permissions.value()) {
-      permission_dict.SetBoolean(
+
+  base::DictionaryValue permissions_dict;
+  if (package.permission_states.has_value()) {
+    // Support new format
+    for (const auto& permission : package.permission_states.value()) {
+      base::DictionaryValue permission_state_dict;
+      permission_state_dict.SetBoolKey(kPermissionStateGranted,
+                                       permission.second->granted);
+      permission_state_dict.SetBoolKey(kPermissionStateManaged,
+                                       permission.second->managed);
+      permissions_dict.SetKey(
           base::NumberToString(static_cast<int64_t>(permission.first)),
-          permission.second);
+          std::move(permission_state_dict));
     }
-    package_dict->SetKey(kPermissions, std::move(permission_dict));
+    package_dict->SetKey(kPermissionStates, std::move(permissions_dict));
+  } else if (package.permissions.has_value()) {
+    // Support deprecated format
+    for (const auto& permission : package.permissions.value()) {
+      base::DictionaryValue permission_state_dict;
+      permission_state_dict.SetBoolKey(kPermissionStateGranted,
+                                       permission.second);
+      // Assume deprecated format is not managed.
+      permission_state_dict.SetBoolKey(kPermissionStateManaged, false);
+      permissions_dict.SetKey(
+          base::NumberToString(static_cast<int64_t>(permission.first)),
+          std::move(permission_state_dict));
+    }
+    package_dict->SetKey(kPermissionStates, std::move(permissions_dict));
   } else {
-    // Remove kPermissions from dict if there are no permissions.
-    package_dict->RemoveKey(kPermissions);
+    // Remove kPermissionStates from dict if there are no permissions.
+    package_dict->RemoveKey(kPermissionStates);
   }
 
   // TODO (crbug.com/xxxxx): Remove in M78. This is required to force updating
@@ -1923,7 +1957,8 @@ ArcAppListPrefs::PackageInfo::PackageInfo(
     bool should_sync,
     bool system,
     bool vpn_provider,
-    const base::flat_map<arc::mojom::AppPermission, bool>& permissions)
+    base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
+        permissions)
     : package_name(package_name),
       package_version(package_version),
       last_backup_android_id(last_backup_android_id),
@@ -1931,7 +1966,7 @@ ArcAppListPrefs::PackageInfo::PackageInfo(
       should_sync(should_sync),
       system(system),
       vpn_provider(vpn_provider),
-      permissions(permissions) {}
+      permissions(std::move(permissions)) {}
 
 // Need to add explicit destructor for chromium style checker error:
 // Complex class/struct needs an explicit out-of-line destructor

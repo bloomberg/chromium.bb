@@ -28,6 +28,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "extensions/browser/extension_prefs.h"
@@ -467,10 +468,16 @@ void ExtensionApps::PopulatePermissions(
         setting_val = apps::mojom::TriState::kAsk;
     }
 
+    content_settings::SettingInfo setting_info;
+    host_content_settings_map->GetWebsiteSetting(url, url, type, std::string(),
+                                                 &setting_info);
+
     auto permission = apps::mojom::Permission::New();
     permission->permission_id = static_cast<uint32_t>(type);
     permission->value_type = apps::mojom::PermissionValueType::kTriState;
     permission->value = static_cast<uint32_t>(setting_val);
+    permission->is_managed =
+        setting_info.source == content_settings::SETTING_SOURCE_POLICY;
 
     target->push_back(std::move(permission));
   }

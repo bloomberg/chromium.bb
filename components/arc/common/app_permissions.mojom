@@ -16,6 +16,11 @@ enum AppPermission {
   NOTIFICATIONS   = 3, // Not a manifest permission
 };
 
+struct PermissionState {
+  bool granted;          // If the permission has been granted
+  bool managed;          // If the permission is managed by an enterprise policy
+};
+
 // An interface for Chrome to manipulate app permissions in ARC.
 // Next method ID: 2
 interface AppPermissionsInstance {
