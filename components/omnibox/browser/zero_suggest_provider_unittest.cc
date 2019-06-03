@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "build/build_config.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
@@ -156,7 +155,7 @@ class ZeroSuggestProviderTest : public testing::Test,
   void SetZeroSuggestVariantForAllContexts(const std::string& variant);
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<ZeroSuggestProvider> provider_;
@@ -203,53 +202,10 @@ void ZeroSuggestProviderTest::CreateContextualSuggestFieldTrial() {
 
 void ZeroSuggestProviderTest::SetZeroSuggestVariantForAllContexts(
     const std::string& variant) {
-  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list_->InitAndEnableFeatureWithParameters(
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
       omnibox::kOnFocusSuggestions,
       {{std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) + ":*:*",
         variant}});
-}
-
-TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
-  GURL current_url = GURL("https://example.com/");
-  GURL suggest_url = GURL("https://www.google.com/complete/?q={searchTerms}");
-
-  // Expect NONE by default if URL data collection is inactive.
-  EXPECT_CALL(*client_, IsPersonalizedUrlDataCollectionActive())
-      .WillRepeatedly(testing::Return(false));
-
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  // iOS and Android both default to MOST_VISITED.
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#else
-  // Expect REMOTE_SEND_URL type if client is authenticated and provides URLs.
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::NONE,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#endif
-
-  EXPECT_CALL(*client_, IsAuthenticated())
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*client_, IsPersonalizedUrlDataCollectionActive())
-      .WillRepeatedly(testing::Return(true));
-
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  // iOS and Android both default to MOST_VISITED, even if authenticated.
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#else
-  // Expect REMOTE_SEND_URL type if client is authenticated and provides URLs.
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_SEND_URL,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#endif
-
-  CreatePersonalizedFieldTrial();
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_NO_URL,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-
-  CreateMostVisitedFieldTrial();
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
 }
 
 TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {

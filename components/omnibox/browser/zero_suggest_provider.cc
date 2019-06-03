@@ -180,8 +180,9 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  const std::string current_url =
-      result_type_running_ == REMOTE_SEND_URL ? current_query_ : std::string();
+  const std::string current_url = result_type_running_ == DEFAULT_SERP_FOR_URL
+                                      ? current_query_
+                                      : std::string();
   // Create a request for suggestions, routing completion to
   // OnContextualSuggestionsLoaderAvailable.
   client()
@@ -349,7 +350,7 @@ bool ZeroSuggestProvider::UpdateResults(const std::string& json_data) {
 
   // When running the personalized service, we want to store suggestion
   // responses if non-empty.
-  if (result_type_running_ == REMOTE_NO_URL && !json_data.empty()) {
+  if (result_type_running_ == DEFAULT_SERP && !json_data.empty()) {
     client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
                                     json_data);
 
@@ -563,7 +564,7 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
 }
 
 void ZeroSuggestProvider::MaybeUseCachedSuggestions() {
-  if (result_type_running_ != REMOTE_NO_URL)
+  if (result_type_running_ != DEFAULT_SERP)
     return;
 
   std::string json_data =
@@ -589,6 +590,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
   const bool can_send_current_url = CanSendURL(
       current_url, suggest_url, default_provider, current_page_classification_,
       template_url_service->search_terms_data(), client());
+
   // Collect metrics on eligibility.
   GURL arbitrary_insecure_url(kArbitraryInsecureUrlString);
   ZeroSuggestEligibility eligibility = ZeroSuggestEligibility::ELIGIBLE;
@@ -612,7 +614,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
 
   if (current_page_classification_ ==
       metrics::OmniboxEventProto::CHROMEOS_APP_LIST) {
-    return REMOTE_NO_URL;
+    return DEFAULT_SERP;
   }
 
   if (OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
@@ -621,7 +623,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
                client()->GetPrefs(), client()->IsAuthenticated(),
                template_url_service)
                ? MOST_VISITED
-               : REMOTE_NO_URL;
+               : DEFAULT_SERP;
   }
 
   if (OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial(
@@ -637,5 +639,5 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     return MOST_VISITED;
   }
 
-  return can_send_current_url ? REMOTE_SEND_URL : NONE;
+  return can_send_current_url ? DEFAULT_SERP_FOR_URL : NONE;
 }
