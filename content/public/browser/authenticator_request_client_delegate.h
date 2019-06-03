@@ -63,10 +63,12 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   virtual bool DoesBlockRequestOnFailure(InterestingFailureReason reason);
 
   // Supplies callbacks that the embedder can invoke to initiate certain
-  // actions, namely: initiate BLE pairing process, cancel WebAuthN request, and
-  // dispatch request to connected authenticators.
+  // actions, namely: cancel the request, start the request over, initiate BLE
+  // pairing process, cancel WebAuthN request, and dispatch request to connected
+  // authenticators.
   virtual void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
+      base::Closure start_over_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
       base::RepeatingClosure bluetooth_adapter_power_on_callback,
       device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback);

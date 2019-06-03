@@ -295,6 +295,19 @@ base::string16 AuthenticatorNotRegisteredErrorModel::GetCancelButtonLabel()
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
+bool AuthenticatorNotRegisteredErrorModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorNotRegisteredErrorModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorNotRegisteredErrorModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RETRY);
+}
+
 const gfx::VectorIcon&
 AuthenticatorNotRegisteredErrorModel::GetStepIllustration(
     ImageColorScheme color_scheme) const {
@@ -312,6 +325,10 @@ base::string16 AuthenticatorNotRegisteredErrorModel::GetStepDescription()
       IDS_WEBAUTHN_ERROR_WRONG_KEY_SIGN_DESCRIPTION);
 }
 
+void AuthenticatorNotRegisteredErrorModel::OnAccept() {
+  dialog_model()->StartOver();
+}
+
 // AuthenticatorAlreadyRegisteredErrorModel -----------------------------------
 
 bool AuthenticatorAlreadyRegisteredErrorModel::IsBackButtonVisible() const {
@@ -321,6 +338,19 @@ bool AuthenticatorAlreadyRegisteredErrorModel::IsBackButtonVisible() const {
 base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetCancelButtonLabel()
     const {
   return l10n_util::GetStringUTF16(IDS_CLOSE);
+}
+
+bool AuthenticatorAlreadyRegisteredErrorModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorAlreadyRegisteredErrorModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RETRY);
 }
 
 const gfx::VectorIcon&
@@ -338,6 +368,10 @@ base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetStepDescription()
     const {
   return l10n_util::GetStringUTF16(
       IDS_WEBAUTHN_ERROR_WRONG_KEY_REGISTER_DESCRIPTION);
+}
+
+void AuthenticatorAlreadyRegisteredErrorModel::OnAccept() {
+  dialog_model()->StartOver();
 }
 
 // AuthenticatorInternalUnrecognizedErrorSheetModel

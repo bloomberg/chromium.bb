@@ -86,6 +86,9 @@ ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
     const std::string& relying_party_id)
     : render_frame_host_(render_frame_host),
       relying_party_id_(relying_party_id),
+      transient_dialog_model_holder_(
+          std::make_unique<AuthenticatorRequestDialogModel>(relying_party_id)),
+      weak_dialog_model_(transient_dialog_model_holder_.get()),
       weak_ptr_factory_(this) {}
 
 ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
@@ -159,25 +162,21 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
 
 void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
+    base::Closure start_over_callback,
     device::FidoRequestHandlerBase::RequestCallback request_callback,
     base::RepeatingClosure bluetooth_adapter_power_on_callback,
     device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback) {
   request_callback_ = request_callback;
   cancel_callback_ = std::move(cancel_callback);
+  start_over_callback_ = std::move(start_over_callback);
 
-  transient_dialog_model_holder_ =
-      std::make_unique<AuthenticatorRequestDialogModel>(relying_party_id_);
-  transient_dialog_model_holder_->SetRequestCallback(request_callback);
-  transient_dialog_model_holder_->SetBluetoothAdapterPowerOnCallback(
+  weak_dialog_model_->SetRequestCallback(request_callback);
+  weak_dialog_model_->SetBluetoothAdapterPowerOnCallback(
       bluetooth_adapter_power_on_callback);
-  transient_dialog_model_holder_->SetBlePairingCallback(ble_pairing_callback);
-  transient_dialog_model_holder_->SetBleDevicePairedCallback(
-      base::BindRepeating(
-          &ChromeAuthenticatorRequestDelegate::AddFidoBleDeviceToPairedList,
-          weak_ptr_factory_.GetWeakPtr()));
-
-  weak_dialog_model_ = transient_dialog_model_holder_.get();
-  weak_dialog_model_->AddObserver(this);
+  weak_dialog_model_->SetBlePairingCallback(ble_pairing_callback);
+  weak_dialog_model_->SetBleDevicePairedCallback(base::BindRepeating(
+      &ChromeAuthenticatorRequestDelegate::AddFidoBleDeviceToPairedList,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
@@ -341,18 +340,17 @@ bool ChromeAuthenticatorRequestDelegate::ShouldDisablePlatformAuthenticators() {
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
 #if !defined(OS_ANDROID)
-  if (disable_ui_) {
+  if (disable_ui_ || !transient_dialog_model_holder_) {
     return;
   }
 
+  weak_dialog_model_->AddObserver(this);
   weak_dialog_model_->set_incognito_mode(
       Profile::FromBrowserContext(browser_context())->IsIncognitoProfile());
 
   weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed(),
                                 GetPreviouslyPairedFidoBleDeviceIds());
 
-  DCHECK(transient_dialog_model_holder_)
-      << "RegisterActionCallbacks() must be called first";
   ShowAuthenticatorRequestDialog(
       content::WebContents::FromRenderFrameHost(render_frame_host()),
       std::move(transient_dialog_model_holder_));
@@ -446,6 +444,11 @@ void ChromeAuthenticatorRequestDelegate::SetMightCreateResidentCredential(
     return;
   }
   weak_dialog_model_->set_might_create_resident_credential(v);
+}
+
+void ChromeAuthenticatorRequestDelegate::OnStartOver() {
+  DCHECK(start_over_callback_);
+  start_over_callback_.Run();
 }
 
 void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {

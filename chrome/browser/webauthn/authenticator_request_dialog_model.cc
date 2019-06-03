@@ -119,6 +119,16 @@ void AuthenticatorRequestDialogModel::StartFlow(
   StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
 }
 
+void AuthenticatorRequestDialogModel::StartOver() {
+  for (auto& observer : observers_)
+    observer.OnStartOver();
+  // Set the current step directly to avoid triggering observers which may
+  // destroy the UI.
+  current_step_ = Step::kNotStarted;
+  has_attempted_pin_entry_ = false;
+  StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
+}
+
 void AuthenticatorRequestDialogModel::
     StartGuidedFlowForMostLikelyTransportOrShowTransportSelection() {
   DCHECK(current_step() == Step::kWelcomeScreen ||

@@ -38,8 +38,6 @@
 #include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/fido/attestation_statement.h"
-#include "device/fido/authenticator_selection_criteria.h"
-#include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
@@ -522,6 +520,18 @@ base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags() {
   return transports;
 }
 
+// Returns the transports to be used for a request made by |caller_origin|.
+base::flat_set<device::FidoTransportProtocol> GetTransports(
+    url::Origin caller_origin,
+    base::flat_set<device::FidoTransportProtocol> available_transports) {
+  // U2F requests proxied from the cryptotoken extension are limited to USB
+  // devices.
+  return OriginIsCryptoTokenExtension(caller_origin)
+             ? base::flat_set<device::FidoTransportProtocol>(
+                   {device::FidoTransportProtocol::kUsbHumanInterfaceDevice})
+             : available_transports;
+}
+
 }  // namespace
 
 AuthenticatorCommon::AuthenticatorCommon(
@@ -549,6 +559,71 @@ void AuthenticatorCommon::UpdateRequestDelegate() {
   request_delegate_ =
       GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
           render_frame_host_, relying_party_id_);
+}
+
+void AuthenticatorCommon::StartMakeCredentialRequest() {
+  request_ = std::make_unique<device::MakeCredentialRequestHandler>(
+      connector_,
+      AuthenticatorEnvironmentImpl::GetInstance()->GetFactory(
+          render_frame_host_),
+      GetTransports(caller_origin_, transports_),
+      *ctap_make_credential_request_, *authenticator_selection_criteria_,
+      base::BindOnce(&AuthenticatorCommon::OnRegisterResponse,
+                     weak_factory_.GetWeakPtr()));
+
+  request_delegate_->RegisterActionCallbacks(
+      base::BindOnce(&AuthenticatorCommon::OnCancelFromUI,
+                     weak_factory_.GetWeakPtr()) /* cancel_callback */,
+      base::BindRepeating(&AuthenticatorCommon::StartMakeCredentialRequest,
+                          weak_factory_.GetWeakPtr()) /* start_over_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
+          request_->GetWeakPtr()) /* request_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::PowerOnBluetoothAdapter,
+          request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::InitiatePairingWithDevice,
+          request_->GetWeakPtr()) /* ble_pairing_callback */);
+  if (authenticator_selection_criteria_->require_resident_key()) {
+    request_delegate_->SetMightCreateResidentCredential(true);
+  }
+  request_->set_observer(request_delegate_.get());
+
+  request_->SetPlatformAuthenticatorOrMarkUnavailable(
+      CreatePlatformAuthenticatorIfAvailable());
+}
+
+void AuthenticatorCommon::StartGetAssertionRequest() {
+  auto opt_platform_authenticator_info =
+      CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
+          *ctap_get_assertion_request_);
+  request_ = std::make_unique<device::GetAssertionRequestHandler>(
+      connector_,
+      AuthenticatorEnvironmentImpl::GetInstance()->GetFactory(
+          render_frame_host_),
+      GetTransports(caller_origin_, transports_), *ctap_get_assertion_request_,
+      base::BindOnce(&AuthenticatorCommon::OnSignResponse,
+                     weak_factory_.GetWeakPtr()));
+
+  request_delegate_->RegisterActionCallbacks(
+      base::BindOnce(&AuthenticatorCommon::OnCancelFromUI,
+                     weak_factory_.GetWeakPtr()) /* cancel_callback */,
+      base::BindRepeating(&AuthenticatorCommon::StartGetAssertionRequest,
+                          weak_factory_.GetWeakPtr()) /* start_over_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
+          request_->GetWeakPtr()) /* request_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::PowerOnBluetoothAdapter,
+          request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::InitiatePairingWithDevice,
+          request_->GetWeakPtr()) /* ble_pairing_callback*/);
+  request_->set_observer(request_delegate_.get());
+
+  request_->SetPlatformAuthenticatorOrMarkUnavailable(
+      std::move(opt_platform_authenticator_info));
 }
 
 bool AuthenticatorCommon::IsFocused() const {
@@ -645,9 +720,8 @@ void AuthenticatorCommon::MakeCredential(
     return;
   }
 
-  const bool resident_key =
-      options->authenticator_selection &&
-      options->authenticator_selection->require_resident_key;
+  bool resident_key = options->authenticator_selection &&
+                      options->authenticator_selection->require_resident_key;
   if (resident_key &&
       (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
        !request_delegate_->SupportsResidentKeys())) {
@@ -658,7 +732,7 @@ void AuthenticatorCommon::MakeCredential(
     return;
   }
 
-  auto authenticator_selection_criteria =
+  authenticator_selection_criteria_ =
       options->authenticator_selection
           ? mojo::ConvertTo<device::AuthenticatorSelectionCriteria>(
                 options->authenticator_selection)
@@ -679,7 +753,7 @@ void AuthenticatorCommon::MakeCredential(
       // UV_REQUIRED only makes sense if UV is required overall.
       (options->protection_policy ==
            blink::mojom::ProtectionPolicy::UV_REQUIRED &&
-       authenticator_selection_criteria.user_verification_requirement() !=
+       authenticator_selection_criteria_->user_verification_requirement() !=
            device::UserVerificationRequirement::kRequired)) {
     InvokeCallbackAndCleanup(
         std::move(callback),
@@ -727,18 +801,11 @@ void AuthenticatorCommon::MakeCredential(
       "WebAuthentication.MakeCredentialExcludeCredentialsCount",
       options->exclude_credentials.size());
 
-  // U2F requests proxied from the cryptotoken extension are limited to USB
-  // devices.
-  const auto transports =
-      OriginIsCryptoTokenExtension(caller_origin_)
-          ? base::flat_set<device::FidoTransportProtocol>(
-                {device::FidoTransportProtocol::kUsbHumanInterfaceDevice})
-          : transports_;
-
-  auto ctap_request = CreateCtapMakeCredentialRequest(
+  ctap_make_credential_request_ = CreateCtapMakeCredentialRequest(
       client_data_json_, options, browser_context()->IsOffTheRecord());
   // On dual protocol CTAP2/U2F devices, force credential creation over U2F.
-  ctap_request.is_u2f_only = OriginIsCryptoTokenExtension(caller_origin_);
+  ctap_make_credential_request_->is_u2f_only =
+      OriginIsCryptoTokenExtension(caller_origin_);
 
   // Compute the effective attestation conveyance preference and set
   // |attestation_requested_| for showing the attestation consent prompt later.
@@ -749,7 +816,7 @@ void AuthenticatorCommon::MakeCredential(
           relying_party_id_)) {
     attestation = ::device::AttestationConveyancePreference::DIRECT;
   }
-  ctap_request.attestation_preference = attestation;
+  ctap_make_credential_request_->attestation_preference = attestation;
   attestation_requested_ =
       attestation != ::device::AttestationConveyancePreference::NONE;
 
@@ -758,44 +825,17 @@ void AuthenticatorCommon::MakeCredential(
     case blink::mojom::ProtectionPolicy::NONE:
       break;
     case blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED:
-      ctap_request.cred_protect =
+      ctap_make_credential_request_->cred_protect =
           std::make_pair(device::CredProtect::kUVOrCredIDRequired,
                          options->enforce_protection_policy);
       break;
     case blink::mojom::ProtectionPolicy::UV_REQUIRED:
-      ctap_request.cred_protect = std::make_pair(
+      ctap_make_credential_request_->cred_protect = std::make_pair(
           device::CredProtect::kUVRequired, options->enforce_protection_policy);
       break;
   }
 
-  request_ = std::make_unique<device::MakeCredentialRequestHandler>(
-      connector_,
-      AuthenticatorEnvironmentImpl::GetInstance()->GetFactory(
-          render_frame_host_),
-      transports, std::move(ctap_request),
-      std::move(authenticator_selection_criteria),
-      base::BindOnce(&AuthenticatorCommon::OnRegisterResponse,
-                     weak_factory_.GetWeakPtr()));
-
-  request_delegate_->RegisterActionCallbacks(
-      base::BindOnce(&AuthenticatorCommon::OnCancelFromUI,
-                     weak_factory_.GetWeakPtr()) /* cancel_callback */,
-      base::BindRepeating(
-          &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
-          request_->GetWeakPtr()) /* request_callback */,
-      base::BindRepeating(
-          &device::FidoRequestHandlerBase::PowerOnBluetoothAdapter,
-          request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */,
-      base::BindRepeating(
-          &device::FidoRequestHandlerBase::InitiatePairingWithDevice,
-          request_->GetWeakPtr()) /* ble_pairing_callback */);
-  if (resident_key) {
-    request_delegate_->SetMightCreateResidentCredential(true);
-  }
-  request_->set_observer(request_delegate_.get());
-
-  request_->SetPlatformAuthenticatorOrMarkUnavailable(
-      CreatePlatformAuthenticatorIfAvailable());
+  StartMakeCredentialRequest();
 }
 
 // mojom:Authenticator
@@ -887,14 +927,6 @@ void AuthenticatorCommon::GetAssertion(
     }
   }
 
-  // U2F requests proxied from the cryptotoken extension are limited to USB
-  // devices.
-  const auto transports =
-      OriginIsCryptoTokenExtension(caller_origin_)
-          ? base::flat_set<device::FidoTransportProtocol>(
-                {device::FidoTransportProtocol::kUsbHumanInterfaceDevice})
-          : transports_;
-
   UMA_HISTOGRAM_COUNTS_100(
       "WebAuthentication.CredentialRequestAllowCredentialsCount",
       options->allow_credentials.size());
@@ -909,36 +941,11 @@ void AuthenticatorCommon::GetAssertion(
   if (!connector_)
     connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
 
-  auto ctap_request = CreateCtapGetAssertionRequest(
+  ctap_get_assertion_request_ = CreateCtapGetAssertionRequest(
       client_data_json_, std::move(options), app_id_,
       browser_context()->IsOffTheRecord());
-  auto opt_platform_authenticator_info =
-      CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
-          ctap_request);
-  request_ = std::make_unique<device::GetAssertionRequestHandler>(
-      connector_,
-      AuthenticatorEnvironmentImpl::GetInstance()->GetFactory(
-          render_frame_host_),
-      transports, std::move(ctap_request),
-      base::BindOnce(&AuthenticatorCommon::OnSignResponse,
-                     weak_factory_.GetWeakPtr()));
 
-  request_delegate_->RegisterActionCallbacks(
-      base::BindOnce(&AuthenticatorCommon::OnCancelFromUI,
-                     weak_factory_.GetWeakPtr()) /* cancel_callback */,
-      base::BindRepeating(
-          &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
-          request_->GetWeakPtr()) /* request_callback */,
-      base::BindRepeating(
-          &device::FidoRequestHandlerBase::PowerOnBluetoothAdapter,
-          request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */,
-      base::BindRepeating(
-          &device::FidoRequestHandlerBase::InitiatePairingWithDevice,
-          request_->GetWeakPtr()) /* ble_pairing_callback*/);
-  request_->set_observer(request_delegate_.get());
-
-  request_->SetPlatformAuthenticatorOrMarkUnavailable(
-      std::move(opt_platform_authenticator_info));
+  StartGetAssertionRequest();
 }
 
 void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(

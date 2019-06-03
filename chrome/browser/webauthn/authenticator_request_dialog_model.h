@@ -110,6 +110,9 @@ class AuthenticatorRequestDialogModel {
   // appropriate for the current step.
   class Observer {
    public:
+    // Called when the user clicks "Try Again" to restart the user flow.
+    virtual void OnStartOver() {}
+
     // Called just before the model is destructed.
     virtual void OnModelDestroyed() = 0;
 
@@ -176,6 +179,9 @@ class AuthenticatorRequestDialogModel {
       TransportAvailabilityInfo transport_availability,
       base::Optional<device::FidoTransportProtocol> last_used_transport,
       const base::ListValue* previously_paired_bluetooth_device_list);
+
+  // Restarts the UX flow.
+  void StartOver();
 
   // Starts the UX flow. Tries to figure out the most likely transport to be
   // used, and starts the guided flow for that transport; or shows the manual

@@ -9739,6 +9739,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_ALLOW_ATTESTATION" desc="Label on button to allow a website to see information that identifies the user's Security Key, such as make and model number. The 'make' of a device is the brand name of the manufacturer, e.g. Yubikey is a make of Security Key. The 'model' of a device is the specific product, e.g. Yubikey Neo is a model of Security Key.">
         Allow
       </message>
+      <message name="IDS_WEBAUTHN_RETRY" desc="Button text. The user clicks this to retry the authentication flow after an error happened, e.g. to try with a different Security Key.">
+        Try again
+      </message>
    </if>
    <if expr="is_macosx">
      <message name="IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_TITLE" desc="Title of the dialog shown when the user attempts to set up sign-in with Touch ID on a website in incognito mode." meaning="'Touch ID' is the fingerprint recognition feature in macOS. Try to refer Apple support documentation in the target language for the appropriate product name translation.">

@@ -75,6 +75,7 @@ class ChromeAuthenticatorRequestDelegate
   bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override;
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
+      base::Closure start_over_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
       base::RepeatingClosure bluetooth_adapter_power_on_callback,
       device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback)
@@ -117,6 +118,7 @@ class ChromeAuthenticatorRequestDelegate
   void SetMightCreateResidentCredential(bool v) override;
 
   // AuthenticatorRequestDialogModel::Observer:
+  void OnStartOver() override;
   void OnModelDestroyed() override;
   void OnCancelRequest() override;
 
@@ -126,7 +128,6 @@ class ChromeAuthenticatorRequestDelegate
 
   content::RenderFrameHost* const render_frame_host_;
   const std::string relying_party_id_;
-  AuthenticatorRequestDialogModel* weak_dialog_model_ = nullptr;
   // Holds ownership of AuthenticatorRequestDialogModel until
   // OnTransportAvailabilityEnumerated() is invoked, at which point the
   // ownership of the model is transferred to AuthenticatorRequestDialogView and
@@ -134,7 +135,9 @@ class ChromeAuthenticatorRequestDelegate
   // |weak_dialog_model_|.
   std::unique_ptr<AuthenticatorRequestDialogModel>
       transient_dialog_model_holder_;
+  AuthenticatorRequestDialogModel* weak_dialog_model_;
   base::OnceClosure cancel_callback_;
+  base::Closure start_over_callback_;
   device::FidoRequestHandlerBase::RequestCallback request_callback_;
 
   // If in the TransportAvailabilityInfo reported by the request handler,

@@ -155,10 +155,14 @@ class AuthenticatorNotRegisteredErrorModel
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
   const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  void OnAccept() override;
 };
 
 class AuthenticatorAlreadyRegisteredErrorModel
@@ -170,10 +174,14 @@ class AuthenticatorAlreadyRegisteredErrorModel
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
   const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  void OnAccept() override;
 };
 
 class AuthenticatorInternalUnrecognizedErrorSheetModel

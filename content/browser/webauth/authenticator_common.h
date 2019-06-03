@@ -21,6 +21,9 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/authenticator_selection_criteria.h"
+#include "device/fido/ctap_get_assertion_request.h"
+#include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -33,7 +36,6 @@ class OneShotTimer;
 namespace device {
 
 struct PlatformAuthenticatorInfo;
-struct CtapGetAssertionRequest;
 class FidoRequestHandlerBase;
 
 enum class FidoReturnCode : uint8_t;
@@ -114,6 +116,14 @@ class CONTENT_EXPORT AuthenticatorCommon {
     kDoCheck,
     kDontCheck,
   };
+
+  // Replaces the current |request_| with a |MakeCredentialRequestHandler|,
+  // effectively restarting the request.
+  void StartMakeCredentialRequest();
+
+  // Replaces the current |request_| with a |GetAssertionRequestHandler|,
+  // effectively restarting the request.
+  void StartGetAssertionRequest();
 
   bool IsFocused() const;
 
@@ -200,7 +210,12 @@ class CONTENT_EXPORT AuthenticatorCommon {
   url::Origin caller_origin_;
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;
+  base::Optional<device::AuthenticatorSelectionCriteria>
+      authenticator_selection_criteria_;
   base::Optional<std::string> app_id_;
+  base::Optional<device::CtapMakeCredentialRequest>
+      ctap_make_credential_request_;
+  base::Optional<device::CtapGetAssertionRequest> ctap_get_assertion_request_;
   // awaiting_attestation_response_ is true if the embedder has been queried
   // about an attestsation decision and the response is still pending.
   bool awaiting_attestation_response_ = false;
