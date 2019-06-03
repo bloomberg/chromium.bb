@@ -20,7 +20,7 @@ import mock
 from chromite.lib import auto_updater
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import dev_server_wrapper
+from chromite.lib import nebraska_wrapper
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
 
@@ -53,14 +53,14 @@ class ChromiumOSBaseUpdaterMock(partial_mock.PartialCmdMock):
 class ChromiumOSTransferMock(partial_mock.PartialCmdMock):
   """Mock out all transfer functions in ChromiumOSUpdater."""
   TARGET = 'chromite.lib.auto_updater.ChromiumOSUpdater'
-  ATTRS = ('TransferDevServerPackage', 'TransferRootfsUpdate',
+  ATTRS = ('TransferUpdateUtilsPackage', 'TransferRootfsUpdate',
            'TransferStatefulUpdate')
 
   def __init__(self):
     partial_mock.PartialCmdMock.__init__(self)
 
-  def TransferDevServerPackage(self, _inst, *_args, **_kwargs):
-    """Mock out TransferDevServerPackage."""
+  def TransferUpdateUtilsPackage(self, _inst, *_args, **_kwargs):
+    """Mock out TransferUpdateUtilsPackage."""
 
   def TransferRootfsUpdate(self, _inst, *_args, **_kwargs):
     """Mock out TransferRootfsUpdate."""
@@ -72,7 +72,7 @@ class ChromiumOSTransferMock(partial_mock.PartialCmdMock):
 class ChromiumOSPreCheckMock(partial_mock.PartialCmdMock):
   """Mock out Precheck function in ChromiumOSUpdater."""
   TARGET = 'chromite.lib.auto_updater.ChromiumOSUpdater'
-  ATTRS = ('CheckRestoreStateful', '_CheckDevserverCanRun')
+  ATTRS = ('CheckRestoreStateful', '_CheckNebraskaCanRun')
 
   def __init__(self):
     partial_mock.PartialCmdMock.__init__(self)
@@ -80,8 +80,8 @@ class ChromiumOSPreCheckMock(partial_mock.PartialCmdMock):
   def CheckRestoreStateful(self, _inst, *_args, **_kwargs):
     """Mock out CheckRestoreStateful."""
 
-  def _CheckDevserverCanRun(self, _inst, *_args, **_kwargs):
-    """Mock out _CheckDevserverCanRun."""
+  def _CheckNebraskaCanRun(self, _inst, *_args, **_kwargs):
+    """Mock out _CheckNebraskaCanRun."""
 
 
 class ChromiumOSUpdaterBaseTest(cros_test_lib.MockTestCase):
@@ -103,7 +103,7 @@ class ChromiumOSUpdateTransferTest(ChromiumOSUpdaterBaseTest):
   def testTransferForRootfs(self):
     """Test transfer functions for rootfs update.
 
-    When rootfs update is enabled, Devserver and rootfs update payload are
+    When rootfs update is enabled, update-utils and rootfs update payload are
     transferred. Stateful update payload is not.
     """
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
@@ -111,7 +111,7 @@ class ChromiumOSUpdateTransferTest(ChromiumOSUpdaterBaseTest):
           device, None, self.payload_dir, do_stateful_update=False)
       CrOS_AU.RunUpdate()
       self.assertTrue(
-          self.transfer_mock.patched['TransferDevServerPackage'].called)
+          self.transfer_mock.patched['TransferUpdateUtilsPackage'].called)
       self.assertTrue(
           self.transfer_mock.patched['TransferRootfsUpdate'].called)
       self.assertFalse(
@@ -120,31 +120,19 @@ class ChromiumOSUpdateTransferTest(ChromiumOSUpdaterBaseTest):
   def testTransferForStateful(self):
     """Test Transfer functions' code path for stateful update.
 
-    When stateful update is enabled, Devserver and stateful update payload are
-    transferred. Rootfs update payload is not.
+    When stateful update is enabled, update-utils and stateful update payload
+    are transferred. Rootfs update payload is not.
     """
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
           device, None, self.payload_dir, do_rootfs_update=False)
       CrOS_AU.RunUpdate()
       self.assertTrue(
-          self.transfer_mock.patched['TransferDevServerPackage'].called)
+          self.transfer_mock.patched['TransferUpdateUtilsPackage'].called)
       self.assertFalse(
           self.transfer_mock.patched['TransferRootfsUpdate'].called)
       self.assertTrue(
           self.transfer_mock.patched['TransferStatefulUpdate'].called)
-
-  def testCopyPythonFilesToTemp(self):
-    """Test copy python files to temp directory."""
-    with mock.patch('shutil.copytree'), \
-        mock.patch('shutil.ignore_patterns') as m, \
-        remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self.payload_dir, do_rootfs_update=False)
-      # pylint: disable=protected-access
-      CrOS_AU._CopyPythonFilesToTemp('dir_src', 'dir_temp',
-                                     extra_ignore_patterns=['bad_thing'])
-      m.assert_called_with('*.pyc', 'tmp*', '.*', 'static', '*~', 'bad_thing')
 
 
 class ChromiumOSUpdatePreCheckTest(ChromiumOSUpdaterBaseTest):
@@ -164,8 +152,8 @@ class ChromiumOSUpdatePreCheckTest(ChromiumOSUpdaterBaseTest):
       CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self.payload_dir)
       self.PatchObject(cros_build_lib, 'BooleanPrompt', return_value=False)
       self.PatchObject(auto_updater.ChromiumOSUpdater,
-                       '_CheckDevserverCanRun',
-                       side_effect=auto_updater.DevserverCannotStartError())
+                       '_CheckNebraskaCanRun',
+                       side_effect=nebraska_wrapper.NebraskaStartupError())
       self.assertRaises(auto_updater.ChromiumOSUpdateError, CrOS_AU.RunUpdate)
 
   def testNoPomptWithYes(self):
@@ -271,13 +259,13 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
     """Prepare work for test errors in rootfs update."""
     self.PatchObject(auto_updater.ChromiumOSUpdater, 'SetupRootfsUpdate')
     self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetRootDev')
-    self.PatchObject(dev_server_wrapper.DevServerWrapper, 'TailLog')
+    self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'PrintLog')
     self.PatchObject(remote_access.RemoteDevice, 'CopyFromDevice')
 
   def testRestoreStatefulError(self):
     """Test ChromiumOSUpdater.RestoreStateful with raising exception.
 
-    Devserver still cannot run after restoring stateful partition will lead
+    Nebraska still cannot run after restoring stateful partition will lead
     to ChromiumOSUpdateError.
     """
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
@@ -292,10 +280,10 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        'PostCheckStatefulUpdate')
       self.PatchObject(auto_updater.ChromiumOSUpdater,
-                       '_IfDevserverPackageInstalled')
+                       '_IsUpdateUtilsPackageInstalled')
       self.PatchObject(auto_updater.ChromiumOSUpdater,
-                       '_CheckDevserverCanRun',
-                       side_effect=auto_updater.DevserverCannotStartError())
+                       '_CheckNebraskaCanRun',
+                       side_effect=nebraska_wrapper.NebraskaStartupError())
       self.assertRaises(auto_updater.ChromiumOSUpdateError, CrOS_AU.RunUpdate)
 
   def testSetupRootfsUpdateError(self):
@@ -311,16 +299,16 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
                        return_value=('cannot_update', ))
       self.assertRaises(auto_updater.RootfsUpdateError, CrOS_AU.RunUpdate)
 
-  def testRootfsUpdateDevServerError(self):
+  def testRootfsUpdateNebraskaError(self):
     """Test ChromiumOSUpdater.UpdateRootfs with raising exception.
 
-    RootfsUpdateError is raised if devserver cannot start.
+    RootfsUpdateError is raised if nebraska cannot start.
     """
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self.payload_dir)
       self.prepareRootfsUpdate()
-      self.PatchObject(dev_server_wrapper.RemoteDevServerWrapper, 'Start',
-                       side_effect=dev_server_wrapper.DevServerException())
+      self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start',
+                       side_effect=nebraska_wrapper.Error())
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        'RevertBootPartition')
       with mock.patch('os.path.join', return_value=''):
@@ -335,8 +323,8 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self.payload_dir)
       self.prepareRootfsUpdate()
-      self.PatchObject(dev_server_wrapper.DevServerWrapper, 'Start')
-      self.PatchObject(dev_server_wrapper.DevServerWrapper, 'GetDevServerURL')
+      self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start')
+      self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'GetURL')
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
                        side_effect=cros_build_lib.RunCommandError(
                            'fail', CommandErrorResult()))
@@ -354,8 +342,8 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self.payload_dir)
       self.prepareRootfsUpdate()
-      self.PatchObject(dev_server_wrapper.DevServerWrapper, 'Start')
-      self.PatchObject(dev_server_wrapper.DevServerWrapper, 'GetDevServerURL')
+      self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start')
+      self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'GetURL')
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetUpdateStatus',
                        side_effect=ValueError('Cannot get update status'))
@@ -434,21 +422,21 @@ class CommandErrorResult(object):
 class ChromiumOSUpdaterRetryTest(ChromiumOSErrorTest):
   """Test whether ChromiumOSUpdater's transfer functions are retried."""
 
-  def testErrorTriggerRetryTransferDevServer(self):
+  def testErrorTriggerRetryTransferUpdateUtils(self):
     """Test ChromiumOSUpdate is retried properly."""
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(device, 'fake/image',
                                                self.payload_dir)
       auto_updater.DELAY_SEC_FOR_RETRY = 1
       auto_updater.MAX_RETRY = 1
-      transfer_devserver = self.PatchObject(
-          auto_updater.ChromiumOSUpdater, '_TransferDevServerPackage',
+      transfer_update_utils = self.PatchObject(
+          auto_updater.ChromiumOSUpdater, '_TransferUpdateUtilsPackage',
           side_effect=cros_build_lib.RunCommandError(
               'fail', CommandErrorResult()))
 
       self.assertRaises(cros_build_lib.RunCommandError,
-                        CrOS_AU.TransferDevServerPackage)
-      self.assertEqual(transfer_devserver.call_count,
+                        CrOS_AU.TransferUpdateUtilsPackage)
+      self.assertEqual(transfer_update_utils.call_count,
                        auto_updater.MAX_RETRY + 1)
 
   def testErrorTriggerRetryTransferStateful(self):

@@ -332,7 +332,6 @@ class FileImager(USBImager):
 
 class RemoteDeviceUpdater(object):
   """Performs update on a remote device."""
-  DEVSERVER_FILENAME = 'devserver.py'
   STATEFUL_UPDATE_BIN = '/usr/bin/stateful_update'
   UPDATE_ENGINE_BIN = 'update_engine_client'
   # Root working directory on the device. This directory is in the
@@ -432,6 +431,9 @@ class RemoteDeviceUpdater(object):
       logging.info('Board is %s', self.board)
 
       # Translate the xbuddy path to get the exact image to use.
+
+      # TODO(crbug.com/872441): Once devserver code has been moved to chromite,
+      # use xbuddy library directly instead of the devserver_wrapper.
       translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
           self.image, self.board, static_dir=DEVSERVER_STATIC_DIR)
       image_path = ds_wrapper.TranslatedPathToLocalPath(
@@ -442,12 +444,12 @@ class RemoteDeviceUpdater(object):
                    image_path, payload_dir)
 
     # Generate rootfs and stateful update payloads if they do not exist.
-    payload_path = os.path.join(payload_dir, ds_wrapper.ROOTFS_FILENAME)
+    payload_path = os.path.join(payload_dir, auto_updater.ROOTFS_FILENAME)
     if not os.path.exists(payload_path):
       paygen_payload_lib.GenerateUpdatePayload(
           image_path, payload_path, src_image=self.src_image_to_delta)
     if not os.path.exists(os.path.join(payload_dir,
-                                       ds_wrapper.STATEFUL_FILENAME)):
+                                       auto_updater.STATEFUL_FILENAME)):
       paygen_stateful_payload_lib.GenerateStatefulPayload(image_path,
                                                           payload_dir)
     return payload_dir

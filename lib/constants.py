@@ -1272,10 +1272,6 @@ SELF_DESTRUCTED_BUILD = 'self_destructed_build'
 # Metadata key to indicate whether a build is self-destructed with success.
 SELF_DESTRUCTED_WITH_SUCCESS_BUILD = 'self_destructed_with_success_build'
 
-# The path to update_payload in the update_engine.
-UPDATE_ENGINE_SCRIPTS_PATH = os.path.join(SOURCE_ROOT, 'src', 'aosp', 'system',
-                                          'update_engine', 'scripts')
-
 # Chroot snapshot names
 CHROOT_SNAPSHOT_CLEAN = 'clean-chroot'
 
