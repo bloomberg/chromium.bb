@@ -1924,7 +1924,7 @@ const CSSValue* ColorScheme::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueID::kAuto)
+  if (range.Peek().Id() == CSSValueID::kNormal)
     return css_property_parser_helpers::ConsumeIdent(range);
   if (range.Peek().Id() == CSSValueID::kOnly) {
     // Handle 'only light'
@@ -1939,10 +1939,10 @@ const CSSValue* ColorScheme::ParseSingleValue(
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();
   do {
     CSSValueID id = range.Peek().Id();
-    // 'auto' is handled above, and 'none' is reserved for future use. 'revert'
-    // is not yet implemented as a keyword, but still skip it for compat and
-    // interop.
-    if (id == CSSValueID::kAuto || id == CSSValueID::kNone ||
+    // 'normal' is handled above, and 'none' is reserved for future use.
+    // 'revert' is not yet implemented as a keyword, but still skip it for
+    // compat and interop.
+    if (id == CSSValueID::kNormal || id == CSSValueID::kNone ||
         id == CSSValueID::kRevert || id == CSSValueID::kDefault) {
       return nullptr;
     }
@@ -1975,7 +1975,7 @@ const CSSValue* ColorScheme::CSSValueFromComputedStyleInternal(
     Node*,
     bool allow_visited_style) const {
   if (style.ColorScheme().IsEmpty())
-    return CSSIdentifierValue::Create(CSSValueID::kAuto);
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   for (auto ident : style.ColorScheme()) {
     list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(ident));
@@ -1984,7 +1984,7 @@ const CSSValue* ColorScheme::CSSValueFromComputedStyleInternal(
 }
 
 const CSSValue* ColorScheme::InitialValue() const {
-  return CSSIdentifierValue::Create(CSSValueID::kAuto);
+  return CSSIdentifierValue::Create(CSSValueID::kNormal);
 }
 
 void ColorScheme::ApplyInitial(StyleResolverState& state) const {
@@ -2000,7 +2000,7 @@ void ColorScheme::ApplyInherit(StyleResolverState& state) const {
 void ColorScheme::ApplyValue(StyleResolverState& state,
                              const CSSValue& value) const {
   if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    DCHECK(identifier_value->GetValueID() == CSSValueID::kAuto);
+    DCHECK(identifier_value->GetValueID() == CSSValueID::kNormal);
     state.Style()->SetColorScheme(Vector<AtomicString>());
     state.Style()->SetDarkColorScheme(false);
   } else if (const auto* scheme_list = DynamicTo<CSSValueList>(value)) {

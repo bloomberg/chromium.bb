@@ -164,7 +164,7 @@ TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_RemoveContentAttribute) {
   GetDocument().getElementById("meta")->removeAttribute(
       html_names::kContentAttr);
 
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_RemoveNameAttribute) {
@@ -176,17 +176,17 @@ TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_RemoveNameAttribute) {
 
   GetDocument().getElementById("meta")->removeAttribute(html_names::kNameAttr);
 
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeParsing) {
   GetDocument().head()->AppendChild(CreateColorSchemeMeta(""));
 
   SetColorScheme("");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 
-  SetColorScheme("auto");
-  ExpectComputedColorScheme("auto");
+  SetColorScheme("normal");
+  ExpectComputedColorScheme("normal");
 
   SetColorScheme("light");
   ExpectComputedColorScheme("light");
@@ -201,19 +201,19 @@ TEST_F(HTMLMetaElementTest, ColorSchemeParsing) {
   ExpectComputedColorScheme("BLUE light");
 
   SetColorScheme("light,dark");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 
   SetColorScheme("light,");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 
   SetColorScheme(",light");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 
   SetColorScheme(", light");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 
   SetColorScheme("light, dark");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeForcedDarkeningAndMQ) {
