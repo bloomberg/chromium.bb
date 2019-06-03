@@ -438,7 +438,7 @@ void av1_highbd_quantize_b_facade(const tran_low_t *coeff_ptr,
           }
           break;
         case 1:
-          aom_highbd_quantize_b_32x32_adaptive_c(
+          aom_highbd_quantize_b_32x32_adaptive(
               coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX, p->quant_QTX,
               p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr, p->dequant_QTX,
               eob_ptr, sc->scan, sc->iscan);
