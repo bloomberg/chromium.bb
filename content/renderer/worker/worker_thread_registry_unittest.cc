@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "content/public/renderer/worker_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +34,13 @@ class MockObserver : public WorkerThread::Observer {
   WorkerThreadRegistry* runner_;
 };
 
-TEST_F(WorkerThreadRegistryTest, BasicObservingAndWorkerId) {
+// TODO(https://crbug.com/969562): Fix flaky failure on Fuschia.
+#if defined(OS_FUCHSIA)
+#define MAYBE_BasicObservingAndWorkerId DISABLED_BasicObservingAndWorkerId
+#else
+#define MAYBE_BasicObservingAndWorkerId BasicObservingAndWorkerId
+#endif
+TEST_F(WorkerThreadRegistryTest, MAYBE_BasicObservingAndWorkerId) {
   ASSERT_EQ(0, WorkerThread::GetCurrentId());
   MockObserver o;
   EXPECT_CALL(o, WillStopCurrentWorkerThread()).Times(1);
@@ -53,7 +60,13 @@ TEST_F(WorkerThreadRegistryTest, CanRemoveSelfDuringNotification) {
   FakeStop();
 }
 
-TEST_F(WorkerThreadRegistryTest, TaskRunnerRemovedCorrectly) {
+// TODO(https://crbug.com/969562): Fix flaky failure on Fuschia.
+#if defined(OS_FUCHSIA)
+#define MAYBE_TaskRunnerRemovedCorrectly DISABLED_TaskRunnerRemovedCorrectly
+#else
+#define MAYBE_TaskRunnerRemovedCorrectly TaskRunnerRemovedCorrectly
+#endif
+TEST_F(WorkerThreadRegistryTest, MAYBE_TaskRunnerRemovedCorrectly) {
   ASSERT_EQ(0, WorkerThread::GetCurrentId());
   MockObserver o;
   FakeStart();
