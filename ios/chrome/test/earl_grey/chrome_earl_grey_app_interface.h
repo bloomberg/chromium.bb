@@ -187,6 +187,12 @@
 // the real one.
 + (void)tearDownFakeSyncServer;
 
+// Verifies the sessions hierarchy on the Sync FakeServer. |specs| is
+// the collection of URLs that are to be expected for a single window. On
+// failure, returns a NSError describing the failure. See the
+// SessionsHierarchy class for documentation regarding the verification.
++ (NSError*)verifySessionsOnSyncServerWithSpecs:(NSArray<NSString*>*)specs;
+
 #pragma mark - JavaScript Utilities (EG2)
 
 // Executes JavaScript on current WebState, and waits for either the completion

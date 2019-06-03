@@ -146,6 +146,14 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // the real one.
 - (void)tearDownFakeSyncServer;
 
+// Verifies the sessions hierarchy on the Sync FakeServer. |URLs| is
+// the collection of URLs that are to be expected for a single window. A
+// GREYAssert is induced on failure. See the SessionsHierarchy class for
+// documentation regarding the verification.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)verifySyncServerURLs:(NSArray<NSString*>*)URLs;
+
 #pragma mark - Tab Utilities (EG2)
 
 // Opens a new tab and waits for the new tab animation to complete within a
@@ -376,13 +384,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Deletes an autofill profile from the fake sync server with |GUID|, if it
 // exists. If it doesn't exist, nothing is done.
 - (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID;
-
-// Verifies the sessions hierarchy on the Sync FakeServer. |expected_urls| is
-// the collection of URLs that are to be expected for a single window. Returns
-// nil on success, or else an NSError indicating why the operation failed. See
-// the SessionsHierarchy class for documentation regarding the verification.
-- (NSError*)verifySyncServerURLs:(const std::multiset<std::string>&)URLs
-    WARN_UNUSED_RESULT;
 
 @end
 

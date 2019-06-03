@@ -297,6 +297,23 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::TearDownFakeSyncServer();
 }
 
++ (NSError*)verifySessionsOnSyncServerWithSpecs:(NSArray<NSString*>*)specs {
+  std::multiset<std::string> multisetSpecs;
+  for (NSString* spec in specs) {
+    multisetSpecs.insert(base::SysNSStringToUTF8(spec));
+  }
+
+  NSError* __autoreleasing tempError = nil;
+  bool success =
+      chrome_test_util::VerifySessionsOnSyncServer(multisetSpecs, &tempError);
+  NSError* error = tempError;
+  if (!success && !error) {
+    error = testing::NSErrorWithLocalizedDescription(
+        @"Error occurred during verification sessions.");
+  }
+  return error;
+}
+
 + (id)executeJavaScript:(NSString*)javaScript error:(NSError**)outError {
   __block bool handlerCalled = false;
   __block id blockResult = nil;

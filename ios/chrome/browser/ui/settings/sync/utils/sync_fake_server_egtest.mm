@@ -392,9 +392,11 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
                  syncTimeout:kSyncOperationTimeout]);
   AssertNumberOfEntities(3, syncer::SESSIONS);
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey verifySyncServerURLs:(std::multiset<std::string>{
-                                               URL1.spec(), URL2.spec()})]);
+  NSArray<NSString*>* specs = @[
+    base::SysUTF8ToNSString(URL1.spec()),
+    base::SysUTF8ToNSString(URL2.spec()),
+  ];
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey verifySyncServerURLs:specs]);
 }
 
 // Tests that a typed URL (after Sync is enabled) is uploaded to the Sync

@@ -390,6 +390,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return base::SysNSStringToUTF8(cacheGUID);
 }
 
+- (NSError*)verifySyncServerURLs:(NSArray<NSString*>*)URLs {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface verifySessionsOnSyncServerWithSpecs:URLs]);
+
+  return nil;
+}
+
 #pragma mark - SignIn Utilities
 
 - (NSError*)signOutAndClearAccounts {
@@ -628,21 +635,6 @@ id ExecuteJavaScript(NSString* javascript,
 
 - (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID {
   chrome_test_util::DeleteAutofillProfileOnFakeSyncServer(GUID);
-}
-
-- (NSError*)verifySyncServerURLs:(const std::multiset<std::string>&)URLs {
-  NSError* error = nil;
-  NSError* __autoreleasing tempError = error;
-  BOOL success = chrome_test_util::VerifySessionsOnSyncServer(URLs, &tempError);
-  error = tempError;
-  if (error != nil) {
-    return error;
-  }
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Error occurred during verification sessions.");
-  }
-  return nil;
 }
 
 @end
