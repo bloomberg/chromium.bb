@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -84,19 +84,16 @@ class DisplayLockEmptyEventListener final : public NativeEventListener {
 };
 }  // namespace
 
-class DisplayLockContextTest : public testing::Test {
+class DisplayLockContextTest : public testing::Test,
+                               private ScopedDisplayLockingForTest {
  public:
+  DisplayLockContextTest() : ScopedDisplayLockingForTest(true) {}
+
   void SetUp() override {
-    features_backup_.emplace();
-    RuntimeEnabledFeatures::SetDisplayLockingEnabled(true);
     web_view_helper_.Initialize();
   }
 
   void TearDown() override {
-    if (features_backup_) {
-      features_backup_->Restore();
-      features_backup_.reset();
-    }
     web_view_helper_.Reset();
   }
 
@@ -163,7 +160,6 @@ class DisplayLockContextTest : public testing::Test {
   const int FAKE_FIND_ID = 1;
 
  private:
-  base::Optional<RuntimeEnabledFeatures::Backup> features_backup_;
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 

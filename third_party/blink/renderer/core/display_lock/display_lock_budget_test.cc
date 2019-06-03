@@ -18,20 +18,13 @@
 
 namespace blink {
 
-class DisplayLockBudgetTest : public RenderingTest {
+class DisplayLockBudgetTest : public RenderingTest,
+                              private ScopedDisplayLockingForTest {
  public:
+  DisplayLockBudgetTest() : ScopedDisplayLockingForTest(true) {}
   void SetUp() override {
     RenderingTest::SetUp();
-    features_backup_.emplace();
-    RuntimeEnabledFeatures::SetDisplayLockingEnabled(true);
     test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  }
-
-  void TearDown() override {
-    if (features_backup_) {
-      features_backup_->Restore();
-      features_backup_.reset();
-    }
   }
 
   double GetBudgetMs(const YieldingDisplayLockBudget& budget) const {
