@@ -224,6 +224,7 @@ android_library("app_hooks_java") {
   deps = [
     ":chrome_java",
   ]
+  jacoco_never_instrument = true
 }
 
 android_aidl("photo_picker_aidl") {
