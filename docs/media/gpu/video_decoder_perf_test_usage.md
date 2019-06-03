@@ -56,6 +56,9 @@ Multiple command line arguments can be given to the command:
      -v                  enable verbose mode, e.g. -v=2.
     --vmodule            enable verbose mode for the specified module,
                          e.g. --vmodule=*media/gpu*=2.
+    --output_folder      overwrite the output folder used to store
+                         performance metrics, if not specified results
+                         will be stored in the current working directory.
     --use_vd             use the new VD-based video decoders, instead of
                          the default VDA-based video decoders.
     --gtest_help         display the gtest help and exit.

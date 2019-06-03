@@ -21,6 +21,7 @@ VideoPlayerTestEnvironment* VideoPlayerTestEnvironment::Create(
     const base::FilePath& video_metadata_path,
     bool enable_validator,
     bool output_frames,
+    const base::FilePath& output_folder,
     bool use_vd) {
   auto video = std::make_unique<media::test::Video>(
       video_path.empty() ? base::FilePath(kDefaultTestVideoPath) : video_path,
@@ -31,17 +32,19 @@ VideoPlayerTestEnvironment* VideoPlayerTestEnvironment::Create(
   }
 
   return new VideoPlayerTestEnvironment(std::move(video), enable_validator,
-                                        output_frames, use_vd);
+                                        output_frames, output_folder, use_vd);
 }
 
 VideoPlayerTestEnvironment::VideoPlayerTestEnvironment(
     std::unique_ptr<media::test::Video> video,
     bool enable_validator,
     bool output_frames,
+    const base::FilePath& output_folder,
     bool use_vd)
     : video_(std::move(video)),
       enable_validator_(enable_validator),
       output_frames_(output_frames),
+      output_folder_(output_folder),
       use_vd_(use_vd) {}
 
 VideoPlayerTestEnvironment::~VideoPlayerTestEnvironment() = default;
@@ -56,6 +59,10 @@ bool VideoPlayerTestEnvironment::IsValidatorEnabled() const {
 
 bool VideoPlayerTestEnvironment::IsFramesOutputEnabled() const {
   return output_frames_;
+}
+
+const base::FilePath& VideoPlayerTestEnvironment::OutputFolder() const {
+  return output_folder_;
 }
 
 bool VideoPlayerTestEnvironment::UseVD() const {

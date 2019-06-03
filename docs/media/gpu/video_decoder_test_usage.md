@@ -67,6 +67,8 @@ Multiple command line arguments can be given to the command:
                          platforms that don't support import mode.
     --output_frames      write all decoded video frames to the
                          "video_frames" folder.
+    --output_folder      overwrite the default output folder used when
+                         "--output_frames" is specified.
     --use_vd             use the new VD-based video decoders, instead of
                          the default VDA-based video decoders.
     --gtest_help         display the gtest help and exit.

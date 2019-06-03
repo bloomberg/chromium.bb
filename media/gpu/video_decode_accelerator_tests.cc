@@ -24,8 +24,8 @@ namespace {
 constexpr const char* usage_msg =
     "usage: video_decode_accelerator_tests\n"
     "           [-v=<level>] [--vmodule=<config>] [--disable_validator]\n"
-    "           [--output_frames] [--use_vd] [--gtest_help] [--help]\n"
-    "           [<video path>] [<video metadata path>]\n";
+    "           [--output_frames] [output_folder] [--use_vd] [--gtest_help]\n"
+    "           [--help] [<video path>] [<video metadata path>]\n";
 
 // Video decoder tests help message.
 constexpr const char* help_msg =
@@ -43,12 +43,18 @@ constexpr const char* help_msg =
     "                       platforms that don't support import mode.\n"
     "  --output_frames      write all decoded video frames to the\n"
     "                       \"video_frames\" folder.\n"
+    "  --output_folder      overwrite the default output folder used when\n"
+    "                       \"--output_frames\" is specified.\n"
     "  --use_vd             use the new VD-based video decoders, instead of\n"
     "                       the default VDA-based video decoders.\n"
     "  --gtest_help         display the gtest help and exit.\n"
     "  --help               display this help and exit.\n";
 
 media::test::VideoPlayerTestEnvironment* g_env;
+
+// Default output folder used to store video frames.
+constexpr const base::FilePath::CharType* kDefaultOutputFolder =
+    FILE_PATH_LITERAL("video_frames");
 
 // Video decode test class. Performs setup and teardown for each single test.
 class VideoDecoderTest : public ::testing::Test {
@@ -70,9 +76,10 @@ class VideoDecoderTest : public ::testing::Test {
     // Write decoded video frames to the 'video_frames/<test_name/>' folder.
     if (g_env->IsFramesOutputEnabled()) {
       base::FilePath output_folder =
-          base::FilePath(FILE_PATH_LITERAL("video_frames"))
+          base::FilePath(g_env->OutputFolder())
               .Append(base::FilePath(g_env->GetTestName()));
       frame_processors.push_back(VideoFrameFileWriter::Create(output_folder));
+      VLOG(0) << "Writing video frames to: " << output_folder;
     }
 
     // Use the new VD-based video decoders if requested.
@@ -301,6 +308,7 @@ int main(int argc, char** argv) {
   // Parse command line arguments.
   bool enable_validator = true;
   bool output_frames = false;
+  base::FilePath::StringType output_folder = media::test::kDefaultOutputFolder;
   bool use_vd = false;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
@@ -314,6 +322,8 @@ int main(int argc, char** argv) {
       enable_validator = false;
     } else if (it->first == "output_frames") {
       output_frames = true;
+    } else if (it->first == "output_folder") {
+      output_folder = it->second;
     } else if (it->first == "use_vd") {
       use_vd = true;
     } else {
@@ -329,7 +339,7 @@ int main(int argc, char** argv) {
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
           video_path, video_metadata_path, enable_validator, output_frames,
-          use_vd);
+          base::FilePath(output_folder), use_vd);
   if (!test_environment)
     return EXIT_FAILURE;
 

@@ -27,8 +27,9 @@ namespace {
 // making changes here.
 constexpr const char* usage_msg =
     "usage: video_decode_accelerator_perf_tests\n"
-    "           [-v=<level>] [--vmodule=<config>] [--use_vd] [--gtest_help]\n"
-    "           [--help] [<video path>] [<video metadata path>]\n";
+    "           [-v=<level>] [--vmodule=<config>] [--output_folder]\n"
+    "           [--use_vd] [--gtest_help] [--help]\n"
+    "           [<video path>] [<video metadata path>]\n";
 
 // Video decoder perf tests help message.
 constexpr const char* help_msg =
@@ -42,6 +43,9 @@ constexpr const char* help_msg =
     "   -v                  enable verbose mode, e.g. -v=2.\n"
     "  --vmodule            enable verbose mode for the specified module,\n"
     "                       e.g. --vmodule=*media/gpu*=2.\n"
+    "  --output_folder      overwrite the output folder used to store\n"
+    "                       performance metrics, if not specified results\n"
+    "                       will be stored in the current working directory.\n"
     "  --use_vd             use the new VD-based video decoders, instead of\n"
     "                       the default VDA-based video decoders.\n"
     "  --gtest_help         display the gtest help and exit.\n"
@@ -175,9 +179,10 @@ void PerformanceEvaluator::StopMeasuring() {
 }
 
 void PerformanceEvaluator::WriteMetricsToFile() const {
-  base::FilePath output_folder_path = base::FilePath(kDefaultOutputFolder);
+  base::FilePath output_folder_path = base::FilePath(g_env->OutputFolder());
   if (!DirectoryExists(output_folder_path))
     base::CreateDirectory(output_folder_path);
+  output_folder_path = base::MakeAbsoluteFilePath(output_folder_path);
 
   // Write performance metrics to json file.
   base::Value metrics(base::Value::Type::DICTIONARY);
@@ -332,6 +337,7 @@ int main(int argc, char** argv) {
       (args.size() >= 2) ? base::FilePath(args[1]) : base::FilePath();
 
   // Parse command line arguments.
+  base::FilePath::StringType output_folder = media::test::kDefaultOutputFolder;
   bool use_vd = false;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
@@ -341,7 +347,9 @@ int main(int argc, char** argv) {
       continue;
     }
 
-    if (it->first == "use_vd") {
+    if (it->first == "output_folder") {
+      output_folder = it->second;
+    } else if (it->first == "use_vd") {
       use_vd = true;
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
@@ -355,7 +363,8 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
-          video_path, video_metadata_path, false, false, use_vd);
+          video_path, video_metadata_path, false, false,
+          base::FilePath(output_folder), use_vd);
   if (!test_environment)
     return EXIT_FAILURE;
 

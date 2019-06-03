@@ -24,6 +24,7 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
       const base::FilePath& video_metadata_path,
       bool enable_validator,
       bool output_frames,
+      const base::FilePath& output_folder,
       bool use_vd);
   ~VideoPlayerTestEnvironment() override;
 
@@ -33,6 +34,8 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
   bool IsValidatorEnabled() const;
   // Check whether outputting frames is enabled.
   bool IsFramesOutputEnabled() const;
+  // Get the output folder.
+  const base::FilePath& OutputFolder() const;
   // Check whether we should use VD-based video decoders instead of VDA-based.
   bool UseVD() const;
 
@@ -40,11 +43,13 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
   VideoPlayerTestEnvironment(std::unique_ptr<media::test::Video> video,
                              bool enable_validator,
                              bool output_frames,
+                             const base::FilePath& output_folder,
                              bool use_vd);
 
   const std::unique_ptr<media::test::Video> video_;
   const bool enable_validator_;
   const bool output_frames_;
+  const base::FilePath output_folder_;
   const bool use_vd_;
 };
 }  // namespace test
