@@ -17,8 +17,6 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
@@ -73,6 +71,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ui/aura/window.h"
 #include "ui/wm/core/ime_util_chromeos.h"
 #endif
 

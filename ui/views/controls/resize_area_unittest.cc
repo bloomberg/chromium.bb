@@ -9,13 +9,16 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/resize_area_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_utils.h"
+
+#if !defined(OS_MACOSX)
+#include "ui/aura/window.h"
+#endif
 
 namespace {
 // Constants used by the ResizeAreaTest.SuccessfulGestureDrag test to simulate

@@ -34,7 +34,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font_list.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/views_delegate.h"
@@ -57,7 +56,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
-#include "ui/gfx/system_fonts_win.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
 
@@ -1221,15 +1219,6 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   // And now, notify them that they have a brand new parent.
   for (auto* widget : widgets)
     widget->NotifyNativeViewHierarchyChanged();
-}
-
-// static
-gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
-#if defined(OS_WIN)
-  return gfx::FontList(gfx::win::GetSystemFont(gfx::win::SystemFont::kCaption));
-#else
-  return gfx::FontList();
-#endif
 }
 
 // static

@@ -14,6 +14,10 @@
 #include "ui/views/window/frame_buttons.h"
 #include "ui/views/window/non_client_view.h"
 
+namespace gfx {
+class FontList;
+}
+
 namespace views {
 
 class FrameBackground;
@@ -57,6 +61,10 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
 
   // Overridden from ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
+
+  // Returns the font list to use in the window's title bar.
+  // TODO(https://crbug.com/968860): Move this into the typography provider.
+  static gfx::FontList GetWindowTitleFontList();
 
  private:
   friend class CustomFrameViewTest;

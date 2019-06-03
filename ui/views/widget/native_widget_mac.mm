@@ -931,12 +931,6 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
 }
 
 // static
-gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
-  NOTIMPLEMENTED();
-  return gfx::FontList();
-}
-
-// static
 gfx::NativeView NativeWidgetPrivate::GetGlobalCapture(
     gfx::NativeView native_view) {
   return BridgedNativeWidgetHostImpl::GetGlobalCaptureView();

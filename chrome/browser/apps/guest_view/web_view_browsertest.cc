@@ -107,8 +107,6 @@
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/display/display_switches.h"
@@ -117,6 +115,11 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#include "ui/aura/window.h"
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/browser/plugin_service.h"
@@ -243,7 +246,7 @@ void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-#if defined (USE_AURA)
+#if defined(USE_AURA)
 // Waits for select control shown/closed.
 class SelectControlWaiter : public aura::WindowObserver,
                             public aura::EnvObserver {

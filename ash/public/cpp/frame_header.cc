@@ -42,8 +42,7 @@ gfx::Rect GetAvailableTitleBounds(const views::View* left_view,
 
   const int x = left_view ? left_view->bounds().right() + kTitleIconOffsetX
                           : kTitleNoIconOffsetX;
-  const int title_height =
-      views::NativeWidgetAura::GetWindowTitleFontList().GetHeight();
+  const int title_height = gfx::FontList().GetHeight();
   DCHECK_LE(right_view->height(), header_height);
   // We want to align the center points of the header and title vertically.
   // Note that we can't just do (header_height - title_height) / 2, since this
@@ -218,10 +217,9 @@ void FrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
   }
 
   if (!text.empty()) {
-    canvas->DrawStringRectWithFlags(
-        text, views::NativeWidgetAura::GetWindowTitleFontList(),
-        GetTitleColor(), view_->GetMirroredRect(GetTitleBounds()),
-        gfx::Canvas::NO_SUBPIXEL_RENDERING);
+    canvas->DrawStringRectWithFlags(text, gfx::FontList(), GetTitleColor(),
+                                    view_->GetMirroredRect(GetTitleBounds()),
+                                    gfx::Canvas::NO_SUBPIXEL_RENDERING);
   }
 }
 

@@ -16,6 +16,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -33,6 +34,7 @@
 
 #if defined(OS_WIN)
 #include "ui/display/win/screen_win.h"
+#include "ui/gfx/system_fonts_win.h"
 #endif
 
 namespace views {
@@ -66,12 +68,6 @@ constexpr SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
 constexpr SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
 constexpr SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 #endif
-
-const gfx::FontList& GetTitleFontList() {
-  static const gfx::FontList title_font_list =
-      internal::NativeWidgetPrivate::GetWindowTitleFontList();
-  return title_font_list;
-}
 
 void LayoutButton(ImageButton* button, const gfx::Rect& bounds) {
   button->SetVisible(true);
@@ -311,7 +307,7 @@ int CustomFrameView::IconSize() const {
 #else
   // The icon never shrinks below 16 px on a side.
   constexpr int kIconMinimumSize = 16;
-  return std::max(GetTitleFontList().GetHeight(), kIconMinimumSize);
+  return std::max(GetWindowTitleFontList().GetHeight(), kIconMinimumSize);
 #endif
 }
 
@@ -393,7 +389,7 @@ void CustomFrameView::PaintTitleBar(gfx::Canvas* canvas) {
 
   gfx::Rect rect = title_bounds_;
   rect.set_x(GetMirroredXForRect(title_bounds_));
-  canvas->DrawStringRect(delegate->GetWindowTitle(), GetTitleFontList(),
+  canvas->DrawStringRect(delegate->GetWindowTitle(), GetWindowTitleFontList(),
                          SK_ColorWHITE, rect);
 }
 
@@ -547,7 +543,7 @@ void CustomFrameView::LayoutTitleBar() {
   // The offset between the window left edge and the title text.
   int title_x = show_window_icon ? icon_bounds.right() + kTitleIconOffsetX
                                  : icon_bounds.x();
-  int title_height = GetTitleFontList().GetHeight();
+  int title_height = GetWindowTitleFontList().GetHeight();
   // We bias the title position so that when the difference between the icon and
   // title heights is odd, the extra pixel of the title is above the vertical
   // midline rather than below.  This compensates for how the icon is already
@@ -623,6 +619,15 @@ ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
     }
   }
   return button;
+}
+
+// static
+gfx::FontList CustomFrameView::GetWindowTitleFontList() {
+#if defined(OS_WIN)
+  return gfx::FontList(gfx::win::GetSystemFont(gfx::win::SystemFont::kCaption));
+#else
+  return gfx::FontList();
+#endif
 }
 
 }  // namespace views

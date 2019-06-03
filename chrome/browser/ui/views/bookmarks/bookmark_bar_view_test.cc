@@ -45,9 +45,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
-#include "ui/aura/env.h"
-#include "ui/aura/env_observer.h"
-#include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/test/ui_controls.h"
@@ -60,6 +57,12 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget.h"
+
+#if !defined(OS_MACOSX)
+#include "ui/aura/env.h"
+#include "ui/aura/env_observer.h"
+#include "ui/aura/window.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

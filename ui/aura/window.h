@@ -21,6 +21,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
@@ -38,6 +39,10 @@
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_MACOSX)
+#error This file must not be included on macOS; Chromium Mac doesn't use Aura.
+#endif
 
 namespace cc {
 class LayerTreeFrameSink;

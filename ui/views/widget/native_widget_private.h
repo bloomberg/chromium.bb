@@ -15,7 +15,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace gfx {
-class FontList;
 class ImageSkia;
 class Rect;
 }
@@ -69,8 +68,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
                                  Widget::Widgets* owned);
   static void ReparentNativeView(gfx::NativeView native_view,
                                  gfx::NativeView new_parent);
-
-  static gfx::FontList GetWindowTitleFontList();
 
   // Returns the NativeView with capture, otherwise NULL if there is no current
   // capture set, or if |native_view| has no root.

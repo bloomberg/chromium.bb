@@ -7,8 +7,6 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_targeter.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -21,6 +19,11 @@
 
 #if defined(OS_WIN)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #endif
 
 namespace message_center {

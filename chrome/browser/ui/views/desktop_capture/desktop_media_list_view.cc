@@ -18,8 +18,11 @@
 #include "chrome/grit/theme_resources.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/aura/window.h"
+#endif
 
 using content::DesktopMediaID;
 

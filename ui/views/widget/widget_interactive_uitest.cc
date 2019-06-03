@@ -19,7 +19,6 @@
 #include "base/timer/timer.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
-#include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -45,6 +44,7 @@
 #include "ui/wm/public/activation_client.h"
 
 #if defined(OS_WIN)
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/win/hwnd_util.h"

@@ -30,7 +30,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/widget/native_widget_aura.h"
+#include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/hit_test_utils.h"
 
 namespace {
@@ -160,7 +160,7 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
   for (auto& model : models) {
     auto image_view = std::make_unique<ContentSettingImageView>(
         std::move(model), delegate,
-        views::NativeWidgetAura::GetWindowTitleFontList());
+        views::CustomFrameView::GetWindowTitleFontList());
     // Padding around content setting icons.
     constexpr int kContentSettingIconInteriorPadding = 4;
     image_view->SetBorder(views::CreateEmptyBorder(
