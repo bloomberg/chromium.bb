@@ -6,28 +6,27 @@
  * @fileoverview This is a table column model
  */
 cr.define('cr.ui.table', function() {
-  /** @const */ const EventTarget = cr.EventTarget;
+  /** @type {number} */
+  const MIMIMAL_WIDTH = 10;
 
   /**
    * A table column model that wraps table columns array
    * This implementation supports widths in percents.
-   * @param {!Array<cr.ui.table.TableColumn>} tableColumns Array of table
-   *     columns.
-   * @constructor
-   * @extends {cr.EventTarget}
    */
-  function TableColumnModel(tableColumns) {
-    /** @type {!Array<cr.ui.table.TableColumn>} */
-    this.columns_ = [];
-    for (let i = 0; i < tableColumns.length; i++) {
-      this.columns_.push(tableColumns[i].clone());
+  class TableColumnModel extends cr.EventTarget {
+    /**
+     * @param {!Array<cr.ui.table.TableColumn>} tableColumns Array of table
+     *     columns.
+     */
+    constructor(tableColumns) {
+      super();
+
+      /** @type {!Array<cr.ui.table.TableColumn>} */
+      this.columns_ = [];
+      for (let i = 0; i < tableColumns.length; i++) {
+        this.columns_.push(tableColumns[i].clone());
+      }
     }
-  }
-
-  const MIMIMAL_WIDTH = 10;
-
-  TableColumnModel.prototype = {
-    __proto__: EventTarget.prototype,
 
     /**
      * The number of the columns.
@@ -35,16 +34,16 @@ cr.define('cr.ui.table', function() {
      */
     get size() {
       return this.columns_.length;
-    },
+    }
 
     /**
      * Returns id of column at the given index.
      * @param {number} index The index of the column.
      * @return {string} Column id.
      */
-    getId: function(index) {
+    getId(index) {
       return this.columns_[index].id;
-    },
+    }
 
     /**
      * Returns name of column at the given index. Name is used as column header
@@ -52,16 +51,16 @@ cr.define('cr.ui.table', function() {
      * @param {number} index The index of the column.
      * @return {string} Column name.
      */
-    getName: function(index) {
+    getName(index) {
       return this.columns_[index].name;
-    },
+    }
 
     /**
      * Sets name of column at the given index.
      * @param {number} index The index of the column.
      * @param {string} name Column name.
      */
-    setName: function(index, name) {
+    setName(index, name) {
       if (index < 0 || index >= this.columns_.length) {
         return;
       }
@@ -71,32 +70,32 @@ cr.define('cr.ui.table', function() {
 
       this.columns_[index].name = name;
       cr.dispatchSimpleEvent(this, 'change');
-    },
+    }
 
     /**
      * Returns width (in percent) of column at the given index.
      * @param {number} index The index of the column.
      * @return {number} Column width in pixels.
      */
-    getWidth: function(index) {
+    getWidth(index) {
       return this.columns_[index].width;
-    },
+    }
 
     /**
      * Check if the column at the given index should align to the end.
      * @param {number} index The index of the column.
      * @return {boolean} True if the column is aligned to end.
      */
-    isEndAlign: function(index) {
+    isEndAlign(index) {
       return this.columns_[index].endAlign;
-    },
+    }
 
     /**
      * Sets width of column at the given index.
      * @param {number} index The index of the column.
      * @param {number} width Column width.
      */
-    setWidth: function(index, width) {
+    setWidth(index, width) {
       if (index < 0 || index >= this.columns_.length) {
         return;
       }
@@ -113,16 +112,16 @@ cr.define('cr.ui.table', function() {
       if (column.visible) {
         cr.dispatchSimpleEvent(this, 'resize');
       }
-    },
+    }
 
     /**
      * Returns render function for the column at the given index.
      * @param {number} index The index of the column.
      * @return {function(*, string, Element): HTMLElement} Render function.
      */
-    getRenderFunction: function(index) {
+    getRenderFunction(index) {
       return this.columns_[index].renderFunction;
-    },
+    }
 
     /**
      * Sets render function for the column at the given index.
@@ -130,7 +129,7 @@ cr.define('cr.ui.table', function() {
      * @param {function(*, string, Element): HTMLElement} renderFunction
      *     Render function.
      */
-    setRenderFunction: function(index, renderFunction) {
+    setRenderFunction(index, renderFunction) {
       if (index < 0 || index >= this.columns_.length) {
         return;
       }
@@ -140,17 +139,17 @@ cr.define('cr.ui.table', function() {
 
       this.columns_[index].renderFunction = renderFunction;
       cr.dispatchSimpleEvent(this, 'change');
-    },
+    }
 
     /**
      * Render the column header.
      * @param {number} index The index of the column.
      * @param {Element} table Owner table.
      */
-    renderHeader: function(index, table) {
+    renderHeader(index, table) {
       const c = this.columns_[index];
       return c.headerRenderFunction.call(c, table);
-    },
+    }
 
     /**
      * The total width of the columns.
@@ -162,48 +161,48 @@ cr.define('cr.ui.table', function() {
         total += this.columns_[i].width;
       }
       return total;
-    },
+    }
 
     /**
      * Normalizes widths to make their sum 100%.
      */
-    normalizeWidths: function(contentWidth) {
+    normalizeWidths(contentWidth) {
       if (this.size == 0) {
         return;
       }
       const c = this.columns_[0];
       c.width = Math.max(10, c.width - this.totalWidth + contentWidth);
-    },
+    }
 
     /**
      * Returns default sorting order for the column at the given index.
      * @param {number} index The index of the column.
      * @return {string} 'asc' or 'desc'.
      */
-    getDefaultOrder: function(index) {
+    getDefaultOrder(index) {
       return this.columns_[index].defaultOrder;
-    },
+    }
 
     /**
      * Returns index of the column with given id.
      * @param {string} id The id to find.
      * @return {number} The index of column with given id or -1 if not found.
      */
-    indexOf: function(id) {
+    indexOf(id) {
       for (let i = 0; i < this.size; i++) {
         if (this.getId(i) == id) {
           return i;
         }
       }
       return -1;
-    },
+    }
 
     /**
      * Show/hide a column.
      * @param {number} index The column index.
      * @param {boolean} visible The column visibility.
      */
-    setVisible: function(index, visible) {
+    setVisible(index, visible) {
       if (index < 0 || index >= this.columns_.length) {
         return;
       }
@@ -218,17 +217,17 @@ cr.define('cr.ui.table', function() {
       const contentWidth = this.totalWidth;
       column.visible = visible;
       this.normalizeWidths(contentWidth);
-    },
+    }
 
     /**
      * Returns a column's visibility.
      * @param {number} index The column index.
      * @return {boolean} Whether the column is visible.
      */
-    isVisible: function(index) {
+    isVisible(index) {
       return this.columns_[index].visible;
     }
-  };
+  }
 
   return {TableColumnModel: TableColumnModel};
 });

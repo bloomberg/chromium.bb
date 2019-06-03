@@ -7,35 +7,32 @@
  */
 
 cr.define('cr.ui.table', function() {
-  /** @const */ const EventTarget = cr.EventTarget;
-
   /**
    * A table column that wraps column ids and settings.
-   * @param {string} id
-   * @param {string} name
-   * @param {number} width
-   * @param {boolean=} opt_endAlign
-   * @constructor
-   * @extends {cr.EventTarget}
    */
-  function TableColumn(id, name, width, opt_endAlign) {
-    this.id_ = id;
-    this.name_ = name;
-    this.width_ = width;
-    this.endAlign_ = !!opt_endAlign;
-    this.visible_ = true;
-  }
+  class TableColumn extends cr.EventTarget {
+    /**
+     * @param {string} id
+     * @param {string} name
+     * @param {number} width
+     * @param {boolean=} opt_endAlign
+     */
+    constructor(id, name, width, opt_endAlign) {
+      super();
 
-  TableColumn.prototype = {
-    __proto__: EventTarget.prototype,
-
-    defaultOrder_: 'asc',
+      this.id_ = id;
+      this.name_ = name;
+      this.width_ = width;
+      this.endAlign_ = !!opt_endAlign;
+      this.visible_ = true;
+      this.defaultOrder_ = 'asc';
+    }
 
     /**
      * Clones column.
      * @return {cr.ui.table.TableColumn} Clone of the given column.
      */
-    clone: function() {
+    clone() {
       const tableColumn =
           new TableColumn(this.id_, this.name_, this.width_, this.endAlign_);
       tableColumn.renderFunction = this.renderFunction_;
@@ -45,7 +42,7 @@ cr.define('cr.ui.table', function() {
       tableColumn.visible_ = this.visible_;
 
       return tableColumn;
-    },
+    }
 
     /**
      * Renders table cell. This is the default render function.
@@ -54,22 +51,22 @@ cr.define('cr.ui.table', function() {
      * @param {Element} table The table.
      * @return {HTMLElement} Rendered element.
      */
-    renderFunction_: function(dataItem, columnId, table) {
+    renderFunction_(dataItem, columnId, table) {
       const div = /** @type {HTMLElement} */
           (table.ownerDocument.createElement('div'));
       div.textContent = dataItem[columnId];
       div.hidden = !this.visible;
       return div;
-    },
+    }
 
     /**
      * Renders table header. This is the default render function.
      * @param {Element} table The table.
      * @return {Text} Rendered text node.
      */
-    headerRenderFunction_: function(table) {
+    headerRenderFunction_(table) {
       return table.ownerDocument.createTextNode(this.name);
-    },
+    }
 
     /**
      * The width of the column.  Hidden columns have zero width.
@@ -77,7 +74,7 @@ cr.define('cr.ui.table', function() {
      */
     get width() {
       return this.visible_ ? this.width_ : 0;
-    },
+    }
 
     /**
      * The width of the column, disregarding visibility.  For hidden columns,
@@ -86,8 +83,8 @@ cr.define('cr.ui.table', function() {
      */
     get absoluteWidth() {
       return this.width_;
-    },
-  };
+    }
+  }
 
   /**
    * The column id.
