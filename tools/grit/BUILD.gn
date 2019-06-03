@@ -34,5 +34,6 @@ group("grit_python_unittests") {
     "//testing/scripts/run_isolated_script_test.py",
     "//testing/xvfb.py",
     "//tools/grit/",
+    "//third_party/catapult/third_party/typ/",
   ]
 }
