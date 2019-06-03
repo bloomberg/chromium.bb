@@ -166,16 +166,21 @@ void PerformanceEvaluator::StopMeasuring() {
              frame_decode_times_[median_index]) /
                 2.0;
 
-  VLOG(0) << "Frames decoded:     " << perf_metrics_.frames_decoded_;
-  VLOG(0) << "Total duration:     "
-          << perf_metrics_.total_duration_.InMillisecondsF() << "ms";
-  VLOG(0) << "FPS:                " << perf_metrics_.frames_per_second_;
-  VLOG(0) << "Frames Dropped:     " << perf_metrics_.frames_dropped_;
-  VLOG(0) << "Dropped frame rate: " << perf_metrics_.dropped_frame_rate_;
-  VLOG(0) << "Avg. frame delivery time:   "
-          << perf_metrics_.avg_frame_delivery_time_ms_ << "ms";
-  VLOG(0) << "Median frame decode time:   "
-          << perf_metrics_.median_frame_decode_time_ms_ << "ms";
+  std::cout << "Frames decoded:     " << perf_metrics_.frames_decoded_
+            << std::endl;
+  std::cout << "Total duration:     "
+            << perf_metrics_.total_duration_.InMillisecondsF() << "ms"
+            << std::endl;
+  std::cout << "FPS:                " << perf_metrics_.frames_per_second_
+            << std::endl;
+  std::cout << "Frames Dropped:     " << perf_metrics_.frames_dropped_
+            << std::endl;
+  std::cout << "Dropped frame rate: " << perf_metrics_.dropped_frame_rate_
+            << std::endl;
+  std::cout << "Avg. frame delivery time:   "
+            << perf_metrics_.avg_frame_delivery_time_ms_ << "ms" << std::endl;
+  std::cout << "Median frame decode time:   "
+            << perf_metrics_.median_frame_decode_time_ms_ << "ms" << std::endl;
 }
 
 void PerformanceEvaluator::WriteMetricsToFile() const {
