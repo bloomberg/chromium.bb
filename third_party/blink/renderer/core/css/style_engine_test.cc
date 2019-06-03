@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -43,7 +44,6 @@ using namespace css_test_helpers;
 class StyleEngineTest : public testing::Test {
  protected:
   void SetUp() override;
-  void TearDown() override;
 
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
   StyleEngine& GetStyleEngine() { return GetDocument().GetStyleEngine(); }
@@ -67,15 +67,10 @@ class StyleEngineTest : public testing::Test {
 
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-  RuntimeEnabledFeatures::Backup features_backup_;
 };
 
 void StyleEngineTest::SetUp() {
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-}
-
-void StyleEngineTest::TearDown() {
-  features_backup_.Restore();
 }
 
 StyleEngineTest::RuleSetInvalidation
@@ -1490,7 +1485,7 @@ TEST_F(StyleEngineTest, MediaQueriesChangeDefaultFontSize) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
-  RuntimeEnabledFeatures::SetMediaQueryPrefersColorSchemeEnabled(true);
+  ScopedMediaQueryPrefersColorSchemeForTest feature_scope(true);
 
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
@@ -1516,7 +1511,7 @@ TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesChangeColorSchemeForcedDarkMode) {
-  RuntimeEnabledFeatures::SetMediaQueryPrefersColorSchemeEnabled(true);
+  ScopedMediaQueryPrefersColorSchemeForTest feature_scope(true);
 
   GetDocument().GetSettings()->SetForceDarkModeEnabled(true);
   GetDocument().GetSettings()->SetPreferredColorScheme(

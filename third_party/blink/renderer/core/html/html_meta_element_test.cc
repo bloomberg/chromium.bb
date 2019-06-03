@@ -18,18 +18,23 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-class HTMLMetaElementTest : public PageTestBase {
+class HTMLMetaElementTest : public PageTestBase,
+                            private ScopedDisplayCutoutAPIForTest,
+                            private ScopedMetaColorSchemeForTest,
+                            private ScopedMediaQueryPrefersColorSchemeForTest,
+                            private ScopedCSSColorSchemeForTest {
  public:
+  HTMLMetaElementTest()
+      : ScopedDisplayCutoutAPIForTest(true),
+        ScopedMetaColorSchemeForTest(true),
+        ScopedMediaQueryPrefersColorSchemeForTest(true),
+        ScopedCSSColorSchemeForTest(true) {}
   void SetUp() override {
     PageTestBase::SetUp();
-
-    RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
-    RuntimeEnabledFeatures::SetMetaColorSchemeEnabled(true);
-    RuntimeEnabledFeatures::SetMediaQueryPrefersColorSchemeEnabled(true);
-    RuntimeEnabledFeatures::SetCSSColorSchemeEnabled(true);
     GetDocument().GetSettings()->SetViewportMetaEnabled(true);
   }
 
