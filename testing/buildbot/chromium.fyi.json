@@ -4763,7 +4763,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4778,7 +4779,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4793,7 +4795,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4808,7 +4811,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4823,7 +4827,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4838,7 +4843,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4853,7 +4859,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4871,7 +4878,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4886,7 +4894,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4901,7 +4910,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4916,7 +4926,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4931,7 +4942,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4946,7 +4958,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4961,7 +4974,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4976,7 +4990,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -4991,7 +5006,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5006,7 +5022,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5021,7 +5038,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5039,7 +5057,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5054,7 +5073,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5069,7 +5089,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5087,7 +5108,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5102,7 +5124,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5117,7 +5140,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5135,7 +5159,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5150,7 +5175,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5165,7 +5191,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5180,7 +5207,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5202,7 +5230,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5217,7 +5246,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5232,7 +5262,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5247,7 +5278,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5262,7 +5294,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5277,7 +5310,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5292,7 +5326,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5310,7 +5345,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5325,7 +5361,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5340,7 +5377,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5355,7 +5393,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5370,7 +5409,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5385,7 +5425,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5400,7 +5441,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5415,7 +5457,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5430,7 +5473,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5445,7 +5489,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5460,7 +5505,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5478,7 +5524,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5496,7 +5543,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5511,7 +5559,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5526,7 +5575,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5544,7 +5594,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5559,7 +5610,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5574,7 +5626,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5592,7 +5645,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5607,7 +5661,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5622,7 +5677,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5637,7 +5693,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -5663,7 +5720,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "kvm": "1"
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
             }
           ]
         }

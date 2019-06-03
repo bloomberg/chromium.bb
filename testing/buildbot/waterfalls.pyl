@@ -1688,6 +1688,9 @@
         'additional_compile_targets': [
           'all',
         ],
+        'mixins': [
+          'linux-xenial',
+        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -1702,6 +1705,9 @@
       'fuchsia-fyi-x64-rel': {
         'additional_compile_targets': [
           'all',
+        ],
+        'mixins': [
+          'linux-xenial',
         ],
         'swarming': {
           'dimension_sets': [
@@ -3339,6 +3345,9 @@
       'Fuchsia x64': {
         'additional_compile_targets': [
           'all',
+        ],
+        'mixins': [
+          'linux-xenial',
         ],
         'swarming': {
           'dimension_sets': [
