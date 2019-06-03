@@ -153,6 +153,12 @@ enum ExecutionMode : uint
     DerivativeGroupQuadsNV = 5289,
     DerivativeGroupLinearNV = 5290,
     OutputTrianglesNV = 5298,
+    PixelInterlockOrderedEXT = 5366,
+    PixelInterlockUnorderedEXT = 5367,
+    SampleInterlockOrderedEXT = 5368,
+    SampleInterlockUnorderedEXT = 5369,
+    ShadingRateInterlockOrderedEXT = 5370,
+    ShadingRateInterlockUnorderedEXT = 5371,
 }
 
 enum StorageClass : uint
@@ -840,7 +846,10 @@ enum Capability : uint
     PhysicalStorageBufferAddressesEXT = 5347,
     ComputeDerivativeGroupLinearNV = 5350,
     CooperativeMatrixNV = 5357,
+    FragmentShaderSampleInterlockEXT = 5363,
+    FragmentShaderShadingRateInterlockEXT = 5372,
     ShaderSMBuiltinsNV = 5373,
+    FragmentShaderPixelInterlockEXT = 5378,
     SubgroupShuffleINTEL = 5568,
     SubgroupBufferBlockIOINTEL = 5569,
     SubgroupImageBlockIOINTEL = 5570,
@@ -1227,6 +1236,8 @@ enum Op : uint
     OpCooperativeMatrixStoreNV = 5360,
     OpCooperativeMatrixMulAddNV = 5361,
     OpCooperativeMatrixLengthNV = 5362,
+    OpBeginInvocationInterlockEXT = 5364,
+    OpEndInvocationInterlockEXT = 5365,
     OpSubgroupShuffleINTEL = 5571,
     OpSubgroupShuffleDownINTEL = 5572,
     OpSubgroupShuffleUpINTEL = 5573,
