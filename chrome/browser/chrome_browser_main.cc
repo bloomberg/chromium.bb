@@ -1273,9 +1273,9 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebUsb)) {
     web_usb_detector_.reset(new WebUsbDetector());
-    BrowserThread::PostAfterStartupTask(
+    base::PostTaskWithTraits(
         FROM_HERE,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&WebUsbDetector::Initialize,
                        base::Unretained(web_usb_detector_.get())));
   }

@@ -434,10 +434,9 @@ void ShowCloseBrowserFirstMessageBox() {
 
 void MaybePostSettingsResetPrompt() {
   if (base::FeatureList::IsEnabled(safe_browsing::kSettingsResetPrompt)) {
-    content::BrowserThread::PostAfterStartupTask(
+    base::PostTaskWithTraits(
         FROM_HERE,
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::UI}),
+        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::Bind(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
   }
 }
