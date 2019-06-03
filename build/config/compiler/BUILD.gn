@@ -1431,6 +1431,12 @@ config("default_warnings") {
         "-Wno-narrowing",
       ]
 
+      # -Wno-class-memaccess warns about hash table and vector in blink.
+      # But the violation is intentional.
+      if (!is_nacl) {
+        cflags_cc += [ "-Wno-class-memaccess" ]
+      }
+
       # -Wunused-local-typedefs is broken in gcc,
       # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63872
       cflags += [ "-Wno-unused-local-typedefs" ]
