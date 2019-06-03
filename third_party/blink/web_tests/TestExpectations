@@ -2822,7 +2822,6 @@ crbug.com/626703 [ Win ] external/wpt/preload/onerror-event.html [ Failure Timeo
 crbug.com/626703 [ Mac10.12 ] external/wpt/preload/onerror-event.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/onerror-event.html [ Failure Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/preload/onerror-event.html [ Timeout ]
-crbug.com/626703 [ Win7 ] external/wpt/service-workers/service-worker/fetch-event-async-respond-with.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-001-manual.html [ Skip ]
 crbug.com/626703 external/wpt/web-animations/timing-model/timelines/update-and-send-events-replacement.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ Failure ]
