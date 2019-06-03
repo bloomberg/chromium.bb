@@ -86,6 +86,12 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
                                   const GoogleServiceAuthError&)>
       AddAccountToCookieCompletedCallback;
 
+  typedef base::RepeatingCallback<void(const std::vector<gaia::ListedAccount>&,
+                                       const std::vector<gaia::ListedAccount>&,
+                                       const GoogleServiceAuthError&)>
+      GaiaAccountsInCookieUpdatedCallback;
+  typedef base::RepeatingCallback<void()> GaiaCookieDeletedByUserActionCallback;
+
   // Contains the information and parameters for any request.
   class GaiaCookieRequest {
    public:
@@ -141,28 +147,6 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
         add_account_to_cookie_completed_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(GaiaCookieRequest);
-  };
-
-  class Observer {
-   public:
-    // Called whenever the GaiaCookieManagerService's list of GAIA accounts is
-    // updated. The GCMS monitors the APISID cookie and triggers a /ListAccounts
-    // call on change. The GCMS will also call ListAccounts upon the first call
-    // to ListAccounts(). The GCMS will delay calling ListAccounts if other
-    // requests are in queue that would modify the APISID cookie.
-    // If the ListAccounts call fails and the GCMS cannot recover, the reason
-    // is passed in |error|.
-    virtual void OnGaiaAccountsInCookieUpdated(
-        const std::vector<gaia::ListedAccount>& accounts,
-        const std::vector<gaia::ListedAccount>& signed_out_accounts,
-        const GoogleServiceAuthError& error) {}
-
-    // Called when the Gaia cookie has been deleted explicitly by a user action,
-    // e.g. from the settings or by an extension.
-    virtual void OnGaiaCookieDeletedByUserAction() {}
-
-   protected:
-    virtual ~Observer() {}
   };
 
   // Class to retrieve the external connection check results from gaia.
@@ -269,10 +253,6 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   // service. Virtual for testing.
   virtual void ForceOnCookieChangeProcessing();
 
-  // Add or remove observers of this helper.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
   // Cancel all login requests.
   void CancelAll();
 
@@ -293,6 +273,25 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   void set_list_accounts_stale_for_testing(bool stale) {
     list_accounts_stale_ = stale;
   }
+
+  // If set, this callback will be invoked whenever the
+  // GaiaCookieManagerService's list of GAIA accounts is updated. The GCMS
+  // monitors the APISID cookie and triggers a /ListAccounts call on change.
+  // The GCMS will also call ListAccounts upon the first call to
+  // ListAccounts(). The GCMS will delay calling ListAccounts if other
+  // requests are in queue that would modify the APISID cookie.
+  // If the ListAccounts call fails and the GCMS cannot recover, the reason
+  // is passed in |error|.
+  // This method can only be called once.
+  void SetGaiaAccountsInCookieUpdatedCallback(
+      GaiaAccountsInCookieUpdatedCallback callback);
+
+  // If set, this callback will be invoked whenever the Gaia cookie has
+  // been deleted explicitly by a user action, e.g. from the settings or by an
+  // extension.
+  // This method can only be called once.
+  void SetGaiaCookieDeletedByUserActionCallback(
+      GaiaCookieDeletedByUserActionCallback callback);
 
   // Returns a non-NULL pointer to its instance of net::BackoffEntry
   const net::BackoffEntry* GetBackoffEntry() { return &fetcher_backoff_; }
@@ -360,6 +359,11 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   OAuth2TokenService* token_service_;
   SigninClient* signin_client_;
 
+  GaiaAccountsInCookieUpdatedCallback gaia_accounts_updated_in_cookie_callback_;
+  GaiaCookieDeletedByUserActionCallback
+      gaia_cookie_deleted_by_user_action_callback_;
+  base::RepeatingCallback<scoped_refptr<network::SharedURLLoaderFactory>()>
+      shared_url_loader_factory_getter_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   std::unique_ptr<signin::UbertokenFetcherImpl> uber_token_fetcher_;
   ExternalCcResultFetcher external_cc_result_fetcher_;
@@ -384,10 +388,6 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   // executed right away, since this class only permits one request to be
   // executed at a time.
   base::circular_deque<GaiaCookieRequest> requests_;
-
-  // List of observers to notify when merge session completes.
-  // Makes sure list is empty on destruction.
-  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   // True once the ExternalCCResultFetcher has completed once.
   bool external_cc_result_fetched_;
