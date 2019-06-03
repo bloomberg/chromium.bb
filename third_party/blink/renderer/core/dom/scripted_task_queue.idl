@@ -4,6 +4,9 @@
 
 callback TaskQueuePostCallback = void ();
 
-[RuntimeEnabled=ScriptedTaskQueue] interface ScriptedTaskQueue {
+[
+    RuntimeEnabled=ScriptedTaskQueue,
+    Exposed=Window
+] interface ScriptedTaskQueue {
     [CallWith=ScriptState] Promise<any> postTask(TaskQueuePostCallback callback, optional AbortSignal signal = null);
 };

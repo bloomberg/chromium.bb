@@ -4,6 +4,9 @@
 
 enum MainThreadTaskQueueType { "user-interaction", "best-effort" };
 
-[RuntimeEnabled=ScriptedTaskQueue] interface ScriptedTaskQueueController {
+[
+    RuntimeEnabled=ScriptedTaskQueue,
+    Exposed=Window
+] interface ScriptedTaskQueueController {
     [ImplementedAs=defaultQueue] ScriptedTaskQueue default(MainThreadTaskQueueType queue_type);
 };

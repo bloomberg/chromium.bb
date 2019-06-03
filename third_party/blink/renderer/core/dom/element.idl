@@ -26,7 +26,9 @@ callback ScrollStateCallback = void (ScrollState scrollState);
 
 // https://dom.spec.whatwg.org/#interface-element
 
-interface Element : Node {
+[
+    Exposed=Window
+] interface Element : Node {
     readonly attribute DOMString? namespaceURI;
     readonly attribute DOMString? prefix;
     readonly attribute DOMString localName;
