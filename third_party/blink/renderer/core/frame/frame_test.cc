@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/document_interface_broker_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -163,7 +164,7 @@ TEST_F(FrameTest, NavigateSameDomainNoGesture) {
 }
 
 TEST_F(FrameTest, UserActivationInterfaceTest) {
-  RuntimeEnabledFeatures::SetUserActivationV2Enabled(true);
+  ScopedUserActivationV2ForTest scoped_feature(true);
 
   // Initially both sticky and transient bits are false.
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
@@ -187,7 +188,7 @@ TEST_F(FrameTest, UserActivationInterfaceTest) {
 }
 
 TEST_F(FrameTest, UserActivationHistograms) {
-  RuntimeEnabledFeatures::SetUserActivationV2Enabled(true);
+  ScopedUserActivationV2ForTest scoped_feature(true);
   base::HistogramTester histograms;
 
   LocalFrame::HasTransientUserActivation(GetDocument().GetFrame());
