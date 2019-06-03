@@ -23,6 +23,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/values_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -79,6 +80,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/reporting/reporting_policy.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -142,6 +144,9 @@ class PreviewsLitePageServerBrowserTest
 
     // Previews server will put Chrome into a redirect loop.
     kRedirectLoop = 8,
+
+    // The URL that intervention reports should be sent to.
+    kInterventionReport = 9,
   };
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -281,8 +286,9 @@ class PreviewsLitePageServerBrowserTest
         {previews::features::kPreviews, previews::features::kOptimizationHints,
          previews::features::kResourceLoadingHints,
          data_reduction_proxy::features::
-             kDataReductionProxyEnabledWithNetworkService},
-        {});
+             kDataReductionProxyEnabledWithNetworkService,
+         network::features::kReporting},
+        {network::features::kNetworkErrorLogging});
 
     if (GetParam()) {
       url_loader_feature_list_.InitWithFeatures(
@@ -308,6 +314,10 @@ class PreviewsLitePageServerBrowserTest
 
     decider->BlacklistBypassedHost(kBlacklistedHost,
                                    base::TimeDelta::FromHours(1));
+
+    net::ReportingPolicy policy;
+    policy.delivery_interval = base::TimeDelta::FromSeconds(0);
+    net::ReportingPolicy::UsePolicyForTesting(policy);
   }
 
   void InitializeOptimizationHints() {
@@ -503,6 +513,17 @@ class PreviewsLitePageServerBrowserTest
         ->GetHttpOriginalContentLength();
   }
 
+  base::Value ParsedInterventionReport() const {
+    base::Value parsed_payload =
+        base::test::ParseJson(intervention_report_content_);
+    // Clear out any non-reproducible fields.
+    for (auto& report : parsed_payload.GetList()) {
+      report.RemoveKey("age");
+      report.RemoveKey("user_agent");
+    }
+    return parsed_payload;
+  }
+
   // Returns a HTTP URL that will respond with the given action and headers when
   // used by the previews server. The response can be delayed a number of
   // milliseconds by passing a value > 0 for |delay_ms| or pass -1 to make the
@@ -579,6 +600,15 @@ class PreviewsLitePageServerBrowserTest
   void WaitForPingback() {
     base::RunLoop run_loop;
     waiting_for_pingback_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  void WaitForInterventionReport() {
+    if (!intervention_report_content_.empty())
+      return;
+
+    base::RunLoop run_loop;
+    waiting_for_report_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
 
@@ -669,6 +699,15 @@ class PreviewsLitePageServerBrowserTest
       return response;
     }
 
+    // If this request is for a intervention report, record the content.
+    if (request.GetURL().spec().find("upload_report") != std::string::npos) {
+      intervention_report_content_ = request.content;
+      response->set_code(net::HTTP_NO_CONTENT);
+      if (waiting_for_report_closure_)
+        std::move(waiting_for_report_closure_).Run();
+      return response;
+    }
+
     response->set_content_type("text/html");
 
     std::string original_url_str;
@@ -755,6 +794,12 @@ class PreviewsLitePageServerBrowserTest
         response->set_code(net::HTTP_OK);
         response->set_content("porgporgporgporgporg" /* length = 20 */);
         response->AddCustomHeader("chrome-proxy", "ofcl=60");
+        // Use the Host header for the report because CORS.
+        response->AddCustomHeader(
+            "Report-To",
+            base::StringPrintf("{\"endpoints\":[{\"url\":\"https://%s/"
+                               "?upload_report=true\"}],\"max_age\":86400}",
+                               request.headers.find("Host")->second.c_str()));
         break;
       case kRedirectNonPreview:
         response->set_code(net::HTTP_TEMPORARY_REDIRECT);
@@ -835,7 +880,9 @@ class PreviewsLitePageServerBrowserTest
   GURL slow_http_url_;
   uint64_t got_page_id_ = 0;
   int subresources_requested_ = 0;
+  std::string intervention_report_content_;
   base::OnceClosure waiting_for_pingback_closure_;
+  base::OnceClosure waiting_for_report_closure_;
 };
 
 // True if testing using the URLLoader Interceptor implementation.
@@ -1425,6 +1472,36 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
   // Starting a new page load will send a pingback for the previous page load.
   GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
   WaitForPingback();
+}
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePageSendsInterventionReport)) {
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+  WaitForInterventionReport();
+
+  base::Value expected = base::test::ParseJson(base::StringPrintf(
+      R"text(
+        [
+          {
+            "body": {
+              "id": "LitePageServed",
+              "message": "Modified page load behavior on the page because )text"
+      R"text(the page was expected to take a long amount of time to load. )text"
+      R"text(https://www.chromestatus.com/feature/5148050062311424"
+            },
+            "type": "intervention",
+            "url": "%s",
+          }
+        ]
+      )text",
+      PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
+          HttpsLitePageURL(kSuccess))
+          .spec()
+          .c_str()));
+
+  EXPECT_EQ(expected, ParsedInterventionReport());
 }
 
 class TestDataReductionProxyPingbackClient

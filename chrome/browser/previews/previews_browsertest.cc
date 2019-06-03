@@ -7,12 +7,10 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/values_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
@@ -20,7 +18,6 @@
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -38,12 +35,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/reporting/reporting_policy.h"
-#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 
 namespace {
@@ -427,148 +421,4 @@ IN_PROC_BROWSER_TEST_F(
   // Verify loaded js resource but not css triggered by noscript tag.
   EXPECT_TRUE(noscript_js_requested());
   EXPECT_FALSE(noscript_css_requested());
-}
-
-namespace {
-
-class PreviewsReportingBrowserTest : public CertVerifierBrowserTest {
- public:
-  PreviewsReportingBrowserTest()
-      : https_server_(net::test_server::EmbeddedTestServer::TYPE_HTTPS) {}
-  ~PreviewsReportingBrowserTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {network::features::kReporting, previews::features::kPreviews,
-         previews::features::kClientLoFi,
-         data_reduction_proxy::features::
-             kDataReductionProxyEnabledWithNetworkService},
-        {network::features::kNetworkErrorLogging});
-    CertVerifierBrowserTest::SetUp();
-    // Make report delivery happen instantly.
-    net::ReportingPolicy policy;
-    policy.delivery_interval = base::TimeDelta::FromSeconds(0);
-    net::ReportingPolicy::UsePolicyForTesting(policy);
-  }
-
-  void SetUpOnMainThread() override {
-    CertVerifierBrowserTest::SetUpOnMainThread();
-
-    g_browser_process->network_quality_tracker()
-        ->ReportEffectiveConnectionTypeForTesting(
-            net::EFFECTIVE_CONNECTION_TYPE_2G);
-
-    host_resolver()->AddRule("*", "127.0.0.1");
-
-    main_frame_response_ =
-        std::make_unique<net::test_server::ControllableHttpResponse>(
-            server(), "/lofi_test");
-    upload_response_ =
-        std::make_unique<net::test_server::ControllableHttpResponse>(server(),
-                                                                     "/upload");
-    mock_cert_verifier()->set_default_result(net::OK);
-    ASSERT_TRUE(server()->Start());
-  }
-
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    CertVerifierBrowserTest::SetUpCommandLine(cmd);
-    cmd->AppendSwitch("enable-spdy-proxy-auth");
-
-    // Due to race conditions, it's possible that blacklist data is not loaded
-    // at the time of first navigation. That may prevent Preview from
-    // triggering, and causing the test to flake.
-    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
-  }
-
-  net::EmbeddedTestServer* server() { return &https_server_; }
-  int port() const { return https_server_.port(); }
-
-  net::test_server::ControllableHttpResponse* main_frame_response() {
-    return main_frame_response_.get();
-  }
-
-  net::test_server::ControllableHttpResponse* upload_response() {
-    return upload_response_.get();
-  }
-
-  GURL GetReportingEnabledURL() const {
-    return GURL(base::StringPrintf("https://example.com:%d/lofi_test", port()));
-  }
-
-  GURL GetCollectorURL() const {
-    return GURL(base::StringPrintf("https://example.com:%d/upload", port()));
-  }
-
-  std::string GetReportToHeader() const {
-    return "Report-To: {\"endpoints\":[{\"url\":\"" + GetCollectorURL().spec() +
-           "\"}],\"max_age\":86400}\r\n";
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  net::EmbeddedTestServer https_server_;
-  std::unique_ptr<net::test_server::ControllableHttpResponse>
-      main_frame_response_;
-  std::unique_ptr<net::test_server::ControllableHttpResponse> upload_response_;
-
-  DISALLOW_COPY_AND_ASSIGN(PreviewsReportingBrowserTest);
-};
-
-std::unique_ptr<base::Value> ParseReportUpload(const std::string& payload) {
-  auto parsed_payload = base::test::ParseJsonDeprecated(payload);
-  // Clear out any non-reproducible fields.
-  for (auto& report : parsed_payload->GetList()) {
-    report.RemoveKey("age");
-    auto* user_agent =
-        report.FindKeyOfType("user_agent", base::Value::Type::STRING);
-    if (user_agent != nullptr)
-      *user_agent = base::Value("Mozilla/1.0");
-  }
-  return parsed_payload;
-}
-
-}  // namespace
-
-// Checks that the intervention is reported during a LoFi load.
-IN_PROC_BROWSER_TEST_F(PreviewsReportingBrowserTest,
-                       TestReportingHeadersSentForLoFiPreview) {
-  NavigateParams params(browser(), GetReportingEnabledURL(),
-                        ui::PAGE_TRANSITION_LINK);
-  Navigate(&params);
-
-  main_frame_response()->WaitForRequest();
-  main_frame_response()->Send(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/html\r\n"
-      "Empty page \r\n");
-  main_frame_response()->Send(GetReportToHeader());
-  main_frame_response()->Send("\r\n");
-  main_frame_response()->Done();
-
-  upload_response()->WaitForRequest();
-  auto actual = ParseReportUpload(upload_response()->http_request()->content);
-  upload_response()->Send("HTTP/1.1 204 OK\r\n");
-  upload_response()->Send("\r\n");
-  upload_response()->Done();
-
-  // Verify the contents of the report that we received.
-  EXPECT_TRUE(actual != nullptr);
-  auto expected = base::test::ParseJsonDeprecated(base::StringPrintf(
-      R"text(
-        [
-          {
-            "body": {
-              "id": "LitePageServed",
-              "message": "Modified page load behavior on the page because )text"
-      R"text(the page was expected to take a long amount of time to load. )text"
-      R"text(https://www.chromestatus.com/feature/5148050062311424"
-            },
-            "type": "intervention",
-            "url": "https://example.com:%d/lofi_test",
-            "user_agent": "Mozilla/1.0"
-          }
-        ]
-      )text",
-      port()));
-  EXPECT_EQ(*expected, *actual);
 }
