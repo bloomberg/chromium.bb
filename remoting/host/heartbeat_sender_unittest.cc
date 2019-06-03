@@ -145,6 +145,12 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
         test_server_.CreateInProcessChannel());
   }
 
+  ~HeartbeatSenderTest() override {
+    heartbeat_sender_.reset();
+    muxing_signal_strategy_.reset();
+    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  }
+
  protected:
   HeartbeatSender* heartbeat_sender() { return heartbeat_sender_.get(); }
 

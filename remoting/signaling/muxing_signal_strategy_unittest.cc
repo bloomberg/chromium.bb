@@ -80,6 +80,8 @@ class MuxingSignalStrategyTest : public testing::Test,
   }
 
   ~MuxingSignalStrategyTest() override {
+    muxing_signal_strategy_->RemoveListener(this);
+    muxing_signal_strategy_.reset();
     scoped_task_environment_.FastForwardUntilNoTasksRemain();
   }
 
