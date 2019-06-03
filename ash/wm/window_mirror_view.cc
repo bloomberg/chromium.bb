@@ -102,17 +102,14 @@ void WindowMirrorView::AddedToWidget() {
   target_ = GetWidget()->GetNativeWindow();
   target_->TrackOcclusionState();
 
-  force_occlusion_tracker_visible_.reset();
-  env_observer_.RemoveAll();
-
-  // Wait for window-occlusion tracker to be running before forcing visibility.
-  // This is done to minimize the amount of work during the initial animation
-  // when entering overview. In particular, telling the remote client it is
-  // visible is likely to result in a fair amount of work.
-  if (aura::Env::GetInstance()->GetWindowOcclusionTracker()->IsPaused())
-    env_observer_.Add(aura::Env::GetInstance());
-  else
-    ForceVisibilityAndOcclusion();
+  if (source_) {
+    // Force the occlusion tracker to treat the source as visible.
+    force_occlusion_tracker_visible_ =
+        std::make_unique<aura::WindowOcclusionTracker::ScopedForceVisible>(
+            source_);
+  } else {
+    force_occlusion_tracker_visible_.reset();
+  }
 }
 
 void WindowMirrorView::RemovedFromWidget() {
@@ -161,27 +158,6 @@ gfx::Rect WindowMirrorView::GetClientAreaBounds() const {
     return gfx::Rect();
   views::View* client_view = widget->client_view();
   return client_view->ConvertRectToWidget(client_view->GetLocalBounds());
-}
-
-void WindowMirrorView::ForceVisibilityAndOcclusion() {
-  // Force the occlusion tracker to treat the source (or the desk container if
-  // source_ is on an inactive desk) as visible.
-  aura::Window* window_to_force_visible = source_;
-  aura::Window* desk_container =
-      desks_util::GetDeskContainerForContext(source_);
-  if (desk_container && !desks_util::IsActiveDeskContainer(desk_container))
-    window_to_force_visible = desk_container;
-
-  force_occlusion_tracker_visible_ =
-      std::make_unique<aura::WindowOcclusionTracker::ScopedForceVisible>(
-          window_to_force_visible);
-}
-
-void WindowMirrorView::OnWindowOcclusionTrackingResumed() {
-  // Skip if the source_ has already been removed.
-  if (source_)
-    ForceVisibilityAndOcclusion();
-  env_observer_.RemoveAll();
 }
 
 }  // namespace wm
