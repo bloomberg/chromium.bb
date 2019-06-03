@@ -76,17 +76,20 @@ std::string GenerateCredentialMetadataSecret();
 //
 // Credential IDs have following format:
 //
-//    | version  |    nonce   | AEAD(pt=CBOR(user_entity), |
+//    | version  |    nonce   | AEAD(pt=CBOR(metadata), |
 //    | (1 byte) | (12 bytes) |      nonce=nonce,          |
 //    |          |            |      ad=(version, rpID))   |
 //
 // with version as 0x00, a random 12-byte nonce, and using AES-256-GCM as the
 // AEAD.
+//
+// The |user_name| and |user_display_name| fields may be truncated before
+// encryption. The truncated values are guaranteed to be valid UTF-8.
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<std::vector<uint8_t>> SealCredentialId(
     const std::string& secret,
     const std::string& rp_id,
-    const CredentialMetadata& user);
+    const CredentialMetadata& metadata);
 
 // UnsealCredentialId attempts to decrypt a CredentialMetadata from a credential
 // id.

@@ -218,6 +218,20 @@ std::string GenerateCredentialMetadataSecret() {
   return secret;
 }
 
+static std::string MaybeTruncateWithTrailingEllipsis(const std::string& in) {
+  constexpr size_t kMaxLength = 70u;
+  if (in.size() <= kMaxLength) {
+    return in;
+  }
+  std::string out;
+  // CTAP authenticators are not supposed to truncate before 64 bytes, but
+  // there is no truncate-with-min-size method, so truncate to a 67 byte max
+  // instead. Adding the 3-byte ellipsis gets us to a maximum of 70 bytes.
+  base::TruncateUTF8ToByteSize(in, kMaxLength - 3, &out);
+  out += "…";  // HORIZONTAL ELLIPSIS (E2 80 A6).
+  return out;
+}
+
 base::Optional<std::vector<uint8_t>> SealCredentialId(
     const std::string& secret,
     const std::string& rp_id,
@@ -236,9 +250,12 @@ base::Optional<std::vector<uint8_t>> SealCredentialId(
   // AES-256-GCM and authenticated with the version and RP ID.
   Value::ArrayValue cbor_user;
   cbor_user.emplace_back(Value(metadata.user_id));
-  cbor_user.emplace_back(Value(metadata.user_name, Value::Type::BYTE_STRING));
   cbor_user.emplace_back(
-      Value(metadata.user_display_name, Value::Type::BYTE_STRING));
+      Value(MaybeTruncateWithTrailingEllipsis(metadata.user_name),
+            Value::Type::BYTE_STRING));
+  cbor_user.emplace_back(
+      Value(MaybeTruncateWithTrailingEllipsis(metadata.user_display_name),
+            Value::Type::BYTE_STRING));
   // TODO(martinkr): Allow creation of resident keys.
   cbor_user.emplace_back(Value(false));
   base::Optional<std::vector<uint8_t>> pt =

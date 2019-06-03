@@ -129,6 +129,26 @@ TEST_F(CredentialMetadataTest, DecodeRpId) {
   EXPECT_FALSE(device::fido::mac::DecodeRpId(wrong_key_, EncodeRpId()));
 }
 
+TEST_F(CredentialMetadataTest, Truncation) {
+  constexpr char len70[] =
+      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345";
+  constexpr char len71[] =
+      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456";
+  constexpr char truncated[] =
+      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012…";
+  auto credential_id =
+      SealCredentialId(CredentialMetadata({1}, len71, len71, false));
+  CredentialMetadata metadata = UnsealCredentialId(credential_id);
+  EXPECT_EQ(metadata.user_name, truncated);
+  EXPECT_EQ(metadata.user_display_name, truncated);
+
+  credential_id =
+      SealCredentialId(CredentialMetadata({1}, len70, len70, false));
+  metadata = UnsealCredentialId(credential_id);
+  EXPECT_EQ(metadata.user_name, len70);
+  EXPECT_EQ(metadata.user_display_name, len70);
+}
+
 TEST(CredentialMetadata, GenerateCredentialMetadataSecret) {
   std::string s1 = GenerateCredentialMetadataSecret();
   EXPECT_EQ(32u, s1.size());
