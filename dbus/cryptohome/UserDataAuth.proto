@@ -101,6 +101,8 @@ message IsMountedReply {
   bool is_mounted = 1;
   // If the mount is ephemeral, that is, if the contents get cleared once
   // the user logs out.
+  // Note that if there's no username specified in the IsMountedRequest,
+  // then this field is set to true if any mount is ephemeral.
   bool is_ephemeral_mount = 2;
 }
 
