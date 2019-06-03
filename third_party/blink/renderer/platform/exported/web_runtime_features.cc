@@ -354,6 +354,10 @@ void WebRuntimeFeatures::EnablePaymentRequestHasEnrolledInstrument(
   RuntimeEnabledFeatures::SetPaymentRequestHasEnrolledInstrumentEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePaymentRetry(bool enable) {
+  RuntimeEnabledFeatures::SetPaymentRetryEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePerformanceManagerInstrumentation(bool enable) {
   RuntimeEnabledFeatures::SetPerformanceManagerInstrumentationEnabled(enable);
 }

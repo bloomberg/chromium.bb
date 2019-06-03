@@ -4600,7 +4600,6 @@ interface PaymentResponse : EventTarget
     attribute @@toStringTag
     getter details
     getter methodName
-    getter onpayerdetailchange
     getter payerEmail
     getter payerName
     getter payerPhone
@@ -4609,9 +4608,7 @@ interface PaymentResponse : EventTarget
     getter shippingOption
     method complete
     method constructor
-    method retry
     method toJSON
-    setter onpayerdetailchange
 interface Performance : EventTarget
     attribute @@toStringTag
     getter memory
