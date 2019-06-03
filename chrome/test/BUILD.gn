@@ -2869,6 +2869,7 @@ test("unit_tests") {
     "../browser/performance_manager/performance_manager_unittest.cc",
     "../browser/performance_manager/persistence/site_data/exponential_moving_average_unittest.cc",
     "../browser/performance_manager/persistence/site_data/leveldb_site_data_store_unittest.cc",
+    "../browser/performance_manager/persistence/site_data/site_data_cache_impl_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_impl_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_reader_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_writer_unittest.cc",

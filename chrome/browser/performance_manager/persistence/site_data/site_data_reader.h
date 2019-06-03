@@ -45,7 +45,9 @@ class SiteDataReader {
   const internal::SiteDataImpl* impl_for_testing() const { return impl_.get(); }
 
  private:
+  friend class SiteDataCacheImpl;
   friend class SiteDataReaderTest;
+
   FRIEND_TEST_ALL_PREFIXES(SiteDataReaderTest,
                            DestroyingReaderCancelsPendingCallbacks);
   FRIEND_TEST_ALL_PREFIXES(SiteDataReaderTest,

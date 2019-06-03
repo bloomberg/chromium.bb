@@ -24,6 +24,7 @@
 
 namespace performance_manager {
 
+class SiteDataCacheImpl;
 class SiteDataReaderTest;
 class SiteDataWriterTest;
 
@@ -150,6 +151,7 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
 
  protected:
   friend class base::RefCounted<SiteDataImpl>;
+  friend class performance_manager::SiteDataCacheImpl;
 
   // Friend all the tests.
   friend class SiteDataImplTest;
