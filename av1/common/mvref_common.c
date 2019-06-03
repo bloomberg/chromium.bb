@@ -1090,9 +1090,9 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
   if (ref_stamp >= 0) motion_field_projection(cm, LAST2_FRAME, 2);
 }
 
-static INLINE void record_samples(MB_MODE_INFO *mbmi, int *pts, int *pts_inref,
-                                  int row_offset, int sign_r, int col_offset,
-                                  int sign_c) {
+static INLINE void record_samples(const MB_MODE_INFO *mbmi, int *pts,
+                                  int *pts_inref, int row_offset, int sign_r,
+                                  int col_offset, int sign_c) {
   int bw = block_size_wide[mbmi->sb_type];
   int bh = block_size_high[mbmi->sb_type];
   int x = col_offset * MI_SIZE + sign_c * AOMMAX(bw, MI_SIZE) / 2 - 1;
@@ -1155,26 +1155,25 @@ uint8_t av1_selectSamples(MV *mv, int *pts, int *pts_inref, int len,
 // left-top pixel of current block.
 uint8_t av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
                         int mi_col, int *pts, int *pts_inref) {
-  MB_MODE_INFO *const mbmi0 = xd->mi[0];
-  int ref_frame = mbmi0->ref_frame[0];
-  int up_available = xd->up_available;
-  int left_available = xd->left_available;
-  int i, mi_step = 1;
+  const MB_MODE_INFO *const mbmi0 = xd->mi[0];
+  const int ref_frame = mbmi0->ref_frame[0];
+  const int up_available = xd->up_available;
+  const int left_available = xd->left_available;
+  int i, mi_step;
   uint8_t np = 0;
-
-  const TileInfo *const tile = &xd->tile;
   int do_tl = 1;
   int do_tr = 1;
+  const int mi_stride = xd->mi_stride;
 
   // scan the nearest above rows
   if (up_available) {
-    int mi_row_offset = -1;
-    MB_MODE_INFO *mbmi = xd->mi[mi_row_offset * xd->mi_stride];
+    const int mi_row_offset = -1;
+    const MB_MODE_INFO *mbmi = xd->mi[mi_row_offset * mi_stride];
     uint8_t n4_w = mi_size_wide[mbmi->sb_type];
 
     if (xd->n4_w <= n4_w) {
       // Handle "current block width <= above block width" case.
-      int col_offset = -mi_col % n4_w;
+      const int col_offset = -mi_col % n4_w;
 
       if (col_offset < 0) do_tl = 0;
       if (col_offset + n4_w > xd->n4_w) do_tr = 0;
@@ -1189,8 +1188,7 @@ uint8_t av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
     } else {
       // Handle "current block width > above block width" case.
       for (i = 0; i < AOMMIN(xd->n4_w, cm->mi_cols - mi_col); i += mi_step) {
-        int mi_col_offset = i;
-        mbmi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
+        mbmi = xd->mi[i + mi_row_offset * mi_stride];
         n4_w = mi_size_wide[mbmi->sb_type];
         mi_step = AOMMIN(xd->n4_w, n4_w);
 
@@ -1209,14 +1207,13 @@ uint8_t av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
 
   // scan the nearest left columns
   if (left_available) {
-    int mi_col_offset = -1;
-
-    MB_MODE_INFO *mbmi = xd->mi[mi_col_offset];
+    const int mi_col_offset = -1;
+    const MB_MODE_INFO *mbmi = xd->mi[mi_col_offset];
     uint8_t n4_h = mi_size_high[mbmi->sb_type];
 
     if (xd->n4_h <= n4_h) {
       // Handle "current block height <= above block height" case.
-      int row_offset = -mi_row % n4_h;
+      const int row_offset = -mi_row % n4_h;
 
       if (row_offset < 0) do_tl = 0;
 
@@ -1230,8 +1227,7 @@ uint8_t av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
     } else {
       // Handle "current block height > above block height" case.
       for (i = 0; i < AOMMIN(xd->n4_h, cm->mi_rows - mi_row); i += mi_step) {
-        int mi_row_offset = i;
-        mbmi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
+        mbmi = xd->mi[mi_col_offset + i * mi_stride];
         n4_h = mi_size_high[mbmi->sb_type];
         mi_step = AOMMIN(xd->n4_h, n4_h);
 
@@ -1250,10 +1246,9 @@ uint8_t av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
 
   // Top-left block
   if (do_tl && left_available && up_available) {
-    int mi_row_offset = -1;
-    int mi_col_offset = -1;
-
-    MB_MODE_INFO *mbmi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
+    const int mi_row_offset = -1;
+    const int mi_col_offset = -1;
+    MB_MODE_INFO *mbmi = xd->mi[mi_col_offset + mi_row_offset * mi_stride];
 
     if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
       record_samples(mbmi, pts, pts_inref, 0, -1, 0, -1);
@@ -1268,14 +1263,13 @@ uint8_t av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
   // Top-right block
   if (do_tr &&
       has_top_right(cm, xd, mi_row, mi_col, AOMMAX(xd->n4_w, xd->n4_h))) {
-    POSITION trb_pos = { -1, xd->n4_w };
-
+    const POSITION trb_pos = { -1, xd->n4_w };
+    const TileInfo *const tile = &xd->tile;
     if (is_inside(tile, mi_col, mi_row, &trb_pos)) {
-      int mi_row_offset = -1;
-      int mi_col_offset = xd->n4_w;
-
-      MB_MODE_INFO *mbmi =
-          xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
+      const int mi_row_offset = -1;
+      const int mi_col_offset = xd->n4_w;
+      const MB_MODE_INFO *mbmi =
+          xd->mi[mi_col_offset + mi_row_offset * mi_stride];
 
       if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
         record_samples(mbmi, pts, pts_inref, 0, -1, xd->n4_w, 1);
