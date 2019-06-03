@@ -988,50 +988,5 @@
     "prefix": "cookies-without-samesite-must-be-secure",
     "base": "external/wpt/cookies/samesite-none-secure",
     "args": ["--enable-features=SameSiteByDefaultCookies,CookiesWithoutSameSiteMustBeSecure"]
-  },
-  {
-    "prefix": "blink-cors",
-    "base": "external/wpt/fetch",
-    "args": ["--disable-features=OutOfBlinkCors"]
-  },
-  {
-    "prefix": "blink-cors",
-    "base": "external/wpt/http",
-    "args": ["--disable-features=OutOfBlinkCors"]
-  },
-  {
-    "prefix": "blink-cors",
-    "base": "external/wpt/referrer-policy",
-    "args": ["--disable-features=OutOfBlinkCors"]
-  },
-  {
-    "prefix": "blink-cors",
-    "base": "external/wpt/service-workers",
-    "args": ["--disable-features=OutOfBlinkCors"]
-  },
-  {
-    "prefix": "blink-cors",
-    "base": "external/wpt/xhr",
-    "args": ["--disable-features=OutOfBlinkCors"]
-  },
-  {
-    "prefix": "blink-cors",
-    "base": "http/tests/fetch",
-    "args": ["--disable-features=OutOfBlinkCors"]
-  },
-  {
-    "prefix": "blink-cors",
-    "base": "http/tests/navigation",
-    "args": ["--disable-features=OutOfBlinkCors"]
-  },
-  {
-    "prefix": "blink-cors",
-    "base": "http/tests/security",
-    "args": ["--disable-features=OutOfBlinkCors"]
-  },
-  {
-    "prefix": "blink-cors",
-    "base": "http/tests/xmlhttprequest",
-    "args": ["--disable-features=OutOfBlinkCors"]
   }
 ]

@@ -2162,11 +2162,6 @@ external/wpt/webstorage/storage_local-manual.html [ WontFix ]
 external/wpt/webstorage/storage_session-manual.html [ WontFix ]
 external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
-virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
-virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
-virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
-virtual/blink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
-virtual/blink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
@@ -2236,7 +2231,6 @@ Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin
 # https://foo.example.com/path?token=secret needs to be replaced with just
 # https://foo.example.com).
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
-crbug.com/669083 virtual/blink-cors/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
 # --------------------------- code cache isolation -----------------------
 # Code cache isolation tests only make sense if either
 # 1) site isolation is disabled or
