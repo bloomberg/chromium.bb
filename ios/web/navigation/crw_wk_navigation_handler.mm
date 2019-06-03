@@ -10,7 +10,10 @@
 #include "base/timer/timer.h"
 #import "ios/net/http_response_headers_util.h"
 #include "ios/web/common/features.h"
+#import "ios/web/js_messaging/crw_js_injector.h"
+#import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/navigation/crw_pending_navigation_info.h"
+#import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -27,6 +30,7 @@
 #import "ios/web/security/wk_web_view_security_util.h"
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
+#include "ios/web/web_view/content_type_util.h"
 #import "ios/web/web_view/wk_web_view_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
@@ -68,6 +72,12 @@ using web::wk_navigation_util::IsWKInternalUrl;
 // Returns the CertVerificationErrorsCacheType from self.delegate.
 @property(nonatomic, readonly, assign)
     web::CertVerificationErrorsCacheType* certVerificationErrors;
+// Returns the docuemnt URL from self.delegate.
+@property(nonatomic, readonly, assign) GURL documentURL;
+// Returns the session controller from self.navigationManagerImpl.
+@property(nonatomic, readonly, weak) CRWSessionController* sessionController;
+// Returns the js injector from self.delegate.
+@property(nonatomic, readonly, weak) CRWJSInjector* JSInjector;
 
 @end
 
@@ -266,8 +276,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
           self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();
       if (lastCommittedItem) {
         GURL lastCommittedURL = lastCommittedItem->GetURL();
-        if (lastCommittedURL !=
-            [self.delegate navigationHandlerDocumentURL:self]) {
+        if (lastCommittedURL != self.documentURL) {
           [self.delegate navigationHandlerRequirePageReconstruction:self];
           [self.delegate navigationHandler:self
                             setDocumentURL:lastCommittedURL
@@ -533,7 +542,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
                          WKNavigationTypeBackForward;
     bool isRestoringSession =
         web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-        IsRestoreSessionUrl([self.delegate navigationHandlerDocumentURL:self]);
+        IsRestoreSessionUrl(self.documentURL);
     exemptedAppSpecificLoad =
         currentItemIsPlaceholder || isBackForward || isRestoringSession;
   }
@@ -553,8 +562,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
     // pages. WebUI pages may have increased power and using the same web
     // process (which may potentially be controller by an attacker) is
     // dangerous.
-    if (web::GetWebClient()->IsAppSpecificURL(
-            [self.delegate navigationHandlerDocumentURL:self])) {
+    if (web::GetWebClient()->IsAppSpecificURL(self.documentURL)) {
       [self.delegate navigationHandlerAbortLoading:self];
       web::NavigationManager::WebLoadParams params(webViewURL);
       self.navigationManagerImpl->LoadURLWithParams(params);
@@ -682,6 +690,224 @@ using web::wk_navigation_util::IsWKInternalUrl;
 - (void)webView:(WKWebView*)webView
     didCommitNavigation:(WKNavigation*)navigation {
   [self didReceiveWKNavigationDelegateCallback];
+
+  // For reasons not yet fully understood, sometimes WKWebView triggers
+  // |webView:didFinishNavigation| before |webView:didCommitNavigation|. If a
+  // navigation is already finished, stop processing
+  // (https://crbug.com/818796#c2).
+  if ([self.navigationStates stateForNavigation:navigation] ==
+      web::WKNavigationState::FINISHED)
+    return;
+
+  BOOL committedNavigation =
+      [self.navigationStates isCommittedNavigation:navigation];
+  if (!web::features::StorePendingItemInContext()) {
+    // Code in this method relies on existance of pending item.
+    [self.navigationStates setState:web::WKNavigationState::COMMITTED
+                      forNavigation:navigation];
+  }
+
+  self.certVerificationErrors->Clear();
+
+  // Invariant: Every |navigation| should have a |context|. Note that violation
+  // of this invariant is currently observed in production, but the cause is not
+  // well understood. This DCHECK is meant to catch such cases in testing if
+  // they arise.
+  // TODO(crbug.com/864769): Remove nullptr checks on |context| in this method
+  // once the root cause of the invariant violation is found.
+  web::NavigationContextImpl* context =
+      [self.navigationStates contextForNavigation:navigation];
+  DCHECK(context);
+  UMA_HISTOGRAM_BOOLEAN("IOS.CommittedNavigationHasContext", context);
+
+  GURL webViewURL = net::GURLWithNSURL(webView.URL);
+  GURL currentWKItemURL =
+      net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
+  UMA_HISTOGRAM_BOOLEAN("IOS.CommittedURLMatchesCurrentItem",
+                        webViewURL == currentWKItemURL);
+
+  // TODO(crbug.com/787497): Always use webView.backForwardList.currentItem.URL
+  // to obtain lastCommittedURL once loadHTML: is no longer user for WebUI.
+  if (webViewURL.is_empty()) {
+    // It is possible for |webView.URL| to be nil, in which case
+    // webView.backForwardList.currentItem.URL will return the right committed
+    // URL (crbug.com/784480).
+    webViewURL = currentWKItemURL;
+  } else if (context && !context->IsPlaceholderNavigation() &&
+             context->GetUrl() == currentWKItemURL) {
+    // If webView.backForwardList.currentItem.URL matches |context|, then this
+    // is a known edge case where |webView.URL| is wrong.
+    // TODO(crbug.com/826013): Remove this workaround.
+    webViewURL = currentWKItemURL;
+  }
+
+  if (self.pendingNavigationInfo.MIMEType)
+    context->SetMimeType(self.pendingNavigationInfo.MIMEType);
+
+  // Don't show webview for placeholder navigation to avoid covering the native
+  // content, which may have already been shown.
+  if (!IsPlaceholderUrl(webViewURL))
+    [self.delegate navigationHandlerDisplayWebView:self];
+
+  // Update HTTP response headers.
+  self.webStateImpl->UpdateHttpResponseHeaders(webViewURL);
+
+  if (@available(iOS 11.3, *)) {
+    // On iOS 11.3 didReceiveServerRedirectForProvisionalNavigation: is not
+    // always called. So if URL was unexpectedly changed then it's probably
+    // because redirect callback was not called.
+    if (@available(iOS 12, *)) {
+      // rdar://37547029 was fixed on iOS 12.
+    } else if (context && !context->IsPlaceholderNavigation() &&
+               context->GetUrl() != webViewURL) {
+      [self didReceiveRedirectForNavigation:context withURL:webViewURL];
+    }
+  }
+
+  // |context| will be nil if this navigation has been already committed and
+  // finished.
+  if (context) {
+    web::NavigationManager* navigationManager =
+        self.webStateImpl->GetNavigationManager();
+    GURL pendingURL;
+    if (web::features::StorePendingItemInContext() &&
+        navigationManager->GetPendingItemIndex() == -1) {
+      if (context->GetItem()) {
+        pendingURL = context->GetItem()->GetURL();
+      }
+    } else {
+      if (navigationManager->GetPendingItem()) {
+        pendingURL = navigationManager->GetPendingItem()->GetURL();
+      }
+    }
+    if ((pendingURL == webViewURL) || (context->IsLoadingHtmlString()) ||
+        (!web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+         ui::PageTransitionCoreTypeIs(context->GetPageTransition(),
+                                      ui::PAGE_TRANSITION_RELOAD) &&
+         navigationManager->GetLastCommittedItem())) {
+      // Commit navigation if at least one of these is true:
+      //  - Navigation has pending item (this should always be true, but
+      //    pending item may not exist due to crbug.com/925304).
+      //  - Navigation is loadHTMLString:baseURL: navigation, which does not
+      //    create a pending item, but modifies committed item instead.
+      //  - Transition type is reload with Legacy Navigation Manager (Legacy
+      //    Navigation Manager does not create pending item for reload due to
+      //    crbug.com/676129)
+      context->SetHasCommitted(true);
+    }
+    context->SetResponseHeaders(self.webStateImpl->GetHttpResponseHeaders());
+    self.webStateImpl->SetContentsMimeType(
+        base::SysNSStringToUTF8(context->GetMimeType()));
+  }
+
+  [self commitPendingNavigationInfoInWebView:webView];
+
+  [self.delegate navigationHandlerRemoveAllWebFrames:self];
+
+  // This point should closely approximate the document object change, so reset
+  // the list of injected scripts to those that are automatically injected.
+  // Do not inject window ID if this is a placeholder URL: window ID is not
+  // needed for native view. For WebUI, let the window ID be injected when the
+  // |loadHTMLString:baseURL| navigation is committed.
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
+      !IsPlaceholderUrl(webViewURL)) {
+    [self.JSInjector resetInjectedScriptSet];
+
+    const std::string& mime_type = self.webStateImpl->GetContentsMimeType();
+    if (web::IsContentTypeHtml(mime_type) ||
+        web::IsContentTypeImage(mime_type) || mime_type.empty()) {
+      // In unit tests MIME type will be empty, because loadHTML:forURL: does
+      // not notify web view delegate about received response, so web controller
+      // does not get a chance to properly update MIME type.
+      [self.JSInjector injectWindowID];
+      web::WebFramesManagerImpl::FromWebState(self.webStateImpl)
+          ->RegisterExistingFrames();
+    }
+  }
+
+  if (committedNavigation) {
+    // WKWebView called didCommitNavigation: with incorrect WKNavigation object.
+    // Correct WKNavigation object for this navigation was deallocated because
+    // WKWebView mistakenly cancelled the navigation and called
+    // didFailProvisionalNavigation. As a result web::NavigationContext for this
+    // navigation does not exist anymore. Find correct navigation item and make
+    // it committed.
+    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      bool found_correct_navigation_item = false;
+      for (size_t i = 0; i < self.sessionController.items.size(); i++) {
+        web::NavigationItem* item = self.sessionController.items[i].get();
+        found_correct_navigation_item = item->GetURL() == webViewURL;
+        if (found_correct_navigation_item) {
+          [self.sessionController goToItemAtIndex:i
+                         discardNonCommittedItems:NO];
+          break;
+        }
+      }
+      DCHECK(found_correct_navigation_item);
+    }
+    [self.delegate navigationHandlerResetDocumentSpecificState:self];
+    [self.delegate navigationHandlerDidStartLoading:self];
+  } else if (context) {
+    // If |navigation| is nil (which happens for windows open by DOM), then it
+    // should be the first and the only pending navigation.
+    BOOL isLastNavigation =
+        !navigation ||
+        [[self.navigationStates lastAddedNavigation] isEqual:navigation];
+    if (isLastNavigation ||
+        (web::features::StorePendingItemInContext() &&
+         self.navigationManagerImpl->GetPendingItemIndex() == -1)) {
+      [self.delegate navigationHandler:self didChangePageWithContext:context];
+    } else if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      // WKWebView has more than one in progress navigation, and committed
+      // navigation was not the latest. Change last committed item to one that
+      // corresponds to committed navigation.
+      int itemIndex = web::GetCommittedItemIndexWithUniqueID(
+          self.navigationManagerImpl, context->GetNavigationItemUniqueID());
+      // Do not discard pending entry, because another pending navigation is
+      // still in progress and will commit or fail soon.
+      [self.sessionController goToItemAtIndex:itemIndex
+                     discardNonCommittedItems:NO];
+    }
+  }
+
+  if (web::features::StorePendingItemInContext()) {
+    // No further code relies an existance of pending item, so this navigation
+    // can be marked as "committed".
+    [self.navigationStates setState:web::WKNavigationState::COMMITTED
+                      forNavigation:navigation];
+  }
+
+  // This is the point where the document's URL has actually changed.
+  [self.delegate navigationHandler:self
+                    setDocumentURL:webViewURL
+                           context:context];
+
+  if (!committedNavigation && context && !context->IsLoadingErrorPage()) {
+    self.webStateImpl->OnNavigationFinished(context);
+  }
+
+  // Do not update the HTML5 history state or states of the last committed item
+  // for placeholder page because the actual navigation item will not be
+  // committed until the native content or WebUI is shown.
+  if (context && !context->IsPlaceholderNavigation() &&
+      !context->IsLoadingErrorPage() &&
+      !context->GetUrl().SchemeIs(url::kAboutScheme) &&
+      !IsRestoreSessionUrl(context->GetUrl())) {
+    [self.delegate
+        navigationHandlerUpdateSSLStatusForCurrentNavigationItem:self];
+    [self.delegate navigationHandlerUpdateHTML5HistoryState:self];
+    if (!context->IsLoadingErrorPage() && !IsRestoreSessionUrl(webViewURL)) {
+      [self setLastCommittedNavigationItemTitle:webView.title];
+    }
+  }
+
+  // Report cases where SSL cert is missing for a secure connection.
+  if (self.documentURL.SchemeIsCryptographic()) {
+    scoped_refptr<net::X509Certificate> cert;
+    cert = web::CreateCertFromTrust(webView.serverTrust);
+    UMA_HISTOGRAM_BOOLEAN("WebController.WKWebViewHasCertForSecureConnection",
+                          static_cast<bool>(cert));
+  }
 }
 
 - (void)webView:(WKWebView*)webView
@@ -725,10 +951,24 @@ using web::wk_navigation_util::IsWKInternalUrl;
   return [self.delegate certVerificationErrorsForNavigationHandler:self];
 }
 
+- (CRWJSInjector*)JSInjector {
+  return [self.delegate JSInjectorForNavigationHandler:self];
+}
+
+- (GURL)documentURL {
+  return [self.delegate navigationHandlerDocumentURL:self];
+}
+
 - (web::NavigationItemImpl*)currentNavItem {
   return self.navigationManagerImpl
              ? self.navigationManagerImpl->GetCurrentItemImpl()
              : nullptr;
+}
+
+- (CRWSessionController*)sessionController {
+  return self.navigationManagerImpl
+             ? self.navigationManagerImpl->GetSessionController()
+             : nil;
 }
 
 // This method should be called on receiving WKNavigationDelegate callbacks. It
@@ -815,7 +1055,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
   }
 
   // If the session is being restored, allow the navigation.
-  if (IsRestoreSessionUrl([self.delegate navigationHandlerDocumentURL:self])) {
+  if (IsRestoreSessionUrl(self.documentURL)) {
     return YES;
   }
 
@@ -1146,6 +1386,17 @@ using web::wk_navigation_util::IsWKInternalUrl;
 - (void)forgetNullWKNavigation:(WKNavigation*)navigation {
   if (!navigation)
     [self.navigationStates removeNavigation:navigation];
+}
+
+- (void)setLastCommittedNavigationItemTitle:(NSString*)title {
+  DCHECK(title);
+  web::NavigationItem* item =
+      self.navigationManagerImpl->GetLastCommittedItem();
+  if (!item)
+    return;
+
+  item->SetTitle(base::SysNSStringToUTF16(title));
+  self.webStateImpl->OnTitleChanged();
 }
 
 @end

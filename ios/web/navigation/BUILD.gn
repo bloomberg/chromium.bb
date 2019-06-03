@@ -20,6 +20,7 @@ source_set("navigation") {
     "//ios/net",
     "//ios/web:core",
     "//ios/web/common",
+    "//ios/web/js_messaging",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ios/web/public/deprecated",

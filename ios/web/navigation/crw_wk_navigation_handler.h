@@ -16,6 +16,7 @@
 @class CRWWKNavigationHandler;
 @class CRWPendingNavigationInfo;
 @class CRWWKNavigationStates;
+@class CRWJSInjector;
 class GURL;
 namespace base {
 class RepeatingTimer;
@@ -44,6 +45,10 @@ class WKBackForwardListItemHolder;
 - (web::CertVerificationErrorsCacheType*)
     certVerificationErrorsForNavigationHandler:
         (CRWWKNavigationHandler*)navigationHandler;
+
+// Returns the associated js injector.
+- (CRWJSInjector*)JSInjectorForNavigationHandler:
+    (CRWWKNavigationHandler*)navigationHandler;
 
 // Returns YES if WKWebView is halted.
 - (BOOL)navigationHandlerWebViewIsHalted:
@@ -115,6 +120,33 @@ class WKBackForwardListItemHolder;
 
 // Instructs the delegate to clear the web frames list.
 - (void)navigationHandlerRemoveAllWebFrames:
+    (CRWWKNavigationHandler*)navigationHandler;
+
+// Instructs the delegate to display the webView.
+- (void)navigationHandlerDisplayWebView:
+    (CRWWKNavigationHandler*)navigationHandler;
+
+// Resets any state that is associated with a specific document object (e.g.,
+// page interaction tracking).
+- (void)navigationHandlerResetDocumentSpecificState:
+    (CRWWKNavigationHandler*)navigationHandler;
+
+// Notifies the delegate that the page has actually started loading.
+- (void)navigationHandlerDidStartLoading:
+    (CRWWKNavigationHandler*)navigationHandler;
+
+// Notifies the delegate that the web page has changed document and/or URL.
+- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+    didChangePageWithContext:(web::NavigationContextImpl*)context;
+
+// Instructs the delegate to update the SSL status for the current navigation
+// item.
+- (void)navigationHandlerUpdateSSLStatusForCurrentNavigationItem:
+    (CRWWKNavigationHandler*)navigationHandler;
+
+// Instructs the delegate to update the HTML5 history state of the page using
+// the current NavigationItem.
+- (void)navigationHandlerUpdateHTML5HistoryState:
     (CRWWKNavigationHandler*)navigationHandler;
 
 @end
@@ -198,6 +230,10 @@ class WKBackForwardListItemHolder;
 // cleaned up manually by calling this method.
 // TODO(crbug.com/956511): Make this private once refactor is done.
 - (void)forgetNullWKNavigation:(WKNavigation*)navigation;
+
+// Sets last committed NavigationItem's title to the given |title|, which can
+// not be nil.
+- (void)setLastCommittedNavigationItemTitle:(NSString*)title;
 
 @end
 
