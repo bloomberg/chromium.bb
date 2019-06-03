@@ -145,7 +145,8 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
 
   auto primary_account_mutator =
       std::make_unique<identity::PrimaryAccountMutatorImpl>(
-          account_tracker_service.get(), signin_manager.get());
+          account_tracker_service.get(), signin_manager.get(),
+          browser_state->GetPrefs());
 
   auto accounts_cookie_mutator =
       std::make_unique<identity::AccountsCookieMutatorImpl>(

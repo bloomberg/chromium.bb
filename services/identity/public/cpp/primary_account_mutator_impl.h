@@ -8,6 +8,7 @@
 #include "services/identity/public/cpp/primary_account_mutator.h"
 
 class AccountTrackerService;
+class PrefService;
 class SigninManager;
 
 namespace identity {
@@ -17,7 +18,8 @@ namespace identity {
 class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
  public:
   PrimaryAccountMutatorImpl(AccountTrackerService* account_tracker,
-                            SigninManager* signin_manager);
+                            SigninManager* signin_manager,
+                            PrefService* pref_service);
   ~PrimaryAccountMutatorImpl() override;
 
   // PrimaryAccountMutator implementation.
@@ -26,15 +28,13 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
       ClearAccountsAction action,
       signin_metrics::ProfileSignout source_metric,
       signin_metrics::SignoutDelete delete_metric) override;
-  bool IsSettingPrimaryAccountAllowed() const override;
-  void SetSettingPrimaryAccountAllowed(bool allowed) override;
-  void SetAllowedPrimaryAccountPattern(const std::string& pattern) override;
 
  private:
   // Pointers to the services used by the PrimaryAccountMutatorImpl. They
   // *must* outlive this instance.
   AccountTrackerService* account_tracker_ = nullptr;
   SigninManager* signin_manager_ = nullptr;
+  PrefService* pref_service_ = nullptr;
 };
 
 }  // namespace identity

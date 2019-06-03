@@ -47,12 +47,14 @@ using ConcreteSigninManager = SigninManagerBase;
 // |profile|.  May return null if mutation of the signed-in state is not
 // supported on the current platform.
 std::unique_ptr<identity::PrimaryAccountMutator> BuildPrimaryAccountMutator(
+    Profile* profile,
     AccountTrackerService* account_tracker_service,
     ConcreteSigninManager* signin_manager) {
 #if !defined(OS_CHROMEOS)
   return std::make_unique<identity::PrimaryAccountMutatorImpl>(
       account_tracker_service,
-      SigninManager::FromSigninManagerBase(signin_manager));
+      SigninManager::FromSigninManagerBase(signin_manager),
+      profile->GetPrefs());
 #else
   return nullptr;
 #endif
@@ -192,7 +194,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
       gaia_cookie_manager_service.get());
 
   std::unique_ptr<identity::PrimaryAccountMutator> primary_account_mutator =
-      BuildPrimaryAccountMutator(account_tracker_service.get(),
+      BuildPrimaryAccountMutator(profile, account_tracker_service.get(),
                                  signin_manager.get());
 
   std::unique_ptr<identity::AccountsMutator> accounts_mutator =

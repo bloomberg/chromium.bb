@@ -56,15 +56,6 @@ class PrimaryAccountMutator {
       ClearAccountsAction action,
       signin_metrics::ProfileSignout source_metric,
       signin_metrics::SignoutDelete delete_metric) = 0;
-
-  // Getter and setter that allow enabling or disabling the ability to set the
-  // primary account.
-  virtual bool IsSettingPrimaryAccountAllowed() const = 0;
-  virtual void SetSettingPrimaryAccountAllowed(bool allowed) = 0;
-
-  // Sets the pattern controlling which user names are allowed when setting
-  // the primary account.
-  virtual void SetAllowedPrimaryAccountPattern(const std::string& pattern) = 0;
 };
 
 }  // namespace identity

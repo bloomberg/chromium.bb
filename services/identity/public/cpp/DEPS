@@ -11,6 +11,7 @@ include_rules = [
   "+components/signin/core/browser/oauth2_token_service_delegate_android.h",
   "+components/signin/core/browser/signin_buildflags.h",
   "+components/signin/core/browser/signin_metrics.h",
+  "+components/signin/core/browser/signin_pref_names.h",
   "+components/signin/core/browser/signin_switches.h",
   "+components/signin/core/browser/ubertoken_fetcher_impl.h",
   "+components/signin/core/browser/ubertoken_fetcher.h",

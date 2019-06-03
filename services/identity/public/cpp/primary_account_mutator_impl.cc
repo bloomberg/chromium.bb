@@ -6,24 +6,30 @@
 
 #include <utility>
 
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 
 namespace identity {
 
 PrimaryAccountMutatorImpl::PrimaryAccountMutatorImpl(
     AccountTrackerService* account_tracker,
-    SigninManager* signin_manager)
-    : account_tracker_(account_tracker), signin_manager_(signin_manager) {
+    SigninManager* signin_manager,
+    PrefService* pref_service)
+    : account_tracker_(account_tracker),
+      signin_manager_(signin_manager),
+      pref_service_(pref_service) {
   DCHECK(account_tracker_);
   DCHECK(signin_manager_);
+  DCHECK(pref_service_);
 }
 
 PrimaryAccountMutatorImpl::~PrimaryAccountMutatorImpl() {}
 
 bool PrimaryAccountMutatorImpl::SetPrimaryAccount(
     const std::string& account_id) {
-  if (!IsSettingPrimaryAccountAllowed())
+  if (!pref_service_->GetBoolean(prefs::kSigninAllowed))
     return false;
 
   if (signin_manager_->IsAuthenticated())
@@ -60,19 +66,6 @@ bool PrimaryAccountMutatorImpl::ClearPrimaryAccount(
   }
 
   return true;
-}
-
-bool PrimaryAccountMutatorImpl::IsSettingPrimaryAccountAllowed() const {
-  return signin_manager_->IsSigninAllowed();
-}
-
-void PrimaryAccountMutatorImpl::SetSettingPrimaryAccountAllowed(bool allowed) {
-  signin_manager_->SetSigninAllowed(allowed);
-}
-
-void PrimaryAccountMutatorImpl::SetAllowedPrimaryAccountPattern(
-    const std::string& pattern) {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace identity

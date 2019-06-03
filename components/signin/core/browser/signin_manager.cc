@@ -98,10 +98,6 @@ bool SigninManager::IsSigninAllowed() const {
   return signin_allowed_.GetValue();
 }
 
-void SigninManager::SetSigninAllowed(bool allowed) {
-  signin_allowed_.SetValue(allowed);
-}
-
 void SigninManager::OnSigninAllowedPrefChanged() {
   if (!IsSigninAllowed() && IsAuthenticated()) {
     VLOG(0) << "IsSigninAllowed() set to false, signing out the user";

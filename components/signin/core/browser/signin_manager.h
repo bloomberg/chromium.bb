@@ -75,19 +75,13 @@ class SigninManager : public SigninManagerBase,
   // up the corresponding account_id and gaia_id for this email.
   void SignIn(const std::string& username);
 
-  // Returns true if a signin to Chrome is allowed (by policy or pref).
-  // TODO(crbug.com/806778): this method should not be used externally,
-  // instead the value of the kSigninAllowed preference should be checked.
-  // Once all external code has been modified, this method will be removed.
-  bool IsSigninAllowed() const;
-
-  // Sets whether sign-in is allowed or not.
-  void SetSigninAllowed(bool allowed);
-
  private:
   friend class identity::IdentityManager;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, Prohibited);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, TestAlternateWildcard);
+
+  // Returns true if a signin to Chrome is allowed (by policy or pref).
+  bool IsSigninAllowed() const;
 
   // Send all observers |GoogleSigninSucceeded| notifications.
   void FireGoogleSigninSucceeded();

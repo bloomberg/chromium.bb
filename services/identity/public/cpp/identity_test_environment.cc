@@ -221,7 +221,7 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
 #if !defined(OS_CHROMEOS)
   primary_account_mutator = std::make_unique<PrimaryAccountMutatorImpl>(
       account_tracker_service.get(),
-      static_cast<SigninManager*>(signin_manager.get()));
+      static_cast<SigninManager*>(signin_manager.get()), pref_service);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

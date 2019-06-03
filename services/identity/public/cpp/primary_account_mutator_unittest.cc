@@ -10,6 +10,8 @@
 #include "base/scoped_observer.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/platform_test.h"
@@ -209,28 +211,6 @@ void RunClearPrimaryAccountTest(
 
 using PrimaryAccountMutatorTest = PlatformTest;
 
-// Checks that the method to control whether setting the primary account is
-// working correctly and that the setting is respected by SetPrimaryAccount().
-TEST_F(PrimaryAccountMutatorTest, SetSettingPrimaryAccountAllowed) {
-  base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment environment;
-
-  identity::IdentityManager* identity_manager = environment.identity_manager();
-  identity::PrimaryAccountMutator* primary_account_mutator =
-      identity_manager->GetPrimaryAccountMutator();
-
-  // Abort the test if the current platform does not support mutation of the
-  // primary account (the returned PrimaryAccountMutator* will be null).
-  if (!primary_account_mutator)
-    return;
-
-  primary_account_mutator->SetSettingPrimaryAccountAllowed(false);
-  EXPECT_FALSE(primary_account_mutator->IsSettingPrimaryAccountAllowed());
-
-  primary_account_mutator->SetSettingPrimaryAccountAllowed(true);
-  EXPECT_TRUE(primary_account_mutator->IsSettingPrimaryAccountAllowed());
-}
-
 // Checks that setting the primary account works.
 TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount) {
   base::test::ScopedTaskEnvironment task_environment;
@@ -333,7 +313,10 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_AlreadyHasPrimaryAccount) {
 TEST_F(PrimaryAccountMutatorTest,
        SetPrimaryAccount_SettingPrimaryAccountForbidden) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment environment;
+
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  identity::IdentityTestEnvironment environment(
+      /*test_url_loader_factory=*/nullptr, &pref_service);
 
   identity::IdentityManager* identity_manager = environment.identity_manager();
   identity::PrimaryAccountMutator* primary_account_mutator =
@@ -347,8 +330,8 @@ TEST_F(PrimaryAccountMutatorTest,
   AccountInfo primary_account_info =
       environment.MakeAccountAvailable(kPrimaryAccountEmail);
 
-  primary_account_mutator->SetSettingPrimaryAccountAllowed(false);
-  EXPECT_FALSE(primary_account_mutator->IsSettingPrimaryAccountAllowed());
+  // Configure prefs so that setting the primary account is disallowed.
+  pref_service.SetBoolean(prefs::kSigninAllowed, false);
 
   EXPECT_FALSE(identity_manager->HasPrimaryAccount());
   EXPECT_FALSE(primary_account_mutator->SetPrimaryAccount(
