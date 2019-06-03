@@ -416,7 +416,6 @@ TEST_P(ReadableStreamTest, Serialize) {
   }
 
   ScopedTransferableStreamsForTest enabled(true);
-  RuntimeEnabledFeatures::SetTransferableStreamsEnabled(true);
 
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();

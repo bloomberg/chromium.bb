@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -1457,7 +1458,7 @@ TEST_F(EventHandlerSimTest, TapActiveInFrame) {
 // Test that the hover is updated at the next begin frame after the compositor
 // scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterCompositorScrollAtBeginFrame) {
-  RuntimeEnabledFeatures::SetUpdateHoverFromScrollAtBeginFrameEnabled(true);
+  ScopedUpdateHoverFromScrollAtBeginFrameForTest scoped_feature(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1543,7 +1544,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterCompositorScrollAtBeginFrame) {
 // Test that the hover is updated at the next begin frame after the main thread
 // scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
-  RuntimeEnabledFeatures::SetUpdateHoverFromScrollAtBeginFrameEnabled(true);
+  ScopedUpdateHoverFromScrollAtBeginFrameForTest scoped_feature(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1644,7 +1645,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
 // Test that the hover is updated at the next begin frame after the smooth JS
 // scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
-  RuntimeEnabledFeatures::SetUpdateHoverFromScrollAtBeginFrameEnabled(true);
+  ScopedUpdateHoverFromScrollAtBeginFrameForTest scoped_feature(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 500));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");

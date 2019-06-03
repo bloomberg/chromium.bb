@@ -328,7 +328,7 @@ TEST(CSSPropertyParserTest, ClipPathEllipse) {
 }
 
 TEST(CSSPropertyParserTest, ScrollCustomizationPropertySingleValue) {
-  RuntimeEnabledFeatures::SetScrollCustomizationEnabled(true);
+  ScopedScrollCustomizationForTest scoped_feature(true);
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyID::kScrollCustomization, "pan-down",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
@@ -339,7 +339,7 @@ TEST(CSSPropertyParserTest, ScrollCustomizationPropertySingleValue) {
 }
 
 TEST(CSSPropertyParserTest, ScrollCustomizationPropertyTwoValuesCombined) {
-  RuntimeEnabledFeatures::SetScrollCustomizationEnabled(true);
+  ScopedScrollCustomizationForTest scoped_feature(true);
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyID::kScrollCustomization, "pan-left pan-y",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
@@ -353,7 +353,7 @@ TEST(CSSPropertyParserTest, ScrollCustomizationPropertyTwoValuesCombined) {
 
 TEST(CSSPropertyParserTest, ScrollCustomizationPropertyInvalidEntries) {
   // We expect exactly one property value per coordinate.
-  RuntimeEnabledFeatures::SetScrollCustomizationEnabled(true);
+  ScopedScrollCustomizationForTest scoped_feature(true);
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyID::kScrollCustomization, "pan-left pan-right",
       StrictCSSParserContext(SecureContextMode::kSecureContext));

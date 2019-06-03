@@ -6,15 +6,16 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-class AlternateSignedExchangeResourceInfoTest : public testing::Test {
+class AlternateSignedExchangeResourceInfoTest
+    : public testing::Test,
+      private ScopedSignedExchangeSubresourcePrefetchForTest {
  public:
-  AlternateSignedExchangeResourceInfoTest() {
-    RuntimeEnabledFeatures::SetSignedExchangeSubresourcePrefetchEnabled(true);
-  }
+  AlternateSignedExchangeResourceInfoTest()
+      : ScopedSignedExchangeSubresourcePrefetchForTest(true) {}
   ~AlternateSignedExchangeResourceInfoTest() override = default;
 
  protected:

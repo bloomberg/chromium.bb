@@ -1001,11 +1001,10 @@ TEST_F(DocumentTest, InterfaceInvalidatorDestruction) {
 // Test fixture parameterized on whether the "IsolatedWorldCSP" feature is
 // enabled.
 class IsolatedWorldCSPTest : public DocumentTest,
-                             public testing::WithParamInterface<bool> {
+                             public testing::WithParamInterface<bool>,
+                             private ScopedIsolatedWorldCSPForTest {
  public:
-  IsolatedWorldCSPTest() {
-    RuntimeEnabledFeatures::SetIsolatedWorldCSPEnabled(GetParam());
-  }
+  IsolatedWorldCSPTest() : ScopedIsolatedWorldCSPForTest(GetParam()) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IsolatedWorldCSPTest);
@@ -1226,12 +1225,12 @@ TEST_F(DocumentTest, PrefersColorSchemeChanged) {
  * Tests for viewport-fit propagation.
  */
 
-class ViewportFitDocumentTest : public DocumentTest {
+class ViewportFitDocumentTest : public DocumentTest,
+                                private ScopedDisplayCutoutAPIForTest {
  public:
+  ViewportFitDocumentTest() : ScopedDisplayCutoutAPIForTest(true) {}
   void SetUp() override {
     DocumentTest::SetUp();
-
-    RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
     GetDocument().GetSettings()->SetViewportMetaEnabled(true);
   }
 

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -245,59 +246,63 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
   GetDocument().body()->addEventListener(event_type_names::kPointermove,
                                          callback);
 
-  // Turn on the flag for test.
-  RuntimeEnabledFeatures::SetMovementXYInBlinkEnabled(true);
+  {
+    // Turn on the flag for test.
+    ScopedMovementXYInBlinkForTest scoped_feature(true);
 
-  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
-      CreateTestPointerEvent(WebInputEvent::kPointerMove,
-                             WebPointerProperties::PointerType::kMouse,
-                             WebFloatPoint(150, 210), WebFloatPoint(100, 50),
-                             10, 10),
-      std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
-  // The first pointermove event has movement_x/y 0.
-  ASSERT_EQ(callback->last_screen_x_, 100);
-  ASSERT_EQ(callback->last_screen_y_, 50);
-  ASSERT_EQ(callback->last_movement_x_, 0);
-  ASSERT_EQ(callback->last_movement_y_, 0);
+    WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
+        CreateTestPointerEvent(WebInputEvent::kPointerMove,
+                               WebPointerProperties::PointerType::kMouse,
+                               WebFloatPoint(150, 210), WebFloatPoint(100, 50),
+                               10, 10),
+        std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+    // The first pointermove event has movement_x/y 0.
+    ASSERT_EQ(callback->last_screen_x_, 100);
+    ASSERT_EQ(callback->last_screen_y_, 50);
+    ASSERT_EQ(callback->last_movement_x_, 0);
+    ASSERT_EQ(callback->last_movement_y_, 0);
 
-  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
-      CreateTestPointerEvent(WebInputEvent::kPointerMove,
-                             WebPointerProperties::PointerType::kMouse,
-                             WebFloatPoint(150, 200), WebFloatPoint(132, 29),
-                             10, 10),
-      std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
-  // pointermove event movement = event.screenX/Y - last_event.screenX/Y.
-  ASSERT_EQ(callback->last_screen_x_, 132);
-  ASSERT_EQ(callback->last_screen_y_, 29);
-  ASSERT_EQ(callback->last_movement_x_, 32);
-  ASSERT_EQ(callback->last_movement_y_, -21);
+    WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
+        CreateTestPointerEvent(WebInputEvent::kPointerMove,
+                               WebPointerProperties::PointerType::kMouse,
+                               WebFloatPoint(150, 200), WebFloatPoint(132, 29),
+                               10, 10),
+        std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+    // pointermove event movement = event.screenX/Y - last_event.screenX/Y.
+    ASSERT_EQ(callback->last_screen_x_, 132);
+    ASSERT_EQ(callback->last_screen_y_, 29);
+    ASSERT_EQ(callback->last_movement_x_, 32);
+    ASSERT_EQ(callback->last_movement_y_, -21);
 
-  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
-      CreateTestPointerEvent(WebInputEvent::kPointerMove,
-                             WebPointerProperties::PointerType::kMouse,
-                             WebFloatPoint(150, 210),
-                             WebFloatPoint(113.8, 32.7), 10, 10),
-      std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
-  // fractional screen coordinates result in fractional movement.
-  ASSERT_FLOAT_EQ(callback->last_screen_x_, 113.8);
-  ASSERT_FLOAT_EQ(callback->last_screen_y_, 32.7);
-  // TODO(eirage): These should be float value once mouse_event.idl change.
-  ASSERT_FLOAT_EQ(callback->last_movement_x_, -18);
-  ASSERT_FLOAT_EQ(callback->last_movement_y_, 3);
+    WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
+        CreateTestPointerEvent(WebInputEvent::kPointerMove,
+                               WebPointerProperties::PointerType::kMouse,
+                               WebFloatPoint(150, 210),
+                               WebFloatPoint(113.8, 32.7), 10, 10),
+        std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+    // fractional screen coordinates result in fractional movement.
+    ASSERT_FLOAT_EQ(callback->last_screen_x_, 113.8);
+    ASSERT_FLOAT_EQ(callback->last_screen_y_, 32.7);
+    // TODO(eirage): These should be float value once mouse_event.idl change.
+    ASSERT_FLOAT_EQ(callback->last_movement_x_, -18);
+    ASSERT_FLOAT_EQ(callback->last_movement_y_, 3);
+  }
 
-  // When flag is off, movementX/Y follows the value in WebPointerProperties.
-  RuntimeEnabledFeatures::SetMovementXYInBlinkEnabled(false);
+  {
+    // When flag is off, movementX/Y follows the value in WebPointerProperties.
+    ScopedMovementXYInBlinkForTest scoped_feature(false);
 
-  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
-      CreateTestPointerEvent(WebInputEvent::kPointerMove,
-                             WebPointerProperties::PointerType::kMouse,
-                             WebFloatPoint(150, 210), WebFloatPoint(100, 16.25),
-                             1024, -8765),
-      std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
-  ASSERT_EQ(callback->last_screen_x_, 100);
-  ASSERT_EQ(callback->last_screen_y_, 16.25);
-  ASSERT_EQ(callback->last_movement_x_, 1024);
-  ASSERT_EQ(callback->last_movement_y_, -8765);
+    WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
+        CreateTestPointerEvent(WebInputEvent::kPointerMove,
+                               WebPointerProperties::PointerType::kMouse,
+                               WebFloatPoint(150, 210),
+                               WebFloatPoint(100, 16.25), 1024, -8765),
+        std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
+    ASSERT_EQ(callback->last_screen_x_, 100);
+    ASSERT_EQ(callback->last_screen_y_, 16.25);
+    ASSERT_EQ(callback->last_movement_x_, 1024);
+    ASSERT_EQ(callback->last_movement_y_, -8765);
+  }
 }
 
 }  // namespace blink

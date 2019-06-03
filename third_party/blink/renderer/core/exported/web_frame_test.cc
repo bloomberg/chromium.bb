@@ -12777,8 +12777,7 @@ class ExternallyHandledPluginDocumentTest
 
 TEST_P(ExternallyHandledPluginDocumentTest, DocumentType) {
   bool cross_process = GetParam();
-  RuntimeEnabledFeatures::SetMimeHandlerViewInCrossProcessFrameEnabled(
-      cross_process);
+  ScopedMimeHandlerViewInCrossProcessFrameForTest scoped_feature(cross_process);
   ScopedFakePluginRegistry fake_plugins;
   RegisterMockedHttpURLLoadWithMimeType("test.pdf", "application/pdf");
   frame_test_helpers::WebViewHelper web_view_helper;

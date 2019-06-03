@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "v8/include/v8.h"
 
@@ -599,7 +600,7 @@ TEST(ReadableStreamOperationsTest, Tee) {
 }
 
 TEST(ReadableStreamOperationsTest, Serialize) {
-  RuntimeEnabledFeatures::SetTransferableStreamsEnabled(true);
+  ScopedTransferableStreamsForTest enabled(true);
 
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
