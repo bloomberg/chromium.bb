@@ -187,5 +187,23 @@ TEST(AddressFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {
                   "Paulo-SP, 04094-050")));
 }
 
+TEST(AddressFormLabelFormatterTest, GetLabelsForFormWithoutName) {
+  AutofillProfile profile =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Sarah", "", "Revere", "sarah.revere@aol.com",
+                       "", "19 North Sq", "", "Boston", "MA", "02113", "US",
+                       "16175232338");
+
+  const std::vector<AutofillProfile*> profiles{&profile};
+  const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
+      profiles, "en-US", ADDRESS_HOME_LINE1,
+      {ADDRESS_HOME_CITY, ADDRESS_HOME_STATE, ADDRESS_HOME_DEPENDENT_LOCALITY,
+       ADDRESS_HOME_ZIP});
+
+  // Checks that the name does not appear in the labels.
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("Boston, MA 02113")));
+}
+
 }  // namespace
 }  // namespace autofill

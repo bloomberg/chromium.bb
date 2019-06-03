@@ -321,5 +321,22 @@ TEST(AddressPhoneFormLabelFormatterTest,
                                       base::ASCIIToUTF16("02445")})));
 }
 
+TEST(AddressPhoneFormLabelFormatterTest, GetLabelsForFormWithoutName) {
+  AutofillProfile profile =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Sarah", "", "Revere", "sarah.revere@aol.com",
+                       "", "19 North Sq", "", "Boston", "MA", "02113", "US",
+                       "16175232338");
+
+  const std::vector<AutofillProfile*> profiles{&profile};
+  const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
+      profiles, "en-US", ADDRESS_BILLING_LINE1,
+      {ADDRESS_BILLING_LINE1, ADDRESS_BILLING_ZIP, PHONE_HOME_WHOLE_NUMBER});
+
+  // Checks that the name does not appear in the labels.
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("(617) 523-2338")));
+}
+
 }  // namespace
 }  // namespace autofill

@@ -30,19 +30,17 @@ using data_util::bit_field_type_groups::kEmail;
 using data_util::bit_field_type_groups::kName;
 using data_util::bit_field_type_groups::kPhone;
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
 namespace {
 
 // Returns true if a form has address fields or has least two supported
 // non-address fields.
-bool IsSupportedFormTypeOnMobile(uint32_t groups) {
+bool IsSupportedFormType(uint32_t groups) {
   return ContainsAddress(groups) ||
          ContainsName(groups) + ContainsEmail(groups) + ContainsPhone(groups) >=
              2;
 }
 
 }  // namespace
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 LabelFormatter::LabelFormatter(const std::vector<AutofillProfile*>& profiles,
                                const std::string& app_locale,
@@ -102,27 +100,32 @@ std::unique_ptr<LabelFormatter> LabelFormatter::Create(
     ServerFieldType focused_field_type,
     const std::vector<ServerFieldType>& field_types) {
   const uint32_t groups = data_util::DetermineGroups(field_types);
+  if (!IsSupportedFormType(groups)) {
+    return nullptr;
+  }
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  return IsSupportedFormTypeOnMobile(groups)
-             ? std::make_unique<MobileLabelFormatter>(profiles, app_locale,
-                                                      focused_field_type,
-                                                      groups, field_types)
-             : nullptr;
+  return std::make_unique<MobileLabelFormatter>(
+      profiles, app_locale, focused_field_type, groups, field_types);
 #else
   switch (groups) {
+    case kAddress | kEmail | kPhone:
     case kName | kAddress | kEmail | kPhone:
       return std::make_unique<AddressContactFormLabelFormatter>(
           profiles, app_locale, focused_field_type, groups, field_types);
+    case kAddress | kPhone:
     case kName | kAddress | kPhone:
       return std::make_unique<AddressPhoneFormLabelFormatter>(
           profiles, app_locale, focused_field_type, groups, field_types);
+    case kAddress | kEmail:
     case kName | kAddress | kEmail:
       return std::make_unique<AddressEmailFormLabelFormatter>(
           profiles, app_locale, focused_field_type, groups, field_types);
+    case kAddress:
     case kName | kAddress:
       return std::make_unique<AddressFormLabelFormatter>(
           profiles, app_locale, focused_field_type, groups, field_types);
+    case kEmail | kPhone:
     case kName | kEmail | kPhone:
     case kName | kEmail:
     case kName | kPhone:

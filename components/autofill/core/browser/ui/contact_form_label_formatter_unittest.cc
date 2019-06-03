@@ -302,5 +302,22 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndEmailWithFocusedEmail) {
               ElementsAre(base::ASCIIToUTF16("John F Kennedy")));
 }
 
+TEST(ContactFormLabelFormatterTest, GetLabelsForFormWithoutName) {
+  AutofillProfile profile =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Sarah", "", "Revere", "sarah.revere@aol.com",
+                       "", "19 North Sq", "", "Boston", "MA", "02113", "US",
+                       "16175232338");
+
+  const std::vector<AutofillProfile*> profiles{&profile};
+  const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
+      profiles, "en-US", PHONE_HOME_COUNTRY_CODE,
+      {EMAIL_ADDRESS, PHONE_HOME_COUNTRY_CODE, PHONE_HOME_CITY_AND_NUMBER});
+
+  // Checks that the name does not appear in the labels.
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("sarah.revere@aol.com")));
+}
+
 }  // namespace
 }  // namespace autofill

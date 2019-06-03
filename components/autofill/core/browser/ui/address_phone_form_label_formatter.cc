@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/ui/address_phone_form_label_formatter.h"
 
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
 
 namespace autofill {
@@ -44,7 +45,7 @@ base::string16 AddressPhoneFormLabelFormatter::
         const AutofillProfile& profile,
         FieldTypeGroup focused_group) const {
   std::vector<base::string16> label_parts;
-  if (focused_group != NAME) {
+  if (focused_group != NAME && data_util::ContainsName(groups())) {
     AddLabelPartIfNotEmpty(GetLabelFullName(profile, app_locale()),
                            &label_parts);
   }

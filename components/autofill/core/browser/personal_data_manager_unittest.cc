@@ -2784,28 +2784,6 @@ TEST_F(PersonalDataManagerTest,
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_FormWithoutNameField) {
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
-                       "", "", "", "", "01852", "US", "");
-  AddProfileToPersonalDataManager(profile);
-
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillUseImprovedLabelDisambiguation);
-
-  EXPECT_THAT(personal_data_->GetProfileSuggestions(
-                  AutofillType(ADDRESS_HOME_ZIP), base::string16(), false,
-                  std::vector<ServerFieldType>{ADDRESS_HOME_ZIP, EMAIL_ADDRESS,
-                                               PHONE_HOME_WHOLE_NUMBER}),
-              ElementsAre(AllOf(
-                  testing::Field(&Suggestion::label,
-                                 base::ASCIIToUTF16("hoa.pham@comcast.net")),
-                  testing::Field(&Suggestion::icon, ""))));
-}
-#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
-
 #if defined(OS_ANDROID) || defined(OS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowOne) {
   std::map<std::string, std::string> parameters;
