@@ -42,11 +42,11 @@ template <>
 struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::IDBIndexKeysDataView,
                                         blink::IndexedDBIndexKeys> {
   static int64_t index_id(const blink::IndexedDBIndexKeys& index_keys) {
-    return index_keys.first;
+    return index_keys.id;
   }
   static const std::vector<blink::IndexedDBKey>& index_keys(
       const blink::IndexedDBIndexKeys& index_keys) {
-    return index_keys.second;
+    return index_keys.keys;
   }
   static bool Read(blink::mojom::IDBIndexKeysDataView data,
                    blink::IndexedDBIndexKeys* out);

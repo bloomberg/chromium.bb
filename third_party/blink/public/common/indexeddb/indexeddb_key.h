@@ -74,7 +74,10 @@ class BLINK_COMMON_EXPORT IndexedDBKey {
 };
 
 // An index id, and corresponding set of keys to insert.
-using IndexedDBIndexKeys = std::pair<int64_t, std::vector<IndexedDBKey>>;
+struct IndexedDBIndexKeys {
+  int64_t id;
+  std::vector<IndexedDBKey> keys;
+};
 
 }  // namespace blink
 

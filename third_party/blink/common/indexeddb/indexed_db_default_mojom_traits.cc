@@ -45,8 +45,8 @@ bool StructTraits<
     blink::mojom::IDBIndexKeysDataView,
     blink::IndexedDBIndexKeys>::Read(blink::mojom::IDBIndexKeysDataView data,
                                      blink::IndexedDBIndexKeys* out) {
-  out->first = data.index_id();
-  return data.ReadIndexKeys(&out->second);
+  out->id = data.index_id();
+  return data.ReadIndexKeys(&out->keys);
 }
 
 // static

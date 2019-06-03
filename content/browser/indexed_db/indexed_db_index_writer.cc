@@ -42,8 +42,8 @@ bool IndexWriter::VerifyIndexKeys(
     const IndexedDBKey& primary_key,
     base::string16* error_message) const {
   *can_add_keys = false;
-  DCHECK_EQ(index_id, index_keys_.first);
-  for (const auto& key : index_keys_.second) {
+  DCHECK_EQ(index_id, index_keys_.id);
+  for (const auto& key : index_keys_.keys) {
     bool ok = AddingKeyAllowed(backing_store, transaction, database_id,
                                object_store_id, index_id, key, primary_key,
                                can_add_keys);
@@ -70,8 +70,8 @@ void IndexWriter::WriteIndexKeys(
     int64_t database_id,
     int64_t object_store_id) const {
   int64_t index_id = index_metadata_.id;
-  DCHECK_EQ(index_id, index_keys_.first);
-  for (const auto& key : index_keys_.second) {
+  DCHECK_EQ(index_id, index_keys_.id);
+  for (const auto& key : index_keys_.keys) {
     leveldb::Status s = backing_store->PutIndexDataForRecord(
         transaction, database_id, object_store_id, index_id, key,
         record_identifier);
@@ -126,7 +126,7 @@ bool MakeIndexWriters(IndexedDBTransaction* transaction,
   *completed = false;
 
   for (const auto& it : index_keys) {
-    const auto& found = object_store.indexes.find(it.first);
+    const auto& found = object_store.indexes.find(it.id);
     if (found == object_store.indexes.end())
       continue;
     const IndexedDBIndexMetadata& index = found->second;
@@ -135,7 +135,7 @@ bool MakeIndexWriters(IndexedDBTransaction* transaction,
     // If the object_store is using auto_increment, then any indexes with an
     // identical key_path need to also use the primary (generated) key as a key.
     if (key_was_generated && (index.key_path == object_store.key_path))
-      keys.second.push_back(primary_key);
+      keys.keys.push_back(primary_key);
 
     std::unique_ptr<IndexWriter> index_writer(
         std::make_unique<IndexWriter>(index, keys));

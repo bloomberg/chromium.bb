@@ -51,8 +51,8 @@ bool StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
 // static
 bool StructTraits<blink::mojom::IDBIndexKeysDataView, blink::IDBIndexKeys>::
     Read(blink::mojom::IDBIndexKeysDataView data, blink::IDBIndexKeys* out) {
-  out->first = data.index_id();
-  if (!data.ReadIndexKeys(&out->second))
+  out->id = data.index_id();
+  if (!data.ReadIndexKeys(&out->keys))
     return false;
   return true;
 }
