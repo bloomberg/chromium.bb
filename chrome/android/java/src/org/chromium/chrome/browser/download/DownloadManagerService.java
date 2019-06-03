@@ -1993,7 +1993,10 @@ public class DownloadManagerService
      */
     private void maybeRecordBackgroundDownload(
             @UmaBackgroundDownload int event, String downloadGuid) {
-        if (sBackgroundDownloadIds.remove(downloadGuid)) {
+        if (sBackgroundDownloadIds.contains(downloadGuid)) {
+            if (event != UmaBackgroundDownload.INTERRUPTED) {
+                sBackgroundDownloadIds.remove(downloadGuid);
+            }
             DownloadNotificationUmaHelper.recordBackgroundDownloadHistogram(event);
         }
         if (downloadGuid.equals(mFirstBackgroundDownloadId)) {
