@@ -34598,6 +34598,7 @@ from previous Chrome versions.
   <int value="106840653" label="mus"/>
   <int value="107900612" label="ChromeHomePersistentIph:disabled"/>
   <int value="109577361" label="ForbidSyncXHRInPageDismissal:enabled"/>
+  <int value="112140177" label="DesktopPWAsUnifiedInstall:disabled"/>
   <int value="115915570"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:enabled"/>
   <int value="116287989"
@@ -35155,6 +35156,7 @@ from previous Chrome versions.
   <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>
   <int value="1003002105" label="MaterialDesignBookmarks:disabled"/>
+  <int value="1003081697" label="DesktopPWAsUnifiedInstall:enabled"/>
   <int value="1004593833" label="LevelDBPerformRewrite:enabled"/>
   <int value="1004909189"
       label="ContentSuggestionsThumbnailDominantColor:disabled"/>
