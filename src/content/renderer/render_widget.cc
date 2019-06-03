@@ -406,16 +406,17 @@ scoped_refptr<RenderWidget> RenderWidget::CreateForFrame(
     bool is_frozen,
     bool hidden,
     bool never_visible,
-    mojom::WidgetRequest widget_request) {
+    mojom::WidgetRequest widget_request,
+    int32_t view_id) {
   if (g_create_render_widget_for_frame) {
     return g_create_render_widget_for_frame(
         widget_routing_id, compositor_deps, screen_info, display_mode,
-        is_frozen, hidden, never_visible, std::move(widget_request));
+        is_frozen, hidden, never_visible, std::move(widget_request), view_id);
   }
 
   return base::WrapRefCounted(new RenderWidget(
       widget_routing_id, compositor_deps, screen_info, display_mode, is_frozen,
-      hidden, never_visible, std::move(widget_request)));
+      hidden, never_visible, std::move(widget_request), view_id));
 }
 
 scoped_refptr<RenderWidget> RenderWidget::CreateForPopup(
@@ -426,10 +427,11 @@ scoped_refptr<RenderWidget> RenderWidget::CreateForPopup(
     bool is_frozen,
     bool hidden,
     bool never_visible,
-    mojom::WidgetRequest widget_request) {
+    mojom::WidgetRequest widget_request,
+    int32_t view_id) {
   return base::WrapRefCounted(new RenderWidget(
       widget_routing_id, compositor_deps, screen_info, display_mode, is_frozen,
-      hidden, never_visible, std::move(widget_request)));
+      hidden, never_visible, std::move(widget_request), view_id));
 }
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
