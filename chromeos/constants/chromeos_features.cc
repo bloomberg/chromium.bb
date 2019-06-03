@@ -58,7 +58,7 @@ const base::Feature kEnableFileManagerPiexWasm{
 // Enables or disables web push for background notifications in
 // Android Messages Integration on Chrome OS.
 const base::Feature kEnableMessagesWebPush{"EnableMessagesWebPush",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the use of Mojo by Chrome-process code to communicate with Power
 // Manager. In order to use mojo, this feature must be turned on and a callsite
@@ -117,7 +117,7 @@ const base::Feature kUpdatedCellularActivationUi{
 // Use the messages.google.com domain as part of the "Messages" feature under
 // "Connected Devices" settings.
 const base::Feature kUseMessagesGoogleComDomain{
-    "UseMessagesGoogleComDomain", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseMessagesGoogleComDomain", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use the staging URL as part of the "Messages" feature under "Connected
 // Devices" settings.
