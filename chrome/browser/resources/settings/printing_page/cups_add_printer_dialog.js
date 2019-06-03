@@ -263,14 +263,21 @@ Polymer({
   },
 
   /**
-   * @param {string} printerMakeAndModel
+   * If the printer is a nearby printer, return make + model with the subtext.
+   * Otherwise, return printer name.
    * @return {string} The additional information subtext of the manufacturer and
    * model dialog.
    * @private
    */
-  getManufacturerAndModelSubtext_: function(printerMakeAndModel) {
+  getManufacturerAndModelSubtext_: function() {
+    if (this.activePrinter.printerMakeAndModel) {
+      return loadTimeData.getStringF(
+          'manufacturerAndModelAdditionalInformation',
+          this.activePrinter.printerMakeAndModel);
+    }
     return loadTimeData.getStringF(
-        'manufacturerAndModelAdditionalInformation', printerMakeAndModel);
+        'manufacturerAndModelAdditionalInformation',
+        this.activePrinter.printerName);
   },
 
   /**
