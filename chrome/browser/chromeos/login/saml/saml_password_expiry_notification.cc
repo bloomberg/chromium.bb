@@ -33,11 +33,13 @@
 
 using message_center::HandleNotificationClickDelegate;
 using message_center::Notification;
+using message_center::NotificationObserver;
 using message_center::NotificationType;
 using message_center::NotifierId;
 using message_center::NotifierType;
 using message_center::RichNotificationData;
 using message_center::SystemNotificationWarningLevel;
+using message_center::ThunkNotificationDelegate;
 
 namespace chromeos {
 
@@ -70,9 +72,8 @@ const SystemNotificationWarningLevel kWarningLevel =
 // ie "Chromium OS" or similar.
 const base::NoDestructor<base::string16> kDisplaySource;
 
-// These extra attributes aren't needed, so they are left empty.
-const base::NoDestructor<GURL> kOriginUrl;
-const base::NoDestructor<RichNotificationData> kRichNotificationData;
+// No origin URL is needed since the notification comes from the system.
+const base::NoDestructor<GURL> kEmptyOriginUrl;
 
 // Line separator in the notification body.
 const base::NoDestructor<base::string16> kLineSeparator(
@@ -91,6 +92,30 @@ base::string16 GetBodyText(int less_than_n_days) {
       l10n_util::GetStringUTF16(IDS_PASSWORD_EXPIRY_CHOOSE_NEW_PASSWORD_LINK)};
 
   return base::JoinString(body_lines, *kLineSeparator);
+}
+
+void ShowNotificationImpl(
+    Profile* profile,
+    int less_than_n_days,
+    scoped_refptr<message_center::NotificationDelegate> delegate) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const base::string16 title = GetTitleText(less_than_n_days);
+  const base::string16 body = GetBodyText(less_than_n_days);
+
+  // TODO(olsen): Add button to notification - see UI mock.
+  RichNotificationData rich_notification_data;
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      kNotificationType, kNotificationId, title, body, *kDisplaySource,
+      *kEmptyOriginUrl, *kNotifierId, rich_notification_data, delegate, kIcon,
+      kWarningLevel);
+
+  NotificationDisplayService* nds =
+      NotificationDisplayServiceFactory::GetForProfile(profile);
+  // Calling close before display ensures that the notification pops up again
+  // even if it is already shown.
+  nds->Close(kNotificationHandlerType, kNotificationId);
+  nds->Display(kNotificationHandlerType, *notification, /*metadata=*/nullptr);
 }
 
 // A time delta of length one hour.
@@ -119,8 +144,12 @@ bool IsEnabledForProfile(Profile* profile) {
 // The Rechecker checks periodically if the notification should be shown or
 // updated. When it checks depends on when the password will expire.
 // There is only at most one Rechecker at a time - for the primary user.
-class Rechecker : public ash::SessionActivationObserver {
+class Rechecker : public ash::SessionActivationObserver,
+                  public NotificationObserver {
  public:
+  // Shows the notification for the primary profile.
+  void ShowNotification(int less_than_n_days);
+
   // Checks again if the notification should be shown, and maybe shows it.
   void Recheck();
 
@@ -133,6 +162,11 @@ class Rechecker : public ash::SessionActivationObserver {
   // ash::SessionActivationObserver:
   void OnSessionActivated(bool activated) override {}  // Not needed.
   void OnLockStateChanged(bool locked) override;
+
+  // NotificationObserver:
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
+  void Close(bool by_user) override;
 
   // Ensures the singleton is initialized and started for the given profile.
   static void StartForProfile(Profile* profile);
@@ -149,10 +183,28 @@ class Rechecker : public ash::SessionActivationObserver {
 
   Profile* profile_;
   const AccountId account_id_;
-  base::WeakPtrFactory<Rechecker> weak_ptr_factory_{this};
+  bool reshow_on_unlock_ = false;
+
+  // Weak ptr factory for handling interaction with notifications - these
+  // pointers shouldn't be invalidated until this class is deleted.
+  base::WeakPtrFactory<NotificationObserver> observer_weak_ptr_factory_{this};
+  // Weak ptr factory for posting tasks. Invalidating these pointers will
+  // cancel upcoming tasks.
+  base::WeakPtrFactory<Rechecker> task_weak_ptr_factory_{this};
+
+  // Give test helper access to internals.
+  friend SamlPasswordExpiryNotificationTestHelper;
 
   DISALLOW_COPY_AND_ASSIGN(Rechecker);
 };
+
+void Rechecker::ShowNotification(int less_than_n_days) {
+  ShowNotificationImpl(profile_, less_than_n_days,
+                       base::MakeRefCounted<ThunkNotificationDelegate>(
+                           observer_weak_ptr_factory_.GetWeakPtr()));
+  // When a notification is currently showing, reshow it on every unlock.
+  reshow_on_unlock_ = true;
+}
 
 void Rechecker::Recheck() {
   // This cancels any pending call to Recheck - we don't want some bug to cause
@@ -186,7 +238,7 @@ void Rechecker::Recheck() {
   if (less_than_n_days <= advance_warning_days) {
     // The password is expired, or expires in less than |advance_warning_days|.
     // So we show a notification immediately.
-    ShowSamlPasswordExpiryNotification(profile_, less_than_n_days);
+    ShowNotification(less_than_n_days);
     // We check again whether to reshow / update the notification after one day:
     RecheckAfter(kOneDay);
 
@@ -205,20 +257,35 @@ void Rechecker::Recheck() {
 void Rechecker::RecheckAfter(base::TimeDelta delay) {
   base::PostDelayedTaskWithTraits(
       FROM_HERE, kRecheckTaskTraits,
-      base::BindOnce(&Rechecker::Recheck, weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&Rechecker::Recheck, task_weak_ptr_factory_.GetWeakPtr()),
       std::max(delay, kOneHour));
   // This always waits at least one hour before calling Recheck again - we don't
   // want some bug to cause this code to run every millisecond.
 }
 
 void Rechecker::CancelPendingRecheck() {
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  task_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void Rechecker::OnLockStateChanged(bool locked) {
-  if (!locked) {
-    // TODO(olsen): Reshow the notification when screen is unlocked.
+  // If a notification is currently showing, we show a new version of it every
+  // time the user unlocks the screen. This makes the notification pop up once
+  // more - just after typing the password is a good time to remind the user.
+  if (!locked && reshow_on_unlock_) {
+    Recheck();
   }
+}
+
+void Rechecker::Click(const base::Optional<int>& button_index,
+                      const base::Optional<base::string16>& reply) {
+  // TODO(olsen): Add a button, only handle clicks on the button itself.
+  PasswordChangeDialog::Show(profile_);
+}
+
+void Rechecker::Close(bool by_user) {
+  // When a notification is dismissed, we then don't pop it up again each time
+  // the user unlocks the screen.
+  reshow_on_unlock_ = false;
 }
 
 // static
@@ -280,20 +347,10 @@ void MaybeShowSamlPasswordExpiryNotification(Profile* profile) {
 void ShowSamlPasswordExpiryNotification(Profile* profile,
                                         int less_than_n_days) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  const base::string16 title = GetTitleText(less_than_n_days);
-  const base::string16 body = GetBodyText(less_than_n_days);
-
-  auto click_delegate = base::MakeRefCounted<HandleNotificationClickDelegate>(
-      base::BindRepeating(&PasswordChangeDialog::Show, profile));
-
-  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
-      kNotificationType, kNotificationId, title, body, *kDisplaySource,
-      *kOriginUrl, *kNotifierId, *kRichNotificationData, click_delegate, kIcon,
-      kWarningLevel);
-
-  NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
-      kNotificationHandlerType, *notification, /*metadata=*/nullptr);
+  ShowNotificationImpl(
+      profile, less_than_n_days,
+      base::MakeRefCounted<HandleNotificationClickDelegate>(
+          base::BindRepeating(&PasswordChangeDialog::Show, profile)));
 }
 
 void DismissSamlPasswordExpiryNotification(Profile* profile) {
@@ -302,9 +359,14 @@ void DismissSamlPasswordExpiryNotification(Profile* profile) {
       kNotificationHandlerType, kNotificationId);
 }
 
-void ResetSamlPasswordExpiryNotificationForTesting() {
+void SamlPasswordExpiryNotificationTestHelper::ResetForTesting() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  Rechecker::Stop();
+  delete Rechecker::instance_;
+}
+
+void SamlPasswordExpiryNotificationTestHelper::SimulateUnlockForTesting() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  Rechecker::instance_->OnLockStateChanged(/*locked=*/false);
 }
 
 }  // namespace chromeos

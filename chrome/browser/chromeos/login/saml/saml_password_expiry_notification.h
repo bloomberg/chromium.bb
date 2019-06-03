@@ -26,8 +26,15 @@ void ShowSamlPasswordExpiryNotification(Profile* profile, int less_than_n_days);
 // Hides the password expiry notification if it is currently shown.
 void DismissSamlPasswordExpiryNotification(Profile* profile);
 
-// Stop waiting for the password to expire and free up any resources.
-void ResetSamlPasswordExpiryNotificationForTesting();
+// Exposes extra functionality that should only be used during testing.
+class SamlPasswordExpiryNotificationTestHelper {
+ public:
+  // Simulate unlocking the screen, which makes the notification pop up again.
+  void SimulateUnlockForTesting();
+
+  // Stop waiting for the password to expire and free up any resources.
+  void ResetForTesting();
+};
 
 }  // namespace chromeos
 

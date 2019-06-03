@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/saml/saml_password_expiry_notification.h"
 
+#include "ash/public/cpp/session/session_activation_observer.h"
+#include "ash/public/cpp/session/session_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/browser_process.h"
@@ -31,6 +33,7 @@ namespace {
 
 constexpr base::TimeDelta kStartTime = base::TimeDelta::FromMilliseconds(1);
 
+constexpr base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
 constexpr base::TimeDelta kOneDay = base::TimeDelta::FromDays(1);
 constexpr base::TimeDelta kAdvanceWarningTime = base::TimeDelta::FromDays(14);
 constexpr base::TimeDelta kOneYear = base::TimeDelta::FromDays(365);
@@ -68,7 +71,7 @@ class SamlPasswordExpiryNotificationTest : public testing::Test {
 
   void TearDown() override {
     display_service_tester_.reset();
-    ResetSamlPasswordExpiryNotificationForTesting();
+    expiry_notification_test_helper_.ResetForTesting();
   }
 
  protected:
@@ -93,6 +96,8 @@ class SamlPasswordExpiryNotificationTest : public testing::Test {
       base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
   TestingProfile* profile_;
+
+  SamlPasswordExpiryNotificationTestHelper expiry_notification_test_helper_;
 
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
@@ -289,6 +294,49 @@ TEST_F(SamlPasswordExpiryNotificationTest, TimePasses_NotificationDismissed) {
   ExpectNotificationAndDismiss();
   test_environment_.FastForwardBy(kOneDay);
   ExpectNotificationAndDismiss();
+}
+
+TEST_F(SamlPasswordExpiryNotificationTest, ReshowOnUnlock) {
+  SetExpirationTime(base::Time::Now() + kAdvanceWarningTime / 2);
+  MaybeShowSamlPasswordExpiryNotification(profile_);
+
+  // Notification is shown immediately.
+  EXPECT_TRUE(Notification().has_value());
+  base::Time first_shown_at = Notification()->timestamp();
+
+  // This notification is still present an hour later - but it is the same
+  // notification as before. So it is no longer shown prominently on screen.
+  test_environment_.FastForwardBy(kOneHour);
+  EXPECT_TRUE(Notification().has_value());
+  EXPECT_EQ(first_shown_at, Notification()->timestamp());
+
+  // But when the screen is unlocked, the old notification is replaced with a
+  // newer one. The new one is prominently shown on screen for a few seconds.
+  expiry_notification_test_helper_.SimulateUnlockForTesting();
+  EXPECT_TRUE(Notification().has_value());
+  EXPECT_NE(first_shown_at, Notification()->timestamp());
+}
+
+TEST_F(SamlPasswordExpiryNotificationTest, DontReshowWhenDismissed) {
+  SetExpirationTime(base::Time::Now() + kAdvanceWarningTime / 2);
+  MaybeShowSamlPasswordExpiryNotification(profile_);
+
+  // Notification is shown immediately.
+  EXPECT_TRUE(Notification().has_value());
+
+  // If dismissed, the notification won't reappear within the next hour, since
+  // we don't want to nag the user continuously.
+  DismissSamlPasswordExpiryNotification(profile_);
+  test_environment_.FastForwardBy(kOneHour);
+  EXPECT_FALSE(Notification().has_value());
+
+  // Nor will it reappear if the user unlocks the screen.
+  expiry_notification_test_helper_.SimulateUnlockForTesting();
+  EXPECT_FALSE(Notification().has_value());
+
+  // But it will eventually reappear the next day.
+  test_environment_.FastForwardBy(kOneDay);
+  EXPECT_TRUE(Notification().has_value());
 }
 
 }  // namespace chromeos
