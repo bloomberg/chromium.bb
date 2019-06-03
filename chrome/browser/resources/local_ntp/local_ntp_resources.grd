@@ -18,8 +18,8 @@
       <include name="IDR_LOCAL_NTP_ANIMATIONS_CSS" file="animations.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_ANIMATIONS_JS" file="animations.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_CSS" file="local_ntp.css" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_CSS" file="custom_backgrounds.css" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_JS" file="custom_backgrounds.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_CUSTOMIZE_CSS" file="customize.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_CUSTOMIZE_JS" file="customize.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_DOODLES_CSS" file="doodles.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_DOODLES_JS" file="doodles.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_HTML" file="local_ntp.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

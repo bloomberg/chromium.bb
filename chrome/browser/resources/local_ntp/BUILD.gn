@@ -13,8 +13,8 @@ js_type_check("closure_compile") {
 js_library("local_ntp") {
   sources = [
     "animations.js",
-    "custom_backgrounds.js",
     "custom_links_edit.js",
+    "customize.js",
     "doodles.js",
     "local_ntp.js",
     "most_visited_single.js",

@@ -117,10 +117,8 @@ const struct Resource{
     {"animations.css", IDR_LOCAL_NTP_ANIMATIONS_CSS, "text/css"},
     {"animations.js", IDR_LOCAL_NTP_ANIMATIONS_JS, "application/javascript"},
     {"local-ntp-common.css", IDR_LOCAL_NTP_COMMON_CSS, "text/css"},
-    {"custom-backgrounds.css", IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_CSS,
-     "text/css"},
-    {"custom-backgrounds.js", IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_JS,
-     "application/javascript"},
+    {"customize.css", IDR_LOCAL_NTP_CUSTOMIZE_CSS, "text/css"},
+    {"customize.js", IDR_LOCAL_NTP_CUSTOMIZE_JS, "application/javascript"},
     {"doodles.css", IDR_LOCAL_NTP_DOODLES_CSS, "text/css"},
     {"doodles.js", IDR_LOCAL_NTP_DOODLES_JS, "application/javascript"},
     {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
@@ -979,8 +977,8 @@ void LocalNtpSource::StartDataRequest(
         base::StrCat({kSha256, ANIMATIONS_JS_INTEGRITY});
     replacements["configDataIntegrity"] = base::StrCat(
         {kSha256, search_config_provider_->config_data_integrity()});
-    replacements["localNtpCustomBgIntegrity"] =
-        base::StrCat({kSha256, CUSTOM_BACKGROUNDS_JS_INTEGRITY});
+    replacements["localNtpCustomizeIntegrity"] =
+        base::StrCat({kSha256, CUSTOMIZE_JS_INTEGRITY});
     replacements["doodlesIntegrity"] =
         base::StrCat({kSha256, DOODLES_JS_INTEGRITY});
     replacements["localNtpIntegrity"] =
@@ -1113,9 +1111,8 @@ std::string LocalNtpSource::GetContentSecurityPolicy() const {
   std::string script_src_csp = base::StringPrintf(
       "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s' 'sha256-%s' "
       "'sha256-%s' 'sha256-%s' 'sha256-%s' 'sha256-%s';",
-      ANIMATIONS_JS_INTEGRITY, CUSTOM_BACKGROUNDS_JS_INTEGRITY,
-      DOODLES_JS_INTEGRITY, LOCAL_NTP_JS_INTEGRITY, UTILS_JS_INTEGRITY,
-      VOICE_JS_INTEGRITY,
+      ANIMATIONS_JS_INTEGRITY, CUSTOMIZE_JS_INTEGRITY, DOODLES_JS_INTEGRITY,
+      LOCAL_NTP_JS_INTEGRITY, UTILS_JS_INTEGRITY, VOICE_JS_INTEGRITY,
       search_config_provider_->config_data_integrity().c_str());
 
   return GetContentSecurityPolicyObjectSrc() +
