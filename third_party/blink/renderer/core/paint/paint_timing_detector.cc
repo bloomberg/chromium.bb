@@ -249,28 +249,33 @@ FloatRect PaintTimingDetector::CalculateVisualRect(
 ScopedPaintTimingDetectorBlockPaintHook*
     ScopedPaintTimingDetectorBlockPaintHook::top_ = nullptr;
 
-ScopedPaintTimingDetectorBlockPaintHook::
-    ScopedPaintTimingDetectorBlockPaintHook(
-        const LayoutBoxModelObject& aggregator,
-        const PropertyTreeState& property_tree_state)
+void ScopedPaintTimingDetectorBlockPaintHook::EmplaceIfNeeded(
+    const LayoutBoxModelObject& aggregator,
+    const PropertyTreeState& property_tree_state) {
+  TextPaintTimingDetector* detector = aggregator.GetFrameView()
+                                          ->GetPaintTimingDetector()
+                                          .GetTextPaintTimingDetector();
+  if (!detector || !detector->ShouldWalkObject(aggregator))
+    return;
+  data_.emplace(aggregator, property_tree_state, detector);
+}
+
+ScopedPaintTimingDetectorBlockPaintHook::Data::Data(
+    const LayoutBoxModelObject& aggregator,
+    const PropertyTreeState& property_tree_state,
+    TextPaintTimingDetector* detector)
     : aggregator_(aggregator),
       property_tree_state_(property_tree_state),
-      // This sets |top_| to |this|, and will restore |top_| to the previous
-      // value when this object destructs.
-      reset_top_(&top_, this),
-      detector_(aggregator.GetFrameView()
-                    ->GetPaintTimingDetector()
-                    .GetTextPaintTimingDetector()),
-      is_recording_(detector_ && detector_->ShouldWalkObject(aggregator)) {}
+      detector_(detector) {}
 
 ScopedPaintTimingDetectorBlockPaintHook::
     ~ScopedPaintTimingDetectorBlockPaintHook() {
   DCHECK_EQ(top_, this);
-  if (!is_recording_ || aggregated_visual_rect_.IsEmpty())
+  if (!data_ || data_->aggregated_visual_rect_.IsEmpty())
     return;
-
-  detector_->RecordAggregatedText(aggregator_, aggregated_visual_rect_,
-                                  property_tree_state_);
+  data_->detector_->RecordAggregatedText(data_->aggregator_,
+                                         data_->aggregated_visual_rect_,
+                                         data_->property_tree_state_);
 }
 
 void PaintTimingDetector::Trace(Visitor* visitor) {

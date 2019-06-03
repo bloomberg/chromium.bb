@@ -83,10 +83,10 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
              &layout_file_upload_control_.GetDocument()))) {
       if (!font.ShouldSkipDrawing()) {
         ScopedPaintTimingDetectorBlockPaintHook
-            scoped_paint_timing_detector_block_paint_hook(
-                layout_file_upload_control_,
-                paint_info.context.GetPaintController()
-                    .CurrentPaintChunkProperties());
+            scoped_paint_timing_detector_block_paint_hook;
+        scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
+            layout_file_upload_control_, paint_info.context.GetPaintController()
+                                             .CurrentPaintChunkProperties());
         PaintTimingDetector::NotifyTextPaint(
             layout_file_upload_control_.FragmentsVisualRectBoundingBox());
       }

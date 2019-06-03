@@ -714,15 +714,17 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
   if (line_boxes.IsEmpty())
     return;
 
-  base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
+  ScopedPaintTimingDetectorBlockPaintHook
       scoped_paint_timing_detector_block_paint_hook;
   const auto& layout_block = To<LayoutBlock>(*layout_object);
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
       RuntimeEnabledFeatures::ElementTimingEnabled(
           &layout_block.GetDocument())) {
-    scoped_paint_timing_detector_block_paint_hook.emplace(
-        layout_block,
-        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
+    if (paint_info.phase == PaintPhase::kForeground) {
+      scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
+          layout_block, paint_info.context.GetPaintController()
+                            .CurrentPaintChunkProperties());
+    }
   }
 
   const bool is_horizontal = box_fragment_.Style().IsHorizontalWritingMode();

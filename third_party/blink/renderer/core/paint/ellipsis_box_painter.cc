@@ -76,15 +76,8 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
   // crbug.com/788444.
   context.GetPaintController().SetTextPainted();
 
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-      RuntimeEnabledFeatures::ElementTimingEnabled(
-          &LineLayoutAPIShim::LayoutObjectFrom(
-               ellipsis_box_.GetLineLayoutItem())
-               ->GetDocument())) {
-    if (!font.ShouldSkipDrawing() &&
-        paint_info.phase == PaintPhase::kForeground)
-      PaintTimingDetector::NotifyTextPaint(ellipsis_box_.VisualRect());
-  }
+  if (!font.ShouldSkipDrawing())
+    PaintTimingDetector::NotifyTextPaint(ellipsis_box_.VisualRect());
 }
 
 }  // namespace blink
