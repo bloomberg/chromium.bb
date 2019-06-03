@@ -20,9 +20,6 @@
 @class CRWLegacyNativeContentController;
 @class CRWCertVerificationController;
 class GURL;
-namespace base {
-class RepeatingTimer;
-}
 namespace web {
 enum class WKNavigationState;
 enum class ErrorRetryCommand;
@@ -205,22 +202,12 @@ class WKBackForwardListItemHolder;
 // TODO(crbug.com/956511): Remove this once refactor is done.
 @property(nonatomic, readwrite, assign) web::WKNavigationState navigationState;
 
-// The SafeBrowsingDetection timer.
-// TODO(crbug.com/956511): Remove this once refactor is done.
-@property(nonatomic, readonly, assign)
-    base::RepeatingTimer* safeBrowsingWarningDetectionTimer;
-
 // Returns the WKBackForwardlistItemHolder of current navigation item.
 @property(nonatomic, readonly, assign)
     web::WKBackForwardListItemHolder* currentBackForwardListItemHolder;
 
 // Returns the referrer for the current page.
 @property(nonatomic, readonly, assign) web::Referrer currentReferrer;
-
-// Discards non committed items, only if the last committed URL was not loaded
-// in native view. But if it was a native view, no discard will happen to avoid
-// an ugly animation where the web view is inserted and quickly removed.
-- (void)discardNonCommittedItemsIfLastCommittedWasNotNativeView;
 
 // Instructs this handler to stop loading.
 - (void)stopLoading;
@@ -233,24 +220,12 @@ class WKBackForwardListItemHolder;
 - (web::NavigationContextImpl*)contextForPendingMainFrameNavigationWithURL:
     (const GURL&)URL;
 
-// Notifies that server redirect has been received.
-// TODO(crbug.com/956511): Remove this once "webView:didCommitNavigation" is
-// moved into CRWWKNavigationHandler.
-- (void)didReceiveRedirectForNavigation:(web::NavigationContextImpl*)context
-                                withURL:(const GURL&)URL;
-
 // Returns YES if current navigation item is WKNavigationTypeBackForward.
 - (BOOL)isCurrentNavigationBackForward;
 
 // Returns YES if the current navigation item corresponds to a web page
 // loaded by a POST request.
 - (BOOL)isCurrentNavigationItemPOST;
-
-// Updates current state with any pending information. Should be called when a
-// navigation is committed.
-// TODO(crbug.com/956511): Make this private once "webView:didCommitNavigation"
-// is moved into CRWWKNavigationHandler.
-- (void)commitPendingNavigationInfoInWebView:(WKWebView*)webView;
 
 // Sets last committed NavigationItem's title to the given |title|, which can
 // not be nil.

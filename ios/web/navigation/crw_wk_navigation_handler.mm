@@ -1549,10 +1549,6 @@ using web::wk_navigation_util::IsWKInternalUrl;
   [self loadCancelled];
 }
 
-- (base::RepeatingTimer*)safeBrowsingWarningDetectionTimer {
-  return &_safeBrowsingWarningDetectionTimer;
-}
-
 - (void)loadCancelled {
   // TODO(crbug.com/821995):  Check if this function should be removed.
   if (self.navigationState != web::WKNavigationState::FINISHED) {
@@ -1619,6 +1615,8 @@ using web::wk_navigation_util::IsWKInternalUrl;
   return holder;
 }
 
+// Updates current state with any pending information. Should be called when a
+// navigation is committed.
 - (void)commitPendingNavigationInfoInWebView:(WKWebView*)webView {
   if (self.pendingNavigationInfo.referrer) {
     _currentReferrerString = [self.pendingNavigationInfo.referrer copy];

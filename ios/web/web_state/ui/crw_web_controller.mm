@@ -290,8 +290,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 // Note that this method is expensive, so it should always be cached locally if
 // it's needed multiple times in a method.
 @property(nonatomic, readonly) GURL currentURL;
-// Returns the referrer for the current page.
-@property(nonatomic, readonly) web::Referrer currentReferrer;
 
 // User agent type of the transient item if any, the pending item if a
 // navigation is in progress or the last committed item otherwise.
@@ -613,7 +611,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                         webView:webView];
   }
   [_jsInjector setWebView:webView];
-  [_webView setNavigationDelegate:self];
+  [_webView setNavigationDelegate:self.navigationHandler];
   [_webView setUIDelegate:self.UIHandler];
   for (NSString* keyPath in self.WKWebViewObservers) {
     [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
@@ -3384,78 +3382,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (web::WebStateImpl*)webStateImplForUIHandler:(CRWWKUIHandler*)UIHandler {
   return self.webStateImpl;
-}
-
-#pragma mark - WKNavigationDelegate Methods
-
-- (void)webView:(WKWebView*)webView
-    decidePolicyForNavigationAction:(WKNavigationAction*)navigationAction
-                    decisionHandler:
-                        (void (^)(WKNavigationActionPolicy))decisionHandler {
-  [self.navigationHandler webView:webView
-      decidePolicyForNavigationAction:navigationAction
-                      decisionHandler:decisionHandler];
-}
-
-- (void)webView:(WKWebView*)webView
-    decidePolicyForNavigationResponse:(WKNavigationResponse*)WKResponse
-                      decisionHandler:
-                          (void (^)(WKNavigationResponsePolicy))handler {
-  [self.navigationHandler webView:webView
-      decidePolicyForNavigationResponse:WKResponse
-                        decisionHandler:handler];
-}
-
-- (void)webView:(WKWebView*)webView
-    didStartProvisionalNavigation:(WKNavigation*)navigation {
-  [self.navigationHandler webView:webView
-      didStartProvisionalNavigation:navigation];
-}
-
-- (void)webView:(WKWebView*)webView
-    didReceiveServerRedirectForProvisionalNavigation:(WKNavigation*)navigation {
-  [self.navigationHandler webView:webView
-      didReceiveServerRedirectForProvisionalNavigation:navigation];
-}
-
-- (void)webView:(WKWebView*)webView
-    didFailProvisionalNavigation:(WKNavigation*)navigation
-                       withError:(NSError*)error {
-  [self.navigationHandler webView:webView
-      didFailProvisionalNavigation:navigation
-                         withError:error];
-}
-
-- (void)webView:(WKWebView*)webView
-    didCommitNavigation:(WKNavigation*)navigation {
-  [self.navigationHandler webView:webView didCommitNavigation:navigation];
-}
-
-- (void)webView:(WKWebView*)webView
-    didFinishNavigation:(WKNavigation*)navigation {
-  [self.navigationHandler webView:webView didFinishNavigation:navigation];
-}
-
-- (void)webView:(WKWebView*)webView
-    didFailNavigation:(WKNavigation*)navigation
-            withError:(NSError*)error {
-  [self.navigationHandler webView:webView
-                didFailNavigation:navigation
-                        withError:error];
-}
-
-- (void)webView:(WKWebView*)webView
-    didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge*)challenge
-                    completionHandler:
-                        (void (^)(NSURLSessionAuthChallengeDisposition,
-                                  NSURLCredential*))completionHandler {
-  [self.navigationHandler webView:webView
-      didReceiveAuthenticationChallenge:challenge
-                      completionHandler:completionHandler];
-}
-
-- (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
-  [self.navigationHandler webViewWebContentProcessDidTerminate:webView];
 }
 
 #pragma mark - WKNavigationDelegate Helpers
