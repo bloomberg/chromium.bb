@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/ellipsis_box_painter.h"
 
 #include "third_party/blink/renderer/core/content_capture/content_holder.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/layout/line/ellipsis_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
@@ -74,20 +75,15 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
   // TODO(npm): Check that there are non-whitespace characters. See
   // crbug.com/788444.
   context.GetPaintController().SetTextPainted();
-  // We should consider using the text node as the tracking node, instead of
-  // the line layout item.
-  Node* node = ellipsis_box_.GetLineLayoutItem().GetNode();
-  if (!node)
-    return;
 
-  if ((RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-       RuntimeEnabledFeatures::ElementTimingEnabled(&node->GetDocument()))) {
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
+      RuntimeEnabledFeatures::ElementTimingEnabled(
+          &LineLayoutAPIShim::LayoutObjectFrom(
+               ellipsis_box_.GetLineLayoutItem())
+               ->GetDocument())) {
     if (!font.ShouldSkipDrawing() &&
-        paint_info.phase == PaintPhase::kForeground) {
-      PaintTimingDetector::NotifyTextPaint(
-          *node->GetLayoutObject(), paint_info.context.GetPaintController()
-                                        .CurrentPaintChunkProperties());
-    }
+        paint_info.phase == PaintPhase::kForeground)
+      PaintTimingDetector::NotifyTextPaint(ellipsis_box_.VisualRect());
   }
 }
 

@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/content_capture/content_holder.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/text_painter_base.h"
 
 namespace blink {
@@ -25,12 +26,14 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
  public:
   NGTextPainter(GraphicsContext& context,
                 const Font& font,
-                const NGPhysicalTextFragment& text_fragment,
+                const NGPaintFragment& paint_fragment,
                 const PhysicalOffset& text_origin,
                 const PhysicalRect& text_bounds,
                 bool horizontal)
       : TextPainterBase(context, font, text_origin, text_bounds, horizontal),
-        fragment_(text_fragment) {}
+        paint_fragment_(paint_fragment),
+        fragment_(
+            To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment())) {}
   ~NGTextPainter() = default;
 
   void ClipDecorationsStripe(float upper,
@@ -66,6 +69,7 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
 
   void PaintEmphasisMarkForCombinedText();
 
+  const NGPaintFragment& paint_fragment_;
   const NGPhysicalTextFragment& fragment_;
 };
 

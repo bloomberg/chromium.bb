@@ -67,8 +67,11 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
       RuntimeEnabledFeatures::ElementTimingEnabled(
           &layout_object.GetDocument())) {
-    if (paint_info.phase == PaintPhase::kForeground)
-      scoped_paint_timing_detector_block_paint_hook.emplace(layout_object);
+    if (paint_info.phase == PaintPhase::kForeground) {
+      scoped_paint_timing_detector_block_paint_hook.emplace(
+          layout_object, paint_info.context.GetPaintController()
+                             .CurrentPaintChunkProperties());
+    }
   }
 
   // See if our root lines intersect with the dirty rect. If so, then we paint

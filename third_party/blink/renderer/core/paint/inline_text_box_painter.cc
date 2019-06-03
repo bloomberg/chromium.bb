@@ -435,11 +435,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
        RuntimeEnabledFeatures::ElementTimingEnabled(
            &InlineLayoutObject().GetDocument()))) {
     if (!font.ShouldSkipDrawing() &&
-        paint_info.phase == PaintPhase::kForeground) {
-      PaintTimingDetector::NotifyTextPaint(
-          InlineLayoutObject(), paint_info.context.GetPaintController()
-                                    .CurrentPaintChunkProperties());
-    }
+        paint_info.phase == PaintPhase::kForeground)
+      PaintTimingDetector::NotifyTextPaint(inline_text_box_.VisualRect());
   }
 }
 

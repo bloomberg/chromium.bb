@@ -112,20 +112,6 @@ void PaintTimingDetector::NotifyImagePaint(
   }
 }
 
-// static
-void PaintTimingDetector::NotifyTextPaint(
-    const LayoutObject& object,
-    const PropertyTreeState& current_paint_chunk_properties) {
-  LocalFrameView* frame_view = object.GetFrameView();
-  if (!frame_view)
-    return;
-  PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
-  if (!detector.GetTextPaintTimingDetector())
-    return;
-  detector.GetTextPaintTimingDetector()->AggregateText(
-      object, current_paint_chunk_properties);
-}
-
 void PaintTimingDetector::NotifyNodeRemoved(const LayoutObject& object) {
   DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
   if (node_id == kInvalidDOMNodeId)
@@ -260,27 +246,31 @@ FloatRect PaintTimingDetector::CalculateVisualRect(
   return FloatRect(layout_visual_rect);
 }
 
+ScopedPaintTimingDetectorBlockPaintHook*
+    ScopedPaintTimingDetectorBlockPaintHook::top_ = nullptr;
+
 ScopedPaintTimingDetectorBlockPaintHook::
     ScopedPaintTimingDetectorBlockPaintHook(
-        const LayoutBoxModelObject& text_aggregating_block)
-    : text_aggregating_block_(text_aggregating_block),
-      frame_view_(text_aggregating_block_.GetFrameView()) {
-  DCHECK(frame_view_);
-  TextPaintTimingDetector* detector =
-      frame_view_->GetPaintTimingDetector().GetTextPaintTimingDetector();
-  if (!detector)
-    return;
-  detector->WillWalkTextAggregatingNode();
-}
+        const LayoutBoxModelObject& aggregator,
+        const PropertyTreeState& property_tree_state)
+    : aggregator_(aggregator),
+      property_tree_state_(property_tree_state),
+      // This sets |top_| to |this|, and will restore |top_| to the previous
+      // value when this object destructs.
+      reset_top_(&top_, this),
+      detector_(aggregator.GetFrameView()
+                    ->GetPaintTimingDetector()
+                    .GetTextPaintTimingDetector()),
+      is_recording_(detector_ && detector_->ShouldWalkObject(aggregator)) {}
 
 ScopedPaintTimingDetectorBlockPaintHook::
     ~ScopedPaintTimingDetectorBlockPaintHook() {
-  DCHECK(frame_view_);
-  TextPaintTimingDetector* detector =
-      frame_view_->GetPaintTimingDetector().GetTextPaintTimingDetector();
-  if (!detector)
+  DCHECK_EQ(top_, this);
+  if (!is_recording_ || aggregated_visual_rect_.IsEmpty())
     return;
-  detector->DidWalkTextAggregatingNode(text_aggregating_block_);
+
+  detector_->RecordAggregatedText(aggregator_, aggregated_visual_rect_,
+                                  property_tree_state_);
 }
 
 void PaintTimingDetector::Trace(Visitor* visitor) {
@@ -288,4 +278,5 @@ void PaintTimingDetector::Trace(Visitor* visitor) {
   visitor->Trace(image_paint_timing_detector_);
   visitor->Trace(frame_view_);
 }
+
 }  // namespace blink

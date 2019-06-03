@@ -35,8 +35,11 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
       RuntimeEnabledFeatures::ElementTimingEnabled(
           &layout_inline_.GetDocument())) {
-    if (paint_info.phase == PaintPhase::kForeground)
-      scoped_paint_timing_detector_block_paint_hook.emplace(layout_inline_);
+    if (paint_info.phase == PaintPhase::kForeground) {
+      scoped_paint_timing_detector_block_paint_hook.emplace(
+          layout_inline_, paint_info.context.GetPaintController()
+                              .CurrentPaintChunkProperties());
+    }
   }
 
   if (layout_inline_.IsInLayoutNGInlineFormattingContext()) {

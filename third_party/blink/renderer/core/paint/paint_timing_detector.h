@@ -46,8 +46,8 @@ class CORE_EXPORT PaintTimingDetector
       const IntSize& intrinsic_size,
       const ImageResourceContent* cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
+  inline static void NotifyTextPaint(const IntRect&);
 
-  static void NotifyTextPaint(const LayoutObject&, const PropertyTreeState&);
   void NotifyNodeRemoved(const LayoutObject&);
   void NotifyBackgroundImageRemoved(const LayoutObject&,
                                     const ImageResourceContent*);
@@ -107,20 +107,38 @@ class CORE_EXPORT PaintTimingDetector
 // is their descendant. The hook should be placed right before visiting the
 // subtree of an container node, so that the constructor and the destructor can
 // tell the start and end of the visit.
+// TODO(crbug.com/960946): we should document the text aggregation.
 class ScopedPaintTimingDetectorBlockPaintHook {
   STACK_ALLOCATED();
 
  public:
-  ScopedPaintTimingDetectorBlockPaintHook(const LayoutBoxModelObject&);
+  ScopedPaintTimingDetectorBlockPaintHook(const LayoutBoxModelObject&,
+                                          const PropertyTreeState&);
 
   ~ScopedPaintTimingDetectorBlockPaintHook();
 
  private:
-  const LayoutBoxModelObject& text_aggregating_block_;
-  Member<LocalFrameView> frame_view_;
+  friend class PaintTimingDetector;
+
+  const LayoutBoxModelObject& aggregator_;
+  const PropertyTreeState& property_tree_state_;
+  IntRect aggregated_visual_rect_;
+  base::AutoReset<ScopedPaintTimingDetectorBlockPaintHook*> reset_top_;
+  Member<TextPaintTimingDetector> detector_;
+  bool is_recording_;
+  static ScopedPaintTimingDetectorBlockPaintHook* top_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedPaintTimingDetectorBlockPaintHook);
 };
+
+// static
+inline void PaintTimingDetector::NotifyTextPaint(
+    const IntRect& text_visual_rect) {
+  auto* top = ScopedPaintTimingDetectorBlockPaintHook::top_;
+  DCHECK(top);
+  if (top->is_recording_)
+    top->aggregated_visual_rect_.Unite(text_visual_rect);
+}
 
 }  // namespace blink
 
