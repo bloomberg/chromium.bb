@@ -37,14 +37,14 @@ def main():
                      False, log, args.verbose)
 
   clangFormatLocation = findClangFormat()
-  if clangFormatLocation == None and args.verbose:
-    print("\tWARNING: clang-format could not be found")
-  else:
+  if not clangFormatLocation:
+    if args.verbose:
+      print("WARNING: clang-format could not be found")
+    return
+
+  for filename in [args.header, args.cc]:
     echoAndRunCommand([clangFormatLocation + 'clang-format', "-i",
-                       os.path.join(args.gen_dir, args.header)],
-                       True, verbose=args.verbose)
-    echoAndRunCommand([clangFormatLocation + 'clang-format', "-i",
-                       os.path.join(args.gen_dir, args.cc)],
+                       os.path.join(args.gen_dir, filename)],
                        True, verbose=args.verbose)
 
 def parseInput():
@@ -112,4 +112,5 @@ def findClangFormat():
 
   return None
 
-main()
+if __name__ == "__main__":
+  main()
