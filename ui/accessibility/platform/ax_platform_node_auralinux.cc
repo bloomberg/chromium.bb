@@ -3295,6 +3295,7 @@ void AXPlatformNodeAuraLinux::OnDescriptionChanged() {
   g_signal_emit_by_name(G_OBJECT(atk_object_),
                         "property-change::accessible-description",
                         &property_values, nullptr);
+  g_value_unset(&property_values.new_value);
 }
 
 void AXPlatformNodeAuraLinux::OnValueChanged() {
