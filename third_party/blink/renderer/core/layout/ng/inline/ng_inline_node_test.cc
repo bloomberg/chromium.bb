@@ -1432,6 +1432,20 @@ TEST_F(NGInlineNodeTest, PreservedNewlineWithRemovedBidiAndRelayout) {
   EXPECT_EQ("foo\nbar", GetText());
 }
 
+// https://crbug.com/969089
+TEST_F(NGInlineNodeTest, InsertedWBRWithLineBreakInRelayout) {
+  SetupHtml("container", "<div id=container><span>foo</span>\nbar</div>");
+  EXPECT_EQ("foo bar", GetText());
+
+  Element* div = GetElementById("container");
+  Element* wbr = GetDocument().CreateElementForBinding("wbr");
+  div->insertBefore(wbr, div->lastChild());
+  UpdateAllLifecyclePhasesForTest();
+
+  // The '\n' should be collapsed by the inserted <wbr>
+  EXPECT_EQ(String(u"foo\u200Bbar"), GetText());
+}
+
 #if SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH
 // https://crbug.com/879088
 TEST_F(NGInlineNodeTest, RemoveSegmentBreakFromJapaneseInRelayout) {

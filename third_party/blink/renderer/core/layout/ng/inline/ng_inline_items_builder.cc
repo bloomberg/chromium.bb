@@ -315,12 +315,26 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
           }
           break;
         case NGInlineItem::kNotCollapsible: {
-          // If the start of the original string was collapsed, it may be
-          // restored.
           const String& source_text = layout_text->GetText();
-          if (source_text.length() && IsCollapsibleSpace(source_text[0]) &&
-              original_string[old_item0.StartOffset()] != kSpaceCharacter)
-            return false;
+          if (source_text.length() && IsCollapsibleSpace(source_text[0])) {
+            // If the start of the original string was collapsed, it may be
+            // restored.
+            if (original_string[old_item0.StartOffset()] != kSpaceCharacter)
+              return false;
+            // If the start of the original string was not collapsed, and the
+            // collapsible space run contains newline, the newline may be
+            // removed.
+            unsigned offset = 0;
+            UChar c = source_text[0];
+            bool contains_newline =
+                MoveToEndOfCollapsibleSpaces(source_text, &offset, &c);
+            if (contains_newline &&
+                ShouldRemoveNewline(text_, text_.length(), last_item->Style(),
+                                    StringView(source_text, offset),
+                                    &new_style)) {
+              return false;
+            }
+          }
           break;
         }
         case NGInlineItem::kCollapsed:
