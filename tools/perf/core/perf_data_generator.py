@@ -1084,11 +1084,7 @@ def generate_performance_test(tester_config, test):
     # to ~2 hrs.
     'hard_timeout': 10 * 60 * 60, # 10 hours timeout for full suite
     'ignore_task_failure': False,
-    # 4 hour timeout. Note that this is effectively the timeout for a
-    # benchmarking subprocess to run since we intentionally do not stream
-    # subprocess output to the task stdout.
-    # TODO(crbug.com/865538): Reduce this once we can reduce hard_timeout.
-    'io_timeout': 4 * 60 * 60,
+    'io_timeout': 30 * 60, # 30 minutes
     'dimension_sets': [
       tester_config['dimension']
     ],
