@@ -1015,6 +1015,11 @@ deps = {
       'dep_type': 'cipd',
   },
 
+  'src/third_party/javalang/src': {
+      'url': Var('chromium_git') + '/external/github.com/c2nes/javalang.git' + '@' + 'f98ffcb31d1daa57fbe5bd6def8ad7c3126d8242',
+      'condition': 'checkout_android',
+  },
+
   'src/third_party/jsoncpp/source':
     Var('chromium_git') + '/external/github.com/open-source-parsers/jsoncpp.git' + '@' + 'f572e8e42e22cfcf5ab0aea26574f408943edfa4', # from svn 248
 

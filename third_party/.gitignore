@@ -114,6 +114,7 @@
 /instrumented_libraries/scripts/out/*
 /javax_inject/lib/
 /jacoco/lib/
+/javalang/src/
 /jsoncpp/source
 /jsr-305/src
 /junit/src
