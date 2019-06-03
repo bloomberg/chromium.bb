@@ -242,15 +242,6 @@ class WKBackForwardListItemHolder;
 // is moved into CRWWKNavigationHandler.
 - (void)commitPendingNavigationInfoInWebView:(WKWebView*)webView;
 
-// WKNavigation objects are used as a weak key to store web::NavigationContext.
-// WKWebView manages WKNavigation lifetime and destroys them after the
-// navigation is finished. However for window opening navigations WKWebView
-// passes null WKNavigation to WKNavigationDelegate callbacks and strong key is
-// used to store web::NavigationContext. Those "null" navigations have to be
-// cleaned up manually by calling this method.
-// TODO(crbug.com/956511): Make this private once refactor is done.
-- (void)forgetNullWKNavigation:(WKNavigation*)navigation;
-
 // Sets last committed NavigationItem's title to the given |title|, which can
 // not be nil.
 - (void)setLastCommittedNavigationItemTitle:(NSString*)title;

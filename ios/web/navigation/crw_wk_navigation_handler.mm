@@ -1063,6 +1063,17 @@ using web::wk_navigation_util::IsWKInternalUrl;
     didFailNavigation:(WKNavigation*)navigation
             withError:(NSError*)error {
   [self didReceiveWKNavigationDelegateCallback];
+
+  [self.navigationStates setState:web::WKNavigationState::FAILED
+                    forNavigation:navigation];
+
+  [self.delegate navigationHandler:self
+                   handleLoadError:error
+                     forNavigation:navigation
+                   provisionalLoad:NO];
+  [self.delegate navigationHandlerRemoveAllWebFrames:self];
+  self.certVerificationErrors->Clear();
+  [self forgetNullWKNavigation:navigation];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -1386,6 +1397,17 @@ using web::wk_navigation_util::IsWKInternalUrl;
   self.userInteractionState->ResetLastTransferTime();
 }
 
+// WKNavigation objects are used as a weak key to store web::NavigationContext.
+// WKWebView manages WKNavigation lifetime and destroys them after the
+// navigation is finished. However for window opening navigations WKWebView
+// passes null WKNavigation to WKNavigationDelegate callbacks and strong key is
+// used to store web::NavigationContext. Those "null" navigations have to be
+// cleaned up manually by calling this method.
+- (void)forgetNullWKNavigation:(WKNavigation*)navigation {
+  if (!navigation)
+    [self.navigationStates removeNavigation:navigation];
+}
+
 #pragma mark - Public methods
 
 - (void)stopLoading {
@@ -1529,11 +1551,6 @@ using web::wk_navigation_util::IsWKInternalUrl;
   // advance and use that instead.
   return web::Referrer(GURL(base::SysNSStringToUTF8(referrerString)),
                        web::ReferrerPolicyAlways);
-}
-
-- (void)forgetNullWKNavigation:(WKNavigation*)navigation {
-  if (!navigation)
-    [self.navigationStates removeNavigation:navigation];
 }
 
 - (void)setLastCommittedNavigationItemTitle:(NSString*)title {

@@ -3552,16 +3552,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self.navigationHandler webView:webView
                 didFailNavigation:navigation
                         withError:error];
-
-  [self.navigationHandler.navigationStates
-           setState:web::WKNavigationState::FAILED
-      forNavigation:navigation];
-
-  [self handleLoadError:error forNavigation:navigation provisionalLoad:NO];
-
-  [self removeAllWebFrames];
-  _certVerificationErrors->Clear();
-  [self.navigationHandler forgetNullWKNavigation:navigation];
 }
 
 - (void)webView:(WKWebView*)webView
