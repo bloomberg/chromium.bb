@@ -2738,8 +2738,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
 // This test tests that browser process hittesting ignores frames with
 // pointer-events: none.
+// TODO(https://crbug.com/968970): Flaky failures on all bots.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       SurfaceHitTestPointerEventsNoneChanged) {
+                       DISABLED_SurfaceHitTestPointerEventsNoneChanged) {
   // In /2 hit testing, OOPIFs with pointer-events: none are ignored and no hit
   // test data is submitted. To make sure we wait enough time until child frame
   // fully loaded, we add a 1x1 pixel OOPIF for the test to track the process of
