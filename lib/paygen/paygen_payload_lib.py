@@ -27,6 +27,10 @@ from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import partition_lib
 from chromite.lib.paygen import signer_payloads_client
 from chromite.lib.paygen import urilib
+from chromite.lib.paygen import utils
+
+from chromite.scripts import build_dlc
+from chromite.scripts import cros_set_lsb_release
 
 
 DESCRIPTION_FILE_VERSION = 2
@@ -94,6 +98,12 @@ class PaygenPayload(object):
     self.src_image_file = os.path.join(work_dir, 'src_image.bin')
     self.tgt_image_file = os.path.join(work_dir, 'tgt_image.bin')
 
+    self.partition_names = None
+    self.tgt_partitions = None
+    self.src_partitions = None
+
+    self._appid = None
+
     self.payload_file = os.path.join(work_dir, 'delta.bin')
     self.log_file = os.path.join(work_dir, 'delta.log')
     self.description_file = os.path.join(work_dir, 'delta.json')
@@ -104,28 +114,6 @@ class PaygenPayload(object):
 
     self._postinst_config_file = os.path.join(work_dir, 'postinst_config')
 
-    # TODO(ahassani): Use the partition names from the target image to construct
-    # these so we can support different partitions.
-    #
-    #  Names to pass to cros_generate_update_payload for extracting old/new
-    # kernel/rootfs partitions.
-    if self._IsDLC():
-      # DLC module image has 1 partition.
-      self.partition_names = ('dlc/%s/%s' %
-                              (self.payload.tgt_image.dlc_id,
-                               self.payload.tgt_image.dlc_package),)
-      # DLC partition is the image itself.
-      self.tgt_partitions = (self.tgt_image_file,)
-      self.src_partitions = (self.src_image_file,)
-    else:
-      self.partition_names = (self._ROOTFS, self._KERNEL)
-      self.tgt_partitions = tuple(os.path.join(self.work_dir,
-                                               'tgt_%s.bin' % name)
-                                  for name in self.partition_names)
-      self.src_partitions = tuple(os.path.join(self.work_dir,
-                                               'src_%s.bin' % name)
-                                  for name in self.partition_names)
-
     self.signer = None
     if sign:
       self._SetupSigner(payload.build)
@@ -134,9 +122,6 @@ class PaygenPayload(object):
     # instance of the cache manager to properly coordinate.
     self._cache = download_cache.DownloadCache(
         self._FindCacheDir(), cache_size=PaygenPayload.CACHE_SIZE)
-
-  def _IsDLC(self):
-    return gspaths.IsDLCImage(self.payload.tgt_image)
 
   def _MetadataUri(self, uri):
     """Given a payload uri, find the uri for the metadata signature."""
@@ -183,6 +168,156 @@ class PaygenPayload(object):
                                          'testing_rsa')
       self.signer = signer_payloads_client.UnofficialSignerPayloadsClient(
           self._private_key, self.work_dir)
+
+  def _GetDlcImageParams(self, tgt_image, src_image=None):
+    """Returns parameters related to target and source DLC images.
+
+    Args:
+      tgt_image: The target image.
+      src_image: The source image.
+
+    Returns:
+      A tuple of three parameters that was discovered from the image: The DLC
+      ID, The DLC package and its release AppID.
+    """
+
+    def _GetImageParams(image):
+      """Returns the parameters of a single DLC image.
+
+      Args:
+        image: The input image.
+
+      Returns:
+        Same values as _GetDlcImageParams()
+      """
+      mount_point = os.path.join(self.work_dir, 'mount-point')
+      osutils.MountDir(image, mount_point, mount_opts=('ro',))
+      try:
+        lsb_release = utils.ReadLsbRelease(mount_point)
+      finally:
+        osutils.UmountDir(mount_point)
+
+      dlc_id = lsb_release[build_dlc.DLC_ID_KEY]
+      dlc_package = lsb_release[build_dlc.DLC_PACKAGE_KEY]
+      appid = lsb_release[build_dlc.DLC_APPID_KEY]
+
+      if gspaths.IsDLCImage(image):
+        if dlc_id != image.dlc_id:
+          raise Error('The DLC ID (%s) inferred from the file path does not '
+                      'match the one (%s) from the lsb-release.' %
+                      (image.dlc_id, dlc_id))
+        if dlc_package != image.dlc_package:
+          raise Error('The DLC package (%s) inferred from the file path '
+                      'does not match the one (%s) from the lsb-release.' %
+                      (image.dlc_package, dlc_package))
+
+      return dlc_id, dlc_package, appid
+
+    tgt_dlc_id, tgt_dlc_package, tgt_appid = _GetImageParams(tgt_image)
+    if src_image:
+      src_dlc_id, src_dlc_package, src_appid = _GetImageParams(src_image)
+      if tgt_dlc_id != src_dlc_id:
+        raise Error('Source (%s) and target (%s) DLC IDs do not match.' %
+                    (src_dlc_id, tgt_dlc_id))
+      if tgt_dlc_package != src_dlc_package:
+        raise Error('Source (%s) and target (%s) DLC packages do not match.'
+                    % (src_dlc_package, tgt_dlc_package))
+      # This may cause problems when we try to switch a board to a different App
+      # ID. If that ever happens the following few lines should be deleted.
+      if tgt_appid != src_appid:
+        raise Error('Source (%s) and target (%s) App IDs do not match.' %
+                    (src_appid, tgt_appid))
+
+    return tgt_dlc_id, tgt_dlc_package, tgt_appid
+
+  def _GetPlatformImageParams(self, image):
+    """Returns parameters related to target or source platform images.
+
+    Since this function is mounting a GPT image, if the mount (for reasons like
+    a bug, etc), changes the bits on the image, then the image cannot be trusted
+    after this call.
+
+    Args:
+      image: The input image.
+
+    Returns:
+      The release APPID of the image.
+    """
+    # Mount the ROOT-A partition of the image. The reason we don't mount the
+    # extracted partition directly is that if by mistake/bug the mount changes
+    # the bits on the partition, then we will create a payload for a changed
+    # partition which is not equivalent to the original partition. So just mount
+    # the partition of the GPT image and even if it changes, then who cares.
+    #
+    # TODO(crbug.com/925203): Replace this with image_lib.LoopbackPartition()
+    # once the mentioned bug is resolved.
+    with osutils.TempDir(base_dir=self.work_dir) as mount_point:
+      with osutils.MountImageContext(image, mount_point,
+                                     (constants.PART_ROOT_A,)):
+        sysroot_dir = os.path.join(mount_point,
+                                   'dir-%s' % constants.PART_ROOT_A)
+        lsb_release = utils.ReadLsbRelease(sysroot_dir)
+        app_id = lsb_release.get(cros_set_lsb_release.LSB_KEY_APPID_RELEASE)
+        if app_id is None:
+          board = lsb_release.get(cros_set_lsb_release.LSB_KEY_APPID_BOARD)
+          logging.error('APPID is missing in board %s. In some boards that do '
+                        'not do auto updates, like amd64-generic, this is '
+                        'expected, otherwise this is an error.' % board)
+        return app_id
+
+  def _PreparePartitions(self):
+    """Prepares parameters related to partitions of the given image.
+
+    This function basically distinguishes between normal platform images and DLC
+    images and creates and checks parameters necessary for each of them.
+    """
+    tgt_image_type = partition_lib.LookupImageType(self.tgt_image_file)
+    if self.payload.src_image:
+      src_image_type = partition_lib.LookupImageType(self.src_image_file)
+      if (tgt_image_type != src_image_type and
+          partition_lib.CROS_IMAGE in (tgt_image_type, src_image_type)):
+        raise Error('Source (%s) and target (%s) images have different types.' %
+                    (src_image_type, tgt_image_type))
+
+    if tgt_image_type == partition_lib.DLC_IMAGE:
+      logging.info('Detected a DLC image.')
+
+      # DLC module image has only one partition which is the image itself.
+      dlc_id, dlc_package, self._appid = self._GetDlcImageParams(
+          self.tgt_image_file,
+          src_image=self.src_image_file if self.payload.src_image else None)
+      self.partition_names = ('dlc/%s/%s' % (dlc_id, dlc_package),)
+      self.tgt_partitions = (self.tgt_image_file,)
+      self.src_partitions = (self.src_image_file,)
+
+    elif tgt_image_type == partition_lib.CROS_IMAGE:
+      logging.info('Detected a Chromium OS image.')
+
+      self.partition_names = (self._ROOTFS, self._KERNEL)
+      self.tgt_partitions = tuple(os.path.join(self.work_dir,
+                                               'tgt_%s.bin' % name)
+                                  for name in self.partition_names)
+      self.src_partitions = tuple(os.path.join(self.work_dir,
+                                               'src_%s.bin' % name)
+                                  for name in self.partition_names)
+
+      partition_lib.ExtractRoot(self.tgt_image_file, self.tgt_partitions[0])
+      partition_lib.ExtractKernel(self.tgt_image_file, self.tgt_partitions[1])
+      if self.payload.src_image:
+        partition_lib.ExtractRoot(self.src_image_file, self.src_partitions[0])
+        partition_lib.ExtractKernel(self.src_image_file, self.src_partitions[1])
+
+      # This step should be done after extracting partitions, look at the
+      # _GetPlatformImageParams() documentation for more info.
+      self._appid = self._GetPlatformImageParams(self.tgt_image_file)
+      # Reset the target image file path so no one uses it later.
+      self.tgt_image_file = None
+
+      # Makes sure we have generated postinstall config for major version 2 and
+      # platform image.
+      self._GeneratePostinstConfig(True)
+    else:
+      raise Error('Invalid image type %s' % tgt_image_type)
 
   def _RunGeneratorCmd(self, cmd):
     """Wrapper for RunCommand in chroot.
@@ -307,36 +442,10 @@ class PaygenPayload(object):
                       'RUN_POSTINSTALL_root=%s\n' %
                       ('true' if run_postinst else 'false'))
 
-  def _ExtractPartitions(self):
-    """Extracts root and kernel partitions from an image."""
-    for idx, part_name in enumerate(self.partition_names):
-      if part_name == self._ROOTFS:
-        partition_lib.ExtractRoot(self.tgt_image_file,
-                                  self.tgt_partitions[idx])
-        if self.payload.src_image:
-          partition_lib.ExtractRoot(self.src_image_file,
-                                    self.src_partitions[idx])
-      elif part_name == self._KERNEL:
-        partition_lib.ExtractKernel(self.tgt_image_file,
-                                    self.tgt_partitions[idx])
-        if self.payload.src_image:
-          partition_lib.ExtractKernel(self.src_image_file,
-                                      self.src_partitions[idx])
-      else:
-        raise Error('Invalid partition %s' % part_name)
-
   def _GenerateUnsignedPayload(self):
     """Generate the unsigned delta into self.payload_file."""
     # Note that the command run here requires sudo access.
     logging.info('Generating unsigned payload as %s', self.payload_file)
-
-    if not self._IsDLC():
-      self._ExtractPartitions()
-
-    # Makes sure we have generated postinstall config for major version 2 and
-    # platform image.
-    # We do not generate postinstall config for DLC images.
-    self._GeneratePostinstConfig(not self._IsDLC())
 
     tgt_image = self.payload.tgt_image
     cmd = ['delta_generator',
@@ -347,7 +456,7 @@ class PaygenPayload(object):
            '--new_partitions=' +
            ':'.join(path_util.ToChrootPath(x) for x in self.tgt_partitions)]
 
-    if not self._IsDLC():
+    if os.path.exists(self._postinst_config_file):
       cmd += ['--new_postinstall_config_file=' +
               path_util.ToChrootPath(self._postinst_config_file)]
 
@@ -671,6 +780,10 @@ class PaygenPayload(object):
     # Fetch and prepare the src image.
     if self.payload.src_image:
       self._PrepareImage(self.payload.src_image, self.src_image_file)
+
+    # Setup parameters about the payload like whether it is a DLC or not. Or
+    # parameters like the APPID, etc.
+    self._PreparePartitions()
 
     # Generate the unsigned payload.
     self._GenerateUnsignedPayload()

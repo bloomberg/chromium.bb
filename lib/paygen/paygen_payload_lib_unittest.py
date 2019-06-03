@@ -21,9 +21,13 @@ from chromite.lib import partial_mock
 
 from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import gspaths
+from chromite.lib.paygen import partition_lib
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import signer_payloads_client
 from chromite.lib.paygen import urilib
+from chromite.lib.paygen import utils
+
+from chromite.scripts import build_dlc
 
 
 # We access a lot of protected members during testing.
@@ -69,7 +73,7 @@ class PaygenPayloadLibTest(cros_test_lib.MockTempDirTestCase):
         build=self.new_build,
         key='dlc',
         dlc_id='dummy-dlc',
-        dlc_package='dlc-package',
+        dlc_package='dummy-package',
         uri=('gs://chromeos-releases/dev-channel/x86-alex/4171.0.0/dlc/'
              'dummy-dlc/dummy-package/dlc.img'))
 
@@ -138,11 +142,17 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     if work_dir is None:
       work_dir = self.tempdir
 
-    return paygen_payload_lib.PaygenPayload(
+    gen = paygen_payload_lib.PaygenPayload(
         payload=payload,
         work_dir=work_dir,
         sign=sign,
         verify=False)
+
+    gen.partition_names = ('foo-root', 'foo-kernel')
+    gen.tgt_partitions = ('/work/tgt_root.bin', '/work/tgt_kernel.bin')
+    gen.src_partitions = ('/work/src_root.bin', '/work/src_kernel.bin')
+
+    return gen
 
   def testWorkingDirNames(self):
     """Make sure that some of the files we create have the expected names."""
@@ -301,13 +311,139 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(osutils.ReadFile(gen._postinst_config_file),
                      'RUN_POSTINSTALL_root=false\n')
 
+  def testPreparePartitionsImageType(self):
+    """Tests discrepency in image types for _PreparePartitions function."""
+    gen = self._GetStdGenerator(payload=self.delta_payload,
+                                work_dir=self.tempdir)
+
+    def side_effect(image):
+      if image == gen.tgt_image_file:
+        return partition_lib.CROS_IMAGE
+      else:
+        return partition_lib.DLC_IMAGE
+
+    self.PatchObject(partition_lib, 'LookupImageType', side_effect=side_effect)
+
+    with self.assertRaisesRegexp(paygen_payload_lib.Error, 'different types'):
+      gen._PreparePartitions()
+
+  def testPreparePartitionsGptFull(self):
+    """Tests _PreparePartitions function for GPT (platform) images.
+
+    This test is or full payloads only.
+    """
+    gen = self._GetStdGenerator(payload=self.full_payload,
+                                work_dir=self.tempdir)
+    # Mock out needed functions.
+    self.PatchObject(partition_lib, 'LookupImageType',
+                     return_value=partition_lib.CROS_IMAGE)
+    platform_params_mock = self.PatchObject(gen, '_GetPlatformImageParams',
+                                            return_value='foo-appid')
+    root_ext_mock = self.PatchObject(partition_lib, 'ExtractRoot')
+    kern_ext_mock = self.PatchObject(partition_lib, 'ExtractKernel')
+    postinst_mock = self.PatchObject(gen, '_GeneratePostinstConfig')
+    tgt_image_file = gen.tgt_image_file
+
+    gen._PreparePartitions()
+
+    # Check the appid was correctly set.
+    self.assertEqual(gen._appid, 'foo-appid')
+    # Check extract partition functions are called correctly.
+    root_ext_mock(gen.tgt_image_file, gen.tgt_partitions[0])
+    kern_ext_mock(gen.tgt_image_file, gen.tgt_partitions[1])
+    # Checks that postinstall config file was generated.
+    postinst_mock.assert_called_once_with(True)
+    # Checks we mounted the image and read the lsb-release file correctly.
+    platform_params_mock.assert_called_once_with(tgt_image_file)
+    # Make sure the tgt_image_file variable is set to None so no one can use it
+    # again.
+    self.assertIsNone(gen.tgt_image_file)
+
+  def testPreparePartitionsGptDelta(self):
+    """Tests _PreparePartitions function for GPT (platform) images.
+
+    This test is or delta payloads only.
+    """
+    gen = self._GetStdGenerator(payload=self.delta_payload,
+                                work_dir=self.tempdir)
+
+    # Mock out needed functions.
+    self.PatchObject(partition_lib, 'LookupImageType',
+                     return_value=partition_lib.CROS_IMAGE)
+    self.PatchObject(gen, '_GetPlatformImageParams', return_value='foo-appid')
+    root_ext_mock = self.PatchObject(partition_lib, 'ExtractRoot')
+    kern_ext_mock = self.PatchObject(partition_lib, 'ExtractKernel')
+
+    gen._PreparePartitions()
+
+    # Check extract partition functions are called correctly. Two times each
+    # partition (kernel, rootfs), once for source partition and once for target
+    # partition.
+    self.assertEqual(root_ext_mock.call_count, 2)
+    self.assertEqual(kern_ext_mock.call_count, 2)
+
+  def testPreparePartitionsDlc(self):
+    """Tests _PreparePartitions function for DLC images."""
+    gen = self._GetStdGenerator(payload=self.full_payload,
+                                work_dir=self.tempdir)
+    self.PatchObject(partition_lib, 'LookupImageType',
+                     return_value=partition_lib.DLC_IMAGE)
+    get_params_mock = self.PatchObject(
+        gen, '_GetDlcImageParams',
+        return_value=('foo-id', 'foo-package', 'foo-appid'))
+    postinst_mock = self.PatchObject(gen, '_GeneratePostinstConfig')
+
+    gen._PreparePartitions()
+
+    self.assertEqual(gen._appid, 'foo-appid')
+    self.assertEqual(gen.partition_names, ('dlc/foo-id/foo-package',))
+    self.assertFalse(postinst_mock.called)
+    get_params_mock.assert_called_once()
+
+  def _TestGetDlcImageParams(self, tgt_id, tgt_package):
+    """Utility function for Testing _GetDlcImageParams."""
+    payload = self.full_dlc_payload
+    tgt_image = self.new_dlc_image
+    tgt_image.dlc_id = tgt_id
+    tgt_image.dlc_package = tgt_package
+
+    gen = self._GetStdGenerator(payload=payload, work_dir=self.tempdir)
+    self.PatchObject(osutils, 'MountDir')
+    self.PatchObject(osutils, 'UmountDir')
+    lsb_read_mock = self.PatchObject(
+        utils, 'ReadLsbRelease',
+        return_value={build_dlc.DLC_APPID_KEY: 'foo-appid',
+                      build_dlc.DLC_ID_KEY: 'dummy-dlc',
+                      build_dlc.DLC_PACKAGE_KEY: 'dummy-package'})
+
+    dlc_id, dlc_package, dlc_appid = gen._GetDlcImageParams(tgt_image)
+
+    self.assertEquals(dlc_id, 'dummy-dlc')
+    self.assertEquals(dlc_package, 'dummy-package')
+    self.assertEqual(dlc_appid, 'foo-appid')
+    lsb_read_mock.assert_called_once()
+
+  def testGetDlcImageParamsCorrect(self):
+    """Tests _GetDlcImageParams function."""
+    self._TestGetDlcImageParams('dummy-dlc', 'dummy-package')
+
+  def testGetDlcImageParamsMismatchId(self):
+    """Tests _GetDlcImageParams function with mismatched DLC ID."""
+    with self.assertRaises(paygen_payload_lib.Error):
+      self._TestGetDlcImageParams('dummy-dlc2', 'dummy-package')
+
+  def testGetDlcImageParamsMismatchPackage(self):
+    """Tests _GetDlcImageParams function with mismatched DLC package."""
+    with self.assertRaises(paygen_payload_lib.Error):
+      self._TestGetDlcImageParams('dummy-dlc', 'dummy-package2')
+
   def testGenerateUnsignedPayloadFull(self):
     """Test _GenerateUnsignedPayload with full payload."""
-    gen = self._GetStdGenerator(payload=self.full_payload, work_dir='/work')
+    gen = self._GetStdGenerator(payload=self.full_payload,
+                                work_dir=self.tempdir)
+    osutils.WriteFile(gen._postinst_config_file, 'Fake postinst content')
 
     # Stub out the required functions.
-    extract_mock = self.PatchObject(gen, '_ExtractPartitions')
-    postinst_config_mock = self.PatchObject(gen, '_GeneratePostinstConfig')
     run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
 
     # Run the test.
@@ -326,82 +462,14 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--new_build_channel=dev-channel',
            '--new_build_version=1620.0.0',
            '--new_key=mp-v3']
-    extract_mock.assert_called_once_with()
-    postinst_config_mock.assert_called_once_with(True)
-    run_mock.assert_called_once_with(cmd)
-
-  def testGenerateUnsignedDLCPayloadFull(self):
-    """Test _GenerateUnsignedPayload with full DLC payload."""
-    gen = self._GetStdGenerator(payload=self.full_dlc_payload,
-                                work_dir='/work')
-
-    # Stub out the required functions.
-    extract_mock = self.PatchObject(gen, '_ExtractPartitions')
-    postinst_config_mock = self.PatchObject(gen, '_GeneratePostinstConfig')
-    run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
-
-    # Run the test.
-    gen._GenerateUnsignedPayload()
-
-    # Check the expected function calls.
-    cmd = ['delta_generator',
-           '--major_version=2',
-           '--out_file=' + gen.payload_file,
-           '--partition_names=' + ':'.join(gen.partition_names),
-           '--new_partitions=' + ':'.join(gen.tgt_partitions),
-           '--new_channel=dev-channel',
-           '--new_board=x86-alex',
-           '--new_version=4171.0.0',
-           '--new_build_channel=dev-channel',
-           '--new_build_version=4171.0.0',
-           '--new_key=dlc']
-    extract_mock.assert_not_called()
-    postinst_config_mock.assert_called_once_with(False)
-    run_mock.assert_called_once_with(cmd)
-
-  def testGenerateUnsignedDLCPayloadDelta(self):
-    """Test _GenerateUnsignedPayload with delta DLC payload."""
-    gen = self._GetStdGenerator(payload=self.delta_dlc_payload,
-                                work_dir='/work')
-
-    # Stub out the required functions.
-    extract_mock = self.PatchObject(gen, '_ExtractPartitions')
-    postinst_config_mock = self.PatchObject(gen, '_GeneratePostinstConfig')
-    run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
-
-    # Run the test.
-    gen._GenerateUnsignedPayload()
-
-    # Check the expected function calls.
-    cmd = ['delta_generator',
-           '--major_version=2',
-           '--out_file=' + gen.payload_file,
-           '--partition_names=' + ':'.join(gen.partition_names),
-           '--new_partitions=' + ':'.join(gen.tgt_partitions),
-           '--new_channel=dev-channel',
-           '--new_board=x86-alex',
-           '--new_version=4171.0.0',
-           '--new_build_channel=dev-channel',
-           '--new_build_version=4171.0.0',
-           '--new_key=dlc',
-           '--old_partitions=/work/src_image.bin',
-           '--old_channel=dev-channel',
-           '--old_board=x86-alex',
-           '--old_version=1620.0.0',
-           '--old_build_channel=dev-channel',
-           '--old_build_version=1620.0.0',
-           '--old_key=dlc']
-    extract_mock.assert_not_called()
-    postinst_config_mock.assert_called_once_with(False)
     run_mock.assert_called_once_with(cmd)
 
   def testGenerateUnsignedPayloadDelta(self):
     """Test _GenerateUnsignedPayload with delta payload."""
-    gen = self._GetStdGenerator(payload=self.delta_payload, work_dir='/work')
+    gen = self._GetStdGenerator(payload=self.delta_payload,
+                                work_dir=self.tempdir)
 
     # Stub out the required functions.
-    extract_mock = self.PatchObject(gen, '_ExtractPartitions')
-    postinst_config_mock = self.PatchObject(gen, '_GeneratePostinstConfig')
     run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
 
     # Run the test.
@@ -413,7 +481,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--out_file=' + gen.payload_file,
            '--partition_names=' + ':'.join(gen.partition_names),
            '--new_partitions=' + ':'.join(gen.tgt_partitions),
-           '--new_postinstall_config_file=' + gen._postinst_config_file,
            '--new_channel=dev-channel',
            '--new_board=x86-alex',
            '--new_version=4171.0.0',
@@ -427,75 +494,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--old_build_channel=dev-channel',
            '--old_build_version=1620.0.0',
            '--old_key=mp-v3']
-    extract_mock.assert_called_once_with()
-    postinst_config_mock.assert_called_once_with(True)
-    run_mock.assert_called_once_with(cmd)
-
-  def testGenerateUnsignedTestPayloadFull(self):
-    """Test _GenerateUnsignedPayload with full test payload."""
-    gen = self._GetStdGenerator(payload=self.full_test_payload,
-                                work_dir='/work')
-
-    # Stub out the required functions.
-    extract_mock = self.PatchObject(gen, '_ExtractPartitions')
-    postinst_config_mock = self.PatchObject(gen, '_GeneratePostinstConfig')
-    run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
-
-    # Run the test.
-    gen._GenerateUnsignedPayload()
-
-    # Check the expected function calls.
-    cmd = ['delta_generator',
-           '--major_version=2',
-           '--out_file=' + gen.payload_file,
-           '--partition_names=' + ':'.join(gen.partition_names),
-           '--new_partitions=' + ':'.join(gen.tgt_partitions),
-           '--new_postinstall_config_file=' + gen._postinst_config_file,
-           '--new_channel=dev-channel',
-           '--new_board=x86-alex',
-           '--new_version=1620.0.0',
-           '--new_build_channel=dev-channel',
-           '--new_build_version=1620.0.0',
-           '--new_key=test']
-    extract_mock.assert_called_once_with()
-    postinst_config_mock.assert_called_once_with(True)
-    run_mock.assert_called_once_with(cmd)
-
-  def testGenerateUnsignedTestPayloadDelta(self):
-    """Test _GenerateUnsignedPayload with delta payload."""
-    gen = self._GetStdGenerator(payload=self.delta_test_payload,
-                                work_dir='/work')
-
-    # Stub out the required functions.
-    extract_mock = self.PatchObject(gen, '_ExtractPartitions')
-    postinst_config_mock = self.PatchObject(gen, '_GeneratePostinstConfig')
-    run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
-
-    # Run the test.
-    gen._GenerateUnsignedPayload()
-
-    # Check the expected function calls.
-    cmd = ['delta_generator',
-           '--major_version=2',
-           '--out_file=' + gen.payload_file,
-           '--partition_names=' + ':'.join(gen.partition_names),
-           '--new_partitions=' + ':'.join(gen.tgt_partitions),
-           '--new_postinstall_config_file=' + gen._postinst_config_file,
-           '--new_channel=dev-channel',
-           '--new_board=x86-alex',
-           '--new_version=4171.0.0',
-           '--new_build_channel=dev-channel',
-           '--new_build_version=4171.0.0',
-           '--new_key=test',
-           '--old_partitions=' + ':'.join(gen.src_partitions),
-           '--old_channel=dev-channel',
-           '--old_board=x86-alex',
-           '--old_version=1620.0.0',
-           '--old_build_channel=dev-channel',
-           '--old_build_version=1620.0.0',
-           '--old_key=test']
-    extract_mock.assert_called_once_with()
-    postinst_config_mock.assert_called_once_with(True)
     run_mock.assert_called_once_with(cmd)
 
   def testGenerateHashes(self):
@@ -612,7 +610,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--check',
            '--type', 'delta',
            '--disabled_tests', 'move-same-src-dst-block',
-           '--part_names', 'root', 'kernel',
+           '--part_names', 'foo-root', 'foo-kernel',
            '--dst_part_paths', '/work/tgt_root.bin', '/work/tgt_kernel.bin',
            '--meta-sig', gen.metadata_signature_file,
            '--metadata-size', "10",
@@ -637,7 +635,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--check',
            '--type', 'full',
            '--disabled_tests', 'move-same-src-dst-block',
-           '--part_names', 'root', 'kernel',
+           '--part_names', 'foo-root', 'foo-kernel',
            '--dst_part_paths', '/work/tgt_root.bin', '/work/tgt_kernel.bin',
            '--meta-sig', gen.metadata_signature_file,
            '--metadata-size', "10"]
@@ -747,8 +745,10 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen = self._GetStdGenerator(payload=payload, work_dir='/work')
 
     # Set up stubs.
-    prep_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
-                                 '_PrepareImage')
+    prep_image_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
+                                       '_PrepareImage')
+    prep_part_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
+                                      '_PreparePartitions')
     gen_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                 '_GenerateUnsignedPayload')
     sign_mock = self.PatchObject(
@@ -761,13 +761,14 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen._Create()
 
     # Check expected calls.
-    self.assertEqual(prep_mock.call_args_list, [
+    self.assertEqual(prep_image_mock.call_args_list, [
         mock.call(payload.tgt_image, gen.tgt_image_file),
         mock.call(payload.src_image, gen.src_image_file),
     ])
     gen_mock.assert_called_once_with()
     sign_mock.assert_called_once_with()
     store_mock.assert_called_once_with(['metadata_sigs'])
+    prep_part_mock.assert_called_once()
 
   def testUploadResults(self):
     """Test the overall payload generation process."""
