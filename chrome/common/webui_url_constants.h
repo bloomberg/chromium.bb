@@ -310,6 +310,7 @@ extern const char kPeopleSubPage[];
 extern const char kPrintingSettingsSubPage[];
 extern const char kPrivacySubPage[];
 extern const char kResetProfileSettingsSubPage[];
+extern const char kSearchSubPage[];
 extern const char kSearchEnginesSubPage[];
 extern const char kSignOutSubPage[];
 extern const char kSyncSetupSubPage[];

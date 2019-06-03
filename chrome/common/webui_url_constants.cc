@@ -348,6 +348,7 @@ const char kPaymentsSubPage[] = "payments";
 const char kPrintingSettingsSubPage[] = "printing";
 const char kPrivacySubPage[] = "privacy";
 const char kResetProfileSettingsSubPage[] = "resetProfileSettings";
+const char kSearchSubPage[] = "search";
 const char kSearchEnginesSubPage[] = "searchEngines";
 const char kSignOutSubPage[] = "signOut";
 const char kSyncSetupSubPage[] = "syncSetup";
