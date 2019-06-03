@@ -13,7 +13,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/favicon_request_handler.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/favicon_base/favicon_request_metrics.h"
 #include "content/public/browser/url_data_source.h"
 #include "ui/gfx/favicon_size.h"
 

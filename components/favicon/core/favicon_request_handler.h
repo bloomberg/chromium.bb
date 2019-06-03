@@ -12,13 +12,35 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_callback.h"
-#include "components/favicon_base/favicon_request_metrics.h"
 #include "url/gurl.h"
 
 namespace favicon {
 
 class FaviconService;
 class LargeIconService;
+
+// The UI origin of an icon request.
+enum class FaviconRequestOrigin {
+  // Unknown origin.
+  UNKNOWN,
+  // chrome://history.
+  HISTORY,
+  // chrome://history/syncedTabs.
+  HISTORY_SYNCED_TABS,
+  // Recently closed tabs menu.
+  RECENTLY_CLOSED_TABS,
+};
+
+// Where the icon sent in the response is coming from. Used for metrics.
+enum class FaviconAvailability {
+  // Icon recovered from local storage (but may originally come from server).
+  kLocal = 0,
+  // Icon recovered using sync.
+  kSync = 1,
+  // Icon not found.
+  kNotAvailable = 2,
+  kMaxValue = kNotAvailable,
+};
 
 // Class for handling favicon requests by page url, forwarding them to local
 // storage, sync or Google server accordingly.
