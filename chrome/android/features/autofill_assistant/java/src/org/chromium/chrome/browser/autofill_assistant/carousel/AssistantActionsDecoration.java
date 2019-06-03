@@ -132,9 +132,13 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
             canvas.drawRect(mChildRect, mOverlayPaint);
         }
 
+        View beforeLastChild = parent.getChildAt(parent.getChildCount() - 2);
+
         // Draw a fixed size white-to-transparent linear gradient from left to right.
         mGradientDrawable.setBounds(
                 0, mVerticalSpacing, mGradientWidth, parent.getHeight() - mVerticalSpacing);
+        mGradientDrawable.setAlpha(Math.round(getBoundedLinearValue(
+                beforeLastChild.getLeft(), lastChild.getLeft(), lastChild.getRight(), 255, 0)));
         mGradientDrawable.draw(canvas);
 
         canvas.restore();
@@ -148,7 +152,6 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
         // Draw shadow composed of 4 layers of colors around the last child. We multiply the
         // original alpha of the shadow color by alphaRatio to hide the shadow when there is no
         // child behind the last child.
-        View beforeLastChild = parent.getChildAt(parent.getChildCount() - 2);
         float alphaRatio = getBoundedLinearValue(
                 beforeLastChild.getLeft(), lastChild.getLeft(), lastChild.getRight(), 1, 0);
 
