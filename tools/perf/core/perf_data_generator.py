@@ -413,17 +413,13 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
         'extra_args': [
-          # TODO(crbug.com/612455): Enable ref builds once can pass both
-          # --browser=exact (used by this bot to have it run Monochrome6432)
-          # and --browser=reference together.
-          #'--run-ref-build',
+          '--run-ref-build',
           '--test-shard-map-filename=android-pixel2-perf_map.json',
         ],
         'num_shards': 35
       }
     ],
     'platform': 'android-chrome',
-    'browser': 'bin/monochrome_64_32_bundle',
     'dimension': {
       'pool': 'chrome.tests.perf',
       'os': 'Android',

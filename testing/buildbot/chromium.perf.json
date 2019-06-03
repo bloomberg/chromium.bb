@@ -1132,10 +1132,9 @@
       {
         "args": [
           "-v",
-          "--browser=exact",
+          "--browser=android-chrome",
           "--upload-results",
-          "--browser-executable=../../out/Release/bin/monochrome_64_32_bundle",
-          "--device=android",
+          "--run-ref-build",
           "--test-shard-map-filename=android-pixel2-perf_map.json"
         ],
         "isolate_name": "performance_test_suite",
