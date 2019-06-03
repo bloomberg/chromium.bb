@@ -126,7 +126,6 @@ jumbo_component("aura") {
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/platform_window",
-    "//ui/platform_window/mojo",
     "//ui/platform_window/stub",
   ]
 

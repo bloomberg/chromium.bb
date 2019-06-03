@@ -1404,7 +1404,6 @@ component("ash") {
     "//ui/native_theme",
     "//ui/ozone",
     "//ui/platform_window",
-    "//ui/platform_window/mojo",
     "//ui/platform_window/stub",
     "//ui/snapshot",
     "//ui/views/window/vector_icons",

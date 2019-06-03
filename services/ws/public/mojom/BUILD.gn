@@ -22,7 +22,6 @@ mojom("mojom") {
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
-    "//ui/platform_window/mojo:interfaces",
   ]
 
   if (is_chromeos) {
