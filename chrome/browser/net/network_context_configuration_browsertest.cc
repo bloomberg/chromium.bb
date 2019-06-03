@@ -102,7 +102,6 @@ const char kCacheRandomPath[] = "/cacherandom";
 const char kControllablePath[] = "/controllable";
 
 enum class NetworkServiceState {
-  kDisabled,
   kEnabled,
   // Similar to |kEnabled|, but will simulate a crash and run tests again the
   // restarted Network Service process.
@@ -180,13 +179,6 @@ class NetworkContextConfigurationBrowserTest
   }
 
   ~NetworkContextConfigurationBrowserTest() override {}
-
-  void SetUpInProcessBrowserTestFixture() override {
-    if (GetParam().network_service_state != NetworkServiceState::kDisabled)
-      feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-    else
-      feature_list_.InitAndDisableFeature(network::features::kNetworkService);
-  }
 
   void SetUpOnMainThread() override {
     // Used in a bunch of proxy tests. Should not resolve.
@@ -1041,8 +1033,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Hsts) {
   // The network service must be cleanly shut down to guarantee HSTS information
   // is flushed to disk, but that currently generally doesn't happen. See
   // https://crbug.com/820996.
-  if (GetParam().network_service_state != NetworkServiceState::kDisabled &&
-      GetHttpCacheType() == StorageType::kDisk) {
+  if (GetHttpCacheType() == StorageType::kDisk) {
     return;
   }
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -1793,24 +1784,19 @@ class NetworkContextConfigurationHttpsStrippingPacBrowserTest
   }
 };
 
-// Instiates tests with a prefix indicating which NetworkContext is being
+// Instantiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
 // enabled, and "/2" if it's enabled and restarted.
 
-#if defined(OS_CHROMEOS)
 // There's an extra network change event on ChromeOS, likely from
 // NetworkChangeNotifierPosix that makes these tests flaky on ChromeOS when
 // there's an out of process network stack.
 //
 // TODO(https://crbug.com/927293): Fix that, and enable these tests on ChromeOS.
-#define TEST_CASES(network_context_type) \
-  TestCase({NetworkServiceState::kDisabled, network_context_type})
-#else  // !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
 #define TEST_CASES(network_context_type)                               \
-  TestCase({NetworkServiceState::kDisabled, network_context_type}),    \
       TestCase({NetworkServiceState::kEnabled, network_context_type}), \
       TestCase({NetworkServiceState::kRestarted, network_context_type})
-#endif  // !defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #define INSTANTIATE_EXTENSION_TESTS(TestFixture)                        \
@@ -1863,5 +1849,7 @@ INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationFtpPacBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationHttpsStrippingPacBrowserTest);
+
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace

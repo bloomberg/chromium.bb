@@ -36,7 +36,6 @@ class ChromeRequestAdapter : public RequestAdapter {
   explicit ChromeRequestAdapter(net::URLRequest* request);
   ~ChromeRequestAdapter() override;
 
-  virtual bool IsMainRequestContext(ProfileIOData* io_data);
   virtual content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
       const;
   virtual content::ResourceType GetResourceType() const;

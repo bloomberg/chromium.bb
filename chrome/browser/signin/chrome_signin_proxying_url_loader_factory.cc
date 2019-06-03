@@ -205,12 +205,6 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
 
   ~ProxyRequestAdapter() override = default;
 
-  // signin::ChromeRequestAdapter
-  bool IsMainRequestContext(ProfileIOData* io_data) override {
-    // This code is never reached from other request contexts.
-    return true;
-  }
-
   content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
       const override {
     return in_progress_request_->factory_->web_contents_getter_;

@@ -18,7 +18,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -60,7 +59,7 @@ OffTheRecordProfileIOData::Handle::Handle(Profile* profile)
 
 OffTheRecordProfileIOData::Handle::~Handle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  io_data_->ShutdownOnUIThread(GetAllContextGetters());
+  io_data_->ShutdownOnUIThread();
 }
 
 content::ResourceContext*
@@ -77,78 +76,6 @@ OffTheRecordProfileIOData::Handle::GetResourceContextNoInit() const {
   // the beginning of initalization and is used by some members while they're
   // being initialized (i.e. AppCacheService).
   return io_data_->GetResourceContext();
-}
-
-scoped_refptr<ChromeURLRequestContextGetter>
-OffTheRecordProfileIOData::Handle::CreateMainRequestContextGetter(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) const {
-  // TODO(oshima): Re-enable when ChromeOS only accesses the profile on the UI
-  // thread.
-#if !defined(OS_CHROMEOS)
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#endif  // defined(OS_CHROMEOS)
-  LazyInitialize();
-  DCHECK(!main_request_context_getter_.get());
-  main_request_context_getter_ = ChromeURLRequestContextGetter::Create(
-      profile_, io_data_, protocol_handlers, std::move(request_interceptors));
-  return main_request_context_getter_;
-}
-
-scoped_refptr<ChromeURLRequestContextGetter>
-OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
-    const base::FilePath& partition_path,
-    bool in_memory) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!partition_path.empty());
-  LazyInitialize();
-
-  // Keep a map of request context getters, one per requested app ID.
-  StoragePartitionDescriptor descriptor(partition_path, in_memory);
-  auto iter = app_request_context_getter_map_.find(descriptor);
-  CHECK(iter != app_request_context_getter_map_.end());
-  return iter->second;
-}
-
-scoped_refptr<ChromeURLRequestContextGetter>
-OffTheRecordProfileIOData::Handle::CreateIsolatedAppRequestContextGetter(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!partition_path.empty());
-  LazyInitialize();
-
-  // Keep a map of request context getters, one per requested app ID.
-  StoragePartitionDescriptor descriptor(partition_path, in_memory);
-  DCHECK_EQ(app_request_context_getter_map_.count(descriptor), 0u);
-
-  std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-      protocol_handler_interceptor(
-          ProtocolHandlerRegistryFactory::GetForBrowserContext(profile_)
-              ->CreateJobInterceptorFactory());
-  base::FilePath relative_partition_path;
-  // This method is passed the absolute partition path, but
-  // ProfileNetworkContext works in terms of relative partition paths.
-  bool result = profile_->GetPath().AppendRelativePath(
-      partition_path, &relative_partition_path);
-  DCHECK(result);
-  network::mojom::NetworkContextRequest network_context_request;
-  network::mojom::NetworkContextParamsPtr network_context_params;
-  ProfileNetworkContextServiceFactory::GetForContext(profile_)
-      ->SetUpProfileIODataNetworkContext(in_memory, relative_partition_path,
-                                         &network_context_request,
-                                         &network_context_params);
-  scoped_refptr<ChromeURLRequestContextGetter> context =
-      ChromeURLRequestContextGetter::CreateForIsolatedApp(
-          profile_, io_data_, descriptor,
-          std::move(protocol_handler_interceptor), protocol_handlers,
-          std::move(request_interceptors), std::move(network_context_request),
-          std::move(network_context_params));
-  app_request_context_getter_map_[descriptor] = context;
-
-  return context;
 }
 
 void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
@@ -175,37 +102,12 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   io_data_->InitializeOnUIThread(profile_);
 }
 
-std::unique_ptr<ProfileIOData::ChromeURLRequestContextGetterVector>
-OffTheRecordProfileIOData::Handle::GetAllContextGetters() {
-  std::unique_ptr<ChromeURLRequestContextGetterVector> context_getters(
-      new ChromeURLRequestContextGetterVector());
-  auto iter = app_request_context_getter_map_.begin();
-  for (; iter != app_request_context_getter_map_.end(); ++iter)
-    context_getters->push_back(iter->second);
-
-  if (main_request_context_getter_.get())
-    context_getters->push_back(main_request_context_getter_);
-
-  return context_getters;
-}
-
 OffTheRecordProfileIOData::OffTheRecordProfileIOData(
     Profile::ProfileType profile_type)
     : ProfileIOData(profile_type) {}
 
 OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
   DestroyResourceContext();
-}
-
-void OffTheRecordProfileIOData::InitializeInternal(
-    net::URLRequestContextBuilder* builder,
-    ProfileParams* profile_params,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) const {
-  AddProtocolHandlersToBuilder(builder, protocol_handlers);
-  SetUpJobFactoryDefaultsForBuilder(
-      builder, std::move(request_interceptors),
-      std::move(profile_params->protocol_handler_interceptor));
 }
 
 void OffTheRecordProfileIOData::OnMainRequestContextCreated(
@@ -222,29 +124,6 @@ void OffTheRecordProfileIOData::InitializeExtensionsCookieStore(
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
   extensions_cookie_store_ = content::CreateCookieStore(
       cookie_config, profile_params->io_thread->net_log());
-}
-
-net::URLRequestContext*
-OffTheRecordProfileIOData::InitializeMediaRequestContext(
-    net::URLRequestContext* original_context,
-    const StoragePartitionDescriptor& partition_descriptor,
-    const char* name) const {
-  NOTREACHED();
-  return NULL;
-}
-
-net::URLRequestContext*
-OffTheRecordProfileIOData::AcquireMediaRequestContext() const {
-  NOTREACHED();
-  return NULL;
-}
-
-net::URLRequestContext*
-OffTheRecordProfileIOData::AcquireIsolatedMediaRequestContext(
-    net::URLRequestContext* app_context,
-    const StoragePartitionDescriptor& partition_descriptor) const {
-  NOTREACHED();
-  return NULL;
 }
 
 net::CookieStore* OffTheRecordProfileIOData::GetExtensionsCookieStore() const {

@@ -32,7 +32,6 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -385,9 +384,7 @@ DownloadManagerDelegate* OffTheRecordProfileImpl::GetDownloadManagerDelegate() {
 net::URLRequestContextGetter* OffTheRecordProfileImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_->CreateMainRequestContextGetter(
-                     protocol_handlers, std::move(request_interceptors))
-      .get();
+  return nullptr;
 }
 
 net::URLRequestContextGetter*
@@ -400,8 +397,7 @@ net::URLRequestContextGetter*
 OffTheRecordProfileImpl::CreateMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
-  return io_data_->GetIsolatedAppRequestContextGetter(partition_path, in_memory)
-      .get();
+  return nullptr;
 }
 
 std::unique_ptr<service_manager::Service>
@@ -464,10 +460,7 @@ OffTheRecordProfileImpl::CreateRequestContextForStoragePartition(
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_->CreateIsolatedAppRequestContextGetter(
-                     partition_path, in_memory, protocol_handlers,
-                     std::move(request_interceptors))
-      .get();
+  return nullptr;
 }
 
 content::ResourceContext* OffTheRecordProfileImpl::GetResourceContext() {

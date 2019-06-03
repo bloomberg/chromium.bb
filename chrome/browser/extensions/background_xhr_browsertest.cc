@@ -47,7 +47,6 @@ constexpr const char kWebstoreDomain[] = "cws.com";
 enum class TestMode {
   kWithoutAny,
   kWithOutOfBlinkCors,
-  kWithOutOfBlinkCorsAndNetworkService,
 };
 
 std::unique_ptr<net::ClientCertStore> CreateNullCertStore() {
@@ -134,15 +133,9 @@ class BackgroundXhrWebstoreTest : public ExtensionApiTestWithManagementPolicy,
     switch (GetParam()) {
       case TestMode::kWithoutAny:
         disabled_features.push_back(network::features::kOutOfBlinkCors);
-        disabled_features.push_back(network::features::kNetworkService);
         break;
       case TestMode::kWithOutOfBlinkCors:
         enabled_features.push_back(network::features::kOutOfBlinkCors);
-        disabled_features.push_back(network::features::kNetworkService);
-        break;
-      case TestMode::kWithOutOfBlinkCorsAndNetworkService:
-        enabled_features.push_back(network::features::kOutOfBlinkCors);
-        enabled_features.push_back(network::features::kNetworkService);
         break;
     }
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
@@ -467,9 +460,5 @@ INSTANTIATE_TEST_SUITE_P(WithoutAny,
 INSTANTIATE_TEST_SUITE_P(WithOutOfBlinkCors,
                          BackgroundXhrWebstoreTest,
                          testing::Values(TestMode::kWithOutOfBlinkCors));
-INSTANTIATE_TEST_SUITE_P(
-    WithOutOfBlinkCorsAndNetworkService,
-    BackgroundXhrWebstoreTest,
-    testing::Values(TestMode::kWithOutOfBlinkCorsAndNetworkService));
 
 }  // namespace extensions

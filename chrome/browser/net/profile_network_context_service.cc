@@ -175,9 +175,9 @@ ProfileNetworkContextService::CreateNetworkContext(
     }
   }
 
-  if ((!in_memory && !profile_->IsOffTheRecord()) &&
-      (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-       base::FeatureList::IsEnabled(features::kUseSameCacheForMedia))) {
+  if ((!in_memory && !profile_->IsOffTheRecord())) {
+    // TODO(jam): delete this code 1 year after Network Service shipped to all
+    // stable users, which would be after M83 branches.
     base::FilePath media_cache_path = GetPartitionPath(relative_partition_path)
                                           .Append(chrome::kMediaCacheDirname);
     base::PostTaskWithTraits(

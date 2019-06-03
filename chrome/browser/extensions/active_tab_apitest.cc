@@ -55,10 +55,8 @@ class ExtensionActiveTabTest : public ExtensionApiTest,
     std::vector<base::Feature> disabled_features;
     if (ShouldEnableOutOfBlinkCors()) {
       enabled_features.push_back(network::features::kOutOfBlinkCors);
-      enabled_features.push_back(network::features::kNetworkService);
     } else {
       disabled_features.push_back(network::features::kOutOfBlinkCors);
-      disabled_features.push_back(network::features::kNetworkService);
     }
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     ExtensionApiTest::SetUp();
@@ -72,8 +70,6 @@ class ExtensionActiveTabTest : public ExtensionApiTest,
 
     ASSERT_EQ(ShouldEnableOutOfBlinkCors(),
               base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors));
-    ASSERT_EQ(ShouldEnableOutOfBlinkCors(),
-              base::FeatureList::IsEnabled(network::features::kNetworkService));
   }
 
  private:

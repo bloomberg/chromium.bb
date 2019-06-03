@@ -25,12 +25,6 @@ class URLLoaderThrottle::ThrottleRequestAdapter : public ChromeRequestAdapter {
   ~ThrottleRequestAdapter() override = default;
 
   // ChromeRequestAdapter
-  bool IsMainRequestContext(ProfileIOData* io_data) override {
-    // The <webview> check in URLLoaderThrottle::MaybeCreate means this is
-    // always true.
-    return true;
-  }
-
   content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
       const override {
     return throttle_->web_contents_getter_;

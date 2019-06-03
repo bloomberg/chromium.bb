@@ -292,10 +292,6 @@ void CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
   }
 }
 
-base::FilePath GetMediaCachePath(const base::FilePath& base) {
-  return base.Append(chrome::kMediaCacheDirname);
-}
-
 // Converts the kSessionExitedCleanly pref to the corresponding EXIT_TYPE.
 Profile::ExitType SessionTypePrefValueToExitType(const std::string& value) {
   if (value == kPrefExitTypeSessionEnded)
@@ -461,7 +457,6 @@ ProfileImpl::ProfileImpl(
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
       delegate_(delegate),
-      reporting_permissions_checker_factory_(this),
       shared_cors_origin_access_list_(
           content::SharedCorsOriginAccessList::Create()) {
   TRACE_EVENT0("browser,startup", "ProfileImpl::ctor")
@@ -695,11 +690,6 @@ void ProfileImpl::DoFinalInit() {
   }
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
-  base::FilePath media_cache_path = base_cache_path;
-  int media_cache_max_size;
-  GetMediaCacheParameters(&media_cache_path, &media_cache_max_size);
-  media_cache_path = GetMediaCachePath(media_cache_path);
-
   base::FilePath extensions_cookie_path = GetPath();
   extensions_cookie_path =
       extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
@@ -707,9 +697,7 @@ void ProfileImpl::DoFinalInit() {
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
-  io_data_.Init(media_cache_path, media_cache_max_size, extensions_cookie_path,
-                GetPath(), GetSpecialStoragePolicy(),
-                reporting_permissions_checker_factory_.CreateChecker());
+  io_data_.Init(extensions_cookie_path, GetPath());
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
@@ -1234,11 +1222,7 @@ content::BackgroundSyncController* ProfileImpl::GetBackgroundSyncController() {
 net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_
-      .CreateMainRequestContextGetter(protocol_handlers,
-                                      std::move(request_interceptors),
-                                      g_browser_process->io_thread())
-      .get();
+  return nullptr;
 }
 
 net::URLRequestContextGetter*
@@ -1247,24 +1231,18 @@ ProfileImpl::CreateRequestContextForStoragePartition(
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_
-      .CreateIsolatedAppRequestContextGetter(partition_path, in_memory,
-                                             protocol_handlers,
-                                             std::move(request_interceptors))
-      .get();
+  return nullptr;
 }
 
 net::URLRequestContextGetter* ProfileImpl::CreateMediaRequestContext() {
-  return io_data_.GetMediaRequestContextGetter().get();
+  return nullptr;
 }
 
 net::URLRequestContextGetter*
 ProfileImpl::CreateMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
-  return io_data_
-      .GetIsolatedMediaRequestContextGetter(partition_path, in_memory)
-      .get();
+  return nullptr;
 }
 
 void ProfileImpl::SetCorsOriginAccessListForOrigin(
@@ -1606,16 +1584,4 @@ void ProfileImpl::UpdateIsEphemeralInStorage() {
     entry->SetIsEphemeral(
         GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles));
   }
-}
-
-// Gets the media cache parameters from the command line. |cache_path| will be
-// set to the user provided path, or will not be touched if there is not an
-// argument. |max_size| will be the user provided value or zero by default.
-void ProfileImpl::GetMediaCacheParameters(base::FilePath* cache_path,
-                                          int* max_size) {
-  base::FilePath path(prefs_->GetFilePath(prefs::kDiskCacheDir));
-  if (!path.empty())
-    *cache_path = path.Append(cache_path->BaseName());
-
-  *max_size = prefs_->GetInteger(prefs::kMediaCacheSize);
 }

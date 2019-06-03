@@ -1082,4 +1082,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 5/2019.
   profile_prefs->ClearPref(kBookmarkAppCreationLaunchType);
+
+  // Added 6/2019.
+  profile_prefs->ClearPref(prefs::kMediaCacheSize);
 }

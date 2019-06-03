@@ -431,10 +431,6 @@ ChromeRequestAdapter::ChromeRequestAdapter(net::URLRequest* request)
 
 ChromeRequestAdapter::~ChromeRequestAdapter() = default;
 
-bool ChromeRequestAdapter::IsMainRequestContext(ProfileIOData* io_data) {
-  return request_->context() == io_data->GetMainRequestContext();
-}
-
 content::ResourceRequestInfo::WebContentsGetter
 ChromeRequestAdapter::GetWebContentsGetter() const {
   auto* info = content::ResourceRequestInfo::ForRequest(request_);
@@ -509,14 +505,6 @@ void FixAccountConsistencyRequestHeader(ChromeRequestAdapter* request,
 
   if (io_data->IsOffTheRecord())
     return;  // Account consistency is disabled in incognito.
-
-  if (!request->IsMainRequestContext(io_data)) {
-    // Account consistency requires the AccountReconcilor, which is only
-    // attached to the main request context.
-    // Note: InlineLoginUI uses an isolated request context and thus bypasses
-    // the account consistency flow here. See http://crbug.com/428396
-    return;
-  }
 
   int profile_mode_mask = PROFILE_MODE_DEFAULT;
   if (io_data->incognito_availibility()->GetValue() ==
