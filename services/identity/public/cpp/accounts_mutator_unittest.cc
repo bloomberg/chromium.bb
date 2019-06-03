@@ -5,9 +5,9 @@
 #include "services/identity/public/cpp/accounts_mutator_impl.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -111,7 +111,7 @@ class AccountsMutatorTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_test_env_;

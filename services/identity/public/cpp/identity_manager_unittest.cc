@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/signin/core/browser/account_consistency_method.h"
@@ -369,7 +369,7 @@ class IdentityManagerTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   TestSigninClient signin_client_;

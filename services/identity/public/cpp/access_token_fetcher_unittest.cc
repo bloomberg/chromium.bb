@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -116,7 +116,7 @@ class AccessTokenFetcherTest : public testing::Test,
       std::move(on_access_token_request_callback_).Run();
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestingPrefServiceSyncable pref_service_;
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
