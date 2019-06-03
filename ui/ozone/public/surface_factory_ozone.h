@@ -149,7 +149,7 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // be used instead of the NativePixmap that would have been produced by the
   // standard, implementation-specific NativePixmapHandle import mechanism.
   using GetProtectedNativePixmapCallback =
-      base::Callback<scoped_refptr<gfx::NativePixmap>(
+      base::RepeatingCallback<scoped_refptr<gfx::NativePixmap>(
           const gfx::NativePixmapHandle& handle)>;
   // Called by an external service to set the GetProtectedNativePixmapCallback,
   // to be used by the implementation when importing NativePixmapHandles.

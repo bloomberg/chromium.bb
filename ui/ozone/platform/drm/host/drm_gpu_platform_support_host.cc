@@ -31,7 +31,7 @@ namespace {
 class CursorIPC : public DrmCursorProxy {
  public:
   CursorIPC(scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-            const base::Callback<void(IPC::Message*)>& send_callback);
+            base::RepeatingCallback<void(IPC::Message*)> send_callback);
   ~CursorIPC() override;
 
   // DrmCursorProxy implementation.
@@ -47,14 +47,14 @@ class CursorIPC : public DrmCursorProxy {
   void Send(IPC::Message* message);
 
   scoped_refptr<base::SingleThreadTaskRunner> send_runner_;
-  base::Callback<void(IPC::Message*)> send_callback_;
+  base::RepeatingCallback<void(IPC::Message*)> send_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorIPC);
 };
 
 CursorIPC::CursorIPC(scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-                     const base::Callback<void(IPC::Message*)>& send_callback)
-    : send_runner_(send_runner), send_callback_(send_callback) {}
+                     base::RepeatingCallback<void(IPC::Message*)> send_callback)
+    : send_runner_(send_runner), send_callback_(std::move(send_callback)) {}
 
 CursorIPC::~CursorIPC() {}
 
@@ -132,7 +132,7 @@ void DrmGpuPlatformSupportHost::OnGpuProcessLaunched(
     int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-    const base::Callback<void(IPC::Message*)>& send_callback) {
+    base::RepeatingCallback<void(IPC::Message*)> send_callback) {
   // If there was a task runner set during construction, prefer using that.
   if (!ui_runner_) {
     ui_runner_ = std::move(ui_runner);
@@ -143,7 +143,7 @@ void DrmGpuPlatformSupportHost::OnGpuProcessLaunched(
                "host_id", host_id);
   host_id_ = host_id;
   send_runner_ = std::move(send_runner);
-  send_callback_ = send_callback;
+  send_callback_ = std::move(send_callback);
 
   for (GpuThreadObserver& observer : gpu_thread_observers_)
     observer.OnGpuProcessLaunched();
@@ -167,7 +167,6 @@ void DrmGpuPlatformSupportHost::OnChannelDestroyed(int host_id) {
     for (GpuThreadObserver& observer : gpu_thread_observers_)
       observer.OnGpuThreadRetired();
   }
-
 }
 
 void DrmGpuPlatformSupportHost::OnMessageReceived(const IPC::Message& message) {

@@ -72,7 +72,7 @@ void ScenicGpuHost::OnGpuProcessLaunched(
     int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-    const base::RepeatingCallback<void(IPC::Message*)>& send_callback) {
+    base::RepeatingCallback<void(IPC::Message*)> send_callback) {
   NOTREACHED();
 }
 

@@ -19,14 +19,6 @@ namespace internal {
 template <typename... Args>
 void PostAsyncTask(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const base::Callback<void(Args...)>& callback,
-    Args... args) {
-  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, args...));
-}
-
-template <typename... Args>
-void PostAsyncTaskOnce(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::OnceCallback<void(Args...)> callback,
     Args... args) {
   auto closure = base::BindOnce(std::move(callback), std::move(args)...);
@@ -59,7 +51,7 @@ base::RepeatingCallback<void(Args...)> CreateSafeRepeatingCallback(
 template <typename... Args>
 base::OnceCallback<void(Args...)> CreateSafeOnceCallback(
     base::OnceCallback<void(Args...)> callback) {
-  return base::BindOnce(&internal::PostAsyncTaskOnce<Args...>,
+  return base::BindOnce(&internal::PostAsyncTask<Args...>,
                         base::ThreadTaskRunnerHandle::Get(),
                         std::move(callback));
 }

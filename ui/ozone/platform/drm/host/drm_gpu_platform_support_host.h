@@ -39,7 +39,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
       int host_id,
       scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
       scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-      const base::Callback<void(IPC::Message*)>& send_callback) override;
+      base::RepeatingCallback<void(IPC::Message*)> send_callback) override;
   void OnChannelDestroyed(int host_id) override;
   void OnGpuServiceLaunched(
       scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
@@ -124,7 +124,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> send_runner_;
-  base::Callback<void(IPC::Message*)> send_callback_;
+  base::RepeatingCallback<void(IPC::Message*)> send_callback_;
 
   DrmDisplayHostManager* display_manager_;  // Not owned.
   DrmOverlayManagerHost* overlay_manager_;  // Not owned.
@@ -139,4 +139,4 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
 
 }  // namespace ui
 
-#endif  // UI_OZONE_GPU_DRM_GPU_PLATFORM_SUPPORT_HOST_H_
+#endif  // UI_OZONE_PLATFORM_DRM_HOST_DRM_GPU_PLATFORM_SUPPORT_HOST_H_

@@ -27,8 +27,7 @@ class WaylandBufferManagerConnector : public GpuPlatformSupportHost {
       int host_id,
       scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
       scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-      const base::RepeatingCallback<void(IPC::Message*)>& send_callback)
-      override;
+      base::RepeatingCallback<void(IPC::Message*)> send_callback) override;
   void OnChannelDestroyed(int host_id) override;
   void OnMessageReceived(const IPC::Message& message) override;
   void OnGpuServiceLaunched(

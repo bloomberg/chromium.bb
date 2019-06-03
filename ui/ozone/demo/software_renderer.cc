@@ -67,8 +67,8 @@ void SoftwareRenderer::RenderFrame() {
 
   if (vsync_provider_) {
     vsync_provider_->GetVSyncParameters(
-        base::Bind(&SoftwareRenderer::UpdateVSyncParameters,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SoftwareRenderer::UpdateVSyncParameters,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   timer_.Start(FROM_HERE, vsync_period_, this, &SoftwareRenderer::RenderFrame);

@@ -112,13 +112,13 @@ class OzonePlatformGbm : public OzonePlatform {
       return;
 
     registry->AddInterface<ozone::mojom::DeviceCursor>(
-        base::Bind(&OzonePlatformGbm::CreateDeviceCursorBinding,
-                   weak_factory_.GetWeakPtr()),
+        base::BindRepeating(&OzonePlatformGbm::CreateDeviceCursorBinding,
+                            weak_factory_.GetWeakPtr()),
         base::ThreadTaskRunnerHandle::Get());
 
     registry->AddInterface<ozone::mojom::DrmDevice>(
-        base::Bind(&OzonePlatformGbm::CreateDrmDeviceBinding,
-                   weak_factory_.GetWeakPtr()),
+        base::BindRepeating(&OzonePlatformGbm::CreateDrmDeviceBinding,
+                            weak_factory_.GetWeakPtr()),
         base::ThreadTaskRunnerHandle::Get());
   }
 

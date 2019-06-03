@@ -42,7 +42,7 @@ class OZONE_BASE_EXPORT GpuPlatformSupportHost {
       int host_id,
       scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
       scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-      const base::Callback<void(IPC::Message*)>& sender) = 0;
+      base::RepeatingCallback<void(IPC::Message*)> sender) = 0;
 
   // Called when the GPU process is destroyed.
   // This is called from browser UI thread.

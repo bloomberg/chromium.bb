@@ -467,7 +467,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^ui/events/',
   '^ui/gfx/',
   '^ui/message_center/',
-  '^ui/ozone/',
   '^ui/snapshot/',
   '^ui/views_content_client/',
   '^ui/wm/',
