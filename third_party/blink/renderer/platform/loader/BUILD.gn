@@ -34,6 +34,7 @@ blink_platform_sources("loader") {
     "fetch/cross_origin_attribute_value.h",
     "fetch/data_pipe_bytes_consumer.cc",
     "fetch/data_pipe_bytes_consumer.h",
+    "fetch/detachable_use_counter.h",
     "fetch/fetch_client_settings_object.h",
     "fetch/fetch_client_settings_object_snapshot.cc",
     "fetch/fetch_client_settings_object_snapshot.h",

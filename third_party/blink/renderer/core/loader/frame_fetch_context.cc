@@ -94,6 +94,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
@@ -240,9 +241,9 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForCommittedDocument(
                                               properties),
       frame.GetTaskRunner(TaskType::kNetworking),
       MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document));
-  auto* console_logger =
+  init.use_counter = MakeGarbageCollected<DetachableUseCounter>(&document);
+  init.console_logger =
       MakeGarbageCollected<DetachableConsoleLogger>(&document);
-  init.console_logger = console_logger;
   // Frame loading should normally start with |kTight| throttling, as the
   // frame will be in layout-blocking state until the <body> tag is inserted
   init.initial_throttling_policy =
@@ -276,9 +277,8 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
                                               properties),
       document->GetTaskRunner(blink::TaskType::kNetworking),
       MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document));
-  auto* console_logger =
-      MakeGarbageCollected<DetachableConsoleLogger>(document);
-  init.console_logger = console_logger;
+  init.use_counter = MakeGarbageCollected<DetachableUseCounter>(document);
+  init.console_logger = MakeGarbageCollected<DetachableConsoleLogger>(document);
   init.frame_scheduler = frame.GetFrameScheduler();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(init);
   fetcher->SetResourceLoadObserver(

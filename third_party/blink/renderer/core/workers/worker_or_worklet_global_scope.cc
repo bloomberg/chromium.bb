@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -306,8 +307,8 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
         GetTaskRunner(TaskType::kNetworking),
         MakeGarbageCollected<LoaderFactoryForWorker>(
             *this, web_worker_fetch_context_));
-    auto* console_logger = MakeGarbageCollected<DetachableConsoleLogger>(this);
-    init.console_logger = console_logger;
+    init.use_counter = MakeGarbageCollected<DetachableUseCounter>(this);
+    init.console_logger = MakeGarbageCollected<DetachableConsoleLogger>(this);
     fetcher = MakeGarbageCollected<ResourceFetcher>(init);
     fetcher->SetResourceLoadObserver(
         MakeGarbageCollected<ResourceLoadObserverForWorker>(

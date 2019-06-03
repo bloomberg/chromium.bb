@@ -51,6 +51,8 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
     return *fetcher_properties_;
   }
 
+  virtual void CountUsage(mojom::WebFeature) const = 0;
+  virtual void CountDeprecation(mojom::WebFeature) const = 0;
   virtual KURL GetSiteForCookies() const = 0;
 
   // Returns the origin of the top frame in the document.

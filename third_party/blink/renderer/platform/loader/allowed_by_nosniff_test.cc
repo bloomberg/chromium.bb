@@ -6,10 +6,10 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
-#include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 
@@ -21,13 +21,17 @@ using MimeTypeCheck = AllowedByNosniff::MimeTypeCheck;
 using WebFeature = mojom::WebFeature;
 using ::testing::_;
 
-class CountUsageMockFetchContext : public MockFetchContext {
+class MockUseCounter : public GarbageCollectedFinalized<MockUseCounter>,
+                       public UseCounter {
+  USING_GARBAGE_COLLECTED_MIXIN(MockUseCounter);
+
  public:
-  static CountUsageMockFetchContext* Create() {
-    return MakeGarbageCollected<
-        ::testing::StrictMock<CountUsageMockFetchContext>>();
+  static MockUseCounter* Create() {
+    return MakeGarbageCollected<testing::StrictMock<MockUseCounter>>();
   }
-  MOCK_CONST_METHOD1(CountUsage, void(mojom::WebFeature));
+
+  MOCK_METHOD1(CountUse, void(mojom::WebFeature));
+  MOCK_METHOD1(CountDeprecation, void(mojom::WebFeature));
 };
 
 class MockConsoleLogger : public GarbageCollectedFinalized<MockConsoleLogger>,
@@ -45,9 +49,6 @@ class MockConsoleLogger : public GarbageCollectedFinalized<MockConsoleLogger>,
 
 class AllowedByNosniffTest : public testing::Test {
  public:
-  static scoped_refptr<base::SingleThreadTaskRunner> CreateTaskRunner() {
-    return base::MakeRefCounted<scheduler::FakeTaskRunner>();
-  }
 };
 
 TEST_F(AllowedByNosniffTest, AllowedOrNot) {
@@ -102,33 +103,27 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
                  << (testcase.strict_allowed ? "true" : "false"));
 
     const KURL url("https://bla.com/");
-    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>(
-        SecurityOrigin::Create(url));
-    auto* context = CountUsageMockFetchContext::Create();
-    // Bind |properties| to |context| through a ResourceFetcher.
-    MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-        properties->MakeDetachable(), context, CreateTaskRunner(),
-        MakeGarbageCollected<TestLoaderFactory>()));
+    Persistent<MockUseCounter> use_counter = MockUseCounter::Create();
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(url);
     response.SetHttpHeaderField("Content-Type", testcase.mimetype);
 
-    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(*use_counter, CountUse(_)).Times(::testing::AnyNumber());
     if (!testcase.allowed)
       EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
     EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
+              AllowedByNosniff::MimeTypeAsScript(*use_counter, logger, response,
                                                  MimeTypeCheck::kLax));
-    ::testing::Mock::VerifyAndClear(context);
+    ::testing::Mock::VerifyAndClear(use_counter);
 
-    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(*use_counter, CountUse(_)).Times(::testing::AnyNumber());
     if (!testcase.strict_allowed)
       EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
     EXPECT_EQ(testcase.strict_allowed,
-              AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
+              AllowedByNosniff::MimeTypeAsScript(*use_counter, logger, response,
                                                  MimeTypeCheck::kStrict));
-    ::testing::Mock::VerifyAndClear(context);
+    ::testing::Mock::VerifyAndClear(use_counter);
   }
 }
 
@@ -174,25 +169,19 @@ TEST_F(AllowedByNosniffTest, Counters) {
                  << testcase.origin << "\n  mime type: " << testcase.mimetype
                  << "\n response type: " << testcase.response_type
                  << "\n  webfeature: " << testcase.expected);
-    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>(
-        SecurityOrigin::Create(KURL(testcase.origin)));
-    auto* context = CountUsageMockFetchContext::Create();
-    // Bind |properties| to |context| through a ResourceFetcher.
-    MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-        properties->MakeDetachable(), context, CreateTaskRunner(),
-        MakeGarbageCollected<TestLoaderFactory>()));
+    Persistent<MockUseCounter> use_counter = MockUseCounter::Create();
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(KURL(testcase.url));
     response.SetType(testcase.response_type);
     response.SetHttpHeaderField("Content-Type", testcase.mimetype);
 
-    EXPECT_CALL(*context, CountUsage(testcase.expected));
-    EXPECT_CALL(*context, CountUsage(::testing::Ne(testcase.expected)))
+    EXPECT_CALL(*use_counter, CountUse(testcase.expected));
+    EXPECT_CALL(*use_counter, CountUse(::testing::Ne(testcase.expected)))
         .Times(::testing::AnyNumber());
-    AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
+    AllowedByNosniff::MimeTypeAsScript(*use_counter, logger, response,
                                        MimeTypeCheck::kLax);
-    ::testing::Mock::VerifyAndClear(context);
+    ::testing::Mock::VerifyAndClear(use_counter);
   }
 }
 
@@ -222,12 +211,7 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
   };
 
   for (auto& testcase : data) {
-    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-    auto* context = CountUsageMockFetchContext::Create();
-    // Bind |properties| to |context| through a ResourceFetcher.
-    MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-        properties->MakeDetachable(), context, CreateTaskRunner(),
-        MakeGarbageCollected<TestLoaderFactory>()));
+    auto* use_counter = MockUseCounter::Create();
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     EXPECT_CALL(*logger, AddConsoleMessage(_, _, _))
@@ -238,7 +222,7 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
     response.SetHttpHeaderField("Content-Type", "invalid");
     response.SetHttpHeaderField("X-Content-Type-Options", "nosniff");
     EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
+              AllowedByNosniff::MimeTypeAsScript(*use_counter, logger, response,
                                                  MimeTypeCheck::kLax));
   }
 }

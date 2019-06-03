@@ -31,9 +31,6 @@ class MockFetchContext : public FetchContext {
 
   uint64_t GetTransferSize() const { return transfer_size_; }
 
-  void CountUsage(mojom::WebFeature) const override {}
-  void CountDeprecation(mojom::WebFeature) const override {}
-
   bool AllowImage(bool images_enabled, const KURL&) const override {
     return true;
   }

@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
@@ -342,7 +343,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   auto* fetcher = GetElement()->GetDocument().ContextDocument()->Fetcher();
   // If the MIME check fails, which is considered as load failure.
   if (!AllowedByNosniff::MimeTypeAsScript(
-          fetcher->Context(), &fetcher->GetConsoleLogger(),
+          fetcher->GetUseCounter(), &fetcher->GetConsoleLogger(),
           resource->GetResponse(), AllowedByNosniff::MimeTypeCheck::kLax)) {
     return nullptr;
   }

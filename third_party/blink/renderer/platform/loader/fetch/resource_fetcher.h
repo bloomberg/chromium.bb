@@ -51,6 +51,7 @@ namespace blink {
 enum class ResourceType : uint8_t;
 class CodeCacheLoader;
 class DetachableConsoleLogger;
+class DetachableUseCounter;
 class DetachableResourceFetcherProperties;
 class FetchContext;
 class FrameScheduler;
@@ -170,6 +171,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   FetchContext& Context() const;
   void ClearContext();
+  DetachableUseCounter& GetUseCounter() { return *use_counter_; }
   DetachableConsoleLogger& GetConsoleLogger() { return *console_logger_; }
 
   int BlockingRequestCount() const;
@@ -375,6 +377,7 @@ class PLATFORM_EXPORT ResourceFetcher
   Member<ResourceLoadObserver> resource_load_observer_;
   Member<FetchContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const Member<DetachableUseCounter> use_counter_;
   const Member<DetachableConsoleLogger> console_logger_;
   Member<LoaderFactory> loader_factory_;
   const Member<ResourceLoadScheduler> scheduler_;
@@ -462,6 +465,7 @@ struct PLATFORM_EXPORT ResourceFetcherInit final {
   const Member<FetchContext> context;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   const Member<ResourceFetcher::LoaderFactory> loader_factory;
+  Member<DetachableUseCounter> use_counter;
   Member<DetachableConsoleLogger> console_logger;
   ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kNormal;

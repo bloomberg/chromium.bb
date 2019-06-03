@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
@@ -177,7 +178,7 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
     return;
   }
   if (!AllowedByNosniff::MimeTypeAsScript(
-          fetch_client_settings_object_fetcher_->Context(),
+          fetch_client_settings_object_fetcher_->GetUseCounter(),
           &fetch_client_settings_object_fetcher_->GetConsoleLogger(), response,
           fetch_client_settings_object_fetcher_->GetProperties()
               .GetFetchClientSettingsObject()

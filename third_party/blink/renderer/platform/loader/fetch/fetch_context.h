@@ -38,16 +38,11 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
-#include "third_party/blink/public/platform/web_url_loader.h"
-#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -74,7 +69,9 @@ class PLATFORM_EXPORT FetchContext
  public:
   FetchContext() = default;
 
-  static FetchContext& NullInstance();
+  static FetchContext& NullInstance() {
+    return *MakeGarbageCollected<FetchContext>();
+  }
 
   virtual ~FetchContext() = default;
 
@@ -128,9 +125,6 @@ class PLATFORM_EXPORT FetchContext
     return ResourceRequestBlockedReason::kOther;
   }
 
-  virtual void CountUsage(mojom::WebFeature) const = 0;
-  virtual void CountDeprecation(mojom::WebFeature) const = 0;
-
   // Populates the ResourceRequest using the given values and information
   // stored in the FetchContext implementation. Used by ResourceFetcher to
   // prepare a ResourceRequest instance at the start of resource loading.
@@ -144,8 +138,7 @@ class PLATFORM_EXPORT FetchContext
   // with "keepalive" specified).
   // Returns a "detached" fetch context which cannot be null.
   virtual FetchContext* Detach() {
-    auto* context = &NullInstance();
-    return context;
+    return MakeGarbageCollected<FetchContext>();
   }
 
   // Determine if the request is on behalf of an advertisement. If so, return
