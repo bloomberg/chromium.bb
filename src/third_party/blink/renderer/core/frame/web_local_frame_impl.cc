@@ -519,7 +519,7 @@ static void CollectAllFrames(std::vector<const LocalFrame*>& list,
     if (!childFrame->IsLocalFrame())
       continue;
 
-    CollectAllFrames(list, ToLocalFrame(childFrame));
+    CollectAllFrames(list, DynamicTo<LocalFrame>(childFrame));
   }
 }
 
