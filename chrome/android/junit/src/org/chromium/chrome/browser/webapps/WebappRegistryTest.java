@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -669,6 +670,25 @@ public class WebappRegistryTest {
         WebappDataStorage storage2 =
                 WebappRegistry.getInstance().getWebappDataStorageForUrl(testUrl);
         assertEquals(webappId, storage2.getId());
+    }
+
+    @Test
+    @Feature({"WebApk"})
+    public void testHasWebApkForUrl() throws Exception {
+        final String startUrl = START_URL;
+        final String testUrl = START_URL + "/index.html";
+
+        assertFalse(WebappRegistry.getInstance().hasWebApkForUrl(testUrl));
+
+        String webappId = "webapp";
+        registerWebapp(webappId, new FetchStorageCallback(createShortcutIntent(startUrl)));
+        assertFalse(WebappRegistry.getInstance().hasWebApkForUrl(testUrl));
+
+        String webApkId = WebApkConstants.WEBAPK_ID_PREFIX + "WebApk";
+        registerWebapp(webApkId,
+                new FetchStorageCallback(
+                        createWebApkIntent(webApkId, startUrl, "org.chromium.webapk")));
+        assertTrue(WebappRegistry.getInstance().hasWebApkForUrl(testUrl));
     }
 
     private Set<String> addWebappsToRegistry(String... webapps) {

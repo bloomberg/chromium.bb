@@ -4,7 +4,6 @@
 
 #include "chrome/browser/background_sync/periodic_background_sync_permission_context.h"
 
-#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,21 +12,43 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
+#include "base/strings/utf_string_conversions.h"
+#include "jni/BackgroundSyncPwaDetector_jni.h"
+#endif
+
 PeriodicBackgroundSyncPermissionContext::
     PeriodicBackgroundSyncPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
+PeriodicBackgroundSyncPermissionContext::
+    ~PeriodicBackgroundSyncPermissionContext() = default;
+
 bool PeriodicBackgroundSyncPermissionContext::IsPwaInstalled(
     const GURL& url) const {
 #if defined(OS_ANDROID)
-  // TODO(crbug.com/925297): Add logic to detect PWAs on Android.
-  return false;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> java_url =
+      base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return Java_BackgroundSyncPwaDetector_isPwaInstalled(env, java_url);
 #else
   return extensions::util::GetInstalledPwaForUrl(profile(), url);
 #endif
 }
+
+#if defined(OS_ANDROID)
+bool PeriodicBackgroundSyncPermissionContext::IsTwaInstalled(
+    const GURL& url) const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> java_url =
+      base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return Java_BackgroundSyncPwaDetector_isTwaInstalled(env, java_url);
+}
+#endif
 
 bool PeriodicBackgroundSyncPermissionContext::IsRestrictedToSecureOrigins()
     const {
@@ -44,8 +65,10 @@ PeriodicBackgroundSyncPermissionContext::GetPermissionStatusInternal(
   if (!base::FeatureList::IsEnabled(features::kPeriodicBackgroundSync))
     return CONTENT_SETTING_BLOCK;
 
-  // TODO(crbug.com/925297): If there's a TWA installed for the origin, grant
-  // permission.
+#if defined(OS_ANDROID)
+  if (IsTwaInstalled(requesting_origin))
+    return CONTENT_SETTING_ALLOW;
+#endif
 
   if (!IsPwaInstalled(requesting_origin))
     return CONTENT_SETTING_BLOCK;

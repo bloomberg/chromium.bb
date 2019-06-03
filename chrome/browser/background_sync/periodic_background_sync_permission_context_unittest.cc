@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -30,13 +31,26 @@ class TestPeriodicBackgroundSyncPermissionContext
 
   void InstallPwa(const GURL& url) { installed_pwas_.insert(url); }
 
+#if defined(OS_ANDROID)
+  void InstallTwa(const GURL& url) { installed_twas_.insert(url); }
+#endif
+
   // PeriodicBackgroundSyncPermissionContext overrides:
   bool IsPwaInstalled(const GURL& url) const override {
     return installed_pwas_.find(url) != installed_pwas_.end();
   }
 
+#if defined(OS_ANDROID)
+  bool IsTwaInstalled(const GURL& url) const override {
+    return installed_twas_.find(url) != installed_twas_.end();
+  }
+#endif
+
  private:
   std::set<GURL> installed_pwas_;
+#if defined(OS_ANDROID)
+  std::set<GURL> installed_twas_;
+#endif
 };
 
 class PeriodicBackgroundSyncPermissionContextTest
@@ -84,6 +98,9 @@ class PeriodicBackgroundSyncPermissionContextTest
   }
 
   void InstallPwa(const GURL& url) { permission_context_->InstallPwa(url); }
+#if defined(OS_ANDROID)
+  void InstallTwa(const GURL& url) { permission_context_->InstallTwa(url); }
+#endif
 
   void SetUpPwaAndContentSettings(const GURL& url) {
     InstallPwa(url);
@@ -131,7 +148,7 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, AllowWithoutFrame) {
             CONTENT_SETTING_ALLOW);
 }
 
-TEST_F(PeriodicBackgroundSyncPermissionContextTest, DesktopPWA) {
+TEST_F(PeriodicBackgroundSyncPermissionContextTest, DesktopPwa) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kPeriodicBackgroundSync);
   GURL url("https://example.com");
@@ -143,5 +160,19 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, DesktopPWA) {
   SetBackgroundSyncContentSetting(url, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(GetPermissionStatus(url), CONTENT_SETTING_BLOCK);
 }
+
+#if defined(OS_ANDROID)
+TEST_F(PeriodicBackgroundSyncPermissionContextTest, Twa) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kPeriodicBackgroundSync);
+  GURL url("https://example.com");
+
+  // No TWA or PWA installed.
+  EXPECT_EQ(GetPermissionStatus(url), CONTENT_SETTING_BLOCK);
+
+  InstallTwa(url);
+  EXPECT_EQ(GetPermissionStatus(url), CONTENT_SETTING_ALLOW);
+}
+#endif
 
 }  // namespace

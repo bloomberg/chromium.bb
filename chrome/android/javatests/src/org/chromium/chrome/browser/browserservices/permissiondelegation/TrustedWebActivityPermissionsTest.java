@@ -5,9 +5,12 @@
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -21,6 +24,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.background_sync.BackgroundSyncPwaDetector;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
@@ -103,6 +107,17 @@ public class TrustedWebActivityPermissionsTest {
             mPermissionManager.unregister(mOrigin);
         });
         assertEquals("\"default\"", getNotificationPermission());
+    }
+
+    @Test
+    @SmallTest
+    public void detectTwa() throws TimeoutException, InterruptedException {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mPermissionManager.register(mOrigin, mPackage, true));
+        assertTrue(BackgroundSyncPwaDetector.isTwaInstalled(mOrigin.toString()));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mPermissionManager.unregister(mOrigin); });
+        assertFalse(BackgroundSyncPwaDetector.isTwaInstalled(mOrigin.toString()));
     }
 
     private String getNotificationPermission() throws TimeoutException, InterruptedException {

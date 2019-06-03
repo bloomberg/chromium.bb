@@ -106,6 +106,11 @@ public class TrustedWebActivityPermissionStore {
         }
     }
 
+    /** Returns true if there's a registered TWA for the origin. */
+    public boolean isTwaInstalled(String origin) {
+        return getStoredOrigins().contains(origin);
+    }
+
     /**
      * Sets the notification state for the origin.
      * Returns whether {@code true} if state was changed, {@code false} if the provided state was

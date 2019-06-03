@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BACKGROUND_SYNC_PERIODIC_BACKGROUND_SYNC_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "components/content_settings/core/common/content_settings.h"
 
@@ -20,14 +21,24 @@ class Profile;
 // by disabling the (one-shot) Background Sync permission from content settings
 // UI. The periodic Background Sync content setting can be disabled via Finch,
 // and will prevent usage of the API.
+// The permission decision is made as follows:
+// If the feature is disabled, deny.
+// If we're on Android, and there's a TWA installed for the origin, grant
+// permission.
+// For other platforms, if there's no PWA installed for the origin, deny.
+// If there is a PWA installed, grant/deny permission based on whether the
+// one-shot Background Sync content setting is set to allow/block.
 class PeriodicBackgroundSyncPermissionContext : public PermissionContextBase {
  public:
   explicit PeriodicBackgroundSyncPermissionContext(Profile* profile);
-  ~PeriodicBackgroundSyncPermissionContext() override = default;
+  ~PeriodicBackgroundSyncPermissionContext() override;
 
  protected:
   // Virtual for testing.
   virtual bool IsPwaInstalled(const GURL& url) const;
+#if defined(OS_ANDROID)
+  virtual bool IsTwaInstalled(const GURL& url) const;
+#endif
 
  private:
   // PermissionContextBase implementation.
