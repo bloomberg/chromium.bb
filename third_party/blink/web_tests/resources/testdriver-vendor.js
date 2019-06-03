@@ -29,7 +29,6 @@
     }
 
     var centerPoint = getInViewCenterPoint(rectangles[0]);
-
     if ("elementsFromPoint" in document) {
       return document.elementsFromPoint(centerPoint[0], centerPoint[1]);
     } else if ("msElementsFromPoint" in document) {
@@ -42,7 +41,7 @@
 
   function inView(element) {
     var pointerInteractablePaintTree = getPointerInteractablePaintTree(element);
-    return pointerInteractablePaintTree.indexOf(element) !== -1;
+    return pointerInteractablePaintTree.indexOf(element) !== -1 || element.contains(pointerInteractablePaintTree[0]);
   }
 
   window.test_driver_internal.click = function(element, coords) {
