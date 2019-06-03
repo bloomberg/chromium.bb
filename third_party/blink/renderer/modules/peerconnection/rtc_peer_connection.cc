@@ -709,7 +709,10 @@ RTCPeerConnection::RTCPeerConnection(
       closed_(false),
       has_data_channels_(false),
       sdp_semantics_(configuration.sdp_semantics),
-      sdp_semantics_specified_(sdp_semantics_specified) {
+      sdp_semantics_specified_(sdp_semantics_specified),
+      blink_webrtc_time_diff_(
+          base::TimeTicks::Now() - base::TimeTicks() -
+          base::TimeDelta::FromMicroseconds(rtc::TimeMicros())) {
   Document* document = To<Document>(GetExecutionContext());
 
   InstanceCounters::IncrementCounter(
@@ -3268,6 +3271,13 @@ void RTCPeerConnection::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   MediaStreamObserver::Trace(visitor);
+}
+
+base::TimeTicks RTCPeerConnection::WebRtcMsToBlinkTimeTicks(
+    double webrtc_monotonic_time_ms) const {
+  return base::TimeTicks() +
+         base::TimeDelta::FromMilliseconds(webrtc_monotonic_time_ms) +
+         blink_webrtc_time_diff_;
 }
 
 int RTCPeerConnection::PeerConnectionCount() {

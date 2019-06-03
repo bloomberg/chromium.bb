@@ -348,6 +348,9 @@ class MODULES_EXPORT RTCPeerConnection final
 
   void Trace(blink::Visitor*) override;
 
+  base::TimeTicks WebRtcMsToBlinkTimeTicks(
+      double webrtc_monotonic_time_ms) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetAudioTrack);
   FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetVideoTrack);
@@ -553,6 +556,9 @@ class MODULES_EXPORT RTCPeerConnection final
   webrtc::SdpSemantics sdp_semantics_;
   // Whether sdpSemantics was specified at construction.
   bool sdp_semantics_specified_;
+
+  // Blink and WebRTC timestamp diff.
+  const base::TimeDelta blink_webrtc_time_diff_;
 };
 
 }  // namespace blink
