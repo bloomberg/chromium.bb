@@ -808,6 +808,15 @@
   <message name="IDS_FILE_BROWSER_SEARCH_CLEAR_LABEL" desc="Label to clear search text field">
     Clear
   </message>
+  <message name="IDS_FILE_BROWSER_SEARCH_A11Y_NO_RESULT" desc="Text spoken by ChromeVox/screen reader when a search has no result">
+    There are no results for <ph name="SEARCH_TERM">$1<ex>ABC</ex></ph>.
+  </message>
+  <message name="IDS_FILE_BROWSER_SEARCH_A11Y_RESULT" desc="Text spoken by ChromeVox/screen reader when a search has some result">
+    Showing results for <ph name="SEARCH_TERM">$1<ex>ABC</ex></ph>.
+  </message>
+  <message name="IDS_FILE_BROWSER_SEARCH_A11Y_CLEAR_SEARCH" desc="Text spoken by ChromeVox/screen reader when a search term has been cleared">
+    Search text cleared, showing all files and folders.
+  </message>
 
   <message name="IDS_FILE_BROWSER_DEFAULT_NEW_FOLDER_NAME" desc="The default name for a newly created folder.">
     New folder

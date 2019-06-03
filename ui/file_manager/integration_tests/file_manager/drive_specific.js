@@ -143,6 +143,12 @@ testcase.driveClickFirstSearchResult = async () => {
 
   await remoteCall.waitForFiles(
       appId, TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET));
+
+  // Fetch A11y messages.
+  const a11yMessages =
+      await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+  chrome.test.assertEq(1, a11yMessages.length, 'Missing a11y message');
+  chrome.test.assertEq('Showing results for hello.', a11yMessages[0]);
 };
 
 /**
@@ -158,6 +164,36 @@ testcase.drivePressEnterToSearch = async () => {
       ['#search-box cr-input', 'Enter', false, false, false]));
   await remoteCall.waitForFiles(
       appId, TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET));
+
+  // Fetch A11y messages.
+  const a11yMessages =
+      await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+  chrome.test.assertEq(1, a11yMessages.length, 'Missing a11y message');
+  chrome.test.assertEq('Showing results for hello.', a11yMessages[0]);
+
+  return appId;
+};
+
+/**
+ * Tests that pressing the clear search button announces an a11y message and
+ * shows all files/folders.
+ */
+testcase.drivePressClearSearch = async () => {
+  const appId = await testcase.drivePressEnterToSearch();
+
+  // Click on the clear search button.
+  await remoteCall.waitAndClickElement(appId, '#search-box cr-input .clear');
+
+  // Wait for fil list to display all files.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(BASIC_DRIVE_ENTRY_SET));
+
+  // Check that a11y message for clearing the search term has been issued.
+  const a11yMessages =
+      await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+  chrome.test.assertEq(2, a11yMessages.length, 'Missing a11y message');
+  chrome.test.assertEq(
+      'Search text cleared, showing all files and folders.', a11yMessages[1]);
 };
 
 /**

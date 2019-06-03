@@ -617,6 +617,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveClickFirstSearchResult").EnableDriveFs(),
         TestCase("drivePressEnterToSearch").DisableDriveFs(),
         TestCase("drivePressEnterToSearch").EnableDriveFs(),
+        TestCase("drivePressClearSearch").EnableDriveFs(),
         TestCase("drivePressCtrlAFromSearch").DisableDriveFs(),
         TestCase("drivePressCtrlAFromSearch").EnableDriveFs(),
         TestCase("driveBackupPhotos").DisableDriveFs(),
@@ -1018,6 +1019,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     NavigationList, /* navigation_list.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("navigationScrollsWhenClipped")));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    Search, /* search.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("searchDownloadsWithResults"),
+                      TestCase("searchDownloadsWithNoResults"),
+                      TestCase("searchDownloadsClearSearch")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {
