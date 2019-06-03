@@ -1115,13 +1115,13 @@ void LayoutBlock::RemovePositionedObjects(
 
 void LayoutBlock::AddPercentHeightDescendant(LayoutBox* descendant) {
   // A replaced object is incapable of properly acting as a containing block for
-  // its children (this is an issue with VIDEO elements, for instance, which
-  // inserts some percentage height flexbox children). Assert that the
-  // descendant hasn't escaped from within a replaced object. Registering the
-  // percentage height descendant further up in the tree is only going to cause
-  // trouble, especially if the replaced object is out-of-flow positioned (and
-  // we failed to notice).
-  DCHECK(!descendant->Container()->IsLayoutReplaced());
+  // its children. This is an issue with VIDEO elements, for instance, which
+  // insert some percentage height flexbox children. It is also very easily
+  // achievable with a foreignObject inside an SVG. Detect this situation and
+  // bail. The assumption is that there is no situation where we require quirky
+  // percentage height behavior inside replaced content.
+  if (UNLIKELY(descendant->Container()->IsLayoutReplaced()))
+    return;
 
   if (descendant->PercentHeightContainer()) {
     if (descendant->PercentHeightContainer() == this) {
