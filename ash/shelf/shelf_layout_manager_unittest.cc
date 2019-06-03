@@ -3022,6 +3022,37 @@ TEST_F(ShelfLayoutManagerTest, NoShelfUpdateDuringOverviewAnimation) {
   EXPECT_EQ(0, observer.metrics_change_count());
 }
 
+// Tests that shelf bounds is updated properly after overview animation.
+TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
+  // Run overview animations.
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  Shelf* shelf = GetPrimaryShelf();
+  ASSERT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  const gfx::Rect bottom_shelf_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+
+  // Change alignment during overview enter animation.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  {
+    OverviewAnimationWaiter waiter;
+    overview_controller->ToggleOverview();
+    shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+    waiter.Wait();
+  }
+  EXPECT_NE(bottom_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
+
+  // Change alignment during overview exit animation.
+  {
+    OverviewAnimationWaiter waiter;
+    overview_controller->ToggleOverview();
+    shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+    waiter.Wait();
+  }
+  EXPECT_EQ(bottom_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
+}
+
 // Tests of ShelfLayoutManager on home screen for KioskNext.
 class ShelfLayoutManagerHomeScreenTest : public ShelfLayoutManagerTest {
  protected:
