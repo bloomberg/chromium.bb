@@ -227,6 +227,7 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
     return gfx::ImageSkia();
 
   constexpr int kIconSize = 16;
+  constexpr int kAccountBoxIconSize = 20;
 
   // For http warning message, get icon images from VectorIcon, which is the
   // same as security indicator icons in location bar.
@@ -254,7 +255,7 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
   }
 
   if (icon_str == "accountBoxIcon") {
-    return gfx::CreateVectorIcon(kAccountBoxIcon, kIconSize,
+    return gfx::CreateVectorIcon(kAccountBoxIcon, kAccountBoxIconSize,
                                  gfx::kChromeIconGrey);
   }
 
