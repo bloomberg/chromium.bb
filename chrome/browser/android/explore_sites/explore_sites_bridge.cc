@@ -115,6 +115,12 @@ jint JNI_ExploreSitesBridge_GetVariation(JNIEnv* env) {
 }
 
 // static
+jint JNI_ExploreSitesBridge_GetIconVariation(JNIEnv* env) {
+  return static_cast<jint>(
+      chrome::android::explore_sites::GetMostLikelyVariation());
+}
+
+// static
 void JNI_ExploreSitesBridge_GetIcon(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile,
