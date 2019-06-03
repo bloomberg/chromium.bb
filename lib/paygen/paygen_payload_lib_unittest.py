@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import json
 import os
 import shutil
 import tempfile
@@ -34,7 +35,7 @@ from chromite.scripts import build_dlc
 # pylint: disable=protected-access
 
 
-class PaygenPayloadLibTest(cros_test_lib.MockTempDirTestCase):
+class PaygenPayloadLibTest(cros_test_lib.RunCommandTempDirTestCase):
   """PaygenPayloadLib tests base class."""
 
   def setUp(self):
@@ -162,7 +163,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(gen.tgt_image_file, '/foo/tgt_image.bin')
     self.assertEqual(gen.payload_file, '/foo/delta.bin')
     self.assertEqual(gen.log_file, '/foo/delta.log')
-    self.assertEqual(gen.metadata_size_file, '/foo/metadata_size.txt')
 
     # Siged image specific values.
     self.assertEqual(gen.signed_payload_file, '/foo/delta.bin.signed')
@@ -560,7 +560,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     # Stub out the required functions.
     run_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                 '_RunGeneratorCmd')
-    read_mock = self.PatchObject(gen, '_ReadMetadataSizeFile')
 
     # Run the test.
     gen._InsertSignaturesIntoPayload(payload_signatures, metadata_signatures)
@@ -570,10 +569,8 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--in_file=' + gen.payload_file,
            partial_mock.HasString('payload_signature_file'),
            partial_mock.HasString('metadata_signature_file'),
-           '--out_file=' + gen.signed_payload_file,
-           '--out_metadata_size_file=' + gen.metadata_size_file]
+           '--out_file=' + gen.signed_payload_file]
     run_mock.assert_called_once_with(cmd)
-    read_mock.assert_called_once_with()
 
   def testStoreMetadataSignatures(self):
     """Test how we store metadata signatures."""
@@ -662,48 +659,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     cmd.extend(['--key', public_key])
     run_mock.assert_called_once_with(cmd)
     pubkey_extract_mock.assert_called_once_with(public_key)
-
-  def testPayloadJson(self):
-    """Test how we store the payload description in json."""
-    gen = self._GetStdGenerator(payload=self.delta_payload, sign=False)
-    # Intentionally don't create signed file, to ensure it's never used.
-    osutils.WriteFile(gen.payload_file, 'Fake payload contents.')
-    gen.metadata_size = 10
-
-    metadata_signatures = ()
-
-    expected_json = (
-        '{"md5_hex": "75218643432e5f621386d4ffcbedf9ba",'
-        ' "metadata_signature": null,'
-        ' "metadata_size": 10,'
-        ' "sha1_hex": "FDwoNOUO+kNwrQJMSLnLDY7iZ/E=",'
-        ' "sha256_hex": "gkm9207E7xbqpNRBFjEPO43nxyp/MNGQfyH3IYrq2kE=",'
-        ' "version": 2}')
-    gen._StorePayloadJson(metadata_signatures)
-
-    # Validate the results.
-    self.assertEqual(osutils.ReadFile(gen.description_file), expected_json)
-
-  def testPayloadJsonSigned(self):
-    """Test how we store the payload description in json."""
-    gen = self._GetStdGenerator(payload=self.delta_payload, sign=True)
-    # Intentionally don't create unsigned file, to ensure it's never used.
-    osutils.WriteFile(gen.signed_payload_file, 'Fake signed payload contents.')
-    gen.metadata_size = 10
-
-    metadata_signatures = ('1',)
-
-    expected_json = (
-        '{"md5_hex": "ad8f67319ca16e691108ca703636b3ad",'
-        ' "metadata_signature": "MQ==",'
-        ' "metadata_size": 10,'
-        ' "sha1_hex": "99zX3vZhTfwRJCi4zGK1A14AY3Y=",'
-        ' "sha256_hex": "yZjWgvsNdzclJzJOleQrTjVFBQy810ZlUAU5+i0okME=",'
-        ' "version": 2}')
-    gen._StorePayloadJson(metadata_signatures)
-
-    # Validate the results.
-    self.assertEqual(osutils.ReadFile(gen.description_file), expected_json)
 
   def testSignPayload(self):
     """Test the overall payload signature process."""
@@ -802,6 +757,51 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     # The correct result is based on the system cache directory, which changes.
     # Ensure it ends with the right directory name.
     self.assertEqual(os.path.basename(gen._FindCacheDir()), 'paygen_cache')
+
+  def testGetPayloadPropertiesMap(self):
+    """Tests getting the payload properties as a dict."""
+    gen = self._GetStdGenerator(sign=False)
+    gen._appid = 'foo-appid'
+    run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
+
+    props_file = os.path.join(self.tempdir, 'properties.json')
+    osutils.WriteFile(props_file, json.dumps({'metadata_signature': '',
+                                              'metadata_size': 10}))
+    payload_path = '/foo'
+    props_map = gen.GetPayloadPropertiesMap(payload_path)
+
+    cmd = ['delta_generator',
+           '--in_file=' + payload_path,
+           '--properties_file=' + props_file,
+           '--properties_format=json']
+    run_mock.assert_called_once_with(cmd)
+    self.assertEquals(props_map,
+                      # This tests that if metadata_signature is empty, the code
+                      # converts it to None.
+                      {'metadata_signature': None,
+                       'metadata_size': 10,
+                       'appid': 'foo-appid',
+                       'md5_hex': 'deprecated',
+                       'sha1_hex': 'deprecated'})
+
+  def testGetPayloadPropertiesMapSigned(self):
+    """Tests getting the payload properties as a dict for signed payloads."""
+    gen = self._GetStdGenerator()
+
+    props_file = os.path.join(self.tempdir, 'properties.json')
+    osutils.WriteFile(props_file, json.dumps({'metadata_signature': 'foo-sig',
+                                              'metadata_size': 10}))
+
+    payload_path = '/foo'
+    props_map = gen.GetPayloadPropertiesMap(payload_path)
+    self.assertEquals(props_map,
+                      {'metadata_signature': 'foo-sig',
+                       'metadata_size': 10,
+                       # This tests that appid key is always added to the
+                       # properties file even if it is empty.
+                       'appid': '',
+                       'md5_hex': 'deprecated',
+                       'sha1_hex': 'deprecated'})
 
 
 class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
