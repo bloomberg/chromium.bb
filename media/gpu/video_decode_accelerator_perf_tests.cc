@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <numeric>
 #include <vector>
 
 #include "base/command_line.h"
@@ -57,7 +58,25 @@ media::test::VideoPlayerTestEnvironment* g_env;
 constexpr const base::FilePath::CharType* kDefaultOutputFolder =
     FILE_PATH_LITERAL("perf_metrics");
 
-// TODO(dstaessens@) Expand with more meaningful metrics.
+// Struct storing various time-related statistics.
+struct PerformanceTimeStats {
+  PerformanceTimeStats() {}
+  explicit PerformanceTimeStats(const std::vector<double>& times);
+  double avg_ms_ = 0.0;
+  double percentile_25_ms_ = 0.0;
+  double percentile_50_ms_ = 0.0;
+  double percentile_75_ms_ = 0.0;
+};
+
+PerformanceTimeStats::PerformanceTimeStats(const std::vector<double>& times) {
+  avg_ms_ = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
+  std::vector<double> sorted_times = times;
+  std::sort(sorted_times.begin(), sorted_times.end());
+  percentile_25_ms_ = sorted_times[sorted_times.size() / 4];
+  percentile_50_ms_ = sorted_times[sorted_times.size() / 2];
+  percentile_75_ms_ = sorted_times[(sorted_times.size() * 3) / 4];
+}
+
 struct PerformanceMetrics {
   // Total measurement duration.
   base::TimeDelta total_duration_;
@@ -70,10 +89,10 @@ struct PerformanceMetrics {
   size_t frames_dropped_ = 0;
   // The rate at which frames are dropped: dropped frames / non-dropped frames.
   double dropped_frame_rate_ = 0;
-  // The average time between subsequent frame deliveries.
-  double avg_frame_delivery_time_ms_ = 0.0;
-  // The median time between decode start and frame delivery.
-  double median_frame_decode_time_ms_ = 0.0;
+  // Statistics about the time between subsequent frame deliveries.
+  PerformanceTimeStats delivery_time_stats_;
+  // Statistics about the time between decode start and frame deliveries.
+  PerformanceTimeStats decode_time_stats_;
 };
 
 // The performance evaluator can be plugged into the video player to collect
@@ -153,18 +172,10 @@ void PerformanceEvaluator::StopMeasuring() {
   perf_metrics_.dropped_frame_rate_ =
       perf_metrics_.frames_dropped_ / std::max<size_t>(frames_rendered, 1ul);
 
-  perf_metrics_.avg_frame_delivery_time_ms_ =
-      perf_metrics_.total_duration_.InMillisecondsF() /
-      perf_metrics_.frames_decoded_;
-
-  std::sort(frame_decode_times_.begin(), frame_decode_times_.end());
-  size_t median_index = frame_decode_times_.size() / 2;
-  perf_metrics_.median_frame_decode_time_ms_ =
-      (frame_decode_times_.size() % 2 != 0)
-          ? frame_decode_times_[median_index]
-          : (frame_decode_times_[median_index - 1] +
-             frame_decode_times_[median_index]) /
-                2.0;
+  // Calculate delivery and decode time metrics.
+  perf_metrics_.delivery_time_stats_ =
+      PerformanceTimeStats(frame_delivery_times_);
+  perf_metrics_.decode_time_stats_ = PerformanceTimeStats(frame_decode_times_);
 
   std::cout << "Frames decoded:     " << perf_metrics_.frames_decoded_
             << std::endl;
@@ -177,10 +188,28 @@ void PerformanceEvaluator::StopMeasuring() {
             << std::endl;
   std::cout << "Dropped frame rate: " << perf_metrics_.dropped_frame_rate_
             << std::endl;
-  std::cout << "Avg. frame delivery time:   "
-            << perf_metrics_.avg_frame_delivery_time_ms_ << "ms" << std::endl;
-  std::cout << "Median frame decode time:   "
-            << perf_metrics_.median_frame_decode_time_ms_ << "ms" << std::endl;
+  std::cout << "Frame delivery time - average:       "
+            << perf_metrics_.delivery_time_stats_.avg_ms_ << "ms" << std::endl;
+  std::cout << "Frame delivery time - percentile 25: "
+            << perf_metrics_.delivery_time_stats_.percentile_25_ms_ << "ms"
+            << std::endl;
+  std::cout << "Frame delivery time - percentile 50: "
+            << perf_metrics_.delivery_time_stats_.percentile_50_ms_ << "ms"
+            << std::endl;
+  std::cout << "Frame delivery time - percentile 75: "
+            << perf_metrics_.delivery_time_stats_.percentile_75_ms_ << "ms"
+            << std::endl;
+  std::cout << "Frame decode time - average:       "
+            << perf_metrics_.decode_time_stats_.avg_ms_ << "ms" << std::endl;
+  std::cout << "Frame decode time - percentile 25: "
+            << perf_metrics_.decode_time_stats_.percentile_25_ms_ << "ms"
+            << std::endl;
+  std::cout << "Frame decode time - percentile 50: "
+            << perf_metrics_.decode_time_stats_.percentile_50_ms_ << "ms"
+            << std::endl;
+  std::cout << "Frame decode time - percentile 75: "
+            << perf_metrics_.decode_time_stats_.percentile_75_ms_ << "ms"
+            << std::endl;
 }
 
 void PerformanceEvaluator::WriteMetricsToFile() const {
@@ -202,10 +231,28 @@ void PerformanceEvaluator::WriteMetricsToFile() const {
       base::Value(base::checked_cast<int>(perf_metrics_.frames_dropped_)));
   metrics.SetKey("DroppedFrameRate",
                  base::Value(perf_metrics_.dropped_frame_rate_));
-  metrics.SetKey("AvgFrameDeliveryTimeMs",
-                 base::Value(perf_metrics_.avg_frame_delivery_time_ms_));
-  metrics.SetKey("MedianFrameDecodeTimeMs",
-                 base::Value(perf_metrics_.median_frame_decode_time_ms_));
+  metrics.SetKey("FrameDeliveryTimeAverage",
+                 base::Value(perf_metrics_.delivery_time_stats_.avg_ms_));
+  metrics.SetKey(
+      "FrameDeliveryTimePercentile25",
+      base::Value(perf_metrics_.delivery_time_stats_.percentile_25_ms_));
+  metrics.SetKey(
+      "FrameDeliveryTimePercentile50",
+      base::Value(perf_metrics_.delivery_time_stats_.percentile_50_ms_));
+  metrics.SetKey(
+      "FrameDeliveryTimePercentile75",
+      base::Value(perf_metrics_.delivery_time_stats_.percentile_75_ms_));
+  metrics.SetKey("FrameDecodeTimeAverage",
+                 base::Value(perf_metrics_.decode_time_stats_.avg_ms_));
+  metrics.SetKey(
+      "FrameDecodeTimePercentile25",
+      base::Value(perf_metrics_.decode_time_stats_.percentile_25_ms_));
+  metrics.SetKey(
+      "FrameDecodeTimePercentile50",
+      base::Value(perf_metrics_.decode_time_stats_.percentile_50_ms_));
+  metrics.SetKey(
+      "FrameDecodeTimePercentile75",
+      base::Value(perf_metrics_.decode_time_stats_.percentile_75_ms_));
 
   // Write frame delivery times to json.
   base::Value delivery_times(base::Value::Type::LIST);
