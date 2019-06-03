@@ -1,6 +1,14 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 3.10.0 (2019-06-03)
+This release comes across as quiet, containing just the usual
+assortment of braille table improvements, cleanups, bug fixes and the
+classic buffer overflow patches. But beware, a lot has happened behind
+the scenes. Bert and Davy have been adding a new opcode to handle
+special emphasis situations. A number of annoying restrictions with
+regards to names, such as class names have been removed thank to Bert.
+And lastly also thanks to Bert it is now possible to define inline
+display tables in your YAML tests.
 
 For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/20?closed=1][the list of closed
 issues]].
@@ -35,9 +43,9 @@ issues]].
 - Update Bopomofo-based Chinese Braille thanks to Sponge Jhan
   - Correct various dot patterns of Chinese characters.
   - Add more known pattern exceptions of Chinese characters.
-  - Apply "word" opcode to 倔 and 据.
+  - Apply ~word~ opcode to 倔 and 据.
   - Change dot pattern of ＆ to 456-12346.
-- ~de-de-comp8.ctb~ now has definitions for musical unicode characters
+- ~de-de-comp8.ctb~ now has definitions for musical Unicode characters
   thanks to Daniel Mayr
 - Emphasis improvements in Unified French 6 dots Braille thanks to
   Ludovic Oger.
@@ -53,7 +61,7 @@ issues]].
 ** Other changes
 - Remove various restrictions on which characters and braille cells
   can be used in translation rules, thanks to Bert Frees.
-- Remove some code duplication in pattern.c thanks to Bert Frees
+- Remove some code duplication in ~pattern.c~ thanks to Bert Frees
 - It is now also possible to define inline tables when a display table
   has been defined thanks to Bert Frees
 - Nightly snapshots of liblouis are now also built for win64 thanks to
