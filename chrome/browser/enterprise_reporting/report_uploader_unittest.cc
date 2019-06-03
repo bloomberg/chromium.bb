@@ -114,6 +114,20 @@ TEST_F(ReportUploaderTest, PersistentError) {
   ::testing::Mock::VerifyAndClearExpectations(&client_);
 }
 
+TEST_F(ReportUploaderTest, RequestTooBigError) {
+  CreateUploader(/* *retyr_count = */ 2);
+  EXPECT_CALL(client_, UploadChromeDesktopReportProxy(_, _))
+      .Times(2)
+      .WillOnce(WithArgs<1>(policy::ScheduleStatusCallback(false)))
+      .WillOnce(WithArgs<1>(policy::ScheduleStatusCallback(false)));
+  client_.SetStatus(policy::DM_STATUS_REQUEST_TOO_LARGE);
+  UploadReportAndSetExpectation(/*number_of_request=*/2,
+                                ReportUploader::kSuccess);
+  RunNextTask();
+  EXPECT_TRUE(has_responded_);
+  ::testing::Mock::VerifyAndClearExpectations(&client_);
+}
+
 TEST_F(ReportUploaderTest, RetryAndSuccess) {
   EXPECT_CALL(client_, UploadChromeDesktopReportProxy(_, _))
       .Times(2)

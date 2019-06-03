@@ -42,8 +42,6 @@ class ReportUploader {
   // Request upload result.
   enum ReportStatus {
     kSuccess,
-    kReportTooLarge,   // Report can't be uploaded due to its size. Usually it's
-                       // caused by our calculation error.
     kTransientError,   // Report can't be uploaded due to transient error like
                        // network error or server side error.
     kPersistentError,  // Report can't be uploaded due to persistent error like
@@ -77,6 +75,9 @@ class ReportUploader {
 
   // Notifies the upload result.
   void SendResponse(const ReportStatus status);
+
+  // Moves to the next request if exist, or notifies the accomplishments.
+  void NextRequest();
 
   policy::CloudPolicyClient* client_;
   ReportCallback callback_;
