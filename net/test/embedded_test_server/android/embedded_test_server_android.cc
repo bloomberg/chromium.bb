@@ -156,6 +156,10 @@ static void JNI_EmbeddedTestServerImpl_Init(
   base::FilePath test_data_dir(
       base::android::ConvertJavaStringToUTF8(env, jtest_data_dir));
   base::InitAndroidTestPaths(test_data_dir);
+
+  // Bare new does not leak here because the instance deletes itself when it
+  // receives a Destroy() call its Java counterpart. The Java counterpart owns
+  // the instance created here.
   new EmbeddedTestServerAndroid(env, jobj, jhttps);
 }
 

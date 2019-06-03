@@ -133,10 +133,10 @@ class EmbeddedTestServerTest
     thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
     ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
 
-    request_context_getter_ =
-        new TestURLRequestContextGetter(io_thread_.task_runner());
+    request_context_getter_ = base::MakeRefCounted<TestURLRequestContextGetter>(
+        io_thread_.task_runner());
 
-    server_.reset(new EmbeddedTestServer(GetParam()));
+    server_ = std::make_unique<EmbeddedTestServer>(GetParam());
     server_->SetConnectionListener(&connection_listener_);
   }
 
@@ -173,11 +173,11 @@ class EmbeddedTestServerTest
     request_absolute_url_ = request.GetURL();
 
     if (request_absolute_url_.path() == path) {
-      std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
+      auto http_response = std::make_unique<BasicHttpResponse>();
       http_response->set_code(code);
       http_response->set_content(content);
       http_response->set_content_type(content_type);
-      return std::move(http_response);
+      return http_response;
     }
 
     return nullptr;
@@ -533,7 +533,7 @@ class EmbeddedTestServerThreadingTestDelegate
 
     std::unique_ptr<base::MessageLoop> loop;
     if (message_loop_present_on_initialize_)
-      loop.reset(new base::MessageLoopForIO);
+      loop = std::make_unique<base::MessageLoopForIO>();
 
     // Create the test server instance.
     EmbeddedTestServer server(type_);
@@ -543,13 +543,14 @@ class EmbeddedTestServerThreadingTestDelegate
 
     // Make a request and wait for the reply.
     if (!loop)
-      loop.reset(new base::MessageLoopForIO);
+      loop = std::make_unique<base::MessageLoopForIO>();
 
     std::unique_ptr<URLFetcher> fetcher =
         URLFetcher::Create(server.GetURL("/test?q=foo"), URLFetcher::GET, this,
                            TRAFFIC_ANNOTATION_FOR_TESTS);
-    fetcher->SetRequestContext(
-        new TestURLRequestContextGetter(loop->task_runner()));
+    auto test_context_getter =
+        base::MakeRefCounted<TestURLRequestContextGetter>(loop->task_runner());
+    fetcher->SetRequestContext(test_context_getter.get());
     base::RunLoop run_loop;
     quit_run_loop_ = run_loop.QuitClosure();
     fetcher->Start();

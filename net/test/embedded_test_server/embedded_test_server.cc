@@ -110,7 +110,7 @@ bool EmbeddedTestServer::InitializeAndListen(int port) {
       return false;
     }
 
-    listen_socket_.reset(new TCPServerSocket(nullptr, NetLogSource()));
+    listen_socket_ = std::make_unique<TCPServerSocket>(nullptr, NetLogSource());
 
     int result =
         listen_socket_->ListenWithAddressAndPort("127.0.0.1", port, 10);
@@ -176,7 +176,7 @@ void EmbeddedTestServer::StartAcceptingConnections() {
       << "Server must not be started while server is running";
   base::Thread::Options thread_options;
   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  io_thread_.reset(new base::Thread("EmbeddedTestServer IO Thread"));
+  io_thread_ = std::make_unique<base::Thread>("EmbeddedTestServer IO Thread");
   CHECK(io_thread_->StartWithOptions(thread_options));
   CHECK(io_thread_->WaitUntilThreadStarted());
 
@@ -237,8 +237,7 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
   if (!response) {
     LOG(WARNING) << "Request not handled. Returning 404: "
                  << request->relative_url;
-    std::unique_ptr<BasicHttpResponse> not_found_response(
-        new BasicHttpResponse);
+    auto not_found_response = std::make_unique<BasicHttpResponse>();
     not_found_response->set_code(HTTP_NOT_FOUND);
     response = std::move(not_found_response);
   }
@@ -510,7 +509,7 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWait(
   // PostTaskAndReply operation if the current thread has no message loop.
   std::unique_ptr<base::MessageLoop> temporary_loop;
   if (!base::MessageLoopCurrent::Get())
-    temporary_loop.reset(new base::MessageLoop());
+    temporary_loop = std::make_unique<base::MessageLoop>();
 
   base::RunLoop run_loop;
   if (!io_thread_->task_runner()->PostTaskAndReply(FROM_HERE, closure,

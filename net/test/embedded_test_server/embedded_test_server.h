@@ -50,7 +50,7 @@ struct HttpRequest;
 // The common use case for unit tests is below:
 //
 // void SetUp() {
-//   test_server_.reset(new EmbeddedTestServer());
+//   test_server_ = std::make_unique<EmbeddedTestServer>();
 //   test_server_->RegisterRequestHandler(
 //       base::Bind(&FooTest::HandleRequest, base::Unretained(this)));
 //   ASSERT_TRUE(test_server_.Start());
@@ -61,7 +61,7 @@ struct HttpRequest;
 //   if (absolute_url.path() != "/test")
 //     return std::unique_ptr<HttpResponse>();
 //
-//   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+//   auto http_response = std::make_unique<BasicHttpResponse>();
 //   http_response->set_code(net::HTTP_OK);
 //   http_response->set_content("hello");
 //   http_response->set_content_type("text/plain");
