@@ -338,6 +338,42 @@ TEST_F(CompositedLayerMappingTest, PerspectiveInterestRect) {
             RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
 }
 
+TEST_F(CompositedLayerMappingTest, RotationInterestRect) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+  .red_box {
+    position: fixed;
+    height: 100px;
+    width: 100vh; /* height of view, after -90 rot */
+    right: calc(16px - 50vh); /* 16 pixels above top of view, after -90 */
+    top: calc(50vh - 16px); /* 16 pixels in from right side, after -90 rot */
+    transform-origin: top;
+    transform: rotate(-90deg);
+    background-color: red;
+    will-change: transform;
+  }
+  .blue_box {
+    height: 30px;
+    width: 600px;
+    background: blue;
+  }
+</style>
+<div class="red_box" id=target>
+  <div class="blue_box"></div>
+</div>
+
+  )HTML");
+  GetFrame().View()->Resize(2000, 3000);
+
+  UpdateAllLifecyclePhasesForTest();
+  Element* element = GetDocument().getElementById("target");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
+  ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
+  EXPECT_EQ(IntRect(0, 0, 3000, 100),
+            RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
+}
+
 TEST_F(CompositedLayerMappingTest, 3D90DegRotatedTallInterestRect) {
   // It's rotated 90 degrees about the X axis, which means its visual content
   // rect is empty, and so the interest rect is the default (0, 0, 4000, 4000)
@@ -365,7 +401,7 @@ TEST_F(CompositedLayerMappingTest, 3D45DegRotatedTallInterestRect) {
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
-  EXPECT_EQ(IntRect(0, 0, 200, 4592),
+  EXPECT_EQ(IntRect(0, 0, 200, 6249),
             RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
 }
 

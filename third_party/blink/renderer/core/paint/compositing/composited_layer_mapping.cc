@@ -3262,8 +3262,10 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
         visible_content_rect.Height() > std::numeric_limits<float>::epsilon()
             ? local_interest_rect.Height() / visible_content_rect.Height()
             : 1.0f;
-    local_interest_rect.InflateX(kPixelDistanceToRecord * x_scale);
-    local_interest_rect.InflateY(kPixelDistanceToRecord * y_scale);
+    // Take the max, to account for situations like rotation transforms, which
+    // swap x and y.
+    float scale = max(x_scale, y_scale);
+    local_interest_rect.Inflate(kPixelDistanceToRecord * scale);
   } else {
     // Expand by interest rect padding amount.
     local_interest_rect.Inflate(kPixelDistanceToRecord);
