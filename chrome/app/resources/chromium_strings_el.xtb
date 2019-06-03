@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">Έχετε συνδεθεί στο Chromium!</translation>
 <translation id="1502360822835740515">Ορίστε το Chromium ως προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="151962892725702025">Το Chromium OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας, επειδή ο συγχρονισμός δεν είναι διαθέσιμος για τον τομέα σας.</translation>
+<translation id="1524282610922162960">Μοιραστείτε μια καρτέλα του Chromium</translation>
 <translation id="1585657529869845941">Αν εμφανιστεί, επιλέξτε <ph name="BEGIN_BOLD" />Εναλλαγή ούτως ή άλλως<ph name="END_BOLD" /></translation>
 <translation id="1668054258064581266">Μετά την κατάργηση του λογαριασμού σας στο Chromium, ενδεχομένως να χρειαστεί να επαναφορτώσετε τις ανοικτές καρτέλες σας προκειμένου να εφαρμοστούν οι αλλαγές σας.</translation>
 <translation id="1688750314291223739">Ρυθμίστε τον συγχρονισμό για την αποθήκευση όλων των εξατομικευμένων λειτουργιών του προγράμματος περιήγησής σας στον ιστό και μεταβείτε σε αυτές από το Chromium μέσω οποιουδήποτε υπολογιστή.</translation>
@@ -126,6 +127,7 @@
 <translation id="5479196819031988440">Το Chromium OS δεν μπορεί να ανοίξει αυτήν τη σελίδα.</translation>
 <translation id="5480860683791598150">Το Chromium χρειάζεται πρόσβαση στην τοποθεσία σας, για να την κοινοποιήσει σε αυτόν τον ιστότοπο</translation>
 <translation id="549669000822060376">Περιμένετε μέχρι να γίνει εγκατάσταση των πιο πρόσφατων ενημερώσεων συστήματος από το Chromium.</translation>
+<translation id="5623402015214259806">{0,plural, =0{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium}=1{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium}other{Υπάρχει μια διαθέσιμη ενημέρωση του Chromium για # ημέρες}}</translation>
 <translation id="5631814766731275228">Όνομα και εικόνα στο Chromium</translation>
 <translation id="5634636535844844681">Το Chromium απαιτεί Windows 7 ή νεότερη έκδοση.</translation>
 <translation id="5680901439334282664">σύνδεση στο Chromium</translation>
@@ -149,6 +151,7 @@
 <translation id="6120345080069858279">Το Chromium θα αποθηκεύσει αυτόν τον κωδικό πρόσβασης στον Λογαριασμό σας Google. Δεν χρειάζεται να τον απομνημονεύσετε.</translation>
 <translation id="6129621093834146363">Το αρχείο <ph name="FILE_NAME" /> είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chromium.</translation>
 <translation id="6212496753309875659">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Chromium. Αν το λογισμικό δεν λειτουργεί, απεγκαταστήστε το Chromium και κατεβάστε το ξανά.</translation>
+<translation id="6219195342503754812">{0,plural, =0{Η επανεκκίνηση του Chromium θα γίνει τώρα}=1{Η επανεκκίνηση του Chromium θα γίνει σε 1 δευτερόλεπτο}other{Η επανεκκίνηση του Chromium θα γίνει σε # δευτερόλεπτα}}</translation>
 <translation id="6248213926982192922">Ορισμός Chromium ως προεπιλεγμένο πρόγραμμα</translation>
 <translation id="6268381023930128611">Θέλετε να αποσυνδεθείτε από το Chromium;</translation>
 <translation id="6295779123002464101">Το αρχείο <ph name="FILE_NAME" /> μπορεί να είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chromium.</translation>
@@ -205,6 +208,7 @@
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">Το Chromium χρειάζεται άδεια, για να αποκτήσει πρόσβαση στην κάμερα για αυτόν τον ιστότοπο</translation>
 <translation id="7483335560992089831">Δεν είναι δυνατή η εγκατάσταση της ίδια έκδοσης του Chromium που εκτελείται αυτήν τη στιγμή. Κλείστε το Chromium και δοκιμάστε ξανά.</translation>
+<translation id="753534427205733210">{0,plural, =1{Η επανεκκίνηση του Chromium θα γίνει σε 1 λεπτό}other{Η επανεκκίνηση του Chromium θα γίνει σε # λεπτά}}</translation>
 <translation id="7549178288319965365">Σχετικά με το Chromium OS</translation>
 <translation id="7561906087460245826">Επίσης, να διαγραφούν δεδομένα από το Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Το Chromium χρησιμοποιεί την κάμερα και το μικρόφωνό σας.</translation>
@@ -232,6 +236,7 @@
 <translation id="8330519371938183845">Συνδεθείτε, για να συγχρονίσετε και να εξατομικεύσετε το Chromium στις συσκευές σας</translation>
 <translation id="8340674089072921962">Η διεύθυνση <ph name="USER_EMAIL_ADDRESS" /> χρησιμοποιούσε το Chromium στο παρελθόν</translation>
 <translation id="8375950122744241554">Τα προφίλ εποπτευόμενων χρηστών δεν θα είναι πλέον διαθέσιμα από το Chromium 70 και μετά.</translation>
+<translation id="8417404458978023919">{0,plural, =1{Επανεκκίνηση του Chromium σε μία ημέρα}other{Επανεκκίνηση του Chromium σε # ημέρες}}</translation>
 <translation id="8453117565092476964">Το αρχείο του προγράμματος εγκατάστασης είναι κατεστραμμένο ή μη έγκυρο. Κατεβάστε το Chromium ξανά.</translation>
 <translation id="8493179195440786826">Το Chromium δεν είναι ενημερωμένο</translation>
 <translation id="85843667276690461">Λήψη βοήθειας σχετικά με τη χρήση του Chromium</translation>
@@ -258,6 +263,7 @@
 <translation id="9025992965467895364">Αυτή η σελίδα χρησιμοποιεί πάρα πολλή μνήμη. Για αυτόν τον λόγο, το Chromium την έθεσε σε παύση.</translation>
 <translation id="9036189287518468038">Λειτουργία εκκίνησης εφαρμογών Chromium</translation>
 <translation id="9089354809943900324">Το Chromium δεν είναι ενημερωμένο</translation>
+<translation id="9093206154853821181">{0,plural, =1{Η επανεκκίνηση του Chromium θα γίνει σε μία ώρα}other{Η επανεκκίνηση του Chromium θα γίνει σε # ώρες}}</translation>
 <translation id="91086099826398415">Άνοιγμα Συνδέσμου σε Νέα καρτέ&amp;λα Chromium</translation>
 <translation id="911206726377975832">Να γίνει διαγραφή και των δεδομένων περιήγησης;</translation>
 <translation id="9158494823179993217">Ο διαχειριστής συστήματος έχει διαμορφώσει το Chromium έτσι ώστε να ανοίγει άλλο πρόγραμμα περιήγησης για την πρόσβαση στη διεύθυνση <ph name="TARGET_URL_HOSTNAME" />.</translation>

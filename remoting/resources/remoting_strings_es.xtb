@@ -126,8 +126,6 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="3695446226812920698">Descubre cómo hacerlo</translation>
 <translation id="3718805989288361841">Se ha producido un error relacionado con la configuración de políticas de Escritorio Remoto de Chrome. Ponte en contacto con el administrador de tu sistema para obtener ayuda.</translation>
 <translation id="3776024066357219166">Ha finalizado tu sesión en Escritorio Remoto de Chrome.</translation>
-<translation id="3846148461359626420">• Se ha mejorado la experiencia al ver panorámicas y hacer zoom en iPhone X.
-• Mejoras de estabilidad y corrección de errores.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirma la cuenta y el PIN a continuación para permitir el acceso de Escritorio Remoto de Chrome.</translation>
 <translation id="3897092660631435901">Menú</translation>
@@ -339,8 +337,6 @@ Para habilitar esta función, selecciona <ph name="BUTTON_NAME" /> para mostrar 
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="8548209692293300397">Anteriormente, iniciaste sesión como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Para acceder a los ordenadores de esa cuenta, <ph name="LINK_BEGIN" />inicia sesión en Google Chrome<ph name="LINK_END" /> con dicha cuenta y vuelve a instalar Escritorio Remoto de Chrome.</translation>
 <translation id="8642984861538780905">Aceptable</translation>
-<translation id="8705151241155781642">• Compatibilidad con Android 9.0 Pie.
-• Ahora es posible cambiar la resolución del escritorio remoto para que coincida con la resolución de la pantalla de tu dispositivo Android.</translation>
 <translation id="8712909229180978490">No puedo ver mis archivos guardados online en Google Drive.</translation>
 <translation id="8743328882720071828">¿Quieres permitir que <ph name="CLIENT_USERNAME" /> vea y controle tu ordenador?</translation>
 <translation id="8747048596626351634">La sesión ha fallado o no se ha podido iniciar. Si hay una secuencia de comandos ~/.chrome-remote-desktop-session en el ordenador remoto, esta debe iniciar un proceso largo en primer plano, como un entorno de escritorio o un administrador de ventanas.</translation>

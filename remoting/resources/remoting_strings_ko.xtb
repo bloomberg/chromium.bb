@@ -126,8 +126,6 @@
 <translation id="3695446226812920698">자세히 알아보기</translation>
 <translation id="3718805989288361841">Chrome 원격 데스크톱 관련 정책 설정에 오류가 있습니다. 시스템 관리자에게 도움을 요청하세요.</translation>
 <translation id="3776024066357219166">Chrome 원격 데스크톱 세션이 종료되었습니다.</translation>
-<translation id="3846148461359626420">• iPhone X 화면 이동 및 확대/축소 개선
-• 안정성 개선 및 버그 수정</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome 원격 데스크톱스으로 액세스할 수 있도록 아래 계정 및 PIN을 확인하세요.</translation>
 <translation id="3897092660631435901">메뉴</translation>
@@ -339,8 +337,6 @@ PC</translation>
 <translation id="8525306231823319788">전체화면</translation>
 <translation id="8548209692293300397">이전에 <ph name="USER_NAME" />(<ph name="USER_EMAIL" />)(으)로 로그인한 적이 있습니다. 이 계정으로 컴퓨터에 액세스하려면 이 계정을 사용해 <ph name="LINK_BEGIN" />Chrome에 로그인<ph name="LINK_END" />하고 Chrome 원격 데스크톱을 다시 설치하세요.</translation>
 <translation id="8642984861538780905">보통</translation>
-<translation id="8705151241155781642">• Android 9.0 Pie 지원 추가
-• Android 기기 화면에 맞게 원격 데스크톱 해상도 크기 조정 지원</translation>
 <translation id="8712909229180978490">Google 드라이브에 저장된 파일을 온라인으로 볼 수 없음</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" />이(가) 컴퓨터를 확인하고 제어할 수 있게 하시겠습니까?</translation>
 <translation id="8747048596626351634">세션이 다운되었거나 시작되지 못했습니다. 원격 컴퓨터에 ~/.chrome-remote-desktop-session이 있는 경우, 세션에서 데스크톱 환경이나 창 관리자와 같이 오랫동안 실행되는 포그라운드 프로세스가 시작되어야 합니다.</translation>

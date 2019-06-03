@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Predlaganje gesla …</translation>
 <translation id="1870148520156231997">Razkrijte geslo</translation>
 <translation id="1876721852596493031">Pošlji pod. o upor.</translation>
-<translation id="1886928167269928266">Beginning of Time</translation>
 <translation id="1911619930368729126">Prenos v Google Drive</translation>
+<translation id="1923342640370224680">Zadnja ura</translation>
 <translation id="1941314575388338491">Dvakrat se dotaknite, če želite kopirati.</translation>
 <translation id="1952172573699511566">Spletna mesta bodo besedilo prikazala v izbranem jeziku, če je mogoče.</translation>
 <translation id="1952728750904661634">Prijava z upravljanim računom</translation>
 <translation id="1974060860693918893">Dodatno</translation>
 <translation id="1989112275319619282">Brskanje</translation>
 <translation id="2015722694326466240">Če si želite ogledati gesla, morate najprej nastaviti geslo v napravi.</translation>
-<translation id="2068952045031577364">Past Week</translation>
 <translation id="2074131957428911366">V <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" /> lahko kadar koli izberete, kaj želite sinhronizirati.</translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="209018056901015185">Zahtevaj spletno mesto za nam. računalnik</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Gesla</translation>
 <translation id="2969979262385602596">Failed to sign in. Please try again later.</translation>
 <translation id="2989805286512600854">Odpri v novem zavihku</translation>
-<translation id="3024255823539804759">Past Day</translation>
 <translation id="3037605927509011580">Ti šment!</translation>
 <translation id="3112556859945124369">Označi …</translation>
 <translation id="3157684681743766797">Označi vse …</translation>
@@ -381,7 +379,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
 <translation id="6476800141292307438">Prevajanje strani v ta jezik: <ph name="LANGUAGE" />. Možnosti so na voljo blizu dna zaslona.</translation>
 <translation id="6482629121755362506">Št. izbrisanih elementov: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
-<translation id="6541915733953096570">Past Hour</translation>
 <translation id="6610002944194042868">Možnosti prevajanja</translation>
 <translation id="6642362222295953972">Preklop na obstoječi zavihek</translation>
 <translation id="6643016212128521049">Izbriši</translation>
@@ -502,6 +499,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8532105204136943229">Expiration Year</translation>
 <translation id="8534481786647257214">Objava v Googlu+ je dokončana.</translation>
 <translation id="8548878600947630424">Najdi na strani ...</translation>
+<translation id="8583866649835978847">Pošlji <ph name="TITLE" /> v eno od naprav.</translation>
 <translation id="8605219856220328675">Close tab.</translation>
 <translation id="8620640915598389714">Uredi</translation>
 <translation id="8636825310635137004">Če želite dostopati do zavihkov iz drugih naprav, vklopite sinhronizacijo.</translation>

@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">मेन्यू छोटा करें</translation>
 <translation id="1383876407941801731">खोजें</translation>
 <translation id="1419738280318246476">सूचना से जुड़ी कार्रवाई करने के लिए डिवाइस को अनलॉक करें</translation>
+<translation id="1426410128494586442">हां</translation>
 <translation id="1455242230282523554">भाषा सेटिंग दिखाएं</translation>
 <translation id="1467432559032391204">बाएं</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -49,7 +50,7 @@
 <translation id="1608626060424371292">इस उपयोगकर्ता को हटाएं</translation>
 <translation id="1654477262762802994">बोलकर खोजना शुरू करें</translation>
 <translation id="1658406695958299976">माफ़ करें, आपके पासवर्ड की अब भी पुष्टि नहीं हो पाई है. नोट: अगर आपने हाल ही में अपना पासवर्ड बदला है, तो आपके साइन आउट होते ही आपका नया पासवर्ड लागू हो जाएगा, कृपया यहां पुराने पासवर्ड का इस्तेमाल करें.</translation>
-<translation id="1677472565718498478"><ph name="TIME" /> शेष</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> बाकी</translation>
 <translation id="1698760176351776263">IPv6 पता: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">उंगली की पहचान नहीं हो सकी</translation>
 <translation id="1746730358044914197">इनपुट विधियों को आपका व्यवस्थापक कॉन्फ़िगर करता है.</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> अब भी बाद में साइन इन कर सकते हैं.</translation>
 <translation id="3321628682574733415">माता-पिता वाला कोड गलत है</translation>
 <translation id="332587331255250389">कृपया बैटरी बदलें</translation>
-<translation id="3335825575923019462">क्या आप वाकई ऑटोमैटिक क्लिक की सुविधा बंद करना चाहते हैं?</translation>
 <translation id="3351879221545518001">आप इस समय स्क्रीन कास्ट कर रहे हैं.</translation>
 <translation id="3364721542077212959">स्टाइलस टूल</translation>
 <translation id="3368922792935385530">कनेक्टेड</translation>
@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">माउस कर्सर को हाइलाइट करें</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> खाता संभालते हैं</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" में फिर से बदलें (फिर से आरंभ करने की आवश्यकता है)</translation>
+<translation id="3576141592585647168">समय क्षेत्र बदलें</translation>
 <translation id="3595596368722241419">बैटरी पूरी हो गई</translation>
 <translation id="3606978283550408104">ब्रेल डिसप्ले कनेक्ट हो गया.</translation>
 <translation id="3621202678540785336">इनपुट</translation>
@@ -227,7 +228,6 @@
 <translation id="4378551569595875038">कनेक्ट हो रहा है...</translation>
 <translation id="4379531060876907730">ये आपके स्टाइलस टूल हैं</translation>
 <translation id="4389184120735010762">आपने 'सामग्री को बड़ा दिखाने वाली डॉक की गई सेवा' का कीबोर्ड शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
-<translation id="4394049700291259645">बंद करें</translation>
 <translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से शेयर किया जा रहा है.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
 <translation id="4450893287417543264">फिर से न दिखाएं</translation>
@@ -355,6 +355,7 @@
 <translation id="6559976592393364813">एडमिन से पूछें</translation>
 <translation id="6585808820553845416">सत्र <ph name="SESSION_TIME_REMAINING" /> में खत्म होने वाला है.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
+<translation id="6637729079642709226">समय में बदलाव करें</translation>
 <translation id="6650933572246256093">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया डिवाइस पर यह पासकुंजी डालें: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6665545700722362599">वेबसाइट, ऐप्लिकेशन, और एक्सटेंशन को जगह की जानकारी, डिवाइस के माइक्रोफ़ोन, कैमरा या दूसरी सुविधाओं का इस्तेमाल करने की अनुमति दें</translation>
@@ -374,7 +375,7 @@
 <translation id="6910714959251846841">इस अपडेट के लिए आपके डिवाइस को पावरवॉश करना ज़रूरी है. <ph name="SYSTEM_APP_NAME" /> के नए अपडेट के बारे में ज़्यादा जानें.</translation>
 <translation id="6911468394164995108">अन्य में शामिल हों...</translation>
 <translation id="6972754398087986839">आरंभ करें</translation>
-<translation id="6981982820502123353">पहुंच क्षमता</translation>
+<translation id="6981982820502123353">सुलभता</translation>
 <translation id="698231206551913481">इस उपयोगकर्ता को हटाए जाने पर, इससे जुड़ीं सभी फ़ाइलों और स्थानीय डेटा को हमेशा के लिए मिटा दिया जाएगा.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> बजे फिर से देखें.</translation>
 <translation id="7025533177575372252">अपने <ph name="DEVICE_NAME" /> को अपने फ़ोन से कनेक्ट करें</translation>
@@ -449,7 +450,7 @@
 <translation id="8054466585765276473">बैटरी समय की गणना की जा रही है.</translation>
 <translation id="8061464966246066292">उच्च स्क्रीन की रोशनी</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> को स्‍क्रीन कास्‍ट करना बंद करें</translation>
-<translation id="8113423164597455979">चालू, सभी ऐप्लिकेशन</translation>
+<translation id="8113423164597455979">चालू, सभी ऐप</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> से कनेक्ट है</translation>
 <translation id="813913629614996137">शुरू हो रहा है...</translation>
 <translation id="8142441511840089262">दो बार क्लिक करें</translation>
@@ -480,11 +481,10 @@
 <translation id="8513108775083588393">स्क्रीन का अपने आप दिशा बदलना (अॉटो-रोटेट)</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> से कनेक्ट है</translation>
-<translation id="8639760480004882931"><ph name="PERCENTAGE" /> शेष</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> बाकी</translation>
 <translation id="8649101189709089199">चुनें और सुनें</translation>
 <translation id="8652175077544655965">सेटिंग बंद करें</translation>
 <translation id="8653151467777939995">सूचना सेटिंग दिखाएं. सूचनाएं चालू हैं</translation>
-<translation id="8664483332071009680">ऑटोमैटिक क्लिक की सुविधा बंद करें?</translation>
 <translation id="8664753092453405566">नेटवर्क सूची दिखाएं. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">कम-शक्ति वाला चार्जर</translation>
@@ -510,6 +510,7 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> का इस्तेमाल करें</translation>
 <translation id="899350903320462459">सूचना से जुड़ी कार्रवाई करने के लिए डिवाइस को <ph name="LOGIN_ID" /> के तौर पर अनलॉक करें</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> द्वारा प्रबंधित</translation>
+<translation id="9017320285115481645">Family Link का अभिभावक एक्सेस कोड डालें.</translation>
 <translation id="9029474291399787231">Adobe Flash Player का अपडेट मौजूद है</translation>
 <translation id="9056839673611986238">डिवाइस बहाल कर दिया जाएगा</translation>
 <translation id="9070640332319875144">Assistant की सेटिंग</translation>

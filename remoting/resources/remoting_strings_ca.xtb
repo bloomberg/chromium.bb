@@ -126,8 +126,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="3695446226812920698">Més informació</translation>
 <translation id="3718805989288361841">S'ha produït un error amb la configuració de la política de l'escriptori remot de Chrome. Contacta amb l'administrador del sistema per obtenir assistència.</translation>
 <translation id="3776024066357219166">La sessió de l'escriptori remot de Chrome ha finalitzat.</translation>
-<translation id="3846148461359626420">• Millores en les funcions de panoràmica i zoom a iPhone X.
-• Millores d'estabilitat i correcció d'errors.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirmeu el vostre compte i PIN a continuació per permetre l'accés per l'escriptori remot de Chrome.</translation>
 <translation id="3897092660631435901">Menú</translation>
@@ -339,8 +337,6 @@ Si vols activar aquesta funcionalitat, selecciona <ph name="BUTTON_NAME" /> per 
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="8548209692293300397">Heu iniciat la sessió anteriorment com a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedir als ordinadors d'aquest compte, <ph name="LINK_BEGIN" />inicieu la sessió a Google Chrome<ph name="LINK_END" /> amb el compte en qüestió i torneu a instal·lar l'escriptori remot de Chrome.</translation>
 <translation id="8642984861538780905">Suficient</translation>
-<translation id="8705151241155781642">• S'admet Android 9.0 Pie.
-• Es pot canviar la mida de la resolució de la pantalla remota perquè s'adapti a la pantalla del dispositiu Android.</translation>
 <translation id="8712909229180978490">No puc veure els meus fitxers desats en línia a Google Drive.</translation>
 <translation id="8743328882720071828">Vols permetre que <ph name="CLIENT_USERNAME" /> pugui veure i controlar l'ordinador?</translation>
 <translation id="8747048596626351634">La sessió s'ha bloquejat o no s'ha pogut iniciar. Si s'ha introduït ~/.chrome-remote-desktop-session a l'ordinador remot, comprova que s'iniciï un procés llarg en primer pla, com ara un entorn d'escriptori o un gestor de finestres.</translation>

@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Tarjetas aceptadas</translation>
 <translation id="1032854598605920125">Girar a la derecha</translation>
 <translation id="1035334672863811645">acceder a Chrome</translation>
+<translation id="1036348656032585052">Desactivar</translation>
 <translation id="1038842779957582377">nombre desconocido</translation>
 <translation id="1039626062703039346">Chrome puede ayudarte a proteger tu Cuenta de Google y cambiar tu contraseña. Esta acción enviará una notificación a Google sobre este sitio.</translation>
 <translation id="1050038467049342496">Cierra las demás apps.</translation>
@@ -189,6 +190,7 @@
 <translation id="187918866476621466">Abrir páginas de inicio</translation>
 <translation id="1883255238294161206">Ocultar lista</translation>
 <translation id="1898423065542865115">Filtrado</translation>
+<translation id="1914326953223720820">Servicio de descompresión</translation>
 <translation id="1916770123977586577">Para aplicar la configuración actualizada en este sitio, vuelve a cargar la página</translation>
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1919367280705858090">Cómo obtener ayuda con un mensaje de error específico</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">¡Oh, no!</translation>
 <translation id="3041612393474885105">Información sobre el certificado</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
+<translation id="3061707000357573562">Aplicar parche al servicio</translation>
 <translation id="3064966200440839136">Saldrás del modo de navegación incógnito para pagar mediante una aplicación externa. ¿Deseas continuar?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Ninguna}=1{1 contraseña}other{# contraseñas}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -732,7 +735,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> dice</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Sin resultados</translation>
-<translation id="4945672369594656571">Controla la forma en que se administran los datos de tu cuenta y dispositivo. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu cuenta y dispositivo, y solo para los fines que se indiquen.</translation>
 <translation id="4950898438188848926">Botón para cambiar de pestaña; presiona Intro para cambiar a la pestaña abierta <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -746,7 +748,6 @@
 <translation id="5017554619425969104">Texto que copiaste</translation>
 <translation id="5018422839182700155">No se puede abrir esta página</translation>
 <translation id="5019198164206649151">La memoria auxiliar se encuentra en mal estado.</translation>
-<translation id="5020154601324912079">Controla la forma en que se administran los datos de tu dispositivo. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu dispositivo y solo para los fines que se indiquen.</translation>
 <translation id="5023310440958281426">Revisa las políticas del administrador.</translation>
 <translation id="5029568752722684782">Borrar la copia</translation>
 <translation id="503069730517007720">Se requiere un certificado raíz para "<ph name="SOFTWARE_NAME" />", pero no está instalado. Tu administrador de IT debe analizar las instrucciones de configuración de "<ph name="SOFTWARE_NAME" />" para corregir este problema. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -914,11 +915,12 @@
 <translation id="5893752035575986141">Se aceptan tarjetas de crédito.</translation>
 <translation id="5901630391730855834">Amarillo</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
-<translation id="5916664084637901428">Activada</translation>
+<translation id="5916664084637901428">Sí</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">¿Quieres guardar la tarjeta en la Cuenta de Google?</translation>
 <translation id="5922853866070715753">Ya casi</translation>
 <translation id="5932224571077948991">El sitio muestra anuncios intrusivos o engañosos</translation>
+<translation id="5939847200023027600">Servicio para crear PDF</translation>
 <translation id="5946937721014915347">Abriendo <ph name="SITE_NAME" />…</translation>
 <translation id="5947933617628957894">Sí, agregar</translation>
 <translation id="5951495562196540101">No se puede realizar la inscripción con una cuenta personal (licencia de paquete disponible).</translation>
@@ -1179,7 +1181,6 @@ Detalles adicionales:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Administrar contraseñas…</translation>
 <translation id="7419106976560586862">Ruta del perfil</translation>
-<translation id="7424427397225027541">Controla la forma en que administran los datos de tu cuenta. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu cuenta y solo para los fines que se indiquen.</translation>
 <translation id="7437289804838430631">Agregar información de contacto</translation>
 <translation id="7440140511386898319">Explorar sin conexión</translation>
 <translation id="7441627299479586546">Nombre de usuario o dominio de política incorrecto</translation>
@@ -1319,6 +1320,7 @@ Detalles adicionales:
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Se quitaron las tarjetas no válidas</translation>
 <translation id="8103161714697287722">Forma de pago</translation>
+<translation id="8105368624971345109">Desactivar</translation>
 <translation id="8118489163946903409">Forma de pago</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" no se instaló correctamente en tu computadora o red. Solicita al administrador de IT que corrija este problema.</translation>
 <translation id="8131740175452115882">Confirmar</translation>

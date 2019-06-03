@@ -126,8 +126,6 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="3695446226812920698">Sužinokite kaip</translation>
 <translation id="3718805989288361841">Įvyko „Chrome“ nuotolinio kompiuterio valdymo politikos nustatymų klaida. Kreipkitės pagalbos į sistemos administratorių.</translation>
 <translation id="3776024066357219166">Baigėsi „Chrome“ nuotolinio kompiuterio valdymo sesija.</translation>
-<translation id="3846148461359626420">• Geriau stumdoma ir keičiamas mastelis „iPhone X“.
-• Stabilumo patobulinimai ir riktų pataisymai.</translation>
 <translation id="3870154837782082782">„Google Inc.“</translation>
 <translation id="3884839335308961732">Kad leistumėte prieigą naudojant „Chrome“ nuotolinį kompiuterio valdymą, toliau patvirtinkite savo paskyrą ir PIN kodą.</translation>
 <translation id="3897092660631435901">Meniu</translation>
@@ -339,8 +337,6 @@ Norėdami įgalinti šias funkcijas, pasirinkite „<ph name="BUTTON_NAME" />“
 <translation id="8525306231823319788">Viso ekrano režimas</translation>
 <translation id="8548209692293300397">Anksčiau prisijungėte kaip <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Kad pasiektumėte kompiuterius toje paskyroje, <ph name="LINK_BEGIN" />prisijunkite prie „Google Chrome“<ph name="LINK_END" /> naudodami tą paskyrą ir iš naujo įdiekite „Chrome“ nuotolinį kompiuterio valdymą.</translation>
 <translation id="8642984861538780905">Neblogas</translation>
-<translation id="8705151241155781642">• Pridėtas 9.0 („Pie“) versijos „Android“ palaikymas.
-• Nuotolinio kompiuterio skyros dydžio keitimo, kad atitiktų „Android“ įrenginio ekraną, palaikymas.</translation>
 <translation id="8712909229180978490">Prisijungus nerodomi „Google“ diske išsaugoti failai.</translation>
 <translation id="8743328882720071828">Ar norite leisti <ph name="CLIENT_USERNAME" /> matyti kompiuterio informaciją ir jį valdyti?</translation>
 <translation id="8747048596626351634">Sesija užstrigo arba jos nepavyko paleisti. Jei nuotoliniame kompiuteryje yra ~/.chrome-remote-desktop-session, įsitikinkite, kad jis paleidžia ilgai vykdomą priekinio plano procesą, pvz., darbalaukio aplinką ar langų tvarkytuvę.</translation>

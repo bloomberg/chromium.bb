@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">瑞典文</translation>
 <translation id="4693155481716051732">壽司</translation>
 <translation id="4694604912444486114">猴子</translation>
+<translation id="4697043402264950621">檔案清單已依<ph name="COLUMN_NAME" />遞增排序。</translation>
 <translation id="4711094779914110278">土耳其文</translation>
 <translation id="4713544552769165154">這個檔案是專為使用 Macintosh 軟體的電腦所設計，與搭載 Chrome 作業系統的裝置不相容。請前往 <ph name="BEGIN_LINK" />Chrome 線上應用程式商店<ph name="END_LINK" />尋找適合的替代應用程式。<ph name="BEGIN_LINK_HELP" />瞭解詳情<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">已備份 <ph name="FILE_COUNT" /> 張相片</translation>
@@ -312,7 +313,7 @@
 <translation id="4839847978919684242">已選取 <ph name="SELCTED_FILES_COUNT" /> 個項目</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="485316830061041779">德文</translation>
-<translation id="4867079195717347957">按一下即可依遞減順序排序直欄。</translation>
+<translation id="4867079195717347957">按一下即可依遞減順序排列資料欄。</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> 位元組</translation>
 <translation id="4880214202172289027">音量滑桿</translation>
 <translation id="4880520557730313061">自動修正</translation>
@@ -353,7 +354,7 @@
 <translation id="5167131699331641907">荷蘭文鍵盤</translation>
 <translation id="5170477580121653719">Google 雲端硬碟剩餘空間：<ph name="SPACE_AVAILABLE" />。</translation>
 <translation id="5177526793333269655">縮圖檢視</translation>
-<translation id="5194713942430106590">按一下即可依遞增順序排序直欄。</translation>
+<translation id="5194713942430106590">按一下即可依遞增順序排列資料欄。</translation>
 <translation id="5218183485292899140">瑞士法文</translation>
 <translation id="5234764350956374838">關閉</translation>
 <translation id="5241298539944515331">越南文鍵盤 (VIQR)</translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">新視窗</translation>
 <translation id="7348749398828259943">美式 Workman 國際鍵盤</translation>
 <translation id="7359359531237882347">正在複製 <ph name="NUMBER_OF_ITEMS" /> 個項目...</translation>
+<translation id="7375951387215729722">檔案清單已依<ph name="COLUMN_NAME" />遞減排序。</translation>
 <translation id="7389722738210761877">泰文鍵盤 (TIS 820-2531)</translation>
 <translation id="7396038720194014279">北印度文鍵盤 (拼音)</translation>
 <translation id="7417453074306512035">衣索比亞文鍵盤</translation>

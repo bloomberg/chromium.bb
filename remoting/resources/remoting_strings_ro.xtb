@@ -126,8 +126,6 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="3695446226812920698">Află cum</translation>
 <translation id="3718805989288361841">A apărut o eroare la setările politicii pentru Desktop la distanță Chrome. Contactează administratorul de sistem pentru asistență.</translation>
 <translation id="3776024066357219166">Sesiunea Desktop la distanță Chrome s-a încheiat.</translation>
-<translation id="3846148461359626420">• Funcții de deplasare și zoom îmbunătățite pe iPhone X.
-• Stabilitate îmbunătățită și erori remediate.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirmați mai jos contul și codul PIN pentru a permite accesarea prin intermediul aplicației Desktop la distanță Chrome.</translation>
 <translation id="3897092660631435901">Meniu</translation>
@@ -339,8 +337,6 @@ Pentru a activa această funcție, selectează „<ph name="BUTTON_NAME" />” p
 <translation id="8525306231823319788">Ecran complet</translation>
 <translation id="8548209692293300397">Anterior te-ai conectat ca <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Pentru a accesa computerele în contul respectiv, <ph name="LINK_BEGIN" />conectează-te la Google Chrome<ph name="LINK_END" /> folosind contul respectiv și reinstalează Desktop la distanță Chrome.</translation>
 <translation id="8642984861538780905">Acceptabilă</translation>
-<translation id="8705151241155781642">• Aplicația este acum compatibilă cu Android 9.0 Pie.
-• Acum poți redimensiona rezoluția desktopului la distanță în funcție de ecranul dispozitivului Android.</translation>
 <translation id="8712909229180978490">Nu pot vedea fișierele salvate online în Google Drive.</translation>
 <translation id="8743328882720071828">Dorești să-i permiți utilizatorului <ph name="CLIENT_USERNAME" /> să vadă și să îți controleze computerul?</translation>
 <translation id="8747048596626351634">Sesiunea s-a blocat sau nu a pornit. Dacă pe computerul la distanță există ~/.chrome-remote-desktop-session, asigură-te că inițiază un proces în prim-plan de lungă durată, cum ar fi un mediu de desktop sau un manager de ferestre.</translation>

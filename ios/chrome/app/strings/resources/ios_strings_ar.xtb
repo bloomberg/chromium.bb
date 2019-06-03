@@ -38,7 +38,7 @@
 <translation id="1400642268715879018">الأسابيع الأربعة الأخيرة</translation>
 <translation id="1407135791313364759">فتح الكل</translation>
 <translation id="1430915738399379752">طباعة</translation>
-<translation id="1436290164580597469">إدخال عبارة المرور لبدء المزامنة</translation>
+<translation id="1436290164580597469">يُرجى إدخال عبارة المرور لبدء المزامنة.</translation>
 <translation id="1449835205994625556">إخفاء كلمة المرور</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> من العناصر</translation>
 <translation id="1491277525950327607">انقر مرّتين لتبديل الإعداد</translation>
@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">اقتراح  كلمة مرور...</translation>
 <translation id="1870148520156231997">الكشف عن كلمة المرور</translation>
 <translation id="1876721852596493031">إرسال بيانات الاستخدام</translation>
-<translation id="1886928167269928266">بدايةَ الوقت</translation>
 <translation id="1911619930368729126">‏التحميل إلى Google Drive</translation>
+<translation id="1923342640370224680">الساعة الأخيرة</translation>
 <translation id="1941314575388338491">انقر مرّتين للنسخ.</translation>
 <translation id="1952172573699511566">ستعرض مواقع الويب النص بلغتك المفضّلة إن أمكن.</translation>
 <translation id="1952728750904661634">تسجيل الدخول باستخدام حساب مُدار</translation>
 <translation id="1974060860693918893">الإعدادات المتقدّمة</translation>
 <translation id="1989112275319619282">تصفّح</translation>
 <translation id="2015722694326466240">للاطلاع على كلمات المرور، يجب عليك أولاً تعيين رمز مرور على جهازك.</translation>
-<translation id="2068952045031577364">الأسبوع الماضي</translation>
 <translation id="2074131957428911366">يمكنك دائمًا اختيار ما تريد مزامنته في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="209018056901015185">طلب موقع سطح المكتب</translation>
@@ -112,7 +111,7 @@
 <translation id="2500374554657206846">خيارات حفظ كلمة المرور</translation>
 <translation id="2523363575747517183">يحاول موقع الويب هذا فتح تطبيق آخر بشكلٍ متكرر.</translation>
 <translation id="2529021024822217800">فتح الكل</translation>
-<translation id="2570206273416014374">ترسل بعض ملفات تعريف الارتباط وعمليات البحث من شريط العناوين ومربّع البحث إلى محرِّك البحث التلقائي.</translation>
+<translation id="2570206273416014374">إرسال بعض ملفات تعريف الارتباط وعمليات البحث من شريط العناوين ومربّع البحث إلى محرِّك البحث التلقائي</translation>
 <translation id="2572712655377361602">حظرت سياسة الجهاز الدخول إلى صورك</translation>
 <translation id="2584132361465095047">إضافة حساب...</translation>
 <translation id="2625189173221582860">تم نسخ كلمة المرور</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">كلمات المرور</translation>
 <translation id="2969979262385602596">تعذّر تسجيل الدخول. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="2989805286512600854">فتح في علامة تبويب جديدة</translation>
-<translation id="3024255823539804759">اليوم الماضي</translation>
 <translation id="3037605927509011580">عذرًا!</translation>
 <translation id="3112556859945124369">وضع علامة...</translation>
 <translation id="3157684681743766797">وضع علامة على الكل...</translation>
@@ -228,7 +226,7 @@
 <translation id="4272631900155121838">لمسح رمز الاستجابة السريعة ضوئيًا، يمكنك تفعيل الكاميرا من الإعدادات</translation>
 <translation id="4281844954008187215">بنود الخدمة</translation>
 <translation id="430793432425771671">مزامنة كل شيء</translation>
-<translation id="4338650699862464074">‏ترسل عناوين URL للصفحات التي تزورها إلى Google.</translation>
+<translation id="4338650699862464074">‏إرسال عناوين URL للصفحات التي تزورها إلى Google</translation>
 <translation id="4359125752503270327">ستفتح هذه الصفحة في تطبيق آخر.</translation>
 <translation id="4370827530403103842">المزامنة لا تعمل. انقر للإصلاح.</translation>
 <translation id="4375040482473363939">البحث عن رمز الاستجابة السريعة</translation>
@@ -262,7 +260,7 @@
 <translation id="4807020197310989387">مقالة "قائمة قراءة" واحدة غير مقروءة.</translation>
 <translation id="4818522717893377262">إضافة لغة...</translation>
 <translation id="481968316161811770">ملفات تعريف الارتباط، وبيانات موقع الويب</translation>
-<translation id="4833786495304741580">‏ترسل إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
+<translation id="4833786495304741580">‏إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
 <translation id="4840495572919996524">‏لن تتم مزامنة الإشارات المرجعية والسجلّ وكلمات المرور وغيرها مع حسابك على Google بعد الآن.</translation>
 <translation id="4854345657858711387">تعيين رمز المرور</translation>
 <translation id="4860895144060829044">اتصال</translation>
@@ -381,7 +379,6 @@
 <translation id="6464071786529933911">فتح في علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="6476800141292307438">ترجمة صفحة إلى <ph name="LANGUAGE" />. وتتوفّر الخيارات بالقرب من أسفل الشاشة.</translation>
 <translation id="6482629121755362506">تم حذف <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
-<translation id="6541915733953096570">الساعة الماضية</translation>
 <translation id="6610002944194042868">خيارات الترجمة</translation>
 <translation id="6642362222295953972">التبديل إلى علامة تبويب حالية</translation>
 <translation id="6643016212128521049">محو</translation>

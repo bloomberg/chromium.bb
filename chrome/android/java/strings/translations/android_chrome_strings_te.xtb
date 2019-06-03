@@ -14,6 +14,7 @@
 <translation id="1111673857033749125">మీ ఇతర పరికరాల్లో సేవ్ చేసిన బుక్‌మార్క్‌లు ఇక్కడ చూపబడతాయి.</translation>
 <translation id="1113597929977215864">సరళీకృత వీక్షణను చూపు</translation>
 <translation id="1121094540300013208">వినియోగ, క్రాష్ నివేదికలు</translation>
+<translation id="1124772482545689468">వినియోగదారు</translation>
 <translation id="1129510026454351943">వివరాలు: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 డౌన్‌లోడ్ పెండింగ్‌లో ఉంది.}other{# డౌన్‌లోడ్‌లు పెండింగ్‌లో ఉన్నాయి.}}</translation>
 <translation id="1145536944570833626">ఇప్పటికే ఉన్న డేటాను తొలగించండి.</translation>
@@ -78,6 +79,7 @@
 <translation id="1513352483775369820">బుక్‌మార్క్‌లు మరియు వెబ్ చరిత్ర</translation>
 <translation id="1513858653616922153">పాస్‌వర్డ్‌ను తొలగించు</translation>
 <translation id="1516229014686355813">'వెతకడానికి నొక్కండి' ఫీచర్, ఎంచుకున్న పదాన్ని మరియు ప్రస్తుత పేజీని సంబంధిత సందర్భం లాగా Google శోధనకు పంపుతుంది. మీరు <ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో దీనిని ఆఫ్ చేయవచ్చు.</translation>
+<translation id="1521774566618522728">ఈ రోజు యాక్టివ్‌గా ఉంది</translation>
 <translation id="1539064842193522527">లింక్ Chromeలో తెరవబడింది</translation>
 <translation id="1549000191223877751">వేరే విండోకు తరలించు</translation>
 <translation id="1553358976309200471">Chromeని నవీకరించు</translation>
@@ -888,7 +890,6 @@
 <translation id="7475688122056506577">SD కార్డ్ కనుగొనబడలేదు. మీ ఫైల్‌లలో కొన్ని ఉండకపోవచ్చు.</translation>
 <translation id="7479104141328977413">ట్యాబ్ నిర్వహణ</translation>
 <translation id="7481312909269577407">ఫార్వర్డ్</translation>
-<translation id="7482697587265222445">ట్యాబ్ మీ పరికరాలకు పంపబడింది</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (నవీకరించినది <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">ఆదా అయిన డేటా</translation>
 <translation id="7498271377022651285">దయచేసి వేచి ఉండండి...</translation>

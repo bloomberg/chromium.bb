@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">સ્વીકારેલ કાર્ડ</translation>
 <translation id="1032854598605920125">ઘડિયાળની દિશામાં ફેરવો</translation>
 <translation id="1035334672863811645">Chrome માં સાઇન ઇન કરો</translation>
+<translation id="1036348656032585052">બંધ કરો</translation>
 <translation id="1038842779957582377">અજ્ઞાત નામ</translation>
 <translation id="1039626062703039346">Chrome તમારા Google એકાઉન્ટને સુરક્ષિત કરવામાં અને તમારો પાસવર્ડ બદલવામાં તમારી સહાય કરી શકે છે. આ સાઇટ વિશે Googleને આ સૂચિત કરશે.</translation>
 <translation id="1050038467049342496">અન્ય ઍપ્લિકેશનો બંધ કરો</translation>
@@ -189,6 +190,7 @@
 <translation id="187918866476621466">સ્ટાર્ટઅપ પૃષ્ઠો ખોલો</translation>
 <translation id="1883255238294161206">સૂચિ સંકુચિત કરો</translation>
 <translation id="1898423065542865115">ફિલ્ટરિંગ</translation>
+<translation id="1914326953223720820">સેવાને અનઝિપ કરો</translation>
 <translation id="1916770123977586577">આ સાઇટ પર તમારી અપડેટ કરેલ સેટિંગ્સ લાગુ પાડવા માટે, આ પેજને ફરીથી લોડ કરો</translation>
 <translation id="1919345977826869612">જાહેરાતો</translation>
 <translation id="1919367280705858090">ભૂલના ચોક્કસ સંદેશ વડે સહાય મેળવો</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">અરર કંઇક ભુલ થઇ!</translation>
 <translation id="3041612393474885105">પ્રમાણપત્ર માહિતી</translation>
 <translation id="3060227939791841287">C9 (એન્વલપ)</translation>
+<translation id="3061707000357573562">પૅચ સેવા</translation>
 <translation id="3064966200440839136">બાહ્ય ઍપ્લિકેશન મારફતે ચુકવણી કરવા માટે છુપો મોડ છોડી રહ્યાં છીએ. તો ચાલુ રાખીએ?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{કોઈ નહીં}=1{1 પાસવર્ડ}one{# પાસવર્ડ}other{# પાસવર્ડ}}</translation>
 <translation id="3095940652251934233">સ્ટેટમેંટ</translation>
@@ -730,7 +733,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> કહે છે કે</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">પરિણામો નથી</translation>
-<translation id="4945672369594656571">તમારા ડિવાઇસના અને એકાઉન્ટના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા ડિવાઇસના અને એકાઉન્ટના ડેટાની પ્રક્રિયા એકમાત્ર તમારા ડિવાઇસના અને એકાઉન્ટ મેનેજરના નિર્દેશ અનુસાર અને સંપૂર્ણપણે તમારા ડિવાઇસ અને એકાઉન્ટ મેનેજર દ્વારા ઉલ્લેખિત હેતુઓ માટે કરે છે.</translation>
 <translation id="4950898438188848926">ટૅબ, સ્વિચ બટન, ખુલ્લા ટૅબ, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /> પર સ્વિચ કરવા માટે Enter દબાવો</translation>
 <translation id="495170559598752135">ક્રિયાઓ</translation>
 <translation id="4955242332710481440">A5-અતિરિક્ત</translation>
@@ -744,7 +746,6 @@
 <translation id="5017554619425969104">તમે કૉપિ કરેલી ટેક્સ્ટ</translation>
 <translation id="5018422839182700155">આ પૃષ્ઠ ખોલી શકતાં નથી</translation>
 <translation id="5019198164206649151">બેકઅપ સ્ટોર કરવું ખરાબ સ્થિતિમાં છે</translation>
-<translation id="5020154601324912079">તમારા ડિવાઇસના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા ડિવાઇસના ડેટાની પ્રક્રિયા એકમાત્ર તમારા ડિવાઇસ મેનેજરના નિર્દેશ અનુસાર અને સંપૂર્ણપણે તમારા ડિવાઇસ મેનેજર દ્વારા ઉલ્લેખિત હેતુઓ માટે કરે છે.</translation>
 <translation id="5023310440958281426">તમારા વ્યવસ્થાપકની નીતિઓ તપાસો</translation>
 <translation id="5029568752722684782">કૉપિ સાફ કરો</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" માટેનું રૂટ પ્રમાણપત્ર આવશ્યક છે પરંતુ તે ઇન્સ્ટૉલ કરેલું નથી. આ સમસ્યાના નિવારણ માટે તમારા IT વ્યવસ્થાપકે "<ph name="SOFTWARE_NAME" />" ની ગોઠવણી માટેની સૂચના જોવી જરૂરી છે. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -917,6 +918,7 @@
 <translation id="5921639886840618607">Google એકાઉન્ટમાં કાર્ડ સાચવીએ?</translation>
 <translation id="5922853866070715753">લગભગ થઈ ગયું</translation>
 <translation id="5932224571077948991">સાઇટ ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવે છે</translation>
+<translation id="5939847200023027600">PDF કંપોઝિટર સેવા</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> ખોલી રહ્યાં છે…</translation>
 <translation id="5947933617628957894">હા, ઉમેરો</translation>
 <translation id="5951495562196540101">ઉપભોક્તા એકાઉન્ટ સાથે નોંધણી કરાવી શકાતી નથી (પૅકેજમાં લાઇસન્સ ઉપલબ્ધ છે).</translation>
@@ -1177,7 +1179,6 @@
 <translation id="741007362987735528">પહોળાઈ-ફૉર્મેટ</translation>
 <translation id="7416351320495623771">પાસવર્ડ મેનેજ કરો…</translation>
 <translation id="7419106976560586862">પ્રોફાઇલ પાથ</translation>
-<translation id="7424427397225027541">તમારા એકાઉન્ટના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા એકાઉન્ટના ડેટાની પ્રક્રિયા એકમાત્ર તમારા એકાઉન્ટ મેનેજરના નિર્દેશ અનુસાર અને સંપૂર્ણપણે તમારા એકાઉન્ટ મેનેજર દ્વારા ઉલ્લેખિત હેતુઓ માટે કરે છે.</translation>
 <translation id="7437289804838430631">સંપર્ક માહિતી ઉમેરો</translation>
 <translation id="7440140511386898319">ઑફલાઇન હો તે સમયે જાણકારી મેળવો</translation>
 <translation id="7441627299479586546">ખોટો નીતિ વિષય</translation>
@@ -1317,6 +1318,7 @@
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">અમાન્ય કાર્ડ કાઢી નાખવામાં આવ્યાં છે</translation>
 <translation id="8103161714697287722">ચુકવણીની પદ્ધતિ</translation>
+<translation id="8105368624971345109">બંધ કરો</translation>
 <translation id="8118489163946903409">ચુકવણી પદ્ધતિ</translation>
 <translation id="8127301229239896662">તમારા કમ્પ્યુટરમાં અથવા નેટવર્ક પર "<ph name="SOFTWARE_NAME" />" યોગ્ય રીતે ઇન્સ્ટૉલ થયું નથી. તમારા IT વ્યવસ્થાપકને આ સમસ્યા હલ કરવાનું કહો.</translation>
 <translation id="8131740175452115882">પુષ્ટિ કરો</translation>

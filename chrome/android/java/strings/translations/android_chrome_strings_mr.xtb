@@ -14,11 +14,13 @@
 <translation id="1111673857033749125">आपल्या इतर डिव्हाइसेेसवर सेव्ह केलेले बुकमार्क येथे दिसतील.</translation>
 <translation id="1113597929977215864">सिंप्लिफाइड व्ह्यू दाखवा</translation>
 <translation id="1121094540300013208">वापर आणि क्रॅश अहवाल</translation>
+<translation id="1124772482545689468">वापरकर्ता</translation>
 <translation id="1129510026454351943">तपशील: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{एक डाउनलोड प्रलंबित आहे.}other{# डाउनलोड प्रलंबित आहेत.}}</translation>
 <translation id="1145536944570833626">विद्यमान डेटा हटवा.</translation>
 <translation id="1146678959555564648">VR एंटर करा</translation>
 <translation id="116280672541001035">वापरला</translation>
+<translation id="1171770572613082465">"टॉप साइट" बटणावर टॅप करून लोकप्रिय वेबसाइट पाहा</translation>
 <translation id="1172593791219290334">स्टार्टअप पेज</translation>
 <translation id="1173894706177603556">नाव बदला</translation>
 <translation id="1175310183703641346">तुमचे बुकमार्क, इतिहास, पासवर्ड आणि बरेच काही आता तुमच्या Google खात्यामध्ये सिंक केले जाणार नाही</translation>
@@ -78,6 +80,7 @@
 <translation id="1513352483775369820">बुकमार्क आणि वेब इतिहास</translation>
 <translation id="1513858653616922153">पासवर्ड हटवा</translation>
 <translation id="1516229014686355813">शोधण्यासाठी टॅप करा निवडलेला शब्द आणि सद्य पेज संदर्भ म्हणून Google शोध ला पाठवते. तुम्ही ते <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मध्ये सुरू किंवा बंद करू शकता.</translation>
+<translation id="1521774566618522728">आज ॲक्टिव्ह होते</translation>
 <translation id="1539064842193522527">लिंक Chromeमध्ये उघडली</translation>
 <translation id="1549000191223877751">अन्य विंडोवर हलवा</translation>
 <translation id="1553358976309200471">Chrome अपडेट करा</translation>
@@ -255,6 +258,7 @@
 <translation id="2836148919159985482">फुलस्क्रीन मधून बाहेर पडण्यासाठी परत बटणास स्पर्श करा.</translation>
 <translation id="2842985007712546952">मुख्य फोल्डर</translation>
 <translation id="2845873210977809562">खुल्या टॅब बंद केल्या</translation>
+<translation id="2858138569776157458">टॉप साइट</translation>
 <translation id="2870560284913253234">साइट</translation>
 <translation id="2874939134665556319">मागील ट्रॅक</translation>
 <translation id="2876369937070532032">तुमची सुरक्षा धोक्यात असते तेव्हा, तुम्ही भेट दिलेल्या काही पेजचे URL Google ला पाठवते</translation>
@@ -888,7 +892,6 @@
 <translation id="7475688122056506577">SD कार्ड आढळले नाही. तुमच्या काही फायली गहाळ झालेल्या असू शकतात.</translation>
 <translation id="7479104141328977413">टॅब व्यवस्थापन</translation>
 <translation id="7481312909269577407">पुढील</translation>
-<translation id="7482697587265222445">तुमच्या डिव्हाइसवर टॅब पाठवला गेला</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> वाजता अपडेट केले)</translation>
 <translation id="7494974237137038751">डेटा वाचवला</translation>
 <translation id="7498271377022651285">कृपया प्रतीक्षा करा...</translation>
@@ -972,6 +975,7 @@
 <translation id="8058746566562539958">नवीन Chrome टॅबमध्‍ये उघडा</translation>
 <translation id="8063895661287329888">बुकमार्क जोडण्यात अयशस्वी झाले.</translation>
 <translation id="806745655614357130">माझा डेटा स्वतंत्र ठेवा</translation>
+<translation id="8067883171444229417">व्हिडिओ प्ले करा</translation>
 <translation id="8068648041423924542">सर्टिफिकेट निवडण्यास अक्षम.</translation>
 <translation id="8073388330009372546">नवीन टॅबमध्ये इमेज उघडा</translation>
 <translation id="8076492880354921740">टॅब</translation>
@@ -1008,6 +1012,7 @@
 <translation id="8327155640814342956">उत्तम ब्राउझिंग अनुभव मिळवण्याकरीता, Chrome अपडेट करण्यासाठी उघडा</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />मधील पेज भाषांतरीत केले जाणार नाही</translation>
 <translation id="8349013245300336738">वापरलेल्या डेटानुसार क्रमाने लावा</translation>
+<translation id="8364299278605033898">लोकप्रिय वेबसाइट पाहा</translation>
 <translation id="8372893542064058268">विशिष्ट साइटसाठी पार्श्वभूमी संकालनासाठी अनुमती द्या.</translation>
 <translation id="8374821112118309944">तुम्हाला नवीनतम आवृत्तीवर TalkBack बदलण्याची आवश्यकता आहे.</translation>
 <translation id="8378714024927312812">तुमच्या संस्थेकडून व्यवस्थापित केलेले</translation>

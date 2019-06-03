@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">瑞典语</translation>
 <translation id="4693155481716051732">寿司</translation>
 <translation id="4694604912444486114">猴子</translation>
+<translation id="4697043402264950621">文件列表按<ph name="COLUMN_NAME" />升序排序。</translation>
 <translation id="4711094779914110278">土耳其语</translation>
 <translation id="4713544552769165154">此文件适用于采用Macintosh软件的计算机，不适用于运行Chrome操作系统的设备。请在<ph name="BEGIN_LINK" />Chrome网上应用店<ph name="END_LINK" />中搜索合适的替代应用。<ph name="BEGIN_LINK_HELP" />了解详情<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">已备份 <ph name="FILE_COUNT" /> 张照片</translation>
@@ -525,6 +526,7 @@
 <translation id="7339898014177206373">打开新的窗口</translation>
 <translation id="7348749398828259943">美式 Workman 国际键盘</translation>
 <translation id="7359359531237882347">正在复制 <ph name="NUMBER_OF_ITEMS" /> 项内容…</translation>
+<translation id="7375951387215729722">文件列表按<ph name="COLUMN_NAME" />降序排列。</translation>
 <translation id="7389722738210761877">泰语键盘(TIS 820-2531)</translation>
 <translation id="7396038720194014279">印地语键盘（注音）</translation>
 <translation id="7417453074306512035">埃塞俄比亚语键盘</translation>

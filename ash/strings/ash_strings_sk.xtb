@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Zbaliť ponuku</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="1419738280318246476">Ak chcete vykonať akciu s upozornením, odomknite zariadenie</translation>
+<translation id="1426410128494586442">Áno</translation>
 <translation id="1455242230282523554">Zobraziť nastavenia jazyka</translation>
 <translation id="1467432559032391204">Doľava</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> sa bude môcť stále prihlásiť neskôr.</translation>
 <translation id="3321628682574733415">Nesprávny kód rodiča</translation>
 <translation id="332587331255250389">Vymeňte batériu</translation>
-<translation id="3335825575923019462">Naozaj chcete deaktivovať automatické kliknutia?</translation>
 <translation id="3351879221545518001">Momentálne prenášate obrazovku.</translation>
 <translation id="3364721542077212959">Nástroje pre dotykové pero</translation>
 <translation id="3368922792935385530">Pripojené</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">Pripája sa...</translation>
 <translation id="4379531060876907730">Toto sú vaše nástroje pre dotykové pero</translation>
 <translation id="4389184120735010762">Stlačili ste klávesovú skratku ukotvenej lupy. Chcete ju zapnúť?</translation>
-<translation id="4394049700291259645">Zakázať</translation>
 <translation id="4421231901400348175">Ovládanie obrazovky sa prostredníctvom Vzdialenej pomoci zdieľa s používateľom <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitosť</translation>
 <translation id="4450893287417543264">Nabudúce nezobrazovať</translation>
@@ -485,7 +484,6 @@
 <translation id="8649101189709089199">Počúvanie vybraného textu</translation>
 <translation id="8652175077544655965">Zatvoriť nastavenia</translation>
 <translation id="8653151467777939995">Zobraziť nastavenia upozornení. Upozornenia sú zapnuté</translation>
-<translation id="8664483332071009680">Chcete deaktivovať automatické kliknutia?</translation>
 <translation id="8664753092453405566">Zobraziť zoznam sietí. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270 °</translation>
 <translation id="8676770494376880701">Pripojila sa nabíjačka s nízkym výkonom</translation>

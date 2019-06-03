@@ -126,8 +126,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="3695446226812920698">Tudnivalók</translation>
 <translation id="3718805989288361841">Hibát észleltünk a Chrome távoliasztal-szolgáltatás házirend-beállításaival kapcsolatban. Segítségért forduljon a rendszergazdához.</translation>
 <translation id="3776024066357219166">A Chrome távoliasztal-szolgáltatás munkamenet véget ért.</translation>
-<translation id="3846148461359626420">• Jobb pásztázási és kicsinyítési/nagyítási élmény iPhone X eszközön.
-• Stabilitási fejlesztések és programhiba-javítások.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Kérjük, erősítse meg a fiókot és a PIN kódot alább a Chrome távoliasztal-szolgáltatás hozzáférésének engedélyezéséhez.</translation>
 <translation id="3897092660631435901">Menü</translation>
@@ -339,8 +337,6 @@ Ha aktiválni szeretné ezt a funkciót, kattintson a(z) „<ph name="BUTTON_NAM
 <translation id="8525306231823319788">Teljes képernyő</translation>
 <translation id="8548209692293300397">Korábban <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) felhasználóként jelentkezett be. A fiók számítógépeinek eléréséhez <ph name="LINK_BEGIN" />jelentkezzen be a Google Chrome-ba<ph name="LINK_END" /> az adott fiókkal, majd telepítse újra a Chrome távoliasztal-szolgáltatást.</translation>
 <translation id="8642984861538780905">Közepes</translation>
-<translation id="8705151241155781642">• Az Android 9.0 Pie támogatásának hozzáadása.
-• A távoli asztal felbontása átméretezésének engedélyezése annak érdekében, hogy egyezzen az Android-eszköz képernyőméretével.</translation>
 <translation id="8712909229180978490">Nem látom a mentett fájlokat online, a Google Drive-on.</translation>
 <translation id="8743328882720071828">Szeretné engedélyezni <ph name="CLIENT_USERNAME" /> számára, hogy lássa és irányítsa a számítógépet?</translation>
 <translation id="8747048596626351634">A munkamenet összeomlott vagy nem tudott elindulni. Ha található ~/.chrome-remote-desktop-session munkamenet a távoli számítógépen, győződjön meg arról, hogy hosszú ideig, előtérben futó folyamatot indít el, például asztali környezetet vagy ablakkezelőt.</translation>

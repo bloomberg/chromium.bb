@@ -14,11 +14,13 @@
 <translation id="1111673857033749125">儲存在您其他裝置上的書籤會顯示在這裡。</translation>
 <translation id="1113597929977215864">顯示「簡易檢視」模式</translation>
 <translation id="1121094540300013208">使用資料和當機報告</translation>
+<translation id="1124772482545689468">使用者</translation>
 <translation id="1129510026454351943">詳細資料：<ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 項下載作業仍待處理。}other{# 項下載作業仍待處理。}}</translation>
 <translation id="1145536944570833626">刪除現有資料。</translation>
 <translation id="1146678959555564648">進入 VR</translation>
 <translation id="116280672541001035">使用量</translation>
+<translation id="1171770572613082465">輕觸 [熱門網站] 按鈕，即可查看熱門網站</translation>
 <translation id="1172593791219290334">起始網頁</translation>
 <translation id="1173894706177603556">重新命名</translation>
 <translation id="1175310183703641346">系統會將你的書籤、歷史記錄、密碼和其他設定與你的 Google 帳戶保持同步。</translation>
@@ -78,6 +80,7 @@
 <translation id="1513352483775369820">書籤與網頁記錄</translation>
 <translation id="1513858653616922153">刪除密碼</translation>
 <translation id="1516229014686355813">「輕觸搜尋」會將選取的字詞和目前所在的網頁 (以便比對內容) 傳送給 Google 搜尋。你可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中關閉這項功能。</translation>
+<translation id="1521774566618522728">上次使用時間：今天</translation>
 <translation id="1539064842193522527">連結已在 Chrome 中開啟</translation>
 <translation id="1549000191223877751">移至其他視窗</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
@@ -255,6 +258,7 @@
 <translation id="2836148919159985482">輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2845873210977809562">已關閉「開啟的分頁」工作表</translation>
+<translation id="2858138569776157458">熱門網站</translation>
 <translation id="2870560284913253234">網站</translation>
 <translation id="2874939134665556319">上一首曲目</translation>
 <translation id="2876369937070532032">當網站具有安全性風險時，Chrome 會將你造訪的部分網頁網址傳送給 Google</translation>
@@ -888,7 +892,6 @@
 <translation id="7475688122056506577">找不到 SD 卡。部分檔案可能會遺失。</translation>
 <translation id="7479104141328977413">分頁管理</translation>
 <translation id="7481312909269577407">往前</translation>
-<translation id="7482697587265222445">分頁已傳送到你的裝置</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (上次更新時間：<ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">(已節省的數據量)</translation>
 <translation id="7498271377022651285">請稍候…</translation>
@@ -972,6 +975,7 @@
 <translation id="8058746566562539958">在新的 Chrome 分頁中開啟</translation>
 <translation id="8063895661287329888">無法加入書籤。</translation>
 <translation id="806745655614357130">分開保留我的資料</translation>
+<translation id="8067883171444229417">播放影片</translation>
 <translation id="8068648041423924542">無法選取憑證。</translation>
 <translation id="8073388330009372546">在新分頁中開啟圖片</translation>
 <translation id="8076492880354921740">分頁</translation>
@@ -1008,6 +1012,7 @@
 <translation id="8327155640814342956">為獲得最佳瀏覽體驗，請開啟 Chrome 進行更新</translation>
 <translation id="8339163506404995330">系統將不會翻譯<ph name="LANGUAGE" />網頁</translation>
 <translation id="8349013245300336738">依使用資料量排序</translation>
+<translation id="8364299278605033898">查看熱門網站</translation>
 <translation id="8372893542064058268">允許特定網站執行背景同步處理作業。</translation>
 <translation id="8374821112118309944">請更新至新版 TalkBack。</translation>
 <translation id="8378714024927312812">由貴機構管理</translation>

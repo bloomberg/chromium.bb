@@ -14,11 +14,13 @@
 <translation id="1111673857033749125">您在其他设备上保存的书签将列在此处。</translation>
 <translation id="1113597929977215864">显示简化版视图</translation>
 <translation id="1121094540300013208">使用情况信息和崩溃报告</translation>
+<translation id="1124772482545689468">用户</translation>
 <translation id="1129510026454351943">错误详情：<ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{有 1 项下载尚待处理。}other{有 # 项下载尚待处理。}}</translation>
 <translation id="1145536944570833626">删除现有数据。</translation>
 <translation id="1146678959555564648">进入 VR</translation>
 <translation id="116280672541001035">已耗用</translation>
+<translation id="1171770572613082465">点按“热门网站”按钮可查看热门网站</translation>
 <translation id="1172593791219290334">启动页</translation>
 <translation id="1173894706177603556">重命名</translation>
 <translation id="1175310183703641346">您的书签、历史记录、密码和其他设置将不再同步到您的 Google 帐号中</translation>
@@ -78,6 +80,7 @@
 <translation id="1513352483775369820">书签和网络历史记录</translation>
 <translation id="1513858653616922153">删除密码</translation>
 <translation id="1516229014686355813">“点按搜索”功能会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中关闭该功能。</translation>
+<translation id="1521774566618522728">今天曾有活动</translation>
 <translation id="1539064842193522527">已在 Chrome 中打开此链接</translation>
 <translation id="1549000191223877751">移至其他窗口</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
@@ -255,6 +258,7 @@
 <translation id="2836148919159985482">触摸“返回”按钮即可退出全屏模式。</translation>
 <translation id="2842985007712546952">父文件夹</translation>
 <translation id="2845873210977809562">已关闭“已打开的标签页”工作表</translation>
+<translation id="2858138569776157458">热门网站</translation>
 <translation id="2870560284913253234">网站</translation>
 <translation id="2874939134665556319">上一曲</translation>
 <translation id="2876369937070532032">当您面临安全风险时，将您所访问的部分网页的网址发送给 Google</translation>
@@ -888,7 +892,6 @@
 <translation id="7475688122056506577">找不到 SD 卡。您的某些文件可能会丢失。</translation>
 <translation id="7479104141328977413">标签页管理</translation>
 <translation id="7481312909269577407">前进</translation>
-<translation id="7482697587265222445">已将标签页发送到您的设备</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
 <translation id="7494974237137038751">已节省的流量</translation>
 <translation id="7498271377022651285">请稍候…</translation>
@@ -972,6 +975,7 @@
 <translation id="8058746566562539958">在新的 Chrome 标签页中打开</translation>
 <translation id="8063895661287329888">无法添加书签。</translation>
 <translation id="806745655614357130">单独保存我的数据</translation>
+<translation id="8067883171444229417">播放视频</translation>
 <translation id="8068648041423924542">无法选择证书。</translation>
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="8076492880354921740">标签页</translation>
@@ -1008,6 +1012,7 @@
 <translation id="8327155640814342956">要获得最好的浏览体验，请打开 Chrome 以进行更新</translation>
 <translation id="8339163506404995330">系统不会自动翻译源语言为<ph name="LANGUAGE" />的网页</translation>
 <translation id="8349013245300336738">按已使用的数据流量排序</translation>
+<translation id="8364299278605033898">查看热门网站</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>
 <translation id="8378714024927312812">由贵单位管理</translation>

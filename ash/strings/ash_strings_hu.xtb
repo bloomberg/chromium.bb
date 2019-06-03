@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Menü összecsukása</translation>
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1419738280318246476">Az eszköz zárolásának feloldása az értesítési művelet végrehajtásához</translation>
+<translation id="1426410128494586442">Igen</translation>
 <translation id="1455242230282523554">Nyelvi beállítások megjelenítése</translation>
 <translation id="1467432559032391204">Balra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> később be tud jelentkezni.</translation>
 <translation id="3321628682574733415">Érvénytelen szülői kód</translation>
 <translation id="332587331255250389">Cserélje ki az akkumulátort</translation>
-<translation id="3335825575923019462">Biztosan kikapcsolja az automatikus kattintásokat?</translation>
 <translation id="3351879221545518001">Folyamatban van a képernyő átküldése.</translation>
 <translation id="3364721542077212959">Érintőceruza eszközök</translation>
 <translation id="3368922792935385530">Kapcsolódva</translation>
@@ -228,7 +228,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4378551569595875038">Kapcsolódás folyamatban…</translation>
 <translation id="4379531060876907730">Ezek az érintőceruza-eszközök</translation>
 <translation id="4389184120735010762">Lenyomta a dokkolt nagyító billentyűparancsát. Bekapcsolja a funkciót?</translation>
-<translation id="4394049700291259645">Kikapcsolás</translation>
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME" /> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
 <translation id="4430019312045809116">Hangerő</translation>
 <translation id="4450893287417543264">Ne jelenjen meg többé</translation>
@@ -486,7 +485,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8649101189709089199">Felolvasás</translation>
 <translation id="8652175077544655965">Beállítások bezárása</translation>
 <translation id="8653151467777939995">Az értesítési beállítások megjelenítése. Az értesítések be vannak kapcsolva</translation>
-<translation id="8664483332071009680">Letiltja az automatikus kattintásokat?</translation>
 <translation id="8664753092453405566">A hálózatok listájának megjelenítése. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Kis teljesítményű töltő csatlakoztatva</translation>

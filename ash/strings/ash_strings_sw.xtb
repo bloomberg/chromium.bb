@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Kunja menyu</translation>
 <translation id="1383876407941801731">Tafuta</translation>
 <translation id="1419738280318246476">Fungua kifaa ili utekeleza kitendo cha arifa</translation>
+<translation id="1426410128494586442">Ndio</translation>
 <translation id="1455242230282523554">Onyesha mipangilio ya lugha</translation>
 <translation id="1467432559032391204">Kushoto</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> bado anaweza kuingia katika akaunti baadaye.</translation>
 <translation id="3321628682574733415">Msimbo wa mzazi si sahihi</translation>
 <translation id="332587331255250389">Tafadhali badilisha betri</translation>
-<translation id="3335825575923019462">Je, una uhakika ungependa kuzima mibofyo ya kiotomatiki?</translation>
 <translation id="3351879221545518001">Kwa sasa unatuma skrini.</translation>
 <translation id="3364721542077212959">Zana za stylus</translation>
 <translation id="3368922792935385530">Umeunganishwa</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">Inaunganisha...</translation>
 <translation id="4379531060876907730">Hizi ni zana zako za stylus</translation>
 <translation id="4389184120735010762">Umebofya mikato ya kibodi ya kikuzaji kilichoambatishwa. Ungependa kukiwasha?</translation>
-<translation id="4394049700291259645">Zima</translation>
 <translation id="4421231901400348175">Kushiriki udhibiti wa skrini yako na <ph name="HELPER_NAME" /> kupitia Usaidizi wa Mbali.</translation>
 <translation id="4430019312045809116">Kiwango</translation>
 <translation id="4450893287417543264">Usionyeshe tena</translation>
@@ -486,7 +485,6 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8649101189709089199">Chagua ili Izungumze</translation>
 <translation id="8652175077544655965">Funga mipangilio</translation>
 <translation id="8653151467777939995">Onyesha mipangilio ya arifa. Umewasha arifa</translation>
-<translation id="8664483332071009680">Je, ungependa kuzima mibofyo ya kiotomatiki?</translation>
 <translation id="8664753092453405566">Onyesha orodha ya mitandao. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chaja ya nguvu ya chini imeunganishwa</translation>

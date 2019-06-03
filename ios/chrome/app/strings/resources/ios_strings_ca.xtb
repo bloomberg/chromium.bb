@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Suggereix una contrasenya...</translation>
 <translation id="1870148520156231997">Mostra la contrasenya</translation>
 <translation id="1876721852596493031">Envia les dades d'ús</translation>
-<translation id="1886928167269928266">L'inici</translation>
 <translation id="1911619930368729126">Penja a Google Drive</translation>
+<translation id="1923342640370224680">La darrera hora</translation>
 <translation id="1941314575388338491">Feu doble toc per copiar-ho.</translation>
 <translation id="1952172573699511566">Quan sigui possible, els llocs web mostraran el text en el teu idioma preferit.</translation>
 <translation id="1952728750904661634">Inicieu la sessió amb un compte gestionat</translation>
 <translation id="1974060860693918893">Configuració avançada</translation>
 <translation id="1989112275319619282">Examina</translation>
 <translation id="2015722694326466240">Per veure les contrasenyes, primer has d'establir una contrasenya al dispositiu.</translation>
-<translation id="2068952045031577364">La darrera setmana</translation>
 <translation id="2074131957428911366">Sempre pots anar a la <ph name="BEGIN_LINK" />configuració<ph name="END_LINK" /> per decidir què vols sincronitzar.</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="209018056901015185">Mostra com a ordinador</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Contrasenyes</translation>
 <translation id="2969979262385602596">No s'ha pogut iniciar la sessió. Torneu-ho a provar més tard.</translation>
 <translation id="2989805286512600854">Obre en una pestanya nova</translation>
-<translation id="3024255823539804759">Ahir</translation>
 <translation id="3037605927509011580">Vaja!</translation>
 <translation id="3112556859945124369">Marca com a…</translation>
 <translation id="3157684681743766797">Marca-ho tot com a…</translation>
@@ -381,7 +379,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6464071786529933911">Obre en una pestanya d'incògnit</translation>
 <translation id="6476800141292307438">La pàgina s'està traduint a <ph name="LANGUAGE" />. Tens opcions disponibles a la part inferior de la pantalla.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elements suprimits</translation>
-<translation id="6541915733953096570">L'última hora</translation>
 <translation id="6610002944194042868">Opcions del Traductor</translation>
 <translation id="6642362222295953972">Canvia a la pestanya existent</translation>
 <translation id="6643016212128521049">Esborra</translation>
@@ -502,6 +499,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8532105204136943229">Any de caducitat</translation>
 <translation id="8534481786647257214">S'ha completat la publicació a Google+.</translation>
 <translation id="8548878600947630424">Cerca a la pàgina...</translation>
+<translation id="8583866649835978847">Envia <ph name="TITLE" /> a un dels teus dispositius.</translation>
 <translation id="8605219856220328675">Tanca la pestanya.</translation>
 <translation id="8620640915598389714">Edita</translation>
 <translation id="8636825310635137004">Activa la sincronització per accedir a les pestanyes dels altres dispositius que tinguis.</translation>

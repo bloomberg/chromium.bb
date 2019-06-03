@@ -71,15 +71,14 @@
 <translation id="1828824471510190776">Cadangkan Kata Laluan...</translation>
 <translation id="1870148520156231997">Dedahkan Kata Laluan</translation>
 <translation id="1876721852596493031">Hantar Data Penggunaan</translation>
-<translation id="1886928167269928266">Permulaan Masa</translation>
 <translation id="1911619930368729126">Muat naik ke Google Drive</translation>
+<translation id="1923342640370224680">Jam Terakhir</translation>
 <translation id="1941314575388338491">Ketik dua kali untuk menyalin.</translation>
 <translation id="1952172573699511566">Tapak web akan menunjukkan teks dalam bahasa pilihan anda, jika boleh.</translation>
 <translation id="1952728750904661634">Log masuk dengan akaun terurus</translation>
 <translation id="1974060860693918893">Lanjutan</translation>
 <translation id="1989112275319619282">Semak Imbas</translation>
 <translation id="2015722694326466240">Untuk melihat kata laluan, mula-mula anda mesti menetapkan kod laluan pada peranti anda.</translation>
-<translation id="2068952045031577364">Minggu Yang Lalu</translation>
 <translation id="2074131957428911366">Anda boleh memilih item yang hendak disegerakkan dalam <ph name="BEGIN_LINK" />tetapan<ph name="END_LINK" /> pada bila-bila masa.</translation>
 <translation id="2079545284768500474">Buat asal</translation>
 <translation id="209018056901015185">Minta Tapak Desktop</translation>
@@ -149,7 +148,6 @@
 <translation id="2958718410589002129">Kata laluan</translation>
 <translation id="2969979262385602596">Gagal melog masuk. Sila cuba sebentar lagi.</translation>
 <translation id="2989805286512600854">Buka dalam Tab Baharu</translation>
-<translation id="3024255823539804759">Sehari Yang Lalu</translation>
 <translation id="3037605927509011580">Oh, Tidak!</translation>
 <translation id="3112556859945124369">Tandakan...</translation>
 <translation id="3157684681743766797">Tandakan Semua...</translation>
@@ -381,7 +379,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6464071786529933911">Buka dalam Tab Inkognito Baharu</translation>
 <translation id="6476800141292307438">Menterjemah halaman ini kepada <ph name="LANGUAGE" />. Pilihan tersedia berhampiran bahagian bawah skrin.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dipadamkan</translation>
-<translation id="6541915733953096570">Sejam Yang Lalu</translation>
 <translation id="6610002944194042868">Pilihan Terjemahan</translation>
 <translation id="6642362222295953972">Beralih ke tab yang sedia ada</translation>
 <translation id="6643016212128521049">Kosongkan</translation>
@@ -502,6 +499,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8532105204136943229">Tahun Tamat Tempoh</translation>
 <translation id="8534481786647257214">Catatan Google+ selesai.</translation>
 <translation id="8548878600947630424">Cari dalam halaman...</translation>
+<translation id="8583866649835978847">Hantar <ph name="TITLE" /> ke salah satu peranti anda.</translation>
 <translation id="8605219856220328675">Tutup tab.</translation>
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">Hidupkan penyegerakan untuk mendapatkan tab daripada peranti anda yang lain.</translation>

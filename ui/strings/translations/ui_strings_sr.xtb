@@ -15,7 +15,6 @@
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1398853756734560583">Увећај</translation>
 <translation id="1409544243779336081">Препорука за апликацију</translation>
-<translation id="1413622004203049571">Онемогући обавештења од <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут и }one{# минут и }few{# минута и }other{# минута и }}</translation>
 <translation id="1643823602425662293">Обавештење</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -166,7 +165,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Још 1 мин}one{Још # мин}few{Још # мин}other{Још # мин}}</translation>
 <translation id="7319740667687257810">Покретач, делимичан приказ</translation>
-<translation id="732374792807444530">Шаље се на уређај <ph name="DEVICE_NAME" /></translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Пре 1 мин}one{Пре # мин}few{Пре # мин}other{Пре # мин}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Још 1 минут}one{Још # минут}few{Још # минута}other{Још # минута}}</translation>

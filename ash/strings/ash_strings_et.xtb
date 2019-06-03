@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Ahenda menüü</translation>
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="1419738280318246476">Märguandetoimingu tegemiseks avage seade</translation>
+<translation id="1426410128494586442">Jah</translation>
 <translation id="1455242230282523554">Kuva keeleseaded</translation>
 <translation id="1467432559032391204">Vasakule</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> saab siiski hiljem sisse logida.</translation>
 <translation id="3321628682574733415">Vanema kood on vale</translation>
 <translation id="332587331255250389">Vahetage akut</translation>
-<translation id="3335825575923019462">Kas soovite kindlasti automaatsed klikid keelata?</translation>
 <translation id="3351879221545518001">Kannate praegu oma ekraani üle.</translation>
 <translation id="3364721542077212959">Elektronpliiatsi tööriistad</translation>
 <translation id="3368922792935385530">Ühendatud</translation>
@@ -228,7 +228,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4378551569595875038">Ühendamine ...</translation>
 <translation id="4379531060876907730">Need on teie elektronpliiatsi tööriistad</translation>
 <translation id="4389184120735010762">Vajutasite dokitud luubi otseteed. Kas soovite luubi sisse lülitada?</translation>
-<translation id="4394049700291259645">Keela</translation>
 <translation id="4421231901400348175">Ekraani juhtimise jagamine isikuga <ph name="HELPER_NAME" /> kaugabi kaudu.</translation>
 <translation id="4430019312045809116">Helitugevus</translation>
 <translation id="4450893287417543264">Ära kuva uuesti</translation>
@@ -486,7 +485,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8649101189709089199">Vali ja kuula</translation>
 <translation id="8652175077544655965">Sulgege seaded</translation>
 <translation id="8653151467777939995">Kuvab märguandeseaded. Märguanded on sisse lülitatud</translation>
-<translation id="8664483332071009680">Kas keelata automaatsed klikid?</translation>
 <translation id="8664753092453405566">Kuvab võrkude loendi. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Väikese energiakuluga laadija on ühendatud</translation>

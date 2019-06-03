@@ -3,7 +3,7 @@
 <translationbundle lang="ar">
 <translation id="1276998909102132017">صور المعرض</translation>
 <translation id="1430915738399379752">طباعة</translation>
-<translation id="1462966117743110941">توفر الكاميرا الآن أوضاعًا جديدة وستتوفر صورك وفيديوهاتك ضمن مجلدات "التنزيلات".</translation>
+<translation id="1462966117743110941">توفر الكاميرا الآن أوضاعًا جديدة وستظهر صورك وفيديوهاتك ضمن مجلدات "عمليات التنزيل".</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1627744224761163218">4 × 4</translation>
 <translation id="1664224225747386870">لم يتمّ تسجيل أيّ بيانات.</translation>
@@ -37,7 +37,9 @@
 <translation id="5152121255775685072">الانتقال إلى المعرض</translation>
 <translation id="5671277269877808209">وضع المربّع</translation>
 <translation id="5869546221129391014">شبكة</translation>
+<translation id="6040143037577758943">إغلاق</translation>
 <translation id="6073451960410192870">إيقاف التسجيل</translation>
+<translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6233780560267770709">3 × 3</translation>
 <translation id="6243827288366940320">النسبة الذهبية</translation>
 <translation id="6681668084120808868">التقاط صورة</translation>
@@ -54,7 +56,6 @@
 <translation id="8145038249676204903">التبديل لالتقاط صورة</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
-<translation id="8712637175834984815">تم</translation>
 <translation id="8815966864175525708">التبديل لالتقاط صورة أشخاص</translation>
 <translation id="8870695351537079478">يتعذّر بدء التسجيل</translation>
 <translation id="9045155556724273246">10 ثوانٍ</translation>

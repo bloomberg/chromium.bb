@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Kabul edilen kartlar</translation>
 <translation id="1032854598605920125">Saat yönünde döndür</translation>
 <translation id="1035334672863811645">Chrome'da oturum açın</translation>
+<translation id="1036348656032585052">Kapat</translation>
 <translation id="1038842779957582377">bilinmeyen ad</translation>
 <translation id="1039626062703039346">Chrome, Google Hesabınızı korumanıza ve şifrenizi değiştirmenize yardımcı olabilir. Bu işlem, Google'ın bu siteyle ilgili bilgilendirilmesini sağlar.</translation>
 <translation id="1050038467049342496">Diğer uygulamaları kapatın</translation>
@@ -189,6 +190,7 @@
 <translation id="187918866476621466">Başlangıç sayfalarını aç</translation>
 <translation id="1883255238294161206">Listeyi daralt</translation>
 <translation id="1898423065542865115">Filtreleme</translation>
+<translation id="1914326953223720820">Sıkıştırma Açma Hizmeti</translation>
 <translation id="1916770123977586577">Güncellenen ayarlarınızı bu siteye uygulamak için sayfayı yeniden yükleyin</translation>
 <translation id="1919345977826869612">Reklamlar</translation>
 <translation id="1919367280705858090">Belirli bir hata mesajıyla ilgili yardım alma</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">Hay aksi!</translation>
 <translation id="3041612393474885105">Sertifika Bilgileri</translation>
 <translation id="3060227939791841287">C9 (Zarf)</translation>
+<translation id="3061707000357573562">Yama Hizmeti</translation>
 <translation id="3064966200440839136">Harici bir uygulama üzerinden ödeme gerçekleştirmek için gizli moddan çıkılacak. Devam edilsin mi?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Yok}=1{1 şifre}other{# şifre}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -731,7 +734,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> web sitesinin mesajı</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Sonuç yok</translation>
-<translation id="4945672369594656571">Cihaz ve hesap verilerinizin nasıl kullanılacağını denetler. Google, cihaz ve hesap verilerinizi özel olarak cihazınızın ve hesabınızın yöneticisinin talimatlarına göre ve sadece cihaz ve hesap yöneticinizin belirttiği amaçlarla işler.</translation>
 <translation id="4950898438188848926">Sekme değiştirme düğmesi, açık sekmeye geçmek için enter tuşuna basın, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">İşlemler</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -745,7 +747,6 @@
 <translation id="5017554619425969104">Kopyalanan metin</translation>
 <translation id="5018422839182700155">Bu sayfa açılamıyor</translation>
 <translation id="5019198164206649151">Yedekleme deposu kötü durumda</translation>
-<translation id="5020154601324912079">Cihaz verilerinizin nasıl kullanılacağını denetler. Google, cihaz verilerinizi özel olarak cihaz yöneticinizin talimatları doğrultusunda ve sadece cihaz yöneticinizin belirttiği amaçlarla işler.</translation>
 <translation id="5023310440958281426">Yöneticinizin politikalarını inceleyin.</translation>
 <translation id="5029568752722684782">Kopyayı temizle</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" için bir kök sertifika gerekli, ancak yüklenmemiş. BT yöneticiniz bu sorunu çözmek için "<ph name="SOFTWARE_NAME" />" ile ilgili yapılandırma talimatlarına bakmalıdır. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -918,6 +919,7 @@
 <translation id="5921639886840618607">Kart Google Hesabı'na kaydedilsin mi?</translation>
 <translation id="5922853866070715753">Tamamlanmak üzere</translation>
 <translation id="5932224571077948991">Site, araya giren veya yanıltıcı reklamlar gösteriyor</translation>
+<translation id="5939847200023027600">PDF Birleştirme Hizmeti</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> açılıyor…</translation>
 <translation id="5947933617628957894">Evet, ekle</translation>
 <translation id="5951495562196540101">Tüketici hesabına kaydedilemiyor (paket lisans mevcut).</translation>
@@ -1152,7 +1154,7 @@ Ek ayrıntılar:
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Güvenli Tarama<ph name="END_LINK" /> uyarıları</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Bağlantı Yardımı</translation>
-<translation id="733354035281974745">Cihaz yerel hesabınızı geçersiz kıl</translation>
+<translation id="733354035281974745">Cihaz yerel hesabını geçersiz kıl</translation>
 <translation id="7334320624316649418">Sıralama değişikliğini &amp;yeniden yap</translation>
 <translation id="733923710415886693">Sunucunun sertifikası, Sertifika Şeffaflığı aracılığıyla açıklanmadı.</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -1178,7 +1180,6 @@ Ek ayrıntılar:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Şifreleri Yönet…</translation>
 <translation id="7419106976560586862">Profil Yolu</translation>
-<translation id="7424427397225027541">Hesap verilerinizin nasıl kullanılacağını denetler. Google, hesap verilerinizi özel olarak hesap yöneticinizin talimatları doğrultusunda ve sadece hesap yöneticinizin belirttiği amaçlarla işler.</translation>
 <translation id="7437289804838430631">İletişim Bilgisi Ekle</translation>
 <translation id="7440140511386898319">Çevrimdışıyken keşfetme</translation>
 <translation id="7441627299479586546">Politika konusu yanlış</translation>
@@ -1318,6 +1319,7 @@ Ek ayrıntılar:
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Geçersiz kartlar kaldırıldı</translation>
 <translation id="8103161714697287722">Ödeme Yöntemi</translation>
+<translation id="8105368624971345109">Kapat</translation>
 <translation id="8118489163946903409">Ödeme yöntemi</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" yazılımı bilgisayarınıza veya ağa düzgün şekilde yüklenmemiş. BT yöneticinizden sorunu çözmesini isteyin.</translation>
 <translation id="8131740175452115882">Onayla</translation>

@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Menu samenvouwen</translation>
 <translation id="1383876407941801731">Zoeken</translation>
 <translation id="1419738280318246476">Ontgrendel het apparaat om de meldingsactie uit te voeren</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="1455242230282523554">Taalinstellingen weergeven</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan later nog inloggen.</translation>
 <translation id="3321628682574733415">Onjuiste oudercode</translation>
 <translation id="332587331255250389">Vervang de batterij</translation>
-<translation id="3335825575923019462">Weet je zeker dat je 'Automatische klikken' wilt uitschakelen?</translation>
 <translation id="3351879221545518001">Je cast momenteel een scherm.</translation>
 <translation id="3364721542077212959">Stylustools</translation>
 <translation id="3368922792935385530">Verbonden</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">Verbinden...</translation>
 <translation id="4379531060876907730">Dit zijn je stylustools</translation>
 <translation id="4389184120735010762">Je hebt op de sneltoets voor het gedockte vergrootglas gedrukt. Wil je deze functie inschakelen?</translation>
-<translation id="4394049700291259645">Uitschakelen</translation>
 <translation id="4421231901400348175">De controle over je scherm wordt gedeeld met <ph name="HELPER_NAME" /> via externe ondersteuning.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Niet meer tonen</translation>
@@ -450,7 +449,7 @@
 <translation id="8054466585765276473">Accuduur berekenen.</translation>
 <translation id="8061464966246066292">Hoog contrast</translation>
 <translation id="8098591350844501178">Schermcast naar <ph name="RECEIVER_NAME" /> stopzetten</translation>
-<translation id="8113423164597455979">Ingeschakeld, alle apps</translation>
+<translation id="8113423164597455979">Aan, alle apps</translation>
 <translation id="8132793192354020517">Verbonden met <ph name="NAME" /></translation>
 <translation id="813913629614996137">Starten...</translation>
 <translation id="8142441511840089262">Dubbelklik</translation>
@@ -485,7 +484,6 @@
 <translation id="8649101189709089199">Selecteer om uitgesproken te worden</translation>
 <translation id="8652175077544655965">Instellingen sluiten</translation>
 <translation id="8653151467777939995">Instellingen voor meldingen weergeven. Meldingen zijn ingeschakeld</translation>
-<translation id="8664483332071009680">'Automatische klikken' uitschakelen?</translation>
 <translation id="8664753092453405566">Netwerklijst weergeven. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laag-vermogen-lader aangesloten</translation>

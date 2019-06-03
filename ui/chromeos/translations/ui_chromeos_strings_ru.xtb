@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">Шведский</translation>
 <translation id="4693155481716051732">Суши</translation>
 <translation id="4694604912444486114">Обезьяна</translation>
+<translation id="4697043402264950621">Данные в столбце "<ph name="COLUMN_NAME" />" отсортированы по возрастанию.</translation>
 <translation id="4711094779914110278">Турецкий</translation>
 <translation id="4713544552769165154">Этот файл предназначен для компьютера с ПО Macintosh. Он не совместим с устройством на базе Chrome OS. Найдите аналогичное приложение в <ph name="BEGIN_LINK" />Интернет-магазине Chrome<ph name="END_LINK" />. <ph name="BEGIN_LINK_HELP" />Подробнее...<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">Сохранено <ph name="FILE_COUNT" /> фото</translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="7348749398828259943">Раскладка США (Workman, международная)</translation>
 <translation id="7359359531237882347">Копирование объектов (<ph name="NUMBER_OF_ITEMS" />)…</translation>
+<translation id="7375951387215729722">Данные в столбце "<ph name="COLUMN_NAME" />" отсортированы по убыванию.</translation>
 <translation id="7389722738210761877">Тайская раскладка (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Клавиатура хинди (фонетическая)</translation>
 <translation id="7417453074306512035">Эфиопская раскладка</translation>

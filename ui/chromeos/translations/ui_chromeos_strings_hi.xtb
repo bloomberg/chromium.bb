@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">स्वीडिश</translation>
 <translation id="4693155481716051732">सुशी</translation>
 <translation id="4694604912444486114">बंदर</translation>
+<translation id="4697043402264950621">फ़ाइल की सूची <ph name="COLUMN_NAME" /> के हिसाब से बढ़ते क्रम में लगाई गई है.</translation>
 <translation id="4711094779914110278">तुर्की</translation>
 <translation id="4713544552769165154">यह फ़ाइल Macintosh सॉफ़्टवेयर का उपयोग करने वाले कंप्यूटर के लिए डिज़ाइन की गई है. यह आपके उस डिवाइस से संगत नहीं है जिस पर Chrome OS चल रहा है. कृपया <ph name="BEGIN_LINK" />Chrome वेब स्टोर<ph name="END_LINK" /> पर उपयुक्त रिप्लेसमेंट ऐप्लिकेशन खोजें.<ph name="BEGIN_LINK_HELP" />ज़्यादा जानें<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> फ़ोटो का बैक अप लिया गया</translation>
@@ -312,6 +313,7 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> आइटम चयनित</translation>
 <translation id="4850886885716139402">देखें</translation>
 <translation id="485316830061041779">जर्मन</translation>
+<translation id="4867079195717347957">स्तंभ को घटते क्रम में लगाने के लिए क्लिक करें.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> बाइट</translation>
 <translation id="4880214202172289027">वॉल्‍यूम स्‍लाइडर</translation>
 <translation id="4880520557730313061">अपने-आप एडजस्ट करें</translation>
@@ -341,7 +343,7 @@
 <translation id="5123433949759960244">बास्केटबॉल</translation>
 <translation id="5129662217315786329">पोलिश</translation>
 <translation id="5144820558584035333">हंगुल 3 सेट (390)</translation>
-<translation id="5145331109270917438">संशोधन तारीख</translation>
+<translation id="5145331109270917438">बदलाव की तारीख</translation>
 <translation id="515594325917491223">शतरंज</translation>
 <translation id="5158593464696388225">इमेज सेव नहीं हो सकी.</translation>
 <translation id="5159383109919732130"><ph name="BEGIN_BOLD" />इस समय अपना डिवाइस न निकालें!<ph name="END_BOLD" />
@@ -352,6 +354,7 @@
 <translation id="5167131699331641907">नीदरलैंड कीबोर्ड</translation>
 <translation id="5170477580121653719">Google डिस्क स्थान शेष: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5177526793333269655">थंबनेल व्यू</translation>
+<translation id="5194713942430106590">स्तंभ को बढ़ते क्रम में लगाने के लिए क्लिक करें.</translation>
 <translation id="5218183485292899140">स्विस फ़्रेंच</translation>
 <translation id="5234764350956374838">खारिज करें</translation>
 <translation id="5241298539944515331">वियतनामी कीबोर्ड (VIQR)</translation>
@@ -411,6 +414,7 @@
 <translation id="5818003990515275822">कोरियाई</translation>
 <translation id="5819442873484330149">हंगुल 3 सेट (अंतिम)</translation>
 <translation id="5833610766403489739">यह फ़ाइल कहीं इधर-उधर हो गई है. कृपया अपनी डाउनलोड स्थान सेटिंग जाँचें और फिर से कोशिश करें.</translation>
+<translation id="5838051104334203064">Play स्टोर ऐप्लिकेशन इस डिवाइस को एक्सेस नहीं कर सकता</translation>
 <translation id="5838825566232597749">यूएस वर्कमैन अंतर्राष्‍ट्रीय</translation>
 <translation id="5850516540536751549">इस तरह की फ़ाइल नहीं खुल सकती है. इस तरह के फ़ाइल को खोल सकने वाले ऐप्लिकेशन खोजने के लिए कृपया <ph name="BEGIN_LINK" />Chrome वेब स्टोर<ph name="END_LINK" /> पर जाएं.
     <ph name="BEGIN_LINK_HELP" />ज़्यादा जानें<ph name="END_LINK_HELP" /></translation>
@@ -463,7 +467,7 @@
 <translation id="6509122719576673235">नॉर्वेजियाई</translation>
 <translation id="6527303717912515753">शेयर करें</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> समन्वयित किया जा रहा है...</translation>
-<translation id="6549689063733911810">नवीनतम</translation>
+<translation id="6549689063733911810">हाल के संग्रह</translation>
 <translation id="6556866813142980365">फिर से करें</translation>
 <translation id="6558280019477628686">कोई गड़बड़ी हुई है. शायद कुछ आइटम नहीं हटाए गए हैं.</translation>
 <translation id="656398493051028875">"<ph name="FILENAME" />" हटा रहा है...</translation>
@@ -527,6 +531,7 @@
 <translation id="7339898014177206373">नई विंडो</translation>
 <translation id="7348749398828259943">यूएस वर्कमैन अंतर्राष्‍ट्रीय कीबोर्ड</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> आइटम कॉपी किए जा रहे हैं...</translation>
+<translation id="7375951387215729722">फ़ाइल की सूची <ph name="COLUMN_NAME" /> के हिसाब से घटते क्रम में लगाई गई है.</translation>
 <translation id="7389722738210761877">थाई कीबोर्ड (TIS 820-2531)</translation>
 <translation id="7396038720194014279">हिन्दी कीबोर्ड (फ़ोनेटिक)</translation>
 <translation id="7417453074306512035">इथिओपियाई कीबोर्ड</translation>

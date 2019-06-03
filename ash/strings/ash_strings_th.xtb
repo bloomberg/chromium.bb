@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">ยุบเมนู</translation>
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1419738280318246476">ปลดล็อกอุปกรณ์เพื่อดำเนินการแจ้งเตือน</translation>
+<translation id="1426410128494586442">ยอมรับ</translation>
 <translation id="1455242230282523554">แสดงการตั้งค่าภาษา</translation>
 <translation id="1467432559032391204">ซ้าย</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> ยังมีสิทธิ์ลงชื่อเข้าใช้ภายหลังได้</translation>
 <translation id="3321628682574733415">รหัสผู้ปกครองไม่ถูกต้อง</translation>
 <translation id="332587331255250389">โปรดเปลี่ยนแบตเตอรี่</translation>
-<translation id="3335825575923019462">แน่ใจไหมว่าต้องการปิดใช้การคลิกอัตโนมัติ</translation>
 <translation id="3351879221545518001">คุณกำลังแคสต์หน้าจออยู่</translation>
 <translation id="3364721542077212959">เครื่องมือสไตลัส</translation>
 <translation id="3368922792935385530">เชื่อมต่อแล้ว</translation>
@@ -228,7 +228,6 @@
 <translation id="4378551569595875038">กำลังเชื่อมต่อ...</translation>
 <translation id="4379531060876907730">นี่คือเครื่องมือสไตลัส</translation>
 <translation id="4389184120735010762">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายหน้าจอบางส่วน จะเปิดแว่นขยายไหม</translation>
-<translation id="4394049700291259645">ปิดการใช้งาน</translation>
 <translation id="4421231901400348175">กำลังแชร์การควบคุมหน้าจอกับ <ph name="HELPER_NAME" /> ผ่านความช่วยเหลือระยะไกล</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>
 <translation id="4450893287417543264">ไม่ต้องแสดงอีก</translation>
@@ -486,7 +485,6 @@
 <translation id="8649101189709089199">เลือกเพื่อให้อ่าน</translation>
 <translation id="8652175077544655965">ปิดการตั้งค่า</translation>
 <translation id="8653151467777939995">แสดงการตั้งค่าการแจ้งเตือน การแจ้งเตือนเปิดอยู่</translation>
-<translation id="8664483332071009680">ปิดใช้การคลิกอัตโนมัติไหม</translation>
 <translation id="8664753092453405566">แสดงรายการเครือข่าย <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">เชื่อมต่อกับที่ชาร์จพลังงานต่ำ</translation>

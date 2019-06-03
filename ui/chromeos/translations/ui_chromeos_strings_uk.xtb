@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">Шведська</translation>
 <translation id="4693155481716051732">Суші</translation>
 <translation id="4694604912444486114">Мавпа</translation>
+<translation id="4697043402264950621">Список файлів відсортовано в порядку зростання за таким критерієм: <ph name="COLUMN_NAME" />.</translation>
 <translation id="4711094779914110278">Турецька</translation>
 <translation id="4713544552769165154">Цей файл створено для комп’ютерів, на яких використовується програмне забезпечення Macintosh. Він несумісний із вашим пристроєм, оскільки на ньому встановлено ОС Chrome. Знайдіть відповідний додаток у <ph name="BEGIN_LINK" />Веб-магазині Chrome<ph name="END_LINK" />.<ph name="BEGIN_LINK_HELP" />Докладніше<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">Імпортовано <ph name="FILE_COUNT" /> фото</translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">Нове вікно</translation>
 <translation id="7348749398828259943">Міжнародна клавіатура US Workman</translation>
 <translation id="7359359531237882347">Копіювання елементів (<ph name="NUMBER_OF_ITEMS" />)…</translation>
+<translation id="7375951387215729722">Список файлів відсортовано в порядку спадання за таким критерієм: <ph name="COLUMN_NAME" />.</translation>
 <translation id="7389722738210761877">Тайська клавіатура (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Клавіатура гінді (фонетична)</translation>
 <translation id="7417453074306512035">Ефіопська клавіатура</translation>

@@ -15,7 +15,6 @@
 <translation id="1383876407941801731">వెతుకు</translation>
 <translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
 <translation id="1409544243779336081">యాప్ సిఫార్సు</translation>
-<translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> నుండి వచ్చే నోటిఫికేషన్‌లను నిలిపివేయి</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 నిమిషం మరియు }other{# నిమిషాలు మరియు }}</translation>
 <translation id="1643823602425662293">నోటిఫికేషన్</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -166,7 +165,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 నిమి. మిగిలి ఉంది}other{# నిమి. మిగిలి ఉన్నాయి}}</translation>
 <translation id="7319740667687257810">లాంఛ‌ర్‌, పాక్షిక వీక్షణ</translation>
-<translation id="732374792807444530"><ph name="DEVICE_NAME" />కు పంపుతోంది</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 నిమి. క్రితం}other{# నిమి. క్రితం}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 నిమిషం మిగిలి ఉంది}other{# నిమిషాలు మిగిలి ఉన్నాయి}}</translation>

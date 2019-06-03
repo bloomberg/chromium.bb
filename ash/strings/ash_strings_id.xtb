@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Ciutkan menu</translation>
 <translation id="1383876407941801731">Telusuri</translation>
 <translation id="1419738280318246476">Buka kunci perangkat untuk melakukan tindakan notifikasi</translation>
+<translation id="1426410128494586442">Ya</translation>
 <translation id="1455242230282523554">Tampilkan setelan bahasa</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> tetap dapat login di lain waktu.</translation>
 <translation id="3321628682574733415">Kode induk salah</translation>
 <translation id="332587331255250389">Harap ganti baterai</translation>
-<translation id="3335825575923019462">Yakin ingin menonaktifkan klik otomatis?</translation>
 <translation id="3351879221545518001">Anda sedang mentransmisi layar.</translation>
 <translation id="3364721542077212959">Alat stilus</translation>
 <translation id="3368922792935385530">Tersambung</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">Menyambung...</translation>
 <translation id="4379531060876907730">Ini adalah fitur stilus</translation>
 <translation id="4389184120735010762">Anda menekan pintasan keyboard untuk kaca pembesar yang terpasang di dok. Ingin mengaktifkannya?</translation>
-<translation id="4394049700291259645">Nonaktifkan</translation>
 <translation id="4421231901400348175">Berbagi kontrol layar dengan <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Jangan tampilkan lagi</translation>
@@ -485,7 +484,6 @@
 <translation id="8649101189709089199">Klik untuk Diucapkan</translation>
 <translation id="8652175077544655965">Tutup setelan</translation>
 <translation id="8653151467777939995">Tampilkan setelan notifikasi. Notifikasi aktif.</translation>
-<translation id="8664483332071009680">Nonaktifkan fitur klik otomatis?</translation>
 <translation id="8664753092453405566">Tampilkan daftar jaringan. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pengisi daya rendah terpasang</translation>

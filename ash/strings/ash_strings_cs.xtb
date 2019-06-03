@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Sbalit nabídku</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1419738280318246476">Chcete-li provést akci s oznámením, odemkněte zařízení</translation>
+<translation id="1426410128494586442">Ano</translation>
 <translation id="1455242230282523554">Zobrazit jazykové nastavení</translation>
 <translation id="1467432559032391204">Doleva</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se i nadále bude moci přihlásit.</translation>
 <translation id="3321628682574733415">Nesprávný kód rodiče</translation>
 <translation id="332587331255250389">Vyměňte prosím baterii</translation>
-<translation id="3335825575923019462">Opravdu chcete automatická kliknutí vypnout?</translation>
 <translation id="3351879221545518001">Právě odesíláte obrazovku.</translation>
 <translation id="3364721542077212959">Nástroje pro dotykové pero</translation>
 <translation id="3368922792935385530">Připojeno</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">Připojování...</translation>
 <translation id="4379531060876907730">Toto jsou nástroje pro dotykové pero</translation>
 <translation id="4389184120735010762">Stiskli jste klávesovou zkratku pro zadokovanou lupu. Chcete ji zapnout?</translation>
-<translation id="4394049700291259645">Deaktivovat</translation>
 <translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
 <translation id="4450893287417543264">Tuto zprávu již nezobrazovat</translation>
@@ -485,7 +484,6 @@
 <translation id="8649101189709089199">Poslech vybraného textu</translation>
 <translation id="8652175077544655965">Zavřít nastavení</translation>
 <translation id="8653151467777939995">Zobrazit nastavení oznámení. Oznámení jsou zapnutá</translation>
-<translation id="8664483332071009680">Zakázat automatická kliknutí?</translation>
 <translation id="8664753092453405566">Zobrazit seznam sítí. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Byla připojena nabíječka s nízkým napětím</translation>

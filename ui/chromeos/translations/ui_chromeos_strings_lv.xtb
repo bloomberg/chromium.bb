@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">Zviedru valoda</translation>
 <translation id="4693155481716051732">Suši</translation>
 <translation id="4694604912444486114">Pērtiķis</translation>
+<translation id="4697043402264950621">Failu saraksts ir sakārtots pēc slejas “<ph name="COLUMN_NAME" />” augošā secībā.</translation>
 <translation id="4711094779914110278">Turku valoda</translation>
 <translation id="4713544552769165154">Šis fails ir paredzēts datoram, kurā tiek izmantota Macintosh programmatūra. Tas nav saderīgs ar jūsu ierīci, kurā darbojas Chrome OS. Atbilstošu lietotni meklējiet <ph name="BEGIN_LINK" />Chrome interneta veikalā<ph name="END_LINK" />. <ph name="BEGIN_LINK_HELP" />Uzziniet vairāk<ph name="END_LINK_HELP" />.</translation>
 <translation id="4724850507808590449">Dublēti <ph name="FILE_COUNT" /> fotoattēli</translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">Jauns logs</translation>
 <translation id="7348749398828259943">Workman (ASV) starptautiskā tastatūra</translation>
 <translation id="7359359531237882347">Notiek <ph name="NUMBER_OF_ITEMS" /> vienumu kopēšana...</translation>
+<translation id="7375951387215729722">Failu saraksts ir sakārtots pēc slejas “<ph name="COLUMN_NAME" />” dilstošā secībā.</translation>
 <translation id="7389722738210761877">Taju valodas tastatūra (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindu valodas tastatūra (fonētiskā)</translation>
 <translation id="7417453074306512035">Gēzu rakstības tastatūra</translation>

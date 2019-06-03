@@ -15,7 +15,6 @@
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1398853756734560583">Maximalizovat</translation>
 <translation id="1409544243779336081">Doporučení aplikace</translation>
-<translation id="1413622004203049571">Deaktivovat oznámení ze služby <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta a  }few{# minuty a  }many{# minuty a  }other{# minut a  }}</translation>
 <translation id="1643823602425662293">Oznámení</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -166,7 +165,6 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Zbývá 1 min}few{Zbývají # min}many{Zbývá # min}other{Zbývá # min}}</translation>
 <translation id="7319740667687257810">Spouštěč, částečné zobrazení</translation>
-<translation id="732374792807444530">Odesílání do zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Před 1 min}few{Před # min}many{Před # min}other{Před # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Zbývá 1 minuta}few{Zbývají # minuty}many{Zbývá # minuty}other{Zbývá # minut}}</translation>

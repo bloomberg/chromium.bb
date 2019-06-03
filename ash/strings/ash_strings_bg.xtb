@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Свиване на менюто</translation>
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="1419738280318246476">Отключете устройството, за да се изпълни действието от известието</translation>
+<translation id="1426410128494586442">Да</translation>
 <translation id="1455242230282523554">Показване на езиковите настройки</translation>
 <translation id="1467432559032391204">Наляво</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> пак може да влезе в профила си по-късно.</translation>
 <translation id="3321628682574733415">Неправилен код на родител</translation>
 <translation id="332587331255250389">Моля, заменете батерията</translation>
-<translation id="3335825575923019462">Наистина ли искате да деактивирате автоматичните кликвания?</translation>
 <translation id="3351879221545518001">Понастоящем предавате екрана.</translation>
 <translation id="3364721542077212959">Инструменти за писане</translation>
 <translation id="3368922792935385530">Установена е връзка</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">Установява се връзка...</translation>
 <translation id="4379531060876907730">Това са инструментите ви за писане</translation>
 <translation id="4389184120735010762">Използвахте клавишната комбинация за лупата в прикрепен режим. Искате ли да включите функцията?</translation>
-<translation id="4394049700291259645">Деактивиране</translation>
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="4450893287417543264">Да не се показва отново</translation>
@@ -485,7 +484,6 @@
 <translation id="8649101189709089199">Прочитане на глас</translation>
 <translation id="8652175077544655965">Затваряне на настройките</translation>
 <translation id="8653151467777939995">Показване на настройките за известия. Известията са включени</translation>
-<translation id="8664483332071009680">Искате ли да деактивирате автоматичните кликвания?</translation>
 <translation id="8664753092453405566">Показване на списъка с мрежи. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>

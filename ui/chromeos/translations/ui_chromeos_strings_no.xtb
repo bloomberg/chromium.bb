@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">Svensk</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694604912444486114">Ape</translation>
+<translation id="4697043402264950621">Fillisten er sortert etter <ph name="COLUMN_NAME" /> i stigende rekkefølge.</translation>
 <translation id="4711094779914110278">Tyrkisk</translation>
 <translation id="4713544552769165154">Denne filen er laget for en datamaskin med Macintosh-programvare. Den er ikke kompatibel med enheten din, som kjører Chrome OS. Du kan søke på <ph name="BEGIN_LINK" />Chrome Nettmarked<ph name="END_LINK" /> etter en passende erstatningsapp.<ph name="BEGIN_LINK_HELP" />Finn ut mer<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> bilder ble sikkerhetskopiert</translation>
@@ -413,7 +414,7 @@
 <translation id="5818003990515275822">Koreansk</translation>
 <translation id="5819442873484330149">Hangul 3-sett (endelig)</translation>
 <translation id="5833610766403489739">Denne filen har vandret av gårde. Sjekk innstillingen din for nedlastingsplassering, og prøv på nytt.</translation>
-<translation id="5838051104334203064">Play Butikk-programmer har ikke tilgang til denne enheten</translation>
+<translation id="5838051104334203064">Play Butikk-apper har ikke tilgang til denne enheten</translation>
 <translation id="5838825566232597749">Internasjonalt Workman (USA)</translation>
 <translation id="5850516540536751549">Denne filtypen støttes ikke. Gå til <ph name="BEGIN_LINK" />Chrome Nettmarked<ph name="END_LINK" /> for å finne en app som kan åpne denne filtypen.
     <ph name="BEGIN_LINK_HELP" />Les mer<ph name="END_LINK_HELP" /></translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">Nytt vindu</translation>
 <translation id="7348749398828259943">Internasjonalt Workman-tastatur (USA)</translation>
 <translation id="7359359531237882347">Kopierer <ph name="NUMBER_OF_ITEMS" /> elementer …</translation>
+<translation id="7375951387215729722">Fillisten er sortert etter <ph name="COLUMN_NAME" /> i synkende rekkefølge.</translation>
 <translation id="7389722738210761877">Thai-tastatur (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindi-tastatur (fonetisk)</translation>
 <translation id="7417453074306512035">Etiopisk tastatur</translation>

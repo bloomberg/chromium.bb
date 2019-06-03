@@ -126,8 +126,6 @@
 <translation id="3695446226812920698">เรียนรู้วิธี</translation>
 <translation id="3718805989288361841">การตั้งค่านโยบายของ Chrome Remote Desktop มีข้อผิดพลาด โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
 <translation id="3776024066357219166">เซสชัน Chrome Remote Desktop ของคุณสิ้นสุดแล้ว</translation>
-<translation id="3846148461359626420">• ประสบการณ์ในการเลื่อนและซูมใน iPhone X ดีขึ้น
-• การปรับปรุงความเสถียรและการแก้ไขข้อบกพร่อง</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">โปรดยืนยันบัญชีและ PIN ของคุณด้านล่างเพื่ออนุญาตให้ Chrome Remote Desktop สามารถเข้าถึง</translation>
 <translation id="3897092660631435901">เมนู</translation>
@@ -339,8 +337,6 @@
 <translation id="8525306231823319788">เต็มหน้าจอ</translation>
 <translation id="8548209692293300397">ก่อนหน้านี้คุณได้ลงชื่อเข้าใช้เป็น <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)  หากต้องการเข้าถึงคอมพิวเตอร์ในบัญชีนั้น ให้<ph name="LINK_BEGIN" />ลงชื่อเข้าใช้ Google Chrome<ph name="LINK_END" /> ด้วยบัญชีนั้นและติดตั้ง Chrome Remote Desktop อีกครั้ง</translation>
 <translation id="8642984861538780905">พอใช้</translation>
-<translation id="8705151241155781642">• เพิ่มการรองรับ Android 9.0 Pie
-• รองรับการปรับขนาดความละเอียดของเดสก์ท็อปที่อยู่ระยะไกลให้พอดีกับหน้าจออุปกรณ์ Android ของคุณ</translation>
 <translation id="8712909229180978490">ฉันไม่เห็นไฟล์ที่บันทึกไว้แบบออนไลน์ใน Google ไดรฟ์</translation>
 <translation id="8743328882720071828">คุณต้องการให้ <ph name="CLIENT_USERNAME" /> มองเห็นและควบคุมคอมพิวเตอร์ของคุณไหม</translation>
 <translation id="8747048596626351634">เซสชันขัดข้องหรือเริ่มต้นไม่สำเร็จ หากมี ~/.chrome-remote-desktop-session ในคอมพิวเตอร์ระยะไกล ให้ตรวจดูว่าได้เริ่มกระบวนการพื้นหน้าแบบระยะยาว เช่น สภาพแวดล้อมเดสก์ท็อปหรือตัวจัดการหน้าต่างแล้ว</translation>

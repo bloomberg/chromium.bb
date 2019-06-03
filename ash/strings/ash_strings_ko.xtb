@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">메뉴 접기</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1419738280318246476">알림 작업을 실행하려면 기기의 잠금을 해제하세요.</translation>
+<translation id="1426410128494586442">예</translation>
 <translation id="1455242230282523554">언어 설정 표시</translation>
 <translation id="1467432559032391204">왼쪽</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />(HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" />님은 나중에도 로그인할 수 있습니다.</translation>
 <translation id="3321628682574733415">잘못된 부모 코드</translation>
 <translation id="332587331255250389">배터리를 교체해 주세요</translation>
-<translation id="3335825575923019462">자동 클릭을 사용 중지하시겠습니까?</translation>
 <translation id="3351879221545518001">현재 화면을 전송하고 있습니다.</translation>
 <translation id="3364721542077212959">스타일러스 도구</translation>
 <translation id="3368922792935385530">연결됨</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">연결 중...</translation>
 <translation id="4379531060876907730">스타일러스 도구입니다</translation>
 <translation id="4389184120735010762">고정 돋보기 단축키를 누르셨습니다. 사용 설정할까요?</translation>
-<translation id="4394049700291259645">사용 중지</translation>
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME" />와(과) 화면 제어 공유</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="4450893287417543264">다시 표시하지 않음</translation>
@@ -485,7 +484,6 @@
 <translation id="8649101189709089199">텍스트 읽어주기</translation>
 <translation id="8652175077544655965">설정 닫기</translation>
 <translation id="8653151467777939995">알림 설정을 표시합니다. 알림이 사용 설정되어 있습니다.</translation>
-<translation id="8664483332071009680">자동 클릭을 사용 중지하시겠습니까?</translation>
 <translation id="8664753092453405566">네트워크 목록을 표시합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">저출력 충전기 연결됨</translation>

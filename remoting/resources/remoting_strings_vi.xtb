@@ -126,8 +126,6 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="3695446226812920698">Tìm hiểu cách thức</translation>
 <translation id="3718805989288361841">Đã xảy ra lỗi với cài đặt chính sách cho Chrome Remote Desktop. Hãy liên hệ với quản trị viên hệ thống của bạn để được hỗ trợ.</translation>
 <translation id="3776024066357219166">Phiên Chrome Remote Desktop của bạn đã kết thúc.</translation>
-<translation id="3846148461359626420">• Nâng cao trải nghiệm xoay và thu phóng trên iPhone X.
-• Cải thiện độ ổn định và sửa lỗi.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Vui lòng xác nhận tài khoản và mã PIN của bạn bên dưới để cho phép Chrome Remote Desktop truy cập.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -339,8 +337,6 @@ PC</translation>
 <translation id="8525306231823319788">Toàn màn hình</translation>
 <translation id="8548209692293300397">Trước đó, bạn đã đăng nhập bằng <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Để truy cập máy tính của bạn bằng tài khoản đó, hãy <ph name="LINK_BEGIN" />đăng nhập vào Google Chrome<ph name="LINK_END" /> bằng tài khoản đó và cài đặt lại Chrome Remote Desktop.</translation>
 <translation id="8642984861538780905">Khá tốt</translation>
-<translation id="8705151241155781642">• Hiện hỗ trợ Android 9.0 Pie.
-• Bạn có thể thay đổi độ phân giải của máy tính từ xa để phù hợp với màn hình thiết bị Android của mình.</translation>
 <translation id="8712909229180978490">Tôi không thể xem các tệp đã lưu của mình trực tuyến trong Google Drive.</translation>
 <translation id="8743328882720071828">Bạn có muốn cho phép <ph name="CLIENT_USERNAME" /> xem và điều khiển máy tính của mình không?</translation>
 <translation id="8747048596626351634">Phiên bị lỗi hoặc không bắt đầu được. Nếu đã có ~/.chrome-remote-desktop-session trên máy tính từ xa, hãy đảm bảo rằng phiên này bắt đầu chạy một quy trình ở nền trước trong thời gian dài, chẳng hạn như môi trường máy tính để bàn hoặc trình quản lý cửa sổ.</translation>

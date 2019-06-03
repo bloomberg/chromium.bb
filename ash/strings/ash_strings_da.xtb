@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Skjul menu</translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1419738280318246476">Lås enheden op for at udføre notifikationshandlingen</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="1455242230282523554">Vis sprogindstillinger</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan stadig logge ind senere.</translation>
 <translation id="3321628682574733415">Forkert forældrekode</translation>
 <translation id="332587331255250389">Udskift batteriet</translation>
-<translation id="3335825575923019462">Er du sikker på, at du vil deaktivere automatiske klik?</translation>
 <translation id="3351879221545518001">Du caster i øjeblikket skærmen.</translation>
 <translation id="3364721542077212959">Styluspenværktøjer</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
@@ -227,7 +227,6 @@
 <translation id="4378551569595875038">Opretter forbindelse...</translation>
 <translation id="4379531060876907730">Dette er dine styluspenværktøjer</translation>
 <translation id="4389184120735010762">Du trykkede på tastaturgenvejen for det fastgjorte lupvindue. Vil du aktivere indstillingen?</translation>
-<translation id="4394049700291259645">Deaktiver</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME" /> via Fjernsupport.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="4450893287417543264">Vis ikke igen</translation>
@@ -486,7 +485,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8649101189709089199">Tekstoplæsning</translation>
 <translation id="8652175077544655965">Luk indstillinger</translation>
 <translation id="8653151467777939995">Vis indstillinger for notifikationer. Notifikationer er slået til</translation>
-<translation id="8664483332071009680">Vil du deaktivere automatiske klik?</translation>
 <translation id="8664753092453405566">Vis netværksliste. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Oplader med lav kraft er tilsluttet</translation>

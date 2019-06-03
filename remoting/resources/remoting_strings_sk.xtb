@@ -126,8 +126,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="3695446226812920698">Ako na to</translation>
 <translation id="3718805989288361841">V súvislosti s nastaveniami pravidiel pre Vzdialenú plochu Chrome sa vyskytla chyba. Požiadajte o pomoc správcu systému.</translation>
 <translation id="3776024066357219166">Vaša relácia Vzdialenej plochy Chrome bola ukončená.</translation>
-<translation id="3846148461359626420">• Lepšie posúvanie zobrazenia a priblíženie/oddialenie v iPhone X.
-• Vylepšenia stability a opravy chýb.</translation>
 <translation id="3870154837782082782">Spoločnosť Google Inc.</translation>
 <translation id="3884839335308961732">Ak chcete povoliť prístup k Vzdialenej ploche Chrome, potvrďte svoj účet a kód PIN nižšie.</translation>
 <translation id="3897092660631435901">Ponuka</translation>
@@ -339,8 +337,6 @@ Túto funkciu povolíte tak, že si tlačidlom <ph name="BUTTON_NAME" /> zobraz�
 <translation id="8525306231823319788">Celá obrazovka</translation>
 <translation id="8548209692293300397">Predtým ste sa prihlásili ako používateľ <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Ak chcete získať prístup k počítačom v danom účte, musíte sa <ph name="LINK_BEGIN" />prihlásiť do prehliadača Google Chrome<ph name="LINK_END" /> pomocou daného účtu a znova nainštalovať aplikáciu Vzdialená plocha Chrome.</translation>
 <translation id="8642984861538780905">Priemerné</translation>
-<translation id="8705151241155781642">• Pridaná podpora platformy Android 9.0 Pie.
-• Podpora zmeny rozlíšenia vzdialenej plochy tak, aby zodpovedalo obrazovke vášho zariadenia s Androidom.</translation>
 <translation id="8712909229180978490">Nevidím svoje uložené súbory online na Disku Google.</translation>
 <translation id="8743328882720071828">Chcete povoliť používateľovi <ph name="CLIENT_USERNAME" /> zobraziť a ovládať váš počítač?</translation>
 <translation id="8747048596626351634">Relácia zlyhala alebo sa ju nepodarilo spustiť. Ak vo vzdialenom počítači existuje relácia ~/.chrome-remote-desktop-session, zaistite, aby spustila dlhotrvajúci proces v popredí, ako napríklad prostredie pracovnej plochy alebo správcu okien.</translation>

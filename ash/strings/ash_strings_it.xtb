@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Comprimi il menu</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1419738280318246476">Sblocca il dispositivo per eseguire l'azione di notifica</translation>
+<translation id="1426410128494586442">Sì</translation>
 <translation id="1455242230282523554">Mostra impostazioni lingua</translation>
 <translation id="1467432559032391204">Sinistra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> può ancora accedere in seguito.</translation>
 <translation id="3321628682574733415">Codice genitore errato</translation>
 <translation id="332587331255250389">Sostituisci la batteria</translation>
-<translation id="3335825575923019462">Vuoi disattivare i clic automatici?</translation>
 <translation id="3351879221545518001">Al momento stai trasmettendo lo schermo.</translation>
 <translation id="3364721542077212959">Strumenti per stilo</translation>
 <translation id="3368922792935385530">Connessa</translation>
@@ -228,7 +228,6 @@
 <translation id="4378551569595875038">Connessione...</translation>
 <translation id="4379531060876907730">Ecco gli strumenti per il tuo stilo</translation>
 <translation id="4389184120735010762">Hai premuto la scorciatoia da tastiera per la lente d'ingrandimento ancorata. Vuoi attivarla?</translation>
-<translation id="4394049700291259645">Disabilita</translation>
 <translation id="4421231901400348175">Condividi il controllo dello schermo con <ph name="HELPER_NAME" /> tramite Assistenza remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Non mostrare più</translation>
@@ -297,7 +296,7 @@
 <translation id="5673434351075758678">Da "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" dopo la sincronizzazione delle impostazioni.</translation>
 <translation id="5691772641933328258">Impronta digitale non riconosciuta</translation>
 <translation id="5710450975648804523">Funzione Non disturbare attiva</translation>
-<translation id="574392208103952083">Medie</translation>
+<translation id="574392208103952083">Medio</translation>
 <translation id="5744083938413354016">Trascinamento al tocco</translation>
 <translation id="5750765938512549687">Bluetooth non attivo</translation>
 <translation id="5777841717266010279">Interrompere la condivisione dello schermo?</translation>
@@ -451,7 +450,7 @@
 <translation id="8054466585765276473">Calcolo della durata della batteria.</translation>
 <translation id="8061464966246066292">Contrasto elevato</translation>
 <translation id="8098591350844501178">Interrompi la trasmissione dello schermo su <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Attive, tutte le app</translation>
+<translation id="8113423164597455979">On, tutte le app</translation>
 <translation id="8132793192354020517">Connesso a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inizializzazione...</translation>
 <translation id="8142441511840089262">Doppio clic</translation>
@@ -486,7 +485,6 @@
 <translation id="8649101189709089199">Seleziona per ascoltare</translation>
 <translation id="8652175077544655965">Chiudi impostazioni</translation>
 <translation id="8653151467777939995">Mostra impostazioni di notifica. Le notifiche sono attive</translation>
-<translation id="8664483332071009680">Disattivare i clic automatici?</translation>
 <translation id="8664753092453405566">Mostra elenco di reti. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Caricabatterie a basso consumo collegato</translation>

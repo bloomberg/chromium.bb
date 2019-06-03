@@ -126,8 +126,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="3695446226812920698">Comment procéder</translation>
 <translation id="3718805989288361841">Erreur dans les paramètres des règles pour le bureau à distance Chrome. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
 <translation id="3776024066357219166">La session du bureau à distance Google Chrome est terminée.</translation>
-<translation id="3846148461359626420">• Amélioration du panoramique et du zoom sur iPhone X.
-• Correction de bugs et amélioration de la stabilité.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Veuillez confirmer le compte et le code d'accès ci-dessous pour autoriser l'accès du Bureau à distance Google Chrome à votre compte.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -339,8 +337,6 @@ Pour activer cette fonctionnalité, sélectionnez <ph name="BUTTON_NAME" /> afin
 <translation id="8525306231823319788">Plein écran</translation>
 <translation id="8548209692293300397">Vous vous êtes auparavant connecté avec le nom d'utilisateur "<ph name="USER_NAME" />" (<ph name="USER_EMAIL" />). Pour accéder à vos ordinateurs avec ce compte, <ph name="LINK_BEGIN" />connectez-vous à Google Chrome<ph name="LINK_END" /> avec ce compte, puis réinstallez le Bureau à distance Chrome.</translation>
 <translation id="8642984861538780905">Correcte</translation>
-<translation id="8705151241155781642">• Désormais compatible avec Android 9.0 Pie.
-• Possibilité d'adapter la résolution du bureau à distance à l'écran de votre appareil Android.</translation>
 <translation id="8712909229180978490">Je ne vois pas mes fichiers enregistrés en ligne sur Google Drive.</translation>
 <translation id="8743328882720071828">Souhaitez-vous autoriser <ph name="CLIENT_USERNAME" /> à voir et contrôler votre ordinateur ?</translation>
 <translation id="8747048596626351634">La session a planté ou n'a pas réussi à démarrer. Si ~/.chrome-remote-desktop-session est présent sur l'ordinateur à distance, assurez-vous qu'il lance un processus long au premier plan, tel qu'un environnement de bureau ou un gestionnaire de fenêtres.</translation>

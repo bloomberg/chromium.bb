@@ -126,8 +126,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="3695446226812920698">Más información</translation>
 <translation id="3718805989288361841">Se produjo un error con la configuración de la política para Escritorio remoto de Chrome. Comunícate con el administrador del sistema para obtener ayuda.</translation>
 <translation id="3776024066357219166">Se cerró tu sesión en Escritorio remoto de Chrome.</translation>
-<translation id="3846148461359626420">• Se mejoraron la planificación y la experiencia de zoom en iPhone X.
-• Se introdujeron correcciones de errores y mejoras de estabilidad.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirma la cuenta y el PIN a continuación para permitir el acceso del Escritorio remoto de Chrome.</translation>
 <translation id="3897092660631435901">Menú</translation>
@@ -339,8 +337,6 @@ Para habilitar esta funcionalidad, selecciona "<ph name="BUTTON_NAME" />". Se mo
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="8548209692293300397">Accediste previamente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Para acceder a las computadoras en esa cuenta, <ph name="LINK_BEGIN" />accede a Google Chrome<ph name="LINK_END" /> con esa cuenta y vuelve a instalar Escritorio remoto de Chrome.</translation>
 <translation id="8642984861538780905">Aceptable</translation>
-<translation id="8705151241155781642">• Se agregó compatibilidad con Android 9.0 Pie.
-• Compatibilidad con el cambio de resolución del escritorio remoto para adaptarse a la pantalla de tu dispositivo Android.</translation>
 <translation id="8712909229180978490">No puedo ver mis archivos guardados en línea en Google Drive.</translation>
 <translation id="8743328882720071828">¿Deseas permitir que <ph name="CLIENT_USERNAME" /> vea y controle tu computadora?</translation>
 <translation id="8747048596626351634">La sesión se bloqueó o no pudo iniciarse. Si la computadora remota cuenta con el script ~/.chrome-remote-desktop-session, asegúrate de que este inicia un proceso de ejecución prolongada en primer plano, como un entorno de escritorio o un administrador de ventanas.</translation>

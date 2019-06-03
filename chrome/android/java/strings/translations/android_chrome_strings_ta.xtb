@@ -14,6 +14,7 @@
 <translation id="1111673857033749125">உங்கள் பிற சாதனங்களில் சேமிக்கும் புக்மார்க்குகள் இங்கே தோன்றும்.</translation>
 <translation id="1113597929977215864">எளிதாக்கப்பட்ட காட்சியைக் காட்டு</translation>
 <translation id="1121094540300013208">பயன்பாட்டு மற்றும் சிதைவு அறிக்கைகள்</translation>
+<translation id="1124772482545689468">பயனர்</translation>
 <translation id="1129510026454351943">விவரங்கள்: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{ஒரு பதிவிறக்கம் நிலுவையில் உள்ளது.}other{# பதிவிறக்கங்கள் நிலுவையில் உள்ளன.}}</translation>
 <translation id="1145536944570833626">ஏற்கனவே உள்ள தரவை நீக்கு.</translation>
@@ -830,6 +831,7 @@
 <translation id="7062545763355031412">சரி, கணக்குகளை மாற்று</translation>
 <translation id="7063006564040364415">ஒத்திசைவு சேவையகத்துடன் இணைக்க முடியவில்லை.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 தேர்ந்தெடுக்கப்பட்டது}other{# தேர்ந்தெடுக்கப்பட்டன}}</translation>
+<translation id="7071521146534760487">கணக்கை நிர்வகிக்கும்</translation>
 <translation id="7077143737582773186">SD கார்டு</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> தேர்ந்தெடுக்கப்பட்டன.  திரையின் மேற்பகுதிக்கு அருகில், விருப்பங்கள் உள்ளன</translation>
 <translation id="7121362699166175603">வரலாற்றையும் முகவரிப் பட்டியில் தன்னிரப்பிகளையும் அழிக்கும். உங்கள் Google கணக்கு, <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> என்ற இணைப்பில் உலாவல் வரலாறு தொடர்பான பிற தகவல்களைக் கொண்டிருக்கக்கூடும்.</translation>
@@ -886,7 +888,6 @@
 <translation id="7475688122056506577">SD கார்டு உள்ளது. உங்கள் கோப்புகளில் சில இல்லாமல் இருக்கலாம்.</translation>
 <translation id="7479104141328977413">தாவல் நிர்வாகம்</translation>
 <translation id="7481312909269577407">அடுத்த பக்கம்</translation>
-<translation id="7482697587265222445">தாவல் உங்கள் சாதனங்களுக்கு அனுப்பப்பட்டது</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (புதுப்பித்தது: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">சேமித்த டேட்டா</translation>
 <translation id="7498271377022651285">காத்திருக்கவும்…</translation>

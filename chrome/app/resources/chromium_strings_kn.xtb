@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">ನೀವು Chromium ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿರುವಿರಿ!</translation>
 <translation id="1502360822835740515">Chromium ಅನ್ನು ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿಸಿ</translation>
 <translation id="151962892725702025">ನಿಮ್ಮ ಡೊಮೇನ್‌ನಲ್ಲಿ ಸಿಂಕ್ ಮಾಡುವ ಸೌಲಭ್ಯವಿಲ್ಲದ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chromium OS ಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
+<translation id="1524282610922162960">Chromium ಟ್ಯಾಬ್ ಹಂಚಿಕೊಳ್ಳಿ</translation>
 <translation id="1585657529869845941">ಇದು ಕಂಡುಬಂದಲ್ಲಿ, <ph name="BEGIN_BOLD" />ಹೇಗಾದರೂ ಬದಲಿಸಿ<ph name="END_BOLD" /> ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
 <translation id="1668054258064581266">Chromium ನಿಂದ ನಿಮ್ಮ ಖಾತೆಯನ್ನು ತೆಗೆದುಹಾಕಿದ ನಂತರ, ಪರಿಣಾಮಕಾರಿಯಾಗಲು ನಿಮ್ಮ ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳನ್ನು ನೀವು ಮರುಲೋಡ್‌ ಮಾಡುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="1688750314291223739">ವೆಬ್‌ಗೆ ನಿಮ್ಮ ವೈಯಕ್ತಿಕಗೊಳಿಸಿದ ಬ್ರೌಸರ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಉಳಿಸಲು ಸಿಂಕ್ ಅನ್ನು ಹೊಂದಿಸಿ ಮತ್ತು ಯಾವುದೇ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ Chromium ನಿಂದ ಅವುಗಳನ್ನು ಪ್ರವೇಶಿಸಿ.</translation>
@@ -124,6 +125,7 @@
 <translation id="5479196819031988440">Chromium OS ಗೆ ಈ ಪುಟ ತೆರೆಯಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5480860683791598150">ಈ ಸೈಟ್‌ ಜೊತೆಗೆ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು Chromium ಗೆ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪ್ರವೇಶಿಸುವ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="549669000822060376">ದಯವಿಟ್ಟು ಇತ್ತೀಚಿನ ಸಿಸ್ಟಂ ನವೀಕರಣಗಳನ್ನು Chromium ಸ್ಥಾಪಿಸುವಾಗ ಕಾಯಿರಿ.</translation>
+<translation id="5623402015214259806">{0,plural, =0{Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}=1{Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}one{# ದಿನಗಳ ಮಟ್ಟಿಗೆ Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}other{# ದಿನಗಳ ಮಟ್ಟಿಗೆ Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}}</translation>
 <translation id="5631814766731275228">Chromium ಹೆಸರು ಮತ್ತು ಚಿತ್ರ</translation>
 <translation id="5634636535844844681">Chromium ಗೆ Windows 7 ಅಥವಾ ಹೆಚ್ಚಿನ ಆವೃತ್ತಿ ಅಗತ್ಯವಿರುತ್ತದೆ.</translation>
 <translation id="5680901439334282664">Chromium ಗೆ ಸೈನ್ ಇನ್ ಆಗಿ</translation>
@@ -147,6 +149,7 @@
 <translation id="6120345080069858279">Chromium, ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಉಳಿಸುತ್ತದೆ. ನೀವು ಅದನ್ನು ನೆನಪಿಡುವ ಅಗತ್ಯವಿರುವುದಿಲ್ಲ.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹಾಗಾಗಿ Chromium ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="6212496753309875659">ಈ ಕಂಪ್ಯೂಟರ್ Chromium ನ ಇತ್ತೀಚಿನ ಹೆಚ್ಚಿನ ಆವೃತ್ತಿಯನ್ನು ಹೊಂದಿದೆ. ಸಾಫ್ಟ್‌ವೇರ್ ಕಾರ್ಯನಿರ್ವಹಿಸದಿದ್ದರೆ, ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="6219195342503754812">{0,plural, =0{ಇದೀಗ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}=1{1 ಸೆಕೆಂಡಿನಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="6248213926982192922">Chromium ಅನ್ನು ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಮಾಡಿ</translation>
 <translation id="6268381023930128611">Chromium ನಿಂದ ಸೈನ್‌ ಔಟ್‌ ಮಾಡುವುದೇ?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹಾಗಾಗಿ Chromium ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
@@ -199,6 +202,7 @@
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">ಈ ಸೈಟ್‌ಗಾಗಿ ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಪ್ರವೇಶಿಸಲು Chromium ಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="7483335560992089831">ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿರುವ Chromium ನ ಅದೇ ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಮುಚ್ಚಿರಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="753534427205733210">{0,plural, =1{1 ನಿಮಿಷದಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ನಿಮಿಷಗಳಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ನಿಮಿಷಗಳಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="7549178288319965365">Chromium OS ಕುರಿತು</translation>
 <translation id="7561906087460245826">Chromium ನಿಂದಲೂ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಬಳಸುತ್ತಿದೆ.</translation>
@@ -226,6 +230,7 @@
 <translation id="8330519371938183845">ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ Chromium ಅನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಲು ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> ಅವರು ಮೊದಲಿನಿಂದಲೆ Chromium ಬಳಸುತ್ತಿದ್ದರು</translation>
 <translation id="8375950122744241554">Chromium 70 ರಿಂದ ಆರಂಭಗೊಂಡು, ಮೇಲ್ವಿಚಾರಣಾ ಬಳಕೆದಾರರ ಪ್ರೊಫೈಲ್‌ಗಳು ಇನ್ನು ಮುಂದೆ ಲಭ್ಯವಿರುವುದಿಲ್ಲ.</translation>
+<translation id="8417404458978023919">{0,plural, =1{ಒಂದು ದಿನದ ಒಳಗೆ Chromium ಮರುಪ್ರಾರಂಭಿಸಿ}one{# ದಿನಗಳ ಒಳಗೆ Chromium ಮರುಪ್ರಾರಂಭಿಸಿ}other{# ದಿನಗಳ ಒಳಗೆ Chromium ಮರುಪ್ರಾರಂಭಿಸಿ}}</translation>
 <translation id="8453117565092476964">ಸ್ಥಾಪಕ ಆರ್ಕೈವ್ ದೋಷಪೂರಿತವಾಗಿದೆ ಅಥವಾ ಅಮಾನ್ಯವಾಗಿದೆ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="8493179195440786826">Chromium ನ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
 <translation id="85843667276690461">Chromium ಅನ್ನು ಬಳಸುತ್ತಿರುವುದರ ಜೊತೆಗೆ ಸಹಾಯವನ್ನು ಪಡೆಯಿರಿ</translation>
@@ -252,6 +257,7 @@
 <translation id="9025992965467895364">ಈ ಪುಟವು ಅತಿ ಹೆಚ್ಚು ಮೆಮೊರಿಯನ್ನು ಬಳಸಿಕೊಳ್ಳುತ್ತದೆ, ಆದ್ದರಿಂದ Chromium ಇದನ್ನು ವಿರಾಮಗೊಳಿಸಿದೆ.</translation>
 <translation id="9036189287518468038">Chromium ಅಪ್ಲಿಕೇಶನ್‌ ಲಾಂಚರ್‌</translation>
 <translation id="9089354809943900324">Chromium ನ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
+<translation id="9093206154853821181">{0,plural, =1{ಒಂದು ಗಂಟೆಯಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಗಂಟೆಗಳಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಗಂಟೆಗಳಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="91086099826398415">ಹೊಸ Chromium &amp;ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="911206726377975832">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಸಹ ಅಳಿಸುವುದೇ?</translation>
 <translation id="9158494823179993217"><ph name="TARGET_URL_HOSTNAME" /> ಗೆ ಪ್ರವೇಶಿಸಲು ಒಂದು ಪರ್ಯಾಯ ಬ್ರೌಸರ್ ತೆರೆಯುವಂತೆ ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರು Chromium ಅನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿದ್ದಾರೆ.</translation>

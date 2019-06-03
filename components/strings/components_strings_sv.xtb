@@ -8,6 +8,7 @@
 <translation id="1021110881106174305">Godkända kort</translation>
 <translation id="1032854598605920125">Rotera medurs</translation>
 <translation id="1035334672863811645">Logga in i Chrome</translation>
+<translation id="1036348656032585052">Inaktivera</translation>
 <translation id="1038842779957582377">okänt namn</translation>
 <translation id="1039626062703039346">Du kan skydda Google-kontot genom att byta lösenord. Google meddelas då om den här webbplatsen.</translation>
 <translation id="1050038467049342496">Stäng andra appar</translation>
@@ -189,6 +190,7 @@
 <translation id="187918866476621466">Öppna startsidorna</translation>
 <translation id="1883255238294161206">Komprimera lista</translation>
 <translation id="1898423065542865115">Filtrering</translation>
+<translation id="1914326953223720820">Uppackningstjänst</translation>
 <translation id="1916770123977586577">Läs in sidan igen för att tillämpa dina uppdaterade inställningar för webbplatsen</translation>
 <translation id="1919345977826869612">Annonser</translation>
 <translation id="1919367280705858090">Få hjälp med ett specifikt felmeddelande</translation>
@@ -400,6 +402,7 @@
 <translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
 <translation id="3041612393474885105">Certifikatinformation</translation>
 <translation id="3060227939791841287">C9 (kuvert)</translation>
+<translation id="3061707000357573562">Tjänst för programkorrigering</translation>
 <translation id="3064966200440839136">Om du betalar i ett externt program sker inte det i inkognitoläge. Vill du fortsätta?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Ingen}=1{1 lösenord}other{# lösenord}}</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -731,7 +734,6 @@
 <translation id="4926159001844873046">Från <ph name="SITE" />:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Inga resultat</translation>
-<translation id="4945672369594656571">Styr hur enhets- och kontodata hanteras. Google behandlar endast enhetens och kontots data i enlighet med anvisningarna från den ansvariga för enheten och kontot och endast i de syften som anges av den ansvariga för enheten och kontot.</translation>
 <translation id="4950898438188848926">Knapp för flikbyte. Tryck på retur för att byta till den öppna fliken <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Åtgärder</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -745,7 +747,6 @@
 <translation id="5017554619425969104">Texten som du kopierade</translation>
 <translation id="5018422839182700155">Det går inte att öppna den här sidan</translation>
 <translation id="5019198164206649151">Säkerhetskopian har dålig status</translation>
-<translation id="5020154601324912079">Styr hur enhetens data hanteras. Google behandlar endast enhetens data i enlighet med enhetshanterarens anvisningar och endast i de syften som anges av enhetshanteraren.</translation>
 <translation id="5023310440958281426">Kontrollera administratörsprinciperna</translation>
 <translation id="5029568752722684782">Ta bort kopia</translation>
 <translation id="503069730517007720">Ett rotcertifikat för <ph name="SOFTWARE_NAME" /> krävs men har inte installerats. IT-administratören bör granska konfigurationsanvisningarna för <ph name="SOFTWARE_NAME" /> och åtgärda problemet. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -918,6 +919,7 @@
 <translation id="5921639886840618607">Vill du spara kortet i Google-kontot?</translation>
 <translation id="5922853866070715753">Nästan klart</translation>
 <translation id="5932224571077948991">Påträngande eller vilseledande annonser visas på webbplatsen</translation>
+<translation id="5939847200023027600">Tjänst för PDF-sammansättning</translation>
 <translation id="5946937721014915347">Öppnar <ph name="SITE_NAME" /> …</translation>
 <translation id="5947933617628957894">Ja, lägg till</translation>
 <translation id="5951495562196540101">Det går inte att registrera enheten med ett konsumentkonto (paketerad licens är tillgänglig).</translation>
@@ -1178,7 +1180,6 @@ Mer information.
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Hantera lösenord …</translation>
 <translation id="7419106976560586862">Profilsökväg</translation>
-<translation id="7424427397225027541">Styr hur kontots data hanteras. Google behandlar endast kontots data i enlighet med den kontoansvarigas anvisningar och endast i de syften som anges av den kontoansvariga.</translation>
 <translation id="7437289804838430631">Lägg till kontaktuppgifter</translation>
 <translation id="7440140511386898319">Utforska medan du är offline</translation>
 <translation id="7441627299479586546">Felaktigt policyämne</translation>
@@ -1318,6 +1319,7 @@ Mer information.
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">De ogiltiga korten har tagits bort</translation>
 <translation id="8103161714697287722">Betalningsmetod</translation>
+<translation id="8105368624971345109">Inaktivera</translation>
 <translation id="8118489163946903409">Betalningsmetod</translation>
 <translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> har inte installerats korrekt på datorn eller nätverket. Be IT-administratören om hjälp med problemet.</translation>
 <translation id="8131740175452115882">Bekräfta</translation>

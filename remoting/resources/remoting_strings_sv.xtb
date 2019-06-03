@@ -126,8 +126,6 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="3695446226812920698">Läs mer</translation>
 <translation id="3718805989288361841">Det finns ett fel i principinställningarna för Chrome Remote Desktop. Kontakta systemadministratören om du behöver hjälp.</translation>
 <translation id="3776024066357219166">Chrome Remote Desktop-sessionen har avslutats.</translation>
-<translation id="3846148461359626420">• Förbättrad panorering och zoomning på iPhone X.
-• Stabilitetsförbättringar och felkorrigeringar.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bekräfta ditt konto och pinkoden nedan för att tillåta åtkomst via Chrome Remote Desktop.</translation>
 <translation id="3897092660631435901">Meny</translation>
@@ -341,8 +339,6 @@ Du aktiverar funktionen genom att öppna inställningspanelen Säkerhet och sekr
 <translation id="8525306231823319788">Helskärm</translation>
 <translation id="8548209692293300397">Du har tidigare loggat in som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Om du vill kunna ansluta till de datorer som sparats i det kontot <ph name="LINK_BEGIN" />loggar du in i Google Chrome<ph name="LINK_END" /> med det kontot och installerar om Chrome Remote Desktop.</translation>
 <translation id="8642984861538780905">OK</translation>
-<translation id="8705151241155781642">• Stöd för Android 9.0 Pie har lagts till.
-• Stöd för att ändra fjärrdatorns upplösning så att den motsvarar skärmen på Android-enheten.</translation>
 <translation id="8712909229180978490">Jag ser inte mina sparade filer online på Google Drive.</translation>
 <translation id="8743328882720071828">Vill du tillåta att <ph name="CLIENT_USERNAME" /> ser och styr din dator?</translation>
 <translation id="8747048596626351634">Sessionen kraschade eller gick inte att starta. Om ~/.chrome-remote-desktop-session finns på fjärrdatorn kontrollerar du att det som startas med den filen är en process som körs under lång tid i förgrunden, som en skrivbordsmiljö eller fönsterhanterare.</translation>

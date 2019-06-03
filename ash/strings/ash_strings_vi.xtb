@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Thu gọn menu</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1419738280318246476">Mở khóa thiết bị để thực hiện hành động đối với thông báo</translation>
+<translation id="1426410128494586442">Có</translation>
 <translation id="1455242230282523554">Hiển thị các tùy chọn cài đặt ngôn ngữ</translation>
 <translation id="1467432559032391204">Trái</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
@@ -157,7 +158,6 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> vẫn có thể đăng nhập vào lúc khác.</translation>
 <translation id="3321628682574733415">Mã dành cho cha mẹ không chính xác</translation>
 <translation id="332587331255250389">Vui lòng thay pin</translation>
-<translation id="3335825575923019462">Bạn có chắc chắn muốn tắt tính năng nhấp tự động không?</translation>
 <translation id="3351879221545518001">Bạn hiện đang truyền màn hình.</translation>
 <translation id="3364721542077212959">Công cụ bút cảm ứng</translation>
 <translation id="3368922792935385530">Đã kết nối</translation>
@@ -228,7 +228,6 @@
 <translation id="4378551569595875038">Đang kết nối…</translation>
 <translation id="4379531060876907730">Đây là các công cụ bút dành cho bút cảm ứng</translation>
 <translation id="4389184120735010762">Bạn đã nhấn phím tắt của tính năng phóng to ở vị trí cố định. Bạn có muốn bật tính năng này không?</translation>
-<translation id="4394049700291259645">Vô hiệu hóa</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="4450893287417543264">Không hiển thị lại</translation>
@@ -486,7 +485,6 @@
 <translation id="8649101189709089199">Chọn để nói</translation>
 <translation id="8652175077544655965">Đóng cài đặt</translation>
 <translation id="8653151467777939995">Hiển thị các tùy chọn cài đặt thông báo. Thông báo đang bật</translation>
-<translation id="8664483332071009680">Tắt tính năng nhấp tự động?</translation>
 <translation id="8664753092453405566">Hiển thị danh sách mạng. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Đã kết nối bộ sạc công suất thấp</translation>
@@ -512,7 +510,7 @@
 <translation id="8990809378771970590">Đang dùng <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Mở khóa thiết bị bằng <ph name="LOGIN_ID" /> để thực hiện hành động thông báo</translation>
 <translation id="8995603266996330174">Được quản lý bởi <ph name="DOMAIN" /></translation>
-<translation id="9017320285115481645">Nhập mã truy cập Family Link dành cho cha mẹ.</translation>
+<translation id="9017320285115481645">Nhập mã truy cập dành cho cha mẹ của Family Link.</translation>
 <translation id="9029474291399787231">Đã có bản cập nhật Adobe Flash Player</translation>
 <translation id="9056839673611986238">Thiết bị sẽ được hạ cấp hệ điều hành</translation>
 <translation id="9070640332319875144">Cài đặt Trợ lý</translation>

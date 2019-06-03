@@ -126,8 +126,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="3695446226812920698">Saiba como</translation>
 <translation id="3718805989288361841">As definições de política do Ambiente de Trabalho Remoto do Chrome têm um erro. Contacte o seu gestor de sistema para obter assistência.</translation>
 <translation id="3776024066357219166">A sessão do Ambiente de Trabalho Remoto do Chrome terminou.</translation>
-<translation id="3846148461359626420">• Melhor experiência de deslocar e aumentar/diminuir zoom no iPhone X.
-• Melhorias de estabilidade e correção de erros.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirme a sua conta e PIN abaixo para permitir o acesso do Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -339,8 +337,6 @@ Para ativar esta funcionalidade, selecione "<ph name="BUTTON_NAME" />" para apre
 <translation id="8525306231823319788">Ecrã inteiro</translation>
 <translation id="8548209692293300397">Iniciou sessão anteriormente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Para aceder aos computadores nessa conta, <ph name="LINK_BEGIN" />inicie sessão no Google Chrome<ph name="LINK_END" /> com essa conta e reinstale o Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="8642984861538780905">Razoável</translation>
-<translation id="8705151241155781642">• Foi adicionada a compatibilidade com o Android 9.0 Pie.
-• Compatibilidade para redimensionar a resolução do ambiente de trabalho remoto de modo a corresponder ao ecrã do dispositivo Android.</translation>
 <translation id="8712909229180978490">Não consigo ver os ficheiros guardados online no Google Drive.</translation>
 <translation id="8743328882720071828">Pretende permitir que <ph name="CLIENT_USERNAME" /> veja e controle o seu computador?</translation>
 <translation id="8747048596626351634">Falha da sessão ou falha ao iniciar a sessão. Se ~/.chrome-remote-desktop-session existir no computador remoto, certifique-se de que inicia um processo em primeiro plano de longa execução, como um gestor de janelas ou um ambiente de trabalho.</translation>

@@ -126,8 +126,6 @@
 <translation id="3695446226812920698">با نحوه انجام کار آشنا شوید</translation>
 <translation id="3718805989288361841">‏خطایی در تنظیمات خط‌مشی «کنترل رایانه ازراه‌دور Chrome» وجود دارد. برای راهنمایی با سرپرست سیستم خود تماس بگیرید.</translation>
 <translation id="3776024066357219166">‏جلسه "کنترل رایانه ازراه‌دور Chrome" تمام شد.</translation>
-<translation id="3846148461359626420">‏• تجربه حرکت و بزرگ‌نمایی بهتر در iPhone X.
-• بهبود پایداری و رفع اشکالات.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">‏برای اجازه دسترسی ازطریق برنامه کنترل رایانه ازراه‌دور Chrome، لطفاً حساب و پین خود را در زیر تأیید کنید.</translation>
 <translation id="3897092660631435901">منو</translation>
@@ -340,8 +338,6 @@ Chrome
 <translation id="8525306231823319788">تمام صفحه</translation>
 <translation id="8548209692293300397">‏قبلاً با <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) وارد سیستم شده بودید. برای دسترسی به رایانه‌های آن حساب، با آن حساب <ph name="LINK_BEGIN" />وارد Google Chrome شوید<ph name="LINK_END" /> و کنترل رایانه ازراه‌دور Chrome را دوباره نصب کنید.</translation>
 <translation id="8642984861538780905">نسبتاً خوب</translation>
-<translation id="8705151241155781642">‏• اضافه شدن پشتیبانی از Android نسخه ۹٫۰ (Pie).
-• پشتیبانی از تغییر اندازه وضوح کنترل دسک تاپ از راه دور برای مطابقت با صفحه دستگاه Android.</translation>
 <translation id="8712909229180978490">‏نمی‌توانم فایل‌های ذخیره شده‌ام را آنلاین در Google Drive ببینم.</translation>
 <translation id="8743328882720071828">می‌خواهید به <ph name="CLIENT_USERNAME" /> اجازه دهید که رایانه‌تان را ببیند و کنترل کند؟</translation>
 <translation id="8747048596626351634">‏جلسه خراب شد یا شروع نشد. درصورت وجود ~/.chrome-remote-desktop-session در رایانه راه‌ دور، مطمئن شوید که یک فرآیند پیش‌زمینه طولانی‌مدت مثل محیط دسک‌تاپ یا مدیر پنجره را راه‌اندازی می‌کند.</translation>

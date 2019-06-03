@@ -14,11 +14,13 @@
 <translation id="1111673857033749125">Tutaj wyświetlą się zakładki z innych urządzeń.</translation>
 <translation id="1113597929977215864">Pokaż widok uproszczony</translation>
 <translation id="1121094540300013208">Raporty o użytkowaniu i awariach</translation>
+<translation id="1124772482545689468">Użytkownik</translation>
 <translation id="1129510026454351943">Szczegóły: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 plik oczekuje na pobranie.}few{# pliki oczekują na pobranie.}many{# plików oczekuje na pobranie.}other{# pliku oczekuje na pobranie.}}</translation>
 <translation id="1145536944570833626">Usuń istniejące dane.</translation>
 <translation id="1146678959555564648">Włącz tryb VR</translation>
 <translation id="116280672541001035">Użyto</translation>
+<translation id="1171770572613082465">Zobacz najpopularniejsze strony, klikając przycisk „Popularne”</translation>
 <translation id="1172593791219290334">Strona startowa</translation>
 <translation id="1173894706177603556">Zmień nazwę</translation>
 <translation id="1175310183703641346">Twoje zakładki, historia, hasła i inne ustawienia przestaną być synchronizowane z Twoim kontem Google</translation>
@@ -78,6 +80,7 @@
 <translation id="1513352483775369820">Zakładki i historia online</translation>
 <translation id="1513858653616922153">Usuń hasło</translation>
 <translation id="1516229014686355813">Funkcja Kliknij, by wyszukać wysyła zaznaczone słowo i bieżącą stronę jako kontekst do wyszukiwarki Google. Możesz ją wyłączyć w <ph name="BEGIN_LINK" />ustawieniach<ph name="END_LINK" />.</translation>
+<translation id="1521774566618522728">Aktywność: dzisiaj</translation>
 <translation id="1539064842193522527">Link otwarty w Chrome</translation>
 <translation id="1549000191223877751">Przenieś do innego okna</translation>
 <translation id="1553358976309200471">Zaktualizuj Chrome</translation>
@@ -255,6 +258,7 @@
 <translation id="2836148919159985482">Kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="2842985007712546952">Folder nadrzędny</translation>
 <translation id="2845873210977809562">Otwarte karty – zamknięto</translation>
+<translation id="2858138569776157458">Popularne</translation>
 <translation id="2870560284913253234">Witryna</translation>
 <translation id="2874939134665556319">Poprzedni utwór</translation>
 <translation id="2876369937070532032">Gdy Twoje bezpieczeństwo jest zagrożone, wysyła do Google adresy URL odwiedzanych stron</translation>
@@ -888,7 +892,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7475688122056506577">Nie znaleziono karty SD. Może brakować niektórych Twoich plików.</translation>
 <translation id="7479104141328977413">Zarządzanie kartami</translation>
 <translation id="7481312909269577407">Dalej</translation>
-<translation id="7482697587265222445">Karta została wysłana na Twoje urządzenia</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (zaktualizowana <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">zaoszczędzonych danych</translation>
 <translation id="7498271377022651285">Czekaj…</translation>
@@ -972,6 +975,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8058746566562539958">Otwórz w nowej karcie Chrome</translation>
 <translation id="8063895661287329888">Nie udało się dodać zakładki.</translation>
 <translation id="806745655614357130">Przechowuj dane oddzielnie</translation>
+<translation id="8067883171444229417">Odtwórz film</translation>
 <translation id="8068648041423924542">Nie można wybrać certyfikatu.</translation>
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="8076492880354921740">Karty</translation>
@@ -1008,6 +1012,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8327155640814342956">Aby komfortowo przeglądać internet, otwórz tę stronę i zaktualizuj Chrome</translation>
 <translation id="8339163506404995330">Strony, których językiem jest <ph name="LANGUAGE" />, nie będą tłumaczone</translation>
 <translation id="8349013245300336738">Sortuj według ilości wykorzystanych danych</translation>
+<translation id="8364299278605033898">Zobacz najpopularniejsze strony</translation>
 <translation id="8372893542064058268">Zezwalaj na synchronizowanie w tle z określoną stroną.</translation>
 <translation id="8374821112118309944">Musisz zainstalować nowszą wersję TalkBack.</translation>
 <translation id="8378714024927312812">Zarządzane przez Twoją organizację</translation>

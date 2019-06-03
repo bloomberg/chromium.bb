@@ -292,6 +292,7 @@
 <translation id="4690246192099372265">švedščina</translation>
 <translation id="4693155481716051732">Suši</translation>
 <translation id="4694604912444486114">Opica</translation>
+<translation id="4697043402264950621">Seznam datotek, razvrščen glede na <ph name="COLUMN_NAME" />, v naraščajočem vrstnem redu.</translation>
 <translation id="4711094779914110278">turščina</translation>
 <translation id="4713544552769165154">Ta datoteka je zasnovana za računalnik, ki uporablja programsko opremo Macintosh. Ni združljiva z vašo napravo, ki uporablja sistem Chrome OS. Poiščite ustrezno nadomestno aplikacijo v <ph name="BEGIN_LINK" />Spletni trgovini Chrome<ph name="END_LINK" />.<ph name="BEGIN_LINK_HELP" />Več o tem<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449">Št. varnostno kopiranih fotografij: <ph name="FILE_COUNT" /></translation>
@@ -530,6 +531,7 @@
 <translation id="7339898014177206373">Novo okno</translation>
 <translation id="7348749398828259943">Mednarodna tipkovnica za angleščino (Združene države) – Workman</translation>
 <translation id="7359359531237882347">Kopiranje toliko elementov: <ph name="NUMBER_OF_ITEMS" /> …</translation>
+<translation id="7375951387215729722">Seznam datotek, razvrščen glede na <ph name="COLUMN_NAME" />, v padajočem vrstnem redu.</translation>
 <translation id="7389722738210761877">Tipkovnica za tajščino (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Tipkovnica za hindijščino (fonetična)</translation>
 <translation id="7417453074306512035">Tipkovnica za etiopščino</translation>
