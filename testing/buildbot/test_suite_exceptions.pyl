@@ -1323,7 +1323,6 @@
               'temp_band': '<30',
             },
           ],
-          'hard_timeout': 1800,
           'shards': 15,
         },
       },
