@@ -1488,12 +1488,45 @@ message AndroidStatus {
   optional string droid_guard_info = 2;
 }
 
+enum CrostiniAppType {
+  // The default terminal App.
+  CROSTINI_APP_TYPE_TERMINAL = 0;
+  // A registered interactive Crostini App which is
+  // not the default terminal app.
+  CROSTINI_APP_TYPE_INTERACTIVE = 1;
+  // Detected non-registered container applications.
+  CROSTINI_APP_TYPE_OTHER = 2;
+}
+
+message CrostiniApp {
+  // The default display name of the App.
+  optional string app_name = 1;
+  // The type of the App.
+  optional CrostiniAppType app_type = 2;
+
+  // Time stamp of last launch of the App with a three day granularity.
+  // The timestamp is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 last_launch_time_window_start_timestamp = 3;
+
+  // If available, the name of the Debian package belonging to this App.
+  optional string package_name = 4;
+  // If available, the version of the Debian package belonging to this App.
+  optional string package_version = 5;
+}
+
 message CrostiniStatus {
   // Time stamp of last launch of a Crostini app with three day granularity,
   // The timestamp is milliseconds since Epoch in UTC timezone (Java time).
   optional int64 last_launch_time_window_start_timestamp = 1;
+
   // The VM image version at the time of the last launch.
   optional string last_launch_vm_image_version = 2;
+  // The VM kernel version at the time of the last launch.
+  optional string last_launch_vm_kernel_version = 3;
+
+  // Contains information about each installed app at the time of the
+  // report.
+  repeated CrostiniApp installed_apps = 4;
 }
 
 // Report current active session (a user on one device) level status.
