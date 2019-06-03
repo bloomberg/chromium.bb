@@ -15,8 +15,6 @@ source_set("earl_grey_support") {
   ]
 
   sources = [
-    "app_launch_manager.h",
-    "app_launch_manager.mm",
     "base_earl_grey_test_case.h",
     "base_earl_grey_test_case.mm",
     "base_eg_test_helper_impl.h",
@@ -61,8 +59,6 @@ source_set("eg_test_support+eg2") {
   testonly = true
 
   sources = [
-    "app_launch_manager.h",
-    "app_launch_manager.mm",
     "base_earl_grey_test_case.h",
     "base_earl_grey_test_case.mm",
     "base_eg_test_helper_impl.h",
