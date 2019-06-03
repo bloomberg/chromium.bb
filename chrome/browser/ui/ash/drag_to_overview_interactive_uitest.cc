@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -81,7 +80,7 @@ class DragToOverviewTest : public UIPerformanceTest {
   }
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
-    test::SetAndWaitForTabletMode(true);
+    ash::ShellTestApi().EnableTabletModeWindowManager(true);
 
     if (base::SysInfo::IsRunningOnChromeOS()) {
       base::RunLoop run_loop;

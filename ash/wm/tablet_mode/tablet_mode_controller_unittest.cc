@@ -665,20 +665,26 @@ TEST_F(TabletModeControllerTest, VerticalHingeUnstableAnglesTest) {
 
 // Tests that when a TabletModeController is created that cached tablet mode
 // state will trigger a mode update.
-TEST_F(TabletModeControllerTest, InitializedWhileTabletModeSwitchOn) {
-  base::RunLoop().RunUntilIdle();
-  power_manager_client()->SetTabletMode(
-      chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks::Now());
+class TabletModeControllerInitedFromPowerManagerClientTest
+    : public TabletModeControllerTest {
+ public:
+  TabletModeControllerInitedFromPowerManagerClientTest() = default;
+  ~TabletModeControllerInitedFromPowerManagerClientTest() override = default;
 
-  // Clear the callback that was set by the original TabletModeController.
-  TabletMode::SetCallback({});
+  void SetUp() override {
+    chromeos::PowerManagerClient::InitializeFake();
+    power_manager_client()->SetTabletMode(
+        chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks::Now());
+    TabletModeControllerTest::SetUp();
+  }
+};
 
-  TabletModeController controller;
-  controller.OnShellInitialized();
-  EXPECT_FALSE(controller.IsTabletModeWindowManagerEnabled());
+TEST_F(TabletModeControllerInitedFromPowerManagerClientTest,
+       InitializedWhileTabletModeSwitchOn) {
+  EXPECT_FALSE(tablet_mode_controller()->IsTabletModeWindowManagerEnabled());
   // PowerManagerClient callback is a posted task.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(controller.IsTabletModeWindowManagerEnabled());
+  EXPECT_TRUE(tablet_mode_controller()->IsTabletModeWindowManagerEnabled());
 }
 
 TEST_F(TabletModeControllerTest, RestoreAfterExit) {

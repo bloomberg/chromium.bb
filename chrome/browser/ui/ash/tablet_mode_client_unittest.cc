@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 
-#include "ash/public/interfaces/tablet_mode.mojom.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/ash/fake_tablet_mode_controller.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,33 +28,29 @@ class TestTabletModeClientObserver : public TabletModeClientObserver {
   DISALLOW_COPY_AND_ASSIGN(TestTabletModeClientObserver);
 };
 
-class TabletModeClientTest : public testing::Test {
- public:
-  TabletModeClientTest() = default;
-  ~TabletModeClientTest() override = default;
-
- private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabletModeClientTest);
-};
+using TabletModeClientTest = testing::Test;
 
 TEST_F(TabletModeClientTest, Construction) {
+  // In production, TabletModeController is constructed before TabletModeClient
+  // and destroyed before it too. Match that here.
+  auto controller = std::make_unique<FakeTabletModeController>();
   TabletModeClient client;
-  FakeTabletModeController controller;
-  client.InitForTesting(controller.CreateInterfacePtr());
-  client.FlushForTesting();
+  client.Init();
 
   // Singleton was initialized.
   EXPECT_EQ(&client, TabletModeClient::Get());
 
   // Object was set as client.
-  EXPECT_TRUE(controller.was_client_set());
+  EXPECT_TRUE(controller->has_observer());
+
+  controller = nullptr;
 }
 
 TEST_F(TabletModeClientTest, Observers) {
-  TabletModeClient client;
+  auto controller = std::make_unique<FakeTabletModeController>();
   TestTabletModeClientObserver observer;
+  TabletModeClient client;
+  client.Init();
   client.AddObserver(&observer);
 
   // Observer is not notified with state when added.
@@ -72,6 +66,8 @@ TEST_F(TabletModeClientTest, Observers) {
   EXPECT_FALSE(observer.last_toggle_);
 
   client.RemoveObserver(&observer);
+
+  controller = nullptr;
 }
 
 }  // namespace

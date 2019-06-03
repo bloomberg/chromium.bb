@@ -6,7 +6,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -35,7 +34,7 @@ class OverviewAnimationsTest
     tablet_mode_ = std::get<2>(GetParam());
 
     if (tablet_mode_)
-      test::SetAndWaitForTabletMode(true);
+      ash::ShellTestApi().EnableTabletModeWindowManager(true);
 
     GURL ntp_url("chrome://newtab");
     // The default is blank page.

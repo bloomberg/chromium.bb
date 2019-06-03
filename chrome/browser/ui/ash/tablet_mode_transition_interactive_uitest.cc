@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(TabletModeTransitionTest, EnterExit) {
     base::RunLoop run_loop;
     ui::LayerAnimator* animator = browser_window->layer()->GetAnimator();
     TestLayerAnimationObserver waiter(animator, run_loop.QuitClosure());
-    test::SetAndWaitForTabletMode(true);
+    ash::ShellTestApi().EnableTabletModeWindowManager(true);
     run_loop.Run();
   }
 
@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(TabletModeTransitionTest, EnterExit) {
     base::RunLoop run_loop;
     ui::LayerAnimator* animator = browser_window->layer()->GetAnimator();
     TestLayerAnimationObserver waiter(animator, run_loop.QuitClosure());
-    test::SetAndWaitForTabletMode(false);
+    ash::ShellTestApi().EnableTabletModeWindowManager(false);
     run_loop.Run();
   }
 }

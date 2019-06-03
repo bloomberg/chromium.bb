@@ -151,6 +151,7 @@ component("cpp") {
     "system_tray_focus_observer.h",
     "tablet_mode.cc",
     "tablet_mode.h",
+    "tablet_mode_toggle_observer.h",
     "touch_uma.cc",
     "touch_uma.h",
     "wallpaper_controller.cc",

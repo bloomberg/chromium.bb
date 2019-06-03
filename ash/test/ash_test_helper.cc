@@ -111,7 +111,8 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
     bluez_dbus_manager_initialized_ = true;
   }
 
-  chromeos::PowerManagerClient::InitializeFake();
+  if (!chromeos::PowerManagerClient::Get())
+    chromeos::PowerManagerClient::InitializeFake();
 
   if (!chromeos::PowerPolicyController::IsInitialized()) {
     chromeos::PowerPolicyController::Initialize(

@@ -6,25 +6,29 @@
 #define ASH_PUBLIC_CPP_TABLET_MODE_H_
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/callback_forward.h"
-#include "base/macros.h"
 
 namespace ash {
 
-// A utility to allow code in //ash/public/cpp to access the tablet mode state,
-// regardless of what process it's running in.
-class TabletMode {
- public:
-  using TabletModeCallback = base::RepeatingCallback<bool(void)>;
+class TabletModeToggleObserver;
 
-  // Sets the callback to be run by IsEnabled().
-  static void ASH_PUBLIC_EXPORT SetCallback(TabletModeCallback callback);
+// An interface implemented by Ash that allows Chrome to be informed of changes
+// to tablet mode state.
+class ASH_PUBLIC_EXPORT TabletMode {
+ public:
+  // Returns the singleton instance.
+  static TabletMode* Get();
+
+  virtual void SetTabletModeToggleObserver(
+      TabletModeToggleObserver* observer) = 0;
 
   // Returns whether the system is in tablet mode.
-  static bool IsEnabled();
+  virtual bool IsEnabled() const = 0;
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(TabletMode);
+  virtual void SetEnabledForTest(bool enabled) = 0;
+
+ protected:
+  TabletMode();
+  virtual ~TabletMode();
 };
 
 }  // namespace ash
