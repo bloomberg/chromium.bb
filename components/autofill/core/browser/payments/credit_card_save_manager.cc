@@ -753,9 +753,10 @@ int CreditCardSaveManager::GetDetectedValues() const {
   if ((!(detected_values & DetectedValue::CARDHOLDER_NAME) &&
        !(detected_values & DetectedValue::ADDRESS_NAME) &&
        !(detected_values & DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT) &&
-       features::IsAutofillUpstreamEditableCardholderNameExperimentEnabled()) ||
-      features::
-          IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled()) {
+       base::FeatureList::IsEnabled(
+           features::kAutofillUpstreamEditableCardholderName)) ||
+      base::FeatureList::IsEnabled(
+          features::kAutofillUpstreamAlwaysRequestCardholderName)) {
     detected_values |= DetectedValue::USER_PROVIDED_NAME;
   }
 

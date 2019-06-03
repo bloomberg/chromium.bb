@@ -208,8 +208,8 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
 
     // Prepare the prefilled cardholder name.
     base::string16 prefilled_name;
-    if (!features::
-            IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled()) {
+    if (!base::FeatureList::IsEnabled(
+            features::kAutofillUpstreamBlankCardholderNameField)) {
       prefilled_name =
           base::UTF8ToUTF16(controller()->GetAccountInfo().full_name);
     }
