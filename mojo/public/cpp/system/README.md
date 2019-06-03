@@ -145,10 +145,10 @@ memory:
 
 ``` cpp
 mojo::ScopedSharedBufferMapping mapping = buffer->Map(64);
-static_cast<int*>(mapping.get()) = 42;
+static_cast<int*>(mapping.get())[0] = 42;
 
 mojo::ScopedSharedBufferMapping another_mapping = buffer->MapAtOffset(64, 4);
-static_cast<int*>(mapping.get()) = 43;
+static_cast<int*>(mapping.get())[0] = 43;
 ```
 
 When `mapping` and `another_mapping` are destroyed, they automatically unmap
