@@ -1132,9 +1132,10 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
   Element* element = state.GetElement();
   DCHECK(element);
 
-  // The animating element may be this element, or its pseudo element. It is
-  // null when calculating the style for a potential pseudo element that has
-  // yet to be created.
+  // The animating element may be this element, the pseudo element we are
+  // resolving style for, or null if we are resolving style for a pseudo
+  // element which is not represented by a PseudoElement like scrollbar pseudo
+  // elements.
   DCHECK(animating_element == element || !animating_element ||
          animating_element->ParentOrShadowHostElement() == element);
 
