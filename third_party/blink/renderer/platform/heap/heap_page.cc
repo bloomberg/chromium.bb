@@ -273,15 +273,13 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
   return result;
 }
 
-void BaseArena::SweepUnsweptPage() {
-  while (BasePage* page = unswept_pages_.Pop()) {
-    SetCurrentlyProccesedPage(page);
-    if (page->Sweep()) {
-      page->RemoveFromHeap();
-    } else {
-      swept_pages_.Push(page);
-      page->MarkAsSwept();
-    }
+void BaseArena::SweepUnsweptPage(BasePage* page) {
+  SetCurrentlyProccesedPage(page);
+  if (page->Sweep()) {
+    page->RemoveFromHeap();
+  } else {
+    swept_pages_.Push(page);
+    page->MarkAsSwept();
   }
   SetCurrentlyProccesedPage(nullptr);
 }
@@ -307,8 +305,8 @@ bool BaseArena::LazySweepWithDeadline(TimeTicks deadline) {
     }
   }
   int page_count = 1;
-  while (!SweepingCompleted()) {
-    SweepUnsweptPage();
+  while (BasePage* page = unswept_pages_.Pop()) {
+    SweepUnsweptPage(page);
     if (page_count % kDeadlineCheckInterval == 0) {
       if (deadline <= CurrentTimeTicks()) {
         // Deadline has come.
@@ -332,8 +330,8 @@ void BaseArena::CompleteSweep() {
   // Some phases, e.g. verification, require iterability of a page.
   MakeIterable();
 
-  while (!SweepingCompleted()) {
-    SweepUnsweptPage();
+  while (BasePage* page = unswept_pages_.Pop()) {
+    SweepUnsweptPage(page);
   }
 }
 

@@ -762,7 +762,7 @@ class PLATFORM_EXPORT BaseArena {
   void PoisonArena();
 #endif
   Address LazySweep(size_t, size_t gc_info_index);
-  void SweepUnsweptPage();
+  void SweepUnsweptPage(BasePage*);
   // Returns true if we have swept all pages within the deadline. Returns false
   // otherwise.
   bool LazySweepWithDeadline(TimeTicks deadline);
