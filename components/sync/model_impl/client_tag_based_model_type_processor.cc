@@ -44,13 +44,19 @@ void LogNonReflectionUpdateFreshnessToUma(ModelType type,
                                           base::Time remote_modification_time) {
   const base::TimeDelta latency = base::Time::Now() - remote_modification_time;
 
-  UMA_HISTOGRAM_LONG_TIMES("Sync.NonReflectionUpdateFreshnessPossiblySkewed",
-                           latency);
+  UMA_HISTOGRAM_CUSTOM_TIMES("Sync.NonReflectionUpdateFreshnessPossiblySkewed2",
+                             latency,
+                             /*min=*/base::TimeDelta::FromMilliseconds(100),
+                             /*max=*/base::TimeDelta::FromDays(7),
+                             /*bucket_count=*/50);
 
-  base::UmaHistogramLongTimes(
-      std::string("Sync.NonReflectionUpdateFreshnessPossiblySkewed.") +
+  base::UmaHistogramCustomTimes(
+      std::string("Sync.NonReflectionUpdateFreshnessPossiblySkewed2.") +
           ModelTypeToHistogramSuffix(type),
-      latency);
+      latency,
+      /*min=*/base::TimeDelta::FromMilliseconds(100),
+      /*max=*/base::TimeDelta::FromDays(7),
+      /*bucket_count=*/50);
 }
 
 }  // namespace

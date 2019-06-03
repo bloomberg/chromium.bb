@@ -72,11 +72,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, E2E_ENABLED(Sanity)) {
   EXPECT_EQ(
       1U, histogram_tester
               .GetAllSamples(
-                  "Sync.NonReflectionUpdateFreshnessPossiblySkewed.PREFERENCE")
+                  "Sync.NonReflectionUpdateFreshnessPossiblySkewed2.PREFERENCE")
               .size());
   EXPECT_NE(
       0U, histogram_tester
-              .GetAllSamples("Sync.NonReflectionUpdateFreshnessPossiblySkewed")
+              .GetAllSamples("Sync.NonReflectionUpdateFreshnessPossiblySkewed2")
               .size());
 }
 
