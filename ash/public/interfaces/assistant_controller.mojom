@@ -10,14 +10,10 @@ import "mojo/public/mojom/base/time.mojom";
 
 // Interface to AssistantController which is owned by Shell in Ash. This is
 // typically used by the Assistant service to provide the controller with an
-// interface to itself, as well as by the Assistant client in chrome/browser to
-// provide interfaces to delegates which depend on browser.
+// interface to itself.
 interface AssistantController {
   // Provides a reference to the underlying |assistant| service.
   SetAssistant(chromeos.assistant.mojom.Assistant assistant);
-
-  // Opens Google Assistant settings.
-  OpenAssistantSettings();
 
   // Show speaker id enrollment flow.
   StartSpeakerIdEnrollmentFlow();
@@ -29,9 +25,6 @@ interface AssistantController {
     bool pii_allowed,
     string feedback_description,
     string screenshot_png);
-
-  // Provides a reference to DeviceActions service.
-  SetDeviceActions(chromeos.assistant.mojom.DeviceActions device_actions);
 };
 
 enum AssistantTimerState {

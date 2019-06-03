@@ -5,13 +5,15 @@
 #ifndef CHROME_BROWSER_UI_ASH_ASSISTANT_DEVICE_ACTIONS_H_
 #define CHROME_BROWSER_UI_ASH_ASSISTANT_DEVICE_ACTIONS_H_
 
+#include "ash/public/cpp/android_intent_helper.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
-class DeviceActions : public chromeos::assistant::mojom::DeviceActions,
+class DeviceActions : public ash::AndroidIntentHelper,
+                      public chromeos::assistant::mojom::DeviceActions,
                       public ArcAppListPrefs::Observer {
  public:
   DeviceActions();

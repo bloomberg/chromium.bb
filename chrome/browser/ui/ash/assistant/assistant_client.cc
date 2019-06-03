@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "ash/public/interfaces/assistant_controller.mojom.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
@@ -67,10 +65,6 @@ void AssistantClient::MaybeInit(Profile* profile) {
 
   chromeos::assistant::mojom::ClientPtr client_ptr;
   client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-
-  ash::mojom::AssistantControllerPtr assistant_controller;
-  connector->BindInterface(ash::mojom::kServiceName, &assistant_controller);
-  assistant_controller->SetDeviceActions(device_actions_.AddBinding());
 
   assistant_connection_->Init(std::move(client_ptr),
                               device_actions_.AddBinding());

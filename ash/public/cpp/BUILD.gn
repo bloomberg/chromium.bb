@@ -9,6 +9,8 @@ component("cpp") {
   sources = [
     "accelerators.cc",
     "accelerators.h",
+    "android_intent_helper.cc",
+    "android_intent_helper.h",
     "app_list/app_list_client.h",
     "app_list/app_list_config.cc",
     "app_list/app_list_config.h",

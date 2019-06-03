@@ -9,6 +9,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/android_intent_helper.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/session/session_controller_impl.h"
@@ -102,11 +103,6 @@ void AssistantController::SetAssistant(
     observer.OnAssistantReady();
 }
 
-void AssistantController::OpenAssistantSettings() {
-  // Launch Assistant settings via deeplink.
-  OpenUrl(assistant::util::CreateAssistantSettingsDeepLink());
-}
-
 void AssistantController::SendAssistantFeedback(
     bool assistant_debug_info_allowed,
     const std::string& feedback_description,
@@ -118,11 +114,6 @@ void AssistantController::SendAssistantFeedback(
   assistant_feedback->description = feedback_description;
   assistant_feedback->screenshot_png = screenshot_png;
   assistant_->SendAssistantFeedback(std::move(assistant_feedback));
-}
-
-void AssistantController::SetDeviceActions(
-    chromeos::assistant::mojom::DeviceActionsPtr device_actions) {
-  device_actions_ = std::move(device_actions);
 }
 
 void AssistantController::StartSpeakerIdEnrollmentFlow() {
@@ -239,8 +230,9 @@ void AssistantController::OnAccessibilityStatusChanged() {
 }
 
 void AssistantController::OpenUrl(const GURL& url, bool from_server) {
-  if (url.SchemeIs(kAndroidIntentScheme) && device_actions_) {
-    device_actions_->LaunchAndroidIntent(url.spec());
+  auto* android_helper = AndroidIntentHelper::GetInstance();
+  if (url.SchemeIs(kAndroidIntentScheme) && android_helper) {
+    android_helper->LaunchAndroidIntent(url.spec());
     return;
   }
 

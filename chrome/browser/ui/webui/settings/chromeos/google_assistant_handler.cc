@@ -6,9 +6,8 @@
 
 #include <utility>
 
+#include "ash/public/cpp/assistant/assistant_settings.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
-#include "ash/public/interfaces/assistant_controller.mojom.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/values.h"
@@ -52,14 +51,8 @@ void GoogleAssistantHandler::RegisterMessages() {
 void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
     const base::ListValue* args) {
   CHECK_EQ(0U, args->GetSize());
-  if (chromeos::switches::IsAssistantEnabled()) {
-    // Opens Google Assistant settings.
-    service_manager::Connector* connector =
-        content::BrowserContext::GetConnectorFor(profile_);
-    ash::mojom::AssistantControllerPtr assistant_controller;
-    connector->BindInterface(ash::mojom::kServiceName, &assistant_controller);
-    assistant_controller->OpenAssistantSettings();
-  }
+  if (chromeos::switches::IsAssistantEnabled())
+    ash::OpenAssistantSettings();
 }
 
 void GoogleAssistantHandler::HandleRetrainVoiceModel(

@@ -79,13 +79,10 @@ class ASH_EXPORT AssistantController
   // TODO(updowndota): Refactor Set() calls to use a factory pattern.
   void SetAssistant(
       chromeos::assistant::mojom::AssistantPtr assistant) override;
-  void OpenAssistantSettings() override;
   void StartSpeakerIdEnrollmentFlow() override;
   void SendAssistantFeedback(bool assistant_debug_info_allowed,
                              const std::string& feedback_description,
                              const std::string& screenshot_png) override;
-  void SetDeviceActions(
-      chromeos::assistant::mojom::DeviceActionsPtr device_actions) override;
 
   // AssistantControllerObserver:
   void OnDeepLinkReceived(
@@ -167,8 +164,6 @@ class ASH_EXPORT AssistantController
   mojo::InterfacePtrSet<mojom::VolumeObserver> volume_observer_;
 
   chromeos::assistant::mojom::AssistantPtr assistant_;
-
-  chromeos::assistant::mojom::DeviceActionsPtr device_actions_;
 
   // Assistant sub-controllers.
   AssistantAlarmTimerController assistant_alarm_timer_controller_;
