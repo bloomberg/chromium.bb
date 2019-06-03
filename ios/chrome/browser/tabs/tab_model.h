@@ -19,7 +19,6 @@ class GURL;
 @class SessionServiceIOS;
 @class SessionWindowIOS;
 @class Tab;
-@protocol TabModelObserver;
 class TabModelSyncedWindowDelegate;
 class TabUsageRecorder;
 class WebStateList;
@@ -140,17 +139,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Halts all tabs (terminating active requests) without closing them. Used
 // when the app is shutting down.
 - (void)haltAllTabs;
-
-// Notifies observers that the given |tab| was changed.
-- (void)notifyTabChanged:(Tab*)tab;
-
-// Adds |observer| to the list of observers. |observer| is not retained. Does
-// nothing if |observer| is already in the list. Any added observers must be
-// explicitly removed before the TabModel is destroyed.
-- (void)addObserver:(id<TabModelObserver>)observer;
-
-// Removes |observer| from the list of observers.
-- (void)removeObserver:(id<TabModelObserver>)observer;
 
 // Resets all session counters.
 - (void)resetSessionMetrics;

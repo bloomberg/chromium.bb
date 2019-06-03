@@ -77,7 +77,7 @@
 
 @end
 
-// TabModelObserver that some tabs stats to be sent to the crash server.
+// WebStateList Observer that some tabs stats to be sent to the crash server.
 @interface CrashReporterTabStateObserver
     : NSObject <CRWWebStateObserver, WebStateListObserving> {
  @private

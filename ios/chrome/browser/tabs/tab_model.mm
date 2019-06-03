@@ -42,7 +42,6 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model_closing_web_state_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
-#import "ios/chrome/browser/tabs/tab_model_observers.h"
 #import "ios/chrome/browser/tabs/tab_model_selected_tab_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_synced_window_delegate.h"
 #import "ios/chrome/browser/tabs/tab_model_web_state_list_delegate.h"
@@ -240,8 +239,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   std::unique_ptr<TabUsageRecorder> _tabUsageRecorder;
   // Saves session's state.
   SessionServiceIOS* _sessionService;
-  // List of TabModelObservers.
-  TabModelObservers* _observers;
 
   // Used to ensure thread-safety of the certificate policy management code.
   base::CancelableTaskTracker _clearPoliciesTaskTracker;
@@ -266,9 +263,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 - (void)dealloc {
   // browserStateDestroyed should always have been called before destruction.
   DCHECK(!_browserState);
-
-  // Make sure the observers do clean after themselves.
-  DCHECK([_observers empty]);
 }
 
 #pragma mark - Public methods
@@ -312,8 +306,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 - (instancetype)initWithSessionService:(SessionServiceIOS*)service
                           browserState:(ios::ChromeBrowserState*)browserState {
   if ((self = [super init])) {
-    _observers = [TabModelObservers observers];
-
     _webStateListDelegate = std::make_unique<TabModelWebStateListDelegate>();
     _webStateList = std::make_unique<WebStateList>(_webStateListDelegate.get());
 
@@ -508,18 +500,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   }
 }
 
-- (void)notifyTabChanged:(Tab*)tab {
-  [_observers tabModel:self didChangeTab:tab];
-}
-
-- (void)addObserver:(id<TabModelObserver>)observer {
-  [_observers addObserver:observer];
-}
-
-- (void)removeObserver:(id<TabModelObserver>)observer {
-  [_observers removeObserver:observer];
-}
-
 - (void)resetSessionMetrics {
   if (_webStateListMetricsObserver)
     _webStateListMetricsObserver->ResetSessionMetrics();
@@ -612,9 +592,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
   // It is only ok to pass a nil |window| during the initial restore.
   DCHECK(window || initialRestore);
-
-  // The initial restore can only happen before observers are registered.
-  DCHECK(!initialRestore || [_observers empty]);
 
   // Setting the sesion progress to |YES|, so BVC can check it to work around
   // crbug.com/763964.
@@ -740,8 +717,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  [self notifyTabChanged:tab];
 
   if (!navigation->IsSameDocument() && navigation->HasCommitted() &&
       !self.offTheRecord) {
@@ -752,7 +727,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
 
   // In order to avoid false positive in the crash loop detection, disable the
   // counter as soon as an URL is loaded. This requires an user action and is a
@@ -768,8 +742,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   if (_tabUsageRecorder && ShouldRecordPageLoadStartForNavigation(navigation)) {
     _tabUsageRecorder->RecordPageLoadStart(webState);
   }
-
-  [self notifyTabChanged:tab];
 
   DCHECK(webState->GetNavigationManager());
   web::NavigationItem* navigationItem =
@@ -800,9 +772,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  [self notifyTabChanged:tab];
-
   RecordInterfaceOrientationMetric();
   RecordMainFrameNavigationMetric(webState);
 
@@ -811,35 +780,11 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
                     loadSuccess:success];
 }
 
-- (void)webState:(web::WebState*)webState
-    didChangeLoadingProgress:(double)progress {
-  // TODO(crbug.com/546406): It is probably possible to do something smarter,
-  // but the fact that this is not always sent will have to be taken into
-  // account.
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  [self notifyTabChanged:tab];
-}
-
-- (void)webStateDidChangeTitle:(web::WebState*)webState {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  [self notifyTabChanged:tab];
-}
-
-- (void)webStateDidChangeVisibleSecurityState:(web::WebState*)webState {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  [self notifyTabChanged:tab];
-}
-
 - (void)webStateDestroyed:(web::WebState*)webState {
   // The TabModel is removed from WebState's observer when the WebState is
   // detached from WebStateList which happens before WebState destructor,
   // so this method should never be called.
   NOTREACHED();
-}
-
-- (void)webStateDidStopLoading:(web::WebState*)webState {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  [self notifyTabChanged:tab];
 }
 
 #pragma mark - WebStateListObserving

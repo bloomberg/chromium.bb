@@ -140,14 +140,6 @@
                                  WebStateList::CLOSE_NO_FLAGS);
 }
 
-- (void)addObserver:(id<TabModelObserver>)observer {
-  // Do nothing.
-}
-
-- (void)removeObserver:(id<TabModelObserver>)observer {
-  // Do nothing.
-}
-
 - (WebStateList*)webStateList {
   return _webStateList.get();
 }

@@ -3666,8 +3666,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     NOTREACHED();
   }
   // If a native controller is vended before its tab is added to the tab model,
-  // use the temporary key and add it under the new tab's tabId in the
-  // TabModelObserver callback.  This happens:
+  // use the temporary key. This happens:
   // - when there is no current tab (occurs when vending the NTP controller for
   //   the first tab that is opened),
   // - when the current tab's url doesn't match |url| (occurs when a native

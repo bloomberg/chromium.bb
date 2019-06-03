@@ -31,7 +31,6 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/activity_services/share_protocol.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -88,8 +87,7 @@ using web::WebStateImpl;
 @class ToolbarButtonUpdater;
 
 // Private methods in BrowserViewController to test.
-@interface BrowserViewController (Testing) <CRWNativeContentProvider,
-                                            TabModelObserver>
+@interface BrowserViewController (Testing) <CRWNativeContentProvider>
 - (void)pageLoadStarted:(NSNotification*)notification;
 - (void)pageLoadComplete:(NSNotification*)notification;
 - (void)webStateSelected:(web::WebState*)webState
@@ -216,8 +214,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         initWithRepresentedObject:[OCMockObject niceMockForClass:[Tab class]]];
     [[[tabModel stub] andReturn:currentTab] currentTab];
     [[[tabModel stub] andReturn:currentTab] tabAtIndex:0];
-    [[tabModel stub] addObserver:[OCMArg any]];
-    [[tabModel stub] removeObserver:[OCMArg any]];
     [[tabModel stub] saveSessionImmediately:NO];
     [[tabModel stub] setCurrentTab:[OCMArg any]];
     [[tabModel stub] closeAllTabs];
