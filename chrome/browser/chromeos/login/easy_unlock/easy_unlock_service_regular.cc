@@ -385,6 +385,7 @@ void EasyUnlockServiceRegular::InitializeInternal() {
 
 void EasyUnlockServiceRegular::ShutdownInternal() {
   pref_manager_.reset();
+  notification_controller_.reset();
 
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
 

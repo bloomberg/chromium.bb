@@ -321,6 +321,10 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
     return;
   service_active_ = false;
 
+  remote_device_cache_.reset();
+  challenge_wrapper_.reset();
+  pref_manager_.reset();
+
   weak_ptr_factory_.InvalidateWeakPtrs();
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
   user_data_.clear();
