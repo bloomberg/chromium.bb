@@ -137,7 +137,6 @@ class BrowserShutdownProfileDumper;
 class BrowserTestBase;
 class CategorizedWorkerPool;
 class DesktopCaptureDevice;
-class DWriteFontLookupTableBuilder;
 class GpuProcessTransportFactory;
 class InProcessUtilityThread;
 class NestedMessagePumpAndroid;
@@ -396,7 +395,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class chrome_cleaner::SystemReportComponent;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessSubThread;
-  friend class content::DWriteFontLookupTableBuilder;
   friend class content::ServiceWorkerContextClient;
   friend class content::SessionStorageDatabase;
   friend class functions::ExecScriptScopedAllowBaseSyncPrimitives;

@@ -228,16 +228,6 @@ void DWriteFontLookupTableBuilder::OverrideDWriteVersionChecksForTesting() {
   factory3_.Reset();
 }
 
-bool DWriteFontLookupTableBuilder::EnsureFontUniqueNameTableForTesting() {
-  TRACE_EVENT0("dwrite,fonts",
-               "DWriteFontLookupTableBuilder::EnsureFontUniqueNameTable");
-  DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
-  DCHECK(!HasDWriteUniqueFontLookups());
-  base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
-  font_table_built_.Wait();
-  return IsFontUniqueNameTableValid();
-}
-
 base::TimeDelta DWriteFontLookupTableBuilder::IndexingTimeout() {
   return font_indexing_timeout_;
 }

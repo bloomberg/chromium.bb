@@ -106,8 +106,6 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   // Windows 10, used for testing only to allow running the tests on Windows 10.
   void OverrideDWriteVersionChecksForTesting();
 
-  bool EnsureFontUniqueNameTableForTesting();
-
  private:
   friend class base::NoDestructor<DWriteFontLookupTableBuilder>;
 
