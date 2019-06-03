@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "base/bits.h"
+#include "base/compiler_specific.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -236,7 +237,9 @@ void PaintOpReader::Read(SkPath* path) {
     case PaintCacheEntryState::kInlined: {
       size_t path_bytes = 0u;
       ReadSize(&path_bytes);
-      if (path_bytes > remaining_bytes_ || path_bytes == 0u)
+      if (path_bytes > remaining_bytes_)
+        SetInvalid();
+      if (path_bytes == 0u)
         SetInvalid();
       if (!valid_)
         return;
@@ -445,7 +448,11 @@ void PaintOpReader::Read(sk_sp<SkTextBlob>* blob) {
   auto* scratch = CopyScratchSpace(data_bytes);
   sk_sp<SkTextBlob> deserialized_blob =
       SkTextBlob::Deserialize(scratch, data_bytes, procs);
-  if (!deserialized_blob || typeface_ctx.invalid_typeface) {
+  if (!deserialized_blob) {
+    SetInvalid();
+    return;
+  }
+  if (typeface_ctx.invalid_typeface) {
     SetInvalid();
     return;
   }
@@ -629,7 +636,8 @@ void PaintOpReader::AlignMemory(size_t alignment) {
   remaining_bytes_ -= padding;
 }
 
-inline void PaintOpReader::SetInvalid() {
+// Don't inline this function so that crash reports can show the caller.
+NOINLINE void PaintOpReader::SetInvalid() {
   if (valid_ && options_.crash_dump_on_failure && base::RandInt(1, 10) == 1) {
     base::debug::DumpWithoutCrashing();
   }
