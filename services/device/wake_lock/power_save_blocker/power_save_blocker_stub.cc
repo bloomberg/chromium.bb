@@ -9,10 +9,6 @@
 
 namespace device {
 
-// TODO(derat): Consider renaming this file; '_ozone' is a misnomer as power
-// save is OS-specific, not display-system-specific.  This implementation
-// ends up being used for non-ChromeOS Ozone platforms such as Chromecast.
-// See crbug.com/495661 for more detail.
 class PowerSaveBlocker::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
  public:
