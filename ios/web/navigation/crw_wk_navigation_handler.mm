@@ -1126,6 +1126,11 @@ using web::wk_navigation_util::IsWKInternalUrl;
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
   [self didReceiveWKNavigationDelegateCallback];
+
+  self.certVerificationErrors->Clear();
+  self.webProcessCrashed = YES;
+
+  [self.delegate navigationHandlerWebProcessDidCrash:self];
 }
 
 #pragma mark - Private methods

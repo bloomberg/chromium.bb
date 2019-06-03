@@ -175,6 +175,10 @@ class WKBackForwardListItemHolder;
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
       didFinishNavigation:(web::NavigationContextImpl*)context;
 
+// Notifies the delegate that web process has crashed.
+- (void)navigationHandlerWebProcessDidCrash:
+    (CRWWKNavigationHandler*)navigationHandler;
+
 @end
 
 // Handler class for WKNavigationDelegate, deals with navigation callbacks from

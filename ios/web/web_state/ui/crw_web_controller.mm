@@ -3353,18 +3353,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 }
 
-// Called when web view process has been terminated.
-- (void)webViewWebProcessDidCrash {
-  // On iOS 11 WKWebView does not repaint after crash and reload. Recreating
-  // web view fixes the issue. TODO(crbug.com/770914): Remove this workaround
-  // once rdar://35063950 is fixed.
-  [self removeWebView];
-
-  self.navigationHandler.webProcessCrashed = YES;
-  self.webStateImpl->CancelDialogs();
-  self.webStateImpl->OnRenderProcessGone();
-}
-
 // Returns the WKWebViewConfigurationProvider associated with the web
 // controller's BrowserState.
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider {
@@ -3468,10 +3456,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
   [self.navigationHandler webViewWebContentProcessDidTerminate:webView];
-
-  _certVerificationErrors->Clear();
-  [self removeAllWebFrames];
-  [self webViewWebProcessDidCrash];
 }
 
 #pragma mark - WKNavigationDelegate Helpers
@@ -4388,6 +4372,18 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
       didFinishNavigation:(web::NavigationContextImpl*)context {
   [self didFinishNavigation:context];
+}
+
+- (void)navigationHandlerWebProcessDidCrash:
+    (CRWWKNavigationHandler*)navigationHandler {
+  [self removeAllWebFrames];
+  // On iOS 11 WKWebView does not repaint after crash and reload. Recreating
+  // web view fixes the issue. TODO(crbug.com/770914): Remove this workaround
+  // once rdar://35063950 is fixed.
+  [self removeWebView];
+
+  self.webStateImpl->CancelDialogs();
+  self.webStateImpl->OnRenderProcessGone();
 }
 
 #pragma mark - Testing-Only Methods
