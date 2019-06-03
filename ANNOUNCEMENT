@@ -1,7 +1,7 @@
-liblouis 3.9.0 has been released
+liblouis 3.10.0 has been released
 
 The liblouis developer team is proud to announce the liblouis release
-3.9.0. The release is available for download at:
+3.10.0. The release is available for download at:
 
     https://github.com/liblouis/liblouis/releases
 
@@ -18,13 +18,14 @@ project liblouisutdml[2] deals with formatting of braille.
 Changes in this release
 =======================
 
-This release has seen a tremendous amount of work by Bert Frees. He
-was instrumental in pushing the improvements for Latvian, Norwegian
-and Slovenian. But most prominently he pushed the big change for space
-and control character handling through the door. These characters are
-now no longer hard coded in liblouis. This should solve a few long
-standing issues. Other than that there is the usual assortment of code
-improvements and cleanups.
+This release comes across as quiet, containing just the usual
+assortment of braille table improvements, cleanups, bug fixes and the
+classic buffer overflow patches. But beware, a lot has happened behind
+the scenes. Bert and Davy have been adding a new opcode to handle
+special emphasis situations. A number of annoying restrictions with
+regards to names, such as class names have been removed thank to Bert.
+And lastly also thanks to Bert it is now possible to define inline
+display tables in your YAML tests.
 
 For a detailed list of all the changes refer to the list of closed
 issues[3].
@@ -32,61 +33,80 @@ issues[3].
 New features
 ~~~~~~~~~~~~
 
-- None
+- Add a new opcode `emphmodechars'. Thanks to Bert Frees and Davy
+  Kager.
+
 
 Bug fixes
 ~~~~~~~~~
 
-- Fix a problem in the callback registration in the Python bindings
-  thanks to Leonard de Ruijter.
-- Fixed memory leaks created by block scope compound literals thanks
-  to Martin Gieseking.
-- The hard coded rules dealing with white space have been replaced
-  with a normal table that is included in all tables. This fixes a
-  number of bugs to do with space and control characters. This (big)
-  change has been brewing for a couple of releases and has finally
-  landed. Thanks to Christian Egli and Bert Frees.
+- Remove memoization in `checkAttr'. It wasn't implemented correctly,
+  caused some weird bugs and probably didn't do much for performance.
+  Thanks to Bert Frees.
+- Fix multiple buffer overflows in `compilePassOpcode'. Thanks to
+  Cheng Wen for the report and to Christian Egli for the fix.
+- Fix a build problem when building without libyaml thanks to Bert
+  Frees.
+
 
 Braille table improvements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Major extension of the German 8 dot computer braille table thanks to
-  Ali-Riza Ciftcioglu. For example the Euro sign or quote characters
-  are finally defined.
-- Fix a few issues with Hungarian grade1 and grade2 Braille thanks to
-  Attila Hammer.
-- Various improvements to Norwegian thanks to Lars Bjørndal, Jostein
-  Austvik Jacobsen, Ammar Usama and Bert Frees.
-- Updates to Bopomofo-based Chinese Braille thanks to Sponge Jhan:
-  Improved Braille representation of Chinese characters, and rewritten
-  Kana rules using multipass statements.
-- Implement the new Slovenian Braille standard thanks to Robert Merič
-  and Bert Frees.
-- Updates to Latvian Grade 1 Braille thanks to Artis Raugulis and Bert
-  Frees.
-- Fixes to English, U.S. Grade 2 (ABAE) thanks to jdatray.
+- Added modified letters to UEB thanks to Mike Gray.
+- Complete overhaul of the U.S. six-dot computer braille tables to
+  align with the CBC standard thanks to Timothy Wynn. There is now a
+  sub-table for EBAE (`en-us-compbrl.uti') and a stand-alone table
+  (`en-us-comp6.ctb').
+  - Conforms to the CBC standard from BANA for character definitions
+    that differ from the 8-dot ASCII braille (11 punctuation marks).
+  - Added rules for braille indicators, emphasis indicators, and
+    isolated lower-cell signs to the stand-alone table.
+  - Uncontracted and contracted EBAE tables no longer use dot 7 when
+    in computer braille mode.
+  - `en-us-compbrl.ctb' was deleted because it was identical to
+    `en-us-comp6.ctb'.
+- Update Bopomofo-based Chinese Braille thanks to Sponge Jhan
+  - Correct various dot patterns of Chinese characters.
+  - Add more known pattern exceptions of Chinese characters.
+  - Apply `word' opcode to 倔 and 据.
+  - Change dot pattern of ＆ to 456-12346.
+- `de-de-comp8.ctb' now has definitions for musical Unicode characters
+  thanks to Daniel Mayr
+- Emphasis improvements in Unified French 6 dots Braille thanks to
+  Ludovic Oger.
+- Improvements to Unified English braille, Grade 2 thanks to James
+  Datray from Freedom Scientific.
+- Numerous back-translation fixes to Grade 2 of UK English and Unified
+  English Braille thanks to Anthony Tibbs.
+- Updates to Dutch Braille thanks to Bert Frees
+  - Hyphen cancels the effect of emphasis indicator
+  - Left/right curly brackets
+  - Write currency symbols in full if they come after the number
+
 
 Other changes
 ~~~~~~~~~~~~~
 
-- Don't search for tables in `/usr/local/share/liblouis/tables' (or
-  the Windows equivalent) if `LOUIS_TABLEPATH' is set.
-- The log levels in `liblouis.h' are no longer exposed as `LOG_FOO'
-  but instead are now prefixed. So `LOG_WARN' becomes `LOU_LOG_WARN'
-  for example to issue a warning from a C program using liblouis. The
-  actual values remain the same, so the ABI remains stable.
+- Remove various restrictions on which characters and braille cells
+  can be used in translation rules, thanks to Bert Frees.
+- Remove some code duplication in `pattern.c' thanks to Bert Frees
+- It is now also possible to define inline tables when a display table
+  has been defined thanks to Bert Frees
+- Nightly snapshots of liblouis are now also built for win64 thanks to
+  Bert Frees
+
 
 Deprecation notice
 ~~~~~~~~~~~~~~~~~~
 
-- The `locale' opcode was never implemented and was just silently
-  ignored. It is now removed from the tables and and a warning will be
-  issued if it is found in a table.
+None
+
 
 Backwards incompatible changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- None
+None
+
 
 New, renamed or removed tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -94,23 +114,26 @@ New, renamed or removed tables
 New
 ---
 
-- None
+- en-us-compbrl.uti
+
 
 Renamed
 -------
 
-- None
+- chardefs.cti -> en-chardefs.cti
+
 
 Removed
 -------
 
-- None
+- en-us-compbrl.ctb
+
 
 Next release
 ============
 
-The next release will be published on June 3 2019 so please keep up
-the excellent work and keep those improvements coming.
+The next release will be published on September 2 2019 so please keep
+up the excellent work and keep those improvements coming.
 
 Share and Enjoy!
 
@@ -121,5 +144,5 @@ Footnotes
 
 [1]  https://github.com/liblouis/liblouis/tree/master/tables
 [2]  https://github.com/liblouis/liblouisutdml
-[3]  https://github.com/liblouis/liblouis/milestone/19?closed=1
+[3]  https://github.com/liblouis/liblouis/milestone/20?closed=1
 
