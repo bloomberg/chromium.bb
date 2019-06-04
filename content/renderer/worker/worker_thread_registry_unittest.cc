@@ -34,13 +34,8 @@ class MockObserver : public WorkerThread::Observer {
   WorkerThreadRegistry* runner_;
 };
 
-// TODO(https://crbug.com/969562): Fix flaky failure on Fuschia.
-#if defined(OS_FUCHSIA)
-#define MAYBE_BasicObservingAndWorkerId DISABLED_BasicObservingAndWorkerId
-#else
-#define MAYBE_BasicObservingAndWorkerId BasicObservingAndWorkerId
-#endif
-TEST_F(WorkerThreadRegistryTest, MAYBE_BasicObservingAndWorkerId) {
+// TODO(https://crbug.com/969562): Flakes on some systems due to thread ids.
+TEST_F(WorkerThreadRegistryTest, DISABLED_BasicObservingAndWorkerId) {
   ASSERT_EQ(0, WorkerThread::GetCurrentId());
   MockObserver o;
   EXPECT_CALL(o, WillStopCurrentWorkerThread()).Times(1);
@@ -50,7 +45,8 @@ TEST_F(WorkerThreadRegistryTest, MAYBE_BasicObservingAndWorkerId) {
   FakeStop();
 }
 
-TEST_F(WorkerThreadRegistryTest, CanRemoveSelfDuringNotification) {
+// TODO(https://crbug.com/969562): Flakes on some systems due to thread ids.
+TEST_F(WorkerThreadRegistryTest, DISABLED_CanRemoveSelfDuringNotification) {
   MockObserver o;
   o.RemoveSelfOnNotify();
   o.runner_ = &task_runner_;
@@ -60,13 +56,8 @@ TEST_F(WorkerThreadRegistryTest, CanRemoveSelfDuringNotification) {
   FakeStop();
 }
 
-// TODO(https://crbug.com/969562): Fix flaky failure on Fuschia.
-#if defined(OS_FUCHSIA)
-#define MAYBE_TaskRunnerRemovedCorrectly DISABLED_TaskRunnerRemovedCorrectly
-#else
-#define MAYBE_TaskRunnerRemovedCorrectly TaskRunnerRemovedCorrectly
-#endif
-TEST_F(WorkerThreadRegistryTest, MAYBE_TaskRunnerRemovedCorrectly) {
+// TODO(https://crbug.com/969562): Flakes on some systems due to thread ids.
+TEST_F(WorkerThreadRegistryTest, DISABLED_TaskRunnerRemovedCorrectly) {
   ASSERT_EQ(0, WorkerThread::GetCurrentId());
   MockObserver o;
   FakeStart();
