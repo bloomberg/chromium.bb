@@ -46,13 +46,6 @@ class IdentityManager;
 class SigninManager : public SigninManagerBase,
                       public OAuth2TokenService::Observer {
  public:
-  // This is used to distinguish URLs belonging to the special web signin flow
-  // running in the special signin process from other URLs on the same domain.
-  // We do not grant WebUI privilieges / bindings to this process or to URLs of
-  // this scheme; enforcement of privileges is handled separately by
-  // OneClickSigninHelper.
-  static const char kChromeSigninEffectiveSite[];
-
   SigninManager(SigninClient* client,
                 ProfileOAuth2TokenService* token_service,
                 AccountTrackerService* account_tracker_service,
