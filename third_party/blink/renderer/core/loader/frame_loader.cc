@@ -37,6 +37,8 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 
 #include <memory>
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/features.h"
@@ -417,6 +419,11 @@ void FrameLoader::DidFinishNavigation() {
     frame_->FinishedLoading();
   }
 
+  // When a subframe finishes loading, the parent should check if *all*
+  // subframes have finished loading (which may mean that the parent can declare
+  // that the parent itself has finished loading).  This local-subframe-focused
+  // code has a remote-subframe equivalent in
+  // WebRemoteFrameImpl::DidStopLoading.
   Frame* parent = frame_->Tree().Parent();
   if (parent)
     parent->CheckCompleted();
