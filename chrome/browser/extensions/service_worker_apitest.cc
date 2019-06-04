@@ -109,6 +109,10 @@ class WebContentsLoadStopObserver : content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsLoadStopObserver);
 };
 
+// A known extension ID for tests that specify the key in their
+// manifests.
+constexpr char kTestExtensionId[] = "knldjmfmopnpolahpmmgbagdohdnhkik";
+
 }  // namespace
 
 class ServiceWorkerTest : public ExtensionApiTest {
@@ -1392,63 +1396,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest,
   EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
 }
 
-// Tests that events to service worker correctly after browser restart.
-// This test is similar to EventsToStoppedExtension, except that the event
-// delivery is verified after a browser restart.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest,
-                       PRE_EventsAfterRestart) {
-  LazyBackgroundObserver lazy_observer;
-  ResultCatcher catcher;
-  const Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII("service_worker/events_to_stopped_extension"),
-      kFlagNone);
-  ASSERT_TRUE(extension);
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-
-  ProcessManager* pm = ProcessManager::Get(browser()->profile());
-  EXPECT_GT(pm->GetLazyKeepaliveCount(extension), 0);
-  EXPECT_FALSE(pm->GetLazyKeepaliveActivities(extension).empty());
-
-  // |extension|'s background page opens a tab to its resource.
-  content::WebContents* extension_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::WaitForLoadStop(extension_web_contents));
-  EXPECT_EQ(extension->GetResourceURL("page.html").spec(),
-            extension_web_contents->GetURL().spec());
-  {
-    // Let the service worker start and register a listener to
-    // chrome.tabs.onCreated event.
-    ExtensionTestMessageListener add_listener_done("listener-added", false);
-    content::ExecuteScriptAsync(extension_web_contents,
-                                "window.runServiceWorkerAsync()");
-    EXPECT_TRUE(add_listener_done.WaitUntilSatisfied());
-
-    base::RunLoop run_loop;
-    content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
-    content::StopServiceWorkerForScope(
-        storage_partition->GetServiceWorkerContext(),
-        // The service worker is registered at the top level scope.
-        extension->url(), run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
-  // Close the tab to |extension|'s resource. This will also close the
-  // extension's event page.
-  browser()->tab_strip_model()->CloseWebContentsAt(
-      browser()->tab_strip_model()->active_index(), TabStripModel::CLOSE_NONE);
-  lazy_observer.Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest, EventsAfterRestart) {
-  ExtensionTestMessageListener newtab_listener("hello-newtab", false);
-  content::WebContents* new_web_contents =
-      AddTab(browser(), GURL(url::kAboutBlankURL));
-  EXPECT_TRUE(new_web_contents);
-  EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
-}
-
 // Tests that worker ref count increments while extension API function is
 // active.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WorkerRefCount) {
@@ -1802,6 +1749,49 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   }
 
   EXPECT_FALSE(ProcessManager::Get(profile())->HasServiceWorker(*worker_id));
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       PRE_EventsAfterRestart) {
+  ExtensionTestMessageListener event_added_listener("ready", false);
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII(
+          "service_worker/worker_based_background/events_to_stopped_extension"),
+      kFlagNone);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(kTestExtensionId, extension->id());
+  ProcessManager* pm = ProcessManager::Get(browser()->profile());
+  // TODO(crbug.com/969884): This will break once keep alive counts
+  // for service workers are tracked by the Process Manager.
+  EXPECT_LT(pm->GetLazyKeepaliveCount(extension), 1);
+  EXPECT_TRUE(pm->GetLazyKeepaliveActivities(extension).empty());
+  EXPECT_TRUE(event_added_listener.WaitUntilSatisfied());
+}
+
+// After browser restarts, this test step ensures that opening a tab fires
+// tabs.onCreated event listener to the extension without explicitly loading the
+// extension. This is because the extension registered a listener for
+// tabs.onMoved before browser restarted in PRE_EventsAfterRestart.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, EventsAfterRestart) {
+  // Verify there is no RenderProcessHost for the extension.
+  ProcessMap* process_map = ProcessMap::Get(browser()->profile());
+  ASSERT_TRUE(process_map);
+  content::RenderProcessHost::iterator it =
+      content::RenderProcessHost::AllHostsIterator();
+  while (!it.IsAtEnd()) {
+    EXPECT_FALSE(
+        process_map->Contains(kTestExtensionId, it.GetCurrentValue()->GetID()));
+    it.Advance();
+  }
+
+  ExtensionTestMessageListener moved_tab_listener("moved-tab", false);
+  // Add a tab, then move it.
+  content::WebContents* new_web_contents =
+      AddTab(browser(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(new_web_contents);
+  browser()->tab_strip_model()->MoveWebContentsAt(
+      browser()->tab_strip_model()->count() - 1, 0, false);
+  EXPECT_TRUE(moved_tab_listener.WaitUntilSatisfied());
 }
 
 // Tests that console messages logged by extension service workers, both via
