@@ -2185,11 +2185,15 @@ bool LocalFrameView::UpdateLifecyclePhases(
     return Lifecycle().GetState() == target_state;
   }
 
-  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    auto lifecycle_observers = frame_view.lifecycle_observers_;
-    for (auto& observer : lifecycle_observers)
-      observer->WillStartLifecycleUpdate(frame_view);
-  });
+  {
+    TRACE_EVENT0("blink,benchmark", "LocalFrameView::WillStartLifecycleUpdate");
+
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+      auto lifecycle_observers = frame_view.lifecycle_observers_;
+      for (auto& observer : lifecycle_observers)
+        observer->WillStartLifecycleUpdate(frame_view);
+    });
+  }
 
   // If we're in PrintBrowser mode, setup a print context.
   // TODO(vmpstr): It doesn't seem like we need to do this every lifecycle
@@ -2202,11 +2206,15 @@ bool LocalFrameView::UpdateLifecyclePhases(
   // Run the lifecycle updates.
   UpdateLifecyclePhasesInternal(target_state);
 
-  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    auto lifecycle_observers = frame_view.lifecycle_observers_;
-    for (auto& observer : lifecycle_observers)
-      observer->DidFinishLifecycleUpdate(frame_view);
-  });
+  {
+    TRACE_EVENT0("blink,benchmark", "LocalFrameView::DidFinishLifecycleUpdate");
+
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+      auto lifecycle_observers = frame_view.lifecycle_observers_;
+      for (auto& observer : lifecycle_observers)
+        observer->DidFinishLifecycleUpdate(frame_view);
+    });
+  }
 
   return Lifecycle().GetState() == target_state;
 }
