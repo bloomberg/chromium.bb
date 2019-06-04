@@ -255,8 +255,6 @@ class SigninManagerBase {
 
   signin::AccountConsistencyMethod account_consistency_;
 
-  base::WeakPtrFactory<SigninManagerBase> weak_pointer_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(SigninManagerBase);
 };
 

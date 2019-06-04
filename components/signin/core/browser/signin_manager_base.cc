@@ -34,8 +34,7 @@ SigninManagerBase::SigninManagerBase(
       token_service_(token_service),
       account_tracker_service_(account_tracker_service),
       initialized_(false),
-      account_consistency_(account_consistency),
-      weak_pointer_factory_(this) {
+      account_consistency_(account_consistency) {
   DCHECK(client_);
   DCHECK(account_tracker_service_);
 }
