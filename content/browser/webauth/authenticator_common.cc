@@ -1286,13 +1286,19 @@ void AuthenticatorCommon::OnSignResponse(
         request_delegate_->UpdateLastTransportUsed(*transport_used);
       }
 
-      if (response_data->size() == 1) {
-        OnAccountSelected(std::move(response_data->at(0)));
-      } else {
+      // Show an account picker for requests with empty allow lists (where
+      // num_credentials() is set in the response). Authenticators may omit the
+      // user entity if only one credential matches, or if they have account
+      // selection UI built-in. In that case, consider that credential
+      // pre-selected.
+      if (response_data->at(0).num_credentials() &&
+          (response_data->size() > 1 || response_data->at(0).user_entity())) {
         request_delegate_->SelectAccount(
             std::move(*response_data),
             base::BindOnce(&AuthenticatorCommon::OnAccountSelected,
                            weak_factory_.GetWeakPtr()));
+      } else {
+        OnAccountSelected(std::move(response_data->at(0)));
       }
       return;
   }

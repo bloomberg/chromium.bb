@@ -39,6 +39,7 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
   // GetAssertion operations; and de-select it if it will not work.
   if (transport_availability.request_type ==
           device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
+      !transport_availability.has_empty_allow_list &&
       base::ContainsKey(candidate_transports,
                         device::FidoTransportProtocol::kInternal)) {
     // For GetAssertion requests, auto advance to Touch ID if the keychain

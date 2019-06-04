@@ -79,6 +79,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // See: https://crbug.com/875011
     RequestType request_type = RequestType::kMakeCredential;
 
+    // Indicates whether this is a GetAssertion request with an empty allow
+    // list.
+    bool has_empty_allow_list = false;
+
     // The intersection of transports supported by the client and allowed by the
     // relying party.
     base::flat_set<FidoTransportProtocol> available_transports;

@@ -209,6 +209,8 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
       weak_factory_(this) {
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kGetAssertion;
+  transport_availability_info().has_empty_allow_list =
+      request_.allow_list.empty();
 
   if (base::ContainsKey(
           transport_availability_info().available_transports,

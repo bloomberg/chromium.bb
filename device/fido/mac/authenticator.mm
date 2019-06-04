@@ -60,26 +60,25 @@ TouchIdAuthenticator::~TouchIdAuthenticator() = default;
 bool TouchIdAuthenticator::HasCredentialForGetAssertionRequest(
     const CtapGetAssertionRequest& request) {
   if (__builtin_available(macOS 10.12.2, *)) {
-    std::set<std::vector<uint8_t>> allowed_credential_ids;
-    // Extract applicable credential IDs from the allowList, if the request has
-    // one. If not, any credential matching the RP works.
-    for (const auto& credential_descriptor : request.allow_list) {
-      if (credential_descriptor.credential_type() ==
-              CredentialType::kPublicKey &&
-          (credential_descriptor.transports().empty() ||
-           base::ContainsKey(credential_descriptor.transports(),
-                             FidoTransportProtocol::kInternal))) {
-        allowed_credential_ids.insert(credential_descriptor.id());
-      }
-    }
-    if (allowed_credential_ids.empty()) {
-      // TODO(martinkr): Implement resident keys for Touch ID.
-      return false;
+    if (request.allow_list.empty()) {
+      return !FindResidentCredentialsInKeychain(keychain_access_group_,
+                                                metadata_secret_, request.rp_id,
+                                                nullptr /* LAContext */)
+                  .empty();
     }
 
-    return FindCredentialInKeychain(keychain_access_group_, metadata_secret_,
-                                    request.rp_id, allowed_credential_ids,
-                                    nullptr /* LAContext */) != base::nullopt;
+    std::set<std::vector<uint8_t>> allowed_credential_ids =
+        FilterInapplicableEntriesFromAllowList(request);
+    if (allowed_credential_ids.empty()) {
+      // The allow list does not have applicable entries, but is not empty.
+      // We must not mistake this for a request for resident credentials and
+      // account choser UI.
+      return false;
+    }
+    return !FindCredentialsInKeychain(keychain_access_group_, metadata_secret_,
+                                      request.rp_id, allowed_credential_ids,
+                                      nullptr /* LAContext */)
+                .empty();
   }
   NOTREACHED();
   return false;
@@ -116,6 +115,16 @@ void TouchIdAuthenticator::GetAssertion(CtapGetAssertionRequest request,
   NOTREACHED();
 }
 
+void TouchIdAuthenticator::GetNextAssertion(GetAssertionCallback callback) {
+  if (__builtin_available(macOS 10.12.2, *)) {
+    DCHECK(operation_);
+    reinterpret_cast<GetAssertionOperation*>(operation_.get())
+        ->GetNextAssertion(std::move(callback));
+    return;
+  }
+  NOTREACHED();
+}
+
 void TouchIdAuthenticator::Cancel() {
   // If there is an operation pending, delete it, which will clean up any
   // pending callbacks, e.g. if the operation is waiting for a response from
@@ -142,7 +151,7 @@ namespace {
 AuthenticatorSupportedOptions TouchIdAuthenticatorOptions() {
   AuthenticatorSupportedOptions options;
   options.is_platform_device = true;
-  options.supports_resident_key = false;
+  options.supports_resident_key = true;
   options.user_verification_availability = AuthenticatorSupportedOptions::
       UserVerificationAvailability::kSupportedAndConfigured;
   options.supports_user_presence = true;

@@ -256,8 +256,7 @@ base::Optional<std::vector<uint8_t>> SealCredentialId(
   cbor_user.emplace_back(
       Value(MaybeTruncateWithTrailingEllipsis(metadata.user_display_name),
             Value::Type::BYTE_STRING));
-  // TODO(martinkr): Allow creation of resident keys.
-  cbor_user.emplace_back(Value(false));
+  cbor_user.emplace_back(Value(metadata.is_resident));
   base::Optional<std::vector<uint8_t>> pt =
       Writer::Write(Value(std::move(cbor_user)));
   if (!pt) {

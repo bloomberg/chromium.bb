@@ -84,15 +84,6 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
     return;
   }
 
-  if (request().resident_key_required) {
-    // TODO(martinkr): Implement resident keys for Touch ID.
-    // MakeCredentialRequestHandler ensures the request never reaches Touch ID.
-    NOTREACHED();
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrUnsupportedOption, base::nullopt);
-    return;
-  }
-
   // Evaluate that excludeList does not contain any credentials stored by this
   // authenticator.
   if (request().exclude_list) {
@@ -122,10 +113,12 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
   }
 
   // Delete the key pair for this RP + user handle if one already exists.
+  //
+  // Note that because the rk bit is not encoded here, a resident credential
+  // may overwrite a non-resident credential and vice versa.
   base::Optional<std::string> encoded_rp_id_user_id =
       EncodeRpIdAndUserId(metadata_secret(), RpId(), request().user.id);
   if (!encoded_rp_id_user_id) {
-    // Internal error.
     std::move(callback())
         .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
     return;
@@ -136,7 +129,6 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
                          base::SysUTF8ToNSString(*encoded_rp_id_user_id));
     OSStatus status = Keychain::GetInstance().ItemDelete(query);
     if (status != errSecSuccess && status != errSecItemNotFound) {
-      // Internal keychain error.
       OSSTATUS_DLOG(ERROR, status) << "SecItemDelete failed";
       std::move(callback())
           .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
@@ -229,11 +221,9 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
 
 base::Optional<std::vector<uint8_t>>
 MakeCredentialOperation::GenerateCredentialIdForRequest() const {
-  // TODO(martinkr): Handle resident key creation.
   return SealCredentialId(metadata_secret(), RpId(),
                           CredentialMetadata::FromPublicKeyCredentialUserEntity(
-                              request().user,
-                              /*is_resident=*/false));
+                              request().user, request().resident_key_required));
 }
 
 }  // namespace mac
