@@ -16,7 +16,6 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib.buildstore import BuildStore
-from chromite.cli.cros import cros_cidbcreds
 
 
 _FINISHED_STATUSES = (
@@ -33,7 +32,7 @@ def FetchBuildStatuses(buildstore, options):
     options: Parsed command line options set.
 
   Returns:
-    List of build_status dicts from CIDB, or None.
+    List of build_status dicts from Buildbucket, or None.
   """
   if options.buildbucket_id:
     build_status = buildstore.GetBuildStatuses([options.buildbucket_id])[0]
@@ -169,20 +168,6 @@ Note:
   def AddParser(cls, parser):
     super(cls, BuildResultCommand).AddParser(parser)
 
-    # CIDB access credentials.
-    creds_args = parser.add_argument_group()
-
-    creds_args.add_argument('--cred-dir', type='path',
-                            metavar='CIDB_CREDENTIALS_DIR',
-                            help='Database credentials directory with'
-                                 ' certificates and other connection'
-                                 ' information. Obtain your credentials'
-                                 ' at go/cros-cidb-admin .')
-
-    creds_args.add_argument('--update-cidb-creds', dest='force_update',
-                            action='store_true',
-                            help='force updating the cidb credentials.')
-
     # What build do we report on?
     request_group = parser.add_mutually_exclusive_group()
 
@@ -218,15 +203,12 @@ Note:
 
     commandline.RunInsideChroot(self)
 
-    credentials = self.options.cred_dir
-    if not credentials:
-      credentials = cros_cidbcreds.CheckAndGetCIDBCreds(
-          force_update=self.options.force_update)
-    buildstore = BuildStore(cidb_creds=credentials)
+    buildstore = BuildStore(_write_to_cidb=False)
     build_statuses = FetchBuildStatuses(buildstore, self.options)
 
     if build_statuses:
-      # Filter out builds that don't exist in CIDB, or which aren't finished.
+      # Filter out builds that don't exist in Buildbucket,
+      # or which aren't finished.
       build_statuses = [b for b in build_statuses if IsBuildStatusFinished(b)]
 
     # If we found no builds at all, return a different exit code to help
