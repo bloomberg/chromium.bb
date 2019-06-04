@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 
 #include "base/logging.h"
-#include "base/time/default_tick_clock.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -19,10 +18,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
-
-namespace {
-const base::TickClock* g_clock = nullptr;
-}  // namespace
 
 namespace blink {
 
@@ -98,7 +93,7 @@ void IdlenessDetector::OnDidLoadResource() {
   if (request_count > 2)
     return;
 
-  TimeTicks timestamp = g_clock->NowTicks();
+  TimeTicks timestamp = CurrentTimeTicks();
   // Arriving at =2 updates the quiet_2 base timestamp.
   // Arriving at <2 sets the quiet_2 base timestamp only if
   // it was not already set.
@@ -204,8 +199,6 @@ IdlenessDetector::IdlenessDetector(LocalFrame* local_frame)
           local_frame->GetTaskRunner(TaskType::kInternalLoading),
           this,
           &IdlenessDetector::NetworkQuietTimerFired) {
-  if (!g_clock)
-    g_clock = base::DefaultTickClock::GetInstance();
   if (local_frame->GetSettings()) {
     network_quiet_window_ = TimeDelta::FromSecondsD(
         local_frame->GetSettings()->GetNetworkQuietTimeout());
@@ -226,11 +219,6 @@ void IdlenessDetector::NetworkQuietTimerFired(TimerBase*) {
       (in_network_2_quiet_period_ && !network_2_quiet_.is_null())) {
     network_quiet_timer_.StartOneShot(kNetworkQuietWatchdog, FROM_HERE);
   }
-}
-
-// static
-void IdlenessDetector::SetTickClockForTesting(const base::TickClock* clock) {
-  g_clock = clock;
 }
 
 void IdlenessDetector::Trace(blink::Visitor* visitor) {

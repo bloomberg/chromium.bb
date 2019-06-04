@@ -53,9 +53,9 @@ void AnimationClock::UpdateTime(base::TimeTicks time) {
 }
 
 double AnimationClock::CurrentTime() {
-  if (clock_ &&
+  if (monotonically_increasing_time_ &&
       task_for_which_time_was_calculated_ != currently_running_task_) {
-    const base::TimeTicks current_time = clock_->NowTicks();
+    const base::TimeTicks current_time = monotonically_increasing_time_();
     if (time_ < current_time) {
       // Advance to the first estimated frame after the current time.
       const base::TimeDelta frame_shift =

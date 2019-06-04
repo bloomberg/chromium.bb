@@ -29,15 +29,14 @@
  */
 
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
-#include "base/time/tick_clock.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class AnimationAnimationClockTest : public testing::Test, base::TickClock {
+class AnimationAnimationClockTest : public testing::Test {
  public:
-  AnimationAnimationClockTest() : animation_clock(this) {}
+  AnimationAnimationClockTest() : animation_clock(MockTimeFunction) {}
 
  protected:
   void SetUp() override {
@@ -45,13 +44,15 @@ class AnimationAnimationClockTest : public testing::Test, base::TickClock {
     animation_clock.ResetTimeForTesting();
   }
 
-  base::TimeTicks NowTicks() const override {
+  static base::TimeTicks MockTimeFunction() {
     return base::TimeTicks() + base::TimeDelta::FromSecondsD(mock_time_);
   }
 
-  double mock_time_;
+  static double mock_time_;
   AnimationClock animation_clock;
 };
+
+double AnimationAnimationClockTest::mock_time_;
 
 TEST_F(AnimationAnimationClockTest, TimeIsGreaterThanZeroForUnitTests) {
   AnimationClock clock;

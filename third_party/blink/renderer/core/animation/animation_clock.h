@@ -34,9 +34,9 @@
 #include <limits>
 
 #include "base/macros.h"
-#include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -49,8 +49,8 @@ class CORE_EXPORT AnimationClock {
  public:
   using TimeTicksFunction = base::TimeTicks (*)();
   explicit AnimationClock(
-      const base::TickClock* clock = base::DefaultTickClock::GetInstance())
-      : clock_(clock),
+      TimeTicksFunction monotonically_increasing_time = WTF::CurrentTimeTicks)
+      : monotonically_increasing_time_(monotonically_increasing_time),
         time_(),
         task_for_which_time_was_calculated_(
             std::numeric_limits<unsigned>::max()) {}
@@ -58,15 +58,16 @@ class CORE_EXPORT AnimationClock {
   void UpdateTime(base::TimeTicks time);
   double CurrentTime();
   void ResetTimeForTesting(base::TimeTicks time = base::TimeTicks());
-  // The caller owns the |clock| which must outlive the AnimationClock.
-  void SetClockForTesting(const base::TickClock* clock) { clock_ = clock; }
+  void DisableSyntheticTimeForTesting() {
+    monotonically_increasing_time_ = nullptr;
+  }
 
   // notifyTaskStart should be called right before the main message loop starts
   // to run the next task from the message queue.
   static void NotifyTaskStart() { ++currently_running_task_; }
 
  private:
-  const base::TickClock* clock_;
+  TimeTicksFunction monotonically_increasing_time_;
   base::TimeTicks time_;
   unsigned task_for_which_time_was_calculated_;
   static unsigned currently_running_task_;

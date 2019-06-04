@@ -19,25 +19,12 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
  protected:
   void SetUp() override {
     platform_->AdvanceClock(TimeDelta::FromSeconds(1));
-    const base::TickClock* test_clock =
-        platform_->test_task_runner()->GetMockTickClock();
-    FirstMeaningfulPaintDetector::SetTickClockForTesting(test_clock);
     PageTestBase::SetUp();
-    GetPaintTiming().SetTickClockForTesting(test_clock);
   }
-
-  void TearDown() override {
-    const base::TickClock* clock = base::DefaultTickClock::GetInstance();
-    GetPaintTiming().SetTickClockForTesting(clock);
-    PageTestBase::TearDown();
-    FirstMeaningfulPaintDetector::SetTickClockForTesting(clock);
-  }
-
-  base::TimeTicks Now() { return platform_->test_task_runner()->NowTicks(); }
 
   TimeTicks AdvanceClockAndGetTime() {
     platform_->AdvanceClock(TimeDelta::FromSeconds(1));
-    return Now();
+    return CurrentTimeTicks();
   }
 
   PaintTiming& GetPaintTiming() { return PaintTiming::From(GetDocument()); }
@@ -75,20 +62,21 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
 
   void ClearFirstPaintSwapPromise() {
     platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
-    GetPaintTiming().ReportSwapTime(
-        PaintEvent::kFirstPaint, WebWidgetClient::SwapResult::kDidSwap, Now());
+    GetPaintTiming().ReportSwapTime(PaintEvent::kFirstPaint,
+                                    WebWidgetClient::SwapResult::kDidSwap,
+                                    CurrentTimeTicks());
   }
 
   void ClearFirstContentfulPaintSwapPromise() {
     platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
     GetPaintTiming().ReportSwapTime(PaintEvent::kFirstContentfulPaint,
                                     WebWidgetClient::SwapResult::kDidSwap,
-                                    Now());
+                                    CurrentTimeTicks());
   }
 
   void ClearProvisionalFirstMeaningfulPaintSwapPromise() {
     platform_->AdvanceClock(TimeDelta::FromMilliseconds(1));
-    ClearProvisionalFirstMeaningfulPaintSwapPromise(Now());
+    ClearProvisionalFirstMeaningfulPaintSwapPromise(CurrentTimeTicks());
   }
 
   void ClearProvisionalFirstMeaningfulPaintSwapPromise(
