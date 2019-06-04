@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.test.util.browser.suggestions;
+package org.chromium.chrome.test.util.browser.suggestions.mostvisited;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.suggestions.MostVisitedSites;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
-import org.chromium.chrome.browser.suggestions.Tile;
-import org.chromium.chrome.browser.suggestions.TileSectionType;
-import org.chromium.chrome.browser.suggestions.TileSource;
-import org.chromium.chrome.browser.suggestions.TileTitleSource;
+import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
+import org.chromium.chrome.browser.suggestions.tile.Tile;
+import org.chromium.chrome.browser.suggestions.tile.TileSectionType;
+import org.chromium.chrome.browser.suggestions.tile.TileSource;
+import org.chromium.chrome.browser.suggestions.tile.TileTitleSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;

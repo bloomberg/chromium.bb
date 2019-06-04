@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.suggestions;
+package org.chromium.chrome.browser.suggestions.mostvisited;
 
 import android.support.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.suggestions.SiteSuggestion;
+import org.chromium.chrome.browser.suggestions.tile.Tile;
 
 import java.util.List;
 

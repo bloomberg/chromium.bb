@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.suggestions;
+package org.chromium.chrome.browser.suggestions.tile;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites.createSiteSuggestion;
+import static org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites.createSiteSuggestion;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -46,10 +46,13 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.ImageFetcher;
+import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig.TileStyle;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
+import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -388,7 +391,7 @@ public class TileGroupUnitTest {
 
     private TileGridViewHolder setupView(TileGroup tileGroup) {
         TileGridLayout layout = new TileGridLayout(RuntimeEnvironment.application, null);
-        TileGridViewHolder tileGrid = new TileGridViewHolder(layout, 4, 2, mock(UiConfig.class));
+        TileGridViewHolder tileGrid = new TileGridViewHolder(layout, 4, 2);
         tileGrid.bindDataSource(tileGroup, mTileRenderer);
         return tileGrid;
     }

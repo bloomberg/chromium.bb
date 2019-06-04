@@ -24,7 +24,7 @@
         android:textAppearance="@style/TextAppearance.BlackBodyDefault"
         tools:text="Category" />
 
-    <org.chromium.chrome.browser.suggestions.TileGridLayout
+    <org.chromium.chrome.browser.suggestions.tile.TileGridLayout
         android:id="@+id/category_sites"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

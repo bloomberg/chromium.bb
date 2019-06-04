@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.suggestions;
+package org.chromium.chrome.browser.suggestions.tile;
 
 import android.support.annotation.LayoutRes;
 import android.view.LayoutInflater;
@@ -17,6 +17,8 @@ import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
@@ -43,7 +45,7 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
     }
 
     public static SiteSectionViewHolder createViewHolder(ViewGroup view, UiConfig uiConfig) {
-        return new TileGridViewHolder(view, getMaxTileRows(), MAX_TILE_COLUMNS, uiConfig);
+        return new TileGridViewHolder(view, getMaxTileRows(), MAX_TILE_COLUMNS);
     }
 
     public SiteSection(SuggestionsUiDelegate uiDelegate, ContextMenuManager contextMenuManager,

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.suggestions;
+package org.chromium.chrome.browser.suggestions.tile;
 
 import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
 import android.view.View;
 
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 
 /**
  * Describes a portion of UI responsible for rendering a group of sites. It abstracts general tasks

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.suggestions;
+package org.chromium.chrome.browser.suggestions.tile;
 
 import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
@@ -22,6 +22,12 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.suggestions.SiteSuggestion;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
+import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
+import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.lang.annotation.Retention;
@@ -382,7 +388,8 @@ public class TileGroup implements MostVisitedSites.Observer {
     /**
      * @param url The URL to search for.
      * @param tiles The section to search in, represented by the contained list of tiles.
-     * @return A tile matching the provided URL and section, or {@code null} if none is found. */
+     * @return A tile matching the provided URL and section, or {@code null} if none is found.
+     */
     private Tile findTile(String url, @Nullable List<Tile> tiles) {
         if (tiles == null) return null;
         for (Tile tile : tiles) {
@@ -407,7 +414,7 @@ public class TileGroup implements MostVisitedSites.Observer {
     }
 
     private void removeTask(@TileTask int task) {
-        boolean removedTask = mPendingTasks.remove(Integer.valueOf(task));
+        boolean removedTask = mPendingTasks.remove(task);
         assert removedTask;
 
         if (mPendingTasks.isEmpty()) {
@@ -458,7 +465,7 @@ public class TileGroup implements MostVisitedSites.Observer {
         // Have an empty list for now that can be rendered as-is without causing issues or too much
         // state checking. We will have to decide if we want empty lists or no section at all for
         // the others.
-        newTileData.put(TileSectionType.PERSONALIZED, new ArrayList<Tile>());
+        newTileData.put(TileSectionType.PERSONALIZED, new ArrayList<>());
 
         return newTileData;
     }

@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.suggestions;
+package org.chromium.chrome.browser.suggestions.tile;
 
-import android.content.res.Resources;
 import android.view.ViewGroup;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 
 import java.util.List;
 /**
@@ -19,17 +17,12 @@ import java.util.List;
 public class TileGridViewHolder extends SiteSectionViewHolder {
     private final TileGridLayout mSectionView;
 
-    public TileGridViewHolder(ViewGroup view, int maxRows, int maxColumns, UiConfig uiConfig) {
+    public TileGridViewHolder(ViewGroup view, int maxRows, int maxColumns) {
         super(view);
 
         mSectionView = (TileGridLayout) itemView;
         mSectionView.setMaxRows(maxRows);
         mSectionView.setMaxColumns(maxColumns);
-
-        Resources res = itemView.getResources();
-        int defaultLateralMargin =
-                res.getDimensionPixelSize(R.dimen.tile_grid_layout_padding_start);
-        int wideLateralMargin = res.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
     }
 
     @Override

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.suggestions;
+package org.chromium.chrome.browser.suggestions.tile;
 
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.favicon.IconType;
+import org.chromium.chrome.browser.suggestions.OfflinableSuggestion;
+import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 
 /**
  * Holds the details to populate a site suggestion tile.
