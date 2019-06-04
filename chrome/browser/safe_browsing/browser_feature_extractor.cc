@@ -171,9 +171,10 @@ BrowserFeatureExtractor::~BrowserFeatureExtractor() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
-                                              ClientPhishingRequest* request,
-                                              const DoneCallback& callback) {
+void BrowserFeatureExtractor::ExtractFeatures(
+    const BrowseInfo* info,
+    std::unique_ptr<ClientPhishingRequest> request,
+    DoneCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
   DCHECK(info);
@@ -216,28 +217,24 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   //      it's different from the candidate url).
   if (url_index != -1) {
     AddNavigationFeatures(std::string(), &controller, url_index,
-                          info->url_redirects, request);
+                          info->url_redirects, request.get());
   }
   if (first_host_index != -1) {
     AddNavigationFeatures(kHostPrefix, &controller, first_host_index,
-                          info->host_redirects, request);
+                          info->host_redirects, request.get());
   }
 
-  // The API doesn't take a std::unique_ptr because the API gets mocked and we
-  // cannot mock an API that takes std::unique_ptr as arguments.
-  std::unique_ptr<ClientPhishingRequest> req(request);
-
-  ExtractBrowseInfoFeatures(*info, request);
+  ExtractBrowseInfoFeatures(*info, request.get());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BrowserFeatureExtractor::StartExtractFeatures,
-                     weak_factory_.GetWeakPtr(), std::move(req), callback));
+      FROM_HERE, base::BindOnce(&BrowserFeatureExtractor::StartExtractFeatures,
+                                weak_factory_.GetWeakPtr(), std::move(request),
+                                std::move(callback)));
 }
 
 void BrowserFeatureExtractor::ExtractMalwareFeatures(
     BrowseInfo* info,
-    ClientMalwareRequest* request,
-    const MalwareDoneCallback& callback) {
+    std::unique_ptr<ClientMalwareRequest> request,
+    MalwareDoneCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -248,18 +245,14 @@ void BrowserFeatureExtractor::ExtractMalwareFeatures(
 
   IPUrlMap* ips_ptr = ips.get();
 
-  // The API doesn't take a std::unique_ptr because the API gets mocked and we
-  // cannot mock an API that takes std::unique_ptr as arguments.
-  std::unique_ptr<ClientMalwareRequest> req(request);
-
   // IP blacklist lookups have to happen on the IO thread.
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&FilterBenignIpsOnIOThread, host_->database_manager(),
                      ips_ptr),
       base::BindOnce(&BrowserFeatureExtractor::FinishExtractMalwareFeatures,
-                     weak_factory_.GetWeakPtr(), std::move(ips), callback,
-                     std::move(req)));
+                     weak_factory_.GetWeakPtr(), std::move(ips),
+                     std::move(callback), std::move(request)));
 }
 
 void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(
@@ -284,26 +277,26 @@ void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(
 
 void BrowserFeatureExtractor::StartExtractFeatures(
     std::unique_ptr<ClientPhishingRequest> request,
-    const DoneCallback& callback) {
+    DoneCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   history::HistoryService* history;
   if (!request || !request->IsInitialized() || !GetHistoryService(&history)) {
-    callback.Run(false, std::move(request));
+    std::move(callback).Run(/*feature_extraction_succeeded=*/false,
+                            std::move(request));
     return;
   }
   GURL request_url(request->url());
-  history->QueryURL(request_url,
-                    true /* wants_visits */,
-                    base::Bind(&BrowserFeatureExtractor::QueryUrlHistoryDone,
-                               base::Unretained(this),
-                               base::Passed(&request),
-                               callback),
-                    &cancelable_task_tracker_);
+  history->QueryURL(
+      request_url, true /* wants_visits */,
+      base::BindOnce(&BrowserFeatureExtractor::QueryUrlHistoryDone,
+                     base::Unretained(this), std::move(request),
+                     std::move(callback)),
+      &cancelable_task_tracker_);
 }
 
 void BrowserFeatureExtractor::QueryUrlHistoryDone(
     std::unique_ptr<ClientPhishingRequest> request,
-    const DoneCallback& callback,
+    DoneCallback callback,
     history::QueryURLResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
@@ -312,7 +305,8 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
     // URL is not found in the history.  In practice this should not
     // happen (unless there is a real error) because we just visited
     // that URL.
-    callback.Run(false, std::move(request));
+    std::move(callback).Run(/*feature_extraction_succeeded=*/false,
+                            std::move(request));
     return;
   }
   AddFeature(kUrlHistoryVisitCount,
@@ -347,7 +341,8 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
   // Issue next history lookup for host visits.
   history::HistoryService* history;
   if (!GetHistoryService(&history)) {
-    callback.Run(false, std::move(request));
+    std::move(callback).Run(/*feature_extraction_succeeded=*/false,
+                            std::move(request));
     return;
   }
   GURL::Replacements rep;
@@ -356,19 +351,21 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
   history->GetVisibleVisitCountToHost(
       http_url,
       base::BindOnce(&BrowserFeatureExtractor::QueryHttpHostVisitsDone,
-                     base::Unretained(this), std::move(request), callback),
+                     base::Unretained(this), std::move(request),
+                     std::move(callback)),
       &cancelable_task_tracker_);
 }
 
 void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
     std::unique_ptr<ClientPhishingRequest> request,
-    const DoneCallback& callback,
+    DoneCallback callback,
     history::VisibleVisitCountToHostResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
   DCHECK(!callback.is_null());
   if (!result.success) {
-    callback.Run(false, std::move(request));
+    std::move(callback).Run(/*feature_extraction_succeeded=*/false,
+                            std::move(request));
     return;
   }
   SetHostVisitsFeatures(result.count, result.first_visit, true, request.get());
@@ -376,7 +373,8 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
   // Same lookup but for the HTTPS URL.
   history::HistoryService* history;
   if (!GetHistoryService(&history)) {
-    callback.Run(false, std::move(request));
+    std::move(callback).Run(/*feature_extraction_succeeded=*/false,
+                            std::move(request));
     return;
   }
   GURL::Replacements rep;
@@ -385,23 +383,26 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
   history->GetVisibleVisitCountToHost(
       https_url,
       base::BindOnce(&BrowserFeatureExtractor::QueryHttpsHostVisitsDone,
-                     base::Unretained(this), std::move(request), callback),
+                     base::Unretained(this), std::move(request),
+                     std::move(callback)),
       &cancelable_task_tracker_);
 }
 
 void BrowserFeatureExtractor::QueryHttpsHostVisitsDone(
     std::unique_ptr<ClientPhishingRequest> request,
-    const DoneCallback& callback,
+    DoneCallback callback,
     history::VisibleVisitCountToHostResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
   DCHECK(!callback.is_null());
   if (!result.success) {
-    callback.Run(false, std::move(request));
+    std::move(callback).Run(/*feature_extraction_succeeded=*/false,
+                            std::move(request));
     return;
   }
   SetHostVisitsFeatures(result.count, result.first_visit, false, request.get());
-  callback.Run(true, std::move(request));
+  std::move(callback).Run(/*feature_extraction_succeeded=*/true,
+                          std::move(request));
 }
 
 void BrowserFeatureExtractor::SetHostVisitsFeatures(
@@ -454,7 +455,8 @@ void BrowserFeatureExtractor::FinishExtractMalwareFeatures(
       break;
     }
   }
-  callback.Run(true, std::move(request));
+  std::move(callback).Run(/*feature_extraction_succeeded=*/true,
+                          std::move(request));
 }
 
 }  // namespace safe_browsing

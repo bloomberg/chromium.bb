@@ -554,8 +554,7 @@ void ClientSideDetectionHost::MaybeStartMalwareFeatureExtraction() {
     // This function doesn't expect browse_info_ to stay around after this
     // function returns.
     feature_extractor_->ExtractMalwareFeatures(
-        browse_info_.get(),
-        malware_request.release(),
+        browse_info_.get(), std::move(malware_request),
         base::Bind(&ClientSideDetectionHost::MalwareFeatureExtractionDone,
                    weak_factory_.GetWeakPtr()));
     should_classify_for_malware_ = false;
@@ -592,8 +591,7 @@ void ClientSideDetectionHost::PhishingDetectionDone(
       // Start browser-side feature extraction.  Once we're done it will send
       // the client verdict request.
       feature_extractor_->ExtractFeatures(
-          browse_info_.get(),
-          verdict.release(),
+          browse_info_.get(), std::move(verdict),
           base::Bind(&ClientSideDetectionHost::FeatureExtractionDone,
                      weak_factory_.GetWeakPtr()));
     }
