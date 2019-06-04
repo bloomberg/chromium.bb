@@ -344,6 +344,7 @@ source_set("eg_app_support+eg2") {
     "//base/test:test_support",
     "//components/signin/core/browser",
     "//components/strings",
+    "//components/sync/base",
     "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/authentication/cells",

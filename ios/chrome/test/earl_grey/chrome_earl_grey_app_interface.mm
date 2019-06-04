@@ -250,6 +250,8 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return nil;
 }
 
+#pragma mark - Sync Utilities
+
 + (void)clearAutofillProfileWithGUID:(NSString*)GUID {
   std::string utfGUID = base::SysNSStringToUTF8(GUID);
   chrome_test_util::ClearAutofillProfile(utfGUID);
@@ -289,6 +291,33 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
         @"Not all bookmarks were removed.");
   }
   return nil;
+}
+
++ (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
+  return chrome_test_util::GetNumberOfSyncEntities(type);
+}
+
++ (void)addFakeSyncServerBookmarkWithURL:(NSString*)URL title:(NSString*)title {
+  chrome_test_util::InjectBookmarkOnFakeSyncServer(
+      base::SysNSStringToUTF8(URL), base::SysNSStringToUTF8(title));
+}
+
++ (void)addFakeSyncServerTypedURL:(NSString*)URL {
+  chrome_test_util::InjectTypedURLOnFakeSyncServer(
+      base::SysNSStringToUTF8(URL));
+}
+
++ (void)addHistoryServiceTypedURL:(NSString*)URL {
+  chrome_test_util::AddTypedURLOnClient(GURL(base::SysNSStringToUTF8(URL)));
+}
+
++ (void)triggerSyncCycleForType:(syncer::ModelType)type {
+  chrome_test_util::TriggerSyncCycle(type);
+}
+
++ (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID {
+  chrome_test_util::DeleteAutofillProfileOnFakeSyncServer(
+      base::SysNSStringToUTF8(GUID));
 }
 
 #pragma mark - Sync Utilities (EG2)

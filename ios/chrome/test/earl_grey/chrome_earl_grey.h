@@ -146,6 +146,26 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // the real one.
 - (void)tearDownFakeSyncServer;
 
+// Gets the number of entities of the given |type|.
+- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type WARN_UNUSED_RESULT;
+
+// Adds typed URL into HistoryService.
+- (void)addHistoryServiceTypedURL:(const GURL&)URL;
+
+// Injects a bookmark with |URL| and |title| into the fake sync server.
+- (void)addFakeSyncServerBookmarkWithURL:(const GURL&)URL
+                                   title:(const std::string&)title;
+
+// Injects typed URL to sync FakeServer.
+- (void)addFakeSyncServerTypedURL:(const GURL&)URL;
+
+// Triggers a sync cycle for a |type|.
+- (void)triggerSyncCycleForType:(syncer::ModelType)type;
+
+// Deletes an autofill profile from the fake sync server with |GUID|, if it
+// exists. If it doesn't exist, nothing is done.
+- (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID;
+
 // Verifies the sessions hierarchy on the Sync FakeServer. |URLs| is
 // the collection of URLs that are to be expected for a single window. A
 // GREYAssert is induced on failure. See the SessionsHierarchy class for
@@ -363,18 +383,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 #pragma mark - Sync Utilities
 
-// Gets the number of entities of the given |type|.
-- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type WARN_UNUSED_RESULT;
-
 // Injects a bookmark into the fake sync server with |URL| and |title|.
 - (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
                                 bookmarkTitle:(const std::string&)title;
-
-// Adds typed URL into HistoryService.
-- (void)addTypedURL:(const GURL&)URL;
-
-// Triggers a sync cycle for a |type|.
-- (void)triggerSyncCycleForType:(syncer::ModelType)type;
 
 // If the provided |url| is present (or not) if |expected_present|
 // is YES (or NO) returns nil, otherwise an NSError indicating why the operation
@@ -385,13 +396,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Deletes typed URL from HistoryService.
 - (void)deleteTypedURL:(const GURL&)URL;
-
-// Injects typed URL to sync FakeServer.
-- (void)injectTypedURLOnFakeSyncServer:(const std::string&)URL;
-
-// Deletes an autofill profile from the fake sync server with |GUID|, if it
-// exists. If it doesn't exist, nothing is done.
-- (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID;
 
 @end
 

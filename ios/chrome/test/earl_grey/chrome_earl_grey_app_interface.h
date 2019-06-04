@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #import "components/content_settings/core/common/content_settings.h"
+#import "components/sync/base/model_type.h"
 
 @class ElementSelector;
 
@@ -150,6 +151,8 @@
 // success, or else an NSError indicating why the operation failed.
 + (NSError*)signOutAndClearAccounts;
 
+#pragma mark - Sync Utilities
+
 // Clears the autofill profile for the given |GUID|.
 + (void)clearAutofillProfileWithGUID:(NSString*)GUID;
 
@@ -201,6 +204,25 @@
 // Tears down the fake sync server used by the ProfileSyncService and restores
 // the real one.
 + (void)tearDownFakeSyncServer;
+
+// Gets the number of entities of the given |type|.
++ (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type;
+
+// Injects a bookmark into the fake sync server with |URL| and |title|.
++ (void)addFakeSyncServerBookmarkWithURL:(NSString*)URL title:(NSString*)title;
+
+// Injects typed URL to sync FakeServer.
++ (void)addFakeSyncServerTypedURL:(NSString*)URL;
+
+// Adds typed URL into HistoryService.
++ (void)addHistoryServiceTypedURL:(NSString*)URL;
+
+// Triggers a sync cycle for a |type|.
++ (void)triggerSyncCycleForType:(syncer::ModelType)type;
+
+// Deletes an autofill profile from the fake sync server with |GUID|, if it
+// exists. If it doesn't exist, nothing is done.
++ (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID;
 
 // Verifies the sessions hierarchy on the Sync FakeServer. |specs| is
 // the collection of URLs that are to be expected for a single window. On

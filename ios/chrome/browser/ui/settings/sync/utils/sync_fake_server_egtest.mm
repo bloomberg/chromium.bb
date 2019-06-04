@@ -121,8 +121,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
 // client.
 - (void)testSyncDownloadBookmark {
   [[self class] assertBookmarksWithTitle:@"hoo" expectedCount:0];
-  [ChromeEarlGrey injectBookmarkOnFakeSyncServerWithURL:"http://www.hoo.com"
-                                          bookmarkTitle:"hoo"];
+  const GURL URL = web::test::HttpServer::MakeUrl("http://www.hoo.com");
+  [ChromeEarlGrey addFakeSyncServerBookmarkWithURL:URL title:"hoo"];
 
   // Sign in to sync, after a bookmark has been injected in the sync server.
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
@@ -408,7 +408,7 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
   [self setTearDownHandler:^{
     [ChromeEarlGrey clearBrowsingHistory];
   }];
-  [ChromeEarlGrey addTypedURL:mockURL];
+  [ChromeEarlGrey addHistoryServiceTypedURL:mockURL];
 
   // Sign in to sync.
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
@@ -439,7 +439,7 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
   }];
 
   // Inject typed url on server.
-  [ChromeEarlGrey injectTypedURLOnFakeSyncServer:mockURL.spec()];
+  [ChromeEarlGrey addFakeSyncServerTypedURL:mockURL];
 
   // Sign in to sync.
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
@@ -469,7 +469,7 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
   }];
 
   // Inject typed url on server.
-  [ChromeEarlGrey injectTypedURLOnFakeSyncServer:mockURL.spec()];
+  [ChromeEarlGrey addFakeSyncServerTypedURL:mockURL];
 
   // Sign in to sync.
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
@@ -507,7 +507,7 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
   [self setTearDownHandler:^{
     [ChromeEarlGrey clearBrowsingHistory];
   }];
-  [ChromeEarlGrey addTypedURL:mockURL];
+  [ChromeEarlGrey addHistoryServiceTypedURL:mockURL];
 
   // Sign in to sync.
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];

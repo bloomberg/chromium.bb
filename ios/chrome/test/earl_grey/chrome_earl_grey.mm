@@ -398,28 +398,28 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [ChromeEarlGreyAppInterface stopSync];
 }
 
-- (void)clearAutofillProfileWithGUID:(const std::string&)GUID {
-  NSString* nsGUID = base::SysUTF8ToNSString(GUID);
-  [ChromeEarlGreyAppInterface clearAutofillProfileWithGUID:nsGUID];
+- (void)clearAutofillProfileWithGUID:(const std::string&)UTF8GUID {
+  NSString* GUID = base::SysUTF8ToNSString(UTF8GUID);
+  [ChromeEarlGreyAppInterface clearAutofillProfileWithGUID:GUID];
 }
 
-- (void)injectAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID
+- (void)injectAutofillProfileOnFakeSyncServerWithGUID:
+            (const std::string&)UTF8GUID
                                   autofillProfileName:
-                                      (const std::string&)fullName {
-  NSString* nsGUID = base::SysUTF8ToNSString(GUID);
-  NSString* nsFullName = base::SysUTF8ToNSString(fullName);
+                                      (const std::string&)UTF8FullName {
+  NSString* GUID = base::SysUTF8ToNSString(UTF8GUID);
+  NSString* fullName = base::SysUTF8ToNSString(UTF8FullName);
   [ChromeEarlGreyAppInterface
-      injectAutofillProfileOnFakeSyncServerWithGUID:nsGUID
-                                autofillProfileName:nsFullName];
+      injectAutofillProfileOnFakeSyncServerWithGUID:GUID
+                                autofillProfileName:fullName];
 }
 
-- (BOOL)isAutofillProfilePresentWithGUID:(const std::string&)GUID
-                     autofillProfileName:(const std::string&)fullName {
-  NSString* nsGUID = base::SysUTF8ToNSString(GUID);
-  NSString* nsFullName = base::SysUTF8ToNSString(fullName);
-  return
-      [ChromeEarlGreyAppInterface isAutofillProfilePresentWithGUID:nsGUID
-                                               autofillProfileName:nsFullName];
+- (BOOL)isAutofillProfilePresentWithGUID:(const std::string&)UTF8GUID
+                     autofillProfileName:(const std::string&)UTF8FullName {
+  NSString* GUID = base::SysUTF8ToNSString(UTF8GUID);
+  NSString* fullName = base::SysUTF8ToNSString(UTF8FullName);
+  return [ChromeEarlGreyAppInterface isAutofillProfilePresentWithGUID:GUID
+                                                  autofillProfileName:fullName];
 }
 
 - (void)setUpFakeSyncServer {
@@ -428,6 +428,39 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 - (void)tearDownFakeSyncServer {
   [ChromeEarlGreyAppInterface tearDownFakeSyncServer];
+}
+
+- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
+  return [ChromeEarlGreyAppInterface numberOfSyncEntitiesWithType:type];
+}
+
+- (void)addFakeSyncServerBookmarkWithURL:(const GURL&)URL
+                                   title:(const std::string&)UTF8Title {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  NSString* title = base::SysUTF8ToNSString(UTF8Title);
+  [ChromeEarlGreyAppInterface addFakeSyncServerBookmarkWithURL:spec
+                                                         title:title];
+}
+
+- (void)addFakeSyncServerTypedURL:(const GURL&)URL {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  [ChromeEarlGreyAppInterface addFakeSyncServerTypedURL:spec];
+}
+
+- (void)addHistoryServiceTypedURL:(const GURL&)URL {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  [ChromeEarlGreyAppInterface addHistoryServiceTypedURL:spec];
+}
+
+- (void)triggerSyncCycleForType:(syncer::ModelType)type {
+  [ChromeEarlGreyAppInterface triggerSyncCycleForType:type];
+}
+
+- (void)deleteAutofillProfileOnFakeSyncServerWithGUID:
+    (const std::string&)UTF8GUID {
+  NSString* GUID = base::SysUTF8ToNSString(UTF8GUID);
+  [ChromeEarlGreyAppInterface
+      deleteAutofillProfileOnFakeSyncServerWithGUID:GUID];
 }
 
 - (NSError*)waitForSyncInitialized:(BOOL)isInitialized
@@ -578,21 +611,9 @@ id ExecuteJavaScript(NSString* javascript,
 
 #pragma mark - Sync Utilities
 
-- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
-  return chrome_test_util::GetNumberOfSyncEntities(type);
-}
-
 - (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
                                 bookmarkTitle:(const std::string&)title {
   chrome_test_util::InjectBookmarkOnFakeSyncServer(URL, title);
-}
-
-- (void)addTypedURL:(const GURL&)URL {
-  chrome_test_util::AddTypedURLOnClient(URL);
-}
-
-- (void)triggerSyncCycleForType:(syncer::ModelType)type {
-  chrome_test_util::TriggerSyncCycle(type);
 }
 
 - (NSError*)waitForTypedURL:(const GURL&)URL
@@ -620,14 +641,6 @@ id ExecuteJavaScript(NSString* javascript,
 
 - (void)deleteTypedURL:(const GURL&)URL {
   chrome_test_util::DeleteTypedUrlFromClient(URL);
-}
-
-- (void)injectTypedURLOnFakeSyncServer:(const std::string&)URL {
-  chrome_test_util::InjectTypedURLOnFakeSyncServer(URL);
-}
-
-- (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID {
-  chrome_test_util::DeleteAutofillProfileOnFakeSyncServer(GUID);
 }
 
 @end
