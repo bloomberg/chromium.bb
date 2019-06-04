@@ -75,37 +75,7 @@
 
 <dom-module id="add-printer-manually-dialog">
   <template>
-    <style include="cups-printer-shared">
-      #discoverPrintersButton {
-        margin-inline-end: 153px;
-      }
-
-      .search-printer-box {
-        margin-top: 18px;
-      }
-
-      .search-printer-box paper-spinner-lite {
-        --paper-spinner-stroke-width: 2px;
-        height: 15px;
-        margin-inline-end: 3px;
-        margin-inline-start: 20px;
-        width: 15px;
-      }
-
-      .search-printer-box .spinner-comment {
-        color: var(--google-grey-700);
-      }
-
-      .printer-not-found {
-        background-color: var(--paper-yellow-100);
-        padding: 10px 20px;
-      }
-
-      .printer-found {
-        background-color: var(--paper-green-100);
-        padding: 10px 20px;
-      }
-    </style>
+    <style include="cups-printer-shared"> </style>
     <add-printer-dialog>
       <div slot="dialog-title">$i18n{addPrintersManuallyTitle}</div>
       <div slot="dialog-body">
