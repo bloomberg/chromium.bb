@@ -87,6 +87,11 @@
           'shards': 21,
         },
       },
+      'linux-chromeos-google-rel': {
+        # TODO(https://crbug.com/932269): Promote out of experiment when the
+        # tests are green.
+        'experiment_percentage': 100,
+      },
       'linux-chromeos-oobe-code-coverage': {
         'swarming': {
           'shards': 21,
@@ -733,6 +738,11 @@
       },
       # chromium.win; temporary, https://crbug.com/818832
       'Win10 Tests x64 (dbg)': {
+        'experiment_percentage': 100,
+      },
+      'linux-chromeos-google-rel': {
+        # TODO(https://crbug.com/932269): Promote out of experiment when the
+        # tests are green.
         'experiment_percentage': 100,
       },
     },
@@ -1456,6 +1466,11 @@
           'shards': 8,
         },
       },
+      'linux-chromeos-google-rel': {
+        # TODO(https://crbug.com/932269): Promote out of experiment when the
+        # tests are green.
+        'experiment_percentage': 100,
+      },
     },
   },
   'video_decode_accelerator_gl_unittest': {
@@ -1475,6 +1490,11 @@
         'swarming': {
           'shards': 20,
         },
+      },
+      'linux-chromeos-google-rel': {
+        # TODO(https://crbug.com/932269): Promote out of experiment when the
+        # tests are green.
+        'experiment_percentage': 100,
       },
       'linux-chromeos-oobe-code-coverage': {
         'swarming': {

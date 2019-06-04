@@ -167,9 +167,6 @@
   'code-coverage': {
     'isolate_coverage_data': True,
   },
-  'experimental': {
-    'experiment_percentage': 100,
-  },
   'flounder': {
     # Nexus 9
     'swarming': {

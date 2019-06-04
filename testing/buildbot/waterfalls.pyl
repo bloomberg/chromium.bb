@@ -620,7 +620,6 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
-          'experimental',
           'linux-trusty',
         ],
         'test_suites': {
