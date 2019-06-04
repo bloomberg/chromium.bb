@@ -135,6 +135,14 @@ include_rules = [
   "+chrome/browser/ui/views/extensions/request_file_system_dialog_view.h",
   "+chrome/browser/ui/views/try_chrome_dialog_win/try_chrome_dialog.h",
 
+  # Ensure that only the public interface of performance_manager gets used.
+  "-chrome/browser/performance_manager",
+  "+chrome/browser/performance_manager/public",
+  "+chrome/browser/performance_manager/chrome_browser_main_extra_parts_performance_manager.h",
+  "+chrome/browser/performance_manager/chrome_content_browser_client_performance_manager_part.h",
+  "+chrome/browser/performance_manager/performance_manager.h",
+  "+chrome/browser/performance_manager/performance_manager_tab_helper.h",
+
   # Explicitly disallow using SyncMessageFilter to prevent browser from
   # sending synchronous IPC messages on non-UI threads.
   "-ipc/ipc_sync_message_filter.h",
