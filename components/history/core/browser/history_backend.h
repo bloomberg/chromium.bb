@@ -275,36 +275,31 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Favicon -------------------------------------------------------------------
 
-  void GetFavicon(
+  std::vector<favicon_base::FaviconRawBitmapResult> GetFavicon(
       const GURL& icon_url,
       favicon_base::IconType icon_type,
-      const std::vector<int>& desired_sizes,
-      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
+      const std::vector<int>& desired_sizes);
 
-  void GetLargestFaviconForURL(
+  favicon_base::FaviconRawBitmapResult GetLargestFaviconForURL(
       const GURL& page_url,
       const std::vector<favicon_base::IconTypeSet>& icon_types_list,
-      int minimum_size_in_pixels,
-      favicon_base::FaviconRawBitmapResult* bitmap_result);
+      int minimum_size_in_pixels);
 
-  void GetFaviconsForURL(
+  std::vector<favicon_base::FaviconRawBitmapResult> GetFaviconsForURL(
       const GURL& page_url,
       const favicon_base::IconTypeSet& icon_types,
       const std::vector<int>& desired_sizes,
-      bool fallback_to_host,
-      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
+      bool fallback_to_host);
 
-  void GetFaviconForID(
+  std::vector<favicon_base::FaviconRawBitmapResult> GetFaviconForID(
       favicon_base::FaviconID favicon_id,
-      int desired_size,
-      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
+      int desired_size);
 
-  void UpdateFaviconMappingsAndFetch(
-      const base::flat_set<GURL>& page_urls,
-      const GURL& icon_url,
-      favicon_base::IconType icon_type,
-      const std::vector<int>& desired_sizes,
-      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
+  std::vector<favicon_base::FaviconRawBitmapResult>
+  UpdateFaviconMappingsAndFetch(const base::flat_set<GURL>& page_urls,
+                                const GURL& icon_url,
+                                favicon_base::IconType icon_type,
+                                const std::vector<int>& desired_sizes);
 
   void DeleteFaviconMappings(const base::flat_set<GURL>& page_urls,
                              favicon_base::IconType icon_type);
