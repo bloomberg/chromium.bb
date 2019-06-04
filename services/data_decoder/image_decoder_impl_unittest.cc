@@ -7,8 +7,8 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
 #include "services/data_decoder/image_decoder_impl.h"
@@ -108,7 +108,7 @@ class ImageDecoderImplTest : public testing::Test {
   ImageDecoderImpl* decoder() { return &decoder_; }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ImageDecoderImpl decoder_;
 };
 

@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
@@ -46,7 +46,7 @@ class JsonSanitizerTest : public ::testing::Test {
   void OnSuccess(const std::string& json);
   void OnError(const std::string& error);
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
 #if !defined(OS_ANDROID)
   TestingJsonParser::ScopedFactoryOverride factory_override_;
