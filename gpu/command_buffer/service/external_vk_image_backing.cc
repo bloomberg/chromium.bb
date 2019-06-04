@@ -14,7 +14,6 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
@@ -33,6 +32,16 @@
 namespace gpu {
 
 namespace {
+
+GrVkImageInfo CreateGrVkImageInfo(VkImage image,
+                                  VkFormat vk_format,
+                                  VkDeviceMemory memory,
+                                  size_t memory_size) {
+  GrVkAlloc alloc(memory, 0 /* offset */, memory_size, 0 /* flags */);
+  return GrVkImageInfo(image, alloc, VK_IMAGE_TILING_OPTIMAL,
+                       VK_IMAGE_LAYOUT_UNDEFINED, vk_format,
+                       1 /* levelCount */);
+}
 
 VkResult CreateExternalVkImage(SharedContextState* context_state,
                                VkFormat format,
@@ -71,28 +80,6 @@ VkResult CreateExternalVkImage(SharedContextState* context_state,
   VkDevice device =
       context_state->vk_context_provider()->GetDeviceQueue()->GetVulkanDevice();
   return vkCreateImage(device, &create_info, nullptr, image);
-}
-
-void TransitionToColorAttachment(VkImage image,
-                                 SharedContextState* context_state,
-                                 VulkanCommandPool* command_pool) {
-  auto command_buffer = command_pool->CreatePrimaryCommandBuffer();
-  CHECK(command_buffer->Initialize());
-
-  {
-    ScopedSingleUseCommandBufferRecorder recorder(*command_buffer);
-    command_buffer->TransitionImageLayout(
-        image, VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-  }
-
-  // TODO(penghuang): get rid of this submission if poosible.
-  command_buffer->Submit(0, nullptr, 0, nullptr);
-
-  context_state->vk_context_provider()
-      ->GetDeviceQueue()
-      ->GetFenceHelper()
-      ->EnqueueVulkanObjectCleanupForSubmittedWork(std::move(command_buffer));
 }
 
 uint32_t FindMemoryTypeIndex(SharedContextState* context_state,
@@ -184,10 +171,6 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     return nullptr;
   }
 
-  // TODO(penghuang): track image layout to avoid unnecessary image layout
-  // transition. https://crbug.com/965955
-  TransitionToColorAttachment(image, context_state, command_pool);
-
   auto backing = base::WrapUnique(new ExternalVkImageBacking(
       mailbox, format, size, color_space, usage, context_state, image, memory,
       requirements.size, vk_format, command_pool));
@@ -244,10 +227,6 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
       vkDestroyImage(vk_device, vk_image, nullptr);
       return nullptr;
     }
-
-    // TODO(penghuang): track image layout to avoid unnecessary image layout
-    // transition. https://crbug.com/965955
-    TransitionToColorAttachment(vk_image, context_state, command_pool);
 
     return base::WrapUnique(new ExternalVkImageBacking(
         mailbox, viz::GetResourceFormat(buffer_format), size, color_space,
@@ -355,15 +334,14 @@ ExternalVkImageBacking::ExternalVkImageBacking(
                          memory_size,
                          false /* is_thread_safe */),
       context_state_(context_state),
-      image_(image),
-      memory_(memory),
-      memory_size_(memory_size),
-      vk_format_(vk_format),
+      backend_texture_(
+          size.width(),
+          size.height(),
+          CreateGrVkImageInfo(image, vk_format, memory, memory_size)),
       command_pool_(command_pool) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {
-  DCHECK(image_ == VK_NULL_HANDLE);
-  DCHECK(memory_ == VK_NULL_HANDLE);
+  DCHECK(!backend_texture_.isValid());
 }
 
 bool ExternalVkImageBacking::BeginAccess(
@@ -404,13 +382,17 @@ void ExternalVkImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
 }
 
 void ExternalVkImageBacking::Destroy() {
+  GrVkImageInfo image_info;
+  bool result = backend_texture_.getVkImageInfo(&image_info);
+  DCHECK(result);
+
   auto* fence_helper = context_state()
                            ->vk_context_provider()
                            ->GetDeviceQueue()
                            ->GetFenceHelper();
-  fence_helper->EnqueueImageCleanupForSubmittedWork(image_, memory_);
-  image_ = VK_NULL_HANDLE;
-  memory_ = VK_NULL_HANDLE;
+  fence_helper->EnqueueImageCleanupForSubmittedWork(image_info.fImage,
+                                                    image_info.fAlloc.fMemory);
+  backend_texture_ = GrBackendTexture();
 
   if (texture_) {
     // Ensure that a context is current before removing the ref and calling
@@ -441,11 +423,14 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 #elif defined(OS_LINUX)
+  GrVkImageInfo image_info;
+  bool result = backend_texture_.getVkImageInfo(&image_info);
+  DCHECK(result);
   if (!texture_) {
     VkMemoryGetFdInfoKHR get_fd_info;
     get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
     get_fd_info.pNext = nullptr;
-    get_fd_info.memory = memory_;
+    get_fd_info.memory = image_info.fAlloc.fMemory;
     get_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
 
     int memory_fd = -1;
@@ -464,7 +449,7 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
 
     GLuint memory_object;
     api->glCreateMemoryObjectsEXTFn(1, &memory_object);
-    api->glImportMemoryFdEXTFn(memory_object, memory_size_,
+    api->glImportMemoryFdEXTFn(memory_object, image_info.fAlloc.fSize,
                                GL_HANDLE_TYPE_OPAQUE_FD_EXT, memory_fd);
     GLuint texture_service_id;
     api->glGenTexturesFn(1, &texture_service_id);
@@ -603,36 +588,32 @@ bool ExternalVkImageBacking::WritePixels(
   memcpy(data, pixel_data.data(), pixel_data.size());
   vkUnmapMemory(device(), stage_memory);
 
-  auto command_buffer = command_pool_->CreatePrimaryCommandBuffer();
-  CHECK(command_buffer->Initialize());
-
-  {
-    ScopedSingleUseCommandBufferRecorder recorder(*command_buffer);
-
-    // TODO(penghuang): track image layout to avoid unnecessary image layout
-    // transition. https://crbug.com/965955
-    command_buffer->TransitionImageLayout(
-        image(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    uint32_t buffer_width =
-        stride ? stride * 8 / BitsPerPixel(format()) : size().width();
-    command_buffer->CopyBufferToImage(stage_buffer, image(), buffer_width,
-                                      size().height(), size().width(),
-                                      size().height());
-
-    // TODO(penghuang): track image layout to avoid unnecessary image layout
-    // transition. https://crbug.com/965955
-    command_buffer->TransitionImageLayout(
-        image(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-  }
-
   std::vector<gpu::SemaphoreHandle> handles;
   if (!BeginAccessInternal(false /* readonly */, &handles)) {
     DLOG(ERROR) << "BeginAccess() failed.";
     vkDestroyBuffer(device(), stage_buffer, nullptr /* pAllocator */);
     vkFreeMemory(device(), stage_memory, nullptr /* pAllocator */);
     return false;
+  }
+
+  auto command_buffer = command_pool_->CreatePrimaryCommandBuffer();
+  CHECK(command_buffer->Initialize());
+  {
+    ScopedSingleUseCommandBufferRecorder recorder(*command_buffer);
+    GrVkImageInfo image_info;
+    bool result = backend_texture_.getVkImageInfo(&image_info);
+    DCHECK(result);
+    if (image_info.fImageLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+      command_buffer->TransitionImageLayout(
+          image_info.fImage, image_info.fImageLayout,
+          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+      backend_texture_.setVkImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    }
+    uint32_t buffer_width =
+        stride ? stride * 8 / BitsPerPixel(format()) : size().width();
+    command_buffer->CopyBufferToImage(stage_buffer, image_info.fImage,
+                                      buffer_width, size().height(),
+                                      size().width(), size().height());
   }
 
   if (!need_sychronization()) {

@@ -48,11 +48,8 @@ class ExternalVkImageBacking : public SharedImageBacking {
 
   ~ExternalVkImageBacking() override;
 
-  VkImage image() const { return image_; }
-  VkDeviceMemory memory() const { return memory_; }
-  size_t memory_size() const { return memory_size_; }
-  VkFormat vk_format() const { return vk_format_; }
   SharedContextState* context_state() const { return context_state_; }
+  const GrBackendTexture& backend_texture() const { return backend_texture_; }
   VulkanImplementation* vulkan_implementation() const {
     return context_state()->vk_context_provider()->GetVulkanImplementation();
   }
@@ -123,14 +120,12 @@ class ExternalVkImageBacking : public SharedImageBacking {
   bool WritePixels(const base::span<const uint8_t>& pixel_data, size_t stride);
 
   SharedContextState* const context_state_;
-  VkImage image_ = VK_NULL_HANDLE;
-  VkDeviceMemory memory_ = VK_NULL_HANDLE;
+  GrBackendTexture backend_texture_;
+  VulkanCommandPool* const command_pool_;
+
   SemaphoreHandle write_semaphore_handle_;
   std::vector<SemaphoreHandle> read_semaphore_handles_;
-  const size_t memory_size_;
   bool is_cleared_ = false;
-  const VkFormat vk_format_;
-  VulkanCommandPool* const command_pool_;
 
   bool is_write_in_progress_ = false;
   uint32_t reads_in_progress_ = 0;
