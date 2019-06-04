@@ -48,7 +48,7 @@
 #endif
 
 #ifdef NOINLINE
-#defined OSP_NOINLINE NOINLINE
+#define OSP_NOINLINE NOINLINE
 #else
 #define OSP_NOINLINE __attribute__((noinline))
 #endif
