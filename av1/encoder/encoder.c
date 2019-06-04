@@ -3089,7 +3089,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     aom_get_worker_interface()->end(worker);
 
     // Deallocate allocated thread data.
-    if (cpi->row_mt == 1) aom_free(thread_data->td->tctx);
+    aom_free(thread_data->td->tctx);
     if (t > 0) {
       aom_free(thread_data->td->palette_buffer);
       aom_free(thread_data->td->tmp_conv_dst);
@@ -3114,11 +3114,9 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     }
   }
 #if CONFIG_MULTITHREAD
-  if (cpi->row_mt == 1) {
-    if (cpi->row_mt_mutex_ != NULL) {
-      pthread_mutex_destroy(cpi->row_mt_mutex_);
-      aom_free(cpi->row_mt_mutex_);
-    }
+  if (cpi->row_mt_mutex_ != NULL) {
+    pthread_mutex_destroy(cpi->row_mt_mutex_);
+    aom_free(cpi->row_mt_mutex_);
   }
 #endif
   av1_row_mt_mem_dealloc(cpi);
