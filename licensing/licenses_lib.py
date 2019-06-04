@@ -59,17 +59,6 @@ SKIPPED_CATEGORIES = [
     'virtual',
 ]
 
-SKIPPED_PACKAGES = [
-    # Fix these packages by adding a real license in the code.
-    # You should not skip packages just because the license scraping doesn't
-    # work. Stick those special cases into PACKAGE_LICENSES.
-    # Packages should only be here because they are sub/split packages already
-    # covered by the license of the main package.
-
-    # These are Chrome-OS-specific packages, copyright BSD-Google
-    'sys-kernel/chromeos-kernel',  # already manually credit Linux
-]
-
 SKIPPED_LICENSES = [
     # Some of our packages contain binary blobs for which we have special
     # negotiated licenses, and no need to display anything publicly. Strongly
@@ -558,10 +547,6 @@ being scraped currently).""",
     """
     if self.category in SKIPPED_CATEGORIES:
       logging.info('%s in SKIPPED_CATEGORIES, skip package', self.fullname)
-      self.skip = True
-
-    if self.fullname in SKIPPED_PACKAGES:
-      logging.info('%s in SKIPPED_PACKAGES, skip package', self.fullname)
       self.skip = True
 
     # TODO(dgarrett): There are additional reasons that should be handled here.
