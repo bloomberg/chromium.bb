@@ -720,6 +720,7 @@ def GetIncludedSources(file_path, source_dir, include_set):
   # absolute paths in the set to avoid same-name-errors.
   if not os.path.isabs(file_path):
     file_path = os.path.abspath(os.path.join(source_dir, file_path))
+  file_path = os.path.normpath(file_path)
 
   current_dir = os.path.dirname(file_path)
 
