@@ -2800,6 +2800,15 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.h
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-002.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-text/text-indent/text-indent-tab-positions-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/text-indent/text-indent-tab-positions-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text/text-indent/text-indent-tab-positions-001.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Timeout ]
