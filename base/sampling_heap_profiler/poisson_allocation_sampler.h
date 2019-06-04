@@ -5,7 +5,6 @@
 #ifndef BASE_SAMPLING_HEAP_PROFILER_POISSON_ALLOCATION_SAMPLER_H_
 #define BASE_SAMPLING_HEAP_PROFILER_POISSON_ALLOCATION_SAMPLER_H_
 
-#include <memory>
 #include <vector>
 
 #include "base/base_export.h"
@@ -110,7 +109,6 @@ class BASE_EXPORT PoissonAllocationSampler {
   void BalanceAddressesHashSet();
 
   Lock mutex_;
-  std::vector<std::unique_ptr<LockFreeAddressHashSet>> sampled_addresses_stack_;
   std::vector<SamplesObserver*> observers_;
 
   static PoissonAllocationSampler* instance_;

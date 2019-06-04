@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cmath>
+#include <memory>
 #include <utility>
 
 #include "base/allocator/allocator_shim.h"
@@ -319,9 +320,8 @@ PoissonAllocationSampler::PoissonAllocationSampler() {
   CHECK_EQ(nullptr, instance_);
   instance_ = this;
   Init();
-  auto sampled_addresses = std::make_unique<LockFreeAddressHashSet>(64);
-  g_sampled_addresses_set = sampled_addresses.get();
-  sampled_addresses_stack_.push_back(std::move(sampled_addresses));
+  auto* sampled_addresses = new LockFreeAddressHashSet(64);
+  g_sampled_addresses_set.store(sampled_addresses, std::memory_order_release);
 }
 
 // static
@@ -509,16 +509,15 @@ void PoissonAllocationSampler::BalanceAddressesHashSet() {
       std::make_unique<LockFreeAddressHashSet>(current_set.buckets_count() * 2);
   new_set->Copy(current_set);
   // Atomically switch all the new readers to the new set.
-  g_sampled_addresses_set = new_set.get();
-  // We still have to keep all the old maps alive to resolve the theoretical
-  // race with readers in |RecordFree| that have already obtained the map,
+  g_sampled_addresses_set.store(new_set.release(), std::memory_order_release);
+  // We leak the older set because we still have to keep all the old maps alive
+  // as there might be reader threads that have already obtained the map,
   // but haven't yet managed to access it.
-  sampled_addresses_stack_.push_back(std::move(new_set));
 }
 
 // static
 LockFreeAddressHashSet& PoissonAllocationSampler::sampled_addresses_set() {
-  return *g_sampled_addresses_set.load(std::memory_order_relaxed);
+  return *g_sampled_addresses_set.load(std::memory_order_acquire);
 }
 
 // static
