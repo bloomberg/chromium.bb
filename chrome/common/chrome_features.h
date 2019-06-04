@@ -115,6 +115,7 @@ extern const base::Feature kCrostiniAppUninstallGui;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kPluginVm;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUsageTimeLimitPolicy;
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kWilcoDtc;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)

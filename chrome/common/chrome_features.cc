@@ -199,6 +199,11 @@ const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 // Whether the UsageTimeLimit policy should be applied to the user.
 const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Allow a Wilco DTC (diagnostics and telemetry controller) on Chrome OS.
+// More info about the project may be found here:
+// https://docs.google.com/document/d/18Ijj8YlC8Q3EWRzLspIi2dGxg4vIBVe5sJgMPt9SWYo
+const base::Feature kWilcoDtc{"WilcoDtc", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables windowing related features for desktop PWAs.

@@ -697,7 +697,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   g_browser_process->platform_part()->InitializeChromeUserManager();
 
-  wilco_dtc_supportd_manager_ = std::make_unique<WilcoDtcSupportdManager>();
+  if (base::FeatureList::IsEnabled(::features::kWilcoDtc))
+    wilco_dtc_supportd_manager_ = std::make_unique<WilcoDtcSupportdManager>();
 
   ScreenLocker::InitClass();
 
