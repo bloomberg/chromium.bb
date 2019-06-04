@@ -792,6 +792,16 @@ template("test_runner_script") {
         "--robolectric-runtime-deps-dir",
         "@WrappedPath(${_rebased_robolectric_runtime_deps_dir})",
       ]
+      if (jacoco_coverage) {
+        # Set a default coverage output directory (can be overridden by user
+        # passing the same flag).
+        _rebased_coverage_dir =
+            rebase_path("$root_out_dir/coverage", root_build_dir)
+        executable_args += [
+          "--coverage-dir",
+          "@WrappedPath(${_rebased_coverage_dir})",
+        ]
+      }
     } else if (_test_type == "linker") {
       executable_args += [
         "--test-apk",
