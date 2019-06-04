@@ -140,7 +140,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
                             const gfx::Rect& damage_region);
   void DestroyBufferInternal(gfx::AcceleratedWidget widget, uint32_t buffer_id);
 
-  void BindHostInterface();
+  void BindHostInterface(BufferManagerHostPtr buffer_manager_host_ptr);
 
 #if defined(WAYLAND_GBM)
   // A DRM render node based gbm device.
@@ -152,20 +152,23 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   // A pointer to a WaylandBufferManagerHost object, which always lives on a
   // browser process side. It's used for a multi-process mode.
   BufferManagerHostPtr buffer_manager_host_ptr_;
-  ozone::mojom::WaylandBufferManagerHostPtrInfo buffer_manager_host_ptr_info_;
 
   mojo::AssociatedBinding<ozone::mojom::WaylandBufferManagerGpu>
       associated_binding_;
 
-  // A task runner, which is initialized in a multi-process mode. It is used to
-  // ensure all the methods of this class are run on GpuMainThread. This is
-  // needed to ensure mojo calls happen on a right sequence. What is more, it
-  // makes it possible to use a frame callback (when it is implemented) in the
-  // browser process, which calls back to a right sequence after a
-  // CommitBuffer call.
+  std::map<gfx::AcceleratedWidget, WaylandSurfaceGpu*> widget_to_surface_map_;
+
+  // This task runner can be used to pass messages back to the GpuMainThread.
+  // For example, swap requests come from the GpuMainThread, but rerouted to the
+  // IOChildThread and then mojo calls happen. However, when the manager
+  // receives mojo calls, it has to reroute calls back to the same thread
+  // where the calls came from to ensure correct sequence.
   scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_runner_;
 
-  std::map<gfx::AcceleratedWidget, WaylandSurfaceGpu*> widget_to_surface_map_;
+  // A task runner, which is initialized in a multi-process mode. It is used to
+  // ensure all the methods of this class are run on IOChildThread. This is
+  // needed to ensure mojo calls happen on a right sequence.
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerGpu);
 };
