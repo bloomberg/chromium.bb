@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "components/web_restrictions/browser/web_restrictions_mojo_implementation.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -157,10 +156,6 @@ void AwRenderViewHostExt::ClearImageRequests() {
 
 void AwRenderViewHostExt::RenderFrameCreated(
     content::RenderFrameHost* frame_host) {
-  registry_.AddInterface(base::BindRepeating(
-      &web_restrictions::WebRestrictionsMojoImplementation::Create,
-      AwBrowserContext::FromWebContents(web_contents())
-          ->GetWebRestrictionProvider()));
   if (!frame_host->GetParent()) {
     frame_host->Send(new AwViewMsg_SetBackgroundColor(
         frame_host->GetRoutingID(), background_color_));

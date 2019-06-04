@@ -741,10 +741,6 @@
     "label": "//components/variations/android:components_variations_junit_tests",
     "type": "junit_test",
   },
-  "components_web_restrictions_junit_tests": {
-    "label": "//components/web_restrictions:components_web_restrictions_junit_tests",
-    "type": "junit_test",
-  },
   "compositor_unittests": {
     "label": "//ui/compositor:compositor_unittests",
     "type": "windowed_test_launcher",

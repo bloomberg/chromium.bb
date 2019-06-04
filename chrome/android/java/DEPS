@@ -21,7 +21,6 @@ include_rules = [
   "+components/omnibox/browser/android/java",
   "+components/payments/content/android/java/src/org/chromium/components/payments",
   "+components/sync/android/java/src/org/chromium/components/sync",
-  "+components/web_restrictions",
 
   "-content/public/android",
   "+content/public/android/java/src/org/chromium/content_public",

@@ -121,7 +121,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'components_invalidation_impl_junit_tests',
   'components_policy_junit_tests',
   'components_variations_junit_tests',
-  'components_web_restrictions_junit_tests',
   'content_junit_tests',
   'content_junit_tests',
   'device_junit_tests',

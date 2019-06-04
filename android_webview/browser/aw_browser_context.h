@@ -19,7 +19,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/safe_browsing/android/remote_database_manager.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
-#include "components/web_restrictions/browser/web_restrictions_client.h"
 #include "content/public/browser/browser_context.h"
 
 class GURL;
@@ -69,7 +68,6 @@ namespace prefs {
 // Used for Kerberos authentication.
 extern const char kAuthAndroidNegotiateAccountType[];
 extern const char kAuthServerWhitelist[];
-extern const char kWebRestrictionsAuthority[];
 
 }  // namespace prefs
 
@@ -110,8 +108,6 @@ class AwBrowserContext : public content::BrowserContext,
   AwFormDatabaseService* GetFormDatabaseService();
   AwURLRequestContextGetter* GetAwURLRequestContext();
   autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager();
-
-  web_restrictions::WebRestrictionsClient* GetWebRestrictionProvider();
 
   // content::BrowserContext implementation.
   base::FilePath GetPath() const override;
@@ -157,7 +153,6 @@ class AwBrowserContext : public content::BrowserContext,
   network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams();
 
  private:
-  void OnWebRestrictionsAuthorityChanged();
   void OnAuthPrefsChanged();
 
   // The file path where data for this context is persisted.
@@ -176,8 +171,6 @@ class AwBrowserContext : public content::BrowserContext,
   std::unique_ptr<policy::BrowserPolicyConnectorBase> browser_policy_connector_;
   std::unique_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;
   std::unique_ptr<content::PermissionControllerDelegate> permission_manager_;
-  std::unique_ptr<web_restrictions::WebRestrictionsClient>
-      web_restriction_provider_;
   PrefChangeRegistrar pref_change_registrar_;
 
   scoped_refptr<AwSafeBrowsingUIManager> safe_browsing_ui_manager_;

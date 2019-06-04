@@ -60,8 +60,6 @@ const char kAuthAndroidNegotiateAccountType[] =
 // Whitelist containing servers for which Integrated Authentication is enabled.
 const char kAuthServerWhitelist[] = "auth.server_whitelist";
 
-const char kWebRestrictionsAuthority[] = "web_restrictions_authority";
-
 }  // namespace prefs
 
 namespace {
@@ -203,15 +201,6 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
 
   EnsureResourceContextInitialized(this);
 
-  web_restriction_provider_.reset(
-      new web_restrictions::WebRestrictionsClient());
-  pref_change_registrar_.Add(
-      prefs::kWebRestrictionsAuthority,
-      base::BindRepeating(&AwBrowserContext::OnWebRestrictionsAuthorityChanged,
-                          base::Unretained(this)));
-  web_restriction_provider_->SetAuthority(
-      user_pref_service_->GetString(prefs::kWebRestrictionsAuthority));
-
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     auto auth_pref_callback = base::BindRepeating(
         &AwBrowserContext::OnAuthPrefsChanged, base::Unretained(this));
@@ -233,11 +222,6 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
 
   content::WebUIControllerFactory::RegisterFactory(
       AwWebUIControllerFactory::GetInstance());
-}
-
-void AwBrowserContext::OnWebRestrictionsAuthorityChanged() {
-  web_restriction_provider_->SetAuthority(
-      user_pref_service_->GetString(prefs::kWebRestrictionsAuthority));
 }
 
 void AwBrowserContext::OnAuthPrefsChanged() {
@@ -396,12 +380,6 @@ AwBrowserContext::RetriveInProgressDownloadManager() {
       nullptr, base::FilePath(),
       base::BindRepeating(&IgnoreOriginSecurityCheck),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe), nullptr);
-}
-
-web_restrictions::WebRestrictionsClient*
-AwBrowserContext::GetWebRestrictionProvider() {
-  DCHECK(web_restriction_provider_);
-  return web_restriction_provider_.get();
 }
 
 AwSafeBrowsingUIManager* AwBrowserContext::GetSafeBrowsingUIManager() const {

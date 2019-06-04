@@ -18,31 +18,6 @@ static_library("supervised_user_error_page") {
     "//components/strings",
     "//ui/base",
   ]
-
-  if (target_os == "android") {
-    sources += [
-      "supervised_user_error_page_android.cc",
-      "supervised_user_error_page_android.h",
-    ]
-    deps += [ "//components/web_restrictions:interfaces" ]
-  }
-}
-
-if (target_os == "android") {
-  source_set("gin") {
-    sources = [
-      "gin_wrapper.cc",
-      "gin_wrapper.h",
-    ]
-    deps = [
-      "//cc/paint",
-      "//components/web_restrictions:interfaces",
-      "//content/public/renderer",
-      "//gin",
-      "//third_party/blink/public:blink_headers",
-      "//url",
-    ]
-  }
 }
 
 if (is_android) {

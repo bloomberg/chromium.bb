@@ -51,11 +51,6 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
       policy::key::kAuthAndroidNegotiateAccountType,
       prefs::kAuthAndroidNegotiateAccountType, base::Value::Type::STRING));
 
-  // Web restrictions
-  handlers->AddHandler(base::WrapUnique(new policy::SimplePolicyHandler(
-      policy::key::kWebRestrictionsAuthority, prefs::kWebRestrictionsAuthority,
-      base::Value::Type::STRING)));
-
   return handlers;
 }
 

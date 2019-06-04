@@ -79,9 +79,6 @@ std::unique_ptr<PrefService> CreatePrefService(
       autofill::prefs::kAutofillCreditCardEnabled, false);
   policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry.get());
 
-  pref_registry->RegisterStringPref(
-      android_webview::prefs::kWebRestrictionsAuthority, std::string());
-
   // Register the Autocomplete Data Retention Policy pref.
   // The default value '0' represents the latest Chrome major version on which
   // the retention policy ran. By setting it to a low default value, we're
