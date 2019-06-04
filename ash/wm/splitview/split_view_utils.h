@@ -91,6 +91,10 @@ ASH_EXPORT bool ShouldAllowSplitView();
 // tablet mode.
 ASH_EXPORT bool CanSnapInSplitview(aura::Window* window);
 
+// Displays a toast notifying users the application selected for split view is
+// not compatible.
+ASH_EXPORT void ShowAppCannotSnapToast();
+
 ASH_EXPORT bool IsPhysicalLeftOrTop(SplitViewController::SnapPosition position);
 
 }  // namespace ash

@@ -507,7 +507,7 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
 
     // Show a toast if the window cannot be snapped.
     if (!CanSnapInSplitview(active_window)) {
-      split_view_controller->ShowAppCannotSnapToast();
+      ShowAppCannotSnapToast();
       return;
     }
 

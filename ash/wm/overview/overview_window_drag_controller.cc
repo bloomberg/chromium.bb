@@ -246,7 +246,7 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
   } else {
     split_view_controller_->EndSplitView();
     overview_session_->SelectWindow(item_);
-    split_view_controller_->ShowAppCannotSnapToast();
+    ShowAppCannotSnapToast();
   }
   current_drag_behavior_ = DragBehavior::kNoDrag;
   UnpauseOcclusionTracker();

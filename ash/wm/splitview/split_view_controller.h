@@ -141,10 +141,6 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   void Resize(const gfx::Point& location_in_screen);
   void EndResize(const gfx::Point& location_in_screen);
 
-  // Displays a toast notifying users the application selected for split view is
-  // not compatible.
-  void ShowAppCannotSnapToast();
-
   // Ends the split view mode.
   void EndSplitView(EndReason end_reason = EndReason::kNormal);
 

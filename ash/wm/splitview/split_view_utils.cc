@@ -10,12 +10,16 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/system/toast/toast_data.h"
+#include "ash/system/toast/toast_manager.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
@@ -51,6 +55,10 @@ constexpr base::TimeDelta kWindowTransform =
 
 constexpr float kHighlightOpacity = 0.3f;
 constexpr float kPreviewAreaHighlightOpacity = 0.18f;
+
+// Toast data.
+constexpr char kAppCannotSnapToastId[] = "split_view_app_cannot_snap";
+constexpr int kAppCannotSnapToastDurationMs = 2500;
 
 // Gets the duration, tween type and delay before animation based on |type|.
 void GetAnimationValuesForType(
@@ -266,6 +274,13 @@ bool CanSnapInSplitview(aura::Window* window) {
   }
 
   return true;
+}
+
+void ShowAppCannotSnapToast() {
+  ash::Shell::Get()->toast_manager()->Show(ash::ToastData(
+      kAppCannotSnapToastId,
+      l10n_util::GetStringUTF16(IDS_ASH_SPLIT_VIEW_CANNOT_SNAP),
+      kAppCannotSnapToastDurationMs, base::Optional<base::string16>()));
 }
 
 bool IsPhysicalLeftOrTop(SplitViewController::SnapPosition position) {

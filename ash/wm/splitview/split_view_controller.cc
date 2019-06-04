@@ -15,9 +15,6 @@
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/strings/grit/ash_strings.h"
-#include "ash/system/toast/toast_data.h"
-#include "ash/system/toast/toast_manager.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -44,7 +41,6 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
@@ -79,10 +75,6 @@ constexpr float kBlackScrimOpacity = 0.4f;
 // change this value, read the comment on kIsWindowMovedTimeoutMs in
 // tablet_mode_window_drag_delegate.cc.
 constexpr int kDividerSnapDurationMs = 300;
-
-// Toast data.
-constexpr char kAppCannotSnapToastId[] = "split_view_app_cannot_snap";
-constexpr int kAppCannotSnapToastDurationMs = 2500;
 
 // Histogram names that record presentation time of resize operation with
 // following conditions, a) single snapped window, empty overview, b) two
@@ -665,14 +657,6 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
         this, divider_position_, target_divider_position);
     divider_snap_animation_->Show();
   }
-}
-
-void SplitViewController::ShowAppCannotSnapToast() {
-  ash::ToastData toast(
-      kAppCannotSnapToastId,
-      l10n_util::GetStringUTF16(IDS_ASH_SPLIT_VIEW_CANNOT_SNAP),
-      kAppCannotSnapToastDurationMs, base::Optional<base::string16>());
-  ash::Shell::Get()->toast_manager()->Show(toast);
 }
 
 void SplitViewController::EndSplitView(EndReason end_reason) {
