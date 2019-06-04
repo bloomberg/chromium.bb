@@ -2195,8 +2195,12 @@
   },
   {
     "name": "media-router-cast-allow-all-ips",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "mfoltz" ],
+    // This flag is used by users with unusual network configurations to allow
+    // cast to work, but enabling this behavior has security implications that
+    // aren't easily understood. It is primarily used by support to help
+    // individual users get cast working.
+    "expiry_milestone": -1
   },
   {
     "name": "memlog",

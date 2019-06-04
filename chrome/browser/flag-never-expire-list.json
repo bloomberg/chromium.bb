@@ -64,6 +64,7 @@
   "in-product-help-demo-mode-choice",
   "list-all-display-modes",
   "load-media-router-component-extension",
+  "media-router-cast-allow-all-ips",
   "memlog",
   "memlog-sampling-rate",
   "memlog-stack-mode",
