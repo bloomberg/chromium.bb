@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
+#include "net/dns/dns_query.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
@@ -87,19 +91,24 @@ class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
       const test_server::HttpRequest& request) {
     if (request.relative_url.compare("/dns_query") == 0) {
       doh_queries_served_++;
-      uint8_t id1 = request.content[0];
-      uint8_t id2 = request.content[1];
-      std::unique_ptr<test_server::BasicHttpResponse> http_response(
-          new test_server::BasicHttpResponse);
-      const uint8_t header_data[] = {
-          id1,  id2,   // - Same ID as before
-          0x81, 0x80,  // - Different flags, we'll look at this below
-          0x00, 0x01,  // - 1 question
-          0x00, 0x01,  // - 1 answer
-          0x00, 0x00,  // - No authority records
-          0x00, 0x00,  // - No additional records
-      };
-      std::string question = request.content.substr(kHeaderSize);
+
+      // Parse request content as a DnsQuery to access the question.
+      auto request_buffer =
+          base::MakeRefCounted<IOBufferWithSize>(request.content.size());
+      memcpy(request_buffer->data(), request.content.data(),
+             request.content.size());
+      DnsQuery query(std::move(request_buffer));
+      EXPECT_TRUE(query.Parse(request.content.size()));
+
+      char header_data[kHeaderSize];
+      base::BigEndianWriter header_writer(header_data, kHeaderSize);
+      header_writer.WriteU16(query.id());  // Same ID as before
+      char flags[] = {0x81, 0x80};
+      header_writer.WriteBytes(flags, 2);
+      header_writer.WriteU16(1);  // 1 question
+      header_writer.WriteU16(1);  // 1 answer
+      header_writer.WriteU16(0);  // No authority records
+      header_writer.WriteU16(0);  // No additional records
 
       const uint8_t answer_data[]{0xC0, 0x0C,  // - NAME
                                   0x00, 0x01,  // - TYPE
@@ -109,8 +118,12 @@ class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
                                   0x00, 0x04,  // - RDLENGTH = 4 bytes
                                   0x7f, 0x00,  // - RDDATA, IP is 127.0.0.1
                                   0x00, 0x01};
+
+      std::unique_ptr<test_server::BasicHttpResponse> http_response(
+          new test_server::BasicHttpResponse);
       http_response->set_content(
-          std::string((char*)header_data, sizeof(header_data)) + question +
+          std::string(header_data, sizeof(header_data)) +
+          query.question().as_string() +
           std::string((char*)answer_data, sizeof(answer_data)));
       http_response->set_content_type("application/dns-message");
       return std::move(http_response);

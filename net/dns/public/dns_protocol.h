@@ -151,6 +151,11 @@ static const uint8_t kRcodeNXDOMAIN = 3;
 static const uint8_t kRcodeNOTIMP = 4;
 static const uint8_t kRcodeREFUSED = 5;
 
+// DNS EDNS(0) option codes (OPT)
+//
+// https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-11
+static const uint16_t kEdnsPadding = 12;
+
 // DNS header flags.
 //
 // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-12

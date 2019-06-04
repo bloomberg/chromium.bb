@@ -1005,7 +1005,8 @@ class DnsTransactionImpl : public DnsTransaction,
     uint16_t id = session_->NextQueryId();
     std::unique_ptr<DnsQuery> query;
     if (attempts_.empty()) {
-      query.reset(new DnsQuery(id, qnames_.front(), qtype_, opt_rdata_));
+      query.reset(new DnsQuery(id, qnames_.front(), qtype_, opt_rdata_,
+                               DnsQuery::PaddingStrategy::BLOCK_LENGTH_128));
     } else {
       query = attempts_[0]->GetQuery()->CloneWithNewId(id);
     }

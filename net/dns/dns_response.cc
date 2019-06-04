@@ -363,9 +363,10 @@ DnsResponse::DnsResponse(const void* data, size_t length, size_t answer_offset)
 DnsResponse::~DnsResponse() = default;
 
 bool DnsResponse::InitParse(size_t nbytes, const DnsQuery& query) {
-  // Response includes query, it should be at least that size.
-  if (nbytes < base::checked_cast<size_t>(query.io_buffer()->size()) ||
-      nbytes > io_buffer_size_) {
+  const base::StringPiece question = query.question();
+
+  // Response includes question, it should be at least that size.
+  if (nbytes < kHeaderSize + question.size() || nbytes > io_buffer_size_) {
     return false;
   }
 
@@ -382,7 +383,6 @@ bool DnsResponse::InitParse(size_t nbytes, const DnsQuery& query) {
     return false;
 
   // Match the question section.
-  const base::StringPiece question = query.question();
   if (question !=
       base::StringPiece(io_buffer_->data() + kHeaderSize, question.size())) {
     return false;
