@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/device_management_service.h"
 
 namespace enterprise_management {
 class DeviceManagementResponse;
@@ -32,9 +33,6 @@ class SharedURLLoaderFactory;
 class GoogleServiceAuthError;
 
 namespace policy {
-
-class DeviceManagementRequestJob;
-class DeviceManagementService;
 
 // Interacts with the device management service and determines whether Android
 // management is enabled for the user or not. Uses the OAuth2TokenService to
@@ -79,6 +77,7 @@ class AndroidManagementClient {
 
   // Callback for check Android management requests.
   void OnAndroidManagementChecked(
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
@@ -86,7 +85,7 @@ class AndroidManagementClient {
   // Used to communicate with the device management service.
   DeviceManagementService* const device_management_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  std::unique_ptr<DeviceManagementRequestJob> request_job_;
+  std::unique_ptr<DeviceManagementService::Job> request_job_;
 
   // The account ID that will be used for the access token fetch.
   const std::string account_id_;

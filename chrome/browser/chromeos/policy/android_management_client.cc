@@ -11,6 +11,8 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
+#include "components/policy/core/common/cloud/dmserver_job_configurations.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -78,19 +80,22 @@ void AndroidManagementClient::RequestAccessToken() {
 
 void AndroidManagementClient::CheckAndroidManagement(
     const std::string& access_token) {
-  request_job_.reset(device_management_service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_ANDROID_MANAGEMENT_CHECK,
-      url_loader_factory_));
-  request_job_->SetOAuthTokenParameter(access_token);
-  request_job_->SetClientID(base::GenerateGUID());
-  request_job_->GetRequest()->mutable_check_android_management_request();
+  std::unique_ptr<DMServerJobConfiguration> config = std::make_unique<
+      DMServerJobConfiguration>(
+      device_management_service_,
+      DeviceManagementService::JobConfiguration::TYPE_ANDROID_MANAGEMENT_CHECK,
+      /*client_id=*/base::GenerateGUID(),
+      /*critical=*/false, DMAuth::NoAuth(), access_token, url_loader_factory_,
+      base::BindOnce(&AndroidManagementClient::OnAndroidManagementChecked,
+                     weak_ptr_factory_.GetWeakPtr()));
 
-  request_job_->Start(
-      base::Bind(&AndroidManagementClient::OnAndroidManagementChecked,
-                 weak_ptr_factory_.GetWeakPtr()));
+  config->request()->mutable_check_android_management_request();
+
+  request_job_ = device_management_service_->CreateJob(std::move(config));
 }
 
 void AndroidManagementClient::OnAndroidManagementChecked(
+    DeviceManagementService::Job* job,
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {

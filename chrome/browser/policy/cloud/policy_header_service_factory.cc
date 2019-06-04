@@ -105,7 +105,9 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<PolicyHeaderService> service =
       std::make_unique<PolicyHeaderService>(
-          connector->device_management_service()->GetServerUrl(),
+          connector->device_management_service()
+              ->configuration()
+              ->GetDMServerUrl(),
           kPolicyVerificationKeyHash, user_store);
   return new PolicyHeaderServiceWrapper(std::move(service));
 }

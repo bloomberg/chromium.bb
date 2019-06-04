@@ -19,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
+#include "components/policy/core/common/cloud/dmserver_job_configurations.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -144,7 +145,8 @@ class AutoEnrollmentClientImpl::StateDownloadMessageProcessor {
 
   // Returns the request job type. This must match the request filled in
   // |FillRequest|.
-  virtual DeviceManagementRequestJob::JobType GetJobType() const = 0;
+  virtual DeviceManagementService::JobConfiguration::JobType GetJobType()
+      const = 0;
 
   // Fills the specific request type in |request|.
   virtual void FillRequest(
@@ -226,8 +228,10 @@ class StateDownloadMessageProcessorFRE
       const std::string& server_backed_state_key)
       : server_backed_state_key_(server_backed_state_key) {}
 
-  DeviceManagementRequestJob::JobType GetJobType() const override {
-    return DeviceManagementRequestJob::TYPE_DEVICE_STATE_RETRIEVAL;
+  DeviceManagementService::JobConfiguration::JobType GetJobType()
+      const override {
+    return DeviceManagementService::JobConfiguration::
+        TYPE_DEVICE_STATE_RETRIEVAL;
   }
 
   void FillRequest(em::DeviceManagementRequest* request) override {
@@ -278,8 +282,10 @@ class StateDownloadMessageProcessorInitialEnrollment
       : device_serial_number_(device_serial_number),
         device_brand_code_(device_brand_code) {}
 
-  DeviceManagementRequestJob::JobType GetJobType() const override {
-    return DeviceManagementRequestJob::TYPE_INITIAL_ENROLLMENT_STATE_RETRIEVAL;
+  DeviceManagementService::JobConfiguration::JobType GetJobType()
+      const override {
+    return DeviceManagementService::JobConfiguration::
+        TYPE_INITIAL_ENROLLMENT_STATE_RETRIEVAL;
   }
 
   void FillRequest(em::DeviceManagementRequest* request) override {
@@ -566,38 +572,49 @@ void AutoEnrollmentClientImpl::SendBucketDownloadRequest() {
   time_start_bucket_download_ = base::Time::Now();
 
   VLOG(1) << "Request bucket #" << remainder;
-  request_job_.reset(device_management_service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT, url_loader_factory_));
-  request_job_->SetAuthData(DMAuth::NoAuth());
-  request_job_->SetClientID(device_id_);
+  std::unique_ptr<DMServerJobConfiguration> config = std::make_unique<
+      DMServerJobConfiguration>(
+      device_management_service_,
+      policy::DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
+      device_id_,
+      /*critical=*/false, DMAuth::NoAuth(),
+      /*oauth_token=*/base::nullopt, url_loader_factory_,
+      base::BindOnce(
+          &AutoEnrollmentClientImpl::HandleRequestCompletion,
+          base::Unretained(this),
+          &AutoEnrollmentClientImpl::OnBucketDownloadRequestCompletion));
+
   em::DeviceAutoEnrollmentRequest* request =
-      request_job_->GetRequest()->mutable_auto_enrollment_request();
+      config->request()->mutable_auto_enrollment_request();
   request->set_remainder(remainder);
   request->set_modulus(INT64_C(1) << current_power_);
   request->set_enrollment_check_type(
       device_identifier_provider_->GetEnrollmentCheckType());
-  request_job_->Start(base::BindRepeating(
-      &AutoEnrollmentClientImpl::HandleRequestCompletion,
-      base::Unretained(this),
-      &AutoEnrollmentClientImpl::OnBucketDownloadRequestCompletion));
+
+  request_job_ = device_management_service_->CreateJob(std::move(config));
 }
 
 void AutoEnrollmentClientImpl::SendDeviceStateRequest() {
   ReportProgress(AUTO_ENROLLMENT_STATE_PENDING);
 
-  request_job_.reset(device_management_service_->CreateJob(
-      state_download_message_processor_->GetJobType(), url_loader_factory_));
-  request_job_->SetAuthData(DMAuth::NoAuth());
-  request_job_->SetClientID(device_id_);
-  state_download_message_processor_->FillRequest(request_job_->GetRequest());
-  request_job_->Start(base::BindRepeating(
-      &AutoEnrollmentClientImpl::HandleRequestCompletion,
-      base::Unretained(this),
-      &AutoEnrollmentClientImpl::OnDeviceStateRequestCompletion));
+  std::unique_ptr<DMServerJobConfiguration> config =
+      std::make_unique<DMServerJobConfiguration>(
+          device_management_service_,
+          state_download_message_processor_->GetJobType(), device_id_,
+          /*critical=*/false, DMAuth::NoAuth(),
+          /*oauth_token=*/base::nullopt, url_loader_factory_,
+          base::BindRepeating(
+              &AutoEnrollmentClientImpl::HandleRequestCompletion,
+              base::Unretained(this),
+              &AutoEnrollmentClientImpl::OnDeviceStateRequestCompletion));
+
+  state_download_message_processor_->FillRequest(config->request());
+  request_job_ = device_management_service_->CreateJob(std::move(config));
 }
 
 void AutoEnrollmentClientImpl::HandleRequestCompletion(
     RequestCompletionHandler handler,
+    policy::DeviceManagementService::Job* job,
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
@@ -619,7 +636,8 @@ void AutoEnrollmentClientImpl::HandleRequestCompletion(
     return;
   }
 
-  bool progress = (this->*handler)(status, net_error, response);
+  bool progress =
+      (this->*handler)(request_job_.get(), status, net_error, response);
   request_job_.reset();
   if (progress)
     NextStep();
@@ -628,6 +646,7 @@ void AutoEnrollmentClientImpl::HandleRequestCompletion(
 }
 
 bool AutoEnrollmentClientImpl::OnBucketDownloadRequestCompletion(
+    policy::DeviceManagementService::Job* job,
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
@@ -700,6 +719,7 @@ bool AutoEnrollmentClientImpl::OnBucketDownloadRequestCompletion(
 }
 
 bool AutoEnrollmentClientImpl::OnDeviceStateRequestCompletion(
+    policy::DeviceManagementService::Job* job,
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {

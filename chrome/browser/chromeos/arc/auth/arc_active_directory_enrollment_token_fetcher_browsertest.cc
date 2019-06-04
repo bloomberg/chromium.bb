@@ -52,7 +52,9 @@ using Status = ArcActiveDirectoryEnrollmentTokenFetcher::Status;
 std::string GetDmServerUrl() {
   policy ::BrowserPolicyConnectorChromeOS* const connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->device_management_service()->GetServerUrl();
+  return connector->device_management_service()
+      ->configuration()
+      ->GetDMServerUrl();
 }
 
 // Observer for FakeArcSupport.

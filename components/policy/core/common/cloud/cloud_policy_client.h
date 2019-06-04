@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -21,6 +22,7 @@
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
+#include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -31,10 +33,9 @@ class SharedURLLoaderFactory;
 
 namespace policy {
 
-class DeviceManagementRequestJob;
-class DeviceManagementService;
 class SigningService;
 class DMAuth;
+class DMServerJobConfiguration;
 
 // Implements the core logic required to talk to the device management service.
 // Also keeps track of the current state of the association with the service,
@@ -244,6 +245,12 @@ class POLICY_EXPORT CloudPolicyClient {
           chrome_desktop_report,
       const StatusCallback& callback);
 
+  // Uploads |event| using the real-time reporting API.  As above, the client
+  // must be in a registered state.  The |callback| will be called when the
+  // operation completes.
+  virtual void UploadRealtimeReport(base::Value event,
+                                    const StatusCallback& callback);
+
   // Uploads a report on the status of app push-installs. The client must be in
   // a registered state. The |callback| will be called when the operation
   // completes.
@@ -349,6 +356,7 @@ class POLICY_EXPORT CloudPolicyClient {
     return !reregistration_dm_token_.empty();
   }
 
+  DeviceManagementService* service() { return service_; }
   const std::string& dm_token() const { return dm_token_; }
   const std::string& client_id() const { return client_id_; }
   const base::DictionaryValue* configuration_seed() const {
@@ -405,9 +413,6 @@ class POLICY_EXPORT CloudPolicyClient {
           certificate_type,
       const StatusCallback& callback);
 
-  // Callback for retries of registration requests.
-  void OnRetryRegister(DeviceManagementRequestJob* job);
-
   // Callback for siganture of requests.
   void OnRegisterWithCertificateRequestSigned(
       std::unique_ptr<DMAuth> auth,
@@ -416,12 +421,14 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Callback for registration requests.
   void OnRegisterCompleted(
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for policy fetch requests.
   void OnPolicyFetchCompleted(
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
@@ -429,74 +436,83 @@ class POLICY_EXPORT CloudPolicyClient {
   // Callback for robot account api authorization requests.
   void OnFetchRobotAuthCodesCompleted(
       RobotAuthCodeCallback callback,
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for unregistration requests.
   void OnUnregisterCompleted(
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for certificate upload requests.
   void OnCertificateUploadCompleted(
-      const DeviceManagementRequestJob* job,
       const StatusCallback& callback,
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for several types of status/report upload requests.
   void OnReportUploadCompleted(
-      const DeviceManagementRequestJob* job,
       const StatusCallback& callback,
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
+  // Callback for realtime report upload requests.
+  void OnRealtimeReportUploadCompleted(const StatusCallback& callback,
+                                       DeviceManagementService::Job* job,
+                                       DeviceManagementStatus status,
+                                       int net_error,
+                                       const base::Value& response);
+
   // Callback for remote command fetch requests.
   void OnRemoteCommandsFetched(
-      const DeviceManagementRequestJob* job,
       RemoteCommandCallback callback,
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for device attribute update permission requests.
   void OnDeviceAttributeUpdatePermissionCompleted(
-      const DeviceManagementRequestJob* job,
       const StatusCallback& callback,
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for device attribute update requests.
   void OnDeviceAttributeUpdated(
-      const DeviceManagementRequestJob* job,
       const StatusCallback& callback,
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for available license types request.
   void OnAvailableLicensesRequested(
-      const DeviceManagementRequestJob* job,
       const LicenseRequestCallback& callback,
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Callback for gcm id update requests.
   void OnGcmIdUpdated(
-      const DeviceManagementRequestJob* job,
       const StatusCallback& callback,
+      DeviceManagementService::Job* job,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
   // Helper to remove a job from request_jobs_.
-  void RemoveJob(const DeviceManagementRequestJob* job);
+  void RemoveJob(DeviceManagementService::Job* job);
 
   // Observer notification helpers.
   void NotifyPolicyFetched();
@@ -543,15 +559,15 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Only one outstanding policy fetch is allowed, so this is tracked in
   // its own member variable.
-  std::unique_ptr<DeviceManagementRequestJob> policy_fetch_request_job_;
+  std::unique_ptr<DeviceManagementService::Job> policy_fetch_request_job_;
 
   // All of the outstanding non-policy-fetch request jobs. These jobs are
   // silently cancelled if Unregister() is called.
-  std::vector<std::unique_ptr<DeviceManagementRequestJob>> request_jobs_;
+  std::vector<std::unique_ptr<DeviceManagementService::Job>> request_jobs_;
 
   // Only one outstanding app push-install report upload is allowed, and it must
   // be accessible so that it can be canceled.
-  DeviceManagementRequestJob* app_install_report_request_job_ = nullptr;
+  DeviceManagementService::Job* app_install_report_request_job_ = nullptr;
 
   // The policy responses returned by the last policy fetch operation.
   ResponseMap responses_;
@@ -577,21 +593,20 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& current_state_key,
       enterprise_management::DeviceRegisterRequest* request);
 
-  // Prepare the certifiate upload request field for uploading a certificate.
+  // Prepare the certificate upload request field for uploading a certificate.
   void PrepareCertUploadRequest(
-      DeviceManagementRequestJob* request_job,
+      DMServerJobConfiguration* config,
       const std::string& certificate_data,
       enterprise_management::DeviceCertUploadRequest::CertificateType
           certificate_type);
 
-  // Creates a job to upload a certificate.
-  std::unique_ptr<DeviceManagementRequestJob> CreateCertUploadJob();
+  // Creates a job config to upload a certificate.
+  std::unique_ptr<DMServerJobConfiguration> CreateCertUploadJobConfiguration(
+      const CloudPolicyClient::StatusCallback& callback);
 
   // Executes a job to upload a certificate. Onwership of the job is
   // retained by this method.
-  void ExecuteCertUploadJob(
-      std::unique_ptr<DeviceManagementRequestJob> request_job,
-      const CloudPolicyClient::StatusCallback& callback);
+  void ExecuteCertUploadJob(std::unique_ptr<DMServerJobConfiguration> config);
 
   // Used to store a copy of the previously used |dm_token_|. This is used
   // during re-registration, which gets triggered by a failed policy fetch with

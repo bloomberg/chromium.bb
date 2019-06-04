@@ -41,6 +41,9 @@ namespace policy {
 
 namespace {
 
+const char kClientID[] = "testid";
+const char kDMToken[] = "fake_token";
+
 // Parses the DeviceManagementRequest in |request_data| and writes a serialized
 // DeviceManagementResponse to |response_data|.
 void ConstructResponse(const std::string& request_data,
@@ -49,8 +52,7 @@ void ConstructResponse(const std::string& request_data,
   ASSERT_TRUE(request.ParseFromString(request_data));
   em::DeviceManagementResponse response;
   if (request.has_register_request()) {
-    response.mutable_register_response()->set_device_management_token(
-        "fake_token");
+    response.mutable_register_response()->set_device_management_token(kDMToken);
   } else if (request.has_service_api_access_request()) {
     response.mutable_service_api_access_response()->set_auth_code(
         "fake_auth_code");
@@ -86,8 +88,11 @@ class DeviceManagementServiceIntegrationTest
       public testing::WithParamInterface<
           std::string (DeviceManagementServiceIntegrationTest::*)(void)> {
  public:
-  MOCK_METHOD3(OnJobDone, void(DeviceManagementStatus, int,
-                               const em::DeviceManagementResponse&));
+  MOCK_METHOD4(OnJobDone,
+               void(DeviceManagementService::Job*,
+                    DeviceManagementStatus,
+                    int,
+                    const std::string&));
 
   std::string InitCannedResponse() {
     test_url_loader_factory_ =
@@ -106,9 +111,12 @@ class DeviceManagementServiceIntegrationTest
     return test_server_->GetServiceURL().spec();
   }
 
-  void RecordAuthCode(DeviceManagementStatus status,
+  void RecordAuthCode(DeviceManagementService::Job* job,
+                      DeviceManagementStatus code,
                       int net_error,
-                      const em::DeviceManagementResponse& response) {
+                      const std::string& response_body) {
+    em::DeviceManagementResponse response;
+    ASSERT_TRUE(response.ParseFromString(response_body));
     robot_auth_code_ = response.service_api_access_response().auth_code();
   }
 
@@ -120,19 +128,39 @@ class DeviceManagementServiceIntegrationTest
                      ->GetSharedURLLoaderFactory();
   }
 
+  std::unique_ptr<DeviceManagementService::Job> StartJob(
+      DeviceManagementService::JobConfiguration::JobType type,
+      bool critical,
+      std::unique_ptr<DMAuth> auth_data,
+      base::Optional<std::string> oauth_token,
+      const em::DeviceManagementRequest request) {
+    std::string payload;
+    request.SerializeToString(&payload);
+    std::unique_ptr<FakeJobConfiguration> config =
+        std::make_unique<FakeJobConfiguration>(
+            service_.get(), type, kClientID, critical, std::move(auth_data),
+            oauth_token, GetFactory(),
+            base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
+                       base::Unretained(this)),
+            base::DoNothing());
+    config->SetRequestPayload(payload);
+    return service_->CreateJob(std::move(config));
+  }
+
   void PerformRegistration() {
     base::RunLoop run_loop;
-    EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
+
+    EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, _))
         .WillOnce(DoAll(
             Invoke(this, &DeviceManagementServiceIntegrationTest::RecordToken),
             InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit)));
-    std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
-        DeviceManagementRequestJob::TYPE_REGISTRATION, GetFactory()));
-    job->SetOAuthTokenParameter("oauth_token");
-    job->SetClientID("testid");
-    job->GetRequest()->mutable_register_request();
-    job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
-                          base::Unretained(this)));
+
+    em::DeviceManagementRequest request;
+    request.mutable_register_request();
+    std::unique_ptr<DeviceManagementService::Job> job =
+        StartJob(DeviceManagementService::JobConfiguration::TYPE_REGISTRATION,
+                 false, DMAuth::NoAuth(), "oauth_token", request);
+
     run_loop.Run();
   }
 
@@ -155,9 +183,12 @@ class DeviceManagementServiceIntegrationTest
     ASSERT_TRUE(test_server_->Start());
   }
 
-  void RecordToken(DeviceManagementStatus status,
+  void RecordToken(DeviceManagementService::Job* job,
+                   DeviceManagementStatus code,
                    int net_error,
-                   const em::DeviceManagementResponse& response) {
+                   const std::string& response_body) {
+    em::DeviceManagementResponse response;
+    ASSERT_TRUE(response.ParseFromString(response_body));
     token_ = response.register_response().device_management_token();
   }
 
@@ -179,20 +210,20 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
   PerformRegistration();
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
+  EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, _))
       .WillOnce(DoAll(
           Invoke(this, &DeviceManagementServiceIntegrationTest::RecordAuthCode),
           InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit)));
-  std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH, GetFactory()));
-  job->SetAuthData(DMAuth::FromDMToken(token_));
-  job->SetClientID("testid");
-  em::DeviceServiceApiAccessRequest* request =
-      job->GetRequest()->mutable_service_api_access_request();
-  request->add_auth_scopes("authScope4Test");
-  request->set_oauth2_client_id("oauth2ClientId4Test");
-  job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
-                        base::Unretained(this)));
+
+  em::DeviceManagementRequest request;
+  em::DeviceServiceApiAccessRequest* device_request =
+      request.mutable_service_api_access_request();
+  device_request->add_auth_scopes("authScope4Test");
+  device_request->set_oauth2_client_id("oauth2ClientId4Test");
+  std::unique_ptr<DeviceManagementService::Job> job = StartJob(
+      DeviceManagementService::JobConfiguration::TYPE_API_AUTH_CODE_FETCH,
+      false, DMAuth::FromDMToken(token_), "", request);
+
   run_loop.Run();
   ASSERT_EQ("fake_auth_code", robot_auth_code_);
 }
@@ -201,17 +232,17 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, PolicyFetch) {
   PerformRegistration();
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
+
+  EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, _))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_POLICY_FETCH, GetFactory()));
-  job->SetAuthData(DMAuth::FromDMToken(token_));
-  job->SetClientID("testid");
-  em::DevicePolicyRequest* request =
-      job->GetRequest()->mutable_policy_request();
-  request->add_requests()->set_policy_type(dm_protocol::kChromeUserPolicyType);
-  job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
-                        base::Unretained(this)));
+
+  em::DeviceManagementRequest request;
+  request.mutable_policy_request()->add_requests()->set_policy_type(
+      dm_protocol::kChromeUserPolicyType);
+  std::unique_ptr<DeviceManagementService::Job> job =
+      StartJob(DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
+               false, DMAuth::FromDMToken(token_), "", request);
+
   run_loop.Run();
 }
 
@@ -219,30 +250,31 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
   PerformRegistration();
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
+
+  EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, _))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_UNREGISTRATION, GetFactory()));
-  job->SetAuthData(DMAuth::FromDMToken(token_));
-  job->SetClientID("testid");
-  job->GetRequest()->mutable_unregister_request();
-  job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
-                        base::Unretained(this)));
+
+  em::DeviceManagementRequest request;
+  request.mutable_unregister_request();
+  std::unique_ptr<DeviceManagementService::Job> job =
+      StartJob(DeviceManagementService::JobConfiguration::TYPE_UNREGISTRATION,
+               false, DMAuth::FromDMToken(token_), "", request);
+
   run_loop.Run();
 }
 
 IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
   base::RunLoop run_loop;
-  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
+  EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, _))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT, GetFactory()));
-  job->SetAuthData(DMAuth::NoAuth());
-  job->SetClientID("testid");
-  job->GetRequest()->mutable_auto_enrollment_request()->set_remainder(0);
-  job->GetRequest()->mutable_auto_enrollment_request()->set_modulus(1);
-  job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
-                        base::Unretained(this)));
+
+  em::DeviceManagementRequest request;
+  request.mutable_auto_enrollment_request()->set_remainder(0);
+  request.mutable_auto_enrollment_request()->set_modulus(1);
+  std::unique_ptr<DeviceManagementService::Job> job =
+      StartJob(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
+               false, DMAuth::NoAuth(), "", request);
+
   run_loop.Run();
 }
 
@@ -251,17 +283,15 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
   PerformRegistration();
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
+  EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, _))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_UPLOAD_APP_INSTALL_REPORT,
-      GetFactory()));
-  job->SetAuthData(DMAuth::FromDMToken(token_));
-  job->SetClientID("testid");
-  job->GetRequest()->mutable_app_install_report_request();
-  job->Start(base::AdaptCallbackForRepeating(
-      base::BindOnce(&DeviceManagementServiceIntegrationTest::OnJobDone,
-                     base::Unretained(this))));
+
+  em::DeviceManagementRequest request;
+  request.mutable_app_install_report_request();
+  std::unique_ptr<DeviceManagementService::Job> job = StartJob(
+      DeviceManagementService::JobConfiguration::TYPE_UPLOAD_APP_INSTALL_REPORT,
+      false, DMAuth::FromDMToken(token_), "", request);
+
   run_loop.Run();
 }
 

@@ -37,6 +37,10 @@ namespace {
 const char kDefaultDeviceManagementServerUrl[] =
     "https://m.google.com/devicemanagement/data/api";
 
+// The URL for the realtime reporting server.
+const char kDefaultRealtimeReportingServerUrl[] =
+    "https://chromereporting-pa.googleapis.com/v1/events";
+
 // Regexes that match many of the larger public email providers as we know
 // these users are not from hosted enterprise domains.
 const wchar_t* const kNonManagedDomainPatterns[] = {
@@ -157,6 +161,15 @@ std::string BrowserPolicyConnector::GetDeviceManagementUrl() {
     return command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
   else
     return kDefaultDeviceManagementServerUrl;
+}
+
+// static
+std::string BrowserPolicyConnector::GetRealtimeReportingUrl() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kRealtimeReportingUrl))
+    return command_line->GetSwitchValueASCII(switches::kRealtimeReportingUrl);
+  else
+    return kDefaultRealtimeReportingServerUrl;
 }
 
 // static

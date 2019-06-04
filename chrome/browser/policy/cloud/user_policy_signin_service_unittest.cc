@@ -16,6 +16,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
+#include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -132,6 +133,9 @@ class UserPolicySigninServiceTest : public testing::Test {
   }
 
   void SetUp() override {
+    device_management_service_.ScheduleInitialization(0);
+    base::RunLoop().RunUntilIdle();
+
     UserPolicySigninServiceFactory::SetDeviceManagementServiceForTesting(
         &device_management_service_);
 
@@ -261,12 +265,13 @@ class UserPolicySigninServiceTest : public testing::Test {
 
     // When the user is from a hosted domain, this should kick off client
     // registration.
-    MockDeviceManagementJob* register_request = NULL;
-    EXPECT_CALL(device_management_service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION, _))
-        .WillOnce(device_management_service_.CreateAsyncJob(&register_request));
-    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
-        .Times(1);
+    DeviceManagementService::JobConfiguration::JobType job_type =
+        DeviceManagementService::JobConfiguration::TYPE_INVALID;
+    DeviceManagementService::JobControl* job_control = nullptr;
+    EXPECT_CALL(device_management_service_, StartJob(_))
+        .WillOnce(DoAll(
+            device_management_service_.CaptureJobType(&job_type),
+            device_management_service_.StartJobFullControl(&job_control)));
 
     // Now mimic the user being a hosted domain - this should cause a Register()
     // call.
@@ -275,17 +280,19 @@ class UserPolicySigninServiceTest : public testing::Test {
     // Should have no more outstanding requests.
     ASSERT_FALSE(IsRequestActive());
     Mock::VerifyAndClearExpectations(this);
-    ASSERT_TRUE(register_request);
+    ASSERT_NE(nullptr, job_control);
+    EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_REGISTRATION,
+              job_type);
 
-    // Mimic successful client registration - this should register the client
-    // and invoke the callback.
-    em::DeviceManagementResponse registration_blob;
     std::string expected_dm_token = "dm_token";
-    registration_blob.mutable_register_response()->set_device_management_token(
-        expected_dm_token);
-    registration_blob.mutable_register_response()->set_enrollment_type(
+    em::DeviceManagementResponse registration_response;
+    registration_response.mutable_register_response()
+        ->set_device_management_token(expected_dm_token);
+    registration_response.mutable_register_response()->set_enrollment_type(
         em::DeviceRegisterResponse::ENTERPRISE);
-    register_request->SendResponse(DM_STATUS_SUCCESS, registration_blob);
+    device_management_service_.DoURLCompletion(
+        &job_control, net::OK, DeviceManagementService::kSuccess,
+        registration_response);
 
     // UserCloudPolicyManager should not be initialized yet.
     ASSERT_FALSE(manager_->core()->service());
@@ -293,12 +300,10 @@ class UserPolicySigninServiceTest : public testing::Test {
     EXPECT_EQ(dm_token_, expected_dm_token);
 
     // Now call to fetch policy - this should fire off a fetch request.
-    MockDeviceManagementJob* fetch_request = NULL;
-    EXPECT_CALL(device_management_service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
-        .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
-    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
-        .Times(1);
+    EXPECT_CALL(device_management_service_, StartJob(_))
+        .WillOnce(DoAll(
+            device_management_service_.CaptureJobType(&job_type),
+            device_management_service_.StartJobFullControl(&job_control)));
 
     signin_service->FetchPolicyForSignedInUser(
         test_account_id_, dm_token_, client_id_,
@@ -307,7 +312,9 @@ class UserPolicySigninServiceTest : public testing::Test {
                    base::Unretained(this)));
 
     Mock::VerifyAndClearExpectations(this);
-    ASSERT_TRUE(fetch_request);
+    ASSERT_NE(nullptr, job_control);
+    EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
+              job_type);
 
     // UserCloudPolicyManager should now be initialized.
     EXPECT_EQ(mock_store_->signin_account_id(), test_account_id_);
@@ -319,14 +326,16 @@ class UserPolicySigninServiceTest : public testing::Test {
     EXPECT_CALL(*this, OnPolicyRefresh(true)).Times(1);
 
     // Create a fake policy blob to deliver to the client.
-    em::DeviceManagementResponse policy_blob;
+    em::DeviceManagementResponse fetch_response;
     em::PolicyData policy_data;
     policy_data.set_policy_type(dm_protocol::kChromeUserPolicyType);
     em::PolicyFetchResponse* policy_response =
-        policy_blob.mutable_policy_response()->add_responses();
+        fetch_response.mutable_policy_response()->add_responses();
     ASSERT_TRUE(
         policy_data.SerializeToString(policy_response->mutable_policy_data()));
-    fetch_request->SendResponse(DM_STATUS_SUCCESS, policy_blob);
+    device_management_service_.DoURLCompletion(
+        &job_control, net::OK, DeviceManagementService::kSuccess,
+        fetch_response);
 
     // Complete the store which should cause the policy fetch callback to be
     // invoked.
@@ -361,8 +370,6 @@ class UserPolicySigninServiceTest : public testing::Test {
   // True if OnRegisterCompleted() was called.
   bool register_completed_;
 
-  // Weak ptr to the MockDeviceManagementService (object is owned by the
-  // BrowserPolicyConnector).
   MockDeviceManagementService device_management_service_;
 
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
@@ -565,15 +572,20 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
 
   // Since there is a signed-in user expect a policy fetch to be started to
   // refresh the policy for the user.
-  MockDeviceManagementJob* fetch_request = nullptr;
-  EXPECT_CALL(device_management_service_,
-              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
-      .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
+  DeviceManagementService::JobConfiguration::JobType job_type =
+      DeviceManagementService::JobConfiguration::TYPE_INVALID;
+  DeviceManagementService::JobControl* job_control = nullptr;
+  EXPECT_CALL(device_management_service_, StartJob(_))
+      .WillOnce(
+          DoAll(device_management_service_.CaptureJobType(&job_type),
+                device_management_service_.StartJobFullControl(&job_control)));
 
   // Client registration should not be in progress since the client should be
   // already registered.
   ASSERT_TRUE(manager_->IsClientRegistered());
   ASSERT_FALSE(IsRequestActive());
+  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
+            job_type);
 }
 
 #endif  // !defined(OS_ANDROID)
@@ -651,17 +663,17 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientFailedRegistration) {
 
   // Mimic successful oauth token fetch.
   MakeOAuthTokenFetchSucceed();
-
   EXPECT_FALSE(register_completed_);
 
   // When the user is from a hosted domain, this should kick off client
   // registration.
-  MockDeviceManagementJob* register_request = NULL;
-  EXPECT_CALL(device_management_service_,
-              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION, _))
-      .WillOnce(device_management_service_.CreateAsyncJob(&register_request));
-  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
-      .Times(1);
+  DeviceManagementService::JobConfiguration::JobType job_type =
+      DeviceManagementService::JobConfiguration::TYPE_INVALID;
+  DeviceManagementService::JobControl* job_control = nullptr;
+  EXPECT_CALL(device_management_service_, StartJob(_))
+      .WillOnce(
+          DoAll(device_management_service_.CaptureJobType(&job_type),
+                device_management_service_.StartJobFullControl(&job_control)));
 
   // Now mimic the user being a hosted domain - this should cause a Register()
   // call.
@@ -670,12 +682,17 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientFailedRegistration) {
   // Should have no more outstanding requests.
   ASSERT_FALSE(IsRequestActive());
   Mock::VerifyAndClearExpectations(this);
-  ASSERT_TRUE(register_request);
+  ASSERT_NE(nullptr, job_control);
+  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_REGISTRATION,
+            job_type);
   EXPECT_FALSE(register_completed_);
 
   // Make client registration fail (hosted domain user that is not managed).
-  register_request->SendResponse(DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED,
-                                 em::DeviceManagementResponse());
+  device_management_service_.DoURLCompletion(
+      &job_control, net::OK,
+      DeviceManagementService::kDeviceManagementNotAllowed,
+      em::DeviceManagementResponse());
+
   EXPECT_TRUE(register_completed_);
   EXPECT_TRUE(dm_token_.empty());
 }
@@ -685,17 +702,21 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientSucceeded) {
       UserPolicySigninServiceFactory::GetForProfile(profile_.get());
   RegisterPolicyClientWithCallback(signin_service);
 
+  // UserCloudPolicyManager should not be initialized.
+  ASSERT_FALSE(manager_->core()->service());
+
   // Mimic successful oauth token fetch.
   MakeOAuthTokenFetchSucceed();
 
   // When the user is from a hosted domain, this should kick off client
   // registration.
-  MockDeviceManagementJob* register_request = NULL;
-  EXPECT_CALL(device_management_service_,
-              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION, _))
-      .WillOnce(device_management_service_.CreateAsyncJob(&register_request));
-  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
-      .Times(1);
+  DeviceManagementService::JobConfiguration::JobType job_type =
+      DeviceManagementService::JobConfiguration::TYPE_INVALID;
+  DeviceManagementService::JobControl* job_control = nullptr;
+  EXPECT_CALL(device_management_service_, StartJob(_))
+      .WillOnce(
+          DoAll(device_management_service_.CaptureJobType(&job_type),
+                device_management_service_.StartJobFullControl(&job_control)));
 
   // Now mimic the user being a hosted domain - this should cause a Register()
   // call.
@@ -704,17 +725,21 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientSucceeded) {
   // Should have no more outstanding requests.
   ASSERT_FALSE(IsRequestActive());
   Mock::VerifyAndClearExpectations(this);
-  ASSERT_TRUE(register_request);
+  ASSERT_NE(nullptr, job_control);
+  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_REGISTRATION,
+            job_type);
   EXPECT_FALSE(register_completed_);
 
-  em::DeviceManagementResponse registration_blob;
+  em::DeviceManagementResponse registration_response;
   std::string expected_dm_token = "dm_token";
-  registration_blob.mutable_register_response()->set_device_management_token(
-      expected_dm_token);
-  registration_blob.mutable_register_response()->set_enrollment_type(
+  registration_response.mutable_register_response()
+      ->set_device_management_token(expected_dm_token);
+  registration_response.mutable_register_response()->set_enrollment_type(
       em::DeviceRegisterResponse::ENTERPRISE);
-  register_request->SendResponse(DM_STATUS_SUCCESS, registration_blob);
-  Mock::VerifyAndClearExpectations(this);
+  device_management_service_.DoURLCompletion(&job_control, net::OK,
+                                             DeviceManagementService::kSuccess,
+                                             registration_response);
+
   EXPECT_TRUE(register_completed_);
   EXPECT_EQ(dm_token_, expected_dm_token);
   // UserCloudPolicyManager should not be initialized.
@@ -723,12 +748,13 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientSucceeded) {
 
 TEST_F(UserPolicySigninServiceTest, FetchPolicyFailed) {
   // Initiate a policy fetch request.
-  MockDeviceManagementJob* fetch_request = NULL;
-  EXPECT_CALL(device_management_service_,
-              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
-      .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
-  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
-      .Times(1);
+  DeviceManagementService::JobConfiguration::JobType job_type =
+      DeviceManagementService::JobConfiguration::TYPE_INVALID;
+  DeviceManagementService::JobControl* job_control = nullptr;
+  EXPECT_CALL(device_management_service_, StartJob(_))
+      .WillOnce(
+          DoAll(device_management_service_.CaptureJobType(&job_type),
+                device_management_service_.StartJobFullControl(&job_control)));
   UserPolicySigninService* signin_service =
       UserPolicySigninServiceFactory::GetForProfile(profile_.get());
   signin_service->FetchPolicyForSignedInUser(
@@ -736,14 +762,18 @@ TEST_F(UserPolicySigninServiceTest, FetchPolicyFailed) {
       test_url_loader_factory_.GetSafeWeakWrapper(),
       base::Bind(&UserPolicySigninServiceTest::OnPolicyRefresh,
                  base::Unretained(this)));
-  ASSERT_TRUE(fetch_request);
+  ASSERT_NE(nullptr, job_control);
+  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
+            job_type);
 
   // Make the policy fetch fail.
   EXPECT_CALL(*this, OnPolicyRefresh(false)).Times(1);
-  fetch_request->SendResponse(DM_STATUS_REQUEST_FAILED,
-                              em::DeviceManagementResponse());
+  device_management_service_.DoURLCompletion(
+      &job_control, net::HTTP_BAD_REQUEST, DeviceManagementService::kSuccess,
+      em::DeviceManagementResponse());
 
   // UserCloudPolicyManager should be initialized.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(mock_store_->signin_account_id(), test_account_id_);
   ASSERT_TRUE(manager_->core()->service());
 }
@@ -775,19 +805,26 @@ TEST_F(UserPolicySigninServiceTest, PolicyFetchFailureTemporary) {
   ASSERT_TRUE(manager_->IsClientRegistered());
 
   // Kick off another policy fetch.
-  MockDeviceManagementJob* fetch_request = NULL;
-  EXPECT_CALL(device_management_service_,
-              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
-      .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
-  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
-      .Times(1);
+  DeviceManagementService::JobConfiguration::JobType job_type =
+      DeviceManagementService::JobConfiguration::TYPE_INVALID;
+  DeviceManagementService::JobControl* job_control = nullptr;
+  EXPECT_CALL(device_management_service_, StartJob(_))
+      .WillOnce(
+          DoAll(device_management_service_.CaptureJobType(&job_type),
+                device_management_service_.StartJobFullControl(&job_control)));
   manager_->RefreshPolicies();
+
   Mock::VerifyAndClearExpectations(this);
+  ASSERT_NE(nullptr, job_control);
+  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
+            job_type);
 
   // Now, fake a transient error from the server on this policy fetch. This
   // should have no impact on the cached policy.
-  fetch_request->SendResponse(DM_STATUS_REQUEST_FAILED,
-                              em::DeviceManagementResponse());
+  device_management_service_.DoURLCompletion(
+      &job_control, net::HTTP_BAD_REQUEST, DeviceManagementService::kSuccess,
+      em::DeviceManagementResponse());
+
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(manager_->IsClientRegistered());
 }
@@ -801,22 +838,29 @@ TEST_F(UserPolicySigninServiceTest, PolicyFetchFailureDisableManagement) {
 #endif
 
   // Kick off another policy fetch.
-  MockDeviceManagementJob* fetch_request = NULL;
-  EXPECT_CALL(device_management_service_,
-              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
-      .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
-  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
-      .Times(1);
+  DeviceManagementService::JobConfiguration::JobType job_type =
+      DeviceManagementService::JobConfiguration::TYPE_INVALID;
+  DeviceManagementService::JobControl* job_control = nullptr;
+  EXPECT_CALL(device_management_service_, StartJob(_))
+      .WillOnce(
+          DoAll(device_management_service_.CaptureJobType(&job_type),
+                device_management_service_.StartJobFullControl(&job_control)));
   manager_->RefreshPolicies();
   Mock::VerifyAndClearExpectations(this);
+  ASSERT_NE(nullptr, job_control);
+  EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_POLICY_FETCH,
+            job_type);
 
-  // Now, fake a SC_FORBIDDEN error from the server on this policy fetch. This
+  // Now, fake a SC_FORBIDDEN error from the server on this policy fetch.  This
   // indicates that chrome management is disabled and will result in the cached
   // policy being removed and the manager shut down.
   EXPECT_CALL(*mock_store_, Clear());
-  fetch_request->SendResponse(DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED,
-                              em::DeviceManagementResponse());
+  device_management_service_.DoURLCompletion(
+      &job_control, net::OK,
+      DeviceManagementService::kDeviceManagementNotAllowed,
+      em::DeviceManagementResponse());
   base::RunLoop().RunUntilIdle();
+
   EXPECT_FALSE(manager_->IsClientRegistered());
 #if !defined(OS_ANDROID)
   EXPECT_TRUE(signin_util::IsUserSignoutAllowedForProfile(profile_.get()));

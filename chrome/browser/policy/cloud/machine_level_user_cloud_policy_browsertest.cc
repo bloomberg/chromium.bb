@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -43,6 +44,8 @@
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/widget_test.h"
@@ -191,19 +194,16 @@ class PolicyFetchClientObserver : public CloudPolicyClient::Observer {
 
 }  // namespace
 
-MATCHER_P(MatchProto, expected, "matches protobuf") {
-  return arg.SerializePartialAsString() == expected.SerializePartialAsString();
-}
-
 class MachineLevelUserCloudPolicyServiceIntegrationTest
     : public InProcessBrowserTest,
-      public testing::WithParamInterface<std::string (
+      public testing::WithParamInterface<std::string(
           MachineLevelUserCloudPolicyServiceIntegrationTest::*)(void)> {
  public:
-  MOCK_METHOD3(OnJobDone,
-               void(DeviceManagementStatus,
+  MOCK_METHOD4(OnJobDone,
+               void(DeviceManagementService::Job*,
+                    DeviceManagementStatus,
                     int,
-                    const em::DeviceManagementResponse&));
+                    const std::string&));
 
   std::string InitTestServer() {
     StartTestServer();
@@ -216,61 +216,73 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
                            bool expect_success) {
     base::RunLoop run_loop;
     if (expect_success) {
-      EXPECT_CALL(*this, OnJobDone(testing::Eq(DM_STATUS_SUCCESS), _, _))
+      EXPECT_CALL(*this, OnJobDone(_, testing::Eq(DM_STATUS_SUCCESS), _, _))
           .WillOnce(DoAll(
               Invoke(this, &MachineLevelUserCloudPolicyServiceIntegrationTest::
                                RecordToken),
               InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle)));
     } else {
-      EXPECT_CALL(*this, OnJobDone(testing::Ne(DM_STATUS_SUCCESS), _, _))
+      EXPECT_CALL(*this, OnJobDone(_, testing::Ne(DM_STATUS_SUCCESS), _, _))
           .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle));
     }
-    std::unique_ptr<DeviceManagementRequestJob> job(
-        service_->CreateJob(DeviceManagementRequestJob::TYPE_TOKEN_ENROLLMENT,
-                            g_browser_process->system_network_context_manager()
-                                ->GetSharedURLLoaderFactory()));
-    job->GetRequest()->mutable_register_browser_request();
+
+    std::unique_ptr<FakeJobConfiguration> config =
+        std::make_unique<FakeJobConfiguration>(
+            service_.get(),
+            DeviceManagementService::JobConfiguration::TYPE_TOKEN_ENROLLMENT,
+            kClientID,
+            /*critical=*/false,
+            !enrollment_token.empty()
+                ? DMAuth::FromEnrollmentToken(enrollment_token)
+                : DMAuth::NoAuth(),
+            /*oauth_token=*/base::nullopt,
+            g_browser_process->system_network_context_manager()
+                ->GetSharedURLLoaderFactory(),
+            base::BindOnce(
+                &MachineLevelUserCloudPolicyServiceIntegrationTest::OnJobDone,
+                base::Unretained(this)),
+            base::DoNothing());
+
+    em::DeviceManagementRequest request;
+    request.mutable_register_browser_request();
     if (!machine_name.empty()) {
-      job->GetRequest()->mutable_register_browser_request()->set_machine_name(
+      request.mutable_register_browser_request()->set_machine_name(
           machine_name);
     }
-    if (!enrollment_token.empty()) {
-      job->SetAuthData(DMAuth::FromEnrollmentToken(enrollment_token));
-    } else {
-      job->SetAuthData(DMAuth::NoAuth());
-    }
-    job->SetClientID(kClientID);
-    job->Start(base::Bind(
-        &MachineLevelUserCloudPolicyServiceIntegrationTest::OnJobDone,
-        base::Unretained(this)));
+    std::string payload;
+    ASSERT_TRUE(request.SerializeToString(&payload));
+    config->SetRequestPayload(payload);
+
+    std::unique_ptr<DeviceManagementService::Job> job =
+        service_->CreateJob(std::move(config));
+
     run_loop.Run();
   }
 
   void UploadChromeDesktopReport(
       const em::ChromeDesktopReportRequest* chrome_desktop_report) {
     base::RunLoop run_loop;
-    em::DeviceManagementResponse chrome_desktop_report_response;
-    chrome_desktop_report_response.mutable_chrome_desktop_report_response();
-    EXPECT_CALL(*this, OnJobDone(testing::Eq(DM_STATUS_SUCCESS), _,
-                                 MatchProto(chrome_desktop_report_response)))
+
+    EXPECT_CALL(*this, OnJobDone(_, testing::Eq(DM_STATUS_SUCCESS), _, _))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle));
 
-    std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
-        DeviceManagementRequestJob::TYPE_CHROME_DESKTOP_REPORT,
+    std::unique_ptr<FakeJobConfiguration> config = std::make_unique<
+        FakeJobConfiguration>(
+        service_.get(),
+        DeviceManagementService::JobConfiguration::TYPE_CHROME_DESKTOP_REPORT,
+        kClientID,
+        /*critical=*/false, DMAuth::FromEnrollmentToken(kDMToken),
+        /*oauth_token=*/std::string(),
         g_browser_process->system_network_context_manager()
-            ->GetSharedURLLoaderFactory()));
+            ->GetSharedURLLoaderFactory(),
+        base::BindOnce(
+            &MachineLevelUserCloudPolicyServiceIntegrationTest::OnJobDone,
+            base::Unretained(this)),
+        base::DoNothing());
 
-    em::DeviceManagementRequest* request = job->GetRequest();
-    if (chrome_desktop_report) {
-      *request->mutable_chrome_desktop_report_request() =
-          *chrome_desktop_report;
-    }
+    std::unique_ptr<DeviceManagementService::Job> job =
+        service_->CreateJob(std::move(config));
 
-    job->SetAuthData(DMAuth::FromDMToken(kDMToken));
-    job->SetClientID(kClientID);
-    job->Start(base::Bind(
-        &MachineLevelUserCloudPolicyServiceIntegrationTest::OnJobDone,
-        base::Unretained(this)));
     run_loop.Run();
   }
 
@@ -280,6 +292,7 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
         std::unique_ptr<DeviceManagementService::Configuration>(
             new MockDeviceManagementServiceConfiguration(service_url))));
     service_->ScheduleInitialization(0);
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDownOnMainThread() override {
@@ -293,14 +306,18 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
     ASSERT_TRUE(test_server_->Start());
   }
 
-  void RecordToken(DeviceManagementStatus status,
+  void RecordToken(DeviceManagementService::Job* job,
+                   DeviceManagementStatus code,
                    int net_error,
-                   const em::DeviceManagementResponse& response) {
+                   const std::string& response_body) {
+    em::DeviceManagementResponse response;
+    ASSERT_TRUE(response.ParseFromString(response_body));
     token_ = response.register_response().device_management_token();
   }
 
   std::string token_;
   std::unique_ptr<DeviceManagementService> service_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<LocalPolicyTestServer> test_server_;
 };
 
