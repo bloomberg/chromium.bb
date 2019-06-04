@@ -570,12 +570,9 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_flash_deprecation) {
   ShowAndVerifyUi();
 }
 
-// TODO(https://crbug.com/965468) Resource generation fails on Windows.
-#if !defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_tab_sharing) {
   ShowAndVerifyUi();
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_multiple_infobars) {
   ShowAndVerifyUi();
