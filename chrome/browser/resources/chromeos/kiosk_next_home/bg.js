@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(() => {
-  const windowOptions = {id: 'main', state: 'maximized', frame: 'none'};
-  chrome.app.window.create('main.html', windowOptions);
+  const windowOptions = {state: 'maximized', frame: 'none'};
+  chrome.app.window.create('main.html', windowOptions, (newWindow) => {
+    newWindow.maximize();
+  });
 });
