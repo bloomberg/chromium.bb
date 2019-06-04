@@ -9,11 +9,10 @@ import android.support.annotation.IntDef;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.dom_distiller.TabDistillabilityProvider;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.feature_engagement.Tracker.DisplayLockHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -30,9 +29,11 @@ import java.util.concurrent.FutureTask;
 public class KeyFunctionsIPHMediator implements CursorObserver {
     private final PropertyModel mModel;
     private final KeyFunctionsIPHTabObserver mKeyFunctionsIPHTabObserver;
+    private final ChromePreferenceManager mChromePreferenceManager;
+    private final Tracker mTracker;
     private FutureTask mHideTask;
-    private int mPageLoadCount;
     private DisplayLockHandle mDisplayLockHandle;
+    private int mPageLoadCount;
     private boolean mIsFallbackCursorModeOn;
     private boolean mShowedWhenPageLoadStarted;
 
@@ -40,8 +41,8 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
 
     // For the first INTRODUCTORY_SESSIONS sessions, show the IPH every INTRODUCTORY_PAGE_LOAD_CYCLE
     // page loads.
-    private static final int INTRODUCTORY_SESSIONS = 6;
-    private static final int INTRODUCTORY_PAGE_LOAD_CYCLE = 3;
+    static final int INTRODUCTORY_SESSIONS = 6;
+    static final int INTRODUCTORY_PAGE_LOAD_CYCLE = 3;
 
     @IntDef({DisplayCause.PAGE_LOAD_STARTED, DisplayCause.PAGE_LOAD_FINISHED,
             DisplayCause.FALLBACK_CURSOR_TOGGLED})
@@ -52,9 +53,12 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
         int FALLBACK_CURSOR_TOGGLED = 2;
     }
 
-    KeyFunctionsIPHMediator(PropertyModel model, ActivityTabProvider activityTabProvider) {
+    KeyFunctionsIPHMediator(PropertyModel model, ActivityTabProvider activityTabProvider,
+            ChromePreferenceManager chromePreferenceManager, Tracker tracker) {
         mModel = model;
         mKeyFunctionsIPHTabObserver = new KeyFunctionsIPHTabObserver(activityTabProvider);
+        mChromePreferenceManager = chromePreferenceManager;
+        mTracker = tracker;
         TouchlessEventHandler.addCursorObserver(this);
     }
 
@@ -70,14 +74,13 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
     private void show(@DisplayCause int displayCause) {
         if (displayCause == DisplayCause.PAGE_LOAD_STARTED) {
             mShowedWhenPageLoadStarted = false;
-            int totalSessionCount = ChromePreferenceManager.getInstance().readInt(
+            int totalSessionCount = mChromePreferenceManager.readInt(
                     ChromePreferenceManager.TOUCHLESS_BROWSING_SESSION_COUNT);
             if (totalSessionCount <= INTRODUCTORY_SESSIONS
                     && mPageLoadCount % INTRODUCTORY_PAGE_LOAD_CYCLE != 1) {
                 return;
             }
             if (totalSessionCount > INTRODUCTORY_SESSIONS && mPageLoadCount > 1) return;
-            mShowedWhenPageLoadStarted = true;
         } else if (mShowedWhenPageLoadStarted && displayCause == DisplayCause.PAGE_LOAD_FINISHED) {
             // If we have already shown the IPH when page load started, we should avoid showing it
             // again when page load is finished.
@@ -86,10 +89,11 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
 
         // If we are already showing this IPH, we should release the lock.
         if (mDisplayLockHandle != null) mDisplayLockHandle.release();
-        mDisplayLockHandle = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile())
-                                     .acquireDisplayLock();
+        mDisplayLockHandle = mTracker.acquireDisplayLock();
         // If another IPH UI is currently shown, return.
         if (mDisplayLockHandle == null) return;
+
+        if (displayCause == DisplayCause.PAGE_LOAD_STARTED) mShowedWhenPageLoadStarted = true;
 
         if (mHideTask != null) mHideTask.cancel(false);
         mHideTask = new FutureTask<Void>(() -> {

@@ -75,6 +75,7 @@ touchless_test_java_sources = [
 touchless_junit_test_java_sources = [
   "touchless/junit/src/org/chromium/chrome/browser/touchless/ScrollPositionInfoTest.java",
   "touchless/junit/src/org/chromium/chrome/browser/touchless/TouchlessActionItemViewHolderTest.java",
+  "touchless/junit/src/org/chromium/chrome/browser/touchless/ui/iph/KeyFunctionsIPHMediatorTest.java",
   "touchless/junit/src/org/chromium/chrome/browser/touchless/ui/progressbar/ProgressBarMediatorTest.java",
 ]
 
