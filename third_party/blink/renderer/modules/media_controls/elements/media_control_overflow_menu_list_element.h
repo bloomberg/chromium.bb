@@ -10,6 +10,10 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class Event;
@@ -29,6 +33,9 @@ class MediaControlOverflowMenuListElement final
   Element* PopupAnchor() const final;
   void OnItemSelected() final;
 
+  // The caller owns the |clock| which must outlive the media control element.
+  MODULES_EXPORT void SetTickClockForTesting(const base::TickClock* clock);
+
  private:
   enum TimeTakenHistogram {
     kTimeToAction,
@@ -41,6 +48,7 @@ class MediaControlOverflowMenuListElement final
   TaskHandle current_task_handle_;
 
   base::Optional<WTF::TimeTicks> time_shown_;
+  const base::TickClock* clock_;
 };
 
 }  // namespace blink
