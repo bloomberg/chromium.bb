@@ -36,6 +36,10 @@ const int kCheckboxAndRadioHeight = 13;
 const int kSliderThumbWidth = 11;
 const int kSliderThumbHeight = 21;
 
+constexpr SkColor kThumbActiveColor = SkColorSetRGB(0xF4, 0xF4, 0xF4);
+constexpr SkColor kThumbInactiveColor = SkColorSetRGB(0xEA, 0xEA, 0xEA);
+constexpr SkColor kTrackColor = SkColorSetRGB(0xD3, 0xD3, 0xD3);
+
 const SkColor kSliderTrackBackgroundColor =
     SkColorSetRGB(0xe3, 0xdd, 0xd8);
 const SkColor kSliderThumbLightGrey = SkColorSetRGB(0xf4, 0xf2, 0xef);
@@ -280,7 +284,7 @@ void NativeThemeBase::PaintArrowButton(cc::PaintCanvas* canvas,
 
   // Calculate button color.
   SkScalar trackHSV[3];
-  SkColorToHSV(track_color_, trackHSV);
+  SkColorToHSV(kTrackColor, trackHSV);
   SkColor buttonColor = SaturateAndBrighten(trackHSV, 0, 0.2f);
   SkColor backgroundColor = buttonColor;
   if (state == kPressed) {
@@ -347,7 +351,7 @@ void NativeThemeBase::PaintArrowButton(cc::PaintCanvas* canvas,
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   SkScalar thumbHSV[3];
-  SkColorToHSV(thumb_inactive_color_, thumbHSV);
+  SkColorToHSV(kThumbInactiveColor, thumbHSV);
   flags.setColor(OutlineColor(trackHSV, thumbHSV));
   canvas->drawPath(outline, flags);
 
@@ -422,12 +426,12 @@ void NativeThemeBase::PaintScrollbarTrack(
 
   skrect.set(rect.x(), rect.y(), rect.right(), rect.bottom());
   SkScalar track_hsv[3];
-  SkColorToHSV(track_color_, track_hsv);
+  SkColorToHSV(kTrackColor, track_hsv);
   flags.setColor(SaturateAndBrighten(track_hsv, 0, 0));
   canvas->drawIRect(skrect, flags);
 
   SkScalar thumb_hsv[3];
-  SkColorToHSV(thumb_inactive_color_, thumb_hsv);
+  SkColorToHSV(kThumbInactiveColor, thumb_hsv);
 
   flags.setColor(OutlineColor(track_hsv, thumb_hsv));
   DrawBox(canvas, rect, flags);
@@ -444,7 +448,7 @@ void NativeThemeBase::PaintScrollbarThumb(cc::PaintCanvas* canvas,
   const bool vertical = part == kScrollbarVerticalThumb;
 
   SkScalar thumb[3];
-  SkColorToHSV(hovered ? thumb_active_color_ : thumb_inactive_color_, thumb);
+  SkColorToHSV(hovered ? kThumbActiveColor : kThumbInactiveColor, thumb);
 
   cc::PaintFlags flags;
   flags.setColor(SaturateAndBrighten(thumb, 0, 0.02f));
@@ -470,7 +474,7 @@ void NativeThemeBase::PaintScrollbarThumb(cc::PaintCanvas* canvas,
   canvas->drawIRect(skrect, flags);
 
   SkScalar track[3];
-  SkColorToHSV(track_color_, track);
+  SkColorToHSV(kTrackColor, track);
   flags.setColor(OutlineColor(track, thumb));
   DrawBox(canvas, rect, flags);
 
@@ -941,9 +945,9 @@ SkColor NativeThemeBase::GetArrowColor(State state) const {
     return SK_ColorBLACK;
 
   SkScalar track_hsv[3];
-  SkColorToHSV(track_color_, track_hsv);
+  SkColorToHSV(kTrackColor, track_hsv);
   SkScalar thumb_hsv[3];
-  SkColorToHSV(thumb_inactive_color_, thumb_hsv);
+  SkColorToHSV(kThumbInactiveColor, thumb_hsv);
   return OutlineColor(track_hsv, thumb_hsv);
 }
 

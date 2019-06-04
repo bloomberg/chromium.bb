@@ -284,11 +284,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // when the part is resized.
   virtual gfx::Rect GetNinePatchAperture(Part part) const = 0;
 
-  // Supports theme specific colors.
-  void SetScrollbarColors(unsigned inactive_color,
-                          unsigned active_color,
-                          unsigned track_color);
-
   // Colors for GetSystemColor().
   enum ColorId {
     // Windows
@@ -440,10 +435,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   void set_high_contrast(bool is_high_contrast) {
     is_high_contrast_ = is_high_contrast;
   }
-
-  unsigned int thumb_inactive_color_;
-  unsigned int thumb_active_color_;
-  unsigned int track_color_;
 
  private:
   // DarkModeObserver callback.
