@@ -413,35 +413,4 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeContentIdNotFound) {
   EXPECT_FALSE(iframe_navigation.is_error());
 }
 
-// Check MHTML subframe works when its parent is loaded from a data-URL.
-//
-// Frame tree: a1(a2(a3))
-//  -  a1: The main document. Loaded from the MHTML archive.
-//  -  a2: An sub-document loaded from a data-URL.
-//  -  a3: A sub-sub-document loaded from the MHTML archive.
-IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, MhtmlIframeInsideDataUrl) {
-  MhtmlArchive mhtml_archive;
-  mhtml_archive.AddHtmlDocument(
-      GURL("http://example.com/a1.html"),
-      "<iframe src=\"data:text/html,"
-      "  <iframe src=&quot;http://example.com/a3.html&quot;></iframe>"
-      "\"></iframe>");
-  mhtml_archive.AddHtmlDocument(GURL("http://example.com/a3.html"),
-                                "<iframe></iframe>");
-  GURL mhtml_url = mhtml_archive.Write("index.mhtml");
-
-  EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
-
-  RenderFrameHostImpl* a1_rfh = main_frame_host();
-  ASSERT_EQ(1u, a1_rfh->child_count());
-  RenderFrameHostImpl* a2_rfh = a1_rfh->child_at(0)->current_frame_host();
-  ASSERT_EQ(1u, a2_rfh->child_count());
-
-  // Check a3 is properly loaded. EvalJs("document.body.innerHTML") can't be
-  // used, because javascript is disabled. Instead, check it was able to load an
-  // iframe.
-  RenderFrameHostImpl* a3_rfh = a2_rfh->child_at(0)->current_frame_host();
-  ASSERT_EQ(1u, a3_rfh->child_count());
-}
-
 }  // namespace content
