@@ -152,7 +152,9 @@ float PerformanceTest::GetHistogramMean(const std::string& name) {
   auto* histogram = base::StatisticsRecorder::FindHistogram(name);
   if (!histogram)
     return 0;
-  auto samples = histogram->SnapshotSamples();
+  // Use SnapshotFinalDelta() so that it won't contain the samples before the
+  // subclass invokes SnapshotDelta() during the test.
+  auto samples = histogram->SnapshotFinalDelta();
   DCHECK_NE(0, samples->TotalCount());
   return static_cast<float>(samples->sum()) / samples->TotalCount();
 }

@@ -6,6 +6,9 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
@@ -17,7 +20,8 @@
 #include "ui/base/test/ui_controls.h"
 
 // TODO(oshima): Add tablet mode overview transition.
-class LauncherAnimationsTest : public UIPerformanceTest {
+class LauncherAnimationsTest : public UIPerformanceTest,
+                               public ::testing::WithParamInterface<bool> {
  public:
   LauncherAnimationsTest() = default;
   ~LauncherAnimationsTest() override = default;
@@ -25,6 +29,7 @@ class LauncherAnimationsTest : public UIPerformanceTest {
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
+    reuse_widget_ = GetParam();
 
     test::PopulateDummyAppListItems(100);
     if (base::SysInfo::IsRunningOnChromeOS()) {
@@ -47,14 +52,73 @@ class LauncherAnimationsTest : public UIPerformanceTest {
  protected:
   void set_suffix(const std::string& suffix) { suffix_ = suffix; }
 
+  // Create the cached widget of the app-list prior to the actual test scenario.
+  void MaybeCreateCachedWidget() {
+    if (!reuse_widget_)
+      return;
+
+    // Here goes through several states of the app-list so that the cached
+    // widget can contain relevant data.
+    BrowserView* browser_view =
+        BrowserView::GetBrowserViewForBrowser(browser());
+    aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
+    ash::ShellTestApi shell_test_api;
+    // Open the app-list with peeking state.
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
+                              /*control=*/false,
+                              /*shift=*/false,
+                              /*alt=*/false,
+                              /* command = */ false);
+    shell_test_api.WaitForLauncherAnimationState(
+        ash::AppListViewState::kPeeking);
+
+    // Expand to the fullscreen with list of applications.
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
+                              /*control=*/false,
+                              /*shift=*/true,
+                              /*alt=*/false,
+                              /* command = */ false);
+    shell_test_api.WaitForLauncherAnimationState(
+        ash::AppListViewState::kFullscreenAllApps);
+
+    // Type a random query to switch to search result view.
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_X,
+                              /*control=*/false,
+                              /*shift=*/false,
+                              /*alt=*/false,
+                              /* command = */ false);
+    shell_test_api.WaitForLauncherAnimationState(
+        ash::AppListViewState::kFullscreenSearch);
+
+    // Close.
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
+                              /*control=*/false,
+                              /*shift=*/false,
+                              /*alt=*/false,
+                              /* command = */ false);
+    shell_test_api.WaitForLauncherAnimationState(
+        ash::AppListViewState::kClosed);
+
+    // Takes the snapshot delta; so that the samples created so far will be
+    // eliminated from the samples.
+    for (const auto& name : GetUMAHistogramNames()) {
+      auto* histogram = base::StatisticsRecorder::FindHistogram(name);
+      if (!histogram)
+        continue;
+      histogram->SnapshotDelta();
+    }
+  }
+
  private:
+  bool reuse_widget_ = false;
   std::string suffix_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsTest);
 };
 
-IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Fullscreen) {
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsTest, Fullscreen) {
   set_suffix("FullscreenAllApps.ClamshellMode");
+  MaybeCreateCachedWidget();
   // Browser window is used to identify display, so we can use
   // use the 1st browser window regardless of number of windows created.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -76,8 +140,9 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Fullscreen) {
   shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }
 
-IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Peeking) {
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsTest, Peeking) {
   set_suffix("Peeking.ClamshellMode");
+  MaybeCreateCachedWidget();
   // Browser window is used to identify display, so we can use
   // use the 1st browser window regardless of number of windows created.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -98,8 +163,9 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Peeking) {
   shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }
 
-IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Half) {
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsTest, Half) {
   set_suffix("Half.ClamshellMode");
+  MaybeCreateCachedWidget();
   // Browser window is used to identify display, so we can use
   // use the 1st browser window regardless of number of windows created.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -111,6 +177,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Half) {
                             /*shift=*/false,
                             /*alt=*/false,
                             /* command = */ false);
+
   shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kPeeking);
 
   // Type some query in the launcher; it should show search results in kHalf
@@ -131,8 +198,9 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Half) {
   shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }
 
-IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, FullscreenSearch) {
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsTest, FullscreenSearch) {
   set_suffix("FullscreenSearch.ClamshellMode");
+  MaybeCreateCachedWidget();
   // Browser window is used to identify display, so we can use
   // use the 1st browser window regardless of number of windows created.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -172,3 +240,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, FullscreenSearch) {
                             /* command = */ false);
   shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }
+
+INSTANTIATE_TEST_SUITE_P(,
+                         LauncherAnimationsTest,
+                         /*reuse_widget=*/::testing::Bool());
