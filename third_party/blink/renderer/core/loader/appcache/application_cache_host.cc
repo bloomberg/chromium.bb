@@ -224,18 +224,21 @@ const base::UnguessableToken& ApplicationCacheHost::GetHostID() const {
   return host_->GetHostID();
 }
 
-void ApplicationCacheHost::FillResourceList(ResourceInfoList* resources) {
+void ApplicationCacheHost::FillResourceList(
+    Vector<mojom::blink::AppCacheResourceInfo>* resources) {
+  DCHECK(resources);
   if (!host_)
     return;
 
   WebVector<WebApplicationCacheHost::ResourceInfo> web_resources;
   host_->GetResourceList(&web_resources);
   for (size_t i = 0; i < web_resources.size(); ++i) {
-    resources->push_back(ResourceInfo(
-        web_resources[i].url, web_resources[i].is_master,
-        web_resources[i].is_manifest, web_resources[i].is_fallback,
-        web_resources[i].is_foreign, web_resources[i].is_explicit,
-        web_resources[i].response_size, web_resources[i].padding_size));
+    resources->push_back(mojom::blink::AppCacheResourceInfo(
+        web_resources[i].url, web_resources[i].response_size,
+        web_resources[i].padding_size, web_resources[i].is_master,
+        web_resources[i].is_manifest, false /*is_intercept*/,
+        web_resources[i].is_fallback, web_resources[i].is_foreign,
+        web_resources[i].is_explicit, 0 /*response_id*/));
   }
 }
 

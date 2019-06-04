@@ -79,36 +79,6 @@ class CORE_EXPORT ApplicationCacheHost final
     int64_t padding_sizes_;
   };
 
-  struct ResourceInfo {
-    DISALLOW_NEW();
-    ResourceInfo(const KURL& resource,
-                 bool is_master,
-                 bool is_manifest,
-                 bool is_fallback,
-                 bool is_foreign,
-                 bool is_explicit,
-                 int64_t response_size,
-                 int64_t padding_size)
-        : resource_(resource),
-          is_master_(is_master),
-          is_manifest_(is_manifest),
-          is_fallback_(is_fallback),
-          is_foreign_(is_foreign),
-          is_explicit_(is_explicit),
-          response_size_(response_size),
-          padding_size_(padding_size) {}
-    KURL resource_;
-    bool is_master_;
-    bool is_manifest_;
-    bool is_fallback_;
-    bool is_foreign_;
-    bool is_explicit_;
-    int64_t response_size_;
-    int64_t padding_size_;
-  };
-
-  typedef Vector<ResourceInfo> ResourceInfoList;
-
   void SelectCacheWithoutManifest();
   void SelectCacheWithManifest(const KURL& manifest_url);
 
@@ -140,7 +110,7 @@ class CORE_EXPORT ApplicationCacheHost final
   void
   StopDeferringEvents();  // Also raises the events that have been queued up.
 
-  void FillResourceList(ResourceInfoList*);
+  void FillResourceList(Vector<mojom::blink::AppCacheResourceInfo>*);
   CacheInfo ApplicationCacheInfo();
   const base::UnguessableToken& GetHostID() const;
 
