@@ -16,6 +16,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
@@ -300,22 +301,19 @@ void WaylandWindow::Show() {
 void WaylandWindow::Hide() {
   if (is_tooltip_) {
     parent_window_ = nullptr;
-    wl_surface_attach(surface_.get(), NULL, 0, 0);
-    wl_surface_commit(surface_.get());
-    return;
+  } else {
+    if (child_window_)
+      child_window_->Hide();
+    if (xdg_popup_) {
+      parent_window_->set_child_window(nullptr);
+      xdg_popup_.reset();
+    }
   }
 
-  if (child_window_)
-    child_window_->Hide();
-
-  if (xdg_popup_) {
-    parent_window_->set_child_window(nullptr);
-    xdg_popup_.reset();
-    // Detach buffer from surface in order to completely shutdown popups and
-    // release resources.
-    wl_surface_attach(surface_.get(), NULL, 0, 0);
-    wl_surface_commit(surface_.get());
-  }
+  // Detach buffer from surface in order to completely shutdown popups and
+  // tooltips, and release resources.
+  if (!xdg_surface())
+    connection_->buffer_manager_host()->ResetSurfaceContents(GetWidget());
 }
 
 void WaylandWindow::Close() {

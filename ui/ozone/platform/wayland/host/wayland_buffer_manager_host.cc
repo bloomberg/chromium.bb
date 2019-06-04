@@ -103,6 +103,14 @@ class WaylandBufferManagerHost::Surface {
 
     connection_->ScheduleFlush();
 
+    // If the contents were reset, there is no buffer attached. It means we have
+    // to behave the same way as if it was the very first frame. Check the
+    // comment below where the |contents_reset_| is declared.
+    if (contents_reset_) {
+      prev_submitted_buffer_ = nullptr;
+      contents_reset_ = false;
+    }
+
     // If it was the very first frame, the surface has not had a back buffer
     // before, and Wayland won't release the front buffer until next buffer is
     // attached. Thus, notify about successful submission immediately.
@@ -166,9 +174,22 @@ class WaylandBufferManagerHost::Surface {
     wl_frame_callback_.reset();
     presentation_feedbacks_ = PresentationFeedbackQueue();
 
-    wl_surface_attach(window_->surface(), nullptr, 0, 0);
+    ResetSurfaceContents();
+
     prev_submitted_buffer_ = nullptr;
     submitted_buffer_ = nullptr;
+
+    connection_->ScheduleFlush();
+  }
+
+  void ResetSurfaceContents() {
+    wl_surface_attach(window_->surface(), nullptr, 0, 0);
+    wl_surface_commit(window_->surface());
+
+    // We cannot reset |prev_submitted_buffer_| here as long as the surface
+    // might have attached a new buffer and is about to receive a release
+    // callback. Check more comments below where the variable is declared.
+    contents_reset_ = true;
 
     connection_->ScheduleFlush();
   }
@@ -430,6 +451,14 @@ class WaylandBufferManagerHost::Surface {
   // Previous submitted buffer.
   WaylandBuffer* prev_submitted_buffer_ = nullptr;
 
+  // If WaylandWindow becomes hidden, it may need to attach a null buffer to the
+  // surface it backed to avoid its contents shown on screen. However, it
+  // means that the Wayland compositor no longer sends new buffer release events
+  // as long as there has not been buffer attached and no submission callback is
+  // sent. To avoid this, |contents_reset_| can be used as an identification of a
+  // need to call submission callback manually.
+  bool contents_reset_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };
 
@@ -599,6 +628,13 @@ void WaylandBufferManagerHost::DestroyBuffer(gfx::AcceleratedWidget widget,
   }
 
   connection_->ScheduleFlush();
+}
+
+void WaylandBufferManagerHost::ResetSurfaceContents(
+    gfx::AcceleratedWidget widget) {
+  auto* surface = GetSurface(widget);
+  DCHECK(surface);
+  surface->ResetSurfaceContents();
 }
 
 bool WaylandBufferManagerHost::CreateBuffer(gfx::AcceleratedWidget& widget,
