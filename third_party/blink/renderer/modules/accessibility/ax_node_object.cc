@@ -1399,12 +1399,12 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
 }
 
 AXObject* AXNodeObject::InPageLinkTarget() const {
-  if (!node_ || !IsHTMLAnchorElement(node_) || !GetDocument())
+  if (!IsAnchor() || !GetDocument())
     return AXObject::InPageLinkTarget();
 
-  HTMLAnchorElement* anchor = ToHTMLAnchorElement(node_.Get());
+  Element* anchor = AnchorElement();
   DCHECK(anchor);
-  KURL link_url = anchor->Href();
+  KURL link_url = anchor->HrefURL();
   if (!link_url.IsValid())
     return AXObject::InPageLinkTarget();
   String fragment = link_url.FragmentIdentifier();
@@ -1777,7 +1777,12 @@ bool AXNodeObject::StepValueForRange(float* out_value) const {
 }
 
 KURL AXNodeObject::Url() const {
-  if (IsAnchor() && IsHTMLAnchorElement(GetNode())) {
+  if (IsAnchor()) {
+    // Some non-HTML elements, most notably SVG <a> elements, can act as
+    // links/anchors.
+    if (!IsHTMLAnchorElement(GetNode()))
+      return AnchorElement()->HrefURL();
+
     if (HTMLAnchorElement* anchor = ToHTMLAnchorElementOrNull(AnchorElement()))
       return anchor->Href();
   }

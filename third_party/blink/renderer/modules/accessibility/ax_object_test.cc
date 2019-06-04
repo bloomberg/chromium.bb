@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_test.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 namespace test {
@@ -163,6 +164,61 @@ TEST_F(AccessibilityTest, AXObjectInOrderTraversalIterator) {
   --iter;  // Skip the generic container which is an ignored object.
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, iter->RoleValue());
   EXPECT_EQ(GetAXObjectCache().InOrderTraversalBegin(), iter);
+}
+
+TEST_F(AccessibilityTest, AxNodeObjectContainsHtmlAnchorElementUrl) {
+  SetBodyInnerHTML(R"HTML(<a id="anchor" href="http://test.com">link</a>)HTML");
+
+  const AXObject* root = GetAXRootObject();
+  ASSERT_NE(nullptr, root);
+  const AXObject* anchor = GetAXObjectByElementId("anchor");
+  ASSERT_NE(nullptr, anchor);
+
+  // Passing a malformed string to KURL returns an empty URL, so verify the
+  // AXObject's URL is non-empty first to catch errors in the test itself.
+  EXPECT_FALSE(anchor->Url().IsEmpty());
+  EXPECT_EQ(anchor->Url(), KURL("http://test.com"));
+}
+
+TEST_F(AccessibilityTest, AxNodeObjectContainsSvgAnchorElementUrl) {
+  SetBodyInnerHTML(R"HTML(
+    <svg>
+      <a id="anchor" xlink:href="http://test.com"></a>
+    </svg>
+  )HTML");
+
+  const AXObject* root = GetAXRootObject();
+  ASSERT_NE(nullptr, root);
+  const AXObject* anchor = GetAXObjectByElementId("anchor");
+  ASSERT_NE(nullptr, anchor);
+
+  EXPECT_FALSE(anchor->Url().IsEmpty());
+  EXPECT_EQ(anchor->Url(), KURL("http://test.com"));
+}
+
+TEST_F(AccessibilityTest, AxNodeObjectContainsImageUrl) {
+  SetBodyInnerHTML(R"HTML(<img id="anchor" src="http://test.png" />)HTML");
+
+  const AXObject* root = GetAXRootObject();
+  ASSERT_NE(nullptr, root);
+  const AXObject* anchor = GetAXObjectByElementId("anchor");
+  ASSERT_NE(nullptr, anchor);
+
+  EXPECT_FALSE(anchor->Url().IsEmpty());
+  EXPECT_EQ(anchor->Url(), KURL("http://test.png"));
+}
+
+TEST_F(AccessibilityTest, AxNodeObjectContainsInPageLinkTarget) {
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(<a id="anchor" href="#target">link</a>)HTML");
+
+  const AXObject* root = GetAXRootObject();
+  ASSERT_NE(nullptr, root);
+  const AXObject* anchor = GetAXObjectByElementId("anchor");
+  ASSERT_NE(nullptr, anchor);
+
+  EXPECT_FALSE(anchor->Url().IsEmpty());
+  EXPECT_EQ(anchor->Url(), KURL("http://test.com/#target"));
 }
 
 }  // namespace test
