@@ -472,6 +472,38 @@ TEST_F('ChromeVoxEditableTextUnitTest', 'CharacterEcho', function() {
 });
 
 
+/** Tests character echo in auto complete text fields. */
+TEST_F('ChromeVoxEditableTextUnitTest', 'CharEchoInAutoComplete', function() {
+  var tts = new TestTts();
+  var url = 'chromevox.com';
+  var obj = new cvox.ChromeVoxEditableTextBase(url, 1, 13, false, tts);
+
+  // This simulates a user typing into an auto complete text field one character
+  // at a time. The selection is the completion and we toggle between various
+  // typing echo options.
+  cvox.ChromeVox.typingEcho = cvox.TypingEcho.CHARACTER;
+  obj.changed(new cvox.TextChangeEvent(url, 2, 13));
+  cvox.ChromeVox.typingEcho = cvox.TypingEcho.NONE;
+  obj.changed(new cvox.TextChangeEvent(url, 3, 13));
+  cvox.ChromeVox.typingEcho = cvox.TypingEcho.CHARACTER_AND_WORD;
+  obj.changed(new cvox.TextChangeEvent(url, 4, 13));
+  cvox.ChromeVox.typingEcho = cvox.TypingEcho.WORD;
+  obj.changed(new cvox.TextChangeEvent(url, 5, 13));
+
+  // The characters should only be read for the typing echo modes containing a
+  // character. They are commented out below when unexpected to make the test
+  // clearer to read.
+  assertEqualStringArrays(
+      [
+        'h', url.slice(2),
+        /* 'r', */ url.slice(3),
+        'o', url.slice(4),
+        /* 'm', */ url.slice(5)
+      ],
+       tts.get());
+});
+
+
 /** Tests word echo. */
 TEST_F('ChromeVoxEditableTextUnitTest', 'WordEcho', function() {
   cvox.ChromeVox.typingEcho = cvox.TypingEcho.WORD;
