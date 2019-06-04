@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/exported/renderer_webapplicationcachehost_impl.h"
+#include "third_party/blink/renderer/core/exported/application_cache_host_for_frame.h"
 
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -13,7 +13,7 @@
 
 namespace blink {
 
-RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
+ApplicationCacheHostForFrame::ApplicationCacheHostForFrame(
     WebLocalFrame* web_local_frame,
     WebApplicationCacheHostClient* client,
     const base::UnguessableToken& appcache_host_id,
@@ -24,7 +24,7 @@ RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
                                   std::move(task_runner)),
       web_local_frame_(web_local_frame) {}
 
-void RendererWebApplicationCacheHostImpl::LogMessage(
+void ApplicationCacheHostForFrame::LogMessage(
     mojom::blink::ConsoleMessageLevel log_level,
     const String& message) {
   if (WebTestSupport::IsRunningWebTest())
@@ -43,7 +43,7 @@ void RendererWebApplicationCacheHostImpl::LogMessage(
       static_cast<mojom::blink::ConsoleMessageLevel>(log_level), message));
 }
 
-void RendererWebApplicationCacheHostImpl::SetSubresourceFactory(
+void ApplicationCacheHostForFrame::SetSubresourceFactory(
     network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) {
   auto info = std::make_unique<URLLoaderFactoryBundleInfo>();
   info->appcache_factory_info().set_handle(
@@ -58,7 +58,7 @@ WebApplicationCacheHost::CreateWebApplicationCacheHostForFrame(
     const base::UnguessableToken& appcache_host_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   auto renderer_webapplicationcachehost_impl =
-      std::make_unique<RendererWebApplicationCacheHostImpl>(
+      std::make_unique<ApplicationCacheHostForFrame>(
           frame, client, appcache_host_id, std::move(task_runner));
   return std::move(renderer_webapplicationcachehost_impl);
 }

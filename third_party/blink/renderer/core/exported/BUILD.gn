@@ -5,12 +5,12 @@ import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("exported") {
   sources = [
+    "application_cache_host_for_frame.cc",
+    "application_cache_host_for_frame.h",
     "application_cache_host_for_shared_worker.cc",
     "application_cache_host_for_shared_worker.h",
     "local_frame_client_impl.cc",
     "local_frame_client_impl.h",
-    "renderer_webapplicationcachehost_impl.cc",
-    "renderer_webapplicationcachehost_impl.h",
     "web_application_cache_host_impl.cc",
     "web_application_cache_host_impl.h",
     "web_array_buffer.cc",

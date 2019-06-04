@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_APPLICATION_CACHE_HOST_FOR_FRAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_APPLICATION_CACHE_HOST_FOR_FRAME_H_
 
 #include "third_party/blink/renderer/core/exported/web_application_cache_host_impl.h"
 
 namespace blink {
 class WebLocalFrame;
 
-class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
+class ApplicationCacheHostForFrame : public WebApplicationCacheHostImpl {
  public:
-  RendererWebApplicationCacheHostImpl(
+  ApplicationCacheHostForFrame(
       WebLocalFrame* web_frame,
       blink::WebApplicationCacheHostClient* client,
       const base::UnguessableToken& appcache_host_id,
@@ -34,4 +34,4 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_APPLICATION_CACHE_HOST_FOR_FRAME_H_
