@@ -1231,9 +1231,9 @@ class CORE_EXPORT Document : public ContainerNode,
   ElementDataCache* GetElementDataCache() { return element_data_cache_.Get(); }
 
   void DidLoadAllScriptBlockingResources();
-  void DidAddPendingStylesheetInBody();
-  void DidRemoveAllPendingStylesheet();
-  void DidRemoveAllPendingBodyStylesheets();
+  void DidAddPendingParserBlockingStylesheet();
+  void DidLoadAllPendingParserBlockingStylesheets();
+  void DidRemoveAllPendingStylesheets();
 
   bool InStyleRecalc() const {
     return lifecycle_.GetState() == DocumentLifecycle::kInStyleRecalc;

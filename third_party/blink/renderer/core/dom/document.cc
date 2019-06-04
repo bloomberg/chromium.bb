@@ -4160,23 +4160,23 @@ void Document::DidLoadAllImports() {
   DidLoadAllScriptBlockingResources();
 }
 
-void Document::DidAddPendingStylesheetInBody() {
+void Document::DidAddPendingParserBlockingStylesheet() {
   if (ScriptableDocumentParser* parser = GetScriptableDocumentParser())
-    parser->DidAddPendingStylesheetInBody();
+    parser->DidAddPendingParserBlockingStylesheet();
 }
 
-void Document::DidRemoveAllPendingStylesheet() {
+void Document::DidRemoveAllPendingStylesheets() {
   // Only imports on master documents can trigger rendering.
   if (HTMLImportLoader* import = ImportLoader())
-    import->DidRemoveAllPendingStylesheet();
+    import->DidRemoveAllPendingStylesheets();
   if (!HaveImportsLoaded())
     return;
   DidLoadAllScriptBlockingResources();
 }
 
-void Document::DidRemoveAllPendingBodyStylesheets() {
+void Document::DidLoadAllPendingParserBlockingStylesheets() {
   if (ScriptableDocumentParser* parser = GetScriptableDocumentParser())
-    parser->DidLoadAllBodyStylesheets();
+    parser->DidLoadAllPendingParserBlockingStylesheets();
 }
 
 void Document::DidLoadAllScriptBlockingResources() {

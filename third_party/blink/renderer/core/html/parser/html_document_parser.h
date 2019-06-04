@@ -159,8 +159,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool IsWaitingForScripts() const final;
   bool IsExecutingScript() const final;
   void ExecuteScriptsWaitingForResources() final;
-  void DidAddPendingStylesheetInBody() final;
-  void DidLoadAllBodyStylesheets() final;
+  void DidAddPendingParserBlockingStylesheet() final;
+  void DidLoadAllPendingParserBlockingStylesheets() final;
   void CheckIfBodyStylesheetAdded();
   void DocumentElementAvailable() override;
 
@@ -268,7 +268,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   unsigned pump_speculations_session_nesting_level_;
   bool is_parsing_at_line_number_;
   bool tried_loading_link_headers_;
-  bool added_pending_stylesheet_in_body_;
+  bool added_pending_parser_blocking_stylesheet_;
   bool is_waiting_for_stylesheets_;
 
   base::WeakPtrFactory<HTMLDocumentParser> weak_factory_;

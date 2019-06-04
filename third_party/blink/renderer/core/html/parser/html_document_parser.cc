@@ -151,7 +151,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       pump_speculations_session_nesting_level_(0),
       is_parsing_at_line_number_(false),
       tried_loading_link_headers_(false),
-      added_pending_stylesheet_in_body_(false),
+      added_pending_parser_blocking_stylesheet_(false),
       is_waiting_for_stylesheets_(false),
       weak_factory_(this) {
   DCHECK(ShouldUseThreading() || (token_ && tokenizer_));
@@ -1102,27 +1102,27 @@ void HTMLDocumentParser::ExecuteScriptsWaitingForResources() {
     ResumeParsingAfterPause();
 }
 
-void HTMLDocumentParser::DidAddPendingStylesheetInBody() {
+void HTMLDocumentParser::DidAddPendingParserBlockingStylesheet() {
   // In-body CSS doesn't block painting. The parser needs to pause so that
   // the DOM doesn't include any elements that may depend on the CSS for style.
   // The stylesheet can be added and removed during the parsing of a single
   // token so don't actually set the bit to block parsing here, just track
   // the state of the added sheet in case it does persist beyond a single
   // token.
-  added_pending_stylesheet_in_body_ = true;
+  added_pending_parser_blocking_stylesheet_ = true;
 }
 
-void HTMLDocumentParser::DidLoadAllBodyStylesheets() {
+void HTMLDocumentParser::DidLoadAllPendingParserBlockingStylesheets() {
   // Just toggle the stylesheet flag here (mostly for synchronous sheets).
   // The document will also call into executeScriptsWaitingForResources
   // which is when the parser will re-start, otherwise it will attempt to
   // resume twice which could cause state machine issues.
-  added_pending_stylesheet_in_body_ = false;
+  added_pending_parser_blocking_stylesheet_ = false;
 }
 
 void HTMLDocumentParser::CheckIfBodyStylesheetAdded() {
-  if (added_pending_stylesheet_in_body_) {
-    added_pending_stylesheet_in_body_ = false;
+  if (added_pending_parser_blocking_stylesheet_) {
+    added_pending_parser_blocking_stylesheet_ = false;
     is_waiting_for_stylesheets_ = true;
   }
 }

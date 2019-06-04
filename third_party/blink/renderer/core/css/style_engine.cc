@@ -214,11 +214,13 @@ void StyleEngine::AddPendingSheet(StyleEngineContext& context) {
   pending_script_blocking_stylesheets_++;
 
   context.AddingPendingSheet(GetDocument());
-  if (context.AddedPendingSheetBeforeBody()) {
+
+  if (context.AddedPendingSheetBeforeBody() &&
+      !RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
     pending_render_blocking_stylesheets_++;
   } else {
-    pending_body_stylesheets_++;
-    GetDocument().DidAddPendingStylesheetInBody();
+    pending_parser_blocking_stylesheets_++;
+    GetDocument().DidAddPendingParserBlockingStylesheet();
   }
 }
 
@@ -228,14 +230,15 @@ void StyleEngine::RemovePendingSheet(Node& style_sheet_candidate_node,
   if (style_sheet_candidate_node.isConnected())
     SetNeedsActiveStyleUpdate(style_sheet_candidate_node.GetTreeScope());
 
-  if (context.AddedPendingSheetBeforeBody()) {
+  if (context.AddedPendingSheetBeforeBody() &&
+      !RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
     DCHECK_GT(pending_render_blocking_stylesheets_, 0);
     pending_render_blocking_stylesheets_--;
   } else {
-    DCHECK_GT(pending_body_stylesheets_, 0);
-    pending_body_stylesheets_--;
-    if (!pending_body_stylesheets_)
-      GetDocument().DidRemoveAllPendingBodyStylesheets();
+    DCHECK_GT(pending_parser_blocking_stylesheets_, 0);
+    pending_parser_blocking_stylesheets_--;
+    if (!pending_parser_blocking_stylesheets_)
+      GetDocument().DidLoadAllPendingParserBlockingStylesheets();
   }
 
   // Make sure we knew this sheet was pending, and that our count isn't out of
@@ -246,7 +249,7 @@ void StyleEngine::RemovePendingSheet(Node& style_sheet_candidate_node,
   if (pending_script_blocking_stylesheets_)
     return;
 
-  GetDocument().DidRemoveAllPendingStylesheet();
+  GetDocument().DidRemoveAllPendingStylesheets();
 }
 
 void StyleEngine::SetNeedsActiveStyleUpdate(TreeScope& tree_scope) {

@@ -199,6 +199,9 @@
       status: "stable",
     },
     {
+      name: "BlockHTMLParserOnStyleSheets",
+    },
+    {
       name: "BlockingDownloadsInSandboxWithoutUserActivation",
       status: "test",
     },

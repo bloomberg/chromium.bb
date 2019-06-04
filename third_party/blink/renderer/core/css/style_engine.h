@@ -447,13 +447,29 @@ class CORE_EXPORT StyleEngine final
   Member<Document> document_;
   bool is_master_;
 
-  // Track the number of currently loading top-level stylesheets needed for
-  // layout.  Sheets loaded using the @import directive are not included in this
-  // count.  We use this count of pending sheets to detect when we can begin
-  // attaching elements and when it is safe to execute scripts.
+  // Tracks the number of currently loading top-level stylesheets. Sheets loaded
+  // using the @import directive are not included in this count. We use this
+  // count of pending sheets to detect when it is safe to execute scripts
+  // (parser-inserted scripts may not run until all pending stylesheets have
+  // loaded). See:
+  // https://html.spec.whatwg.org/multipage/semantics.html#interactions-of-styling-and-scripting
+  // Once the BlockHTMLParserOnStyleSheets flag has shipped, this is the same
+  // as pending_parser_blocking_stylesheets_.
   int pending_script_blocking_stylesheets_ = 0;
+
+  // Tracks the number of currently loading top-level stylesheets which block
+  // rendering (the "Update the rendering" step of the event loop processing
+  // model) from starting. Sheets loaded using the @import directive are not
+  // included in this count. See:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model
+  // Once all of these sheets have loaded, rendering begins.
   int pending_render_blocking_stylesheets_ = 0;
-  int pending_body_stylesheets_ = 0;
+
+  // Tracks the number of currently loading top-level stylesheets which block
+  // the HTML parser. Sheets loaded using the @import directive are not included
+  // in this count. Once all of these sheets have loaded, the parser may
+  // continue.
+  int pending_parser_blocking_stylesheets_ = 0;
 
   Member<CSSStyleSheet> inspector_style_sheet_;
 
