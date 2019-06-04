@@ -996,14 +996,58 @@ Status WebViewImpl::CallAsyncFunctionInternal(
   async_args.AppendString("return (" + function + ").apply(null, arguments);");
   async_args.Append(args.CreateDeepCopy());
   async_args.AppendBoolean(is_user_supplied);
+  async_args.AppendInteger(timeout.InMilliseconds());
   std::unique_ptr<base::Value> tmp;
   Status status = CallFunctionWithTimeout(frame, kExecuteAsyncScriptScript,
                                           async_args, timeout, &tmp);
   if (status.IsError())
     return status;
 
-  *result = std::move(tmp);
-  return status;
+  const char kDocUnloadError[] = "document unloaded while waiting for result";
+  std::string kQueryResult = base::StringPrintf(
+      "function() {"
+      "  var info = document.$chrome_asyncScriptInfo;"
+      "  if (!info)"
+      "    return {status: %d, value: '%s'};"
+      "  var result = info.result;"
+      "  if (!result)"
+      "    return {status: 0};"
+      "  delete info.result;"
+      "  return result;"
+      "}",
+      kJavaScriptError,
+      kDocUnloadError);
+
+  while (true) {
+    base::ListValue no_args;
+    std::unique_ptr<base::Value> query_value;
+    Status status = CallFunction(frame, kQueryResult, no_args, &query_value);
+    if (status.IsError()) {
+      if (status.code() == kNoSuchFrame)
+        return Status(kJavaScriptError, kDocUnloadError);
+      return status;
+    }
+
+    base::DictionaryValue* result_info = NULL;
+    if (!query_value->GetAsDictionary(&result_info))
+      return Status(kUnknownError, "async result info is not a dictionary");
+    int status_code;
+    if (!result_info->GetInteger("status", &status_code))
+      return Status(kUnknownError, "async result info has no int 'status'");
+    if (status_code != kOk) {
+      std::string message;
+      result_info->GetString("value", &message);
+      return Status(static_cast<StatusCode>(status_code), message);
+    }
+
+    base::Value* value = NULL;
+    if (result_info->Get("value", &value)) {
+      result->reset(value->DeepCopy());
+      return Status(kOk);
+    }
+
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  }
 }
 
 Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,

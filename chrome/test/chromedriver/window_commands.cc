@@ -601,7 +601,7 @@ Status ExecuteExecuteAsyncScript(Session* session,
     script = script + "\n";
 
   Status status = web_view->CallUserAsyncFunction(
-      session->GetCurrentFrameId(), "async function(){" + script + "}", *args,
+      session->GetCurrentFrameId(), "function(){" + script + "}", *args,
       session->script_timeout, value);
   if (status.code() == kTimeout)
     return Status(kScriptTimeout);

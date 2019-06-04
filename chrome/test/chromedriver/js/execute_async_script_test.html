@@ -4,28 +4,23 @@
 <script src='execute_async_script.js'></script>
 <script>
 
-async function testScriptThrows() {
-  let promise = executeAsyncScript('f(123);', [], true).then((result) => {
-    assert(false);
-  }).catch((error) => {
-    assertEquals(StatusCode.JAVASCRIPT_ERROR, error.code);
-    return 1;
-  });
-
-  let result = await promise;
-  assertEquals(1, result);
-
-  executeAsyncScript('f(123);', [], false).then((result) => {
-    assert(false);
-  }).catch((error) => {
-    assertEquals(StatusCode.UNKNOWN_ERROR, error.code);
-    return 1;
-  });
-  result = await promise;
-  assertEquals(1, result);
+function resetAsyncScriptInfo() {
+  delete document[ASYNC_INFO_KEY];
 }
 
-async function testUserScriptWithArgs() {
+function testScriptThrows() {
+  resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
+
+  executeAsyncScript('f(123);', [], true);
+  assertEquals(StatusCode.JAVASCRIPT_ERROR, info.result.status);
+  executeAsyncScript('f(123);', [], false);
+  assertEquals(StatusCode.UNKNOWN_ERROR, info.result.status);
+}
+
+function testUserScriptWithArgs() {
+  resetAsyncScriptInfo();
+
   var injectedArgs = null;
   function captureArguments(args) {
     injectedArgs = args;
@@ -35,49 +30,106 @@ async function testUserScriptWithArgs() {
   var script =
       'var args = arguments; args[0](args); args[args.length - 1](args[1]);';
   var script_args = [captureArguments, 1];
-  await executeAsyncScript(script, script_args, true).then((result) => {
-    assertEquals(1, result);
-  });
+  executeAsyncScript(script, script_args, true);
+
   assertEquals(3, injectedArgs.length);
   assertEquals(captureArguments, injectedArgs[0]);
   assertEquals(1, injectedArgs[1]);
+
+  var info = getAsyncScriptInfo();
+  assertEquals(0, info.result.status);
+  assertEquals(1, info.result.value);
+  assertEquals(2, info.id);
 }
 
-async function testNonUserScript() {
-  await executeAsyncScript('arguments[1](arguments[0])', [33],
-                           false).then((result) => {
-    assertEquals(33, result);
-  });
+function testNonUserScript() {
+  resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
 
-  await executeAsyncScript('arguments[2](new Error("ERR"))', [33],
-                           false).then((result) => {
-    assert(false);
-  }).catch((error) => {
-    assertEquals(StatusCode.UNKNOWN_ERROR, error.code);
-    assertEquals(0, error.message.indexOf('ERR'));
-  });
+  executeAsyncScript('arguments[1](arguments[0])', [33], false);
+  assertEquals(0, info.result.status);
+  assertEquals(33, info.result.value);
 
-  await executeAsyncScript(`
-    var e = new Error("ERR");
-    e.code = 111;
-    arguments[1](e)`,
-    [], false).then((result) => { assert(false); }).catch((error) => {
-      assertEquals(111, error.code);
-      assertEquals(0,   error.message.indexOf('ERR'));
-  });
+  executeAsyncScript('arguments[2](new Error("ERR"))', [33], false);
+  assertEquals(StatusCode.UNKNOWN_ERROR, info.result.status);
+  assertEquals(0, info.result.value.indexOf('ERR'));
+
+  executeAsyncScript('var e = new Error("ERR"); e.code = 111; arguments[1](e)',
+                     [], false);
+  assertEquals(111, info.result.status);
+  assertEquals(0, info.result.value.indexOf('ERR'));
 }
-async function testFirstScriptFinishAfterSecondScriptExecute() {
-  let firstCompleted = false;
+
+function testNoResultBeforeTimeout() {
+  resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
+
   executeAsyncScript(
-    `var f = arguments[0];
-     setTimeout(function(){ f(1); }, 100000);`, []).then((result) => {
-        firstCompleted = true;
-  });
-  await executeAsyncScript('var fn = arguments[0]; fn(2);',
-                           []).then((result) => {
-    assert(!firstCompleted);
-    assertEquals(2, result);
-  });
+      'var a = arguments; window.setTimeout(function() {a[0](33)}, 0);',
+      [], true, 0);
+
+  assert(!info.result);
+}
+
+function testZeroTimeout(runner) {
+  resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
+
+  executeAsyncScript(
+      'var a = arguments; window.setTimeout(function() {a[0](33)}, 0);',
+      [], true, 0);
+
+  window.setTimeout(function() {
+    assertEquals(0, info.result.status);
+    assertEquals(33, info.result.value);
+    runner.continueTesting();
+  }, 0);
+  runner.waitForAsync();
+}
+
+function testUserScriptTimesOut(runner) {
+  resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
+
+  executeAsyncScript('', [], true, 500);
+
+  window.setTimeout(function() {
+    assertEquals(StatusCode.SCRIPT_TIMEOUT, info.result.status);
+    assert(info.result.value.indexOf('0.5') != -1);
+    runner.continueTesting();
+  }, 500);
+
+  runner.waitForAsync();
+}
+
+function testNonUserScriptTimesOut(runner) {
+  resetAsyncScriptInfo();
+  var info = getAsyncScriptInfo();
+
+  executeAsyncScript('', [], false, 500);
+
+  window.setTimeout(function() {
+    assertEquals(StatusCode.UNKNOWN_ERROR, info.result.status);
+    assert(info.result.value.indexOf('0.5') != -1);
+    runner.continueTesting();
+  }, 500);
+
+  runner.waitForAsync();
+}
+
+function testFirstScriptFinishAfterSecondScriptExecute() {
+  resetAsyncScriptInfo();
+
+  executeAsyncScript(
+      'var f = arguments[0]; setTimeout(function(){ f(1); }, 100000);', []);
+  var info = getAsyncScriptInfo();
+  assert(!info.hasOwnProperty('result'));
+  assertEquals(1, info.id);
+
+  executeAsyncScript('var fn = arguments[0]; fn(2);', []);
+  assertEquals(0, info.result.status);
+  assertEquals(2, info.result.value);
+  assertEquals(3, info.id);
 }
 
 </script>
