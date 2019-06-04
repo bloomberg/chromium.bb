@@ -1031,18 +1031,15 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
   int32_t A[2][2] = { { 0, 0 }, { 0, 0 } };
   int32_t Bx[2] = { 0, 0 };
   int32_t By[2] = { 0, 0 };
-  int i;
 
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
-  const int rsuy = (AOMMAX(bh, MI_SIZE) / 2 - 1);
-  const int rsux = (AOMMAX(bw, MI_SIZE) / 2 - 1);
+  const int rsuy = bh / 2 - 1;
+  const int rsux = bw / 2 - 1;
   const int suy = rsuy * 8;
   const int sux = rsux * 8;
   const int duy = suy + mvy;
   const int dux = sux + mvx;
-  const int isuy = (mi_row * MI_SIZE + rsuy);
-  const int isux = (mi_col * MI_SIZE + rsux);
 
   // Assume the center pixel of the block has exactly the same motion vector
   // as transmitted for the block. First shift the origin of the source
@@ -1067,7 +1064,7 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
   // The loop below computes: A = P'P, Bx = P'q, By = P'r
   // We need to just compute inv(A).Bx and inv(A).By for the solutions.
   // Contribution from neighbor block
-  for (i = 0; i < np; i++) {
+  for (int i = 0; i < np; i++) {
     const int dx = pts2[i * 2] - dux;
     const int dy = pts2[i * 2 + 1] - duy;
     const int sx = pts1[i * 2] - sux;
@@ -1095,13 +1092,12 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
   assert(By[0] >= LS_MAT_MIN && By[0] <= LS_MAT_MAX);
   assert(By[1] >= LS_MAT_MIN && By[1] <= LS_MAT_MAX);
 
-  int64_t Det;
-  int16_t iDet, shift;
-
   // Compute Determinant of A
-  Det = (int64_t)A[0][0] * A[1][1] - (int64_t)A[0][1] * A[0][1];
+  const int64_t Det = (int64_t)A[0][0] * A[1][1] - (int64_t)A[0][1] * A[0][1];
   if (Det == 0) return 1;
-  iDet = resolve_divisor_64(llabs(Det), &shift) * (Det < 0 ? -1 : 1);
+
+  int16_t shift;
+  int16_t iDet = resolve_divisor_64(llabs(Det), &shift) * (Det < 0 ? -1 : 1);
   shift -= WARPEDMODEL_PREC_BITS;
   if (shift < 0) {
     iDet <<= (-shift);
@@ -1109,7 +1105,6 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
   }
 
   int64_t Px[2], Py[2];
-
   // These divided by the Det, are the least squares solutions
   Px[0] = (int64_t)A[1][1] * Bx[0] - (int64_t)A[0][1] * Bx[1];
   Px[1] = -(int64_t)A[0][1] * Bx[0] + (int64_t)A[0][0] * Bx[1];
@@ -1121,16 +1116,18 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
   wm->wmmat[4] = get_mult_shift_ndiag(Py[0], iDet, shift);
   wm->wmmat[5] = get_mult_shift_diag(Py[1], iDet, shift);
 
+  const int isuy = (mi_row * MI_SIZE + rsuy);
+  const int isux = (mi_col * MI_SIZE + rsux);
   // Note: In the vx, vy expressions below, the max value of each of the
   // 2nd and 3rd terms are (2^16 - 1) * (2^13 - 1). That leaves enough room
   // for the first term so that the overall sum in the worst case fits
   // within 32 bits overall.
-  int32_t vx = mvx * (1 << (WARPEDMODEL_PREC_BITS - 3)) -
-               (isux * (wm->wmmat[2] - (1 << WARPEDMODEL_PREC_BITS)) +
-                isuy * wm->wmmat[3]);
-  int32_t vy = mvy * (1 << (WARPEDMODEL_PREC_BITS - 3)) -
-               (isux * wm->wmmat[4] +
-                isuy * (wm->wmmat[5] - (1 << WARPEDMODEL_PREC_BITS)));
+  const int32_t vx = mvx * (1 << (WARPEDMODEL_PREC_BITS - 3)) -
+                     (isux * (wm->wmmat[2] - (1 << WARPEDMODEL_PREC_BITS)) +
+                      isuy * wm->wmmat[3]);
+  const int32_t vy = mvy * (1 << (WARPEDMODEL_PREC_BITS - 3)) -
+                     (isux * wm->wmmat[4] +
+                      isuy * (wm->wmmat[5] - (1 << WARPEDMODEL_PREC_BITS)));
   wm->wmmat[0] =
       clamp(vx, -WARPEDMODEL_TRANS_CLAMP, WARPEDMODEL_TRANS_CLAMP - 1);
   wm->wmmat[1] =
