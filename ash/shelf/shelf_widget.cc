@@ -368,8 +368,6 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
       shelf_layout_manager_->GetShelfBackgroundType(),
       AnimationChangeType::IMMEDIATE);
 
-  views::Widget::AddObserver(this);
-
   background_animator_.AddObserver(delegate_view_);
   shelf_->AddObserver(this);
 
@@ -414,7 +412,6 @@ void ShelfWidget::Shutdown() {
   // Don't need to observe focus/activation during shutdown.
   Shell::Get()->focus_cycler()->RemoveWidget(this);
   SetFocusCycler(nullptr);
-  RemoveObserver(this);
 }
 
 void ShelfWidget::CreateStatusAreaWidget(aura::Window* status_container) {
@@ -522,20 +519,22 @@ void ShelfWidget::FocusFirstOrLastFocusableChild(bool last) {
   to_focus->GetFocusManager()->SetFocusedView(to_focus);
 }
 
-void ShelfWidget::OnWidgetActivationChanged(views::Widget* widget,
-                                            bool active) {
+bool ShelfWidget::OnNativeWidgetActivationChanged(bool active) {
+  if (!Widget::OnNativeWidgetActivationChanged(active))
+    return false;
   if (active) {
     // Do not focus the default element if the widget activation came from the
     // another widget's focus cycling. The setter of
     // |activated_from_other_widget_| should handle focusing the correct view.
     if (activated_from_other_widget_) {
       activated_from_other_widget_ = false;
-      return;
+      return true;
     }
     delegate_view_->SetPaneFocusAndFocusDefault();
   } else {
     delegate_view_->GetFocusManager()->ClearFocus();
   }
+  return true;
 }
 
 void ShelfWidget::WillDeleteShelfLayoutManager() {

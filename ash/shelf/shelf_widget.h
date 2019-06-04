@@ -16,7 +16,6 @@
 #include "ash/shelf/shelf_observer.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace app_list {
 class ApplicationDragAndDropHost;
@@ -37,7 +36,6 @@ class StatusAreaWidget;
 // the status area widget. There is one ShelfWidget per display. It is created
 // early during RootWindowController initialization.
 class ASH_EXPORT ShelfWidget : public views::Widget,
-                               public views::WidgetObserver,
                                public ShelfLayoutManagerObserver,
                                public ShelfObserver,
                                public SessionObserver,
@@ -106,10 +104,12 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // and focuses it.
   void FocusFirstOrLastFocusableChild(bool last);
 
-  // Overridden from views::WidgetObserver:
-  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+  // views::Widget:
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  bool OnNativeWidgetActivationChanged(bool active) override;
 
-  // ShelfLayoutManagerObserver overrides:
+  // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;
 
   // ShelfObserver:
@@ -147,10 +147,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Shows shelf widget if IsVisible() returns false.
   void ShowIfHidden();
-
-  // views::Widget:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   Shelf* shelf_;
 
