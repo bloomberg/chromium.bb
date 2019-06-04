@@ -93,7 +93,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
-#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
@@ -1522,18 +1521,6 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
           frame_request, target.IsEmpty() ? "_blank" : target);
   if (!result.frame)
     return nullptr;
-
-  // If the navigation opened a new window, focus is handled during window
-  // creation. If the navigation reused an existing frame in a different page,
-  // FindOrCreateFrameForNavigation() took care of focus. Most navigations don't
-  // refocus when a different frame in the same page is navigated, but
-  // window.open() does. Why?
-  if (result.frame->GetPage() == GetFrame()->GetPage()) {
-    GetFrame()->GetPage()->GetFocusController().SetFocusedFrame(result.frame);
-    // Focusing can fire onblur, so check for detach.
-    if (!result.frame->GetPage())
-      return nullptr;
-  }
 
   if (!completed_url.IsEmpty() || result.new_window)
     result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);
