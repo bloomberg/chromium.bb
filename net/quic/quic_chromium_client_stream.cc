@@ -418,12 +418,12 @@ QuicChromiumClientStream::QuicChromiumClientStream(
       weak_factory_(this) {}
 
 QuicChromiumClientStream::QuicChromiumClientStream(
-    quic::PendingStream pending,
+    quic::PendingStream* pending,
     quic::QuicSpdyClientSessionBase* session,
     quic::StreamType type,
     const NetLogWithSource& net_log,
     const NetworkTrafficAnnotationTag& traffic_annotation)
-    : quic::QuicSpdyStream(std::move(pending), session, type),
+    : quic::QuicSpdyStream(pending, session, type),
       net_log_(net_log),
       handle_(nullptr),
       headers_delivered_(false),

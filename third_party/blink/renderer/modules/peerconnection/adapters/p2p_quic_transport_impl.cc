@@ -413,7 +413,7 @@ void P2PQuicTransportImpl::SendDatagram(Vector<uint8_t> datagram) {
 bool P2PQuicTransportImpl::CanSendDatagram() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return IsEncryptionEstablished() &&
-         (connection()->transport_version() > quic::QUIC_VERSION_44) &&
+         (connection()->transport_version() > quic::QUIC_VERSION_43) &&
          !IsClosed();
 }
 
@@ -437,10 +437,10 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
 }
 
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
-    quic::PendingStream pending) {
+    quic::PendingStream* pending) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   num_incoming_streams_created_++;
-  P2PQuicStreamImpl* stream = CreateStreamInternal(std::move(pending));
+  P2PQuicStreamImpl* stream = CreateStreamInternal(pending);
   ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream));
   delegate_->OnStream(stream);
   return stream;
@@ -457,13 +457,12 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
 }
 
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
-    quic::PendingStream pending) {
+    quic::PendingStream* pending) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(crypto_stream_);
   DCHECK(IsEncryptionEstablished());
   DCHECK(!IsClosed());
-  return new P2PQuicStreamImpl(std::move(pending), this,
-                               stream_delegate_read_buffer_size_,
+  return new P2PQuicStreamImpl(pending, this, stream_delegate_read_buffer_size_,
                                stream_write_buffer_size_);
 }
 

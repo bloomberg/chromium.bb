@@ -63,7 +63,7 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
   MOCK_METHOD1(CreateIncomingStream,
                quic::QuicSpdyStream*(quic::QuicStreamId id));
   MOCK_METHOD1(CreateIncomingStream,
-               quic::QuicSpdyStream*(quic::PendingStream pending));
+               quic::QuicSpdyStream*(quic::PendingStream* pending));
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicChromiumClientStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicChromiumClientStream*());
   MOCK_METHOD5(WritevData,

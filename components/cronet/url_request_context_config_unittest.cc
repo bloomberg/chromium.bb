@@ -316,7 +316,7 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
-      "{\"QUIC\":{\"quic_version\":\"QUIC_VERSION_44\"}}",
+      "{\"QUIC\":{\"quic_version\":\"QUIC_VERSION_46\"}}",
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
       // Enable network quality estimator.
@@ -339,7 +339,7 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
   EXPECT_EQ(params->quic_supported_versions.size(), 1u);
   EXPECT_EQ(params->quic_supported_versions[0],
             quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                                    quic::QUIC_VERSION_44));
+                                    quic::QUIC_VERSION_46));
 }
 
 TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {

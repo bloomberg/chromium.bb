@@ -132,7 +132,8 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // quic::QuicSession.
   P2PQuicStreamImpl* CreateIncomingStream(
       quic::QuicStreamId id) override;
-  P2PQuicStreamImpl* CreateIncomingStream(quic::PendingStream pending) override;
+  P2PQuicStreamImpl* CreateIncomingStream(
+      quic::PendingStream* pending) override;
 
   // Creates a new outgoing stream. The caller does not own the
   // stream, so the stream is activated and ownership is moved to the
@@ -164,7 +165,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Creates a new stream. This helper function is used when we need to create
   // a new incoming stream or outgoing stream.
   P2PQuicStreamImpl* CreateStreamInternal(quic::QuicStreamId id);
-  P2PQuicStreamImpl* CreateStreamInternal(quic::PendingStream pending);
+  P2PQuicStreamImpl* CreateStreamInternal(quic::PendingStream* pending);
 
   // Returns true if datagram was sent, false if it was not because of
   // congestion control blocking.

@@ -1568,8 +1568,14 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
   // in the stored AlternativeService is not supported by the client. However,
   // the response from the server will advertise new Alt-Svc with supported
   // versions.
+  quic::ParsedQuicVersionVector versions;
+  for (quic::QuicTransportVersion version :
+       quic::AllSupportedTransportVersions()) {
+    versions.push_back(
+        quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, version));
+  }
   std::string advertised_versions_list_str =
-      GenerateQuicVersionsListForAltSvcHeader(quic::AllSupportedVersions());
+      GenerateQuicVersionsListForAltSvcHeader(versions);
   std::string altsvc_header =
       base::StringPrintf("Alt-Svc: quic=\":443\"; v=\"%s\"\r\n\r\n",
                          advertised_versions_list_str.c_str());
@@ -2066,8 +2072,14 @@ TEST_P(QuicNetworkTransactionTest,
     break;
   }
 
+  quic::ParsedQuicVersionVector versions;
+  for (quic::QuicTransportVersion version :
+       quic::AllSupportedTransportVersions()) {
+    versions.push_back(
+        quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, version));
+  }
   std::string advertised_versions_list_str =
-      GenerateQuicVersionsListForAltSvcHeader(quic::AllSupportedVersions());
+      GenerateQuicVersionsListForAltSvcHeader(versions);
   std::string altsvc_header =
       base::StringPrintf("Alt-Svc: quic=\":443\"; v=\"%s\"\r\n\r\n",
                          advertised_versions_list_str.c_str());

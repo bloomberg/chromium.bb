@@ -1449,7 +1449,7 @@ TEST_P(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
   ASSERT_TRUE(base::Time::FromUTCString("2036-12-01 10:00:00", &expiration1));
   quic::ParsedQuicVersionVector advertised_versions = {
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                              quic::QUIC_VERSION_44),
+                              quic::QUIC_VERSION_46),
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                               quic::QUIC_VERSION_39)};
   alternative_service_info_vector.push_back(
@@ -1499,7 +1499,7 @@ TEST_P(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
       "{\"quic_servers\":{\"https://mail.google.com:80\":{"
       "\"server_info\":\"quic_server_info1\"}},\"servers\":["
       "{\"https://www.google.com:80\":{\"alternative_service\":[{"
-      "\"advertised_versions\":[39,44],\"expiration\":\"13756212000000000\","
+      "\"advertised_versions\":[39,46],\"expiration\":\"13756212000000000\","
       "\"port\":443,\"protocol_str\":\"quic\"},{\"advertised_versions\":[],"
       "\"expiration\":\"13758804000000000\",\"host\":\"www.google.com\","
       "\"port\":1234,\"protocol_str\":\"h2\"}]}},"
@@ -1523,7 +1523,7 @@ TEST_P(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
       "{\"port\":443,\"protocol_str\":\"quic\"},"
       "{\"port\":123,\"protocol_str\":\"quic\","
       "\"expiration\":\"9223372036854775807\","
-      "\"advertised_versions\":[44,39]}]}");
+      "\"advertised_versions\":[46,39]}]}");
   ASSERT_TRUE(server_value);
   base::DictionaryValue* server_dict;
   ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
@@ -1564,7 +1564,7 @@ TEST_P(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
                                     quic::QUIC_VERSION_39),
             loaded_advertised_versions[0]);
   EXPECT_EQ(quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                                    quic::QUIC_VERSION_44),
+                                    quic::QUIC_VERSION_46),
             loaded_advertised_versions[1]);
 }
 
@@ -1575,7 +1575,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   // #1: Set alternate protocol.
   AlternativeServiceInfoVector alternative_service_info_vector;
   // Quic alternative service set with a single QUIC version:
-  // quic::QUIC_VERSION_44.
+  // quic::QUIC_VERSION_46.
   AlternativeService quic_alternative_service1(kProtoQUIC, "", 443);
   base::Time expiration1;
   ASSERT_TRUE(base::Time::FromUTCString("2036-12-01 10:00:00", &expiration1));
@@ -1624,7 +1624,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   // Quic alternative service set with two advertised QUIC versions.
   quic::ParsedQuicVersionVector advertised_versions = {
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                              quic::QUIC_VERSION_44),
+                              quic::QUIC_VERSION_46),
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                               quic::QUIC_VERSION_39)};
   alternative_service_info_vector_2.push_back(
@@ -1644,7 +1644,7 @@ TEST_P(HttpServerPropertiesManagerTest,
       "{\"quic_servers\":{\"https://mail.google.com:80\":"
       "{\"server_info\":\"quic_server_info1\"}},\"servers\":["
       "{\"https://www.google.com:80\":"
-      "{\"alternative_service\":[{\"advertised_versions\":[39,44],"
+      "{\"alternative_service\":[{\"advertised_versions\":[39,46],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"quic\"}]}}],\"supports_quic\":"
       "{\"address\":\"127.0.0.1\",\"used_quic\":true},\"version\":5}";
@@ -1659,7 +1659,7 @@ TEST_P(HttpServerPropertiesManagerTest,
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                               quic::QUIC_VERSION_39),
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                              quic::QUIC_VERSION_44)};
+                              quic::QUIC_VERSION_46)};
   alternative_service_info_vector_3.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           quic_alternative_service1, expiration1, advertised_versions_2));

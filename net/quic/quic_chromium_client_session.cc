@@ -1364,7 +1364,7 @@ QuicChromiumClientStream* QuicChromiumClientSession::CreateIncomingStream(
 }
 
 QuicChromiumClientStream* QuicChromiumClientSession::CreateIncomingStream(
-    quic::PendingStream pending) {
+    quic::PendingStream* pending) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation(
           "quic_chromium_incoming_pending_session", R"(
@@ -1388,8 +1388,7 @@ QuicChromiumClientStream* QuicChromiumClientSession::CreateIncomingStream(
           "Essential for network access."
       }
   )");
-  return CreateIncomingReliableStreamImpl(std::move(pending),
-                                          traffic_annotation);
+  return CreateIncomingReliableStreamImpl(pending, traffic_annotation);
 }
 
 QuicChromiumClientStream*
@@ -1407,13 +1406,12 @@ QuicChromiumClientSession::CreateIncomingReliableStreamImpl(
 
 QuicChromiumClientStream*
 QuicChromiumClientSession::CreateIncomingReliableStreamImpl(
-    quic::PendingStream pending,
+    quic::PendingStream* pending,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(connection()->connected());
 
   QuicChromiumClientStream* stream = new QuicChromiumClientStream(
-      std::move(pending), this, quic::READ_UNIDIRECTIONAL, net_log_,
-      traffic_annotation);
+      pending, this, quic::READ_UNIDIRECTIONAL, net_log_, traffic_annotation);
   ActivateStream(base::WrapUnique(stream));
   ++num_total_streams_;
   return stream;

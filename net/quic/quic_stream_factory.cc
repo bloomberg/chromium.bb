@@ -1836,7 +1836,7 @@ int QuicStreamFactory::CreateSession(
   config.SetInitialStreamFlowControlWindowToSend(kQuicStreamMaxRecvWindowSize);
   config.SetBytesForConnectionIdToSend(0);
   ConfigureInitialRttEstimate(server_id, &config);
-  if (quic_version < quic::QUIC_VERSION_44 &&
+  if (quic_version <= quic::QUIC_VERSION_43 &&
       !config.HasClientSentConnectionOption(quic::kNSTP,
                                             quic::Perspective::IS_CLIENT)) {
     // Enable the no stop waiting frames connection option by default.
