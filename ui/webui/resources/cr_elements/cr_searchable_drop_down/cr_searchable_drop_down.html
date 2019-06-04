@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 
 <dom-module id="cr-searchable-drop-down">
   <template>
@@ -27,6 +28,25 @@
         box-shadow: 0 2px 6px var(--paper-grey-500);
         min-width: 128px;
         padding: 8px 0;
+      }
+
+      #progress-container {
+        border-radius: 4px;
+        height: 100%;
+        left: 0;
+        overflow: hidden;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        width: 100%;
+      }
+
+      paper-progress {
+        --paper-progress-active-color: var(--google-blue-600);
+        --paper-progress-height: 2px;
+        bottom: 0;
+        position: absolute;
+        width: 100%;
       }
 
       .list-item {
@@ -55,6 +75,10 @@
         placeholder="[[placeholder]]"
         error-message="[[getErrorMessage_(errorMessage, errorMessageAllowed)]]"
         invalid="[[shouldShowErrorMessage_(errorMessage, errorMessageAllowed)]]">
+      <div id="progress-container" slot="suffix">
+        <paper-progress id="loading" indeterminate hidden="[[!showLoading]]">
+        </paper-progress>
+      </div>
     </cr-input>
     <iron-dropdown horizontal-align="left" vertical-align="top"
         vertical-offset="52">

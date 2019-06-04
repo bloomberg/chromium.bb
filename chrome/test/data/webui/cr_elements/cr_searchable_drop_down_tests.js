@@ -132,4 +132,17 @@ suite('cr-searchable-drop-down', function() {
     assertEquals(dropDown.errorMessage, input.$.error.textContent);
     assertFalse(input.invalid);
   });
+
+  // The show-loading attribute should determine whether or not the loading
+  // progress bar is shown.
+  test('progress bar is shown and hidden', function() {
+    const progress = dropDown.$.loading;
+    assertTrue(progress.hidden);
+
+    dropDown.showLoading = true;
+    assertFalse(progress.hidden);
+
+    dropDown.showLoading = false;
+    assertTrue(progress.hidden);
+  });
 });

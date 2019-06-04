@@ -64,6 +64,12 @@ Polymer({
 
     /** @private {boolean} */
     dropdownRefitPending_: Boolean,
+
+    /** @private {boolean} */
+    showLoading: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /**
