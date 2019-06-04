@@ -178,6 +178,8 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
         String template = getContext().getString(R.string.duplicate_download_request_infobar_text);
 
         model.set(ModalDialogProperties.TITLE,
+                getContext().getResources().getString(R.string.menu_download));
+        model.set(ModalDialogProperties.MESSAGE,
                 getDownloadMessageText(getContext(), template).toString());
 
         return model;
