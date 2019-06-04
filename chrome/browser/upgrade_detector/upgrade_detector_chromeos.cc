@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +15,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/rand_util.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
@@ -22,8 +24,10 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::UpdateEngineClient;
@@ -118,7 +122,6 @@ UpgradeDetectorChromeos::UpgradeDetectorChromeos(
       upgrade_notification_timer_(tick_clock),
       initialized_(false),
       weak_factory_(this) {
-  CalculateThresholds();
   // Not all tests provide a PrefService for local_state().
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
@@ -157,14 +160,11 @@ void UpgradeDetectorChromeos::Shutdown() {
 }
 
 base::TimeDelta UpgradeDetectorChromeos::GetHighAnnoyanceLevelDelta() {
-  return high_threshold_ - elevated_threshold_;
+  return high_deadline_ - elevated_deadline_;
 }
 
 base::Time UpgradeDetectorChromeos::GetHighAnnoyanceDeadline() {
-  const base::Time detected_time = upgrade_detected_time();
-  if (detected_time.is_null())
-    return detected_time;
-  return detected_time + high_threshold_;
+  return high_deadline_;
 }
 
 // static
@@ -183,15 +183,63 @@ base::TimeDelta UpgradeDetectorChromeos::GetRelaunchHeadsUpPeriod() {
   return base::TimeDelta::FromMilliseconds(value);
 }
 
-void UpgradeDetectorChromeos::CalculateThresholds() {
+// static
+base::TimeDelta UpgradeDetectorChromeos::GenRandomTimeDelta(
+    base::TimeDelta max) {
+  return max * base::RandDouble();
+}
+
+// static
+base::Time UpgradeDetectorChromeos::AdjustDeadline(base::Time deadline) {
+  // Compute the offset applied to GMT to get local time at |deadline|.
+  const icu::TimeZone& time_zone =
+      chromeos::system::TimezoneSettings::GetInstance()->GetTimezone();
+  UErrorCode status = U_ZERO_ERROR;
+  int32_t raw_offset, dst_offset;
+  time_zone.getOffset(deadline.ToDoubleT() * base::Time::kMillisecondsPerSecond,
+                      true /* local */, raw_offset, dst_offset, status);
+  base::TimeDelta time_zone_offset;
+  if (U_FAILURE(status)) {
+    LOG(ERROR) << "Failed to get time zone offset, error code: " << status;
+    // The fallback case is to get the raw timezone offset ignoring the daylight
+    // saving time.
+    time_zone_offset =
+        base::TimeDelta::FromMilliseconds(time_zone.getRawOffset());
+  } else {
+    time_zone_offset =
+        base::TimeDelta::FromMilliseconds(raw_offset + dst_offset);
+  }
+
+  // To get local midnight add timezone offset to deadline and treat this time
+  // as UTC based to use UTCMidnight(), then subtract timezone offset.
+  auto midnight =
+      (deadline + time_zone_offset).UTCMidnight() - time_zone_offset;
+  const auto day_time = deadline - midnight;
+  // Return the exact deadline if it naturally falls between 2am and 4am.
+  if (day_time >= base::TimeDelta::FromHours(2) &&
+      day_time <= base::TimeDelta::FromHours(4)) {
+    return deadline;
+  }
+  // Advance to the next day if the deadline falls after 4am.
+  if (day_time > base::TimeDelta::FromHours(4))
+    midnight += base::TimeDelta::FromDays(1);
+
+  return midnight + base::TimeDelta::FromHours(2) +
+         GenRandomTimeDelta(base::TimeDelta::FromHours(2));
+}
+
+void UpgradeDetectorChromeos::CalculateDeadlines() {
   base::TimeDelta notification_period = GetRelaunchNotificationPeriod();
-  high_threshold_ = notification_period.is_zero() ? kDefaultHighThreshold
-                                                  : notification_period;
+  if (notification_period.is_zero())
+    notification_period = kDefaultHighThreshold;
+  high_deadline_ =
+      AdjustDeadline(upgrade_detected_time() + notification_period);
+
   base::TimeDelta heads_up_period = GetRelaunchHeadsUpPeriod();
   if (heads_up_period.is_zero())
     heads_up_period = kDefaultHeadsUpPeriod;
-  elevated_threshold_ =
-      high_threshold_ - std::min(heads_up_period, high_threshold_);
+  elevated_deadline_ =
+      std::max(high_deadline_ - heads_up_period, upgrade_detected_time());
 }
 
 void UpgradeDetectorChromeos::OnRelaunchHeadsUpPeriodPrefChanged() {
@@ -215,8 +263,10 @@ void UpgradeDetectorChromeos::OnRelaunchNotificationPeriodPrefChanged() {
 void UpgradeDetectorChromeos::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
   if (status.status == UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-    if (upgrade_detected_time().is_null())
+    if (upgrade_detected_time().is_null()) {
       set_upgrade_detected_time(clock()->Now());
+      CalculateDeadlines();
+    }
 
     if (status.is_rollback) {
       // Powerwash will be required, determine what kind of notification to show
@@ -246,32 +296,33 @@ void UpgradeDetectorChromeos::OnUpdateOverCellularOneTimePermissionGranted() {
 void UpgradeDetectorChromeos::OnThresholdPrefChanged() {
   // Check the current stage and potentially notify observers now if a change to
   // the observed policies results in changes to the thresholds.
-  const base::TimeDelta old_elevated_threshold = elevated_threshold_;
-  const base::TimeDelta old_high_threshold = high_threshold_;
-  CalculateThresholds();
-  if (!upgrade_detected_time().is_null() &&
-      (elevated_threshold_ != old_elevated_threshold ||
-       high_threshold_ != old_high_threshold)) {
+  if (upgrade_detected_time().is_null())
+    return;
+  const base::Time old_elevated_deadline = elevated_deadline_;
+  const base::Time old_high_deadline = high_deadline_;
+  CalculateDeadlines();
+  if (elevated_deadline_ != old_elevated_deadline ||
+      high_deadline_ != old_high_deadline) {
     NotifyOnUpgrade();
   }
 }
 
 void UpgradeDetectorChromeos::NotifyOnUpgrade() {
-  const base::TimeDelta delta = clock()->Now() - upgrade_detected_time();
+  const base::Time current_time = clock()->Now();
   // The delay from now until the next highest notification stage is reached, or
   // zero if the highest notification stage has been reached.
   base::TimeDelta next_delay;
 
   const auto last_stage = upgrade_notification_stage();
   // These if statements must be sorted (highest interval first).
-  if (delta >= high_threshold_) {
+  if (current_time >= high_deadline_) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);
-  } else if (delta >= elevated_threshold_) {
+  } else if (current_time >= elevated_deadline_) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_ELEVATED);
-    next_delay = high_threshold_ - delta;
+    next_delay = high_deadline_ - current_time;
   } else {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_NONE);
-    next_delay = elevated_threshold_ - delta;
+    next_delay = elevated_deadline_ - current_time;
   }
   const auto new_stage = upgrade_notification_stage();
 

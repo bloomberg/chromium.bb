@@ -49,23 +49,28 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   UpgradeDetectorChromeos(const base::Clock* clock,
                           const base::TickClock* tick_clock);
 
+  // Return adjusted high annoyance deadline which takes place at night between
+  // 2am and 4am. If |deadline| takes place after 4am it is prolonged for the
+  // next day night between 2am and 4am.
+  static base::Time AdjustDeadline(base::Time deadline);
+
  private:
   friend class base::NoDestructor<UpgradeDetectorChromeos>;
+
+  // Return random TimeDelta uniformly selected between zero and |max|.
+  static base::TimeDelta GenRandomTimeDelta(base::TimeDelta max);
 
   // Returns the period between first notification and Recommended / Required
   // deadline specified via the RelaunchHeadsUpPeriod policy setting, or a
   // zero delta if unset or out of range.
   static base::TimeDelta GetRelaunchHeadsUpPeriod();
 
-  // Calculates |elevated_threshold_| and |high_threshold_|.
-  void CalculateThresholds();
+  // Calculates |elevated_deadline_| and |high_deadline_|.
+  void CalculateDeadlines();
 
   // Handles a change to the browser.relaunch_heads_up_period Local State
   // preference. Calls NotifyUpgrade if an upgrade is available.
   void OnRelaunchHeadsUpPeriodPrefChanged();
-
-  // Returns the threshold to reach high annoyance level.
-  static base::TimeDelta DetermineHighThreshold();
 
   // UpgradeDetector:
   void OnRelaunchNotificationPeriodPrefChanged() override;
@@ -86,11 +91,11 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   void OnChannelsReceived(std::string current_channel,
                           std::string target_channel);
 
-  // The delta from upgrade detection until elevated annoyance level is reached.
-  base::TimeDelta elevated_threshold_;
+  // The time when elevated annoyance deadline is reached.
+  base::Time elevated_deadline_;
 
-  // The delta from upgrade detection until high annoyance level is reached.
-  base::TimeDelta high_threshold_;
+  // The time when high annoyance deadline is reached.
+  base::Time high_deadline_;
 
   // Observes changes to the browser.relaunch_heads_up_period Local State
   // preference.

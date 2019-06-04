@@ -20,9 +20,11 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace {
 
@@ -34,6 +36,7 @@ class TestUpgradeDetectorChromeos : public UpgradeDetectorChromeos {
   ~TestUpgradeDetectorChromeos() override = default;
 
   // Exposed for testing.
+  using UpgradeDetectorChromeos::AdjustDeadline;
   using UpgradeDetectorChromeos::UPGRADE_AVAILABLE_REGULAR;
 
   DISALLOW_COPY_AND_ASSIGN(TestUpgradeDetectorChromeos);
@@ -63,7 +66,8 @@ class MockUpgradeObserver : public UpgradeObserver {
 class UpgradeDetectorChromeosTest : public ::testing::Test {
  protected:
   UpgradeDetectorChromeosTest()
-      : scoped_task_environment_(
+      : utc_(icu::TimeZone::createTimeZone("Etc/GMT")),
+        scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         scoped_local_state_(TestingBrowserProcess::GetGlobal()) {
     // Disable the detector's check to see if autoupdates are inabled.
@@ -78,6 +82,10 @@ class UpgradeDetectorChromeosTest : public ::testing::Test {
     dbus_setter->SetUpdateEngineClient(
         std::unique_ptr<chromeos::UpdateEngineClient>(
             fake_update_engine_client_));
+    // Set UTC timezone
+    chromeos::system::TimezoneSettings::GetInstance()->SetTimezone(*utc_);
+    // Fast forward to align deadline be at 2am
+    FastForwardBy(base::TimeDelta::FromHours(2));
   }
 
   const base::Clock* GetMockClock() {
@@ -132,6 +140,7 @@ class UpgradeDetectorChromeosTest : public ::testing::Test {
   }
 
  private:
+  std::unique_ptr<icu::TimeZone> utc_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ScopedTestingLocalState scoped_local_state_;
 
@@ -355,6 +364,62 @@ TEST_F(UpgradeDetectorChromeosTest, OnUpgradeRecommendedCalledOnce) {
   SetHeadsUpPeriodPref(base::TimeDelta::FromDays(8));
   RunUntilIdle();
   ::testing::Mock::VerifyAndClear(&mock_observer);
+
+  upgrade_detector.Shutdown();
+  RunUntilIdle();
+}
+
+TEST_F(UpgradeDetectorChromeosTest, TimezoneAdjustment) {
+  TestUpgradeDetectorChromeos upgrade_detector(GetMockClock(),
+                                               GetMockTickClock());
+  upgrade_detector.Init();
+  const auto delta = base::TimeDelta::FromDays(7);
+
+  // Europe/Moscow timezone
+  std::unique_ptr<icu::TimeZone> msk_timezone(
+      icu::TimeZone::createTimeZone("Europe/Moscow"));
+  chromeos::system::TimezoneSettings::GetInstance()->SetTimezone(*msk_timezone);
+  base::Time detect_time;
+  ASSERT_TRUE(
+      base::Time::FromString("1 Jan 2018 06:00 UTC+0300", &detect_time));
+  base::Time deadline, deadline_lower_border, deadline_upper_border;
+  ASSERT_TRUE(base::Time::FromString("9 Jan 2018 02:00 UTC+0300",
+                                     &deadline_lower_border));
+  ASSERT_TRUE(base::Time::FromString("9 Jan 2018 04:00 UTC+0300",
+                                     &deadline_upper_border));
+  deadline = upgrade_detector.AdjustDeadline(detect_time + delta);
+  EXPECT_GE(deadline, deadline_lower_border);
+  EXPECT_LE(deadline, deadline_upper_border);
+
+  // Pacific/Midway timezone
+  std::unique_ptr<icu::TimeZone> midway_timezone(
+      icu::TimeZone::createTimeZone("Pacific/Midway"));
+  chromeos::system::TimezoneSettings::GetInstance()->SetTimezone(
+      *midway_timezone);
+  ASSERT_TRUE(
+      base::Time::FromString("1 Jan 2018 23:00 UTC-1100", &detect_time));
+  ASSERT_TRUE(base::Time::FromString("9 Jan 2018 02:00 UTC-1100",
+                                     &deadline_lower_border));
+  ASSERT_TRUE(base::Time::FromString("9 Jan 2018 04:00 UTC-1100",
+                                     &deadline_upper_border));
+  deadline = upgrade_detector.AdjustDeadline(detect_time + delta);
+  EXPECT_GE(deadline, deadline_lower_border);
+  EXPECT_LE(deadline, deadline_upper_border);
+
+  // Pacific/Kiritimati timezone
+  std::unique_ptr<icu::TimeZone> kiritimati_timezone(
+      icu::TimeZone::createTimeZone("Pacific/Kiritimati"));
+  chromeos::system::TimezoneSettings::GetInstance()->SetTimezone(
+      *kiritimati_timezone);
+  ASSERT_TRUE(
+      base::Time::FromString("1 Jan 2018 16:30 UTC+1400", &detect_time));
+  ASSERT_TRUE(base::Time::FromString("9 Jan 2018 02:00 UTC+1400",
+                                     &deadline_lower_border));
+  ASSERT_TRUE(base::Time::FromString("9 Jan 2018 04:00 UTC+1400",
+                                     &deadline_upper_border));
+  deadline = upgrade_detector.AdjustDeadline(detect_time + delta);
+  EXPECT_GE(deadline, deadline_lower_border);
+  EXPECT_LE(deadline, deadline_upper_border);
 
   upgrade_detector.Shutdown();
   RunUntilIdle();
