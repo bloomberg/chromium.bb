@@ -155,9 +155,8 @@ void SigninManagerAndroid::OnSignInCompleted(
 
   // TODO(crbug.com/889902): Migrate to IdentityManager once there's an
   // API mapping for SigninManager::SignIn().
-  SigninManager::FromSigninManagerBase(
-      IdentityManagerFactory::GetForProfile(profile_)->GetSigninManager())
-      ->SignIn(base::android::ConvertJavaStringToUTF8(env, username));
+  IdentityManagerFactory::GetForProfile(profile_)->GetSigninManager()->SignIn(
+      base::android::ConvertJavaStringToUTF8(env, username));
 }
 
 void SigninManagerAndroid::SignOut(JNIEnv* env,

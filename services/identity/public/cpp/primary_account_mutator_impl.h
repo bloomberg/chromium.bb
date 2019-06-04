@@ -9,7 +9,7 @@
 
 class AccountTrackerService;
 class PrefService;
-class SigninManager;
+class SigninManagerBase;
 
 namespace identity {
 
@@ -18,7 +18,7 @@ namespace identity {
 class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
  public:
   PrimaryAccountMutatorImpl(AccountTrackerService* account_tracker,
-                            SigninManager* signin_manager,
+                            SigninManagerBase* signin_manager,
                             PrefService* pref_service);
   ~PrimaryAccountMutatorImpl() override;
 
@@ -33,7 +33,7 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
   // Pointers to the services used by the PrimaryAccountMutatorImpl. They
   // *must* outlive this instance.
   AccountTrackerService* account_tracker_ = nullptr;
-  SigninManager* signin_manager_ = nullptr;
+  SigninManagerBase* signin_manager_ = nullptr;
   PrefService* pref_service_ = nullptr;
 };
 

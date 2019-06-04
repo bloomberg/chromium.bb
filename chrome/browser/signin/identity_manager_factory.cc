@@ -38,24 +38,16 @@
 
 namespace {
 
-#if !defined(OS_CHROMEOS)
-using ConcreteSigninManager = SigninManager;
-#else
-using ConcreteSigninManager = SigninManagerBase;
-#endif
-
 // Helper function returning a newly constructed PrimaryAccountMutator for
 // |profile|.  May return null if mutation of the signed-in state is not
 // supported on the current platform.
 std::unique_ptr<identity::PrimaryAccountMutator> BuildPrimaryAccountMutator(
     Profile* profile,
     AccountTrackerService* account_tracker_service,
-    ConcreteSigninManager* signin_manager) {
+    SigninManagerBase* signin_manager) {
 #if !defined(OS_CHROMEOS)
   return std::make_unique<identity::PrimaryAccountMutatorImpl>(
-      account_tracker_service,
-      SigninManager::FromSigninManagerBase(signin_manager),
-      profile->GetPrefs());
+      account_tracker_service, signin_manager, profile->GetPrefs());
 #else
   return nullptr;
 #endif
@@ -78,19 +70,19 @@ std::unique_ptr<identity::AccountsMutator> BuildAccountsMutator(
 #endif
 }
 
-std::unique_ptr<ConcreteSigninManager> BuildSigninManager(
+std::unique_ptr<SigninManagerBase> BuildSigninManager(
     Profile* profile,
     AccountTrackerService* account_tracker_service,
     ProfileOAuth2TokenService* token_service) {
-  std::unique_ptr<ConcreteSigninManager> signin_manager;
+  std::unique_ptr<SigninManagerBase> signin_manager;
   SigninClient* client =
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile);
 #if defined(OS_CHROMEOS)
-  signin_manager = std::make_unique<ConcreteSigninManager>(
+  signin_manager = std::make_unique<SigninManagerBase>(
       client, token_service, account_tracker_service,
       AccountConsistencyModeManager::GetMethodForProfile(profile));
 #else
-  signin_manager = std::make_unique<ConcreteSigninManager>(
+  signin_manager = std::make_unique<SigninManager>(
       client, token_service, account_tracker_service,
       AccountConsistencyModeManager::GetMethodForProfile(profile));
 #endif
@@ -187,7 +179,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
   auto gaia_cookie_manager_service = std::make_unique<GaiaCookieManagerService>(
       token_service.get(), ChromeSigninClientFactory::GetForProfile(profile));
 
-  std::unique_ptr<ConcreteSigninManager> signin_manager = BuildSigninManager(
+  std::unique_ptr<SigninManagerBase> signin_manager = BuildSigninManager(
       profile, account_tracker_service.get(), token_service.get());
 
   std::unique_ptr<identity::PrimaryAccountMutator> primary_account_mutator =

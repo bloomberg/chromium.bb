@@ -198,13 +198,12 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
       signin_client, token_service.get(), account_tracker_service.get(),
       std::make_unique<image_fetcher::FakeImageDecoder>());
 
-#if defined(OS_CHROMEOS)
   std::unique_ptr<SigninManagerBase> signin_manager =
+#if defined(OS_CHROMEOS)
       std::make_unique<SigninManagerBase>(signin_client, token_service.get(),
                                           account_tracker_service.get(),
                                           account_consistency);
 #else
-  std::unique_ptr<SigninManagerBase> signin_manager =
       std::make_unique<SigninManager>(signin_client, token_service.get(),
                                       account_tracker_service.get(),
                                       account_consistency);
@@ -220,8 +219,7 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
 
 #if !defined(OS_CHROMEOS)
   primary_account_mutator = std::make_unique<PrimaryAccountMutatorImpl>(
-      account_tracker_service.get(),
-      static_cast<SigninManager*>(signin_manager.get()), pref_service);
+      account_tracker_service.get(), signin_manager.get(), pref_service);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

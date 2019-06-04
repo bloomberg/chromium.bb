@@ -101,9 +101,7 @@ CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
   // test-only API.
   identity_manager->LegacySetPrimaryAccount(gaia_id, email);
 #else
-  SigninManager* real_signin_manager =
-      SigninManager::FromSigninManagerBase(signin_manager);
-  real_signin_manager->SignIn(email);
+  signin_manager->SignIn(email);
 #endif
 
   DCHECK(signin_manager->IsAuthenticated());
@@ -163,8 +161,7 @@ void ClearPrimaryAccount(IdentityManager* identity_manager,
   TestIdentityManagerObserver signout_observer(identity_manager);
   signout_observer.SetOnPrimaryAccountClearedCallback(run_loop.QuitClosure());
 
-  SigninManager* real_signin_manager = SigninManager::FromSigninManagerBase(
-      identity_manager->GetSigninManager());
+  SigninManagerBase* signin_manager = identity_manager->GetSigninManager();
   signin_metrics::ProfileSignout signout_source_metric =
       signin_metrics::SIGNOUT_TEST;
   signin_metrics::SignoutDelete signout_delete_metric =
@@ -172,16 +169,15 @@ void ClearPrimaryAccount(IdentityManager* identity_manager,
 
   switch (policy) {
     case ClearPrimaryAccountPolicy::DEFAULT:
-      real_signin_manager->SignOut(signout_source_metric,
-                                   signout_delete_metric);
+      signin_manager->SignOut(signout_source_metric, signout_delete_metric);
       break;
     case ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS:
-      real_signin_manager->SignOutAndKeepAllAccounts(signout_source_metric,
-                                                     signout_delete_metric);
+      signin_manager->SignOutAndKeepAllAccounts(signout_source_metric,
+                                                signout_delete_metric);
       break;
     case ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS:
-      real_signin_manager->SignOutAndRemoveAllAccounts(signout_source_metric,
-                                                       signout_delete_metric);
+      signin_manager->SignOutAndRemoveAllAccounts(signout_source_metric,
+                                                  signout_delete_metric);
       break;
   }
 

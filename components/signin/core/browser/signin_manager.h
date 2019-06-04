@@ -52,11 +52,6 @@ class SigninManager : public SigninManagerBase,
                 signin::AccountConsistencyMethod account_consistency);
   ~SigninManager() override;
 
-  // Returns |manager| as a SigninManager instance. Relies on the fact that on
-  // platforms where signin_manager.* is built, all SigninManagerBase instances
-  // are actually SigninManager instances.
-  static SigninManager* FromSigninManagerBase(SigninManagerBase* manager);
-
   // On platforms where SigninManager is responsible for dealing with
   // invalid username policy updates, we need to check this during
   // initialization and sign the user out.

@@ -60,7 +60,7 @@ std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
   return account_fetcher_service;
 }
 
-std::unique_ptr<SigninManager> BuildSigninManager(
+std::unique_ptr<SigninManagerBase> BuildSigninManager(
     ios::ChromeBrowserState* chrome_browser_state,
     AccountTrackerService* account_tracker_service,
     ProfileOAuth2TokenService* token_service) {
@@ -139,7 +139,7 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
       token_service.get(),
       SigninClientFactory::GetForBrowserState(browser_state));
 
-  std::unique_ptr<SigninManager> signin_manager = BuildSigninManager(
+  std::unique_ptr<SigninManagerBase> signin_manager = BuildSigninManager(
       browser_state, account_tracker_service.get(), token_service.get());
 
   auto primary_account_mutator =

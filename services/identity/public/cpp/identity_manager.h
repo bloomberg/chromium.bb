@@ -22,10 +22,6 @@
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/scope_set.h"
 
-#if !defined(OS_CHROMEOS)
-#include "components/signin/core/browser/signin_manager.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #endif

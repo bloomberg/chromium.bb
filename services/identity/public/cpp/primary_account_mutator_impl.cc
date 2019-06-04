@@ -8,14 +8,14 @@
 
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 
 namespace identity {
 
 PrimaryAccountMutatorImpl::PrimaryAccountMutatorImpl(
     AccountTrackerService* account_tracker,
-    SigninManager* signin_manager,
+    SigninManagerBase* signin_manager,
     PrefService* pref_service)
     : account_tracker_(account_tracker),
       signin_manager_(signin_manager),

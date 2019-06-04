@@ -72,8 +72,8 @@ class SigninManagerBase {
 // invariant that any SigninManagerBase object can be cast to a
 // SigninManager object when not on ChromeOS. Make the constructor private
 // and add SigninManager as a friend to support this.
-// TODO(883648): Eliminate the need to downcast SigninManagerBase to
-// SigninManager and then eliminate this as well.
+// TODO(952766): Eliminate this once SigninManager and SigninManagerBase are
+// merged.
 #if !defined(OS_CHROMEOS)
  private:
 #endif
