@@ -1,14 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="shared_style.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
 <dom-module id="app-management-permission-view-header">
   <template>
-    <style include="app-management-shared-css paper-button-style">
+    <style include="app-management-shared-css">
       :host {
         align-items: center;
         display: flex;
@@ -52,10 +51,10 @@
       <template is="dom-if" if="[[isPolicyApp_(app_)]]">
         <iron-icon id="policy-indicator" icon="cr:domain"></iron-icon>
       </template>
-      <paper-button id="uninstall-button" on-click="onClickUninstallButton_"
-        disabled$="[[getUninstallButtonDisableState_(app_)]]">
+      <cr-button id="uninstall-button" on-click="onClickUninstallButton_"
+          disabled$="[[getUninstallButtonDisableState_(app_)]]">
         $i18n{uninstall}
-      </paper-button>
+      </cr-button>
     </div>
   </template>
   <script src="permission_view_header.js"></script>
