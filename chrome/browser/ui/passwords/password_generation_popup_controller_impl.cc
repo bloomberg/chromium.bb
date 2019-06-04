@@ -22,6 +22,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -77,16 +78,15 @@ base::WeakPtr<PasswordGenerationPopupControllerImpl>
 PasswordGenerationPopupControllerImpl::GetOrCreate(
     base::WeakPtr<PasswordGenerationPopupControllerImpl> previous,
     const gfx::RectF& bounds,
-    const autofill::PasswordForm& form,
-    const base::string16& generation_element,
-    uint32_t max_length,
+    const autofill::password_generation::PasswordGenerationUIData& ui_data,
     const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
     content::RenderFrameHost* frame) {
   if (previous.get() && previous->element_bounds() == bounds &&
       previous->web_contents() == web_contents &&
-      previous->driver_.get() == driver.get()) {
+      previous->driver_.get() == driver.get() &&
+      previous->generation_element_id_ == ui_data.generation_element_id) {
     return previous;
   }
 
@@ -94,31 +94,29 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
     previous->Hide();
 
   PasswordGenerationPopupControllerImpl* controller =
-      new PasswordGenerationPopupControllerImpl(
-          bounds, form, generation_element, max_length, driver, observer,
-          web_contents, frame);
+      new PasswordGenerationPopupControllerImpl(bounds, ui_data, driver,
+                                                observer, web_contents, frame);
   return controller->GetWeakPtr();
 }
 
 PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
     const gfx::RectF& bounds,
-    const autofill::PasswordForm& form,
-    const base::string16& generation_element,
-    uint32_t max_length,
+    const autofill::password_generation::PasswordGenerationUIData& ui_data,
     const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
     content::RenderFrameHost* frame)
     : content::WebContentsObserver(web_contents),
       view_(nullptr),
-      form_(form),
+      form_(ui_data.password_form),
       driver_(driver),
       observer_(observer),
-      form_signature_(autofill::CalculateFormSignature(form.form_data)),
-      field_signature_(
-          autofill::CalculateFieldSignatureByNameAndType(generation_element,
-                                                         "password")),
-      max_length_(max_length),
+      form_signature_(autofill::CalculateFormSignature(form_.form_data)),
+      field_signature_(autofill::CalculateFieldSignatureByNameAndType(
+          ui_data.generation_element,
+          "password")),
+      generation_element_id_(ui_data.generation_element_id),
+      max_length_(ui_data.max_length),
       // TODO(estade): use correct text direction.
       controller_common_(bounds,
                          base::i18n::LEFT_TO_RIGHT,
@@ -196,7 +194,9 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
   if (state_ != kOfferGeneration)
     return;
 
-  driver_->GeneratedPasswordAccepted(current_password_);
+  driver_->GetPasswordManager()->OnGeneratedPasswordAccepted(
+      driver_.get(), form_.form_data, generation_element_id_,
+      current_password_);
   Hide();
 }
 

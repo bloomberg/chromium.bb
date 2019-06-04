@@ -734,7 +734,8 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
 
 void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     const gfx::RectF& bounds,
-    const autofill::PasswordForm& form) {
+    const autofill::PasswordForm& form,
+    uint32_t field_renderer_id) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
           password_generation_driver_bindings_.GetCurrentTargetFrame(), form,
           BadMessageReason::CPMD_BAD_ORIGIN_SHOW_PASSWORD_EDITING_POPUP))
@@ -746,10 +747,11 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
       GetBoundsInScreenSpace(TransformToRootCoordinates(
           password_generation_driver_bindings_.GetCurrentTargetFrame(),
           bounds));
+  autofill::password_generation::PasswordGenerationUIData ui_data(
+      bounds, 0 /*max_length*/, base::string16() /*generation_element*/,
+      field_renderer_id, base::i18n::TextDirection(), form);
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
-      popup_controller_, element_bounds_in_screen_space, form,
-      base::string16(),  // No generation_element needed for editing.
-      0,                 // Unspecified max length.
+      popup_controller_, element_bounds_in_screen_space, ui_data,
       driver->AsWeakPtr(), observer_, web_contents(),
       password_generation_driver_bindings_.GetCurrentTargetFrame());
   DCHECK(!form.password_value.empty());
@@ -1029,9 +1031,9 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
       is_manually_triggered);
 
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
-      popup_controller_, element_bounds_in_screen_space, ui_data.password_form,
-      ui_data.generation_element, ui_data.max_length, driver->AsWeakPtr(),
-      observer_, web_contents(), driver->render_frame_host());
+      popup_controller_, element_bounds_in_screen_space, ui_data,
+      driver->AsWeakPtr(), observer_, web_contents(),
+      driver->render_frame_host());
   popup_controller_->Show(PasswordGenerationPopupController::kOfferGeneration);
 }
 

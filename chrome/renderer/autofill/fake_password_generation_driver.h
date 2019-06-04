@@ -34,9 +34,10 @@ class FakePasswordGenerationDriver
   MOCK_METHOD1(
       AutomaticGenerationAvailable,
       void(const autofill::password_generation::PasswordGenerationUIData&));
-  MOCK_METHOD2(ShowPasswordEditingPopup,
-               void(const gfx::RectF& bounds,
-                    const autofill::PasswordForm& form));
+  MOCK_METHOD3(ShowPasswordEditingPopup,
+               void(const gfx::RectF&,
+                    const autofill::PasswordForm&,
+                    uint32_t));
   MOCK_METHOD0(PasswordGenerationRejectedByTyping, void());
   MOCK_METHOD1(PresaveGeneratedPassword,
                void(const autofill::PasswordForm& password_form));

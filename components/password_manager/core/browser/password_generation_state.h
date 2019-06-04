@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "components/autofill/core/common/password_form.h"
@@ -15,10 +16,12 @@
 namespace password_manager {
 
 class FormSaver;
+class PasswordManagerClient;
+class PasswordManagerDriver;
 
 class PasswordGenerationState {
  public:
-  explicit PasswordGenerationState(FormSaver* form_saver);
+  PasswordGenerationState(FormSaver* form_saver, PasswordManagerClient* client);
   ~PasswordGenerationState();
   PasswordGenerationState(const PasswordGenerationState& rhs) = delete;
   PasswordGenerationState& operator=(const PasswordGenerationState&) = delete;
@@ -31,6 +34,14 @@ class PasswordGenerationState {
   const base::string16& generated_password() const {
     return presaved_->password_value;
   }
+
+  // Called when user wants to start generation flow for |generated|. If there
+  // is no username conflict, the message is synchronously passed to |driver|.
+  // Otherwise, the UI on the client is invoked to ask for overwrite permission.
+  void GeneratedPasswordAccepted(
+      const autofill::PasswordForm& generated,
+      const std::vector<const autofill::PasswordForm*>& matches,
+      base::WeakPtr<PasswordManagerDriver> driver);
 
   // Called when generated password is accepted or changed by user.
   void PresaveGeneratedPassword(autofill::PasswordForm generated);
@@ -54,6 +65,8 @@ class PasswordGenerationState {
  private:
   // Weak reference to the interface for saving credentials.
   FormSaver* const form_saver_;
+  // The client for the password form.
+  PasswordManagerClient* const client_;
   // Stores the pre-saved credential.
   base::Optional<autofill::PasswordForm> presaved_;
   // Interface to get current time.

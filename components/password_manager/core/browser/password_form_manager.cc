@@ -433,7 +433,7 @@ void PasswordFormManager::PresaveGeneratedPassword(
 
   if (!generation_state_) {
     generation_state_ =
-        std::make_unique<PasswordGenerationState>(form_saver_.get());
+        std::make_unique<PasswordGenerationState>(form_saver_.get(), client_);
   }
   if (!base::ContainsKey(best_matches_, form.username_value) ||
       form.username_value.empty()) {

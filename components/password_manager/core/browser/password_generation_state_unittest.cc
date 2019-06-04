@@ -10,6 +10,7 @@
 #include "base/test/simple_test_clock.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,6 +74,7 @@ class PasswordGenerationStateTest : public testing::Test {
   MockPasswordStore& store() { return *mock_store_; }
   PasswordGenerationState& state() { return generation_state_; }
   FormSaverImpl& form_saver() { return form_saver_; }
+  StubPasswordManagerClient& client() { return client_; }
 
  private:
   // For the MockPasswordStore.
@@ -80,13 +82,14 @@ class PasswordGenerationStateTest : public testing::Test {
   scoped_refptr<MockPasswordStore> mock_store_;
   // Test with the real form saver for better robustness.
   FormSaverImpl form_saver_;
+  StubPasswordManagerClient client_;
   PasswordGenerationState generation_state_;
 };
 
 PasswordGenerationStateTest::PasswordGenerationStateTest()
     : mock_store_(new testing::StrictMock<MockPasswordStore>()),
       form_saver_(mock_store_.get()),
-      generation_state_(&form_saver_) {
+      generation_state_(&form_saver_, &client_) {
   auto clock = std::make_unique<base::SimpleTestClock>();
   clock->SetNow(base::Time::FromTimeT(kTime));
   generation_state_.set_clock(std::move(clock));
@@ -297,7 +300,8 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_CloneUpdates) {
 
 // Check that a clone can still work after the original is destroyed.
 TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_CloneSurvives) {
-  auto original = std::make_unique<PasswordGenerationState>(&form_saver());
+  auto original =
+      std::make_unique<PasswordGenerationState>(&form_saver(), &client());
   const PasswordForm generated = CreateGenerated();
 
   EXPECT_CALL(store(), AddLogin(_));

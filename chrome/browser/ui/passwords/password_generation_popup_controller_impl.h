@@ -39,6 +39,9 @@ class PasswordManagerDriver;
 namespace autofill {
 struct PasswordForm;
 struct Suggestion;
+namespace password_generation {
+struct PasswordGenerationUIData;
+}  // namespace password_generation
 }  // namespace autofill
 
 class PasswordGenerationPopupObserver;
@@ -64,19 +67,13 @@ class PasswordGenerationPopupControllerImpl
  public:
   // Create a controller or return |previous| if it is suitable. Will hide
   // |previous| if it is not returned. |bounds| is the bounds of the element
-  // that we are showing the dropdown for in screen space. |form| is the
-  // identifier for the form that we are filling, and is used to notify
-  // |password_manager| if the password is generated. |generation_element| is
-  // the name of the element for which the password will be generated.
-  // |max_length| is used to determine the length of the password shown, 0 if
-  // unbound. If not NULL, |observer| will be notified of changes of the popup
-  // state.
+  // that we are showing the dropdown for in screen space. |ui_data| contains
+  // parameters for generation a passwords. If not NULL, |observer| will be
+  // notified of changes of the popup state.
   static base::WeakPtr<PasswordGenerationPopupControllerImpl> GetOrCreate(
       base::WeakPtr<PasswordGenerationPopupControllerImpl> previous,
       const gfx::RectF& bounds,
-      const autofill::PasswordForm& form,
-      const base::string16& generation_element,
-      uint32_t max_length,
+      const autofill::password_generation::PasswordGenerationUIData& ui_data,
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
@@ -116,9 +113,7 @@ class PasswordGenerationPopupControllerImpl
  protected:
   PasswordGenerationPopupControllerImpl(
       const gfx::RectF& bounds,
-      const autofill::PasswordForm& form,
-      const base::string16& generation_element,
-      uint32_t max_length,
+      const autofill::password_generation::PasswordGenerationUIData& ui_data,
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
@@ -164,22 +159,25 @@ class PasswordGenerationPopupControllerImpl
   // Accept password if it's selected.
   bool PossiblyAcceptPassword();
 
-  autofill::PasswordForm form_;
+  const autofill::PasswordForm form_;
 
-  base::WeakPtr<password_manager::PasswordManagerDriver> driver_;
+  base::WeakPtr<password_manager::PasswordManagerDriver> const driver_;
 
   // May be NULL.
-  PasswordGenerationPopupObserver* observer_;
+  PasswordGenerationPopupObserver* const observer_;
 
   // Signature of the form for which password generation is triggered.
-  autofill::FormSignature form_signature_;
+  const autofill::FormSignature form_signature_;
 
   // Signature of the field for which password generation is triggered.
-  autofill::FieldSignature field_signature_;
+  const autofill::FieldSignature field_signature_;
+
+  // Renderer ID of the generation element.
+  const uint32_t generation_element_id_;
 
   // Maximum length of the password to be generated. 0 represents an unbound
   // maximum length.
-  uint32_t max_length_;
+  const uint32_t max_length_;
 
   // Contains common popup data.
   const autofill::PopupControllerCommon controller_common_;

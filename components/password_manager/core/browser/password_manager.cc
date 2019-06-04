@@ -411,6 +411,26 @@ void PasswordManager::GenerationAvailableForForm(const PasswordForm& form) {
   }
 }
 
+void PasswordManager::OnGeneratedPasswordAccepted(
+    PasswordManagerDriver* driver,
+    const autofill::FormData& form_data,
+    uint32_t generation_element_id,
+    const base::string16& password) {
+  if (IsNewFormParsingForSavingEnabled()) {
+    NewPasswordFormManager* manager = GetMatchedManager(driver, form_data);
+    if (manager) {
+      manager->OnGeneratedPasswordAccepted(form_data, generation_element_id,
+                                           password);
+    } else {
+      // OnPresaveGeneratedPassword records the histogram in all other cases.
+      UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
+                            true);
+    }
+  } else {
+    driver->GeneratedPasswordAccepted(password);
+  }
+}
+
 void PasswordManager::OnPresaveGeneratedPassword(PasswordManagerDriver* driver,
                                                  const PasswordForm& form) {
   DCHECK(client_->IsSavingAndFillingEnabled(form.origin));

@@ -625,7 +625,7 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   EXPECT_CALL(fake_pw_client_,
               PresaveGeneratedPassword(testing::Field(
                   &autofill::PasswordForm::password_value, edited_password)));
-  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
+  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _, _));
   SimulateUserInputChangeForElement(&first_password_element,
                                     edited_password_ascii);
   EXPECT_EQ(edited_password, first_password_element.Value().Utf16());
@@ -662,7 +662,7 @@ TEST_F(PasswordGenerationAgentTest, EditingEventsTest) {
 
   // Start removing characters one by one and observe the events sent to the
   // browser.
-  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
+  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _, _));
   FocusField("first_password");
   fake_pw_client_.Flush();
   testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
@@ -826,7 +826,7 @@ TEST_F(PasswordGenerationAgentTest, MinimumLengthForEditedPassword) {
   testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
 
   // Delete most of the password.
-  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
+  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _, _));
   EXPECT_CALL(fake_pw_client_, AutomaticGenerationAvailable(_)).Times(0);
   FocusField("first_password");
   size_t max_chars_to_delete =
@@ -1089,7 +1089,7 @@ TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
     password_generation_->GeneratedPasswordAccepted(password);
     base::RunLoop().RunUntilIdle();
 
-    EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
+    EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _, _));
     FocusField(test_case.generation_element);
     EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(testing::_));
     SimulateUserTypingASCIICharacter('a', true);
@@ -1102,7 +1102,7 @@ TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
     base::RunLoop().RunUntilIdle();
     testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
 
-    EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
+    EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _, _));
     FocusField(test_case.generation_element);
     EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
     for (size_t i = 0; i < password.length(); ++i)
@@ -1216,7 +1216,7 @@ TEST_F(PasswordGenerationAgentTest, RevealPassword) {
   for (bool clickOnInputField : {false, true}) {
     SCOPED_TRACE(testing::Message("clickOnInputField = ") << clickOnInputField);
     // Click on the generation field to reveal the password value.
-    EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
+    EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _, _));
     FocusField(kGenerationElementId);
     fake_pw_client_.Flush();
 
@@ -1326,7 +1326,7 @@ TEST_F(PasswordGenerationAgentTest, PasswordUnmaskedUntilCompleteDeletion) {
 
   // Delete characters of the generated password until only
   // |kMinimumLengthForEditedPassword| - 1 chars remain.
-  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
+  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _, _));
   FocusField(kGenerationElementId);
   EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
   EXPECT_CALL(fake_pw_client_, AutomaticGenerationAvailable(_));
@@ -1380,7 +1380,7 @@ TEST_F(PasswordGenerationAgentTest, ShortPasswordMaskedAfterChangingFocus) {
 
   // Delete characters of the generated password until only
   // |kMinimumLengthForEditedPassword| - 1 chars remain.
-  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
+  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _, _));
   FocusField(kGenerationElementId);
   EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
   size_t max_chars_to_delete =

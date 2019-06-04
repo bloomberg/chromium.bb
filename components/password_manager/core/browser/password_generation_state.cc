@@ -8,21 +8,33 @@
 
 #include "base/time/default_clock.h"
 #include "components/password_manager/core/browser/form_saver.h"
+#include "components/password_manager/core/browser/password_manager_driver.h"
 
 namespace password_manager {
 
 using autofill::PasswordForm;
 
-PasswordGenerationState::PasswordGenerationState(FormSaver* form_saver)
-    : form_saver_(form_saver), clock_(new base::DefaultClock) {}
+PasswordGenerationState::PasswordGenerationState(FormSaver* form_saver,
+                                                 PasswordManagerClient* client)
+    : form_saver_(form_saver),
+      client_(client),
+      clock_(new base::DefaultClock) {}
 
 PasswordGenerationState::~PasswordGenerationState() = default;
 
 std::unique_ptr<PasswordGenerationState> PasswordGenerationState::Clone(
     FormSaver* form_saver) const {
-  auto clone = std::make_unique<PasswordGenerationState>(form_saver);
+  auto clone = std::make_unique<PasswordGenerationState>(form_saver, client_);
   clone->presaved_ = presaved_;
   return clone;
+}
+
+void PasswordGenerationState::GeneratedPasswordAccepted(
+    const PasswordForm& generated,
+    const std::vector<const autofill::PasswordForm*>& matches,
+    base::WeakPtr<PasswordManagerDriver> driver) {
+  // TODO(936011): more logic is coming.
+  driver->GeneratedPasswordAccepted(generated.password_value);
 }
 
 void PasswordGenerationState::PresaveGeneratedPassword(PasswordForm generated) {

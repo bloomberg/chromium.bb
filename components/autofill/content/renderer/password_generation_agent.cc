@@ -549,6 +549,8 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword(
             current_generation_item_->generation_element_.MaxLength(),
             current_generation_item_->generation_element_.NameForAutofill()
                 .Utf16(),
+            current_generation_item_->generation_element_
+                .UniqueRendererFormControlId(),
             GetTextDirectionForElement(
                 current_generation_item_->generation_element_),
             current_generation_item_->form_);
@@ -837,6 +839,8 @@ void PasswordGenerationAgent::AutomaticGenerationAvailable() {
           current_generation_item_->generation_element_.MaxLength(),
           current_generation_item_->generation_element_.NameForAutofill()
               .Utf16(),
+          current_generation_item_->generation_element_
+              .UniqueRendererFormControlId(),
           GetTextDirectionForElement(
               current_generation_item_->generation_element_),
           current_generation_item_->form_);
@@ -851,7 +855,9 @@ void PasswordGenerationAgent::ShowEditingPopup() {
   GetPasswordGenerationDriver()->ShowPasswordEditingPopup(
       render_frame()->GetRenderView()->ElementBoundsInWindow(
           current_generation_item_->generation_element_),
-      *CreatePasswordFormToPresave());
+      *CreatePasswordFormToPresave(),
+      current_generation_item_->generation_element_
+          .UniqueRendererFormControlId());
   current_generation_item_->editing_popup_shown_ = true;
 }
 

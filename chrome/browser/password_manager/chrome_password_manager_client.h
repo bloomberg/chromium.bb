@@ -136,7 +136,8 @@ class ChromePasswordManagerClient
       const autofill::password_generation::PasswordGenerationUIData& ui_data)
       override;
   void ShowPasswordEditingPopup(const gfx::RectF& bounds,
-                                const autofill::PasswordForm& form) override;
+                                const autofill::PasswordForm& form,
+                                uint32_t field_renderer_id) override;
   void GenerationAvailableForForm(const autofill::PasswordForm& form) override;
   void PasswordGenerationRejectedByTyping() override;
   void PresaveGeneratedPassword(

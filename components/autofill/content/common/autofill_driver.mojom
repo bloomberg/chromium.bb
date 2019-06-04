@@ -153,8 +153,10 @@ interface PasswordGenerationDriver {
 
   // Instructs the browser to show the popup for editing a generated password.
   // The location should be specified in the renderers coordinate system. Form
-  // is the form associated with the password field.
-  ShowPasswordEditingPopup(gfx.mojom.RectF bounds, PasswordForm password_form);
+  // is the form associated with the password field. |field_renderer_id| is the
+  // ID of the password field triggering generation.
+  ShowPasswordEditingPopup(gfx.mojom.RectF bounds, PasswordForm password_form,
+      uint32 field_renderer_id);
 
   // Informs the browser that the password generation option was rejected
   // by the user typing more characters than the maximum offer size into the

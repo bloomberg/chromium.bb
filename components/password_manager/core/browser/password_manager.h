@@ -58,6 +58,13 @@ class PasswordManager : public FormSubmissionObserver {
 
   void GenerationAvailableForForm(const autofill::PasswordForm& form);
 
+  // Notifies the renderer to start the generation flow or pops up additional UI
+  // in case there is a danger to overwrite an existing password.
+  void OnGeneratedPasswordAccepted(PasswordManagerDriver* driver,
+                                   const autofill::FormData& form_data,
+                                   uint32_t generation_element_id,
+                                   const base::string16& password);
+
   // Presaves the form with generated password. |driver| is needed to find the
   // matched form manager.
   void OnPresaveGeneratedPassword(PasswordManagerDriver* driver,

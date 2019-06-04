@@ -522,6 +522,7 @@ bool StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
     return false;
 
   out->max_length = data.max_length();
+  out->generation_element_id = data.generation_element_id();
 
   if (!data.ReadGenerationElement(&out->generation_element) ||
       !data.ReadTextDirection(&out->text_direction) ||

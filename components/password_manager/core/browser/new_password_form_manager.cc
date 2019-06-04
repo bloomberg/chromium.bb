@@ -721,6 +721,34 @@ void NewPasswordFormManager::FillForm(const FormData& observed_form) {
     Fill();
 }
 
+void NewPasswordFormManager::OnGeneratedPasswordAccepted(
+    FormData form_data,
+    uint32_t generation_element_id,
+    const base::string16& password) {
+  // Find the generating element to update its value. The parser needs a non
+  // empty value.
+  auto it = std::find_if(form_data.fields.begin(), form_data.fields.end(),
+                         [generation_element_id](const auto& field_data) {
+                           return generation_element_id ==
+                                  field_data.unique_renderer_id;
+                         });
+  DCHECK(it != form_data.fields.end());
+  it->value = password;
+  std::unique_ptr<PasswordForm> parsed_form =
+      ParseFormAndMakeLogging(form_data, FormDataParser::Mode::kSaving);
+  if (!parsed_form) {
+    // Create a password form with a minimum data.
+    parsed_form.reset(new PasswordForm);
+    parsed_form->origin = form_data.url;
+    parsed_form->signon_realm = GetSignonRealm(form_data.url);
+  }
+  parsed_form->password_value = password;
+  generation_state_ =
+      std::make_unique<PasswordGenerationState>(form_saver_.get(), client_);
+  generation_state_->GeneratedPasswordAccepted(*parsed_form, GetAllMatches(),
+                                               driver_);
+}
+
 NewPasswordFormManager::NewPasswordFormManager(
     PasswordManagerClient* client,
     FormFetcher* form_fetcher,
@@ -1013,7 +1041,7 @@ void NewPasswordFormManager::PresaveGeneratedPasswordInternal(
 
   if (!HasGeneratedPassword()) {
     generation_state_ =
-        std::make_unique<PasswordGenerationState>(form_saver_.get());
+        std::make_unique<PasswordGenerationState>(form_saver_.get(), client_);
     votes_uploader_.set_generated_password_changed(false);
     metrics_recorder_->SetGeneratedPasswordStatus(
         PasswordFormMetricsRecorder::GeneratedPasswordStatus::

@@ -121,6 +121,12 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // Sends fill data to the renderer to fill |observed_form|.
   void FillForm(const autofill::FormData& observed_form);
 
+  // Sends the request to prefill the generated password or pops up an
+  // additional UI in case of possible override.
+  void OnGeneratedPasswordAccepted(autofill::FormData form_data,
+                                   uint32_t generation_element_id,
+                                   const base::string16& password);
+
   // PasswordFormManagerForUI:
   FormFetcher* GetFormFetcher() override;
   const GURL& GetOrigin() const override;
