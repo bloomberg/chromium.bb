@@ -72,9 +72,9 @@ class HttpsPreviewsBaseClass():
         self.assertRegexpMatches(response.url, LITEPAGES_REGEXP)
         self.assertEqual(200, response.status)
         lite_page_responses += 1
-      if 'image/' in content_type:
-        self.assertRegexpMatches(response.url, LITEPAGES_REGEXP)
-        self.assertEqual(200, response.status)
+      if ('image/' in content_type
+          and re.match(LITEPAGES_REGEXP, response.url)
+          and 200 == response.status):
         image_responses += 1
 
     self.assertEqual(1, lite_page_responses)
