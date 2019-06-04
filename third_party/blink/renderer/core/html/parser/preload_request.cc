@@ -108,12 +108,7 @@ Resource* PreloadRequest::Start(Document* document) {
     if (const auto* frame = document->Loader()->GetFrame()) {
       if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
         params.SetClientLoFiPlaceholder();
-      } else if ((lazy_load_image_eligibility_ ==
-                      LazyLoadImageEligibility::kEnabledExplicit &&
-                  frame->IsExplicitLazyLoadingImageAllowed()) ||
-                 (lazy_load_image_eligibility_ ==
-                      LazyLoadImageEligibility::kEnabledAutomatic &&
-                  frame->IsAutomaticLazyLoadingImageAllowed())) {
+      } else if (is_lazy_load_image_enabled_) {
         params.SetLazyImagePlaceholder();
       }
     }
