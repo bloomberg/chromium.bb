@@ -171,7 +171,6 @@ blink_core_sources("frame") {
     "smart_clip.cc",
     "smart_clip.h",
     "test_report_body.h",
-    "use_counter.h",
     "use_counter_helper.cc",
     "use_counter_helper.h",
     "user_activation.cc",
