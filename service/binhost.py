@@ -24,6 +24,10 @@ class Error(Exception):
   """Base error class for the module."""
 
 
+class EmptyPrebuiltsRoot(Error):
+  """When a prebuilts root is unexpectedly empty."""
+
+
 class NoAclFileFound(Error):
   """No ACL file could be found."""
 
@@ -85,25 +89,27 @@ def _ValidatePrebuiltsRoot(target, prebuilts_root):
     prebuilts_root: The expected root directory for the target's prebuilts.
 
   Raises:
-    LookupError: If prebuilts root does not exist.
+    EmptyPrebuiltsRoot: If prebuilts root does not exist.
   """
   if not os.path.exists(prebuilts_root):
-    raise LookupError(
+    raise EmptyPrebuiltsRoot(
         'Expected to find prebuilts for build target %s at %s. '
         'Did %s build successfully?' % (target, prebuilts_root, target))
 
 
-def GetPrebuiltsRoot(target):
-  """Find the root directory with binary prebuilts for the given build target.
+def GetPrebuiltsRoot(chroot, sysroot, build_target):
+  """Find the root directory with binary prebuilts for the given sysroot.
 
   Args:
-    target: The build target in question.
+    chroot (chroot_lib.Chroot): The chroot where the sysroot lives.
+    sysroot (sysroot_lib.Sysroot): The sysroot.
+    build_target (build_target_util.BuildTarget): The build target.
 
   Returns:
     Absolute path to the root directory with the target's prebuilt archives.
   """
-  root = os.path.join(constants.SOURCE_ROOT, 'chroot/build', target, 'packages')
-  _ValidatePrebuiltsRoot(target, root)
+  root = os.path.join(chroot.path, sysroot.path.lstrip(os.sep), 'packages')
+  _ValidatePrebuiltsRoot(build_target, root)
   return root
 
 
@@ -183,14 +189,13 @@ def SetBinhost(target, key, uri, private=True):
   return conf_path
 
 
-def RegenBuildCache(overlay_type, sysroot_path):
+def RegenBuildCache(overlay_type):
   """Regenerate the Build Cache for the given target.
 
   Args:
     overlay_type: one of "private", "public", or "both".
-    sysroot_path: Sysroot to update.
   """
-  overlays = portage_util.FindOverlays(overlay_type, buildroot=sysroot_path)
+  overlays = portage_util.FindOverlays(overlay_type)
   task_inputs = [[o] for o in overlays if os.path.isdir(o)]
   parallel.RunTasksInProcessPool(portage_util.RegenCache, task_inputs)
 

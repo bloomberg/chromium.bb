@@ -9,12 +9,21 @@ from __future__ import print_function
 
 import urlparse
 
+from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import binhost_pb2
 from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
+from chromite.lib import sysroot_lib
 from chromite.service import binhost
+
+_OVERLAY_TYPE_TO_NAME = {
+    binhost_pb2.OVERLAYTYPE_PUBLIC: constants.PUBLIC_OVERLAYS,
+    binhost_pb2.OVERLAYTYPE_PRIVATE: constants.PRIVATE_OVERLAYS,
+    binhost_pb2.OVERLAYTYPE_BOTH: constants.BOTH_OVERLAYS,
+    binhost_pb2.OVERLAYTYPE_NONE: None
+}
 
 
 def GetPrivatePrebuiltAclArgs(input_proto, output_proto):
@@ -45,9 +54,22 @@ def PrepareBinhostUploads(input_proto, output_proto):
     input_proto (PrepareBinhostUploadsRequest): The input proto.
     output_proto (PrepareBinhostUploadsResponse): The output proto.
   """
-  target = input_proto.build_target.name
-  uri = input_proto.uri
+  target_name = (input_proto.sysroot.build_target.name
+                 or input_proto.build_target.name)
+  sysroot_path = input_proto.sysroot.path
 
+  if not sysroot_path and not target_name:
+    cros_build_lib.Die('Sysroot.path is required.')
+
+  build_target = build_target_util.BuildTarget(target_name)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+
+  if not sysroot_path:
+    # Very temporary, so not worried about this not calling the lib function.
+    sysroot_path = build_target.root
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+
+  uri = input_proto.uri
   # For now, we enforce that all input URIs are Google Storage buckets.
   if not gs.PathIsGs(uri):
     raise ValueError('Upload URI %s must be Google Storage.' % uri)
@@ -58,7 +80,7 @@ def PrepareBinhostUploads(input_proto, output_proto):
 
   # Read all packages and update the index. The index must be uploaded to the
   # binhost for Portage to use it, so include it in upload_targets.
-  uploads_dir = binhost.GetPrebuiltsRoot(target)
+  uploads_dir = binhost.GetPrebuiltsRoot(chroot, sysroot, build_target)
   upload_targets = binhost.GetPrebuiltsFiles(uploads_dir)
   index_path = binhost.UpdatePackageIndex(uploads_dir, upload_uri, upload_path,
                                           sudo=True)
@@ -98,25 +120,18 @@ def SetBinhost(input_proto, output_proto):
   output_proto.output_file = binhost.SetBinhost(target, key, uri,
                                                 private=private)
 
-_OVERLAY_TYPE_TO_NAME = {
-    binhost_pb2.OVERLAYTYPE_PUBLIC: constants.PUBLIC_OVERLAYS,
-    binhost_pb2.OVERLAYTYPE_PRIVATE: constants.PRIVATE_OVERLAYS,
-    binhost_pb2.OVERLAYTYPE_BOTH: constants.BOTH_OVERLAYS,
-    binhost_pb2.OVERLAYTYPE_NONE: None
-}
 
-def RegenBuildCache(input_proto):
+def RegenBuildCache(input_proto, _output_proto):
   """Regenerate the Build Cache for a build target.
 
   See BinhostService documentation in api/proto/binhost.proto.
 
   Args:
     input_proto (RegenBuildCacheRequest): The input proto.
-    output_proto (RegenBuildCacheResponse): The output proto.
+    _output_proto (RegenBuildCacheResponse): The output proto.
   """
   overlay_type = input_proto.overlay_type
-  sysroot = input_proto.sysroot
   if overlay_type in _OVERLAY_TYPE_TO_NAME:
-    binhost.RegenBuildCache(_OVERLAY_TYPE_TO_NAME[overlay_type], sysroot.path)
+    binhost.RegenBuildCache(_OVERLAY_TYPE_TO_NAME[overlay_type])
   else:
     cros_build_lib.Die('Overlay_type must be specified.')

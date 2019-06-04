@@ -11,11 +11,13 @@ import os
 
 from chromite.lib import binpkg
 from chromite.lib import build_target_util
+from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
+from chromite.lib import sysroot_lib
 from chromite.service import binhost
 
 
@@ -126,18 +128,28 @@ class GetPrebuiltsRootTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     self.PatchObject(constants, 'SOURCE_ROOT', new=self.tempdir)
-    self.root = os.path.join(self.tempdir, 'chroot/build/foo/packages')
+    self.chroot_path = os.path.join(self.tempdir, 'chroot')
+    self.sysroot_path = '/build/foo'
+    self.root = os.path.join(self.chroot_path, self.sysroot_path.lstrip('/'),
+                             'packages')
+
+    self.chroot = chroot_lib.Chroot(self.chroot_path)
+    self.sysroot = sysroot_lib.Sysroot(self.sysroot_path)
+    self.build_target = build_target_util.BuildTarget('foo')
+
     osutils.SafeMakedirs(self.root)
 
   def testGetPrebuiltsRoot(self):
     """GetPrebuiltsRoot returns correct root for given build target."""
-    actual = binhost.GetPrebuiltsRoot('foo')
+    actual = binhost.GetPrebuiltsRoot(self.chroot, self.sysroot,
+                                      self.build_target)
     self.assertEqual(actual, self.root)
 
   def testGetPrebuiltsBadTarget(self):
     """GetPrebuiltsRoot dies on missing root (target probably not built.)"""
-    with self.assertRaises(LookupError):
-      binhost.GetPrebuiltsRoot('bar')
+    with self.assertRaises(binhost.EmptyPrebuiltsRoot):
+      binhost.GetPrebuiltsRoot(self.chroot, sysroot_lib.Sysroot('/build/bar'),
+                               build_target_util.BuildTarget('bar'))
 
 
 class GetPrebuiltsFilesTest(cros_test_lib.MockTempDirTestCase):
@@ -241,6 +253,6 @@ class RegenBuildCacheTest(cros_test_lib.MockTempDirTestCase):
         portage_util, 'FindOverlays', return_value=overlays_found)
     run_tasks = self.PatchObject(parallel, 'RunTasksInProcessPool')
 
-    binhost.RegenBuildCache(None, self.tempdir)
-    find_overlays.assert_called_once_with(None, buildroot=self.tempdir)
+    binhost.RegenBuildCache(None)
+    find_overlays.assert_called_once_with(None)
     run_tasks.assert_called_once_with(portage_util.RegenCache, [overlays_found])

@@ -78,11 +78,10 @@ class RegenBuildCacheTest(cros_test_lib.MockTestCase):
 
     input_proto = binhost_pb2.RegenBuildCacheRequest()
     input_proto.overlay_type = binhost_pb2.OVERLAYTYPE_BOTH
-    input_proto.sysroot.path = '/path/to/chroot'
-    input_proto.sysroot.build_target.name = 'target'
+    output_proto = binhost_pb2.RegenBuildCacheResponse()
 
-    binhost.RegenBuildCache(input_proto)
-    regen_cache.assert_called_once_with('both', '/path/to/chroot')
+    binhost.RegenBuildCache(input_proto, output_proto)
+    regen_cache.assert_called_once_with('both')
 
   def testRequiresOverlayType(self):
     """RegenBuildCache dies if overlay_type not specified."""
@@ -91,9 +90,8 @@ class RegenBuildCacheTest(cros_test_lib.MockTestCase):
 
     input_proto = binhost_pb2.RegenBuildCacheRequest()
     input_proto.overlay_type = binhost_pb2.OVERLAYTYPE_UNSPECIFIED
-    input_proto.sysroot.path = '/path/to/chroot'
-    input_proto.sysroot.build_target.name = 'target'
+    output_proto = binhost_pb2.RegenBuildCacheResponse()
 
-    binhost.RegenBuildCache(input_proto)
+    binhost.RegenBuildCache(input_proto, output_proto)
     die.assert_called_once()
     regen_cache.assert_not_called()
