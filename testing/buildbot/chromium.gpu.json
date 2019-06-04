@@ -229,7 +229,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "shards": 2
         }
       },
       {

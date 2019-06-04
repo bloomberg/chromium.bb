@@ -1216,6 +1216,15 @@
       },
     },
   },
+ 'pixel_test':{
+    'modifications': {
+      'Android Release (Nexus 5X)': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
+    },
+ },
  'remoting_unittests': {
     'remove_from': [
       # chromium.linux
