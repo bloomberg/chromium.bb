@@ -524,9 +524,7 @@ DOMStorageArea::CommitBatch* DOMStorageArea::CreateCommitBatchIfNeeded() {
   if (!GetCurrentCommitBatch()) {
     commit_batches_.emplace_front(CommitBatchHolder(
         CommitBatchHolder::TYPE_CURRENT_BATCH, new CommitBatch()));
-    BrowserThread::PostAfterStartupTask(
-        FROM_HERE, task_runner_,
-        base::BindOnce(&DOMStorageArea::StartCommitTimer, this));
+    StartCommitTimer();
   }
   return GetCurrentCommitBatch()->batch.get();
 }

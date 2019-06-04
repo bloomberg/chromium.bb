@@ -724,10 +724,7 @@ void StorageAreaImpl::CreateCommitBatchIfNeeded() {
   DCHECK(database_);
 
   commit_batch_.reset(new CommitBatch());
-  BrowserThread::PostAfterStartupTask(
-      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::BindOnce(&StorageAreaImpl::StartCommitTimer,
-                     weak_ptr_factory_.GetWeakPtr()));
+  StartCommitTimer();
 }
 
 void StorageAreaImpl::StartCommitTimer() {
