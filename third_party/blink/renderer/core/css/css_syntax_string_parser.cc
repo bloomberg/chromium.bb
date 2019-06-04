@@ -70,20 +70,16 @@ base::Optional<CSSSyntaxDescriptor> CSSSyntaxStringParser::Parse() {
   Vector<CSSSyntaxComponent> components;
 
   while (true) {
-    UChar cc = input_.NextInputChar();
-    input_.Advance();
-    if (IsHTMLSpace(cc))
-      continue;
-    if (cc == '\0')
-      break;
-    if (cc == '|') {
-      if (!components.size())
-        return base::nullopt;
-    } else {
-      input_.PushBack(cc);
-    }
     if (!ConsumeSyntaxComponent(components))
       return base::nullopt;
+    input_.AdvanceUntilNonWhitespace();
+    UChar cc = input_.NextInputChar();
+    input_.Advance();
+    if (cc == '\0')
+      break;
+    if (cc == '|')
+      continue;
+    return base::nullopt;
   }
 
   return CSSSyntaxDescriptor(std::move(components));
