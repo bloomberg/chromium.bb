@@ -1164,7 +1164,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '6f26bce0b1c4e8ce0e13332f7c0083788def5fdf',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '7bc7f102467b395fbf4963ac34e4844564c783d3',
+    Var('chromium_git') + '/openscreen' + '@' + 'efc3e5ad59d5f30529b3d1df91e6688d0bb0b80c',
 
   'src/third_party/ow2_asm': {
       'packages': [
