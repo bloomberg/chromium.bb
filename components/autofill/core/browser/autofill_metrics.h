@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/sync_utils.h"
+#include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/security_state/core/security_state.h"
@@ -1159,7 +1160,8 @@ class AutofillMetrics {
   static void LogAddressSuggestionsCount(size_t num_suggestions);
 
   // Log the index of the selected Autofill suggestion in the popup.
-  static void LogAutofillSuggestionAcceptedIndex(int index);
+  static void LogAutofillSuggestionAcceptedIndex(int index,
+                                                 PopupType popup_type);
 
   // Logs that the user cleared the form.
   static void LogAutofillFormCleared();

@@ -1459,9 +1459,22 @@ void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
 }
 
 // static
-void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index) {
+void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index,
+                                                         PopupType popup_type) {
   base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex",
                            std::min(index, kMaxBucketsCount));
+
+  if (popup_type == PopupType::kCreditCards) {
+    base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex.CreditCard",
+                             std::min(index, kMaxBucketsCount));
+  } else if (popup_type == PopupType::kAddresses ||
+             popup_type == PopupType::kPersonalInformation) {
+    base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex.Profile",
+                             std::min(index, kMaxBucketsCount));
+  } else {
+    base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex.Other",
+                             std::min(index, kMaxBucketsCount));
+  }
 
   base::RecordAction(base::UserMetricsAction("Autofill_SelectedSuggestion"));
 }

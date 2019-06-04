@@ -38,6 +38,7 @@
 #include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -63,6 +64,7 @@ using base::ASCIIToUTF16;
 using base::Bucket;
 using base::TimeTicks;
 using ::testing::ElementsAre;
+using ::testing::HasSubstr;
 using ::testing::Matcher;
 using ::testing::UnorderedPointwise;
 
@@ -8604,6 +8606,59 @@ TEST_F(AutofillMetricsTest, LogAutocompleteSuggestionAcceptedIndex_IndexCap) {
   histogram_tester.ExpectBucketCount(
       "Autocomplete.Events", AutofillMetrics::AUTOCOMPLETE_SUGGESTION_SELECTED,
       /*expected_count=*/1);
+}
+
+TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_CreditCard) {
+  const int index = 2;
+  const PopupType popup_type = PopupType::kCreditCards;
+
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SuggestionAcceptedIndex.CreditCard", index, 1);
+
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.Other"),
+                HasSubstr("Autofill.SuggestionAcceptedIndex.Profile"))));
+}
+
+TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_Profile) {
+  const int index = 1;
+  const PopupType popup_type1 = PopupType::kPersonalInformation;
+  const PopupType popup_type2 = PopupType::kAddresses;
+
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1);
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SuggestionAcceptedIndex.Profile", index, 2);
+
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.CreditCard"),
+                HasSubstr("Autofill.SuggestionAcceptedIndex.Other"))));
+}
+
+TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_Other) {
+  const int index = 0;
+  const PopupType popup_type1 = PopupType::kUnspecified;
+  const PopupType popup_type2 = PopupType::kPasswords;
+
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1);
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2);
+
+  histogram_tester.ExpectUniqueSample("Autofill.SuggestionAcceptedIndex.Other",
+                                      index, 2);
+
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.CreditCard"),
+                HasSubstr("Autofill.SuggestionAcceptedIndex.Profile"))));
 }
 
 TEST_F(AutofillMetricsTest, OnAutocompleteSuggestionsShown) {

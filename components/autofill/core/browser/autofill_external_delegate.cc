@@ -228,7 +228,8 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     manager_->OnUserAcceptedCardsFromAccountOption();
   } else {
     if (identifier > 0)  // Denotes an Autofill suggestion.
-      AutofillMetrics::LogAutofillSuggestionAcceptedIndex(position);
+      AutofillMetrics::LogAutofillSuggestionAcceptedIndex(position,
+                                                          popup_type_);
 
     FillAutofillFormData(identifier, false);
   }

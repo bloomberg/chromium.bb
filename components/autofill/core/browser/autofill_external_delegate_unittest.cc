@@ -595,8 +595,7 @@ TEST_F(AutofillExternalDelegateUnitTest,
                                           0);
 }
 
-// Test that an accepted autofill suggestion will fill the form and log the
-// proper metric.
+// Test that an accepted autofill suggestion will fill the form.
 TEST_F(AutofillExternalDelegateUnitTest,
        ExternalDelegateAcceptAutofillSuggestion) {
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
@@ -605,11 +604,9 @@ TEST_F(AutofillExternalDelegateUnitTest,
               FillOrPreviewForm(
                   AutofillDriver::FORM_DATA_ACTION_FILL, _, _, _,
                   kAutofillProfileId));
-  base::HistogramTester histogram;
   external_delegate_->DidAcceptSuggestion(dummy_string,
                                           kAutofillProfileId,
                                           2);  // Row 2
-  histogram.ExpectUniqueSample("Autofill.SuggestionAcceptedIndex", 2, 1);
 }
 
 // Test that the driver is directed to clear the form after being notified that
