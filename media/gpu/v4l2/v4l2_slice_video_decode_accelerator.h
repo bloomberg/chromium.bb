@@ -295,7 +295,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Attempt to start/stop device_poll_thread_.
   bool StartDevicePoll();
-  bool StopDevicePoll(bool keep_input_state);
+  bool StopDevicePoll();
 
   // Ran on device_poll_thread_ to wait for device events.
   void DevicePollTask(bool poll_device);

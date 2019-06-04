@@ -364,7 +364,7 @@ void V4L2SliceVideoDecodeAccelerator::DestroyTask() {
     decoder_input_queue_.pop_front();
 
   // Stop streaming and the device_poll_thread_.
-  StopDevicePoll(false);
+  StopDevicePoll();
 
   DestroyInputBuffers();
   DestroyOutputs(false);
@@ -973,7 +973,7 @@ bool V4L2SliceVideoDecodeAccelerator::StartDevicePoll() {
   return true;
 }
 
-bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
+bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll() {
   DVLOGF(3) << "Stopping device poll";
   if (decoder_thread_.IsRunning())
     DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
@@ -993,13 +993,11 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
     return false;
   }
 
-  if (!keep_input_state) {
-    if (input_streamon_) {
-      __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-      IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_STREAMOFF, &type);
-    }
-    input_streamon_ = false;
+  if (input_streamon_) {
+    __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_STREAMOFF, &type);
   }
+  input_streamon_ = false;
 
   if (output_streamon_) {
     __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -1007,17 +1005,15 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
   }
   output_streamon_ = false;
 
-  if (!keep_input_state) {
-    for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
-      InputRecord& input_record = input_buffer_map_[i];
-      if (input_record.at_device) {
-        input_record.at_device = false;
-        ReuseInputBuffer(i);
-        input_buffer_queued_count_--;
-      }
+  for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
+    InputRecord& input_record = input_buffer_map_[i];
+    if (input_record.at_device) {
+      input_record.at_device = false;
+      ReuseInputBuffer(i);
+      input_buffer_queued_count_--;
     }
-    DCHECK_EQ(input_buffer_queued_count_, 0);
   }
+  DCHECK_EQ(input_buffer_queued_count_, 0);
 
   // STREAMOFF makes the driver drop all buffers without decoding and DQBUFing,
   // so we mark them all as at_device = false and clear surfaces_at_device_.
@@ -1209,8 +1205,7 @@ bool V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChange() {
   DCHECK_EQ(free_output_buffers_.size() + surfaces_at_display_.size(),
             output_buffer_map_.size());
 
-  // Keep input queue running while we switch outputs.
-  if (!StopDevicePoll(true)) {
+  if (!StopDevicePoll()) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
