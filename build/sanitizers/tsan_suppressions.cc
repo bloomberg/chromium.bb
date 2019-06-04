@@ -87,9 +87,6 @@ char kTSanDefaultSuppressions[] =
     "race:SamplingStateScope\n"
     "race:g_trace_state\n"
 
-    // http://crbug.com/258499
-    "race:third_party/skia/include/core/SkRefCnt.h\n"
-
     // http://crbug.com/268924
     "race:base::g_power_monitor\n"
     "race:base::PowerMonitor::PowerMonitor\n"
@@ -147,9 +144,6 @@ char kTSanDefaultSuppressions[] =
 
     // http://crbug.com/490856
     "deadlock:content::TracingControllerImpl::SetEnabledOnFileThread\n"
-
-    // https://code.google.com/p/skia/issues/detail?id=3294
-    "race:SkBaseMutex::acquire\n"
 
     // Lock inversion in third party code, won't fix.
     // https://crbug.com/455638
