@@ -23,6 +23,7 @@
 
 #include "base/logging.h"
 #include "base/optional.h"
+#include "base/template_util.h"
 
 namespace base {
 
@@ -38,6 +39,11 @@ void IterateAndEraseIf(Container& container, Predicate pred) {
       ++it;
   }
 }
+
+template <typename Iter>
+constexpr bool IsRandomAccessIter =
+    std::is_same<typename std::iterator_traits<Iter>::iterator_category,
+                 std::random_access_iterator_tag>::value;
 
 }  // namespace internal
 
@@ -134,6 +140,37 @@ STLCount(const Container& container, const T& val) {
   return std::count(container.begin(), container.end(), val);
 }
 
+// O(1) implementation of const casting an iterator for any sequence,
+// associative or unordered associative container in the STL.
+//
+// Reference: https://stackoverflow.com/a/10669041
+template <typename Container,
+          typename ConstIter,
+          std::enable_if_t<!internal::IsRandomAccessIter<ConstIter>>* = nullptr>
+constexpr auto ConstCastIterator(Container& c, ConstIter it) {
+  return c.erase(it, it);
+}
+
+// Explicit overload for std::forward_list where erase() is spelt erase_after().
+template <typename T, typename Allocator>
+constexpr auto ConstCastIterator(
+    std::forward_list<T, Allocator>& c,
+    typename std::forward_list<T, Allocator>::const_iterator it) {
+  return c.erase_after(it, it);
+}
+
+// Specialized O(1) const casting for random access iterators. This is
+// necessary, because erase() is either not available (e.g. array-like
+// containers), or has O(n) complexity (e.g. std::deque or std::vector).
+template <typename Container,
+          typename ConstIter,
+          std::enable_if_t<internal::IsRandomAccessIter<ConstIter>>* = nullptr>
+constexpr auto ConstCastIterator(Container& c, ConstIter it) {
+  using std::begin;
+  using std::cbegin;
+  return begin(c) + (it - cbegin(c));
+}
+
 // Test to see if a set or map contains a particular key.
 // Returns true if the key is in the collection.
 template <typename Collection, typename Key>
@@ -154,6 +191,94 @@ class HasKeyType {
   static constexpr bool value = decltype(test<Collection>(nullptr))::value;
 };
 
+template <typename Map, typename Key, typename Value>
+std::pair<typename Map::iterator, bool> InsertOrAssignImpl(Map& map,
+                                                           Key&& key,
+                                                           Value&& value) {
+  auto lower = map.lower_bound(key);
+  if (lower != map.end() && !map.key_comp()(key, lower->first)) {
+    // key already exists, perform assignment.
+    lower->second = std::forward<Value>(value);
+    return {lower, false};
+  }
+
+  // key did not yet exist, insert it.
+  return {map.emplace_hint(lower, std::forward<Key>(key),
+                           std::forward<Value>(value)),
+          true};
+}
+
+template <typename Map, typename Key, typename Value>
+typename Map::iterator InsertOrAssignImpl(Map& map,
+                                          typename Map::const_iterator hint,
+                                          Key&& key,
+                                          Value&& value) {
+  auto&& key_comp = map.key_comp();
+  if ((hint == map.begin() || key_comp(std::prev(hint)->first, key))) {
+    if (hint == map.end() || key_comp(key, hint->first)) {
+      // *(hint - 1) < key < *hint => key did not exist and hint is correct.
+      return map.emplace_hint(hint, std::forward<Key>(key),
+                              std::forward<Value>(value));
+    }
+
+    if (!key_comp(hint->first, key)) {
+      // key == *hint => key already exists and hint is correct.
+      auto mutable_hint = ConstCastIterator(map, hint);
+      mutable_hint->second = std::forward<Value>(value);
+      return mutable_hint;
+    }
+  }
+
+  // hint was not helpful, dispatch to hintless version.
+  return InsertOrAssignImpl(map, std::forward<Key>(key),
+                            std::forward<Value>(value))
+      .first;
+}
+
+template <typename Map, typename Key, typename... Args>
+std::pair<typename Map::iterator, bool> TryEmplaceImpl(Map& map,
+                                                       Key&& key,
+                                                       Args&&... args) {
+  auto lower = map.lower_bound(key);
+  if (lower != map.end() && !map.key_comp()(key, lower->first)) {
+    // key already exists, do nothing.
+    return {lower, false};
+  }
+
+  // key did not yet exist, insert it.
+  return {map.emplace_hint(lower, std::piecewise_construct,
+                           std::forward_as_tuple(std::forward<Key>(key)),
+                           std::forward_as_tuple(std::forward<Args>(args)...)),
+          true};
+}
+
+template <typename Map, typename Key, typename... Args>
+typename Map::iterator TryEmplaceImpl(Map& map,
+                                      typename Map::const_iterator hint,
+                                      Key&& key,
+                                      Args&&... args) {
+  auto&& key_comp = map.key_comp();
+  if ((hint == map.begin() || key_comp(std::prev(hint)->first, key))) {
+    if (hint == map.end() || key_comp(key, hint->first)) {
+      // *(hint - 1) < key < *hint => key did not exist and hint is correct.
+      return map.emplace_hint(
+          hint, std::piecewise_construct,
+          std::forward_as_tuple(std::forward<Key>(key)),
+          std::forward_as_tuple(std::forward<Args>(args)...));
+    }
+
+    if (!key_comp(hint->first, key)) {
+      // key == *hint => no-op, return correct hint.
+      return ConstCastIterator(map, hint);
+    }
+  }
+
+  // hint was not helpful, dispatch to hintless version.
+  return TryEmplaceImpl(map, std::forward<Key>(key),
+                        std::forward<Args>(args)...)
+      .first;
+}
+
 }  // namespace internal
 
 // Test to see if a collection like a vector contains a particular value.
@@ -167,6 +292,74 @@ template <typename Collection,
 bool ContainsValue(const Collection& collection, const Value& value) {
   return std::find(std::begin(collection), std::end(collection), value) !=
          std::end(collection);
+}
+
+// Implementation of C++17's std::map::insert_or_assign as a free function.
+template <typename Map, typename Value>
+std::pair<typename Map::iterator, bool>
+InsertOrAssign(Map& map, const typename Map::key_type& key, Value&& value) {
+  return internal::InsertOrAssignImpl(map, key, std::forward<Value>(value));
+}
+
+template <typename Map, typename Value>
+std::pair<typename Map::iterator, bool>
+InsertOrAssign(Map& map, typename Map::key_type&& key, Value&& value) {
+  return internal::InsertOrAssignImpl(map, std::move(key),
+                                      std::forward<Value>(value));
+}
+
+// Implementation of C++17's std::map::insert_or_assign with hint as a free
+// function.
+template <typename Map, typename Value>
+typename Map::iterator InsertOrAssign(Map& map,
+                                      typename Map::const_iterator hint,
+                                      const typename Map::key_type& key,
+                                      Value&& value) {
+  return internal::InsertOrAssignImpl(map, hint, key,
+                                      std::forward<Value>(value));
+}
+
+template <typename Map, typename Value>
+typename Map::iterator InsertOrAssign(Map& map,
+                                      typename Map::const_iterator hint,
+                                      typename Map::key_type&& key,
+                                      Value&& value) {
+  return internal::InsertOrAssignImpl(map, hint, std::move(key),
+                                      std::forward<Value>(value));
+}
+
+// Implementation of C++17's std::map::try_emplace as a free function.
+template <typename Map, typename... Args>
+std::pair<typename Map::iterator, bool>
+TryEmplace(Map& map, const typename Map::key_type& key, Args&&... args) {
+  return internal::TryEmplaceImpl(map, key, std::forward<Args>(args)...);
+}
+
+template <typename Map, typename... Args>
+std::pair<typename Map::iterator, bool> TryEmplace(Map& map,
+                                                   typename Map::key_type&& key,
+                                                   Args&&... args) {
+  return internal::TryEmplaceImpl(map, std::move(key),
+                                  std::forward<Args>(args)...);
+}
+
+// Implementation of C++17's std::map::try_emplace with hint as a free
+// function.
+template <typename Map, typename... Args>
+typename Map::iterator TryEmplace(Map& map,
+                                  typename Map::const_iterator hint,
+                                  const typename Map::key_type& key,
+                                  Args&&... args) {
+  return internal::TryEmplaceImpl(map, hint, key, std::forward<Args>(args)...);
+}
+
+template <typename Map, typename... Args>
+typename Map::iterator TryEmplace(Map& map,
+                                  typename Map::const_iterator hint,
+                                  typename Map::key_type&& key,
+                                  Args&&... args) {
+  return internal::TryEmplaceImpl(map, hint, std::move(key),
+                                  std::forward<Args>(args)...);
 }
 
 // Returns true if the container is sorted.
