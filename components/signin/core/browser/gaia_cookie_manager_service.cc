@@ -654,6 +654,14 @@ void GaiaCookieManagerService::LogOutAllAccounts(gaia::GaiaSource source) {
   }
 }
 
+void GaiaCookieManagerService::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void GaiaCookieManagerService::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void GaiaCookieManagerService::CancelAll() {
   VLOG(1) << "GaiaCookieManagerService::CancelAll";
   gaia_auth_fetcher_.reset();
@@ -687,8 +695,8 @@ void GaiaCookieManagerService::OnCookieChange(
 
   if (cause == network::mojom::CookieChangeCause::EXPLICIT) {
     DCHECK(net::CookieChangeCauseIsDeletion(net::CookieChangeCause::EXPLICIT));
-    if (gaia_cookie_deleted_by_user_action_callback_) {
-      gaia_cookie_deleted_by_user_action_callback_.Run();
+    for (auto& observer : observer_list_) {
+      observer.OnGaiaCookieDeletedByUserAction();
     }
   }
 
@@ -734,18 +742,6 @@ void GaiaCookieManagerService::SignalSetAccountsComplete(
   DCHECK(requests_.front().request_type() ==
          GaiaCookieRequestType::SET_ACCOUNTS);
   requests_.front().RunSetAccountsInCookieCompletedCallback(result);
-}
-
-void GaiaCookieManagerService::SetGaiaAccountsInCookieUpdatedCallback(
-    GaiaAccountsInCookieUpdatedCallback callback) {
-  DCHECK(!gaia_accounts_updated_in_cookie_callback_);
-  gaia_accounts_updated_in_cookie_callback_ = std::move(callback);
-}
-
-void GaiaCookieManagerService::SetGaiaCookieDeletedByUserActionCallback(
-    GaiaCookieDeletedByUserActionCallback callback) {
-  DCHECK(!gaia_cookie_deleted_by_user_action_callback_);
-  gaia_cookie_deleted_by_user_action_callback_ = std::move(callback);
 }
 
 void GaiaCookieManagerService::OnUbertokenFetchComplete(
@@ -856,8 +852,8 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
   // services, in response to OnGaiaAccountsInCookieUpdated, may try in return
   // to call ListAccounts, which would immediately return false if the
   // ListAccounts request is still sitting in queue.
-  if (gaia_accounts_updated_in_cookie_callback_) {
-    gaia_accounts_updated_in_cookie_callback_.Run(
+  for (auto& observer : observer_list_) {
+    observer.OnGaiaAccountsInCookieUpdated(
         listed_accounts_, signed_out_accounts_,
         GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   }
@@ -885,12 +881,10 @@ void GaiaCookieManagerService::OnListAccountsFailure(
   }
 
   RecordListAccountsFailure(error.state());
-
-  if (gaia_accounts_updated_in_cookie_callback_) {
-    gaia_accounts_updated_in_cookie_callback_.Run(listed_accounts_,
-                                                  signed_out_accounts_, error);
+  for (auto& observer : observer_list_) {
+    observer.OnGaiaAccountsInCookieUpdated(listed_accounts_,
+                                           signed_out_accounts_, error);
   }
-
   HandleNextRequest();
 }
 

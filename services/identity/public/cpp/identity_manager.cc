@@ -8,7 +8,6 @@
 
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/ubertoken_fetcher_impl.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
@@ -66,15 +65,7 @@ IdentityManager::IdentityManager(
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
   account_tracker_service_->AddObserver(this);
-
-  // IdentityManager owns gaia_cookie_manager_service_ and will outlive it, so
-  // base::Unretained is safe.
-  gaia_cookie_manager_service_->SetGaiaAccountsInCookieUpdatedCallback(
-      base::BindRepeating(&IdentityManager::OnGaiaAccountsInCookieUpdated,
-                          base::Unretained(this)));
-  gaia_cookie_manager_service_->SetGaiaCookieDeletedByUserActionCallback(
-      base::BindRepeating(&IdentityManager::OnGaiaCookieDeletedByUserAction,
-                          base::Unretained(this)));
+  gaia_cookie_manager_service_->AddObserver(this);
 
   // Seed the primary account with any state that |signin_manager_| loaded from
   // prefs.
@@ -95,6 +86,7 @@ IdentityManager::~IdentityManager() {
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
   account_tracker_service_->RemoveObserver(this);
+  gaia_cookie_manager_service_->RemoveObserver(this);
 }
 
 // TODO(862619) change return type to base::Optional<CoreAccountInfo>

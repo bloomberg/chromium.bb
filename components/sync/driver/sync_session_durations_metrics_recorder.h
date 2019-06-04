@@ -20,7 +20,8 @@ namespace syncer {
 // Tracks the active browsing time that the user spends signed in and/or syncing
 // as fraction of their total browsing time.
 class SyncSessionDurationsMetricsRecorder
-    : public syncer::SyncServiceObserver,
+    : public GaiaCookieManagerService::Observer,
+      public syncer::SyncServiceObserver,
       public identity::IdentityManager::Observer {
  public:
   // Callers must ensure that the parameters outlive this object.

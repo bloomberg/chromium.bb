@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
 
