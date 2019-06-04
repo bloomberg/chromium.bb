@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -60,6 +61,10 @@ void SAMLOfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
                              base::Bind(&SAMLOfflineSigninLimiter::UpdateLimit,
                                         base::Unretained(this)));
 
+  // Start listening to power state.
+  if (base::PowerMonitor* power_monitor = base::PowerMonitor::Get())
+    power_monitor->AddObserver(this);
+
   // Arm the |offline_signin_limit_timer_| if a limit is in force.
   UpdateLimit();
 }
@@ -74,13 +79,20 @@ void SAMLOfflineSigninLimiter::Shutdown() {
   pref_change_registrar_.RemoveAll();
 }
 
+void SAMLOfflineSigninLimiter::OnResume() {
+  UpdateLimit();
+}
+
 SAMLOfflineSigninLimiter::SAMLOfflineSigninLimiter(Profile* profile,
                                                    base::Clock* clock)
     : profile_(profile),
       clock_(clock ? clock : base::DefaultClock::GetInstance()),
       offline_signin_limit_timer_(std::make_unique<base::OneShotTimer>()) {}
 
-SAMLOfflineSigninLimiter::~SAMLOfflineSigninLimiter() {}
+SAMLOfflineSigninLimiter::~SAMLOfflineSigninLimiter() {
+  if (base::PowerMonitor* power_monitor = base::PowerMonitor::Get())
+    power_monitor->RemoveObserver(this);
+}
 
 void SAMLOfflineSigninLimiter::UpdateLimit() {
   // Stop the |offline_signin_limit_timer_|.
