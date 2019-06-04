@@ -247,6 +247,11 @@ Channel::MessagePtr Channel::Message::Deserialize(
                 sizeof(MachPortsEntry);
 #else
   const uint32_t max_handles = 0;
+  // No extra header expected. Fail if this is detected.
+  if (extra_header_size > 0) {
+    DLOG(ERROR) << "Decoding invalid message: unexpected extra_header_size > 0";
+    return nullptr;
+  }
 #endif  // defined(OS_WIN)
 
   const uint16_t num_handles =

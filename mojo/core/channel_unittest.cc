@@ -13,6 +13,7 @@
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "mojo/core/platform_handle_utils.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -363,6 +364,28 @@ TEST(ChannelTest, DeserializeMessage_BadExtraHeaderSize) {
   EXPECT_EQ(nullptr, Channel::Message::Deserialize(&message[0], kMessageSize,
                                                    base::kNullProcessHandle));
 }
+
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
+TEST(ChannelTest, DeserializeMessage_NonZeroExtraHeaderSize) {
+  // Verifies that a message payload is rejected when the extra header chunk
+  // size anything but zero on Linux, even if it's aligned.
+  constexpr uint16_t kTotalHeaderSize =
+      sizeof(Channel::Message::Header) + kChannelMessageAlignment;
+  constexpr uint32_t kEmptyPayloadSize = 8;
+  constexpr uint32_t kMessageSize = kTotalHeaderSize + kEmptyPayloadSize;
+  char message[kMessageSize];
+  memset(message, 0, kMessageSize);
+
+  Channel::Message::Header* header =
+      reinterpret_cast<Channel::Message::Header*>(&message[0]);
+  header->num_bytes = kMessageSize;
+  header->num_header_bytes = kTotalHeaderSize;
+  header->message_type = Channel::Message::MessageType::NORMAL;
+  header->num_handles = 0;
+  EXPECT_EQ(nullptr, Channel::Message::Deserialize(&message[0], kMessageSize,
+                                                   base::kNullProcessHandle));
+}
+#endif
 
 class CountingChannelDelegate : public Channel::Delegate {
  public:
