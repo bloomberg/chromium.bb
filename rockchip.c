@@ -27,8 +27,8 @@ static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_BGR888,   DRM_FORMAT_RGB565,
 						  DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888 };
 
-static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_NV12,
-						   DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_YVU420,
+						   DRM_FORMAT_YVU420_ANDROID };
 
 static int afbc_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, uint32_t format)
 {
@@ -139,8 +139,9 @@ static int rockchip_init(struct driver *drv)
 	 * R8 format is used for Android's HAL_PIXEL_FORMAT_BLOB and is used for JPEG snapshots
 	 * from camera.
 	 */
-	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
-			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	drv_add_combination(drv, DRM_FORMAT_R8, &metadata,
+			    BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_SW_MASK |
+				BO_USE_LINEAR);
 
 	kms_items = drv_query_kms(drv);
 	if (!kms_items)

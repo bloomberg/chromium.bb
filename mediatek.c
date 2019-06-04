@@ -36,12 +36,12 @@ static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_XRGB8888 };
 
 #ifdef MTK_MT8183
-static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8,     DRM_FORMAT_NV21,
-						   DRM_FORMAT_NV12,   DRM_FORMAT_YUYV,
-						   DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_NV21, DRM_FORMAT_NV12,
+						   DRM_FORMAT_YUYV, DRM_FORMAT_YVU420,
+						   DRM_FORMAT_YVU420_ANDROID };
 #else
-static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
-						   DRM_FORMAT_YVU420_ANDROID, DRM_FORMAT_NV12 };
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID,
+						   DRM_FORMAT_NV12 };
 #endif
 
 static int mediatek_init(struct driver *drv)
@@ -54,6 +54,7 @@ static int mediatek_init(struct driver *drv)
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
 
+	drv_add_combination(drv, DRM_FORMAT_R8, &metadata, BO_USE_SW_MASK | BO_USE_LINEAR);
 	/*
 	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
 	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
