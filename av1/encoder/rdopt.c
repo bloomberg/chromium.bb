@@ -10885,6 +10885,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   ctx->mbmi_ext = *x->mbmi_ext;
 }
 
+#if !CONFIG_REALTIME_ONLY
 static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -10932,6 +10933,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
                                       int mi_col, const uint8_t *above,
                                       int above_stride, const uint8_t *left,
                                       int left_stride);
+#endif  // !CONFIG_REALTIME_ONLY
 
 static void rd_pick_skip_mode(RD_STATS *rd_cost,
                               InterModeSearchState *search_state,
@@ -11083,6 +11085,7 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
   }
 }
 
+#if !CONFIG_REALTIME_ONLY
 // speed feature: fast intra/inter transform type search
 // Used for speed >= 2
 // When this speed feature is on, in rd mode search, only DCT is used.
@@ -11182,6 +11185,7 @@ static void sf_refine_fast_tx_type_search(
     }
   }
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 typedef struct {
   // Mask for each reference frame, specifying which prediction modes to NOT try
@@ -11364,6 +11368,7 @@ static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
       ~(sf->intra_y_mode_mask[max_txsize_lookup[bsize]]);
 }
 
+#if !CONFIG_REALTIME_ONLY
 // Please add/modify parameter setting in this function, making it consistent
 // and easy to read and maintain.
 static void set_params_rd_pick_inter_mode(
@@ -11593,6 +11598,7 @@ static void search_palette_mode(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
            sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
   }
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 static void init_inter_mode_search_state(InterModeSearchState *search_state,
                                          const AV1_COMP *cpi,
@@ -12514,6 +12520,7 @@ static void release_compound_type_rd_buffers(
   av1_zero(*bufs);  // Set all pointers to NULL for safety.
 }
 
+#if !CONFIG_REALTIME_ONLY
 // Enables do_tx_search on a per-mode basis.
 static int do_tx_search_mode(int do_tx_search_global, int midx, int adaptive) {
   if (!adaptive || do_tx_search_global) {
@@ -13112,6 +13119,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     restore_uv_color_map(cpi, x);
   }
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 // TODO(kyslov): now this is very similar to set_params_rd_pick_inter_mode
 // (except that doesn't set ALTREF parameters)
@@ -13912,6 +13920,7 @@ static INLINE void calc_target_weighted_pred_left(
   }
 }
 
+#if !CONFIG_REALTIME_ONLY
 // This function has a structure similar to av1_build_obmc_inter_prediction
 //
 // The OBMC predictor is computed as:
@@ -14020,6 +14029,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
     }
   }
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 /* Use standard 3x3 Sobel matrix. Macro so it can be used for either high or
    low bit-depth arrays. */

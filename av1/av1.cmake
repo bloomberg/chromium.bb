@@ -369,6 +369,7 @@ if(CONFIG_REALTIME_ONLY)
                    "${AOM_ROOT}/av1/encoder/pass2_strategy.c"
                    "${AOM_ROOT}/av1/encoder/mbgraph.c"
                    "${AOM_ROOT}/av1/encoder/mbgraph.h"
+                   "${AOM_ROOT}/av1/encoder/partition_model_weights.h"
                    "${AOM_ROOT}/av1/encoder/temporal_filter.c"
                    "${AOM_ROOT}/av1/encoder/temporal_filter.h"
                    "${AOM_ROOT}/av1/encoder/temporal_filter_constants.h"

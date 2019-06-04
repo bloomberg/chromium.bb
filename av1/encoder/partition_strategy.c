@@ -17,13 +17,17 @@
 #include "av1/common/reconinter.h"
 
 #include "av1/encoder/encoder.h"
+#if !CONFIG_REALTIME_ONLY
 #include "av1/encoder/partition_model_weights.h"
+#endif
 #include "av1/encoder/partition_strategy.h"
 #include "av1/encoder/rdopt.h"
 
+#if !CONFIG_REALTIME_ONLY
 static void simple_motion_search_prune_part_features(
     AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
     int mi_col, BLOCK_SIZE bsize, float *features, int features_to_get);
+#endif
 
 static INLINE int convert_bsize_to_idx(BLOCK_SIZE bsize) {
   switch (bsize) {
@@ -36,6 +40,7 @@ static INLINE int convert_bsize_to_idx(BLOCK_SIZE bsize) {
   }
 }
 
+#if !CONFIG_REALTIME_ONLY
 void av1_simple_motion_search_based_split(
     AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
     int mi_col, BLOCK_SIZE bsize, int *partition_none_allowed,
@@ -1109,3 +1114,4 @@ int av1_ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   return (int)(score * 100) >= thresh;
 }
 #undef FEATURES
+#endif  // !CONFIG_REALTIME_ONLY

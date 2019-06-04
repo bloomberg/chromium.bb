@@ -52,6 +52,7 @@ void av1_simple_motion_search_prune_part(
     int *do_square_split, int *do_rectangular_split, int *prune_horz,
     int *prune_vert);
 
+#if !CONFIG_REALTIME_ONLY
 // Early terminates PARTITION_NONE using simple_motion_search features and the
 // rate, distortion, and rdcost of PARTITION_NONE. This is only called when:
 //  - The frame is a show frame
@@ -122,6 +123,7 @@ int av1_ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
                             const MACROBLOCK *const x,
                             const RD_STATS *const rd_stats,
                             unsigned int pb_source_variance);
+#endif  // !CONFIG_REALTIME_ONLY
 
 // A simplified version of set_offsets meant to be used for
 // simple_motion_search.
