@@ -9,10 +9,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_extras_test_utils.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "v8/include/v8.h"
 
 namespace blink {

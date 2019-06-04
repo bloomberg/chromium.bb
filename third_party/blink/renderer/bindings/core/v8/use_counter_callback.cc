@@ -7,8 +7,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 

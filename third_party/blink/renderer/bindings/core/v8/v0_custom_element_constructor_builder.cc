@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_svg_element.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_registration_options.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_definition.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_descriptor.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_exception.h"
@@ -49,6 +48,7 @@
 #include "third_party/blink/renderer/platform/bindings/v0_custom_element_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
