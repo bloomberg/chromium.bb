@@ -161,6 +161,17 @@ const CSSValue* CSSSyntaxDescriptor::Parse(CSSParserTokenRange range,
                                                          is_animation_tainted);
 }
 
+CSSSyntaxDescriptor CSSSyntaxDescriptor::IsolatedCopy() const {
+  Vector<CSSSyntaxComponent> syntax_components_copy;
+  syntax_components_copy.ReserveCapacity(syntax_components_.size());
+  for (const auto& syntax_component : syntax_components_) {
+    syntax_components_copy.push_back(CSSSyntaxComponent(
+        syntax_component.GetType(), syntax_component.GetString().IsolatedCopy(),
+        syntax_component.GetRepeat()));
+  }
+  return CSSSyntaxDescriptor(std::move(syntax_components_copy));
+}
+
 CSSSyntaxDescriptor::CSSSyntaxDescriptor(Vector<CSSSyntaxComponent> components)
     : syntax_components_(std::move(components)) {
   DCHECK(syntax_components_.size());

@@ -11,8 +11,10 @@ namespace blink {
 MainThreadDocumentPaintDefinition::MainThreadDocumentPaintDefinition(
     const Vector<CSSPropertyID>& native_invalidation_properties,
     const Vector<String>& custom_invalidation_properties,
+    const Vector<CSSSyntaxDescriptor>& input_argument_types,
     bool alpha)
     : native_invalidation_properties_(native_invalidation_properties),
+      input_argument_types_(input_argument_types),
       alpha_(alpha) {
   custom_invalidation_properties_.ReserveInitialCapacity(
       custom_invalidation_properties.size());

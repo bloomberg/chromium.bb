@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
 
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
 #include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_deferred_image.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
@@ -60,15 +61,12 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
         GetName(), document, paint_image_generator_observer_);
   }
 
+  if (!ParseInputArguments(document))
+    return nullptr;
+
   // For Off-Thread PaintWorklet, we just collect the necessary inputs together
   // and defer the actual JavaScript call until much later (during cc Raster).
   if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
-    // If the main-thread does not yet know about this painter, there is no
-    // point sending it to cc - they won't be able to paint it. Once (or if) a
-    // matching painter is registered the |paint_image_generator_observer_| will
-    // cause us to be repainted.
-    if (!generator_->IsImageGeneratorReady())
-      return nullptr;
 
     // TODO(crbug.com/946515): Break dependency on LayoutObject.
     const LayoutObject& layout_object =
@@ -88,9 +86,6 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
                                                 std::move(style_data));
     return PaintWorkletDeferredImage::Create(std::move(input), target_size);
   }
-
-  if (!ParseInputArguments(document))
-    return nullptr;
 
   return generator_->Paint(client, target_size, parsed_input_arguments_);
 }

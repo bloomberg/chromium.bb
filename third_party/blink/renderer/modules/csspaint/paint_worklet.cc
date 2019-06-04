@@ -149,10 +149,12 @@ void PaintWorklet::RegisterMainThreadDocumentPaintDefinition(
     const String& name,
     Vector<CSSPropertyID> native_properties,
     Vector<String> custom_properties,
+    std::unique_ptr<Vector<CSSSyntaxDescriptor>> input_argument_types,
     double alpha) {
   DCHECK(!main_thread_document_definition_map_.Contains(name));
   auto definition = std::make_unique<MainThreadDocumentPaintDefinition>(
-      std::move(native_properties), std::move(custom_properties), alpha);
+      std::move(native_properties), std::move(custom_properties),
+      std::move(*input_argument_types), alpha);
   main_thread_document_definition_map_.insert(name, std::move(definition));
   pending_generator_registry_->NotifyGeneratorReady(name);
 }

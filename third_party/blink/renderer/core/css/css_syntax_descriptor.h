@@ -34,6 +34,8 @@ class CORE_EXPORT CSSSyntaxDescriptor {
     return Components() != a.Components();
   }
 
+  CSSSyntaxDescriptor IsolatedCopy() const;
+
  private:
   friend class CSSSyntaxStringParser;
   friend class CSSSyntaxStringParserTest;

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 
+#include <memory>
+
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -109,12 +111,18 @@ void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
     Vector<String> passed_custom_properties;
     for (const auto& property : custom_properties)
       passed_custom_properties.push_back(property.GetString());
+
+    Vector<CSSSyntaxDescriptor> passed_input_argument_types;
+    for (const auto& syntax_descriptor : definition->InputArgumentTypes())
+      passed_input_argument_types.push_back(syntax_descriptor.IsolatedCopy());
     PostCrossThreadTask(
         *main_thread_runner_, FROM_HERE,
         CrossThreadBindOnce(
             &PaintWorklet::RegisterMainThreadDocumentPaintDefinition,
             paint_worklet_, name, definition->NativeInvalidationProperties(),
             WTF::Passed(std::move(passed_custom_properties)),
+            std::make_unique<Vector<CSSSyntaxDescriptor>>(
+                passed_input_argument_types),
             definition->GetPaintRenderingContext2DSettings()->alpha()));
   }
 }
