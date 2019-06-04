@@ -75,7 +75,7 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
-        if (!hasFocus) mImageFetcher.clear();
+        if (mImageFetcher != null && !hasFocus) mImageFetcher.clear();
     }
 
     private void fetchEntityImage(OmniboxSuggestion suggestion, PropertyModel model) {
