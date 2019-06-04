@@ -279,7 +279,7 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
   DCHECK(GetContentSecurityPolicy());
 
   auto* resource_timing_notifier =
-      MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(*this);
+      WorkerResourceTimingNotifierImpl::CreateForInsideResourceFetcher(*this);
   inside_settings_resource_fetcher_ = CreateFetcherInternal(
       *MakeGarbageCollected<FetchClientSettingsObjectImpl>(*this),
       *GetContentSecurityPolicy(), *resource_timing_notifier);

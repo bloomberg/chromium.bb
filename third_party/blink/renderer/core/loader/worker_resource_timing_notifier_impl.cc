@@ -36,26 +36,41 @@ Performance* GetPerformance(ExecutionContext& execution_context) {
 
 }  // namespace
 
-WorkerResourceTimingNotifierImpl::WorkerResourceTimingNotifierImpl() = default;
+// static
+WorkerResourceTimingNotifierImpl*
+WorkerResourceTimingNotifierImpl::CreateForInsideResourceFetcher(
+    ExecutionContext& execution_context) {
+  auto* notifier = MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(
+      execution_context.GetTaskRunner(TaskType::kPerformanceTimeline));
+  notifier->inside_execution_context_ = &execution_context;
+  return notifier;
+}
+
+// static
+WorkerResourceTimingNotifierImpl*
+WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
+    ExecutionContext& execution_context) {
+  auto* notifier = MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(
+      execution_context.GetTaskRunner(TaskType::kPerformanceTimeline));
+  notifier->outside_execution_context_ = &execution_context;
+  return notifier;
+}
 
 WorkerResourceTimingNotifierImpl::WorkerResourceTimingNotifierImpl(
-    ExecutionContext& execution_context)
-    : task_runner_(
-          execution_context.GetTaskRunner(TaskType::kPerformanceTimeline)),
-      execution_context_(execution_context) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)) {
   DCHECK(task_runner_);
-  DCHECK(execution_context_);
 }
 
 void WorkerResourceTimingNotifierImpl::AddResourceTiming(
     const WebResourceTimingInfo& info,
     const AtomicString& initiator_type) {
-  DCHECK(task_runner_);
   if (task_runner_->RunsTasksInCurrentSequence()) {
-    if (!execution_context_ || execution_context_->IsContextDestroyed())
+    DCHECK(inside_execution_context_);
+    if (inside_execution_context_->IsContextDestroyed())
       return;
-    DCHECK(execution_context_->IsContextThread());
-    GetPerformance(*execution_context_)
+    DCHECK(inside_execution_context_->IsContextThread());
+    GetPerformance(*inside_execution_context_)
         ->AddResourceTiming(info, initiator_type);
   } else {
     PostCrossThreadTask(
@@ -70,11 +85,18 @@ void WorkerResourceTimingNotifierImpl::AddResourceTiming(
 void WorkerResourceTimingNotifierImpl::AddCrossThreadResourceTiming(
     const WebResourceTimingInfo& info,
     const String& initiator_type) {
-  if (!execution_context_ || execution_context_->IsContextDestroyed())
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (!outside_execution_context_ ||
+      outside_execution_context_->IsContextDestroyed())
     return;
-  DCHECK(execution_context_->IsContextThread());
-  GetPerformance(*execution_context_)
+  DCHECK(outside_execution_context_->IsContextThread());
+  GetPerformance(*outside_execution_context_)
       ->AddResourceTiming(info, AtomicString(initiator_type));
+}
+
+void WorkerResourceTimingNotifierImpl::Trace(Visitor* visitor) {
+  visitor->Trace(inside_execution_context_);
+  WorkerResourceTimingNotifier::Trace(visitor);
 }
 
 }  // namespace blink
