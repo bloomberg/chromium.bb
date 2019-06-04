@@ -238,7 +238,6 @@ source_set("wayland_unittests") {
 
   sources = [
     "gpu/wayland_surface_factory_unittest.cc",
-    "host/wayland_buffer_manager_host_unittest.cc",
     "host/wayland_connection_unittest.cc",
     "host/wayland_data_device_unittest.cc",
     "host/wayland_input_method_context_unittest.cc",
@@ -249,6 +248,7 @@ source_set("wayland_unittests") {
     "host/wayland_window_unittest.cc",
     "test/wayland_test.cc",
     "test/wayland_test.h",
+    "wayland_buffer_manager_unittest.cc",
   ]
 
   deps = [

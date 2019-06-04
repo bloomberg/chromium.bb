@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 
 #include <drm_fourcc.h>
@@ -39,20 +40,22 @@ struct InputData {
 
 }  // namespace
 
-class WaylandBufferManagerHostTest : public WaylandTest {
+class WaylandBufferManagerTest : public WaylandTest {
  public:
-  WaylandBufferManagerHostTest() = default;
-  ~WaylandBufferManagerHostTest() override = default;
+  WaylandBufferManagerTest() = default;
+  ~WaylandBufferManagerTest() override = default;
 
   void SetUp() override {
     WaylandTest::SetUp();
 
-    manager_ = connection_->buffer_manager_host();
-    EXPECT_TRUE(manager_);
+    manager_host_ = connection_->buffer_manager_host();
+    EXPECT_TRUE(manager_host_);
 
     // Use the helper methods below, which automatically set the termination
-    // callback again if the manager failed.
-    manager_->SetTerminateGpuCallback(callback_.Get());
+    // callback and bind the interface again if the manager failed.
+    manager_host_->SetTerminateGpuCallback(callback_.Get());
+    auto interface_ptr = manager_host_->BindInterface();
+    buffer_manager_gpu_->SetWaylandBufferManagerHost(std::move(interface_ptr));
   }
 
  protected:
@@ -65,11 +68,11 @@ class WaylandBufferManagerHostTest : public WaylandTest {
     return base::ScopedFD(file.TakePlatformFile());
   }
 
-  // Sets the terminate gpu callback expectation, calls OnChannelDestroyed and
-  // sets the same callback again for convenience.
+  // Sets the terminate gpu callback expectation, calls OnChannelDestroyed,
+  // sets the same callback again and re-establishes mojo connection again
+  // for convenience.
   void SetTerminateCallbackExpectationAndDestroyChannel(
       MockTerminateGpuCallback* callback,
-      WaylandBufferManagerHost* manager,
       bool fail) {
     if (!fail) {
       // To avoid warning messages as "Expected to be never called, but has 0
@@ -78,9 +81,13 @@ class WaylandBufferManagerHostTest : public WaylandTest {
     } else {
       EXPECT_CALL(*callback, Run(_))
           .Times(1)
-          .WillRepeatedly(::testing::Invoke([manager, callback](std::string) {
-            manager->OnChannelDestroyed();
-            manager->SetTerminateGpuCallback(callback->Get());
+          .WillRepeatedly(::testing::Invoke([this, callback](std::string) {
+            manager_host_->OnChannelDestroyed();
+            manager_host_->SetTerminateGpuCallback(callback->Get());
+
+            auto interface_ptr = manager_host_->BindInterface();
+            buffer_manager_gpu_->SetWaylandBufferManagerHost(
+                std::move(interface_ptr));
           }));
     }
   }
@@ -99,12 +106,10 @@ class WaylandBufferManagerHostTest : public WaylandTest {
     if (!fd.is_valid())
       fd = MakeFD();
 
-    SetTerminateCallbackExpectationAndDestroyChannel(&callback_, manager_,
-                                                     fail);
-    manager_->CreateDmabufBasedBuffer(
-        widget, mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd))),
-        kDefaultSize, strides, offsets, modifiers, format, planes_count,
-        buffer_id);
+    SetTerminateCallbackExpectationAndDestroyChannel(&callback_, fail);
+    buffer_manager_gpu_->CreateDmabufBasedBuffer(
+        widget, std::move(fd), kDefaultSize, strides, offsets, modifiers,
+        format, planes_count, buffer_id);
 
     Sync();
   }
@@ -115,34 +120,34 @@ class WaylandBufferManagerHostTest : public WaylandTest {
       uint32_t buffer_id,
       const gfx::Size& size = kDefaultSize,
       size_t length = 0) {
-    SetTerminateCallbackExpectationAndDestroyChannel(&callback_, manager_,
-                                                     fail);
+    SetTerminateCallbackExpectationAndDestroyChannel(&callback_, fail);
+
     if (!length)
       length = size.width() * size.height() * 4;
-    manager_->CreateShmBasedBuffer(
-        widget, mojo::WrapPlatformHandle(mojo::PlatformHandle(MakeFD())),
-        length, size, buffer_id);
+    buffer_manager_gpu_->CreateShmBasedBuffer(widget, MakeFD(), length, size,
+                                              buffer_id);
+
     Sync();
   }
 
   void DestroyBufferAndSetTerminateExpectation(gfx::AcceleratedWidget widget,
                                                uint32_t buffer_id,
                                                bool fail) {
-    SetTerminateCallbackExpectationAndDestroyChannel(&callback_, manager_,
-                                                     fail);
-    manager_->DestroyBuffer(widget, buffer_id);
+    SetTerminateCallbackExpectationAndDestroyChannel(&callback_, fail);
+
+    buffer_manager_gpu_->DestroyBuffer(widget, buffer_id);
 
     Sync();
   }
 
   MockTerminateGpuCallback callback_;
-  WaylandBufferManagerHost* manager_;
+  WaylandBufferManagerHost* manager_host_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerHostTest);
+  DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerTest);
 };
 
-TEST_P(WaylandBufferManagerHostTest, CreateDmabufBasedBuffers) {
+TEST_P(WaylandBufferManagerTest, CreateDmabufBasedBuffers) {
   constexpr uint32_t kDmabufBufferId = 1;
 
   EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(1);
@@ -154,7 +159,7 @@ TEST_P(WaylandBufferManagerHostTest, CreateDmabufBasedBuffers) {
                                           false /*fail*/);
 }
 
-TEST_P(WaylandBufferManagerHostTest, CreateShmBasedBuffers) {
+TEST_P(WaylandBufferManagerTest, CreateShmBasedBuffers) {
   constexpr uint32_t kShmBufferId = 1;
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
@@ -165,7 +170,7 @@ TEST_P(WaylandBufferManagerHostTest, CreateShmBasedBuffers) {
   DestroyBufferAndSetTerminateExpectation(widget, kShmBufferId, false /*fail*/);
 }
 
-TEST_P(WaylandBufferManagerHostTest, ValidateDataFromGpu) {
+TEST_P(WaylandBufferManagerTest, ValidateDataFromGpu) {
   const InputData kBadInputs[] = {
       // All zeros.
       {},
@@ -221,7 +226,7 @@ TEST_P(WaylandBufferManagerHostTest, ValidateDataFromGpu) {
   DestroyBufferAndSetTerminateExpectation(widget, kBufferId, true /*fail*/);
 }
 
-TEST_P(WaylandBufferManagerHostTest, CreateAndDestroyBuffer) {
+TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
   const uint32_t kBufferId1 = 1;
   const uint32_t kBufferId2 = 2;
 
@@ -257,10 +262,10 @@ TEST_P(WaylandBufferManagerHostTest, CreateAndDestroyBuffer) {
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
-                         WaylandBufferManagerHostTest,
+                         WaylandBufferManagerTest,
                          ::testing::Values(kXdgShellV5));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
-                         WaylandBufferManagerHostTest,
+                         WaylandBufferManagerTest,
                          ::testing::Values(kXdgShellV6));
 
 }  // namespace ui
