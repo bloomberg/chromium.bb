@@ -102,7 +102,8 @@ static void RegionToTracedValue(const JankRegion& region,
 
 #if DCHECK_IS_ON()
 static bool ShouldLog(const LocalFrame& frame) {
-  return !frame.GetDocument()->Url().GetString().StartsWith("chrome-devtools:");
+  const String& url = frame.GetDocument()->Url().GetString();
+  return !url.StartsWith("chrome-devtools:") && !url.StartsWith("devtools:");
 }
 #endif
 
