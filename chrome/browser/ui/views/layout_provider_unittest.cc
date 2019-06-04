@@ -52,52 +52,64 @@ class LayoutProviderTest : public testing::Test {
 #if defined(OS_WIN)
     base::win::EnableHighDPISupport();
     gfx::win::InitializeDirectWrite();
-
-    // Ensures anti-aliasing is activated.
-    BOOL antialiasing = TRUE;
-    BOOL result =
-        SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
-    EXPECT_NE(result, FALSE);
-    EXPECT_NE(antialiasing, FALSE)
-        << "The test requires that fonts smoothing (anti-aliasing) is "
-           "activated. If this assert is failing you need to manually activate "
-           "the flag in your system fonts settings.";
-
-    // Ensures that the screen resolution is at the default value.
-    float system_dpi_scale = display::win::GetDPIScale();
-    EXPECT_EQ(system_dpi_scale, 1.0)
-        << "The test requires default display settings. The DPI of the display "
-           "is not 100%. dpi_scale="
-        << system_dpi_scale;
-
-    double accessibility_font_scale = display::win::GetAccessibilityFontScale();
-    EXPECT_EQ(accessibility_font_scale, 1.0)
-        << "The test requires default display settings. The fonts are scaled "
-           "due to accessibility settings. font_scale="
-        << accessibility_font_scale;
-
-    // Ensures that the default fonts are used.
-    EXPECT_EQ(
-        gfx::win::GetSystemFont(gfx::win::SystemFont::kCaption).GetFontName(),
-        kDefaultFontName);
-    EXPECT_EQ(gfx::win::GetSystemFont(gfx::win::SystemFont::kSmallCaption)
-                  .GetFontName(),
-              kDefaultFontName);
-    EXPECT_EQ(
-        gfx::win::GetSystemFont(gfx::win::SystemFont::kMenu).GetFontName(),
-        kDefaultFontName);
-    EXPECT_EQ(
-        gfx::win::GetSystemFont(gfx::win::SystemFont::kStatus).GetFontName(),
-        kDefaultFontName);
-    EXPECT_EQ(
-        gfx::win::GetSystemFont(gfx::win::SystemFont::kMessage).GetFontName(),
-        kDefaultFontName);
 #endif
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutProviderTest);
 };
+
+// Check whether the system is in the default configuration. This test will fail
+// if some system-wide settings are changed. Other tests rely on these default
+// settings and were the cause of many flaky tests.
+TEST_F(LayoutProviderTest, EnsuresDefaultSystemSettings) {
+#if defined(OS_WIN)
+  // Ensures anti-aliasing is activated.
+  BOOL antialiasing = TRUE;
+  BOOL result = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
+  EXPECT_NE(result, FALSE);
+  EXPECT_NE(antialiasing, FALSE)
+      << "The test requires that fonts smoothing (anti-aliasing) is "
+         "activated. If this assert is failing you need to manually activate "
+         "the flag in your system fonts settings.";
+
+  // Ensures that the screen resolution is at the default value.
+  float system_dpi_scale = display::win::GetDPIScale();
+  EXPECT_EQ(system_dpi_scale, 1.0)
+      << "The test requires default display settings. The DPI of the display "
+         "is not 100%. dpi_scale="
+      << system_dpi_scale;
+
+  double accessibility_font_scale = display::win::GetAccessibilityFontScale();
+  EXPECT_EQ(accessibility_font_scale, 1.0)
+      << "The test requires default display settings. The fonts are scaled "
+         "due to accessibility settings. font_scale="
+      << accessibility_font_scale;
+
+  // Ensures that the default UI fonts have the original settings.
+  gfx::Font caption_font =
+      gfx::win::GetSystemFont(gfx::win::SystemFont::kCaption);
+  gfx::Font small_caption_font =
+      gfx::win::GetSystemFont(gfx::win::SystemFont::kSmallCaption);
+  gfx::Font menu_font = gfx::win::GetSystemFont(gfx::win::SystemFont::kMenu);
+  gfx::Font status_font =
+      gfx::win::GetSystemFont(gfx::win::SystemFont::kStatus);
+  gfx::Font message_font =
+      gfx::win::GetSystemFont(gfx::win::SystemFont::kMessage);
+
+  EXPECT_EQ(caption_font.GetFontName(), kDefaultFontName);
+  EXPECT_EQ(small_caption_font.GetFontName(), kDefaultFontName);
+  EXPECT_EQ(menu_font.GetFontName(), kDefaultFontName);
+  EXPECT_EQ(status_font.GetFontName(), kDefaultFontName);
+  EXPECT_EQ(message_font.GetFontName(), kDefaultFontName);
+
+  EXPECT_EQ(caption_font.GetFontSize(), 12);
+  EXPECT_EQ(small_caption_font.GetFontSize(), 12);
+  EXPECT_EQ(menu_font.GetFontSize(), 12);
+  EXPECT_EQ(status_font.GetFontSize(), 12);
+  EXPECT_EQ(message_font.GetFontSize(), 12);
+#endif
+}
 
 // Check legacy font sizes. No new code should be using these constants, but if
 // these tests ever fail it probably means something in the old UI will have
