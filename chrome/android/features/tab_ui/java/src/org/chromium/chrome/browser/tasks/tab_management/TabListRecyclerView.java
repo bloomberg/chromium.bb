@@ -68,7 +68,7 @@ class TabListRecyclerView extends RecyclerView {
     private VisibilityListener mListener;
     private ViewResourceAdapter mDynamicView;
     private long mLastDirtyTime;
-    private long mOriginalAddDuration;
+    private RecyclerView.ItemAnimator mOriginalAnimator;
 
     /**
      * Basic constructor to use during inflation from xml.
@@ -88,9 +88,9 @@ class TabListRecyclerView extends RecyclerView {
     void prepareOverview() {
         endAllAnimations();
 
-        // Make all the items show up immediately.
-        mOriginalAddDuration = getItemAnimator().getAddDuration();
-        getItemAnimator().setAddDuration(0);
+        // Stop all the animations to make all the items show up and scroll to position immediately.
+        mOriginalAnimator = getItemAnimator();
+        setItemAnimator(null);
     }
 
     /**
@@ -113,7 +113,7 @@ class TabListRecyclerView extends RecyclerView {
                 mFadeInAnimator = null;
                 mListener.finishedShowing();
                 // Restore the original value.
-                getItemAnimator().setAddDuration(mOriginalAddDuration);
+                setItemAnimator(mOriginalAnimator);
 
                 if (mDynamicView != null)
                     mDynamicView.dropCachedBitmap();
