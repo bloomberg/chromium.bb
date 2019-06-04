@@ -1554,9 +1554,6 @@ extern const char kOmniboxTabSwitchSuggestionsDescription[];
 extern const char kProactiveTabFreezeAndDiscardName[];
 extern const char kProactiveTabFreezeAndDiscardDescription[];
 
-extern const char kShowManagedUiName[];
-extern const char kShowManagedUiDescription[];
-
 #if defined(GOOGLE_CHROME_BUILD)
 
 extern const char kGoogleBrandedContextMenuName[];

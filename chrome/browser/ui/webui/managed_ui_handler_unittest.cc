@@ -4,12 +4,10 @@
 
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "base/token.h"
 #include "base/values.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_service_impl.h"
@@ -35,8 +33,6 @@ class ManagedUIHandlerTest : public testing::Test {
   ManagedUIHandlerTest()
       : source_(content::TestWebUIDataSource::Create(
             base::Token::CreateRandom().ToString())) {
-    features_.InitAndEnableFeature(features::kShowManagedUi);
-
     // Create a TestingProfile that uses our MockConfigurationPolicyProvider.
     policy_provider()->Init();
     policy::PolicyServiceImpl::Providers providers = {policy_provider()};
@@ -80,7 +76,6 @@ class ManagedUIHandlerTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle bundle_;
-  base::test::ScopedFeatureList features_;
 
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
   std::unique_ptr<TestingProfile> profile_;

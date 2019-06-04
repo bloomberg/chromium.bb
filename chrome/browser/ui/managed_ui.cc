@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/managed_ui.h"
 
-#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -12,7 +11,6 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/management_ui_handler.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -27,9 +25,6 @@
 namespace chrome {
 
 bool ShouldDisplayManagedUi(Profile* profile) {
-  if (!base::FeatureList::IsEnabled(features::kShowManagedUi))
-    return false;
-
 #if defined(OS_CHROMEOS)
   // Don't show the UI in demo mode.
   if (chromeos::DemoSession::IsDeviceInDemoMode())

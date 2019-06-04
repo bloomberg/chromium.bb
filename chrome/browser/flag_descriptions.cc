@@ -2643,11 +2643,6 @@ const char kProactiveTabFreezeAndDiscardDescription[] =
     "Enables proactive tab freezing and discarding. This requires "
     "#enable-page-almost-idle.";
 
-const char kShowManagedUiName[] = "Show managed UI for managed users";
-const char kShowManagedUiDescription[] =
-    "Enabled/disable showing enterprise users a 'Managed by your organization' "
-    "message in the app menu and on some chrome:// pages.";
-
 #if defined(GOOGLE_CHROME_BUILD)
 
 const char kGoogleBrandedContextMenuName[] =
