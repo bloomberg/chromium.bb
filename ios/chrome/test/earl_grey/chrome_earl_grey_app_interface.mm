@@ -42,8 +42,8 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
       @"Clearing browser history timed out");
 }
 
-+ (void)startLoadingURL:(NSString*)URL {
-  chrome_test_util::LoadUrl(GURL(base::SysNSStringToUTF8(URL)));
++ (void)startLoadingURL:(NSString*)spec {
+  chrome_test_util::LoadUrl(GURL(base::SysNSStringToUTF8(spec)));
 }
 
 + (BOOL)waitForWindowIDInjectionIfNeeded {
@@ -309,6 +309,19 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 + (void)addHistoryServiceTypedURL:(NSString*)URL {
   chrome_test_util::AddTypedURLOnClient(GURL(base::SysNSStringToUTF8(URL)));
+}
+
++ (void)deleteHistoryServiceTypedURL:(NSString*)URL {
+  chrome_test_util::DeleteTypedUrlFromClient(
+      GURL(base::SysNSStringToUTF8(URL)));
+}
+
++ (BOOL)isTypedURL:(NSString*)spec presentOnClient:(BOOL)expectPresent {
+  NSError* error = nil;
+  GURL URL(base::SysNSStringToUTF8(spec));
+  BOOL success =
+      chrome_test_util::IsTypedUrlPresentOnClient(URL, expectPresent, &error);
+  return success && !error;
 }
 
 + (void)triggerSyncCycleForType:(syncer::ModelType)type {

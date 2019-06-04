@@ -152,6 +152,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Adds typed URL into HistoryService.
 - (void)addHistoryServiceTypedURL:(const GURL&)URL;
 
+// Deletes typed URL from HistoryService.
+- (void)deleteHistoryServiceTypedURL:(const GURL&)URL;
+
 // Injects a bookmark with |URL| and |title| into the fake sync server.
 - (void)addFakeSyncServerBookmarkWithURL:(const GURL&)URL
                                    title:(const std::string&)title;
@@ -183,6 +186,14 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
                                          name:(const std::string&)UTF8Name
                                         count:(size_t)count
                                       timeout:(NSTimeInterval)timeout;
+
+// Induces a GREYAssert if |expected_present| is YES and the provided |url| is
+// not present, or vice versa.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForTypedURL:(const GURL&)URL
+              expectPresent:(BOOL)expectPresent
+                    timeout:(NSTimeInterval)timeout;
 
 #pragma mark - Tab Utilities (EG2)
 
@@ -386,16 +397,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Injects a bookmark into the fake sync server with |URL| and |title|.
 - (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
                                 bookmarkTitle:(const std::string&)title;
-
-// If the provided |url| is present (or not) if |expected_present|
-// is YES (or NO) returns nil, otherwise an NSError indicating why the operation
-// failed.
-- (NSError*)waitForTypedURL:(const GURL&)URL
-              expectPresent:(BOOL)expectPresent
-                    timeout:(NSTimeInterval)timeout WARN_UNUSED_RESULT;
-
-// Deletes typed URL from HistoryService.
-- (void)deleteTypedURL:(const GURL&)URL;
 
 @end
 

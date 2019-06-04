@@ -41,7 +41,10 @@ using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
-NSString* kWaitForPageToFinishLoadingError = @"Page did not finish loading";
+NSString* const kWaitForPageToFinishLoadingError =
+    @"Page did not finish loading";
+NSString* const kTypedURLError =
+    @"Error occurred during typed URL verification.";
 }
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -452,6 +455,29 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [ChromeEarlGreyAppInterface addHistoryServiceTypedURL:spec];
 }
 
+- (void)deleteHistoryServiceTypedURL:(const GURL&)URL {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  [ChromeEarlGreyAppInterface deleteHistoryServiceTypedURL:spec];
+}
+
+- (NSError*)waitForTypedURL:(const GURL&)URL
+              expectPresent:(BOOL)expectPresent
+                    timeout:(NSTimeInterval)timeout {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  GREYCondition* waitForTypedURL =
+      [GREYCondition conditionWithName:kTypedURLError
+                                 block:^{
+                                   return [ChromeEarlGreyAppInterface
+                                            isTypedURL:spec
+                                       presentOnClient:expectPresent];
+                                 }];
+
+  bool success = [waitForTypedURL waitWithTimeout:timeout];
+  EG_TEST_HELPER_ASSERT_TRUE(success, kTypedURLError);
+
+  return nil;
+}
+
 - (void)triggerSyncCycleForType:(syncer::ModelType)type {
   [ChromeEarlGreyAppInterface triggerSyncCycleForType:type];
 }
@@ -614,33 +640,6 @@ id ExecuteJavaScript(NSString* javascript,
 - (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
                                 bookmarkTitle:(const std::string&)title {
   chrome_test_util::InjectBookmarkOnFakeSyncServer(URL, title);
-}
-
-- (NSError*)waitForTypedURL:(const GURL&)URL
-              expectPresent:(BOOL)expectPresent
-                    timeout:(NSTimeInterval)timeout {
-  __block NSError* error = nil;
-  ConditionBlock condition = ^{
-    NSError* __autoreleasing tempError = error;
-    BOOL success = chrome_test_util::IsTypedUrlPresentOnClient(
-        URL, expectPresent, &tempError);
-    error = tempError;
-    DCHECK(success || error);
-    return !!success;
-  };
-  bool success = WaitUntilConditionOrTimeout(timeout, condition);
-  if (error != nil) {
-    return nil;
-  }
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Error occurred during typed URL verification.");
-  }
-  return nil;
-}
-
-- (void)deleteTypedURL:(const GURL&)URL {
-  chrome_test_util::DeleteTypedUrlFromClient(URL);
 }
 
 @end

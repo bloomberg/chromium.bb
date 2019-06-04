@@ -491,7 +491,7 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
       @"There should be 1 typed URL entity");
 
   // Delete typed URL from client.
-  [ChromeEarlGrey deleteTypedURL:mockURL];
+  [ChromeEarlGrey deleteHistoryServiceTypedURL:mockURL];
 
   // Trigger sync and wait for typed URL to be deleted.
   [ChromeEarlGrey triggerSyncCycleForType:syncer::TYPED_URLS];
@@ -525,7 +525,7 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
                                    name:mockURL.spec()
                                   count:1
                                 timeout:kSyncOperationTimeout]);
-  [ChromeEarlGrey deleteTypedURL:mockURL];
+  [ChromeEarlGrey deleteHistoryServiceTypedURL:mockURL];
 
   // Trigger sync and wait for fake server to be updated.
   [ChromeEarlGrey triggerSyncCycleForType:syncer::TYPED_URLS];

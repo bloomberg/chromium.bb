@@ -179,4 +179,12 @@
                          actualResult);
 }
 
+// Tests typed URL converted helpers in chrome_earl_grey.h.
+- (void)testTypedURLHelpers {
+  const GURL mockURL("http://not-a-real-site.test/");
+
+  [ChromeEarlGrey addHistoryServiceTypedURL:mockURL];
+  [ChromeEarlGrey deleteHistoryServiceTypedURL:mockURL];
+}
+
 @end

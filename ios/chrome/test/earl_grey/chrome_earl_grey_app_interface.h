@@ -22,9 +22,9 @@
 // operation failed.
 + (NSError*)clearBrowsingHistory;
 
-// Loads |URL| in the current WebState with transition type
+// Loads the URL |spec| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
-+ (void)startLoadingURL:(NSString*)URL;
++ (void)startLoadingURL:(NSString*)spec;
 
 // If the current WebState is HTML content, will wait until the window ID is
 // injected. Returns YES if the injection is successful or if the WebState is
@@ -216,6 +216,14 @@
 
 // Adds typed URL into HistoryService.
 + (void)addHistoryServiceTypedURL:(NSString*)URL;
+
+// Deletes typed URL from HistoryService.
++ (void)deleteHistoryServiceTypedURL:(NSString*)URL;
+
+// If the provided URL |spec| is either present or not present in HistoryService
+// (depending on |expectPresent|), return YES. If the present status of |spec|
+// is not what is expected, or there is an error, return NO.
++ (BOOL)isTypedURL:(NSString*)spec presentOnClient:(BOOL)expectPresent;
 
 // Triggers a sync cycle for a |type|.
 + (void)triggerSyncCycleForType:(syncer::ModelType)type;
