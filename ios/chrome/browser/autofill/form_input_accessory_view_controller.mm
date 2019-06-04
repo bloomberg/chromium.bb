@@ -83,10 +83,8 @@ CGFloat const kInputAccessoryHeight = 44.0f;
     _paused = YES;
     _manualFillAccessoryViewControllerDelegate =
         manualFillAccessoryViewControllerDelegate;
-    if (autofill::features::IsPasswordManualFallbackEnabled()) {
       _manualFillAccessoryViewController =
           [[ManualFillAccessoryViewController alloc] initWithDelegate:self];
-    }
 
     _suggestionsHaveBeenShown = NO;
     if (IsIPadIdiom()) {
@@ -188,23 +186,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
        CGRectEqualToRect(_keyboardFrame, CGRectZero))) {
     [self removeCustomInputAccessoryView];
     return;
-  }
-
-  // Check that |manualFillAccessoryViewController| was not instantiated if flag
-  // is disabled. And return early if there are no suggestions on iPad.
-  if (!autofill::features::IsPasswordManualFallbackEnabled()) {
-    DCHECK(!self.manualFillAccessoryViewController);
-    if (IsIPadIdiom()) {
-      // On iPad, there's no inputAccessoryView available, so we attach the
-      // custom view directly to the keyboard view instead. If this is a form
-      // suggestion view and no suggestions have been triggered yet, don't show
-      // the custom view.
-      if (suggestions && !_suggestionsHaveBeenShown && !suggestions.count) {
-        [self removeCustomInputAccessoryView];
-        return;
-      }
-      _suggestionsHaveBeenShown = YES;
-    }
   }
 
   // Create the views if they don't exist already.
@@ -344,14 +325,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   if (windows.count < expectedMinWindows)
     return nil;
 
-  UIWindow* window;
-  if (autofill::features::IsPasswordManualFallbackEnabled()) {
-    // TODO(crbug.com/845472): verify this works on iPad with split view before
-    // making this the default.
-    window = windows.lastObject;
-  } else {
-    window = windows[1];
-  }
+  UIWindow* window = windows.lastObject;
 
   for (UIView* subview in window.subviews) {
     if ([NSStringFromClass([subview class]) rangeOfString:@"PeripheralHost"]

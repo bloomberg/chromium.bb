@@ -445,23 +445,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
     LogSuggestionShown(PasswordSuggestionType::SUGGESTED);
   }
 
-  // Once Manual Fallback is enabled the access to settings will exist as an
-  // option in the new passwords UI.
-  if (!autofill::features::IsPasswordManualFallbackEnabled()) {
-    // Add "Show all".
-    NSString* showAll = GetNSString(IDS_IOS_SHOW_ALL_PASSWORDS);
-    [suggestions
-        addObject:
-            [FormSuggestion
-                suggestionWithValue:showAll
-                 displayDescription:nil
-                               icon:nil
-                         identifier:
-                             autofill::
-                                 POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY]];
-    LogSuggestionShown(PasswordSuggestionType::SHOW_ALL);
-  }
-
   completion([suggestions copy], self);
 }
 

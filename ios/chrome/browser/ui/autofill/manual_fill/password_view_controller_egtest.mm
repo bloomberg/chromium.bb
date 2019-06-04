@@ -237,8 +237,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 - (void)setUp {
   [super setUp];
-  GREYAssert(autofill::features::IsPasswordManualFallbackEnabled(),
-             @"Manual Fallback must be enabled for this Test Case");
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);

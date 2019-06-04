@@ -175,7 +175,6 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   self.passwordButton.contentEdgeInsets = UIEdgeInsetsMake(0, 2, 0, 2);
   [icons addObject:self.passwordButton];
 
-  if (autofill::features::IsAutofillManualFallbackEnabled()) {
     self.cardsButton =
         [self manualFillButtonWithAction:@selector(cardButtonPressed:)
                               ImageNamed:@"ic_credit_card"
@@ -197,7 +196,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 
     self.accountButton.hidden = self.isAddressButtonHidden;
     [icons addObject:self.accountButton];
-  }
+
   UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:icons];
   stackView.spacing =
       IsIPadIdiom() ? ManualFillIconsIPadSpacing : ManualFillIconsSpacing;

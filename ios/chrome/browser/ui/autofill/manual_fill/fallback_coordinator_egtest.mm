@@ -314,11 +314,6 @@ void DockKeyboard() {
 
 - (void)setUp {
   [super setUp];
-  GREYAssert(autofill::features::IsAutofillManualFallbackEnabled(),
-             @"Manual Fallback must be enabled for this Test Case");
-  GREYAssert(autofill::features::IsAutofillManualFallbackEnabled(),
-             @"Manual Fallback phase 2 must be enabled for this Test Case");
-
   ios::ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   _personalDataManager =

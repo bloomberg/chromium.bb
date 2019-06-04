@@ -92,7 +92,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'cronet_unittests_ios',
   'ios_chrome_bookmarks_egtests',
   'ios_chrome_integration_egtests',
-  'ios_chrome_manual_fill_egtests',
   'ios_chrome_reading_list_egtests',
   'ios_chrome_settings_egtests',
   'ios_chrome_smoke_egtests',

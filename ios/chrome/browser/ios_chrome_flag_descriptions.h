@@ -42,14 +42,6 @@ extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
 extern const char kAutofillIOSDelayBetweenFieldsName[];
 extern const char kAutofillIOSDelayBetweenFieldsDescription[];
 
-// Title and description for the flag to control if manual fallback is enabled.
-extern const char kAutofillManualFallbackName[];
-extern const char kAutofillManualFallbackDescription[];
-
-// Title and description for the flag to control if manual fallback is enabled.
-extern const char kAutofillManualFallbackPhaseTwoName[];
-extern const char kAutofillManualFallbackPhaseTwoDescription[];
-
 // Title and description for the flag to control offering to save unmasked
 // server cards locally as FULL_SERVER_CARDs upon success of credit card unmask.
 extern const char kAutofillNoLocalSaveOnUnmaskSuccessName[];

@@ -23,18 +23,6 @@
 
 namespace {
 
-// The alpha value of the background color.
-const CGFloat kBackgroundColorAlpha = 1.0;
-
-// The width of the separators of the previous and next buttons.
-const CGFloat kNavigationButtonSeparatorWidth = 1;
-
-// The width of the shadow part of the navigation area separator.
-const CGFloat kNavigationAreaSeparatorShadowWidth = 2;
-
-// The width of the navigation area / custom view separator asset.
-const CGFloat kNavigationAreaSeparatorWidth = 1;
-
 // The width for the white gradient UIImageView.
 constexpr CGFloat ManualFillGradientWidth = 44;
 
@@ -119,10 +107,6 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
   DCHECK(leadingView);
   self.leadingView = leadingView;
 
-  if (!autofill::features::IsPasswordManualFallbackEnabled()) {
-    [[self class] addBackgroundImageInView:self
-                             withImageName:@"autofill_keyboard_background"];
-  }
   leadingView.translatesAutoresizingMaskIntoConstraints = NO;
 
   UIView* trailingView;
@@ -164,7 +148,6 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
     [trailingView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
   ]];
 
-  if (autofill::features::IsPasswordManualFallbackEnabled()) {
     self.backgroundColor = UIColor.whiteColor;
 
     UIImage* gradientImage = [[UIImage imageNamed:@"mf_gradient"]
@@ -214,12 +197,6 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
       [leadingViewContainer.trailingAnchor
           constraintEqualToAnchor:trailingView.leadingAnchor],
     ]];
-  } else {
-    [leadingViewContainer.trailingAnchor
-        constraintEqualToAnchor:trailingView.leadingAnchor
-                       constant:kNavigationAreaSeparatorShadowWidth]
-        .active = YES;
-  }
 }
 
 UIImage* ButtonImage(NSString* name) {
@@ -229,7 +206,6 @@ UIImage* ButtonImage(NSString* name) {
 
 // Returns a view that shows navigation buttons.
 - (UIView*)viewForNavigationButtons {
-  if (autofill::features::IsPasswordManualFallbackEnabled()) {
     UIButton* previousButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [previousButton setImage:[UIImage imageNamed:@"mf_arrow_up"]
                     forState:UIControlStateNormal];
@@ -274,148 +250,6 @@ UIImage* ButtonImage(NSString* name) {
         initWithArrangedSubviews:@[ previousButton, nextButton, closeButton ]];
     navigationView.spacing = ManualFillNavigationItemSpacing;
     return navigationView;
-  }
-
-  UIView* navView = [[UIView alloc] init];
-  navView.translatesAutoresizingMaskIntoConstraints = NO;
-
-  UIView* separator =
-      [[self class] createImageViewWithImageName:@"autofill_left_sep"
-                                          inView:navView];
-
-  UIButton* previousButton = [self
-      addKeyboardNavButtonWithNormalImage:ButtonImage(@"autofill_prev")
-                             pressedImage:ButtonImage(@"autofill_prev_pressed")
-                            disabledImage:ButtonImage(@"autofill_prev_inactive")
-                                   target:self
-                                   action:@selector(previousButtonTapped)
-                                  enabled:NO
-                                   inView:navView];
-  [previousButton
-      setAccessibilityLabel:l10n_util::GetNSString(
-                                IDS_IOS_AUTOFILL_ACCNAME_PREVIOUS_FIELD)];
-
-  // Add internal separator.
-  UIView* internalSeparator =
-      [[self class] createImageViewWithImageName:@"autofill_middle_sep"
-                                          inView:navView];
-
-  UIButton* nextButton = [self
-      addKeyboardNavButtonWithNormalImage:ButtonImage(@"autofill_next")
-                             pressedImage:ButtonImage(@"autofill_next_pressed")
-                            disabledImage:ButtonImage(@"autofill_next_inactive")
-                                   target:self
-                                   action:@selector(nextButtonTapped)
-                                  enabled:NO
-                                   inView:navView];
-  [nextButton setAccessibilityLabel:l10n_util::GetNSString(
-                                        IDS_IOS_AUTOFILL_ACCNAME_NEXT_FIELD)];
-
-  // Add internal separator.
-  UIView* internalSeparator2 =
-      [[self class] createImageViewWithImageName:@"autofill_middle_sep"
-                                          inView:navView];
-
-  UIButton* closeButton = [self
-      addKeyboardNavButtonWithNormalImage:ButtonImage(@"autofill_close")
-                             pressedImage:ButtonImage(@"autofill_close_pressed")
-                            disabledImage:nil
-                                   target:self
-                                   action:@selector(closeButtonTapped)
-                                  enabled:YES
-                                   inView:navView];
-  [closeButton
-      setAccessibilityLabel:l10n_util::GetNSString(
-                                IDS_IOS_AUTOFILL_ACCNAME_HIDE_KEYBOARD)];
-
-  ApplyVisualConstraintsWithMetrics(
-      @[
-        (@"H:|[separator1(==areaSeparatorWidth)][previousButton][separator2(=="
-         @"buttonSeparatorWidth)][nextButton][internalSeparator2("
-         @"buttonSeparatorWidth)][closeButton]|"),
-        @"V:|-(topPadding)-[separator1]|",
-        @"V:|-(topPadding)-[previousButton]|",
-        @"V:|-(topPadding)-[previousButton]|",
-        @"V:|-(topPadding)-[separator2]|", @"V:|-(topPadding)-[nextButton]|",
-        @"V:|-(topPadding)-[internalSeparator2]|",
-        @"V:|-(topPadding)-[closeButton]|"
-      ],
-      @{
-        @"separator1" : separator,
-        @"previousButton" : previousButton,
-        @"separator2" : internalSeparator,
-        @"nextButton" : nextButton,
-        @"internalSeparator2" : internalSeparator2,
-        @"closeButton" : closeButton
-      },
-      @{
-
-        @"areaSeparatorWidth" : @(kNavigationAreaSeparatorWidth),
-        @"buttonSeparatorWidth" : @(kNavigationButtonSeparatorWidth),
-        @"topPadding" : @(1)
-      });
-
-  self.nextButton = nextButton;
-  self.previousButton = previousButton;
-  return navView;
-}
-
-// Adds a button in |view| that has |normalImage| for  state
-// UIControlStateNormal, a |pressedImage| for states UIControlStateSelected and
-// UIControlStateHighlighted, and an optional |disabledImage| for
-// UIControlStateDisabled.
-- (UIButton*)addKeyboardNavButtonWithNormalImage:(UIImage*)normalImage
-                                    pressedImage:(UIImage*)pressedImage
-                                   disabledImage:(UIImage*)disabledImage
-                                          target:(id)target
-                                          action:(SEL)action
-                                         enabled:(BOOL)enabled
-                                          inView:(UIView*)view {
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
-  button.translatesAutoresizingMaskIntoConstraints = NO;
-
-  [button setBackgroundImage:normalImage forState:UIControlStateNormal];
-  [button setBackgroundImage:pressedImage forState:UIControlStateSelected];
-  [button setBackgroundImage:pressedImage forState:UIControlStateHighlighted];
-  if (disabledImage)
-    [button setBackgroundImage:disabledImage forState:UIControlStateDisabled];
-
-  CALayer* layer = [button layer];
-  layer.borderWidth = 0;
-  layer.borderColor = [[UIColor blackColor] CGColor];
-  button.enabled = enabled;
-  [button addTarget:target
-                action:action
-      forControlEvents:UIControlEventTouchUpInside];
-  [button.heightAnchor constraintEqualToAnchor:button.widthAnchor].active = YES;
-  [view addSubview:button];
-  return button;
-}
-
-// Adds a background image to |view|. The supplied image is stretched to fit the
-// space by stretching the content its horizontal and vertical centers.
-+ (void)addBackgroundImageInView:(UIView*)view
-                   withImageName:(NSString*)imageName {
-  UIImage* backgroundImage = StretchableImageNamed(imageName);
-
-  UIImageView* backgroundImageView = [[UIImageView alloc] init];
-  backgroundImageView.translatesAutoresizingMaskIntoConstraints = NO;
-  [backgroundImageView setImage:backgroundImage];
-  [backgroundImageView setAlpha:kBackgroundColorAlpha];
-  [view addSubview:backgroundImageView];
-  [view sendSubviewToBack:backgroundImageView];
-  AddSameConstraints(view, backgroundImageView);
-}
-
-// Adds an image view in |view| with an image named |imageName|.
-+ (UIView*)createImageViewWithImageName:(NSString*)imageName
-                                 inView:(UIView*)view {
-  UIImage* image =
-      StretchableImageFromUIImage([UIImage imageNamed:imageName], 0, 0);
-  UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
-  imageView.translatesAutoresizingMaskIntoConstraints = NO;
-  [view addSubview:imageView];
-  return imageView;
 }
 
 @end

@@ -1258,13 +1258,6 @@
     "label": "//ios/chrome/test/earl_grey:ios_chrome_integration_egtests",
     "type": "raw",
   },
-  "ios_chrome_manual_fill_egtests": {
-    "args": [
-      "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging",
-    ],
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_manual_fill_egtests",
-    "type": "raw",
-  },
   "ios_chrome_reading_list_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests",
