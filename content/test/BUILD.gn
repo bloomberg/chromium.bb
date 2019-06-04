@@ -573,7 +573,6 @@ jumbo_static_library("browsertest_support") {
 
   deps = [
     ":test_support",
-    ":web_test_support",
     "//base",
     "//base:i18n",
     "//base/test:test_config",
@@ -643,6 +642,31 @@ mojom("test_interfaces") {
   ]
 }
 
+if (is_android) {
+  static_library("android_test_message_pump_support") {
+    testonly = true
+
+    # See comment at the top of //content/BUILD.gn for why this is disabled in
+    # component builds.
+    if (is_component_build) {
+      check_includes = false
+    }
+
+    sources = [
+      "../public/test/nested_message_pump_android.cc",
+      "../public/test/nested_message_pump_android.h",
+    ]
+
+    public_deps = [
+      "//base",
+    ]
+
+    deps = [
+      "//content/public/test/android:test_support_content_jni_headers",
+    ]
+  }
+}
+
 static_library("web_test_support") {
   testonly = true
 
@@ -653,8 +677,6 @@ static_library("web_test_support") {
   }
 
   sources = [
-    "../public/test/nested_message_pump_android.cc",
-    "../public/test/nested_message_pump_android.h",
     "../public/test/web_test_support.h",
     "web_test_support.cc",
   ]
@@ -678,10 +700,6 @@ static_library("web_test_support") {
     "//ui/gfx/geometry",
     "//v8",
   ]
-
-  if (is_android) {
-    deps += [ "//content/public/test/android:test_support_content_jni_headers" ]
-  }
 }
 
 static_library("test_runner_support") {
@@ -1215,6 +1233,7 @@ test("content_browsertests") {
       "../browser/pointer_lock_browsertest.h",
     ]
     deps += [
+      ":android_test_message_pump_support",
       ":content_browsertests_java",
       "//content/shell:content_shell_lib",
       "//content/shell/android:content_shell_assets",

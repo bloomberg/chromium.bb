@@ -549,8 +549,8 @@ if (!is_ios) {
         "//components/autofill_assistant/browser",
         "//components/autofill_assistant/browser:proto",
         "//components/download/internal/common:internal_java",
-        "//content/public/test/android:web_test_java_support",
-        "//content/test:web_test_support",
+        "//content/public/test/android:android_test_message_pump_support_java",
+        "//content/test:android_test_message_pump_support",
         "//testing/android/native_test:native_test_support",
       ]
       use_default_launcher = false

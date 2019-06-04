@@ -408,6 +408,7 @@ jumbo_static_library("content_shell_lib") {
       "//base/test:test_support",
       "//components/embedder_support/android:view",
       "//content/shell/android:content_shell_jni_headers",
+      "//content/test:android_test_message_pump_support",
       "//mojo/public/java/system:test_support",
       "//ui/android",
     ]

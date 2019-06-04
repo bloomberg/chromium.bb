@@ -172,7 +172,7 @@ android_apk("content_shell_apk") {
     "//base:base_java_test_support",
     "//components/crash/android:java",
     "//content/public/android:content_java",
-    "//content/public/test/android:web_test_java_support",
+    "//content/public/test/android:android_test_message_pump_support_java",
     "//media/capture/video/android:capture_java",
     "//net/android:net_java",
     "//services/shape_detection:shape_detection_java",

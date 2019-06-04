@@ -97,6 +97,8 @@ display log messages to the `LogCat` pane.
 <classpathentry kind="src" path="android_webview/test/shell/src"/>
 <classpathentry kind="src" path="android_webview/unittestjava/src"/>
 <classpathentry kind="src" path="android_webview/javatests/src"/>
+<classpathentry kind="src" path="chrome/test/android/browsertests_apk/src"/>
+<classpathentry kind="src" path="components/test/android/browsertests_apk/src"/>
 <classpathentry kind="src" path="content/public/test/android/javatests/src"/>
 <classpathentry kind="src" path="content/public/android/java/src"/>
 <classpathentry kind="src" path="content/public/android/javatests/src"/>

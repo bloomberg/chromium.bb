@@ -8,7 +8,7 @@ generate_jni("test_support_content_jni_headers") {
   ]
 }
 
-android_library("web_test_java_support") {
+android_library("android_test_message_pump_support_java") {
   testonly = true
   deps = [
     "//base:base_java",
@@ -19,7 +19,7 @@ android_library("web_test_java_support") {
 android_library("content_java_test_support") {
   testonly = true
   deps = [
-    ":web_test_java_support",
+    ":android_test_message_pump_support_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//content/public/android:content_java",

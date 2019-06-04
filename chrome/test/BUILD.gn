@@ -141,7 +141,6 @@ static_library("test_support") {
     "//base/test:test_support",
     "//chrome:resources",
     "//chrome:strings",
-    "//chrome/app:test_support",
 
     #"//chrome/app/theme:theme_resources",
     "//chrome/browser:test_support",
@@ -223,6 +222,9 @@ static_library("test_support") {
     }
   } else {
     public_deps += [
+      # Android uses //chrome:chrome_android_core instead of the //chrome/app
+      # target.
+      "//chrome/app:test_support",
       "//components/ukm:test_support",
       "//components/zoom:test_support",
     ]
@@ -457,15 +459,24 @@ if (is_android) {
       "CHROME_VERSION_MAJOR=" + chrome_version_major,
     ]
     use_default_launcher = false
+    android_manifest =
+        "${target_gen_dir}/android_browsertests_manifest/AndroidManifest.xml"
+    android_manifest_dep = ":android_browsertests_manifest"
 
     deps = [
+      ":android_browsertests_java",
       ":test_support",
       ":test_support_ui_android",
+      "//chrome:chrome_android_core",
       "//chrome/android:app_hooks_java",
       "//chrome/android:chrome_java",
+      "//content/test:android_test_message_pump_support",
     ]
 
-    sources = []
+    sources = [
+      "android/browsertests_apk/android_browsertests_jni_onload.cc",
+      # TODO(crbug.com/961849): Write an Android browser test and put it here.
+    ]
   }
 
   static_library("test_support_ui_android") {
@@ -481,6 +492,35 @@ if (is_android) {
       "//chrome/browser",
       "//content/public/browser",
     ]
+  }
+
+  android_library("android_browsertests_java") {
+    testonly = true
+    deps = [
+      ":android_browsertests_java_resources",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//chrome/android:chrome_java",
+      "//content/shell/android:content_shell_browsertests_java",
+      "//testing/android/native_test:native_test_java",
+    ]
+    java_files = [
+      "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsActivity.java",
+      "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsApplication.java",
+    ]
+  }
+
+  android_resources("android_browsertests_java_resources") {
+    testonly = true
+    resource_dirs = [ "//chrome/test/android/browsertests_apk/res" ]
+    custom_package = "org.chromium.android_browsertests_apk"
+  }
+
+  jinja_template("android_browsertests_manifest") {
+    testonly = true
+    input = "//chrome/test/android/browsertests_apk/AndroidManifest.xml.jinja2"
+    output =
+        "${target_gen_dir}/android_browsertests_manifest/AndroidManifest.xml"
   }
 }
 
@@ -3361,6 +3401,7 @@ test("unit_tests") {
     ]
     deps += [
       "//base:base_java",
+      "//chrome:chrome_android_core",
       "//chrome/android:app_hooks_java",
       "//chrome/android:chrome_java",
       "//chrome/android/features/media_router:java",
@@ -5464,6 +5505,8 @@ test("chrome_app_unittests") {
     "../app/android/chrome_main_delegate_android.cc",
     "../app/android/chrome_main_delegate_android.h",
     "../app/android/chrome_main_delegate_android_unittest.cc",
+    "../app/chrome_main_delegate.cc",
+    "../app/chrome_main_delegate.h",
     "../app/chrome_watcher_client_unittest_win.cc",
     "../app/chrome_watcher_client_win.cc",
     "../app/chrome_watcher_command_line_win.cc",
@@ -5476,8 +5519,10 @@ test("chrome_app_unittests") {
     "//base/test:test_support",
     "//chrome/browser",
     "//chrome/child",
+    "//chrome/gpu",
     "//components/crash/core/common",
     "//components/flags_ui:switches",
+    "//components/tracing",
   ]
   if (!is_fuchsia) {
     # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
