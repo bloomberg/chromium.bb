@@ -25,7 +25,7 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
  public:
   // Callback function that releases the according output record.
   // |output_record_| will be passed to the callback function as argument.
-  using ReleaseCB = base::OnceCallback<void(int)>;
+  using ReleaseCB = base::OnceClosure;
 
   // V4L2DecodeSurfaceHandler maintains a list of InputRecords, which records
   // the status and metadata of input buffers.

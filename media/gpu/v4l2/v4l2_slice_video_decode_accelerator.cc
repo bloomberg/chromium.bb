@@ -1994,7 +1994,7 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
       new V4L2ConfigStoreDecodeSurface(
           input, output,
           base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer,
-                         base::Unretained(this)));
+                         base::Unretained(this), output));
 
   DVLOGF(4) << "Created surface " << input << " -> " << output;
   return dec_surface;

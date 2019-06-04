@@ -26,7 +26,7 @@ V4L2DecodeSurface::~V4L2DecodeSurface() {
 
   DVLOGF(5) << "Releasing output record id=" << output_record_;
   if (release_cb_)
-    std::move(release_cb_).Run(output_record_);
+    std::move(release_cb_).Run();
 }
 
 void V4L2DecodeSurface::SetDecoded() {
