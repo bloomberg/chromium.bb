@@ -767,11 +767,6 @@
                   'extensions/browser/api/networking_private/|'\
                   'ui/chromeos/network/',
     },
-    'chromeos_power': {
-      'filepath': 'ash/system/power/|'\
-                  'chromeos/dbus/power_.*|'\
-                  'chrome/browser/chromeos/power/',
-    },
     'chromeos_timezone': {
       'filepath': 'chromeos/timezone/',
     },
@@ -1110,11 +1105,6 @@
     'libxml_xslt': {
       'filepath': 'third_party/libxml/' \
                   '|third_party/libxslt/',
-    },
-    'linux_fonts': {
-      'filepath': 'ui/gfx/font_render_params_.*|'\
-                  'ui/gfx/platform_font_linux.*|'\
-                  'ui/gfx/render_text_harfbuzz.*',
     },
     'linux_sandboxing': {
       'filepath': 'sandbox/linux/',
@@ -1886,8 +1876,7 @@
   'WATCHLISTS': {
     'about_flags': ['asvitkine+watch@chromium.org',
                     'jmedley+watch@chromium.org'],
-    'accelerator_table': ['derat+watch@chromium.org',
-                          'yusukes+watch@chromium.org'],
+    'accelerator_table': ['yusukes+watch@chromium.org'],
     'accessibility': ['aboxhall+watch@chromium.org',
                       'akihiroota@chromium.org',
                       'aleventhal+watch@chromium.org',
@@ -2221,7 +2210,6 @@
                      'jlklein+watch-network@chromium.org',
                      'khorimoto+watch-network@chromium.org',
                      'stevenjb+watch-network@chromium.org'],
-    'chromeos_power': ['derat+watch@chromium.org'],
     'chromeos_timezone': ['alemate+watch@chromium.org'],
     'chromeos_webui': ['alemate+watch@chromium.org'],
     'chromevox': ['anastasi+watch@google.com'],
@@ -2387,7 +2375,6 @@
                 'urvang@chromium.org'],
     'libxml_xslt': ['ail@google.com',
                     'dominicc+watchlist@chromium.org'],
-    'linux_fonts': ['derat+watch@chromium.org'],
     'linux_sandboxing': ['jln+watch@chromium.org'],
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
     'mac' : ['mac-reviews@chromium.org'],
@@ -2665,8 +2652,7 @@
                          'msramek+watch@chromium.org'],
     'webui_backend': ['dbeam+watch-webui-backend@chromium.org'],
     'windows_sandboxing': ['wfh+watch@chromium.org'],
-    'x11': ['derat+watch@chromium.org',
-            'sadrul@chromium.org',
+    'x11': ['sadrul@chromium.org',
             'yusukes+watch@chromium.org'],
     'zlib': ['cblume+zlib@chromium.org'],
     'zoom': ['wjmaclean@chromium.org'],
