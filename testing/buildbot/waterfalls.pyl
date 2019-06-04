@@ -1598,6 +1598,14 @@
           'libANGLE',
         ],
       },
+      'android-code-coverage': {
+        'mixins': [
+          'code-coverage',
+        ],
+        'test_suites': {
+          'junit_tests': 'android_code_coverage_junit_tests',
+        }
+      },
       'android-mojo-webview-rel': {
         'swarming': {
           'dimension_sets': [

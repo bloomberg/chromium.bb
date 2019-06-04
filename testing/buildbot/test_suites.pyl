@@ -24,6 +24,10 @@
       'monochrome_public_test_ar_apk': {},
     },
 
+    'android_code_coverage_junit_tests': {
+      'base_junit_tests': {},
+    },
+
     'android_ddready_vr_gtests': {
       'chrome_public_test_vr_apk-ddready-cardboard': {
         'args': [

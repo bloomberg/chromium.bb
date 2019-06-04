@@ -3460,6 +3460,13 @@
       "libANGLE"
     ]
   },
+  "android-code-coverage": {
+    "junit_tests": [
+      {
+        "test": "base_junit_tests"
+      }
+    ]
+  },
   "android-mojo-webview-rel": {
     "gtest_tests": [
       {
