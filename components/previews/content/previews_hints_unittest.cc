@@ -423,6 +423,35 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
   resource_hint2b->set_loading_optimization_type(
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
   resource_hint2b->set_resource_pattern("resource2b.js");
+  // Page hint for "/has_metadata/" with all details provided in metadata and
+  // should take precedence over the details at the top-level.
+  optimization_guide::proto::PageHint* page_hint3 = hint1->add_page_hints();
+  page_hint3->set_page_pattern("/has_metadata/");
+  page_hint3->set_max_ect_trigger(
+      optimization_guide::proto::EffectiveConnectionType::
+          EFFECTIVE_CONNECTION_TYPE_4G);
+  optimization_guide::proto::Optimization* optimization_with_metadata =
+      page_hint3->add_whitelisted_optimizations();
+  optimization_with_metadata->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_with_metadata->set_inflation_percent(12345);
+  optimization_guide::proto::ResourceLoadingHint* unused_resource_hint =
+      optimization_with_metadata->add_resource_loading_hints();
+  unused_resource_hint->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  unused_resource_hint->set_resource_pattern("unused_resource_hint.js");
+  optimization_guide::proto::PreviewsMetadata* previews_metadata =
+      optimization_with_metadata->mutable_previews_metadata();
+  previews_metadata->set_inflation_percent(123);
+  optimization_guide::proto::ResourceLoadingHint* resource_hint3 =
+      previews_metadata->add_resource_loading_hints();
+  resource_hint3->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_hint3->set_resource_pattern("resource3.js");
+  previews_metadata->set_max_ect_trigger(
+      optimization_guide::proto::EffectiveConnectionType::
+          EFFECTIVE_CONNECTION_TYPE_3G);
+
   ParseConfig(config);
 
   // Verify optimization providing inflation_percent and hints version.
@@ -467,6 +496,24 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
   EXPECT_EQ(2ul, patterns_to_block2.size());
   EXPECT_EQ("resource2a.js", patterns_to_block2[0]);
   EXPECT_EQ("resource2b.js", patterns_to_block2[1]);
+
+  // Verify page hint having data stored in metadata.
+  inflation_percent = 0;
+  ect_threshold =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  serialized_hint_version_string = "";
+  EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
+      GURL("https://www.somedomain.org/has_metadata/"),
+      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent, &ect_threshold,
+      &serialized_hint_version_string));
+  EXPECT_EQ(123, inflation_percent);
+  std::vector<std::string> patterns_to_block3;
+  previews_hints()->GetResourceLoadingHints(
+      GURL("https://www.somedomain.org/has_metadata/"), &patterns_to_block3);
+  EXPECT_EQ(1ul, patterns_to_block3.size());
+  EXPECT_EQ("resource3.js", patterns_to_block3[0]);
+  EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G,
+            ect_threshold);
 }
 
 TEST_F(PreviewsHintsTest,
