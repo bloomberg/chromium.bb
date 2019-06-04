@@ -297,7 +297,7 @@ std::vector<PageNodeImpl*> GraphImpl::GetAllPageNodes() {
   return GetAllNodesOfType<PageNodeImpl>();
 }
 
-size_t GraphImpl::GetNodeAttachedDataCountForTesting(NodeBase* node,
+size_t GraphImpl::GetNodeAttachedDataCountForTesting(const Node* node,
                                                      const void* key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!node && !key)
@@ -330,10 +330,11 @@ void GraphImpl::RemoveNode(NodeBase* node) {
   OnBeforeNodeRemoved(node);
 
   // Remove any node attached data affiliated with this node.
+  const Node* public_node = node->ToNode();
   auto lower =
-      node_attached_data_map_.lower_bound(std::make_pair(node, nullptr));
-  auto upper =
-      node_attached_data_map_.lower_bound(std::make_pair(node + 1, nullptr));
+      node_attached_data_map_.lower_bound(std::make_pair(public_node, nullptr));
+  auto upper = node_attached_data_map_.lower_bound(
+      std::make_pair(public_node + 1, nullptr));
   node_attached_data_map_.erase(lower, upper);
 
   // Before removing the node itself.

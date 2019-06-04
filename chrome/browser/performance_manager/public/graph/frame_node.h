@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_FRAME_NODE_H_
 
 #include "base/macros.h"
+#include "chrome/browser/performance_manager/public/graph/node.h"
 
 namespace performance_manager {
 
-class Graph;
 class FrameNodeObserver;
 
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
@@ -34,20 +34,13 @@ class FrameNodeObserver;
 // origin meaning the frame has to be destroyed and another one created in
 // another process!) and commits, the frame will be swapped with the previously
 // active frame.
-class FrameNode {
+class FrameNode : public Node {
  public:
   using Observer = FrameNodeObserver;
   class ObserverDefaultImpl;
 
   FrameNode();
-  virtual ~FrameNode();
-
-  // Returns the graph to which this node belongs.
-  virtual Graph* GetGraph() const = 0;
-
-  // Returns the private key which is used for indexing this object in the
-  // graph. This is an opaque pointer strictly used for implementation.
-  virtual const void* GetIndexingKey() const = 0;
+  ~FrameNode() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameNode);

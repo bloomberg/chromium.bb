@@ -6,29 +6,22 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_
 
 #include "base/macros.h"
+#include "chrome/browser/performance_manager/public/graph/node.h"
 
 namespace performance_manager {
 
-class Graph;
 class PageNodeObserver;
 
 // A PageNode represents the root of a FrameTree, or equivalently a WebContents.
 // These may correspond to normal tabs, WebViews, Portals, Chrome Apps or
 // Extensions.
-class PageNode {
+class PageNode : public Node {
  public:
   using Observer = PageNodeObserver;
   class ObserverDefaultImpl;
 
   PageNode();
-  virtual ~PageNode();
-
-  // Returns the graph to which this node belongs.
-  virtual Graph* GetGraph() const = 0;
-
-  // Returns the private key which is used for indexing this object in the
-  // graph. This is an opaque pointer strictly used for implementation.
-  virtual const void* GetIndexingKey() const = 0;
+  ~PageNode() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageNode);

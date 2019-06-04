@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PROCESS_NODE_H_
 
 #include "base/macros.h"
+#include "chrome/browser/performance_manager/public/graph/node.h"
 
 namespace performance_manager {
 
-class Graph;
 class ProcessNodeObserver;
 
 // A process node follows the lifetime of a RenderProcessHost.
@@ -22,20 +22,13 @@ class ProcessNodeObserver;
 //    process fails to start, this state may not occur.
 // 3. Process died or failed to start, have exit status.
 // 4. Back to 2.
-class ProcessNode {
+class ProcessNode : public Node {
  public:
   using Observer = ProcessNodeObserver;
   class ObserverDefaultImpl;
 
   ProcessNode();
-  virtual ~ProcessNode();
-
-  // Returns the graph to which this node belongs.
-  virtual Graph* GetGraph() const = 0;
-
-  // Returns the private key which is used for indexing this object in the
-  // graph. This is an opaque pointer strictly used for implementation.
-  virtual const void* GetIndexingKey() const = 0;
+  ~ProcessNode() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProcessNode);

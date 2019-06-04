@@ -37,11 +37,15 @@ class FrameNodeImplTest : public GraphTestHarness {
 
 }  // namespace
 
-TEST_F(FrameNodeImplTest, GetIndexingKey) {
+TEST_F(FrameNodeImplTest, SafeDowncast) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
   auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
-  EXPECT_EQ(frame->GetIndexingKey(), static_cast<const NodeBase*>(frame.get()));
+  FrameNode* node = frame.get();
+  EXPECT_EQ(frame.get(), FrameNodeImpl::FromNode(node));
+  NodeBase* base = frame.get();
+  EXPECT_EQ(base, NodeBase::FromNode(node));
+  EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
 }
 
 TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {

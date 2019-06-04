@@ -75,11 +75,14 @@ std::unique_ptr<ProcessResourceMeasurementBatch> CreateMeasurementBatch(
 
 }  // namespace
 
-TEST_F(SystemNodeImplTest, GetIndexingKey) {
+TEST_F(SystemNodeImplTest, SafeDowncast) {
   MockMultiplePagesWithMultipleProcessesGraph mock_graph(graph());
   auto& sys = mock_graph.system;
-  EXPECT_EQ(sys->GetIndexingKey(),
-            static_cast<const void*>(static_cast<const NodeBase*>(sys.get())));
+  SystemNode* node = sys.get();
+  EXPECT_EQ(sys.get(), SystemNodeImpl::FromNode(node));
+  NodeBase* base = sys.get();
+  EXPECT_EQ(base, NodeBase::FromNode(node));
+  EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
 }
 
 TEST_F(SystemNodeImplTest, DistributeMeasurementBatch) {

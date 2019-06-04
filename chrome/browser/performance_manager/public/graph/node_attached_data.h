@@ -7,9 +7,12 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/macros.h"
 
 namespace performance_manager {
+
+class Node;
 
 // NodeAttachedData allows external observers of the graph to store data that is
 // associated with a graph node, providing lifetime management as a service.
@@ -65,9 +68,70 @@ class ExternalNodeAttachedDataImpl : public NodeAttachedData {
   DISALLOW_COPY_AND_ASSIGN(ExternalNodeAttachedDataImpl);
 };
 
-}  // namespace performance_manager
+// Everything below this point is pure implementation detail.
 
-// This drags in the implementation of ExternalNodeAttachedDataImpl.
-#include "chrome/browser/performance_manager/graph/node_attached_data.h"
+// Provides access for setting/getting data in the map based storage. Not
+// intended to be used directly, but rather by (External)NodeAttachedDataImpl.
+class NodeAttachedDataMapHelper {
+ public:
+  // Attaches the provided |data| to the provided |node|. This should only be
+  // called if the data does not exist (GetFromMap returns nullptr), and will
+  // DCHECK otherwise.
+  static void AttachInMap(const Node* node,
+                          std::unique_ptr<NodeAttachedData> data);
+
+  // Retrieves the data associated with the provided |node| and |key|. This
+  // returns nullptr if no data exists.
+  static NodeAttachedData* GetFromMap(const Node* node, const void* key);
+
+  // Detaches the data associated with the provided |node| and |key|. It is
+  // harmless to call this when no data exists.
+  static std::unique_ptr<NodeAttachedData> DetachFromMap(const Node* node,
+                                                         const void* key);
+};
+
+// Implementation of ExternalNodeAttachedDataImpl, which is declared in the
+// corresponding public header. This helps keep the public headers as clean as
+// possible.
+
+// static
+template <typename UserDataType>
+constexpr int ExternalNodeAttachedDataImpl<UserDataType>::kUserDataKey;
+
+template <typename UserDataType>
+template <typename NodeType>
+UserDataType* ExternalNodeAttachedDataImpl<UserDataType>::GetOrCreate(
+    const NodeType* node) {
+  if (auto* data = Get(node))
+    return data;
+  std::unique_ptr<UserDataType> data = std::make_unique<UserDataType>(node);
+  auto* raw_data = data.get();
+  auto* base = static_cast<const Node*>(node);
+  NodeAttachedDataMapHelper::AttachInMap(base, std::move(data));
+  return raw_data;
+}
+
+template <typename UserDataType>
+template <typename NodeType>
+UserDataType* ExternalNodeAttachedDataImpl<UserDataType>::Get(
+    const NodeType* node) {
+  auto* base = static_cast<const Node*>(node);
+  auto* data = NodeAttachedDataMapHelper::GetFromMap(base, UserDataKey());
+  if (!data)
+    return nullptr;
+  DCHECK_EQ(UserDataKey(), data->GetKey());
+  return static_cast<UserDataType*>(data);
+}
+
+template <typename UserDataType>
+template <typename NodeType>
+bool ExternalNodeAttachedDataImpl<UserDataType>::Destroy(const NodeType* node) {
+  auto* base = static_cast<const Node*>(node);
+  std::unique_ptr<NodeAttachedData> data =
+      NodeAttachedDataMapHelper::DetachFromMap(base, UserDataKey());
+  return data.get();
+}
+
+}  // namespace performance_manager
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_NODE_ATTACHED_DATA_H_

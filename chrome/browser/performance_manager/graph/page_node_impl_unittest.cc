@@ -39,10 +39,13 @@ class PageNodeImplTest : public GraphTestHarness {
 
 }  // namespace
 
-TEST_F(PageNodeImplTest, GetIndexingKey) {
+TEST_F(PageNodeImplTest, SafeDowncast) {
   auto page = CreateNode<PageNodeImpl>();
-  EXPECT_EQ(page->GetIndexingKey(),
-            static_cast<const void*>(static_cast<const NodeBase*>(page.get())));
+  PageNode* node = page.get();
+  EXPECT_EQ(page.get(), PageNodeImpl::FromNode(node));
+  NodeBase* base = page.get();
+  EXPECT_EQ(base, NodeBase::FromNode(node));
+  EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
 }
 
 TEST_F(PageNodeImplTest, AddFrameBasic) {

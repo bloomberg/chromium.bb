@@ -26,6 +26,7 @@ namespace performance_manager {
 
 // TODO(chrisha): Remove this when GraphImplObserver is killed.
 class GraphImplObserver;
+class Node;
 
 // NodeBase implements shared functionality among different types of graph
 // nodes. A specific type of graph node will derive from this class and can
@@ -37,6 +38,11 @@ class NodeBase {
  public:
   using ObserverList =
       typename base::ObserverList<GraphImplObserver>::Unchecked;
+
+  // Used as a unique key to safely allow downcasting from a public node type
+  // to NodeBase via "GetImplType" and "GetImpl". The implementations are
+  // provided by PublicNodeImpl below.
+  static const uintptr_t kNodeBaseType;
 
   // TODO(siggi): Don't store the node type, expose it on a virtual function
   //    instead.
@@ -64,6 +70,16 @@ class NodeBase {
     observers_.RemoveObserver(observer);
   }
   const ObserverList& observers() const { return observers_; }
+
+  // Helper functions for casting from a node type to its underlying NodeBase.
+  // This CHECKs that the cast is valid. These functions work happily with
+  // public and private node class inputs.
+  static const NodeBase* FromNode(const Node* node);
+  static NodeBase* FromNode(Node* node);
+
+  // For converting from NodeBase to Node. This is implemented by
+  // TypedNodeBase.
+  virtual const Node* ToNode() const = 0;
 
  protected:
   friend class GraphImpl;
@@ -97,18 +113,18 @@ class NodeBase {
   DISALLOW_COPY_AND_ASSIGN(NodeBase);
 };
 
-// Helper for implementing the common bits of |PublicNodeClass|.
+// Helper for implementing the Node parent of a PublicNodeClass.
 template <class NodeImplClass, class PublicNodeClass>
 class PublicNodeImpl : public PublicNodeClass {
  public:
-  // Partial implementation of PublicNodeClass:
+  // Node implementation:
   Graph* GetGraph() const override {
     return static_cast<const NodeImplClass*>(this)->graph();
   }
-  const void* GetIndexingKey() const override {
-    // By contract the indexing key is actually a NodeBase pointer. This allows
-    // quick and safe casting from a public node type to the corresponding
-    // internal node type.
+  uintptr_t GetImplType() const override { return NodeBase::kNodeBaseType; }
+  const void* GetImpl() const override {
+    // This exposes NodeBase, so that we can complete the triangle of casting
+    // between all views of a node: NodeBase, FooNodeImpl, and FooNode.
     return static_cast<const NodeBase*>(
         static_cast<const NodeImplClass*>(this));
   }
@@ -128,14 +144,25 @@ class TypedNodeBase : public NodeBase {
   explicit TypedNodeBase(GraphImpl* graph)
       : NodeBase(NodeImplClass::Type(), graph) {}
 
+  // Helper functions for casting from NodeBase to a concrete node type. This
+  // CHECKs that the cast is valid.
   static const NodeImplClass* FromNodeBase(const NodeBase* node) {
-    DCHECK_EQ(node->type(), NodeImplClass::Type());
+    CHECK_EQ(NodeImplClass::Type(), node->type());
     return static_cast<const NodeImplClass*>(node);
   }
-
   static NodeImplClass* FromNodeBase(NodeBase* node) {
-    DCHECK(node->type() == NodeImplClass::Type());
+    CHECK_EQ(NodeImplClass::Type(), node->type());
     return static_cast<NodeImplClass*>(node);
+  }
+
+  // Helper function for casting from a public node type to the private impl.
+  // This also casts away const correctness, as it is intended to be used by
+  // impl code that uses the public observer interface for a node type, where
+  // all notifications are delivered with a const node pointer. This CHECKs that
+  // the cast is valid.
+  static NodeImplClass* FromNode(const NodeClass* node) {
+    NodeBase* node_base = const_cast<NodeBase*>(NodeBase::FromNode(node));
+    return FromNodeBase(node_base);
   }
 
   // Convenience accessor to the per-node-class list of observers that is stored
@@ -144,6 +171,10 @@ class TypedNodeBase : public NodeBase {
     // Mediate through NodeBase, as it's the class that is friended by the
     // GraphImpl in order to provide access.
     return NodeBase::GetObservers<NodeObserverClass>(graph());
+  }
+
+  const Node* ToNode() const override {
+    return static_cast<const NodeImplClass*>(this);
   }
 
  private:

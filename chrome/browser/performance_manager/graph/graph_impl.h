@@ -16,8 +16,8 @@
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -25,6 +25,7 @@ namespace performance_manager {
 
 class FrameNodeImpl;
 class GraphImplObserver;
+class Node;
 class NodeBase;
 class PageNodeImpl;
 class ProcessNodeImpl;
@@ -99,7 +100,7 @@ class GraphImpl : public Graph {
   // A |key| of nullptr counts all instances associated with the |node|. A
   // |node| of null counts all instances associated with the |key|. If both are
   // null then the entire map size is provided.
-  size_t GetNodeAttachedDataCountForTesting(NodeBase* node,
+  size_t GetNodeAttachedDataCountForTesting(const Node* node,
                                             const void* key) const;
 
   // Allows explicitly invoking SystemNode destruction for testing.
@@ -166,7 +167,7 @@ class GraphImpl : public Graph {
 
   // User data storage for the graph.
   friend class NodeAttachedDataMapHelper;
-  using NodeAttachedDataKey = std::pair<const NodeBase*, const void*>;
+  using NodeAttachedDataKey = std::pair<const Node*, const void*>;
   using NodeAttachedDataMap =
       std::map<NodeAttachedDataKey, std::unique_ptr<NodeAttachedData>>;
   NodeAttachedDataMap node_attached_data_map_;
