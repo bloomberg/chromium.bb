@@ -425,7 +425,7 @@ android_library("chrome_java") {
     "//components/signin/core/browser:signin_enums_javagen",
     "//components/supervised_user_error_page:enums_srcjar",
     "//components/ui_metrics:ui_metrics_enums_java",
-    "//chrome/browser/notifications/scheduler:jni_enums",
+    "//chrome/browser/notifications/scheduler/public:jni_enums",
     "//chrome/browser/ui:tab_model_enums_java",
     "//net:effective_connection_type_java",
     ":vr_build_config",

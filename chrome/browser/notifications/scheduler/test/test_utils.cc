@@ -7,8 +7,8 @@
 #include <sstream>
 #include <utility>
 
-#include "chrome/browser/notifications/scheduler/notification_data.h"
-#include "chrome/browser/notifications/scheduler/notification_entry.h"
+#include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
+#include "chrome/browser/notifications/scheduler/public/notification_data.h"
 
 namespace notifications {
 namespace test {

@@ -9,7 +9,8 @@ if (is_android) {
 }
 
 source_set("test_lib") {
-  visibility = [ "//chrome/browser/notifications/scheduler:unit_tests" ]
+  visibility =
+      [ "//chrome/browser/notifications/scheduler/internal:unit_tests" ]
 
   sources = [
     "test_utils.cc",
@@ -18,7 +19,7 @@ source_set("test_lib") {
 
   deps = [
     "//base",
-    "//chrome/browser/notifications/scheduler:lib",
-    "//chrome/browser/notifications/scheduler:public",
+    "//chrome/browser/notifications/scheduler/internal:lib",
+    "//chrome/browser/notifications/scheduler/public",
   ]
 }

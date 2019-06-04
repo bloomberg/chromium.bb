@@ -8,9 +8,8 @@
 #include <utility>
 
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_impl.h"
-#include "chrome/browser/notifications/scheduler/notification_schedule_service.h"
-#include "chrome/browser/notifications/scheduler/notification_scheduler_client_registrar.h"
-#include "chrome/browser/notifications/scheduler/notification_scheduler_context.h"
+#include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
+#include "chrome/browser/notifications/scheduler/public/notification_scheduler_client_registrar.h"
 #include "chrome/browser/notifications/scheduler/schedule_service_factory_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"

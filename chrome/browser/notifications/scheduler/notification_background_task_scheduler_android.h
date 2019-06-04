@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/notifications/scheduler/notification_background_task_scheduler.h"
+#include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 
 // This class contains:
 // 1. Android implementation of NotificationBackgroundTaskScheduler, which

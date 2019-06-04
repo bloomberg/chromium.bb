@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/notifications/scheduler/impression_history_tracker.h"
-#include "chrome/browser/notifications/scheduler/impression_types.h"
-#include "chrome/browser/notifications/scheduler/notification_scheduler_types.h"
+#include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
+#include "chrome/browser/notifications/scheduler/internal/impression_types.h"
+#include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
 
 namespace notifications {
 
