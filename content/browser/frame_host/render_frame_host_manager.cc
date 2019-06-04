@@ -786,10 +786,7 @@ void RenderFrameHostManager::CleanUpNavigation() {
 std::unique_ptr<RenderFrameHostImpl>
 RenderFrameHostManager::UnsetSpeculativeRenderFrameHost() {
   speculative_render_frame_host_->GetProcess()->RemovePendingView();
-  speculative_render_frame_host_->DeleteRenderFrame(
-      frame_tree_node_->parent()
-          ? FrameDeleteIntention::kNotMainFrame
-          : FrameDeleteIntention::kSpeculativeMainFrameForNavigationCancelled);
+  speculative_render_frame_host_->DeleteRenderFrame();
   return std::move(speculative_render_frame_host_);
 }
 

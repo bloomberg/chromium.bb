@@ -688,8 +688,7 @@ WebContentsImpl::~WebContentsImpl() {
   // Do not update state as the WebContents is being destroyed.
   frame_tree_.root()->ResetNavigationRequest(true, true);
   if (root->speculative_frame_host()) {
-    root->speculative_frame_host()->DeleteRenderFrame(
-        FrameDeleteIntention::kSpeculativeMainFrameForShutdown);
+    root->speculative_frame_host()->DeleteRenderFrame();
     root->speculative_frame_host()->SetRenderFrameCreated(false);
     root->speculative_frame_host()->ResetNavigationRequests();
   }

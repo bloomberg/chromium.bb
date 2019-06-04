@@ -2427,46 +2427,7 @@ void RenderFrameImpl::OnSwapIn() {
   SwapIn();
 }
 
-void RenderFrameImpl::OnDeleteFrame(FrameDeleteIntention intent) {
-  // The main frame (when not provisional) is owned by the renderer's frame tree
-  // via WebViewImpl. When a provisional main frame is swapped in, the ownership
-  // moves from the browser to the renderer, but this happens in the renderer
-  // process and is then the browser is informed.
-  // If the provisional main frame is swapped in while the browser is destroying
-  // it, the browser may request to delete |this|, thinking it has ownership
-  // of it, but the renderer has already taken ownership via SwapIn().
-  switch (intent) {
-    case FrameDeleteIntention::kNotMainFrame:
-      // The frame was not a main frame, so the browser should always have
-      // ownership of it and we can just proceed with deleting it on
-      // request.
-      DCHECK(!is_main_frame_);
-      break;
-    case FrameDeleteIntention::kSpeculativeMainFrameForShutdown:
-      // In this case the renderer has taken ownership of the provisional main
-      // frame but the browser did not know yet and is shutting down. We can
-      // ignore this request as the frame will be destroyed when the RenderView
-      // is. This handles the shutdown case of https://crbug.com/957858.
-      DCHECK(is_main_frame_);
-      if (in_frame_tree_)
-        return;
-      break;
-    case FrameDeleteIntention::kSpeculativeMainFrameForNavigationCancelled:
-      // In this case the browser was navigating and cancelled the speculative
-      // navigation. The renderer *should* undo the SwapIn() but the old state
-      // has already been destroyed. Both ignoring the message or handling it
-      // would leave the renderer in an inconsistent state now. If we ignore it
-      // then the browser thinks the RenderView has a remote main frame, but it
-      // is incorrect. If we handle it, then we are deleting a local main frame
-      // out from under the RenderView and we will have bad pointers in the
-      // renderer. So all we can do is crash. We should instead prevent this
-      // scenario by blocking the browser from dropping the speculative main
-      // frame when a commit (and ownership transfer) is imminent.
-      // TODO(dcheng): This is the case of https://crbug.com/838348.
-      DCHECK(is_main_frame_);
-      break;
-  }
-
+void RenderFrameImpl::OnDeleteFrame() {
   // This will result in a call to RenderFrameImpl::FrameDetached, which
   // deletes the object. Do not access |this| after detach.
   frame_->Detach();
