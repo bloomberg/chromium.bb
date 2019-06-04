@@ -236,10 +236,10 @@ void SpinButtonElement::RepeatingTimerFired(TimerBase*) {
     Step(up_down_state_ == kUp ? 1 : -1);
 }
 
-void SpinButtonElement::SetHovered(bool flag) {
-  if (!flag)
+void SpinButtonElement::SetHovered(bool hovered) {
+  if (!hovered)
     up_down_state_ = kIndeterminate;
-  HTMLDivElement::SetHovered(flag);
+  HTMLDivElement::SetHovered(hovered);
 }
 
 bool SpinButtonElement::ShouldRespondToMouseEvents() {

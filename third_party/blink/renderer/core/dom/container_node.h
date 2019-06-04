@@ -156,9 +156,7 @@ class CORE_EXPORT ContainerNode : public Node {
   void FocusStateChanged();
   void FocusVisibleStateChanged();
   void FocusWithinStateChanged();
-  void SetActive(bool = true) override;
   void SetDragged(bool) override;
-  void SetHovered(bool = true) override;
   void RemovedFrom(ContainerNode& insertion_point) override;
 
   bool ChildrenOrSiblingsAffectedByFocus() const {

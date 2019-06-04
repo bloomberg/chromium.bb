@@ -1156,42 +1156,6 @@ void ContainerNode::SetHasFocusWithinUpToAncestor(bool flag, Node* ancestor) {
   }
 }
 
-void ContainerNode::SetActive(bool down) {
-  if (down == IsActive())
-    return;
-
-  Node::SetActive(down);
-
-  if (!GetLayoutObject()) {
-    auto* this_element = DynamicTo<Element>(this);
-    if (this_element && this_element->ChildrenOrSiblingsAffectedByActive()) {
-      this_element->PseudoStateChanged(CSSSelector::kPseudoActive);
-    } else {
-      SetNeedsStyleRecalc(kLocalStyleChange,
-                          StyleChangeReasonForTracing::CreateWithExtraData(
-                              style_change_reason::kPseudoClass,
-                              style_change_extra_data::g_active));
-    }
-    return;
-  }
-
-  if (GetComputedStyle()->AffectedByActive()) {
-    StyleChangeType change_type =
-        GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
-            ? kSubtreeStyleChange
-            : kLocalStyleChange;
-    SetNeedsStyleRecalc(change_type,
-                        StyleChangeReasonForTracing::CreateWithExtraData(
-                            style_change_reason::kPseudoClass,
-                            style_change_extra_data::g_active));
-  }
-  auto* this_element = DynamicTo<Element>(this);
-  if (this_element && this_element->ChildrenOrSiblingsAffectedByActive())
-    this_element->PseudoStateChanged(CSSSelector::kPseudoActive);
-
-  GetLayoutObject()->InvalidateIfControlStateChanged(kPressedControlState);
-}
-
 void ContainerNode::SetDragged(bool new_value) {
   if (new_value == IsDragged())
     return;
@@ -1229,30 +1193,6 @@ void ContainerNode::SetDragged(bool new_value) {
   auto* this_element = DynamicTo<Element>(this);
   if (this_element && this_element->ChildrenOrSiblingsAffectedByDrag())
     this_element->PseudoStateChanged(CSSSelector::kPseudoDrag);
-}
-
-void ContainerNode::SetHovered(bool over) {
-  if (over == IsHovered())
-    return;
-
-  Node::SetHovered(over);
-
-  const ComputedStyle* style = GetComputedStyle();
-  if (!style || style->AffectedByHover()) {
-    StyleChangeType change_type = kLocalStyleChange;
-    if (style && style->HasPseudoStyle(kPseudoIdFirstLetter))
-      change_type = kSubtreeStyleChange;
-    SetNeedsStyleRecalc(change_type,
-                        StyleChangeReasonForTracing::CreateWithExtraData(
-                            style_change_reason::kPseudoClass,
-                            style_change_extra_data::g_hover));
-  }
-  auto* this_element = DynamicTo<Element>(this);
-  if (this_element && this_element->ChildrenOrSiblingsAffectedByHover())
-    this_element->PseudoStateChanged(CSSSelector::kPseudoHover);
-
-  if (LayoutObject* o = GetLayoutObject())
-    o->InvalidateIfControlStateChanged(kHoverControlState);
 }
 
 HTMLCollection* ContainerNode::Children() {

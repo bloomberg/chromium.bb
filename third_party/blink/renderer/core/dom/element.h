@@ -912,6 +912,9 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void ActivateDisplayLockIfNeeded();
 
+  virtual void SetActive(bool active);
+  virtual void SetHovered(bool hovered);
+
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }
   UniqueElementData& EnsureUniqueElementData();

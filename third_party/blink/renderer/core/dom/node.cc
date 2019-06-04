@@ -2866,16 +2866,8 @@ void Node::SetHasFocusWithin(bool flag) {
   GetDocument().UserActionElements().SetHasFocusWithin(this, flag);
 }
 
-void Node::SetActive(bool flag) {
-  GetDocument().UserActionElements().SetActive(this, flag);
-}
-
 void Node::SetDragged(bool flag) {
   GetDocument().UserActionElements().SetDragged(this, flag);
-}
-
-void Node::SetHovered(bool flag) {
-  GetDocument().UserActionElements().SetHovered(this, flag);
 }
 
 bool Node::IsUserActionElementActive() const {

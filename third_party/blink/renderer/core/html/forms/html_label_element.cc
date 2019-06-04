@@ -96,10 +96,10 @@ HTMLFormElement* HTMLLabelElement::form() const {
   return nullptr;
 }
 
-void HTMLLabelElement::SetActive(bool down) {
-  if (down != IsActive()) {
+void HTMLLabelElement::SetActive(bool active) {
+  if (active != IsActive()) {
     // Update our status first.
-    HTMLElement::SetActive(down);
+    HTMLElement::SetActive(active);
   }
 
   // Also update our corresponding control.
@@ -108,10 +108,10 @@ void HTMLLabelElement::SetActive(bool down) {
     control_element->SetActive(IsActive());
 }
 
-void HTMLLabelElement::SetHovered(bool over) {
-  if (over != IsHovered()) {
+void HTMLLabelElement::SetHovered(bool hovered) {
+  if (hovered != IsHovered()) {
     // Update our status first.
-    HTMLElement::SetHovered(over);
+    HTMLElement::SetHovered(hovered);
   }
 
   // Also update our corresponding control.

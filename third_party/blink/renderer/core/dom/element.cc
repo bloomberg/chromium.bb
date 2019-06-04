@@ -5495,4 +5495,61 @@ bool Element::StyleRecalcBlockedByDisplayLock(
   return context && !context->ShouldStyle(target);
 }
 
+void Element::SetHovered(bool hovered) {
+  if (hovered == IsHovered())
+    return;
+
+  GetDocument().UserActionElements().SetHovered(this, hovered);
+
+  const ComputedStyle* style = GetComputedStyle();
+  if (!style || style->AffectedByHover()) {
+    StyleChangeType change_type = kLocalStyleChange;
+    if (style && style->HasPseudoStyle(kPseudoIdFirstLetter))
+      change_type = kSubtreeStyleChange;
+    SetNeedsStyleRecalc(change_type,
+                        StyleChangeReasonForTracing::CreateWithExtraData(
+                            style_change_reason::kPseudoClass,
+                            style_change_extra_data::g_hover));
+  }
+  if (ChildrenOrSiblingsAffectedByHover())
+    PseudoStateChanged(CSSSelector::kPseudoHover);
+
+  if (LayoutObject* layout_object = GetLayoutObject())
+    layout_object->InvalidateIfControlStateChanged(kHoverControlState);
+}
+
+void Element::SetActive(bool active) {
+  if (active == IsActive())
+    return;
+
+  GetDocument().UserActionElements().SetActive(this, active);
+
+  if (!GetLayoutObject()) {
+    if (ChildrenOrSiblingsAffectedByActive()) {
+      PseudoStateChanged(CSSSelector::kPseudoActive);
+    } else {
+      SetNeedsStyleRecalc(kLocalStyleChange,
+                          StyleChangeReasonForTracing::CreateWithExtraData(
+                              style_change_reason::kPseudoClass,
+                              style_change_extra_data::g_active));
+    }
+    return;
+  }
+
+  if (GetComputedStyle()->AffectedByActive()) {
+    StyleChangeType change_type =
+        GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
+            ? kSubtreeStyleChange
+            : kLocalStyleChange;
+    SetNeedsStyleRecalc(change_type,
+                        StyleChangeReasonForTracing::CreateWithExtraData(
+                            style_change_reason::kPseudoClass,
+                            style_change_extra_data::g_active));
+  }
+  if (ChildrenOrSiblingsAffectedByActive())
+    PseudoStateChanged(CSSSelector::kPseudoActive);
+
+  GetLayoutObject()->InvalidateIfControlStateChanged(kPressedControlState);
+}
+
 }  // namespace blink

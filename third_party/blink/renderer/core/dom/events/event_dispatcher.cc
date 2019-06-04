@@ -100,12 +100,14 @@ void EventDispatcher::DispatchSimulatedClick(
                                               underlying_event, creation_scope))
         .Dispatch();
 
+  Element* element = DynamicTo<Element>(node);
   if (mouse_event_options != kSendNoEvents) {
     EventDispatcher(node, *MouseEvent::Create(event_type_names::kMousedown,
                                               node.GetDocument().domWindow(),
                                               underlying_event, creation_scope))
         .Dispatch();
-    node.SetActive(true);
+    if (element)
+      element->SetActive(true);
     EventDispatcher(node, *MouseEvent::Create(event_type_names::kMouseup,
                                               node.GetDocument().domWindow(),
                                               underlying_event, creation_scope))
@@ -113,7 +115,8 @@ void EventDispatcher::DispatchSimulatedClick(
   }
   // Some elements (e.g. the color picker) may set active state to true before
   // calling this method and expect the state to be reset during the call.
-  node.SetActive(false);
+  if (element)
+    element->SetActive(false);
 
   // always send click
   EventDispatcher(node, *MouseEvent::Create(event_type_names::kClick,

@@ -565,9 +565,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   virtual void SetFocused(bool flag, WebFocusType);
   virtual void SetHasFocusWithin(bool flag);
-  virtual void SetActive(bool flag = true);
   virtual void SetDragged(bool flag);
-  virtual void SetHovered(bool flag = true);
 
   virtual int tabIndex() const;
 

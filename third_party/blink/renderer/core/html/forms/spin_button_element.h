@@ -91,7 +91,7 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
   void StartRepeatingTimer();
   void StopRepeatingTimer();
   void RepeatingTimerFired(TimerBase*);
-  void SetHovered(bool = true) override;
+  void SetHovered(bool hovered) override;
   bool ShouldRespondToMouseEvents();
   bool IsMouseFocusable() const override { return false; }
 

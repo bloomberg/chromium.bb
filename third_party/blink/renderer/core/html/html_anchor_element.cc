@@ -170,11 +170,11 @@ bool HTMLAnchorElement::HasActivationBehavior() const {
   return true;
 }
 
-void HTMLAnchorElement::SetActive(bool down) {
+void HTMLAnchorElement::SetActive(bool active) {
   if (HasEditableStyle(*this))
     return;
 
-  ContainerNode::SetActive(down);
+  HTMLElement::SetActive(active);
 }
 
 const AttrNameToTrustedType& HTMLAnchorElement::GetCheckedAttributeTypes()
