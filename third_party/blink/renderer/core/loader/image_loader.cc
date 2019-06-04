@@ -343,7 +343,8 @@ void ImageLoader::SetImageForTest(ImageResourceContent* new_image) {
 }
 
 bool ImageLoader::ShouldUpdateOnInsertedInto(
-    ContainerNode& insertion_point) const {
+    ContainerNode& insertion_point,
+    network::mojom::ReferrerPolicy referrer_policy) const {
   // If we're being inserted into a disconnected tree, we don't need to update.
   if (!insertion_point.isConnected())
     return false;
@@ -355,10 +356,15 @@ bool ImageLoader::ShouldUpdateOnInsertedInto(
   if (element_->GetDocument().ValidBaseElementURL() != last_base_element_url_)
     return true;
 
-  // Finally, try to update if we're idle (that is, we have neither the image
-  // contents nor any activity). This could be an indication that we skipped a
-  // previous load when inserted into an inactive document.
-  return !image_content_ && !HasPendingActivity();
+  // If we already have image content, then we don't need an update.
+  if (image_content_)
+    return false;
+
+  // Finally, try to update if we're idle. This could be an indication that we
+  // skipped a previous load when inserted into an inactive document. Note that
+  // if we're not idle, we should also update our referrer policy if it has
+  // changed.
+  return !HasPendingActivity() || referrer_policy != last_referrer_policy_;
 }
 
 void ImageLoader::ClearImage() {
@@ -659,6 +665,7 @@ void ImageLoader::UpdateFromElement(
   suppress_error_events_ = (update_behavior == kUpdateSizeChanged);
   last_base_element_url_ =
       element_->GetDocument().ValidBaseElementURL().GetString();
+  last_referrer_policy_ = referrer_policy;
 
   if (update_behavior == kUpdateIgnorePreviousError)
     ClearFailedLoadURL();

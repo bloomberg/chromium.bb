@@ -448,8 +448,8 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
     }
   }
 
-  if (image_was_modified ||
-      GetImageLoader().ShouldUpdateOnInsertedInto(insertion_point)) {
+  if (image_was_modified || GetImageLoader().ShouldUpdateOnInsertedInto(
+                                insertion_point, referrer_policy_)) {
     GetImageLoader().UpdateFromElement(ImageLoader::kUpdateNormal,
                                        referrer_policy_);
   }

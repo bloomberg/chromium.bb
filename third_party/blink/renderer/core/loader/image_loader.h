@@ -90,7 +90,10 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
 
   // Returns true if this loader should be updated via UpdateFromElement() when
   // being inserted into a new parent; returns false otherwise.
-  bool ShouldUpdateOnInsertedInto(ContainerNode& insertion_point) const;
+  bool ShouldUpdateOnInsertedInto(
+      ContainerNode& insertion_point,
+      network::mojom::ReferrerPolicy referrer_policy =
+          network::mojom::ReferrerPolicy::kDefault) const;
 
   // Cancels pending load events, and doesn't dispatch new ones.
   // Note: ClearImage/SetImage.*() are not a simple setter.
@@ -208,6 +211,8 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   Member<ImageResource> image_resource_for_image_document_;
 
   String last_base_element_url_;
+  network::mojom::ReferrerPolicy last_referrer_policy_ =
+      network::mojom::ReferrerPolicy::kDefault;
   AtomicString failed_load_url_;
   base::WeakPtr<Task> pending_task_;  // owned by Microtask
   std::unique_ptr<IncrementLoadEventDelayCount>

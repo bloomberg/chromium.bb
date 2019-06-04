@@ -2037,6 +2037,7 @@ jumbo_source_set("unit_tests") {
     "loader/frame_fetch_context_test.cc",
     "loader/frame_resource_fetcher_properties_test.cc",
     "loader/idleness_detector_test.cc",
+    "loader/image_loader_test.cc",
     "loader/interactive_detector_test.cc",
     "loader/link_loader_test.cc",
     "loader/long_task_detector_test.cc",
