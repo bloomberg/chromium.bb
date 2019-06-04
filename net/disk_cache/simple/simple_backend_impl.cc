@@ -61,6 +61,10 @@ namespace {
 // Maximum fraction of the cache that one entry can consume.
 const int kMaxFileRatio = 8;
 
+// Native code entries can be large. Rather than increasing the overall cache
+// size, allow an individual entry to occupy up to half of the cache.
+const int kMaxNativeCodeFileRatio = 2;
+
 // Overrides the above.
 const int64_t kMinFileSizeLimit = 5 * 1024 * 1024;
 
@@ -247,7 +251,8 @@ SimpleBackendImpl::SimpleBackendImpl(
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       orig_max_size_(max_bytes),
       entry_operations_mode_((cache_type == net::DISK_CACHE ||
-                              cache_type == net::GENERATED_CODE_CACHE)
+                              cache_type == net::GENERATED_BYTE_CODE_CACHE ||
+                              cache_type == net::GENERATED_NATIVE_CODE_CACHE)
                                  ? SimpleEntryImpl::OPTIMISTIC_OPERATIONS
                                  : SimpleEntryImpl::NON_OPTIMISTIC_OPERATIONS),
       net_log_(net_log) {
@@ -306,8 +311,11 @@ bool SimpleBackendImpl::SetMaxSize(int64_t max_bytes) {
 }
 
 int64_t SimpleBackendImpl::MaxFileSize() const {
+  uint64_t file_size_ratio = GetCacheType() == net::GENERATED_NATIVE_CODE_CACHE
+                                 ? kMaxNativeCodeFileRatio
+                                 : kMaxFileRatio;
   return std::max(
-      base::saturated_cast<int64_t>(index_->max_size() / kMaxFileRatio),
+      base::saturated_cast<int64_t>(index_->max_size() / file_size_ratio),
       kMinFileSizeLimit);
 }
 

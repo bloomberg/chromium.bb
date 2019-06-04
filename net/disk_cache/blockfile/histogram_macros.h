@@ -102,7 +102,8 @@
       case net::PNACL_CACHE:                                         \
         CACHE_HISTOGRAM_##type(my_name.data(), sample);              \
         break;                                                       \
-      case net::GENERATED_CODE_CACHE:                                \
+      case net::GENERATED_BYTE_CODE_CACHE:                           \
+      case net::GENERATED_NATIVE_CODE_CACHE:                         \
         break;                                                       \
     }                                                                \
   }

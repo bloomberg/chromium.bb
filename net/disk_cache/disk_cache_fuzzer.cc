@@ -270,9 +270,13 @@ net::CacheType GetCacheTypeAndPrint(
       MAYBE_PRINT << "Cache type = PNACL_CACHE." << std::endl;
       return net::CacheType::PNACL_CACHE;
       break;
-    case disk_cache_fuzzer::FuzzCommands::GENERATED_CODE_CACHE:
-      MAYBE_PRINT << "Cache type = GENERATED_CODE_CACHE." << std::endl;
-      return net::CacheType::GENERATED_CODE_CACHE;
+    case disk_cache_fuzzer::FuzzCommands::GENERATED_BYTE_CODE_CACHE:
+      MAYBE_PRINT << "Cache type = GENERATED_BYTE_CODE_CACHE." << std::endl;
+      return net::CacheType::GENERATED_BYTE_CODE_CACHE;
+      break;
+    case disk_cache_fuzzer::FuzzCommands::GENERATED_NATIVE_CODE_CACHE:
+      MAYBE_PRINT << "Cache type = GENERATED_NATIVE_CODE_CACHE." << std::endl;
+      return net::CacheType::GENERATED_NATIVE_CODE_CACHE;
       break;
     case disk_cache_fuzzer::FuzzCommands::DISK_CACHE:
       MAYBE_PRINT << "Cache type = DISK_CACHE." << std::endl;

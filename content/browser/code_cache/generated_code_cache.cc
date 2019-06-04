@@ -312,9 +312,11 @@ void GeneratedCodeCache::CreateBackend() {
   // If the initialization of the existing cache fails, this call would delete
   // all the contents and recreates a new one.
   int rv = disk_cache::CreateCacheBackend(
-      net::GENERATED_CODE_CACHE, net::CACHE_BACKEND_SIMPLE, path_,
-      max_size_bytes_, true, nullptr, &shared_backend_ptr->data,
-      std::move(create_backend_complete));
+      cache_type_ == GeneratedCodeCache::CodeCacheType::kJavaScript
+          ? net::GENERATED_BYTE_CODE_CACHE
+          : net::GENERATED_NATIVE_CODE_CACHE,
+      net::CACHE_BACKEND_SIMPLE, path_, max_size_bytes_, true, nullptr,
+      &shared_backend_ptr->data, std::move(create_backend_complete));
   if (rv != net::ERR_IO_PENDING) {
     DidCreateBackend(shared_backend_ptr, rv);
   }

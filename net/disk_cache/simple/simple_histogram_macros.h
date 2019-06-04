@@ -35,7 +35,8 @@
         SIMPLE_CACHE_THUNK(uma_type,                                        \
                            ("SimpleCache.Media." uma_name, ##__VA_ARGS__)); \
         break;                                                              \
-      case net::GENERATED_CODE_CACHE:                                       \
+      case net::GENERATED_BYTE_CODE_CACHE:                                  \
+      case net::GENERATED_NATIVE_CODE_CACHE:                                \
       case net::SHADER_CACHE:                                               \
         break;                                                              \
       default:                                                              \
