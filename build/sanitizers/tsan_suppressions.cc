@@ -169,9 +169,6 @@ char kTSanDefaultSuppressions[] =
     "race:base::debug::SetCrashKeyString\n"
     "race:crash_reporter::internal::CrashKeyStringImpl::Set\n"
 
-    // http://crbug.com/795110
-    "race:third_party/fontconfig/*\n"
-
     // http://crbug.com/927330
     "race:net::(anonymous namespace)::g_network_change_notifier\n"
 
