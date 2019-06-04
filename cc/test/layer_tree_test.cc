@@ -42,6 +42,7 @@
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/fake_skia_output_surface.h"
 #include "components/viz/test/test_context_provider.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -1062,6 +1063,11 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
   // actions and less dependent on timings to make decisions.
   settings_.enable_latency_recovery = false;
   InitializeSettings(&settings_);
+
+  if (use_vulkan()) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kEnableVulkan);
+  }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

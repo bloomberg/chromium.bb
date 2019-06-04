@@ -38,6 +38,7 @@ class LayerTreeHostFiltersPixelTest
       case RENDERER_GL:
         return "gl";
       case RENDERER_SKIA_GL:
+      case RENDERER_SKIA_VK:
         return "skia";
       case RENDERER_SOFTWARE:
         return "sw";
@@ -79,6 +80,20 @@ INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersPixelTest,
                          ::testing::Values(LayerTreeTest::RENDERER_GL,
                                            LayerTreeTest::RENDERER_SKIA_GL,
+                                           LayerTreeTest::RENDERER_SOFTWARE
+#if defined(ENABLE_CC_VULKAN_TESTS)
+                                           ,
+                                           LayerTreeTest::RENDERER_SKIA_VK
+#endif
+                                           ));
+
+using LayerTreeHostFiltersPixelTestNonVulkan = LayerTreeHostFiltersPixelTest;
+
+// TODO(crbug.com/963446): Enable these tests for Vulkan.
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostFiltersPixelTestNonVulkan,
+                         ::testing::Values(LayerTreeTest::RENDERER_GL,
+                                           LayerTreeTest::RENDERER_SKIA_GL,
                                            LayerTreeTest::RENDERER_SOFTWARE));
 
 using LayerTreeHostFiltersPixelTestGL = LayerTreeHostFiltersPixelTest;
@@ -92,6 +107,19 @@ using LayerTreeHostFiltersPixelTestGPU = LayerTreeHostFiltersPixelTest;
 
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersPixelTestGPU,
+                         ::testing::Values(LayerTreeTest::RENDERER_GL,
+                                           LayerTreeTest::RENDERER_SKIA_GL
+#if defined(ENABLE_CC_VULKAN_TESTS)
+                                           ,
+                                           LayerTreeTest::RENDERER_SKIA_VK
+#endif
+                                           ));
+
+using LayerTreeHostFiltersPixelTestGPUNonVulkan = LayerTreeHostFiltersPixelTest;
+
+// TODO(crbug.com/963446): Enable these tests for Vulkan.
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostFiltersPixelTestGPUNonVulkan,
                          ::testing::Values(LayerTreeTest::RENDERER_GL,
                                            LayerTreeTest::RENDERER_SKIA_GL));
 
@@ -135,7 +163,7 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRect) {
                base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRounded) {
+TEST_P(LayerTreeHostFiltersPixelTestGPUNonVulkan, BackdropFilterBlurRounded) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -219,6 +247,9 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOutsets) {
       average_error_allowed_in_bad_pixels,
       large_error_allowed,
       small_error_allowed));
+#else
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 #endif
 
   RunPixelTest(
@@ -298,7 +329,8 @@ TEST_P(LayerTreeHostFiltersPixelTestGL, BackdropFilterBlurOffAxis) {
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_off_axis.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBoundsWithChildren) {
+TEST_P(LayerTreeHostFiltersPixelTestNonVulkan,
+       BackdropFilterBoundsWithChildren) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
   scoped_refptr<SolidColorLayer> green =
@@ -368,7 +400,12 @@ INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersScaledPixelTest,
                          ::testing::Values(LayerTreeTest::RENDERER_GL,
                                            LayerTreeTest::RENDERER_SKIA_GL,
-                                           LayerTreeTest::RENDERER_SOFTWARE));
+                                           LayerTreeTest::RENDERER_SOFTWARE
+#if defined(ENABLE_CC_VULKAN_TESTS)
+                                           ,
+                                           LayerTreeTest::RENDERER_SKIA_VK
+#endif
+                                           ));
 
 TEST_P(LayerTreeHostFiltersScaledPixelTest, StandardDpi) {
   RunPixelTestType(100, 1.f);
@@ -539,6 +576,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
       small_error_allowed));
+#else
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 #endif
 
   RunPixelTest(
@@ -547,7 +587,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterRotated) {
+TEST_P(LayerTreeHostFiltersPixelTestNonVulkan, BackdropFilterRotated) {
   // Add a white background with a rotated red rect in the center.
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
@@ -757,6 +797,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedFilter) {
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
       small_error_allowed));
+#else
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 #endif
 
   RunPixelTest(renderer_type(), background,
@@ -764,7 +807,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedFilter) {
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
+TEST_P(LayerTreeHostFiltersPixelTestNonVulkan, RotatedDropShadowFilter) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorWHITE);
 
@@ -811,7 +854,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTest, TranslatedFilter) {
+TEST_P(LayerTreeHostFiltersPixelTestNonVulkan, TranslatedFilter) {
   scoped_refptr<Layer> clip = Layer::Create();
   clip->SetBounds(gfx::Size(300, 300));
   clip->SetMasksToBounds(true);
@@ -974,6 +1017,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, BlurFilterWithClip) {
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
       small_error_allowed));
+#else
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 #endif
 
   RunPixelTest(renderer_type(), filter_layer,
@@ -1038,7 +1084,12 @@ INSTANTIATE_TEST_SUITE_P(,
                          BackdropFilterWithDeviceScaleFactorTest,
                          ::testing::Values(LayerTreeTest::RENDERER_GL,
                                            LayerTreeTest::RENDERER_SKIA_GL,
-                                           LayerTreeTest::RENDERER_SOFTWARE));
+                                           LayerTreeTest::RENDERER_SOFTWARE
+#if defined(ENABLE_CC_VULKAN_TESTS)
+                                           ,
+                                           LayerTreeTest::RENDERER_SKIA_VK
+#endif
+                                           ));
 
 TEST_P(BackdropFilterWithDeviceScaleFactorTest, StandardDpi) {
   RunPixelTestType(

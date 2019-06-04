@@ -51,7 +51,7 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
     scoped_refptr<viz::RasterContextProvider>) {
   scoped_refptr<viz::TestInProcessContextProvider> compositor_context_provider;
   scoped_refptr<viz::TestInProcessContextProvider> worker_context_provider;
-  if (renderer_type_ == RENDERER_GL || renderer_type_ == RENDERER_SKIA_GL) {
+  if (!use_software_renderer()) {
     compositor_context_provider =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/false, /*support_locking=*/false);

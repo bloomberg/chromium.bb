@@ -72,6 +72,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   enum RendererType {
     RENDERER_GL,
     RENDERER_SKIA_GL,
+    RENDERER_SKIA_VK,
     RENDERER_SOFTWARE,
   };
 
@@ -81,6 +82,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
         return "GL";
       case RENDERER_SKIA_GL:
         return "Skia GL";
+      case RENDERER_SKIA_VK:
+        return "Skia Vulkan";
       case RENDERER_SOFTWARE:
         return "Software";
     }
@@ -197,8 +200,12 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     begin_frame_source_ = begin_frame_source;
   }
 
-  bool use_skia_renderer() { return renderer_type_ == RENDERER_SKIA_GL; }
+  bool use_skia_renderer() {
+    return renderer_type_ == RENDERER_SKIA_GL ||
+           renderer_type_ == RENDERER_SKIA_VK;
+  }
   bool use_software_renderer() { return renderer_type_ == RENDERER_SOFTWARE; }
+  bool use_vulkan() { return renderer_type_ == RENDERER_SKIA_VK; }
 
   RendererType renderer_type_ = RENDERER_GL;
 
