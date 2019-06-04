@@ -120,6 +120,7 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -1293,6 +1294,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
     IPC_MESSAGE_HANDLER(PageMsg_UpdateScreenInfo, OnUpdateScreenInfo)
     IPC_MESSAGE_HANDLER(PageMsg_SetPageFrozen, SetPageFrozen)
+    IPC_MESSAGE_HANDLER(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
+                        OnTextAutosizerPageInfoChanged)
 
     // Adding a new message? Add platform independent ones first, then put the
     // platform specific ones at the end.
@@ -2042,6 +2045,20 @@ void RenderViewImpl::SetPageFrozen(bool frozen) {
     webview()->SetPageFrozen(frozen);
 }
 
+// This function receives TextAutosizerPageInfo from the main frame's renderer
+// and makes it available to other renderers with frames on the same page.
+void RenderViewImpl::OnTextAutosizerPageInfoChanged(
+    const blink::WebTextAutosizerPageInfo& page_info) {
+  // Only propagate the remote page info if our main frame is remote. It's
+  // possible a main frame renderer may receive this message, as SendPageMessage
+  // in RenderFrameHostManager may send to a speculative RenderFrameHost that
+  // corresponds to a local main frame. Since a local main frame will generate
+  // these values for itself, we shouldn't override them with values from
+  // another renderer.
+  if (!webview()->MainFrame()->IsWebLocalFrame())
+    webview()->SetTextAutosizePageInfo(page_info);
+}
+
 void RenderViewImpl::SetFocus(bool enable) {
   // This is not an IPC message, don't go through the IPC handler. This is used
   // in cases where the IPC message should not happen.
@@ -2067,6 +2084,13 @@ void RenderViewImpl::PageScaleFactorChanged(float page_scale_factor) {
 
   Send(new ViewHostMsg_PageScaleFactorChanged(GetRoutingID(),
                                               page_scale_factor));
+}
+
+void RenderViewImpl::DidUpdateTextAutosizerPageInfo(
+    const blink::WebTextAutosizerPageInfo& page_info) {
+  DCHECK(webview()->MainFrame()->IsWebLocalFrame());
+  Send(new ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame(
+      GetRoutingID(), page_info));
 }
 
 void RenderViewImpl::PageImportanceSignalsChanged() {

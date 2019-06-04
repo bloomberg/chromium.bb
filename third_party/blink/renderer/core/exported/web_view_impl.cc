@@ -45,6 +45,7 @@
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -2671,6 +2672,11 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
     text_autosizer->UpdatePageInfoInAllFrames();
 
   UpdateMainFrameLayoutSize();
+}
+
+void WebViewImpl::SetTextAutosizePageInfo(
+    const WebTextAutosizerPageInfo& page_info) {
+  GetPage()->SetTextAutosizePageInfo(page_info);
 }
 
 void WebViewImpl::UpdateMainFrameLayoutSize() {

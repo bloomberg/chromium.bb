@@ -20,6 +20,7 @@
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
@@ -63,6 +64,12 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebImeTextSpan)
   IPC_STRUCT_TRAITS_MEMBER(suggestion_highlight_color)
   IPC_STRUCT_TRAITS_MEMBER(remove_on_finish_composing)
   IPC_STRUCT_TRAITS_MEMBER(suggestions)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(blink::WebTextAutosizerPageInfo)
+  IPC_STRUCT_TRAITS_MEMBER(main_frame_width)
+  IPC_STRUCT_TRAITS_MEMBER(main_frame_layout_width)
+  IPC_STRUCT_TRAITS_MEMBER(device_scale_adjustment)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::RenderWidgetSurfaceProperties)

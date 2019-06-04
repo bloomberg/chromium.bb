@@ -34,6 +34,7 @@
 #include <unicode/uchar.h>
 #include <memory>
 #include "base/macros.h"
+#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -275,19 +276,10 @@ class CORE_EXPORT TextAutosizer final
 
   struct PageInfo {
     DISALLOW_NEW();
-    PageInfo()
-        : frame_width_(0),
-          layout_width_(0),
-          accessibility_font_scale_factor_(1),
-          device_scale_adjustment_(1),
-          page_needs_autosizing_(false),
-          has_autosized_(false),
-          setting_enabled_(false) {}
+    PageInfo() = default;
 
-    int frame_width_;  // LocalFrame width in density-independent pixels (DIPs).
-    int layout_width_;  // Layout width in CSS pixels.
+    WebTextAutosizerPageInfo shared_info_;
     float accessibility_font_scale_factor_;
-    float device_scale_adjustment_;
     bool page_needs_autosizing_;
     bool has_autosized_;
     bool setting_enabled_;

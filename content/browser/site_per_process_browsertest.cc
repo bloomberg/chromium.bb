@@ -76,6 +76,7 @@
 #include "content/common/input/actions_parser.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input_messages.h"
+#include "content/common/page_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -1009,6 +1010,207 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 #endif
+
+class TextAutosizerPageInfoObserver : public WebContentsObserver {
+ public:
+  explicit TextAutosizerPageInfoObserver(WebContents* web_contents)
+      : remote_page_info_seen_(false), remote_page_info_({0, 0, 1.f}) {
+    Observe(web_contents);
+  }
+  ~TextAutosizerPageInfoObserver() override { Observe(nullptr); }
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    IPC_BEGIN_MESSAGE_MAP(TextAutosizerPageInfoObserver, message)
+      IPC_MESSAGE_HANDLER(
+          ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame,
+          OnUpdateRemotePageInfo)
+    IPC_END_MESSAGE_MAP()
+    return false;
+  }
+
+  void WaitForPageInfo(base::Optional<int> target_main_frame_width,
+                       base::Optional<float> target_device_scale_adjustment) {
+    target_main_frame_width_ = target_main_frame_width;
+    target_device_scale_adjustment_ = target_device_scale_adjustment;
+    remote_page_info_seen_ = false;
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+  const blink::WebTextAutosizerPageInfo& GetTextAutosizerPageInfo() {
+    return remote_page_info_;
+  }
+
+ private:
+  void OnUpdateRemotePageInfo(
+      const blink::WebTextAutosizerPageInfo& remote_page_info) {
+    remote_page_info_ = remote_page_info;
+    if ((!target_main_frame_width_ ||
+         remote_page_info.main_frame_width != target_main_frame_width_) &&
+        (!target_device_scale_adjustment_ ||
+         remote_page_info.device_scale_adjustment !=
+             target_device_scale_adjustment_)) {
+      return;
+    }
+    remote_page_info_seen_ = true;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  bool remote_page_info_seen_;
+  blink::WebTextAutosizerPageInfo remote_page_info_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  base::Optional<int> target_main_frame_width_;
+  base::Optional<float> target_device_scale_adjustment_;
+};
+
+class OutgoingTextAutosizerPageInfoIPCWatcher {
+ public:
+  OutgoingTextAutosizerPageInfoIPCWatcher(
+      RenderProcessHostImpl* rph,
+      base::Optional<int> target_width,
+      base::Optional<float> target_device_scale_adjustment)
+      : rph_(rph),
+        outgoing_message_seen_(false),
+        target_width_(target_width),
+        target_device_scale_adjustment_(target_device_scale_adjustment) {
+    rph_->SetIpcSendWatcherForTesting(
+        base::BindRepeating(&OutgoingTextAutosizerPageInfoIPCWatcher::OnMessage,
+                            base::Unretained(this)));
+  }
+  ~OutgoingTextAutosizerPageInfoIPCWatcher() {
+    rph_->SetIpcSendWatcherForTesting(
+        base::RepeatingCallback<void(const IPC::Message& msg)>());
+  }
+
+  void WaitForIPC() {
+    if (outgoing_message_seen_)
+      return;
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+  const blink::WebTextAutosizerPageInfo& GetTextAutosizerPageInfo() {
+    return remote_page_info_;
+  }
+
+ private:
+  void OnMessage(const IPC::Message& message) {
+    IPC_BEGIN_MESSAGE_MAP(OutgoingTextAutosizerPageInfoIPCWatcher, message)
+      IPC_MESSAGE_HANDLER(
+          PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
+          ProcessMessage)
+    IPC_END_MESSAGE_MAP()
+  }
+
+  void ProcessMessage(const blink::WebTextAutosizerPageInfo& remote_page_info) {
+    if ((target_width_ && remote_page_info.main_frame_width != target_width_) ||
+        (target_device_scale_adjustment_ &&
+         remote_page_info.device_scale_adjustment !=
+             target_device_scale_adjustment_)) {
+      return;
+    }
+    outgoing_message_seen_ = true;
+    remote_page_info_ = remote_page_info;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  RenderProcessHostImpl* rph_;
+  bool outgoing_message_seen_;
+  base::Optional<int> target_width_;
+  base::Optional<float> target_device_scale_adjustment_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  blink::WebTextAutosizerPageInfo remote_page_info_;
+};
+
+// Make sure that when a relevant feature of the main frame changes, e.g. the
+// frame width, that the browser is notified.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
+  WebPreferences prefs =
+      web_contents()->GetRenderViewHost()->GetWebkitPreferences();
+  prefs.text_autosizing_enabled = true;
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* b_child = root->child_at(0);
+  auto* child_rph = static_cast<RenderProcessHostImpl*>(
+      b_child->current_frame_host()->GetProcess());
+
+  blink::WebTextAutosizerPageInfo received_page_info;
+  auto observer =
+      std::make_unique<TextAutosizerPageInfoObserver>(web_contents());
+#if defined(OS_ANDROID)
+  prefs.device_scale_adjustment += 0.05f;
+  OutgoingTextAutosizerPageInfoIPCWatcher ipc_watcher(
+      child_rph, base::Optional<int>(), prefs.device_scale_adjustment);
+  // Change the device scale adjustment to trigger a RemotePageInfo update.
+  web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  // Make sure we receive a ViewHostMsg from the main frame's renderer.
+  observer->WaitForPageInfo(base::Optional<int>(),
+                            prefs.device_scale_adjustment);
+  // Make sure the correct page message is sent to the child.
+  ipc_watcher.WaitForIPC();
+  received_page_info = observer->GetTextAutosizerPageInfo();
+  EXPECT_EQ(prefs.device_scale_adjustment,
+            received_page_info.device_scale_adjustment);
+#else
+  // Resize the main frame, then wait to observe that the RemotePageInfo message
+  // arrives.
+  auto* view = web_contents()->GetRenderWidgetHostView();
+  gfx::Rect old_bounds = view->GetViewBounds();
+  gfx::Rect new_bounds(
+      old_bounds.origin(),
+      gfx::Size(old_bounds.width() - 20, old_bounds.height() - 20));
+  OutgoingTextAutosizerPageInfoIPCWatcher ipc_watcher(
+      child_rph, new_bounds.width(), base::Optional<float>());
+  view->SetBounds(new_bounds);
+  // Make sure we receive a ViewHostMsg from the main frame's renderer.
+  observer->WaitForPageInfo(new_bounds.width(), base::Optional<float>());
+  // Make sure the correct page message is sent to the child.
+  ipc_watcher.WaitForIPC();
+  received_page_info = observer->GetTextAutosizerPageInfo();
+  EXPECT_EQ(new_bounds.width(), received_page_info.main_frame_width);
+#endif  // defined(OS_ANDROID)
+
+  // Dynamically create a new, cross-process frame to test sending the cached
+  // TextAutosizerPageInfo.
+
+  GURL c_url = embedded_test_server()->GetURL("c.com", "/title1.html");
+  // The following is a hack so we can get an IPC watcher connected to the
+  // RenderProcessHost for C before the RenderView is created for it, and the
+  // TextAutosizerPageInfo IPC is sent to it.
+  scoped_refptr<SiteInstance> c_site =
+      web_contents()->GetSiteInstance()->GetRelatedSiteInstance(c_url);
+  // Force creation of a render process for c's SiteInstance, this will get
+  // used when we dynamically create the new frame.
+  auto* c_rph = static_cast<RenderProcessHostImpl*>(c_site->GetProcess());
+  ASSERT_TRUE(c_rph);
+  ASSERT_NE(c_rph, root->current_frame_host()->GetProcess());
+  ASSERT_NE(c_rph, b_child->current_frame_host()->GetProcess());
+  OutgoingTextAutosizerPageInfoIPCWatcher c_ipc_watcher(
+      c_rph, base::Optional<int>(), base::Optional<float>());
+
+  // Create the subframe now.
+  std::string create_frame_script = base::StringPrintf(
+      "var new_iframe = document.createElement('iframe');"
+      "new_iframe.src = '%s';"
+      "document.body.appendChild(new_iframe);",
+      c_url.spec().c_str());
+  EXPECT_TRUE(ExecuteScript(root, create_frame_script));
+  ASSERT_EQ(2U, root->child_count());
+
+  // Ensure IPC is sent.
+  c_ipc_watcher.WaitForIPC();
+  EXPECT_EQ(received_page_info, c_ipc_watcher.GetTextAutosizerPageInfo());
+}
 
 // Ensure that navigating subframes in --site-per-process mode works and the
 // correct documents are committed.

@@ -61,6 +61,7 @@
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
+#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -1243,6 +1244,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                           int maximum_percent);
   void OnPageScaleFactorChanged(RenderViewHostImpl* source,
                                 float page_scale_factor);
+  void OnTextAutosizerPageInfoChanged(
+      RenderViewHostImpl* source,
+      const blink::WebTextAutosizerPageInfo& page_info);
 
   void OnRegisterProtocolHandler(RenderFrameHostImpl* source,
                                  const std::string& protocol,
@@ -1858,6 +1862,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // If non-null then this WebContents is embedded in a portal and its outer
   // WebContents can be found by using GetOuterWebContents().
   Portal* portal_ = nullptr;
+
+  // Stores information from the main frame's renderer that needs to be shared
+  // with OOPIF renderers.
+  blink::WebTextAutosizerPageInfo text_autosizer_page_info_;
 
   // Observe dark mode native theme changes to notify the renderer about
   // preferred color scheme changes.

@@ -96,6 +96,7 @@ class WebViewImpl;
 
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
+struct WebTextAutosizerPageInfo;
 struct ViewportDescription;
 struct WebCursorInfo;
 struct WebScreenInfo;
@@ -437,6 +438,9 @@ class CORE_EXPORT ChromeClient
                                                      bool visible) = 0;
 
   virtual void Trace(blink::Visitor*);
+
+  virtual void DidUpdateTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) {
+  }
 
  protected:
   ChromeClient() = default;

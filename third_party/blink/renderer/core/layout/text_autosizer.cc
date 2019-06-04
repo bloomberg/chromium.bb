@@ -562,8 +562,24 @@ void TextAutosizer::UpdatePageInfoInAllFrames() {
     // If document is being detached, skip updatePageInfo.
     if (!document || !document->IsActive())
       continue;
-    if (TextAutosizer* text_autosizer = document->GetTextAutosizer())
+    if (TextAutosizer* text_autosizer = document->GetTextAutosizer()) {
       text_autosizer->UpdatePageInfo();
+
+      // Share the page information from the local mainframe with remote ones.
+      if (frame->IsMainFrame()) {
+        const WebTextAutosizerPageInfo& old_page_info =
+            document_->GetPage()->TextAutosizerPageInfo();
+        if (page_info_.shared_info_ != old_page_info) {
+          document_->GetPage()
+              ->GetChromeClient()
+              .DidUpdateTextAutosizerPageInfo(page_info_.shared_info_);
+          // Remember the RemotePageSettings in the mainframe's renderer so we
+          // know when they change.
+          document_->GetPage()->SetTextAutosizePageInfo(
+              page_info_.shared_info_);
+        }
+      }
+    }
   }
 }
 
@@ -595,11 +611,11 @@ void TextAutosizer::UpdatePageInfo() {
     if (frame_size.IsEmpty())
       frame_size = WindowSize();
 
-    page_info_.frame_width_ =
+    page_info_.shared_info_.main_frame_width =
         horizontal_writing_mode ? frame_size.Width() : frame_size.Height();
 
     IntSize layout_size = main_frame.View()->GetLayoutSize();
-    page_info_.layout_width_ =
+    page_info_.shared_info_.main_frame_layout_width =
         horizontal_writing_mode ? layout_size.Width() : layout_size.Height();
 
     // TODO(pdr): Accessibility should be moved out of the text autosizer. See:
@@ -613,33 +629,31 @@ void TextAutosizer::UpdatePageInfo() {
              ->GetViewportData()
              .GetViewportDescription()
              .IsSpecifiedByAuthor()) {
-      page_info_.device_scale_adjustment_ =
+      page_info_.shared_info_.device_scale_adjustment =
           document_->GetSettings()->GetDeviceScaleAdjustment();
     } else {
-      page_info_.device_scale_adjustment_ = 1.0f;
+      page_info_.shared_info_.device_scale_adjustment = 1.0f;
     }
 
     // TODO(pdr): pageNeedsAutosizing should take into account whether
     // text-size-adjust is used anywhere on the page because that also needs to
     // trigger autosizing. See: crbug.com/646237.
     page_info_.page_needs_autosizing_ =
-        !!page_info_.frame_width_ &&
+        !!page_info_.shared_info_.main_frame_width &&
         (page_info_.accessibility_font_scale_factor_ *
-             page_info_.device_scale_adjustment_ *
-             (static_cast<float>(page_info_.layout_width_) /
-              page_info_.frame_width_) >
+             page_info_.shared_info_.device_scale_adjustment *
+             (static_cast<float>(
+                  page_info_.shared_info_.main_frame_layout_width) /
+              page_info_.shared_info_.main_frame_width) >
          1.0f);
   }
 
   if (page_info_.page_needs_autosizing_) {
     // If page info has changed, multipliers may have changed. Force a layout to
     // recompute them.
-    if (page_info_.frame_width_ != previous_page_info.frame_width_ ||
-        page_info_.layout_width_ != previous_page_info.layout_width_ ||
+    if (page_info_.shared_info_ != previous_page_info.shared_info_ ||
         page_info_.accessibility_font_scale_factor_ !=
             previous_page_info.accessibility_font_scale_factor_ ||
-        page_info_.device_scale_adjustment_ !=
-            previous_page_info.device_scale_adjustment_ ||
         page_info_.setting_enabled_ != previous_page_info.setting_enabled_)
       SetAllTextNeedsLayout();
   } else if (previous_page_info.has_autosized_) {
@@ -1025,12 +1039,15 @@ float TextAutosizer::MultiplierFromBlock(const LayoutBlock* block) {
 #endif
   // Block width, in CSS pixels.
   float block_width = WidthFromBlock(block);
-  float layout_width =
-      std::min(block_width, static_cast<float>(page_info_.layout_width_));
+  float layout_width = std::min(
+      block_width,
+      static_cast<float>(page_info_.shared_info_.main_frame_layout_width));
   float multiplier =
-      page_info_.frame_width_ ? layout_width / page_info_.frame_width_ : 1.0f;
+      page_info_.shared_info_.main_frame_width
+          ? layout_width / page_info_.shared_info_.main_frame_width
+          : 1.0f;
   multiplier *= page_info_.accessibility_font_scale_factor_ *
-                page_info_.device_scale_adjustment_;
+                page_info_.shared_info_.device_scale_adjustment;
   return std::max(multiplier, 1.0f);
 }
 

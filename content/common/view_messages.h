@@ -42,6 +42,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/web/web_plugin_action.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "ui/base/ime/text_input_type.h"
@@ -272,6 +273,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus,
 // Sent when the renderer changes its page scale factor.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_PageScaleFactorChanged,
                     float /* page_scale_factor */)
+
+IPC_MESSAGE_ROUTED1(
+    ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame,
+    blink::WebTextAutosizerPageInfo /* page_info */)
 
 // Updates the minimum/maximum allowed zoom percent for this tab from the
 // default values.  If |remember| is true, then the zoom setting is applied to

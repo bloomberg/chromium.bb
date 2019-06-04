@@ -244,6 +244,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   int HistoryForwardListCount() override;
   void ZoomLimitsChanged(double minimum_level, double maximum_level) override;
   void PageScaleFactorChanged(float page_scale_factor) override;
+  void DidUpdateTextAutosizerPageInfo(
+      const blink::WebTextAutosizerPageInfo& page_info) override;
   void PageImportanceSignalsChanged() override;
   void DidAutoResize(const blink::WebSize& newSize) override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
@@ -457,6 +459,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnPageWasShown();
   void OnUpdateScreenInfo(const ScreenInfo& screen_info);
   void SetPageFrozen(bool frozen);
+  void OnTextAutosizerPageInfoChanged(
+      const blink::WebTextAutosizerPageInfo& page_info);
 
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.

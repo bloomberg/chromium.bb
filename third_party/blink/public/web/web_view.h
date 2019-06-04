@@ -67,6 +67,7 @@ struct WebFloatSize;
 struct WebPluginAction;
 struct WebRect;
 struct WebSize;
+struct WebTextAutosizerPageInfo;
 struct WebWindowFeatures;
 
 class WebView {
@@ -490,6 +491,10 @@ class WebView {
 
   // Informs the page that it is inside a portal.
   virtual void SetInsidePortal(bool inside_portal) = 0;
+
+  // Use to transfer TextAutosizer state from the local main frame renderer to
+  // remote main frame renderers.
+  virtual void SetTextAutosizePageInfo(const WebTextAutosizerPageInfo&) {}
 
  protected:
   ~WebView() = default;

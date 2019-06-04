@@ -265,6 +265,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
                                              bool visible) override;
 
+  void DidUpdateTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) override;
+
  private:
   bool IsChromeClientImpl() const override { return true; }
 

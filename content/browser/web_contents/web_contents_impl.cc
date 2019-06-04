@@ -588,6 +588,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #endif  // !defined(OS_ANDROID)
       is_overlay_content_(false),
       showing_context_menu_(false),
+      text_autosizer_page_info_({0, 0, 1.f}),
       had_inner_webcontents_(false),
       loading_weak_factory_(this),
       weak_factory_(this) {
@@ -864,6 +865,9 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorChanged,
                         OnPageScaleFactorChanged)
+    IPC_MESSAGE_HANDLER(
+        ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame,
+        OnTextAutosizerPageInfoChanged)
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
@@ -4775,6 +4779,18 @@ void WebContentsImpl::OnPageScaleFactorChanged(RenderViewHostImpl* source,
     observer.OnPageScaleFactorChanged(page_scale_factor);
 }
 
+void WebContentsImpl::OnTextAutosizerPageInfoChanged(
+    RenderViewHostImpl* source,
+    const blink::WebTextAutosizerPageInfo& page_info) {
+  // Keep a copy of |page_info| in case we create a new RenderView before
+  // the next update.
+  text_autosizer_page_info_ = page_info;
+  frame_tree_.root()->render_manager()->SendPageMessage(
+      new PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames(
+          MSG_ROUTING_NONE, page_info),
+      source->GetSiteInstance());
+}
+
 void WebContentsImpl::EnumerateDirectory(
     RenderFrameHost* render_frame_host,
     std::unique_ptr<FileSelectListener> listener,
@@ -6411,6 +6427,15 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
                               devtools_frame_token, replicated_frame_state,
                               created_with_opener_)) {
     return false;
+  }
+  // Set the TextAutosizer state from the main frame's renderer on the new view,
+  // but only if it's not for the main frame. Main frame renderers should create
+  // this state themselves from up-to-date values, so we shouldn't override it
+  // with the cached values.
+  if (!render_view_host->GetMainFrame()) {
+    render_view_host->Send(
+        new PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames(
+            render_view_host->GetRoutingID(), text_autosizer_page_info_));
   }
 
   if (proxy_routing_id == MSG_ROUTING_NONE && node_.outer_web_contents())

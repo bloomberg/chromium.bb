@@ -200,7 +200,8 @@ Page::Page(PageClients& page_clients)
       subframe_count_(0),
       next_related_page_(this),
       prev_related_page_(this),
-      autoplay_flags_(0) {
+      autoplay_flags_(0),
+      web_text_autosizer_page_info_({0, 0, 1.f}) {
   DCHECK(!AllPages().Contains(this));
   AllPages().insert(this);
 }
