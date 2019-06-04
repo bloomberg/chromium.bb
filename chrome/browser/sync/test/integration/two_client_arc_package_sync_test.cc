@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
@@ -140,7 +141,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientArcPackageSyncTest, InstallDifferent) {
 
 // Installs package from one client and uninstalls from another after sync
 // started.
-IN_PROC_BROWSER_TEST_F(TwoClientArcPackageSyncTest, Uninstall) {
+// TODO(https://crbug.com/970063): Runs out of memory on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_Uninstall DISABLED_Uninstall
+#else
+#define MAYBE_Uninstall Uninstall
+#endif
+IN_PROC_BROWSER_TEST_F(TwoClientArcPackageSyncTest, MAYBE_Uninstall) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameArcPackageDetails());
 
