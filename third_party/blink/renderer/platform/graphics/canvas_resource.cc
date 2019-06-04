@@ -704,17 +704,11 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
 
   // Wait for the mailbox to be ready to be used.
   WaitSyncToken(shared_image_interface->GenUnverifiedSyncToken());
-}
 
-GLuint CanvasResourceSharedImage::GetTextureIdForBackendTexture() const {
-  if (!texture_id_) {
-    DCHECK(!is_cross_thread());
-    auto* gl = ContextGL();
-    DCHECK(gl);
-    texture_id_ =
-        gl->CreateAndConsumeTextureCHROMIUM(shared_image_mailbox_.name);
-  }
-  return texture_id_;
+  auto* gl = ContextGL();
+  DCHECK(gl);
+  texture_id_ =
+      gl->CreateAndTexStorage2DSharedImageCHROMIUM(shared_image_mailbox_.name);
 }
 
 scoped_refptr<CanvasResourceSharedImage> CanvasResourceSharedImage::Create(
@@ -805,8 +799,6 @@ void CanvasResourceSharedImage::Transfer() {
   if (is_cross_thread() || !ContextProviderWrapper())
     return;
 
-  // Initialize lazy params before transfer to another thread.
-  GetTextureIdForBackendTexture();
   // Initialize GLFilter first so that the generated sync token includes this
   // update.
   SetGLFilterIfNeeded();

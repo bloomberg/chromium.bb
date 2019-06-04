@@ -10,6 +10,7 @@
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/tiles/software_image_decode_cache.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -457,7 +458,7 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
   scoped_refptr<CanvasResource> resource_;
 };
 
-// * Renders to a SharedImage, which manage memory internally.
+// * Renders to a SharedImage, which manages memory internally.
 // * Layers are overlay candidates.
 class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
  public:
@@ -479,6 +480,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
         is_overlay_candidate_(is_overlay_candidate) {
     RecordTypeToUMA(kSharedImage);
     resource_ = NewOrRecycledResource();
+    if (resource_)
+      EnsureWriteAccess();
   }
 
   ~CanvasResourceProviderSharedImage() override {}
@@ -490,8 +493,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   GLuint GetBackingTextureHandleForOverwrite() override {
     FlushGrContext();
     WillDraw();
-    return static_cast<CanvasResourceSharedImage*>(resource_.get())
-        ->GetTextureIdForBackendTexture();
+    return resource()->GetTextureIdForBackendTexture();
   }
 
   scoped_refptr<CanvasResource> CreateResource() final {
@@ -505,8 +507,12 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   scoped_refptr<CanvasResource> ProduceCanvasResource() override {
     TRACE_EVENT0("blink",
                  "CanvasResourceProviderSharedImage::ProduceCanvasResource");
-    FlushGrContext();
-
+    // Its important to end read access and ref the resource before the WillDraw
+    // call below. Since it relies on resource ref-count to trigger
+    // copy-on-write and asserts that we only have write access when the
+    // provider has the only ref to the resource, to ensure there are no other
+    // readers.
+    EndWriteAccess();
     scoped_refptr<CanvasResource> resource = resource_;
     if (ContextProviderWrapper()
             ->ContextProvider()
@@ -524,25 +530,42 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
   scoped_refptr<StaticBitmapImage> Snapshot() override {
     TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::Snapshot");
-    FlushGrContext();
+    EndWriteAccess();
     return resource_->Bitmap();
   }
 
   void WillDraw() override {
     DCHECK(resource_);
+
+    if (!ContextProviderWrapper())
+      return;
+
     // If |resource_| is still being used by the compositor we need to create
     // a new resource or reuse a previously recycled one. This class holds one
     // reference so we check if there is more than one.
     if (!resource_->HasOneRef()) {
-      FlushGrContext();
+      DCHECK(!current_resource_has_write_access_)
+          << "Write access must be released before sharing the resource";
+
+      auto* old_resource =
+          static_cast<CanvasResourceSharedImage*>(resource_.get());
       resource_ = NewOrRecycledResource();
+      EnsureWriteAccess();
       if (surface_) {
+        // Take read access to the outgoing resource for the skia copy below.
+        ContextGL()->BeginSharedImageAccessDirectCHROMIUM(
+            old_resource->GetTextureIdForBackendTexture(),
+            GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
         surface_->replaceBackendTexture(CreateGrTextureForResource(),
                                         GetGrSurfaceOrigin());
         surface_->flush();
+        ContextGL()->EndSharedImageAccessDirectCHROMIUM(
+            old_resource->GetTextureIdForBackendTexture());
       }
     }
-    static_cast<CanvasResourceSharedImage*>(resource_.get())->WillDraw();
+
+    EnsureWriteAccess();
+    resource()->WillDraw();
   }
 
   sk_sp<SkSurface> CreateSkSurface() const override {
@@ -564,9 +587,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
   GrBackendTexture CreateGrTextureForResource() const {
     GrGLTextureInfo texture_info = {};
-    texture_info.fID =
-        static_cast<const CanvasResourceSharedImage*>(resource_.get())
-            ->GetTextureIdForBackendTexture();
+    texture_info.fID = resource()->GetTextureIdForBackendTexture();
     texture_info.fTarget = resource_->TextureTarget();
     texture_info.fFormat = ColorParams().GLSizedInternalFormat();
     return GrBackendTexture(Size().Width(), Size().Height(), GrMipMapped::kNo,
@@ -583,9 +604,46 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     GetGrContext()->flush();
   }
 
+  void EnsureWriteAccess() {
+    DCHECK(resource_);
+    DCHECK(resource_->HasOneRef())
+        << "Write access requires exclusive access to the resource";
+    DCHECK(!resource()->is_cross_thread())
+        << "Write access is only allowed on the owning thread";
+
+    if (current_resource_has_write_access_ || !ContextProviderWrapper())
+      return;
+
+    auto texture_id = resource()->GetTextureIdForBackendTexture();
+    ContextGL()->BeginSharedImageAccessDirectCHROMIUM(
+        texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+    current_resource_has_write_access_ = true;
+  }
+
+  void EndWriteAccess() {
+    DCHECK(!resource()->is_cross_thread());
+
+    if (!current_resource_has_write_access_ || !ContextProviderWrapper())
+      return;
+
+    // Issue any skia work using this resource before releasing write access.
+    FlushGrContext();
+    auto texture_id = resource()->GetTextureIdForBackendTexture();
+    ContextGL()->EndSharedImageAccessDirectCHROMIUM(texture_id);
+    current_resource_has_write_access_ = false;
+  }
+
+  CanvasResourceSharedImage* resource() {
+    return static_cast<CanvasResourceSharedImage*>(resource_.get());
+  }
+  const CanvasResourceSharedImage* resource() const {
+    return static_cast<const CanvasResourceSharedImage*>(resource_.get());
+  }
+
   const unsigned msaa_sample_count_;
   const bool is_origin_top_left_;
   const bool is_overlay_candidate_;
+  bool current_resource_has_write_access_ = false;
   scoped_refptr<CanvasResource> resource_;
 };
 

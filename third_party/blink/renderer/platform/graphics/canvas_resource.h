@@ -332,8 +332,11 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
     return nullptr;
   }
   void TakeSkImage(sk_sp<SkImage> image) final { NOTREACHED(); }
-  GLuint GetTextureIdForBackendTexture() const;
+  GLuint GetTextureIdForBackendTexture() const { return texture_id_; }
   void WillDraw();
+  bool is_cross_thread() const {
+    return Thread::Current()->ThreadId() != owning_thread_id_;
+  }
 
  private:
   static void OnBitmapImageDestroyed(
@@ -350,9 +353,6 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   bool HasGpuMailbox() const override;
   const gpu::SyncToken GetSyncToken() override;
   bool IsOverlayCandidate() const final { return is_overlay_candidate_; }
-  bool is_cross_thread() const {
-    return Thread::Current()->ThreadId() != owning_thread_id_;
-  }
 
   CanvasResourceSharedImage(const IntSize&,
                             base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
@@ -367,7 +367,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   bool mailbox_needs_new_sync_token_ = true;
   gpu::SyncToken sync_token_;
   MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
-  mutable GLuint texture_id_ = 0u;  // mutable for lazy init.
+  GLuint texture_id_ = 0u;
   bool is_overlay_candidate_ = false;
   IntSize size_;
   bool needs_gl_filter_reset_ = true;
