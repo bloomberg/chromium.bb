@@ -138,9 +138,6 @@ EXTRA_LICENSES_DIR = os.path.join(licenses_lib.SCRIPT_DIR,
 EXTRA_PACKAGES = (
     ('sys-kernel/Linux-2.6',
      ['http://www.kernel.org/'], ['GPL-2'], []),
-    ('app-arch/libarchive-3.1.2',
-     ['http://www.libarchive.org/'], ['BSD', 'public-domain'],
-     ['libarchive-3.1.2.LICENSE']),
 )
 
 
