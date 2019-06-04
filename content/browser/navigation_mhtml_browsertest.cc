@@ -167,8 +167,7 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeNotFound) {
 // defined in the MHTML archive.
 // TODO(https://crbug.com/967307): Enable this test. It currently reaches a
 // DCHECK or timeout in release mode.
-IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
-                       DISABLED_IframeDataUrlNotFound) {
+IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeDataUrlNotFound) {
   MhtmlArchive mhtml_archive;
   mhtml_archive.AddHtmlDocument(
       GURL("http://example.com"),
@@ -192,10 +191,7 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
 
 // An MHTML document with an iframe using a data-URL. The data-URL IS defined in
 // the MHTML archive, but isn't used, per https://crbug.com/969696.
-// TODO(https://crbug.com/967307): Enable this test. It currently reaches a
-// DCHECK or timeout in release mode.
-IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
-                       DISABLED_IframeDataUrlFound) {
+IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeDataUrlFound) {
   MhtmlArchive mhtml_archive;
   mhtml_archive.AddHtmlDocument(
       GURL("http://example.com"),

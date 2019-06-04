@@ -835,7 +835,7 @@ static void FillStaticResponseIfNeeded(WebNavigationParams* params,
   MHTMLArchive* archive = nullptr;
   if (auto* parent = DynamicTo<LocalFrame>(frame->Tree().Parent()))
     archive = parent->Loader().GetDocumentLoader()->Archive();
-  if (archive) {
+  if (archive && !url.ProtocolIsData()) {
     // If we have an archive loaded in some ancestor frame, we should
     // retrieve document content from that archive. This is different from
     // loading an archive into this frame, which will be handled separately
