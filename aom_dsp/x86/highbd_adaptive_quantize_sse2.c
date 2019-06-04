@@ -91,6 +91,214 @@ static INLINE __m128i highbd_calculate_dqcoeff(__m128i qcoeff, __m128i dequant,
   return invert_sign_32_sse2(abs_coeff, coeff_sign);
 }
 
+void aom_highbd_quantize_b_adaptive_sse2(
+    const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr,
+    const int16_t *round_ptr, const int16_t *quant_ptr,
+    const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
+    tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr,
+    const int16_t *scan, const int16_t *iscan) {
+  int index = 8;
+  const int log_scale = 0;
+  int non_zero_count = 0;
+  int non_zero_count_prescan_add_zero = 0;
+  int is_found0 = 0, is_found1 = 0;
+  int eob = -1;
+  const __m128i zero = _mm_setzero_si128();
+  const __m128i one = _mm_set1_epi32(1);
+  __m128i zbin, round, quant, dequant, shift;
+  __m128i coeff0, coeff1, coeff0_sign, coeff1_sign;
+  __m128i qcoeff0, qcoeff1;
+  __m128i cmp_mask0, cmp_mask1, cmp_mask;
+  __m128i all_zero;
+  __m128i mask0 = zero, mask1 = zero;
+
+  int prescan_add[2];
+  int thresh[4];
+  const qm_val_t wt = (1 << AOM_QM_BITS);
+  for (int i = 0; i < 2; ++i) {
+    prescan_add[i] = ROUND_POWER_OF_TWO(dequant_ptr[i] * EOB_FACTOR, 7);
+    thresh[i] = (zbin_ptr[i] * wt + prescan_add[i]) - 1;
+  }
+  thresh[2] = thresh[3] = thresh[1];
+  __m128i threshold[2];
+  threshold[0] = _mm_loadu_si128((__m128i *)&thresh[0]);
+  threshold[1] = _mm_unpackhi_epi64(threshold[0], threshold[0]);
+
+#if SKIP_EOB_FACTOR_ADJUST
+  int first = -1;
+#endif
+  // Setup global values.
+  zbin = _mm_load_si128((const __m128i *)zbin_ptr);
+  round = _mm_load_si128((const __m128i *)round_ptr);
+  quant = _mm_load_si128((const __m128i *)quant_ptr);
+  dequant = _mm_load_si128((const __m128i *)dequant_ptr);
+  shift = _mm_load_si128((const __m128i *)quant_shift_ptr);
+
+  __m128i zbin_sign = _mm_srai_epi16(zbin, 15);
+  __m128i round_sign = _mm_srai_epi16(round, 15);
+  __m128i quant_sign = _mm_srai_epi16(quant, 15);
+  __m128i dequant_sign = _mm_srai_epi16(dequant, 15);
+  __m128i shift_sign = _mm_srai_epi16(shift, 15);
+
+  zbin = _mm_unpacklo_epi16(zbin, zbin_sign);
+  round = _mm_unpacklo_epi16(round, round_sign);
+  quant = _mm_unpacklo_epi16(quant, quant_sign);
+  dequant = _mm_unpacklo_epi16(dequant, dequant_sign);
+  shift = _mm_unpacklo_epi16(shift, shift_sign);
+  zbin = _mm_sub_epi32(zbin, one);
+
+  // Do DC and first 15 AC.
+  coeff0 = _mm_load_si128((__m128i *)(coeff_ptr));
+  coeff1 = _mm_load_si128((__m128i *)(coeff_ptr + 4));
+
+  coeff0_sign = _mm_srai_epi32(coeff0, 31);
+  coeff1_sign = _mm_srai_epi32(coeff1, 31);
+  qcoeff0 = invert_sign_32_sse2(coeff0, coeff0_sign);
+  qcoeff1 = invert_sign_32_sse2(coeff1, coeff1_sign);
+
+  highbd_update_mask0(&qcoeff0, &qcoeff1, threshold, iscan, &is_found0, &mask0);
+
+  cmp_mask0 = _mm_cmpgt_epi32(qcoeff0, zbin);
+  zbin = _mm_unpackhi_epi64(zbin, zbin);  // Switch DC to AC
+  cmp_mask1 = _mm_cmpgt_epi32(qcoeff1, zbin);
+  cmp_mask = _mm_packs_epi32(cmp_mask0, cmp_mask1);
+  highbd_update_mask1(&cmp_mask, iscan, &is_found1, &mask1);
+
+  threshold[0] = threshold[1];
+  all_zero = _mm_or_si128(cmp_mask0, cmp_mask1);
+  if (_mm_movemask_epi8(all_zero) == 0) {
+    _mm_store_si128((__m128i *)(qcoeff_ptr), zero);
+    _mm_store_si128((__m128i *)(qcoeff_ptr + 4), zero);
+    _mm_store_si128((__m128i *)(dqcoeff_ptr), zero);
+    _mm_store_si128((__m128i *)(dqcoeff_ptr + 4), zero);
+
+    round = _mm_unpackhi_epi64(round, round);
+    quant = _mm_unpackhi_epi64(quant, quant);
+    shift = _mm_unpackhi_epi64(shift, shift);
+    dequant = _mm_unpackhi_epi64(dequant, dequant);
+  } else {
+    highbd_calculate_qcoeff(&qcoeff0, &round, &quant, &shift, &log_scale);
+
+    round = _mm_unpackhi_epi64(round, round);
+    quant = _mm_unpackhi_epi64(quant, quant);
+    shift = _mm_unpackhi_epi64(shift, shift);
+    highbd_calculate_qcoeff(&qcoeff1, &round, &quant, &shift, &log_scale);
+
+    // Reinsert signs
+    qcoeff0 = invert_sign_32_sse2(qcoeff0, coeff0_sign);
+    qcoeff1 = invert_sign_32_sse2(qcoeff1, coeff1_sign);
+
+    // Mask out zbin threshold coeffs
+    qcoeff0 = _mm_and_si128(qcoeff0, cmp_mask0);
+    qcoeff1 = _mm_and_si128(qcoeff1, cmp_mask1);
+
+    _mm_store_si128((__m128i *)(qcoeff_ptr), qcoeff0);
+    _mm_store_si128((__m128i *)(qcoeff_ptr + 4), qcoeff1);
+
+    coeff0 = highbd_calculate_dqcoeff(qcoeff0, dequant, log_scale);
+    dequant = _mm_unpackhi_epi64(dequant, dequant);
+    coeff1 = highbd_calculate_dqcoeff(qcoeff1, dequant, log_scale);
+    _mm_store_si128((__m128i *)(dqcoeff_ptr), coeff0);
+    _mm_store_si128((__m128i *)(dqcoeff_ptr + 4), coeff1);
+  }
+
+  // AC only loop.
+  while (index < n_coeffs) {
+    coeff0 = _mm_load_si128((__m128i *)(coeff_ptr + index));
+    coeff1 = _mm_load_si128((__m128i *)(coeff_ptr + index + 4));
+
+    coeff0_sign = _mm_srai_epi32(coeff0, 31);
+    coeff1_sign = _mm_srai_epi32(coeff1, 31);
+    qcoeff0 = invert_sign_32_sse2(coeff0, coeff0_sign);
+    qcoeff1 = invert_sign_32_sse2(coeff1, coeff1_sign);
+
+    highbd_update_mask0(&qcoeff0, &qcoeff1, threshold, iscan + index,
+                        &is_found0, &mask0);
+
+    cmp_mask0 = _mm_cmpgt_epi32(qcoeff0, zbin);
+    cmp_mask1 = _mm_cmpgt_epi32(qcoeff1, zbin);
+    cmp_mask = _mm_packs_epi32(cmp_mask0, cmp_mask1);
+    highbd_update_mask1(&cmp_mask, iscan + index, &is_found1, &mask1);
+
+    all_zero = _mm_or_si128(cmp_mask0, cmp_mask1);
+    if (_mm_movemask_epi8(all_zero) == 0) {
+      _mm_store_si128((__m128i *)(qcoeff_ptr + index), zero);
+      _mm_store_si128((__m128i *)(qcoeff_ptr + index + 4), zero);
+      _mm_store_si128((__m128i *)(dqcoeff_ptr + index), zero);
+      _mm_store_si128((__m128i *)(dqcoeff_ptr + index + 4), zero);
+      index += 8;
+      continue;
+    }
+    highbd_calculate_qcoeff(&qcoeff0, &round, &quant, &shift, &log_scale);
+    highbd_calculate_qcoeff(&qcoeff1, &round, &quant, &shift, &log_scale);
+
+    qcoeff0 = invert_sign_32_sse2(qcoeff0, coeff0_sign);
+    qcoeff1 = invert_sign_32_sse2(qcoeff1, coeff1_sign);
+
+    qcoeff0 = _mm_and_si128(qcoeff0, cmp_mask0);
+    qcoeff1 = _mm_and_si128(qcoeff1, cmp_mask1);
+
+    _mm_store_si128((__m128i *)(qcoeff_ptr + index), qcoeff0);
+    _mm_store_si128((__m128i *)(qcoeff_ptr + index + 4), qcoeff1);
+
+    coeff0 = highbd_calculate_dqcoeff(qcoeff0, dequant, log_scale);
+    coeff1 = highbd_calculate_dqcoeff(qcoeff1, dequant, log_scale);
+
+    _mm_store_si128((__m128i *)(dqcoeff_ptr + index), coeff0);
+    _mm_store_si128((__m128i *)(dqcoeff_ptr + index + 4), coeff1);
+
+    index += 8;
+  }
+  if (is_found0) non_zero_count = calculate_non_zero_count(mask0);
+  if (is_found1)
+    non_zero_count_prescan_add_zero = calculate_non_zero_count(mask1);
+
+  for (int i = non_zero_count_prescan_add_zero - 1; i >= non_zero_count; i--) {
+    const int rc = scan[i];
+    qcoeff_ptr[rc] = 0;
+    dqcoeff_ptr[rc] = 0;
+  }
+
+  for (int i = non_zero_count - 1; i >= 0; i--) {
+    const int rc = scan[i];
+    if (qcoeff_ptr[rc]) {
+      eob = i;
+      break;
+    }
+  }
+
+  *eob_ptr = eob + 1;
+#if SKIP_EOB_FACTOR_ADJUST
+  // TODO(Aniket): Experiment the following loop with intrinsic by combining
+  // with the quantization loop above
+  for (int i = 0; i < non_zero_count; i++) {
+    const int rc = scan[i];
+    const int qcoeff = qcoeff_ptr[rc];
+    if (qcoeff) {
+      first = i;
+      break;
+    }
+  }
+  if ((*eob_ptr - 1) >= 0 && first == (*eob_ptr - 1)) {
+    const int rc = scan[(*eob_ptr - 1)];
+    if (qcoeff_ptr[rc] == 1 || qcoeff_ptr[rc] == -1) {
+      const int coeff = coeff_ptr[rc] * wt;
+      const int coeff_sign = (coeff >> 31);
+      const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
+      const int factor = EOB_FACTOR + SKIP_EOB_FACTOR_ADJUST;
+      const int prescan_add_val =
+          ROUND_POWER_OF_TWO(dequant_ptr[rc != 0] * factor, 7);
+      if (abs_coeff <
+          (zbin_ptr[rc != 0] * (1 << AOM_QM_BITS) + prescan_add_val)) {
+        qcoeff_ptr[rc] = 0;
+        dqcoeff_ptr[rc] = 0;
+        *eob_ptr = 0;
+      }
+    }
+  }
+#endif
+}
+
 void aom_highbd_quantize_b_32x32_adaptive_sse2(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr,
     const int16_t *round_ptr, const int16_t *quant_ptr,
