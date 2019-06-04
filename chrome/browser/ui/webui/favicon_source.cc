@@ -70,21 +70,17 @@ bool CanSendHistoryDataToServer(Profile* profile) {
 }  // namespace
 
 FaviconSource::IconRequest::IconRequest()
-    : size_in_dip(gfx::kFaviconSize),
-      device_scale_factor(1.0f),
-      icon_request_origin(favicon::FaviconRequestOrigin::UNKNOWN) {}
+    : size_in_dip(gfx::kFaviconSize), device_scale_factor(1.0f) {}
 
 FaviconSource::IconRequest::IconRequest(
     const content::URLDataSource::GotDataCallback& cb,
     const GURL& path,
     int size,
-    float scale,
-    favicon::FaviconRequestOrigin origin)
+    float scale)
     : callback(cb),
       request_path(path),
       size_in_dip(size),
-      device_scale_factor(scale),
-      icon_request_origin(origin) {}
+      device_scale_factor(scale) {}
 
 FaviconSource::IconRequest::IconRequest(const IconRequest& other) = default;
 
@@ -141,10 +137,10 @@ void FaviconSource::StartDataRequest(
     // IconType.
     favicon_service->GetRawFavicon(
         url, favicon_base::IconType::kFavicon, desired_size_in_pixel,
-        base::BindRepeating(
-            &FaviconSource::OnFaviconDataAvailable, base::Unretained(this),
-            IconRequest(callback, url, parsed.size_in_dip,
-                        parsed.device_scale_factor, unsafe_request_origin)),
+        base::BindRepeating(&FaviconSource::OnFaviconDataAvailable,
+                            base::Unretained(this),
+                            IconRequest(callback, url, parsed.size_in_dip,
+                                        parsed.device_scale_factor)),
         &cancelable_task_tracker_);
   } else {
     // Intercept requests for prepopulated pages if TopSites exists.
@@ -167,10 +163,10 @@ void FaviconSource::StartDataRequest(
         GetOpenTabsUIDelegate(profile_);
     favicon_request_handler_.GetRawFaviconForPageURL(
         url, desired_size_in_pixel,
-        base::BindOnce(
-            &FaviconSource::OnFaviconDataAvailable, base::Unretained(this),
-            IconRequest(callback, url, parsed.size_in_dip,
-                        parsed.device_scale_factor, unsafe_request_origin)),
+        base::BindOnce(&FaviconSource::OnFaviconDataAvailable,
+                       base::Unretained(this),
+                       IconRequest(callback, url, parsed.size_in_dip,
+                                   parsed.device_scale_factor)),
         unsafe_request_origin, favicon::FaviconRequestPlatform::kDesktop,
         favicon_service,
         LargeIconServiceFactory::GetForBrowserContext(profile_),
@@ -226,8 +222,7 @@ void FaviconSource::OnFaviconDataAvailable(
 
 void FaviconSource::SendDefaultResponse(
     const content::URLDataSource::GotDataCallback& callback) {
-  SendDefaultResponse(IconRequest(callback, GURL(), 16, 1.0f,
-                                  favicon::FaviconRequestOrigin::UNKNOWN));
+  SendDefaultResponse(IconRequest(callback, GURL(), 16, 1.0f));
 }
 
 void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {

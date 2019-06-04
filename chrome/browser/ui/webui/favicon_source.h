@@ -79,8 +79,7 @@ class FaviconSource : public content::URLDataSource {
     IconRequest(const content::URLDataSource::GotDataCallback& cb,
                 const GURL& path,
                 int size,
-                float scale,
-                favicon::FaviconRequestOrigin origin);
+                float scale);
     IconRequest(const IconRequest& other);
     ~IconRequest();
 
@@ -88,7 +87,6 @@ class FaviconSource : public content::URLDataSource {
     GURL request_path;
     int size_in_dip;
     float device_scale_factor;
-    favicon::FaviconRequestOrigin icon_request_origin;
   };
 
   // Exposed for testing.
