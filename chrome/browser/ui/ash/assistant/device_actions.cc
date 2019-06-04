@@ -220,18 +220,16 @@ void DeviceActions::LaunchAndroidIntent(const std::string& intent) {
 
 void DeviceActions::AddAppListEventSubscriber(
     chromeos::assistant::mojom::AppListEventSubscriberPtr subscriber) {
-  app_list_subscribers_.AddPtr(std::move(subscriber));
   auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
-  if (!prefs)
-    return;
-
-  if (!scoped_prefs_observer_.IsObserving(prefs)) {
-    scoped_prefs_observer_.Add(prefs);
-  }
-  if (prefs->package_list_initial_refreshed()) {
+  if (prefs && prefs->package_list_initial_refreshed()) {
     std::vector<AndroidAppInfoPtr> android_apps_info = GetAppsInfo();
     subscriber->OnAndroidAppListRefreshed(mojo::Clone(android_apps_info));
   }
+
+  app_list_subscribers_.AddPtr(std::move(subscriber));
+
+  if (prefs && !scoped_prefs_observer_.IsObserving(prefs))
+    scoped_prefs_observer_.Add(prefs);
 }
 
 void DeviceActions::OnPackageListInitialRefreshed() {

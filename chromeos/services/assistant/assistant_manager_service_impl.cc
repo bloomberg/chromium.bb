@@ -125,9 +125,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           assistant::features::IsAppSupportEnabled(),
           assistant::features::IsRoutinesEnabled())),
       chromium_api_delegate_(std::move(url_loader_factory_info)),
-      display_connection_(std::make_unique<CrosDisplayConnection>(
-          this,
-          assistant::features::IsFeedbackUiEnabled())),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(service, this)),
       service_(service),
@@ -196,6 +193,7 @@ void AssistantManagerServiceImpl::Stop() {
 
   assistant_manager_internal_ = nullptr;
   assistant_manager_.reset(nullptr);
+  display_connection_.reset(nullptr);
 }
 
 AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
@@ -932,6 +930,9 @@ void AssistantManagerServiceImpl::OnCommunicationError(int error_code) {
 void AssistantManagerServiceImpl::StartAssistantInternal(
     const base::Optional<std::string>& access_token) {
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
+
+  display_connection_ = std::make_unique<CrosDisplayConnection>(
+      this, assistant::features::IsFeedbackUiEnabled());
 
   base::AutoLock lock(new_assistant_manager_lock_);
   new_assistant_manager_.reset(assistant_client::AssistantManager::Create(
