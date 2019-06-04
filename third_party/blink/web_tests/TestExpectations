@@ -5833,3 +5833,6 @@ crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/905971 virtual/blink-cors/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
 crbug.com/905971 virtual/blink-cors/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
 crbug.com/905971 [ Win ] virtual/blink-cors/external/wpt/service-workers/service-worker/detached-context.https.html [ Pass Crash ]
+
+# Sheriff 2019-06-04
+crbug.com/970135 [ Mac ] virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-interested-element-indicated.html [ Failure ]
