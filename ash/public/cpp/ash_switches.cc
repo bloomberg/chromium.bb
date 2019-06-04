@@ -90,6 +90,12 @@ const char kAshHideNotificationsForFactory[] =
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
 
+// The physical position info of the side volume button while in landscape
+// primary screen orientation. The value is a JSON object containing a "region"
+// property with the value "keyboard", "screen" and a "side" property with the
+// value "left", "right", "top", "bottom".
+const char kAshSideVolumeButtonPosition[] = "ash-side-volume-button-position";
+
 // (Most) Chrome OS hardware reports ACPI power button releases correctly.
 // Standard hardware reports releases immediately after presses.  If set, we
 // lock the screen or shutdown the system immediately in response to a press
