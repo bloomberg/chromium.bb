@@ -696,7 +696,7 @@ void TreeView::LoadChildren(InternalNode* node) {
   for (auto* model_child : model_->GetChildren(node->model_node())) {
     std::unique_ptr<InternalNode> child = std::make_unique<InternalNode>();
     ConfigureInternalNode(model_child, child.get());
-    node->Add(std::move(child), node->child_count());
+    node->Add(std::move(child));
   }
 }
 

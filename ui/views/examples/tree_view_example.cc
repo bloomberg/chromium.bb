@@ -115,8 +115,7 @@ void TreeViewExample::AddNewNode() {
   if (!selected_node)
     selected_node = model_.GetRoot();
   NodeType* new_node = model_.Add(
-      selected_node, std::make_unique<NodeType>(selected_node->GetTitle(), 1),
-      selected_node->child_count());
+      selected_node, std::make_unique<NodeType>(selected_node->GetTitle(), 1));
   tree_view_->SetSelectedNode(new_node);
 }
 

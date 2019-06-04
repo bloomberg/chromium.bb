@@ -204,8 +204,7 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
       parent = wip_partner_bookmarks_root_.get();
     }
     node_id = node->id();
-    const_cast<BookmarkNode*>(parent)->Add(std::move(node),
-                                           parent->child_count());
+    const_cast<BookmarkNode*>(parent)->Add(std::move(node));
   } else {
     std::unique_ptr<BookmarkPermanentNode> node =
         std::make_unique<BookmarkPermanentNode>(wip_next_available_id_++);

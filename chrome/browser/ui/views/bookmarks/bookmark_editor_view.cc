@@ -468,8 +468,7 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::AddNewFolder(
   return tree_model_->Add(
       parent,
       std::make_unique<EditorNode>(
-          l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME), 0),
-      parent->child_count());
+          l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME), 0));
 }
 
 void BookmarkEditorView::ExpandAndSelect() {
@@ -514,10 +513,8 @@ void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
     const BookmarkNode* child_bb_node = bb_node->GetChild(i);
     if (child_bb_node->IsVisible() && child_bb_node->is_folder() &&
         bb_model_->client()->CanBeEditedByUser(child_bb_node)) {
-      EditorNode* new_b_node =
-          b_node->Add(std::make_unique<EditorNode>(child_bb_node->GetTitle(),
-                                                   child_bb_node->id()),
-                      b_node->child_count());
+      EditorNode* new_b_node = b_node->Add(std::make_unique<EditorNode>(
+          child_bb_node->GetTitle(), child_bb_node->id()));
       CreateNodes(child_bb_node, new_b_node);
     }
   }
@@ -597,8 +594,8 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewFolders(
     const BookmarkNode* child_bb_node = nullptr;
     if (child_b_node->value == 0) {
       // New folder.
-      child_bb_node = bb_model_->AddFolder(bb_node,
-          bb_node->child_count(), child_b_node->GetTitle());
+      child_bb_node = bb_model_->AddFolder(bb_node, bb_node->child_count(),
+                                           child_b_node->GetTitle());
       child_b_node->value = child_bb_node->id();
     } else {
       // Existing node, reset the title (BookmarkModel ignores changes if the

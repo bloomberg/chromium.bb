@@ -98,6 +98,11 @@ class TreeNode : public TreeModelNode {
     return node_ptr;
   }
 
+  // Shorthand for "add at end".
+  NodeType* Add(std::unique_ptr<NodeType> node) {
+    return Add(std::move(node), child_count());
+  }
+
   // Removes the node at the given index. Returns the removed node.
   std::unique_ptr<NodeType> Remove(int index) {
     DCHECK_GE(index, 0);
@@ -235,6 +240,11 @@ class TreeNodeModel : public TreeModel {
     NodeType* node_ptr = parent->Add(std::move(node), index);
     NotifyObserverTreeNodesAdded(parent, index, 1);
     return node_ptr;
+  }
+
+  // Shorthand for "add at end".
+  NodeType* Add(NodeType* parent, std::unique_ptr<NodeType> node) {
+    return Add(parent, std::move(node), parent->child_count());
   }
 
   std::unique_ptr<NodeType> Remove(NodeType* parent, int index) {

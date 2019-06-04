@@ -138,10 +138,8 @@ void PopulateNodeImpl(const std::vector<std::string>& description,
       // value. The folders need not have a name, but one is assigned to help
       // in debugging.
       static int next_folder_id = 1;
-      TestNode* new_node = parent->Add(
-          std::make_unique<TestNode>(base::NumberToString16(next_folder_id++),
-                                     BookmarkNode::FOLDER),
-          parent->child_count());
+      TestNode* new_node = parent->Add(std::make_unique<TestNode>(
+          base::NumberToString16(next_folder_id++), BookmarkNode::FOLDER));
       PopulateNodeImpl(description, index, new_node);
     } else if (element == "]") {
       // End the current folder.
@@ -154,8 +152,7 @@ void PopulateNodeImpl(const std::vector<std::string>& description,
       DCHECK(element.find('[') == std::string::npos);
       DCHECK(element.find(']') == std::string::npos);
       parent->Add(std::make_unique<TestNode>(base::UTF8ToUTF16(element),
-                                             BookmarkNode::URL),
-                  parent->child_count());
+                                             BookmarkNode::URL));
     }
   }
 }

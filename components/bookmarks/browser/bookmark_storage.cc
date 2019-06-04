@@ -229,7 +229,7 @@ bool BookmarkLoadDetails::LoadExtraNodes() {
   for (auto& node : extra_nodes) {
     if (node->child_count() != 0)
       has_non_empty_node = true;
-    root_node_->Add(std::move(node), root_node_->child_count());
+    root_node_->Add(std::move(node));
   }
   return has_non_empty_node;
 }
@@ -266,7 +266,7 @@ BookmarkPermanentNode* BookmarkLoadDetails::CreatePermanentNode(
   }
   node->SetTitle(l10n_util::GetStringUTF16(title_id));
   BookmarkPermanentNode* permanent_node = node.get();
-  root_node_->Add(std::move(node), root_node_->child_count());
+  root_node_->Add(std::move(node));
   return permanent_node;
 }
 

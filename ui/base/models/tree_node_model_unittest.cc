@@ -264,11 +264,11 @@ TEST_F(TreeNodeModelTest, BasicOperations) {
   TestNode root;
   EXPECT_EQ(0, root.child_count());
 
-  TestNode* child1 = root.Add(std::make_unique<TestNode>(), root.child_count());
+  TestNode* child1 = root.Add(std::make_unique<TestNode>());
   EXPECT_EQ(1, root.child_count());
   EXPECT_EQ(&root, child1->parent());
 
-  TestNode* child2 = root.Add(std::make_unique<TestNode>(), root.child_count());
+  TestNode* child2 = root.Add(std::make_unique<TestNode>());
   EXPECT_EQ(2, root.child_count());
   EXPECT_EQ(child1->parent(), child2->parent());
 
@@ -284,7 +284,7 @@ TEST_F(TreeNodeModelTest, IsRoot) {
   TestNode root;
   EXPECT_TRUE(root.is_root());
 
-  TestNode* child1 = root.Add(std::make_unique<TestNode>(), root.child_count());
+  TestNode* child1 = root.Add(std::make_unique<TestNode>());
   EXPECT_FALSE(child1->is_root());
 }
 
