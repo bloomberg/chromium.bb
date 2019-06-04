@@ -4,9 +4,9 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
@@ -96,7 +96,7 @@ class VirtualDeviceTest : public ::testing::Test {
   std::unique_ptr<MockProducer> producer_;
 
  private:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   service_manager::ServiceKeepalive keepalive_;
   media::VideoCaptureDeviceInfo device_info_;
 };
