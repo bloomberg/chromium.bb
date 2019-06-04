@@ -81,11 +81,6 @@
 // Infobar redesign.
 - (void)displayInfobarButton:(BOOL)display
              metricsRecorder:(InfobarMetricsRecorder*)metricsRecorder;
-// If |selected| is YES applies the selected styling to the InfobarButton, if NO
-// it removes it.
-// TODO(crbug.com/935804): This method is currently only being used in the
-// Infobar redesign.
-- (void)setInfobarButtonStyleSelected:(BOOL)selected;
 // If |active| is YES applies the active styling to the InfobarButton, if NO it
 // removes it.
 // TODO(crbug.com/935804): This method is currently only being used in the

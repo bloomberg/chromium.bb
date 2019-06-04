@@ -15,8 +15,6 @@ namespace {
 const CGFloat kButtonAnimationDuration = 0.2;
 // Edge insets of button.
 const CGFloat kButtonEdgeInset = 6;
-// White value of the button background in a selected state.
-const CGFloat kSelectedWhiteValue = 0.80;
 // Tint color of the button in an active state.
 const CGFloat kActiveTintColor = 0x1A73E8;
 // To achieve a circular corner radius, divide length of a side by 2.
@@ -50,21 +48,6 @@ const CGFloat kCircularCornerRadiusDivisor = 2.0;
       self.bounds.size.height / kCircularCornerRadiusDivisor;
 }
 
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
-  void (^changeBackgroundColor)() = ^{
-    self.backgroundColor =
-        selected ? [UIColor colorWithWhite:kSelectedWhiteValue alpha:1.0]
-                 : [UIColor clearColor];
-  };
-  if (animated) {
-    [UIView animateWithDuration:kButtonAnimationDuration
-                     animations:^{
-                       changeBackgroundColor();
-                     }];
-  } else {
-    changeBackgroundColor();
-  }
-}
 - (void)setActive:(BOOL)active animated:(BOOL)animated {
   void (^changeTintColor)() = ^{
     self.tintColor =

@@ -168,7 +168,6 @@
 
 - (void)setBadgeState:(InfobarBadgeState)badgeState {
   _badgeState = badgeState;
-  [self.consumer selectInfobarBadge:_badgeState & InfobarBadgeStateSelected];
   [self.consumer activeInfobarBadge:_badgeState & InfobarBadgeStateAccepted];
 }
 
