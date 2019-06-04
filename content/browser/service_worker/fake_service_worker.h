@@ -66,10 +66,10 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
       const net::CanonicalCookie& cookie,
       ::network::mojom::CookieChangeCause cause,
       DispatchCookieChangeEventCallback callback) override;
-  void DispatchFetchEvent(
+  void DispatchFetchEventForMainResource(
       blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      DispatchFetchEventCallback callback) override;
+      DispatchFetchEventForMainResourceCallback callback) override;
   void DispatchNotificationClickEvent(
       const std::string& notification_id,
       const blink::PlatformNotificationData& notification_data,

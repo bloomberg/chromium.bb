@@ -37,7 +37,7 @@ interface ControllerServiceWorker {
   // handler ran and all outstanding respondWith() and waitUntil() promises have
   // settled. |response_callback| is called once the promise to respondWith()
   // settles, or when the event handler ran without calling respondWith().
-  DispatchFetchEvent(
+  DispatchFetchEventForSubresource(
       blink.mojom.DispatchFetchEventParams params,
       blink.mojom.ServiceWorkerFetchResponseCallback response_callback)
       => (blink.mojom.ServiceWorkerEventStatus status);

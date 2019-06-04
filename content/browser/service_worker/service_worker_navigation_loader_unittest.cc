@@ -177,11 +177,11 @@ class FetchEventServiceWorker : public FakeServiceWorker {
   }
 
  protected:
-  void DispatchFetchEvent(
+  void DispatchFetchEventForMainResource(
       blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
-      override {
+      blink::mojom::ServiceWorker::DispatchFetchEventForMainResourceCallback
+          finish_callback) override {
     // Basic checks on DispatchFetchEvent parameters.
     EXPECT_TRUE(params->request->is_main_resource_load);
 
@@ -191,9 +191,9 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
     switch (response_mode_) {
       case ResponseMode::kDefault:
-        FakeServiceWorker::DispatchFetchEvent(std::move(params),
-                                              std::move(response_callback),
-                                              std::move(finish_callback));
+        FakeServiceWorker::DispatchFetchEventForMainResource(
+            std::move(params), std::move(response_callback),
+            std::move(finish_callback));
         break;
       case ResponseMode::kBlob:
         response_callback->OnResponse(
@@ -231,7 +231,7 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
         // Finish the event by calling |finish_callback|.
         // This is the Mojo callback for
-        // blink::mojom::ServiceWorker::DispatchFetchEvent().
+        // blink::mojom::ServiceWorker::DispatchFetchEventForMainResource().
         // If this is not called, Mojo will complain. In production code,
         // ServiceWorkerContextClient would call this when it aborts all
         // callbacks after an unexpected stop.
@@ -286,7 +286,8 @@ class FetchEventServiceWorker : public FakeServiceWorker {
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
 
   // For ResponseMode::kEarlyResponse and kDeferredResponse.
-  blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
+  blink::mojom::ServiceWorker::DispatchFetchEventForMainResourceCallback
+      finish_callback_;
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
 
   // For ResponseMode::kRedirect.

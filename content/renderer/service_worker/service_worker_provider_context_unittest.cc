@@ -182,10 +182,10 @@ class FakeControllerServiceWorker
   ~FakeControllerServiceWorker() override = default;
 
   // blink::mojom::ControllerServiceWorker:
-  void DispatchFetchEvent(
+  void DispatchFetchEventForSubresource(
       blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      DispatchFetchEventCallback callback) override {
+      DispatchFetchEventForSubresourceCallback callback) override {
     fetch_event_count_++;
     fetch_event_request_ = std::move(params->request);
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);

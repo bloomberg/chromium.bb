@@ -105,10 +105,10 @@ void FakeServiceWorker::DispatchCookieChangeEvent(
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
-void FakeServiceWorker::DispatchFetchEvent(
+void FakeServiceWorker::DispatchFetchEventForMainResource(
     blink::mojom::DispatchFetchEventParamsPtr params,
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-    DispatchFetchEventCallback callback) {
+    DispatchFetchEventForMainResourceCallback callback) {
   auto response = blink::mojom::FetchAPIResponse::New();
   response->status_code = 200;
   response->status_text = "OK";

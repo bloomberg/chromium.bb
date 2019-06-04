@@ -267,7 +267,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
 
   // TODO(falken): Grant the controller service worker's process access to files
   // in the body, like ServiceWorkerFetchDispatcher::DispatchFetchEvent() does.
-  controller->DispatchFetchEvent(
+  controller->DispatchFetchEventForSubresource(
       std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
                      weak_factory_.GetWeakPtr()));

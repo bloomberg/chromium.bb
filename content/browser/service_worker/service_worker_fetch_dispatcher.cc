@@ -593,7 +593,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   // unretained raw pointer of |version_| to OnFetchEventFinished callback.
   // Pass |url_loader_assets_| to the callback to keep the URL loader related
   // assets alive while the FetchEvent is ongoing in the service worker.
-  version_->endpoint()->DispatchFetchEvent(
+  version_->endpoint()->DispatchFetchEventForMainResource(
       std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
                      base::Unretained(version_.get()), event_finish_id,

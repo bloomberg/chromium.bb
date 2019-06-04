@@ -201,10 +201,10 @@ class FakeControllerServiceWorker
   }
 
   // blink::mojom::ControllerServiceWorker:
-  void DispatchFetchEvent(
+  void DispatchFetchEventForSubresource(
       blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      DispatchFetchEventCallback callback) override {
+      DispatchFetchEventForSubresourceCallback callback) override {
     EXPECT_FALSE(params->request->is_main_resource_load);
     if (params->request->body)
       request_body_ = params->request->body;

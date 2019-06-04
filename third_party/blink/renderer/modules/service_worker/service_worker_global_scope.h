@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
@@ -45,7 +46,6 @@
 
 namespace blink {
 
-class ControllerServiceWorker;
 class ExceptionState;
 class FetchEvent;
 class RespondWithObserver;
@@ -68,6 +68,7 @@ typedef RequestOrUSVString RequestInfo;
 
 class MODULES_EXPORT ServiceWorkerGlobalScope final
     : public WorkerGlobalScope,
+      public mojom::blink::ControllerServiceWorker,
       public mojom::blink::ServiceWorker {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -159,19 +160,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
                                    int64_t encoded_data_length,
                                    int64_t encoded_body_length,
                                    int64_t decoded_body_length);
-
-  // Dispatches the fetch event if the worker is running normally, and queues it
-  // instead if the worker has already requested to be terminated by the
-  // browser. If queued, the event will be dispatched once the worker resumes
-  // normal operation (if the browser decides not to terminate it, and instead
-  // starts another event), or else is dropped if the worker is terminated.
-  //
-  // This method needs to be used only if the event comes directly from a
-  // client, which means it is coming through the ControllerServiceWorker.
-  void DispatchOrQueueFetchEvent(
-      mojom::blink::DispatchFetchEventParamsPtr params,
-      mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      DispatchFetchEventCallback callback);
 
   // Creates a ServiceWorkerTimeoutTimer::StayAwakeToken to ensure that the idle
   // timer won't be triggered while any of these are alive.
@@ -342,7 +330,27 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       int event_id,
       mojom::blink::ExtendableMessageEventPtr event);
 
+  using DispatchFetchEventInternalCallback =
+      base::OnceCallback<void(mojom::blink::ServiceWorkerEventStatus)>;
+  void DispatchFetchEventInternal(
+      mojom::blink::DispatchFetchEventParamsPtr params,
+      mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      DispatchFetchEventInternalCallback callback);
+
   void SetFetchHandlerExistence(FetchHandlerExistence fetch_handler_existence);
+
+  // Implements mojom::blink::ControllerServiceWorker.
+  //
+  // Dispatches the fetch event if the worker is running normally, and queues it
+  // instead if the worker has already requested to be terminated by the
+  // browser. If queued, the event will be dispatched once the worker resumes
+  // normal operation (if the browser decides not to terminate it, and instead
+  // starts another event), or else is dropped if the worker is terminated.
+  void DispatchFetchEventForSubresource(
+      mojom::blink::DispatchFetchEventParamsPtr params,
+      mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      DispatchFetchEventForSubresourceCallback callback) override;
+  void Clone(mojom::blink::ControllerServiceWorkerRequest request) override;
 
   // Implements mojom::blink::ServiceWorker.
   void InitializeGlobalScope(
@@ -370,10 +378,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       mojom::blink::ExtendableMessageEventPtr event,
       base::TimeDelta timeout,
       DispatchExtendableMessageEventCallback callback) override;
-  void DispatchFetchEvent(
+  void DispatchFetchEventForMainResource(
       mojom::blink::DispatchFetchEventParamsPtr params,
       mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      DispatchFetchEventCallback callback) override;
+      DispatchFetchEventForMainResourceCallback callback) override;
   void DispatchNotificationClickEvent(
       const String& notification_id,
       mojom::blink::NotificationDataPtr notification_data,
@@ -473,7 +481,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   HashMap<int, DispatchNotificationCloseEventCallback>
       notification_close_event_callbacks_;
   HashMap<int, DispatchPushEventCallback> push_event_callbacks_;
-  HashMap<int, DispatchFetchEventCallback> fetch_event_callbacks_;
+  HashMap<int, DispatchFetchEventInternalCallback> fetch_event_callbacks_;
   HashMap<int, DispatchCookieChangeEventCallback>
       cookie_change_event_callbacks_;
   HashMap<int, DispatchExtendableMessageEventCallback> message_event_callbacks_;
@@ -494,11 +502,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // an event should be aborted.
   std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer_;
 
-  // |controller_| should be destroyed before |timeout_timer_| since the pipe
-  // needs to be disconnected before callbacks passed by DispatchSomeEvent() get
-  // destructed, which may be stored in |timeout_timer_| as parameters of
-  // pending tasks added after a termination request.
-  std::unique_ptr<ControllerServiceWorker> controller_;
+  // Connected by the ServiceWorkerProviderHost in the browser process and by
+  // the controllees. |controller_bindings_| should be destroyed before
+  // |timeout_timer_| since the pipe needs to be disconnected before callbacks
+  // passed by DispatchSomeEvent() get destructed, which may be stored in
+  // |timeout_timer_|
+  mojo::BindingSet<mojom::blink::ControllerServiceWorker> controller_bindings_;
 };
 
 template <>

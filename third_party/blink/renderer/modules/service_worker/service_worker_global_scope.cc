@@ -85,7 +85,6 @@
 #include "third_party/blink/renderer/modules/payments/payment_request_respond_with_observer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_event.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_message_data.h"
-#include "third_party/blink/renderer/modules/service_worker/controller_service_worker.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_event.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_message_event.h"
 #include "third_party/blink/renderer/modules/service_worker/fetch_event.h"
@@ -378,10 +377,10 @@ void ServiceWorkerGlobalScope::RunInstalledModuleScript(
 
 void ServiceWorkerGlobalScope::Dispose() {
   DCHECK(IsContextThread());
+  controller_bindings_.CloseAllBindings();
   timeout_timer_.reset();
   service_worker_host_.reset();
   binding_.Close();
-  controller_.reset();
   WorkerGlobalScope::Dispose();
 }
 
@@ -626,12 +625,12 @@ void ServiceWorkerGlobalScope::BindServiceWorker(
 void ServiceWorkerGlobalScope::BindControllerServiceWorker(
     mojom::blink::ControllerServiceWorkerRequest request) {
   DCHECK(IsContextThread());
-  DCHECK(!controller_);
+  DCHECK(controller_bindings_.empty());
   // TODO(falken): Consider adding task types for "the handle fetch task source"
   // and "handle functional event task source" defined in the service worker
   // spec and use them when dispatching events.
-  controller_ = std::make_unique<ControllerServiceWorker>(
-      std::move(request), this,
+  controller_bindings_.AddBinding(
+      this, std::move(request),
       GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 
@@ -682,25 +681,6 @@ void ServiceWorkerGlobalScope::OnNavigationPreloadComplete(
   fetch_event->OnNavigationPreloadComplete(
       this, completion_time, encoded_data_length, encoded_body_length,
       decoded_body_length);
-}
-
-void ServiceWorkerGlobalScope::DispatchOrQueueFetchEvent(
-    mojom::blink::DispatchFetchEventParamsPtr params,
-    mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
-    DispatchFetchEventCallback callback) {
-  DCHECK(IsContextThread());
-  TRACE_EVENT2("ServiceWorker",
-               "ServiceWorkerGlobalScope::DispatchOrQueueFetchEvent", "url",
-               params->request->url.ElidedString().Utf8(), "queued",
-               RequestedTermination() ? "true" : "false");
-  if (RequestedTermination()) {
-    timeout_timer_->PushPendingTask(WTF::Bind(
-        &ServiceWorkerGlobalScope::DispatchFetchEvent, WrapWeakPersistent(this),
-        std::move(params), std::move(response_callback), std::move(callback)));
-    return;
-  }
-  DispatchFetchEvent(std::move(params), std::move(response_callback),
-                     std::move(callback));
 }
 
 std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken>
@@ -1337,6 +1317,68 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
   DispatchExtendableEvent(event_to_dispatch, observer);
 }
 
+void ServiceWorkerGlobalScope::DispatchFetchEventInternal(
+    mojom::blink::DispatchFetchEventParamsPtr params,
+    mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    DispatchFetchEventInternalCallback callback) {
+  DCHECK(IsContextThread());
+  int event_id =
+      timeout_timer_->StartEvent(CreateAbortCallback(&fetch_event_callbacks_));
+  fetch_event_callbacks_.Set(event_id, std::move(callback));
+  fetch_response_callbacks_.Set(event_id, std::move(response_callback));
+
+  // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
+  // events have completed. (crbug.com/736697)
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerGlobalScope::DispatchFetchEventInternal",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
+                          TRACE_ID_LOCAL(event_id)),
+      TRACE_EVENT_FLAG_FLOW_OUT, "url",
+      params->request->url.ElidedString().Utf8());
+
+  // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
+  const bool navigation_preload_sent = !!params->preload_handle;
+  if (navigation_preload_sent) {
+    ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+        ->SetupNavigationPreload(event_id, params->request->url,
+                                 std::move(params->preload_handle));
+  }
+
+  mojom::blink::FetchAPIRequest& fetch_request = *params->request;
+  ScriptState::Scope scope(ScriptController()->GetScriptState());
+  WaitUntilObserver* wait_until_observer =
+      WaitUntilObserver::Create(this, WaitUntilObserver::kFetch, event_id);
+  FetchRespondWithObserver* respond_with_observer =
+      FetchRespondWithObserver::Create(
+          this, event_id, fetch_request.url, fetch_request.mode,
+          fetch_request.redirect_mode, fetch_request.frame_type,
+          fetch_request.request_context_type, wait_until_observer);
+  Request* request =
+      Request::Create(ScriptController()->GetScriptState(), fetch_request,
+                      Request::ForServiceWorkerFetchEvent::kTrue);
+  request->getHeaders()->SetGuard(Headers::kImmutableGuard);
+  FetchEventInit* event_init = FetchEventInit::Create();
+  event_init->setCancelable(true);
+  event_init->setRequest(request);
+  event_init->setClientId(
+      fetch_request.is_main_resource_load ? String() : params->client_id);
+  event_init->setResultingClientId(
+      !fetch_request.is_main_resource_load ? String() : params->client_id);
+  event_init->setIsReload(fetch_request.is_reload);
+  ScriptState* script_state = ScriptController()->GetScriptState();
+  FetchEvent* fetch_event = FetchEvent::Create(
+      script_state, event_type_names::kFetch, event_init, respond_with_observer,
+      wait_until_observer, navigation_preload_sent);
+  if (navigation_preload_sent) {
+    // Keep |fetchEvent| until OnNavigationPreloadComplete() or
+    // onNavigationPreloadError() will be called.
+    pending_preload_fetch_events_.insert(event_id, fetch_event);
+  }
+
+  DispatchExtendableEventWithRespondWith(fetch_event, wait_until_observer,
+                                         respond_with_observer);
+}
+
 void ServiceWorkerGlobalScope::SetFetchHandlerExistence(
     FetchHandlerExistence fetch_handler_existence) {
   DCHECK(IsContextThread());
@@ -1345,6 +1387,34 @@ void ServiceWorkerGlobalScope::SetFetchHandlerExistence(
           features::kServiceWorkerIsolateInForeground)) {
     GetThread()->GetIsolate()->IsolateInForegroundNotification();
   }
+}
+
+void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
+    mojom::blink::DispatchFetchEventParamsPtr params,
+    mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    DispatchFetchEventForSubresourceCallback callback) {
+  DCHECK(IsContextThread());
+  TRACE_EVENT2("ServiceWorker",
+               "ServiceWorkerGlobalScope::DispatchFetchEventForSubresource",
+               "url", params->request->url.ElidedString().Utf8(), "queued",
+               RequestedTermination() ? "true" : "false");
+  if (RequestedTermination()) {
+    timeout_timer_->PushPendingTask(
+        WTF::Bind(&ServiceWorkerGlobalScope::DispatchFetchEventInternal,
+                  WrapWeakPersistent(this), std::move(params),
+                  std::move(response_callback), std::move(callback)));
+    return;
+  }
+  DispatchFetchEventInternal(std::move(params), std::move(response_callback),
+                             std::move(callback));
+}
+
+void ServiceWorkerGlobalScope::Clone(
+    mojom::blink::ControllerServiceWorkerRequest request) {
+  DCHECK(IsContextThread());
+  controller_bindings_.AddBinding(
+      this, std::move(request),
+      GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 
 void ServiceWorkerGlobalScope::InitializeGlobalScope(
@@ -1570,66 +1640,13 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventWithCustomTimeout(
   DispatchExtendableMessageEventInternal(event_id, std::move(event));
 }
 
-void ServiceWorkerGlobalScope::DispatchFetchEvent(
+void ServiceWorkerGlobalScope::DispatchFetchEventForMainResource(
     mojom::blink::DispatchFetchEventParamsPtr params,
     mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
-    DispatchFetchEventCallback callback) {
+    DispatchFetchEventForMainResourceCallback callback) {
   DCHECK(IsContextThread());
-  int event_id =
-      timeout_timer_->StartEvent(CreateAbortCallback(&fetch_event_callbacks_));
-  fetch_event_callbacks_.Set(event_id, std::move(callback));
-  fetch_response_callbacks_.Set(event_id, std::move(response_callback));
-
-  // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
-  // events have completed. (crbug.com/736697)
-  TRACE_EVENT_WITH_FLOW1(
-      "ServiceWorker", "ServiceWorkerGlobalScope::DispatchFetchEvent",
-      TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
-                          TRACE_ID_LOCAL(event_id)),
-      TRACE_EVENT_FLAG_FLOW_OUT, "url",
-      params->request->url.ElidedString().Utf8());
-
-  // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
-  const bool navigation_preload_sent = !!params->preload_handle;
-  if (navigation_preload_sent) {
-    ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-        ->SetupNavigationPreload(event_id, params->request->url,
-                                 std::move(params->preload_handle));
-  }
-
-  mojom::blink::FetchAPIRequest& fetch_request = *params->request;
-  ScriptState::Scope scope(ScriptController()->GetScriptState());
-  WaitUntilObserver* wait_until_observer =
-      WaitUntilObserver::Create(this, WaitUntilObserver::kFetch, event_id);
-  FetchRespondWithObserver* respond_with_observer =
-      FetchRespondWithObserver::Create(
-          this, event_id, fetch_request.url, fetch_request.mode,
-          fetch_request.redirect_mode, fetch_request.frame_type,
-          fetch_request.request_context_type, wait_until_observer);
-  Request* request =
-      Request::Create(ScriptController()->GetScriptState(), fetch_request,
-                      Request::ForServiceWorkerFetchEvent::kTrue);
-  request->getHeaders()->SetGuard(Headers::kImmutableGuard);
-  FetchEventInit* event_init = FetchEventInit::Create();
-  event_init->setCancelable(true);
-  event_init->setRequest(request);
-  event_init->setClientId(
-      fetch_request.is_main_resource_load ? String() : params->client_id);
-  event_init->setResultingClientId(
-      !fetch_request.is_main_resource_load ? String() : params->client_id);
-  event_init->setIsReload(fetch_request.is_reload);
-  ScriptState* script_state = ScriptController()->GetScriptState();
-  FetchEvent* fetch_event = FetchEvent::Create(
-      script_state, event_type_names::kFetch, event_init, respond_with_observer,
-      wait_until_observer, navigation_preload_sent);
-  if (navigation_preload_sent) {
-    // Keep |fetchEvent| until OnNavigationPreloadComplete() or
-    // onNavigationPreloadError() will be called.
-    pending_preload_fetch_events_.insert(event_id, fetch_event);
-  }
-
-  DispatchExtendableEventWithRespondWith(fetch_event, wait_until_observer,
-                                         respond_with_observer);
+  DispatchFetchEventInternal(std::move(params), std::move(response_callback),
+                             std::move(callback));
 }
 
 void ServiceWorkerGlobalScope::DispatchNotificationClickEvent(

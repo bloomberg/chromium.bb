@@ -207,7 +207,7 @@ interface ServiceWorker {
   // waitUntil() promises have settled. |response_callback| is called once the
   // promise to respondWith() settles, or when the event handler ran without
   // calling respondWith().
-  DispatchFetchEvent(
+  DispatchFetchEventForMainResource(
       DispatchFetchEventParams params,
       ServiceWorkerFetchResponseCallback response_callback)
       => (ServiceWorkerEventStatus status);
