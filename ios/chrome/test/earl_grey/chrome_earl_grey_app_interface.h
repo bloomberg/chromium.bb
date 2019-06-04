@@ -122,10 +122,25 @@
 // otherwise nil.
 + (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector;
 
-// Waits for there to be no web state containing |text|.
-// If not succeed returns an NSError indicating  why the operation failed,
-// otherwise nil.
-+ (NSError*)waitForWebStateNotContainingText:(NSString*)text;
+// Attempts to submit form with |formID| in the current WebState.
+// Returns nil on success, or else an NSError indicating why the operation
+// failed.
++ (NSError*)submitWebStateFormWithID:(NSString*)formID;
+
+// Returns YES if the current WebState contains |text|.
++ (BOOL)webStateContainsText:(NSString*)text;
+
+// Waits for the current WebState to contain loaded image with |imageID|.
+// When loaded, the image element will have the same size as actual image.
+// Returns nil if the condition is met within a timeout, or else an NSError
+// indicating why the operation failed.
++ (NSError*)waitForWebStateContainingLoadedImage:(NSString*)imageID;
+
+// Waits for the current WebState to contain a blocked image with |imageID|.
+// When blocked, the image element will be smaller than the actual image size.
+// Returns nil if the condition is met within a timeout, or else an NSError
+// indicating why the operation failed.
++ (NSError*)waitForWebStateContainingBlockedImage:(NSString*)imageID;
 
 // Sets value for content setting.
 + (void)setContentSettings:(ContentSetting)setting;

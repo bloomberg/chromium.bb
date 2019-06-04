@@ -189,17 +189,51 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return nil;
 }
 
-+ (NSError*)waitForWebStateNotContainingText:(NSString*)text {
-  bool success = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
-    return !web::test::IsWebViewContainingText(
-        chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
-  });
++ (NSError*)submitWebStateFormWithID:(NSString*)formID {
+  bool success = web::test::SubmitWebViewFormWithId(
+      chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(formID));
+
   if (!success) {
-    NSString* NSErrorDescription = [NSString
-        stringWithFormat:@"Failed waiting for web view not containing %@",
-                         text];
-    return testing::NSErrorWithLocalizedDescription(NSErrorDescription);
+    NSString* errorString =
+        [NSString stringWithFormat:@"Failed to submit form with ID=%@", formID];
+    return testing::NSErrorWithLocalizedDescription(errorString);
   }
+
+  return nil;
+}
+
++ (BOOL)webStateContainsText:(NSString*)text {
+  return web::test::IsWebViewContainingText(
+      chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
+}
+
++ (NSError*)waitForWebStateContainingLoadedImage:(NSString*)imageID {
+  bool success = web::test::WaitForWebViewContainingImage(
+      base::SysNSStringToUTF8(imageID), chrome_test_util::GetCurrentWebState(),
+      web::test::IMAGE_STATE_LOADED);
+
+  if (!success) {
+    NSString* errorString = [NSString
+        stringWithFormat:@"Failed waiting for web view loaded image %@",
+                         imageID];
+    return testing::NSErrorWithLocalizedDescription(errorString);
+  }
+
+  return nil;
+}
+
++ (NSError*)waitForWebStateContainingBlockedImage:(NSString*)imageID {
+  bool success = web::test::WaitForWebViewContainingImage(
+      base::SysNSStringToUTF8(imageID), chrome_test_util::GetCurrentWebState(),
+      web::test::IMAGE_STATE_BLOCKED);
+
+  if (!success) {
+    NSString* errorString = [NSString
+        stringWithFormat:@"Failed waiting for web view blocked image %@",
+                         imageID];
+    return testing::NSErrorWithLocalizedDescription(errorString);
+  }
+
   return nil;
 }
 

@@ -317,10 +317,63 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return nil;
 }
 
-- (NSError*)waitForWebStateNotContainingText:(std::string)UTF8Text {
-  NSString* text = base::SysUTF8ToNSString(UTF8Text);
+- (NSError*)submitWebStateFormWithID:(const std::string&)UTF8FormID {
+  NSString* formID = base::SysUTF8ToNSString(UTF8FormID);
   EG_TEST_HELPER_ASSERT_NO_ERROR(
-      [ChromeEarlGreyAppInterface waitForWebStateNotContainingText:text]);
+      [ChromeEarlGreyAppInterface submitWebStateFormWithID:formID]);
+
+  return nil;
+}
+
+- (NSError*)waitForWebStateContainingText:(const std::string&)UTF8Text {
+  NSString* text = base::SysUTF8ToNSString(UTF8Text);
+  NSString* errorString = [NSString
+      stringWithFormat:@"Failed waiting for web state containing %@", text];
+
+  GREYCondition* waitForText = [GREYCondition
+      conditionWithName:errorString
+                  block:^{
+                    return
+                        [ChromeEarlGreyAppInterface webStateContainsText:text];
+                  }];
+  bool containsText = [waitForText waitWithTimeout:kWaitForUIElementTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(containsText, errorString);
+
+  return nil;
+}
+
+- (NSError*)waitForWebStateNotContainingText:(const std::string&)UTF8Text {
+  NSString* text = base::SysUTF8ToNSString(UTF8Text);
+  NSString* errorString = [NSString
+      stringWithFormat:@"Failed waiting for web state not containing %@", text];
+
+  GREYCondition* waitForText = [GREYCondition
+      conditionWithName:errorString
+                  block:^{
+                    return !
+                        [ChromeEarlGreyAppInterface webStateContainsText:text];
+                  }];
+  bool containsText = [waitForText waitWithTimeout:kWaitForUIElementTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(containsText, errorString);
+
+  return nil;
+}
+
+- (NSError*)waitForWebStateContainingBlockedImageElementWithID:
+    (const std::string&)UTF8ImageID {
+  NSString* imageID = base::SysUTF8ToNSString(UTF8ImageID);
+  EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
+      waitForWebStateContainingBlockedImage:imageID]);
+
+  return nil;
+}
+
+- (NSError*)waitForWebStateContainingLoadedImageElementWithID:
+    (const std::string&)UTF8ImageID {
+  NSString* imageID = base::SysUTF8ToNSString(UTF8ImageID);
+  EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
+      waitForWebStateContainingLoadedImage:imageID]);
+
   return nil;
 }
 
@@ -519,64 +572,6 @@ id ExecuteJavaScript(NSString* javascript,
       stringWithFormat:@"Failed, there was a static html view containing %@",
                        text];
   EG_TEST_HELPER_ASSERT_TRUE(noStaticView, errorDescription);
-
-  return nil;
-}
-
-#pragma mark - WebState Utilities
-
-- (NSError*)submitWebStateFormWithID:(const std::string&)formID {
-  bool success = web::test::SubmitWebViewFormWithId(
-      chrome_test_util::GetCurrentWebState(), formID);
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:@"Failed to submit form with ID=%s", formID.c_str()]);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebStateContainingText:(std::string)text {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return web::test::IsWebViewContainingText(
-        chrome_test_util::GetCurrentWebState(), text);
-  });
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:@"Failed waiting for web state containing %s",
-                         text.c_str()]);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebStateContainingBlockedImageElementWithID:
-    (std::string)imageID {
-  bool success = web::test::WaitForWebViewContainingImage(
-      imageID, chrome_test_util::GetCurrentWebState(),
-      web::test::IMAGE_STATE_BLOCKED);
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:@"Failed waiting for web view blocked image %s",
-                         imageID.c_str()]);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebStateContainingLoadedImageElementWithID:
-    (std::string)imageID {
-  bool success = web::test::WaitForWebViewContainingImage(
-      imageID, chrome_test_util::GetCurrentWebState(),
-      web::test::IMAGE_STATE_LOADED);
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:@"Failed waiting for web view loaded image %s",
-                         imageID.c_str()]);
-  }
 
   return nil;
 }

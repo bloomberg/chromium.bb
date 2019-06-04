@@ -275,11 +275,39 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector;
 
-// Waits for there to be no web state containing |text|.
+// Attempts to submit form with |formID| in the current WebState.
+// Induces a GREYAssert if the operation fails.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)submitWebStateFormWithID:(const std::string&)formID;
+
+// Waits for the current web state to contain |UTF8Text|. If the condition is
+// not met within a timeout a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForWebStateContainingText:(const std::string&)UTF8Text;
+
+// Waits for there to be no web state containing |UTF8Text|.
 // If the condition is not met within a timeout a GREYAssert is induced.
 // TODO(crbug.com/963613): Change return type to void when
 // CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForWebStateNotContainingText:(std::string)text;
+- (NSError*)waitForWebStateNotContainingText:(const std::string&)UTF8Text;
+
+// Waits for there to be a web state containing a blocked |imageID|.  When
+// blocked, the image element will be smaller than the actual image size.
+// If the condition is not met within a timeout a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForWebStateContainingBlockedImageElementWithID:
+    (const std::string&)UTF8ImageID;
+
+// Waits for there to be a web state containing loaded image with |imageID|.
+// When loaded, the image element will have the same size as actual image.
+// If the condition is not met within a timeout a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForWebStateContainingLoadedImageElementWithID:
+    (const std::string&)UTF8ImageID;
 
 #pragma mark - Bookmarks Utilities (EG2)
 
@@ -332,27 +360,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // If the condition is not met within a timeout returns an NSError indicating
 // why the operation failed, otherwise nil.
 - (NSError*)waitForErrorPage WARN_UNUSED_RESULT;
-
-#pragma mark - WebState Utilities
-
-// Attempts to submit form with |formID| in the current WebState.
-- (NSError*)submitWebStateFormWithID:(const std::string&)formID
-    WARN_UNUSED_RESULT;
-
-// Waits for the current web state to contain |text|. Returns nil if the
-// condition is met within a timeout, otherwise an NSError indicating why the
-// operation failed.
-- (NSError*)waitForWebStateContainingText:(std::string)text WARN_UNUSED_RESULT;
-
-// Waits for there to be a web state containing a blocked |image_id|.  When
-// blocked, the image element will be smaller than the actual image size.
-- (NSError*)waitForWebStateContainingBlockedImageElementWithID:
-    (std::string)imageID WARN_UNUSED_RESULT;
-
-// Waits for there to be a web state containing loaded image with |image_id|.
-// When loaded, the image element will have the same size as actual image.
-- (NSError*)waitForWebStateContainingLoadedImageElementWithID:
-    (std::string)imageID WARN_UNUSED_RESULT;
 
 #pragma mark - Sync Utilities
 
