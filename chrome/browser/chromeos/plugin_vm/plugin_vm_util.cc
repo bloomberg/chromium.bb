@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -102,11 +103,10 @@ bool IsPluginVmEnabled(Profile* profile) {
 }
 
 bool IsPluginVmRunning(Profile* profile) {
-  // TODO(timloh): This should probably also check the state of the VM. Once we
-  // have a signal to update us on VM state changes, we should keep track of it
-  // for use here.
-  return ChromeLauncherController::instance()->IsOpen(
-      ash::ShelfID(kPluginVmAppId));
+  return plugin_vm::PluginVmManager::GetForProfile(profile)->vm_state() ==
+             vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING &&
+         ChromeLauncherController::instance()->IsOpen(
+             ash::ShelfID(kPluginVmAppId));
 }
 
 bool IsPluginVmWindow(const aura::Window* window) {

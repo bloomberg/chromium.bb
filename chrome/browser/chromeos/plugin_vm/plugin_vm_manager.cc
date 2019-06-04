@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "chromeos/dbus/vm_plugin_dispatcher_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -53,6 +52,14 @@ class PluginVmManagerFactory : public BrowserContextKeyedServiceFactory {
   }
 };
 
+// Checks if the VM is in a state in which we can't immediately start it.
+bool VmIsStopping(vm_tools::plugin_dispatcher::VmState state) {
+  return state == vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDING ||
+         state == vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPING ||
+         state == vm_tools::plugin_dispatcher::VmState::VM_STATE_RESETTING ||
+         state == vm_tools::plugin_dispatcher::VmState::VM_STATE_PAUSING;
+}
+
 }  // namespace
 
 PluginVmManager* PluginVmManager::GetForProfile(Profile* profile) {
@@ -62,9 +69,17 @@ PluginVmManager* PluginVmManager::GetForProfile(Profile* profile) {
 PluginVmManager::PluginVmManager(Profile* profile)
     : profile_(profile),
       owner_id_(chromeos::ProfileHelper::GetUserIdHashFromProfile(profile)),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  chromeos::DBusThreadManager::Get()
+      ->GetVmPluginDispatcherClient()
+      ->AddObserver(this);
+}
 
-PluginVmManager::~PluginVmManager() {}
+PluginVmManager::~PluginVmManager() {
+  chromeos::DBusThreadManager::Get()
+      ->GetVmPluginDispatcherClient()
+      ->RemoveObserver(this);
+}
 
 void PluginVmManager::LaunchPluginVm() {
   if (!IsPluginVmAllowedForProfile(profile_)) {
@@ -73,7 +88,10 @@ void PluginVmManager::LaunchPluginVm() {
     return;
   }
 
-  if (!vm_has_been_launched_) {
+  // Show a spinner for the first launch (state UNKNOWN) or if we will have to
+  // wait before starting the VM.
+  if (vm_state_ == vm_tools::plugin_dispatcher::VmState::VM_STATE_UNKNOWN ||
+      VmIsStopping(vm_state_)) {
     ChromeLauncherController* chrome_controller =
         ChromeLauncherController::instance();
     // Can be null in tests.
@@ -82,11 +100,10 @@ void PluginVmManager::LaunchPluginVm() {
           kPluginVmAppId,
           std::make_unique<ShelfSpinnerItemController>(kPluginVmAppId));
     }
-    vm_has_been_launched_ = true;
   }
 
   // Launching Plugin Vm goes through the following steps:
-  // 1) Start the Plugin Vm Dispatcher
+  // 1) Start the Plugin Vm Dispatcher (no-op if already running)
   // 2) Call ListVms to get the state of the VM
   // 3) Start the VM if necessary
   // 4) Show the UI.
@@ -111,6 +128,17 @@ void PluginVmManager::StopPluginVm() {
 
   // Reset seneschal handle to indicate that it is no longer valid.
   seneschal_server_handle_ = 0;
+}
+
+void PluginVmManager::OnVmStateChanged(
+    const vm_tools::plugin_dispatcher::VmStateChangedSignal& signal) {
+  if (signal.owner_id() != owner_id_ || signal.vm_name() != kPluginVmName)
+    return;
+
+  vm_state_ = signal.vm_state();
+
+  if (pending_start_vm_ && !VmIsStopping(vm_state_))
+    StartVm();
 }
 
 void PluginVmManager::OnStartPluginVmDispatcher(bool success) {
@@ -142,33 +170,46 @@ void PluginVmManager::OnListVms(
     return;
   }
 
-  auto vm_state = reply->vm_info(0).state();
-  switch (vm_state) {
+  // This is kept up to date in OnVmStateChanged, but the state will not yet be
+  // set if we just started the dispatcher.
+  vm_state_ = reply->vm_info(0).state();
+
+  switch (vm_state_) {
+    case vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDING:
+    case vm_tools::plugin_dispatcher::VmState::VM_STATE_RESETTING:
+    case vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPING:
+    case vm_tools::plugin_dispatcher::VmState::VM_STATE_PAUSING:
+      pending_start_vm_ = true;
+      break;
     case vm_tools::plugin_dispatcher::VmState::VM_STATE_STARTING:
     case vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING:
+    case vm_tools::plugin_dispatcher::VmState::VM_STATE_CONTINUING:
+    case vm_tools::plugin_dispatcher::VmState::VM_STATE_RESUMING:
       ShowVm();
       break;
     case vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED:
     case vm_tools::plugin_dispatcher::VmState::VM_STATE_PAUSED:
-    case vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED: {
-      vm_tools::plugin_dispatcher::StartVmRequest request;
-      request.set_owner_id(owner_id_);
-      request.set_vm_name_uuid(kPluginVmName);
-
-      chromeos::DBusThreadManager::Get()
-          ->GetVmPluginDispatcherClient()
-          ->StartVm(std::move(request),
-                    base::BindOnce(&PluginVmManager::OnStartVm,
-                                   weak_ptr_factory_.GetWeakPtr()));
+    case vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED:
+      StartVm();
       break;
-    }
     default:
-      // TODO(timloh): Handle states like stopping by waiting for a signal of
-      // completion, and show a spinner while we wait.
-      LOG(ERROR) << "Didn't start VM as it is in state " << vm_state;
+      LOG(ERROR) << "Didn't start VM as it is in unexpected state "
+                 << vm_state_;
       LaunchFailed();
       break;
   }
+}
+
+void PluginVmManager::StartVm() {
+  pending_start_vm_ = false;
+
+  vm_tools::plugin_dispatcher::StartVmRequest request;
+  request.set_owner_id(owner_id_);
+  request.set_vm_name_uuid(kPluginVmName);
+
+  chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->StartVm(
+      std::move(request), base::BindOnce(&PluginVmManager::OnStartVm,
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginVmManager::OnStartVm(

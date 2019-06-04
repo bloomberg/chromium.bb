@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -24,6 +25,14 @@ class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
   VmPluginDispatcherClientImpl() : weak_ptr_factory_(this) {}
 
   ~VmPluginDispatcherClientImpl() override = default;
+
+  void AddObserver(Observer* observer) override {
+    observer_list_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) override {
+    observer_list_.RemoveObserver(observer);
+  }
 
   void StartVm(const StartVmRequest& request,
                DBusMethodCallback<StartVmResponse> callback) override {
@@ -66,6 +75,15 @@ class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
       LOG(ERROR) << "Unable to get dbus proxy for "
                  << kVmPluginDispatcherServiceName;
     }
+
+    vm_plugin_dispatcher_proxy_->ConnectToSignal(
+        vm_tools::plugin_dispatcher::kVmPluginDispatcherInterface,
+        vm_tools::plugin_dispatcher::kVmStateChangedSignal,
+        base::BindRepeating(
+            &VmPluginDispatcherClientImpl::OnVmStateChangedSignal,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&VmPluginDispatcherClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -107,7 +125,36 @@ class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
     std::move(callback).Run(std::move(reponse_proto));
   }
 
+  void OnVmStateChangedSignal(dbus::Signal* signal) {
+    DCHECK_EQ(signal->GetInterface(),
+              vm_tools::plugin_dispatcher::kVmPluginDispatcherInterface);
+    DCHECK_EQ(signal->GetMember(),
+              vm_tools::plugin_dispatcher::kVmStateChangedSignal);
+
+    vm_tools::plugin_dispatcher::VmStateChangedSignal vm_state_changed_signal;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&vm_state_changed_signal)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+
+    for (auto& observer : observer_list_) {
+      observer.OnVmStateChanged(vm_state_changed_signal);
+    }
+  }
+
+  void OnSignalConnected(const std::string& interface_name,
+                         const std::string& signal_name,
+                         bool is_connected) {
+    DCHECK_EQ(interface_name,
+              vm_tools::plugin_dispatcher::kVmPluginDispatcherInterface);
+    if (!is_connected)
+      LOG(ERROR) << "Failed to connect to signal: " << signal_name;
+  }
+
   dbus::ObjectProxy* vm_plugin_dispatcher_proxy_ = nullptr;
+
+  base::ObserverList<Observer> observer_list_;
 
   base::WeakPtrFactory<VmPluginDispatcherClientImpl> weak_ptr_factory_;
 

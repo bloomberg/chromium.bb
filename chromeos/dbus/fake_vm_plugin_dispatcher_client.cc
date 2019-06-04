@@ -17,6 +17,14 @@ FakeVmPluginDispatcherClient::FakeVmPluginDispatcherClient() = default;
 
 FakeVmPluginDispatcherClient::~FakeVmPluginDispatcherClient() = default;
 
+void FakeVmPluginDispatcherClient::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void FakeVmPluginDispatcherClient::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void FakeVmPluginDispatcherClient::StartVm(
     const StartVmRequest& request,
     DBusMethodCallback<StartVmResponse> callback) {
@@ -61,6 +69,13 @@ void FakeVmPluginDispatcherClient::WaitForServiceToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeVmPluginDispatcherClient::NotifyVmStateChanged(
+    const vm_tools::plugin_dispatcher::VmStateChangedSignal& signal) {
+  for (auto& observer : observer_list_) {
+    observer.OnVmStateChanged(signal);
+  }
 }
 
 }  // namespace chromeos
