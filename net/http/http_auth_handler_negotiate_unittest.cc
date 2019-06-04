@@ -18,6 +18,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/mock_allow_http_auth_preferences.h"
 #include "net/log/net_log_with_source.h"
+#include "net/net_buildflags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
@@ -382,14 +383,12 @@ TEST_F(HttpAuthHandlerNegotiateTest, NoKerberosCredentials) {
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_MISSING_AUTH_CREDENTIALS));
 }
 
-#if defined(DLOPEN_KERBEROS)
+#if BUILDFLAG(DLOPEN_KERBEROS)
 TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
-  std::unique_ptr<HostResolver> host_resolver(new MockHostResolver());
   MockAllowHttpAuthPreferences http_auth_preferences;
   std::unique_ptr<HttpAuthHandlerNegotiate::Factory> negotiate_factory(
       new HttpAuthHandlerNegotiate::Factory(
           net::HttpAuthHandlerFactory::NegotiateAuthSystemFactory()));
-  negotiate_factory->set_host_resolver(host_resolver);
   negotiate_factory->set_http_auth_preferences(&http_auth_preferences);
   negotiate_factory->set_library(
       std::make_unique<GSSAPISharedLibrary>("/this/library/does/not/exist"));
@@ -397,12 +396,12 @@ TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
   GURL gurl("http://www.example.com");
   std::unique_ptr<HttpAuthHandler> generic_handler;
   int rv = negotiate_factory->CreateAuthHandlerFromString(
-      "Negotiate", HttpAuth::AUTH_SERVER, gurl, NetLogWithSource(),
-      &generic_handler);
+      "Negotiate", HttpAuth::AUTH_SERVER, SSLInfo(), gurl, NetLogWithSource(),
+      resolver(), &generic_handler);
   EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
   EXPECT_TRUE(generic_handler.get() == nullptr);
 }
-#endif  // defined(DLOPEN_KERBEROS)
+#endif  // BUILDFLAG(DLOPEN_KERBEROS)
 
 // AllowGssapiLibraryLoad() is only supported on Chrome OS.
 #if defined(OS_CHROMEOS)

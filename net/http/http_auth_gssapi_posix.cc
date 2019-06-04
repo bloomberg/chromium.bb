@@ -16,7 +16,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth_gssapi_posix.h"
 #include "net/http/http_auth_multi_round_parse.h"
+#include "net/net_buildflags.h"
 
 // These are defined for the GSSAPI library:
 // Paraphrasing the comments from gssapi.h:
@@ -422,11 +424,11 @@ bool GSSAPISharedLibrary::Init() {
 
 bool GSSAPISharedLibrary::InitImpl() {
   DCHECK(!initialized_);
-#if defined(DLOPEN_KERBEROS)
+#if BUILDFLAG(DLOPEN_KERBEROS)
   gssapi_library_ = LoadSharedLibrary();
   if (gssapi_library_ == nullptr)
     return false;
-#endif  // defined(DLOPEN_KERBEROS)
+#endif  // BUILDFLAG(DLOPEN_KERBEROS)
   initialized_ = true;
   return true;
 }
@@ -479,7 +481,7 @@ base::NativeLibrary GSSAPISharedLibrary::LoadSharedLibrary() {
   return nullptr;
 }
 
-#if defined(DLOPEN_KERBEROS)
+#if BUILDFLAG(DLOPEN_KERBEROS)
 #define BIND(lib, x)                                              \
   DCHECK(lib);                                                    \
   gss_##x##_type x = reinterpret_cast<gss_##x##_type>(            \

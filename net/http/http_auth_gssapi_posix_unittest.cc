@@ -13,6 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/mock_gssapi_library_posix.h"
+#include "net/net_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -90,13 +91,13 @@ TEST(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup) {
   EXPECT_TRUE(gssapi.get()->Init());
 }
 
-#if defined(DLOPEN_KERBEROS)
+#if BUILDFLAG(DLOPEN_KERBEROS)
 TEST(HttpAuthGSSAPIPOSIXTest, GSSAPILoadCustomLibrary) {
   std::unique_ptr<GSSAPILibrary> gssapi(
       new GSSAPISharedLibrary("/this/library/does/not/exist"));
   EXPECT_FALSE(gssapi.get()->Init());
 }
-#endif  // defined(DLOPEN_KERBEROS)
+#endif  // DLOPEN_KERBEROS
 
 TEST(HttpAuthGSSAPIPOSIXTest, GSSAPICycle) {
   std::unique_ptr<test::MockGSSAPILibrary> mock_library(

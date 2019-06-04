@@ -84,6 +84,7 @@ buildflag_header("buildflags") {
     "ENABLE_WEBSOCKETS=$enable_websockets",
     "INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST=$include_transport_security_state_preload_list",
     "USE_KERBEROS=$use_kerberos",
+    "DLOPEN_KERBEROS=$use_external_gssapi",
     "TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED=$trial_comparison_cert_verifier_supported",
   ]
 }
@@ -97,10 +98,6 @@ config("net_internal_config") {
 
   if (enable_built_in_dns) {
     defines += [ "ENABLE_BUILT_IN_DNS" ]
-  }
-
-  if (use_external_gssapi) {
-    defines += [ "DLOPEN_KERBEROS" ]
   }
 }
 
