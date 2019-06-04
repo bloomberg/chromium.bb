@@ -882,6 +882,21 @@ class Licensing(object):
       license_names: list of license name strings.
       license_texts: custom license text to use, mostly for attribution.
     """
+    # TODO(crbug.com/401332): Remove this entirely.
+    # We allow a few packages for now so new packages will stop showing up.
+    if 'Proprietary-Binary' in license_names:
+      # Note: DO NOT ADD ANY MORE PACKAGES HERE.
+      LEGACY_PKGS = (
+          'chromeos-base/infineon-firmware',
+          'chromeos-base/pepper-flash',
+          'sys-boot/coreboot-private-files-',
+          'sys-boot/exynos-pre-boot',
+          'sys-boot/nhlt-blobs',
+          'sys-boot/mma-blobs',
+      )
+      if not any(fullnamerev.startswith(x) for x in LEGACY_PKGS):
+        raise AssertionError('Proprietary-Binary is not a valid license.')
+
     pkg = PackageInfo(self.board, fullnamerev)
     pkg.homepages = homepages
     pkg.license_names = license_names
