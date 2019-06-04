@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
@@ -671,8 +672,17 @@ bool LayoutBlock::SimplifiedLayout() {
         !TryLayoutDoingPositionedMovementOnly())
       return false;
 
+    // If this block is inside a multicol container, we may not be able to
+    // perform simplified layout.
     if (LayoutFlowThread* flow_thread = FlowThreadContainingBlock()) {
       if (!flow_thread->CanSkipLayout(*this))
+        return false;
+    }
+    // Additionally, if this block itself establishes a multicol container, we
+    // may not be able to perform simplified layout inside it. This is really
+    // only unsafe if there are spanners in there, but let's just bail.
+    if (const auto* block_flow = DynamicTo<LayoutBlockFlow>(this)) {
+      if (block_flow->MultiColumnFlowThread())
         return false;
     }
 
