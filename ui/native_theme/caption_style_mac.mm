@@ -47,12 +47,14 @@ std::string GetMAForegroundColorAndOpacityAsCSSColor() {
   return color_utils::SkColorToRgbaString(rgba_color);
 }
 
-std::string GetMABackgroundColorAsCSSColor() {
+std::string GetMABackgroundColorAndOpacityAsCSSColor() {
   base::ScopedCFTypeRef<CGColorRef> cg_color(
       MACaptionAppearanceCopyBackgroundColor(kUserDomain, nullptr));
+  float opacity = MACaptionAppearanceGetBackgroundOpacity(kUserDomain, nullptr);
 
-  return color_utils::SkColorToRgbaString(
-      skia::CGColorRefToSkColor(cg_color.get()));
+  SkColor rgba_color =
+      SkColorSetA(skia::CGColorRefToSkColor(cg_color.get()), 0xff * opacity);
+  return color_utils::SkColorToRgbaString(rgba_color);
 }
 
 // The MA text scale is a float between 0.0 and 2.0; this function converts it
@@ -125,7 +127,7 @@ CaptionStyle CaptionStyle::FromSystemSettings() {
   CaptionStyle style;
 
   style.text_color = GetMAForegroundColorAndOpacityAsCSSColor();
-  style.background_color = GetMABackgroundColorAsCSSColor();
+  style.background_color = GetMABackgroundColorAndOpacityAsCSSColor();
   style.text_size = GetMATextScaleAsCSSPercent();
   style.text_shadow = GetMATextEdgeStyleAsCSSShadow();
 
