@@ -66,7 +66,7 @@ void WakeLockStateRecord::ReleaseWakeLock(ActiveLocksType::iterator iterator) {
   // 2. Reject lockPromise with an "AbortError" DOMException.
   ScriptPromiseResolver* resolver = *iterator;
   resolver->Reject(MakeGarbageCollected<DOMException>(
-      DOMExceptionCode::kAbortError, "Wake Lock is being released"));
+      DOMExceptionCode::kAbortError, "Wake Lock released"));
 
   // 3. Let document be the responsible document of the current settings object.
   // 4. Let record be the platform wake lock's state record associated with
