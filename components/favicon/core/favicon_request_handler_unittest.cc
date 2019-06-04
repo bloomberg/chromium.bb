@@ -28,6 +28,7 @@ using testing::_;
 using testing::Invoke;
 
 const char kDummyPageUrl[] = "https://www.example.com";
+const char kDummyIconUrl[] = "https://www.example.com/favicon16.png";
 const int kDesiredSizeInPixel = 16;
 // TODO(victorvianna): Add unit tests specific for mobile.
 const FaviconRequestPlatform kDummyPlatform = FaviconRequestPlatform::kDesktop;
@@ -46,12 +47,14 @@ scoped_refptr<base::RefCountedBytes> CreateTestBitmapBytes() {
 favicon_base::FaviconRawBitmapResult CreateTestBitmapResult() {
   favicon_base::FaviconRawBitmapResult result;
   result.bitmap_data = CreateTestBitmapBytes();
+  result.icon_url = GURL(kDummyIconUrl);
   return result;
 }
 
 favicon_base::FaviconImageResult CreateTestImageResult() {
   favicon_base::FaviconImageResult result;
   result.image = gfx::Image::CreateFrom1xPNGBytes(CreateTestBitmapBytes());
+  result.icon_url = GURL(kDummyIconUrl);
   return result;
 }
 
@@ -182,6 +185,8 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetLocalBitmap) {
         std::move(callback).Run(CreateTestBitmapResult());
         return kDummyTaskId;
       });
+  EXPECT_CALL(mock_large_icon_service_,
+              TouchIconFromGoogleServer(GURL(kDummyIconUrl)));
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
@@ -326,6 +331,8 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetLocalImage) {
         std::move(callback).Run(CreateTestImageResult());
         return kDummyTaskId;
       });
+  EXPECT_CALL(mock_large_icon_service_,
+              TouchIconFromGoogleServer(GURL(kDummyIconUrl)));
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconImageResult result;
   favicon_request_handler_.GetFaviconImageForPageURL(

@@ -213,6 +213,8 @@ void FaviconRequestHandler::OnBitmapLocalDataAvailable(
     // The icon comes from local storage now even though it may have been
     // originally retrieved from Google server.
     RecordFaviconAvailabilityMetric(origin, FaviconAvailability::kLocal);
+    if (large_icon_service)
+      large_icon_service->TouchIconFromGoogleServer(bitmap_result.icon_url);
     std::move(response_callback).Run(bitmap_result);
     return;
   }
@@ -275,6 +277,8 @@ void FaviconRequestHandler::OnImageLocalDataAvailable(
     // The icon comes from local storage now even though it may have been
     // originally retrieved from Google server.
     RecordFaviconAvailabilityMetric(origin, FaviconAvailability::kLocal);
+    if (large_icon_service)
+      large_icon_service->TouchIconFromGoogleServer(image_result.icon_url);
     std::move(response_callback).Run(image_result);
     return;
   }
