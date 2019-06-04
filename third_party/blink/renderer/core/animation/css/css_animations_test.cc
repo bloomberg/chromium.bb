@@ -26,7 +26,6 @@ class CSSAnimationsTest : public RenderingTest {
     platform()->AdvanceClockSeconds(1.);
     RenderingTest::SetUp();
     EnableCompositing();
-    SetUpAnimationClockForTesting();
   }
 
   void TearDown() override {
@@ -36,12 +35,9 @@ class CSSAnimationsTest : public RenderingTest {
 
   void StartAnimationOnCompositor(Animation* animation) {
     static_cast<CompositorAnimationDelegate*>(animation)
-        ->NotifyAnimationStarted(platform()
-                                     ->test_task_runner()
-                                     ->NowTicks()
-                                     .since_origin()
-                                     .InSecondsF(),
-                                 animation->CompositorGroup());
+        ->NotifyAnimationStarted(
+            (CurrentTimeTicks() - base::TimeTicks()).InSecondsF(),
+            animation->CompositorGroup());
   }
 
   void AdvanceClockSeconds(double seconds) {
@@ -56,17 +52,6 @@ class CSSAnimationsTest : public RenderingTest {
     EXPECT_EQ(FilterOperation::OperationType::CONTRAST, filter->GetType());
     return static_cast<const BasicComponentTransferFilterOperation*>(filter)
         ->Amount();
-  }
-
- private:
-  void SetUpAnimationClockForTesting() {
-    auto& animator_clock = GetPage().Animator().Clock();
-    animator_clock.SetClockForTesting(
-        platform()->test_task_runner()->GetMockTickClock());
-    animator_clock.ResetTimeForTesting();
-    // Call NofifyTaskStart() to force the computation of animation clock times
-    // after reset.
-    animator_clock.NotifyTaskStart();
   }
 };
 
@@ -94,15 +79,13 @@ TEST_F(CSSAnimationsTest, RetargetedTransition) {
 
   // Starting the second transition should retarget the active transition.
   element->setAttribute(html_names::kClassAttr, "contrast2");
-  GetPage().Animator().ServiceScriptedAnimations(
-      platform()->test_task_runner()->NowTicks());
+  GetPage().Animator().ServiceScriptedAnimations(CurrentTimeTicks());
   UpdateAllLifecyclePhasesForTest();
   EXPECT_NEAR(0.6, GetContrastFilterAmount(element), 0.0000000001);
 
   // As it has been retargeted, advancing halfway should go to 0.3.
   AdvanceClockSeconds(0.5);
-  GetPage().Animator().ServiceScriptedAnimations(
-      platform()->test_task_runner()->NowTicks());
+  GetPage().Animator().ServiceScriptedAnimations(CurrentTimeTicks());
   UpdateAllLifecyclePhasesForTest();
   EXPECT_NEAR(0.3, GetContrastFilterAmount(element), 0.0000000001);
 }
@@ -130,7 +113,6 @@ TEST_F(CSSAnimationsTest, IncompatibleRetargetedTransition) {
   StartAnimationOnCompositor(animation);
   EXPECT_TRUE(animation->HasActiveAnimationsOnCompositor());
   AdvanceClockSeconds(0.003);
-  platform()->RunUntilIdle();
 
   // The computed style still contains no filter until the next frame.
   EXPECT_TRUE(element->GetComputedStyle()->Filter().IsEmpty());

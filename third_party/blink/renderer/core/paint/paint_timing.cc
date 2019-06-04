@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -60,7 +59,7 @@ void PaintTiming::MarkFirstPaint() {
   // markFirstPaint().
   if (!first_paint_.is_null())
     return;
-  SetFirstPaint(clock_->NowTicks());
+  SetFirstPaint(CurrentTimeTicks());
 }
 
 void PaintTiming::MarkFirstContentfulPaint() {
@@ -70,13 +69,13 @@ void PaintTiming::MarkFirstContentfulPaint() {
   // markFirstContentfulPaint().
   if (!first_contentful_paint_.is_null())
     return;
-  SetFirstContentfulPaint(clock_->NowTicks());
+  SetFirstContentfulPaint(CurrentTimeTicks());
 }
 
 void PaintTiming::MarkFirstImagePaint() {
   if (!first_image_paint_.is_null())
     return;
-  first_image_paint_ = clock_->NowTicks();
+  first_image_paint_ = CurrentTimeTicks();
   SetFirstContentfulPaint(first_image_paint_);
   RegisterNotifySwapTime(PaintEvent::kFirstImagePaint);
 }
@@ -139,10 +138,6 @@ void PaintTiming::NotifyPaint(bool is_first_paint,
   fmp_detector_->NotifyPaint();
 }
 
-void PaintTiming::SetTickClockForTesting(const base::TickClock* clock) {
-  clock_ = clock;
-}
-
 void PaintTiming::Trace(blink::Visitor* visitor) {
   visitor->Trace(fmp_detector_);
   Supplement<Document>::Trace(visitor);
@@ -150,8 +145,7 @@ void PaintTiming::Trace(blink::Visitor* visitor) {
 
 PaintTiming::PaintTiming(Document& document)
     : Supplement<Document>(document),
-      fmp_detector_(MakeGarbageCollected<FirstMeaningfulPaintDetector>(this)),
-      clock_(base::DefaultTickClock::GetInstance()) {}
+      fmp_detector_(MakeGarbageCollected<FirstMeaningfulPaintDetector>(this)) {}
 
 LocalFrame* PaintTiming::GetFrame() const {
   return GetSupplementable()->GetFrame();

@@ -244,9 +244,6 @@ class MediaControlsImplTest : public PageTestBase,
   MediaControlOverflowMenuButtonElement* OverflowMenuButtonElement() const {
     return media_controls_->overflow_menu_;
   }
-  MediaControlOverflowMenuListElement* OverflowMenuListElement() const {
-    return media_controls_->overflow_list_;
-  }
 
   MockWebMediaPlayerForImpl* WebMediaPlayer() {
     return static_cast<MockWebMediaPlayerForImpl*>(
@@ -1191,9 +1188,6 @@ TEST_F(MediaControlsImplTest, InfinityDurationChangeHidesDurationField) {
 
 TEST_F(MediaControlsImplTestWithMockScheduler,
        OverflowMenuMetricsTimeToAction) {
-  OverflowMenuListElement()->SetTickClockForTesting(
-      platform()->test_task_runner()->GetMockTickClock());
-
   GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 0);
   GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 0);
 
@@ -1230,9 +1224,6 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
 
 TEST_F(MediaControlsImplTestWithMockScheduler,
        OverflowMenuMetricsTimeToDismiss) {
-  OverflowMenuListElement()->SetTickClockForTesting(
-      platform()->test_task_runner()->GetMockTickClock());
-
   GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 0);
   GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 0);
 

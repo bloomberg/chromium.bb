@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 
-#include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
@@ -22,7 +21,6 @@ namespace {
 // Meaningful Paint.
 const int kBlankCharactersThreshold = 200;
 
-const base::TickClock* g_clock = nullptr;
 }  // namespace
 
 FirstMeaningfulPaintDetector& FirstMeaningfulPaintDetector::From(
@@ -32,10 +30,7 @@ FirstMeaningfulPaintDetector& FirstMeaningfulPaintDetector::From(
 
 FirstMeaningfulPaintDetector::FirstMeaningfulPaintDetector(
     PaintTiming* paint_timing)
-    : paint_timing_(paint_timing) {
-  if (!g_clock)
-    g_clock = base::DefaultTickClock::GetInstance();
-}
+    : paint_timing_(paint_timing) {}
 
 Document* FirstMeaningfulPaintDetector::GetDocument() {
   return paint_timing_->GetSupplementable();
@@ -89,7 +84,7 @@ void FirstMeaningfulPaintDetector::NotifyPaint() {
   // Skip document background-only paints.
   if (paint_timing_->FirstPaintRendered().is_null())
     return;
-  provisional_first_meaningful_paint_ = g_clock->NowTicks();
+  provisional_first_meaningful_paint_ = CurrentTimeTicks();
   next_paint_is_meaningful_ = false;
 
   if (network2_quiet_reached_)
@@ -278,12 +273,6 @@ void FirstMeaningfulPaintDetector::SetFirstMeaningfulPaint(
 
   paint_timing_->SetFirstMeaningfulPaint(
       swap_stamp, had_user_input_before_provisional_first_meaningful_paint_);
-}
-
-// static
-void FirstMeaningfulPaintDetector::SetTickClockForTesting(
-    const base::TickClock* clock) {
-  g_clock = clock;
 }
 
 void FirstMeaningfulPaintDetector::Trace(blink::Visitor* visitor) {
