@@ -59,18 +59,21 @@ enum {
 // BRANCH_CAT: Concatenate branch tensor to output of layer
 enum { BRANCH_NOC, BRANCH_ADD, BRANCH_CAT } UENUM1BYTE(BRANCH_COMBINE);
 
+// The parameters used to scale each channel in batch
+// normalization. The processing in done on a per-channel basis.
+// e.g. bn_mean[c] is the mean for all pixels in channel c. This
+// is always applied after activation. The output is given by
+// out[c,i,j] = norm[c,i,j] * bn_gamma[c] + bn_beta[c] where
+// norm[c,i,j] = (in[c,i,j] - bn_mean[c]) / bn_std[c]
+// here we assume that the effect of variance_epsilon is already
+// taken into account when bn_std is calculated. The pointers
+// needs to be either all zero or all valid. If all zero, then
+// batchnorm is disabled, else batchnorm is applied.
 struct CNN_BATCHNORM_PARAMS {
-  float *bn_gamma, *bn_beta, *bn_mean,
-      *bn_std;  // The parameters used to scale each channel in batch
-                // normalization. The processing in done on a per-channel basis.
-                // e.g. bn_mean[c] is the mean for all pixels in channel c. This
-                // is always applied after activation. The output is given by
-                // out[c,i,j] = norm[c,i,j] * bn_gamma[c] + bn_beta[c] where
-                // norm[c,i,j] = (in[c,i,j] - bn_mean[c]) / bn_std[c]
-                // here we assume that the effect of variance_epsilon is already
-                // taken into account when bn_std is calculated. The pointers
-                // needs to be either all zero or all valid. If all zero, then
-                // batchnorm is disabled, else batchnorm is applied.
+  const float *bn_gamma;
+  const float *bn_beta;
+  const float *bn_mean;
+  const float *bn_std;
 };
 
 struct CNN_BRANCH_CONFIG {
@@ -101,12 +104,13 @@ struct CNN_LAYER_CONFIG {
   int out_channels;
   int skip_width;
   int skip_height;
-  int maxpool;     // whether to use maxpool or not (only effective when
-                   // skip width or skip_height are > 1)
-  float *weights;  // array of length filter_height x filter_width x in_channels
-                   // x out_channels where the inner-most scan is out_channels
-                   // and the outer most scan is filter_height.
-  float *bias;     // array of length out_channels
+  int maxpool;            // whether to use maxpool or not (only effective when
+                          // skip width or skip_height are > 1)
+  const float *weights;   // array of length filter_height x filter_width x
+                          // in_channels // x out_channels where the inner-most
+                          // scan is out_channels and the outer most scan is
+                          // filter_height.
+  const float *bias;      // array of length out_channels
   PADDING_TYPE pad;       // padding type
   ACTIVATION activation;  // the activation function to use after convolution
   int deconvolve;         // whether this is a deconvolution layer.
