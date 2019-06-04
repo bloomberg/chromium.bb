@@ -24,6 +24,7 @@ class BrowserContext;
 
 namespace history {
 class HistoryService;
+struct VisibleVisitCountToHostResult;
 }  // namespace history
 
 namespace url {
@@ -64,9 +65,7 @@ class UkmBackgroundRecorderService : public KeyedService {
   void DidGetVisibleVisitCount(
       const url::Origin& origin,
       UkmBackgroundRecorderService::GetBackgroundSourceIdCallback callback,
-      bool did_determine,
-      int num_visits,
-      base::Time first_visit_time);
+      history::VisibleVisitCountToHostResult result);
 
   history::HistoryService* history_service_;
 

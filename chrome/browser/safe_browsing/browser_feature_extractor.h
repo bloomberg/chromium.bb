@@ -34,6 +34,7 @@ class WebContents;
 
 namespace history {
 class HistoryService;
+struct VisibleVisitCountToHostResult;
 struct QueryURLResult;
 }
 
@@ -147,17 +148,13 @@ class BrowserFeatureExtractor {
   // visits in the history.
   void QueryHttpHostVisitsDone(std::unique_ptr<ClientPhishingRequest> request,
                                const DoneCallback& callback,
-                               bool success,
-                               int num_visits,
-                               base::Time first_visit);
+                               history::VisibleVisitCountToHostResult result);
 
   // HistoryService callback which is called when we're done querying HTTPS host
   // visits in the history.
   void QueryHttpsHostVisitsDone(std::unique_ptr<ClientPhishingRequest> request,
                                 const DoneCallback& callback,
-                                bool success,
-                                int num_visits,
-                                base::Time first_visit);
+                                history::VisibleVisitCountToHostResult result);
 
   // Helper function which sets the host history features given the
   // number of host visits and the time of the fist host visit.  Set

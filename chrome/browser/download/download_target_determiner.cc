@@ -70,14 +70,11 @@ const base::FilePath::CharType kCrdownloadSuffix[] =
 // single bool. A host is considered visited before if prior visible visits were
 // found in history and the first such visit was earlier than the most recent
 // midnight.
-void VisitCountsToVisitedBefore(
-    const base::Callback<void(bool)>& callback,
-    bool found_visits,
-    int count,
-    base::Time first_visit) {
-  callback.Run(
-      found_visits && count > 0 &&
-      (first_visit.LocalMidnight() < base::Time::Now().LocalMidnight()));
+void VisitCountsToVisitedBefore(base::OnceCallback<void(bool)> callback,
+                                history::VisibleVisitCountToHostResult result) {
+  std::move(callback).Run(
+      result.success && result.count > 0 &&
+      (result.first_visit.LocalMidnight() < base::Time::Now().LocalMidnight()));
 }
 
 #if defined(OS_WIN)
@@ -802,9 +799,9 @@ DownloadTargetDeterminer::Result
     if (history_service && download_->GetReferrerUrl().is_valid()) {
       history_service->GetVisibleVisitCountToHost(
           download_->GetReferrerUrl(),
-          base::Bind(
+          base::BindOnce(
               &VisitCountsToVisitedBefore,
-              base::Bind(
+              base::BindOnce(
                   &DownloadTargetDeterminer::CheckVisitedReferrerBeforeDone,
                   weak_ptr_factory_.GetWeakPtr())),
           &history_tracker_);

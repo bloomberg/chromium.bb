@@ -274,16 +274,12 @@ class HistoryService : public KeyedService {
   // Requests the number of user-visible visits (i.e. no redirects or subframes)
   // to all urls on the same scheme/host/port as |url|.  This is only valid for
   // HTTP and HTTPS URLs.
-  typedef base::Callback<void(
-      bool,         // Were we able to determine the # of visits?
-      int,          // Number of visits.
-      base::Time)>  // Time of first visit. Only set if bool
-                    // is true and int is > 0.
-      GetVisibleVisitCountToHostCallback;
+  using GetVisibleVisitCountToHostCallback =
+      base::OnceCallback<void(VisibleVisitCountToHostResult)>;
 
   base::CancelableTaskTracker::TaskId GetVisibleVisitCountToHost(
       const GURL& url,
-      const GetVisibleVisitCountToHostCallback& callback,
+      GetVisibleVisitCountToHostCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Request the |result_count| most visited URLs and the chain of

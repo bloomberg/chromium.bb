@@ -355,25 +355,23 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
   GURL http_url = GURL(request->url()).ReplaceComponents(rep);
   history->GetVisibleVisitCountToHost(
       http_url,
-      base::Bind(&BrowserFeatureExtractor::QueryHttpHostVisitsDone,
-                 base::Unretained(this), base::Passed(&request), callback),
+      base::BindOnce(&BrowserFeatureExtractor::QueryHttpHostVisitsDone,
+                     base::Unretained(this), std::move(request), callback),
       &cancelable_task_tracker_);
 }
 
 void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
     std::unique_ptr<ClientPhishingRequest> request,
     const DoneCallback& callback,
-    bool success,
-    int num_visits,
-    base::Time first_visit) {
+    history::VisibleVisitCountToHostResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
   DCHECK(!callback.is_null());
-  if (!success) {
+  if (!result.success) {
     callback.Run(false, std::move(request));
     return;
   }
-  SetHostVisitsFeatures(num_visits, first_visit, true, request.get());
+  SetHostVisitsFeatures(result.count, result.first_visit, true, request.get());
 
   // Same lookup but for the HTTPS URL.
   history::HistoryService* history;
@@ -386,25 +384,23 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
   GURL https_url = GURL(request->url()).ReplaceComponents(rep);
   history->GetVisibleVisitCountToHost(
       https_url,
-      base::Bind(&BrowserFeatureExtractor::QueryHttpsHostVisitsDone,
-                 base::Unretained(this), base::Passed(&request), callback),
+      base::BindOnce(&BrowserFeatureExtractor::QueryHttpsHostVisitsDone,
+                     base::Unretained(this), std::move(request), callback),
       &cancelable_task_tracker_);
 }
 
 void BrowserFeatureExtractor::QueryHttpsHostVisitsDone(
     std::unique_ptr<ClientPhishingRequest> request,
     const DoneCallback& callback,
-    bool success,
-    int num_visits,
-    base::Time first_visit) {
+    history::VisibleVisitCountToHostResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
   DCHECK(!callback.is_null());
-  if (!success) {
+  if (!result.success) {
     callback.Run(false, std::move(request));
     return;
   }
-  SetHostVisitsFeatures(num_visits, first_visit, false, request.get());
+  SetHostVisitsFeatures(result.count, result.first_visit, false, request.get());
   callback.Run(true, std::move(request));
 }
 

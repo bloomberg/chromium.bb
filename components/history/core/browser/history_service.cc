@@ -81,15 +81,6 @@ void RunWithFaviconResult(favicon_base::FaviconRawBitmapCallback callback,
   std::move(callback).Run(*bitmap_result);
 }
 
-void RunWithVisibleVisitCountToHostResult(
-    base::OnceClosure origin_queried_closure,
-    const HistoryService::GetVisibleVisitCountToHostCallback& callback,
-    const VisibleVisitCountToHostResult* result) {
-  callback.Run(result->success, result->count, result->first_visit);
-  if (origin_queried_closure)
-    std::move(origin_queried_closure).Run();
-}
-
 // Callback from WebHistoryService::ExpireWebHistory().
 void ExpireWebHistoryComplete(bool success) {
   // Ignore the result.
@@ -845,18 +836,25 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryRedirectsTo(
 
 base::CancelableTaskTracker::TaskId HistoryService::GetVisibleVisitCountToHost(
     const GURL& url,
-    const GetVisibleVisitCountToHostCallback& callback,
+    GetVisibleVisitCountToHostCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  VisibleVisitCountToHostResult* result = new VisibleVisitCountToHostResult();
-  return tracker->PostTaskAndReply(
+  if (origin_queried_closure_for_testing_) {
+    callback = base::BindOnce(
+        [](base::OnceClosure origin_queried_closure,
+           GetVisibleVisitCountToHostCallback wrapped_callback,
+           VisibleVisitCountToHostResult result) {
+          std::move(wrapped_callback).Run(std::move(result));
+          std::move(origin_queried_closure).Run();
+        },
+        std::move(origin_queried_closure_for_testing_), std::move(callback));
+  }
+  return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::GetVisibleVisitCountToHost,
-                     history_backend_, url, base::Unretained(result)),
-      base::BindOnce(&RunWithVisibleVisitCountToHostResult,
-                     std::move(origin_queried_closure_for_testing_), callback,
-                     base::Owned(result)));
+                     history_backend_, url),
+      std::move(callback));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::QueryMostVisitedURLs(

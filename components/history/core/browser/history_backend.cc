@@ -1370,13 +1370,12 @@ RedirectList HistoryBackend::QueryRedirectsTo(const GURL& to_url) {
   return redirects;
 }
 
-void HistoryBackend::GetVisibleVisitCountToHost(
-    const GURL& url,
-    VisibleVisitCountToHostResult* result) {
-  result->count = 0;
-  result->success = db_ &&
-                    db_->GetVisibleVisitCountToHost(url, &result->count,
-                                                    &result->first_visit);
+VisibleVisitCountToHostResult HistoryBackend::GetVisibleVisitCountToHost(
+    const GURL& url) {
+  VisibleVisitCountToHostResult result;
+  result.success = db_ && db_->GetVisibleVisitCountToHost(url, &result.count,
+                                                          &result.first_visit);
+  return result;
 }
 
 void HistoryBackend::QueryMostVisitedURLs(int result_count,
