@@ -510,9 +510,9 @@ AutofillPopupSuggestionView* AutofillPopupSuggestionView::Create(
 
 std::unique_ptr<views::Background>
 AutofillPopupSuggestionView::CreateBackground() {
-  return views::CreateSolidBackground(
-      is_selected_ ? popup_view_->GetSelectedBackgroundColor()
-                   : popup_view_->GetBackgroundColor());
+  return is_selected_ ? views::CreateSolidBackground(
+                            popup_view_->GetSelectedBackgroundColor())
+                      : nullptr;
 }
 
 int AutofillPopupSuggestionView::GetPrimaryTextStyle() {
@@ -656,9 +656,9 @@ void AutofillPopupFooterView::CreateContent() {
 }
 
 std::unique_ptr<views::Background> AutofillPopupFooterView::CreateBackground() {
-  return views::CreateSolidBackground(
-      is_selected_ ? popup_view_->GetSelectedBackgroundColor()
-                   : popup_view_->GetFooterBackgroundColor());
+  return is_selected_ ? views::CreateSolidBackground(
+                            popup_view_->GetSelectedBackgroundColor())
+                      : nullptr;
 }
 
 int AutofillPopupFooterView::GetPrimaryTextStyle() {
@@ -709,8 +709,6 @@ void AutofillPopupSeparatorView::CreateContent() {
       /*bottom=*/0,
       /*right=*/0));
   AddChildView(separator);
-
-  SetBackground(CreateBackground());
 }
 
 void AutofillPopupSeparatorView::RefreshStyle() {
@@ -719,7 +717,7 @@ void AutofillPopupSeparatorView::RefreshStyle() {
 
 std::unique_ptr<views::Background>
 AutofillPopupSeparatorView::CreateBackground() {
-  return views::CreateSolidBackground(popup_view_->GetBackgroundColor());
+  return nullptr;
 }
 
 AutofillPopupSeparatorView::AutofillPopupSeparatorView(
@@ -780,7 +778,7 @@ void AutofillPopupWarningView::CreateContent() {
 
 std::unique_ptr<views::Background>
 AutofillPopupWarningView::CreateBackground() {
-  return views::CreateSolidBackground(popup_view_->GetBackgroundColor());
+  return nullptr;
 }
 
 }  // namespace
@@ -793,6 +791,10 @@ void AutofillPopupRowView::SetSelected(bool is_selected) {
 
   is_selected_ = is_selected;
   NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  RefreshStyle();
+}
+
+void AutofillPopupRowView::OnThemeChanged() {
   RefreshStyle();
 }
 
@@ -832,6 +834,20 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
 }
 
 AutofillPopupViewNativeViews::~AutofillPopupViewNativeViews() {}
+
+void AutofillPopupViewNativeViews::OnThemeChanged() {
+  SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
+  // |body_container_| and |footer_container_| will be null if there is no body
+  // or footer content, respectively.
+  if (body_container_) {
+    body_container_->SetBackground(
+        views::CreateSolidBackground(GetBackgroundColor()));
+  }
+  if (footer_container_) {
+    footer_container_->SetBackground(
+        views::CreateSolidBackground(GetFooterBackgroundColor()));
+  }
+}
 
 void AutofillPopupViewNativeViews::Show() {
   DoShow();
@@ -911,7 +927,8 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 
   if (!rows_.empty()) {
     // Create a container to wrap the "regular" (non-footer) rows.
-    auto body_container = std::make_unique<views::View>();
+    std::unique_ptr<views::View> body_container =
+        std::make_unique<views::View>();
     views::BoxLayout* body_layout = body_container->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     body_layout->set_main_axis_alignment(
@@ -922,11 +939,9 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 
     scroll_view_ = new views::ScrollView();
     scroll_view_->set_hide_horizontal_scrollbar(true);
-    auto* body_container_ptr =
-        scroll_view_->SetContents(std::move(body_container));
+    body_container_ = scroll_view_->SetContents(std::move(body_container));
     scroll_view_->set_draw_overflow_indicator(false);
-    scroll_view_->ClipHeightTo(0,
-                               body_container_ptr->GetPreferredSize().height());
+    scroll_view_->ClipHeightTo(0, body_container_->GetPreferredSize().height());
 
     // Use an additional container to apply padding outside the scroll view, so
     // that the padding area is stationary. This ensures that the rounded
@@ -947,9 +962,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   // affected by scrolling behavior (it's "sticky") and because it has a
   // special background color.
   if (has_footer) {
-    views::View* footer_container = new views::View();
-    footer_container->SetBackground(
-        views::CreateSolidBackground(GetFooterBackgroundColor()));
+    auto* footer_container = new views::View();
 
     views::BoxLayout* footer_layout = footer_container->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
@@ -964,8 +977,8 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
       line_number++;
     }
 
-    AddChildView(footer_container);
-    layout_->SetFlexForView(footer_container, 0);
+    footer_container_ = AddChildView(footer_container);
+    layout_->SetFlexForView(footer_container_, 0);
   }
 }
 

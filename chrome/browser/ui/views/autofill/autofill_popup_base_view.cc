@@ -38,12 +38,12 @@ SkColor AutofillPopupBaseView::GetBackgroundColor() {
 
 SkColor AutofillPopupBaseView::GetSelectedBackgroundColor() {
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor);
+      ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
 }
 
 SkColor AutofillPopupBaseView::GetFooterBackgroundColor() {
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
+      ui::NativeTheme::kColorId_BubbleFooterBackground);
 }
 
 SkColor AutofillPopupBaseView::GetSeparatorColor() {
