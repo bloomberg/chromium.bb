@@ -257,7 +257,7 @@ class HitTestNativeWidgetMac : public NativeWidgetMac {
   HitTestNativeWidgetMac(internal::NativeWidgetDelegate* delegate,
                          NativeFrameView* native_frame_view)
       : NativeWidgetMac(delegate), native_frame_view_(native_frame_view) {
-    bridge_host_ = std::make_unique<NativeWidgetMacNSWindowHost>(this);
+    ns_window_host_ = std::make_unique<NativeWidgetMacNSWindowHost>(this);
   }
 
   // internal::NativeWidgetPrivate:

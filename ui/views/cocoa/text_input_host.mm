@@ -175,8 +175,8 @@ void TextInputHost::SetTextInputClient(
   text_input_client_ = new_text_input_client;
   pending_text_input_client_ = new_text_input_client;
 
-  if (host_impl_->bridge_impl_ &&
-      host_impl_->bridge_impl_->NeedsUpdateWindows()) {
+  if (host_impl_->in_process_ns_window_bridge_ &&
+      host_impl_->in_process_ns_window_bridge_->NeedsUpdateWindows()) {
     text_input_client_ = old_text_input_client;
     [NSApp updateWindows];
     // Note: |pending_text_input_client_| (and therefore +[NSTextInputContext

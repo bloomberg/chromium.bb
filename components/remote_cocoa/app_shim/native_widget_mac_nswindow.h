@@ -58,8 +58,7 @@ REMOTE_COCOA_APP_SHIM_EXPORT
 @property(assign, nonatomic) uint64_t bridgedNativeWidgetId;
 
 // The NativeWidgetNSWindowBridge that this will use to call back to the host.
-@property(assign, nonatomic)
-    remote_cocoa::NativeWidgetNSWindowBridge* bridgeImpl;
+@property(assign, nonatomic) remote_cocoa::NativeWidgetNSWindowBridge* bridge;
 @end
 
 #endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_MAC_NSWINDOW_H_

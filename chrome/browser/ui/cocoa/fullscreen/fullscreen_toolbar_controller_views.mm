@@ -27,10 +27,10 @@
 }
 
 - (BOOL)isFullscreenTransitionInProgress {
-  views::NativeWidgetMacNSWindowHost* bridge_host =
+  auto* host =
       views::NativeWidgetMacNSWindowHost::GetFromNativeWindow([self window]);
-  if (bridge_host->bridge_impl())
-    return bridge_host->bridge_impl()->in_fullscreen_transition();
+  if (auto* bridge = host->GetInProcessNSWindowBridge())
+    return bridge->in_fullscreen_transition();
   DLOG(ERROR) << "TODO(https://crbug.com/915110): Support fullscreen "
                  "transitions for RemoteMacViews PWA windows.";
   return false;
@@ -39,11 +39,11 @@
 - (NSWindow*)window {
   NSWindow* ns_window = browserView_->GetNativeWindow().GetNativeNSWindow();
   if (!ns_view_) {
-    views::NativeWidgetMacNSWindowHost* bridge_host =
+    auto* host =
         views::NativeWidgetMacNSWindowHost::GetFromNativeWindow(ns_window);
-    if (bridge_host) {
-      if (bridge_host->bridge_impl())
-        ns_view_.reset([bridge_host->bridge_impl()->ns_view() retain]);
+    if (host) {
+      if (auto* bridge = host->GetInProcessNSWindowBridge())
+        ns_view_.reset([bridge->ns_view() retain]);
       else
         DLOG(ERROR) << "Cannot retain remote NSView.";
     }

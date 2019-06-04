@@ -336,7 +336,7 @@ void NativeWidgetNSWindowBridge::SetWindow(
   window_delegate_.reset(
       [[ViewsNSWindowDelegate alloc] initWithBridgedNativeWidget:this]);
   window_ = std::move(window);
-  [window_ setBridgeImpl:this];
+  [window_ setBridge:this];
   [window_ setBridgedNativeWidgetId:id_];
   [window_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
   [window_ setDelegate:window_delegate_];
@@ -831,7 +831,7 @@ void NativeWidgetNSWindowBridge::OnWindowWillClose() {
   DCHECK(!show_animation_);
 
   [window_ setDelegate:nil];
-  [window_ setBridgeImpl:nullptr];
+  [window_ setBridge:nullptr];
 
   // Ensure that |this| cannot be reached by its id while it is being destroyed.
   size_t erased = GetIdToWidgetImplMap().erase(id_);

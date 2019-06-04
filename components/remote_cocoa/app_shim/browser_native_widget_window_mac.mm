@@ -33,10 +33,10 @@
 
   if (!_inFullScreen) {
     auto* window = base::mac::ObjCCast<NativeWidgetMacNSWindow>([self window]);
-    remote_cocoa::NativeWidgetNSWindowBridge* bridgeImpl = [window bridgeImpl];
-    if (bridgeImpl) {
-      bridgeImpl->host()->GetWindowFrameTitlebarHeight(&overrideTitlebarHeight,
-                                                       &titlebarHeight);
+    remote_cocoa::NativeWidgetNSWindowBridge* bridge = [window bridge];
+    if (bridge) {
+      bridge->host()->GetWindowFrameTitlebarHeight(&overrideTitlebarHeight,
+                                                   &titlebarHeight);
     }
   }
   if (overrideTitlebarHeight)
@@ -91,9 +91,9 @@
 // Keyboard -> Shortcuts -> Keyboard. Usually Ctrl+F5. The argument (|unknown|)
 // tends to just be nil.
 - (void)_handleFocusToolbarHotKey:(id)unknown {
-  remote_cocoa::NativeWidgetNSWindowBridge* bridgeImpl = [self bridgeImpl];
-  if (bridgeImpl)
-    bridgeImpl->host()->OnFocusWindowToolbar();
+  remote_cocoa::NativeWidgetNSWindowBridge* bridge = [self bridge];
+  if (bridge)
+    bridge->host()->OnFocusWindowToolbar();
 }
 
 @end

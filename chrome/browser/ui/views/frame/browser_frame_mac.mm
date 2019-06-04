@@ -332,14 +332,14 @@ BrowserFrameMac::GetRemoteCocoaApplicationHost() {
 }
 
 void BrowserFrameMac::OnWindowInitialized() {
-  if (bridge_impl()) {
-    bridge_impl()->SetCommandDispatcher(
+  if (auto* bridge = GetInProcessNSWindowBridge()) {
+    bridge->SetCommandDispatcher(
         [[[ChromeCommandDispatcherDelegate alloc] init] autorelease],
         [[[BrowserWindowCommandHandler alloc] init] autorelease]);
   } else {
     if (auto* host = GetHostForBrowser(browser_view_->browser())) {
       host->GetAppShim()->CreateCommandDispatcherForWidget(
-          bridge_host()->bridged_native_widget_id());
+          GetNSWindowHost()->bridged_native_widget_id());
     }
   }
 }
@@ -409,5 +409,5 @@ bool BrowserFrameMac::HandleKeyboardEvent(
 
   // Redispatch the event. If it's a keyEquivalent:, this gives
   // CommandDispatcher the opportunity to finish passing the event to consumers.
-  return bridge_host()->RedispatchKeyEvent(event.os_event);
+  return GetNSWindowHost()->RedispatchKeyEvent(event.os_event);
 }

@@ -208,10 +208,16 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   virtual void OnWindowDestroying(gfx::NativeWindow window) {}
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
-  remote_cocoa::mojom::NativeWidgetNSWindow* bridge() const;
-  remote_cocoa::NativeWidgetNSWindowBridge* bridge_impl() const;
-  NativeWidgetMacNSWindowHost* bridge_host() const {
-    return bridge_host_.get();
+
+  // Return the mojo interface for the NSWindow. The interface may be
+  // implemented in-process or out-of-process.
+  remote_cocoa::mojom::NativeWidgetNSWindow* GetNSWindowMojo() const;
+
+  // Return the bridge structure only if this widget is in-process.
+  remote_cocoa::NativeWidgetNSWindowBridge* GetInProcessNSWindowBridge() const;
+
+  NativeWidgetMacNSWindowHost* GetNSWindowHost() const {
+    return ns_window_host_.get();
   }
 
  private:
@@ -220,7 +226,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   friend class views::test::WidgetTest;
 
   internal::NativeWidgetDelegate* delegate_;
-  std::unique_ptr<NativeWidgetMacNSWindowHost> bridge_host_;
+  std::unique_ptr<NativeWidgetMacNSWindowHost> ns_window_host_;
 
   Widget::InitParams::Ownership ownership_;
 

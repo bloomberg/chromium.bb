@@ -82,10 +82,10 @@
   base::scoped_nsprotocol<id<UserInterfaceItemCommandHandler>> commandHandler_;
   id<WindowTouchBarDelegate> touchBarDelegate_;  // Weak.
   uint64_t bridgedNativeWidgetId_;
-  remote_cocoa::NativeWidgetNSWindowBridge* bridgeImpl_;
+  remote_cocoa::NativeWidgetNSWindowBridge* bridge_;
 }
 @synthesize bridgedNativeWidgetId = bridgedNativeWidgetId_;
-@synthesize bridgeImpl = bridgeImpl_;
+@synthesize bridge = bridge_;
 
 - (instancetype)initWithContentRect:(NSRect)contentRect
                           styleMask:(NSUInteger)windowStyle
@@ -136,14 +136,14 @@
 
 - (BOOL)hasViewsMenuActive {
   bool hasMenuController = false;
-  if (bridgeImpl_)
-    bridgeImpl_->host()->GetHasMenuController(&hasMenuController);
+  if (bridge_)
+    bridge_->host()->GetHasMenuController(&hasMenuController);
   return hasMenuController;
 }
 
 - (id<NSAccessibility>)rootAccessibilityObject {
   id<NSAccessibility> obj =
-      bridgeImpl_ ? bridgeImpl_->host_helper()->GetNativeViewAccessible() : nil;
+      bridge_ ? bridge_->host_helper()->GetNativeViewAccessible() : nil;
   // We should like to DCHECK that the object returned implemements the
   // NSAccessibility protocol, but the NSAccessibilityRemoteUIElement interface
   // does not conform.
@@ -166,8 +166,8 @@
 
 - (BOOL)_isTitleHidden {
   bool shouldShowWindowTitle = YES;
-  if (bridgeImpl_)
-    bridgeImpl_->host()->GetShouldShowWindowTitle(&shouldShowWindowTitle);
+  if (bridge_)
+    bridge_->host()->GetShouldShowWindowTitle(&shouldShowWindowTitle);
   return !shouldShowWindowTitle;
 }
 
@@ -184,22 +184,22 @@
 // down, so check for a delegate.
 - (BOOL)canBecomeKeyWindow {
   bool canBecomeKey = NO;
-  if (bridgeImpl_)
-    bridgeImpl_->host()->GetCanWindowBecomeKey(&canBecomeKey);
+  if (bridge_)
+    bridge_->host()->GetCanWindowBecomeKey(&canBecomeKey);
   return canBecomeKey;
 }
 
 - (BOOL)canBecomeMainWindow {
-  if (!bridgeImpl_)
+  if (!bridge_)
     return NO;
 
   // Dialogs and bubbles shouldn't take large shadows away from their parent.
-  if (bridgeImpl_->parent())
+  if (bridge_->parent())
     return NO;
 
   bool canBecomeKey = NO;
-  if (bridgeImpl_)
-    bridgeImpl_->host()->GetCanWindowBecomeKey(&canBecomeKey);
+  if (bridge_)
+    bridge_->host()->GetCanWindowBecomeKey(&canBecomeKey);
   return canBecomeKey;
 }
 
@@ -211,9 +211,9 @@
   // https://crbug.com/941506.
   if (![NSThread isMainThread])
     return [super hasKeyAppearance];
-  if (bridgeImpl_) {
+  if (bridge_) {
     bool isAlwaysRenderWindowAsKey = NO;
-    bridgeImpl_->host()->GetAlwaysRenderWindowAsKey(&isAlwaysRenderWindowAsKey);
+    bridge_->host()->GetAlwaysRenderWindowAsKey(&isAlwaysRenderWindowAsKey);
     if (isAlwaysRenderWindowAsKey)
       return YES;
   }
@@ -341,10 +341,10 @@
   // properties on the NSWindow and repeats them when focusing an item in the
   // RootView's a11y group. See http://crbug.com/748221.
   id superFocus = [super accessibilityFocusedUIElement];
-  if (!bridgeImpl_ || superFocus != self)
+  if (!bridge_ || superFocus != self)
     return superFocus;
 
-  return bridgeImpl_->host_helper()->GetNativeViewAccessible();
+  return bridge_->host_helper()->GetNativeViewAccessible();
 }
 
 - (NSString*)accessibilityTitle {

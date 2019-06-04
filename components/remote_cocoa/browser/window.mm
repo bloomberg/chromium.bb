@@ -14,15 +14,15 @@ class NativeWidgetNSWindowBridge;
 }  // namespace remote_cocoa
 
 @interface NSWindow (Private)
-- (remote_cocoa::NativeWidgetNSWindowBridge*)bridgeImpl;
+- (remote_cocoa::NativeWidgetNSWindowBridge*)bridge;
 @end
 
 namespace remote_cocoa {
 
 bool IsWindowRemote(gfx::NativeWindow gfx_window) {
   NSWindow* ns_window = gfx_window.GetNativeNSWindow();
-  if ([ns_window respondsToSelector:@selector(bridgeImpl)]) {
-    if (![ns_window bridgeImpl])
+  if ([ns_window respondsToSelector:@selector(bridge)]) {
+    if (![ns_window bridge])
       return true;
   }
   return false;

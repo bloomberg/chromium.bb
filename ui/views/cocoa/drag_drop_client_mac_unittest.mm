@@ -158,7 +158,7 @@ class DragDropClientMacTest : public WidgetTest {
   DragDropClientMacTest() : widget_(new Widget) {}
 
   DragDropClientMac* drag_drop_client() {
-    return bridge_host_->drag_drop_client();
+    return ns_window_host_->drag_drop_client();
   }
 
   NSDragOperation DragUpdate(NSPasteboard* pasteboard) {
@@ -189,9 +189,9 @@ class DragDropClientMacTest : public WidgetTest {
     gfx::Rect bounds(0, 0, 100, 100);
     widget_->SetBounds(bounds);
 
-    bridge_host_ = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
+    ns_window_host_ = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
         widget_->GetNativeWindow());
-    bridge_ = bridge_host_->bridge_impl();
+    bridge_ = ns_window_host_->GetInProcessNSWindowBridge();
     widget_->Show();
 
     target_ = new DragDropView();
@@ -210,7 +210,7 @@ class DragDropClientMacTest : public WidgetTest {
  protected:
   Widget* widget_ = nullptr;
   remote_cocoa::NativeWidgetNSWindowBridge* bridge_ = nullptr;
-  NativeWidgetMacNSWindowHost* bridge_host_ = nullptr;
+  NativeWidgetMacNSWindowHost* ns_window_host_ = nullptr;
   DragDropView* target_ = nullptr;
   base::scoped_nsobject<MockDraggingInfo> dragging_info_;
 
@@ -242,7 +242,7 @@ TEST_F(DragDropClientMacTest, ReleaseCapture) {
   // since the runloop will exit before the system has any opportunity to
   // capture anything.
   bridge_->AcquireCapture();
-  EXPECT_TRUE(bridge_host_->IsMouseCaptureActive());
+  EXPECT_TRUE(ns_window_host_->IsMouseCaptureActive());
 
   // Create the drop data
   OSExchangeData data;
@@ -268,7 +268,7 @@ TEST_F(DragDropClientMacTest, ReleaseCapture) {
       target_, data, 0, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
 
   // The capture should be released.
-  EXPECT_FALSE(bridge_host_->IsMouseCaptureActive());
+  EXPECT_FALSE(ns_window_host_->IsMouseCaptureActive());
 }
 
 // Tests if the drag and drop target rejects the dropped data with the

@@ -297,7 +297,7 @@ NativeWidgetMacNSWindowHost::NativeWidgetMacNSWindowHost(NativeWidgetMac* owner)
       root_view_id_(remote_cocoa::GetNewNSViewId()),
       accessibility_focus_overrider_(this),
       text_input_host_(new TextInputHost(this)),
-      host_mojo_binding_(this) {
+      remote_ns_window_host_binding_(this) {
   DCHECK(GetIdToWidgetHostImplMap().find(widget_id_) ==
          GetIdToWidgetHostImplMap().end());
   GetIdToWidgetHostImplMap().insert(std::make_pair(widget_id_, this));
@@ -307,14 +307,14 @@ NativeWidgetMacNSWindowHost::NativeWidgetMacNSWindowHost(NativeWidgetMac* owner)
 NativeWidgetMacNSWindowHost::~NativeWidgetMacNSWindowHost() {
   DCHECK(children_.empty());
   if (application_host_) {
-    bridge_ptr_.reset();
+    remote_ns_window_ptr_.reset();
     application_host_->RemoveObserver(this);
     application_host_ = nullptr;
   }
 
   // Workaround for https://crbug.com/915572
-  if (host_mojo_binding_.is_bound()) {
-    auto request = host_mojo_binding_.Unbind();
+  if (remote_ns_window_host_binding_.is_bound()) {
+    auto request = remote_ns_window_host_binding_.Unbind();
     if (request.is_pending()) {
       mojo::MakeStrongAssociatedBinding(
           std::make_unique<BridgedNativeWidgetHostDummy>(), std::move(request));
@@ -331,47 +331,49 @@ NativeWidgetMacNSWindowHost::~NativeWidgetMacNSWindowHost() {
   // destruction.
   // TODO(ccameron): When all communication from |bridge_| to this goes through
   // the BridgedNativeWidgetHost, this can be replaced with closing that pipe.
-  bridge_impl_.reset();
+  in_process_ns_window_bridge_.reset();
   SetFocusManager(nullptr);
   DestroyCompositor();
 }
 
-NativeWidgetMacNSWindow* NativeWidgetMacNSWindowHost::GetLocalNSWindow() const {
-  return local_window_.get();
+NativeWidgetMacNSWindow* NativeWidgetMacNSWindowHost::GetInProcessNSWindow()
+    const {
+  return in_process_ns_window_.get();
 }
 
 gfx::NativeViewAccessible
 NativeWidgetMacNSWindowHost::GetNativeViewAccessibleForNSView() const {
-  if (bridge_impl_)
-    return bridge_impl_->ns_view();
+  if (in_process_ns_window_bridge_)
+    return in_process_ns_window_bridge_->ns_view();
   return remote_view_accessible_.get();
 }
 
 gfx::NativeViewAccessible
 NativeWidgetMacNSWindowHost::GetNativeViewAccessibleForNSWindow() const {
-  if (bridge_impl_)
-    return bridge_impl_->ns_window();
+  if (in_process_ns_window_bridge_)
+    return in_process_ns_window_bridge_->ns_window();
   return remote_window_accessible_.get();
 }
 
-remote_cocoa::mojom::NativeWidgetNSWindow* NativeWidgetMacNSWindowHost::bridge()
-    const {
-  if (bridge_ptr_)
-    return bridge_ptr_.get();
-  if (bridge_impl_)
-    return bridge_impl_.get();
+remote_cocoa::mojom::NativeWidgetNSWindow*
+NativeWidgetMacNSWindowHost::GetNSWindowMojo() const {
+  if (remote_ns_window_ptr_)
+    return remote_ns_window_ptr_.get();
+  if (in_process_ns_window_bridge_)
+    return in_process_ns_window_bridge_.get();
   return nullptr;
 }
 
-void NativeWidgetMacNSWindowHost::CreateLocalBridge(
+void NativeWidgetMacNSWindowHost::CreateInProcessNSWindowBridge(
     base::scoped_nsobject<NativeWidgetMacNSWindow> window) {
-  local_window_ = window;
-  bridge_impl_ = std::make_unique<remote_cocoa::NativeWidgetNSWindowBridge>(
-      widget_id_, this, this, text_input_host_.get());
-  bridge_impl_->SetWindow(window);
+  in_process_ns_window_ = window;
+  in_process_ns_window_bridge_ =
+      std::make_unique<remote_cocoa::NativeWidgetNSWindowBridge>(
+          widget_id_, this, this, text_input_host_.get());
+  in_process_ns_window_bridge_->SetWindow(window);
 }
 
-void NativeWidgetMacNSWindowHost::CreateRemoteBridge(
+void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
     remote_cocoa::ApplicationHost* application_host,
     remote_cocoa::mojom::CreateWindowParamsPtr window_create_params) {
   accessibility_focus_overrider_.SetAppIsRemote(true);
@@ -381,30 +383,33 @@ void NativeWidgetMacNSWindowHost::CreateRemoteBridge(
   // Create a local invisible window that will be used as the gfx::NativeWindow
   // handle to track this window in this process.
   {
-    auto local_window_create_params =
+    auto in_process_ns_window_create_params =
         remote_cocoa::mojom::CreateWindowParams::New();
-    local_window_create_params->style_mask = NSBorderlessWindowMask;
-    local_window_ = remote_cocoa::NativeWidgetNSWindowBridge::CreateNSWindow(
-        local_window_create_params.get());
-    [local_window_ setBridgedNativeWidgetId:widget_id_];
-    [local_window_ setAlphaValue:0.0];
-    local_view_id_mapping_ =
+    in_process_ns_window_create_params->style_mask = NSBorderlessWindowMask;
+    in_process_ns_window_ =
+        remote_cocoa::NativeWidgetNSWindowBridge::CreateNSWindow(
+            in_process_ns_window_create_params.get());
+    [in_process_ns_window_ setBridgedNativeWidgetId:widget_id_];
+    [in_process_ns_window_ setAlphaValue:0.0];
+    in_process_view_id_mapping_ =
         std::make_unique<remote_cocoa::ScopedNSViewIdMapping>(
-            root_view_id_, [local_window_ contentView]);
+            root_view_id_, [in_process_ns_window_ contentView]);
   }
 
-  // Initialize |bridge_ptr_| to point to a bridge created by |factory|.
+  // Initialize |remote_ns_window_ptr_| to point to a bridge created by
+  // |factory|.
   remote_cocoa::mojom::NativeWidgetNSWindowHostAssociatedPtr host_ptr;
-  host_mojo_binding_.Bind(mojo::MakeRequest(&host_ptr),
-                          ui::WindowResizeHelperMac::Get()->task_runner());
+  remote_ns_window_host_binding_.Bind(
+      mojo::MakeRequest(&host_ptr),
+      ui::WindowResizeHelperMac::Get()->task_runner());
   remote_cocoa::mojom::TextInputHostAssociatedPtr text_input_host_ptr;
   text_input_host_->BindRequest(mojo::MakeRequest(&text_input_host_ptr));
   application_host_->GetApplication()->CreateNativeWidgetNSWindow(
-      widget_id_, mojo::MakeRequest(&bridge_ptr_), host_ptr.PassInterface(),
-      text_input_host_ptr.PassInterface());
+      widget_id_, mojo::MakeRequest(&remote_ns_window_ptr_),
+      host_ptr.PassInterface(), text_input_host_ptr.PassInterface());
 
   // Create the window in its process, and attach it to its parent window.
-  bridge()->CreateWindow(std::move(window_create_params));
+  GetNSWindowMojo()->CreateWindow(std::move(window_create_params));
 }
 
 void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
@@ -413,7 +418,7 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
   // native on Mac, so nothing should ever want one in Widget form.
   DCHECK_NE(params.type, Widget::InitParams::TYPE_TOOLTIP);
   widget_type_ = params.type;
-  tooltip_manager_.reset(new TooltipManagerMac(bridge()));
+  tooltip_manager_.reset(new TooltipManagerMac(GetNSWindowMojo()));
 
   // Initialize the window.
   {
@@ -449,7 +454,7 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
         widget_type_ == Widget::InitParams::TYPE_WINDOW &&
         params.remove_standard_frame;
 
-    bridge()->InitWindow(std::move(window_params));
+    GetNSWindowMojo()->InitWindow(std::move(window_params));
   }
 
   // Set a meaningful initial bounds. Note that except for frameless widgets
@@ -459,22 +464,22 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
   // before calling Widget::Show() to avoid a kWindowSizeDeterminedLater-sized
   // (i.e. 1x1) window appearing.
   UpdateLocalWindowFrame(params.bounds);
-  bridge()->SetInitialBounds(params.bounds, widget->GetMinimumSize());
+  GetNSWindowMojo()->SetInitialBounds(params.bounds, widget->GetMinimumSize());
 
-  // TODO(ccameron): Correctly set these based |local_window_|.
+  // TODO(ccameron): Correctly set these based |in_process_ns_window_|.
   window_bounds_in_screen_ = params.bounds;
   content_bounds_in_screen_ = params.bounds;
 
   // Widgets for UI controls (usually layered above web contents) start visible.
   if (widget_type_ == Widget::InitParams::TYPE_CONTROL)
-    bridge()->SetVisibilityState(WindowVisibilityState::kShowInactive);
+    GetNSWindowMojo()->SetVisibilityState(WindowVisibilityState::kShowInactive);
 }
 
 void NativeWidgetMacNSWindowHost::CloseWindowNow() {
-  bool is_out_of_process = !bridge_impl_;
+  bool is_out_of_process = !in_process_ns_window_bridge_;
   // Note that CloseWindowNow may delete |this| for in-process windows.
-  if (bridge())
-    bridge()->CloseWindowNow();
+  if (GetNSWindowMojo())
+    GetNSWindowMojo()->CloseWindowNow();
 
   // If it is out-of-process, then simulate the calls that would have been
   // during window closure.
@@ -488,8 +493,8 @@ void NativeWidgetMacNSWindowHost::CloseWindowNow() {
 
 void NativeWidgetMacNSWindowHost::SetBounds(const gfx::Rect& bounds) {
   UpdateLocalWindowFrame(bounds);
-  bridge()->SetBounds(bounds,
-                      native_widget_mac_->GetWidget()->GetMinimumSize());
+  GetNSWindowMojo()->SetBounds(
+      bounds, native_widget_mac_->GetWidget()->GetMinimumSize());
 }
 
 void NativeWidgetMacNSWindowHost::SetFullscreen(bool fullscreen) {
@@ -499,16 +504,16 @@ void NativeWidgetMacNSWindowHost::SetFullscreen(bool fullscreen) {
   // transition (and therefore OnWindowFullscreenTransitionStart will not be
   // called until the current transition completes).
   target_fullscreen_state_ = fullscreen;
-  bridge()->SetFullscreen(target_fullscreen_state_);
+  GetNSWindowMojo()->SetFullscreen(target_fullscreen_state_);
 }
 
 void NativeWidgetMacNSWindowHost::SetRootView(views::View* root_view) {
   root_view_ = root_view;
   if (root_view_) {
     // TODO(ccameron): Drag-drop functionality does not yet run over mojo.
-    if (bridge_impl_) {
-      drag_drop_client_.reset(
-          new DragDropClientMac(bridge_impl_.get(), root_view_));
+    if (in_process_ns_window_bridge_) {
+      drag_drop_client_.reset(new DragDropClientMac(
+          in_process_ns_window_bridge_.get(), root_view_));
     }
   } else {
     drag_drop_client_.reset();
@@ -550,7 +555,7 @@ void NativeWidgetMacNSWindowHost::CreateCompositor(
   if (is_visible_)
     compositor_->Unsuspend();
 
-  bridge()->InitCompositorView();
+  GetNSWindowMojo()->InitCompositorView();
 }
 
 void NativeWidgetMacNSWindowHost::UpdateCompositorProperties() {
@@ -606,7 +611,7 @@ bool NativeWidgetMacNSWindowHost::SetWindowTitle(const base::string16& title) {
   if (window_title_ == title)
     return false;
   window_title_ = title;
-  bridge()->SetWindowTitle(window_title_);
+  GetNSWindowMojo()->SetWindowTitle(window_title_);
   return true;
 }
 
@@ -619,12 +624,12 @@ void NativeWidgetMacNSWindowHost::OnWidgetInitDone() {
 bool NativeWidgetMacNSWindowHost::RedispatchKeyEvent(NSEvent* event) {
   // If the target window is in-process, then redispatch the event directly,
   // and give an accurate return value.
-  if (bridge_impl_)
-    return bridge_impl_->RedispatchKeyEvent(event);
+  if (in_process_ns_window_bridge_)
+    return in_process_ns_window_bridge_->RedispatchKeyEvent(event);
 
   // If the target window is out of process then always report the event as
   // handled (because it should never be handled in this process).
-  bridge()->RedispatchKeyEvent(
+  GetNSWindowMojo()->RedispatchKeyEvent(
       [event type], [event modifierFlags], [event timestamp],
       base::SysNSStringToUTF16([event characters]),
       base::SysNSStringToUTF16([event charactersIgnoringModifiers]),
@@ -686,16 +691,16 @@ void NativeWidgetMacNSWindowHost::SetParent(
   if (new_application_host != application_host_) {
     DLOG(ERROR) << "Cannot migrate views::NativeWidget to another process, "
                    "closing it instead.";
-    bridge()->CloseWindow();
+    GetNSWindowMojo()->CloseWindow();
     return;
   }
 
   parent_ = new_parent;
   if (parent_) {
     parent_->children_.push_back(this);
-    bridge()->SetParent(parent_->bridged_native_widget_id());
+    GetNSWindowMojo()->SetParent(parent_->bridged_native_widget_id());
   } else {
-    bridge()->SetParent(0);
+    GetNSWindowMojo()->SetParent(0);
   }
 }
 
@@ -718,8 +723,8 @@ void NativeWidgetMacNSWindowHost::ReorderChildViews() {
     return;
   std::map<NSView*, int> rank;
   RankNSViewsRecursive(widget->GetRootView(), &rank);
-  if (bridge_impl_)
-    bridge_impl_->SortSubviews(std::move(rank));
+  if (in_process_ns_window_bridge_)
+    in_process_ns_window_bridge_->SortSubviews(std::move(rank));
 }
 
 void NativeWidgetMacNSWindowHost::RankNSViewsRecursive(
@@ -734,9 +739,11 @@ void NativeWidgetMacNSWindowHost::RankNSViewsRecursive(
 
 void NativeWidgetMacNSWindowHost::UpdateLocalWindowFrame(
     const gfx::Rect& frame) {
-  if (!bridge_ptr_)
+  if (!remote_ns_window_ptr_)
     return;
-  [local_window_ setFrame:gfx::ScreenRectToNSRect(frame) display:NO animate:NO];
+  [in_process_ns_window_ setFrame:gfx::ScreenRectToNSRect(frame)
+                          display:NO
+                          animate:NO];
 }
 
 // static
@@ -1380,7 +1387,7 @@ void NativeWidgetMacNSWindowHost::HandleAccelerator(
 void NativeWidgetMacNSWindowHost::OnDialogChanged() {
   // Note it's only necessary to clear the TouchBar. If the OS needs it again,
   // a new one will be created.
-  bridge()->ClearTouchBar();
+  GetNSWindowMojo()->ClearTouchBar();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1458,7 +1465,7 @@ void NativeWidgetMacNSWindowHost::AcceleratedWidgetCALayerParamsUpdated() {
     // mach port has been specified (in practice, when software compositing is
     // enabled).
     // https://crbug.com/942213
-    if (bridge_ptr_ && ca_layer_params->io_surface_mach_port) {
+    if (remote_ns_window_ptr_ && ca_layer_params->io_surface_mach_port) {
       gfx::CALayerParams updated_ca_layer_params = *ca_layer_params;
       if (!io_surface_to_remote_layer_interceptor_) {
         io_surface_to_remote_layer_interceptor_ =
@@ -1466,9 +1473,9 @@ void NativeWidgetMacNSWindowHost::AcceleratedWidgetCALayerParamsUpdated() {
       }
       io_surface_to_remote_layer_interceptor_->UpdateCALayerParams(
           &updated_ca_layer_params);
-      bridge_ptr_->SetCALayerParams(updated_ca_layer_params);
+      remote_ns_window_ptr_->SetCALayerParams(updated_ca_layer_params);
     } else {
-      bridge()->SetCALayerParams(*ca_layer_params);
+      GetNSWindowMojo()->SetCALayerParams(*ca_layer_params);
     }
   }
 

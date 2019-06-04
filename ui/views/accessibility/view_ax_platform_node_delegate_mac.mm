@@ -31,12 +31,12 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegateMac::GetNSWindow() {
   if (!top_level_widget)
     return nil;
 
-  auto* bridge_host = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
+  auto* window_host = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
       top_level_widget->GetNativeWindow());
-  if (!bridge_host)
+  if (!window_host)
     return nil;
 
-  return bridge_host->GetNativeViewAccessibleForNSWindow();
+  return window_host->GetNativeViewAccessibleForNSWindow();
 }
 
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegateMac::GetParent() {
@@ -47,12 +47,12 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegateMac::GetParent() {
   if (!widget)
     return nil;
 
-  auto* bridge_host = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
+  auto* window_host = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
       view()->GetWidget()->GetNativeWindow());
-  if (!bridge_host)
+  if (!window_host)
     return nil;
 
-  return bridge_host->GetNativeViewAccessibleForNSView();
+  return window_host->GetNativeViewAccessibleForNSView();
 }
 
 }  // namespace views

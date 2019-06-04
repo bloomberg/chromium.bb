@@ -96,7 +96,7 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   // A NSWindow that is guaranteed to exist in this process. If the bridge
   // object for this host is in this process, then this points to the bridge's
   // NSWindow. Otherwise, it mirrors the id and bounds of the child window.
-  NativeWidgetMacNSWindow* GetLocalNSWindow() const;
+  NativeWidgetMacNSWindow* GetInProcessNSWindow() const;
 
   // Return the accessibility object for the content NSView.
   gfx::NativeViewAccessible GetNativeViewAccessibleForNSView() const;
@@ -105,14 +105,15 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   gfx::NativeViewAccessible GetNativeViewAccessibleForNSWindow() const;
 
   // The mojo interface through which to communicate with the underlying
-  // NSWindow and NSView.
-  remote_cocoa::mojom::NativeWidgetNSWindow* bridge() const;
+  // NSWindow and NSView. This points to either |remote_ns_window_ptr_| or
+  // |in_process_ns_window_bridge_|.
+  remote_cocoa::mojom::NativeWidgetNSWindow* GetNSWindowMojo() const;
 
   // Direct access to the NativeWidgetNSWindowBridge that this is hosting.
   // TODO(ccameron): Remove all accesses to this member, and replace them
   // with methods that may be sent across processes.
-  remote_cocoa::NativeWidgetNSWindowBridge* bridge_impl() const {
-    return bridge_impl_.get();
+  remote_cocoa::NativeWidgetNSWindowBridge* GetInProcessNSWindowBridge() const {
+    return in_process_ns_window_bridge_.get();
   }
 
   TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
@@ -122,10 +123,11 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   }
 
   // Create and set the bridge object to be in this process.
-  void CreateLocalBridge(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
+  void CreateInProcessNSWindowBridge(
+      base::scoped_nsobject<NativeWidgetMacNSWindow> window);
 
   // Create and set the bridge object to be potentially in another process.
-  void CreateRemoteBridge(
+  void CreateRemoteNSWindow(
       remote_cocoa::ApplicationHost* application_host,
       remote_cocoa::mojom::CreateWindowParamsPtr window_create_params);
 
@@ -225,9 +227,9 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   void RankNSViewsRecursive(View* view, std::map<NSView*, int>* rank) const;
 
   // If we are accessing the BridgedNativeWidget through mojo, then
-  // |local_window_| is not the true window that is resized. This function
-  // updates the frame of |local_window_| to keep it in sync for any native
-  // calls that may use it (e.g, for context menu positioning).
+  // |in_process_ns_window_| is not the true window that is resized. This
+  // function updates the frame of |in_process_ns_window_| to keep it in sync
+  // for any native calls that may use it (e.g, for context menu positioning).
   void UpdateLocalWindowFrame(const gfx::Rect& frame);
 
   // NativeWidgetNSWindowHostHelper:
@@ -385,8 +387,8 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   NativeWidgetMacNSWindowHost* parent_ = nullptr;
   std::vector<NativeWidgetMacNSWindowHost*> children_;
 
-  // The factory that was used to create |bridge_ptr_|. This must be the same
-  // as |parent_->application_host_|.
+  // The factory that was used to create |remote_ns_window_ptr_|. This must be
+  // the same as |parent_->application_host_|.
   remote_cocoa::ApplicationHost* application_host_ = nullptr;
 
   Widget::InitParams::Type widget_type_ = Widget::InitParams::TYPE_WINDOW;
@@ -401,7 +403,7 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
 
   // The mojo pointer to a BridgedNativeWidget, which may exist in another
   // process.
-  remote_cocoa::mojom::NativeWidgetNSWindowAssociatedPtr bridge_ptr_;
+  remote_cocoa::mojom::NativeWidgetNSWindowAssociatedPtr remote_ns_window_ptr_;
 
   // Remote accessibility objects corresponding to the NSWindow and its root
   // NSView.
@@ -416,13 +418,16 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   // TODO(ccameron): Rather than instantiate a NativeWidgetNSWindowBridge here,
   // we will instantiate a mojo NativeWidgetNSWindowBridge interface to a Cocoa
   // instance that may be in another process.
-  std::unique_ptr<remote_cocoa::NativeWidgetNSWindowBridge> bridge_impl_;
+  std::unique_ptr<remote_cocoa::NativeWidgetNSWindowBridge>
+      in_process_ns_window_bridge_;
 
-  // Window that is guaranteed to exist in this process (see GetLocalNSWindow).
-  base::scoped_nsobject<NativeWidgetMacNSWindow> local_window_;
+  // Window that is guaranteed to exist in this process (see
+  // GetInProcessNSWindow).
+  base::scoped_nsobject<NativeWidgetMacNSWindow> in_process_ns_window_;
 
-  // Id mapping for |local_window_|'s content NSView.
-  std::unique_ptr<remote_cocoa::ScopedNSViewIdMapping> local_view_id_mapping_;
+  // Id mapping for |in_process_ns_window_|'s content NSView.
+  std::unique_ptr<remote_cocoa::ScopedNSViewIdMapping>
+      in_process_view_id_mapping_;
 
   std::unique_ptr<TooltipManager> tooltip_manager_;
   std::unique_ptr<ui::InputMethod> input_method_;
@@ -463,7 +468,7 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   std::map<const views::View*, NSView*> associated_views_;
 
   mojo::AssociatedBinding<remote_cocoa::mojom::NativeWidgetNSWindowHost>
-      host_mojo_binding_;
+      remote_ns_window_host_binding_;
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMacNSWindowHost);
 };
 

@@ -57,7 +57,7 @@ class NativeViewHostMac : public NativeViewHostWrapper,
 
  private:
   // Return the NativeWidgetMacNSWindowHost for this hosted view.
-  NativeWidgetMacNSWindowHost* GetBridgedNativeWidgetHost() const;
+  NativeWidgetMacNSWindowHost* GetNSWindowHost() const;
 
   // Our associated NativeViewHost. Owns this.
   NativeViewHost* host_;

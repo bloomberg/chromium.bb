@@ -96,8 +96,8 @@ namespace test {
 class BridgedNativeWidgetTestApi {
  public:
   explicit BridgedNativeWidgetTestApi(NSWindow* window) {
-    bridge_ =
-        NativeWidgetMacNSWindowHost::GetFromNativeWindow(window)->bridge_impl();
+    bridge_ = NativeWidgetMacNSWindowHost::GetFromNativeWindow(window)
+                  ->GetInProcessNSWindowBridge();
   }
 
   // Simulate a frame swap from the compositor.
@@ -1620,14 +1620,14 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
   NSWindow* parent = MakeBorderlessNativeParent();
   Widget* dialog = views::DialogDelegate::CreateDialogWidget(
       new DialogDelegateView, nullptr, [parent contentView]);
-  NativeWidgetMacNSWindowHost* bridge_host =
+  NativeWidgetMacNSWindowHost* window_host =
       NativeWidgetMacNSWindowHost::GetFromNativeWindow(
           dialog->GetNativeWindow());
 
-  EXPECT_EQ(bridge_host->parent()->native_widget_mac()->GetNativeWindow(),
+  EXPECT_EQ(window_host->parent()->native_widget_mac()->GetNativeWindow(),
             parent);
   Widget::ReparentNativeView(dialog->GetNativeView(), [parent contentView]);
-  EXPECT_EQ(bridge_host->parent()->native_widget_mac()->GetNativeWindow(),
+  EXPECT_EQ(window_host->parent()->native_widget_mac()->GetNativeWindow(),
             parent);
 
   [parent close];
@@ -1636,13 +1636,13 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
   parent = parent_widget->GetNativeWindow().GetNativeNSWindow();
   dialog = views::DialogDelegate::CreateDialogWidget(
       new DialogDelegateView, nullptr, [parent contentView]);
-  bridge_host = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
+  window_host = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
       dialog->GetNativeWindow());
 
-  EXPECT_EQ(bridge_host->parent()->native_widget_mac()->GetNativeWindow(),
+  EXPECT_EQ(window_host->parent()->native_widget_mac()->GetNativeWindow(),
             parent);
   Widget::ReparentNativeView(dialog->GetNativeView(), [parent contentView]);
-  EXPECT_EQ(bridge_host->parent()->native_widget_mac()->GetNativeWindow(),
+  EXPECT_EQ(window_host->parent()->native_widget_mac()->GetNativeWindow(),
             parent);
 
   parent_widget->CloseNow();
@@ -2204,7 +2204,7 @@ class NativeWidgetMacFullKeyboardAccessTest : public NativeWidgetMacTest {
     widget_ = CreateTopLevelPlatformWidget();
     bridge_ = NativeWidgetMacNSWindowHost::GetFromNativeWindow(
                   widget_->GetNativeWindow())
-                  ->bridge_impl();
+                  ->GetInProcessNSWindowBridge();
     fake_full_keyboard_access_ =
         ui::test::ScopedFakeFullKeyboardAccess::GetInstance();
     DCHECK(fake_full_keyboard_access_);
