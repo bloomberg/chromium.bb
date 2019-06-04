@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOADER_PREFETCHED_SIGNED_EXCHANGE_CACHE_ADAPTER_H_
-#define CONTENT_BROWSER_LOADER_PREFETCHED_SIGNED_EXCHANGE_CACHE_ADAPTER_H_
+#ifndef CONTENT_BROWSER_WEB_PACKAGE_PREFETCHED_SIGNED_EXCHANGE_CACHE_ADAPTER_H_
+#define CONTENT_BROWSER_WEB_PACKAGE_PREFETCHED_SIGNED_EXCHANGE_CACHE_ADAPTER_H_
 
 #include "base/optional.h"
-#include "content/browser/loader/prefetched_signed_exchange_cache.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 class GURL;
@@ -74,4 +74,4 @@ class PrefetchedSignedExchangeCacheAdapter {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LOADER_PREFETCHED_SIGNED_EXCHANGE_CACHE_ADAPTER_H_
+#endif  // CONTENT_BROWSER_WEB_PACKAGE_PREFETCHED_SIGNED_EXCHANGE_CACHE_ADAPTER_H_

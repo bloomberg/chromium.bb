@@ -17,7 +17,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader.h"
-#include "content/browser/loader/prefetched_signed_exchange_cache.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"

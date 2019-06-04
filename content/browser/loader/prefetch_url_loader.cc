@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "content/browser/loader/prefetched_signed_exchange_cache.h"
-#include "content/browser/loader/prefetched_signed_exchange_cache_adapter.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache_adapter.h"
 #include "content/browser/web_package/signed_exchange_prefetch_handler.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_utils.h"

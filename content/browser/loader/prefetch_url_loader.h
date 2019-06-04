@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "content/browser/loader/prefetched_signed_exchange_cache.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"

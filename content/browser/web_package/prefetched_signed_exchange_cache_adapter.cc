@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/prefetched_signed_exchange_cache_adapter.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache_adapter.h"
 
 #include "content/browser/loader/prefetch_url_loader.h"
 #include "storage/browser/blob/blob_builder_from_stream.h"

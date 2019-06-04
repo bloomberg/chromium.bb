@@ -11,7 +11,7 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
-#include "content/browser/loader/prefetched_signed_exchange_cache.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "services/network/public/cpp/features.h"
 
