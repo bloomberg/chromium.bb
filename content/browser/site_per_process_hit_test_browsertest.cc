@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/site_per_process_browsertest.h"
-
 #include <tuple>
 
 #include "base/bind.h"
@@ -26,6 +24,7 @@
 #include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/site_per_process_browsertest.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/input_handler.mojom-test-utils.h"
 #include "content/common/view_messages.h"
@@ -689,10 +688,15 @@ class SystemEventRewriter : public ui::EventRewriter {
 };
 #endif
 
+enum class HitTestType {
+  kDrawQuad,
+  kSurfaceLayer,
+};
+
 }  // namespace
 
 class SitePerProcessHitTestBrowserTest
-    : public testing::WithParamInterface<std::tuple<int, float>>,
+    : public testing::WithParamInterface<std::tuple<HitTestType, float>>,
       public SitePerProcessBrowserTest {
  public:
   SitePerProcessHitTestBrowserTest() {}
@@ -716,20 +720,13 @@ class SitePerProcessHitTestBrowserTest
     ui::PlatformEventSource::SetIgnoreNativePlatformEvents(true);
     const char kParam[] = "provider";
     std::map<std::string, std::string> parameters;
-    if (std::get<0>(GetParam()) == 1) {
+    if (std::get<0>(GetParam()) == HitTestType::kDrawQuad) {
       parameters[kParam] = "draw_quad";
-      feature_list_.InitAndEnableFeatureWithParameters(
-          features::kEnableVizHitTest, parameters);
-    } else if (std::get<0>(GetParam()) == 2) {
+    } else if (std::get<0>(GetParam()) == HitTestType::kSurfaceLayer) {
       parameters[kParam] = "surface_layer";
-      feature_list_.InitAndEnableFeatureWithParameters(
-          features::kEnableVizHitTest, parameters);
-    } else {
-      feature_list_.InitWithFeatures(
-          {},
-          {features::kVizDisplayCompositor, features::kEnableVizHitTestDrawQuad,
-           features::kEnableVizHitTestSurfaceLayer});
     }
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kEnableVizHitTest, parameters);
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -1435,10 +1432,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        CSSTransformedIframeTouchEventCoordinates) {
-  // This test only makes sense if viz hit testing is enabled.
-  if (std::get<0>(GetParam()) == 0)
-    return;
-
   GURL url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_scaled_frame.html"));
   ASSERT_TRUE(NavigateToURL(shell(), url));
@@ -2794,12 +2787,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().y,
               kHitTestTolerance);
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
-
-  // Surface hit test can only learn about pointer-events changes when
-  // submitting compositing frame, so we disable the second half of the test for
-  // surface hit test.
-  if (!features::IsVizHitTestingEnabled())
-    return;
 
   // Remove pointer-events: none property from iframe, also remove child2 to
   // properly notify the observer the update.
@@ -5035,9 +5022,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // hit test data without crashing.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        TouchpadPinchWhenMissingHitTestDataDoesNotCrash) {
-  if (!features::IsVizHitTestingEnabled())
-    return;
-
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -6286,8 +6270,6 @@ const uint32_t
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        TransformedOOPIF) {
-  if (!features::IsVizHitTestingEnabled())
-    return;
   auto hit_test_data =
       SetupAndGetHitTestData("/frame_tree/page_with_transformed_iframe.html");
   float device_scale_factor = current_device_scale_factor();
@@ -6312,8 +6294,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        ClippedOOPIFFastPath) {
-  if (!features::IsVizHitTestingEnabled())
-    return;
   auto hit_test_data =
       SetupAndGetHitTestData("/frame_tree/page_with_clipped_iframe.html");
   float device_scale_factor = current_device_scale_factor();
@@ -6353,8 +6333,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        RotatedClippedOOPIF) {
-  if (!features::IsVizHitTestingEnabled())
-    return;
   auto hit_test_data = SetupAndGetHitTestData(
       "/frame_tree/page_with_rotated_clipped_iframe.html");
   float device_scale_factor = current_device_scale_factor();
@@ -6394,8 +6372,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        ClippedRotatedOOPIF) {
-  if (!features::IsVizHitTestingEnabled())
-    return;
   auto hit_test_data = SetupAndGetHitTestData(
       "/frame_tree/page_with_clipped_rotated_iframe.html");
   float device_scale_factor = current_device_scale_factor();
@@ -6457,8 +6433,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        ClipPathOOPIF) {
-  if (!features::IsVizHitTestingEnabled())
-    return;
   auto hit_test_data =
       SetupAndGetHitTestData("/frame_tree/page_with_clip_path_iframe.html");
   float device_scale_factor = current_device_scale_factor();
@@ -6492,8 +6466,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        OverlappedOOPIF) {
-  if (!features::IsVizHitTestingEnabled())
-    return;
   auto hit_test_data =
       SetupAndGetHitTestData("/frame_tree/page_with_overlapped_iframes.html");
   float device_scale_factor = current_device_scale_factor();
@@ -6522,8 +6494,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        MaskedOOPIF) {
-  if (!features::IsVizHitTestingEnabled())
-    return;
   auto hit_test_data =
       SetupAndGetHitTestData("/frame_tree/page_with_masked_iframe.html");
   float device_scale_factor = current_device_scale_factor();
@@ -6542,8 +6512,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        AncestorMaskedOOPIF) {
-  if (!features::IsVizHitTestingEnabled())
-    return;
   auto hit_test_data = SetupAndGetHitTestData(
       "/frame_tree/page_with_ancestor_masked_iframe.html");
   float device_scale_factor = current_device_scale_factor();
@@ -6568,8 +6536,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
                        PointerEventsNoneOOPIF) {
-  if (!features::IsVizHitTestingEnabled())
-    return;
   auto hit_test_data = SetupAndGetHitTestData(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html", 0);
   float device_scale_factor = current_device_scale_factor();
@@ -6690,7 +6656,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 // All tests are flaky on MSAN. https://crbug.com/959924
 #if !defined(MEMORY_SANITIZER)
 
-static const int kHitTestOption[] = {0, 1, 2};
+static const HitTestType kHitTestOption[] = {HitTestType::kDrawQuad,
+                                             HitTestType::kSurfaceLayer};
 static const float kOneScale[] = {1.f};
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,

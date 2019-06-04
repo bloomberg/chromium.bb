@@ -21,9 +21,8 @@ class WebContents;
 // TODO(jonross): Remove these once Viz Hit Testing is on by default and the
 // legacy content::browser_test_utils fallbacks are no longer needed.
 //
-// When Viz Hit Testing is available, waits until hit test data for
-// |child_frame| has been submitted, see WaitForHitTestData. Otherwise waits
-// until the cc::Surface associated with |child_frame| has been activated.
+// Waits until hit test data for |child_frame| has been submitted, see
+// WaitForHitTestData.
 void WaitForHitTestDataOrChildSurfaceReady(RenderFrameHost* child_frame);
 void WaitForHitTestDataOrGuestSurfaceReady(WebContents* guest_web_contents);
 

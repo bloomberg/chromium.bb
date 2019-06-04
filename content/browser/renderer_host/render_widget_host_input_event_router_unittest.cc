@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "components/viz/common/features.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/test/host_frame_sink_manager_test_api.h"
@@ -170,16 +169,14 @@ class MockRootRenderWidgetHostView : public TestRenderWidgetHostView {
                         bool query_renderer) {
     current_hittest_result_ = result_view;
     force_query_renderer_on_hit_test_ = query_renderer;
-    if (features::IsVizHitTestingEnabled()) {
-      DCHECK(GetHostFrameSinkManager());
+    DCHECK(GetHostFrameSinkManager());
 
-      viz::HostFrameSinkManager::DisplayHitTestQueryMap hit_test_map;
-      hit_test_map[GetFrameSinkId()] =
-          std::make_unique<StubHitTestQuery>(result_view, query_renderer);
+    viz::HostFrameSinkManager::DisplayHitTestQueryMap hit_test_map;
+    hit_test_map[GetFrameSinkId()] =
+        std::make_unique<StubHitTestQuery>(result_view, query_renderer);
 
-      viz::HostFrameSinkManagerTestApi(GetHostFrameSinkManager())
-          .SetDisplayHitTestQuery(std::move(hit_test_map));
-    }
+    viz::HostFrameSinkManagerTestApi(GetHostFrameSinkManager())
+        .SetDisplayHitTestQuery(std::move(hit_test_map));
   }
 
   void Reset() { last_gesture_seen_ = blink::WebInputEvent::kUndefined; }

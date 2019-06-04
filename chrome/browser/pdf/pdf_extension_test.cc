@@ -408,25 +408,7 @@ class PDFExtensionLoadTest : public PDFExtensionTest,
   PDFExtensionLoadTest() {}
 };
 
-class PDFExtensionHitTestTest : public PDFExtensionTest,
-                                public testing::WithParamInterface<bool> {
- public:
-  PDFExtensionHitTestTest() {}
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PDFExtensionTest::SetUpCommandLine(command_line);
-    if (GetParam()) {
-      std::map<std::string, std::string> parameters{{"provider", "draw_quad"}};
-      feature_list_.InitAndEnableFeatureWithParameters(
-          features::kEnableVizHitTest, parameters);
-    } else {
-      feature_list_.InitAndDisableFeature(features::kEnableVizHitTest);
-    }
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-};
+using PDFExtensionHitTestTest = PDFExtensionTest;
 
 class PDFAnnotationsTest : public PDFExtensionTest {
  public:
@@ -629,10 +611,6 @@ IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest,
 INSTANTIATE_TEST_SUITE_P(PDFTestFiles,
                          PDFExtensionLoadTest,
                          testing::Range(0, kNumberLoadTestParts));
-
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         PDFExtensionHitTestTest,
-                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
   RunTestsInFile("basic_test.js", "test.pdf");
@@ -1972,7 +1950,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest,
 #endif  // !defined(OS_MACOSX)
 
 // Flaky in nearly all configurations; see https://crbug.com/856169.
-IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
   GURL url = embedded_test_server()->GetURL("/pdf/pdf_embed.html");
 
   // Load page with embedded PDF and make sure it succeeds.
@@ -2023,7 +2001,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
   EXPECT_EQ(1, enter_count);
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   GURL url = embedded_test_server()->GetURL("/pdf/pdf_embed.html");
 
   // Load page with embedded PDF and make sure it succeeds.
