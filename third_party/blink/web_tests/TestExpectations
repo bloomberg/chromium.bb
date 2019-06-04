@@ -294,6 +294,25 @@ crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/overflow/c
 crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/video/video-controls-layer-creation-squashing.html [ Failure ]
 
+# These fail when device_scale_factor is changed, but only for anti-aliasing:
+crbug.com/968791 virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Failure ]
+crbug.com/968791 virtual/scalefactor200/css3/filters/filterRegions.html [ Failure ]
+crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-blur.html [ Failure ]
+crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-combined-001.html [ Failure ]
+crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
+
+# These appear to be actually incorrect at device_scale_factor 2.0:
+crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure ]
+crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-image-lazy-attach.html [ Failure ]
+crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-image.html [ Failure ]
+crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
+crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
+
+# These seem flaky on scalefactor200:
+crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Pass Failure Timeout ]
+crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Pass Failure Timeout ]
+crbug.com/968791 virtual/scalefactor200/css3/filters/effect-contrast-hw.html [ Pass Failure Timeout ]
+
 # ==== Regressions introduced by BlinkGenPropertyTrees =====
 # Reflection / mask ordering issue
 crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Failure ]
@@ -1659,6 +1678,7 @@ crbug.com/538697 [ Win Win10 ] virtual/threaded/printing/webgl-oversized-printin
 crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
 crbug.com/904592 css3/filters/backdrop-filter-svg.html [ Failure ]
+crbug.com/904592 virtual/scalefactor200/css3/filters/backdrop-filter-svg.html [ Failure ]
 
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
