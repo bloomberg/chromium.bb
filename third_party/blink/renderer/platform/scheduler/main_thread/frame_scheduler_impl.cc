@@ -459,6 +459,8 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalIntersectionObserver:
       return PausableTaskQueueTraits();
+    case TaskType::kInternalFreezableIPC:
+      return FreezableTaskQueueTraits();
     case TaskType::kInternalIPC:
     // The TaskType of Inspector tasks needs to be unpausable because they need
     // to run even on a paused page.
@@ -1117,6 +1119,14 @@ MainThreadTaskQueue::QueueTraits FrameSchedulerImpl::PausableTaskQueueTraits() {
       .SetCanBeFrozen(base::FeatureList::IsEnabled(
           blink::features::kStopNonTimersInBackground))
       .SetCanBePaused(true);
+}
+
+// static
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::FreezableTaskQueueTraits() {
+  // Should not use VirtualTime because using VirtualTime would make the task
+  // execution non-deterministic and produce timeouts failures.
+  return QueueTraits().SetCanBeFrozen(true).SetShouldUseVirtualTime(false);
 }
 
 // static

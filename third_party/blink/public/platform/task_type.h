@@ -210,6 +210,9 @@ enum class TaskType : unsigned char {
   // when one of the frames is frozen.
   kInternalNavigationAssociated = 63,
 
+  // Legacy IPCs that are freezable.
+  kInternalFreezableIPC = 64,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -233,7 +236,7 @@ enum class TaskType : unsigned char {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 64,
+  kCount = 65,
 };
 
 }  // namespace blink

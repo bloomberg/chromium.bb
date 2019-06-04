@@ -131,6 +131,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalContentCapture";
     case TaskType::kInternalNavigationAssociated:
       return "InternalNavigationAssociated";
+    case TaskType::kInternalFreezableIPC:
+      return "InternalFreezableIPC";
     case TaskType::kCount:
       return "Count";
   }
