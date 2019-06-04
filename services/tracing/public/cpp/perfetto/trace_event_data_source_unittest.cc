@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_id_name_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -26,6 +27,7 @@
 #include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/thread_descriptor.pb.h"
 
 using TrackEvent = perfetto::protos::TrackEvent;
 
@@ -33,6 +35,7 @@ namespace tracing {
 
 namespace {
 
+constexpr char kTestThread[] = "CrTestMain";
 constexpr const char kCategoryGroup[] = "foo";
 
 class MockProducerClient : public ProducerClient {
@@ -188,6 +191,7 @@ class TraceEventDataSourceTest : public testing::Test {
         scoped_task_environment_.GetMainThreadTaskRunner());
     producer_client_ =
         std::make_unique<MockProducerClient>(std::move(perfetto_wrapper));
+    base::ThreadIdNameManager::GetInstance()->SetName(kTestThread);
   }
 
   void TearDown() override {
@@ -223,7 +227,8 @@ class TraceEventDataSourceTest : public testing::Test {
 
   void ExpectThreadDescriptor(const perfetto::protos::TracePacket* packet,
                               int64_t min_timestamp = 1u,
-                              int64_t min_thread_time = 1u) {
+                              int64_t min_thread_time = 1u,
+                              bool filtering_enabled = false) {
     EXPECT_TRUE(packet->has_thread_descriptor());
     EXPECT_NE(packet->thread_descriptor().pid(), 0);
     EXPECT_NE(packet->thread_descriptor().tid(), 0);
@@ -237,6 +242,13 @@ class TraceEventDataSourceTest : public testing::Test {
       EXPECT_LE(packet->thread_descriptor().reference_thread_time_us(),
                 base::ThreadTicks::Now().since_origin().InMicroseconds());
     }
+    if (filtering_enabled) {
+      EXPECT_FALSE(packet->thread_descriptor().has_thread_name());
+    } else {
+      EXPECT_EQ(kTestThread, packet->thread_descriptor().thread_name());
+    }
+    EXPECT_EQ(perfetto::protos::ThreadDescriptor::CHROME_THREAD_MAIN,
+              packet->thread_descriptor().chrome_thread_type());
 
     last_timestamp_ = packet->thread_descriptor().reference_timestamp_us();
     last_thread_time_ = packet->thread_descriptor().reference_thread_time_us();
@@ -928,7 +940,7 @@ TEST_F(TraceEventDataSourceTest, FilteringSimpleTraceEvent) {
   EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
 
   auto* td_packet = producer_client()->GetFinalizedPacket();
-  ExpectThreadDescriptor(td_packet);
+  ExpectThreadDescriptor(td_packet, 1u, 1u, /*filtering_enabled=*/true);
 
   auto* e_packet = producer_client()->GetFinalizedPacket(1);
   ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
