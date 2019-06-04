@@ -14,7 +14,8 @@ GEN('#include "chrome/test/data/webui/signin_browsertest.h"');
  * chrome/browser/resources/signin/dice_sync_confirmation/sync_confirmation.html.
  * This has to be declared as a variable for TEST_F to find it correctly.
  */
-SigninSyncConfirmationTest = class extends PolymerTest {
+// eslint-disable-next-line no-var
+var SigninSyncConfirmationTest = class extends PolymerTest {
   /** @override */
   get typedefCppFixture() {
     return 'SigninBrowserTest';
