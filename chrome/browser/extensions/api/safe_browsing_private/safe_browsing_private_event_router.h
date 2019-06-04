@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SAFE_BROWSING_PRIVATE_SAFE_BROWSING_PRIVATE_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SAFE_BROWSING_PRIVATE_SAFE_BROWSING_PRIVATE_EVENT_ROUTER_H_
 
+#include <memory>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -18,13 +21,43 @@ namespace extensions {
 class EventRouter;
 }
 
+namespace identity {
+class IdentityManager;
+}
+
 class GURL;
+
+namespace policy {
+class CloudPolicyClient;
+}
 
 namespace extensions {
 
 // An event router that observes Safe Browsing events and notifies listeners.
+// The router also uploads events to the chrome reporting server side API if
+// the kRealtimeReportingFeature feature is enabled.
 class SafeBrowsingPrivateEventRouter : public KeyedService {
  public:
+  // Feature that controls whether real-time reports are sent.
+  static const base::Feature kRealtimeReportingFeature;
+
+  // Key names used with when building the dictionary to pass to the real-time
+  // reporting API.
+  static const char kKeyUrl[];
+  static const char kKeyUserName[];
+  static const char kKeyIsPhishingUrl[];
+  static const char kKeyProfileUserName[];
+  static const char kKeyFileName[];
+  static const char kKeyDownloadDigestSha256[];
+  static const char kKeyReason[];
+  static const char kKeyNetErrorCode[];
+  static const char kKeyClickedThrough[];
+
+  static const char kKeyPasswordReuseEvent[];
+  static const char kKeyPasswordChangedEvent[];
+  static const char kKeyDangerousDownloadEvent[];
+  static const char kKeyInterstitialEvent[];
+
   explicit SafeBrowsingPrivateEventRouter(content::BrowserContext* context);
 
   ~SafeBrowsingPrivateEventRouter() override;
@@ -56,9 +89,22 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
                                        int net_error_code,
                                        const std::string& user_name);
 
+  void SetCloudPolicyClientForTesting(
+      std::unique_ptr<policy::CloudPolicyClient> client);
+
  private:
+  // Initialize the real-time report client if needed.  This client is used only
+  // if real-time reporting is enabled, the machine is properly reigistered
+  // with CBCM and the appropriate policies are enabled.
+  void InitRealtimeReportingClient();
+
+  // Report safe browsing event through real-time reporting channel, if enabled.
+  void ReportRealtimeEvent(const char* name, base::Value event);
+
   content::BrowserContext* context_;
-  EventRouter* event_router_;
+  identity::IdentityManager* identity_manager_ = nullptr;
+  EventRouter* event_router_ = nullptr;
+  std::unique_ptr<policy::CloudPolicyClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateEventRouter);
 };

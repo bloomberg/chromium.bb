@@ -81,6 +81,8 @@ class MockCloudPolicyClient : public CloudPolicyClient {
                void(enterprise_management::ChromeDesktopReportRequest*,
                     const StatusCallback&));
 
+  MOCK_METHOD2(UploadRealtimeReport, void(base::Value, const StatusCallback&));
+
   // Sets the DMToken.
   void SetDMToken(const std::string& token);
 
