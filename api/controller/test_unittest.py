@@ -155,7 +155,8 @@ class VmTestTest(cros_test_lib.MockTestCase):
         test_harness=test_pb2.VmTestRequest.TAST,
         vm_tests=[test_pb2.VmTestRequest.VmTest(pattern='suite')],
         ssh_options=test_pb2.VmTestRequest.SshOptions(
-            port=1234, private_key_path='/path/to/id_rsa'),
+            port=1234, private_key_path={'path':'/path/to/id_rsa',
+                                         'location': common_pb2.Path.INSIDE}),
     )
     values.update(kwargs)
     return test_pb2.VmTestRequest(**values)

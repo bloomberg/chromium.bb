@@ -185,7 +185,7 @@ def VmTest(input_proto, _output_proto):
     cmd.extend(['--ssh-port', str(input_proto.ssh_options.port)])
 
   if input_proto.ssh_options.private_key_path:
-    cmd.extend(['--private-key', input_proto.ssh_options.private_key_path])
+    cmd.extend(['--private-key', input_proto.ssh_options.private_key_path.path])
 
   # TODO(evanhernandez): Find a nice way to pass test_that-args through
   # the build API. Or obviate them.

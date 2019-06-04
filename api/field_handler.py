@@ -21,6 +21,8 @@ from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
+from google.protobuf import message as protobuf_message
+
 
 class ChrootHandler(object):
   """Translate a Chroot message to chroot enter arguments and env."""
@@ -112,6 +114,10 @@ class PathHandler(object):
     self.prefix = prefix or ''
     self.delete = delete
     self.tempdir = None
+    # For resetting the state.
+    self._transferred = False
+    self._original_message = common_pb2.Path()
+    self._original_message.CopyFrom(self.field)
 
   def transfer(self, direction=None):
     """Copy the file or directory to its destination.
@@ -121,12 +127,16 @@ class PathHandler(object):
         the chroot). Specifying the direction allows avoiding performing
         unnecessary copies.
     """
+    if self._transferred:
+      return
+
     if direction is None:
       direction = self.ALL
     assert direction in [self.INSIDE, self.OUTSIDE, self.ALL]
 
     if self.field.location == direction:
-      return None
+      # Already in the correct location, nothing to do.
+      return
 
     if self.delete:
       self.tempdir = osutils.TempDir(base_dir=self.destination)
@@ -150,16 +160,16 @@ class PathHandler(object):
     if return_path.startswith(self.prefix):
       return_path = return_path[len(self.prefix):]
 
-    path = common_pb2.Path()
-    path.path = return_path
-    path.location = direction
-
-    return path
+    self.field.path = return_path
+    self.field.location = direction
+    self._transferred = True
 
   def cleanup(self):
     if self.tempdir:
       self.tempdir.Cleanup()
       self.tempdir = None
+
+    self.field.CopyFrom(self._original_message)
 
 
 @contextlib.contextmanager
@@ -183,7 +193,20 @@ def handle_paths(message, destination, delete=True, direction=None,
   assert destination
   direction = direction or PathHandler.ALL
 
-  # field-name, handler pairs.
+  handlers = _extract_handlers(message, destination, delete, prefix)
+
+  for handler in handlers:
+    handler.transfer(direction)
+
+  try:
+    yield handlers
+  finally:
+    for handler in handlers:
+      handler.cleanup()
+
+
+def _extract_handlers(message, destination, delete, prefix):
+  """Recursive helper for handle_paths to extract Path messages."""
   handlers = []
   for descriptor in message.DESCRIPTOR.fields:
     field = getattr(message, descriptor.name)
@@ -193,20 +216,8 @@ def handle_paths(message, destination, delete=True, direction=None,
         continue
 
       handler = PathHandler(field, destination, delete=delete, prefix=prefix)
-      handlers.append((descriptor.name, handler))
+      handlers.append(handler)
+    elif isinstance(field, protobuf_message.Message):
+      handlers.extend(_extract_handlers(field, destination, delete, prefix))
 
-  for field_name, handler in handlers:
-    new_field = handler.transfer(direction)
-    if not new_field:
-      # When no copy is needed.
-      continue
-
-    old_field = getattr(message, field_name)
-    old_field.path = new_field.path
-    old_field.location = new_field.location
-
-  try:
-    yield handlers
-  finally:
-    for field_name, handler in handlers:
-      handler.cleanup()
+  return handlers

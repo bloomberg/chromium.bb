@@ -113,6 +113,8 @@ class PathHandlerTest(cros_test_lib.TempDirTestCase):
 
     # The file should have been deleted on exit with delete=True.
     self.assertNotExists(new_path)
+    # Make sure it gets reset.
+    self.assertEqual(message.path.path, self.source_file1)
 
   def test_handle_files(self):
     """Test handling of multiple files."""
@@ -132,6 +134,16 @@ class PathHandlerTest(cros_test_lib.TempDirTestCase):
     # The files should still exist with delete=False.
     self.assertExists(new_path1)
     self.assertExists(new_path2)
+
+  def test_handle_nested_file(self):
+    """Test the nested path handling."""
+    message = build_api_test_pb2.TestRequestMessage()
+    message.nested_path.path.path = self.source_file1
+    message.nested_path.path.location = common_pb2.Path.OUTSIDE
+
+    with field_handler.handle_paths(message, self.dest_dir):
+      new_path = message.nested_path.path.path
+      self._path_checks(self.source_file1, new_path, self.file1_contents)
 
   def test_handle_directory(self):
     """Test handling of a directory."""
