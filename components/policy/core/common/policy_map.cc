@@ -151,8 +151,7 @@ base::string16 PolicyMap::Entry::GetLocalizedWarnings(
 bool PolicyMap::Entry::IsBlockedOrIgnored() const {
   return error_message_ids_.find(IDS_POLICY_BLOCKED) !=
              error_message_ids_.end() ||
-         error_message_ids_.find(IDS_POLICY_IGNORED_BY_GROUP_MERGING) !=
-             error_message_ids_.end();
+         IsIgnoredByAtomicGroup();
 }
 
 void PolicyMap::Entry::SetBlocked() {
@@ -161,6 +160,11 @@ void PolicyMap::Entry::SetBlocked() {
 
 void PolicyMap::Entry::SetIgnoredByPolicyAtomicGroup() {
   error_message_ids_.insert(IDS_POLICY_IGNORED_BY_GROUP_MERGING);
+}
+
+bool PolicyMap::Entry::IsIgnoredByAtomicGroup() const {
+  return error_message_ids_.find(IDS_POLICY_IGNORED_BY_GROUP_MERGING) !=
+         error_message_ids_.end();
 }
 
 PolicyMap::PolicyMap() {}
@@ -230,6 +234,11 @@ void PolicyMap::AddError(const std::string& policy, const std::string& error) {
 
 void PolicyMap::AddError(const std::string& policy, int message_id) {
   map_[policy].AddError(message_id);
+}
+
+bool PolicyMap::IsPolicyIgnoredByAtomicGroup(const std::string& policy) const {
+  const auto& entry = map_.find(policy);
+  return entry != map_.end() && entry->second.IsIgnoredByAtomicGroup();
 }
 
 void PolicyMap::SetSourceForAll(PolicySource source) {

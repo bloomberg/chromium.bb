@@ -48,6 +48,9 @@ class POLICY_EXPORT PolicyStatisticsCollector {
   // protected virtual for mocking.
   virtual void RecordPolicyUse(int id);
 
+  // protected virtual for mocking.
+  virtual void RecordPolicyIgnoredByAtomicGroup(int id);
+
  private:
   void CollectStatistics();
   void ScheduleUpdate(base::TimeDelta delay);

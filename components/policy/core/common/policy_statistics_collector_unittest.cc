@@ -66,6 +66,7 @@ class TestPolicyStatisticsCollector : public PolicyStatisticsCollector {
                                   task_runner) {}
 
   MOCK_METHOD1(RecordPolicyUse, void(int));
+  MOCK_METHOD1(RecordPolicyIgnoredByAtomicGroup, void(int));
 };
 
 }  // namespace
@@ -110,6 +111,12 @@ class PolicyStatisticsCollectorTest : public testing::Test {
     policy_map_.Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                     POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
                     nullptr);
+  }
+
+  void SetPolicyIgnoredByAtomicGroup(const std::string& name) {
+    SetPolicy(name);
+    auto* policy = policy_map_.GetMutable(name);
+    policy->SetIgnoredByPolicyAtomicGroup();
   }
 
   base::TimeDelta GetFirstDelay() const {
@@ -181,6 +188,19 @@ TEST_F(PolicyStatisticsCollectorTest, MultiplePolicies) {
 
   EXPECT_CALL(*policy_statistics_collector_, RecordPolicyUse(kTestPolicy1Id));
   EXPECT_CALL(*policy_statistics_collector_, RecordPolicyUse(kTestPolicy2Id));
+
+  policy_statistics_collector_->Initialize();
+  EXPECT_EQ(1u, task_runner_->NumPendingTasks());
+}
+
+TEST_F(PolicyStatisticsCollectorTest, PolicyIgnoredByAtomicGroup) {
+  SetPolicyIgnoredByAtomicGroup(kTestPolicy1);
+
+  prefs_.SetInt64(policy_prefs::kLastPolicyStatisticsUpdate,
+                  (base::Time::Now() - update_delay_).ToInternalValue());
+
+  EXPECT_CALL(*policy_statistics_collector_,
+              RecordPolicyIgnoredByAtomicGroup(kTestPolicy1Id));
 
   policy_statistics_collector_->Initialize();
   EXPECT_EQ(1u, task_runner_->NumPendingTasks());
