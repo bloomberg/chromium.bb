@@ -24,6 +24,7 @@ class AccountMigrationWelcomeDialog : public SystemWebDialogDelegate {
   ~AccountMigrationWelcomeDialog() override;
 
   // ui::SystemWebDialogDelegate overrides.
+  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
   bool ShouldShowDialogTitle() const override;
