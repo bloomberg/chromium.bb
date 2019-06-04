@@ -150,7 +150,7 @@ double HostZoomMapImpl::GetZoomLevelForHost(const std::string& host) const {
 }
 
 bool HostZoomMapImpl::HasZoomLevel(const std::string& scheme,
-                                   const std::string& host) const {
+                                   const std::string& host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto scheme_iterator(scheme_host_zoom_levels_.find(scheme));
 
@@ -162,9 +162,8 @@ bool HostZoomMapImpl::HasZoomLevel(const std::string& scheme,
   return base::ContainsKey(zoom_levels, host);
 }
 
-double HostZoomMapImpl::GetZoomLevelForHostAndScheme(
-    const std::string& scheme,
-    const std::string& host) const {
+double HostZoomMapImpl::GetZoomLevelForHostAndScheme(const std::string& scheme,
+                                                     const std::string& host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto scheme_iterator(scheme_host_zoom_levels_.find(scheme));
   if (scheme_iterator != scheme_host_zoom_levels_.end()) {
@@ -176,7 +175,7 @@ double HostZoomMapImpl::GetZoomLevelForHostAndScheme(
   return GetZoomLevelForHost(host);
 }
 
-HostZoomMap::ZoomLevelVector HostZoomMapImpl::GetAllZoomLevels() const {
+HostZoomMap::ZoomLevelVector HostZoomMapImpl::GetAllZoomLevels() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   HostZoomMap::ZoomLevelVector result;
   result.reserve(host_zoom_levels_.size() + scheme_host_zoom_levels_.size());
@@ -266,7 +265,7 @@ void HostZoomMapImpl::SetZoomLevelForHostAndScheme(const std::string& scheme,
   zoom_level_changed_callbacks_.Notify(change);
 }
 
-double HostZoomMapImpl::GetDefaultZoomLevel() const {
+double HostZoomMapImpl::GetDefaultZoomLevel() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return default_zoom_level_;
 }
@@ -341,7 +340,7 @@ HostZoomMapImpl::AddZoomLevelChangedCallback(
 }
 
 double HostZoomMapImpl::GetZoomLevelForWebContents(
-    WebContentsImpl* web_contents_impl) const {
+    WebContentsImpl* web_contents_impl) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int render_process_id =
       web_contents_impl->GetRenderViewHost()->GetProcess()->GetID();
@@ -432,7 +431,7 @@ void HostZoomMapImpl::ClearPageScaleFactorIsOneForView(int render_process_id,
 }
 
 bool HostZoomMapImpl::UsesTemporaryZoomLevel(int render_process_id,
-                                             int render_view_id) const {
+                                             int render_view_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderViewKey key(render_process_id, render_view_id);
   return base::ContainsKey(temporary_zoom_levels_, key);
@@ -469,7 +468,7 @@ void HostZoomMapImpl::SetTemporaryZoomLevel(int render_process_id,
 
 double HostZoomMapImpl::GetZoomLevelForView(const GURL& url,
                                             int render_process_id,
-                                            int render_view_id) const {
+                                            int render_view_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderViewKey key(render_process_id, render_view_id);
 

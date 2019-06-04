@@ -40,7 +40,7 @@ class TestIframeSource : public IframeSource {
   void set_origin(std::string origin) { origin_ = origin; }
 
  protected:
-  std::string GetSource() const override { return "test"; }
+  std::string GetSource() override { return "test"; }
 
   bool ServesPath(const std::string& path) const override {
     return path == "/valid.html" || path == "/valid.js";

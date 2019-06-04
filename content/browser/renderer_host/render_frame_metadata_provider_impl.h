@@ -42,7 +42,7 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
   // submissions.
   void ReportAllFrameSubmissionsForTesting(bool enabled) override;
 
-  const cc::RenderFrameMetadata& LastRenderFrameMetadata() const override;
+  const cc::RenderFrameMetadata& LastRenderFrameMetadata() override;
 
  private:
   friend class FakeRenderWidgetHostViewAura;

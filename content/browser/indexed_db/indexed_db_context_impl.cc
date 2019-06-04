@@ -431,7 +431,7 @@ std::vector<base::FilePath> IndexedDBContextImpl::GetStoragePaths(
 }
 
 base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
-    const Origin& origin) const {
+    const Origin& origin) {
   return GetLevelDBPath(origin);
 }
 
@@ -626,7 +626,7 @@ std::set<Origin>* IndexedDBContextImpl::GetOriginSet() {
   return origin_set_.get();
 }
 
-base::SequencedTaskRunner* IndexedDBContextImpl::TaskRunner() const {
+base::SequencedTaskRunner* IndexedDBContextImpl::TaskRunner() {
   DCHECK(task_runner_.get());
   return task_runner_.get();
 }

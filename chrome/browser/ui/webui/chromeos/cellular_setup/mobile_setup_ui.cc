@@ -175,16 +175,14 @@ class MobileSetupUIHTMLSource : public content::URLDataSource {
   ~MobileSetupUIHTMLSource() override {}
 
   // content::URLDataSource implementation.
-  std::string GetSource() const override;
+  std::string GetSource() override;
   void StartDataRequest(
       const std::string& path,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
-  std::string GetMimeType(const std::string&) const override {
-    return "text/html";
-  }
-  bool ShouldAddContentSecurityPolicy() const override { return false; }
-  bool AllowCaching() const override {
+  std::string GetMimeType(const std::string&) override { return "text/html"; }
+  bool ShouldAddContentSecurityPolicy() override { return false; }
+  bool AllowCaching() override {
     // Should not be cached to reflect dynamically-generated contents that may
     // depend on current settings.
     return false;
@@ -266,7 +264,7 @@ class MobileSetupHandler : public content::WebUIMessageHandler,
 
 MobileSetupUIHTMLSource::MobileSetupUIHTMLSource() : weak_ptr_factory_(this) {}
 
-std::string MobileSetupUIHTMLSource::GetSource() const {
+std::string MobileSetupUIHTMLSource::GetSource() {
   return chrome::kChromeUIMobileSetupHost;
 }
 

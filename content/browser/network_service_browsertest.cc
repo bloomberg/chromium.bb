@@ -105,7 +105,7 @@ class TestWebUIDataSource : public URLDataSource {
   TestWebUIDataSource() {}
   ~TestWebUIDataSource() override {}
 
-  std::string GetSource() const override { return "webui"; }
+  std::string GetSource() override { return "webui"; }
 
   void StartDataRequest(
       const std::string& path,
@@ -117,7 +117,7 @@ class TestWebUIDataSource : public URLDataSource {
     callback.Run(response.get());
   }
 
-  std::string GetMimeType(const std::string& path) const override {
+  std::string GetMimeType(const std::string& path) override {
     return "text/html";
   }
 

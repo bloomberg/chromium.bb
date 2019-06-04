@@ -83,7 +83,7 @@ class NetInternalsMessageHandler
   void RegisterMessages() override;
 
  private:
-  network::mojom::NetworkContext* GetNetworkContext() const;
+  network::mojom::NetworkContext* GetNetworkContext();
 
   // Calls g_browser.receive in the renderer, passing in |command| and |arg|.
   // If the renderer is displaying a log file, the message will be ignored.
@@ -137,7 +137,7 @@ class NetInternalsMessageHandler
                                       bool succeeded);
 #endif
 
-  const content::WebUI* web_ui_;
+  content::WebUI* web_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(NetInternalsMessageHandler);
 };
@@ -503,8 +503,8 @@ void NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted(
 }
 #endif  // defined(OS_CHROMEOS)
 
-network::mojom::NetworkContext* NetInternalsMessageHandler::GetNetworkContext()
-    const {
+network::mojom::NetworkContext*
+NetInternalsMessageHandler::GetNetworkContext() {
   return content::BrowserContext::GetDefaultStoragePartition(
              web_ui_->GetWebContents()->GetBrowserContext())
       ->GetNetworkContext();

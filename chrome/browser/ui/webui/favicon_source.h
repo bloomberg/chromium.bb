@@ -61,17 +61,17 @@ class FaviconSource : public content::URLDataSource {
   ~FaviconSource() override;
 
   // content::URLDataSource implementation.
-  std::string GetSource() const override;
+  std::string GetSource() override;
   void StartDataRequest(
       const std::string& path,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
-  std::string GetMimeType(const std::string&) const override;
-  bool AllowCaching() const override;
-  bool ShouldReplaceExistingSource() const override;
+  std::string GetMimeType(const std::string&) override;
+  bool AllowCaching() override;
+  bool ShouldReplaceExistingSource() override;
   bool ShouldServiceRequest(const GURL& url,
                             content::ResourceContext* resource_context,
-                            int render_process_id) const override;
+                            int render_process_id) override;
 
  protected:
   struct IconRequest {

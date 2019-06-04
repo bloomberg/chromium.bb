@@ -401,7 +401,7 @@ void ChromeSSLHostStateDelegate::HostRanInsecureContent(
 bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
     const std::string& host,
     int child_id,
-    InsecureContentType content_type) const {
+    InsecureContentType content_type) {
   auto entry = BrokenHostEntry(host, child_id);
   switch (content_type) {
     case MIXED_CONTENT:
@@ -424,8 +424,7 @@ void ChromeSSLHostStateDelegate::RevokeUserAllowExceptions(
                                      std::string(), nullptr);
 }
 
-bool ChromeSSLHostStateDelegate::HasAllowException(
-    const std::string& host) const {
+bool ChromeSSLHostStateDelegate::HasAllowException(const std::string& host) {
   GURL url = GetSecureGURLForHost(host);
   const ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURLNoWildcard(url);

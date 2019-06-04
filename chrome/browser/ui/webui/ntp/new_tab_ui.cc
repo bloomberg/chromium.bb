@@ -169,7 +169,7 @@ NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
     : profile_(profile) {
 }
 
-std::string NewTabUI::NewTabHTMLSource::GetSource() const {
+std::string NewTabUI::NewTabHTMLSource::GetSource() {
   return chrome::kChromeUINewTabHost;
 }
 
@@ -199,35 +199,31 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
   callback.Run(html_bytes.get());
 }
 
-std::string NewTabUI::NewTabHTMLSource::GetMimeType(const std::string& resource)
-    const {
+std::string NewTabUI::NewTabHTMLSource::GetMimeType(
+    const std::string& resource) {
   return "text/html";
 }
 
-bool NewTabUI::NewTabHTMLSource::ShouldReplaceExistingSource() const {
+bool NewTabUI::NewTabHTMLSource::ShouldReplaceExistingSource() {
   return false;
 }
 
-std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyScriptSrc()
-    const {
+std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyScriptSrc() {
   // 'unsafe-inline' and google resources are added to script-src.
   return "script-src chrome://resources 'self' 'unsafe-eval' 'unsafe-inline' "
       "*.google.com *.gstatic.com;";
 }
 
-std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyStyleSrc()
-    const {
+std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyStyleSrc() {
   return "style-src 'self' chrome://resources 'unsafe-inline' chrome://theme;";
 }
 
-std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyImgSrc()
-    const {
+std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyImgSrc() {
   return "img-src chrome-search://thumb chrome-search://thumb2 "
       "chrome-search://theme chrome://theme data:;";
 }
 
-std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyChildSrc()
-    const {
+std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyChildSrc() {
   return "child-src chrome-search://most-visited;";
 }
 

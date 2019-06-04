@@ -26,14 +26,14 @@ class ImageSource : public content::URLDataSource {
   ~ImageSource() override;
 
   // content::URLDataSource implementation.
-  std::string GetSource() const override;
+  std::string GetSource() override;
   void StartDataRequest(
       const std::string& path,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& got_data_callback)
       override;
 
-  std::string GetMimeType(const std::string& path) const override;
+  std::string GetMimeType(const std::string& path) override;
 
  private:
   // Continuation from StartDataRequest().

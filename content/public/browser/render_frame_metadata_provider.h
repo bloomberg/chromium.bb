@@ -52,7 +52,7 @@ class CONTENT_EXPORT RenderFrameMetadataProvider {
   // submissions.
   virtual void ReportAllFrameSubmissionsForTesting(bool enabled) = 0;
 
-  virtual const cc::RenderFrameMetadata& LastRenderFrameMetadata() const = 0;
+  virtual const cc::RenderFrameMetadata& LastRenderFrameMetadata() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderFrameMetadataProvider);

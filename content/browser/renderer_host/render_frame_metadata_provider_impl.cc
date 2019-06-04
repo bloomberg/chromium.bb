@@ -53,7 +53,7 @@ void RenderFrameMetadataProviderImpl::ReportAllFrameSubmissionsForTesting(
 }
 
 const cc::RenderFrameMetadata&
-RenderFrameMetadataProviderImpl::LastRenderFrameMetadata() const {
+RenderFrameMetadataProviderImpl::LastRenderFrameMetadata() {
   return last_render_frame_metadata_;
 }
 

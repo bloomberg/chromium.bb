@@ -25,12 +25,12 @@ void GpuDataManagerImpl::BlacklistWebGLForTesting() {
   private_->BlacklistWebGLForTesting();
 }
 
-gpu::GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
+gpu::GPUInfo GpuDataManagerImpl::GetGPUInfo() {
   base::AutoLock auto_lock(lock_);
   return private_->GetGPUInfo();
 }
 
-bool GpuDataManagerImpl::GpuAccessAllowed(std::string* reason) const {
+bool GpuDataManagerImpl::GpuAccessAllowed(std::string* reason) {
   base::AutoLock auto_lock(lock_);
   return private_->GpuAccessAllowed(reason);
 }
@@ -40,7 +40,7 @@ void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded() {
   private_->RequestCompleteGpuInfoIfNeeded();
 }
 
-bool GpuDataManagerImpl::IsEssentialGpuInfoAvailable() const {
+bool GpuDataManagerImpl::IsEssentialGpuInfoAvailable() {
   base::AutoLock auto_lock(lock_);
   return private_->IsEssentialGpuInfoAvailable();
 }
@@ -57,7 +57,7 @@ gpu::GpuFeatureStatus GpuDataManagerImpl::GetFeatureStatus(
 }
 
 void GpuDataManagerImpl::RequestVideoMemoryUsageStatsUpdate(
-    VideoMemoryUsageStatsCallback callback) const {
+    VideoMemoryUsageStatsCallback callback) {
   base::AutoLock auto_lock(lock_);
   private_->RequestVideoMemoryUsageStatsUpdate(std::move(callback));
 }
@@ -79,13 +79,13 @@ void GpuDataManagerImpl::DisableHardwareAcceleration() {
   private_->DisableHardwareAcceleration();
 }
 
-bool GpuDataManagerImpl::HardwareAccelerationEnabled() const {
+bool GpuDataManagerImpl::HardwareAccelerationEnabled() {
   base::AutoLock auto_lock(lock_);
   return private_->HardwareAccelerationEnabled();
 }
 
 void GpuDataManagerImpl::AppendGpuCommandLine(base::CommandLine* command_line,
-                                              GpuProcessKind kind) const {
+                                              GpuProcessKind kind) {
   base::AutoLock auto_lock(lock_);
   private_->AppendGpuCommandLine(command_line, kind);
 }

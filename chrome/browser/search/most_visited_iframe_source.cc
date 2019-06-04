@@ -50,7 +50,7 @@ MostVisitedIframeSource::MostVisitedIframeSource() = default;
 
 MostVisitedIframeSource::~MostVisitedIframeSource() = default;
 
-std::string MostVisitedIframeSource::GetSource() const {
+std::string MostVisitedIframeSource::GetSource() {
   return chrome::kChromeSearchMostVisitedHost;
 }
 

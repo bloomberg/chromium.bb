@@ -344,7 +344,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetAudioMuted(bool mute) override;
   bool IsCurrentlyAudible() override;
   bool IsConnectedToBluetoothDevice() override;
-  bool IsConnectedToSerialPort() const override;
+  bool IsConnectedToSerialPort() override;
   bool HasPictureInPictureVideo() override;
   bool IsCrashed() override;
   void SetIsCrashed(base::TerminationStatus status, int error_code) override;

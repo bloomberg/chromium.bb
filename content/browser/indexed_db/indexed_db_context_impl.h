@@ -86,13 +86,12 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   int64_t GetOriginDiskUsage(const url::Origin& origin);
 
   // IndexedDBContext implementation:
-  base::SequencedTaskRunner* TaskRunner() const override;
+  base::SequencedTaskRunner* TaskRunner() override;
   std::vector<StorageUsageInfo> GetAllOriginsInfo() override;
   void DeleteForOrigin(const url::Origin& origin) override;
   void CopyOriginData(const url::Origin& origin,
                       IndexedDBContext* dest_context) override;
-  base::FilePath GetFilePathForTesting(
-      const url::Origin& origin) const override;
+  base::FilePath GetFilePathForTesting(const url::Origin& origin) override;
   void ResetCachesForTesting() override;
   void SetForceKeepSessionState() override;
 

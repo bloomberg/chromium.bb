@@ -476,7 +476,7 @@ class WebContents : public PageNavigator,
 
   // Indicates whether any frame in the WebContents is connected to a serial
   // port.
-  virtual bool IsConnectedToSerialPort() const = 0;
+  virtual bool IsConnectedToSerialPort() = 0;
 
   // Indicates whether a video is in Picture-in-Picture for |this|.
   virtual bool HasPictureInPictureVideo() = 0;

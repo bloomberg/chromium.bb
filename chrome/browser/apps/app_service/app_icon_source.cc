@@ -52,7 +52,7 @@ AppIconSource::AppIconSource(Profile* profile) : profile_(profile) {}
 
 AppIconSource::~AppIconSource() = default;
 
-std::string AppIconSource::GetSource() const {
+std::string AppIconSource::GetSource() {
   return chrome::kChromeUIAppIconHost;
 }
 
@@ -95,18 +95,18 @@ void AppIconSource::StartDataRequest(
       allow_placeholder_icon, base::BindOnce(&RunCallback, callback));
 }
 
-std::string AppIconSource::GetMimeType(const std::string&) const {
+std::string AppIconSource::GetMimeType(const std::string&) {
   // We need to explicitly return a mime type, otherwise if the user tries to
   // drag the image they get no extension.
   return "image/png";
 }
 
-bool AppIconSource::AllowCaching() const {
+bool AppIconSource::AllowCaching() {
   // Should not be cached as caching is performed by proxy.
   return false;
 }
 
-bool AppIconSource::ShouldReplaceExistingSource() const {
+bool AppIconSource::ShouldReplaceExistingSource() {
   // The source doesn't maintain its own state so there's no need to replace it.
   return false;
 }

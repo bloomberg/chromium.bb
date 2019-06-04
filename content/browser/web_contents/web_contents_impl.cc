@@ -1548,7 +1548,7 @@ bool WebContentsImpl::IsConnectedToBluetoothDevice() {
   return bluetooth_connected_device_count_ > 0;
 }
 
-bool WebContentsImpl::IsConnectedToSerialPort() const {
+bool WebContentsImpl::IsConnectedToSerialPort() {
   return serial_active_frame_count_ > 0;
 }
 

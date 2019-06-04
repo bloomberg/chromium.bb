@@ -46,12 +46,12 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
 
   // GpuDataManager implementation.
   void BlacklistWebGLForTesting() override;
-  gpu::GPUInfo GetGPUInfo() const override;
-  bool GpuAccessAllowed(std::string* reason) const override;
+  gpu::GPUInfo GetGPUInfo() override;
+  bool GpuAccessAllowed(std::string* reason) override;
   void RequestCompleteGpuInfoIfNeeded() override;
-  bool IsEssentialGpuInfoAvailable() const override;
+  bool IsEssentialGpuInfoAvailable() override;
   void RequestVideoMemoryUsageStatsUpdate(
-      VideoMemoryUsageStatsCallback callback) const override;
+      VideoMemoryUsageStatsCallback callback) override;
   // TODO(kbr): the threading model for the GpuDataManagerObservers is
   // not well defined, and it's impossible for callers to correctly
   // delete observers from anywhere except in one of the observer's
@@ -60,9 +60,9 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void AddObserver(GpuDataManagerObserver* observer) override;
   void RemoveObserver(GpuDataManagerObserver* observer) override;
   void DisableHardwareAcceleration() override;
-  bool HardwareAccelerationEnabled() const override;
+  bool HardwareAccelerationEnabled() override;
   void AppendGpuCommandLine(base::CommandLine* command_line,
-                            GpuProcessKind kind) const override;
+                            GpuProcessKind kind) override;
 
   void RequestGpuSupportedRuntimeVersion() const;
   bool GpuProcessStartAllowed() const;

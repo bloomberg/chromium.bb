@@ -30,14 +30,13 @@ class MockSSLHostStateDelegate : public SSLHostStateDelegate {
                               int child_id,
                               InsecureContentType content_type) override;
 
-  bool DidHostRunInsecureContent(
-      const std::string& host,
-      int child_id,
-      InsecureContentType content_type) const override;
+  bool DidHostRunInsecureContent(const std::string& host,
+                                 int child_id,
+                                 InsecureContentType content_type) override;
 
   void RevokeUserAllowExceptions(const std::string& host) override;
 
-  bool HasAllowException(const std::string& host) const override;
+  bool HasAllowException(const std::string& host) override;
 
  private:
   std::set<std::string> exceptions_;

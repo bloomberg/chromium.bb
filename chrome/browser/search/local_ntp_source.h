@@ -70,20 +70,20 @@ class LocalNtpSource : public content::URLDataSource,
   };
 
   // Overridden from content::URLDataSource:
-  std::string GetSource() const override;
+  std::string GetSource() override;
   void StartDataRequest(
       const std::string& path,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
-  std::string GetMimeType(const std::string& path) const override;
-  bool AllowCaching() const override;
+  std::string GetMimeType(const std::string& path) override;
+  bool AllowCaching() override;
   bool ShouldServiceRequest(const GURL& url,
                             content::ResourceContext* resource_context,
-                            int render_process_id) const override;
-  bool ShouldAddContentSecurityPolicy() const override;
+                            int render_process_id) override;
+  bool ShouldAddContentSecurityPolicy() override;
 
   // The Content Security Policy for the Local NTP.
-  std::string GetContentSecurityPolicy() const;
+  std::string GetContentSecurityPolicy();
 
   // Overridden from NtpBackgroundServiceObserver:
   void OnCollectionInfoAvailable() override;

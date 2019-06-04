@@ -514,7 +514,7 @@ PresentationServiceImpl::ScreenAvailabilityListenerImpl::
     ~ScreenAvailabilityListenerImpl() = default;
 
 GURL PresentationServiceImpl::ScreenAvailabilityListenerImpl::
-    GetAvailabilityUrl() const {
+    GetAvailabilityUrl() {
   return availability_url_;
 }
 

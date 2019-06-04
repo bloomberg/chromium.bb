@@ -163,7 +163,7 @@ void AddCpuInfoToFingerprint(Fingerprint::MachineCharacteristics* machine) {
 
 // Writes info about the machine's GPU into the |machine|.
 void AddGpuInfoToFingerprint(Fingerprint::MachineCharacteristics* machine,
-                             const content::GpuDataManager& gpu_data_manager) {
+                             content::GpuDataManager& gpu_data_manager) {
   if (!gpu_data_manager.IsEssentialGpuInfoAvailable())
     return;
 

@@ -275,7 +275,7 @@ NtpIconSource::NtpIconSource(Profile* profile)
 
 NtpIconSource::~NtpIconSource() = default;
 
-std::string NtpIconSource::GetSource() const {
+std::string NtpIconSource::GetSource() {
   return chrome::kChromeUINewTabIconHost;
 }
 
@@ -337,7 +337,7 @@ void NtpIconSource::StartDataRequest(
   }
 }
 
-std::string NtpIconSource::GetMimeType(const std::string&) const {
+std::string NtpIconSource::GetMimeType(const std::string&) {
   // NOTE: this may not always be correct for all possible types that this
   // source will serve. Seems to work fine, however.
   return "image/png";
@@ -346,7 +346,7 @@ std::string NtpIconSource::GetMimeType(const std::string&) const {
 bool NtpIconSource::ShouldServiceRequest(
     const GURL& url,
     content::ResourceContext* resource_context,
-    int render_process_id) const {
+    int render_process_id) {
   if (url.SchemeIs(chrome::kChromeSearchScheme)) {
     return InstantIOContext::ShouldServiceRequest(url, resource_context,
                                                   render_process_id);

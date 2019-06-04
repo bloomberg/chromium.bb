@@ -277,12 +277,11 @@ ExtensionsInternalsSource::ExtensionsInternalsSource(Profile* profile)
 
 ExtensionsInternalsSource::~ExtensionsInternalsSource() = default;
 
-std::string ExtensionsInternalsSource::GetSource() const {
+std::string ExtensionsInternalsSource::GetSource() {
   return chrome::kChromeUIExtensionsInternalsHost;
 }
 
-std::string ExtensionsInternalsSource::GetMimeType(
-    const std::string& path) const {
+std::string ExtensionsInternalsSource::GetMimeType(const std::string& path) {
   return "text/plain";
 }
 

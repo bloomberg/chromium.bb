@@ -18,8 +18,7 @@ IframeSource::IframeSource() = default;
 
 IframeSource::~IframeSource() = default;
 
-std::string IframeSource::GetMimeType(
-    const std::string& path_and_query) const {
+std::string IframeSource::GetMimeType(const std::string& path_and_query) {
   std::string path(GURL("chrome-search://host/" + path_and_query).path());
   if (base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII))
     return "application/javascript";
@@ -34,21 +33,21 @@ std::string IframeSource::GetMimeType(
   return std::string();
 }
 
-bool IframeSource::AllowCaching() const {
+bool IframeSource::AllowCaching() {
   return false;
 }
 
 bool IframeSource::ShouldServiceRequest(
     const GURL& url,
     content::ResourceContext* resource_context,
-    int render_process_id) const {
+    int render_process_id) {
   return InstantIOContext::ShouldServiceRequest(url, resource_context,
                                                 render_process_id) &&
          url.SchemeIs(chrome::kChromeSearchScheme) &&
          url.host_piece() == GetSource() && ServesPath(url.path());
 }
 
-bool IframeSource::ShouldDenyXFrameOptions() const {
+bool IframeSource::ShouldDenyXFrameOptions() {
   return false;
 }
 

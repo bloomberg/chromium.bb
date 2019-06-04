@@ -580,7 +580,7 @@ AboutUIHTMLSource::AboutUIHTMLSource(const std::string& source_name,
 
 AboutUIHTMLSource::~AboutUIHTMLSource() {}
 
-std::string AboutUIHTMLSource::GetSource() const {
+std::string AboutUIHTMLSource::GetSource() {
   return source_name_;
 }
 
@@ -640,7 +640,7 @@ void AboutUIHTMLSource::FinishDataRequest(
   callback.Run(base::RefCountedString::TakeString(&html_copy));
 }
 
-std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
+std::string AboutUIHTMLSource::GetMimeType(const std::string& path) {
   if (path == kCreditsJsPath     ||
 #if defined(OS_CHROMEOS)
       path == kKeyboardUtilsPath ||
@@ -652,7 +652,7 @@ std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
   return "text/html";
 }
 
-bool AboutUIHTMLSource::ShouldAddContentSecurityPolicy() const {
+bool AboutUIHTMLSource::ShouldAddContentSecurityPolicy() {
 #if defined(OS_CHROMEOS)
   if (source_name_ == chrome::kChromeUIOSCreditsHost ||
       source_name_ == chrome::kChromeUILinuxCreditsHost) {
@@ -663,7 +663,7 @@ bool AboutUIHTMLSource::ShouldAddContentSecurityPolicy() const {
 }
 
 std::string AboutUIHTMLSource::GetAccessControlAllowOriginForOrigin(
-    const std::string& origin) const {
+    const std::string& origin) {
 #if defined(OS_CHROMEOS)
   // Allow chrome://oobe to load chrome://terms via XHR.
   if (source_name_ == chrome::kChromeUITermsHost &&

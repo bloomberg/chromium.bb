@@ -28,7 +28,7 @@ class MostVisitedIframeSource : public IframeSource {
 
  private:
   // Overridden from IframeSource:
-  std::string GetSource() const override;
+  std::string GetSource() override;
 
   bool ServesPath(const std::string& path) const override;
 

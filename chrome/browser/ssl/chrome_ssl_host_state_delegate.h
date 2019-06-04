@@ -53,12 +53,11 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   void HostRanInsecureContent(const std::string& host,
                               int child_id,
                               InsecureContentType content_type) override;
-  bool DidHostRunInsecureContent(
-      const std::string& host,
-      int child_id,
-      InsecureContentType content_type) const override;
+  bool DidHostRunInsecureContent(const std::string& host,
+                                 int child_id,
+                                 InsecureContentType content_type) override;
   void RevokeUserAllowExceptions(const std::string& host) override;
-  bool HasAllowException(const std::string& host) const override;
+  bool HasAllowException(const std::string& host) override;
 
   // RevokeUserAllowExceptionsHard is the same as RevokeUserAllowExceptions but
   // additionally may close idle connections in the process. This should be used

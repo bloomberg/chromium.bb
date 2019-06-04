@@ -503,7 +503,7 @@ void PushMessagingServiceImpl::OnMessageDecryptionFailed(
 
 // GetEndpoint method ----------------------------------------------------------
 
-GURL PushMessagingServiceImpl::GetEndpoint(bool standard_protocol) const {
+GURL PushMessagingServiceImpl::GetEndpoint(bool standard_protocol) {
   return GURL(kPushMessagingGcmEndpoint);
 }
 

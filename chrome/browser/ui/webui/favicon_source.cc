@@ -93,7 +93,7 @@ FaviconSource::FaviconSource(Profile* profile)
 FaviconSource::~FaviconSource() {
 }
 
-std::string FaviconSource::GetSource() const {
+std::string FaviconSource::GetSource() {
   return chrome::kChromeUIFaviconHost;
 }
 
@@ -177,17 +177,17 @@ void FaviconSource::StartDataRequest(
   }
 }
 
-std::string FaviconSource::GetMimeType(const std::string&) const {
+std::string FaviconSource::GetMimeType(const std::string&) {
   // We need to explicitly return a mime type, otherwise if the user tries to
   // drag the image they get no extension.
   return "image/png";
 }
 
-bool FaviconSource::AllowCaching() const {
+bool FaviconSource::AllowCaching() {
   return false;
 }
 
-bool FaviconSource::ShouldReplaceExistingSource() const {
+bool FaviconSource::ShouldReplaceExistingSource() {
   // Leave the existing DataSource in place, otherwise we'll drop any pending
   // requests on the floor.
   return false;
@@ -196,7 +196,7 @@ bool FaviconSource::ShouldReplaceExistingSource() const {
 bool FaviconSource::ShouldServiceRequest(
     const GURL& url,
     content::ResourceContext* resource_context,
-    int render_process_id) const {
+    int render_process_id) {
   if (url.SchemeIs(chrome::kChromeSearchScheme)) {
     return InstantIOContext::ShouldServiceRequest(url, resource_context,
                                                   render_process_id);

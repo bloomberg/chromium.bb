@@ -53,64 +53,64 @@ void URLDataSource::GetSourceForURL(
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-URLDataSource::TaskRunnerForRequestPath(const std::string& path) const {
+URLDataSource::TaskRunnerForRequestPath(const std::string& path) {
   return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
 }
 
-bool URLDataSource::ShouldReplaceExistingSource() const {
+bool URLDataSource::ShouldReplaceExistingSource() {
   return true;
 }
 
-bool URLDataSource::AllowCaching() const {
+bool URLDataSource::AllowCaching() {
   return true;
 }
 
-bool URLDataSource::ShouldAddContentSecurityPolicy() const {
+bool URLDataSource::ShouldAddContentSecurityPolicy() {
   return true;
 }
 
-std::string URLDataSource::GetContentSecurityPolicyScriptSrc() const {
+std::string URLDataSource::GetContentSecurityPolicyScriptSrc() {
   // Note: Do not add 'unsafe-eval' here. Instead override CSP for the
   // specific pages that need it, see context http://crbug.com/525224.
   return "script-src chrome://resources 'self';";
 }
 
-std::string URLDataSource::GetContentSecurityPolicyObjectSrc() const {
+std::string URLDataSource::GetContentSecurityPolicyObjectSrc() {
   return "object-src 'none';";
 }
 
-std::string URLDataSource::GetContentSecurityPolicyChildSrc() const {
+std::string URLDataSource::GetContentSecurityPolicyChildSrc() {
   return "child-src 'none';";
 }
 
-std::string URLDataSource::GetContentSecurityPolicyStyleSrc() const {
+std::string URLDataSource::GetContentSecurityPolicyStyleSrc() {
   return std::string();
 }
 
-std::string URLDataSource::GetContentSecurityPolicyImgSrc() const {
+std::string URLDataSource::GetContentSecurityPolicyImgSrc() {
   return std::string();
 }
 
-bool URLDataSource::ShouldDenyXFrameOptions() const {
+bool URLDataSource::ShouldDenyXFrameOptions() {
   return true;
 }
 
 bool URLDataSource::ShouldServiceRequest(const GURL& url,
                                          ResourceContext* resource_context,
-                                         int render_process_id) const {
+                                         int render_process_id) {
   return url.SchemeIs(kChromeDevToolsScheme) || url.SchemeIs(kChromeUIScheme);
 }
 
-bool URLDataSource::ShouldServeMimeTypeAsContentTypeHeader() const {
+bool URLDataSource::ShouldServeMimeTypeAsContentTypeHeader() {
   return false;
 }
 
 std::string URLDataSource::GetAccessControlAllowOriginForOrigin(
-    const std::string& origin) const {
+    const std::string& origin) {
   return std::string();
 }
 
-bool URLDataSource::IsGzipped(const std::string& path) const {
+bool URLDataSource::IsGzipped(const std::string& path) {
   return false;
 }
 

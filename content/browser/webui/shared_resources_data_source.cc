@@ -273,7 +273,7 @@ SharedResourcesDataSource::SharedResourcesDataSource() {
 SharedResourcesDataSource::~SharedResourcesDataSource() {
 }
 
-std::string SharedResourcesDataSource::GetSource() const {
+std::string SharedResourcesDataSource::GetSource() {
   return kChromeUIResourcesHost;
 }
 
@@ -314,14 +314,13 @@ void SharedResourcesDataSource::StartDataRequest(
   callback.Run(bytes.get());
 }
 
-bool SharedResourcesDataSource::AllowCaching() const {
+bool SharedResourcesDataSource::AllowCaching() {
   // Should not be cached to reflect dynamically-generated contents that may
   // depend on the current locale.
   return false;
 }
 
-std::string SharedResourcesDataSource::GetMimeType(
-    const std::string& path) const {
+std::string SharedResourcesDataSource::GetMimeType(const std::string& path) {
   if (path.empty())
     return "text/html";
 
@@ -361,13 +360,12 @@ std::string SharedResourcesDataSource::GetMimeType(
   return "text/plain";
 }
 
-bool SharedResourcesDataSource::ShouldServeMimeTypeAsContentTypeHeader() const {
+bool SharedResourcesDataSource::ShouldServeMimeTypeAsContentTypeHeader() {
   return true;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-SharedResourcesDataSource::TaskRunnerForRequestPath(
-    const std::string& path) const {
+SharedResourcesDataSource::TaskRunnerForRequestPath(const std::string& path) {
   // Since WebContentsGetter can only be run on the UI thread, always return
   // a task runner if we need to choose between Polymer resources based on the
   // WebContents that is requesting the resource.
@@ -388,9 +386,8 @@ SharedResourcesDataSource::TaskRunnerForRequestPath(
   return nullptr;
 }
 
-std::string
-SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
-    const std::string& origin) const {
+std::string SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
+    const std::string& origin) {
   // For now we give access only for "chrome://*" origins.
   // According to CORS spec, Access-Control-Allow-Origin header doesn't support
   // wildcards, so we need to set its value explicitly by passing the |origin|
@@ -404,7 +401,7 @@ SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
   return origin;
 }
 
-bool SharedResourcesDataSource::IsGzipped(const std::string& path) const {
+bool SharedResourcesDataSource::IsGzipped(const std::string& path) {
   return GetContentClient()->IsDataResourceGzipped(GetIdrForPath(path));
 }
 

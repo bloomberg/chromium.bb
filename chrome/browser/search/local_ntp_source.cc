@@ -817,7 +817,7 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
 
 LocalNtpSource::~LocalNtpSource() = default;
 
-std::string LocalNtpSource::GetSource() const {
+std::string LocalNtpSource::GetSource() {
   return chrome::kChromeSearchLocalNtpHost;
 }
 
@@ -1053,8 +1053,7 @@ void LocalNtpSource::StartDataRequest(
   callback.Run(nullptr);
 }
 
-std::string LocalNtpSource::GetMimeType(
-    const std::string& path) const {
+std::string LocalNtpSource::GetMimeType(const std::string& path) {
   const std::string stripped_path = StripParameters(path);
   for (size_t i = 0; i < base::size(kResources); ++i) {
     if (stripped_path == kResources[i].filename)
@@ -1063,7 +1062,7 @@ std::string LocalNtpSource::GetMimeType(
   return std::string();
 }
 
-bool LocalNtpSource::AllowCaching() const {
+bool LocalNtpSource::AllowCaching() {
   // Some resources served by LocalNtpSource, i.e. config.js, are dynamically
   // generated and could differ on each access. To avoid using old cached
   // content on reload, disallow caching here. Otherwise, it fails to reflect
@@ -1074,20 +1073,20 @@ bool LocalNtpSource::AllowCaching() const {
 bool LocalNtpSource::ShouldServiceRequest(
     const GURL& url,
     content::ResourceContext* resource_context,
-    int render_process_id) const {
+    int render_process_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   return ShouldServiceRequestIOThread(url, resource_context, render_process_id);
 }
 
-bool LocalNtpSource::ShouldAddContentSecurityPolicy() const {
+bool LocalNtpSource::ShouldAddContentSecurityPolicy() {
   // The Content Security Policy is served as a meta tag in local NTP html.
   // We disable the HTTP Header version here to avoid a conflicting policy. See
   // GetContentSecurityPolicy.
   return false;
 }
 
-std::string LocalNtpSource::GetContentSecurityPolicy() const {
+std::string LocalNtpSource::GetContentSecurityPolicy() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if !defined(GOOGLE_CHROME_BUILD)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

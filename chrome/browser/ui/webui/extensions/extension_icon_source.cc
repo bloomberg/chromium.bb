@@ -102,11 +102,11 @@ SkBitmap* ExtensionIconSource::LoadImageByResourceId(int resource_id) {
   return ToBitmap(data, contents.length());
 }
 
-std::string ExtensionIconSource::GetSource() const {
+std::string ExtensionIconSource::GetSource() {
   return chrome::kChromeUIExtensionIconHost;
 }
 
-std::string ExtensionIconSource::GetMimeType(const std::string&) const {
+std::string ExtensionIconSource::GetMimeType(const std::string&) {
   // We need to explicitly return a mime type, otherwise if the user tries to
   // drag the image they get no extension.
   return "image/png";
@@ -139,7 +139,7 @@ void ExtensionIconSource::StartDataRequest(
   }
 }
 
-bool ExtensionIconSource::AllowCaching() const {
+bool ExtensionIconSource::AllowCaching() {
   // Should not be cached to reflect the latest contents that may be updated by
   // Extensions.
   return false;

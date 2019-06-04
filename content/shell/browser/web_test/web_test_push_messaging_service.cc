@@ -49,7 +49,7 @@ WebTestPushMessagingService::WebTestPushMessagingService()
 
 WebTestPushMessagingService::~WebTestPushMessagingService() {}
 
-GURL WebTestPushMessagingService::GetEndpoint(bool standard_protocol) const {
+GURL WebTestPushMessagingService::GetEndpoint(bool standard_protocol) {
   return GURL(standard_protocol ? "https://example.com/StandardizedEndpoint/"
                                 : "https://example.com/LayoutTestEndpoint/");
 }

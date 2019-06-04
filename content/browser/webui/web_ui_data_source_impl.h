@@ -50,7 +50,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
-  std::string GetSource() const override;
+  std::string GetSource() override;
 
   // URLDataSourceImpl:
   const ui::TemplateReplacements* GetReplacements() const override;
