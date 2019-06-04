@@ -50,12 +50,12 @@ AutofillManager.AddressEntry;
 class AutofillManagerImpl {
   /** @override */
   addAddressListChangedListener(listener) {
-    chrome.autofillPrivate.onPersonalDataChanged.addListener(listener);
+    chrome.autofillPrivate.onAddressListChanged.addListener(listener);
   }
 
   /** @override */
   removeAddressListChangedListener(listener) {
-    chrome.autofillPrivate.onPersonalDataChanged.removeListener(listener);
+    chrome.autofillPrivate.onAddressListChanged.removeListener(listener);
   }
 
   /** @override */

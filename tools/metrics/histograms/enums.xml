@@ -17717,9 +17717,8 @@ Called by update_net_error_codes.py.-->
   <int value="25" label="AUDIO_ON_DEVICES_CHANGED"/>
   <int value="26" label="AUDIO_ON_LEVEL_CHANGED"/>
   <int value="27" label="AUDIO_ON_MUTE_CHANGED"/>
-  <int value="28" label="AUTOFILL_PRIVATE_ON_ADDRESS_LIST_CHANGED_DEPRECATED"/>
-  <int value="29"
-      label="AUTOFILL_PRIVATE_ON_CREDIT_CARD_LIST_CHANGED_DEPRECATED"/>
+  <int value="28" label="AUTOFILL_PRIVATE_ON_ADDRESS_LIST_CHANGED"/>
+  <int value="29" label="AUTOFILL_PRIVATE_ON_CREDIT_CARD_LIST_CHANGED"/>
   <int value="30" label="AUTOMATION_INTERNAL_ON_ACCESSIBILITY_EVENT"/>
   <int value="31" label="AUTOMATION_INTERNAL_ON_ACCESSIBILITY_TREE_DESTROYED"/>
   <int value="32" label="BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_VALUE_CHANGED"/>
@@ -18145,7 +18144,6 @@ Called by update_net_error_codes.py.-->
   <int value="436" label="MIME_HANDLER_PRIVATE_SAVE"/>
   <int value="437" label="RUNTIME_ON_CONNECT_NATIVE"/>
   <int value="438" label="ACTION_ON_CLICKED"/>
-  <int value="439" label="AUTOFILL_PRIVATE_ON_PERSONAL_DATA_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
