@@ -666,6 +666,7 @@
         <item name="android:layout_width">24dp</item>
         <item name="android:background">@android:color/transparent</item>
         <item name="android:clickable">false</item>
+        <item name="android:importantForAccessibility">no</item>
     </style>
     <style name="TextAppearance.BottomToolbarLabel" parent="TextAppearance.RobotoMediumStyle">
         <item name="android:textColor">@color/default_text_color_dark_secondary</item>
