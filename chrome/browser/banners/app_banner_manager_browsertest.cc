@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_manager_browsertest_base.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
@@ -22,10 +21,6 @@
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_command_controller.h"
-#include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 
@@ -36,9 +31,7 @@ using State = AppBannerManager::State;
 // Browser tests for web app banners.
 // NOTE: this test relies on service workers; failures and flakiness may be due
 // to changes in SW code.
-class AppBannerManagerTest
-    : public AppBannerManager,
-      public content::WebContentsUserData<AppBannerManagerTest> {
+class AppBannerManagerTest : public AppBannerManager {
  public:
   explicit AppBannerManagerTest(content::WebContents* web_contents)
       : AppBannerManager(web_contents) {}
@@ -75,19 +68,7 @@ class AppBannerManagerTest
     on_banner_prompt_reply_ = on_banner_prompt_reply;
   }
 
-  void AwaitAppInstall() {
-    base::RunLoop loop;
-    on_install_ = loop.QuitClosure();
-    loop.Run();
-  }
-
  protected:
-  void OnInstall(bool is_native, blink::WebDisplayMode display) override {
-    AppBannerManager::OnInstall(is_native, display);
-    if (on_install_)
-      std::move(on_install_).Run();
-  }
-
   // All calls to RequestAppBanner should terminate in one of Stop() (not
   // showing banner), UpdateState(State::PENDING_ENGAGEMENT) (waiting for
   // sufficient engagement), or ShowBannerUi(). Override these methods to
@@ -150,7 +131,6 @@ class AppBannerManagerTest
 
  private:
   base::Closure on_done_;
-  base::OnceClosure on_install_;
 
   // If non-null, |on_banner_prompt_reply_| will be invoked from
   // OnBannerPromptReply.
@@ -184,17 +164,6 @@ class AppBannerManagerBrowserTest : public AppBannerManagerBrowserTestBase {
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
     return std::make_unique<AppBannerManagerTest>(web_contents);
-  }
-
-  AppBannerManagerTest* ReplaceAppBannerManager(Browser* browser) {
-    content::WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-    auto banner_manager = std::make_unique<AppBannerManagerTest>(web_contents);
-    AppBannerManagerTest* result = banner_manager.get();
-    banner_manager->MigrateObserverListForTesting(web_contents);
-    web_contents->SetUserData(AppBannerManagerDesktop::UserDataKey(),
-                              std::move(banner_manager));
-    return result;
   }
 
   void RunBannerTest(
@@ -509,59 +478,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerReprompt) {
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 1);
   histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
                                 SHOWING_WEB_APP_BANNER, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
-                       WebAppBannerPromptAfterUserMenuInstall) {
-  AppBannerManagerTest* manager = ReplaceAppBannerManager(browser());
-  base::HistogramTester histograms;
-
-  SiteEngagementService* service =
-      SiteEngagementService::Get(browser()->profile());
-  GURL test_url = GetBannerURLWithAction("stash_event");
-  service->ResetBaseScoreForURL(test_url, 10);
-
-  // Navigate to page and get the pipeline started.
-  TriggerBannerFlowWithNavigation(browser(), manager, test_url,
-                                  false /* expected_will_show */,
-                                  State::PENDING_PROMPT);
-  EXPECT_TRUE(manager->IsAppBannerServiceBoundForTesting());
-
-  // Install the app via the menu instead of the banner.
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
-  browser()->command_controller()->ExecuteCommand(IDC_INSTALL_PWA);
-  manager->AwaitAppInstall();
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
-
-  EXPECT_FALSE(manager->IsAppBannerServiceBoundForTesting());
-}
-
-IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
-                       WebAppBannerPromptAfterUserOmniboxInstall) {
-  AppBannerManagerTest* manager = ReplaceAppBannerManager(browser());
-  base::HistogramTester histograms;
-
-  SiteEngagementService* service =
-      SiteEngagementService::Get(browser()->profile());
-  GURL test_url = GetBannerURLWithAction("stash_event");
-  service->ResetBaseScoreForURL(test_url, 10);
-
-  // Navigate to page and get the pipeline started.
-  TriggerBannerFlowWithNavigation(browser(), manager, test_url,
-                                  false /* expected_will_show */,
-                                  State::PENDING_PROMPT);
-  EXPECT_TRUE(manager->IsAppBannerServiceBoundForTesting());
-
-  // Install the app via the omnibox install icon instead of the banner.
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
-  browser()
-      ->window()
-      ->GetOmniboxPageActionIconContainer()
-      ->ExecutePageActionIconForTesting(PageActionIconType::kPwaInstall);
-  manager->AwaitAppInstall();
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
-
-  EXPECT_FALSE(manager->IsAppBannerServiceBoundForTesting());
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, PreferRelatedAppUnknown) {

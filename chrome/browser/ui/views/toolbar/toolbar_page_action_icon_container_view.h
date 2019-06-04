@@ -39,7 +39,6 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
 
   // PageActionIconContainer:
   void UpdatePageActionIcon(PageActionIconType icon_type) override;
-  void ExecutePageActionIconForTesting(PageActionIconType icon_type) override;
 
   // PageActionIconView::Delegate:
   SkColor GetPageActionInkDropColor() const override;

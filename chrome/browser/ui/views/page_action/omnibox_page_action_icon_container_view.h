@@ -69,7 +69,6 @@ class OmniboxPageActionIconContainerView
 
   // PageActionIconContainer:
   void UpdatePageActionIcon(PageActionIconType type) override;
-  void ExecutePageActionIconForTesting(PageActionIconType type) override;
 
  private:
   // views::View:

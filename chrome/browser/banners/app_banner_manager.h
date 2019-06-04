@@ -152,8 +152,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // performs logging related to the app installation. Appinstalled event is
   // redundant for the beforeinstallprompt event's promise being resolved, but
   // is required by the install event spec.
-  // This is virtual for testing.
-  virtual void OnInstall(bool is_native, blink::WebDisplayMode display);
+  void OnInstall(bool is_native, blink::WebDisplayMode display);
 
   // Sends a message to the renderer that the user accepted the banner.
   void SendBannerAccepted();
@@ -163,17 +162,6 @@ class AppBannerManager : public content::WebContentsObserver,
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  virtual base::WeakPtr<AppBannerManager> GetWeakPtr() = 0;
-
-  // Used by test subclasses that replace the existing AppBannerManager
-  // instance. The observer list must be transferred over to avoid dangling
-  // pointers in the observers.
-  void MigrateObserverListForTesting(content::WebContents* web_contents);
-
-  // Returns whether the BeforeInstallPromptEvent connection is alive for the
-  // site to call "event.prompt()".
-  bool IsAppBannerServiceBoundForTesting() const;
 
  protected:
   explicit AppBannerManager(content::WebContents* web_contents);
@@ -201,6 +189,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // alerting websites that a banner is about to be created.
   virtual std::string GetBannerType();
 
+  virtual base::WeakPtr<AppBannerManager> GetWeakPtr() = 0;
   virtual void InvalidateWeakPtrs() = 0;
 
   // Returns true if |has_sufficient_engagement_| is true or
@@ -306,6 +295,11 @@ class AppBannerManager : public content::WebContentsObserver,
   InstallableManager* manager() const { return manager_; }
   State state() const { return state_; }
   bool IsRunning() const;
+
+  // Used by test subclasses that replace the existing AppBannerManager
+  // instance. The observer list must be transferred over to avoid dangling
+  // pointers in the observers.
+  void MigrateObserverListForTesting(content::WebContents* web_contents);
 
   // The URL for which the banner check is being conducted.
   GURL validated_url_;

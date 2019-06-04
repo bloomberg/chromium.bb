@@ -106,13 +106,6 @@ void ToolbarPageActionIconContainerView::UpdatePageActionIcon(
     icon->Update();
 }
 
-void ToolbarPageActionIconContainerView::ExecutePageActionIconForTesting(
-    PageActionIconType type) {
-  PageActionIconView* icon = GetIconView(type);
-  if (icon)
-    icon->ExecuteForTesting();
-}
-
 SkColor ToolbarPageActionIconContainerView::GetPageActionInkDropColor() const {
   return GetToolbarInkDropBaseColor(this);
 }
