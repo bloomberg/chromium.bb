@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -4017,8 +4018,10 @@ const LayoutObject* AssociatedLayoutObjectOf(const Node& node,
 }
 
 bool LayoutObject::CanBeSelectionLeaf() const {
-  if (SlowFirstChild() || StyleRef().Visibility() != EVisibility::kVisible)
+  if (SlowFirstChild() || StyleRef().Visibility() != EVisibility::kVisible ||
+      DisplayLockUtilities::NearestLockedExclusiveAncestor(*GetNode())) {
     return false;
+  }
   return CanBeSelectionLeafInternal();
 }
 
