@@ -5845,3 +5845,5 @@ crbug.com/905971 [ Win ] virtual/blink-cors/external/wpt/service-workers/service
 
 # Sheriff 2019-06-04
 crbug.com/970135 [ Mac ] virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-interested-element-indicated.html [ Failure ]
+crbug.com/970142 http/tests/security/mixedContent/insecure-css-resources.html [ Failure ]
+crbug.com/970142 virtual/blink-cors/http/tests/security/mixedContent/insecure-css-resources.html [ Failure ]
