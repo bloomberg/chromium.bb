@@ -136,7 +136,6 @@
   X("viz")                                                               \
   X("vk")                                                                \
   X("wayland")                                                           \
-  X("Wayland")                                                           \
   X("webaudio")                                                          \
   X("WebCore")                                                           \
   X("webrtc")                                                            \
