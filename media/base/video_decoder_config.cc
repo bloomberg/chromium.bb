@@ -46,6 +46,8 @@ VideoCodec VideoCodecProfileToVideoCodec(VideoCodecProfile profile) {
     case DOLBYVISION_PROFILE4:
     case DOLBYVISION_PROFILE5:
     case DOLBYVISION_PROFILE7:
+    case DOLBYVISION_PROFILE8:
+    case DOLBYVISION_PROFILE9:
       return kCodecDolbyVision;
     case THEORAPROFILE_ANY:
       return kCodecTheora;

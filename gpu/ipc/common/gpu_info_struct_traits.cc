@@ -79,6 +79,10 @@ EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::ToMojom(
       return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE5;
     case gpu::VideoCodecProfile::DOLBYVISION_PROFILE7:
       return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE7;
+    case gpu::VideoCodecProfile::DOLBYVISION_PROFILE8:
+      return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE8;
+    case gpu::VideoCodecProfile::DOLBYVISION_PROFILE9:
+      return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE9;
     case gpu::VideoCodecProfile::THEORAPROFILE_ANY:
       return gpu::mojom::VideoCodecProfile::THEORAPROFILE_ANY;
     case gpu::VideoCodecProfile::AV1PROFILE_PROFILE_MAIN:
@@ -168,6 +172,12 @@ bool EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::
       return true;
     case gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE7:
       *out = gpu::VideoCodecProfile::DOLBYVISION_PROFILE7;
+      return true;
+    case gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE8:
+      *out = gpu::VideoCodecProfile::DOLBYVISION_PROFILE8;
+      return true;
+    case gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE9:
+      *out = gpu::VideoCodecProfile::DOLBYVISION_PROFILE9;
       return true;
     case gpu::mojom::VideoCodecProfile::THEORAPROFILE_ANY:
       *out = gpu::VideoCodecProfile::THEORAPROFILE_ANY;

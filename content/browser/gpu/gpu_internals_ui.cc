@@ -407,7 +407,7 @@ std::unique_ptr<base::ListValue> getDisplayInfo() {
   return display_info;
 }
 
-std::string GetProfileName(gpu::VideoCodecProfile profile) {
+const char* GetProfileName(gpu::VideoCodecProfile profile) {
   switch (profile) {
     case gpu::VIDEO_CODEC_PROFILE_UNKNOWN:
       return "unknown";
@@ -457,6 +457,10 @@ std::string GetProfileName(gpu::VideoCodecProfile profile) {
       return "dolby vision profile 5";
     case gpu::DOLBYVISION_PROFILE7:
       return "dolby vision profile 7";
+    case gpu::DOLBYVISION_PROFILE8:
+      return "dolby vision profile 8";
+    case gpu::DOLBYVISION_PROFILE9:
+      return "dolby vision profile 9";
     case gpu::THEORAPROFILE_ANY:
       return "theora";
     case gpu::AV1PROFILE_PROFILE_MAIN:
@@ -476,8 +480,8 @@ std::unique_ptr<base::ListValue> GetVideoAcceleratorsInfo() {
 
   for (const auto& profile :
        gpu_info.video_decode_accelerator_capabilities.supported_profiles) {
-    std::string codec_string = base::StringPrintf(
-        "Decode %s", GetProfileName(profile.profile).c_str());
+    std::string codec_string =
+        base::StringPrintf("Decode %s", GetProfileName(profile.profile));
     std::string resolution_string = base::StringPrintf(
         "up to %s pixels %s", profile.max_resolution.ToString().c_str(),
         profile.encrypted_only ? "(encrypted)" : "");
@@ -486,8 +490,8 @@ std::unique_ptr<base::ListValue> GetVideoAcceleratorsInfo() {
 
   for (const auto& profile :
        gpu_info.video_encode_accelerator_supported_profiles) {
-    std::string codec_string = base::StringPrintf(
-        "Encode %s", GetProfileName(profile.profile).c_str());
+    std::string codec_string =
+        base::StringPrintf("Encode %s", GetProfileName(profile.profile));
     std::string resolution_string = base::StringPrintf(
         "up to %s pixels and/or %.3f fps",
         profile.max_resolution.ToString().c_str(),

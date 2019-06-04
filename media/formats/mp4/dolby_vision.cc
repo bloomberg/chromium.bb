@@ -65,6 +65,12 @@ bool DolbyVisionConfiguration::ParseInternal(BufferReader* reader,
     case 7:
       codec_profile = DOLBYVISION_PROFILE7;
       break;
+    case 8:
+      codec_profile = DOLBYVISION_PROFILE8;
+      break;
+    case 9:
+      codec_profile = DOLBYVISION_PROFILE9;
+      break;
     default:
       DVLOG(2) << "Deprecated or invalid Dolby Vision profile:"
                << static_cast<int>(dv_profile);

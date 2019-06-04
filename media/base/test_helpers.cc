@@ -160,7 +160,7 @@ static VideoCodecProfile MinProfile(VideoCodec codec) {
     case kCodecHEVC:
       return HEVCPROFILE_MIN;
     case kCodecDolbyVision:
-      return DOLBYVISION_MIN;
+      return DOLBYVISION_PROFILE0;
     case kCodecAV1:
       return AV1PROFILE_MIN;
   }

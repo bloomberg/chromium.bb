@@ -52,6 +52,8 @@ enum VideoCodecProfile {
   AV1PROFILE_PROFILE_MAIN,
   AV1PROFILE_PROFILE_HIGH,
   AV1PROFILE_PROFILE_PRO,
+  DOLBYVISION_PROFILE8,
+  DOLBYVISION_PROFILE9,
 };
 
 // gpu::VideoDecodeAcceleratorSupportedProfile
