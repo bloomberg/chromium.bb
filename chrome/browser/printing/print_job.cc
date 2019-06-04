@@ -51,7 +51,7 @@ PrintJob::~PrintJob() {
   DCHECK(!worker_ || !worker_->IsRunning());
 }
 
-void PrintJob::Initialize(PrinterQuery* query,
+void PrintJob::Initialize(std::unique_ptr<PrinterQuery> query,
                           const base::string16& name,
                           int page_count) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

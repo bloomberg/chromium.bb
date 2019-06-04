@@ -90,7 +90,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // currently a print job, safely disconnect from it. Returns false if it is
   // impossible to safely disconnect from the current print job or it is
   // impossible to create a new print job.
-  virtual bool CreateNewPrintJob(PrinterQuery* query);
+  virtual bool CreateNewPrintJob(std::unique_ptr<PrinterQuery> query);
 
   // Manages the low-level talk to the printer.
   scoped_refptr<PrintJob> print_job_;
@@ -126,11 +126,11 @@ class PrintViewManagerBase : public content::NotificationObserver,
   void OnPrintSettingsDone(scoped_refptr<base::RefCountedMemory> print_data,
                            int page_count,
                            PrinterHandler::PrintCallback callback,
-                           scoped_refptr<PrinterQuery> printer_query);
+                           std::unique_ptr<PrinterQuery> printer_query);
 
   void StartLocalPrintJob(scoped_refptr<base::RefCountedMemory> print_data,
                           int page_count,
-                          scoped_refptr<PrinterQuery> printer_query,
+                          int cookie,
                           PrinterHandler::PrintCallback callback);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 

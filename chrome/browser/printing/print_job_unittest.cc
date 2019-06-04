@@ -43,6 +43,8 @@ class TestQuery : public PrinterQuery {
     FAIL();
   }
 
+  ~TestQuery() override {}
+
   std::unique_ptr<PrintJobWorker> DetachWorker() override {
     {
       // Do an actual detach to keep the parent class happy.
@@ -62,8 +64,6 @@ class TestQuery : public PrinterQuery {
   const PrintSettings& settings() const override { return settings_; }
 
  private:
-  ~TestQuery() override {}
-
   PrintSettings settings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestQuery);
@@ -101,8 +101,7 @@ TEST(PrintJobTest, SimplePrint) {
                 content::NotificationService::AllSources());
   volatile bool check = false;
   scoped_refptr<PrintJob> job(new TestPrintJob(&check));
-  scoped_refptr<TestQuery> query = base::MakeRefCounted<TestQuery>();
-  job->Initialize(query.get(), base::string16(), 1);
+  job->Initialize(std::make_unique<TestQuery>(), base::string16(), 1);
   job->Stop();
   while (job->document()) {
     base::RunLoop().RunUntilIdle();

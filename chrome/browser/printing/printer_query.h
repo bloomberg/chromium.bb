@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/values.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -24,7 +23,7 @@ namespace printing {
 class PrintJobWorker;
 
 // Query the printer for settings.
-class PrinterQuery : public base::RefCountedDeleteOnSequence<PrinterQuery> {
+class PrinterQuery {
  public:
   // GetSettings() UI parameter.
   enum class GetSettingsAskParam {
@@ -34,6 +33,7 @@ class PrinterQuery : public base::RefCountedDeleteOnSequence<PrinterQuery> {
 
   // Can only be called on the IO thread.
   PrinterQuery(int render_process_id, int render_frame_id);
+  virtual ~PrinterQuery();
 
   // Detach the PrintJobWorker associated to this object. Virtual so that tests
   // can override.
@@ -48,6 +48,7 @@ class PrinterQuery : public base::RefCountedDeleteOnSequence<PrinterQuery> {
   // times to reinitialize the settings. |web_contents_observer| can be queried
   // to find the owner of the print setting dialog box. It is unused when
   // |ask_for_user_settings| is DEFAULTS.
+  // Caller has to ensure that |this| is alive until |callback| is run.
   void GetSettings(GetSettingsAskParam ask_user_for_settings,
                    int expected_page_count,
                    bool has_selection,
@@ -57,11 +58,13 @@ class PrinterQuery : public base::RefCountedDeleteOnSequence<PrinterQuery> {
                    base::OnceClosure callback);
 
   // Updates the current settings with |new_settings| dictionary values.
+  // Caller has to ensure that |this| is alive until |callback| is run.
   virtual void SetSettings(base::Value new_settings,
                            base::OnceClosure callback);
 
 #if defined(OS_CHROMEOS)
   // Updates the current settings with |new_settings|.
+  // Caller has to ensure that |this| is alive until |callback| is run.
   void SetSettingsFromPOD(std::unique_ptr<PrintSettings> new_settings,
                           base::OnceClosure callback);
 #endif
@@ -82,12 +85,6 @@ class PrinterQuery : public base::RefCountedDeleteOnSequence<PrinterQuery> {
   bool PostTask(const base::Location& from_here, base::OnceClosure task);
 
  protected:
-  // RefCountedDeleteOnSequence class.
-  friend class base::RefCountedDeleteOnSequence<PrinterQuery>;
-  friend class base::DeleteHelper<PrinterQuery>;
-
-  virtual ~PrinterQuery();
-
   // Virtual so that tests can override.
   virtual void GetSettingsDone(const PrintSettings& new_settings,
                                PrintingContext::Result result);

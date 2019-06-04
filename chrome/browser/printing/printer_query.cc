@@ -23,16 +23,13 @@
 namespace printing {
 
 PrinterQuery::PrinterQuery(int render_process_id, int render_frame_id)
-    : base::RefCountedDeleteOnSequence<PrinterQuery>(
-          base::ThreadTaskRunnerHandle::Get()),
-      cookie_(PrintSettings::NewCookie()),
+    : cookie_(PrintSettings::NewCookie()),
       worker_(std::make_unique<PrintJobWorker>(render_process_id,
                                                render_frame_id)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
 PrinterQuery::~PrinterQuery() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // The job should be finished (or at least canceled) when it is destroyed.
   DCHECK(!is_print_dialog_box_shown_);
   // If this fires, it is that this pending printer context has leaked.
@@ -60,9 +57,11 @@ void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
 
 void PrinterQuery::PostSettingsDoneToIO(const PrintSettings& new_settings,
                                         PrintingContext::Result result) {
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(&PrinterQuery::GetSettingsDone, this,
-                                          new_settings, result));
+  // |this| is owned by |callback_|, so |base::Unretained| is safe.
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(&PrinterQuery::GetSettingsDone, base::Unretained(this),
+                     new_settings, result));
 }
 
 std::unique_ptr<PrintJobWorker> PrinterQuery::DetachWorker() {
@@ -100,13 +99,15 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
   // Real work is done in PrintJobWorker::GetSettings().
   is_print_dialog_box_shown_ =
       ask_user_for_settings == GetSettingsAskParam::ASK_USER;
+  // |this| is owned by |callback_|, so |base::Unretained| is safe.
   worker_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &PrintJobWorker::GetSettings, base::Unretained(worker_.get()),
-          is_print_dialog_box_shown_, expected_page_count, has_selection,
-          margin_type, is_scripted, is_modifiable,
-          base::BindOnce(&PrinterQuery::PostSettingsDoneToIO, this)));
+      base::BindOnce(&PrintJobWorker::GetSettings,
+                     base::Unretained(worker_.get()),
+                     is_print_dialog_box_shown_, expected_page_count,
+                     has_selection, margin_type, is_scripted, is_modifiable,
+                     base::BindOnce(&PrinterQuery::PostSettingsDoneToIO,
+                                    base::Unretained(this))));
 }
 
 void PrinterQuery::SetSettings(base::Value new_settings,
@@ -114,12 +115,13 @@ void PrinterQuery::SetSettings(base::Value new_settings,
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   StartWorker(std::move(callback));
+  // |this| is owned by |callback_|, so |base::Unretained| is safe.
   worker_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &PrintJobWorker::SetSettings, base::Unretained(worker_.get()),
-          std::move(new_settings),
-          base::BindOnce(&PrinterQuery::PostSettingsDoneToIO, this)));
+      base::BindOnce(&PrintJobWorker::SetSettings,
+                     base::Unretained(worker_.get()), std::move(new_settings),
+                     base::BindOnce(&PrinterQuery::PostSettingsDoneToIO,
+                                    base::Unretained(this))));
 }
 
 #if defined(OS_CHROMEOS)
@@ -129,12 +131,13 @@ void PrinterQuery::SetSettingsFromPOD(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   StartWorker(std::move(callback));
+  // |this| is owned by |callback_|, so |base::Unretained| is safe.
   worker_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &PrintJobWorker::SetSettingsFromPOD, base::Unretained(worker_.get()),
-          std::move(new_settings),
-          base::BindOnce(&PrinterQuery::PostSettingsDoneToIO, this)));
+      base::BindOnce(&PrintJobWorker::SetSettingsFromPOD,
+                     base::Unretained(worker_.get()), std::move(new_settings),
+                     base::BindOnce(&PrinterQuery::PostSettingsDoneToIO,
+                                    base::Unretained(this))));
 }
 #endif
 

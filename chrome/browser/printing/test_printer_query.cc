@@ -17,12 +17,11 @@
 
 namespace printing {
 
-scoped_refptr<PrinterQuery> TestPrintQueriesQueue::CreatePrinterQuery(
+std::unique_ptr<PrinterQuery> TestPrintQueriesQueue::CreatePrinterQuery(
     int render_process_id,
     int render_frame_id) {
-  scoped_refptr<TestPrinterQuery> test_query =
-      base::MakeRefCounted<TestPrinterQuery>(render_process_id,
-                                             render_frame_id);
+  auto test_query =
+      std::make_unique<TestPrinterQuery>(render_process_id, render_frame_id);
 #if defined(OS_WIN)
   test_query->SetPrinterType(printer_type_);
 #endif

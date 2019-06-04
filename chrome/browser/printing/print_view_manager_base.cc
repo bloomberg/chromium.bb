@@ -61,7 +61,7 @@ namespace printing {
 namespace {
 
 using PrintSettingsCallback =
-    base::OnceCallback<void(scoped_refptr<PrinterQuery>)>;
+    base::OnceCallback<void(std::unique_ptr<PrinterQuery>)>;
 
 void ShowWarningMessageBox(const base::string16& message) {
   // Runs always on the UI thread.
@@ -76,11 +76,12 @@ void ShowWarningMessageBox(const base::string16& message) {
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void OnPrintSettingsDoneWrapper(PrintSettingsCallback settings_callback,
-                                scoped_refptr<PrinterQuery> query) {
+                                std::unique_ptr<PrinterQuery> query) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(std::move(settings_callback), query));
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(std::move(settings_callback), std::move(query)));
 }
 
 void CreateQueryWithSettings(base::Value job_settings,
@@ -92,11 +93,12 @@ void CreateQueryWithSettings(base::Value job_settings,
 
   PrintSettingsCallback callback_wrapper =
       base::BindOnce(OnPrintSettingsDoneWrapper, std::move(callback));
-  scoped_refptr<printing::PrinterQuery> printer_query =
+  std::unique_ptr<printing::PrinterQuery> printer_query =
       queue->CreatePrinterQuery(render_process_id, render_frame_id);
-  printer_query->SetSettings(
+  auto* printer_query_ptr = printer_query.get();
+  printer_query_ptr->SetSettings(
       std::move(job_settings),
-      base::BindOnce(std::move(callback_wrapper), printer_query));
+      base::BindOnce(std::move(callback_wrapper), std::move(printer_query)));
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -174,14 +176,14 @@ void PrintViewManagerBase::OnPrintSettingsDone(
     scoped_refptr<base::RefCountedMemory> print_data,
     int page_count,
     PrinterHandler::PrintCallback callback,
-    scoped_refptr<printing::PrinterQuery> printer_query) {
+    std::unique_ptr<printing::PrinterQuery> printer_query) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(printer_query);
 
   // Check if the job was cancelled. This should only happen on Windows when
   // the system dialog is cancelled.
   if (printer_query->last_status() == PrintingContext::CANCEL) {
-    queue_->QueuePrinterQuery(printer_query.get());
+    queue_->QueuePrinterQuery(std::move(printer_query));
 #if defined(OS_WIN)
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
@@ -195,31 +197,32 @@ void PrintViewManagerBase::OnPrintSettingsDone(
   if (!printer_query->cookie() || !printer_query->settings().dpi()) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&PrinterQuery::StopWorker, printer_query));
+        base::BindOnce(&PrinterQuery::StopWorker, std::move(printer_query)));
     std::move(callback).Run(base::Value("Update settings failed"));
     return;
   }
 
   // Post task so that the query has time to reset the callback before calling
   // OnDidGetPrintedPagesCount().
-  queue_->QueuePrinterQuery(printer_query.get());
+  int cookie = printer_query->cookie();
+  queue_->QueuePrinterQuery(std::move(printer_query));
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&PrintViewManagerBase::StartLocalPrintJob,
                      weak_ptr_factory_.GetWeakPtr(), print_data, page_count,
-                     printer_query, std::move(callback)));
+                     cookie, std::move(callback)));
 }
 
 void PrintViewManagerBase::StartLocalPrintJob(
     scoped_refptr<base::RefCountedMemory> print_data,
     int page_count,
-    scoped_refptr<printing::PrinterQuery> printer_query,
+    int cookie,
     PrinterHandler::PrintCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  OnDidGetPrintedPagesCount(printer_query->cookie(), page_count);
+  OnDidGetPrintedPagesCount(cookie, page_count);
 
-  if (!PrintJobHasDocument(printer_query->cookie())) {
+  if (!PrintJobHasDocument(cookie)) {
     std::move(callback).Run(base::Value("Failed to print"));
     return;
   }
@@ -228,7 +231,7 @@ void PrintViewManagerBase::StartLocalPrintJob(
   print_job_->ResetPageMapping();
 #endif
 
-  const printing::PrintSettings& settings = printer_query->settings();
+  const printing::PrintSettings& settings = print_job_->settings();
   gfx::Size page_size = settings.page_setup_device_units().physical_size();
   gfx::Rect content_area =
       gfx::Rect(0, 0, page_size.width(), page_size.height());
@@ -527,7 +530,8 @@ void PrintViewManagerBase::ShouldQuitFromInnerMessageLoop() {
   }
 }
 
-bool PrintViewManagerBase::CreateNewPrintJob(PrinterQuery* query) {
+bool PrintViewManagerBase::CreateNewPrintJob(
+    std::unique_ptr<PrinterQuery> query) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!quit_inner_loop_);
   DCHECK(query);
@@ -543,7 +547,7 @@ bool PrintViewManagerBase::CreateNewPrintJob(PrinterQuery* query) {
 
   DCHECK(!print_job_);
   print_job_ = base::MakeRefCounted<PrintJob>();
-  print_job_->Initialize(query, RenderSourceName(), number_pages_);
+  print_job_->Initialize(std::move(query), RenderSourceName(), number_pages_);
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                  content::Source<PrintJob>(print_job_.get()));
   printing_succeeded_ = false;
@@ -651,13 +655,13 @@ bool PrintViewManagerBase::OpportunisticallyCreatePrintJob(int cookie) {
 
   // The job was initiated by a script. Time to get the corresponding worker
   // thread.
-  scoped_refptr<PrinterQuery> queued_query = queue_->PopPrinterQuery(cookie);
+  std::unique_ptr<PrinterQuery> queued_query = queue_->PopPrinterQuery(cookie);
   if (!queued_query) {
     NOTREACHED();
     return false;
   }
 
-  if (!CreateNewPrintJob(queued_query.get())) {
+  if (!CreateNewPrintJob(std::move(queued_query))) {
     // Don't kill anything.
     return false;
   }
@@ -694,13 +698,12 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
   if (!print_job_manager)
     return;
 
-  scoped_refptr<PrinterQuery> printer_query;
-  printer_query = queue_->PopPrinterQuery(cookie);
+  std::unique_ptr<PrinterQuery> printer_query = queue_->PopPrinterQuery(cookie);
   if (!printer_query)
     return;
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&PrinterQuery::StopWorker, printer_query));
+      base::BindOnce(&PrinterQuery::StopWorker, std::move(printer_query)));
 }
 
 void PrintViewManagerBase::SendPrintingEnabled(bool enabled,
