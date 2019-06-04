@@ -18,8 +18,9 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import {Material, RENDER_ORDER} from '../core/material.js';
+import {Primitive, PrimitiveAttribute} from '../core/primitive.js';
 import {Node} from '../core/node.js';
-import {GeometryBuilderBase} from '../geometry/primitive-stream.js';
+import {vec3} from '../math/gl-matrix.js';
 
 const GL = WebGLRenderingContext; // For enums
 
@@ -45,7 +46,6 @@ class PlaneMaterial extends Material {
   get vertexSource() {
     return `
     attribute vec3 POSITION;
-    attribute vec3 NORMAL;
 
     varying vec3 vLight;
 
@@ -54,7 +54,7 @@ class PlaneMaterial extends Material {
     const vec3 lightColor = vec3(0.75, 0.75, 0.75);
 
     vec4 vertex_main(mat4 proj, mat4 view, mat4 model) {
-      vec3 normalRotated = vec3(model * vec4(NORMAL, 0.0));
+      vec3 normalRotated = vec3(model * vec4(0.0, 0.0, 1.0, 0.0));
       float lightFactor = max(dot(normalize(lightDir), normalRotated), 0.0);
       vLight = ambientColor + (lightColor * lightFactor);
       return proj * view * model * vec4(POSITION, 1.0);
@@ -87,28 +87,85 @@ export class PlaneNode extends Node {
     this.baseColor = options.baseColor;
     this.polygon = options.polygon;
 
+    // ring buffer containing last 3 plane primitives (meshes)
+    this.primitives = [null, null, null];
+    this.primitiveIndex = -1;
+
     this._material = new PlaneMaterial({baseColor : options.baseColor});
 
     this._renderer = null;
   }
 
   createPlanePrimitive(polygon) {
-    // TODO: create new builder class for planes
-    let planeBuilder = new GeometryBuilderBase();
+    let vertices = [];
+    let indices = [];
+    let min = null;
+    let max = null;
 
-    planeBuilder.primitiveStream.startGeometry();
-    let numVertices = polygon.length;
-    let firstVertex = planeBuilder.primitiveStream.nextVertexIndex;
+    // first, collect all polygon vertices
     polygon.forEach(vertex => {
-      planeBuilder.primitiveStream.pushVertex(vertex.x, vertex.y, vertex.z);
+      vertices.push(vertex.x, vertex.y, vertex.z);
+
+      if(min) {
+        min[0] = Math.min(min[0], vertex.x);
+        min[1] = Math.min(min[1], vertex.y);
+        min[2] = Math.min(min[2], vertex.z);
+      } else {
+        min = vec3.fromValues(vertex.x, vertex.y, vertex.z);
+      }
+
+      if(max) {
+        max[0] = Math.min(min[0], vertex.x);
+        max[1] = Math.min(max[1], vertex.y);
+        max[2] = Math.min(max[2], vertex.z);
+      } else {
+        max = vec3.fromValues(vertex.x, vertex.y, vertex.z);
+      }
     });
 
-    for(let i = 0; i < numVertices - 2; i++) {
-      planeBuilder.primitiveStream.pushTriangle(firstVertex, firstVertex + i + 1, firstVertex + i + 2);
+    // then indices
+    for(let i = 0; i < polygon.length - 2; i++) {
+      indices.push(0, i + 1, i + 2);
     }
-    planeBuilder.primitiveStream.endGeometry();
 
-    return planeBuilder.finishPrimitive(this._renderer);
+    let newPrimitiveIndex = (this.primitiveIndex + 1) % this.primitives.length;
+    if(this.primitives[newPrimitiveIndex]) {
+      // update
+      let oldPrimitive = this.primitives[newPrimitiveIndex];
+
+      this._renderer.updateRenderBuffer(oldPrimitive.attributes[0].buffer, new Float32Array(vertices));
+      this._renderer.updateRenderBuffer(oldPrimitive.indexBuffer, new Uint16Array(indices));
+
+      // attribs are still set, no need to re-set them
+
+      // index buffer is still set, no need to re-set it
+      oldPrimitive.setBounds(min, max);
+      oldPrimitive.elementCount = indices.length;
+    } else {
+      // add
+      let vertexBuffer = this._renderer.createRenderBuffer(
+        GL.ARRAY_BUFFER, new Float32Array(vertices));
+      let indexBuffer = this._renderer.createRenderBuffer(
+        GL.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices));
+
+      let position_attribute = new PrimitiveAttribute('POSITION', vertexBuffer, 3, GL.FLOAT, 12, 0);
+
+      let newPrimitive = new Primitive([position_attribute], indices.length);
+      newPrimitive.setIndexBuffer(indexBuffer);
+      newPrimitive.setBounds(min, max);
+
+      this.primitives[newPrimitiveIndex] = newPrimitive;
+    }
+
+    this.primitiveIndex = newPrimitiveIndex;
+  }
+
+  get primitive() {
+    if(!this.primitives[this.primitiveIndex]) {
+      throw new Error(`Primitive is not set! Call createPlanePrimitive first!`);
+    }
+
+    return this.primitives[this.primitiveIndex];
   }
 
   onRendererChanged(renderer) {
@@ -117,8 +174,9 @@ export class PlaneNode extends Node {
 
     this._renderer = renderer;
 
-    this.planeNode = this._renderer.createRenderPrimitive(
-      this.createPlanePrimitive(this.polygon), this._material);
+    this.createPlanePrimitive(this.polygon);
+
+    this.planeNode = this._renderer.createRenderPrimitive(this.primitive, this._material);
     this.addRenderPrimitive(this.planeNode);
 
     this.polygon = null;
@@ -130,9 +188,16 @@ export class PlaneNode extends Node {
     if(this.polygon)
       throw new Error(`Polygon is set on a plane where it shouldn't be!`);
 
-    let updatedPrimitive = this.createPlanePrimitive(polygon);
+    this.createPlanePrimitive(polygon);
 
-    this.planeNode.setPrimitive(updatedPrimitive);
+    // eagerly clean up render primitive's VAO
+    if(this.planeNode._vao) {
+      this._renderer._vaoExt.deleteVertexArrayOES(this.planeNode._vao);
+      this.planeNode._vao = null;
+    }
+
+    this.planeNode.setPrimitive(this.primitive);
+
     return this.planeNode.waitForComplete();
   }
 }
