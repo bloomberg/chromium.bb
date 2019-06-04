@@ -485,6 +485,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_AUTOCLICK_OPTION_DRAG_AND_DROP" desc="The tooltip text for a menu option for the automatic clicks menu that results in the next automatic click being a click and drag action.">
         Click and drag
       </message>
+      <message name="IDS_ASH_AUTOCLICK_OPTION_SCROLL" desc="The tooltip text for a menu option for the automatic clicks menu that launches a scroll pad for doing mousewheel scroll events.">
+        Scroll
+      </message>
       <message name="IDS_ASH_AUTOCLICK_OPTION_NO_ACTION" desc="The tooltip text for a menu option for the automatic clicks menu that results in pausing the automatic clicks feature without disabling it.">
         No action (pause)
       </message>

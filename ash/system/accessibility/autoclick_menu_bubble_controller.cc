@@ -15,6 +15,8 @@
 #include "ash/wm/work_area_insets.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
+#include "base/command_line.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -25,6 +27,7 @@ namespace ash {
 namespace {
 // Autoclick menu constants.
 const int kAutoclickMenuWidth = 321;
+const int kAutoclickMenuWidthWithScroll = 371;
 const int kAutoclickMenuHeight = 64;
 }  // namespace
 
@@ -72,27 +75,30 @@ void AutoclickMenuBubbleController::SetPosition(
   aura::Window* window = Shell::GetPrimaryRootWindow();
   gfx::Rect work_area =
       WorkAreaInsets::ForWindow(window)->user_work_area_bounds();
+  int width = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kEnableExperimentalAccessibilityAutoclick)
+                  ? kAutoclickMenuWidthWithScroll
+                  : kAutoclickMenuWidth;
   gfx::Rect new_bounds;
   switch (new_position) {
     case mojom::AutoclickMenuPosition::kBottomRight:
-      new_bounds = gfx::Rect(work_area.right() - kAutoclickMenuWidth,
-                             work_area.bottom() - kAutoclickMenuHeight,
-                             kAutoclickMenuWidth, kAutoclickMenuHeight);
+      new_bounds = gfx::Rect(work_area.right() - width,
+                             work_area.bottom() - kAutoclickMenuHeight, width,
+                             kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kBottomLeft:
       new_bounds =
           gfx::Rect(work_area.x(), work_area.bottom() - kAutoclickMenuHeight,
-                    kAutoclickMenuWidth, kAutoclickMenuHeight);
+                    width, kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kTopLeft:
       // Setting the top to 1 instead of 0 so that the view is drawn on screen.
-      new_bounds = gfx::Rect(work_area.x(), 1, kAutoclickMenuWidth,
-                             kAutoclickMenuHeight);
+      new_bounds = gfx::Rect(work_area.x(), 1, width, kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kTopRight:
       // Setting the top to 1 instead of 0 so that the view is drawn on screen.
-      new_bounds = gfx::Rect(work_area.right() - kAutoclickMenuWidth, 1,
-                             kAutoclickMenuWidth, kAutoclickMenuHeight);
+      new_bounds =
+          gfx::Rect(work_area.right() - width, 1, width, kAutoclickMenuHeight);
       break;
     case mojom::AutoclickMenuPosition::kSystemDefault:
       return;
@@ -135,8 +141,12 @@ void AutoclickMenuBubbleController::ShowBubble(
       Shell::GetPrimaryRootWindow(), kShellWindowId_AutoclickContainer);
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.insets = gfx::Insets(kCollisionWindowWorkAreaInsetsDp);
-  init_params.min_width = kAutoclickMenuWidth;
-  init_params.max_width = kAutoclickMenuWidth;
+  int width = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kEnableExperimentalAccessibilityAutoclick)
+                  ? kAutoclickMenuWidthWithScroll
+                  : kAutoclickMenuWidth;
+  init_params.min_width = width;
+  init_params.max_width = width;
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   bubble_view_ = new AutoclickMenuBubbleView(init_params);

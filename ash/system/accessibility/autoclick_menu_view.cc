@@ -10,8 +10,10 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/top_shortcut_button.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -175,6 +177,13 @@ AutoclickMenuView::AutoclickMenuView(mojom::AutoclickEventType type,
                                   kAutoclickPositionBottomLeftIcon,
                                   IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION,
                                   kPanelPositionButtonSize)) {
+  // TODO(katie): Initialize scroll above once it launches, target in M77.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalAccessibilityAutoclick)) {
+    scroll_button_ = new AutoclickMenuButton(this, kAutoclickScrollIcon,
+                                             IDS_ASH_AUTOCLICK_OPTION_SCROLL);
+  }
+
   // Set view IDs for testing.
   left_click_button_->SetId(ButtonId::kLeftClick);
   right_click_button_->SetId(ButtonId::kRightClick);
@@ -182,6 +191,8 @@ AutoclickMenuView::AutoclickMenuView(mojom::AutoclickEventType type,
   drag_button_->SetId(ButtonId::kDragAndDrop);
   pause_button_->SetId(ButtonId::kPause);
   position_button_->SetId(ButtonId::kPosition);
+  if (scroll_button_)
+    scroll_button_->SetId(ButtonId::kScroll);
 
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(), 0);
@@ -197,6 +208,8 @@ AutoclickMenuView::AutoclickMenuView(mojom::AutoclickEventType type,
   action_button_container->AddChildView(right_click_button_);
   action_button_container->AddChildView(double_click_button_);
   action_button_container->AddChildView(drag_button_);
+  if (scroll_button_)
+    action_button_container->AddChildView(scroll_button_);
   action_button_container->AddChildView(pause_button_);
   AddChildView(action_button_container);
 
@@ -230,6 +243,8 @@ void AutoclickMenuView::UpdateEventType(mojom::AutoclickEventType type) {
   double_click_button_->SetToggled(type ==
                                    mojom::AutoclickEventType::kDoubleClick);
   drag_button_->SetToggled(type == mojom::AutoclickEventType::kDragAndDrop);
+  if (scroll_button_)
+    scroll_button_->SetToggled(type == mojom::AutoclickEventType::kScroll);
   pause_button_->SetToggled(type == mojom::AutoclickEventType::kNoAction);
   if (type != mojom::AutoclickEventType::kNoAction)
     event_type_ = type;
@@ -297,6 +312,8 @@ void AutoclickMenuView::ButtonPressed(views::Button* sender,
     type = mojom::AutoclickEventType::kDoubleClick;
   } else if (sender == drag_button_) {
     type = mojom::AutoclickEventType::kDragAndDrop;
+  } else if (sender == scroll_button_) {
+    type = mojom::AutoclickEventType::kScroll;
   } else if (sender == pause_button_) {
     // If the pause button was already selected, tapping it again turns off
     // pause and returns to the previous type.

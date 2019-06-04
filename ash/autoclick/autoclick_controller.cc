@@ -420,8 +420,10 @@ void AutoclickController::RecordUserAction(
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.DragAndDrop"));
       return;
+    case mojom::AutoclickEventType::kScroll:
+      // Scroll users actions will be recorded from AutoclickScrollView.
     case mojom::AutoclickEventType::kNoAction:
-      // No action shouldn't have a UserAction, so we return null.
+      // No action shouldn't have a UserAction, so we return.
       return;
   }
 }

@@ -41,7 +41,8 @@ class AutoclickMenuView : public views::View, public views::ButtonListener {
     kRightClick = 3,
     kDoubleClick = 4,
     kDragAndDrop = 5,
-    kPause = 6
+    kScroll = 6,
+    kPause = 7,
   };
 
   AutoclickMenuView(mojom::AutoclickEventType type,
@@ -63,6 +64,7 @@ class AutoclickMenuView : public views::View, public views::ButtonListener {
   AutoclickMenuButton* right_click_button_;
   AutoclickMenuButton* double_click_button_;
   AutoclickMenuButton* drag_button_;
+  AutoclickMenuButton* scroll_button_ = nullptr;
   AutoclickMenuButton* pause_button_;
   AutoclickMenuButton* position_button_;
 

@@ -21,6 +21,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "autoclick_position_bottom_right.icon",
     "autoclick_position_top_left.icon",
     "autoclick_position_top_right.icon",
+    "autoclick_scroll.icon",
     "captive_portal.icon",
     "check_circle.icon",
     "desks_close_desk_button.icon",

@@ -84,22 +84,24 @@ enum SelectToSpeakState {
 // should be added at the end.
 enum AutoclickEventType {
   // Perform a left click.
-  kLeftClick,
+  kLeftClick = 0,
 
   // Perform a right click.
-  kRightClick,
+  kRightClick = 1,
 
   // Perform a drag and drop, i.e. click down at the first dwell, and up at the
   // second dwell.
-  kDragAndDrop,
+  kDragAndDrop = 2,
 
   // Perform a double-click.
-  kDoubleClick,
+  kDoubleClick = 3,
 
   // A non-action, i.e. nothing will happen at the end of the dwell time.
-  kNoAction,
+  kNoAction = 4,
 
-  // TODO(katie): Add scroll.
+  // A mousewheel scroll action. An additional menu will be shown for the user
+  // to pick whether they want to scroll up/down/left/right.
+  kScroll = 5,
 };
 
 // The Automatic Clicks feature's on-screen menu display location. These values
