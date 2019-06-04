@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -89,8 +90,9 @@ class MockActionDelegate : public ActionDelegate {
                void(const Selector& selector,
                     const std::string& selected_option,
                     base::OnceCallback<void(const ClientStatus&)> callback));
-  MOCK_METHOD2(FocusElement,
+  MOCK_METHOD3(FocusElement,
                void(const Selector& selector,
+                    const TopPadding& top_padding,
                     base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD1(SetTouchableElementArea,
                void(const ElementAreaProto& touchable_element_area));

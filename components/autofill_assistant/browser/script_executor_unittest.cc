@@ -67,8 +67,8 @@ class ScriptExecutorTest : public testing::Test,
 
     ON_CALL(mock_web_controller_, OnElementCheck(_, _))
         .WillByDefault(RunOnceCallback<1>(true));
-    ON_CALL(mock_web_controller_, OnFocusElement(_, _))
-        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
+    ON_CALL(mock_web_controller_, OnFocusElement(_, _, _))
+        .WillByDefault(RunOnceCallback<2>(OkClientStatus()));
   }
 
  protected:

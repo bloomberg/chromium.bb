@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_FOCUS_ELEMENT_ACTION_H_
 
 #include "components/autofill_assistant/browser/actions/action.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -26,6 +27,7 @@ class FocusElementAction : public Action {
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
                         const Selector& selector,
+                        const TopPadding& top_padding,
                         bool element_found);
   void OnFocusElement(ActionDelegate* delegate,
                       ProcessActionCallback callback,

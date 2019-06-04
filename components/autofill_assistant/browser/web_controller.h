@@ -23,6 +23,7 @@
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/selector.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
 #include "url/gurl.h"
 
@@ -105,9 +106,11 @@ class WebController {
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Focus on element given by |selector|.
+  // Focus on element given by |selector|. |top_padding| specifies the padding
+  // between focused element and the top.
   virtual void FocusElement(
       const Selector& selector,
+      const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Get the value of |selector| and return the result through |callback|. The
@@ -321,10 +324,12 @@ class WebController {
       const autofill::FormData& form_data,
       const autofill::FormFieldData& form_field);
   void OnFindElementForFocusElement(
+      const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
       std::unique_ptr<FindElementResult> element_result);
   void OnWaitDocumentToBecomeInteractiveForFocusElement(
+      const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<FindElementResult> target_element,
       bool result);

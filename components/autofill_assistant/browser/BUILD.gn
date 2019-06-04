@@ -131,6 +131,8 @@ jumbo_static_library("browser") {
     "state.h",
     "string_conversions_util.cc",
     "string_conversions_util.h",
+    "top_padding.cc",
+    "top_padding.h",
     "trigger_context.cc",
     "trigger_context.h",
     "ui_controller.cc",

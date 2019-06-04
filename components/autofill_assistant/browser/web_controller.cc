@@ -60,15 +60,17 @@ const char* const kGetVisualViewport =
           v.width,
           v.height] })";
 
-const char* const kScrollIntoViewScript =
-    R"(function(node) {
+// Scrolls to the specified node with top padding. The top padding can
+// be specified through pixels or ratio. Pixels take precedence.
+const char* const kScrollIntoViewWithPaddingScript =
+    R"(function(node, topPaddingPixels, topPaddingRatio) {
     node.scrollIntoViewIfNeeded();
     const rect = node.getBoundingClientRect();
-    if (rect.height < window.innerHeight) {
-      window.scrollBy({top: rect.top - window.innerHeight * 0.25});
-    } else {
-      window.scrollBy({top: rect.top});
+    let topPadding = topPaddingPixels;
+    if (!topPadding){
+      topPadding = window.innerHeight * topPaddingRatio;
     }
+    window.scrollBy({top: rect.top - topPadding});
   })";
 
 const char* const kScrollIntoViewIfNeededScript =
@@ -1209,6 +1211,7 @@ void WebController::OnFindElementResult(
 }
 
 void WebController::OnFindElementForFocusElement(
+    const TopPadding& top_padding,
     base::OnceCallback<void(const ClientStatus&)> callback,
     const ClientStatus& status,
     std::unique_ptr<FindElementResult> element_result) {
@@ -1223,11 +1226,12 @@ void WebController::OnFindElementForFocusElement(
       settings_->document_ready_check_count, element_object_id,
       base::BindOnce(
           &WebController::OnWaitDocumentToBecomeInteractiveForFocusElement,
-          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+          weak_ptr_factory_.GetWeakPtr(), top_padding, std::move(callback),
           std::move(element_result)));
 }
 
 void WebController::OnWaitDocumentToBecomeInteractiveForFocusElement(
+    const TopPadding& top_padding,
     base::OnceCallback<void(const ClientStatus&)> callback,
     std::unique_ptr<FindElementResult> target_element,
     bool result) {
@@ -1236,15 +1240,23 @@ void WebController::OnWaitDocumentToBecomeInteractiveForFocusElement(
     return;
   }
 
-  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-  argument.emplace_back(runtime::CallArgument::Builder()
-                            .SetObjectId(target_element->object_id)
-                            .Build());
+  std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
+  arguments.emplace_back(runtime::CallArgument::Builder()
+                             .SetObjectId(target_element->object_id)
+                             .Build());
+  arguments.emplace_back(runtime::CallArgument::Builder()
+                             .SetValue(base::Value::ToUniquePtrValue(
+                                 base::Value(top_padding.pixels())))
+                             .Build());
+  arguments.emplace_back(runtime::CallArgument::Builder()
+                             .SetValue(base::Value::ToUniquePtrValue(
+                                 base::Value(top_padding.ratio())))
+                             .Build());
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(target_element->object_id)
-          .SetArguments(std::move(argument))
-          .SetFunctionDeclaration(std::string(kScrollIntoViewScript))
+          .SetArguments(std::move(arguments))
+          .SetFunctionDeclaration(std::string(kScrollIntoViewWithPaddingScript))
           .SetReturnByValue(true)
           .Build(),
       base::BindOnce(&WebController::OnFocusElement,
@@ -1459,14 +1471,15 @@ void WebController::OnHighlightElement(
 
 void WebController::FocusElement(
     const Selector& selector,
+    const TopPadding& top_padding,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   DVLOG(3) << __func__ << " " << selector;
   DCHECK(!selector.empty());
-  FindElement(
-      selector,
-      /* strict_mode= */ false,
-      base::BindOnce(&WebController::OnFindElementForFocusElement,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  FindElement(selector,
+              /* strict_mode= */ false,
+              base::BindOnce(&WebController::OnFindElementForFocusElement,
+                             weak_ptr_factory_.GetWeakPtr(), top_padding,
+                             std::move(callback)));
 }
 
 void WebController::GetFieldValue(

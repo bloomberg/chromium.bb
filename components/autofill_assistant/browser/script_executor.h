@@ -25,6 +25,7 @@
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/top_padding.h"
 
 namespace autofill_assistant {
 // Class to execute an assistant script.
@@ -137,6 +138,7 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   void FocusElement(
       const Selector& selector,
+      const TopPadding& top_padding,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   void SetTouchableElementArea(
       const ElementAreaProto& touchable_element_area) override;
@@ -342,6 +344,7 @@ class ScriptExecutor : public ActionDelegate,
   bool should_clean_contextual_ui_on_finish_;
   ActionProto::ActionInfoCase previous_action_type_;
   Selector last_focused_element_selector_;
+  TopPadding last_focused_element_top_padding_;
   std::unique_ptr<ElementAreaProto> touchable_element_area_;
   std::map<std::string, ScriptStatusProto>* scripts_state_;
   std::unique_ptr<BatchElementChecker> batch_element_checker_;
