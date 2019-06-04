@@ -79,7 +79,6 @@ public class GridTabSwitcherMediatorUnitTest {
     private static final String TAB1_TITLE = "Tab1";
     private static final String TAB2_TITLE = "Tab2";
     private static final String TAB3_TITLE = "Tab3";
-    private static final String NEW_TITLE = "New title";
     private static final int TAB1_ID = 456;
     private static final int TAB2_ID = 789;
     private static final int TAB3_ID = 123;
@@ -115,8 +114,6 @@ public class GridTabSwitcherMediatorUnitTest {
     ArgumentCaptor<TabModelSelectorObserver> mTabModelSelectorObserverCaptor;
     @Captor
     ArgumentCaptor<ChromeFullscreenManager.FullscreenListener> mFullscreenListenerCaptor;
-    @Captor
-    ArgumentCaptor<Tab> mTabCaptor;
 
     private Tab mTab1;
     private Tab mTab2;

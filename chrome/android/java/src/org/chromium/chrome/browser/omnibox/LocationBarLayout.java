@@ -73,8 +73,6 @@ import java.util.List;
 public class LocationBarLayout extends FrameLayout
         implements OnClickListener, LocationBar, AutocompleteDelegate, FakeboxDelegate,
                    LocationBarVoiceRecognitionHandler.Delegate {
-    private static final String TAG = "cr_LocationBar";
-
     protected ImageButton mDeleteButton;
     protected ImageButton mMicButton;
     protected View mUrlBar;
@@ -106,7 +104,6 @@ public class LocationBarLayout extends FrameLayout
 
     private OmniboxPrerender mOmniboxPrerender;
 
-    private boolean mOmniboxVoiceSearchAlwaysVisible;
     protected float mUrlFocusChangePercent;
     protected LinearLayout mUrlActionContainer;
 
@@ -403,9 +400,7 @@ public class LocationBarLayout extends FrameLayout
         mUrlFocusChangeInProgress = inProgress;
         if (!inProgress) {
             updateButtonVisibility();
-        }
 
-        if (!inProgress) {
             // The accessibility bounding box is not properly updated when focusing the Omnibox
             // from the NTP fakebox.  Clearing/re-requesting focus triggers the bounding box to
             // be recalculated.

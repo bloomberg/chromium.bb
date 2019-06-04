@@ -57,8 +57,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
-import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -175,8 +173,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     // used when |mAnimateNormalToolbar| is false.
     @ViewDebug.ExportedProperty(category = "chrome")
     private Rect mClipRect;
-
-    private OnClickListener mNewTabListener;
 
     @ViewDebug.ExportedProperty(category = "chrome")
     protected boolean mUrlFocusChangeInProgress;
@@ -2684,40 +2680,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         mExperimentalButton.setTranslationX(0);
     }
 
-    @VisibleForTesting
-    public View getExperimentalButtonForTesting() {
-        return mExperimentalButton;
-    }
-
-    @VisibleForTesting
-    public void endExperimentalButtonAnimationForTesting() {
-        if (mExperimentalButtonAnimator != null) mExperimentalButtonAnimator.end();
-    }
-
     private void setTabSwitcherAnimationMenuDrawable() {
         mTabSwitcherAnimationMenuDrawable =
                 ApiCompatibilityUtils
                         .getDrawable(getResources(), R.drawable.ic_more_vert_black_24dp)
                         .mutate();
         ((BitmapDrawable) mTabSwitcherAnimationMenuDrawable).setGravity(Gravity.CENTER);
-    }
-
-    private void setTabSwitcherAnimationMenuBadgeDrawable() {
-        MenuButtonState buttonState = UpdateMenuItemHelper.getInstance().getUiState().buttonState;
-        if (buttonState == null) return;
-
-        Drawable darkDrawable =
-                ApiCompatibilityUtils.getDrawable(getResources(), buttonState.darkBadgeIcon);
-        Drawable lightDrawable =
-                ApiCompatibilityUtils.getDrawable(getResources(), buttonState.lightBadgeIcon);
-
-        mTabSwitcherAnimationMenuBadgeDarkDrawable = darkDrawable;
-        mTabSwitcherAnimationMenuBadgeDarkDrawable.mutate();
-        ((BitmapDrawable) mTabSwitcherAnimationMenuBadgeDarkDrawable).setGravity(Gravity.CENTER);
-
-        mTabSwitcherAnimationMenuBadgeLightDrawable = lightDrawable;
-        mTabSwitcherAnimationMenuBadgeLightDrawable.mutate();
-        ((BitmapDrawable) mTabSwitcherAnimationMenuBadgeLightDrawable).setGravity(Gravity.CENTER);
     }
 
     /**

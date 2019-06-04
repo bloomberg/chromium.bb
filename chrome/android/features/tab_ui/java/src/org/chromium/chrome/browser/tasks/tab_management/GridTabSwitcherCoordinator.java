@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -43,10 +42,10 @@ public class GridTabSwitcherCoordinator
     private final TabGridDialogCoordinator mTabGridDialogCoordinator;
 
     public GridTabSwitcherCoordinator(Context context,
-            ActivityLifecycleDispatcher lifecycleDispatcher, ToolbarManager toolbarManager,
-            TabModelSelector tabModelSelector, TabContentManager tabContentManager,
-            CompositorViewHolder compositorViewHolder, ChromeFullscreenManager fullscreenManager,
-            TabCreatorManager tabCreatorManager, Runnable backPress) {
+            ActivityLifecycleDispatcher lifecycleDispatcher, TabModelSelector tabModelSelector,
+            TabContentManager tabContentManager, CompositorViewHolder compositorViewHolder,
+            ChromeFullscreenManager fullscreenManager, TabCreatorManager tabCreatorManager,
+            Runnable backPress) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider;
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
