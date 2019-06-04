@@ -406,6 +406,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     return previous_url_;
   }
 
+  bool from_download_cross_origin_redirect() const {
+    return from_download_cross_origin_redirect_;
+  }
 
 #if defined(OS_ANDROID)
   // Returns a reference to |navigation_handle_| Java counterpart. It is used
@@ -420,6 +423,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   std::vector<GURL>& redirect_chain() { return redirect_chain_; }
 
   Referrer& sanitized_referrer() { return sanitized_referrer_; }
+
+  void set_from_download_cross_origin_redirect(
+      bool from_download_cross_origin_redirect) {
+    from_download_cross_origin_redirect_ = from_download_cross_origin_redirect;
+  }
 
   // This should be a private method. The only valid reason to be used
   // outside of the class constructor is in the case of an initial history
@@ -832,6 +840,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   Referrer sanitized_referrer_;
 
   bool was_redirected_ = false;
+
+  // Whether this navigation was triggered by a x-origin redirect following a
+  // prior (most likely <a download>) download attempt.
+  bool from_download_cross_origin_redirect_ = false;
 
   // Used when SignedExchangeSubresourcePrefetch is enabled to hold the
   // prefetched signed exchanges. This is shared with the navigation initiator's

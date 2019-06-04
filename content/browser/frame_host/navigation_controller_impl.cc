@@ -3141,10 +3141,14 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   // extra_headers in params are \n separated; NavigationRequests want \r\n.
   std::string extra_headers_crlf;
   base::ReplaceChars(params.extra_headers, "\n", "\r\n", &extra_headers_crlf);
-  return NavigationRequest::CreateBrowserInitiated(
+
+  auto navigation_request = NavigationRequest::CreateBrowserInitiated(
       node, common_params, commit_params, !params.is_renderer_initiated,
       extra_headers_crlf, *frame_entry, entry, request_body,
       params.navigation_ui_data ? params.navigation_ui_data->Clone() : nullptr);
+  navigation_request->set_from_download_cross_origin_redirect(
+      params.from_download_cross_origin_redirect);
+  return navigation_request;
 }
 
 std::unique_ptr<NavigationRequest>

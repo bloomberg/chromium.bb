@@ -151,9 +151,11 @@ void DownloadRequestLimiter::TabDownloadState::DidStartNavigation(
       return;
     }
 
-    // If this is a forward/back navigation, also don't reset a prompting or
-    // blocking limiter state unless a new host is encounted. This prevents a
-    // page to use history forward/backward to trigger multiple downloads.
+    // If this is a navigation as a result of x-origin redirect from a previous
+    // <a download> download, or if this is a forward/back navigation in a host
+    // already seen, also don't reset a prompting or blocking limiter state.
+    // This prevents a page to use any of those mechanisms to trigger multiple
+    // downloads.
     if (IsNavigationRestricted(navigation_handle))
       return;
   }
@@ -418,6 +420,9 @@ void DownloadRequestLimiter::TabDownloadState::SetDownloadStatusAndNotifyImpl(
 
 bool DownloadRequestLimiter::TabDownloadState::IsNavigationRestricted(
     content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->FromDownloadCrossOriginRedirect())
+    return true;
+
   std::string host = navigation_handle->GetURL().host();
   if (navigation_handle->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK)
     return restricted_hosts_.find(host) != restricted_hosts_.end();
@@ -585,6 +590,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
         case CONTENT_SETTING_ASK:
           state->PromptUserForDownload(std::move(callback));
           state->increment_download_count();
+          ret = false;
           break;
         case CONTENT_SETTING_SESSION_ONLY:
         case CONTENT_SETTING_NUM_SETTINGS:

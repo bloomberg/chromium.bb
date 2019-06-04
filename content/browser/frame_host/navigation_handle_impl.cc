@@ -452,6 +452,10 @@ int NavigationHandleImpl::GetNavigationEntryOffset() {
   return navigation_request_->navigation_entry_offset();
 }
 
+bool NavigationHandleImpl::FromDownloadCrossOriginRedirect() {
+  return navigation_request_->from_download_cross_origin_redirect();
+}
+
 bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {
   return navigation_request_->response()
              ? navigation_request_->response()

@@ -549,6 +549,7 @@ bool DownloadManagerImpl::InterceptDownload(
       params.frame_tree_node_id =
           RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
               info.render_process_id, info.render_frame_id);
+      params.from_download_cross_origin_redirect = true;
       web_contents->GetController().LoadURLWithParams(params);
     }
     if (info.request_handle)

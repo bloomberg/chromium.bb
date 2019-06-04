@@ -234,6 +234,9 @@ class DownloadRequestLimiter
   FRIEND_TEST_ALL_PREFIXES(DownloadTest, DownloadResourceThrottleCancels);
   FRIEND_TEST_ALL_PREFIXES(DownloadTest,
                            DownloadRequestLimiterDisallowsAnchorDownloadTag);
+  FRIEND_TEST_ALL_PREFIXES(
+      DownloadTest,
+      MultipleAnchorDownloadsRequestsCrossOriginRedirectToAnotherDownload);
   FRIEND_TEST_ALL_PREFIXES(ContentSettingBubbleControllerTest, Init);
   FRIEND_TEST_ALL_PREFIXES(ContentSettingImageModelBrowserTest,
                            CreateBubbleModel);

@@ -97,6 +97,7 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(IsDeferredForTesting, bool());
   MOCK_METHOD1(RegisterSubresourceOverride,
                void(mojom::TransferrableURLLoaderPtr));
+  MOCK_METHOD0(FromDownloadCrossOriginRedirect, bool());
   MOCK_METHOD0(IsSameProcess, bool());
   MOCK_METHOD0(GetNavigationEntryOffset, int());
 

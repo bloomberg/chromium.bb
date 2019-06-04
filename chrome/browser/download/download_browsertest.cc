@@ -121,6 +121,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -207,15 +208,14 @@ class CreatedObserver : public content::DownloadManager::Observer {
 
 class OnCanDownloadDecidedObserver {
  public:
-  OnCanDownloadDecidedObserver()
-      : on_decided_called_(false), last_allow_(false) {}
+  OnCanDownloadDecidedObserver() = default;
 
-  void Wait(bool expectation) {
-    if (on_decided_called_) {
-      EXPECT_EQ(last_allow_, expectation);
-      on_decided_called_ = false;
+  void Wait(const std::vector<bool>& expected_decisions) {
+    if (expected_decisions.size() <= decisions_.size()) {
+      EXPECT_TRUE(std::equal(expected_decisions.begin(),
+                             expected_decisions.end(), decisions_.begin()));
     } else {
-      expectation_ = expectation;
+      expected_decisions_ = expected_decisions;
       base::RunLoop run_loop;
       completion_closure_ = run_loop.QuitClosure();
       run_loop.Run();
@@ -223,22 +223,24 @@ class OnCanDownloadDecidedObserver {
   }
 
   void OnCanDownloadDecided(bool allow) {
-    // It is possible this is called before Wait(), so the result needs to
-    // be stored in that case.
-    if (!completion_closure_.is_null()) {
+    decisions_.push_back(allow);
+    if (decisions_.size() == expected_decisions_.size()) {
+      DCHECK(!completion_closure_.is_null());
+      EXPECT_EQ(decisions_, expected_decisions_);
       std::move(completion_closure_).Run();
-      EXPECT_EQ(allow, expectation_);
-    } else {
-      on_decided_called_ = true;
-      last_allow_ = allow;
     }
   }
 
+  void Reset() {
+    decisions_.clear();
+    expected_decisions_.clear();
+    completion_closure_.Reset();
+  }
+
  private:
-  bool expectation_;
+  std::vector<bool> decisions_;
+  std::vector<bool> expected_decisions_;
   base::Closure completion_closure_;
-  bool on_decided_called_;
-  bool last_allow_;
 
   DISALLOW_COPY_AND_ASSIGN(OnCanDownloadDecidedObserver);
 };
@@ -1483,7 +1485,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
 }
 
 // Test to make sure 'download' attribute in anchor tag doesn't trigger a
-// downloadd if DownloadRequestLimiter disallows it.
+// download if DownloadRequestLimiter disallows it.
 IN_PROC_BROWSER_TEST_F(DownloadTest,
                        DownloadRequestLimiterDisallowsAnchorDownloadTag) {
   OnCanDownloadDecidedObserver can_download_observer;
@@ -1515,7 +1517,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
       "window.domAutomationController.send(startDownload1());",
       &download_attempted));
   ASSERT_TRUE(download_attempted);
-  can_download_observer.Wait(false);
+  can_download_observer.Wait({false});
+  can_download_observer.Reset();
 
   // Let the 2nd download to succeed.
   std::unique_ptr<content::DownloadTestObserver> observer(
@@ -1527,7 +1530,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
       "window.domAutomationController.send(startDownload2());",
       &download_attempted));
   ASSERT_TRUE(download_attempted);
-  can_download_observer.Wait(true);
+  can_download_observer.Wait({true});
   // Waits for the 2nd download to complete.
   observer->WaitForFinished();
 
@@ -3254,6 +3257,52 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsRequests) {
       DownloadItem::COMPLETE));
 
   browser()->tab_strip_model()->GetActiveWebContents()->Close();
+}
+
+// Test the scenario for 3 consecutive <a download> download attempts that all
+// trigger a x-origin redirect to another download. No download is expected to
+// happen.
+IN_PROC_BROWSER_TEST_F(
+    DownloadTest,
+    MultipleAnchorDownloadsRequestsCrossOriginRedirectToAnotherDownload) {
+  std::unique_ptr<content::DownloadTestObserver> downloads_observer(
+      CreateWaiter(browser(), 0u));
+
+  OnCanDownloadDecidedObserver can_download_observer;
+  g_browser_process->download_request_limiter()
+      ->SetOnCanDownloadDecidedCallbackForTesting(base::BindRepeating(
+          &OnCanDownloadDecidedObserver::OnCanDownloadDecided,
+          base::Unretained(&can_download_observer)));
+
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/downloads/multiple_a_download_x_origin_redirect_to_download.html");
+
+  base::StringPairs port_replacement;
+  port_replacement.push_back(std::make_pair(
+      "{{PORT}}", base::NumberToString(embedded_test_server()->port())));
+  std::string download_url = net::test_server::GetFilePathWithReplacements(
+      "redirect_x_origin_download.html", port_replacement);
+
+  url = GURL(url.spec() + "?download_url=" + download_url);
+
+  // Navigate to a page that triggers 3 consecutive <a download> download
+  // attempts that all trigger a x-origin redirect to another download.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
+
+  // The 1st <a download> attempt should pass the download limiter check,
+  // and prevent further download attempts from passing. The subsequent 2nd/3rd
+  // <a download> attempts as well as the |download as a result of the x-origin
+  // redirect from the 1st download attempt| should all fail the download
+  // limiter check.
+  can_download_observer.Wait({true, false, false, false});
+
+  // Only the 1st <a download> attempt passed the download limiter check, but it
+  // was still aborted by a x-origin redirect, therefore we expect no download
+  // to happen.
+  EXPECT_EQ(
+      0u, downloads_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {

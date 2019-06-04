@@ -201,6 +201,10 @@ class NavigationController {
     // ContentBrowserClient::GetNavigationUIData.
     std::unique_ptr<NavigationUIData> navigation_ui_data;
 
+    // Whether this navigation was triggered by a x-origin redirect following a
+    // prior (most likely <a download>) download attempt.
+    bool from_download_cross_origin_redirect;
+
     // Time at which the input leading to this navigation occurred. This field
     // is set for links clicked by the user; the embedder is recommended to set
     // it for navigations it initiates.

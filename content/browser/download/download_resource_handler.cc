@@ -124,6 +124,7 @@ void NavigateOnUIThread(const GURL& url,
                         const std::vector<GURL> url_chain,
                         const Referrer& referrer,
                         bool has_user_gesture,
+                        bool from_download_cross_origin_redirect,
                         const ResourceRequestInfo::WebContentsGetter& wc_getter,
                         int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -135,6 +136,8 @@ void NavigateOnUIThread(const GURL& url,
     params.referrer = referrer;
     params.redirect_chain = url_chain;
     params.frame_tree_node_id = frame_tree_node_id;
+    params.from_download_cross_origin_redirect =
+        from_download_cross_origin_redirect;
     web_contents->GetController().LoadURLWithParams(params);
   }
 }
@@ -210,6 +213,7 @@ void DownloadResourceHandler::OnRequestRedirected(
                      Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
                          redirect_info.new_referrer_policy)),
             GetRequestInfo()->HasUserGesture(),
+            true /* from_download_cross_origin_redirect */,
             GetRequestInfo()->GetWebContentsGetterForRequest(),
             GetRequestInfo()->frame_tree_node_id()));
     controller->Cancel();
