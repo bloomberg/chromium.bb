@@ -893,10 +893,6 @@
       status: "experimental",
     },
     {
-      name: "MediaStreamTrackContentHint",
-      status: "stable",
-    },
-    {
       name: "MergeBlockingNonBlockingPools",
     },
     // Support for META tag for setting color-scheme used for opting into dark
