@@ -304,31 +304,26 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     ]
 
     if (is_monochrome) {
-      if (invoker.target_type == "android_app_bundle_module") {
-        _suffix = bundle_library_suffix
-      } else {
-        _suffix = ""
-      }
       if (android_64bit_target_cpu) {
         # Build //android_webview:monochrome with the opposite bitness that
         # Chrome runs in.
         if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
-          shared_libraries = [ "//chrome/android:monochrome_64${_suffix}" ]
+          shared_libraries = [ "//chrome/android:monochrome_64" ]
           if (build_apk_secondary_abi && invoker.include_32_bit_webview) {
-            secondary_abi_shared_libraries = [ "//android_webview:monochrome_64${_suffix}($android_secondary_abi_toolchain)" ]
+            secondary_abi_shared_libraries = [ "//android_webview:monochrome_64($android_secondary_abi_toolchain)" ]
           }
         } else {
-          shared_libraries = [ "//android_webview:monochrome${_suffix}" ]
+          shared_libraries = [ "//android_webview:monochrome" ]
           if (build_apk_secondary_abi) {
             secondary_abi_shared_libraries =
-                [ "//chrome/android:monochrome${_suffix}_secondary_abi_lib" ]
+                [ "//chrome/android:monochrome_secondary_abi_lib" ]
           }
         }
       } else {
-        shared_libraries = [ "//chrome/android:monochrome${_suffix}" ]
+        shared_libraries = [ "//chrome/android:monochrome" ]
       }
       if (invoker.add_unwind_tables_in_apk) {
-        shared_library_for_unwind_asset = "monochrome${_suffix}"
+        shared_library_for_unwind_asset = "monochrome"
       }
 
       _deps += [
@@ -403,13 +398,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     # Android N+ better supports multiple locales (https://crbug.com/780847).
     support_zh_hk = false
 
-    if (invoker.target_type == "android_app_bundle_module") {
-      _deps += [
-        "//chrome/android:${_pak_prefix}_${bundle_pak_asset_type}_pak_assets",
-      ]
-    } else {
-      _deps += [ "//chrome/android:${_pak_prefix}_apk_pak_assets" ]
-    }
+    _deps += [ "//chrome/android:${_pak_prefix}_apk_pak_assets" ]
 
     if (_enable_multidex && invoker.target_type == "android_apk" &&
         !defined(invoker.negative_main_dex_globs)) {

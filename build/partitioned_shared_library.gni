@@ -27,18 +27,18 @@ import("//build/config/clang/clang.gni")
 # The template instantiates targets for the base library, as well as each
 # specified partition, based on the root target name.  Example:
 #
-#   - monochrome_base       (base library)
-#   - monochrome_base_foo   (partition library for feature 'foo')
-#   - monochrome_base_bar   (partition library for feature 'bar')
+#   - monochrome            (base library)
+#   - monochrome_foo        (partition library for feature 'foo')
+#   - monochrome_bar        (partition library for feature 'bar')
 #
 # The base library is placed in the root output directory, but additional
 # feature libraries are placed in a subdirectory named according to the base
 # library.  This avoids name collisions, since feature library names are not
 # sensitive to the base library to which they are paired.  Example:
 #
-#   - out/libmonochrome_base.so
-#   - out/monochrome_base_partitions/libfoo.so
-#   - out/monochrome_base_partitions/libbar.so
+#   - out/libmonochrome.so
+#   - out/monochrome_partitions/libfoo.so
+#   - out/monochrome_partitions/libbar.so
 #
 # This template uses shared_library's default configurations.
 #

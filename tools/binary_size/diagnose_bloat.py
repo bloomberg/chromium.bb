@@ -268,14 +268,11 @@ class _BuildHelper(object):
     if self.IsLinux():
       return 'chrome'
     if 'monochrome' in self.target or 'trichrome' in self.target:
-      ret = 'lib.unstripped/libmonochrome_base.so'
+      ret = 'lib.unstripped/libmonochrome.so'
     elif 'webview' in self.target:
       ret = 'lib.unstripped/libwebviewchromium.so'
     else:
-      ret = 'lib.unstripped/libchrome_base.so'
-    # Maintain support for measuring non-bundle apks.
-    if not self.is_bundle:
-      ret = ret.replace('_base', '')
+      ret = 'lib.unstripped/libchrome.so'
     return ret
 
   @property

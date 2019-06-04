@@ -1161,9 +1161,7 @@
     <meta-data
         android:name="android.content.APP_RESTRICTIONS"
         android:resource="@xml/app_restrictions"/>
-    <meta-data
-        android:name="com.android.webview.WebViewLibrary"
-        android:value="libmonochrome_base.so"/>
+    <meta-data android:name="com.android.webview.WebViewLibrary" android:value="libmonochrome.so"/>
     <meta-data
         android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
         android:value="org.chromium.chrome.browser.media.router.caf.CastOptionsProvider"/>

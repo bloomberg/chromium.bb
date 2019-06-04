@@ -1147,42 +1147,24 @@ config("orderfile_config") {
   }
 }
 
-# This template creates a native library for Chrome's APK or bundle.
-template("libchrome_apk_or_bundle_tmpl") {
-  chrome_common_shared_library(target_name) {
-    forward_variables_from(invoker, "*", [ "is_bundle" ])
-    sources = [
-      "../browser/android/chrome_entry_point.cc",
-      chrome_jni_registration_header,
-    ]
-    deps = [
-      ":chrome_jni_registration($default_toolchain)",
-    ]
+# Chrome APK's native library.
+chrome_common_shared_library("libchrome") {
+  sources = [
+    "../browser/android/chrome_entry_point.cc",
+    chrome_jni_registration_header,
+  ]
+  deps = [
+    ":chrome_jni_registration($default_toolchain)",
+  ]
 
-    # Include appropriate factories for native feature modules if necessary.
-    if (enable_vr) {
-      if (defined(invoker.is_bundle) && invoker.is_bundle) {
-        if (modularize_vr_native) {
-          deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
-        } else {
-          deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
-        }
-      } else {
-        deps += [ "//chrome/browser/android/vr:ui_default_factory" ]
-      }
+  # Include appropriate factories for native feature modules if necessary.
+  if (enable_vr) {
+    if (modularize_vr_native) {
+      deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
+    } else {
+      deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
     }
   }
-}
-
-# Chrome APK's native library.
-libchrome_apk_or_bundle_tmpl("libchrome") {
-  is_bundle = false
-}
-
-# Chrome bundle's base module native library. This is currently the same as the
-# APK version, but will diverge when code moves into feature modules.
-libchrome_apk_or_bundle_tmpl("libchrome_base") {
-  is_bundle = true
 }
 
 chrome_common_shared_library("libchromefortest") {
@@ -1236,25 +1218,18 @@ if (current_toolchain == default_toolchain) {
   #    is_monochrome: If true, generate Monochrome targets rather than Chrome.
   #    is_trichrome: Optionally generate Trichrome targets that use monochrome
   #      library targets but don't include webview resources.
-  #    is_bundle: If true, generate resources for bundles rather than APK.
   template("resource_packaging") {
     _is_monochrome = invoker.is_monochrome
-    _is_bundle = invoker.is_bundle
     _is_trichrome = defined(invoker.is_trichrome) && invoker.is_trichrome
 
     if (_is_trichrome) {
-      _type = "trichrome_chrome"
+      _variant = "trichrome_chrome"
     } else if (_is_monochrome) {
-      _type = "monochrome"
+      _variant = "monochrome"
     } else {
-      _type = "chrome"
+      _variant = "chrome"
     }
-    if (_is_bundle) {
-      _output_type = "bundle"
-    } else {
-      _output_type = "apk"
-    }
-    _variant = "${_type}_${_output_type}"
+    _variant += "_apk"
 
     if (enable_resource_whitelist_generation) {
       if (_is_trichrome || _is_monochrome) {
@@ -1271,13 +1246,8 @@ if (current_toolchain == default_toolchain) {
       } else {
         _target_prefix = "lib"
       }
-      if (_is_bundle) {
-        _suffix = bundle_library_suffix
-      } else {
-        _suffix = ""
-      }
-      _lib_path = "/lib.unstripped/lib" + _lib + _suffix + shlib_extension
-      _lib_target = _target_prefix + _lib + _suffix
+      _lib_path = "/lib.unstripped/lib" + _lib + shlib_extension
+      _lib_target = _target_prefix + _lib
 
       generate_resource_whitelist(_resource_whitelist_target) {
         _fat_lib_toolchain = ""
@@ -1390,7 +1360,7 @@ if (current_toolchain == default_toolchain) {
       }
     }
 
-    # This target is separate from monochrome_pak_assets because it does not
+    # This target is separate from monochrome_apk_pak_assets because it does not
     # disable compression.
     android_assets("${_variant}_locale_pak_assets") {
       renaming_sources = []
@@ -1430,43 +1400,20 @@ if (current_toolchain == default_toolchain) {
   # resource whitelist is derived from the native library.
   resource_packaging("chrome_apk_pak_assets") {
     is_monochrome = false
-    is_bundle = false
   }
   resource_packaging("monochrome_apk_pak_assets") {
     is_monochrome = true
-    is_bundle = false
   }
   resource_packaging("trichrome_chrome_apk_pak_assets") {
     is_monochrome = false
     is_trichrome = true
-    is_bundle = false
-  }
-  resource_packaging("chrome_bundle_pak_assets") {
-    is_monochrome = false
-    is_bundle = true
-  }
-  resource_packaging("monochrome_bundle_pak_assets") {
-    is_monochrome = true
-    is_bundle = true
-  }
-  resource_packaging("trichrome_chrome_bundle_pak_assets") {
-    is_monochrome = false
-    is_bundle = true
-    is_trichrome = true
-  }
-
-  # TODO(cjgrant): Remove this temporary alias after downstream renaming lands.
-  java_group("chrome_public_pak_assets") {
-    deps = [
-      ":chrome_apk_pak_assets",
-    ]
   }
 }  # current_toolchain == host_toolchain
 
 # Monochrome equivalent of Chrome's APK or bundle library template.
 template("libmonochrome_apk_or_bundle_tmpl") {
   chrome_common_shared_library(target_name) {
-    forward_variables_from(invoker, "*", [ "is_bundle" ])
+    forward_variables_from(invoker, "*")
     sources = [
       "../browser/android/monochrome_entry_point.cc",
     ]
@@ -1477,14 +1424,10 @@ template("libmonochrome_apk_or_bundle_tmpl") {
 
     # Include appropriate factories for native feature modules if necessary.
     if (enable_vr) {
-      if (defined(invoker.is_bundle) && invoker.is_bundle) {
-        if (modularize_vr_native) {
-          deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
-        } else {
-          deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
-        }
+      if (modularize_vr_native) {
+        deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
       } else {
-        deps += [ "//chrome/browser/android/vr:ui_default_factory" ]
+        deps += [ "//chrome/browser/android/vr:ui_module_dummy_factory" ]
       }
     }
 
@@ -1496,12 +1439,6 @@ if (!android_64bit_target_cpu ||
     current_toolchain == android_secondary_abi_toolchain) {
   # Monochrome APK native library.
   libmonochrome_apk_or_bundle_tmpl("monochrome") {
-    is_bundle = false
-  }
-
-  # Monochrome bundle native library.
-  libmonochrome_apk_or_bundle_tmpl("monochrome_base") {
-    is_bundle = true
   }
 
   if (android_64bit_target_cpu) {
@@ -1510,30 +1447,16 @@ if (!android_64bit_target_cpu ||
         ":monochrome_64($android_secondary_abi_toolchain)",
       ]
     }
-    group("monochrome_64_base_secondary_abi_lib") {
-      public_deps = [
-        ":monochrome_64_base($android_secondary_abi_toolchain)",
-      ]
-    }
   }
 } else {
   # 64-bit browser library targets (APK and bundle).
   libmonochrome_apk_or_bundle_tmpl("monochrome_64") {
-    is_bundle = false
-  }
-  libmonochrome_apk_or_bundle_tmpl("monochrome_64_base") {
-    is_bundle = true
   }
 
   # 32-bit browser library alias targets, pulled in by 64-bit WebView builds.
   group("monochrome_secondary_abi_lib") {
     public_deps = [
       ":monochrome($android_secondary_abi_toolchain)",
-    ]
-  }
-  group("monochrome_base_secondary_abi_lib") {
-    public_deps = [
-      ":monochrome_base($android_secondary_abi_toolchain)",
     ]
   }
 }
@@ -1663,7 +1586,7 @@ template("chrome_public_apk_or_module_tmpl") {
                              "enable_multidex",
                            ])
 
-    deps = _chrome_public_shared_deps
+    deps = _chrome_public_shared_deps + [ ":chrome_apk_pak_assets" ]
 
     if (_is_modern) {
       android_manifest = chrome_modern_public_android_manifest
@@ -1673,19 +1596,11 @@ template("chrome_public_apk_or_module_tmpl") {
       android_manifest_dep = ":chrome_public_android_manifest"
     }
 
-    if (invoker.target_type == "android_app_bundle_module") {
-      deps += [ ":chrome_${bundle_pak_asset_type}_pak_assets" ]
-      _suffix = bundle_library_suffix
-    } else {
-      deps += [ ":chrome_apk_pak_assets" ]
-      _suffix = ""
-    }
-
-    shared_libraries = [ ":libchrome${_suffix}" ]
+    shared_libraries = [ ":libchrome" ]
     add_unwind_tables_in_apk =
         _add_unwind_tables_in_chrome_32bit_apk && target_cpu == "arm"
     if (add_unwind_tables_in_apk) {
-      shared_library_for_unwind_asset = "chrome${_suffix}"
+      shared_library_for_unwind_asset = "chrome"
     }
 
     # Android supports webp transparent resources properly since API level 18,
@@ -1778,18 +1693,14 @@ template("monochrome_public_apk_or_module_tmpl") {
       variables += trichrome_jinja_variables
     } else {
       _arch = ""
-      _lib_suffix = ""
       if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
         _arch = "_64"
-      }
-      if (invoker.target_type == "android_app_bundle_module") {
-        _lib_suffix = bundle_library_suffix
       }
       input = "java/AndroidManifest_monochrome.xml"
       includes += [ "//android_webview/apk/java/AndroidManifest.xml" ]
       variables += monochrome_android_manifest_jinja_variables + [
                      "target_sdk_version=$android_sdk_version",
-                     "webview_library=libmonochrome${_arch}${_lib_suffix}.so",
+                     "webview_library=libmonochrome${_arch}.so",
                      "include_arcore_manifest_flag=true",
                    ]
     }
