@@ -1475,8 +1475,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_RequestOverlayRoutingToken,
                         OnRequestOverlayRoutingToken)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_TransferUserActivationFrom,
-                        OnTransferUserActivationFrom)
   IPC_END_MESSAGE_MAP()
 
   // No further actions here, since we may have been deleted.
@@ -3676,7 +3674,7 @@ void RenderFrameHostImpl::OnShowCreatedWindow(int pending_widget_routing_id,
                                disposition, initial_rect, user_gesture);
 }
 
-void RenderFrameHostImpl::OnTransferUserActivationFrom(
+void RenderFrameHostImpl::TransferUserActivationFrom(
     int32_t source_routing_id) {
   RenderFrameHostImpl* source_rfh =
       RenderFrameHostImpl::FromID(GetProcess()->GetID(), source_routing_id);

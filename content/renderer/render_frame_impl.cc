@@ -7658,8 +7658,8 @@ void RenderFrameImpl::TransferUserActivationFrom(
     RenderFrameImpl* source_render_frame =
         RenderFrameImpl::FromWebFrame(source_frame);
     source_routing_id = source_render_frame->GetRoutingID();
-    Send(new FrameHostMsg_TransferUserActivationFrom(routing_id_,
-                                                     source_routing_id));
+
+    GetFrameHost()->TransferUserActivationFrom(source_routing_id);
   }
 }
 

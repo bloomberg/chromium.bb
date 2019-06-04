@@ -87,6 +87,8 @@ class MockFrameHost : public mojom::FrameHost {
     }
   }
 
+  void TransferUserActivationFrom(int32_t source_routing_id) override {}
+
  protected:
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr,

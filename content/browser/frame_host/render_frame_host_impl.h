@@ -1150,7 +1150,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ui::input_types::ScrollGranularity granularity);
   void OnFrameDidCallFocus();
   void OnRenderFallbackContentInParentProcess();
-  void OnTransferUserActivationFrom(int32_t source_routing_id);
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
@@ -1235,6 +1234,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidFailLoadWithError(const GURL& url,
                             int error_code,
                             const base::string16& error_description) override;
+  void TransferUserActivationFrom(int32_t source_routing_id) override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif

@@ -1636,13 +1636,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_GoToEntryAtOffset,
                     int /* offset (from current) of history item to get */,
                     bool /* has_user_gesture */)
 
-// Sent to the browser process to transfer the user activation state from the
-// source frame to the frame sending this IPC. The browser will update the user
-// activation state of the frames in the frame tree in the non-source and
-// non-target renderer processes.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_TransferUserActivationFrom,
-                    int /* source_routing_id */)
-
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 
 // Message to show/hide a popup menu using native controls.
