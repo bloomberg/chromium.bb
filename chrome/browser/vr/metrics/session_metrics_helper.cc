@@ -355,11 +355,10 @@ void SessionMetricsHelper::ReportRequestPresent(
     case Mode::kVrBrowsing:
     case Mode::kVrBrowsingRegular:
     case Mode::kVrBrowsingFullscreen:
+    case Mode::kWebXrVrPresentation:
       RecordPresentationStartAction(
           PresentationStartAction::kRequestFromVrBrowsing, options);
       return;
-    case Mode::kWebXrVrPresentation:
-      break;
   }
 
   NOTREACHED();
