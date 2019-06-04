@@ -351,7 +351,7 @@ matchCurrentInput(
 	for (k = passIC + 2;
 			((k < passIC + 2 + passInstructions[passIC + 1]) && (kk < input->length));
 			k++)
-		if (input->chars[kk] == ENDSEGMENT || passInstructions[k] != input->chars[kk++])
+		if (input->chars[kk] == LOU_ENDSEGMENT || passInstructions[k] != input->chars[kk++])
 			return 0;
 	return 1;
 }
@@ -595,7 +595,7 @@ doPassSearch(const TranslationTableHeader *table, const InString *input,
 				kk = *searchPos;
 				for (k = *searchIC + 2;
 						k < *searchIC + 2 + passInstructions[*searchIC + 1]; k++)
-					if (input->chars[kk] == ENDSEGMENT ||
+					if (input->chars[kk] == LOU_ENDSEGMENT ||
 							passInstructions[k] != input->chars[kk++]) {
 						itsTrue = 0;
 						break;
@@ -613,7 +613,7 @@ doPassSearch(const TranslationTableHeader *table, const InString *input,
 				attributes = (passInstructions[*searchIC + 1] << 16) |
 						passInstructions[*searchIC + 2];
 				for (k = 0; k < passInstructions[*searchIC + 3]; k++) {
-					if (input->chars[*searchPos] == ENDSEGMENT)
+					if (input->chars[*searchPos] == LOU_ENDSEGMENT)
 						itsTrue = 0;
 					else {
 						itsTrue = ((findCharOrDots(input->chars[(*searchPos)++],
@@ -629,7 +629,7 @@ doPassSearch(const TranslationTableHeader *table, const InString *input,
 				if (itsTrue) {
 					for (k = passInstructions[*searchIC + 3];
 							k < passInstructions[*searchIC + 4]; k++) {
-						if (input->chars[*searchPos] == ENDSEGMENT) {
+						if (input->chars[*searchPos] == LOU_ENDSEGMENT) {
 							itsTrue = 0;
 							break;
 						}
@@ -762,7 +762,7 @@ passDoTest(const TranslationTableHeader *table, int pos, const InString *input,
 					itsTrue = 0;
 					break;
 				}
-				if (input->chars[pos] == ENDSEGMENT) {
+				if (input->chars[pos] == LOU_ENDSEGMENT) {
 					itsTrue = 0;
 					break;
 				}
@@ -783,7 +783,7 @@ passDoTest(const TranslationTableHeader *table, int pos, const InString *input,
 				for (k = (*passInstructions)[*passIC + 3];
 						k < (*passInstructions)[*passIC + 4] && pos < input->length;
 						k++) {
-					if (input->chars[pos] == ENDSEGMENT) {
+					if (input->chars[pos] == LOU_ENDSEGMENT) {
 						itsTrue = 0;
 						break;
 					}
@@ -1506,7 +1506,7 @@ static void
 setBefore(const TranslationTableHeader *table, int pos, const InString *input,
 		TranslationTableCharacterAttributes *beforeAttributes) {
 	widechar before;
-	if (pos >= 2 && input->chars[pos - 1] == ENDSEGMENT)
+	if (pos >= 2 && input->chars[pos - 1] == LOU_ENDSEGMENT)
 		before = input->chars[pos - 2];
 	else
 		before = (pos == 0) ? ' ' : input->chars[pos - 1];
@@ -1517,7 +1517,7 @@ static void
 setAfter(int length, const TranslationTableHeader *table, int pos, const InString *input,
 		TranslationTableCharacterAttributes *afterAttributes) {
 	widechar after;
-	if ((pos + length + 2) < input->length && input->chars[pos + 1] == ENDSEGMENT)
+	if ((pos + length + 2) < input->length && input->chars[pos + 1] == LOU_ENDSEGMENT)
 		after = input->chars[pos + 2];
 	else
 		after = (pos + length < input->length) ? input->chars[pos + length] : ' ';
@@ -1543,7 +1543,7 @@ validMatch(const TranslationTableHeader *table, int pos, const InString *input,
 	int kk = 0;
 	if (!transCharslen) return 0;
 	for (k = pos; k < pos + transCharslen; k++) {
-		if (input->chars[k] == ENDSEGMENT) {
+		if (input->chars[k] == LOU_ENDSEGMENT) {
 			if (k == pos && transCharslen == 1)
 				return 1;
 			else
@@ -2366,7 +2366,7 @@ doCompTrans(int start, int end, const TranslationTableHeader *table, int *pos,
 		 * can't have any emphasis indicators.
 		 * A better solution is to treat computer braille as its own mode. */
 		emphasisBuffer[k] = (EmphasisInfo){ 0 };
-		if (input->chars[k] == ENDSEGMENT) {
+		if (input->chars[k] == LOU_ENDSEGMENT) {
 			haveEndsegment = 1;
 			continue;
 		}
@@ -2388,7 +2388,7 @@ doCompTrans(int start, int end, const TranslationTableHeader *table, int *pos,
 			return 0;
 	*pos = end;
 	if (haveEndsegment) {
-		widechar endSegment = ENDSEGMENT;
+		widechar endSegment = LOU_ENDSEGMENT;
 		if (!for_updatePositions(&endSegment, 0, 1, 0, *pos, input, output, posMapping,
 					cursorPosition, cursorStatus))
 			return 0;
@@ -3449,7 +3449,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 				int hasEndSegment = 0;
 				while (output->length > 0 && checkAttr(output->chars[output->length - 1],
 													 CTC_Space, 1, table)) {
-					if (output->chars[output->length - 1] == ENDSEGMENT) {
+					if (output->chars[output->length - 1] == LOU_ENDSEGMENT) {
 						hasEndSegment = 1;
 					}
 					output->length--;
@@ -3588,7 +3588,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 		case CTO_JoinableWord:
 			while (pos < input->length &&
 					checkAttr(input->chars[pos], CTC_Space, 0, table) &&
-					input->chars[pos] != ENDSEGMENT)
+					input->chars[pos] != LOU_ENDSEGMENT)
 				pos++;
 			break;
 		default:

@@ -57,7 +57,7 @@ extern "C" {
 #define SEQPATTERNSIZE 128
 #define CHARSIZE sizeof(widechar)
 #define DEFAULTRULESIZE 50
-#define ENDSEGMENT 0xffff
+#define LOU_ENDSEGMENT 0xffff
 
 /**
  * Definitions of braille dots

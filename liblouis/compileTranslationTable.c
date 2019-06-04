@@ -1032,7 +1032,7 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 					ch = 11;
 					break;
 				case 'w':
-					ch = ENDSEGMENT;
+					ch = LOU_ENDSEGMENT;
 					break;
 				case 34:
 					ch = QUOTESUB;
@@ -3945,7 +3945,7 @@ compileTranslationTable(const char *tableList, CharacterClass **characterClasses
 	   some characters in every table notably behind the users back */
 	compileString("space \\x001b 1b escape", characterClasses, characterClassAttribute,
 			opcodeLengths, newRuleOffset, newRule, ruleNames, &table);
-	compileString("space \\xffff 123456789abcdef ENDSEGMENT", characterClasses,
+	compileString("space \\xffff 123456789abcdef LOU_ENDSEGMENT", characterClasses,
 			characterClassAttribute, opcodeLengths, newRuleOffset, newRule, ruleNames,
 			&table);
 
