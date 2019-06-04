@@ -2868,7 +2868,9 @@ bool CompositedLayerMapping::IsDirectlyCompositedImage() const {
 void CompositedLayerMapping::ContentChanged(ContentChangeType change_type) {
   if ((change_type == kImageChanged) && GetLayoutObject().IsImage() &&
       IsDirectlyCompositedImage()) {
-    UpdateImageContents();
+    SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateLocal);
+    Compositor()->SetNeedsCompositingUpdate(
+        kCompositingUpdateAfterGeometryChange);
     return;
   }
 
@@ -2880,6 +2882,9 @@ void CompositedLayerMapping::ContentChanged(ContentChangeType change_type) {
 }
 
 void CompositedLayerMapping::UpdateImageContents() {
+  DCHECK_EQ(owning_layer_.Compositor()->Lifecycle().GetState(),
+            DocumentLifecycle::kInCompositingUpdate);
+
   DCHECK(GetLayoutObject().IsImage());
   LayoutImage& image_layout_object = ToLayoutImage(GetLayoutObject());
 
