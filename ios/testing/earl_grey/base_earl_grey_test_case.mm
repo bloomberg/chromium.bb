@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
@@ -41,11 +42,8 @@
 }
 
 - (void)launchAppForTestMethod {
-  static dispatch_once_t launchAppToken;
-  dispatch_once(&launchAppToken, ^{
-    XCUIApplication* application = [[XCUIApplication alloc] init];
-    [application launch];
-  });
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithArgs:nil
+                                                 forceRestart:false];
 }
 
 // Prevents tests inheriting from this class from putting logic in +setUp.
