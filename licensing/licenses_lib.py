@@ -665,13 +665,6 @@ being scraped currently).""",
         logging.warning(
             'Fixed BSD->BSD-Google for %s because it\'s in chromeos-base. '
             'Please fix the LICENSE field in the ebuild', self.fullnamerev)
-      # TODO: temp workaround for http;//crbug.com/348749 , remove when the bug
-      # is fixed.
-      if license_name == 'Proprietary':
-        license_name = 'Google-TOS'
-        logging.warning(
-            'Fixed Proprietary -> Google-TOS for %s. '
-            'Please fix the LICENSE field in the ebuild', self.fullnamerev)
       new_license_names.append(license_name)
     ebuild_license_names = new_license_names
 
