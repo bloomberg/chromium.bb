@@ -3396,52 +3396,37 @@ TEST_F(DisplayTest, BeginFrameThrottling) {
   support_->SetNeedsBeginFrame(true);
 
   // Helper fn to submit a CF.
-  auto submit_frame = [this](RenderPassList* pass_list) {
+  auto submit_frame = [this]() {
+    RenderPassList pass_list;
     auto pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
     pass->id = 1u;
-    pass_list->push_back(std::move(pass));
+    pass_list.push_back(std::move(pass));
 
     SubmitCompositorFrame(
-        pass_list,
+        &pass_list,
         id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
   };
 
-  // BeginFrame should not be throttled when the client has not submitted any
-  // compositor frames.
-  base::TimeTicks frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
-
-  // Submit the first frame for the client. Begin-frame should still not be
-  // throttled since it has not been embedded yet.
-  RenderPassList pass_list;
-  submit_frame(&pass_list);
+  // Submit kUndrawnFrameLimit+1 frames. BeginFrames should be throttled only
+  // after the last frame.
+  base::TimeTicks frame_time;
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
+       ++i) {
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    UpdateBeginFrameTime(support_.get(), frame_time);
+    submit_frame();
+    // Immediately after submitting frame, because there is presentation
+    // feedback queued up, ShouldSendBeginFrame should always return true.
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    // Clear the presentation feedbacks.
+    UpdateBeginFrameTime(support_.get(), frame_time);
+  }
   frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
-
-  display_->DrawAndSwap();
-  frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
-
-  // Submit a second frame. This frame should not be throttled, even after
-  // presentation-feedbacks, as we allow up to two undrawn frames.
-  submit_frame(&pass_list);
-  frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-
-  // Submit a third frame. This frame should be throttled after
-  // presentation-feedbacks, as we throttle at two undrawn frames.
-  submit_frame(&pass_list);
-  frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
   EXPECT_FALSE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
 
   // Drawing should unthrottle begin-frames.
   display_->DrawAndSwap();
@@ -3449,22 +3434,192 @@ TEST_F(DisplayTest, BeginFrameThrottling) {
   EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
   UpdateBeginFrameTime(support_.get(), frame_time);
 
-  // Submit two more frames. Begin-frame should be throttled after the
-  // begin-frame for presenatation-feedback.
-  submit_frame(&pass_list);
+  // Verify that throttling starts again after kUndrawnFrameLimit+1 frames.
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
+       ++i) {
+    // This clears the presentation feedbacks.
+    UpdateBeginFrameTime(support_.get(), frame_time);
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    UpdateBeginFrameTime(support_.get(), frame_time);
+    submit_frame();
+    // Immediately after submitting frame, because there is presentation
+    // feedback queued up, ShouldSendBeginFrame should always return true.
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    // Clear the presentation feedbacks.
+    UpdateBeginFrameTime(support_.get(), frame_time);
+  }
   frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
-  submit_frame(&pass_list);
-  frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
   EXPECT_FALSE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
 
   // Instead of doing a draw, forward time by ~1 seconds. That should unthrottle
   // the begin-frame.
   frame_time += base::TimeDelta::FromSecondsD(1.1);
   EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+
+  TearDownDisplay();
+}
+
+TEST_F(DisplayTest, BeginFrameThrottlingMultipleSurfaces) {
+  id_allocator_.GenerateId();
+  SetUpGpuDisplay(RendererSettings());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->SetLocalSurfaceId(
+      id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      1.f);
+  support_->SetNeedsBeginFrame(true);
+
+  // Helper fn to submit a CF.
+  auto submit_frame = [this]() {
+    RenderPassList pass_list;
+    auto pass = RenderPass::Create();
+    pass->output_rect = gfx::Rect(0, 0, 100, 100);
+    pass->damage_rect = gfx::Rect(10, 10, 1, 1);
+    pass->id = 1u;
+    pass_list.push_back(std::move(pass));
+
+    SubmitCompositorFrame(
+        &pass_list,
+        id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
+  };
+
+  // Submit kUndrawnFrameLimit frames. BeginFrames should be throttled only
+  // after the last frame.
+  base::TimeTicks frame_time;
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
+       ++i) {
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    UpdateBeginFrameTime(support_.get(), frame_time);
+    submit_frame();
+    // Generate a new LocalSurfaceId for the next submission.
+    id_allocator_.GenerateId();
+  }
+  frame_time = base::TimeTicks::Now();
+  EXPECT_FALSE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
+
+  // This only draws the first surface, so we should only be able to send one
+  // more BeginFrame.
+  display_->DrawAndSwap();
+  frame_time = base::TimeTicks::Now();
+  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
+
+  // After this frame submission, we are throttled again.
+  submit_frame();
+  frame_time = base::TimeTicks::Now();
+  EXPECT_FALSE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
+
+  // Now the last surface is drawn. This should unblock us to submit
+  // kUndrawnFrameLimit+1 frames again.
+  display_->SetLocalSurfaceId(
+      id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      1.f);
+  display_->DrawAndSwap();
+  id_allocator_.GenerateId();
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
+       ++i) {
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    UpdateBeginFrameTime(support_.get(), frame_time);
+    submit_frame();
+    // Generate a new LocalSurfaceId for the next submission.
+    id_allocator_.GenerateId();
+  }
+  frame_time = base::TimeTicks::Now();
+  EXPECT_FALSE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
+
+  TearDownDisplay();
+}
+
+TEST_F(DisplayTest, DontThrottleWhenParentBlocked) {
+  id_allocator_.GenerateId();
+  SetUpGpuDisplay(RendererSettings());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->SetLocalSurfaceId(
+      id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      1.f);
+  support_->SetNeedsBeginFrame(true);
+
+  // Create frame sink for a sub surface.
+  const LocalSurfaceId sub_local_surface_id(6,
+                                            base::UnguessableToken::Create());
+  const LocalSurfaceId sub_local_surface_id2(7,
+                                             base::UnguessableToken::Create());
+  const SurfaceId sub_surface_id2(kAnotherFrameSinkId, sub_local_surface_id2);
+
+  MockCompositorFrameSinkClient sub_client;
+
+  auto sub_support = std::make_unique<CompositorFrameSinkSupport>(
+      &sub_client, &manager_, kAnotherFrameSinkId, false /* is_root */,
+      true /* needs_sync_points */);
+  sub_support->SetNeedsBeginFrame(true);
+
+  // Submit kUndrawnFrameLimit+1 frames. BeginFrames should be throttled only
+  // after the last frame.
+  base::TimeTicks frame_time;
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
+       ++i) {
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+    UpdateBeginFrameTime(sub_support.get(), frame_time);
+    sub_support->SubmitCompositorFrame(sub_local_surface_id,
+                                       MakeDefaultCompositorFrame());
+    // Immediately after submitting frame, because there is presentation
+    // feedback queued up, ShouldSendBeginFrame should always return true.
+    EXPECT_TRUE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+    // Clear the presentation feedbacks.
+    UpdateBeginFrameTime(sub_support.get(), frame_time);
+  }
+  frame_time = base::TimeTicks::Now();
+  EXPECT_FALSE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+  UpdateBeginFrameTime(sub_support.get(), frame_time);
+
+  // Make the display block on |sub_local_surface_id2|.
+  CompositorFrame frame =
+      CompositorFrameBuilder()
+          .AddDefaultRenderPass()
+          .SetActivationDependencies({sub_surface_id2})
+          .SetDeadline(FrameDeadline(base::TimeTicks::Now(),
+                                     std::numeric_limits<uint32_t>::max(),
+                                     base::TimeDelta::FromSeconds(1), false))
+          .Build();
+  support_->SubmitCompositorFrame(
+      id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      std::move(frame));
+
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit * 3;
+       ++i) {
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+    UpdateBeginFrameTime(sub_support.get(), frame_time);
+    sub_support->SubmitCompositorFrame(sub_local_surface_id,
+                                       MakeDefaultCompositorFrame());
+    // Immediately after submitting frame, because there is presentation
+    // feedback queued up, ShouldSendBeginFrame should always return true.
+    EXPECT_TRUE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+    // Clear the presentation feedbacks.
+    UpdateBeginFrameTime(sub_support.get(), frame_time);
+  }
+
+  // Now submit to |sub_local_surface_id2|. This should unblock the parent and
+  // throttling will resume.
+  frame_time = base::TimeTicks::Now();
+  EXPECT_TRUE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+  UpdateBeginFrameTime(sub_support.get(), frame_time);
+  sub_support->SubmitCompositorFrame(sub_local_surface_id2,
+                                     MakeDefaultCompositorFrame());
+  frame_time = base::TimeTicks::Now();
+  EXPECT_FALSE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+  UpdateBeginFrameTime(sub_support.get(), frame_time);
 
   TearDownDisplay();
 }

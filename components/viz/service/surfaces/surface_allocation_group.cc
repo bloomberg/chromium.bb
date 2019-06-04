@@ -241,25 +241,11 @@ void SurfaceAllocationGroup::UpdateLastReferenceAndMaybeActivate(
   auto it = FindLatestSurfaceUpTo(surface_id);
   if (it == surfaces_.end())
     return;
-  // Notify that |*it| is now embedded. This might unblock |*it| if it was
-  // blocked due to child throttling.
-  (*it)->OnSurfaceDependencyAdded();
   // If |surface_id| does not exist yet, notify the surface immediately prior to
   // it that it is a fallback. This might activate the surface immediately
   // because fallback surfaces never block.
   if ((*it)->surface_id() != surface_id)
     (*it)->SetIsFallbackAndMaybeActivate();
-  // Since child throttling allows up to two unembedded surfaces, the surface
-  // immediately after |it| should not be throttled even if it is not embedded
-  // yet.
-  ++it;
-  if (it == surfaces_.end())
-    return;
-  // This ensures the next surface has its seen_first_surface_dependency_ bit
-  // set so that throttling doesn't kick in until 3 surfaces after the surface
-  // that was just embedded. We see regression if throttling kicks in sooner.
-  // See https://crbug.com/951992.
-  (*it)->OnSurfaceDependencyAdded();
 }
 
 }  // namespace viz

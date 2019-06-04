@@ -79,8 +79,7 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // dependencies are satisfied, and it is not reachable from the root surface.
   // A temporary reference will be added to the new Surface.
   Surface* CreateSurface(base::WeakPtr<SurfaceClient> surface_client,
-                         const SurfaceInfo& surface_info,
-                         bool block_activation_on_parent);
+                         const SurfaceInfo& surface_info);
 
   // Marks |surface_id| for destruction. The surface will get destroyed when
   // it's not reachable from the root or any other surface that is not marked
@@ -193,6 +192,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Called by allocation groups when they're ready to destroy and need garbage
   // collection.
   void SetAllocationGroupsNeedGarbageCollection();
+
+  // Returns whether there is any surface blocked on a surface from
+  // |frame_sink_id|.
+  bool HasBlockedEmbedder(const FrameSinkId& frame_sink_id) const;
 
  private:
   friend class CompositorFrameSinkSupportTest;

@@ -103,8 +103,7 @@ void SurfaceManager::SetTickClockForTesting(const base::TickClock* tick_clock) {
 
 Surface* SurfaceManager::CreateSurface(
     base::WeakPtr<SurfaceClient> surface_client,
-    const SurfaceInfo& surface_info,
-    bool block_activation_on_parent) {
+    const SurfaceInfo& surface_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(surface_info.is_valid());
   DCHECK(surface_client);
@@ -121,9 +120,8 @@ Surface* SurfaceManager::CreateSurface(
   if (!allocation_group)
     return nullptr;
 
-  std::unique_ptr<Surface> surface =
-      std::make_unique<Surface>(surface_info, this, allocation_group,
-                                surface_client, block_activation_on_parent);
+  std::unique_ptr<Surface> surface = std::make_unique<Surface>(
+      surface_info, this, allocation_group, surface_client);
   surface->SetDependencyDeadline(
       std::make_unique<SurfaceDependencyDeadline>(tick_clock_));
   surface_map_[surface_info.id()] = std::move(surface);
@@ -631,6 +629,19 @@ void SurfaceManager::MaybeGarbageCollectAllocationGroups() {
   }
 
   allocation_groups_need_garbage_collection_ = false;
+}
+
+bool SurfaceManager::HasBlockedEmbedder(
+    const FrameSinkId& frame_sink_id) const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  auto it = frame_sink_id_to_allocation_groups_.find(frame_sink_id);
+  if (it == frame_sink_id_to_allocation_groups_.end())
+    return false;
+  for (SurfaceAllocationGroup* group : it->second) {
+    if (group->HasBlockedEmbedder())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace viz

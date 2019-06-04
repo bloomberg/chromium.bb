@@ -60,7 +60,13 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                                    const gfx::Rect& damage_rect,
                                    base::TimeTicks expected_display_time)>;
 
-  static const uint64_t kFrameIndexStart = 2;
+  static constexpr uint64_t kFrameIndexStart = 2;
+
+  // Determines maximum number of allowed undrawn frames. Once this limit is
+  // exceeded, we throttle sBeginFrames to 1 per second. Limit must be at least
+  // 1, as the relative ordering of renderer / browser frame submissions allows
+  // us to have one outstanding undrawn frame under normal operation.
+  static constexpr uint32_t kUndrawnFrameLimit = 3;
 
   CompositorFrameSinkSupport(mojom::CompositorFrameSinkClient* client,
                              FrameSinkManagerImpl* frame_sink_manager,
@@ -288,7 +294,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // TODO(crbug.com/754872): Remove once tab capture has moved into VIZ.
   AggregatedDamageCallback aggregated_damage_callback_;
 
-  uint64_t last_frame_index_ = kFrameIndexStart;
+  uint64_t last_frame_index_ = kFrameIndexStart - 1;
 
   // The video capture clients hooking into this instance to observe frame
   // begins and damage, and then make CopyOutputRequests on the appropriate

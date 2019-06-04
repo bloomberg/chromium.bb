@@ -83,8 +83,7 @@ class VIZ_SERVICE_EXPORT Surface final {
   Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
           SurfaceAllocationGroup* allocation_group,
-          base::WeakPtr<SurfaceClient> surface_client,
-          bool block_activation_on_parent);
+          base::WeakPtr<SurfaceClient> surface_client);
   ~Surface();
 
   void SetDependencyDeadline(
@@ -118,10 +117,6 @@ class VIZ_SERVICE_EXPORT Surface final {
   // don't matter anyway.
   bool needs_sync_tokens() const {
     return surface_client_ ? surface_client_->NeedsSyncTokens() : false;
-  }
-
-  bool block_activation_on_parent() const {
-    return block_activation_on_parent_;
   }
 
   // Returns false if |frame| is invalid.
@@ -200,10 +195,6 @@ class VIZ_SERVICE_EXPORT Surface final {
     return HasActiveFrame() && !active_frame_data_->frame_acked;
   }
 
-  // Returns true if at any point, another Surface's CompositorFrame has
-  // depended on this Surface.
-  bool HasDependentFrame() const { return seen_first_surface_dependency_; }
-
   bool seen_first_surface_embedding() const {
     return seen_first_surface_embedding_;
   }
@@ -216,9 +207,6 @@ class VIZ_SERVICE_EXPORT Surface final {
   // Called when |surface_id| is activated for the first time and its part of a
   // referenced SurfaceRange.
   void OnChildActivatedForActiveFrame(const SurfaceId& surface_id);
-
-  // Called when this surface is embedded by another Surface's CompositorFrame.
-  void OnSurfaceDependencyAdded();
 
   // Called when the embedder of this surface has been activated and therefore
   // this surface should activate too by deadline inheritance.
@@ -312,13 +300,6 @@ class VIZ_SERVICE_EXPORT Surface final {
   base::Optional<FrameData> active_frame_data_;
   bool seen_first_frame_activation_ = false;
   bool seen_first_surface_embedding_ = false;
-  // Indicates whether another surface adds this surface as a dependency. When
-  // set to true, this surface will be unthrottled and the surface that is
-  // created after it will also not be throttled.
-  bool seen_first_surface_dependency_ = false;
-  // When false, this surface will not be subject to child throttling even if
-  // it's not embedded yet.
-  bool block_activation_on_parent_ = false;
 
   // A set of all valid SurfaceIds contained |last_surface_id_for_range_| to
   // avoid recompution.

@@ -153,6 +153,8 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
 }
 
 void CompositorFrameSinkSupport::OnSurfaceDrawn(Surface* surface) {
+  if (last_drawn_frame_index_ >= surface->GetActiveFrameIndex())
+    return;
   last_drawn_frame_index_ = surface->GetActiveFrameIndex();
 }
 
@@ -457,8 +459,6 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
     // to determine the freshness of a surface at aggregation time.
     const LocalSurfaceId& last_created_local_surface_id =
         last_created_surface_id_.local_surface_id();
-    bool last_surface_has_dependent_frame =
-        prev_surface && prev_surface->HasDependentFrame();
 
     bool child_initiated_synchronization_event =
         last_created_local_surface_id.is_valid() &&
@@ -485,14 +485,6 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
       return SubmitResult::SURFACE_ID_DECREASED;
     }
 
-    // If the last Surface doesn't have a dependent frame, and this frame
-    // corresponds to a child-initiated synchronization event then defer this
-    // Surface until a dependent frame arrives. This throttles child submission
-    // of CompositorFrames to the parent's embedding rate.
-    const bool block_activation_on_parent =
-        child_initiated_synchronization_event &&
-        !last_surface_has_dependent_frame;
-
     // Don't recreate a surface that was previously evicted. Drop the
     // CompositorFrame and return all its resources.
     if (IsEvicted(local_surface_id)) {
@@ -502,7 +494,7 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
     }
 
     current_surface = surface_manager_->CreateSurface(
-        weak_factory_.GetWeakPtr(), surface_info, block_activation_on_parent);
+        weak_factory_.GetWeakPtr(), surface_info);
     if (!current_surface) {
       TRACE_EVENT_INSTANT0("viz", "Surface belongs to another client",
                            TRACE_EVENT_SCOPE_THREAD);
@@ -788,17 +780,16 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
   if (!last_activated_surface_id_.is_valid())
     return true;
 
-  Surface* surface =
-      surface_manager_->GetSurfaceForId(last_activated_surface_id_);
-  // If client has not submitted any frames, or the first frame submitted is
-  // yet to be embedded, then allow the begin-frame to be dispatched to the
-  // client.
-  if (!surface || !surface->seen_first_surface_embedding())
+  // We should never throttle BeginFrames if there is another client waiting for
+  // this client to submit a frame.
+  if (surface_manager_->HasBlockedEmbedder(frame_sink_id_))
     return true;
 
-  // If the embedded surface doesn't have an active frame, send begin frame.
-  if (!surface->HasActiveFrame())
-    return true;
+  Surface* surface =
+      surface_manager_->GetSurfaceForId(last_activated_surface_id_);
+
+  DCHECK(surface);
+  DCHECK(surface->HasActiveFrame());
 
   uint64_t active_frame_index = surface->GetActiveFrameIndex();
 
@@ -807,13 +798,8 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
   // must be at least as large as our last drawn frame index.
   DCHECK_GE(active_frame_index, last_drawn_frame_index_);
 
-  // Determine the number of undrawn frames. If this is below our limit, send
-  // begin frame. Limit must be at least 1, as the relative ordering of
-  // renderer / browser frame submissions allows us to have one outstanding
-  // undrawn frame under normal operation.
-  constexpr uint64_t undrawn_frame_limit = 1;
   uint64_t num_undrawn_frames = active_frame_index - last_drawn_frame_index_;
-  if (num_undrawn_frames <= undrawn_frame_limit)
+  if (num_undrawn_frames <= kUndrawnFrameLimit)
     return true;
 
   // Send begin-frames if the previous begin-frame was sent more than 1 second

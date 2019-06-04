@@ -65,7 +65,7 @@ class FrameRateDeciderTest : public testing::Test,
     SurfaceInfo surface_info(surface_id, frame_.device_scale_factor(),
                              frame_.size_in_pixels());
     auto* surface =
-        surface_manager_->CreateSurface(surface_client(), surface_info, false);
+        surface_manager_->CreateSurface(surface_client(), surface_info);
 
     {
       FrameRateDecider::ScopedAggregate scope(frame_rate_decider_.get());
