@@ -21,8 +21,10 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.Promise;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -488,26 +490,22 @@ public class NotificationPlatformBridge {
             final String title, final String body, final Bitmap image, final Bitmap icon,
             final Bitmap badge, final int[] vibrationPattern, final long timestamp,
             final boolean renotify, final boolean silent, final ActionInfo[] actions) {
-        final String webApkPackage = WebApkValidator.queryFirstWebApkPackage(
-                ContextUtils.getApplicationContext(), scopeUrl);
-        if (webApkPackage != null) {
-            WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback callback =
-                    new WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback() {
-                        @Override
-                        public void onChecked(boolean doesBrowserBackWebApk) {
-                            displayNotificationInternal(notificationId, origin, scopeUrl, profileId,
-                                    incognito, title, body, image, icon, badge, vibrationPattern,
-                                    timestamp, renotify, silent, actions,
-                                    doesBrowserBackWebApk ? webApkPackage : "");
-                        }
-                    };
-            ChromeWebApkHost.checkChromeBacksWebApkAsync(webApkPackage, callback);
-            return;
-        }
+        getWebApkPackage(scopeUrl).then(
+                (Callback<String>) (webApkPackage)
+                        -> displayNotificationInternal(notificationId, origin, scopeUrl, profileId,
+                                incognito, title, body, image, icon, badge, vibrationPattern,
+                                timestamp, renotify, silent, actions, webApkPackage));
+    }
 
-        displayNotificationInternal(notificationId, origin, scopeUrl, profileId, incognito, title,
-                body, image, icon, badge, vibrationPattern, timestamp, renotify, silent, actions,
-                "");
+    private Promise<String> getWebApkPackage(String scopeUrl) {
+        String webApkPackage = WebApkValidator.queryFirstWebApkPackage(
+                ContextUtils.getApplicationContext(), scopeUrl);
+        if (webApkPackage == null) return Promise.fulfilled("");
+        Promise<String> promise = new Promise<>();
+        ChromeWebApkHost.checkChromeBacksWebApkAsync(webApkPackage,
+                (doesBrowserBackWebApk)
+                        -> promise.fulfill(doesBrowserBackWebApk ? webApkPackage : ""));
+        return promise;
     }
 
     /** Called after querying whether the browser backs the given WebAPK. */
@@ -517,12 +515,41 @@ public class NotificationPlatformBridge {
             boolean silent, ActionInfo[] actions, String webApkPackage) {
         nativeStoreCachedWebApkPackageForNotificationId(
                 mNativeNotificationPlatformBridge, notificationId, webApkPackage);
-
         // Record whether it's known whether notifications can be shown to the user at all.
         NotificationSystemStatusUtil.recordAppNotificationStatusHistogram();
 
+        NotificationBuilderBase notificationBuilder = prepareNotificationBuilder(notificationId,
+                origin, scopeUrl, profileId, incognito, title, body, image, icon, badge,
+                vibrationPattern, timestamp, renotify, silent, actions, webApkPackage);
+
+        // Delegate notification to WebAPK.
+        if (!webApkPackage.isEmpty()) {
+            WebApkServiceClient.getInstance().notifyNotification(
+                    webApkPackage, notificationBuilder, notificationId, PLATFORM_ID);
+            return;
+        }
+
+        // Delegate notification to TWA.
+        if (getTwaClient().twaExistsForScope(Uri.parse(scopeUrl))) {
+            getTwaClient().notifyNotification(Uri.parse(scopeUrl), notificationId, PLATFORM_ID,
+                    notificationBuilder, NotificationUmaTracker.getInstance());
+            return;
+        }
+
+        ChromeNotification notification =
+                buildNotification(notificationBuilder, notificationId, origin, actions, image);
+        // Display notification as Chrome.
+        mNotificationManager.notify(notification);
+        NotificationUmaTracker.getInstance().onNotificationShown(
+                NotificationUmaTracker.SystemNotificationType.SITES,
+                notification.getNotification());
+    }
+
+    private NotificationBuilderBase prepareNotificationBuilder(String notificationId, String origin,
+            String scopeUrl, String profileId, boolean incognito, String title, String body,
+            Bitmap image, Bitmap icon, Bitmap badge, int[] vibrationPattern, long timestamp,
+            boolean renotify, boolean silent, ActionInfo[] actions, String webApkPackage) {
         Context context = ContextUtils.getApplicationContext();
-        Resources res = context.getResources();
 
         PendingIntentProvider clickIntent = makePendingIntent(context,
                 NotificationConstants.ACTION_CLICK_NOTIFICATION, notificationId, origin, scopeUrl,
@@ -584,44 +611,38 @@ public class NotificationPlatformBridge {
                 makeDefaults(vibrationPattern.length, silent, vibrateEnabled));
         notificationBuilder.setVibrate(makeVibrationPattern(vibrationPattern));
 
-        if (forWebApk) {
-            WebApkServiceClient.getInstance().notifyNotification(
-                    webApkPackage, notificationBuilder, notificationId, PLATFORM_ID);
-        } else if (getTwaClient().twaExistsForScope(Uri.parse(scopeUrl))) {
-            getTwaClient().notifyNotification(Uri.parse(scopeUrl), notificationId, PLATFORM_ID,
-                    notificationBuilder, NotificationUmaTracker.getInstance());
-        } else {
-            // Set up a pending intent for going to the settings screen for |origin|.
-            Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(context,
-                    SingleWebsitePreferences.class.getName(),
-                    SingleWebsitePreferences.createFragmentArgsForSite(origin));
-            settingsIntent.setData(makeIntentData(notificationId, origin, -1 /* actionIndex */));
-            PendingIntent pendingSettingsIntent = PendingIntent.getActivity(context,
-                    PENDING_INTENT_REQUEST_CODE, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return notificationBuilder;
+    }
 
-            // If action buttons are displayed, there isn't room for the full Site Settings button
-            // label and icon, so abbreviate it. This has the unfortunate side-effect of
-            // unnecessarily abbreviating it on Android Wear also (crbug.com/576656). If custom
-            // layouts are enabled, the label and icon provided here only affect Android Wear, so
-            // don't abbreviate them.
-            boolean abbreviateSiteSettings = actions.length > 0 && !useCustomLayouts(hasImage);
-            int settingsIconId = abbreviateSiteSettings ? 0 : R.drawable.settings_cog;
-            CharSequence settingsTitle = abbreviateSiteSettings
-                    ? res.getString(R.string.notification_site_settings_button)
-                    : res.getString(R.string.page_info_site_settings_button);
-            // If the settings button is displayed together with the other buttons it has to be the
-            // last one, so add it after the other actions.
-            notificationBuilder.addSettingsAction(
-                    settingsIconId, settingsTitle, pendingSettingsIntent);
+    private ChromeNotification buildNotification(NotificationBuilderBase notificationBuilder,
+            String notificationId, String origin, ActionInfo[] actions, Bitmap image) {
+        Context context = ContextUtils.getApplicationContext();
+        Resources res = context.getResources();
+        // Set up a pending intent for going to the settings screen for |origin|.
+        Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(context,
+                SingleWebsitePreferences.class.getName(),
+                SingleWebsitePreferences.createFragmentArgsForSite(origin));
+        settingsIntent.setData(makeIntentData(notificationId, origin, -1 /* actionIndex */));
+        PendingIntent pendingSettingsIntent = PendingIntent.getActivity(context,
+                PENDING_INTENT_REQUEST_CODE, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-            ChromeNotification notification = notificationBuilder.build(new NotificationMetadata(
-                    NotificationUmaTracker.SystemNotificationType.SITES,
-                    notificationId /* notificationTag */, PLATFORM_ID /* notificationId */));
-            mNotificationManager.notify(notification);
-            NotificationUmaTracker.getInstance().onNotificationShown(
-                    NotificationUmaTracker.SystemNotificationType.SITES,
-                    notification.getNotification());
-        }
+        // If action buttons are displayed, there isn't room for the full Site Settings button
+        // label and icon, so abbreviate it. This has the unfortunate side-effect of
+        // unnecessarily abbreviating it on Android Wear also (crbug.com/576656). If custom
+        // layouts are enabled, the label and icon provided here only affect Android Wear, so
+        // don't abbreviate them.
+        boolean abbreviateSiteSettings = actions.length > 0 && !useCustomLayouts(image != null);
+        int settingsIconId = abbreviateSiteSettings ? 0 : R.drawable.settings_cog;
+        CharSequence settingsTitle = abbreviateSiteSettings
+                ? res.getString(R.string.notification_site_settings_button)
+                : res.getString(R.string.page_info_site_settings_button);
+        // If the settings button is displayed together with the other buttons it has to be the
+        // last one, so add it after the other actions.
+        notificationBuilder.addSettingsAction(settingsIconId, settingsTitle, pendingSettingsIntent);
+
+        return notificationBuilder.build(
+                new NotificationMetadata(NotificationUmaTracker.SystemNotificationType.SITES,
+                        notificationId /* notificationTag */, PLATFORM_ID /* notificationId */));
     }
 
     private NotificationBuilderBase createNotificationBuilder(Context context, boolean hasImage) {
