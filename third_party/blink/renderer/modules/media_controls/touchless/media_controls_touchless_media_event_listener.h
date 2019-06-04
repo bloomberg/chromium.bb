@@ -29,7 +29,7 @@ class MediaControlsTouchlessMediaEventListener final
  private:
   HTMLMediaElement& GetMediaElement();
 
-  HeapListHashSet<Member<MediaControlsTouchlessMediaEventListenerObserver>>
+  HeapLinkedHashSet<Member<MediaControlsTouchlessMediaEventListenerObserver>>
       observers_;
   Member<HTMLMediaElement> media_element_;
 
