@@ -1591,11 +1591,18 @@ class Changelist(object):
   def RunHook(self, committing, may_prompt, verbose, change, parallel):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
     try:
-      return presubmit_support.DoPresubmitChecks(change, committing,
+      start = time_time()
+      result = presubmit_support.DoPresubmitChecks(change, committing,
           verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
           default_presubmit=None, may_prompt=may_prompt,
           gerrit_obj=self._codereview_impl.GetGerritObjForPresubmit(),
           parallel=parallel)
+      metrics.collector.add_repeated('sub_commands', {
+        'command': 'presubmit',
+        'execution_time': time_time() - start,
+        'exit_code': 0 if result.should_continue() else 1,
+      })
+      return result
     except presubmit_support.PresubmitFailure as e:
       DieWithError('%s\nMaybe your depot_tools is out of date?' % e)
 

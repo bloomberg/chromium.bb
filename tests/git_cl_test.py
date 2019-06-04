@@ -894,6 +894,13 @@ class TestGitCl(TestCase):
 
     calls += [
       ((['git', 'config', 'user.email'],), 'me@example.com'),
+      (('time.time',), 1000,),
+      (('time.time',), 3000,),
+      (('add_repeated', 'sub_commands', {
+          'execution_time': 2000,
+          'command': 'presubmit',
+          'exit_code': 0
+      }), None,),
       ((['git', 'diff', '--no-ext-diff', '--stat', '-l100000', '-C50'] +
          ([custom_cl_base] if custom_cl_base else
           [ancestor_revision, 'HEAD']),),
