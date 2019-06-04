@@ -569,24 +569,10 @@ void RenderWidgetInputHandler::InjectGestureScrollEvent(
     ui::LatencyInfo latency_info;
     ui::WebScopedInputEvent web_scoped_gesture_event(gesture_event.release());
 
-    // We have an empty callback since sending gestures through the
-    // system can generate overscroll params - if the user holds down the
-    // mouse on one of the arrows the autoscroll timer continues to fire to
-    // support infinite scrollers.
-    // For scrollbar, we ignore overscroll params, as scrollbar doesn't
-    // participate in overscroll.
-    // TODO(dlibby): Change blink to not propagate overscroll for scrollbar
-    // gestures and remove this callback. Currently non-blocking events are
-    // set up such that the callback is not propagated into the event queue,
-    // and we DCHECK when overscroll data is passed to the event handler.
-    HandledEventCallback handled_event = base::BindOnce(
-        [](InputEventAckState, const ui::LatencyInfo& latency_info,
-           std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
-           base::Optional<cc::TouchAction> touch_action) {});
     widget_->GetInputEventQueue()->HandleEvent(
         std::move(web_scoped_gesture_event), latency_info,
-        DISPATCH_TYPE_BLOCKING, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-        std::move(handled_event));
+        DISPATCH_TYPE_NON_BLOCKING, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+        HandledEventCallback());
   }
 }
 
