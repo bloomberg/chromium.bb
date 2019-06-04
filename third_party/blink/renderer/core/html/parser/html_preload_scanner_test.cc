@@ -1223,8 +1223,6 @@ TEST_F(HTMLPreloadScannerTest, LazyLoadImage_DisabledForSmallImages) {
       {"<img src='foo.jpg' style='height: 1px; width: 1px'>", false},
       {"<img src='foo.jpg' height='10px' width='10px'>", false},
       {"<img src='foo.jpg' style='height: 10px; width: 10px'>", false},
-      {"<img src='foo.jpg' height='20px' width='20px'>", true},
-      {"<img src='foo.jpg' style='height: 20px; width: 20px'>", true},
       {"<img src='foo.jpg' height='1px'>", true},
       {"<img src='foo.jpg' style='height: 1px;'>", true},
       {"<img src='foo.jpg' width='1px'>", true},
@@ -1278,6 +1276,76 @@ TEST_F(HTMLPreloadScannerTest,
       {"<img src='foo.jpg' loading='eager'>", false},
   };
   for (const auto& test_case : test_cases)
+    Test(test_case);
+}
+
+TEST_F(HTMLPreloadScannerTest,
+       LazyLoadImage_FeatureAutomaticPreloadForLargeImages) {
+  // Large images should not be preloaded, when loading is auto or lazy.
+  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
+  ScopedAutomaticLazyImageLoadingForTest
+      scoped_automatic_lazy_image_loading_for_test(true);
+  GetDocument().GetSettings()->SetLazyLoadEnabled(true);
+  RunSetUp(kViewportEnabled);
+  PreloadScannerTestCase test_cases[] = {
+      {"http://example.test", "<img src='foo.jpg' height='20px' width='20px'>",
+       nullptr, "http://example.test/", ResourceType::kImage, 0},
+      {"http://example.test",
+       "<img src='foo.jpg' style='height: 20px; width: 20px'>", nullptr,
+       "http://example.test/", ResourceType::kImage, 0},
+      {"http://example.test",
+       "<img src='foo.jpg' height='20px' width='20px' loading='lazy'>", nullptr,
+       "http://example.test/", ResourceType::kImage, 0},
+      {"http://example.test",
+       "<img src='foo.jpg' height='20px' width='20px' loading='auto'>", nullptr,
+       "http://example.test/", ResourceType::kImage, 0},
+      {"http://example.test",
+       "<img src='foo.jpg' style='height: 20px; width: 20px' loading='lazy'>",
+       nullptr, "http://example.test/", ResourceType::kImage, 0},
+      {"http://example.test",
+       "<img src='foo.jpg' style='height: 20px; width: 20px' loading='auto'>",
+       nullptr, "http://example.test/", ResourceType::kImage, 0},
+  };
+  for (const auto& test_case : test_cases)
+    Test(test_case);
+
+  // When loading is eager, lazyload is disabled and preload happens.
+  LazyLoadImageTestCase test_cases_that_preload[] = {
+      {"<img src='foo.jpg' height='20px' width='20px' loading='eager'>", false},
+      {"<img src='foo.jpg' style='height: 20px; width: 20px' loading='eager'>",
+       false},
+  };
+  for (const auto& test_case : test_cases_that_preload)
+    Test(test_case);
+}
+
+TEST_F(HTMLPreloadScannerTest,
+       LazyLoadImage_FeatureExplicitPreloadForLargeImages) {
+  // Large images should not be preloaded, when loading is lazy.
+  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
+  GetDocument().GetSettings()->SetLazyLoadEnabled(true);
+  RunSetUp(kViewportEnabled);
+  PreloadScannerTestCase test_cases[] = {
+      {"http://example.test",
+       "<img src='foo.jpg' height='20px' width='20px' loading='lazy'>", nullptr,
+       "http://example.test/", ResourceType::kImage, 0},
+      {"http://example.test",
+       "<img src='foo.jpg' style='height: 20px; width: 20px' loading='lazy'>",
+       nullptr, "http://example.test/", ResourceType::kImage, 0},
+  };
+  for (const auto& test_case : test_cases)
+    Test(test_case);
+
+  // When loading is eager or auto, lazyload is disabled and preload happens.
+  LazyLoadImageTestCase test_cases_that_preload[] = {
+      {"<img src='foo.jpg' height='20px' width='20px' loading='eager'>", false},
+      {"<img src='foo.jpg' style='height: 20px; width: 20px' loading='eager'>",
+       false},
+      {"<img src='foo.jpg' height='20px' width='20px' loading='auto'>", false},
+      {"<img src='foo.jpg' style='height: 20px; width: 20px' loading='auto'>",
+       false},
+  };
+  for (const auto& test_case : test_cases_that_preload)
     Test(test_case);
 }
 

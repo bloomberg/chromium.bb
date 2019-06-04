@@ -56,6 +56,12 @@ struct CORE_EXPORT CachedDocumentParameters {
   USING_FAST_MALLOC(CachedDocumentParameters);
 
  public:
+  enum class LazyLoadImageEnabledState {
+    kDisabled,
+    kEnabledExplicit,
+    kEnabledAutomatic
+  };
+
   explicit CachedDocumentParameters(Document*);
   CachedDocumentParameters() = default;
 
