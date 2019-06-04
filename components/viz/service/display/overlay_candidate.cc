@@ -20,7 +20,7 @@
 #include "components/viz/service/display/display_resource_provider.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
-#include "ui/gl/dc_renderer_layer_params.h"
+#include "ui/gfx/video_types.h"
 
 namespace viz {
 
@@ -181,12 +181,12 @@ bool OverlayCandidate::RequiresOverlay(const DrawQuad* quad) {
   switch (quad->material) {
     case DrawQuad::Material::kTextureContent:
       return TextureDrawQuad::MaterialCast(quad)->protected_video_type ==
-             ui::ProtectedVideoType::kHardwareProtected;
+             gfx::ProtectedVideoType::kHardwareProtected;
     case DrawQuad::Material::kVideoHole:
       return true;
     case DrawQuad::Material::kYuvVideoContent:
       return YUVVideoDrawQuad::MaterialCast(quad)->protected_video_type ==
-             ui::ProtectedVideoType::kHardwareProtected;
+             gfx::ProtectedVideoType::kHardwareProtected;
     default:
       return false;
   }

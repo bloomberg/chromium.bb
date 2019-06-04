@@ -325,8 +325,8 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   bool y_flipped = true;
   bool nearest_neighbor = true;
   bool secure_output_only = true;
-  ui::ProtectedVideoType protected_video_type =
-      ui::ProtectedVideoType::kSoftwareProtected;
+  gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kSoftwareProtected;
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_NEW(TextureDrawQuad, visible_rect, needs_blending, resource_id,
@@ -424,8 +424,8 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   float resource_offset = 0.5f;
   float resource_multiplier = 2.001f;
   uint32_t bits_per_channel = 5;
-  ui::ProtectedVideoType protected_video_type =
-      ui::ProtectedVideoType::kHardwareProtected;
+  gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kHardwareProtected;
   gfx::ColorSpace video_color_space = gfx::ColorSpace::CreateJpeg();
   CREATE_SHARED_STATE();
 
@@ -448,7 +448,7 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   EXPECT_EQ(resource_offset, copy_quad->resource_offset);
   EXPECT_EQ(resource_multiplier, copy_quad->resource_multiplier);
   EXPECT_EQ(bits_per_channel, copy_quad->bits_per_channel);
-  EXPECT_EQ(ui::ProtectedVideoType::kClear, copy_quad->protected_video_type);
+  EXPECT_EQ(gfx::ProtectedVideoType::kClear, copy_quad->protected_video_type);
 
   CREATE_QUAD_ALL(YUVVideoDrawQuad, ya_tex_coord_rect, uv_tex_coord_rect,
                   ya_tex_size, uv_tex_size, y_plane_resource_id,
@@ -621,7 +621,8 @@ TEST_F(DrawQuadIteratorTest, TextureDrawQuad) {
   bool y_flipped = true;
   bool nearest_neighbor = true;
   bool secure_output_only = true;
-  ui::ProtectedVideoType protected_video_type = ui::ProtectedVideoType::kClear;
+  gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kClear;
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_NEW(TextureDrawQuad, visible_rect, needs_blending, resource_id,

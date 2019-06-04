@@ -277,7 +277,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
                canvas_resource_size, kPremultipliedAlpha, uv_top_left,
                uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity, yflipped,
                kNearestNeighbor, /*secure_output_only=*/false,
-               ui::ProtectedVideoType::kClear);
+               gfx::ProtectedVideoType::kClear);
 
   frame->render_pass_list.push_back(std::move(pass));
 

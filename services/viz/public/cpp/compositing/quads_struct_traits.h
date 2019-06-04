@@ -35,14 +35,15 @@ viz::DrawQuad* AllocateAndConstruct(
     viz::QuadList* list);
 
 template <>
-struct EnumTraits<viz::mojom::ProtectedVideoState, ui::ProtectedVideoType> {
-  static viz::mojom::ProtectedVideoState ToMojom(ui::ProtectedVideoType input) {
+struct EnumTraits<viz::mojom::ProtectedVideoState, gfx::ProtectedVideoType> {
+  static viz::mojom::ProtectedVideoState ToMojom(
+      gfx::ProtectedVideoType input) {
     switch (input) {
-      case ui::ProtectedVideoType::kClear:
+      case gfx::ProtectedVideoType::kClear:
         return viz::mojom::ProtectedVideoState::kClear;
-      case ui::ProtectedVideoType::kHardwareProtected:
+      case gfx::ProtectedVideoType::kHardwareProtected:
         return viz::mojom::ProtectedVideoState::kHardwareProtected;
-      case ui::ProtectedVideoType::kSoftwareProtected:
+      case gfx::ProtectedVideoType::kSoftwareProtected:
         return viz::mojom::ProtectedVideoState::kSoftwareProtected;
     }
     NOTREACHED();
@@ -50,16 +51,16 @@ struct EnumTraits<viz::mojom::ProtectedVideoState, ui::ProtectedVideoType> {
   }
 
   static bool FromMojom(viz::mojom::ProtectedVideoState input,
-                        ui::ProtectedVideoType* out) {
+                        gfx::ProtectedVideoType* out) {
     switch (input) {
       case viz::mojom::ProtectedVideoState::kClear:
-        *out = ui::ProtectedVideoType::kClear;
+        *out = gfx::ProtectedVideoType::kClear;
         return true;
       case viz::mojom::ProtectedVideoState::kHardwareProtected:
-        *out = ui::ProtectedVideoType::kHardwareProtected;
+        *out = gfx::ProtectedVideoType::kHardwareProtected;
         return true;
       case viz::mojom::ProtectedVideoState::kSoftwareProtected:
-        *out = ui::ProtectedVideoType::kSoftwareProtected;
+        *out = gfx::ProtectedVideoType::kSoftwareProtected;
         return true;
     }
     NOTREACHED();
@@ -405,7 +406,7 @@ struct StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad> {
     return quad->secure_output_only;
   }
 
-  static ui::ProtectedVideoType protected_video_type(
+  static gfx::ProtectedVideoType protected_video_type(
       const viz::DrawQuad& input) {
     const viz::TextureDrawQuad* quad =
         viz::TextureDrawQuad::MaterialCast(&input);
@@ -523,7 +524,7 @@ struct StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad> {
         viz::YUVVideoDrawQuad::MaterialCast(&input);
     return quad->video_color_space;
   }
-  static ui::ProtectedVideoType protected_video_type(
+  static gfx::ProtectedVideoType protected_video_type(
       const viz::DrawQuad& input) {
     const viz::YUVVideoDrawQuad* quad =
         viz::YUVVideoDrawQuad::MaterialCast(&input);

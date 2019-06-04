@@ -168,6 +168,7 @@ jumbo_component("gfx") {
     "ui_gfx_exports.cc",
     "utf16_indexing.cc",
     "utf16_indexing.h",
+    "video_types.h",
     "vsync_provider.cc",
     "vsync_provider.h",
     "win/crash_id_helper.cc",

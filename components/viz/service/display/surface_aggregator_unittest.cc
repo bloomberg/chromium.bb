@@ -4094,8 +4094,8 @@ void SubmitCompositorFrameWithResources(
     bool flipped = false;
     bool nearest_neighbor = false;
     bool secure_output_only = true;
-    ui::ProtectedVideoType protected_video_type =
-        ui::ProtectedVideoType::kClear;
+    gfx::ProtectedVideoType protected_video_type =
+        gfx::ProtectedVideoType::kClear;
     quad->SetAll(sqs, rect, visible_rect, needs_blending, resource_ids[i],
                  gfx::Size(), premultiplied_alpha, uv_top_left, uv_bottom_right,
                  background_color, vertex_opacity, flipped, nearest_neighbor,

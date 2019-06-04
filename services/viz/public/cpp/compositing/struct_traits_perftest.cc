@@ -171,8 +171,8 @@ class VizSerializationPerfTest : public testing::Test {
     bool arbitrary_bool4 = true;
     bool arbitrary_bool5 = false;
     bool arbitrary_bool6 = true;
-    ui::ProtectedVideoType arbitrary_protected_video_type =
-        ui::ProtectedVideoType::kClear;
+    gfx::ProtectedVideoType arbitrary_protected_video_type =
+        gfx::ProtectedVideoType::kClear;
     int arbitrary_context_id1 = 12;
     int arbitrary_context_id2 = 57;
     int arbitrary_context_id3 = -503;

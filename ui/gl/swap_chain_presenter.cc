@@ -25,8 +25,8 @@ namespace {
 const base::Feature kFallbackBT709VideoToBT601{
     "FallbackBT709VideoToBT601", base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsProtectedVideo(ui::ProtectedVideoType protected_video_type) {
-  return protected_video_type != ui::ProtectedVideoType::kClear;
+bool IsProtectedVideo(gfx::ProtectedVideoType protected_video_type) {
+  return protected_video_type != gfx::ProtectedVideoType::kClear;
 }
 
 class ScopedReleaseKeyedMutex {
@@ -98,16 +98,16 @@ void RecordOverlayFullScreenTypes(bool workaround_applied,
       workaround_applied);
 }
 
-const char* ProtectedVideoTypeToString(ui::ProtectedVideoType type) {
+const char* ProtectedVideoTypeToString(gfx::ProtectedVideoType type) {
   switch (type) {
-    case ui::ProtectedVideoType::kClear:
+    case gfx::ProtectedVideoType::kClear:
       return "Clear";
-    case ui::ProtectedVideoType::kSoftwareProtected:
+    case gfx::ProtectedVideoType::kSoftwareProtected:
       if (DirectCompositionSurfaceWin::AreOverlaysSupported())
         return "SoftwareProtected.HasOverlaySupport";
       else
         return "SoftwareProtected.NoOverlaySupport";
-    case ui::ProtectedVideoType::kHardwareProtected:
+    case gfx::ProtectedVideoType::kHardwareProtected:
       return "HardwareProtected";
   }
 }
@@ -203,19 +203,19 @@ SwapChainPresenter::SwapChainPresenter(
 SwapChainPresenter::~SwapChainPresenter() = default;
 
 bool SwapChainPresenter::ShouldUseYUVSwapChain(
-    ui::ProtectedVideoType protected_video_type) {
+    gfx::ProtectedVideoType protected_video_type) {
   // TODO(crbug.com/850799): Assess power/perf impact when protected video
   // swap chain is composited by DWM.
 
   // Always prefer YUV swap chain for hardware protected video for now.
-  if (protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
+  if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
     return true;
 
   // For software protected video, BGRA swap chain is preferred if hardware
   // overlay is not supported for better power efficiency.
   // Currently, software protected video is the only case that overlay swap
   // chain is used when hardware overlay is not supported.
-  if (protected_video_type == ui::ProtectedVideoType::kSoftwareProtected &&
+  if (protected_video_type == gfx::ProtectedVideoType::kSoftwareProtected &&
       !DirectCompositionSurfaceWin::AreOverlaysSupported())
     return false;
 
@@ -1057,7 +1057,7 @@ void SwapChainPresenter::ReleaseSwapChainResources() {
 bool SwapChainPresenter::ReallocateSwapChain(
     const gfx::Size& swap_chain_size,
     bool use_yuv_swap_chain,
-    ui::ProtectedVideoType protected_video_type,
+    gfx::ProtectedVideoType protected_video_type,
     bool z_order) {
   TRACE_EVENT2("gpu", "SwapChainPresenter::ReallocateSwapChain", "size",
                swap_chain_size.ToString(), "yuv", use_yuv_swap_chain);
@@ -1124,7 +1124,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
       DXGI_SWAP_CHAIN_FLAG_YUV_VIDEO | DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO;
   if (IsProtectedVideo(protected_video_type))
     desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
-  if (protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
+  if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
     desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
   desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 
@@ -1166,7 +1166,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
     desc.Flags = 0;
     if (IsProtectedVideo(protected_video_type))
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
-    if (protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
+    if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
 
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(

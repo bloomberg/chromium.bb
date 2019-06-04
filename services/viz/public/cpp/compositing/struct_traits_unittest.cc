@@ -982,8 +982,8 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const bool nearest_neighbor = true;
   const bool secure_output_only = true;
   const bool needs_blending = true;
-  const ui::ProtectedVideoType protected_video_type =
-      ui::ProtectedVideoType::kClear;
+  const gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kClear;
   const gfx::Size resource_size_in_pixels5(1234, 5678);
   TextureDrawQuad* texture_draw_quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -1160,8 +1160,8 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   const float resource_offset = 1337.5f;
   const float resource_multiplier = 1234.6f;
   const uint32_t bits_per_channel = 13;
-  const ui::ProtectedVideoType protected_video_type =
-      ui::ProtectedVideoType::kSoftwareProtected;
+  const gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kSoftwareProtected;
 
   SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
   YUVVideoDrawQuad* quad =

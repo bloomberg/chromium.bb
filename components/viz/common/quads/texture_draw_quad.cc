@@ -31,7 +31,7 @@ void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              bool y_flipped,
                              bool nearest_neighbor,
                              bool secure_output_only,
-                             ui::ProtectedVideoType protected_video_type) {
+                             gfx::ProtectedVideoType protected_video_type) {
   needs_blending = needs_blending || vertex_opacity[0] != 1.0f ||
                    vertex_opacity[1] != 1.0f || vertex_opacity[2] != 1.0f ||
                    vertex_opacity[3] != 1.0f;
@@ -67,7 +67,7 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              bool y_flipped,
                              bool nearest_neighbor,
                              bool secure_output_only,
-                             ui::ProtectedVideoType protected_video_type) {
+                             gfx::ProtectedVideoType protected_video_type) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::Material::kTextureContent, rect,
                    visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;

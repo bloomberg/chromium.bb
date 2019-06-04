@@ -691,7 +691,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionHigh) {
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
                        SK_ColorTRANSPARENT, vertex_opacity, flipped,
                        nearest_neighbor, /*secure_output_only=*/false,
-                       ui::ProtectedVideoType::kClear);
+                       gfx::ProtectedVideoType::kClear);
 
   DrawFrame(renderer_.get(), viewport_size);
 
@@ -754,7 +754,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
                        SK_ColorTRANSPARENT, vertex_opacity, flipped,
                        nearest_neighbor, /*secure_output_only=*/false,
-                       ui::ProtectedVideoType::kClear);
+                       gfx::ProtectedVideoType::kClear);
 
   DrawFrame(renderer_.get(), viewport_size);
 
@@ -2275,7 +2275,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
-      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+      /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 
   // DirectRenderer::DrawFrame calls into OverlayProcessor::ProcessForOverlays.
   // Attempt will be called for each strategy in OverlayProcessor. We have
@@ -2302,7 +2302,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
-      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+      /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(false));
@@ -2325,7 +2325,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
-      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+      /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(true));
@@ -2491,7 +2491,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
                        parent_resource_id, premultiplied_alpha, uv_top_left,
                        uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
                        flipped, nearest_neighbor, /*secure_output_only=*/false,
-                       ui::ProtectedVideoType::kClear);
+                       gfx::ProtectedVideoType::kClear);
 
   // The verified flush flag will be set by
   // ClientResourceProvider::PrepareSendToParent. Before checking if the
@@ -4180,7 +4180,7 @@ TEST_F(GLRendererWithGpuFenceTest,
       needs_blending, create_overlay_resource(), premultiplied_alpha,
       uv_top_left, uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
       flipped, nearest_neighbor,
-      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+      /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 
   EXPECT_CALL(overlay_scheduler,
               Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, kSurfaceOverlayTextureId,

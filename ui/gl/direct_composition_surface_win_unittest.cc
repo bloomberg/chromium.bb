@@ -508,7 +508,7 @@ TEST_F(DirectCompositionSurfaceTest, ProtectedVideos) {
     params.uv_image = image_dxgi;
     params.quad_rect = gfx::Rect(window_size);
     params.content_rect = gfx::Rect(texture_size);
-    params.protected_video_type = ui::ProtectedVideoType::kClear;
+    params.protected_video_type = gfx::ProtectedVideoType::kClear;
 
     surface_->ScheduleDCLayer(params);
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
@@ -532,7 +532,7 @@ TEST_F(DirectCompositionSurfaceTest, ProtectedVideos) {
     params.uv_image = image_dxgi;
     params.quad_rect = gfx::Rect(window_size);
     params.content_rect = gfx::Rect(texture_size);
-    params.protected_video_type = ui::ProtectedVideoType::kSoftwareProtected;
+    params.protected_video_type = gfx::ProtectedVideoType::kSoftwareProtected;
 
     surface_->ScheduleDCLayer(params);
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK,

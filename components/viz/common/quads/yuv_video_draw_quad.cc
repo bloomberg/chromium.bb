@@ -66,7 +66,7 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               float offset,
                               float multiplier,
                               uint32_t bits_per_channel,
-                              ui::ProtectedVideoType protected_video_type) {
+                              gfx::ProtectedVideoType protected_video_type) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::Material::kYuvVideoContent,
                    rect, visible_rect, needs_blending);
   this->ya_tex_coord_rect = ya_tex_coord_rect;

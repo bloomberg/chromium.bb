@@ -482,7 +482,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
                    /*background_color=*/SK_ColorTRANSPARENT, vertex_opacity,
                    /*flipped=*/false,
                    /*nearest_neighbor=*/false, /*secure_output_only=*/false,
-                   ui::ProtectedVideoType::kClear);
+                   gfx::ProtectedVideoType::kClear);
       ValidateQuadResources(quad);
       break;
     }

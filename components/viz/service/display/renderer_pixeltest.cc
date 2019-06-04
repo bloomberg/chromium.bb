@@ -275,7 +275,7 @@ void CreateTestTwoColoredTextureDrawQuad(
                premultiplied_alpha, uv_top_left, uv_bottom_right,
                background_color, vertex_opacity, flipped_texture_quad,
                nearest_neighbor, /*secure_output_only=*/false,
-               ui::ProtectedVideoType::kClear);
+               gfx::ProtectedVideoType::kClear);
 }
 
 void CreateTestTextureDrawQuad(
@@ -335,7 +335,7 @@ void CreateTestTextureDrawQuad(
   quad->SetNew(shared_state, rect, rect, needs_blending, mapped_resource,
                premultiplied_alpha, uv_top_left, uv_bottom_right,
                background_color, vertex_opacity, flipped, nearest_neighbor,
-               /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+               /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 }
 
 void CreateTestTextureDrawQuad(
@@ -521,7 +521,7 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
   quad->SetNew(shared_state, rect, rect, needs_blending, mapped_resource_y,
                false, tex_coord_rect.origin(), tex_coord_rect.bottom_right(),
                SK_ColorBLACK, vertex_opacity, false, false,
-               /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+               /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 }
 
 // Upshift video frame to 10 bit.
@@ -3766,7 +3766,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
   quad->SetNew(shared_state, viewport, viewport, needs_blending,
                mapped_resource, false, gfx::PointF(0, 0), gfx::PointF(1, 1),
                SK_ColorBLACK, vertex_opacity, false, nearest_neighbor,
-               /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+               /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -3820,7 +3820,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
   quad->SetNew(shared_state, viewport, viewport, needs_blending,
                mapped_resource, false, gfx::PointF(0, 0), gfx::PointF(1, 1),
                SK_ColorBLACK, vertex_opacity, false, nearest_neighbor,
-               /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+               /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -4196,7 +4196,7 @@ TYPED_TEST(GPURendererPixelTest, TextureQuadBatching) {
           shared_state, layer_rect, layer_rect, needs_blending, mapped_resource,
           true, uv_rect.origin(), uv_rect.bottom_right(), SK_ColorWHITE,
           vertex_opacity, false, false, /*secure_output_only=*/false,
-          ui::ProtectedVideoType::kClear);
+          gfx::ProtectedVideoType::kClear);
     }
   }
 
@@ -4372,7 +4372,7 @@ TYPED_TEST(GPURendererPixelTest, RoundedCornerSimpleTextureDrawQuad) {
   blue->SetNew(shared_state_rounded, blue_rect, blue_rect, needs_blending,
                mapped_resource, true, uv_top_left, uv_bottom_right,
                SK_ColorBLACK, vertex_opacity, flipped, nearest_neighbor,
-               /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+               /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 
   SharedQuadState* shared_state_normal = CreateTestSharedQuadState(
       quad_to_target_transform, viewport_rect, root_pass.get(), gfx::RRectF());
@@ -4825,7 +4825,7 @@ class ColorTransformPixelTest
                    this->premultiplied_alpha_, uv_top_left, uv_bottom_right,
                    SK_ColorBLACK, vertex_opacity, flipped, nearest_neighbor,
                    /*secure_output_only=*/false,
-                   ui::ProtectedVideoType::kClear);
+                   gfx::ProtectedVideoType::kClear);
 
       auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
       color_quad->SetNew(shared_state, rect, rect, SK_ColorBLACK, false);

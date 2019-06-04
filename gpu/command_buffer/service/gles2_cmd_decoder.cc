@@ -19431,7 +19431,7 @@ void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
                                                  GLint clip_height,
                                                  GLuint protected_video_type) {
   if (protected_video_type >
-      static_cast<GLuint>(ui::ProtectedVideoType::kMaxValue)) {
+      static_cast<GLuint>(gfx::ProtectedVideoType::kMaxValue)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
                        "invalid protected video type");
     return;
@@ -19476,7 +19476,7 @@ void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
   params.is_clipped = is_clipped;
   params.clip_rect = gfx::Rect(clip_x, clip_y, clip_width, clip_height);
   params.protected_video_type =
-      static_cast<ui::ProtectedVideoType>(protected_video_type);
+      static_cast<gfx::ProtectedVideoType>(protected_video_type);
 
   if (!surface_->ScheduleDCLayer(params)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleDCLayerCHROMIUM",

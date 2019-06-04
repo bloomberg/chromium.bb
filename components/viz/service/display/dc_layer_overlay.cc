@@ -52,21 +52,21 @@ DCLayerResult FromYUVQuad(const YUVVideoDrawQuad* quad,
   // Hardware protected video must use Direct Composition Overlay
   if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver &&
       quad->protected_video_type !=
-          ui::ProtectedVideoType::kHardwareProtected) {
+          gfx::ProtectedVideoType::kHardwareProtected) {
     return DC_LAYER_FAILED_QUAD_BLEND_MODE;
   }
   // To support software protected video on machines without hardware overlay
   // capability. Don't do dc layer overlay if no hardware support.
   if (!has_hw_overlay_support &&
       quad->protected_video_type !=
-          ui::ProtectedVideoType::kSoftwareProtected) {
+          gfx::ProtectedVideoType::kSoftwareProtected) {
     return DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT;
   }
 
   if (!quad->shared_quad_state->quad_to_target_transform
            .Preserves2dAxisAlignment() &&
       quad->protected_video_type !=
-          ui::ProtectedVideoType::kHardwareProtected &&
+          gfx::ProtectedVideoType::kHardwareProtected &&
       !base::FeatureList::IsEnabled(
           features::kDirectCompositionComplexOverlays)) {
     return DC_LAYER_FAILED_COMPLEX_TRANSFORM;
@@ -74,7 +74,7 @@ DCLayerResult FromYUVQuad(const YUVVideoDrawQuad* quad,
 
   if (current_frame_processed_overlay_count > 0 &&
       quad->protected_video_type !=
-          ui::ProtectedVideoType::kHardwareProtected) {
+          gfx::ProtectedVideoType::kHardwareProtected) {
     return DC_LAYER_FAILED_TOO_MANY_OVERLAYS;
   }
 
@@ -165,17 +165,17 @@ bool HasOccludingQuads(const gfx::RectF& target_quad,
 }
 
 void RecordDCLayerResult(DCLayerResult result,
-                         ui::ProtectedVideoType protected_video_type) {
+                         gfx::ProtectedVideoType protected_video_type) {
   switch (protected_video_type) {
-    case ui::ProtectedVideoType::kClear:
+    case gfx::ProtectedVideoType::kClear:
       UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.DCLayerResult2.Clear",
                                 result);
       break;
-    case ui::ProtectedVideoType::kSoftwareProtected:
+    case gfx::ProtectedVideoType::kSoftwareProtected:
       UMA_HISTOGRAM_ENUMERATION(
           "GPU.DirectComposition.DCLayerResult2.SoftwareProtected", result);
       break;
-    case ui::ProtectedVideoType::kHardwareProtected:
+    case gfx::ProtectedVideoType::kHardwareProtected:
       UMA_HISTOGRAM_ENUMERATION(
           "GPU.DirectComposition.DCLayerResult2.HardwareProtected", result);
       break;
@@ -355,7 +355,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
 
     DCLayerOverlay dc_layer;
     DCLayerResult result;
-    auto uma_protected_video_type = ui::ProtectedVideoType::kClear;
+    auto uma_protected_video_type = gfx::ProtectedVideoType::kClear;
     switch (it->material) {
       case DrawQuad::Material::kYuvVideoContent:
         result = FromYUVQuad(YUVVideoDrawQuad::MaterialCast(*it),

@@ -4538,7 +4538,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
     GLint clip_height,
     GLuint protected_video_type) {
   if (protected_video_type >
-      static_cast<GLuint>(ui::ProtectedVideoType::kMaxValue)) {
+      static_cast<GLuint>(gfx::ProtectedVideoType::kMaxValue)) {
     InsertError(GL_INVALID_VALUE, "invalid protected video type");
     return error::kNoError;
   }
@@ -4581,7 +4581,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
   params.is_clipped = is_clipped;
   params.clip_rect = gfx::Rect(clip_x, clip_y, clip_width, clip_height);
   params.protected_video_type =
-      static_cast<ui::ProtectedVideoType>(protected_video_type);
+      static_cast<gfx::ProtectedVideoType>(protected_video_type);
 
   if (!surface_->ScheduleDCLayer(params))
     InsertError(GL_INVALID_OPERATION, "failed to schedule DCLayer");

@@ -583,10 +583,10 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
       if (frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO)) {
         if (frame->metadata()->IsTrue(VideoFrameMetadata::HW_PROTECTED)) {
           yuv_video_quad->protected_video_type =
-              ui::ProtectedVideoType::kHardwareProtected;
+              gfx::ProtectedVideoType::kHardwareProtected;
         } else {
           yuv_video_quad->protected_video_type =
-              ui::ProtectedVideoType::kSoftwareProtected;
+              gfx::ProtectedVideoType::kSoftwareProtected;
         }
       }
 
@@ -607,13 +607,13 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       bool nearest_neighbor = false;
-      ui::ProtectedVideoType protected_video_type =
-          ui::ProtectedVideoType::kClear;
+      gfx::ProtectedVideoType protected_video_type =
+          gfx::ProtectedVideoType::kClear;
       if (frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO)) {
         if (frame->metadata()->IsTrue(VideoFrameMetadata::HW_PROTECTED))
-          protected_video_type = ui::ProtectedVideoType::kHardwareProtected;
+          protected_video_type = gfx::ProtectedVideoType::kHardwareProtected;
         else
-          protected_video_type = ui::ProtectedVideoType::kSoftwareProtected;
+          protected_video_type = gfx::ProtectedVideoType::kSoftwareProtected;
       }
 
       auto* texture_quad =

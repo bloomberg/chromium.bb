@@ -129,7 +129,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
                  thumb_resource_id, premultipled_alpha, uv_top_left,
                  uv_bottom_right, SK_ColorTRANSPARENT, opacity, flipped,
                  nearest_neighbor, /*secure_output_only=*/false,
-                 ui::ProtectedVideoType::kClear);
+                 gfx::ProtectedVideoType::kClear);
     ValidateQuadResources(quad);
   }
 
@@ -149,7 +149,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
                  track_resource_id, premultipled_alpha, uv_top_left,
                  uv_bottom_right, SK_ColorTRANSPARENT, opacity, flipped,
                  nearest_neighbor, /*secure_output_only=*/false,
-                 ui::ProtectedVideoType::kClear);
+                 gfx::ProtectedVideoType::kClear);
     ValidateQuadResources(quad);
   }
 }

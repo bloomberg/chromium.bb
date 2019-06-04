@@ -369,7 +369,7 @@ TextureDrawQuad* CreateCandidateQuadAt(
     const SharedQuadState* shared_quad_state,
     RenderPass* render_pass,
     const gfx::Rect& rect,
-    ui::ProtectedVideoType protected_video_type) {
+    gfx::ProtectedVideoType protected_video_type) {
   bool needs_blending = false;
   bool premultiplied_alpha = false;
   bool flipped = false;
@@ -401,7 +401,7 @@ TextureDrawQuad* CreateCandidateQuadAt(
     const gfx::Rect& rect) {
   return CreateCandidateQuadAt(
       parent_resource_provider, child_resource_provider, child_context_provider,
-      shared_quad_state, render_pass, rect, ui::ProtectedVideoType::kClear);
+      shared_quad_state, render_pass, rect, gfx::ProtectedVideoType::kClear);
 }
 
 // For Cast we use VideoHoleDrawQuad, and that's what overlay_processor_
@@ -440,7 +440,7 @@ TextureDrawQuad* CreateTransparentCandidateQuadAt(
                        resource_id, premultiplied_alpha, kUVTopLeft,
                        kUVBottomRight, SK_ColorTRANSPARENT, vertex_opacity,
                        flipped, nearest_neighbor, /*secure_output_only=*/false,
-                       ui::ProtectedVideoType::kClear);
+                       gfx::ProtectedVideoType::kClear);
   overlay_quad->set_resource_size_in_pixels(resource_size_in_pixels);
 
   return overlay_quad;
@@ -2416,7 +2416,7 @@ TEST_F(DCLayerOverlayTest, AllowRequiredNonAxisAlignedTransform) {
       resource_provider_.get(), child_resource_provider_.get(),
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
   // Set the protected video flag will force DCLayerOverlay to use hw overlay
-  yuv_quad->protected_video_type = ui::ProtectedVideoType::kHardwareProtected;
+  yuv_quad->protected_video_type = gfx::ProtectedVideoType::kHardwareProtected;
   pass->shared_quad_state_list.back()
       ->quad_to_target_transform.RotateAboutZAxis(45.f);
 
@@ -2462,7 +2462,7 @@ TEST_F(DCLayerOverlayTest, Occluded) {
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
     // Set the protected video flag will force DCLayerOverlay to use hw overlay
     second_video_quad->protected_video_type =
-        ui::ProtectedVideoType::kHardwareProtected;
+        gfx::ProtectedVideoType::kHardwareProtected;
     second_video_quad->rect.set_origin(gfx::Point(2, 2));
     second_video_quad->visible_rect.set_origin(gfx::Point(2, 2));
 
@@ -2503,7 +2503,7 @@ TEST_F(DCLayerOverlayTest, Occluded) {
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
     second_video_quad->protected_video_type =
-        ui::ProtectedVideoType::kHardwareProtected;
+        gfx::ProtectedVideoType::kHardwareProtected;
     second_video_quad->rect.set_origin(gfx::Point(2, 2));
     second_video_quad->visible_rect.set_origin(gfx::Point(2, 2));
 
@@ -2750,7 +2750,7 @@ TEST_F(DCLayerOverlayTest, MultiplePassDamageRect) {
       child_pass1.get());
   // Set the protected video flag will force DCLayerOverlay to use hw overlay
   yuv_quad_required->protected_video_type =
-      ui::ProtectedVideoType::kHardwareProtected;
+      gfx::ProtectedVideoType::kHardwareProtected;
 
   RenderPassId child_pass2_id(6);
   std::unique_ptr<RenderPass> child_pass2 = CreateRenderPass();

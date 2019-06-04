@@ -87,7 +87,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
                      premultiplied_alpha, uv_top_left, uv_bottom_right,
                      background_color, vertex_opacity, flipped,
                      nearest_neighbor, /*secure_output_only=*/false,
-                     ui::ProtectedVideoType::kClear);
+                     gfx::ProtectedVideoType::kClear);
       }
       sqs = pass->CreateAndAppendSharedQuadState();
       sqs->opacity = opacity;

@@ -13,6 +13,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/video_types.h"
 #include "ui/gl/gl_export.h"
 
 namespace gl {
@@ -20,13 +21,6 @@ class GLImage;
 }
 
 namespace ui {
-
-enum class ProtectedVideoType : uint32_t {
-  kClear = 0,
-  kSoftwareProtected = 1,
-  kHardwareProtected = 2,
-  kMaxValue = kHardwareProtected,
-};
 
 struct GL_EXPORT DCRendererLayerParams {
   DCRendererLayerParams();
@@ -56,7 +50,8 @@ struct GL_EXPORT DCRendererLayerParams {
   bool is_clipped = false;
   gfx::Rect clip_rect;
 
-  ProtectedVideoType protected_video_type = ProtectedVideoType::kClear;
+  gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kClear;
 };
 
 }  // namespace ui
