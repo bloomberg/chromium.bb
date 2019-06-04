@@ -464,18 +464,35 @@ if (is_android) {
     android_manifest_dep = ":android_browsertests_manifest"
 
     deps = [
+      ":android_browsertests_assets",
       ":android_browsertests_java",
+      ":browser_tests_runner",
       ":test_support",
       ":test_support_ui_android",
       "//chrome:chrome_android_core",
       "//chrome/android:app_hooks_java",
       "//chrome/android:chrome_java",
+
+      # TODO(crbug.com/961849): This is needed for ShellManager which is what
+      # the ChromeBrowserTestsActivity is using to build the java UI. It's
+      # likely we want to replace it with something new that uses ChromeWindow
+      # and CompositorViewHolder instead.
+      "//content/shell:content_shell_lib",
       "//content/test:android_test_message_pump_support",
+      "//testing/android/native_test:native_test_support",
     ]
 
     sources = [
       "android/browsertests_apk/android_browsertests_jni_onload.cc",
-      # TODO(crbug.com/961849): Write an Android browser test and put it here.
+      "base/android/android_browser_test_browsertest_android.cc",
+    ]
+
+    data = [
+      "$root_gen_dir/chrome/android/chrome_apk_paks/chrome_100_percent.pak",
+      "$root_gen_dir/chrome/android/chrome_apk_paks/locales/en-US.pak",
+      "$root_gen_dir/chrome/android/chrome_apk_paks/resources.pak",
+      "$root_gen_dir/components/components_resources.pak",
+      "$root_out_dir/browser_tests.pak",
     ]
   }
 
@@ -484,14 +501,44 @@ if (is_android) {
     testonly = true
 
     sources = [
-      # TODO(crbug.com/961849): Write an AndroidBrowserTest base class and put
-      # it here.
+      "base/android/android_browser_test.cc",
+      "base/android/android_browser_test.h",
     ]
-    public_deps = []
+    public_deps = [
+      "//content/test:test_support",
+    ]
     deps = [
       "//chrome/browser",
       "//content/public/browser",
     ]
+  }
+
+  android_assets("android_browsertests_assets") {
+    testonly = true
+    sources = []
+    deps = []
+
+    # These are grit() rules so they are in $root_gen_dir.
+    deps += [
+      "//chrome/android:chrome_apk_paks",
+      "//components/resources",
+    ]
+    sources += [
+      "$root_gen_dir/chrome/android/chrome_apk_paks/chrome_100_percent.pak",
+      "$root_gen_dir/chrome/android/chrome_apk_paks/locales/en-US.pak",
+      "$root_gen_dir/chrome/android/chrome_apk_paks/resources.pak",
+      "$root_gen_dir/components/components_resources.pak",
+    ]
+
+    # These are repack() rules so they are in $root_out_dir.
+    deps += [ "//chrome:browser_tests_pak" ]
+    sources += [ "$root_out_dir/browser_tests.pak" ]
+
+    if (use_v8_context_snapshot) {
+      deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
+    } else {
+      deps += [ "//v8:v8_external_startup_data_assets" ]
+    }
   }
 
   android_library("android_browsertests_java") {
@@ -501,6 +548,7 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//chrome/android:chrome_java",
+      "//content/public/test/android:android_test_message_pump_support_java",
       "//content/shell/android:content_shell_browsertests_java",
       "//testing/android/native_test:native_test_java",
     ]
@@ -524,26 +572,26 @@ if (is_android) {
   }
 }
 
-if (!is_android) {
-  static_library("browser_tests_runner") {
-    testonly = true
-    sources = []
+static_library("browser_tests_runner") {
+  testonly = true
+  sources = []
 
-    deps = [
-      ":test_support",
-    ]
+  deps = [
+    ":test_support",
+  ]
 
-    if (is_chromeos) {
-      sources += [ "base/browser_tests_main_chromeos.cc" ]
-    } else {
-      sources += [ "base/browser_tests_main.cc" ]
-    }
-
-    if (is_win) {
-      deps += [ "//chrome/installer/util:strings" ]
-    }
+  if (is_chromeos) {
+    sources += [ "base/browser_tests_main_chromeos.cc" ]
+  } else {
+    sources += [ "base/browser_tests_main.cc" ]
   }
 
+  if (is_win) {
+    deps += [ "//chrome/installer/util:strings" ]
+  }
+}
+
+if (!is_android) {
   test("browser_tests") {
     configs += [ "//build/config:precompiled_headers" ]
     defines = [
@@ -603,7 +651,6 @@ if (!is_android) {
       "//media/cast:test_support",
       "//mojo/public/cpp/system",
       "//net",
-      "//net:test_support",
       "//net:test_support",
       "//ppapi/buildflags",
       "//printing/buildflags",

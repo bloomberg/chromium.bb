@@ -23,10 +23,7 @@ public class ChromeBrowserTestsActivity extends ContentShellBrowserTestActivity 
         super.onCreate(savedInstanceState);
         appendCommandLineFlags(
                 "--remote-debugging-socket-name android_browsertests_devtools_remote");
-    }
 
-    @Override
-    protected void initializeBrowserProcess() {
         // TODO(danakj): This sets up some of the Chrome Java stuff.
         // AsyncInitializationActivity normally does this for the ChromeActivity.
         // We skip handlePostNativeStartup() for now, which runs child processes.
@@ -37,6 +34,10 @@ public class ChromeBrowserTestsActivity extends ContentShellBrowserTestActivity 
         // its ShellManager.
         BrowserParts parts = new EmptyBrowserParts() {};
         ChromeBrowserInitializer.getInstance(getApplicationContext()).handlePreNativeStartup(parts);
+    }
+
+    @Override
+    protected void initializeBrowserProcess() {
         super.initializeBrowserProcess();
     }
 
