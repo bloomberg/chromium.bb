@@ -12,6 +12,26 @@
 
 namespace ash {
 
+namespace {
+
+// Reactivate the most recently unminimized window on the active desk so as not
+// to activate any desk that has been explicitly navigated away from, nor
+// activate any window that has been explicitly minimized.
+void ActivateMruUnminimizedWindowOnActiveDesk() {
+  MruWindowTracker::WindowList mru_windows(
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(
+          DesksMruType::kActiveDesk));
+  for (auto* window : mru_windows) {
+    if (wm::GetWindowState(window)->GetStateType() !=
+        WindowStateType::kMinimized) {
+      wm::GetWindowState(window)->Activate();
+      return;
+    }
+  }
+}
+
+}  // namespace
+
 WallpaperWindowStateManager::WallpaperWindowStateManager() = default;
 
 WallpaperWindowStateManager::~WallpaperWindowStateManager() = default;
@@ -63,6 +83,8 @@ void WallpaperWindowStateManager::RestoreMinimizedWindows(
     wm::GetWindowState(*iter)->Unminimize();
     RemoveObserverIfUnreferenced(*iter);
   }
+
+  ActivateMruUnminimizedWindowOnActiveDesk();
 }
 
 void WallpaperWindowStateManager::RemoveObserverIfUnreferenced(
