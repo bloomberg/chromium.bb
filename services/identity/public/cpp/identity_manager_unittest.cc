@@ -318,7 +318,7 @@ class IdentityManagerTest : public testing::Test {
     }
 
     auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
-        gaia_cookie_manager_service.get());
+        gaia_cookie_manager_service.get(), account_tracker_service.get());
 
     auto diagnostics_provider = std::make_unique<DiagnosticsProviderImpl>(
         token_service.get(), gaia_cookie_manager_service.get());
@@ -1801,10 +1801,11 @@ TEST_F(IdentityManagerTest, CallbackSentOnFailureAdditionOfAccountToCookie) {
 
 TEST_F(IdentityManagerTest,
        CallbackSentOnSetAccountsInCookieCompleted_Success) {
-  const char kTestAccountId[] = "account_id";
-  const char kTestAccountId2[] = "account_id2";
-  const std::vector<std::string> account_ids = {kTestAccountId,
-                                                kTestAccountId2};
+  const CoreAccountId kTestAccountId("account_id");
+  const CoreAccountId kTestAccountId2("account_id2");
+  const std::vector<std::pair<CoreAccountId, std::string>> accounts = {
+      {kTestAccountId, kTestAccountId.id},
+      {kTestAccountId2, kTestAccountId2.id}};
 
   signin::SetAccountsInCookieResult
       error_from_set_accounts_in_cookie_completed_callback;
@@ -1816,7 +1817,7 @@ TEST_F(IdentityManagerTest,
 
   // Needed to insert request in the queue.
   identity_manager()->GetGaiaCookieManagerService()->SetAccountsInCookie(
-      account_ids, gaia::GaiaSource::kChrome, std::move(completion_callback));
+      accounts, gaia::GaiaSource::kChrome, std::move(completion_callback));
 
   SimulateOAuthMultiloginFinished(
       identity_manager()->GetGaiaCookieManagerService(),
@@ -1828,10 +1829,11 @@ TEST_F(IdentityManagerTest,
 
 TEST_F(IdentityManagerTest,
        CallbackSentOnSetAccountsInCookieCompleted_Failure) {
-  const char kTestAccountId[] = "account_id";
-  const char kTestAccountId2[] = "account_id2";
-  const std::vector<std::string> account_ids = {kTestAccountId,
-                                                kTestAccountId2};
+  const CoreAccountId kTestAccountId("account_id");
+  const CoreAccountId kTestAccountId2("account_id2");
+  const std::vector<std::pair<CoreAccountId, std::string>> accounts = {
+      {kTestAccountId, kTestAccountId.id},
+      {kTestAccountId2, kTestAccountId2.id}};
 
   signin::SetAccountsInCookieResult
       error_from_set_accounts_in_cookie_completed_callback;
@@ -1843,7 +1845,7 @@ TEST_F(IdentityManagerTest,
 
   // Needed to insert request in the queue.
   identity_manager()->GetGaiaCookieManagerService()->SetAccountsInCookie(
-      account_ids, gaia::GaiaSource::kChrome, std::move(completion_callback));
+      accounts, gaia::GaiaSource::kChrome, std::move(completion_callback));
 
   // Sample an erroneous response.
   signin::SetAccountsInCookieResult error =

@@ -73,6 +73,8 @@ struct MultiloginParameters {
 class GaiaCookieManagerService : public GaiaAuthConsumer,
                                  public network::mojom::CookieChangeListener {
  public:
+  using AccountIdGaiaIdPair = std::pair<CoreAccountId, std::string>;
+
   enum GaiaCookieRequestType {
     ADD_ACCOUNT,
     LOG_OUT,
@@ -100,10 +102,11 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
     GaiaCookieRequest& operator=(GaiaCookieRequest&&);
 
     GaiaCookieRequestType request_type() const { return request_type_; }
-    const std::vector<std::string>& account_ids() const { return account_ids_; }
+    const std::vector<AccountIdGaiaIdPair>& accounts() const {
+      return accounts_;
+    }
     // For use in the Request of type ADD_ACCOUNT which must have exactly one
-    // account_id in the array. It checks this condition and extracts this one
-    // account.
+    // account_id.
     const std::string GetAccountID();
     gaia::GaiaSource source() const { return source_; }
 
@@ -120,25 +123,27 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
     static GaiaCookieRequest CreateLogOutRequest(gaia::GaiaSource source);
     static GaiaCookieRequest CreateListAccountsRequest();
     static GaiaCookieRequest CreateSetAccountsRequest(
-        const std::vector<std::string>& account_ids,
+        const std::vector<AccountIdGaiaIdPair>& account_ids,
         gaia::GaiaSource source,
         SetAccountsInCookieCompletedCallback callback);
 
    private:
     GaiaCookieRequest(GaiaCookieRequestType request_type,
-                      const std::vector<std::string>& account_ids,
                       gaia::GaiaSource source);
     GaiaCookieRequest(GaiaCookieRequestType request_type,
-                      const std::vector<std::string>& account_ids,
+                      const std::vector<AccountIdGaiaIdPair>& accounts,
                       gaia::GaiaSource source,
                       SetAccountsInCookieCompletedCallback callback);
     GaiaCookieRequest(GaiaCookieRequestType request_type,
-                      const std::vector<std::string>& account_ids,
+                      const std::string& account_id,
                       gaia::GaiaSource source,
                       AddAccountToCookieCompletedCallback callback);
 
     GaiaCookieRequestType request_type_;
-    std::vector<std::string> account_ids_;
+    // For use in the request of type ADD_ACCOUNT.
+    std::string account_id_;
+    // For use in the request of type SET_ACCOUNT.
+    std::vector<AccountIdGaiaIdPair> accounts_;
     gaia::GaiaSource source_;
 
     SetAccountsInCookieCompletedCallback
@@ -230,7 +235,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   // Takes list of account_ids and sets the cookie for these accounts regardless
   // of the current cookie state. Removes the accounts that are not in
   // account_ids and add the missing ones.
-  void SetAccountsInCookie(const std::vector<std::string>& account_ids,
+  void SetAccountsInCookie(const std::vector<AccountIdGaiaIdPair>& account_ids,
                            gaia::GaiaSource source,
                            SetAccountsInCookieCompletedCallback
                                set_accounts_in_cookies_completed_callback);

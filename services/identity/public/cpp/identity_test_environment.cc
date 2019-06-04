@@ -234,7 +234,7 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
       token_service.get(), gaia_cookie_manager_service.get());
 
   auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
-      gaia_cookie_manager_service.get());
+      gaia_cookie_manager_service.get(), account_tracker_service.get());
 
   return std::make_unique<IdentityManagerWrapper>(
       std::move(account_tracker_service), std::move(token_service),

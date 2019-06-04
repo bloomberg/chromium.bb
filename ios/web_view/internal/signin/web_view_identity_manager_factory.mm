@@ -151,7 +151,7 @@ WebViewIdentityManagerFactory::BuildServiceInstanceFor(
 
   auto accounts_cookie_mutator =
       std::make_unique<identity::AccountsCookieMutatorImpl>(
-          gaia_cookie_manager_service.get());
+          gaia_cookie_manager_service.get(), account_tracker_service.get());
 
   auto diagnostics_provider =
       std::make_unique<identity::DiagnosticsProviderImpl>(

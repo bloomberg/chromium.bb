@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
 
 class GaiaCookieManagerService;
@@ -23,7 +24,8 @@ namespace identity {
 class AccountsCookieMutatorImpl : public AccountsCookieMutator {
  public:
   explicit AccountsCookieMutatorImpl(
-      GaiaCookieManagerService* gaia_cookie_manager_service);
+      GaiaCookieManagerService* gaia_cookie_manager_service,
+      AccountTrackerService* account_tracker_service);
   ~AccountsCookieMutatorImpl() override;
 
   void AddAccountToCookie(
@@ -49,6 +51,7 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
 
  private:
   GaiaCookieManagerService* gaia_cookie_manager_service_;
+  AccountTrackerService* account_tracker_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutatorImpl);
 };
