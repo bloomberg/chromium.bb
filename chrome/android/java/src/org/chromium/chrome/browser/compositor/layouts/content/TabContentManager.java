@@ -10,6 +10,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
@@ -295,7 +296,7 @@ public class TabContentManager {
      * Cache the content of a tab as a thumbnail.
      * @param tab The tab whose content we will cache.
      */
-    public void cacheTabThumbnail(final Tab tab) {
+    public void cacheTabThumbnail(@NonNull final Tab tab) {
         cacheTabThumbnail(tab, null);
     }
 
@@ -304,7 +305,7 @@ public class TabContentManager {
      * @param tab The tab whose content we will cache.
      * @param callback The callback to send the {@link Bitmap} with.
      */
-    public void cacheTabThumbnail(final Tab tab, @Nullable Callback<Bitmap> callback) {
+    public void cacheTabThumbnail(@NonNull final Tab tab, @Nullable Callback<Bitmap> callback) {
         if (mNativeTabContentManager != 0 && mSnapshotsEnabled) {
             if (tab.getNativePage() != null || isNativeViewShowing(tab)) {
                 Bitmap nativeBitmap = readbackNativeBitmap(tab, mThumbnailScale);
