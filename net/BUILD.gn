@@ -6351,6 +6351,19 @@ fuzzer_test("net_gzip_source_stream_fuzzer") {
   ]
 }
 
+fuzzer_test("net_crl_set_fuzzer") {
+  sources = [
+    "cert/crl_set_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+  seed_corpus = "data/fuzzer_data/net_crl_set_fuzzer/"
+}
+
 if (!disable_ftp_support) {
   fuzzer_test("net_ftp_ctrl_response_fuzzer") {
     sources = [
