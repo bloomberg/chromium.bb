@@ -22,6 +22,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_annotations.h"
 #include "base/threading/sequence_local_storage_map.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
@@ -304,16 +305,16 @@ class ScopedTaskEnvironment::TestTaskTracker
   Lock lock_;
 
   // True if running tasks is allowed.
-  bool can_run_tasks_ = true;
+  bool can_run_tasks_ GUARDED_BY(lock_) = true;
 
   // Signaled when |can_run_tasks_| becomes true.
-  ConditionVariable can_run_tasks_cv_;
+  ConditionVariable can_run_tasks_cv_ GUARDED_BY(lock_);
 
   // Signaled when a task is completed.
-  ConditionVariable task_completed_;
+  ConditionVariable task_completed_ GUARDED_BY(lock_);
 
   // Number of tasks that are currently running.
-  int num_tasks_running_ = 0;
+  int num_tasks_running_ GUARDED_BY(lock_) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestTaskTracker);
 };
