@@ -218,8 +218,13 @@ void MimeHandlerViewEmbedder::ReadyToCreateMimeHandlerView(
 }
 
 void MimeHandlerViewEmbedder::CheckSandboxFlags() {
-  if (!render_frame_host_->IsSandboxed(blink::WebSandboxFlags::kPlugins))
+  // If the FrameTreeNode is deleted while it has ownership of the ongoing
+  // NavigationRequest, DidFinishNavigation is called before FrameDeleted (see
+  // https://crbug.com/969840).
+  if (render_frame_host_ &&
+      !render_frame_host_->IsSandboxed(blink::WebSandboxFlags::kPlugins)) {
     return;
+  }
   // Notify the renderer to load an empty page instead.
   GetContainerManager()->LoadEmptyPage(resource_url_);
   GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
