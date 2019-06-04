@@ -61,12 +61,12 @@ constexpr char kAppListSearchResultOpenSourceHistogram[] =
 // The UMA hisotogram that logs the action user performs on zero state
 // search result.
 constexpr char kAppListZeroStateSearchResultUserActionHistogram[] =
-    "Apps.AppListZeroStateSearchResultUserActionType";
+    "Apps.AppList.ZeroStateSearchResultUserActionType";
 
 // The UMA histogram that logs user's decision(remove or cancel) for zero state
 // search result removal confirmation.
 constexpr char kAppListZeroStateSearchResultRemovalHistogram[] =
-    "Apps.ZeroStateSearchResutRemovalDecision";
+    "Apps.AppList.ZeroStateSearchResultRemovalDecision";
 
 // The UMA histogram that logs the length of the query when user abandons
 // results of a queried search or recommendations of zero state(zero length
