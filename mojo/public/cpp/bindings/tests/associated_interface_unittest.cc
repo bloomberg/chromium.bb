@@ -32,6 +32,19 @@
 #include "mojo/public/interfaces/bindings/tests/test_associated_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(crbug.com/969789): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_ReceiverWaitAndPauseWhenNoAssociatedInterfaces \
+  DISABLED_ReceiverWaitAndPauseWhenNoAssociatedInterfaces
+#define MAYBE_PassAssociatedInterfaces DISABLED_PassAssociatedInterfaces
+#define MAYBE_SharedAssociatedRemote DISABLED_SharedAssociatedRemote
+#else
+#define MAYBE_ReceiverWaitAndPauseWhenNoAssociatedInterfaces \
+  ReceiverWaitAndPauseWhenNoAssociatedInterfaces
+#define MAYBE_PassAssociatedInterfaces PassAssociatedInterfaces
+#define MAYBE_SharedAssociatedRemote SharedAssociatedRemote
+#endif
+
 namespace mojo {
 namespace test {
 namespace {
@@ -496,7 +509,7 @@ TEST_F(AssociatedInterfaceTest, FIFO) {
   }
 }
 
-TEST_F(AssociatedInterfaceTest, PassAssociatedInterfaces) {
+TEST_F(AssociatedInterfaceTest, MAYBE_PassAssociatedInterfaces) {
   Remote<IntegerSenderConnection> connection_remote;
   IntegerSenderConnectionImpl connection(
       connection_remote.BindNewPipeAndPassReceiver());
@@ -530,7 +543,7 @@ TEST_F(AssociatedInterfaceTest, PassAssociatedInterfaces) {
 }
 
 TEST_F(AssociatedInterfaceTest,
-       ReceiverWaitAndPauseWhenNoAssociatedInterfaces) {
+       MAYBE_ReceiverWaitAndPauseWhenNoAssociatedInterfaces) {
   Remote<IntegerSenderConnection> connection_remote;
   IntegerSenderConnectionImpl connection(
       connection_remote.BindNewPipeAndPassReceiver());
@@ -957,7 +970,7 @@ TEST_F(AssociatedInterfaceTest, AssociatedRequestResetWithReason) {
   run_loop.Run();
 }
 
-TEST_F(AssociatedInterfaceTest, SharedAssociatedRemote) {
+TEST_F(AssociatedInterfaceTest, MAYBE_SharedAssociatedRemote) {
   Remote<IntegerSenderConnection> connection_remote;
   IntegerSenderConnectionImpl connection(
       connection_remote.BindNewPipeAndPassReceiver());
