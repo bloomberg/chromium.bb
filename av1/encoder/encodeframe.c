@@ -4556,32 +4556,36 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
     TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
 
-    int tpl_stride = tpl_frame->stride;
-    int64_t intra_cost_base = 0;
-    int64_t mc_dep_cost_base = 0;
-    int64_t mc_saved_base = 0;
-    int64_t mc_count_base = 0;
-    int row, col;
-
-    for (row = 0; row < cm->mi_rows; ++row) {
-      for (col = 0; col < cm->mi_cols; ++col) {
-        TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
-        intra_cost_base += this_stats->intra_cost;
-        mc_dep_cost_base += this_stats->intra_cost + this_stats->mc_flow;
-        mc_count_base += this_stats->mc_count;
-        mc_saved_base += this_stats->mc_saved;
-      }
-    }
-
-    aom_clear_system_state();
-
     if (tpl_frame->is_valid) {
-      cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
-      cpi->rd.mc_count_base =
-          (double)mc_count_base / (cm->mi_rows * cm->mi_cols);
-      cpi->rd.mc_saved_base =
-          (double)mc_saved_base / (cm->mi_rows * cm->mi_cols);
+      int tpl_stride = tpl_frame->stride;
+      int64_t intra_cost_base = 0;
+      int64_t mc_dep_cost_base = 0;
+      int64_t mc_saved_base = 0;
+      int64_t mc_count_base = 0;
+      int row, col;
+
+      for (row = 0; row < cm->mi_rows; ++row) {
+        for (col = 0; col < cm->mi_cols; ++col) {
+          TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
+          intra_cost_base += this_stats->intra_cost;
+          mc_dep_cost_base += this_stats->intra_cost + this_stats->mc_flow;
+          mc_count_base += this_stats->mc_count;
+          mc_saved_base += this_stats->mc_saved;
+        }
+      }
+
       aom_clear_system_state();
+
+      if (mc_dep_cost_base == 0) {
+        tpl_frame->is_valid = 0;
+      } else {
+        cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
+        cpi->rd.mc_count_base =
+            (double)mc_count_base / (cm->mi_rows * cm->mi_cols);
+        cpi->rd.mc_saved_base =
+            (double)mc_saved_base / (cm->mi_rows * cm->mi_cols);
+        aom_clear_system_state();
+      }
     }
   }
 
