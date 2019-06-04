@@ -42,7 +42,6 @@ extern const base::Feature kAutofillUpstreamDisallowElo;
 extern const base::Feature kAutofillUpstreamDisallowJcb;
 extern const base::Feature kAutofillUpstreamEditableCardholderName;
 extern const base::Feature kAutofillUpstreamEditableExpirationDate;
-extern const base::Feature kAutofillUsePaymentsCustomerData;
 
 extern const char kAutofillSaveCreditCardUsesImprovedMessagingParamName[];
 extern const char
