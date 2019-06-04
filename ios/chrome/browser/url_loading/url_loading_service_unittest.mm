@@ -372,7 +372,6 @@ TEST_F(URLLoadingServiceTest, TestOpenInCurrentIncognitoTab) {
 
   // We won't to wait for the navigation item to be committed, let's just
   // make sure it is at least pending.
-
   EXPECT_EQ(url1, otr_web_state_list->GetActiveWebState()
                       ->GetNavigationManager()
                       ->GetPendingItem()
@@ -479,6 +478,73 @@ TEST_F(URLLoadingServiceTest, TestOpenIncognitoInNewTabWithNormalService) {
 
   // Check that we had one app level redirection.
   EXPECT_EQ(1, app_service_->load_new_tab_call_count);
+}
+
+// Test opening an incognito url in new tab with normal service using load
+// strategy.
+TEST_F(URLLoadingServiceTest, TestOpenIncognitoInNewTabWithLoadStrategy) {
+  WebStateList* web_state_list = tab_model_.webStateList;
+  ASSERT_EQ(0, web_state_list->count());
+  WebStateList* otr_web_state_list = otr_tab_model_.webStateList;
+  ASSERT_EQ(0, otr_web_state_list->count());
+
+  app_service_->currentBrowserState = chrome_browser_state_.get();
+
+  // Send to normal service.
+  GURL url1("http://test/1");
+  UrlLoadParams params1 =
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(url1));
+  params1.load_strategy = UrlLoadStrategy::ALWAYS_IN_INCOGNITO;
+  service_->Load(params1);
+  EXPECT_EQ(0, web_state_list->count());
+  EXPECT_EQ(0, otr_web_state_list->count());
+
+  // Check that we had one app level redirection.
+  EXPECT_EQ(1, app_service_->load_new_tab_call_count);
+}
+
+// Test opening an incognito url in current tab with normal service using load
+// strategy.
+TEST_F(URLLoadingServiceTest, TestOpenIncognitoInCurrentTabWithLoadStrategy) {
+  WebStateList* web_state_list = tab_model_.webStateList;
+  ASSERT_EQ(0, web_state_list->count());
+  WebStateList* otr_web_state_list = otr_tab_model_.webStateList;
+  ASSERT_EQ(0, otr_web_state_list->count());
+
+  // Make app level to be otr.
+  ios::ChromeBrowserState* otr_browser_state =
+      chrome_browser_state_.get()->GetOffTheRecordChromeBrowserState();
+  app_service_->currentBrowserState = otr_browser_state;
+
+  // Set a new incognito tab.
+  GURL newtab("chrome://newtab");
+  UrlLoadParams new_tab_params =
+      UrlLoadParams::InNewTab(web::NavigationManager::WebLoadParams(newtab));
+  new_tab_params.in_incognito = YES;
+  otr_service_->Load(new_tab_params);
+  EXPECT_EQ(0, web_state_list->count());
+  EXPECT_EQ(1, otr_web_state_list->count());
+
+  // Send to normal service.
+  GURL url1("http://test/1");
+  UrlLoadParams params1 =
+      UrlLoadParams::InCurrentTab(web::NavigationManager::WebLoadParams(url1));
+  params1.load_strategy = UrlLoadStrategy::ALWAYS_IN_INCOGNITO;
+  service_->Load(params1);
+
+  // We won't to wait for the navigation item to be committed, let's just
+  // make sure it is at least pending.
+  EXPECT_EQ(url1, otr_web_state_list->GetActiveWebState()
+                      ->GetNavigationManager()
+                      ->GetPendingItem()
+                      ->GetOriginalRequestURL());
+
+  // And that a new tab wasn't created.
+  EXPECT_EQ(0, web_state_list->count());
+  EXPECT_EQ(1, otr_web_state_list->count());
+
+  // Check that we had no app level redirection.
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
 }
 
 }  // namespace
