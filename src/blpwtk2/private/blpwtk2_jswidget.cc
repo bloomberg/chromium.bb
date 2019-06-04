@@ -29,6 +29,7 @@
 #include <third_party/blink/public/web/web_local_frame.h>
 #include <third_party/blink/public/web/web_plugin_container.h>
 #include <third_party/blink/public/web/web_serialized_script_value.h>
+#include <third_party/blink/renderer/platform/bindings/script_forbidden_scope.h>
 #include <v8/include/v8.h>
 
 namespace blpwtk2 {
@@ -102,12 +103,23 @@ void JsWidget::UpdateGeometry(
     v8::Context::Scope contextScope(context);
 
     v8::Handle<v8::Object> detailObj = v8::Object::New(isolate);
-    detailObj->Set(v8::String::NewFromUtf8(isolate, "windowRect"), ToV8(isolate, windowRect));
-	detailObj->Set(v8::String::NewFromUtf8(isolate, "clipRect"), ToV8(isolate, clipRect));
-	detailObj->Set(v8::String::NewFromUtf8(isolate, "unobscuredRect"), ToV8(isolate, unobscuredRect));
-	detailObj->Set(v8::String::NewFromUtf8(isolate, "isVisible"), v8::Boolean::New(isolate, isVisible));
-
-    detailObj->Set(v8::String::NewFromUtf8(isolate, "frameRect"), ToV8(isolate, windowRect));
+    {
+      // https://chromium.googlesource.com/chromium/src/+/45236fd563e9df53dc45579be1f3d0b4784885a2%5E%21/#F1
+      // added ScriptForbiddenScope. It would block running scripts when
+      // invoking JsWidget from Document::UpdateStyleAndLayout. we'd use
+      // blink::ScriptForbiddenScope::AllowUserAgentScript to allow script.
+      blink::ScriptForbiddenScope::AllowUserAgentScript alllow_script;
+      detailObj->Set(v8::String::NewFromUtf8(isolate, "windowRect"),
+                     ToV8(isolate, windowRect));
+      detailObj->Set(v8::String::NewFromUtf8(isolate, "clipRect"),
+                     ToV8(isolate, clipRect));
+      detailObj->Set(v8::String::NewFromUtf8(isolate, "unobscuredRect"),
+                     ToV8(isolate, unobscuredRect));
+      detailObj->Set(v8::String::NewFromUtf8(isolate, "isVisible"),
+                     v8::Boolean::New(isolate, isVisible));
+      detailObj->Set(v8::String::NewFromUtf8(isolate, "frameRect"),
+                     ToV8(isolate, windowRect));
+    }
 
     blink::WebDOMEvent event = blink::WebDOMEvent::CreateCustomEvent(isolate, "bbOnUpdateGeometry", false, false,
                                                                      detailObj);
@@ -129,7 +141,12 @@ void JsWidget::UpdateVisibility(bool isVisible)
     v8::Context::Scope contextScope(context);
 
     v8::Handle<v8::Object> detailObj = v8::Object::New(isolate);
-    detailObj->Set(v8::String::NewFromUtf8(isolate, "isVisible"), v8::Boolean::New(isolate, isVisible));
+    {
+      // See the explanation of AllowUserAgentScript above
+      blink::ScriptForbiddenScope::AllowUserAgentScript alllow_script;
+      detailObj->Set(v8::String::NewFromUtf8(isolate, "isVisible"),
+                     v8::Boolean::New(isolate, isVisible));
+    }
 
     blink::WebDOMEvent event = blink::WebDOMEvent::CreateCustomEvent(isolate, "bbOnUpdateVisibility", false, false,
                                                                      detailObj);
