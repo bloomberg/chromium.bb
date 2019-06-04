@@ -78,8 +78,10 @@ void WebRequestProxyingWebSocket::AddChannelRequest(
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
     std::vector<network::mojom::HttpHeaderPtr> additional_headers,
+    network::mojom::WebSocketHandshakeClientPtr handshake_client,
     network::mojom::WebSocketClientPtr client) {
-  if (binding_as_client_.is_bound() || !client || forwarding_client_) {
+  if (binding_as_client_.is_bound() || !handshake_client ||
+      forwarding_handshake_client_ || !client || forwarding_client_) {
     // Illegal request.
     proxied_socket_ = nullptr;
     return;
@@ -96,6 +98,7 @@ void WebRequestProxyingWebSocket::AddChannelRequest(
                                nullptr, routing_id, resource_context_, request_,
                                false /* is_download */, true /* is_async */));
 
+  forwarding_handshake_client_ = std::move(handshake_client);
   forwarding_client_ = std::move(client);
   additional_headers_ = std::move(additional_headers);
 
@@ -154,31 +157,15 @@ void WebRequestProxyingWebSocket::StartClosingHandshake(
   proxied_socket_->StartClosingHandshake(code, reason);
 }
 
-void WebRequestProxyingWebSocket::OnFailChannel(const std::string& reason) {
-  DCHECK(forwarding_client_);
-  forwarding_client_->OnFailChannel(reason);
-
-  forwarding_client_ = nullptr;
-  int rv = net::ERR_FAILED;
-  if (reason == "HTTP Authentication failed; no valid credentials available" ||
-      reason == "Proxy authentication failed") {
-    // This is needed to make some tests pass.
-    // TODO(yhirano): Remove this hack.
-    rv = net::ERR_ABORTED;
-  }
-
-  OnError(rv);
-}
-
 void WebRequestProxyingWebSocket::OnStartOpeningHandshake(
     network::mojom::WebSocketHandshakeRequestPtr request) {
-  DCHECK(forwarding_client_);
-  forwarding_client_->OnStartOpeningHandshake(std::move(request));
+  DCHECK(forwarding_handshake_client_);
+  forwarding_handshake_client_->OnStartOpeningHandshake(std::move(request));
 }
 
 void WebRequestProxyingWebSocket::OnFinishOpeningHandshake(
     network::mojom::WebSocketHandshakeResponsePtr response) {
-  DCHECK(forwarding_client_);
+  DCHECK(forwarding_handshake_client_);
 
   // response_.headers will be set in OnBeforeSendHeaders if
   // binding_as_header_client_ is set.
@@ -198,7 +185,7 @@ void WebRequestProxyingWebSocket::OnFinishOpeningHandshake(
   // OnFinishOpeningHandshake is called with the original response headers.
   // That means if OnHeadersReceived modified them the renderer won't see that
   // modification. This is the opposite of http(s) requests.
-  forwarding_client_->OnFinishOpeningHandshake(std::move(response));
+  forwarding_handshake_client_->OnFinishOpeningHandshake(std::move(response));
 
   if (!binding_as_header_client_ || response_.headers) {
     ContinueToHeadersReceived();
@@ -231,41 +218,14 @@ void WebRequestProxyingWebSocket::ContinueToHeadersReceived() {
 void WebRequestProxyingWebSocket::OnAddChannelResponse(
     const std::string& selected_protocol,
     const std::string& extensions) {
-  DCHECK(forwarding_client_);
+  DCHECK(forwarding_handshake_client_);
   DCHECK(!is_done_);
   is_done_ = true;
   ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
       browser_context_, info_map_, &info_.value(), net::ERR_WS_UPGRADE);
 
-  forwarding_client_->OnAddChannelResponse(selected_protocol, extensions);
-}
-
-void WebRequestProxyingWebSocket::OnDataFrame(
-    bool fin,
-    network::mojom::WebSocketMessageType type,
-    const std::vector<uint8_t>& data) {
-  DCHECK(forwarding_client_);
-  forwarding_client_->OnDataFrame(fin, type, data);
-}
-
-void WebRequestProxyingWebSocket::OnFlowControl(int64_t quota) {
-  DCHECK(forwarding_client_);
-  forwarding_client_->OnFlowControl(quota);
-}
-
-void WebRequestProxyingWebSocket::OnDropChannel(bool was_clean,
-                                                uint16_t code,
-                                                const std::string& reason) {
-  DCHECK(forwarding_client_);
-  forwarding_client_->OnDropChannel(was_clean, code, reason);
-
-  forwarding_client_ = nullptr;
-  OnError(net::ERR_FAILED);
-}
-
-void WebRequestProxyingWebSocket::OnClosingHandshake() {
-  DCHECK(forwarding_client_);
-  forwarding_client_->OnClosingHandshake();
+  forwarding_handshake_client_->OnAddChannelResponse(selected_protocol,
+                                                     extensions);
 }
 
 void WebRequestProxyingWebSocket::OnAuthRequired(
@@ -410,7 +370,7 @@ void WebRequestProxyingWebSocket::OnBeforeSendHeadersComplete(
 }
 
 void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
-  network::mojom::WebSocketClientPtr proxy;
+  network::mojom::WebSocketHandshakeClientPtr proxy;
 
   base::flat_set<std::string> used_header_names;
   std::vector<network::mojom::HttpHeaderPtr> additional_headers;
@@ -432,7 +392,8 @@ void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
                      base::Unretained(this), net::ERR_FAILED));
   proxied_socket_->AddChannelRequest(
       request_.url, websocket_protocols_, request_.site_for_cookies,
-      std::move(additional_headers), std::move(proxy));
+      std::move(additional_headers), std::move(proxy),
+      std::move(forwarding_client_));
 }
 
 void WebRequestProxyingWebSocket::OnHeadersReceivedComplete(int error_code) {
@@ -522,8 +483,6 @@ void WebRequestProxyingWebSocket::OnError(int error_code) {
         browser_context_, info_map_, &info_.value(), true /* started */,
         error_code);
   }
-  if (forwarding_client_)
-    forwarding_client_->OnFailChannel(net::ErrorToString(error_code));
 
   // Deletes |this|.
   proxies_->RemoveProxy(this);

@@ -1519,7 +1519,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebSocketRequestAuthRequired) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(StartWebSocketServer(net::GetWebSocketTestDataDirectory(), true));
-  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_websocket_auth.html"))
+  // Test expectations differ with the Network Service because of the way
+  // mojo onError is handled.
+  const char* network_service_arg =
+      base::FeatureList::IsEnabled(network::features::kNetworkService)
+          ? "NetworkServiceEnabled"
+          : "NetworkServiceDisabled";
+  ASSERT_TRUE(RunExtensionSubtestWithArg(
+      "webrequest", "test_websocket_auth.html", network_service_arg))
       << message_;
 }
 
