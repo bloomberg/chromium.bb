@@ -113,8 +113,13 @@ bool IsThrottlableRequestContext(mojom::RequestContextType context) {
 void LogMixedAutoupgradeMetrics(blink::MixedContentAutoupgradeStatus status,
                                 base::Optional<int> response_or_error_code,
                                 ukm::SourceId source_id,
-                                ukm::UkmRecorder* recorder) {
+                                ukm::UkmRecorder* recorder,
+                                Resource* resource) {
   UMA_HISTOGRAM_ENUMERATION("MixedAutoupgrade.ResourceRequest.Status", status);
+  if (status == MixedContentAutoupgradeStatus::kFailed) {
+    UMA_HISTOGRAM_BOOLEAN("MixedAutoupgrade.ResourceRequest.Failure.IsAd",
+                          resource->GetResourceRequest().IsAdResource());
+  }
   ukm::builders::MixedContentAutoupgrade_ResourceRequest builder(source_id);
   builder.SetStatus(static_cast<int64_t>(status));
   if (response_or_error_code.has_value()) {
@@ -442,7 +447,7 @@ void ResourceLoader::Start() {
         ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
     LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kStarted,
                                base::nullopt, request.GetUkmSourceId(),
-                               recorder.get());
+                               recorder.get(), resource_);
   }
   if (resource_->GetResourceRequest().IsDownloadToNetworkCacheOnly()) {
     // The download-to-cache requests are throttled in net/, they are fire-and
@@ -882,7 +887,8 @@ void ResourceLoader::DidReceiveResponseInternal(
         ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
     LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kResponseReceived,
                                response.HttpStatusCode(),
-                               request.GetUkmSourceId(), recorder.get());
+                               request.GetUkmSourceId(), recorder.get(),
+                               resource_);
   }
 
   if (fetcher_->GetProperties().IsDetached()) {
@@ -1160,7 +1166,7 @@ void ResourceLoader::DidFail(const WebURLError& error,
         ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
     LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kFailed,
                                error.reason(), request.GetUkmSourceId(),
-                               recorder.get());
+                               recorder.get(), resource_);
   }
   resource_->SetEncodedDataLength(encoded_data_length);
   resource_->SetEncodedBodyLength(encoded_body_length);
