@@ -231,6 +231,10 @@ class AssistantPaymentRequestBinder
             view.mPaymentMethodSection.setVisible(
                     (model.get(AssistantPaymentRequestModel.REQUEST_PAYMENT)));
             return true;
+        } else if (propertyKey == AssistantPaymentRequestModel.REQUEST_TERMS_AND_CONDITIONS) {
+            view.mTermsSection.setTermsListVisible(
+                    model.get(AssistantPaymentRequestModel.REQUEST_TERMS_AND_CONDITIONS));
+            return true;
         }
         return false;
     }

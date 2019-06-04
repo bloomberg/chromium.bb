@@ -653,6 +653,8 @@ void UiControllerAndroid::OnPaymentRequestOptionsChanged(
       env, jmodel, payment_options->request_shipping);
   Java_AssistantPaymentRequestModel_setRequestPayment(
       env, jmodel, payment_options->request_payment_method);
+  Java_AssistantPaymentRequestModel_setRequestTermsAndConditions(
+      env, jmodel, payment_options->request_terms_and_conditions);
   Java_AssistantPaymentRequestModel_setSupportedBasicCardNetworks(
       env, jmodel,
       base::android::ToJavaArrayOfStrings(

@@ -1003,6 +1003,8 @@ message GetPaymentInformationProto {
   optional ContactDetailsProto contact_details = 5;
   // Override for the text of the confirm button in the payment request.
   optional string confirm_button_text = 7;
+  // When 'false', hide the terms and conditions box in the UI.
+  optional bool request_terms_and_conditions = 9 [default = true];
 }
 
 // Resets Autofill Assistant: clears any state and server payload.
