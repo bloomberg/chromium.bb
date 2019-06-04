@@ -24,6 +24,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -37,6 +38,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.TimeoutException;
 
@@ -232,7 +234,7 @@ public class AppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
-    @DisabledTest(message="https://crbug.com/970184")
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testHideMenuOnToggleOverview() throws TimeoutException, InterruptedException {
         CallbackHelper overviewModeFinishedShowingCallback = new CallbackHelper();
         OverviewModeBehavior.OverviewModeObserver overviewModeObserver =
