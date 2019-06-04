@@ -34,6 +34,9 @@ const CGFloat kToolsMenuOffset = -7;
 // The blur visual effect view, redefined as readwrite.
 @property(nonatomic, strong, readwrite) UIView* blur;
 
+// Separator above the toolbar, redefined as readwrite.
+@property(nonatomic, strong, readwrite) UIView* separator;
+
 // The stack view containing the buttons.
 @property(nonatomic, strong) UIStackView* stackView;
 
@@ -145,11 +148,11 @@ const CGFloat kToolsMenuOffset = -7;
     self.toolsMenuButton
   ];
 
-  UIView* separator = [[UIView alloc] init];
-  separator.backgroundColor = [UIColor colorWithWhite:0
-                                                alpha:kToolbarSeparatorAlpha];
-  separator.translatesAutoresizingMaskIntoConstraints = NO;
-  [self addSubview:separator];
+  self.separator = [[UIView alloc] init];
+  self.separator.backgroundColor =
+      [UIColor colorWithWhite:0 alpha:kToolbarSeparatorAlpha];
+  self.separator.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:self.separator];
 
   self.stackView =
       [[UIStackView alloc] initWithArrangedSubviews:self.allButtons];
@@ -170,10 +173,10 @@ const CGFloat kToolsMenuOffset = -7;
         constraintEqualToAnchor:self.topAnchor
                        constant:kBottomButtonsBottomMargin],
 
-    [separator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [separator.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-    [separator.bottomAnchor constraintEqualToAnchor:self.topAnchor],
-    [separator.heightAnchor
+    [self.separator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [self.separator.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [self.separator.bottomAnchor constraintEqualToAnchor:self.topAnchor],
+    [self.separator.heightAnchor
         constraintEqualToConstant:ui::AlignValueToUpperPixel(
                                       kToolbarSeparatorHeight)],
   ]];

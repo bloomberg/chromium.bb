@@ -89,6 +89,7 @@
                (progress - 1));
   }
   self.view.locationBarContainer.alpha = progress;
+  self.view.separator.alpha = progress;
 
   // When the locationBarContainer is hidden, show the |fakeOmniboxTarget|.
   if (progress == 0 && !self.view.fakeOmniboxTarget) {

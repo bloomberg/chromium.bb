@@ -57,6 +57,9 @@
 // Progress bar displayed below the toolbar, redefined as readwrite.
 @property(nonatomic, strong, readwrite) ToolbarProgressBar* progressBar;
 
+// Separator below the toolbar, redefined as readwrite.
+@property(nonatomic, strong, readwrite) UIView* separator;
+
 #pragma mark** Buttons in the leading stack view. **
 // Button to navigate back, redefined as readwrite.
 @property(nonatomic, strong, readwrite) ToolbarButton* backButton;
@@ -151,21 +154,7 @@
   [self setUpLocationBar];
   [self setUpProgressBar];
   [self setUpCollapsedToolbarButton];
-
-  // Add the separator here as there is no need to have a property.
-  UIView* separator = [[UIView alloc] init];
-  separator.backgroundColor = [UIColor colorWithWhite:0
-                                                alpha:kToolbarSeparatorAlpha];
-  separator.translatesAutoresizingMaskIntoConstraints = NO;
-  [self addSubview:separator];
-  [NSLayoutConstraint activateConstraints:@[
-    [separator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [separator.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-    [separator.topAnchor constraintEqualToAnchor:self.bottomAnchor],
-    [separator.heightAnchor
-        constraintEqualToConstant:ui::AlignValueToUpperPixel(
-                                      kToolbarSeparatorHeight)],
-  ]];
+  [self setUpSeparator];
 
   [self setUpConstraints];
 }
@@ -322,12 +311,31 @@
   [self addSubview:self.collapsedToolbarButton];
 }
 
+// Sets the separator up.
+- (void)setUpSeparator {
+  self.separator = [[UIView alloc] init];
+  self.separator.backgroundColor =
+      [UIColor colorWithWhite:0 alpha:kToolbarSeparatorAlpha];
+  self.separator.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:self.separator];
+}
+
 // Sets the constraints up.
 - (void)setUpConstraints {
   id<LayoutGuideProvider> safeArea = self.safeAreaLayoutGuide;
   self.expandedConstraints = [NSMutableArray array];
   self.contractedConstraints = [NSMutableArray array];
   self.contractedNoMarginConstraints = [NSMutableArray array];
+
+  // Separator constraints.
+  [NSLayoutConstraint activateConstraints:@[
+    [self.separator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [self.separator.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [self.separator.topAnchor constraintEqualToAnchor:self.bottomAnchor],
+    [self.separator.heightAnchor
+        constraintEqualToConstant:ui::AlignValueToUpperPixel(
+                                      kToolbarSeparatorHeight)],
+  ]];
 
   // Leading StackView constraints
   [NSLayoutConstraint activateConstraints:@[
