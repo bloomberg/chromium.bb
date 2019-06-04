@@ -75,10 +75,14 @@ class IsolationContextMetrics : public GraphImplObserverDefaultImpl {
     // instance in the process. This is typically small for most processes, but
     // can go to O(100s) for power users hence the use of small_map.
     base::small_map<std::unordered_map<int32_t, int>> site_instance_frame_count;
+    // The number of frames in this process.
+    int frame_count = 0;
     // The number of site instances with multiple frames in this process.
     // Basically, this counts the number of entries in
     // |site_instance_frame_count| that are > 1.
     int multi_frame_site_instance_count = 0;
+    // Whether or not this process has *ever* hosted multiple frames.
+    bool has_hosted_multiple_frames = false;
     // Whether or not this process has *ever* hosted multiple frames in the same
     // site instance. This goes to true if |multi_frame_site_instance_count| is
     // ever greater than 0.
@@ -94,8 +98,9 @@ class IsolationContextMetrics : public GraphImplObserverDefaultImpl {
     kUndefined = -1,  // This value is never reported, but used in logic.
     kAllFramesHaveDistinctSiteInstances = 0,
     kSomeFramesHaveSameSiteInstance = 1,
+    kOnlyOneFrameExists = 2,
     // Must be maintained as the max value.
-    kMaxValue = kSomeFramesHaveSameSiteInstance
+    kMaxValue = kOnlyOneFrameExists
   };
 
   // Tracks summary information regarding pages in a browsing instance.

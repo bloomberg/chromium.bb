@@ -25019,6 +25019,7 @@ Called by update_net_error_codes.py.-->
   </summary>
   <int value="0" label="All frames have distinct SiteInstances"/>
   <int value="1" label="Some frames have the same SiteInstance"/>
+  <int value="2" label="Only one frame exists"/>
 </enum>
 
 <enum name="FrameVisibility">

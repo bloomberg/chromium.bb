@@ -80,11 +80,11 @@ constexpr base::TimeDelta IsolationContextMetrics::kReportingInterval;
 
 // static
 const char IsolationContextMetrics::kProcessDataByTimeHistogramName[] =
-    "PerformanceManager.FrameSiteInstanceProcessRelationship.ByTime";
+    "PerformanceManager.FrameSiteInstanceProcessRelationship.ByTime2";
 
 // static
 const char IsolationContextMetrics::kProcessDataByProcessHistogramName[] =
-    "PerformanceManager.FrameSiteInstanceProcessRelationship.ByProcess";
+    "PerformanceManager.FrameSiteInstanceProcessRelationship.ByProcess2";
 
 // static
 const char
@@ -160,10 +160,12 @@ void IsolationContextMetrics::OnBeforeNodeRemoved(NodeBase* node) {
     // exist for renderer processes that ever actually hosted frames.
     const auto* process_node = ProcessNodeImpl::FromNodeBase(node);
     if (auto* process_data = ProcessData::Get(process_node)) {
-      const auto state =
-          process_data->has_hosted_multiple_frames_with_same_site_instance
-              ? ProcessDataState::kSomeFramesHaveSameSiteInstance
-              : ProcessDataState::kAllFramesHaveDistinctSiteInstances;
+      auto state = ProcessDataState::kOnlyOneFrameExists;
+      if (process_data->has_hosted_multiple_frames) {
+        state = process_data->has_hosted_multiple_frames_with_same_site_instance
+                    ? ProcessDataState::kSomeFramesHaveSameSiteInstance
+                    : ProcessDataState::kAllFramesHaveDistinctSiteInstances;
+      }
       UMA_HISTOGRAM_ENUMERATION(kProcessDataByProcessHistogramName, state);
     }
   }
@@ -227,8 +229,11 @@ IsolationContextMetrics::GetProcessDataState(const ProcessData* process_data) {
   if (process_data->site_instance_frame_count.empty())
     return ProcessDataState::kUndefined;
 
-  if (process_data->multi_frame_site_instance_count == 0)
+  if (process_data->multi_frame_site_instance_count == 0) {
+    if (process_data->site_instance_frame_count.size() == 1)
+      return ProcessDataState::kOnlyOneFrameExists;
     return ProcessDataState::kAllFramesHaveDistinctSiteInstances;
+  }
 
   return ProcessDataState::kSomeFramesHaveSameSiteInstance;
 }
@@ -257,6 +262,13 @@ void IsolationContextMetrics::ChangeFrameCount(const FrameNodeImpl* frame_node,
   const auto* process_node = frame_node->process_node();
   auto* data = ProcessData::GetOrCreate(process_node);
   const auto old_state = GetProcessDataState(data);
+
+  if (delta == 1) {
+    if (++data->frame_count > 1)
+      data->has_hosted_multiple_frames = true;
+  } else {
+    --data->frame_count;
+  }
 
   auto iter = data->site_instance_frame_count
                   .insert(std::make_pair(frame_node->site_instance_id(), 0))
