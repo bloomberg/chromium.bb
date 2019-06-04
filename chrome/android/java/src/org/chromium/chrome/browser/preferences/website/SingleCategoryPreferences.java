@@ -464,7 +464,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 prefServiceBridge.setCategoryEnabled(
                         SiteSettingsCategory.contentSettingsType(type), (boolean) newValue);
 
-                if (type == SiteSettingsCategory.Type.COOKIES) {
+                // Third-party cookies toggle doesn't exist in touchless. Refer to crbug/951850.
+                if (type == SiteSettingsCategory.Type.COOKIES
+                        && !FeatureUtilities.isNoTouchModeEnabled()) {
                     updateThirdPartyCookiesCheckBox();
                 } else if (type == SiteSettingsCategory.Type.NOTIFICATIONS) {
                     updateNotificationsVibrateCheckBox();
@@ -858,7 +860,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
             return;
         }
 
-        // Configure/hide the third-party cookie toggle, as needed.
+        // Configure/hide the third-party cookies toggle, as needed.
         // We don't need this toggle in touchless. Refer to crbug/951850.
         if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
                 && !FeatureUtilities.isNoTouchModeEnabled()) {
