@@ -379,7 +379,7 @@ void MarkupFormatter::AppendCDATASection(StringBuilder& result,
 }
 
 EntityMask MarkupFormatter::EntityMaskForText(const Text& text) const {
-  if (!SerializeAsHTMLDocument(text))
+  if (!SerializeAsHTML())
     return kEntityMaskInPCDATA;
 
   // TODO(hajimehoshi): We need to switch EditingStrategy.
@@ -405,7 +405,7 @@ EntityMask MarkupFormatter::EntityMaskForText(const Text& text) const {
 // separate end tag.
 // 4. Other elements self-close.
 bool MarkupFormatter::ShouldSelfClose(const Element& element) const {
-  if (SerializeAsHTMLDocument(element))
+  if (SerializeAsHTML())
     return false;
   if (element.HasChildren())
     return false;
@@ -414,10 +414,8 @@ bool MarkupFormatter::ShouldSelfClose(const Element& element) const {
   return true;
 }
 
-bool MarkupFormatter::SerializeAsHTMLDocument(const Node& node) const {
-  if (serialization_type_ == SerializationType::kForcedXML)
-    return false;
-  return node.GetDocument().IsHTMLDocument();
+bool MarkupFormatter::SerializeAsHTML() const {
+  return serialization_type_ == SerializationType::kHTML;
 }
 
 }  // namespace blink

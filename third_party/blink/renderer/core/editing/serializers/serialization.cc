@@ -461,7 +461,10 @@ String CreateMarkup(const Node* node,
   if (!node)
     return "";
 
-  MarkupAccumulator accumulator(should_resolve_urls);
+  MarkupAccumulator accumulator(should_resolve_urls,
+                                node->GetDocument().IsHTMLDocument()
+                                    ? SerializationType::kHTML
+                                    : SerializationType::kXML);
   return accumulator.SerializeNodes<EditingStrategy>(*node, children_only);
 }
 

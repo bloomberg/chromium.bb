@@ -119,7 +119,9 @@ SerializerMarkupAccumulator::SerializerMarkupAccumulator(
     FrameSerializer::Delegate& delegate,
     const Document& document,
     HeapVector<Member<const Element>>& elements)
-    : MarkupAccumulator(kResolveAllURLs),
+    : MarkupAccumulator(kResolveAllURLs,
+                        document.IsHTMLDocument() ? SerializationType::kHTML
+                                                  : SerializationType::kXML),
       delegate_(delegate),
       document_(&document),
       elements_(elements) {}
