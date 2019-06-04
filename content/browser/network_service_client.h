@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -39,7 +40,8 @@ class CONTENT_EXPORT NetworkServiceClient
   ~NetworkServiceClient() override;
 
   // network::mojom::NetworkServiceClient implementation:
-  void OnAuthRequired(uint32_t process_id,
+  void OnAuthRequired(const base::Optional<base::UnguessableToken>& window_id,
+                      uint32_t process_id,
                       uint32_t routing_id,
                       uint32_t request_id,
                       const GURL& url,

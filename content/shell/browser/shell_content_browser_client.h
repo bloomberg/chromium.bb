@@ -127,7 +127,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       base::OnceCallback<bool(const service_manager::Identity&)> callback) {
     should_terminate_on_service_quit_callback_ = std::move(callback);
   }
-  void set_login_request_callback(base::OnceClosure login_request_callback) {
+  void set_login_request_callback(
+      base::OnceCallback<void(bool is_main_frame)> login_request_callback) {
     login_request_callback_ = std::move(login_request_callback);
   }
 
@@ -147,7 +148,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   base::OnceClosure select_client_certificate_callback_;
   base::OnceCallback<bool(const service_manager::Identity&)>
       should_terminate_on_service_quit_callback_;
-  base::OnceClosure login_request_callback_;
+  base::OnceCallback<void(bool is_main_frame)> login_request_callback_;
 
   std::unique_ptr<
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>

@@ -33,6 +33,7 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
 
   // network::mojom::NetworkServiceClient implementation:
   void OnAuthRequired(
+      const base::Optional<base::UnguessableToken>& window_id,
       uint32_t process_id,
       uint32_t routing_id,
       uint32_t request_id,

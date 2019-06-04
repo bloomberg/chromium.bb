@@ -21,6 +21,7 @@ TestNetworkServiceClient::TestNetworkServiceClient(
 TestNetworkServiceClient::~TestNetworkServiceClient() {}
 
 void TestNetworkServiceClient::OnAuthRequired(
+    const base::Optional<base::UnguessableToken>& window_id,
     uint32_t process_id,
     uint32_t routing_id,
     uint32_t request_id,

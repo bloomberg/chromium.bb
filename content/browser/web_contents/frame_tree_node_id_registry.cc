@@ -5,11 +5,25 @@
 #include "content/browser/web_contents/frame_tree_node_id_registry.h"
 
 #include "base/bind_helpers.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content {
 
 using WebContentsGetter = FrameTreeNodeIdRegistry::WebContentsGetter;
+using IsMainFrameGetter = FrameTreeNodeIdRegistry::IsMainFrameGetter;
+
+namespace {
+
+base::Optional<bool> IsMainFrameFromFrameTreeNodeId(int frame_tree_node_id) {
+  if (FrameTreeNode* frame_tree_node =
+          FrameTreeNode::GloballyFindByID(frame_tree_node_id)) {
+    return frame_tree_node->IsMainFrame();
+  }
+  return base::nullopt;
+}
+
+}  // namespace
 
 // static
 FrameTreeNodeIdRegistry* FrameTreeNodeIdRegistry::GetInstance() {
@@ -36,6 +50,16 @@ WebContentsGetter FrameTreeNodeIdRegistry::GetWebContentsGetter(
   if (iter == map_.end())
     return base::NullCallback();
   return base::BindRepeating(&WebContents::FromFrameTreeNodeId, iter->second);
+}
+
+IsMainFrameGetter FrameTreeNodeIdRegistry::GetIsMainFrameGetter(
+    const base::UnguessableToken& id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto iter = map_.find(id);
+  if (iter == map_.end()) {
+    return base::NullCallback();
+  }
+  return base::BindRepeating(&IsMainFrameFromFrameTreeNodeId, iter->second);
 }
 
 FrameTreeNodeIdRegistry::FrameTreeNodeIdRegistry() = default;

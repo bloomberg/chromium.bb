@@ -2137,6 +2137,7 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
 
   // mojom::NetworkServiceClient:
   void OnAuthRequired(
+      const base::Optional<base::UnguessableToken>& window_id,
       uint32_t process_id,
       uint32_t routing_id,
       uint32_t request_id,

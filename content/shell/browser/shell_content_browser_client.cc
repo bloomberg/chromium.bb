@@ -466,9 +466,8 @@ std::unique_ptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
     bool first_auth_attempt,
     LoginAuthRequiredCallback auth_required_callback) {
   if (!login_request_callback_.is_null()) {
-    std::move(login_request_callback_).Run();
+    std::move(login_request_callback_).Run(is_main_frame);
   }
-
   return nullptr;
 }
 

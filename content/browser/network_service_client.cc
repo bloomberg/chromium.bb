@@ -288,6 +288,12 @@ void HandleFileUploadRequest(
                                                   std::move(files)));
 }
 
+FrameTreeNodeIdRegistry::IsMainFrameGetter GetIsMainFrameFromRegistry(
+    const base::UnguessableToken& window_id) {
+  return FrameTreeNodeIdRegistry::GetInstance()->GetIsMainFrameGetter(
+      window_id);
+}
+
 base::RepeatingCallback<WebContents*(void)> GetWebContentsFromRegistry(
     const base::UnguessableToken& window_id) {
   return FrameTreeNodeIdRegistry::GetInstance()->GetWebContentsGetter(
@@ -307,6 +313,60 @@ bool IsMainFrameRequest(int process_id, int routing_id) {
 
   auto* frame_tree_node = FrameTreeNode::GloballyFindByID(routing_id);
   return frame_tree_node && frame_tree_node->IsMainFrame();
+}
+
+void OnAuthRequiredContinuation(
+    uint32_t process_id,
+    uint32_t routing_id,
+    uint32_t request_id,
+    const GURL& url,
+    bool is_request_for_main_frame,
+    bool first_auth_attempt,
+    const net::AuthChallengeInfo& auth_info,
+    const base::Optional<network::ResourceResponseHead>& head,
+    network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
+    base::RepeatingCallback<WebContents*(void)> web_contents_getter) {
+  if (!web_contents_getter) {
+    web_contents_getter =
+        base::BindRepeating(GetWebContents, process_id, routing_id);
+  }
+  if (!web_contents_getter.Run()) {
+    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+    return;
+  }
+  new LoginHandlerDelegate(std::move(auth_challenge_responder),
+                           std::move(web_contents_getter), auth_info,
+                           is_request_for_main_frame, process_id, routing_id,
+                           request_id, url, head ? head->headers : nullptr,
+                           first_auth_attempt);  // deletes self
+}
+
+void OnAuthRequiredContinuationForWindowId(
+    const base::UnguessableToken& window_id,
+    uint32_t process_id,
+    uint32_t routing_id,
+    uint32_t request_id,
+    const GURL& url,
+    bool first_auth_attempt,
+    const net::AuthChallengeInfo& auth_info,
+    const base::Optional<network::ResourceResponseHead>& head,
+    network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
+    FrameTreeNodeIdRegistry::IsMainFrameGetter is_main_frame_getter) {
+  // |is_main_frame_getter| should not be a null callback because the
+  // FrameTreeNodeIdRegistry should have a corresponding FrameTreeNode id.
+  CHECK(is_main_frame_getter);
+  base::Optional<bool> is_main_frame_opt = is_main_frame_getter.Run();
+  // The frame may already be gone due to thread hopping.
+  if (!is_main_frame_opt) {
+    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+    return;
+  }
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&GetWebContentsFromRegistry, window_id),
+      base::BindOnce(&OnAuthRequiredContinuation, process_id, routing_id,
+                     request_id, url, *is_main_frame_opt, first_auth_attempt,
+                     auth_info, head, std::move(auth_challenge_responder)));
 }
 
 void CreateSSLClientAuthDelegateOnIO(
@@ -489,6 +549,7 @@ NetworkServiceClient::~NetworkServiceClient() {
 }
 
 void NetworkServiceClient::OnAuthRequired(
+    const base::Optional<base::UnguessableToken>& window_id,
     uint32_t process_id,
     uint32_t routing_id,
     uint32_t request_id,
@@ -497,20 +558,20 @@ void NetworkServiceClient::OnAuthRequired(
     const net::AuthChallengeInfo& auth_info,
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
-  base::RepeatingCallback<WebContents*(void)> web_contents_getter =
-      base::BindRepeating(GetWebContents, process_id, routing_id);
-
-  if (!web_contents_getter.Run()) {
-    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+  if (window_id) {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&GetIsMainFrameFromRegistry, *window_id),
+        base::BindOnce(&OnAuthRequiredContinuationForWindowId, *window_id,
+                       process_id, routing_id, request_id, url,
+                       first_auth_attempt, auth_info, head,
+                       std::move(auth_challenge_responder)));
     return;
   }
-
-  bool is_request_for_main_frame = IsMainFrameRequest(process_id, routing_id);
-  new LoginHandlerDelegate(std::move(auth_challenge_responder),
-                           std::move(web_contents_getter), auth_info,
-                           is_request_for_main_frame, process_id, routing_id,
-                           request_id, url, head ? head->headers : nullptr,
-                           first_auth_attempt);  // deletes self
+  OnAuthRequiredContinuation(process_id, routing_id, request_id, url,
+                             IsMainFrameRequest(process_id, routing_id),
+                             first_auth_attempt, auth_info, head,
+                             std::move(auth_challenge_responder), {});
 }
 
 void NetworkServiceClient::OnCertificateRequested(
