@@ -16,7 +16,7 @@ PAM_CONFIG=/etc/pam.d/chrome-remote-desktop
 ENABLED_FILE="$HELPERTOOLS/$SERVICE_NAME.me2me_enabled"
 ENABLED_FILE_BACKUP="$ENABLED_FILE.backup"
 HOST_BUNDLE_NAME=@@HOST_BUNDLE_NAME@@
-HOST_EXE=$CONFIG_DIR/$HOST_BUNDLE_NAME/Contents/MacOS/remoting_me2me_host
+HOST_EXE="$HELPERTOOLS/$HOST_BUNDLE_NAME/Contents/MacOS/remoting_me2me_host"
 
 KSADMIN=/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin
 KSUPDATE=https://tools.google.com/service/update2
