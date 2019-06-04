@@ -285,20 +285,20 @@ class RenderWebView final : public WebView
     content::InputEventAckState FilterInputEvent(
         const blink::WebInputEvent& input_event,
         const ui::LatencyInfo& latency_info) override;
-    void IncrementInFlightEventCount() override {};
-    void DecrementInFlightEventCount(content::InputEventAckSource ack_source) override {};
-    void DidOverscroll(const ui::DidOverscrollParams& params) override {};
-    void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) override {};
-    void DidStartScrollingViewport() override {};
+    void IncrementInFlightEventCount() override {}
+    void DecrementInFlightEventCount(content::InputEventAckSource ack_source) override {}
+    void DidOverscroll(const ui::DidOverscrollParams& params) override {}
+    void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) override {}
+    void DidStartScrollingViewport() override {}
     void ForwardGestureEventWithLatencyInfo(
         const blink::WebGestureEvent& gesture_event,
         const ui::LatencyInfo& latency_info) override;
     void ForwardWheelEventWithLatencyInfo(
         const blink::WebMouseWheelEvent& wheel_event,
-        const ui::LatencyInfo& latency_info) override {};
+        const ui::LatencyInfo& latency_info) override {}
     bool IsWheelScrollInProgress() override;
     bool IsAutoscrollInProgress() override;
-    void SetMouseCapture(bool capture) override {};
+    void SetMouseCapture(bool capture) override {}
 
     // content::InputRouterImplClient overrides:
     content::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
@@ -311,22 +311,22 @@ class RenderWebView final : public WebView
     void OnWheelEventAck(
         const content::MouseWheelEventWithLatencyInfo& event,
         content::InputEventAckSource ack_source,
-        content::InputEventAckState ack_result) override {};
+        content::InputEventAckState ack_result) override {}
     void OnTouchEventAck(
         const content::TouchEventWithLatencyInfo& event,
         content::InputEventAckSource ack_source,
-        content::InputEventAckState ack_result) override {};
+        content::InputEventAckState ack_result) override {}
     void OnGestureEventAck(
         const content::GestureEventWithLatencyInfo& event,
         content::InputEventAckSource ack_source,
-        content::InputEventAckState ack_result) override {};
-    void OnUnexpectedEventAck(UnexpectedEventAckType type) override {};
+        content::InputEventAckState ack_result) override {}
+    void OnUnexpectedEventAck(UnexpectedEventAckType type) override {}
 
     // content::FlingControllerSchedulerClient overrides:
     void ScheduleFlingProgress(
-        base::WeakPtr<content::FlingController> fling_controller) override {};
+        base::WeakPtr<content::FlingController> fling_controller) override {}
     void DidStopFlingingOnBrowser(
-        base::WeakPtr<content::FlingController> fling_controller) override {};
+        base::WeakPtr<content::FlingController> fling_controller) override {}
     bool NeedsBeginFrameForFlingProgress() override;
 
     // ui::internal::InputMethodDelegate overrides:
@@ -368,7 +368,7 @@ class RenderWebView final : public WebView
     bool ShouldDoLearning() override;
     void SetCompositionFromExistingText(
       const gfx::Range& range,
-      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override {};
+      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override {}
 
     // DragDropDelegate overrides:
     void DragTargetEnter(
@@ -465,11 +465,11 @@ class RenderWebView final : public WebView
     void onMouseEventAck(
         const content::MouseEventWithLatencyInfo& event,
         content::InputEventAckSource ack_source,
-        content::InputEventAckState ack_result) {};
+        content::InputEventAckState ack_result) {}
     void onKeyboardEventAck(
         const content::NativeWebKeyboardEventWithLatencyInfo& event,
         content::InputEventAckSource ack_source,
-        content::InputEventAckState ack_result) {};
+        content::InputEventAckState ack_result) {}
     void onQueueWheelEventWithPhaseEnded();
     void onStartDraggingImpl(
         const content::DropData& drop_data,
