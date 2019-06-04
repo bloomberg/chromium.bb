@@ -530,6 +530,49 @@ void EntryAndExitPointsForDirection(SpatialNavigationDirection direction,
   }
 }
 
+double ProjectedOverlap(SpatialNavigationDirection direction,
+                        LayoutRect current,
+                        LayoutRect candidate) {
+  switch (direction) {
+    case SpatialNavigationDirection::kLeft:
+    case SpatialNavigationDirection::kRight:
+      current.SetWidth(LayoutUnit(1));
+      candidate.SetX(current.X());
+      current.Intersect(candidate);
+      return current.Height();
+    case SpatialNavigationDirection::kUp:
+    case SpatialNavigationDirection::kDown:
+      current.SetHeight(LayoutUnit(1));
+      candidate.SetY(current.Y());
+      current.Intersect(candidate);
+      return current.Width();
+    default:
+      NOTREACHED();
+      return kMaxDistance;
+  }
+}
+
+double Alignment(SpatialNavigationDirection direction,
+                 LayoutRect current,
+                 LayoutRect candidate) {
+  // The formula and constants for "alignment" are experimental and
+  // come from https://drafts.csswg.org/css-nav-1/#heuristics.
+  const int kAlignWeight = 5;
+
+  double projected_overlap = ProjectedOverlap(direction, current, candidate);
+  switch (direction) {
+    case SpatialNavigationDirection::kLeft:
+    case SpatialNavigationDirection::kRight:
+      return (kAlignWeight * projected_overlap) / current.Height();
+    case SpatialNavigationDirection::kUp:
+    case SpatialNavigationDirection::kDown:
+      return (kAlignWeight * projected_overlap) / current.Width();
+    default:
+      NOTREACHED();
+      return kMaxDistance;
+  }
+}
+
 double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
                                   const FocusCandidate& current_interest,
                                   const FocusCandidate& candidate) {
@@ -614,8 +657,9 @@ double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
       return kMaxDistance;
   }
 
-  // Distance calculation is based on http://www.w3.org/TR/WICD/#focus-handling
-  return distance + navigation_axis_distance +
+  // Distance calculation is based on https://drafts.csswg.org/css-nav-1/.
+  return distance + navigation_axis_distance -
+         Alignment(direction, current_rect, node_rect) +
          weighted_orthogonal_axis_distance - sqrt(overlap);
 }
 
