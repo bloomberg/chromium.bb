@@ -915,14 +915,6 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   }
 }
 
-// Flaky on Win, Mac and Linux (http://crbug.com/806684).
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_NestedURLDownloadsToExtensionAllowed \
-  DISABLED_NestedURLDownloadsToExtensionAllowed
-#else
-#define MAYBE_NestedURLDownloadsToExtensionAllowed \
-  NestedURLDownloadsToExtensionAllowed
-#endif
 // Check that browser-side restrictions on extension blob/filesystem URLs allow
 // navigations that will result in downloads.  See https://crbug.com/714373.
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
