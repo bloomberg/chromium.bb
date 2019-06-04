@@ -87,7 +87,7 @@ public class CustomButtonParams {
     /**
      * @return The drawable for the customized button.
      */
-    Drawable getIcon(Context context) {
+    public Drawable getIcon(Context context) {
         if (mShouldTint) {
             return new TintedDrawable(context, mIcon);
         } else {
@@ -98,7 +98,7 @@ public class CustomButtonParams {
     /**
      * @return The content description for the customized button.
      */
-    String getDescription() {
+    public String getDescription() {
         return mDescription;
     }
 
@@ -274,7 +274,11 @@ public class CustomButtonParams {
     /**
      * @return Whether the given icon's size is suitable to put on toolbar.
      */
-    static boolean doesIconFitToolbar(Context context, Bitmap bitmap) {
+    public boolean doesIconFitToolbar(Context context) {
+        return doesIconFitToolbar(context, mIcon);
+    }
+
+    private static boolean doesIconFitToolbar(Context context, Bitmap bitmap) {
         int height = context.getResources().getDimensionPixelSize(R.dimen.toolbar_icon_height);
         if (bitmap.getHeight() < height) return false;
         int scaledWidth = bitmap.getWidth() / bitmap.getHeight() * height;

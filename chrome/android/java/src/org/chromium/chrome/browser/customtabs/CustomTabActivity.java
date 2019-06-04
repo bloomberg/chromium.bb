@@ -29,15 +29,12 @@ import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -55,7 +52,6 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
@@ -65,6 +61,7 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActi
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarController;
+import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.gsa.GSAState;
@@ -74,17 +71,12 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.page_info.PageInfoController;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
-import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
-import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -92,7 +84,6 @@ import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.List;
 
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
@@ -116,21 +107,18 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private CustomTabsSessionToken mSession;
     private BrowserSessionContentHandler mBrowserSessionContentHandler;
     private CustomTabBottomBarDelegate mBottomBarDelegate;
-    private CustomTabTopBarDelegate mTopBarDelegate;
     private CustomTabActivityTabController mTabController;
     private CustomTabActivityTabProvider mTabProvider;
     private CustomTabActivityTabFactory mTabFactory;
     private CustomTabActivityNavigationController mNavigationController;
     private CustomTabStatusBarColorProvider mCustomTabStatusBarColorProvider;
+    private CustomTabToolbarCoordinator mToolbarCoordinator;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
     // TODO(ianwen, yusufo): Figure out a solution to extract external resources without having to
     // change the package name.
     private boolean mShouldOverridePackage;
-
-    /** Adds and removes observers from tabs when needed. */
-    private TabObserverRegistrar mTabObserverRegistrar;
 
     private boolean mIsKeepAlive;
 
@@ -231,7 +219,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             initializeIncognito();
         }
 
-        initalizePreviewsObserver();
         CustomTabNavigationBarController.updateNavigationBarColor(this, mIntentDataProvider);
     }
 
@@ -263,21 +250,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     public void performPostInflationStartup() {
         super.performPostInflationStartup();
-
-        getToolbarManager().setCloseButtonDrawable(FeatureUtilities.isNoTouchModeEnabled()
-                        ? null
-                        : mIntentDataProvider.getCloseButtonDrawable());
-        getToolbarManager().setShowTitle(
-                mIntentDataProvider.getTitleVisibilityState() == CustomTabsIntent.SHOW_PAGE_TITLE);
-        if (mConnection.shouldHideDomainForSession(mSession)) {
-            getToolbarManager().setUrlBarHidden(true);
-        }
-        int toolbarColor = mIntentDataProvider.getToolbarColor();
-        getToolbarManager().onThemeColorChanged(toolbarColor, false);
-        if (!mIntentDataProvider.isOpenedByChrome()) {
-            getToolbarManager().setShouldUpdateToolbarPrimaryColor(false);
-        }
-
         getStatusBarColorController().updateStatusBarColor(ColorUtils.isUsingDefaultToolbarColor(
                 getResources(), false, getBaseStatusBarColor()));
 
@@ -290,11 +262,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         }
 
         // Setting task title and icon to be null will preserve the client app's title and icon.
-        ApiCompatibilityUtils.setTaskDescription(this, null, null, toolbarColor);
-        showCustomButtonsOnToolbar();
+        ApiCompatibilityUtils.setTaskDescription(this, null, null,
+                mIntentDataProvider.getToolbarColor());
         mBottomBarDelegate = getComponent().resolveBottomBarDelegate();
         mBottomBarDelegate.showBottomBarIfNecessary();
-        mTopBarDelegate = getComponent().resolveTobBarDelegate();
     }
 
     @Override
@@ -328,23 +299,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             mDynamicModuleCoordinator = getComponent().resolveDynamicModuleCoordinator();
         }
 
-        LayoutManager layoutDriver = new LayoutManager(getCompositorViewHolder());
-        initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
-                (ViewGroup) findViewById(android.R.id.content),
-                (ToolbarControlContainer) findViewById(R.id.control_container));
-        getToolbarManager().initializeWithNative(getTabModelSelector(),
-                getFullscreenManager().getBrowserVisibilityDelegate(), getFindToolbarManager(),
-                null, layoutDriver, null, null, null, new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        RecordUserAction.record("CustomTabs.CloseButtonClicked");
-                        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
-                            RecordUserAction.record("CustomTabs.CloseButtonClicked.DownloadsUI");
-                        }
-                        mNavigationController.navigateOnClose();
-                    }
-                });
-
         mBrowserSessionContentHandler = new BrowserSessionContentHandler() {
             @Override
             public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {
@@ -375,25 +329,15 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
                 params.update(bitmap, description);
                 if (params.showOnToolbar()) {
-                    if (!CustomButtonParams.doesIconFitToolbar(CustomTabActivity.this, bitmap)) {
-                        return false;
-                    }
-                    int index = mIntentDataProvider.getCustomToolbarButtonIndexForId(id);
-                    assert index != -1;
-                    getToolbarManager().updateCustomActionButton(
-                            index, params.getIcon(CustomTabActivity.this), description);
-                } else {
-                    if (mBottomBarDelegate != null) {
-                        mBottomBarDelegate.updateBottomBarButtons(params);
-                    }
+                    return mToolbarCoordinator.updateCustomButton(params);
                 }
+                mBottomBarDelegate.updateBottomBarButtons(params);
                 return true;
             }
 
             @Override
             public boolean updateRemoteViews(RemoteViews remoteViews, int[] clickableIDs,
                     PendingIntent pendingIntent) {
-                if (mBottomBarDelegate == null) return false;
                 return mBottomBarDelegate.updateRemoteViews(
                         remoteViews, clickableIDs, pendingIntent);
             }
@@ -472,68 +416,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         if (mDynamicModuleCoordinator != null) {
             mDynamicModuleCoordinator.resetPostMessageHandlersForCurrentSession(null);
         }
-    }
-
-    private void initalizePreviewsObserver() {
-        mTabObserverRegistrar.registerTabObserver(new EmptyTabObserver() {
-            /** Keeps track of the original color before the preview was shown. */
-            private int mOriginalColor;
-
-            /** True if a change to the toolbar color was made because of a preview. */
-            private boolean mTriggeredPreviewChange;
-
-            @Override
-            public void onPageLoadFinished(Tab tab, String url) {
-                // Update the color when the page load finishes.
-                updateColor(tab);
-            }
-
-            @Override
-            public void didReloadLoFiImages(Tab tab) {
-                // Update the color when the LoFi preview is reloaded.
-                updateColor(tab);
-            }
-
-            @Override
-            public void onUrlUpdated(Tab tab) {
-                // Update the color on every new URL.
-                updateColor(tab);
-            }
-
-            /**
-             * Updates the color of the Activity's status bar and the CCT Toolbar. When a preview is
-             * shown, it should be reset to the default color. If the user later navigates away from
-             * that preview to a non-preview page, reset the color back to the original. This does
-             * not interfere with site-specific theme colors which are disabled when a preview is
-             * being shown.
-             */
-            private void updateColor(Tab tab) {
-                final ToolbarManager manager = getToolbarManager();
-                if (manager == null) return;
-
-                // Record the original toolbar color in case we need to revert back to it later
-                // after a preview has been shown then the user navigates to another non-preview
-                // page.
-                if (mOriginalColor == 0) mOriginalColor = manager.getPrimaryColor();
-
-                final boolean shouldUpdateOriginal = manager.getShouldUpdateToolbarPrimaryColor();
-                manager.setShouldUpdateToolbarPrimaryColor(true);
-
-                if (tab.isPreview()) {
-                    final int defaultColor = ColorUtils.getDefaultThemeColor(getResources(), false);
-                    manager.onThemeColorChanged(defaultColor, false);
-                    mTriggeredPreviewChange = true;
-                } else if (mOriginalColor != manager.getPrimaryColor() && mTriggeredPreviewChange) {
-                    manager.onThemeColorChanged(mOriginalColor, false);
-
-                    mTriggeredPreviewChange = false;
-                    mOriginalColor = 0;
-                }
-
-                getStatusBarColorController().updateStatusBarColor(false);
-                manager.setShouldUpdateToolbarPrimaryColor(shouldUpdateOriginal);
-            }
-        });
     }
 
     @Override
@@ -682,32 +564,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         }
     }
 
-    /**
-     * Configures the custom button on toolbar. Does nothing if invalid data is provided by clients.
-     */
-    private void showCustomButtonsOnToolbar() {
-        final List<CustomButtonParams> paramList = mIntentDataProvider.getCustomButtonsOnToolbar();
-        for (CustomButtonParams params : paramList) {
-            getToolbarManager().addCustomActionButton(
-                    params.getIcon(this), params.getDescription(), v -> {
-                        if (getActivityTab() == null) return;
-                        mIntentDataProvider.sendButtonPendingIntentWithUrlAndTitle(
-                                ContextUtils.getApplicationContext(), params,
-                                getActivityTab().getUrl(), getActivityTab().getTitle());
-                        RecordUserAction.record("CustomTabsCustomActionButtonClick");
-                        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()
-                                && TextUtils.equals(
-                                           params.getDescription(), getString(R.string.share))) {
-                            RecordUserAction.record(
-                                    "CustomTabsCustomActionButtonClick.DownloadsUI.Share");
-                        }
-                    });
-        }
-    }
-
     @Override
     public boolean canShowAppMenu() {
-        if (getActivityTab() == null || !getToolbarManager().isInitialized()) return false;
+        if (getActivityTab() == null || !mToolbarCoordinator.toolbarIsInitialized()) return false;
 
         return super.canShowAppMenu();
     }
@@ -729,13 +588,13 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         Boolean result = KeyboardShortcuts.dispatchKeyEvent(event, this,
-                getToolbarManager().isInitialized());
+                mToolbarCoordinator.toolbarIsInitialized());
         return result != null ? result : super.dispatchKeyEvent(event);
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!getToolbarManager().isInitialized()) {
+        if (!mToolbarCoordinator.toolbarIsInitialized()) {
             return super.onKeyDown(keyCode, event);
         }
         return KeyboardShortcuts.onKeyDown(event, this, true, false)
@@ -791,14 +650,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @VisibleForTesting
     public CustomTabIntentDataProvider getIntentDataProvider() {
         return mIntentDataProvider;
-    }
-
-    @Override
-    protected void initializeToolbar() {
-        super.initializeToolbar();
-        if (mIntentDataProvider.isMediaViewer()) {
-            getToolbarManager().setToolbarShadowVisibility(View.GONE);
-        }
     }
 
     @Override
@@ -896,10 +747,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                         commonsModule, customTabsModule);
 
         mCustomTabStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
-        mTabObserverRegistrar = component.resolveTabObserverRegistrar();
         mTabController = component.resolveTabController();
         mTabProvider = component.resolveTabProvider();
         mTabFactory = component.resolveTabFactory();
+        mToolbarCoordinator = component.resolveToolbarCoordinator();
         component.resolveUmaTracker();
         mNavigationController = component.resolveNavigationController();
         mNavigationController.setFinishHandler((reason) -> {

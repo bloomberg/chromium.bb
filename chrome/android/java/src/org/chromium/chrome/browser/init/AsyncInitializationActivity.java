@@ -92,6 +92,7 @@ public abstract class AsyncInitializationActivity
     private boolean mFirstDrawComplete;
 
     private Runnable mOnInflationCompleteCallback;
+    private boolean mInitialLayoutInflationComplete;
 
     public AsyncInitializationActivity() {
         mHandler = new Handler();
@@ -761,6 +762,14 @@ public abstract class AsyncInitializationActivity
         if (mOnInflationCompleteCallback == null) return;
         mOnInflationCompleteCallback.run();
         mOnInflationCompleteCallback = null;
+        mInitialLayoutInflationComplete = true;
+    }
+
+    /**
+     * Returns whether initial inflation is complete.
+     */
+    public boolean isInitialLayoutInflationComplete() {
+        return mInitialLayoutInflationComplete;
     }
 
     /**

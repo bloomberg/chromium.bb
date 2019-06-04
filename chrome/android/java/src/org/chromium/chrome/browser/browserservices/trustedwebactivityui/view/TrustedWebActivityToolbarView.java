@@ -8,36 +8,32 @@ import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.T
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
-import org.chromium.chrome.browser.customtabs.CustomTabBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyObservable;
 
 import javax.inject.Inject;
 
-import dagger.Lazy;
-
 /**
  * Hides and shows the toolbar according to the state of the Trusted Web Activity.
+ *
+ * TODO(pshmakov): Since we now have CustomTabToolbarCoordinator representing toolbar as a separate
+ * feature, this class doesn't make sense any more. Remove it, and let TrustedWebActivityCoordinator
+ * talk to CustomTabToolbarCoordinator.
  */
 @ActivityScope
 public class TrustedWebActivityToolbarView implements
         PropertyObservable.PropertyObserver<PropertyKey> {
-    private final Lazy<ChromeFullscreenManager> mFullscreenManager;
-    private final CustomTabBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
+    private final CustomTabToolbarCoordinator mCustomTabToolbarCoordinator;
     private final TrustedWebActivityModel mModel;
     private final ChromeActivity mActivity;
 
-    private int mControlsHidingToken = FullscreenManager.INVALID_TOKEN;
-
     @Inject
-    public TrustedWebActivityToolbarView(Lazy<ChromeFullscreenManager> fullscreenManager,
-            CustomTabBrowserControlsVisibilityDelegate controlsVisibilityDelegate,
-            TrustedWebActivityModel model, ChromeActivity activity) {
-        mFullscreenManager = fullscreenManager;
-        mControlsVisibilityDelegate = controlsVisibilityDelegate;
+    public TrustedWebActivityToolbarView(CustomTabToolbarCoordinator customTabToolbarCoordinator,
+            TrustedWebActivityModel model,
+            ChromeActivity activity) {
+        mCustomTabToolbarCoordinator = customTabToolbarCoordinator;
         mModel = model;
         mActivity = activity;
         mModel.addObserver(this);
@@ -53,16 +49,11 @@ public class TrustedWebActivityToolbarView implements
 
         boolean hide = mModel.get(TOOLBAR_HIDDEN);
 
-        mControlsVisibilityDelegate.setTrustedWebActivityMode(hide);
+        mCustomTabToolbarCoordinator.setToolbarHidden(hide);
 
-        ChromeFullscreenManager fullscreenManager = mFullscreenManager.get();
-        if (hide) {
-            mControlsHidingToken =
-                    fullscreenManager.hideAndroidControlsAndClearOldToken(mControlsHidingToken);
-        } else {
-            fullscreenManager.releaseAndroidControlsHidingToken(mControlsHidingToken);
+        if (!hide) {
             // Force showing the controls for a bit when leaving Trusted Web Activity mode.
-            fullscreenManager.getBrowserVisibilityDelegate().showControlsTransient();
+            mCustomTabToolbarCoordinator.showToolbarTemporarily();
         }
     }
 }

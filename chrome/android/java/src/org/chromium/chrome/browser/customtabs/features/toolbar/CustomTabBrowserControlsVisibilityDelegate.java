@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.customtabs;
+package org.chromium.chrome.browser.customtabs.features.toolbar;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -23,8 +23,7 @@ public class CustomTabBrowserControlsVisibilityDelegate
         implements BrowserControlsVisibilityDelegate {
     private final Lazy<ChromeFullscreenManager> mFullscreenManagerDelegate;
     private final ActivityTabProvider mTabProvider;
-    private boolean mIsInTwaMode;
-    private boolean mIsInModuleLoadingMode;
+    private boolean mHidden;
 
     @Inject
     public CustomTabBrowserControlsVisibilityDelegate(
@@ -34,32 +33,18 @@ public class CustomTabBrowserControlsVisibilityDelegate
     }
 
     /**
-     * Sets trusted web activity mode. In trusted web activity mode browser controls should be
-     * hidden.
+     * Sets browser controls hidden. Note: this is not enough to completely hide the toolbar, use
+     * {@link CustomTabToolbarCoordinator#setToolbarHidden} for that.
      */
-    public void setTrustedWebActivityMode(boolean isInTwaMode) {
-        if (mIsInTwaMode == isInTwaMode) {
-            return;
-        }
-        mIsInTwaMode = isInTwaMode;
-        updateActiveTabFullscreenEnabledState();
-    }
-
-    /**
-     * Sets module loading mode. In module loading mode browser controls should be hidden.
-     */
-    public void setModuleLoadingMode(boolean isInModuleLoadingMode) {
-        if (mIsInModuleLoadingMode == isInModuleLoadingMode) {
-            return;
-        }
-        mIsInModuleLoadingMode = isInModuleLoadingMode;
+    public void setControlsHidden(boolean hidden) {
+        if (hidden == mHidden) return;
+        mHidden = hidden;
         updateActiveTabFullscreenEnabledState();
     }
 
     @Override
     public boolean canShowBrowserControls() {
-        return !mIsInTwaMode && !mIsInModuleLoadingMode
-                && getDefaultVisibilityDelegate().canShowBrowserControls();
+        return !mHidden && getDefaultVisibilityDelegate().canShowBrowserControls();
     }
 
     @Override

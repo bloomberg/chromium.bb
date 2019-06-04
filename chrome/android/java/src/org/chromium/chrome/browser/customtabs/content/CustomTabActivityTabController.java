@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.translate.TranslateBridge;
@@ -176,6 +177,11 @@ public class CustomTabActivityTabController implements InflationObserver, Native
     /** Save the current state of the tab. */
     void saveState() {
         mTabFactory.getTabModelSelector().saveState();
+    }
+
+    /** Returns {@link TabModelSelector}. Should be called after postInflationStartup. */
+    public TabModelSelector getTabModelSelector() {
+        return mTabFactory.getTabModelSelector();
     }
 
     @Override

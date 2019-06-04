@@ -274,6 +274,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private boolean mTabModelsInitialized;
     private boolean mNativeInitialized;
     private boolean mRemoveWindowBackgroundDone;
+    private boolean mToolbarInitialized;
 
     // The class cannot implement TouchExplorationStateChangeListener,
     // because it is only available for Build.VERSION_CODES.KITKAT and later.
@@ -297,6 +298,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private SnackbarManager mSnackbarManager;
     @Nullable
     private ToolbarManager mToolbarManager;
+    @Nullable
     private FindToolbarManager mFindToolbarManager;
     private BottomSheetController mBottomSheetController;
     private UpdateNotificationController mUpdateNotificationController;
@@ -499,7 +501,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     mCompositorViewHolder.getCompositorView());
 
             initializeTabModels();
-            initializeToolbar();
+            initializeToolbarIfNecessary();
             if (!isFinishing() && getFullscreenManager() != null) {
                 getFullscreenManager().initialize(
                         (ControlContainer) findViewById(R.id.control_container),
@@ -642,6 +644,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return true;
     }
 
+    private void initializeToolbarIfNecessary() {
+        // TODO(pshmakov): make ToolbarManager and FindToolbarManager lazy, don't create them unless
+        // getToolbarManager() or getFindToolbarManager() is called.
+        if (!mToolbarInitialized) {
+            mToolbarInitialized = true;
+            initializeToolbar();
+        }
+    }
+
     /**
      * Constructs {@link ToolbarManager} and the handler necessary for controlling the menu on the
      * {@link Toolbar}. Extending classes can override this call to avoid creating the toolbar.
@@ -732,13 +743,20 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @Nullable
     public ToolbarManager getToolbarManager() {
+        if (isInitialLayoutInflationComplete()) {
+            initializeToolbarIfNecessary();
+        }
         return mToolbarManager;
     }
 
     /**
      * @return {@link FindToolbarManager} that belongs to this activity.
      */
+    @Nullable
     public FindToolbarManager getFindToolbarManager() {
+        if (isInitialLayoutInflationComplete()) {
+            initializeToolbarIfNecessary();
+        }
         return mFindToolbarManager;
     }
 
@@ -1843,7 +1861,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      *                                  {@link Layout}s.
      * @param controlContainer          A {@link ControlContainer} instance to draw.
      */
-    protected void initializeCompositorContent(LayoutManager layoutManager, View urlBar,
+    public void initializeCompositorContent(LayoutManager layoutManager, View urlBar,
             ViewGroup contentContainer, ControlContainer controlContainer) {
         if (mContextualSearchManager != null) {
             mContextualSearchManager.initialize(contentContainer);

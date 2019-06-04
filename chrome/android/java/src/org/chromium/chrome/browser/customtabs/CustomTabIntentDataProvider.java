@@ -767,7 +767,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     /**
      * @return See {@link #EXTRA_UI_TYPE}.
      */
-    boolean isMediaViewer() {
+    public boolean isMediaViewer() {
         return mUiType == CustomTabsUiType.MEDIA_VIEWER;
     }
 

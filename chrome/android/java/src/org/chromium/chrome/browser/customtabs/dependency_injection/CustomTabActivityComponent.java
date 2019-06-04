@@ -9,7 +9,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityLifecycleUmaTrack
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
-import org.chromium.chrome.browser.customtabs.CustomTabTopBarDelegate;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityInitialPageLoader;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
@@ -17,10 +16,10 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactor
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleToolbarController;
+import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
-import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 
 import dagger.Subcomponent;
 
@@ -35,8 +34,6 @@ public interface CustomTabActivityComponent extends ChromeActivityComponent {
     DynamicModuleToolbarController resolveDynamicModuleToolbarController();
     DynamicModuleCoordinator resolveDynamicModuleCoordinator();
 
-    TabObserverRegistrar resolveTabObserverRegistrar();
-    CustomTabTopBarDelegate resolveTobBarDelegate();
     CustomTabBottomBarDelegate resolveBottomBarDelegate();
     CustomTabActivityTabController resolveTabController();
     CustomTabActivityTabFactory resolveTabFactory();
@@ -45,6 +42,7 @@ public interface CustomTabActivityComponent extends ChromeActivityComponent {
     CustomTabActivityNavigationController resolveNavigationController();
     CustomTabActivityTabProvider resolveTabProvider();
     CustomTabStatusBarColorProvider resolveCustomTabStatusBarColorProvider();
+    CustomTabToolbarCoordinator resolveToolbarCoordinator();
 
     CustomTabTabPersistencePolicy resolveTabPersistencePolicy(); // For testing
 }
