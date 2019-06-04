@@ -76,7 +76,7 @@ SamlPasswordAttributes SamlPasswordAttributes::FromJs(
 
 // static
 SamlPasswordAttributes SamlPasswordAttributes::LoadFromPrefs(
-    PrefService* prefs) {
+    const PrefService* prefs) {
   const base::Time modified_time =
       prefs->GetTime(prefs::kSamlPasswordModifiedTime);
   const base::Time expiration_time =
