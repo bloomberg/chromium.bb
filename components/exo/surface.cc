@@ -716,13 +716,6 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
   if (needs_update_resource_)
     UpdateResource(resource_manager);
 
-  // TODO(afrantzis): Propagate fence to the consumer of the buffer instead of
-  // waiting here.
-  if (acquire_fence_) {
-    acquire_fence_->Wait();
-    acquire_fence_ = nullptr;
-  }
-
   AppendContentsToFrame(origin, device_scale_factor, frame);
 
   DCHECK(!current_resource_.id ||
@@ -874,8 +867,8 @@ void Surface::UpdateResource(FrameSinkResourceManager* resource_manager) {
   needs_update_resource_ = false;
   if (current_buffer_.buffer()) {
     if (current_buffer_.buffer()->ProduceTransferableResource(
-            resource_manager, state_.only_visible_on_secure_output,
-            &current_resource_)) {
+            resource_manager, std::move(acquire_fence_),
+            state_.only_visible_on_secure_output, &current_resource_)) {
       current_resource_has_alpha_ =
           FormatHasAlpha(current_buffer_.buffer()->GetFormat());
     } else {

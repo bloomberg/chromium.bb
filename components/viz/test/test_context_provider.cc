@@ -23,6 +23,7 @@
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace viz {
@@ -152,6 +153,13 @@ gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
 
 void TestSharedImageInterface::UpdateSharedImage(
     const gpu::SyncToken& sync_token,
+    const gpu::Mailbox& mailbox) {
+  DCHECK(shared_images_.find(mailbox) != shared_images_.end());
+}
+
+void TestSharedImageInterface::UpdateSharedImage(
+    const gpu::SyncToken& sync_token,
+    std::unique_ptr<gfx::GpuFence> acquire_fence,
     const gpu::Mailbox& mailbox) {
   DCHECK(shared_images_.find(mailbox) != shared_images_.end());
 }

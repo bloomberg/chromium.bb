@@ -165,9 +165,19 @@ IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateSharedImageWithData,
                     GpuChannelMsg_CreateSharedImageWithData_Params /* params */)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateGMBSharedImage,
                     GpuChannelMsg_CreateGMBSharedImage_Params /* params */)
-IPC_MESSAGE_ROUTED2(GpuChannelMsg_UpdateSharedImage,
+
+// The following IPC message, that can be used by the browser or renderers,
+// updates the SharedImage referenced by |id| after its contents are modified
+// (e.g: its GpuMemoryBuffer is modified via the CPU or through external
+// devices).
+// The sync token in the shared image sequence at position |release_id| will be
+// released once this command has been executed service side.
+// |in_fence_handle|, if not null, represents a fence that will be waited on
+// before reading the contents represented by the shared image.
+IPC_MESSAGE_ROUTED3(GpuChannelMsg_UpdateSharedImage,
                     gpu::Mailbox /* id */,
-                    uint32_t /* release_id */)
+                    uint32_t /* release_id */,
+                    gfx::GpuFenceHandle /* in_fence_handle */)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_DestroySharedImage, gpu::Mailbox /* id */)
 #if defined(OS_WIN)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateSwapChain,

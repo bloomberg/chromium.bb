@@ -64,7 +64,9 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   void OnCreateSharedImageWithData(
       const GpuChannelMsg_CreateSharedImageWithData_Params& params);
   void OnCreateGMBSharedImage(GpuChannelMsg_CreateGMBSharedImage_Params params);
-  void OnUpdateSharedImage(const Mailbox& mailbox, uint32_t release_id);
+  void OnUpdateSharedImage(const Mailbox& mailbox,
+                           uint32_t release_id,
+                           const gfx::GpuFenceHandle& in_fence_handle);
   void OnDestroySharedImage(const Mailbox& mailbox);
   void OnRegisterSharedImageUploadBuffer(base::ReadOnlySharedMemoryRegion shm);
 #if defined(OS_WIN)

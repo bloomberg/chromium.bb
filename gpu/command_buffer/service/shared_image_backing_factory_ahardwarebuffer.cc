@@ -154,7 +154,7 @@ class SharedImageBackingAHB : public SharedImageBacking {
 
   bool IsCleared() const override;
   void SetCleared() override;
-  void Update() override;
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   void Destroy() override;
   base::android::ScopedHardwareBufferHandle GetAhbHandle() const;
@@ -624,7 +624,9 @@ void SharedImageBackingAHB::SetCleared() {
   is_cleared_ = true;
 }
 
-void SharedImageBackingAHB::Update() {}
+void SharedImageBackingAHB::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
+  DCHECK(!in_fence);
+}
 
 bool SharedImageBackingAHB::ProduceLegacyMailbox(
     MailboxManager* mailbox_manager) {

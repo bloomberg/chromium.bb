@@ -36,6 +36,9 @@ class SharedImageInterfaceProxy : public SharedImageInterface {
                             uint32_t usage) override;
   void UpdateSharedImage(const SyncToken& sync_token,
                          const Mailbox& mailbox) override;
+  void UpdateSharedImage(const SyncToken& sync_token,
+                         std::unique_ptr<gfx::GpuFence> acquire_fence,
+                         const Mailbox& mailbox) override;
 
   void DestroySharedImage(const SyncToken& sync_token,
                           const Mailbox& mailbox) override;

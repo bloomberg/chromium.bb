@@ -186,12 +186,18 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
 }
 
 bool SharedImageFactory::UpdateSharedImage(const Mailbox& mailbox) {
+  return UpdateSharedImage(mailbox, nullptr);
+}
+
+bool SharedImageFactory::UpdateSharedImage(
+    const Mailbox& mailbox,
+    std::unique_ptr<gfx::GpuFence> in_fence) {
   auto it = shared_images_.find(mailbox);
   if (it == shared_images_.end()) {
     LOG(ERROR) << "UpdateSharedImage: Could not find shared image mailbox";
     return false;
   }
-  (*it)->Update();
+  (*it)->Update(std::move(in_fence));
   return true;
 }
 

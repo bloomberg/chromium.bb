@@ -668,7 +668,7 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
   auto* stub_image = static_cast<StubImage*>(image.get());
   EXPECT_TRUE(stub_image->bound());
   int update_counter = stub_image->update_counter();
-  ref->Update();
+  ref->Update(nullptr);
   EXPECT_TRUE(stub_image->bound());
   EXPECT_GT(stub_image->update_counter(), update_counter);
 }

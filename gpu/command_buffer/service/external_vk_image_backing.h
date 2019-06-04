@@ -80,7 +80,7 @@ class ExternalVkImageBacking : public SharedImageBacking {
   // SharedImageBacking implementation.
   bool IsCleared() const override;
   void SetCleared() override;
-  void Update() override;
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   void Destroy() override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
 

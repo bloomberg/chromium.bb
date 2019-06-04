@@ -58,6 +58,9 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
 
   void UpdateSharedImage(const gpu::SyncToken& sync_token,
                          const gpu::Mailbox& mailbox) override;
+  void UpdateSharedImage(const gpu::SyncToken& sync_token,
+                         std::unique_ptr<gfx::GpuFence> acquire_fence,
+                         const gpu::Mailbox& mailbox) override;
 
   void DestroySharedImage(const gpu::SyncToken& sync_token,
                           const gpu::Mailbox& mailbox) override;

@@ -12,6 +12,7 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
+#include "ui/gfx/gpu_fence.h"
 
 namespace gpu {
 namespace {
@@ -166,6 +167,13 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
 
 void SharedImageInterfaceProxy::UpdateSharedImage(const SyncToken& sync_token,
                                                   const Mailbox& mailbox) {
+  UpdateSharedImage(sync_token, nullptr, mailbox);
+}
+
+void SharedImageInterfaceProxy::UpdateSharedImage(
+    const SyncToken& sync_token,
+    std::unique_ptr<gfx::GpuFence> acquire_fence,
+    const Mailbox& mailbox) {
   std::vector<SyncToken> dependencies;
   if (sync_token.HasData()) {
     dependencies.push_back(sync_token);
@@ -181,9 +189,21 @@ void SharedImageInterfaceProxy::UpdateSharedImage(const SyncToken& sync_token,
   }
   {
     base::AutoLock lock(lock_);
-    last_flush_id_ = host_->EnqueueDeferredMessage(
-        GpuChannelMsg_UpdateSharedImage(route_id_, mailbox, ++next_release_id_),
-        std::move(dependencies));
+    gfx::GpuFenceHandle acquire_fence_handle;
+    if (acquire_fence) {
+      acquire_fence_handle =
+          gfx::CloneHandleForIPC(acquire_fence->GetGpuFenceHandle());
+      // TODO(dcastagna): This message will be wrapped, handles can't be passed
+      // in inner messages. Use EnqueueDeferredMessage if it will be possible to
+      // have handles in inner messages in the future.
+      host_->EnsureFlush(last_flush_id_);
+      host_->Send(new GpuChannelMsg_UpdateSharedImage(
+          route_id_, mailbox, ++next_release_id_, acquire_fence_handle));
+      return;
+    }
+    last_flush_id_ =
+        host_->EnqueueDeferredMessage(GpuChannelMsg_UpdateSharedImage(
+            route_id_, mailbox, ++next_release_id_, acquire_fence_handle));
   }
 }
 

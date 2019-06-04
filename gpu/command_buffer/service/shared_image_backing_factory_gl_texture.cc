@@ -30,6 +30,7 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_version_info.h"
@@ -382,7 +383,7 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
     texture_->SetLevelCleared(texture_->target(), 0, true);
   }
 
-  void Update() override {
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
     GLenum target = texture_->target();
     gl::GLApi* api = gl::g_current_gl_context;
     ScopedRestoreTexture scoped_restore(api, target);
@@ -394,6 +395,16 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
       return;
     if (old_state == gles2::Texture::BOUND)
       image->ReleaseTexImage(target);
+
+    if (in_fence) {
+      // TODO(dcastagna): Don't wait for the fence if the SharedImage is going
+      // to be scanned out as an HW overlay. Currently we don't know that at
+      // this point and we always bind the image, therefore we need to wait for
+      // the fence.
+      std::unique_ptr<gl::GLFence> egl_fence =
+          gl::GLFence::CreateFromGpuFence(*in_fence.get());
+      egl_fence->ServerWait();
+    }
     gles2::Texture::ImageState new_state = gles2::Texture::UNBOUND;
     if (image->ShouldBindOrCopy() == gl::GLImage::BIND &&
         image->BindTexImage(target)) {
@@ -576,7 +587,7 @@ class SharedImageBackingPassthroughGLTexture
   bool IsCleared() const override { return is_cleared_; }
   void SetCleared() override { is_cleared_ = true; }
 
-  void Update() override {
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
     GLenum target = texture_passthrough_->target();
     gl::GLApi* api = gl::g_current_gl_context;
     ScopedRestoreTexture scoped_restore(api, target);

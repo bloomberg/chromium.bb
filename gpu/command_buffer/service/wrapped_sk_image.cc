@@ -54,7 +54,7 @@ class WrappedSkImage : public SharedImageBacking {
 
   void SetCleared() override { cleared_ = true; }
 
-  void Update() override {}
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {}
 
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,

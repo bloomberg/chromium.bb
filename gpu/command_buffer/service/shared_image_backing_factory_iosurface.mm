@@ -396,7 +396,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
     is_cleared_ = true;
   }
 
-  void Update() final {}
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) final {}
 
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) final {
     DCHECK(io_surface_);

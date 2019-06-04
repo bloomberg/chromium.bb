@@ -242,6 +242,13 @@ class InProcessCommandBuffer::SharedImageInterface
 
   void UpdateSharedImage(const SyncToken& sync_token,
                          const Mailbox& mailbox) override {
+    UpdateSharedImage(sync_token, nullptr, mailbox);
+  }
+
+  void UpdateSharedImage(const SyncToken& sync_token,
+                         std::unique_ptr<gfx::GpuFence> acquire_fence,
+                         const Mailbox& mailbox) override {
+    DCHECK(!acquire_fence);
     base::AutoLock lock(lock_);
     // Note: we enqueue the task under the lock to guarantee monotonicity of
     // the release ids as seen by the service. Unretained is safe because

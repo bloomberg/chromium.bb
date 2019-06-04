@@ -47,7 +47,7 @@ class MEDIA_GPU_EXPORT SharedImageVideo
   // SharedImageBacking implementation.
   bool IsCleared() const override;
   void SetCleared() override;
-  void Update() override;
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(gpu::MailboxManager* mailbox_manager) override;
   void Destroy() override;
   size_t EstimatedSizeForMemTracking() const override;

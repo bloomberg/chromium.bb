@@ -324,6 +324,11 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
     NOTIMPLEMENTED();
     return gpu::Mailbox();
   }
+  void UpdateSharedImage(const gpu::SyncToken& sync_token,
+                         std::unique_ptr<gfx::GpuFence> acquire_fence,
+                         const gpu::Mailbox& mailbox) override {
+    NOTREACHED();
+  }
 
   void UpdateSharedImage(const gpu::SyncToken& sync_token,
                          const gpu::Mailbox& mailbox) override {

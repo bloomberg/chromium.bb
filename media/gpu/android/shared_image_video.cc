@@ -149,7 +149,9 @@ bool SharedImageVideo::IsCleared() const {
 
 void SharedImageVideo::SetCleared() {}
 
-void SharedImageVideo::Update() {}
+void SharedImageVideo::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
+  DCHECK(!in_fence);
+}
 
 bool SharedImageVideo::ProduceLegacyMailbox(
     gpu::MailboxManager* mailbox_manager) {

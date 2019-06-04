@@ -158,7 +158,7 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
 
   void SetCleared() override {}
 
-  void Update() override {
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
     DLOG(ERROR) << "SharedImageBackingDXGISwapChain::Update : Trying to update "
                    "Shared Images associated with swap chain.";
   }

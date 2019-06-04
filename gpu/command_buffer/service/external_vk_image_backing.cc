@@ -398,7 +398,8 @@ void ExternalVkImageBacking::SetCleared() {
   is_cleared_ = true;
 }
 
-void ExternalVkImageBacking::Update() {
+void ExternalVkImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
+  DCHECK(!in_fence);
   shared_memory_is_updated_ = true;
 }
 
@@ -537,7 +538,7 @@ void ExternalVkImageBacking::InstallSharedMemory(
   shared_memory_mapping_ = std::move(shared_memory_mapping);
   stride_ = stride;
   memory_offset_ = memory_offset;
-  Update();
+  Update(nullptr);
 }
 
 bool ExternalVkImageBacking::WritePixels(

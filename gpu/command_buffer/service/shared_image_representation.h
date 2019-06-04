@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_fence.h"
 
 typedef unsigned int GLenum;
 class SkPromiseImageTexture;
@@ -69,7 +70,9 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
       : SharedImageRepresentation(manager, backing, tracker) {}
 
   const Mailbox& mailbox() const { return backing()->mailbox(); }
-  void Update() { backing()->Update(); }
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) {
+    backing()->Update(std::move(in_fence));
+  }
 #if defined(OS_WIN)
   void PresentSwapChain() { backing()->PresentSwapChain(); }
 #endif  // OS_WIN

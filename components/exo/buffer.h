@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace exo {
@@ -52,6 +53,7 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // be called before a new texture mailbox can be acquired unless
   // |non_client_usage| is true.
   bool ProduceTransferableResource(FrameSinkResourceManager* resource_manager,
+                                   std::unique_ptr<gfx::GpuFence> acquire_fence,
                                    bool secure_output_only,
                                    viz::TransferableResource* resource);
 
