@@ -182,8 +182,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
   }
 
   ui::PageTransition transition =
-      [self.delegate navigationHandler:self
-          pageTransitionFromNavigationType:action.navigationType];
+      [self pageTransitionFromNavigationType:action.navigationType];
   BOOL isMainFrameNavigationAction = [self isMainFrameNavigationAction:action];
   if (isMainFrameNavigationAction) {
     web::NavigationContextImpl* context =
@@ -1692,6 +1691,30 @@ using web::wk_navigation_util::IsWKInternalUrl;
 
   item->SetTitle(base::SysNSStringToUTF16(title));
   self.webStateImpl->OnTitleChanged();
+}
+
+- (ui::PageTransition)pageTransitionFromNavigationType:
+    (WKNavigationType)navigationType {
+  switch (navigationType) {
+    case WKNavigationTypeLinkActivated:
+      return ui::PAGE_TRANSITION_LINK;
+    case WKNavigationTypeFormSubmitted:
+    case WKNavigationTypeFormResubmitted:
+      return ui::PAGE_TRANSITION_FORM_SUBMIT;
+    case WKNavigationTypeBackForward:
+      return ui::PAGE_TRANSITION_FORWARD_BACK;
+    case WKNavigationTypeReload:
+      return ui::PAGE_TRANSITION_RELOAD;
+    case WKNavigationTypeOther:
+      // The "Other" type covers a variety of very different cases, which may
+      // or may not be the result of user actions. For now, guess based on
+      // whether there's been an interaction since the last URL change.
+      // TODO(crbug.com/549301): See if this heuristic can be improved.
+      return self.userInteractionState
+                     ->UserInteractionRegisteredSinceLastUrlChange()
+                 ? ui::PAGE_TRANSITION_LINK
+                 : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+  }
 }
 
 @end

@@ -1337,30 +1337,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return _documentURL;
 }
 
-// Maps WKNavigationType to ui::PageTransition.
-- (ui::PageTransition)pageTransitionFromNavigationType:
-    (WKNavigationType)navigationType {
-  switch (navigationType) {
-    case WKNavigationTypeLinkActivated:
-      return ui::PAGE_TRANSITION_LINK;
-    case WKNavigationTypeFormSubmitted:
-    case WKNavigationTypeFormResubmitted:
-      return ui::PAGE_TRANSITION_FORM_SUBMIT;
-    case WKNavigationTypeBackForward:
-      return ui::PAGE_TRANSITION_FORWARD_BACK;
-    case WKNavigationTypeReload:
-      return ui::PAGE_TRANSITION_RELOAD;
-    case WKNavigationTypeOther:
-      // The "Other" type covers a variety of very different cases, which may
-      // or may not be the result of user actions. For now, guess based on
-      // whether there's been an interaction since the last URL change.
-      // TODO(crbug.com/549301): See if this heuristic can be improved.
-      return _userInteractionState.UserInteractionRegisteredSinceLastUrlChange()
-                 ? ui::PAGE_TRANSITION_LINK
-                 : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-  }
-}
-
 - (BOOL)isUserInitiatedAction:(WKNavigationAction*)action {
   return _userInteractionState.IsUserInteracting(self.webView);
 }
@@ -1383,7 +1359,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
           ? self.navigationHandler.pendingNavigationInfo.navigationType
           : WKNavigationTypeOther;
   ui::PageTransition transition =
-      [self pageTransitionFromNavigationType:navigationType];
+      [self.navigationHandler pageTransitionFromNavigationType:navigationType];
 
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
       navigationType == WKNavigationTypeBackForward &&
@@ -4173,12 +4149,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (GURL)navigationHandlerDocumentURL:
     (CRWWKNavigationHandler*)navigationHandler {
   return _documentURL;
-}
-
-- (ui::PageTransition)navigationHandler:
-                          (CRWWKNavigationHandler*)navigationHandler
-       pageTransitionFromNavigationType:(WKNavigationType)navigationType {
-  return [self pageTransitionFromNavigationType:navigationType];
 }
 
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler

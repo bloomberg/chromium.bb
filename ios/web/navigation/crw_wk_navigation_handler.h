@@ -78,11 +78,6 @@ class WKBackForwardListItemHolder;
            setDocumentURL:(const GURL&)newURL
                   context:(web::NavigationContextImpl*)context;
 
-// Maps WKNavigationType to ui::PageTransition.
-- (ui::PageTransition)navigationHandler:
-                          (CRWWKNavigationHandler*)navigationHandler
-       pageTransitionFromNavigationType:(WKNavigationType)navigationType;
-
 // Sets up WebUI for URL.
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
         createWebUIForURL:(const GURL&)URL;
@@ -230,6 +225,10 @@ class WKBackForwardListItemHolder;
 // Sets last committed NavigationItem's title to the given |title|, which can
 // not be nil.
 - (void)setLastCommittedNavigationItemTitle:(NSString*)title;
+
+// Maps WKNavigationType to ui::PageTransition.
+- (ui::PageTransition)pageTransitionFromNavigationType:
+    (WKNavigationType)navigationType;
 
 @end
 
