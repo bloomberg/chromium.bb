@@ -5,9 +5,6 @@
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
 
 #include "base/stl_util.h"
-#include "base/strings/pattern.h"
-#include "base/strings/strcat.h"
-#include "base/threading/thread_id_name_manager.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_log.h"
@@ -26,7 +23,6 @@
 
 using TraceLog = base::trace_event::TraceLog;
 using TrackEvent = perfetto::protos::pbzero::TrackEvent;
-using perfetto::protos::pbzero::ThreadDescriptor;
 
 namespace tracing {
 
@@ -112,40 +108,6 @@ void WriteDebugAnnotations(
   }
 }
 
-ThreadDescriptor::ChromeThreadType GetThreadType(
-    const char* const thread_name) {
-  if (base::MatchPattern(thread_name, "Cr*Main")) {
-    return ThreadDescriptor::CHROME_THREAD_MAIN;
-  } else if (base::MatchPattern(thread_name, "Chrome*IOThread")) {
-    return ThreadDescriptor::CHROME_THREAD_IO;
-  } else if (base::MatchPattern(thread_name, "ThreadPoolForegroundWorker*")) {
-    return ThreadDescriptor::CHROME_THREAD_POOL_FG_WORKER;
-  } else if (base::MatchPattern(thread_name, "ThreadPoolBackgroundWorker*")) {
-    return ThreadDescriptor::CHROME_THREAD_POOL_BG_WORKER;
-  } else if (base::MatchPattern(thread_name,
-                                "ThreadPool*ForegroundBlocking*")) {
-    return ThreadDescriptor::CHROME_THREAD_POOL_FB_BLOCKING;
-  } else if (base::MatchPattern(thread_name,
-                                "ThreadPool*BackgroundBlocking*")) {
-    return ThreadDescriptor::CHROME_THREAD_POOL_BG_BLOCKING;
-  } else if (base::MatchPattern(thread_name, "ThreadPoolService*")) {
-    return ThreadDescriptor::CHROME_THREAD_POOL_SERVICE;
-  } else if (base::MatchPattern(thread_name, "CompositorTileWorker*")) {
-    return ThreadDescriptor::CHROME_THREAD_COMPOSITOR_WORKER;
-  } else if (base::MatchPattern(thread_name, "Compositor")) {
-    return ThreadDescriptor::CHROME_THREAD_COMPOSITOR;
-  } else if (base::MatchPattern(thread_name, "VizCompositor*")) {
-    return ThreadDescriptor::CHROME_THREAD_VIZ_COMPOSITOR;
-  } else if (base::MatchPattern(thread_name, "ServiceWorker*")) {
-    return ThreadDescriptor::CHROME_THREAD_SERVICE_WORKER;
-  } else if (base::MatchPattern(thread_name, "MemoryInfra")) {
-    return ThreadDescriptor::CHROME_THREAD_MEMORY_INFRA;
-  } else if (base::MatchPattern(thread_name, "StackSamplingProfiler")) {
-    return ThreadDescriptor::CHROME_THREAD_SAMPLING_PROFILER;
-  }
-  return ThreadDescriptor::CHROME_THREAD_UNSPECIFIED;
-}
-
 }  // namespace
 
 // static
@@ -220,7 +182,38 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   }
 
   if (reset_incremental_state_) {
-    DoResetIncrementalState(trace_event, explicit_timestamp);
+    interned_event_categories_.ResetEmittedState();
+    interned_event_names_.ResetEmittedState();
+    interned_annotation_names_.ResetEmittedState();
+    interned_source_locations_.ResetEmittedState();
+
+    // Emit a new thread descriptor in a separate packet, where we also set
+    // the |reset_incremental_state| field.
+    auto trace_packet = trace_writer_->NewTracePacket();
+    trace_packet->set_incremental_state_cleared(true);
+    auto* thread_descriptor = trace_packet->set_thread_descriptor();
+    thread_descriptor->set_pid(process_id_);
+    thread_descriptor->set_tid(thread_id_);
+    if (explicit_timestamp) {
+      // Don't use a user-provided timestamp as a reference timestamp.
+      last_timestamp_ = TRACE_TIME_TICKS_NOW();
+    } else {
+      last_timestamp_ = trace_event->timestamp();
+    }
+    if (trace_event->thread_timestamp().is_null()) {
+      last_thread_time_ = ThreadNow();
+    } else {
+      // Thread timestamp is never user-provided.
+      DCHECK(trace_event->thread_timestamp() <= ThreadNow());
+      last_thread_time_ = trace_event->thread_timestamp();
+    }
+    thread_descriptor->set_reference_timestamp_us(
+        last_timestamp_.since_origin().InMicroseconds());
+    thread_descriptor->set_reference_thread_time_us(
+        last_thread_time_.since_origin().InMicroseconds());
+    // TODO(eseckler): Fill in remaining fields in ThreadDescriptor.
+
+    reset_incremental_state_ = false;
   }
 
   const char* category_name =
@@ -501,55 +494,6 @@ void TrackEventThreadLocalEventSink::UpdateDuration(
 
 void TrackEventThreadLocalEventSink::Flush() {
   trace_writer_->Flush();
-}
-
-void TrackEventThreadLocalEventSink::DoResetIncrementalState(
-    base::trace_event::TraceEvent* trace_event,
-    bool explicit_timestamp) {
-  interned_event_categories_.ResetEmittedState();
-  interned_event_names_.ResetEmittedState();
-  interned_annotation_names_.ResetEmittedState();
-  interned_source_locations_.ResetEmittedState();
-
-  // Emit a new thread descriptor in a separate packet, where we also set
-  // the |reset_incremental_state| field.
-  auto trace_packet = trace_writer_->NewTracePacket();
-  trace_packet->set_incremental_state_cleared(true);
-  auto* thread_descriptor = trace_packet->set_thread_descriptor();
-  thread_descriptor->set_pid(process_id_);
-  thread_descriptor->set_tid(thread_id_);
-
-  const char* const maybe_new_name =
-      base::ThreadIdNameManager::GetInstance()->GetName(thread_id_);
-  if (maybe_new_name && base::StringPiece(thread_name_) != maybe_new_name) {
-    thread_name_ = maybe_new_name;
-    thread_type_ = GetThreadType(maybe_new_name);
-  }
-  if (!privacy_filtering_enabled_ && !thread_name_.empty()) {
-    thread_descriptor->set_thread_name(thread_name_.c_str());
-  }
-  thread_descriptor->set_chrome_thread_type(thread_type_);
-
-  if (explicit_timestamp) {
-    // Don't use a user-provided timestamp as a reference timestamp.
-    last_timestamp_ = TRACE_TIME_TICKS_NOW();
-  } else {
-    last_timestamp_ = trace_event->timestamp();
-  }
-  if (trace_event->thread_timestamp().is_null()) {
-    last_thread_time_ = ThreadNow();
-  } else {
-    // Thread timestamp is never user-provided.
-    DCHECK(trace_event->thread_timestamp() <= ThreadNow());
-    last_thread_time_ = trace_event->thread_timestamp();
-  }
-  thread_descriptor->set_reference_timestamp_us(
-      last_timestamp_.since_origin().InMicroseconds());
-  thread_descriptor->set_reference_thread_time_us(
-      last_thread_time_.since_origin().InMicroseconds());
-  // TODO(eseckler): Fill in remaining fields in ThreadDescriptor.
-
-  reset_incremental_state_ = false;
 }
 
 }  // namespace tracing

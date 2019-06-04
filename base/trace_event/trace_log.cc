@@ -1550,8 +1550,7 @@ void TraceLog::AddMetadataEventsWhileLocked() {
                                 it.second);
   }
 
-  // TODO(ssid): Stop emitting and tracking thread names when perfetto is
-  // enabled. The JSON exporter will emit thread names.
+  // Thread names.
   AutoLock thread_info_lock(thread_info_lock_);
   for (const auto& it : thread_names_) {
     if (it.second.empty())

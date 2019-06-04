@@ -15,7 +15,6 @@ namespace tracing {
 namespace {
 
 using ::perfetto::protos::ChromeTracePacket;
-using ::perfetto::protos::ThreadDescriptor;
 using ::perfetto::protos::TrackEvent;
 
 const std::string& GetInternedName(
@@ -24,40 +23,6 @@ const std::string& GetInternedName(
   auto iter = interned.find(iid);
   DCHECK(iter != interned.end());
   return iter->second;
-}
-
-const char* ThreadTypeToName(ThreadDescriptor::ChromeThreadType type) {
-  switch (type) {
-    case ThreadDescriptor::CHROME_THREAD_MAIN:
-      return "CrProcessMain";
-    case ThreadDescriptor::CHROME_THREAD_IO:
-      return "ChromeIOThread";
-    case ThreadDescriptor::CHROME_THREAD_POOL_FG_WORKER:
-      return "ThreadPoolForegroundWorker&";
-    case ThreadDescriptor::CHROME_THREAD_POOL_BG_WORKER:
-      return "ThreadPoolBackgroundWorker&";
-    case ThreadDescriptor::CHROME_THREAD_POOL_FB_BLOCKING:
-      return "ThreadPoolSingleThreadForegroundBlocking&";
-    case ThreadDescriptor::CHROME_THREAD_POOL_BG_BLOCKING:
-      return "ThreadPoolSingleThreadBackgroundBlocking&";
-    case ThreadDescriptor::CHROME_THREAD_POOL_SERVICE:
-      return "ThreadPoolService";
-    case ThreadDescriptor::CHROME_THREAD_COMPOSITOR_WORKER:
-      return "CompositorTileWorker&";
-    case ThreadDescriptor::CHROME_THREAD_COMPOSITOR:
-      return "Compositor";
-    case ThreadDescriptor::CHROME_THREAD_VIZ_COMPOSITOR:
-      return "VizCompositorThread";
-    case ThreadDescriptor::CHROME_THREAD_SERVICE_WORKER:
-      return "ServiceWorkerThread&";
-    case ThreadDescriptor::CHROME_THREAD_MEMORY_INFRA:
-      return "MemoryInfra";
-    case ThreadDescriptor::CHROME_THREAD_SAMPLING_PROFILER:
-      return "StackSamplingProfiler";
-
-    case ThreadDescriptor::CHROME_THREAD_UNSPECIFIED:
-      return nullptr;
-  }
 }
 
 }  // namespace
@@ -348,13 +313,18 @@ void TrackEventJSONExporter::HandleThreadDescriptor(
       add_arg->AppendF("\"%s\"", name);
     }
   };
-  if (thread.has_thread_name()) {
-    emit_thread_name(thread.thread_name().c_str());
-  } else {
-    const char* name = ThreadTypeToName(thread.chrome_thread_type());
-    if (name) {
-      emit_thread_name(name);
-    }
+  switch (thread.chrome_thread_type()) {
+    // TODO(nuskos): As we add more thread types we will add handling here to
+    // switch the enum to a string and call |emit_thread_name()|
+    case perfetto::protos::ThreadDescriptor::THREAD_TYPE_UNSPECIFIED:
+      // No thread type enum so check to see if a explicit thread name was
+      // provided..
+      if (thread.has_thread_name()) {
+        emit_thread_name(thread.thread_name().c_str());
+      }
+      break;
+    default:
+      break;
   }
 }
 

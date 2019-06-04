@@ -30,6 +30,7 @@ void OnJsonData(base::File* output_file,
                 bool has_more) {
   CHECK_EQ(output_file->WriteAtCurrentPos(json->data(), json->size()),
            static_cast<int>(json->size()));
+  LOG(ERROR) << "Finished writing " << json->size() << " bytes to file.";
 }
 
 void WriteJsonTrace(const std::string& data, base::File* output_file) {

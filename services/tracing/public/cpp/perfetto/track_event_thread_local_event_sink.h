@@ -16,7 +16,6 @@
 #include "services/tracing/public/cpp/perfetto/thread_local_event_sink.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/include/perfetto/protozero/message_handle.h"
-#include "third_party/perfetto/protos/perfetto/trace/track_event/thread_descriptor.pbzero.h"
 
 namespace perfetto {
 class StartupTraceWriter;
@@ -50,9 +49,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
  private:
   static constexpr size_t kMaxCompleteEventDepth = 30;
 
-  void DoResetIncrementalState(base::trace_event::TraceEvent* trace_event,
-                               bool explicit_timestamp);
-
   // TODO(eseckler): Make it possible to register new indexes for use from
   // TRACE_EVENT macros.
   InterningIndex<const char*> interned_event_categories_;
@@ -69,9 +65,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   base::ThreadTicks last_thread_time_;
   int process_id_;
   int thread_id_;
-  std::string thread_name_;
-  perfetto::protos::pbzero::ThreadDescriptor::ChromeThreadType thread_type_ =
-      perfetto::protos::pbzero::ThreadDescriptor::CHROME_THREAD_UNSPECIFIED;
 
   base::trace_event::TraceEvent complete_event_stack_[kMaxCompleteEventDepth];
   uint32_t current_stack_depth_ = 0;
