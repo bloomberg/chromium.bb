@@ -76,6 +76,16 @@ class AudioSinkAudioTrackImpl {
         }
     };
 
+    /** See VolumeControl for this mapping. */
+    private static final SparseIntArray CAST_TYPE_TO_ANDROID_STREAM_TYPE = new SparseIntArray(4) {
+        {
+            append(AudioContentType.MEDIA, AudioManager.STREAM_MUSIC);
+            append(AudioContentType.ALARM, AudioManager.STREAM_ALARM);
+            append(AudioContentType.COMMUNICATION, AudioManager.STREAM_SYSTEM);
+            append(AudioContentType.OTHER, AudioManager.STREAM_VOICE_CALL);
+        }
+    };
+
     // Hardcoded AudioTrack config parameters.
     private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_OUT_STEREO;
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT;
@@ -331,21 +341,33 @@ class AudioSinkAudioTrackImpl {
                         + "ms) usageType=" + usageType + " contentType=" + contentType
                         + " with session-id=" + sessionId);
 
-        AudioTrack.Builder builder = new AudioTrack.Builder();
-        builder.setBufferSizeInBytes(bufferSizeInBytes)
-                .setTransferMode(AUDIO_MODE)
-                .setAudioAttributes(new AudioAttributes.Builder()
-                                            .setUsage(usageType)
-                                            .setContentType(contentType)
-                                            .build())
-                .setAudioFormat(new AudioFormat.Builder()
-                                        .setEncoding(AUDIO_FORMAT)
-                                        .setSampleRate(mSampleRateInHz)
-                                        .setChannelMask(CHANNEL_CONFIG)
-                                        .build());
-        if (sessionId != AudioManager.ERROR) builder.setSessionId(sessionId);
-
-        mAudioTrack = builder.build();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            AudioTrack.Builder builder = new AudioTrack.Builder();
+            builder.setBufferSizeInBytes(bufferSizeInBytes)
+                    .setTransferMode(AUDIO_MODE)
+                    .setAudioAttributes(new AudioAttributes.Builder()
+                                                .setUsage(usageType)
+                                                .setContentType(contentType)
+                                                .build())
+                    .setAudioFormat(new AudioFormat.Builder()
+                                            .setEncoding(AUDIO_FORMAT)
+                                            .setSampleRate(mSampleRateInHz)
+                                            .setChannelMask(CHANNEL_CONFIG)
+                                            .build());
+            if (sessionId != AudioManager.ERROR) builder.setSessionId(sessionId);
+            mAudioTrack = builder.build();
+        } else {
+            // Using pre-M API.
+            if (sessionId == AudioManager.ERROR) {
+                mAudioTrack = new AudioTrack(CAST_TYPE_TO_ANDROID_STREAM_TYPE.get(castContentType),
+                        mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT, bufferSizeInBytes,
+                        AudioTrack.MODE_STREAM);
+            } else {
+                mAudioTrack = new AudioTrack(CAST_TYPE_TO_ANDROID_STREAM_TYPE.get(castContentType),
+                        mSampleRateInHz, CHANNEL_CONFIG, AudioFormat.AUDIO_FORMAT,
+                        bufferSizeInBytes, AudioTrack.MODE_STREAM, sessionId);
+            }
+        }
 
         // Allocated shared buffers.
         mPcmBuffer = ByteBuffer.allocateDirect(bytesPerBuffer);
@@ -414,9 +436,14 @@ class AudioSinkAudioTrackImpl {
             playtimeLeftNsecs = lastPlayoutTimeNsecs - now;
         } else {
             // We have no timestamp to estimate how much is left to play, so assume the worst case.
-            long most_frames_left =
-                    Math.min(mTotalFramesWritten, mAudioTrack.getBufferSizeInFrames());
-            playtimeLeftNsecs = convertFramesToNanoTime(most_frames_left);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                long most_frames_left =
+                        Math.min(mTotalFramesWritten, mAudioTrack.getBufferSizeInFrames());
+                playtimeLeftNsecs = convertFramesToNanoTime(most_frames_left);
+            } else {
+                // Using pre-M API. Don't know how many frames there are, so assume the worst case.
+                playtimeLeftNsecs = 0;
+            }
         }
         return (playtimeLeftNsecs < 0) ? 0 : playtimeLeftNsecs / 1000; // return usecs
     }
@@ -449,7 +476,11 @@ class AudioSinkAudioTrackImpl {
     }
 
     int getUnderrunCount() {
-        return mAudioTrack.getUnderrunCount();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return mAudioTrack.getUnderrunCount();
+        }
+        // Using pre-M API.
+        return 0;
     }
 
     /** Writes the PCM data of the given size into the AudioTrack object. The
