@@ -14467,6 +14467,42 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             actual_scroll_delta);
 }
 
+// Check that if a frame starts a navigation, and the frame's current process
+// dies before the response for the navigation comes back, the response will
+// not trigger a process kill and will be allowed to commit in a new process.
+// See https://crbug.com/968259.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ProcessDiesBeforeCrossSiteNavigationCompletes) {
+  GURL first_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), first_url));
+  scoped_refptr<SiteInstanceImpl> first_site_instance(
+      web_contents()->GetMainFrame()->GetSiteInstance());
+
+  // Start a cross-site navigation and proceed only up to the request start.
+  GURL second_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestNavigationManager delayer(web_contents(), second_url);
+  EXPECT_TRUE(ExecuteScript(shell(), JsReplace("location = $1", second_url)));
+  EXPECT_TRUE(delayer.WaitForRequestStart());
+
+  // Terminate the current a.com process.
+  RenderProcessHost* first_process =
+      web_contents()->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      first_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(first_process->Shutdown(0));
+  crash_observer.Wait();
+  EXPECT_FALSE(web_contents()->GetMainFrame()->IsRenderFrameLive());
+
+  // Resume the cross-site navigation and ensure it commits in a new
+  // SiteInstance and process.
+  delayer.WaitForNavigationFinished();
+  EXPECT_TRUE(web_contents()->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_NE(web_contents()->GetMainFrame()->GetProcess(), first_process);
+  EXPECT_NE(web_contents()->GetMainFrame()->GetSiteInstance(),
+            first_site_instance);
+  EXPECT_EQ(second_url, web_contents()->GetMainFrame()->GetLastCommittedURL());
+}
+
 class FeaturePolicyPropagationToAuxiliaryBrowsingContextTest
     : public SitePerProcessFeaturePolicyJavaScriptBrowserTest,
       public testing::WithParamInterface<std::tuple<
