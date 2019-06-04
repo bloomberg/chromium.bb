@@ -193,6 +193,13 @@
 // SessionsHierarchy class for documentation regarding the verification.
 + (NSError*)verifySessionsOnSyncServerWithSpecs:(NSArray<NSString*>*)specs;
 
+// Verifies that |count| entities of the given |type| and |name| exist on the
+// sync FakeServer. Folders are not included in this count. Returns NSError
+// if there is a failure or if the count does not match.
++ (NSError*)verifyNumberOfSyncEntitiesWithType:(NSUInteger)type
+                                          name:(NSString*)name
+                                         count:(NSUInteger)count;
+
 #pragma mark - JavaScript Utilities (EG2)
 
 // Executes JavaScript on current WebState, and waits for either the completion

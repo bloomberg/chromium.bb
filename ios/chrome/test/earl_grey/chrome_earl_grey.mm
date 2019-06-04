@@ -397,6 +397,29 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return nil;
 }
 
+- (NSError*)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
+                                         name:(const std::string&)UTF8Name
+                                        count:(size_t)count
+                                      timeout:(NSTimeInterval)timeout {
+  NSString* errorString = [NSString
+      stringWithFormat:@"Expected %zu entities of the %d type.", count, type];
+  NSString* name = base::SysUTF8ToNSString(UTF8Name);
+  GREYCondition* verifyEntities = [GREYCondition
+      conditionWithName:errorString
+                  block:^{
+                    NSError* error = [ChromeEarlGreyAppInterface
+                        verifyNumberOfSyncEntitiesWithType:type
+                                                      name:name
+                                                     count:count];
+                    return !error;
+                  }];
+
+  bool success = [verifyEntities waitWithTimeout:timeout];
+  EG_TEST_HELPER_ASSERT_TRUE(success, errorString);
+
+  return nil;
+}
+
 #pragma mark - SignIn Utilities
 
 - (NSError*)signOutAndClearAccounts {
@@ -559,31 +582,6 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 #pragma mark - Sync Utilities
-
-- (NSError*)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
-                                         name:(const std::string&)name
-                                        count:(size_t)count
-                                      timeout:(NSTimeInterval)timeout {
-  __block NSError* error = nil;
-  ConditionBlock condition = ^{
-    NSError* __autoreleasing tempError = error;
-    BOOL success = chrome_test_util::VerifyNumberOfSyncEntitiesWithName(
-        type, name, count, &tempError);
-    error = tempError;
-    DCHECK(success || error);
-    return !!success;
-  };
-  bool success = WaitUntilConditionOrTimeout(timeout, condition);
-  if (error != nil) {
-    return nil;
-  }
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        [NSString stringWithFormat:@"Expected %zu entities of the %d type.",
-                                   count, type]);
-  }
-  return nil;
-}
 
 - (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
   return chrome_test_util::GetNumberOfSyncEntities(type);

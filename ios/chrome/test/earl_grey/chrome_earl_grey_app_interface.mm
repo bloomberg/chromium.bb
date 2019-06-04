@@ -297,6 +297,25 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::TearDownFakeSyncServer();
 }
 
++ (NSError*)verifyNumberOfSyncEntitiesWithType:(NSUInteger)type
+                                          name:(NSString*)name
+                                         count:(NSUInteger)count {
+  std::string UTF8Name = base::SysNSStringToUTF8(name);
+  NSError* __autoreleasing tempError = nil;
+  bool success = chrome_test_util::VerifyNumberOfSyncEntitiesWithName(
+      (syncer::ModelType)type, UTF8Name, count, &tempError);
+  NSError* error = tempError;
+
+  if (!success and !error) {
+    NSString* errorString =
+        [NSString stringWithFormat:@"Expected %zu entities of the %d type.",
+                                   count, (syncer::ModelType)type];
+    return testing::NSErrorWithLocalizedDescription(errorString);
+  }
+
+  return error;
+}
+
 + (NSError*)verifySessionsOnSyncServerWithSpecs:(NSArray<NSString*>*)specs {
   std::multiset<std::string> multisetSpecs;
   for (NSString* spec in specs) {

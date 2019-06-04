@@ -154,6 +154,16 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)verifySyncServerURLs:(NSArray<NSString*>*)URLs;
 
+// Waits until sync server contains |count| entities of the given |type| and
+// |name|. Folders are not included in this count.
+// If the condition is not met within a timeout a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
+                                         name:(const std::string&)UTF8Name
+                                        count:(size_t)count
+                                      timeout:(NSTimeInterval)timeout;
+
 #pragma mark - Tab Utilities (EG2)
 
 // Opens a new tab and waits for the new tab animation to complete within a
@@ -345,15 +355,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
     (std::string)imageID WARN_UNUSED_RESULT;
 
 #pragma mark - Sync Utilities
-
-// Verifies that |count| entities of the given |type| and |name| exist on the
-// sync FakeServer. Folders are not included in this count. Returns nil on
-// success, or else an NSError indicating why the operation failed.
-- (NSError*)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
-                                         name:(const std::string&)name
-                                        count:(size_t)count
-                                      timeout:(NSTimeInterval)timeout
-    WARN_UNUSED_RESULT;
 
 // Gets the number of entities of the given |type|.
 - (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type WARN_UNUSED_RESULT;
