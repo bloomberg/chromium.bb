@@ -21,7 +21,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceElementTiming* Create(const AtomicString& name,
+  static PerformanceElementTiming* Create(const String& url,
                                           const FloatRect& intersection_rect,
                                           DOMHighResTimeStamp start_time,
                                           DOMHighResTimeStamp response_end,
@@ -30,7 +30,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
                                           int naturalHeight,
                                           const AtomicString& id,
                                           Element*);
-  PerformanceElementTiming(const AtomicString& name,
+  PerformanceElementTiming(const String& url,
                            const FloatRect& intersection_rect,
                            DOMHighResTimeStamp start_time,
                            DOMHighResTimeStamp response_end,
@@ -57,6 +57,8 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
   AtomicString id() const { return id_; }
 
+  String url() const { return url_; }
+
   Element* element() const;
 
   void Trace(blink::Visitor*) override;
@@ -71,6 +73,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   unsigned naturalWidth_;
   unsigned naturalHeight_;
   AtomicString id_;
+  String url_;
 };
 
 }  // namespace blink

@@ -5377,6 +5377,7 @@ interface PerformanceElementTiming : PerformanceEntry
     getter naturalHeight
     getter naturalWidth
     getter responseEnd
+    getter url
     method constructor
     method toJSON
 interface PerformanceEntry

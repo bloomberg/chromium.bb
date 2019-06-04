@@ -109,7 +109,7 @@ void ImageElementTiming::NotifyImagePaintedInternal(
          performance->ShouldBufferEntries())) {
       // Create an entry with a |startTime| of 0.
       performance->AddElementTiming(
-          AtomicString(url.GetString()), intersection_rect, TimeTicks(),
+          url.GetString(), intersection_rect, TimeTicks(),
           cached_image.LoadResponseEnd(), attr,
           cached_image.IntrinsicSize(kDoNotRespectImageOrientation), id,
           element);
@@ -121,12 +121,11 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   // PerformanceElementTiming entry should be the URL trimmed to 100 characters.
   // If it is not, then pass in the full URL regardless of the length to be
   // consistent with Resource Timing.
-  const String& image_name = url.ProtocolIsData()
-                                 ? url.GetString().Left(kInlineImageMaxChars)
-                                 : url.GetString();
+  const String& image_url = url.ProtocolIsData()
+                                ? url.GetString().Left(kInlineImageMaxChars)
+                                : url.GetString();
   element_timings_.emplace_back(MakeGarbageCollected<ElementTimingInfo>(
-      AtomicString(image_name), intersection_rect,
-      cached_image.LoadResponseEnd(), attr,
+      image_url, intersection_rect, cached_image.LoadResponseEnd(), attr,
       cached_image.IntrinsicSize(kDoNotRespectImageOrientation), id, element));
   // Only queue a swap promise when |element_timings_| was empty. All of the
   // records in |element_timings_| will be processed when the promise succeeds
@@ -201,7 +200,7 @@ void ImageElementTiming::ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
                       performance->ShouldBufferEntries())) {
     for (const auto& element_timing : element_timings_) {
       performance->AddElementTiming(
-          element_timing->name, element_timing->rect, timestamp,
+          element_timing->url, element_timing->rect, timestamp,
           element_timing->response_end, element_timing->identifier,
           element_timing->intrinsic_size, element_timing->id,
           element_timing->element);

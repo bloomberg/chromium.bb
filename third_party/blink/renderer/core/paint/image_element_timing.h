@@ -82,14 +82,14 @@ class CORE_EXPORT ImageElementTiming final
   class ElementTimingInfo
       : public GarbageCollectedFinalized<ElementTimingInfo> {
    public:
-    ElementTimingInfo(const AtomicString& name,
+    ElementTimingInfo(const String& url,
                       const FloatRect& rect,
                       const TimeTicks& response_end,
                       const AtomicString& identifier,
                       const IntSize& intrinsic_size,
                       const AtomicString& id,
                       Element* element)
-        : name(name),
+        : url(url),
           rect(rect),
           response_end(response_end),
           identifier(identifier),
@@ -100,7 +100,7 @@ class CORE_EXPORT ImageElementTiming final
 
     void Trace(blink::Visitor* visitor) { visitor->Trace(element); }
 
-    AtomicString name;
+    String url;
     FloatRect rect;
     TimeTicks response_end;
     AtomicString identifier;
