@@ -858,6 +858,7 @@ test("content_browsertests") {
     "../browser/mojo_sandbox_browsertest.cc",
     "../browser/native_file_system/file_system_chooser_browsertest.cc",
     "../browser/navigation_browsertest.cc",
+    "../browser/navigation_mhtml_browsertest.cc",
     "../browser/net/accept_header_browsertest.cc",
     "../browser/net/net_command_line_flags_browsertest.cc",
     "../browser/net_info_browsertest.cc",
