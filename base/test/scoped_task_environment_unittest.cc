@@ -18,6 +18,7 @@
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "base/test/mock_log.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -43,7 +44,11 @@ namespace test {
 
 namespace {
 
+using ::testing::_;
+using ::testing::HasSubstr;
 using ::testing::IsNull;
+using ::testing::Not;
+using ::testing::Return;
 
 class ScopedTaskEnvironmentForTest : public ScopedTaskEnvironment {
  public:
@@ -570,6 +575,29 @@ TEST_F(ScopedTaskEnvironmentTest, SetsDefaultRunTimeout) {
   }
 
   EXPECT_EQ(RunLoop::ScopedRunTimeoutForTest::Current(), old_run_timeout);
+}
+
+namespace {}
+
+TEST_F(ScopedTaskEnvironmentTest, DescribePendingMainThreadTasks) {
+  ScopedTaskEnvironment scoped_task_environment;
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, DoNothing());
+
+  test::MockLog mock_log;
+  mock_log.StartCapturingLogs();
+
+  EXPECT_CALL(mock_log, Log(::logging::LOG_INFO, _, _, _,
+                            HasSubstr("scoped_task_environment_unittest.cc")))
+      .WillOnce(Return(true));
+  scoped_task_environment.DescribePendingMainThreadTasks();
+
+  scoped_task_environment.RunUntilIdle();
+
+  EXPECT_CALL(mock_log,
+              Log(::logging::LOG_INFO, _, _, _,
+                  Not(HasSubstr("scoped_task_environment_unittest.cc"))))
+      .WillOnce(Return(true));
+  scoped_task_environment.DescribePendingMainThreadTasks();
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -227,9 +227,10 @@ class ScopedTaskEnvironment {
   // Returns the current virtual tick time (initially starting at 0).
   base::TimeTicks NowTicks() const;
 
-  // Only valid for instances with a MOCK_TIME MainThreadType.
-  // Returns the number of pending tasks (delayed and non-delayed) of the main
-  // thread's TaskRunner.
+  // Only valid for instances with a MOCK_TIME MainThreadType. Returns the
+  // number of pending tasks (delayed and non-delayed) of the main thread's
+  // TaskRunner. When debugging, you can use DescribePendingMainThreadTasks() to
+  // see what those are.
   size_t GetPendingMainThreadTaskCount() const;
 
   // Only valid for instances with a MOCK_TIME MainThreadType.
@@ -241,6 +242,10 @@ class ScopedTaskEnvironment {
   // Returns true iff the next task is delayed. Returns false if the next task
   // is immediate or if there is no next task.
   bool NextTaskIsDelayed() const;
+
+  // For debugging purposes: Dumps information about pending tasks on the main
+  // thread.
+  void DescribePendingMainThreadTasks() const;
 
  protected:
   explicit ScopedTaskEnvironment(ScopedTaskEnvironment&& other);

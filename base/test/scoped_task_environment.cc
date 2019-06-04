@@ -645,6 +645,10 @@ bool ScopedTaskEnvironment::NextTaskIsDelayed() const {
   return !delay.is_zero() && !delay.is_max();
 }
 
+void ScopedTaskEnvironment::DescribePendingMainThreadTasks() const {
+  LOG(INFO) << sequence_manager_->DescribeAllPendingTasks();
+}
+
 ScopedTaskEnvironment::TestTaskTracker::TestTaskTracker()
     : internal::ThreadPoolImpl::TaskTrackerImpl("ScopedTaskEnvironment"),
       can_run_tasks_cv_(&lock_),
