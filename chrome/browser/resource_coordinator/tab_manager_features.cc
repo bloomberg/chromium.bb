@@ -262,6 +262,11 @@ int GetNumOldestTabsToScoreWithTabRanker() {
       std::numeric_limits<int>::max());
 }
 
+int GetProcessTypeToScoreWithTabRanker() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kTabRanker, "process_type_of_tabs_to_score_with_TabRanker", 4);
+}
+
 int GetNumOldestTabsToLogWithTabRanker() {
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kTabRanker, "number_of_oldest_tabs_to_log_with_TabRanker", 0);
