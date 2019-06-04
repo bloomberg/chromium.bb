@@ -44,6 +44,10 @@ using ForegroundedOrClosed =
 namespace resource_coordinator {
 namespace {
 
+const char* kTabMetricsEntryName = TabManager_TabMetrics::kEntryName;
+
+const int64_t kIdShift = 1 << 13;
+
 // Test URLs need to be from different origins to test site engagement score.
 const GURL kTestUrls[] = {
     GURL("https://test1.example.com"), GURL("https://test3.example.com"),
@@ -131,6 +135,94 @@ TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithTabRanker) {
   EXPECT_EQ(lifecycleunits[1], tab2);
   EXPECT_EQ(lifecycleunits[2], tab1);
   EXPECT_EQ(lifecycleunits[3], tab0);
+
+  // Closing the tabs destroys the WebContentses but should not trigger logging.
+  // The TestWebContentsObserver simulates hiding these tabs as they are closed;
+  // we verify in TearDown() that no logging occurred.
+  tab_strip_model->CloseAllTabs();
+}
+
+// Test that lifecycleunits are correctly logged inside
+// SortLifecycleUnitWithTabRanker.
+TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
+  base::test::ScopedFeatureList feature_list_overrides;
+  feature_list_overrides.InitAndEnableFeatureWithParameters(
+      features::kTabRanker,
+      {{"disable_background_log_with_TabRanker", "true"}});
+  Browser::CreateParams params(profile(), true);
+  std::unique_ptr<Browser> browser =
+      CreateBrowserWithTestWindowForParams(&params);
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+
+  // Create lifecycleunits.
+  LifecycleUnit* tab0 = AddNewTab(tab_strip_model, 0);
+  LifecycleUnit* tab1 = AddNewTab(tab_strip_model, 1);
+  LifecycleUnit* tab2 = AddNewTab(tab_strip_model, 2);
+  std::vector<LifecycleUnit*> lifecycleunits = {tab0};
+
+  // Call SortLifecycleUnitWithTabRanker on tab0 should log the TabMetrics for
+  // tab0.
+  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+      &lifecycleunits);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_.ExpectNewEntry(
+        kTabMetricsEntryName, kTestUrls[0],
+        {
+            {TabManager_TabMetrics::kQueryIdName, 1 * kIdShift},
+            {TabManager_TabMetrics::kLabelIdName, 2 * kIdShift},
+        });
+  }
+
+  // Call SortLifecycleUnitWithTabRanker on tab0 should log the TabMetrics for
+  // tab0.
+  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+      &lifecycleunits);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_.ExpectNewEntry(
+        kTabMetricsEntryName, kTestUrls[0],
+        {
+            {TabManager_TabMetrics::kQueryIdName, 3 * kIdShift},
+            {TabManager_TabMetrics::kLabelIdName, 2 * kIdShift + 1},
+        });
+  }
+
+  // Call SortLifecycleUnitWithTabRanker on tab2 should not log the TabMetrics
+  // for tab2 because it is foregrounded.
+  lifecycleunits = {tab2};
+  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+      &lifecycleunits);
+  {
+    SCOPED_TRACE("");
+    EXPECT_EQ(ukm_entry_checker_.NumNewEntriesRecorded(kTabMetricsEntryName),
+              0);
+  }
+
+  // Call SortLifecycleUnitWithTabRanker on all three tabs should log two
+  // TabMetrics events for tab0 and tab1.
+  lifecycleunits = {tab0, tab1, tab2};
+  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+      &lifecycleunits);
+  {
+    SCOPED_TRACE("");
+    EXPECT_EQ(ukm_entry_checker_.NumNewEntriesRecorded(kTabMetricsEntryName),
+              2);
+
+    ukm_entry_checker_.ExpectNewEntry(
+        kTabMetricsEntryName, kTestUrls[0],
+        {
+            {TabManager_TabMetrics::kQueryIdName, 5 * kIdShift},
+            {TabManager_TabMetrics::kLabelIdName, 2 * kIdShift + 2},
+        });
+
+    ukm_entry_checker_.ExpectNewEntry(
+        kTabMetricsEntryName, kTestUrls[1],
+        {
+            {TabManager_TabMetrics::kQueryIdName, 5 * kIdShift},
+            {TabManager_TabMetrics::kLabelIdName, 6 * kIdShift},
+        });
+  }
 
   // Closing the tabs destroys the WebContentses but should not trigger logging.
   // The TestWebContentsObserver simulates hiding these tabs as they are closed;

@@ -42,23 +42,7 @@
                              base::TimeDelta::FromDays(1), 50)
 
 namespace resource_coordinator {
-namespace {
 
-// Returns an int64_t number as label_id or query_id. The number is generated
-// incrementally from 1.
-int64_t NewInt64ForLabelIdOrQueryId() {
-  static int64_t id = 0;
-  // The id is shifted 13 bits so that the lower bits are reserved for counting
-  // multiple queries.
-  // We choose 13 so that the lower bits for counting multiple queries and
-  // higher bits for labeling queries are both unlikely to overflow. (lower bits
-  // only overflows when we have more than 8192 queries without labeling events;
-  // higher bits only overflow when we have more than 100 billion discards.
-  constexpr int kIdShiftBits = 13;
-  return (++id) << kIdShiftBits;
-}
-
-}  // namespace
 
 // Per-WebContents helper class that observes its WebContents, notifying
 // TabActivityWatcher when interesting events occur. Also provides
@@ -73,7 +57,7 @@ class TabActivityWatcher::WebContentsData
   // Calculates the tab reactivation score for a background tab. Returns nullopt
   // if the score could not be calculated, e.g. because the tab is in the
   // foreground.
-  base::Optional<float> CalculateReactivationScore() {
+  base::Optional<float> CalculateReactivationScore(bool log_this_query) {
     if (web_contents()->IsBeingDestroyed() || backgrounded_time_.is_null())
       return base::nullopt;
 
@@ -82,6 +66,19 @@ class TabActivityWatcher::WebContentsData
     base::Optional<tab_ranker::TabFeatures> tab = GetTabFeatures(mru);
     if (!tab.has_value())
       return base::nullopt;
+
+    if (log_this_query) {
+      // Update label_id_: a new label_id is generated for this query if the
+      // label_id_ is 0; otherwise the old label_id_ is incremented. This allows
+      // us to better pairing TabMetrics with ForegroundedOrClosed events
+      // offline. The same label_id_ will be logged with ForegroundedOrClosed
+      // event later on so that TabFeatures can be paired with
+      // ForegroundedOrClosed.
+      label_id_ = label_id_ ? label_id_ + 1 : NewInt64ForLabelIdOrQueryId();
+
+      TabActivityWatcher::GetInstance()->tab_metrics_logger_->LogTabMetrics(
+          ukm_source_id_, tab.value(), web_contents(), label_id_);
+    }
 
     float score = 0.0f;
     const tab_ranker::TabRankerResult result =
@@ -240,7 +237,6 @@ class TabActivityWatcher::WebContentsData
 
     backgrounded_time_ = base::TimeTicks();
     foregrounded_time_ = NowTicks();
-    creation_time_ = NowTicks();
 
     page_metrics_.num_reactivations++;
   }
@@ -453,6 +449,11 @@ class TabActivityWatcher::WebContentsData
     label_id_ = 0;
   }
 
+  // Helper function for label_id and query_id.
+  inline int64_t NewInt64ForLabelIdOrQueryId() {
+    return TabActivityWatcher::GetInstance()->NewInt64ForLabelIdOrQueryId();
+  }
+
   // Updated when a navigation is finished.
   ukm::SourceId ukm_source_id_ = 0;
 
@@ -512,12 +513,13 @@ TabActivityWatcher::TabActivityWatcher()
 TabActivityWatcher::~TabActivityWatcher() = default;
 
 base::Optional<float> TabActivityWatcher::CalculateReactivationScore(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    bool log_this_query) {
   WebContentsData* web_contents_data =
       WebContentsData::FromWebContents(web_contents);
   if (!web_contents_data)
     return base::nullopt;
-  return web_contents_data->CalculateReactivationScore();
+  return web_contents_data->CalculateReactivationScore(log_this_query);
 }
 
 void TabActivityWatcher::LogOldestNTabFeatures() {
@@ -547,10 +549,13 @@ void TabActivityWatcher::SortLifecycleUnitWithTabRanker(
     std::vector<LifecycleUnit*>* tabs) {
   std::map<int32_t, float> reactivation_scores;
 
+  // Set query_id so that all TabFeatures logged in this query can be joined.
+  tab_metrics_logger_->set_query_id(NewInt64ForLabelIdOrQueryId());
+
   for (auto* lifecycle_unit : *tabs) {
     content::WebContents* web_content =
         lifecycle_unit->AsTabLifecycleUnitExternal()->GetWebContents();
-    base::Optional<float> score = CalculateReactivationScore(web_content);
+    base::Optional<float> score = CalculateReactivationScore(web_content, true);
     reactivation_scores[lifecycle_unit->GetID()] =
         score.has_value() ? score.value() : std::numeric_limits<float>::max();
   }
@@ -561,6 +566,17 @@ void TabActivityWatcher::SortLifecycleUnitWithTabRanker(
               return reactivation_scores[a->GetID()] >
                      reactivation_scores[b->GetID()];
             });
+}
+
+int64_t TabActivityWatcher::NewInt64ForLabelIdOrQueryId() {
+  // The id is shifted 13 bits so that the lower bits are reserved for counting
+  // multiple queries.
+  // We choose 13 so that the lower bits for counting multiple queries and
+  // higher bits for labeling queries are both unlikely to overflow. (lower bits
+  // only overflows when we have more than 8192 queries without labeling events;
+  // higher bits only overflow when we have more than 100 billion discards.
+  constexpr int kIdShiftBits = 13;
+  return (++internal_id_for_logging_) << kIdShiftBits;
 }
 
 void TabActivityWatcher::OnBrowserSetLastActive(Browser* browser) {
@@ -637,6 +653,7 @@ bool TabActivityWatcher::ShouldTrackBrowser(Browser* browser) {
 
 void TabActivityWatcher::ResetForTesting() {
   tab_metrics_logger_ = std::make_unique<TabMetricsLogger>();
+  internal_id_for_logging_ = 0;
 }
 
 // static
