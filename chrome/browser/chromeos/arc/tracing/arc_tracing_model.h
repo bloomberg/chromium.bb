@@ -54,6 +54,9 @@ class ArcTracingModel {
   TracingEventPtrs Select(const ArcTracingEvent* event,
                           const std::string query) const;
 
+  // Gets group of asynchronous events for |id|.
+  TracingEventPtrs GetGroupEvents(const std::string& id) const;
+
   // Dumps this model to |stream|.
   void Dump(std::ostream& stream) const;
 

@@ -99,6 +99,9 @@ struct GraphicsEventsContext {
   ArcTracingModel::TracingEvents converted_events;
   std::map<uint32_t, std::vector<ArcTracingEvent*>>
       per_thread_pending_events_stack;
+
+  std::map<std::pair<char, std::string>, std::unique_ptr<ArcTracingEvent>>
+      pending_asynchronous_events;
 };
 
 bool HandleGraphicsEvent(GraphicsEventsContext* context,
@@ -157,6 +160,41 @@ bool HandleGraphicsEvent(GraphicsEventsContext* context,
       context->per_thread_pending_events_stack[tid].pop_back();
       completed_event->SetPhase(TRACE_EVENT_PHASE_COMPLETE);
       completed_event->SetDuration(timestamp - completed_event->GetTimestamp());
+    } break;
+    case TRACE_EVENT_PHASE_ASYNC_BEGIN:
+    case TRACE_EVENT_PHASE_ASYNC_END: {
+      const size_t name_pos = ParseUint32(line, event_position + 2, '|', &pid);
+      if (name_pos == std::string::npos) {
+        LOG(ERROR) << "Cannot parse pid of trace event: " << line;
+        return false;
+      }
+      const size_t id_pos = line.find('|', name_pos + 2);
+      if (id_pos == std::string::npos) {
+        LOG(ERROR) << "Cannot parse name|id of trace event: " << line;
+        return false;
+      }
+      const std::string name = line.substr(name_pos + 1, id_pos - name_pos - 1);
+      const std::string id = line.substr(id_pos + 1);
+      std::unique_ptr<ArcTracingEvent> event =
+          std::make_unique<ArcTracingEvent>(base::DictionaryValue());
+      event->SetPhase(phase);
+      event->SetPid(pid);
+      event->SetTid(tid);
+      event->SetTimestamp(timestamp);
+      event->SetCategory(kAndroidCategory);
+      event->SetName(name);
+      // Id here is weak and theoretically can be replicated in another
+      // processes or for different event names.
+      const std::string full_id = line.substr(event_position + 2);
+      event->SetId(id);
+      if (context->pending_asynchronous_events.find({phase, full_id}) !=
+          context->pending_asynchronous_events.end()) {
+        LOG(ERROR) << "Found duplicated asynchronous event " << line;
+        // That could be the real case from Android framework, for example
+        // animator:opacity trace. Ignore these duplicate events.
+        return true;
+      }
+      context->pending_asynchronous_events[{phase, full_id}] = std::move(event);
     } break;
     default:
       LOG(ERROR) << "Unsupported type of trace event: " << line;
@@ -280,6 +318,15 @@ bool HandleGpuFreq(ValueEvents* value_events,
   return true;
 }
 
+bool SortByTimestampPred(const std::unique_ptr<ArcTracingEvent>& lhs,
+                         const std::unique_ptr<ArcTracingEvent>& rhs) {
+  const uint64_t lhs_timestamp = lhs->GetTimestamp();
+  const uint64_t rhs_timestamp = rhs->GetTimestamp();
+  if (lhs_timestamp != rhs_timestamp)
+    return lhs_timestamp < rhs_timestamp;
+  return lhs->GetDuration() > rhs->GetDuration();
+}
+
 }  // namespace
 
 ArcTracingModel::ArcTracingModel() = default;
@@ -325,6 +372,11 @@ bool ArcTracingModel::Build(const std::string& data) {
     return false;
   }
 
+  for (auto& group_events : group_events_) {
+    std::sort(group_events.second.begin(), group_events.second.end(),
+              SortByTimestampPred);
+  }
+
   return true;
 }
 
@@ -360,6 +412,17 @@ ArcTracingModel::TracingEventPtrs ArcTracingModel::Select(
   for (const auto& child : event->children())
     SelectRecursively(0, child.get(), BuildSelector(query), &collector);
   return collector;
+}
+
+ArcTracingModel::TracingEventPtrs ArcTracingModel::GetGroupEvents(
+    const std::string& id) const {
+  TracingEventPtrs result;
+  const auto& it = group_events_.find(id);
+  if (it == group_events_.end())
+    return result;
+  for (const auto& group_event : it->second)
+    result.emplace_back(group_event.get());
+  return result;
 }
 
 bool ArcTracingModel::ProcessEvent(base::ListValue* events) {
@@ -400,14 +463,7 @@ bool ArcTracingModel::ProcessEvent(base::ListValue* events) {
 
   // Events may come by closure that means event started earlier as a root event
   // for others may appear after children. Sort by ts time.
-  std::sort(parsed_events.begin(), parsed_events.end(),
-            [](const auto& lhs, const auto& rhs) {
-              const uint64_t lhs_timestamp = lhs->GetTimestamp();
-              const uint64_t rhs_timestamp = rhs->GetTimestamp();
-              if (lhs_timestamp != rhs_timestamp)
-                return lhs_timestamp < rhs->GetTimestamp();
-              return lhs->GetDuration() > rhs->GetDuration();
-            });
+  std::sort(parsed_events.begin(), parsed_events.end(), SortByTimestampPred);
 
   for (auto& event : parsed_events) {
     switch (event->GetPhase()) {
@@ -539,6 +595,12 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
         return false;
       }
     }
+  }
+
+  for (auto& asyncronous_event :
+       graphics_events_context.pending_asynchronous_events) {
+    group_events_[asyncronous_event.second->GetId()].emplace_back(
+        std::move(asyncronous_event.second));
   }
 
   // Close all pending tracing event, assuming last event is 0 duration.

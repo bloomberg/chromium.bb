@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_event.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_event_matcher.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h"
@@ -560,6 +561,45 @@ TEST_F(ArcTracingModelTest, EventsContainerTrim) {
   EXPECT_EQ(40U, events.buffer_events()[0][0].timestamp);
   EXPECT_EQ(ArcTracingGraphicsModel::BufferEventType::kChromeOSDraw,
             events.buffer_events()[0][0].type);
+}
+
+TEST_F(ArcTracingModelTest, AsynchronousSystemEvents) {
+  base::FilePath base_path;
+  base::PathService::Get(chrome::DIR_TEST_DATA, &base_path);
+  const base::FilePath tracing_path = base_path.Append("arc_graphics_tracing")
+                                          .Append("trace_async_events.json");
+  std::string tracing_data;
+  base::ReadFileToString(tracing_path, &tracing_data);
+  DCHECK(!tracing_data.empty());
+
+  ArcTracingModel model;
+  ASSERT_TRUE(model.Build(tracing_data));
+
+  const ArcTracingModel::TracingEventPtrs group1 = model.GetGroupEvents("1");
+  const ArcTracingModel::TracingEventPtrs group2 = model.GetGroupEvents("2");
+
+  constexpr char kAsync1[] = "async1";
+  constexpr char kAsync2[] = "async2";
+
+  ASSERT_EQ(2U, group1.size());
+  EXPECT_EQ(kAsync1, group1[0]->GetName());
+  EXPECT_EQ(kAsync1, group1[1]->GetName());
+  EXPECT_EQ("1", group1[0]->GetId());
+  EXPECT_EQ(group1[0]->GetId(), group1[1]->GetId());
+  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_BEGIN, group1[0]->GetPhase());
+  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_END, group1[1]->GetPhase());
+  EXPECT_EQ(1100000UL, group1[0]->GetTimestamp());
+  EXPECT_EQ(1300000UL, group1[1]->GetTimestamp());
+
+  ASSERT_EQ(2U, group2.size());
+  EXPECT_EQ(kAsync2, group2[0]->GetName());
+  EXPECT_EQ(kAsync2, group2[1]->GetName());
+  EXPECT_EQ("2", group2[0]->GetId());
+  EXPECT_EQ(group2[0]->GetId(), group2[1]->GetId());
+  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_BEGIN, group2[0]->GetPhase());
+  EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_END, group2[1]->GetPhase());
+  EXPECT_EQ(1200000UL, group2[0]->GetTimestamp());
+  EXPECT_EQ(1400000UL, group2[1]->GetTimestamp());
 }
 
 }  // namespace arc
