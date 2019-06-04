@@ -10831,6 +10831,7 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame) {
   url_test_helpers::RegisterMockedURLLoad(ToKURL(redirect_url),
                                           test::CoreTestDataPath("foo.html"));
   helper.LocalMainFrame()->LoadJavaScriptURL(javascript_url);
+  RunPendingTasks();
 
   // The result of the JS url replaces the existing contents on the
   // Document, but the JS-triggered navigation should still occur.
@@ -10838,7 +10839,6 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame) {
                     ->GetDocument()
                     ->documentElement()
                     ->innerText());
-  RunPendingTasks();
   EXPECT_EQ(ToKURL(redirect_url),
             To<LocalFrame>(helper.GetWebView()->GetPage()->MainFrame())
                 ->GetDocument()

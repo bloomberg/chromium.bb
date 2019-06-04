@@ -299,14 +299,11 @@ void FrameLoader::DispatchUnloadEvent() {
         provisional_document_loader_
             ? &provisional_document_loader_->GetTiming()
             : nullptr);
-    // Don't remove event listeners from a transitional empty document (see
-    // https://bugs.webkit.org/show_bug.cgi?id=28716 for more information).
-    bool keep_event_listeners =
-        provisional_document_loader_ &&
-        ShouldReuseDefaultView(
-            SecurityOrigin::Create(provisional_document_loader_->Url()),
-            provisional_document_loader_->GetContentSecurityPolicy());
-    if (!keep_event_listeners)
+    // Remove event listeners if we're firing unload events for a reason other
+    // than committing a navigation. In the commit case, we'll determine whether
+    // event listeners should be retained when choosing whether to reuse the
+    // LocalDOMWindow.
+    if (!provisional_document_loader_)
       document->RemoveAllEventListenersRecursively();
   }
 }
@@ -328,44 +325,6 @@ void FrameLoader::DidExplicitOpen() {
       progress_tracker_->ProgressStarted();
     }
   }
-}
-
-// This is only called by ScriptController::executeScriptIfJavaScriptURL and
-// always contains the result of evaluating a javascript: url. This is the
-// <iframe src="javascript:'html'"> case.
-void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
-    const String& source,
-    Document* owner_document) {
-  Document* document = frame_->GetDocument();
-  if (!document_loader_ ||
-      document->PageDismissalEventBeingDispatched() != Document::kNoDismissal)
-    return;
-
-  UseCounter::Count(*document, WebFeature::kReplaceDocumentViaJavaScriptURL);
-
-  const KURL& url = document->Url();
-
-  document_loader_->StopLoading();
-
-  // Don't allow any new child frames to load in this frame: attaching a new
-  // child frame during or after detaching children results in an attached
-  // frame on a detached DOM tree, which is bad.
-  SubframeLoadingDisabler disabler(document);
-  // https://html.spec.whatwg.org/C/browsing-the-web.html#unload-a-document
-  // The ignore-opens-during-unload counter of the parent Document must be
-  // incremented when unloading its descendants.
-  IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(document);
-  frame_->DetachChildren();
-
-  // detachChildren() potentially detaches or navigates this frame. The load
-  // cannot continue in those cases.
-  if (!frame_->IsAttached() || document != frame_->GetDocument())
-    return;
-
-  frame_->GetDocument()->Shutdown();
-  Client()->TransitionToCommittedForNewPage();
-  document_loader_->ReplaceDocumentWhileExecutingJavaScriptURL(
-      url, owner_document, source);
 }
 
 void FrameLoader::FinishedParsing() {
@@ -574,10 +533,6 @@ bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
         ((frame_->Owner()->GetFramePolicy().sandbox_flags &
           WebSandboxFlags::kOrigin) != WebSandboxFlags::kNone))
       return false;
-
-    frame_->GetDocument()->ProcessJavaScriptUrl(
-        url, request.ShouldCheckMainWorldContentSecurityPolicy());
-    return false;
   }
 
   if (!request.OriginDocument()->GetSecurityOrigin()->CanDisplay(url)) {
@@ -760,6 +715,12 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     return;
   }
 
+  if (url.ProtocolIsJavaScript()) {
+    frame_->GetDocument()->ProcessJavaScriptUrl(
+        url, request.ShouldCheckMainWorldContentSecurityPolicy());
+    return;
+  }
+
   bool has_transient_activation =
       LocalFrame::HasTransientUserActivation(frame_);
   // TODO(csharrison): In M71 when UserActivation v2 should ship, we can remove
@@ -882,7 +843,8 @@ static bool ShouldNavigate(WebNavigationParams* params, LocalFrame* frame) {
 
 void FrameLoader::CommitNavigation(
     std::unique_ptr<WebNavigationParams> navigation_params,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+    bool is_javascript_url) {
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
 
@@ -951,6 +913,8 @@ void FrameLoader::CommitNavigation(
       std::move(extra_data));
   if (history_item)
     provisional_document_loader->SetItemForHistoryNavigation(history_item);
+  if (is_javascript_url)
+    provisional_document_loader->SetLoadingJavaScriptUrl();
 
   progress_tracker_->ProgressStarted();
   provisional_document_loader_ = provisional_document_loader;

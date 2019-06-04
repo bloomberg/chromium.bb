@@ -848,7 +848,9 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
 
   // TODO(dcheng): This differs from the behavior of both IE and Firefox: the
   // origin is inherited from the document that loaded the URL.
-  if (Document::ShouldInheritSecurityOriginFromOwner(Url())) {
+  if (loading_url_as_javascript_) {
+    owner_document = frame_->GetDocument();
+  } else if (Document::ShouldInheritSecurityOriginFromOwner(Url())) {
     Frame* owner_frame = frame_->Tree().Parent();
     if (!owner_frame)
       owner_frame = frame_->Loader().Opener();
@@ -860,12 +862,13 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
   DCHECK(frame_->GetPage());
 
   ParserSynchronizationPolicy parsing_policy = kAllowAsynchronousParsing;
-  if (!Document::ThreadedParsingEnabledForTesting())
+  if (loading_url_as_javascript_ ||
+      !Document::ThreadedParsingEnabledForTesting()) {
     parsing_policy = kForceSynchronousParsing;
+  }
 
-  InstallNewDocument(Url(), initiator_origin, owner_document,
-                     mime_type, encoding, InstallNewDocumentReason::kNavigation,
-                     parsing_policy, overriding_url);
+  InstallNewDocument(Url(), initiator_origin, owner_document, mime_type,
+                     encoding, parsing_policy, overriding_url);
   parser_->SetDocumentWasLoadedAsPartOfNavigation();
   if (was_discarded_)
     frame_->GetDocument()->SetWasDiscarded(true);
@@ -1109,10 +1112,6 @@ bool DocumentLoader::WillLoadUrlAsEmpty(const KURL& url) {
 }
 
 void DocumentLoader::LoadEmpty() {
-  if (url_.IsEmpty() &&
-      !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument()) {
-    url_ = BlankURL();
-  }
   response_ = ResourceResponse(url_);
   response_.SetMimeType("text/html");
   response_.SetTextEncodingName("utf-8");
@@ -1136,6 +1135,11 @@ void DocumentLoader::StartLoadingInternal() {
   DCHECK(params_);
   state_ = kProvisional;
   application_cache_host_ = MakeGarbageCollected<ApplicationCacheHost>(this);
+
+  if (url_.IsEmpty() &&
+      !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument()) {
+    url_ = BlankURL();
+  }
 
   if (loading_url_as_empty_document_) {
     LoadEmpty();
@@ -1466,7 +1470,6 @@ void DocumentLoader::InstallNewDocument(
     Document* owner_document,
     const AtomicString& mime_type,
     const AtomicString& encoding,
-    InstallNewDocumentReason reason,
     ParserSynchronizationPolicy parsing_policy,
     const KURL& overriding_url) {
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
@@ -1481,12 +1484,12 @@ void DocumentLoader::InstallNewDocument(
                           .WithSrcdocDocument(loading_srcdoc_)
                           .WithNewRegistrationContext();
 
-  ContentSecurityPolicy* csp = content_security_policy_.Get();
-  // The only case where there should be nullptr content_security_policy_
-  // besides empty loads is a javascript: url, which inherits its CSP from the
-  // document in which it was executed.
-  if (!csp && !loading_url_as_empty_document_)
-    csp = frame_->GetDocument()->GetContentSecurityPolicy();
+  // A javascript: url inherits CSP from the document in which it was
+  // executed.
+  ContentSecurityPolicy* csp =
+      loading_url_as_javascript_
+          ? frame_->GetDocument()->GetContentSecurityPolicy()
+          : content_security_policy_.Get();
   GlobalObjectReusePolicy global_object_reuse_policy =
       GetFrameLoader().ShouldReuseDefaultView(init.GetDocumentOrigin(), csp)
           ? GlobalObjectReusePolicy::kUseExisting
@@ -1510,10 +1513,13 @@ void DocumentLoader::InstallNewDocument(
   // commits. To make that happen, we "securely transition" the existing
   // LocalDOMWindow to the Document that results from the network load. See also
   // Document::IsSecureTransitionTo.
-  if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting)
+  if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting) {
+    if (frame_->GetDocument())
+      frame_->GetDocument()->RemoveAllEventListenersRecursively();
     frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_));
+  }
 
-  if (reason == InstallNewDocumentReason::kNavigation)
+  if (!loading_url_as_javascript_)
     WillCommitNavigation();
 
   Document* document =
@@ -1555,7 +1561,7 @@ void DocumentLoader::InstallNewDocument(
 
   // This must be called before the document is opened, otherwise HTML parser
   // will use stale values from HTMLParserOption.
-  if (reason == InstallNewDocumentReason::kNavigation)
+  if (!loading_url_as_javascript_)
     DidCommitNavigation(global_object_reuse_policy);
 
   // Initializing origin trials might force window proxy initialization,
@@ -1647,37 +1653,6 @@ const AtomicString& DocumentLoader::MimeType() const {
   if (archive_ && loading_mhtml_archive_)
     return archive_->MainResource()->MimeType();
   return response_.MimeType();
-}
-
-// This is only called by
-// FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL()
-void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
-    const KURL& url,
-    Document* owner_document,
-    const String& source) {
-  // This is necessary because extensions look at DocumentLoader::url_ when
-  // deciding whether to inject a content script. In the case where the content
-  // script can be injected into blank frames, and an iframe is created with
-  // a javascript url as its src attribute, url_ will be empty here as the
-  // javascript url was run in the context of the initial empty document.
-  // However, the document's url will be about:blank, and content scripts
-  // should be allowed to inject into this document.
-  if (url_.IsEmpty())
-    url_ = BlankURL();
-
-  InstallNewDocument(url, nullptr, owner_document, MimeType(),
-                     response_.TextEncodingName(),
-                     InstallNewDocumentReason::kJavascriptURL,
-                     kForceSynchronousParsing, NullURL());
-
-  if (!source.IsNull()) {
-    frame_->GetDocument()->SetCompatibilityMode(Document::kNoQuirksMode);
-    parser_->Append(source);
-  }
-
-  // Append() might lead to a detach.
-  if (parser_)
-    parser_->Finish();
 }
 
 void DocumentLoader::BlockParser() {

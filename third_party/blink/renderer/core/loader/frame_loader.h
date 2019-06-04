@@ -100,7 +100,8 @@ class CORE_EXPORT FrameLoader final {
   // See WebNavigationParams for details.
   void CommitNavigation(
       std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data);
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+      bool is_javascript_url = false);
 
   // Called before the browser process is asked to navigate this frame, to mark
   // the frame as loading and save some navigation information for later use.
@@ -117,9 +118,6 @@ class CORE_EXPORT FrameLoader final {
   // FrameLoader belongs. Callers need to be careful about checking the
   // existence of the frame after StopAllLoaders() returns.
   void StopAllLoaders();
-
-  void ReplaceDocumentWhileExecutingJavaScriptURL(const String& source,
-                                                  Document* owner_document);
 
   // Notifies the client that the initial empty document has been accessed, and
   // thus it is no longer safe to show a provisional URL above the document

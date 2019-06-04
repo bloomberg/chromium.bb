@@ -235,22 +235,22 @@ void ScriptController::ExecuteJavaScriptURL(
     return;
   }
 
-  script_source = script_source.Substring(kJavascriptSchemeLength);
+  bool had_navigation_before = GetFrame()->Loader().HasProvisionalNavigation();
 
-  Document* owner_document = GetFrame()->GetDocument();
+  script_source = script_source.Substring(kJavascriptSchemeLength);
 
   v8::HandleScope handle_scope(GetIsolate());
 
   // https://html.spec.whatwg.org/C/#navigate
   // Step 12.8 "Let base URL be settings object's API base URL." [spec text]
-  KURL base_url = owner_document->BaseURL();
+  KURL base_url = GetFrame()->GetDocument()->BaseURL();
 
   // Step 12.9 "Let script be result of creating a classic script given script
   // source, settings, base URL, and the default classic script fetch options."
   // [spec text]
   // We pass |SanitizeScriptErrors::kDoNotSanitize| because |muted errors| is
   // false by default.
-  v8::Local<v8::Value> result = EvaluateScriptInMainWorld(
+  v8::Local<v8::Value> v8_result = EvaluateScriptInMainWorld(
       ScriptSourceCode(script_source, ScriptSourceLocationType::kJavascriptUrl),
       base_url, SanitizeScriptErrors::kDoNotSanitize, ScriptFetchOptions(),
       kDoNotExecuteScriptWhenScriptsDisabled);
@@ -259,10 +259,24 @@ void ScriptController::ExecuteJavaScriptURL(
   // don't want to try to replace its document!
   if (!GetFrame()->GetPage())
     return;
-  if (result.IsEmpty() || !result->IsString())
+  // If a navigation begins during the javascript: url's execution, ignore
+  // the return value of the script. Otherwise, replacing the document with a
+  // string result would cancel the navigation.
+  if (!had_navigation_before && GetFrame()->Loader().HasProvisionalNavigation())
     return;
-  GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
-      ToCoreString(v8::Local<v8::String>::Cast(result)), owner_document);
+  if (v8_result.IsEmpty() || !v8_result->IsString())
+    return;
+
+  UseCounter::Count(*GetFrame()->GetDocument(),
+                    WebFeature::kReplaceDocumentViaJavaScriptURL);
+  auto params = std::make_unique<WebNavigationParams>();
+  params->url = GetFrame()->GetDocument()->Url();
+
+  String result = ToCoreString(v8::Local<v8::String>::Cast(v8_result));
+  WebNavigationParams::FillStaticResponse(
+      params.get(), "text/html", "UTF-8",
+      base::make_span(result.Utf8().data(), result.Utf8().length()));
+  GetFrame()->Loader().CommitNavigation(std::move(params), nullptr, true);
 }
 
 void ScriptController::ExecuteScriptInMainWorld(

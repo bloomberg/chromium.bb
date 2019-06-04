@@ -122,10 +122,6 @@ class CORE_EXPORT DocumentLoader
 
   uint64_t MainResourceIdentifier() const;
 
-  void ReplaceDocumentWhileExecutingJavaScriptURL(const KURL&,
-                                                  Document* owner_document,
-                                                  const String& source);
-
   const AtomicString& MimeType() const;
 
   const KURL& OriginalUrl() const;
@@ -286,6 +282,8 @@ class CORE_EXPORT DocumentLoader
   // The caller owns the |clock| which must outlive the DocumentLoader.
   void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
 
+  void SetLoadingJavaScriptUrl() { loading_url_as_javascript_ = true; }
+
  protected:
   bool had_transient_activation() const { return had_transient_activation_; }
 
@@ -300,18 +298,16 @@ class CORE_EXPORT DocumentLoader
       mojom::MHTMLLoadResult::kSuccess;
 
  private:
-  // installNewDocument() does the work of creating a Document and
+  // InstallNewDocument() does the work of creating a Document and
   // DocumentParser, as well as creating a new LocalDOMWindow if needed. It also
   // initalizes a bunch of state on the Document (e.g., the state based on
   // response headers).
-  enum class InstallNewDocumentReason { kNavigation, kJavascriptURL };
   void InstallNewDocument(
       const KURL&,
       const scoped_refptr<const SecurityOrigin> initiator_origin,
       Document* owner_document,
       const AtomicString& mime_type,
       const AtomicString& encoding,
-      InstallNewDocumentReason,
       ParserSynchronizationPolicy,
       const KURL& overriding_url);
   void DidInstallNewDocument(Document*);
@@ -482,6 +478,7 @@ class CORE_EXPORT DocumentLoader
   bool loading_mhtml_archive_ = false;
   bool loading_srcdoc_ = false;
   bool loading_url_as_empty_document_ = false;
+  bool loading_url_as_javascript_ = false;
   uint64_t main_resource_identifier_ = 0;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
   bool report_timing_info_to_parent_ = false;
