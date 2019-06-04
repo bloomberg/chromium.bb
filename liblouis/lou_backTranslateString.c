@@ -333,7 +333,7 @@ back_findCharOrDots(widechar c, int m, const TranslationTableHeader *table) {
 	TranslationTableCharacter *notFound;
 	TranslationTableCharacter *character;
 	TranslationTableOffset bucket;
-	unsigned long int makeHash = (unsigned long int)c % HASHNUM;
+	unsigned long int makeHash = _lou_charHash(c);
 	if (m == 0) {
 		bucket = table->characters[makeHash];
 		notFound = &noChar;

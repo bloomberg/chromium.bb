@@ -670,26 +670,27 @@ _lou_allocMem(AllocBuf buffer, int index, int srcmax, int destmax);
 
 /**
  * Hash function for character strings
+ *
+ * @param lowercase Whether to convert the string to lowercase because
+ *                  making the hash of it.
  */
-int EXPORT_CALL
-_lou_stringHash(const widechar *c);
+unsigned long int EXPORT_CALL
+_lou_stringHash(const widechar *c, int lowercase, const TranslationTableHeader *table);
 
 /**
  * Hash function for single characters
  */
-int EXPORT_CALL
+unsigned long int EXPORT_CALL
 _lou_charHash(widechar c);
 
 /**
  * Return a string in the same format as the characters operand in opcodes
- * TODO: move to utils.c
  */
 char *EXPORT_CALL
 _lou_showString(widechar const *chars, int length);
 
 /**
  * Return a character string in the format of the dots operand
- * TODO: move to utils.c
  */
 char *EXPORT_CALL
 _lou_showDots(widechar const *dots, int length);
@@ -697,7 +698,6 @@ _lou_showDots(widechar const *dots, int length);
 /**
  * Return a character string where the attributes are indicated
  * by the attribute letters used in multipass opcodes
- * TODO: move to utils.c
  */
 char *EXPORT_CALL
 _lou_showAttributes(TranslationTableCharacterAttributes a);

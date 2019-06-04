@@ -152,7 +152,7 @@ findCharOrDots(widechar c, int m, const TranslationTableHeader *table) {
 	TranslationTableCharacter *notFound;
 	TranslationTableCharacter *character;
 	TranslationTableOffset bucket;
-	unsigned long int makeHash = (unsigned long int)c % HASHNUM;
+	unsigned long int makeHash = _lou_charHash(c);
 	if (m == 0) {
 		bucket = table->characters[makeHash];
 		notFound = &noChar;
@@ -242,29 +242,22 @@ makeCorrections(const TranslationTableHeader *table, const InString *input,
 	_lou_resetPassVariables();
 	while (pos < input->length) {
 		int length = input->length - pos;
-		const TranslationTableCharacter *character =
-				findCharOrDots(input->chars[pos], 0, table);
-		const TranslationTableCharacter *character2;
 		int tryThis = 0;
 		if (!findForPassRule(table, pos, 0, input, &transOpcode, &transRule,
 					&transCharslen, &passCharDots, &passInstructions, &passIC,
 					&patternMatch, &groupingRule, &groupingOp))
 			while (tryThis < 3) {
 				TranslationTableOffset ruleOffset = 0;
-				unsigned long int makeHash = 0;
 				switch (tryThis) {
 				case 0:
 					if (!(length >= 2)) break;
-					makeHash = (unsigned long int)character->lowercase << 8;
-					character2 = findCharOrDots(input->chars[pos + 1], 0, table);
-					makeHash += (unsigned long int)character2->lowercase;
-					makeHash %= HASHNUM;
-					ruleOffset = table->forRules[makeHash];
+					ruleOffset = table->forRules[_lou_stringHash(
+							&input->chars[pos], 1, table)];
 					break;
 				case 1:
 					if (!(length >= 1)) break;
 					length = 1;
-					ruleOffset = character->otherRules;
+					ruleOffset = findCharOrDots(input->chars[pos], 0, table)->otherRules;
 					break;
 				case 2: /* No rule found */
 					transOpcode = CTO_Always;
@@ -1751,31 +1744,24 @@ noCompbrlAhead(const TranslationTableHeader *table, int pos, int mode,
 	for (p = start; p < end; p++) {
 		int length = input->length - p;
 		int tryThis;
-		const TranslationTableCharacter *character1;
-		const TranslationTableCharacter *character2;
 		int k;
-		character1 = findCharOrDots(input->chars[p], 0, table);
 		for (tryThis = 0; tryThis < 2; tryThis++) {
 			TranslationTableOffset ruleOffset = 0;
 			TranslationTableRule *testRule;
-			unsigned long int makeHash = 0;
 			switch (tryThis) {
 			case 0:
 				if (!(length >= 2)) break;
-				/* Hash function optimized for forward translation */
-				makeHash = (unsigned long int)character1->lowercase << 8;
-				character2 = findCharOrDots(input->chars[p + 1], 0, table);
-				makeHash += (unsigned long int)character2->lowercase;
-				makeHash %= HASHNUM;
-				ruleOffset = table->forRules[makeHash];
+				ruleOffset = table->forRules[_lou_stringHash(&input->chars[p], 1, table)];
 				break;
 			case 1:
 				if (!(length >= 1)) break;
 				length = 1;
-				ruleOffset = character1->otherRules;
+				ruleOffset = findCharOrDots(input->chars[p], 0, table)->otherRules;
 				break;
 			}
 			while (ruleOffset) {
+				const TranslationTableCharacter *character1;
+				const TranslationTableCharacter *character2;
 				testRule = (TranslationTableRule *)&table->ruleArea[ruleOffset];
 				for (k = 0; k < testRule->charslen; k++) {
 					character1 = findCharOrDots(testRule->charsdots[k], 0, table);
@@ -1914,21 +1900,14 @@ for_selectRule(const TranslationTableHeader *table, int pos, OutString output, i
 	static TranslationTableRule pseudoRule = { 0 };
 	int length = ((pos < compbrlStart) ? compbrlStart : input->length) - pos;
 	int tryThis;
-	const TranslationTableCharacter *character2;
 	int k;
 	TranslationTableOffset ruleOffset = 0;
 	*curCharDef = findCharOrDots(input->chars[pos], 0, table);
 	for (tryThis = 0; tryThis < 3; tryThis++) {
-		unsigned long int makeHash = 0;
 		switch (tryThis) {
 		case 0:
 			if (!(length >= 2)) break;
-			/* Hash function optimized for forward translation */
-			makeHash = (unsigned long int)(*curCharDef)->lowercase << 8;
-			character2 = findCharOrDots(input->chars[pos + 1], 0, table);
-			makeHash += (unsigned long int)character2->lowercase;
-			makeHash %= HASHNUM;
-			ruleOffset = table->forRules[makeHash];
+			ruleOffset = table->forRules[_lou_stringHash(&input->chars[pos], 1, table)];
 			break;
 		case 1:
 			if (!(length >= 1)) break;
@@ -2416,27 +2395,20 @@ markSyllables(const TranslationTableHeader *table, const InString *input,
 	pos = 0;
 	while (pos < input->length) { /* the main multipass translation loop */
 		int length = input->length - pos;
-		const TranslationTableCharacter *character =
-				findCharOrDots(input->chars[pos], 0, table);
-		const TranslationTableCharacter *character2;
 		int tryThis = 0;
 		while (tryThis < 3) {
 			TranslationTableOffset ruleOffset = 0;
-			unsigned long int makeHash = 0;
 			switch (tryThis) {
 			case 0:
 				if (!(length >= 2)) break;
-				makeHash = (unsigned long int)character->lowercase << 8;
 				// memory overflow when pos == input->length - 1
-				character2 = findCharOrDots(input->chars[pos + 1], 0, table);
-				makeHash += (unsigned long int)character2->lowercase;
-				makeHash %= HASHNUM;
-				ruleOffset = table->forRules[makeHash];
+				ruleOffset =
+						table->forRules[_lou_stringHash(&input->chars[pos], 1, table)];
 				break;
 			case 1:
 				if (!(length >= 1)) break;
 				length = 1;
-				ruleOffset = character->otherRules;
+				ruleOffset = findCharOrDots(input->chars[pos], 0, table)->otherRules;
 				break;
 			case 2: /* No rule found */
 				*transOpcode = CTO_Always;

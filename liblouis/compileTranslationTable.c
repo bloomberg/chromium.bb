@@ -360,7 +360,7 @@ compile_findCharOrDots(widechar c, int m, TranslationTableHeader *table) {
 	 * of the possibility of conflicts. */
 	TranslationTableCharacter *character;
 	TranslationTableOffset bucket;
-	unsigned long int makeHash = (unsigned long int)c % HASHNUM;
+	unsigned long int makeHash = _lou_charHash(c);
 	if (m == 0)
 		bucket = table->characters[makeHash];
 	else
@@ -391,7 +391,7 @@ addCharOrDots(FileInfo *nested, widechar c, int m, TranslationTableHeader **tabl
 	character = (TranslationTableCharacter *)&(*table)->ruleArea[offset];
 	memset(character, 0, sizeof(*character));
 	character->realchar = c;
-	makeHash = (unsigned long int)c % HASHNUM;
+	makeHash = _lou_charHash(c);
 	if (m == 0)
 		bucket = (*table)->characters[makeHash];
 	else
@@ -414,7 +414,7 @@ static CharOrDots *
 getCharOrDots(widechar c, int m, TranslationTableHeader *table) {
 	CharOrDots *cdPtr;
 	TranslationTableOffset bucket;
-	unsigned long int makeHash = (unsigned long int)c % HASHNUM;
+	unsigned long int makeHash = _lou_charHash(c);
 	if (m == 0)
 		bucket = table->charToDots[makeHash];
 	else
@@ -454,7 +454,7 @@ putCharAndDots(FileInfo *nested, widechar c, widechar d, TranslationTableHeader 
 		cdPtr->next = 0;
 		cdPtr->lookFor = c;
 		cdPtr->found = d;
-		makeHash = (unsigned long int)c % HASHNUM;
+		makeHash = _lou_charHash(c);
 		bucket = (*table)->charToDots[makeHash];
 		if (!bucket)
 			(*table)->charToDots[makeHash] = offset;
@@ -471,7 +471,7 @@ putCharAndDots(FileInfo *nested, widechar c, widechar d, TranslationTableHeader 
 		cdPtr->next = 0;
 		cdPtr->lookFor = d;
 		cdPtr->found = c;
-		makeHash = (unsigned long int)d % HASHNUM;
+		makeHash = _lou_charHash(d);
 		bucket = (*table)->dotsToChar[makeHash];
 		if (!bucket)
 			(*table)->dotsToChar[makeHash] = offset;
@@ -649,7 +649,7 @@ addForwardRuleWithMultipleChars(TranslationTableOffset *newRuleOffset,
 	/* direction = 0 newRule->charslen > 1 */
 	TranslationTableRule *currentRule = NULL;
 	TranslationTableOffset *currentOffsetPtr =
-			&table->forRules[_lou_stringHash(&newRule->charsdots[0])];
+			&table->forRules[_lou_stringHash(&newRule->charsdots[0], 0, NULL)];
 	while (*currentOffsetPtr) {
 		currentRule = (TranslationTableRule *)&table->ruleArea[*currentOffsetPtr];
 		if (newRule->charslen > currentRule->charslen) break;
@@ -696,7 +696,8 @@ addBackwardRuleWithMultipleCells(widechar *cells, int count,
 		TranslationTableHeader *table) {
 	/* direction = 1, newRule->dotslen > 1 */
 	TranslationTableRule *currentRule = NULL;
-	TranslationTableOffset *currentOffsetPtr = &table->backRules[_lou_stringHash(cells)];
+	TranslationTableOffset *currentOffsetPtr =
+			&table->backRules[_lou_stringHash(cells, 0, NULL)];
 	if (newRule->opcode == CTO_SwapCc) return;
 	while (*currentOffsetPtr) {
 		int currentLength;

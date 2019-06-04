@@ -108,18 +108,32 @@ lou_getProgramPath(void) {
 #endif
 /* End of MS contribution */
 
-int EXPORT_CALL
-_lou_stringHash(const widechar *c) {
-	/* hash function for strings */
-	unsigned long int makeHash =
-			(((unsigned long int)c[0] << 8) + (unsigned long int)c[1]) % HASHNUM;
-	return (int)makeHash;
+static widechar
+toLowercase(widechar c, const TranslationTableHeader *table) {
+	static TranslationTableOffset offset;
+	static TranslationTableCharacter *character;
+	offset = table->characters[_lou_charHash(c)];
+	while (offset) {
+		character = (TranslationTableCharacter *)&table->ruleArea[offset];
+		if (character->realchar == c) return character->lowercase;
+		offset = character->next;
+	}
+	return c;
 }
 
-int EXPORT_CALL
+unsigned long int EXPORT_CALL
+_lou_stringHash(const widechar *c, int lowercase, const TranslationTableHeader *table) {
+	if (!lowercase)
+		return (((unsigned long int)c[0] << 8) + (unsigned long int)c[1]) % HASHNUM;
+	else
+		return (((unsigned long int)toLowercase(c[0], table) << 8) +
+					   (unsigned long int)toLowercase(c[1], table)) %
+				HASHNUM;
+}
+
+unsigned long int EXPORT_CALL
 _lou_charHash(widechar c) {
-	unsigned long int makeHash = (unsigned long int)c % HASHNUM;
-	return (int)makeHash;
+	return (unsigned long int)c % HASHNUM;
 }
 
 char *EXPORT_CALL
