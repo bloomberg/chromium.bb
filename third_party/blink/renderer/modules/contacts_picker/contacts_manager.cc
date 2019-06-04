@@ -81,6 +81,7 @@ mojom::blink::ContactsManagerPtr& ContactsManager::GetContactsManager(
 }
 
 ScriptPromise ContactsManager::select(ScriptState* script_state,
+                                      const Vector<String>& properties,
                                       ContactsSelectOptions* options) {
   Document* document = To<Document>(ExecutionContext::From(script_state));
   if (!LocalFrame::HasTransientUserActivation(document ? document->GetFrame()
@@ -91,7 +92,7 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
                           "A user gesture is required to call this method"));
   }
 
-  if (!options->hasProperties() || !options->properties().size()) {
+  if (properties.IsEmpty()) {
     return ScriptPromise::Reject(script_state,
                                  V8ThrowException::CreateTypeError(
                                      script_state->GetIsolate(),
@@ -105,7 +106,7 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
   bool include_emails = false;
   bool include_tel = false;
 
-  for (const String& property : options->properties()) {
+  for (const String& property : properties) {
     if (property == "name")
       include_names = true;
     else if (property == "email")

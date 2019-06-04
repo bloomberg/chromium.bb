@@ -2,13 +2,8 @@
 'use strict';
 
 window.onload = function() {
-  navigator.contacts.select({
-    multiple: "true",
-    properties: ['name', 'email']
-  }).then(results => {
-    parent.postMessage({ errorMsg: '' }, '*');
-  }).catch(exception => {
-    parent.postMessage({ errorMsg: exception.toString() }, '*');
-  });
+  navigator.contacts.select(['name', 'email'], { multiple: true })
+    .then(results => parent.postMessage({ errorMsg: '' }, '*'))
+    .catch(exception => parent.postMessage({ errorMsg: exception.toString() }, '*'));
 }
 </script>

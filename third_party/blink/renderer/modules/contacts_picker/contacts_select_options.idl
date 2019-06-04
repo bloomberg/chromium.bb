@@ -7,6 +7,5 @@
 enum ContactProperty { "email", "name", "tel" };
 
 dictionary ContactsSelectOptions {
-    sequence<ContactProperty> properties;
     boolean multiple = false;
 };

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/contacts_picker/contacts_select_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -26,6 +27,7 @@ class ContactsManager final : public ScriptWrappable {
 
   // Web-exposed function defined in the IDL file.
   ScriptPromise select(ScriptState* script_state,
+                       const Vector<String>& properties,
                        ContactsSelectOptions* options);
 
  private:

@@ -35,7 +35,7 @@ test(() => {
 
 promise_test(async () => {
   await expectTypeError(() =>
-      navigator.contacts.select({ properties: ['name'] }));
+      navigator.contacts.select(['name']));
 
 }, 'The Contact API requires a user gesture')
 
@@ -44,17 +44,17 @@ promise_test(async () => {
 
   // At least one property must be provided.
   await expectTypeError(() => navigator.contacts.select());
-  await expectTypeError(() => navigator.contacts.select({ properties: [] }));
+  await expectTypeError(() => navigator.contacts.select([]));
 
   // Per WebIDL parsing, no invalid values may be provided.
   await expectTypeError(() =>
-      navigator.contacts.select({ properties: [''] }));
+      navigator.contacts.select(['']));
   await expectTypeError(() =>
-      navigator.contacts.select({ properties: ['foo'] }));
+      navigator.contacts.select(['foo']));
   await expectTypeError(() =>
-      navigator.contacts.select({ properties: ['name', 'photo'] }));
+      navigator.contacts.select(['name', 'photo']));
 
-}, 'The Contact API requires at least one valid property to be provided');
+}, 'The Contact API requires valid properties to be provided');
 
 promise_test(async () => {
   triggerUserGesture();
@@ -64,8 +64,7 @@ promise_test(async () => {
     return { contacts: null };
   });
 
-  await expectTypeError(() =>
-      navigator.contacts.select({ properties: ['name'] }));
+  await expectTypeError(() => navigator.contacts.select(['name']));
 
 }, 'The Contact API can fail when the selector cannot be opened');
 
@@ -83,10 +82,7 @@ promise_test(async () => {
   });
 
   await expectTypeError(() => {
-    return navigator.contacts.select({
-        properties: ['name', 'email'],
-        multiple: true
-    });
+    return navigator.contacts.select(['name', 'email'], { multiple: true });
   });
 
   assert_not_equals(storedOptions, null);
@@ -110,10 +106,7 @@ promise_test(async () => {
     };
   });
 
-  const results = await navigator.contacts.select({
-    properties: ['name', 'email', 'tel'],
-    multiple: true
-  });
+  const results = await navigator.contacts.select(['name', 'email', 'tel'], { multiple: true });
 
   assert_equals(results.length, 2);
 
@@ -153,9 +146,7 @@ promise_test(async () => {
     };
   });
 
-  const results = await navigator.contacts.select({
-    properties: ['name']
-  });
+  const results = await navigator.contacts.select(['name']);
 
   assert_equals(results.length, 1);
 
