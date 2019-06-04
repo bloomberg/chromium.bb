@@ -83,8 +83,8 @@ SVGElement::~SVGElement() {
   DCHECK(isConnected() || !HasRelativeLengths());
 }
 
-void SVGElement::DetachLayoutTree(const AttachContext& context) {
-  Element::DetachLayoutTree(context);
+void SVGElement::DetachLayoutTree(bool performing_reattach) {
+  Element::DetachLayoutTree(performing_reattach);
   if (SVGElement* element = CorrespondingElement())
     element->RemoveInstanceMapping(this);
   // To avoid a noncollectable Blink GC reference cycle, we must clear the

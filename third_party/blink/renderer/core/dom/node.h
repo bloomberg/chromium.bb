@@ -675,7 +675,7 @@ class CORE_EXPORT Node : public EventTarget {
     // we don't need to backtrack past display:none/contents and out of flow
     // objects when we need to do whitespace re-attachment.
     LayoutObject* previous_in_flow = nullptr;
-    // Set to true if the Attach/DetachLayoutTree is done as part of the
+    // Set to true if the AttachLayoutTree is done as part of the
     // RebuildLayoutTree pass.
     bool performing_reattach = false;
     // True if the previous_in_flow member is up-to-date, even if it is nullptr.
@@ -695,7 +695,7 @@ class CORE_EXPORT Node : public EventTarget {
   // Detaches the node from the layout tree, making it invisible in the rendered
   // view. This method will remove the node's layout object from the layout tree
   // and delete it.
-  virtual void DetachLayoutTree(const AttachContext& = AttachContext());
+  virtual void DetachLayoutTree(bool performing_reattach = false);
 
   void ReattachLayoutTree() {
     AttachContext context;

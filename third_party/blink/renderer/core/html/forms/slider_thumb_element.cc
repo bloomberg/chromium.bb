@@ -258,14 +258,14 @@ bool SliderThumbElement::WillRespondToMouseClickEvents() {
   return HTMLDivElement::WillRespondToMouseClickEvents();
 }
 
-void SliderThumbElement::DetachLayoutTree(const AttachContext& context) {
+void SliderThumbElement::DetachLayoutTree(bool performing_reattach) {
   if (in_drag_mode_) {
     if (LocalFrame* frame = GetDocument().GetFrame()) {
       frame->GetEventHandler().ReleasePointerCapture(
           PointerEventFactory::kMouseId, this);
     }
   }
-  HTMLDivElement::DetachLayoutTree(context);
+  HTMLDivElement::DetachLayoutTree(performing_reattach);
 }
 
 HTMLInputElement* SliderThumbElement::HostInput() const {

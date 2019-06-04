@@ -335,7 +335,7 @@ ParsedFeaturePolicy HTMLPlugInElement::ConstructContainerPolicy(
   return container_policy;
 }
 
-void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
+void HTMLPlugInElement::DetachLayoutTree(bool performing_reattach) {
   // Update the EmbeddedContentView the next time we attach (detaching destroys
   // the plugin).
   // FIXME: None of this "needsPluginUpdate" related code looks right.
@@ -347,7 +347,7 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
     GetDocument().DecrementLoadEventDelayCount();
   }
 
-  bool keep_plugin = context.performing_reattach && !dispose_view_;
+  bool keep_plugin = performing_reattach && !dispose_view_;
 
   // Only try to persist a plugin we actually own.
   WebPluginContainerImpl* plugin = OwnedPlugin();
@@ -370,12 +370,12 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
   // state. But only if we're reattaching. Otherwise we need to throw it away,
   // since there's no telling what's going to happen next, and it wouldn't be
   // safe to keep it.
-  if (!context.performing_reattach)
+  if (!performing_reattach)
     SetDisposeView();
 
   ResetInstance();
 
-  HTMLFrameOwnerElement::DetachLayoutTree(context);
+  HTMLFrameOwnerElement::DetachLayoutTree(performing_reattach);
 }
 
 LayoutObject* HTMLPlugInElement::CreateLayoutObject(const ComputedStyle& style,

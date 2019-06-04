@@ -901,8 +901,8 @@ void HTMLInputElement::AttachLayoutTree(AttachContext& context) {
   input_type_->CountUsage();
 }
 
-void HTMLInputElement::DetachLayoutTree(const AttachContext& context) {
-  TextControlElement::DetachLayoutTree(context);
+void HTMLInputElement::DetachLayoutTree(bool performing_reattach) {
+  TextControlElement::DetachLayoutTree(performing_reattach);
   needs_to_update_view_value_ = true;
   input_type_view_->ClosePopupView();
 }

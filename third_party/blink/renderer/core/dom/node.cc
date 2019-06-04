@@ -1407,7 +1407,7 @@ Node* Node::CommonAncestor(const Node& other,
 void Node::ReattachLayoutTree(AttachContext& context) {
   context.performing_reattach = true;
 
-  DetachLayoutTree(context);
+  DetachLayoutTree(context.performing_reattach);
   AttachLayoutTree(context);
   DCHECK(!NeedsReattachLayoutTree());
 }
@@ -1429,9 +1429,9 @@ void Node::AttachLayoutTree(AttachContext& context) {
     cache->UpdateCacheAfterNodeIsAttached(this);
 }
 
-void Node::DetachLayoutTree(const AttachContext& context) {
+void Node::DetachLayoutTree(bool performing_reattach) {
   DCHECK(GetDocument().Lifecycle().StateAllowsDetach());
-  DCHECK(!context.performing_reattach ||
+  DCHECK(!performing_reattach ||
          GetDocument().GetStyleEngine().InRebuildLayoutTree());
   DocumentLifecycle::DetachScope will_detach(GetDocument().Lifecycle());
   if (GetLayoutObject())

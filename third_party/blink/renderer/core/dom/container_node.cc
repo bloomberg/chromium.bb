@@ -982,10 +982,10 @@ void ContainerNode::AttachLayoutTree(AttachContext& context) {
   ClearChildNeedsReattachLayoutTree();
 }
 
-void ContainerNode::DetachLayoutTree(const AttachContext& context) {
+void ContainerNode::DetachLayoutTree(bool performing_reattach) {
   for (Node* child = firstChild(); child; child = child->nextSibling())
-    child->DetachLayoutTree(context);
-  Node::DetachLayoutTree(context);
+    child->DetachLayoutTree(performing_reattach);
+  Node::DetachLayoutTree(performing_reattach);
 }
 
 void ContainerNode::ChildrenChanged(const ChildrenChange& change) {

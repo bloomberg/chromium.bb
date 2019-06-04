@@ -76,7 +76,7 @@ class PickerIndicatorElement final : public HTMLDivElement,
  private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   void DefaultEventHandler(Event&) override;
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  void DetachLayoutTree(bool performing_reattach) override;
   bool IsPickerIndicatorElement() const override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void DidNotifySubtreeInsertionsToDocument() override;

@@ -53,7 +53,7 @@ class SliderThumbElement final : public HTMLDivElement {
   void DefaultEventHandler(Event&) override;
   bool WillRespondToMouseMoveEvents() override;
   bool WillRespondToMouseClickEvents() override;
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  void DetachLayoutTree(bool performing_reattach) override;
   const AtomicString& ShadowPseudoId() const override;
   HTMLInputElement* HostInput() const;
   void SetPositionFromPoint(const LayoutPoint&);

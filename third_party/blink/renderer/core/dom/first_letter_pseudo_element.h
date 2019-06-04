@@ -53,7 +53,7 @@ class CORE_EXPORT FirstLetterPseudoElement final : public PseudoElement {
   void UpdateTextFragments();
 
   void AttachLayoutTree(AttachContext&) override;
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  void DetachLayoutTree(bool performing_reattach) override;
   Node* InnerNodeForHitTesting() const override;
 
  private:

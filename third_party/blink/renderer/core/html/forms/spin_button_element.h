@@ -78,7 +78,7 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
   void Trace(Visitor*) override;
 
  private:
-  void DetachLayoutTree(const AttachContext&) override;
+  void DetachLayoutTree(bool performing_reattach) override;
   bool IsSpinButtonElement() const override { return true; }
   bool IsDisabledFormControl() const override {
     return OwnerShadowHost() && OwnerShadowHost()->IsDisabledFormControl();

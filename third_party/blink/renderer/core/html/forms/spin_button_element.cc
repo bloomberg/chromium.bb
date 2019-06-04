@@ -58,9 +58,9 @@ SpinButtonElement::SpinButtonElement(Document& document,
   setAttribute(kIdAttr, shadow_element_names::SpinButton());
 }
 
-void SpinButtonElement::DetachLayoutTree(const AttachContext& context) {
+void SpinButtonElement::DetachLayoutTree(bool performing_reattach) {
   ReleaseCapture(kEventDispatchDisallowed);
-  HTMLDivElement::DetachLayoutTree(context);
+  HTMLDivElement::DetachLayoutTree(performing_reattach);
 }
 
 void SpinButtonElement::DefaultEventHandler(Event& event) {

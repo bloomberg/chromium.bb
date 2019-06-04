@@ -2019,8 +2019,8 @@ void HTMLSelectElement::AttachLayoutTree(AttachContext& context) {
   }
 }
 
-void HTMLSelectElement::DetachLayoutTree(const AttachContext& context) {
-  HTMLFormControlElementWithState::DetachLayoutTree(context);
+void HTMLSelectElement::DetachLayoutTree(bool performing_reattach) {
+  HTMLFormControlElementWithState::DetachLayoutTree(performing_reattach);
   if (popup_)
     popup_->DisconnectClient();
   popup_is_visible_ = false;

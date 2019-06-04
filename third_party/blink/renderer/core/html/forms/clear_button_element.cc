@@ -42,8 +42,8 @@ ClearButtonElement::ClearButtonElement(Document& document,
   setAttribute(kIdAttr, shadow_element_names::ClearButton());
 }
 
-void ClearButtonElement::DetachLayoutTree(const AttachContext& context) {
-  HTMLDivElement::DetachLayoutTree(context);
+void ClearButtonElement::DetachLayoutTree(bool performing_reattach) {
+  HTMLDivElement::DetachLayoutTree(performing_reattach);
 }
 
 void ClearButtonElement::DefaultEventHandler(Event& event) {

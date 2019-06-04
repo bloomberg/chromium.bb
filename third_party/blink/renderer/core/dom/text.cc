@@ -370,17 +370,16 @@ void Text::ReattachLayoutTreeIfNeeded(const AttachContext& context) {
   if (layout_object_is_needed == !!GetLayoutObject())
     return;
 
-  AttachContext reattach_context;
-  reattach_context.performing_reattach = true;
-
   if (layout_object_is_needed) {
     DCHECK(!GetLayoutObject());
     LayoutTreeBuilderForText(*this, parent_layout_object,
                              style_parent->MutableComputedStyle())
         .CreateLayoutObject();
   } else {
-    DetachLayoutTree(reattach_context);
+    DetachLayoutTree(true /* performing_reattach*/);
   }
+  AttachContext reattach_context;
+  reattach_context.performing_reattach = true;
   CharacterData::AttachLayoutTree(reattach_context);
 }
 

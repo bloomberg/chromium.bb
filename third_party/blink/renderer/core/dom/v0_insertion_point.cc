@@ -119,11 +119,11 @@ void V0InsertionPoint::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
 }
 
-void V0InsertionPoint::DetachLayoutTree(const AttachContext& context) {
+void V0InsertionPoint::DetachLayoutTree(bool performing_reattach) {
   for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i)
-    distributed_nodes_.at(i)->DetachLayoutTree(context);
+    distributed_nodes_.at(i)->DetachLayoutTree(performing_reattach);
 
-  HTMLElement::DetachLayoutTree(context);
+  HTMLElement::DetachLayoutTree(performing_reattach);
 }
 
 void V0InsertionPoint::RebuildDistributedChildrenLayoutTrees(

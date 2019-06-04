@@ -265,7 +265,7 @@ void FirstLetterPseudoElement::AttachLayoutTree(AttachContext& context) {
   AttachFirstLetterTextLayoutObjects(first_letter_text);
 }
 
-void FirstLetterPseudoElement::DetachLayoutTree(const AttachContext& context) {
+void FirstLetterPseudoElement::DetachLayoutTree(bool performing_reattach) {
   if (remaining_text_layout_object_) {
     if (remaining_text_layout_object_->GetNode() && GetDocument().IsActive()) {
       auto* text_node = To<Text>(remaining_text_layout_object_->GetNode());
@@ -277,7 +277,7 @@ void FirstLetterPseudoElement::DetachLayoutTree(const AttachContext& context) {
   }
   remaining_text_layout_object_ = nullptr;
 
-  PseudoElement::DetachLayoutTree(context);
+  PseudoElement::DetachLayoutTree(performing_reattach);
 }
 
 scoped_refptr<ComputedStyle>

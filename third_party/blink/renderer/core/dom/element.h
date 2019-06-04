@@ -508,7 +508,7 @@ class CORE_EXPORT Element : public ContainerNode {
                                                CloneChildrenFlag) {}
 
   void AttachLayoutTree(AttachContext&) override;
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  void DetachLayoutTree(bool performing_reattach = false) override;
 
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout);
   virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
@@ -1029,7 +1029,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   inline PseudoElement* CreatePseudoElementIfNeeded(PseudoId);
   void AttachPseudoElement(PseudoId, AttachContext&);
-  void DetachPseudoElement(PseudoId, const AttachContext&);
+  void DetachPseudoElement(PseudoId, bool performing_reattach);
 
   ShadowRoot& CreateAndAttachShadowRoot(ShadowRootType);
 

@@ -2705,7 +2705,7 @@ void Document::Initialize() {
       kCompositingUpdateAfterCompositingInputChange);
 
   AttachContext context;
-  ContainerNode::AttachLayoutTree(context);
+  AttachLayoutTree(context);
 
   // The TextAutosizer can't update layout view info while the Document is
   // detached, so update now in case anything changed.
@@ -2829,7 +2829,7 @@ void Document::Shutdown() {
   computed_node_mapping_.clear();
 
   layout_view_ = nullptr;
-  ContainerNode::DetachLayoutTree();
+  DetachLayoutTree();
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!View()->IsAttached());
 

@@ -2255,15 +2255,15 @@ void Element::AttachLayoutTree(AttachContext& context) {
     display_lock_context->DidAttachLayoutTree();
 }
 
-void Element::DetachLayoutTree(const AttachContext& context) {
+void Element::DetachLayoutTree(bool performing_reattach) {
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   if (HasRareData()) {
     ElementRareData* data = GetElementRareData();
-    if (!context.performing_reattach)
+    if (!performing_reattach)
       data->ClearPseudoElements();
 
     if (ElementAnimations* element_animations = data->GetElementAnimations()) {
-      if (context.performing_reattach) {
+      if (performing_reattach) {
         // FIXME: We call detach from within style recalc, so compositingState
         // is not up to date.
         // https://code.google.com/p/chromium/issues/detail?id=339847
@@ -2280,29 +2280,29 @@ void Element::DetachLayoutTree(const AttachContext& context) {
     }
   }
 
-  DetachPseudoElement(kPseudoIdBefore, context);
+  DetachPseudoElement(kPseudoIdBefore, performing_reattach);
 
   if (ChildNeedsReattachLayoutTree() || GetComputedStyle()) {
     if (ShadowRoot* shadow_root = GetShadowRoot()) {
-      shadow_root->DetachLayoutTree(context);
-      Node::DetachLayoutTree(context);
+      shadow_root->DetachLayoutTree(performing_reattach);
+      Node::DetachLayoutTree(performing_reattach);
     } else {
-      ContainerNode::DetachLayoutTree(context);
+      ContainerNode::DetachLayoutTree(performing_reattach);
     }
   } else {
-    Node::DetachLayoutTree(context);
+    Node::DetachLayoutTree(performing_reattach);
   }
 
-  DetachPseudoElement(kPseudoIdAfter, context);
-  DetachPseudoElement(kPseudoIdBackdrop, context);
-  DetachPseudoElement(kPseudoIdFirstLetter, context);
+  DetachPseudoElement(kPseudoIdAfter, performing_reattach);
+  DetachPseudoElement(kPseudoIdBackdrop, performing_reattach);
+  DetachPseudoElement(kPseudoIdFirstLetter, performing_reattach);
 
-  if (!context.performing_reattach) {
+  if (!performing_reattach) {
     UpdateCallbackSelectors(GetComputedStyle(), nullptr);
     SetComputedStyle(nullptr);
   }
 
-  if (!context.performing_reattach && IsUserActionElement()) {
+  if (!performing_reattach && IsUserActionElement()) {
     if (IsHovered())
       GetDocument().HoveredElementDetached(*this);
     if (InActiveChain())
@@ -4408,9 +4408,9 @@ void Element::AttachPseudoElement(PseudoId pseudo_id, AttachContext& context) {
 }
 
 void Element::DetachPseudoElement(PseudoId pseudo_id,
-                                  const AttachContext& context) {
+                                  bool performing_reattach) {
   if (PseudoElement* pseudo_element = GetPseudoElement(pseudo_id))
-    pseudo_element->DetachLayoutTree(context);
+    pseudo_element->DetachLayoutTree(performing_reattach);
 }
 
 PseudoElement* Element::GetPseudoElement(PseudoId pseudo_id) const {
