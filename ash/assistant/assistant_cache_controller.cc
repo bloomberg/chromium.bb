@@ -11,9 +11,9 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -66,12 +66,12 @@ AssistantCacheController::AssistantCacheController(
     : assistant_controller_(assistant_controller) {
   UpdateConversationStarters();
   assistant_controller_->AddObserver(this);
-  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
+  VoiceInteractionController::Get()->AddLocalObserver(this);
 }
 
 AssistantCacheController::~AssistantCacheController() {
   assistant_controller_->RemoveObserver(this);
-  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
+  VoiceInteractionController::Get()->RemoveLocalObserver(this);
 }
 
 void AssistantCacheController::AddModelObserver(
@@ -132,8 +132,7 @@ void AssistantCacheController::UpdateConversationStarters() {
 
   // If enabled, always show the "What's on my screen?" conversation starter.
   if (kWhatsOnMyScreenChipEnabled.Get() &&
-      Shell::Get()->voice_interaction_controller()->context_enabled().value_or(
-          false)) {
+      VoiceInteractionController::Get()->context_enabled().value_or(false)) {
     AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN,
                            assistant::util::CreateWhatsOnMyScreenDeepLink());
   }

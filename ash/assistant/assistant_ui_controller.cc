@@ -14,12 +14,12 @@
 #include "ash/assistant/util/histogram_util.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/optional.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -276,7 +276,7 @@ void AssistantUiController::OnUiVisibilityChanged(
     AssistantVisibility old_visibility,
     base::Optional<AssistantEntryPoint> entry_point,
     base::Optional<AssistantExitPoint> exit_point) {
-  Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
+  VoiceInteractionController::Get()->NotifyStatusChanged(
       new_visibility == AssistantVisibility::kVisible
           ? mojom::VoiceInteractionState::RUNNING
           : mojom::VoiceInteractionState::STOPPED);
@@ -352,8 +352,7 @@ void AssistantUiController::OnUiVisibilityChanged(
 }
 
 void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
-  auto* voice_interaction_controller =
-      Shell::Get()->voice_interaction_controller();
+  auto* voice_interaction_controller = VoiceInteractionController::Get();
 
   if (!voice_interaction_controller->settings_enabled().value_or(false) ||
       voice_interaction_controller->locked_full_screen_enabled().value_or(
@@ -362,7 +361,7 @@ void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
   }
 
   // TODO(dmblack): Show a more helpful message to the user.
-  if (Shell::Get()->voice_interaction_controller()->voice_interaction_state() ==
+  if (VoiceInteractionController::Get()->voice_interaction_state() ==
       mojom::VoiceInteractionState::NOT_READY) {
     ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
     return;

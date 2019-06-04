@@ -46,11 +46,6 @@ class VoiceInteractionControllerClient
     return voice_interaction_state_;
   }
 
-  // Testing methods.
-  void SetControllerForTesting(
-      ash::mojom::VoiceInteractionControllerPtr controller);
-  void FlushMojoForTesting();
-
  private:
   friend class VoiceInteractionControllerClientTest;
 
@@ -77,10 +72,6 @@ class VoiceInteractionControllerClient
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   void SetProfile(Profile* profile);
-
-  void ConnectToVoiceInteractionController();
-
-  ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
 
   content::NotificationRegistrar notification_registrar_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

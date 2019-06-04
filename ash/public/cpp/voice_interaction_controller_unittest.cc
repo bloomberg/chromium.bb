@@ -1,16 +1,16 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/voice_interaction/voice_interaction_controller.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 
 #include <memory>
 #include <utility>
 
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
-#include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
 namespace {
@@ -80,32 +80,29 @@ class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
   DISALLOW_COPY_AND_ASSIGN(TestVoiceInteractionObserver);
 };
 
-class VoiceInteractionControllerTest : public AshTestBase {
+class VoiceInteractionControllerTest : public testing::Test {
  public:
-  VoiceInteractionControllerTest() = default;
+  VoiceInteractionControllerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~VoiceInteractionControllerTest() override = default;
 
   void SetUp() override {
-    AshTestBase::SetUp();
-
+    controller_ = std::make_unique<VoiceInteractionController>();
     observer_ = std::make_unique<TestVoiceInteractionObserver>();
     observer_->SetVoiceInteractionController(controller());
   }
 
-  void TearDown() override {
-    observer_.reset();
-
-    AshTestBase::TearDown();
-  }
+  void TearDown() override { observer_.reset(); }
 
  protected:
-  VoiceInteractionController* controller() {
-    return Shell::Get()->voice_interaction_controller();
-  }
+  VoiceInteractionController* controller() { return controller_.get(); }
 
   TestVoiceInteractionObserver* observer() { return observer_.get(); }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<VoiceInteractionController> controller_;
   std::unique_ptr<TestVoiceInteractionObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(VoiceInteractionControllerTest);

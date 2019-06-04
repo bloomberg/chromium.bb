@@ -16,6 +16,7 @@
 #include "ash/kiosk_next/kiosk_next_shell_test_util.h"
 #include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -24,7 +25,6 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
@@ -192,10 +192,10 @@ TEST_F(VoiceInteractionAppListButtonTest,
   CreateUserSessions(2);
 
   // Enable voice interaction in system settings.
-  Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(true);
-  Shell::Get()->voice_interaction_controller()->NotifyFeatureAllowed(
+  VoiceInteractionController::Get()->NotifySettingsEnabled(true);
+  VoiceInteractionController::Get()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::ALLOWED);
-  Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
+  VoiceInteractionController::Get()->NotifyStatusChanged(
       mojom::VoiceInteractionState::STOPPED);
 
   ui::GestureEvent long_press =
@@ -222,11 +222,11 @@ TEST_F(VoiceInteractionAppListButtonTest,
 
 TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
   // Disallowed by secondary user.
-  Shell::Get()->voice_interaction_controller()->NotifyFeatureAllowed(
+  VoiceInteractionController::Get()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER);
 
   // Enable voice interaction in system settings.
-  Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(true);
+  VoiceInteractionController::Get()->NotifySettingsEnabled(true);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
@@ -254,8 +254,8 @@ TEST_F(VoiceInteractionAppListButtonTest,
 
   // Simulate a user who has already completed setup flow, but disabled voice
   // interaction in settings.
-  Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(false);
-  Shell::Get()->voice_interaction_controller()->NotifyFeatureAllowed(
+  VoiceInteractionController::Get()->NotifySettingsEnabled(false);
+  VoiceInteractionController::Get()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::ALLOWED);
 
   ui::GestureEvent long_press =

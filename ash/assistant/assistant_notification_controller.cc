@@ -11,10 +11,10 @@
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
@@ -200,7 +200,7 @@ void AssistantNotificationController::RemoveAllNotifications(bool from_server) {
 void AssistantNotificationController::OnNotificationAdded(
     const AssistantNotification* notification) {
   // Do not show system notifications if the setting is disabled.
-  if (!Shell::Get()->voice_interaction_controller()->notification_enabled())
+  if (!VoiceInteractionController::Get()->notification_enabled())
     return;
 
   // We only show system notifications in the Message Center.
@@ -214,7 +214,7 @@ void AssistantNotificationController::OnNotificationAdded(
 void AssistantNotificationController::OnNotificationUpdated(
     const AssistantNotification* notification) {
   // Do not show system notifications if the setting is disabled.
-  if (!Shell::Get()->voice_interaction_controller()->notification_enabled())
+  if (!VoiceInteractionController::Get()->notification_enabled())
     return;
 
   // If the notification that was updated is *not* a system notification, we

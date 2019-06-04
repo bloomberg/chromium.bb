@@ -30,11 +30,11 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -141,7 +141,7 @@ AppListControllerImpl::AppListControllerImpl()
   shell->AddShellObserver(this);
   shell->overview_controller()->AddObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
-  shell->voice_interaction_controller()->AddLocalObserver(this);
+  VoiceInteractionController::Get()->AddLocalObserver(this);
   shell->window_tree_host_manager()->AddObserver(this);
   shell->mru_window_tracker()->AddObserver(this);
   if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
@@ -1124,7 +1124,7 @@ bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
   if (!Shell::Get()->assistant_controller()->IsAssistantReady())
     return false;
 
-  auto* controller = Shell::Get()->voice_interaction_controller();
+  auto* controller = VoiceInteractionController::Get();
   return controller->settings_enabled().value_or(false) &&
          controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED &&
          controller->voice_interaction_state().value_or(
@@ -1382,7 +1382,7 @@ void AppListControllerImpl::Shutdown() {
   }
   shell->mru_window_tracker()->RemoveObserver(this);
   shell->window_tree_host_manager()->RemoveObserver(this);
-  shell->voice_interaction_controller()->RemoveLocalObserver(this);
+  VoiceInteractionController::Get()->RemoveLocalObserver(this);
   keyboard::KeyboardController::Get()->RemoveObserver(this);
   shell->overview_controller()->RemoveObserver(this);
   shell->RemoveShellObserver(this);

@@ -24,6 +24,7 @@
 #include "ash/media/media_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shutdown_controller.h"
@@ -32,7 +33,6 @@
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/tray_action/tray_action.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -146,7 +146,7 @@ void BindTrayActionRequestOnMainThread(mojom::TrayActionRequest request) {
 
 void BindVoiceInteractionControllerRequestOnMainThread(
     mojom::VoiceInteractionControllerRequest request) {
-  Shell::Get()->voice_interaction_controller()->BindRequest(std::move(request));
+  VoiceInteractionController::Get()->BindRequest(std::move(request));
 }
 
 void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {

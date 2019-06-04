@@ -12,10 +12,10 @@
 #include "ash/public/cpp/android_intent_helper.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/utility/screenshot_controller.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -42,7 +42,7 @@ AssistantController::AssistantController()
       assistant_ui_controller_(this),
       view_delegate_(this),
       weak_factory_(this) {
-  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
+  VoiceInteractionController::Get()->AddLocalObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
   AddObserver(this);
 
@@ -54,7 +54,7 @@ AssistantController::~AssistantController() {
 
   chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
-  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
+  VoiceInteractionController::Get()->RemoveLocalObserver(this);
   RemoveObserver(this);
 }
 
@@ -118,7 +118,7 @@ void AssistantController::SendAssistantFeedback(
 
 void AssistantController::StartSpeakerIdEnrollmentFlow() {
   mojom::ConsentStatus consent_status =
-      Shell::Get()->voice_interaction_controller()->consent_status().value_or(
+      VoiceInteractionController::Get()->consent_status().value_or(
           mojom::ConsentStatus::kUnknown);
   if (consent_status == mojom::ConsentStatus::kActivityControlAccepted) {
     // If activity control has been accepted, launch the enrollment flow.

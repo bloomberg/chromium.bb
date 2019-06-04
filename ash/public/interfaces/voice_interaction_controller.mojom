@@ -88,45 +88,6 @@ interface VoiceInteractionObserver {
 // Interface for ash client (Chrome) to connect to the voice interaction
 // controller, which notifies changes of voice interaction related flags.
 interface VoiceInteractionController {
-  // Called when the voice interaction state is changed.
-  NotifyStatusChanged(VoiceInteractionState state);
-
-  // Called when the voice interaction settings is enabled/disabled.
-  NotifySettingsEnabled(bool enabled);
-
-  // Called when the voice interaction context is enabled/disabled.
-  // If context is enabled the screenshot will be passed in voice
-  // interaction session.
-  NotifyContextEnabled(bool enabled);
-
-  // Called when the hotword listening is enabled/disabled.
-  NotifyHotwordEnabled(bool enabled);
-
-  // Called when the hotword is set to always on/only with power source.
-  NotifyHotwordAlwaysOn(bool enabled);
-
-  // Called when the consent status is obtained from the server.
-  NotifyConsentStatus(ConsentStatus consent_status);
-
-  // Notify if voice interaction feature is allowed or not. e.g. not allowed
-  // if disabled by policy.
-  NotifyFeatureAllowed(AssistantAllowedState state);
-
-  // Called when the notification is enabled/disabled.
-  NotifyNotificationEnabled(bool enabled);
-
-  // Called when the locale is changed.
-  NotifyLocaleChanged(string locale);
-
-  // Called when the launch with mic open state is changed.
-  NotifyLaunchWithMicOpen(bool launch_with_mic_open);
-
-  // Called when Google Play Store is enabled/disabled.
-  NotifyArcPlayStoreEnabledChanged(bool enabled);
-
-  // Called when locked full screen state is enabled/disabled.
-  NotifyLockedFullScreenStateChanged(bool enabled);
-
   // Add an observer.
   AddObserver(VoiceInteractionObserver observer);
 };

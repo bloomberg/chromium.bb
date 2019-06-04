@@ -157,6 +157,8 @@ component("cpp") {
     "tablet_mode_toggle_observer.h",
     "touch_uma.cc",
     "touch_uma.h",
+    "voice_interaction_controller.cc",
+    "voice_interaction_controller.h",
     "wallpaper_controller.cc",
     "wallpaper_controller.h",
     "wallpaper_controller_client.h",
@@ -256,6 +258,7 @@ source_set("unit_tests") {
     "power_utils_unittest.cc",
     "rounded_corner_decorator_unittest.cc",
     "shelf_model_unittest.cc",
+    "voice_interaction_controller_unittest.cc",
   ]
 
   deps = [

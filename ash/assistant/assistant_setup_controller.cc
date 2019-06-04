@@ -8,9 +8,9 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/i18n_util.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -58,7 +58,7 @@ void AssistantSetupController::OnDeepLinkReceived(
 
 void AssistantSetupController::OnOptInButtonPressed() {
   mojom::ConsentStatus consent_status =
-      Shell::Get()->voice_interaction_controller()->consent_status().value_or(
+      VoiceInteractionController::Get()->consent_status().value_or(
           mojom::ConsentStatus::kUnknown);
 
   if (consent_status == mojom::ConsentStatus::kUnauthorized) {

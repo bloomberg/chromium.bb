@@ -4,11 +4,10 @@
 
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 
-#include "ash/shell.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/fake_voice_interaction_controller.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
@@ -49,27 +48,17 @@ class VoiceInteractionControllerClientTest : public ChromeAshTestBase {
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
 
-    voice_interaction_controller_ =
-        std::make_unique<FakeVoiceInteractionController>();
-
     voice_interaction_controller_client_ =
         std::make_unique<VoiceInteractionControllerClient>();
-    voice_interaction_controller_client_->SetControllerForTesting(
-        voice_interaction_controller_->CreateInterfacePtrAndBind());
     voice_interaction_controller_client_->SetProfile(profile_.get());
   }
 
   void TearDown() override {
-    voice_interaction_controller_.reset();
     voice_interaction_controller_client_.reset();
     profile_.reset();
     arc_session_manager_->Shutdown();
     arc_session_manager_.reset();
     ChromeAshTestBase::TearDown();
-  }
-
-  FakeVoiceInteractionController* voice_interaction_controller() {
-    return voice_interaction_controller_.get();
   }
 
   VoiceInteractionControllerClient* voice_interaction_controller_client() {
@@ -82,10 +71,6 @@ class VoiceInteractionControllerClientTest : public ChromeAshTestBase {
     return arc_session_manager_.get();
   }
 
-  void FlushVoiceInteractionControllerMojo() {
-    voice_interaction_controller_client()->FlushMojoForTesting();
-  }
-
  private:
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {
     return static_cast<chromeos::FakeChromeUserManager*>(
@@ -96,7 +81,6 @@ class VoiceInteractionControllerClientTest : public ChromeAshTestBase {
   std::unique_ptr<TestingProfile> profile_;
   user_manager::ScopedUserManager fake_user_manager_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
-  std::unique_ptr<FakeVoiceInteractionController> voice_interaction_controller_;
   std::unique_ptr<VoiceInteractionControllerClient>
       voice_interaction_controller_client_;
 };
@@ -107,26 +91,17 @@ TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
   ASSERT_EQ(false, prefs->GetBoolean(prefs::kVoiceInteractionEnabled));
   prefs->SetBoolean(prefs::kVoiceInteractionEnabled, true);
   ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionEnabled));
-  voice_interaction_controller_client()->FlushMojoForTesting();
-  EXPECT_EQ(
-      true,
-      voice_interaction_controller()->voice_interaction_settings_enabled());
+  EXPECT_EQ(true, ash::VoiceInteractionController::Get()->settings_enabled());
 
   ASSERT_EQ(false, prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled));
   prefs->SetBoolean(prefs::kVoiceInteractionContextEnabled, true);
   ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled));
-  voice_interaction_controller_client()->FlushMojoForTesting();
-  EXPECT_EQ(
-      true,
-      voice_interaction_controller()->voice_interaction_context_enabled());
+  EXPECT_EQ(true, ash::VoiceInteractionController::Get()->context_enabled());
 
   ASSERT_EQ(false, prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled));
   prefs->SetBoolean(prefs::kVoiceInteractionHotwordEnabled, true);
   ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled));
-  voice_interaction_controller_client()->FlushMojoForTesting();
-  EXPECT_EQ(
-      true,
-      voice_interaction_controller()->voice_interaction_hotword_enabled());
+  EXPECT_EQ(true, ash::VoiceInteractionController::Get()->hotword_enabled());
 
   // Default setting is true.
   ASSERT_EQ(true,
@@ -134,10 +109,8 @@ TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
   prefs->SetBoolean(prefs::kVoiceInteractionNotificationEnabled, false);
   ASSERT_EQ(false,
             prefs->GetBoolean(prefs::kVoiceInteractionNotificationEnabled));
-  voice_interaction_controller_client()->FlushMojoForTesting();
-  EXPECT_EQ(
-      false,
-      voice_interaction_controller()->voice_interaction_notification_enabled());
+  EXPECT_EQ(false,
+            ash::VoiceInteractionController::Get()->notification_enabled());
 
   ASSERT_EQ(static_cast<int>(ash::mojom::ConsentStatus::kUnknown),
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
@@ -147,22 +120,20 @@ TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
   ASSERT_EQ(
       static_cast<int>(ash::mojom::ConsentStatus::kActivityControlAccepted),
       prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  voice_interaction_controller_client()->FlushMojoForTesting();
   EXPECT_EQ(ash::mojom::ConsentStatus::kActivityControlAccepted,
-            voice_interaction_controller()->voice_interaction_consent_status());
+            ash::VoiceInteractionController::Get()->consent_status());
 
   ASSERT_EQ("", prefs->GetString(language::prefs::kApplicationLocale));
   prefs->SetString(language::prefs::kApplicationLocale, "en-CA");
   ASSERT_EQ("en-CA", prefs->GetString(language::prefs::kApplicationLocale));
-  voice_interaction_controller_client()->FlushMojoForTesting();
-  EXPECT_EQ("en-CA", voice_interaction_controller()->locale());
+  EXPECT_EQ("en-CA", ash::VoiceInteractionController::Get()->locale());
 
   ASSERT_EQ(false,
             prefs->GetBoolean(prefs::kVoiceInteractionLaunchWithMicOpen));
   prefs->SetBoolean(prefs::kVoiceInteractionLaunchWithMicOpen, true);
   ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionLaunchWithMicOpen));
-  voice_interaction_controller_client()->FlushMojoForTesting();
-  EXPECT_EQ(true, voice_interaction_controller()->launch_with_mic_open());
+  EXPECT_EQ(true,
+            ash::VoiceInteractionController::Get()->launch_with_mic_open());
 }
 
 }  // namespace arc

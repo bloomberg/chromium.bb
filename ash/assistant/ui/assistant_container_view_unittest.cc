@@ -8,9 +8,9 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
@@ -38,7 +38,7 @@ class AssistantContainerViewTest : public AshTestBase {
     AshTestBase::SetUp();
 
     // Enable Assistant in settings.
-    Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(true);
+    VoiceInteractionController::Get()->NotifySettingsEnabled(true);
 
     // Cache controller.
     controller_ = Shell::Get()->assistant_controller();
@@ -52,7 +52,7 @@ class AssistantContainerViewTest : public AshTestBase {
 
     // After mocks are set up our Assistant service is ready for use. Indicate
     // this by changing status from NOT_READY to STOPPED.
-    Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
+    VoiceInteractionController::Get()->NotifyStatusChanged(
         mojom::VoiceInteractionState::STOPPED);
   }
 

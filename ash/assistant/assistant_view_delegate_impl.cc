@@ -9,8 +9,8 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 
 namespace ash {
@@ -93,12 +93,12 @@ void AssistantViewDelegateImpl::RemoveUiModelObserver(
 
 void AssistantViewDelegateImpl::AddVoiceInteractionControllerObserver(
     DefaultVoiceInteractionObserver* observer) {
-  Shell::Get()->voice_interaction_controller()->AddLocalObserver(observer);
+  VoiceInteractionController::Get()->AddLocalObserver(observer);
 }
 
 void AssistantViewDelegateImpl::RemoveVoiceInteractionControllerObserver(
     DefaultVoiceInteractionObserver* observer) {
-  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(observer);
+  VoiceInteractionController::Get()->RemoveLocalObserver(observer);
 }
 
 CaptionBarDelegate* AssistantViewDelegateImpl::GetCaptionBarDelegate() {
@@ -112,10 +112,8 @@ void AssistantViewDelegateImpl::DownloadImage(
 }
 
 mojom::ConsentStatus AssistantViewDelegateImpl::GetConsentStatus() const {
-  return Shell::Get()
-      ->voice_interaction_controller()
-      ->consent_status()
-      .value_or(mojom::ConsentStatus::kUnknown);
+  return VoiceInteractionController::Get()->consent_status().value_or(
+      mojom::ConsentStatus::kUnknown);
 }
 
 ::wm::CursorManager* AssistantViewDelegateImpl::GetCursorManager() {
@@ -132,7 +130,7 @@ aura::Window* AssistantViewDelegateImpl::GetRootWindowForNewWindows() {
 }
 
 bool AssistantViewDelegateImpl::IsLaunchWithMicOpen() const {
-  return Shell::Get()->voice_interaction_controller()->launch_with_mic_open();
+  return VoiceInteractionController::Get()->launch_with_mic_open();
 }
 
 bool AssistantViewDelegateImpl::IsTabletMode() const {

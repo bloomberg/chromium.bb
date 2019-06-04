@@ -1,21 +1,34 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/voice_interaction/voice_interaction_controller.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 
 #include <utility>
 
 #include "chromeos/constants/chromeos_switches.h"
 
 namespace ash {
+namespace {
+VoiceInteractionController* g_voice_interaction_cotroller = nullptr;
+}
+
+// static
+VoiceInteractionController* VoiceInteractionController::Get() {
+  return g_voice_interaction_cotroller;
+}
 
 VoiceInteractionController::VoiceInteractionController() {
+  DCHECK(!g_voice_interaction_cotroller);
+  g_voice_interaction_cotroller = this;
   if (chromeos::switches::IsAssistantEnabled())
     voice_interaction_state_ = mojom::VoiceInteractionState::NOT_READY;
 }
 
-VoiceInteractionController::~VoiceInteractionController() = default;
+VoiceInteractionController::~VoiceInteractionController() {
+  DCHECK_EQ(g_voice_interaction_cotroller, this);
+  g_voice_interaction_cotroller = nullptr;
+}
 
 void VoiceInteractionController::BindRequest(
     mojom::VoiceInteractionControllerRequest request) {

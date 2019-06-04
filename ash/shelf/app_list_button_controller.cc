@@ -7,6 +7,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/assistant_overlay.h"
@@ -14,7 +15,6 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/shell_state.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -53,7 +53,7 @@ AppListButtonController::AppListButtonController(AppListButton* button,
     shell->app_list_controller()->AddObserver(this);
   shell->session_controller()->AddObserver(this);
   shell->tablet_mode_controller()->AddObserver(this);
-  shell->voice_interaction_controller()->AddLocalObserver(this);
+  VoiceInteractionController::Get()->AddLocalObserver(this);
 
   // Initialize voice interaction overlay and sync the flags if active user
   // session has already started. This could happen when an external monitor
@@ -74,7 +74,7 @@ AppListButtonController::~AppListButtonController() {
   if (shell->tablet_mode_controller())
     shell->tablet_mode_controller()->RemoveObserver(this);
   shell->session_controller()->RemoveObserver(this);
-  shell->voice_interaction_controller()->RemoveLocalObserver(this);
+  VoiceInteractionController::Get()->RemoveLocalObserver(this);
 }
 
 bool AppListButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event,
@@ -146,8 +146,7 @@ bool AppListButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event,
 }
 
 bool AppListButtonController::IsVoiceInteractionAvailable() {
-  VoiceInteractionController* controller =
-      Shell::Get()->voice_interaction_controller();
+  VoiceInteractionController* controller = VoiceInteractionController::Get();
   bool settings_enabled = controller->settings_enabled().value_or(false);
   bool consent_given = controller->consent_status() ==
                        mojom::ConsentStatus::kActivityControlAccepted;
@@ -159,10 +158,8 @@ bool AppListButtonController::IsVoiceInteractionAvailable() {
 }
 
 bool AppListButtonController::IsVoiceInteractionRunning() {
-  return Shell::Get()
-             ->voice_interaction_controller()
-             ->voice_interaction_state()
-             .value_or(mojom::VoiceInteractionState::STOPPED) ==
+  return VoiceInteractionController::Get()->voice_interaction_state().value_or(
+             mojom::VoiceInteractionState::STOPPED) ==
          mojom::VoiceInteractionState::RUNNING;
 }
 
