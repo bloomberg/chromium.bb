@@ -72,9 +72,10 @@ void ContentData::Trace(blink::Visitor* visitor) {
   visitor->Trace(next_);
 }
 
-LayoutObject* ImageContentData::CreateLayoutObject(PseudoElement& pseudo,
-                                                   ComputedStyle& pseudo_style,
-                                                   LegacyLayout) const {
+LayoutObject* ImageContentData::CreateLayoutObject(
+    PseudoElement& pseudo,
+    const ComputedStyle& pseudo_style,
+    LegacyLayout) const {
   LayoutImage* image = LayoutImage::CreateAnonymous(pseudo);
   image->SetPseudoStyle(&pseudo_style);
   if (image_) {
@@ -91,9 +92,10 @@ void ImageContentData::Trace(blink::Visitor* visitor) {
   ContentData::Trace(visitor);
 }
 
-LayoutObject* TextContentData::CreateLayoutObject(PseudoElement& pseudo,
-                                                  ComputedStyle& pseudo_style,
-                                                  LegacyLayout legacy) const {
+LayoutObject* TextContentData::CreateLayoutObject(
+    PseudoElement& pseudo,
+    const ComputedStyle& pseudo_style,
+    LegacyLayout legacy) const {
   LayoutObject* layout_object =
       LayoutTextFragment::CreateAnonymous(pseudo, text_.Impl(), legacy);
   layout_object->SetPseudoStyle(&pseudo_style);
@@ -102,7 +104,7 @@ LayoutObject* TextContentData::CreateLayoutObject(PseudoElement& pseudo,
 
 LayoutObject* AltTextContentData::CreateLayoutObject(
     PseudoElement& pseudo,
-    ComputedStyle& pseudo_style,
+    const ComputedStyle& pseudo_style,
     LegacyLayout) const {
   // Does not require a layout object. Calling site should first check
   // IsAltContentData() before calling this method.
@@ -112,16 +114,17 @@ LayoutObject* AltTextContentData::CreateLayoutObject(
 
 LayoutObject* CounterContentData::CreateLayoutObject(
     PseudoElement& pseudo,
-    ComputedStyle& pseudo_style,
+    const ComputedStyle& pseudo_style,
     LegacyLayout) const {
   LayoutObject* layout_object = new LayoutCounter(pseudo, *counter_);
   layout_object->SetPseudoStyle(&pseudo_style);
   return layout_object;
 }
 
-LayoutObject* QuoteContentData::CreateLayoutObject(PseudoElement& pseudo,
-                                                   ComputedStyle& pseudo_style,
-                                                   LegacyLayout) const {
+LayoutObject* QuoteContentData::CreateLayoutObject(
+    PseudoElement& pseudo,
+    const ComputedStyle& pseudo_style,
+    LegacyLayout) const {
   LayoutObject* layout_object = new LayoutQuote(pseudo, quote_);
   layout_object->SetPseudoStyle(&pseudo_style);
   return layout_object;

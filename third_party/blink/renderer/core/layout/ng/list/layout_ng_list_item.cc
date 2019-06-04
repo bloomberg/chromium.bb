@@ -325,15 +325,15 @@ void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
     if (child) {
       if (child->IsText()) {
         text = ToLayoutText(child);
-        text->SetStyle(marker_->MutableStyle());
+        text->SetStyle(marker_->Style());
       } else {
         child->Destroy();
         child = nullptr;
       }
     }
     if (!child) {
-      text = LayoutText::CreateEmptyAnonymous(
-          GetDocument(), marker_->MutableStyle(), LegacyLayout::kAuto);
+      text = LayoutText::CreateEmptyAnonymous(GetDocument(), marker_->Style(),
+                                              LegacyLayout::kAuto);
       marker_->AddChild(text);
       is_marker_text_updated_ = false;
     }

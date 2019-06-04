@@ -1901,7 +1901,8 @@ StyleDifference LayoutObject::AdjustStyleDifference(
   return diff;
 }
 
-void LayoutObject::SetPseudoStyle(scoped_refptr<ComputedStyle> pseudo_style) {
+void LayoutObject::SetPseudoStyle(
+    scoped_refptr<const ComputedStyle> pseudo_style) {
   DCHECK(pseudo_style->StyleType() == kPseudoIdBefore ||
          pseudo_style->StyleType() == kPseudoIdAfter ||
          pseudo_style->StyleType() == kPseudoIdFirstLetter);
@@ -1963,7 +1964,7 @@ void LayoutObject::SetNeedsOverflowRecalc() {
 }
 
 DISABLE_CFI_PERF
-void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style,
+void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
                             ApplyStyleChanges apply_changes) {
   if (style_ == style)
     return;
@@ -1983,7 +1984,7 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style,
 
   StyleWillChange(diff, *style);
 
-  scoped_refptr<ComputedStyle> old_style = std::move(style_);
+  scoped_refptr<const ComputedStyle> old_style = std::move(style_);
   SetStyleInternal(std::move(style));
 
   if (!IsText())
@@ -2472,23 +2473,19 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
       continue;
     }
     if (child->IsText() || child->IsQuote() || child->IsImage())
-      child->SetPseudoStyle(MutableStyle());
+      child->SetPseudoStyle(Style());
     child = child->NextInPreOrder(this);
   }
 }
 
-void LayoutObject::SetStyleWithWritingModeOf(scoped_refptr<ComputedStyle> style,
-                                             LayoutObject* parent) {
+void LayoutObject::SetStyleWithWritingModeOfParent(
+    scoped_refptr<ComputedStyle> style) {
+  const LayoutObject* parent = Parent();
   if (parent) {
     style->SetWritingMode(parent->StyleRef().GetWritingMode());
     style->UpdateFontOrientation();
   }
   SetStyle(std::move(style));
-}
-
-void LayoutObject::SetStyleWithWritingModeOfParent(
-    scoped_refptr<ComputedStyle> style) {
-  SetStyleWithWritingModeOf(std::move(style), Parent());
 }
 
 void LayoutObject::AddAsImageObserver(StyleImage* image) {
@@ -4059,7 +4056,7 @@ Vector<PhysicalRect> LayoutObject::OutlineRects(
 }
 
 void LayoutObject::SetModifiedStyleOutsideStyleRecalc(
-    scoped_refptr<ComputedStyle> style,
+    scoped_refptr<const ComputedStyle> style,
     ApplyStyleChanges apply_changes) {
   SetStyle(style, apply_changes);
   if (IsAnonymous() || !GetNode() || !GetNode()->IsElementNode())

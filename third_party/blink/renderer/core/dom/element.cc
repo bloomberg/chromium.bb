@@ -2202,7 +2202,7 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
 void Element::AttachLayoutTree(AttachContext& context) {
   DCHECK(GetDocument().InStyleRecalc());
 
-  ComputedStyle* style = MutableComputedStyle();
+  const ComputedStyle* style = GetComputedStyle();
   if ((!style || style->IsEnsuredInDisplayNone()) &&
       !ChildNeedsReattachLayoutTree()) {
     Node::AttachLayoutTree(context);

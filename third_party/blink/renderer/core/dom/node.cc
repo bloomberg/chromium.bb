@@ -169,7 +169,7 @@ struct SameSizeAsNode : EventTarget {
 
 NodeRenderingData::NodeRenderingData(
     LayoutObject* layout_object,
-    scoped_refptr<ComputedStyle> computed_style)
+    scoped_refptr<const ComputedStyle> computed_style)
     : layout_object_(layout_object), computed_style_(computed_style) {}
 
 NodeRenderingData::~NodeRenderingData() {
@@ -177,7 +177,7 @@ NodeRenderingData::~NodeRenderingData() {
 }
 
 void NodeRenderingData::SetComputedStyle(
-    scoped_refptr<ComputedStyle> computed_style) {
+    scoped_refptr<const ComputedStyle> computed_style) {
   DCHECK_NE(&SharedEmptyData(), this);
   computed_style_ = computed_style;
 }
@@ -911,7 +911,7 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
     data_.node_layout_data_ = node_layout_data;
 }
 
-void Node::SetComputedStyle(scoped_refptr<ComputedStyle> computed_style) {
+void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
   // We don't set computed style for text nodes.
   DCHECK(IsElementNode());
 

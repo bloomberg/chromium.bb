@@ -142,7 +142,7 @@ void PseudoElement::Dispose() {
 PseudoElement::AttachLayoutTreeScope::AttachLayoutTreeScope(
     PseudoElement* element)
     : element_(element) {
-  if (ComputedStyle* style = element->MutableComputedStyle()) {
+  if (const ComputedStyle* style = element->GetComputedStyle()) {
     if (style->Display() == EDisplay::kContents) {
       original_style_ = style;
       element->SetComputedStyle(element->LayoutStyleForDisplayContents(*style));
@@ -172,7 +172,7 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
   DCHECK(layout_object->Parent());
   DCHECK(CanHaveGeneratedChildren(*layout_object->Parent()));
 
-  ComputedStyle& style = layout_object->MutableStyleRef();
+  const ComputedStyle& style = layout_object->StyleRef();
   if (style.StyleType() != kPseudoIdBefore &&
       style.StyleType() != kPseudoIdAfter)
     return;

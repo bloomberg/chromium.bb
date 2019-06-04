@@ -267,14 +267,14 @@ void LayoutQuote::UpdateText() {
 
   LayoutTextFragment* fragment = FindFragmentChild();
   if (fragment) {
-    fragment->SetStyle(MutableStyle());
+    fragment->SetStyle(Style());
     fragment->SetContentString(text_.Impl());
   } else {
     LegacyLayout legacy =
         ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
     fragment = LayoutTextFragment::CreateAnonymous(*owning_pseudo_,
                                                    text_.Impl(), legacy);
-    fragment->SetStyle(MutableStyle());
+    fragment->SetStyle(Style());
     AddChild(fragment);
   }
 }

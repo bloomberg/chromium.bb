@@ -265,7 +265,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   bool SupportsAltText();
 
-  void SetComputedStyle(scoped_refptr<ComputedStyle> computed_style);
+  void SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style);
 
   // Other methods (not part of DOM)
 
@@ -709,7 +709,7 @@ class CORE_EXPORT Node : public EventTarget {
   // Note that the following 'inline' functions are not defined in this header,
   // but in node_computed_style.h. Please include that file if you want to use
   // these functions.
-  ComputedStyle* MutableComputedStyle() const;
+  ComputedStyle* MutableComputedStyleForEditingDeprecated() const;
   const ComputedStyle* GetComputedStyle() const;
   const ComputedStyle* ParentComputedStyle() const;
   const ComputedStyle& ComputedStyleRef() const;

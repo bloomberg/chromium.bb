@@ -1471,11 +1471,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // and new ComputedStyle like paint and size invalidations. If kNo, just set
   // the ComputedStyle member.
   enum class ApplyStyleChanges { kNo, kYes };
-  void SetStyle(scoped_refptr<ComputedStyle>,
+  void SetStyle(scoped_refptr<const ComputedStyle>,
                 ApplyStyleChanges = ApplyStyleChanges::kYes);
 
   // Set the style of the object if it's generated content.
-  void SetPseudoStyle(scoped_refptr<ComputedStyle>);
+  void SetPseudoStyle(scoped_refptr<const ComputedStyle>);
 
   // In some cases we modify the ComputedStyle after the style recalc, either
   // for updating anonymous style or doing layout hacks for special elements
@@ -1487,11 +1487,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // visual invalidation etc.
   //
   // Do not use unless strictly necessary.
-  void SetModifiedStyleOutsideStyleRecalc(scoped_refptr<ComputedStyle>,
+  void SetModifiedStyleOutsideStyleRecalc(scoped_refptr<const ComputedStyle>,
                                           ApplyStyleChanges);
 
-  void SetStyleWithWritingModeOf(scoped_refptr<ComputedStyle>,
-                                 LayoutObject* parent);
   void SetStyleWithWritingModeOfParent(scoped_refptr<ComputedStyle>);
 
   void ClearBaseComputedStyle();
@@ -1712,12 +1710,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual LayoutUnit MaxPreferredLogicalWidth() const { return LayoutUnit(); }
 
   const ComputedStyle* Style() const { return style_.get(); }
-  ComputedStyle* MutableStyle() const { return style_.get(); }
 
   // style_ can only be nullptr before the first style is set, thus most
   // callers will never see a nullptr style and should use StyleRef().
-  const ComputedStyle& StyleRef() const { return MutableStyleRef(); }
-  ComputedStyle& MutableStyleRef() const {
+  const ComputedStyle& StyleRef() const {
     DCHECK(style_);
     return *style_;
   }
@@ -2505,7 +2501,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Updates only the local style ptr of the object.  Does not update the state
   // of the object, and so only should be called when the style is known not to
   // have changed (or from SetStyle).
-  void SetStyleInternal(scoped_refptr<ComputedStyle> style) {
+  void SetStyleInternal(scoped_refptr<const ComputedStyle> style) {
     style_ = std::move(style);
   }
   // Overrides should call the superclass at the end. style_ will be 0 the
@@ -2691,7 +2687,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // DisplayItemClient and LayoutObject's other fields.
   PaintInvalidationReason full_paint_invalidation_reason_;
 
-  scoped_refptr<ComputedStyle> style_;
+  scoped_refptr<const ComputedStyle> style_;
 
   // Oilpan: This untraced pointer to the owning Node is considered safe.
   UntracedMember<Node> node_;

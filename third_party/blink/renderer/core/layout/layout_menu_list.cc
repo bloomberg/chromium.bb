@@ -98,7 +98,7 @@ void LayoutMenuList::CreateInnerBlock() {
                                                   CreateInnerStyle(), legacy);
 
   button_text_ =
-      LayoutText::CreateEmptyAnonymous(GetDocument(), MutableStyle(), legacy);
+      LayoutText::CreateEmptyAnonymous(GetDocument(), Style(), legacy);
   // We need to set the text explicitly though it was specified in the
   // constructor because LayoutText doesn't refer to the text
   // specified in the constructor in a case of re-transforming.
@@ -195,7 +195,7 @@ void LayoutMenuList::StyleDidChange(StyleDifference diff,
   if (!inner_block_)
     CreateInnerBlock();
 
-  button_text_->SetStyle(MutableStyle());
+  button_text_->SetStyle(Style());
   UpdateInnerStyle();
   UpdateInnerBlockHeight();
 }

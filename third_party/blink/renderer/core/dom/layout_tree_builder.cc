@@ -45,8 +45,9 @@
 
 namespace blink {
 
-LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element,
-                                                         ComputedStyle* style)
+LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(
+    Element& element,
+    const ComputedStyle* style)
     : LayoutTreeBuilder(element, nullptr, style) {
   DCHECK(element.CanParticipateInFlatTree());
   DCHECK(style_);
@@ -159,7 +160,7 @@ LayoutTreeBuilderForText::CreateInlineWrapperForDisplayContentsIfNeeded() {
 }
 
 void LayoutTreeBuilderForText::CreateLayoutObject() {
-  ComputedStyle& style = *style_;
+  const ComputedStyle& style = *style_;
 
   DCHECK(style_ == layout_object_parent_->GetNode()->GetComputedStyle() ||
          To<Element>(LayoutTreeBuilderTraversal::Parent(*node_))

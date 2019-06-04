@@ -877,9 +877,10 @@ EditingTriState EditingStyle::TriStateOfStyle(
               To<CSSIdentifierValue>(mutable_style_->GetPropertyCSSValue(
                   CSSPropertyID::kVerticalAlign));
           if (EditingStyleUtilities::HasAncestorVerticalAlignStyle(
-                  node, vertical_align->GetValueID()))
-            node.MutableComputedStyle()->SetVerticalAlign(
+                  node, vertical_align->GetValueID())) {
+            node.MutableComputedStyleForEditingDeprecated()->SetVerticalAlign(
                 vertical_align->ConvertTo<EVerticalAlign>());
+          }
         }
 
         // Pass EditingStyle::DoNotIgnoreTextOnlyProperties without checking if

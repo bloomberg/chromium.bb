@@ -62,7 +62,7 @@ void LayoutTextCombine::SetTextInternal(scoped_refptr<StringImpl> text) {
     // UpdateFontStyleForCombinedText on the original font and not what was
     // previously set for combined text. If IsCombined() is now false, we are
     // simply resetting the style to the parent style.
-    SetStyle(Parent()->MutableStyle());
+    SetStyle(Parent()->Style());
   } else if (IsCombined()) {
     // If the text was previously not combined, SetStyle would have been a no-op
     // since the before and after style would be the same ComputedStyle

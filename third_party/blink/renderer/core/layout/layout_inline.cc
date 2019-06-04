@@ -276,7 +276,7 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
 
       LayoutBoxModelObject* next_cont = curr_cont->Continuation();
       curr_cont->SetContinuation(nullptr);
-      curr_cont->SetStyle(MutableStyle());
+      curr_cont->SetStyle(Style());
       curr_cont->SetContinuation(next_cont);
       end_of_continuation = curr_cont;
     }
@@ -554,7 +554,7 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
 LayoutInline* LayoutInline::Clone() const {
   DCHECK(!IsAnonymous());
   LayoutInline* clone_inline = new LayoutInline(GetNode());
-  clone_inline->SetStyle(MutableStyle());
+  clone_inline->SetStyle(Style());
   clone_inline->SetIsInsideFlowThread(IsInsideFlowThread());
   return clone_inline;
 }

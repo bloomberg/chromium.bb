@@ -348,7 +348,7 @@ void Text::AttachLayoutTree(AttachContext& context) {
     if (TextLayoutObjectIsNeeded(context, *style_parent->GetComputedStyle(),
                                  *parent_layout_object)) {
       LayoutTreeBuilderForText(*this, parent_layout_object,
-                               style_parent->MutableComputedStyle())
+                               style_parent->GetComputedStyle())
           .CreateLayoutObject();
       context.previous_in_flow = GetLayoutObject();
     }
@@ -373,7 +373,7 @@ void Text::ReattachLayoutTreeIfNeeded(const AttachContext& context) {
   if (layout_object_is_needed) {
     DCHECK(!GetLayoutObject());
     LayoutTreeBuilderForText(*this, parent_layout_object,
-                             style_parent->MutableComputedStyle())
+                             style_parent->GetComputedStyle())
         .CreateLayoutObject();
   } else {
     DetachLayoutTree(true /* performing_reattach*/);
@@ -392,7 +392,7 @@ bool NeedsWhitespaceLayoutObject(const ComputedStyle& style) {
 }  // namespace
 
 void Text::RecalcTextStyle(const StyleRecalcChange change) {
-  scoped_refptr<ComputedStyle> new_style =
+  scoped_refptr<const ComputedStyle> new_style =
       GetDocument().EnsureStyleResolver().StyleForText(this);
   if (LayoutText* layout_text = GetLayoutObject()) {
     const ComputedStyle* layout_parent_style =

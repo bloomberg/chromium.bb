@@ -158,9 +158,10 @@ LayoutText::~LayoutText() {
 #endif
 }
 
-LayoutText* LayoutText::CreateEmptyAnonymous(Document& doc,
-                                             scoped_refptr<ComputedStyle> style,
-                                             LegacyLayout legacy) {
+LayoutText* LayoutText::CreateEmptyAnonymous(
+    Document& doc,
+    scoped_refptr<const ComputedStyle> style,
+    LegacyLayout legacy) {
   LayoutText* text =
       LayoutObjectFactory::CreateText(nullptr, StringImpl::empty_, legacy);
   text->SetDocumentForAnonymous(&doc);

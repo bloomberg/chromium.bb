@@ -61,7 +61,7 @@ class LayoutTreeBuilder {
  protected:
   LayoutTreeBuilder(NodeType& node,
                     LayoutObject* layout_object_parent,
-                    ComputedStyle* style)
+                    const ComputedStyle* style)
       : node_(node),
         layout_object_parent_(layout_object_parent),
         style_(style) {
@@ -96,12 +96,12 @@ class LayoutTreeBuilder {
 
   Member<NodeType> node_;
   LayoutObject* layout_object_parent_;
-  ComputedStyle* style_;
+  const ComputedStyle* style_;
 };
 
 class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
  public:
-  LayoutTreeBuilderForElement(Element&, ComputedStyle*);
+  LayoutTreeBuilderForElement(Element&, const ComputedStyle*);
 
   void CreateLayoutObjectIfNeeded(LegacyLayout legacy) {
     if (ShouldCreateLayoutObject())
@@ -119,7 +119,7 @@ class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
  public:
   LayoutTreeBuilderForText(Text& text,
                            LayoutObject* layout_parent,
-                           ComputedStyle* style_from_parent)
+                           const ComputedStyle* style_from_parent)
       : LayoutTreeBuilder(text, layout_parent, style_from_parent) {}
 
   void CreateLayoutObject();
