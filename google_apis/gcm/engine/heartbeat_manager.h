@@ -32,7 +32,10 @@ class GCM_EXPORT HeartbeatManager : public base::PowerObserver {
   typedef base::Callback<void(ConnectionFactory::ConnectionResetReason)>
       ReconnectCallback;
 
-  HeartbeatManager();
+  // Constructs a heartbeat manager with a passed in |io_task_runner|. Must be
+  // called on |io_task_runner|
+  explicit HeartbeatManager(
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   ~HeartbeatManager() override;
 
   // Start the heartbeat logic.
@@ -116,6 +119,8 @@ class GCM_EXPORT HeartbeatManager : public base::PowerObserver {
 
   // Custom interval requested by the client.
   int client_interval_ms_;
+
+  const scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // Timer for triggering heartbeats.
   std::unique_ptr<base::RetainingOneShotTimer> heartbeat_timer_;

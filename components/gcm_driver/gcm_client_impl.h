@@ -67,6 +67,7 @@ class GCMInternalsBuilder {
       base::Clock* clock,
       ConnectionFactory* connection_factory,
       GCMStore* gcm_store,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       GCMStatsRecorder* recorder);
   virtual std::unique_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
@@ -74,6 +75,7 @@ class GCMInternalsBuilder {
       base::RepeatingCallback<
           void(network::mojom::ProxyResolvingSocketFactoryRequest)>
           get_socket_factory_callback,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       GCMStatsRecorder* recorder,
       network::NetworkConnectionTracker* network_connection_tracker);
 };
@@ -113,6 +115,7 @@ class GCMClientImpl
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       base::RepeatingCallback<
           void(network::mojom::ProxyResolvingSocketFactoryRequest)>
           get_socket_factory_callback,
@@ -375,6 +378,8 @@ class GCMClientImpl
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   network::NetworkConnectionTracker* network_connection_tracker_;
+
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // Controls receiving and sending of packets and reliable message queueing.
   // Must be destroyed before |network_session_|.

@@ -282,14 +282,15 @@ void MCSProbe::Start() {
       endpoints, kDefaultBackoffPolicy,
       base::BindRepeating(&MCSProbe::RequestProxyResolvingSocketFactory,
                           base::Unretained(this)),
-      &recorder_, network_connection_tracker_.get());
+      base::ThreadTaskRunnerHandle::Get(), &recorder_,
+      network_connection_tracker_.get());
   gcm_store_ = std::make_unique<GCMStoreImpl>(
       gcm_store_path_, file_thread_.task_runner(),
       std::make_unique<FakeEncryptor>());
 
-  mcs_client_ =
-      std::make_unique<MCSClient>("probe", &clock_, connection_factory_.get(),
-                                  gcm_store_.get(), &recorder_);
+  mcs_client_ = std::make_unique<MCSClient>(
+      "probe", &clock_, connection_factory_.get(), gcm_store_.get(),
+      base::ThreadTaskRunnerHandle::Get(), &recorder_);
   run_loop_ = std::make_unique<base::RunLoop>();
   gcm_store_->Load(GCMStore::CREATE_IF_MISSING,
                    base::Bind(&MCSProbe::LoadCallback,
@@ -398,7 +399,8 @@ void MCSProbe::CheckIn() {
   checkin_request_ = std::make_unique<CheckinRequest>(
       GServicesSettings().GetCheckinURL(), request_info, kDefaultBackoffPolicy,
       base::Bind(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),
-      shared_url_loader_factory_, &recorder_);
+      shared_url_loader_factory_, base::ThreadTaskRunnerHandle::Get(),
+      &recorder_);
   checkin_request_->Start();
 }
 

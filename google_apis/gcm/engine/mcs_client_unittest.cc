@@ -90,10 +90,15 @@ class TestMCSClient : public MCSClient {
   TestMCSClient(base::Clock* clock,
                 ConnectionFactory* connection_factory,
                 GCMStore* gcm_store,
+                scoped_refptr<base::SequencedTaskRunner> io_task_runner,
                 gcm::GCMStatsRecorder* recorder)
-    : MCSClient("", clock, connection_factory, gcm_store, recorder),
-      next_id_(0) {
-  }
+      : MCSClient("",
+                  clock,
+                  connection_factory,
+                  gcm_store,
+                  io_task_runner,
+                  recorder),
+        next_id_(0) {}
 
   std::string GetNextPersistentId() override {
     return base::NumberToString(++next_id_);
@@ -207,10 +212,9 @@ void MCSClientTest::BuildMCSClient() {
   gcm_store_.reset(
       new GCMStoreImpl(temp_directory_.GetPath(), message_loop_.task_runner(),
                        base::WrapUnique<Encryptor>(new FakeEncryptor)));
-  mcs_client_.reset(new TestMCSClient(&clock_,
-                                      &connection_factory_,
-                                      gcm_store_.get(),
-                                      &recorder_));
+  mcs_client_.reset(
+      new TestMCSClient(&clock_, &connection_factory_, gcm_store_.get(),
+                        base::ThreadTaskRunnerHandle::Get(), &recorder_));
 }
 
 void MCSClientTest::InitializeClient() {

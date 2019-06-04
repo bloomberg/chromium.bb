@@ -47,6 +47,7 @@ class FakeGCMClient : public GCMClient {
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       base::RepeatingCallback<
           void(network::mojom::ProxyResolvingSocketFactoryRequest)>
           get_socket_factory_callback,

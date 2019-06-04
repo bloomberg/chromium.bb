@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/base/load_flags.h"
@@ -103,18 +102,23 @@ CheckinRequest::CheckinRequest(
     const net::BackoffEntry::Policy& backoff_policy,
     const CheckinRequestCallback& callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     GCMStatsRecorder* recorder)
     : url_loader_factory_(url_loader_factory),
       callback_(callback),
       backoff_entry_(&backoff_policy),
       checkin_url_(checkin_url),
       request_info_(request_info),
+      io_task_runner_(std::move(io_task_runner)),
       recorder_(recorder),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK(io_task_runner_);
+}
 
 CheckinRequest::~CheckinRequest() {}
 
 void CheckinRequest::Start() {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!url_loader_.get());
 
   checkin_proto::AndroidCheckinRequest request;
@@ -196,6 +200,8 @@ void CheckinRequest::Start() {
 }
 
 void CheckinRequest::RetryWithBackoff() {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+
   backoff_entry_.InformOfRequest(false);
   url_loader_.reset();
 
@@ -205,7 +211,7 @@ void CheckinRequest::RetryWithBackoff() {
   recorder_->RecordCheckinDelayedDueToBackoff(
       backoff_entry_.GetTimeUntilRelease().InMilliseconds());
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  io_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&CheckinRequest::Start, weak_ptr_factory_.GetWeakPtr()),
       backoff_entry_.GetTimeUntilRelease());

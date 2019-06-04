@@ -161,7 +161,7 @@ void GCMDriverDesktop::IOWorker::Initialize(
       network::SharedURLLoaderFactory::Create(std::move(loader_factory_info));
 
   gcm_client_->Initialize(chrome_build_info, store_path, blocking_task_runner,
-                          std::move(get_socket_factory_callback),
+                          io_thread_, std::move(get_socket_factory_callback),
                           url_loader_factory_for_io, network_connection_tracker,
                           std::make_unique<SystemEncryptor>(), this);
 }

@@ -121,6 +121,7 @@ class GCM_EXPORT RegistrationRequest {
       const RegistrationCallback& callback,
       int max_retry_count,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       GCMStatsRecorder* recorder,
       const std::string& source_to_record);
   ~RegistrationRequest();
@@ -154,6 +155,8 @@ class GCM_EXPORT RegistrationRequest {
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
   int retries_left_;
   base::TimeTicks request_start_time_;
+
+  const scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // Recorder that records GCM activities for debugging purpose. Not owned.
   GCMStatsRecorder* recorder_;
