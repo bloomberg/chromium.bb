@@ -47,8 +47,9 @@ namespace blink {
 
 LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(
     Element& element,
-    const ComputedStyle* style)
-    : LayoutTreeBuilder(element, nullptr, style) {
+    const ComputedStyle* style,
+    LegacyLayout legacy)
+    : LayoutTreeBuilder(element, nullptr, style), legacy_(legacy) {
   DCHECK(element.CanParticipateInFlatTree());
   DCHECK(style_);
   DCHECK(!style_->IsEnsuredInDisplayNone());
@@ -56,8 +57,11 @@ LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(
   // It's an extra (unnecessary) check for text nodes, though.
   if (element.IsFirstLetterPseudoElement()) {
     if (LayoutObject* next_layout_object =
-            FirstLetterPseudoElement::FirstLetterTextLayoutObject(element))
+            FirstLetterPseudoElement::FirstLetterTextLayoutObject(element)) {
       layout_object_parent_ = next_layout_object->Parent();
+      if (layout_object_parent_->ForceLegacyLayout())
+        legacy_ = LegacyLayout::kForce;
+    }
   } else {
     layout_object_parent_ =
         LayoutTreeBuilderTraversal::ParentLayoutObject(element);
@@ -107,8 +111,8 @@ bool LayoutTreeBuilderForElement::ShouldCreateLayoutObject() const {
 }
 
 DISABLE_CFI_PERF
-void LayoutTreeBuilderForElement::CreateLayoutObject(LegacyLayout legacy) {
-  LayoutObject* new_layout_object = node_->CreateLayoutObject(*style_, legacy);
+void LayoutTreeBuilderForElement::CreateLayoutObject() {
+  LayoutObject* new_layout_object = node_->CreateLayoutObject(*style_, legacy_);
   if (!new_layout_object)
     return;
 

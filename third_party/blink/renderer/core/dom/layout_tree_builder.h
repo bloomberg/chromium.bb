@@ -101,18 +101,22 @@ class LayoutTreeBuilder {
 
 class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
  public:
-  LayoutTreeBuilderForElement(Element&, const ComputedStyle*);
+  LayoutTreeBuilderForElement(Element&,
+                              const ComputedStyle*,
+                              LegacyLayout legacy);
 
-  void CreateLayoutObjectIfNeeded(LegacyLayout legacy) {
+  void CreateLayoutObjectIfNeeded() {
     if (ShouldCreateLayoutObject())
-      CreateLayoutObject(legacy);
+      CreateLayoutObject();
   }
 
  private:
   LayoutObject* ParentLayoutObject() const;
   LayoutObject* NextLayoutObject() const;
   bool ShouldCreateLayoutObject() const;
-  void CreateLayoutObject(LegacyLayout);
+  void CreateLayoutObject();
+
+  LegacyLayout legacy_;
 };
 
 class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {

@@ -2218,8 +2218,8 @@ void Element::AttachLayoutTree(AttachContext& context) {
     LegacyLayout legacy = children_context.force_legacy_layout
                               ? LegacyLayout::kForce
                               : LegacyLayout::kAuto;
-    LayoutTreeBuilderForElement builder(*this, style);
-    builder.CreateLayoutObjectIfNeeded(legacy);
+    LayoutTreeBuilderForElement builder(*this, style, legacy);
+    builder.CreateLayoutObjectIfNeeded();
   }
 
   LayoutObject* layout_object = GetLayoutObject();
