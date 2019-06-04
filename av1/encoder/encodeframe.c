@@ -3378,9 +3378,11 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
     }
   }
 
+  aom_clear_system_state();
+
   double beta = 1.0;
   if (analysis_type == 0) {
-    if (mc_dep_cost > 0) {
+    if (mc_dep_cost > 0 && intra_cost > 0) {
       const double r0 = cpi->rd.r0;
       const double rk = (double)intra_cost / mc_dep_cost;
       beta = (r0 / rk);
@@ -3451,13 +3453,16 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
     }
   }
 
+  aom_clear_system_state();
+
   int offset = 0;
   double beta = 1.0;
   if (analysis_type == 0) {
-    if (mc_dep_cost > 0) {
+    if (mc_dep_cost > 0 && intra_cost > 0) {
       const double r0 = cpi->rd.r0;
       const double rk = (double)intra_cost / mc_dep_cost;
       beta = (r0 / rk);
+      assert(beta > 0.0);
     }
   } else if (analysis_type == 1) {
     const double mc_count_base = (mi_count * cpi->rd.mc_count_base);
