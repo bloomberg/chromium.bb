@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/installable/fake_installable_manager.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -385,9 +384,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
     manifest->scope = manifest_scope;
     manifest->theme_color = manifest_theme_color;
 
-    FakeInstallableManager::CreateForWebContentsWithManifest(
-        web_contents(), NO_ERROR_DETECTED, GURL("https://example.com/manifest"),
-        std::move(manifest));
+    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
   }
 
   base::RunLoop run_loop;

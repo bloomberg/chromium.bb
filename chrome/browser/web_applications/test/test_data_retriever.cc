@@ -32,11 +32,7 @@ void TestDataRetriever::CheckInstallabilityAndRetrieveManifest(
     content::WebContents* web_contents,
     bool bypass_service_worker_check,
     CheckInstallabilityCallback callback) {
-  if (manifest_ == nullptr) {
-    WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
-        web_contents, bypass_service_worker_check, std::move(callback));
-    return;
-  }
+  DCHECK(manifest_);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

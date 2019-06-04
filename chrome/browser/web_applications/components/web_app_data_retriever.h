@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class GURL;
 enum class WebappInstallSource;
@@ -34,7 +35,7 @@ class WebAppIconDownloader;
 
 // Class used by BookmarkAppInstallationTask to retrieve the necessary
 // information to install an app. Should only be called from the UI thread.
-class WebAppDataRetriever {
+class WebAppDataRetriever : content::WebContentsObserver {
  public:
   // Returns nullptr for WebApplicationInfo if error.
   using GetWebApplicationInfoCallback =
@@ -48,7 +49,7 @@ class WebAppDataRetriever {
   using GetIconsCallback = base::OnceCallback<void(IconsMap)>;
 
   WebAppDataRetriever();
-  virtual ~WebAppDataRetriever();
+  ~WebAppDataRetriever() override;
 
   // Runs |callback| with the result of retrieving the WebApplicationInfo from
   // |web_contents|.
@@ -69,23 +70,24 @@ class WebAppDataRetriever {
                         WebappInstallSource install_source,
                         GetIconsCallback callback);
 
+  // WebContentsObserver:
+  void WebContentsDestroyed() override;
+  void RenderProcessGone(base::TerminationStatus status) override;
+
  private:
   void OnGetWebApplicationInfo(
       chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
-      content::WebContents* web_contents,
       int last_committed_nav_entry_unique_id,
       const WebApplicationInfo& web_app_info);
-  void OnGetWebApplicationInfoFailed();
+  void OnDidPerformInstallableCheck(const InstallableData& data);
+  void OnIconsDownloaded(bool success, const IconsMap& icons_map);
 
-  void OnDidPerformInstallableCheck(CheckInstallabilityCallback callback,
-                                    const InstallableData& data);
+  void CallCallbackOnError();
+  bool ShouldStopRetrieval() const;
 
-  void OnIconsDownloaded(GetIconsCallback callback,
-                         bool success,
-                         const IconsMap& icons_map);
-
-  // Saved callback from GetWebApplicationInfo().
   GetWebApplicationInfoCallback get_web_app_info_callback_;
+  CheckInstallabilityCallback check_installability_callback_;
+  GetIconsCallback get_icons_callback_;
 
   std::unique_ptr<WebAppIconDownloader> icon_downloader_;
 
