@@ -87,6 +87,8 @@ message CreateRequest {
 // Actual request/reply goes below
 ///////////////////////////////////////////////////////////////////////////////
 
+// ------------------------- UserDataAuth Interface -------------------------
+
 // Input parameters to IsMounted()
 message IsMountedRequest {
   // If username is available, then it'll check if a specific user's home
@@ -346,13 +348,6 @@ message GetSupportedKeyPoliciesReply {
   bool low_entropy_credentials_supported = 1;
 }
 
-message GetDiskFeaturesRequest {
-}
-
-message GetDiskFeaturesReply {
-  bool quota_supported = 1;
-}
-
 message GetAccountDiskUsageRequest {
   cryptohome.AccountIdentifier identifier = 1;
 }
@@ -363,21 +358,31 @@ message GetAccountDiskUsageReply {
   int64 size = 2;
 }
 
-message GetCurrentSpaceForUidRequest {
+// ------------------------- ArcQuota Interface -------------------------
+
+message GetArcDiskFeaturesRequest {}
+
+message GetArcDiskFeaturesReply {
+  bool quota_supported = 1;
+}
+
+message GetCurrentSpaceForArcUidRequest {
   uint32 uid = 1;
 }
 
-message GetCurrentSpaceForUidReply {
+message GetCurrentSpaceForArcUidReply {
   int64 cur_space = 1;
 }
 
-message GetCurrentSpaceForGidRequest {
+message GetCurrentSpaceForArcGidRequest {
   uint32 gid = 1;
 }
 
-message GetCurrentSpaceForGidReply {
+message GetCurrentSpaceForArcGidReply {
   int64 cur_space = 1;
 }
+
+// ------------------------- PKCS#11 Interface -------------------------
 
 // Represents the information about a token in PKCS#11, used by
 // Pkcs11GetTpmTokeInfo()
@@ -433,6 +438,8 @@ message Pkcs11TerminateRequest {
 message Pkcs11TerminateReply {
   // Nothing at the moment.
 }
+
+// ----------------------- Install Attributes Interface -----------------------
 
 // The possible states of Install Attributes module, this is used by
 // InstallAttributesGetStatus().
@@ -513,6 +520,8 @@ message InstallAttributesGetStatusReply {
   // The state the install attributes are in.
   InstallAttributesState state = 4;
 }
+
+// ----------------- Firmware Management Parameters Interface -----------------
 
 // This represents the content of Firmware Management Parameters
 message FirmwareManagementParameters {
