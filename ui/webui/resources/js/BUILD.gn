@@ -21,7 +21,6 @@ js_type_check("js_resources") {
     ":event_tracker",
     ":find_shortcut_behavior",
     ":i18n_behavior",
-    ":i18n_template",
     ":i18n_template_no_process",
     ":icon",
     ":list_property_update_behavior",
@@ -33,6 +32,9 @@ js_type_check("js_resources") {
     ":web_ui_listener_behavior",
     ":webui_resource_test",
   ]
+  if (is_chromeos) {
+    deps += [ ":i18n_template" ]
+  }
   if (is_ios) {
     deps += [ "ios:web_ui" ]
   }

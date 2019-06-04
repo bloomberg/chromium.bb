@@ -409,8 +409,10 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_CR_UI_STORE_CLENT"
                  file="js/cr/ui/store_client.js"
                  type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_GRID"
-                 file="js/cr/ui/grid.js" type="chrome_html" compress="gzip" />
+      <if expr="chromeos">
+        <structure name="IDR_WEBUI_JS_CR_UI_GRID"
+                   file="js/cr/ui/grid.js" type="chrome_html" compress="gzip" />
+      </if>
       <structure name="IDR_WEBUI_JS_CR_UI_TABS"
                  file="js/cr/ui/tabs.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_TREE"

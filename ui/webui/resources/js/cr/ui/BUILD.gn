@@ -25,7 +25,6 @@ js_type_check("ui_resources") {
     ":focus_row",
     ":focus_row_behavior",
     ":focus_without_ink",
-    ":grid",
     ":list",
     ":list_item",
     ":list_selection_controller",
@@ -44,6 +43,10 @@ js_type_check("ui_resources") {
     ":tabs",
     ":tree",
   ]
+
+  if (is_chromeos) {
+    deps += [ ":grid" ]
+  }
 }
 
 js_library("array_data_model") {

@@ -125,6 +125,7 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListTest) {
   LoadFile(base::FilePath(FILE_PATH_LITERAL("list_test.html")));
 }
 
+#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, GridTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
@@ -138,6 +139,7 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, GridTest) {
   AddLibrary(IDR_WEBUI_JS_CR_UI_GRID);
   LoadFile(base::FilePath(FILE_PATH_LITERAL("grid_test.html")));
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListSelectionModelTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
