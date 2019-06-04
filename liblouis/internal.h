@@ -57,29 +57,6 @@ extern "C" {
 #define SEQPATTERNSIZE 128
 #define CHARSIZE sizeof(widechar)
 #define DEFAULTRULESIZE 50
-#define LOU_ENDSEGMENT 0xffff
-
-/**
- * Definitions of braille dots
- */
-typedef enum BrailleDots {
-	LOU_DOT_1 = 0X01,
-	LOU_DOT_2 = 0X02,
-	LOU_DOT_3 = 0X04,
-	LOU_DOT_4 = 0X08,
-	LOU_DOT_5 = 0X10,
-	LOU_DOT_6 = 0X20,
-	LOU_DOT_7 = 0X40,
-	LOU_DOT_8 = 0X80,
-	LOU_DOT_9 = 0X100,
-	LOU_DOT_10 = 0X200,
-	LOU_DOT_11 = 0X400,
-	LOU_DOT_12 = 0X800,
-	LOU_DOT_13 = 0X1000,
-	LOU_DOT_14 = 0X2000,
-	LOU_DOT_15 = 0X4000,
-	LOU_DOT_16 = 0X8000
-} BrailleDots;
 
 typedef struct intCharTupple {
 	int key;
