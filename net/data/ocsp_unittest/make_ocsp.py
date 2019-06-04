@@ -289,8 +289,6 @@ def Store(fname, description, ca, data):
 
   ocsp_request_der = CreateOCSPRequestDer(ca_cert_pem, cert_pem)
 
-  d64 = base64.b64encode(encoder.encode(data))
-  wd64 = '\n'.join(d64[pos:pos + 64] for pos in xrange(0, len(d64), 64))
   out = ('%s\n%s\n%s\n\n%s\n%s') % (
       description,
       MakePemBlock(encoder.encode(data), "OCSP RESPONSE"),
