@@ -59,7 +59,7 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
            int64_t index_id,
            const blink::IndexedDBKeyRange& key_range,
            bool key_only,
-           blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+           blink::mojom::IDBDatabase::GetCallback callback) override;
   void GetAll(int64_t transaction_id,
               int64_t object_store_id,
               int64_t index_id,

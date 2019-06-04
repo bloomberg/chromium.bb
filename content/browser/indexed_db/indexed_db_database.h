@@ -172,12 +172,13 @@ class CONTENT_EXPORT IndexedDBDatabase {
   void SendObservations(
       std::map<int32_t, blink::mojom::IDBObserverChangesPtr> change_map);
 
-  void Get(IndexedDBTransaction* transaction,
+  void Get(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+           IndexedDBTransaction* transaction,
            int64_t object_store_id,
            int64_t index_id,
            std::unique_ptr<blink::IndexedDBKeyRange> key_range,
            bool key_only,
-           scoped_refptr<IndexedDBCallbacks> callbacks);
+           blink::mojom::IDBDatabase::GetCallback callback);
   void GetAll(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
               IndexedDBTransaction* transaction,
               int64_t object_store_id,
@@ -259,11 +260,12 @@ class CONTENT_EXPORT IndexedDBDatabase {
                                  int64_t index_id,
                                  base::string16 old_name);
   leveldb::Status GetOperation(
+      base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
       int64_t object_store_id,
       int64_t index_id,
       std::unique_ptr<blink::IndexedDBKeyRange> key_range,
       indexed_db::CursorType cursor_type,
-      scoped_refptr<IndexedDBCallbacks> callbacks,
+      blink::mojom::IDBDatabase::GetCallback callback,
       IndexedDBTransaction* transaction);
   leveldb::Status GetAllOperation(
       base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,

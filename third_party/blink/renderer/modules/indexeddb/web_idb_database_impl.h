@@ -53,6 +53,8 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
            const IDBKeyRange*,
            bool key_only,
            WebIDBCallbacks*) override;
+  void GetCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
+                   mojom::blink::IDBDatabaseGetResultPtr result);
   void GetAll(int64_t transaction_id,
               int64_t object_store_id,
               int64_t index_id,

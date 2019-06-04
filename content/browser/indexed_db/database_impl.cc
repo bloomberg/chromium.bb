@@ -152,28 +152,35 @@ void DatabaseImpl::RemoveObservers(const std::vector<int32_t>& observers) {
   connection_->RemoveObservers(observers);
 }
 
-void DatabaseImpl::Get(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const IndexedDBKeyRange& key_range,
-    bool key_only,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+void DatabaseImpl::Get(int64_t transaction_id,
+                       int64_t object_store_id,
+                       int64_t index_id,
+                       const IndexedDBKeyRange& key_range,
+                       bool key_only,
+                       blink::mojom::IDBDatabase::GetCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  if (!connection_->IsConnected())
+  if (!connection_->IsConnected()) {
+    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+                                 "Unknown error");
+    std::move(callback).Run(blink::mojom::IDBDatabaseGetResult::NewErrorResult(
+        blink::mojom::IDBError::New(error.code(), error.message())));
     return;
+  }
 
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
-  if (!transaction)
+  if (!transaction) {
+    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+                                 "Unknown error");
+    std::move(callback).Run(blink::mojom::IDBDatabaseGetResult::NewErrorResult(
+        blink::mojom::IDBError::New(error.code(), error.message())));
     return;
+  }
 
-  connection_->database()->Get(transaction, object_store_id, index_id,
+  connection_->database()->Get(dispatcher_host_->AsWeakPtr(), transaction,
+                               object_store_id, index_id,
                                std::make_unique<IndexedDBKeyRange>(key_range),
-                               key_only, callbacks);
+                               key_only, std::move(callback));
 }
 
 void DatabaseImpl::GetAll(int64_t transaction_id,
