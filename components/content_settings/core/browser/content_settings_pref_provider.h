@@ -36,14 +36,16 @@ class PrefProvider : public UserModifiableProvider {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  PrefProvider(PrefService* prefs, bool incognito, bool store_last_modified);
+  PrefProvider(PrefService* prefs,
+               bool off_the_record,
+               bool store_last_modified);
   ~PrefProvider() override;
 
   // UserModifiableProvider implementations.
   std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      bool incognito) const override;
+      bool off_the_record) const override;
   bool SetWebsiteSetting(const ContentSettingsPattern& primary_pattern,
                          const ContentSettingsPattern& secondary_pattern,
                          ContentSettingsType content_type,
@@ -83,7 +85,7 @@ class PrefProvider : public UserModifiableProvider {
   // Weak; owned by the Profile and reset in ShutdownOnUIThread.
   PrefService* prefs_;
 
-  const bool is_incognito_;
+  const bool off_the_record_;
 
   bool store_last_modified_;
 
