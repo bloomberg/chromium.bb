@@ -186,6 +186,14 @@ void PasswordAccessoryControllerImpl::OnOptionSelected(
 void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
     FocusedFieldType focused_field_type,
     bool is_manual_generation_available) {
+  // Prevent crashing by not acting at all if frame became unfocused at any
+  // point. The next time a focus event happens, this will be called again and
+  // ensure we show correct data.
+  if (web_contents_->GetFocusedFrame() == nullptr)
+    return;
+  url::Origin origin = GetFocusedFrameOrigin();
+  if (origin.opaque())
+    return;  // Don't proceed for invalid origins.
   std::vector<UserInfo> info_to_add;
   std::vector<FooterCommand> footer_commands_to_add;
 
@@ -219,10 +227,10 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
 
   GetManualFillingController()->RefreshSuggestionsForField(
       focused_field_type,
-      autofill::CreateAccessorySheetData(
-          autofill::AccessoryTabType::PASSWORDS,
-          GetTitle(has_suggestions, GetFocusedFrameOrigin()),
-          std::move(info_to_add), std::move(footer_commands_to_add)));
+      autofill::CreateAccessorySheetData(autofill::AccessoryTabType::PASSWORDS,
+                                         GetTitle(has_suggestions, origin),
+                                         std::move(info_to_add),
+                                         std::move(footer_commands_to_add)));
 
   if (is_password_field) {
     GetManualFillingController()->ShowWhenKeyboardIsVisible(
@@ -243,6 +251,8 @@ void PasswordAccessoryControllerImpl::GetFavicon(
     base::OnceCallback<void(const gfx::Image&)> icon_callback) {
   url::Origin origin =
       GetFocusedFrameOrigin();  // Copy origin in case it changes.
+  if (origin.opaque())
+    return;  // Don't proceed for invalid origins.
   // Check whether this request can be immediately answered with a cached icon.
   // It is empty if there wasn't at least one request that found an icon yet.
   FaviconRequestData* icon_request = &icons_request_data_[origin];
@@ -314,6 +324,8 @@ bool PasswordAccessoryControllerImpl::AppearsInSuggestions(
     const base::string16& suggestion,
     bool is_password,
     const url::Origin& origin) const {
+  if (origin.opaque())
+    return false;  // Don't proceed for invalid origins.
   for (const PasswordAccessorySuggestion& element :
        origin_suggestions_.at(origin)) {
     const base::string16& candidate =
@@ -333,6 +345,11 @@ PasswordAccessoryControllerImpl::GetManualFillingController() {
 }
 
 url::Origin PasswordAccessoryControllerImpl::GetFocusedFrameOrigin() const {
+  if (web_contents_->GetFocusedFrame() == nullptr) {
+    LOG(DFATAL) << "Tried to get retrieve origin without focused "
+                   "frame.";
+    return url::Origin();  // Nonce!
+  }
   return web_contents_->GetFocusedFrame()->GetLastCommittedOrigin();
 }
 
