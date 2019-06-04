@@ -2751,63 +2751,6 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClip90DegRotationSupported) {
 }
 
 TEST_P(PaintArtifactCompositorTest,
-       SynthesizedClipSimpleFastBorderNotSupported1) {
-  // This tests the simplist case that a single layer needs to be clipped
-  // by a single composited rounded clip. Because the radius is too big,
-  // it falls back to a mask layer.
-  FloatSize corner(200, 200);
-  FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
-                         corner);
-  auto c1 = CreateClip(c0(), t0(), rrect);
-
-  TestPaintArtifact artifact;
-  artifact.Chunk(t0(), *c1, e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
-  Update(artifact.Build());
-
-  // Expectation in effect stack diagram:
-  //           l1
-  // l0 [ mask_effect_0 ]
-  // [ mask_isolation_0 ]
-  // [        e0        ]
-  // One content layer.
-  ASSERT_EQ(2u, RootLayer()->children().size());
-  ASSERT_EQ(1u, ContentLayerCount());
-  ASSERT_EQ(1u, SynthesizedClipLayerCount());
-
-  const cc::Layer* content0 = RootLayer()->children()[0].get();
-  const cc::Layer* clip_mask0 = RootLayer()->children()[1].get();
-
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
-
-  EXPECT_EQ(ContentLayerAt(0), content0);
-  int c1_id = content0->clip_tree_index();
-  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
-  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
-  ASSERT_EQ(c0_id, cc_c1.parent_id);
-  int mask_isolation_0_id = content0->effect_tree_index();
-  const cc::EffectNode& mask_isolation_0 =
-      *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
-  ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
-  EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
-  EXPECT_TRUE(mask_isolation_0.HasRenderSurface());
-
-  EXPECT_EQ(SynthesizedClipLayerAt(0), clip_mask0);
-  EXPECT_EQ(gfx::Size(300, 200), clip_mask0->bounds());
-  EXPECT_EQ(c1_id, clip_mask0->clip_tree_index());
-  int mask_effect_0_id = clip_mask0->effect_tree_index();
-  const cc::EffectNode& mask_effect_0 =
-      *GetPropertyTrees().effect_tree.Node(mask_effect_0_id);
-  ASSERT_EQ(mask_isolation_0_id, mask_effect_0.parent_id);
-  EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_0.blend_mode);
-
-  // The masks DrawsContent because it has content that it masks which also
-  // DrawsContent.
-  EXPECT_TRUE(clip_mask0->DrawsContent());
-}
-
-TEST_P(PaintArtifactCompositorTest,
        SynthesizedClipSimpleFastBorderNotSupported2) {
   // This tests the simplist case that a single layer needs to be clipped
   // by a single composited rounded clip. Because the radius is unsymmetric,

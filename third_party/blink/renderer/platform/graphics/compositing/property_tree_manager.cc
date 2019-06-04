@@ -823,13 +823,6 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
       !WidthAndHeightAreTheSame(radii.BottomLeft())) {
     return false;
   }
-  float min_dimension =
-      std::min(rect.Rect().Width(), rect.Rect().Height()) / 2.0f;
-  if (radii.TopLeft().Width() > min_dimension ||
-      radii.TopRight().Width() > min_dimension ||
-      radii.BottomRight().Width() > min_dimension ||
-      radii.BottomLeft().Width() > min_dimension)
-    return false;
 
   return true;
 }

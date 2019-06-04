@@ -605,3 +605,9 @@ crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to
 crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Skip ]
 crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-window.html [ Skip ]
 crbug.com/966981 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Skip ]
+
+Bug(none) fast/borders/border-radius-mask-canvas-border.html [ Failure ]
+Bug(none) fast/borders/border-radius-mask-canvas.html [ Failure ]
+Bug(none) fast/borders/border-radius-mask-video-ratio.html [ Failure ]
+Bug(none) fast/borders/border-radius-mask-video-shadow.html [ Failure ]
+Bug(none) fast/borders/border-radius-mask-video.html [ Failure ]
