@@ -80,6 +80,20 @@ bool CanShowSigninModule(const policy::PolicyMap& policies) {
          policy::BrowserSigninMode::kDisabled;
 }
 
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+// These feature flags are used to tie our experiment to specific studies.
+// go/navi-app-variation for details.
+// TODO(hcarmona): find a solution that scales better.
+const base::Feature kNaviControlEnabled = {"NaviControlEnabled",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNaviAppVariationEnabled = {
+    "NaviAppVariationEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNaviNTPVariationEnabled = {
+    "NaviNTPVariationEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNaviShortcutVariationEnabled = {
+    "NaviShortcutVariationEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+
 // This feature flag is used to force the feature to be turned on for non-win
 // and non-branded builds, like with tests or development on other platforms.
 const base::Feature kNuxOnboardingForceEnabled = {
@@ -163,6 +177,17 @@ bool IsNuxOnboardingEnabled(Profile* profile) {
   // experiment ends.
   ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       "NaviOnboardingSynthetic", onboard_group);
+
+  // Check for feature based on onboarding group.
+  // TODO(hcarmona): find a solution that scales better.
+  if (onboard_group.compare("ControlSynthetic-008") == 0)
+    base::FeatureList::IsEnabled(kNaviControlEnabled);
+  else if (onboard_group.compare("AppVariationSynthetic-008") == 0)
+    base::FeatureList::IsEnabled(kNaviAppVariationEnabled);
+  else if (onboard_group.compare("NTPVariationSynthetic-008") == 0)
+    base::FeatureList::IsEnabled(kNaviNTPVariationEnabled);
+  else if (onboard_group.compare("ShortcutVariationSynthetic-008") == 0)
+    base::FeatureList::IsEnabled(kNaviShortcutVariationEnabled);
 
   if (base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature)) {
     return true;
