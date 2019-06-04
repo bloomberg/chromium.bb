@@ -14,6 +14,8 @@
 #include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
@@ -676,7 +678,6 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, PrefersColorScheme) {
 
 INSTANTIATE_TEST_SUITE_P(All, PrefersColorSchemeTest, testing::Bool());
 
-#if defined(OS_CHROMEOS)
 class ProtocolHandlerTest : public InProcessBrowserTest {
  public:
   ProtocolHandlerTest() = default;
@@ -687,13 +688,50 @@ class ProtocolHandlerTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
+ protected:
+  void AddProtocolHandler(const std::string& scheme,
+                          const std::string& redirect_template) {
+    protocol_handler_registry()->OnAcceptRegisterProtocolHandler(
+        ProtocolHandler::CreateProtocolHandler(scheme,
+                                               GURL(redirect_template)));
+  }
+
+  ProtocolHandlerRegistry* protocol_handler_registry() {
+    return ProtocolHandlerRegistryFactory::GetInstance()->GetForBrowserContext(
+        browser()->profile());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerTest);
 };
 
+IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, CustomHandler) {
+  AddProtocolHandler("abc", "https://abc.xyz/?url=%s");
+
+  ui_test_utils::NavigateToURL(browser(), GURL("abc:something"));
+
+  base::string16 expected_title = base::ASCIIToUTF16("abc.xyz");
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
+// This is a regression test for crbug.com/969177.
+IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, HandlersIgnoredWhenDisabled) {
+  AddProtocolHandler("abc", "https://abc.xyz/?url=%s");
+  protocol_handler_registry()->Disable();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("abc:something"));
+
+  base::string16 tab_title;
+  ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
+  EXPECT_EQ(base::ASCIIToUTF16("about:blank"), tab_title);
+}
+
+#if defined(OS_CHROMEOS)
 // Tests that if a protocol handler is registered for a scheme, an external
 // program (another Chrome tab in this case) is not launched to handle the
-// navigation.
+// navigation. This is a regression test for crbug.com/963133.
 IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, ExternalProgramNotLaunched) {
   ui_test_utils::NavigateToURL(browser(), GURL("mailto:bob@example.com"));
 

@@ -4613,9 +4613,7 @@ class ProtocolHandlerThrottle : public content::URLLoaderThrottle {
 
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override {
-    GURL translated_url = protocol_handler_registry_->Translate(request->url);
-    if (!translated_url.is_empty())
-      request->url = translated_url;
+    TranslateUrl(&request->url);
   }
 
   void WillRedirectRequest(net::RedirectInfo* redirect_info,
@@ -4623,13 +4621,18 @@ class ProtocolHandlerThrottle : public content::URLLoaderThrottle {
                            bool* defer,
                            std::vector<std::string>* to_be_removed_headers,
                            net::HttpRequestHeaders* modified_headers) override {
-    GURL translated_url =
-        protocol_handler_registry_->Translate(redirect_info->new_url);
-    if (!translated_url.is_empty())
-      redirect_info->new_url = translated_url;
+    TranslateUrl(&redirect_info->new_url);
   }
 
  private:
+  void TranslateUrl(GURL* url) {
+    if (!protocol_handler_registry_->IsHandledProtocol(url->scheme()))
+      return;
+    GURL translated_url = protocol_handler_registry_->Translate(*url);
+    if (!translated_url.is_empty())
+      *url = translated_url;
+  }
+
   scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>
       protocol_handler_registry_;
 };
