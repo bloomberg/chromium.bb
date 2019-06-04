@@ -232,6 +232,7 @@ public class AppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @DisabledTest(message="https://crbug.com/970184")
     public void testHideMenuOnToggleOverview() throws TimeoutException, InterruptedException {
         CallbackHelper overviewModeFinishedShowingCallback = new CallbackHelper();
         OverviewModeBehavior.OverviewModeObserver overviewModeObserver =
