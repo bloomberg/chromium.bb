@@ -3330,7 +3330,7 @@ BEGIN_PARTITION_SEARCH:
 
 #define MAX_PYR_LEVEL_FROMTOP_DELTAQ 0
 static int is_frame_tpl_eligible(AV1_COMP *const cpi) {
-  const int max_pyr_level_fromtop_deltaq = 0;
+  const int max_pyr_level_fromtop_deltaq = MAX_PYR_LEVEL_FROMTOP_DELTAQ;
   const int pyr_lev_from_top =
       cpi->twopass.gf_group.pyramid_height -
       cpi->twopass.gf_group.pyramid_level[cpi->twopass.gf_group.index];
