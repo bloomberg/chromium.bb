@@ -176,6 +176,11 @@ bool InZeroSuggestMostVisitedWithoutSerpFieldTrial(
 bool InZeroSuggestPersonalizedFieldTrial(
     metrics::OmniboxEventProto::PageClassification page_classification);
 
+// Returns whether the user is in a ZeroSuggest field trial where a remote
+// contextual suggestions endpoint is queried and sent the current URL.
+bool InZeroSuggestRemoteSendURLFieldTrial(
+    metrics::OmniboxEventProto::PageClassification page_classification);
+
 // ---------------------------------------------------------
 // For the On Focus Suggestions Custom Endpoint field trial.
 

@@ -257,6 +257,13 @@ bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
              page_classification) == "Personalized";
 }
 
+bool OmniboxFieldTrial::InZeroSuggestRemoteSendURLFieldTrial(
+    metrics::OmniboxEventProto::PageClassification page_classification) {
+  return internal::GetValueForRuleInContextByFeature(
+             omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
+             page_classification) == "RemoteSendURL";
+}
+
 // static
 int OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointExperimentId() {
   return base::GetFieldTrialParamByFeatureAsInt(

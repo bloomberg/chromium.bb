@@ -639,5 +639,11 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     return MOST_VISITED;
   }
 
-  return can_send_current_url ? DEFAULT_SERP_FOR_URL : NONE;
+  if (can_send_current_url &&
+      OmniboxFieldTrial::InZeroSuggestRemoteSendURLFieldTrial(
+          current_page_classification_)) {
+    return DEFAULT_SERP_FOR_URL;
+  }
+
+  return NONE;
 }

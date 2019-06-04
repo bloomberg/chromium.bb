@@ -155,7 +155,7 @@ class ZeroSuggestProviderTest : public testing::Test,
   void SetZeroSuggestVariantForAllContexts(const std::string& variant);
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<ZeroSuggestProvider> provider_;
@@ -196,13 +196,10 @@ void ZeroSuggestProviderTest::CreateMostVisitedFieldTrial() {
   SetZeroSuggestVariantForAllContexts("MostVisitedWithoutSERP");
 }
 
-void ZeroSuggestProviderTest::CreateContextualSuggestFieldTrial() {
-  SetZeroSuggestVariantForAllContexts("ContextualSuggestions");
-}
-
 void ZeroSuggestProviderTest::SetZeroSuggestVariantForAllContexts(
     const std::string& variant) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list_->InitAndEnableFeatureWithParameters(
       omnibox::kOnFocusSuggestions,
       {{std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) + ":*:*",
         variant}});
@@ -469,7 +466,6 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
 }
 
 TEST_F(ZeroSuggestProviderTest, CustomEndpoint) {
-  CreateContextualSuggestFieldTrial();
   // Coverage for the URL-specific page. (Regression test for a DCHECK).
   // This is exercising ContextualSuggestionsService::CreateExperimentalRequest,
   // and to do that, ZeroSuggestProvider needs to be looking for
@@ -477,11 +473,21 @@ TEST_F(ZeroSuggestProviderTest, CustomEndpoint) {
   // experiments off, IsPersonalizedUrlDataCollectionActive true), and the
   // redirect to chrome mode on.
   base::test::ScopedFeatureList features;
-  std::map<std::string, std::string> params;
-  params[std::string(OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam)] =
-      "https://cuscochromeextension-pa.googleapis.com/v1/omniboxsuggestions";
-  features.InitAndEnableFeatureWithParameters(
-      omnibox::kOnFocusSuggestionsCustomEndpoint, params);
+  features.InitWithFeaturesAndParameters(
+      {
+          {
+              omnibox::kOnFocusSuggestions,
+              {{std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) +
+                    ":*:*",
+                "RemoteSendURL"}},
+          },
+          {
+              omnibox::kOnFocusSuggestionsCustomEndpoint,
+              {{OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam,
+                "https://valid-but-fake-endpoint.com/fakepath"}},
+          },
+      },
+      {});
 
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
@@ -496,6 +502,6 @@ TEST_F(ZeroSuggestProviderTest, CustomEndpoint) {
   input.set_from_omnibox_focus(true);
   provider_->Start(input, false);
   EXPECT_TRUE(test_loader_factory()->IsPending(
-      "https://cuscochromeextension-pa.googleapis.com/v1/omniboxsuggestions"));
+      "https://valid-but-fake-endpoint.com/fakepath"));
   base::RunLoop().RunUntilIdle();
 }
