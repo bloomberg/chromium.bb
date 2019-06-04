@@ -384,7 +384,6 @@
     bob-nyc-android-pfq
     cyan-nyc-android-pfq
     hana-nyc-android-pfq
-    reef-nyc-android-pfq
     samus-nyc-android-pfq
     veyron_minnie-nyc-android-pfq
 
@@ -397,6 +396,7 @@
     eve-pi-android-pfq
     grunt-pi-android-pfq
     kevin-pi-android-pfq
+    reef-pi-android-pfq
 
 == postsubmit ==
   master-postsubmit
@@ -2615,7 +2615,6 @@
     bob-nyc-android-pfq-tryjob
     cyan-nyc-android-pfq-tryjob
     hana-nyc-android-pfq-tryjob
-    reef-nyc-android-pfq-tryjob
     samus-nyc-android-pfq-tryjob
     veyron_minnie-nyc-android-pfq-tryjob
   master-paladin-tryjob
@@ -2727,6 +2726,7 @@
     eve-pi-android-pfq-tryjob
     grunt-pi-android-pfq-tryjob
     kevin-pi-android-pfq-tryjob
+    reef-pi-android-pfq-tryjob
   master-postsubmit-tryjob
     amd64-generic-postsubmit-tryjob
     arkham-postsubmit-tryjob
@@ -3477,9 +3477,9 @@
   reef-llvm-next-toolchain-tryjob
   reef-llvm-toolchain-tryjob
   reef-no-vmtest-pre-cq
-  reef-nyc-android-pfq-tryjob
   reef-paladin-tryjob
   reef-payloads-tryjob
+  reef-pi-android-pfq-tryjob
   reef-postsubmit-tryjob
   reef-pre-cq
   reef-release-afdo-generate-tryjob
