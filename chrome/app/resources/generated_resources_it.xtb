@@ -2140,12 +2140,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4242577469625748426">Installazione delle impostazioni criterio sul dispositivo non riuscita. <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Trova altre app per stilo</translation>
 <translation id="424726838611654458">Apri sempre in Adobe Reader</translation>
-<translation id="4247274662191902962">I dati dei sensori verranno condivisi solo quando ti trovi in questa esperienza VR. Questo sito potrebbe essere in grado di apprendere le tue abitudini utilizzando determinate informazioni, ad esempio:
-    - La tua località
-    - Le tue caratteristiche fisiche, come la posizione degli occhi
-    - I tuoi movimenti, come il modo di camminare
-
-    Prima di consentire l'accesso, controlla che questo sito sia attendibile.</translation>
 <translation id="4247901771970415646">Impossibile sincronizzare con <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">In attesa della connessione di rete...</translation>
 <translation id="4249373718504745892">A questa pagina è stato impedito l'accesso alla webcam e al microfono.</translation>

@@ -1428,7 +1428,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (使用硬體加密金鑰)</translation>
 <translation id="3161522574479303604">所有語言</translation>
 <translation id="3163201441334626963">供應商 <ph name="VENDOR_ID" /> 提供的不明產品 <ph name="PRODUCT_ID" /></translation>
-<translation id="3164329792803560526">將這個分頁與 <ph name="APP_NAME" /> 共用</translation>
+<translation id="3164329792803560526">這個分頁正與 <ph name="APP_NAME" /> 共用</translation>
 <translation id="3165390001037658081">部分電信業者可能會封鎖這項功能。</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">你也可以略過登入程序，<ph name="LINK_START" />以訪客身分瀏覽<ph name="LINK_END" />。</translation>
@@ -2142,12 +2142,6 @@
 <translation id="4242577469625748426">無法在裝置上安裝政策設定：<ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4244238649050961491">尋找其他觸控筆應用程式</translation>
 <translation id="424726838611654458">一律在 Adobe Reader 中開啟</translation>
-<translation id="4247274662191902962">系統只會在你進入這個 VR 時分享感應器資料。網站或許可以使用特定資訊辨識你，例如：
-    - 你的位置
-    - 你的身體特徵，例如眼睛的位置
-    - 你的動作，例如走路的方式
-
-    允許存取前，請確認你信任這個網站。</translation>
 <translation id="4247901771970415646">無法與 <ph name="USERNAME" /> 同步</translation>
 <translation id="4249248555939881673">正在等待網路連線...</translation>
 <translation id="4249373718504745892">系統已封鎖這個網頁存取你的攝影機和麥克風。</translation>

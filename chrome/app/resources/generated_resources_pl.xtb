@@ -2144,12 +2144,6 @@
 <translation id="4242577469625748426">Instalacja ustawień zasad na urządzeniu nie powiodła się: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Znajdź więcej aplikacji dla rysika</translation>
 <translation id="424726838611654458">Zawsze otwieraj w Adobe Reader</translation>
-<translation id="4247274662191902962">Dane z czujników będą udostępniane tylko wtedy, gdy będziesz używać tego doświadczenia związanego z VR. Strona może być w stanie poznać Cię na podstawie pewnych informacji, takich jak:
-    – Twoja lokalizacja;
-    – Twoje cechy fizyczne, na przykład położenie oczu;
-    – Twoje ruchy, na przykład sposób chodzenia.
-
-    Zanim zezwolisz stronie na dostęp, upewnij się, że możesz jej zaufać.</translation>
 <translation id="4247901771970415646">Nie można zsynchronizować z <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Czekam na połączenie z siecią...</translation>
 <translation id="4249373718504745892">Ta strona ma zablokowany dostęp do kamery i mikrofonu.</translation>

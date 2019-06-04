@@ -151,7 +151,7 @@
 <translation id="1206407435587370571">Explorar o Chromebook</translation>
 <translation id="1209796539517632982">Servidores de nome automáticos</translation>
 <translation id="1211364473545090084">Use a Web sem salvar seu histórico de navegação com uma janela anônima</translation>
-<translation id="1211769675100312947">Atalhos selecionados para você</translation>
+<translation id="1211769675100312947">Atalhos selecionados por você</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> impressões digitais configuradas</translation>
 <translation id="1215411991991485844">Novo aplicativo de fundo adicionado</translation>
 <translation id="1217483152325416304">Seus dados locais serão excluídos em breve</translation>
@@ -1232,7 +1232,7 @@
 <translation id="284975061945174219">Falha ao limpar</translation>
 <translation id="2849936225196189499">Crítico</translation>
 <translation id="2850541429955027218">Adicionar tema</translation>
-<translation id="2858138569776157458">Mais visitados</translation>
+<translation id="2858138569776157458">Sites famosos</translation>
 <translation id="2859806420264540918">Neste site, há exibição de anúncios invasivos ou enganosos</translation>
 <translation id="2861301611394761800">A atualização do sistema foi concluída. Reinicie o sistema.</translation>
 <translation id="2861941300086904918">Gerenciador de segurança do Cliente nativo</translation>
@@ -2144,12 +2144,6 @@
 <translation id="4242577469625748426">Falha ao instalar configurações da política no dispositivo: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Encontrar mais apps para usar com a stylus</translation>
 <translation id="424726838611654458">Sempre abrir com o Adobe Reader</translation>
-<translation id="4247274662191902962">Os dados do sensor serão compartilhados apenas enquanto você estiver nesta experiência de RV. É possível que o site aprenda sobre você usando algumas informações, como estas:
-    - Sua localização
-    - Suas características físicas, como a posição dos olhos
-    - Seus movimentos, como a maneira como você caminha
-
-    Certifique-se de que esse site seja confiável antes de conceder acesso.</translation>
 <translation id="4247901771970415646">Não é possível sincronizar com <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Aguardando conexão da rede...</translation>
 <translation id="4249373718504745892">Esta página foi impedida de acessar sua câmera e seu microfone.</translation>

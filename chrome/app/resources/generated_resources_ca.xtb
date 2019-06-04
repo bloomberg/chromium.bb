@@ -925,7 +925,7 @@
 <translation id="2391762656119864333">Revoca</translation>
 <translation id="2392369802118427583">Activa</translation>
 <translation id="2394566832561516196">La configuració s'esborrarà en tornar a carregar.</translation>
-<translation id="2395616325548404795">El teu dispositiu <ph name="DEVICE_TYPE" /> s'ha inscrit correctament a la gestió empresarial, però no ha pogut enviar la informació d'elements i d'ubicació. Introdueix aquesta informació manualment a la Consola d'administració del dispositiu.</translation>
+<translation id="2395616325548404795">El teu dispositiu <ph name="DEVICE_TYPE" /> s'ha inscrit correctament a la gestió empresarial, però no ha pogut enviar la informació d'elements i d'ubicació. Introdueix aquesta informació manualment a la consola d'administració del dispositiu.</translation>
 <translation id="2396783860772170191">Introdueix un PIN de 4 dígits (0000-9999)</translation>
 <translation id="2408955596600435184">Introdueix el PIN</translation>
 <translation id="241082044617551207">Connector desconegut</translation>
@@ -2139,12 +2139,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4242577469625748426">No s'ha pogut instal·lar la configuració de la política al dispositiu: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Cerca més aplicacions de llapis òptic</translation>
 <translation id="424726838611654458">Obre sempre a Adobe Reader</translation>
-<translation id="4247274662191902962">Les dades del sensor només es podran compartir mentre duri l'experiència de RV. Pot ser que el lloc web aprengui coses sobre tu a partir de certa informació, per exemple:
-    - la teva ubicació
-    - els teus trets físics, com ara la posició dels ulls
-    - els teus moviments, com ara la manera de caminar
-
-    Assegura't que confies en aquest lloc web abans de donar-li accés.</translation>
 <translation id="4247901771970415646">No es pot sincronitzar amb <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">S'està esperant la connexió de xarxa...</translation>
 <translation id="4249373718504745892">S'ha bloquejat l'accés d'aquesta pàgina a la càmera i al micròfon</translation>

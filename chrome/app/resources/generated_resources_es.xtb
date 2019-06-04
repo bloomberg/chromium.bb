@@ -2141,12 +2141,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4242577469625748426">Se ha producido un error al instalar la configuración de política en el dispositivo (<ph name="VALIDATION_ERROR" />).</translation>
 <translation id="4244238649050961491">Buscar más aplicaciones para el lápiz óptico</translation>
 <translation id="424726838611654458">Abrir siempre en Adobe Reader</translation>
-<translation id="4247274662191902962">Los datos de los sensores solo se podrán compartir mientras estés inmerso en esta experiencia de realidad virtual. Es posible que el sitio web aprenda sobre ti usando cierta información, como la siguiente:
-    - Tu ubicación
-    - Tus características físicas, como la posición de los ojos
-    - Tus movimientos, p. ej., tu forma de andar
-
-    Antes de permitirle el acceso, asegúrate de que el sitio web sea de confianza.</translation>
 <translation id="4247901771970415646">No se puede sincronizar con <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Esperando conexión de red...</translation>
 <translation id="4249373718504745892">Esta página no tiene permiso para acceder a la cámara y al micrófono.</translation>

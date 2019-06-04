@@ -2144,12 +2144,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4242577469625748426">Setările de politică nu au putut fi instalate pe gadget: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Găsește mai multe aplicații pentru creion</translation>
 <translation id="424726838611654458">Deschide întotdeauna în Adobe Reader</translation>
-<translation id="4247274662191902962">Datele de la senzori vor fi distribuite doar când ești în această experiență RV. Acest site te-ar putea recunoaște, folosind anumite informații, precum:
-    - locația ta,
-    - trăsăturile tale fizice, cum ar fi poziția ochilor,
-    - mișcările tale, cum ar fi mersul.
-
-    Asigură-te că ai încredere în acest site înainte să permiți accesul.</translation>
 <translation id="4247901771970415646">Nu se poate sincroniza cu <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Se așteaptă realizarea conexiunii la rețea...</translation>
 <translation id="4249373718504745892">Accesul acestei pagini la camera și microfonul dvs. a fost blocat.</translation>

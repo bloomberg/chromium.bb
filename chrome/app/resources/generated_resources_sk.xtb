@@ -2142,12 +2142,6 @@
 <translation id="4242577469625748426">Nastavenia pravidla sa nepodarilo nainštalovať na zariadenie: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Nájsť ďalšie aplikácie pre dotykové pero</translation>
 <translation id="424726838611654458">Vždy otvoriť v programe Adobe Reader</translation>
-<translation id="4247274662191902962">Dáta senzorov sa budú zdieľať iba vtedy, keď budete v tomto prostredí VR. Príslušný web o vás môže získať informácie pomocou určitých údajov, napríklad na základe:
-    – polohy;
-    – fyzických čŕt, napríklad umiestnenia očí;
-    – pohybov, napríklad štýlu chôdze.
-
-    Skôr ako povolíte prístup, skontrolujte, či ide o dôveryhodný web.</translation>
 <translation id="4247901771970415646">Nedá sa synchronizovať do účtu <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Čaká sa na sieťové pripojenie...</translation>
 <translation id="4249373718504745892">Táto stránka má zablokovaný prístup ku kamere a mikrofónu.</translation>

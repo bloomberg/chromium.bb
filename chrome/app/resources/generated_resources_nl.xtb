@@ -2144,12 +2144,6 @@
 <translation id="4242577469625748426">Kan geen beleidsinstellingen op het apparaat installeren: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Meer stylus-apps zoeken</translation>
 <translation id="424726838611654458">Altijd in Adobe Reader openen</translation>
-<translation id="4247274662191902962">Sensorgegevens worden alleen gedeeld wanneer je deze VR-functie gebruikt. De site kan je mogelijk herkennen aan de hand van bepaalde gegevens, zoals:
-    - Je locatie
-    - Je fysieke kenmerken, zoals de positie van je ogen
-    - Je bewegingen, zoals hoe je loopt
-
-    Controleer of je de site vertrouwt voordat je deze toegang geeft.</translation>
 <translation id="4247901771970415646">Kan niet synchroniseren met <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Wachten op netwerkverbinding...</translation>
 <translation id="4249373718504745892">Deze pagina heeft geen toegang tot je camera en microfoon.</translation>
@@ -3882,7 +3876,7 @@
 <translation id="6977381486153291903">Firmwarerevisie</translation>
 <translation id="6978121630131642226">Zoekmachines</translation>
 <translation id="6979440798594660689">Dempen (standaard)</translation>
-<translation id="6979737339423435258">Altijd</translation>
+<translation id="6979737339423435258">Alles</translation>
 <translation id="6980462514016882061">Google kan je browsegeschiedenis gebruiken om Google Zoeken, advertenties en andere Google-services te personaliseren</translation>
 <translation id="6981982820502123353">Toegankelijkheid</translation>
 <translation id="6983783921975806247">Geregistreerde OID</translation>
