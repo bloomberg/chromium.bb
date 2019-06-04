@@ -329,7 +329,7 @@ back_findCharOrDots(widechar c, int m, const TranslationTableHeader *table) {
 	/* Look up character or dot pattern in the appropriate
 	 * table. */
 	static TranslationTableCharacter noChar = { 0, 0, 0, CTC_Space, 32, 32, 32 };
-	static TranslationTableCharacter noDots = { 0, 0, 0, CTC_Space, B16, B16, B16 };
+	static TranslationTableCharacter noDots = { 0, 0, 0, CTC_Space, LOU_DOT_16, LOU_DOT_16, LOU_DOT_16 };
 	TranslationTableCharacter *notFound;
 	TranslationTableCharacter *character;
 	TranslationTableOffset bucket;
@@ -893,21 +893,21 @@ undefinedDots(widechar dots, int mode, OutString *output, int pos, int *posMappi
 	widechar buffer[20];
 	int k = 1;
 	buffer[0] = '\\';
-	if ((dots & B1)) buffer[k++] = '1';
-	if ((dots & B2)) buffer[k++] = '2';
-	if ((dots & B3)) buffer[k++] = '3';
-	if ((dots & B4)) buffer[k++] = '4';
-	if ((dots & B5)) buffer[k++] = '5';
-	if ((dots & B6)) buffer[k++] = '6';
-	if ((dots & B7)) buffer[k++] = '7';
-	if ((dots & B8)) buffer[k++] = '8';
-	if ((dots & B9)) buffer[k++] = '9';
-	if ((dots & B10)) buffer[k++] = 'A';
-	if ((dots & B11)) buffer[k++] = 'B';
-	if ((dots & B12)) buffer[k++] = 'C';
-	if ((dots & B13)) buffer[k++] = 'D';
-	if ((dots & B14)) buffer[k++] = 'E';
-	if ((dots & B15)) buffer[k++] = 'F';
+	if ((dots & LOU_DOT_1)) buffer[k++] = '1';
+	if ((dots & LOU_DOT_2)) buffer[k++] = '2';
+	if ((dots & LOU_DOT_3)) buffer[k++] = '3';
+	if ((dots & LOU_DOT_4)) buffer[k++] = '4';
+	if ((dots & LOU_DOT_5)) buffer[k++] = '5';
+	if ((dots & LOU_DOT_6)) buffer[k++] = '6';
+	if ((dots & LOU_DOT_7)) buffer[k++] = '7';
+	if ((dots & LOU_DOT_8)) buffer[k++] = '8';
+	if ((dots & LOU_DOT_9)) buffer[k++] = '9';
+	if ((dots & LOU_DOT_10)) buffer[k++] = 'A';
+	if ((dots & LOU_DOT_11)) buffer[k++] = 'B';
+	if ((dots & LOU_DOT_12)) buffer[k++] = 'C';
+	if ((dots & LOU_DOT_13)) buffer[k++] = 'D';
+	if ((dots & LOU_DOT_14)) buffer[k++] = 'E';
+	if ((dots & LOU_DOT_15)) buffer[k++] = 'F';
 	buffer[k++] = '/';
 	if ((output->length + k) > output->maxlength) return 0;
 	memcpy(&output->chars[output->length], buffer, k * CHARSIZE);

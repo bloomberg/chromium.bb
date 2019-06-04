@@ -62,22 +62,24 @@ extern "C" {
 /**
  * Definitions of braille dots
  */
-#define B1 0X01
-#define B2 0X02
-#define B3 0X04
-#define B4 0X08
-#define B5 0X10
-#define B6 0X20
-#define B7 0X40
-#define B8 0X80
-#define B9 0X100
-#define B10 0X200
-#define B11 0X400
-#define B12 0X800
-#define B13 0X1000
-#define B14 0X2000
-#define B15 0X4000
-#define B16 0X8000
+typedef enum BrailleDots {
+	LOU_DOT_1 = 0X01,
+	LOU_DOT_2 = 0X02,
+	LOU_DOT_3 = 0X04,
+	LOU_DOT_4 = 0X08,
+	LOU_DOT_5 = 0X10,
+	LOU_DOT_6 = 0X20,
+	LOU_DOT_7 = 0X40,
+	LOU_DOT_8 = 0X80,
+	LOU_DOT_9 = 0X100,
+	LOU_DOT_10 = 0X200,
+	LOU_DOT_11 = 0X400,
+	LOU_DOT_12 = 0X800,
+	LOU_DOT_13 = 0X1000,
+	LOU_DOT_14 = 0X2000,
+	LOU_DOT_15 = 0X4000,
+	LOU_DOT_16 = 0X8000
+} BrailleDots;
 
 typedef struct intCharTupple {
 	int key;
@@ -88,9 +90,9 @@ typedef struct intCharTupple {
  * Mapping between braille dot and textual representation as used in dots operands
  */
 static const intCharTupple dotMapping[] = {
-	{ B1, '1' }, { B2, '2' }, { B3, '3' }, { B4, '4' }, { B5, '5' }, { B6, '6' },
-	{ B7, '7' }, { B8, '8' }, { B9, '9' }, { B10, 'A' }, { B11, 'B' }, { B12, 'C' },
-	{ B13, 'D' }, { B14, 'E' }, { B15, 'F' }, { 0, 0 },
+	{ LOU_DOT_1, '1' }, { LOU_DOT_2, '2' }, { LOU_DOT_3, '3' }, { LOU_DOT_4, '4' }, { LOU_DOT_5, '5' }, { LOU_DOT_6, '6' },
+	{ LOU_DOT_7, '7' }, { LOU_DOT_8, '8' }, { LOU_DOT_9, '9' }, { LOU_DOT_10, 'A' }, { LOU_DOT_11, 'B' }, { LOU_DOT_12, 'C' },
+	{ LOU_DOT_13, 'D' }, { LOU_DOT_14, 'E' }, { LOU_DOT_15, 'F' }, { 0, 0 },
 };
 
 /* HASHNUM must be prime */
