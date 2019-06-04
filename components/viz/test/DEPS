@@ -1,7 +1,6 @@
 # Please consult components/viz/README.md about allowable dependencies.
 
 include_rules = [
-  "+cc",
   "+components/viz",
   "+gpu/command_buffer/client/context_support.h",
   "+gpu/command_buffer/client/gles2_implementation.h",
@@ -23,7 +22,6 @@ include_rules = [
   "+gpu/ipc/raster_in_process_context.h",
   "+gpu/ipc/test_gpu_thread_holder.h",
   "+gpu/skia_bindings/grcontext_for_gles2_interface.h",
-  "+media",
   "+mojo/public/cpp/bindings",
   "+mojo/public/cpp/system",
   "+services/viz/privileged/interfaces",

@@ -67,8 +67,6 @@ viz_static_library("test_support") {
     "test_in_process_context_provider.h",
     "test_latest_local_surface_id_lookup_delegate.cc",
     "test_latest_local_surface_id_lookup_delegate.h",
-    "test_layer_tree_frame_sink.cc",
-    "test_layer_tree_frame_sink.h",
     "test_output_surface_provider.cc",
     "test_output_surface_provider.h",
     "test_shared_bitmap_manager.cc",
@@ -77,7 +75,6 @@ viz_static_library("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//cc",
     "//components/viz/host",
     "//components/viz/service",
     "//gpu:raster",

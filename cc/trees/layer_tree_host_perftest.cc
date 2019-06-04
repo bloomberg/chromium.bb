@@ -21,10 +21,10 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/layer_tree_json_parser.h"
 #include "cc/test/layer_tree_test.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/paths.h"
-#include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "testing/perf/perf_test.h"
@@ -48,7 +48,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
         measure_commit_cost_(false) {
   }
 
-  std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
@@ -58,7 +58,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
     bool synchronous_composite =
         !HasImplThread() &&
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
-    return std::make_unique<viz::TestLayerTreeFrameSink>(
+    return std::make_unique<TestLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         gpu_memory_buffer_manager(), renderer_settings, ImplThreadTaskRunner(),
         synchronous_composite, disable_display_vsync, refresh_rate);

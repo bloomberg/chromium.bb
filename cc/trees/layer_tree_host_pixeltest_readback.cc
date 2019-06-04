@@ -10,11 +10,11 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/solid_color_content_layer_client.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/test/paths.h"
-#include "components/viz/test/test_layer_tree_frame_sink.h"
 
 #if !defined(OS_ANDROID)
 
@@ -528,13 +528,13 @@ class LayerTreeHostReadbackColorSpacePixelTest
     output_color_space_ = gfx::ColorSpace::CreateDisplayP3D65();
   }
 
-  std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider)
       override {
-    std::unique_ptr<viz::TestLayerTreeFrameSink> frame_sink =
+    std::unique_ptr<TestLayerTreeFrameSink> frame_sink =
         LayerTreePixelTest::CreateLayerTreeFrameSink(
             renderer_settings, refresh_rate, compositor_context_provider,
             worker_context_provider);

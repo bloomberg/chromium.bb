@@ -18,7 +18,7 @@
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/solid_color_content_layer_client.h"
-#include "components/viz/test/test_layer_tree_frame_sink.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 #if !defined(OS_ANDROID)
@@ -1049,7 +1049,7 @@ class LayerTreeHostMaskAsBlendingPixelTest
   }
 
  protected:
-  std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,

@@ -17,6 +17,7 @@
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -28,7 +29,6 @@
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_gpu_service_holder.h"
 #include "components/viz/test/test_in_process_context_provider.h"
-#include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/ipc/gl_in_process_context.h"
 
@@ -43,7 +43,7 @@ LayerTreePixelTest::LayerTreePixelTest()
 
 LayerTreePixelTest::~LayerTreePixelTest() = default;
 
-std::unique_ptr<viz::TestLayerTreeFrameSink>
+std::unique_ptr<TestLayerTreeFrameSink>
 LayerTreePixelTest::CreateLayerTreeFrameSink(
     const viz::RendererSettings& renderer_settings,
     double refresh_rate,
@@ -72,11 +72,10 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   // Keep texture sizes exactly matching the bounds of the RenderPass to avoid
   // floating point badness in texcoords.
   test_settings.dont_round_texture_sizes_for_pixel_tests = true;
-  auto delegating_output_surface =
-      std::make_unique<viz::TestLayerTreeFrameSink>(
-          compositor_context_provider, worker_context_provider,
-          gpu_memory_buffer_manager(), test_settings, ImplThreadTaskRunner(),
-          synchronous_composite, disable_display_vsync, refresh_rate);
+  auto delegating_output_surface = std::make_unique<TestLayerTreeFrameSink>(
+      compositor_context_provider, worker_context_provider,
+      gpu_memory_buffer_manager(), test_settings, ImplThreadTaskRunner(),
+      synchronous_composite, disable_display_vsync, refresh_rate);
   delegating_output_surface->SetEnlargePassTextureAmount(
       enlarge_texture_amount_);
   return delegating_output_surface;

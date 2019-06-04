@@ -502,6 +502,8 @@ cc_test_static_library("test_support") {
     "test/task_graph_runner_test_template.h",
     "test/test_hooks.cc",
     "test/test_hooks.h",
+    "test/test_layer_tree_frame_sink.cc",
+    "test/test_layer_tree_frame_sink.h",
     "test/test_layer_tree_host_base.cc",
     "test/test_layer_tree_host_base.h",
     "test/test_occlusion_tracker.h",
