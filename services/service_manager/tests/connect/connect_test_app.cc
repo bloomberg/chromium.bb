@@ -122,7 +122,7 @@ class ConnectTestApp : public Service,
   // test::mojom::StandaloneApp:
   void ConnectToAllowedAppInBlockedPackage(
       ConnectToAllowedAppInBlockedPackageCallback callback) override {
-    base::RunLoop run_loop;
+    base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
     test::mojom::ConnectTestServicePtr test_service;
     service_binding_.GetConnector()->BindInterface("connect_test_a",
                                                    &test_service);
@@ -135,7 +135,6 @@ class ConnectTestApp : public Service,
 
     // This message is dispatched as a task on the same run loop, so we need
     // to allow nesting in order to pump additional signals.
-    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     run_loop.Run();
   }
 
@@ -146,10 +145,9 @@ class ConnectTestApp : public Service,
                                                    &class_interface);
     std::string ping_response;
     {
-      base::RunLoop loop;
+      base::RunLoop loop{base::RunLoop::Type::kNestableTasksAllowed};
       class_interface->Ping(base::BindOnce(&OnResponseString, &ping_response,
                                            loop.QuitClosure()));
-      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
       loop.Run();
     }
     test::mojom::ConnectTestServicePtr service;
@@ -157,10 +155,9 @@ class ConnectTestApp : public Service,
                                                    &service);
     std::string title_response;
     {
-      base::RunLoop loop;
+      base::RunLoop loop{base::RunLoop::Type::kNestableTasksAllowed};
       service->GetTitle(base::BindOnce(&OnResponseString, &title_response,
                                        loop.QuitClosure()));
-      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
       loop.Run();
     }
     std::move(callback).Run(ping_response, title_response);
@@ -177,11 +174,10 @@ class ConnectTestApp : public Service,
       ConnectToClassAppWithFilterCallback callback) override {
     mojom::ConnectResult result;
     base::Optional<Identity> resolved_identity;
-    base::RunLoop loop;
+    base::RunLoop loop{base::RunLoop::Type::kNestableTasksAllowed};
     service_binding_.GetConnector()->WarmService(
         filter, base::BindOnce(&OnConnectResult, loop.QuitClosure(), &result,
                                &resolved_identity));
-    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     loop.Run();
     std::move(callback).Run(static_cast<int32_t>(result), resolved_identity);
   }
