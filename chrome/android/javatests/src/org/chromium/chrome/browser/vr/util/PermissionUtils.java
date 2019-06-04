@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.vr.util;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.permissions.PermissionDialogController;
 import org.chromium.chrome.browser.vr.ArConsentDialog;
+import org.chromium.chrome.browser.vr.VrConsentDialog;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -18,6 +19,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * in the VR Browser, see NativeUiUtils.
  */
 public class PermissionUtils {
+    public static final long DIALOG_POLLING_INTERVAL_MS = 250;
     /**
      * Blocks until a permission prompt appears.
      */
@@ -48,49 +50,52 @@ public class PermissionUtils {
     }
 
     /**
-     * Blocks until the AR session consent prompt appears.
+     * Blocks until the session consent prompt appears.
      */
-    public static void waitForArConsentPrompt(ChromeActivity activity) {
-        CriteriaHelper.pollUiThread(() -> {
-            return isArConsentDialogShown(activity);
-        }, "AR consent prompt did not appear in allotted time");
+    public static void waitForConsentPrompt(ChromeActivity activity) {
+        CriteriaHelper.pollUiThread(()
+                                            -> { return isConsentDialogShown(activity); },
+                "Consent prompt did not appear in allotted time",
+                CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, DIALOG_POLLING_INTERVAL_MS);
     }
 
     /**
-     * Accepts the currently displayed AR session consent prompt.
+     * Accepts the currently displayed session consent prompt.
      */
-    public static void acceptArConsentPrompt(ChromeActivity activity) {
+    public static void acceptConsentPrompt(ChromeActivity activity) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            clickArConsentDialogButton(activity, ModalDialogProperties.ButtonType.POSITIVE);
+            clickConsentDialogButton(activity, ModalDialogProperties.ButtonType.POSITIVE);
         });
     }
 
     /**
-     * Declines the currently displayed AR session consent prompt.
+     * Declines the currently displayed session consent prompt.
      */
-    public static void declineArConsentPrompt(ChromeActivity activity) {
+    public static void declineConsentPrompt(ChromeActivity activity) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            clickArConsentDialogButton(activity, ModalDialogProperties.ButtonType.NEGATIVE);
+            clickConsentDialogButton(activity, ModalDialogProperties.ButtonType.NEGATIVE);
         });
     }
 
     /**
-     * Helper function to check if the AR consent dialog is being shown.
+     * Helper function to check if the consent dialog is being shown.
      */
-    public static boolean isArConsentDialogShown(ChromeActivity activity) {
+    public static boolean isConsentDialogShown(ChromeActivity activity) {
         ModalDialogManager manager = activity.getModalDialogManager();
         PropertyModel model = manager.getCurrentDialogForTest();
         if (model == null) return false;
-        return model.get(ModalDialogProperties.CONTROLLER) instanceof ArConsentDialog;
+        ModalDialogProperties.Controller controller = model.get(ModalDialogProperties.CONTROLLER);
+        return controller instanceof ArConsentDialog || controller instanceof VrConsentDialog;
     }
 
     /**
-     * Helper function to click a button in the AR consent dialog.
+     * Helper function to click a button in the consent dialog.
      */
-    public static void clickArConsentDialogButton(ChromeActivity activity, int buttonType) {
+    public static void clickConsentDialogButton(ChromeActivity activity, int buttonType) {
         ModalDialogManager manager = activity.getModalDialogManager();
         PropertyModel model = manager.getCurrentDialogForTest();
-        ArConsentDialog dialog = (ArConsentDialog) (model.get(ModalDialogProperties.CONTROLLER));
+        ModalDialogProperties.Controller dialog =
+                (ModalDialogProperties.Controller) (model.get(ModalDialogProperties.CONTROLLER));
         dialog.onClick(model, buttonType);
     }
 }

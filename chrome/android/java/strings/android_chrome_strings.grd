@@ -3805,6 +3805,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Reopen Chrome.
       </message>
 
+      <if expr="enable_vr">
+        <part file="../../../app/xr_consent_ui_strings.grdp" />
+      </if>
+
       <if expr="enable_arcore">
         <!-- ARCore check infobar -->
         <message name="IDS_AR_CORE_CHECK_INFOBAR_INSTALL_TEXT" desc="Text to be displayed in the ARCore check infobar. When a WebXR page is loaded, if ARCore is needed to display AR content and it is not installed, an infobar will be shown to the user prompting them to install ARCore.">

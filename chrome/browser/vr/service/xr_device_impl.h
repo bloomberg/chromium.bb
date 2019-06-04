@@ -96,9 +96,12 @@ class XRDeviceImpl : public device::mojom::XRDevice {
       device::mojom::XRDeviceId session_runtime_id,
       device::mojom::XRDevice::RequestSessionCallback callback,
       device::mojom::XRSessionPtr session);
-  void OnUserConsent(device::mojom::XRSessionOptionsPtr options,
-                     device::mojom::XRDevice::RequestSessionCallback callback,
-                     bool allowed);
+  void DoRequestSession(
+      device::mojom::XRSessionOptionsPtr options,
+      device::mojom::XRDevice::RequestSessionCallback callback);
+  void OnConsentResult(device::mojom::XRSessionOptionsPtr options,
+                       device::mojom::XRDevice::RequestSessionCallback callback,
+                       bool is_consent_granted);
 
   // TODO(https://crbug.com/837538): Instead, check before returning this
   // object.
