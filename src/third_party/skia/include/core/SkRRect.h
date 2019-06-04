@@ -20,6 +20,7 @@
 
 #include "SkRect.h"
 #include "SkPoint.h"
+#include "SkMatrix.h"
 
 class SkPath;
 class SkMatrix;
