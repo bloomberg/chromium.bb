@@ -107,7 +107,7 @@ bool GetCodecSpecificDataForAudio(AudioCodec codec,
 
       // The last header is the codec header.
       output_csd1->assign(extra_data + total_length,
-                          extra_data + extra_data_size - total_length);
+                          extra_data + extra_data_size);
       break;
     }
     case kCodecAAC: {
