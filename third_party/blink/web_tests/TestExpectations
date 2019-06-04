@@ -2968,8 +2968,6 @@ crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-atomic-00
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-replaced-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-replaced-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-atomic-003.html [ Failure ]
-crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
-crbug.com/626703 external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-cluster-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-cluster-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-normal-keep-all-001.html [ Failure ]
