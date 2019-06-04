@@ -2248,24 +2248,10 @@ putCharacter(widechar character, const TranslationTableHeader *table, int pos,
 	TranslationTableCharacter *chardef = NULL;
 	TranslationTableOffset offset;
 	widechar d;
-	chardef = (findCharOrDots(character, 0, table));
+	chardef = findCharOrDots(character, 0, table);
 	if ((chardef->attributes & CTC_Letter) && (chardef->attributes & CTC_UpperCase))
 		chardef = findCharOrDots(chardef->lowercase, 0, table);
-	// TODO: for_selectRule and this function screw up Digit and LitDigit
-	// NOTE: removed Litdigit from tables.
-	// if(!chardef->otherRules)
 	offset = chardef->definitionRule;
-	// else
-	//{
-	//	offset = chardef->otherRules;
-	//	rule = (TranslationTableRule *)&table->ruleArea[offset];
-	//	while(rule->charsnext && rule->charsnext != chardef->definitionRule)
-	//	{
-	//		rule = (TranslationTableRule *)&table->ruleArea[offset];
-	//		if(rule->charsnext)
-	//			offset = rule->charsnext;
-	//	}
-	//}
 	if (offset) {
 		rule = (TranslationTableRule *)&table->ruleArea[offset];
 		if (rule->dotslen)
