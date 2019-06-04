@@ -95,10 +95,6 @@ unit tests.
 
 - unittest.key.bin : private key stored unencrypted.
 
-- unittest.originbound.der: A test origin-bound certificate for
-     https://www.google.com:443.
-- unittest.originbound.key.der: matching PrivateKeyInfo.
-
 - multivalue_rdn.pem : A regression test for http://crbug.com/101009. A
      certificate with all of the AttributeTypeAndValues stored within a single
      RelativeDistinguishedName, rather than one AVA per RDN as normally seen.

@@ -2664,8 +2664,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/treadclimber.sctlist",
     "data/ssl/certificates/unescaped.pem",
     "data/ssl/certificates/unittest.key.bin",
-    "data/ssl/certificates/unittest.originbound.der",
-    "data/ssl/certificates/unittest.originbound.key.der",
     "data/ssl/certificates/unittest.selfsigned.der",
     "data/ssl/certificates/verisign_class3_g5_crosssigned-trusted.keychain",
     "data/ssl/certificates/verisign_class3_g5_crosssigned.pem",
