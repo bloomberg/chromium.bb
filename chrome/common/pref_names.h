@@ -299,6 +299,7 @@ extern const char kKerberosAddAccountsAllowed[];
 extern const char kKerberosAccounts[];
 extern const char kAppReinstallRecommendationEnabled[];
 extern const char kStartupBrowserWindowLaunchSuppressed[];
+extern const char kDeviceWebUsbAllowDevicesForUrls[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];

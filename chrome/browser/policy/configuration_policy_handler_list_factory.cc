@@ -1150,7 +1150,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(
-      std::make_unique<WebUsbAllowDevicesForUrlsPolicyHandler>(chrome_schema));
+      WebUsbAllowDevicesForUrlsPolicyHandler::CreateForUserPolicy(
+          chrome_schema));
 
 // On most platforms, there is a legacy policy
 // kUnsafelyTreatInsecureOriginAsSecure which has been replaced by
@@ -1492,6 +1493,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  handlers->AddHandler(
+      WebUsbAllowDevicesForUrlsPolicyHandler::CreateForDevicePolicy(
+          chrome_schema));
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)

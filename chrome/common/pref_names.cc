@@ -949,6 +949,11 @@ const char kAppReinstallRecommendationEnabled[] =
 // launching at the start of the session.
 const char kStartupBrowserWindowLaunchSuppressed[] =
     "startup_browser_window_launch_suppressed";
+
+// A JSON pref for controlling which devices are whitelisted for certain urls to
+// be used via the WebUSB API.
+const char kDeviceWebUsbAllowDevicesForUrls[] =
+    "device_webusb_allow_devices_for_urls";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
