@@ -383,11 +383,13 @@ class CORE_EXPORT LocalFrameView final
 
   // Updates the fragment anchor element based on URL's fragment identifier.
   // Updates corresponding ':target' CSS pseudo class on the anchor element.
-  // If |Behavior| is passed it can be used to prevent scrolling/focusing while
-  // still performing all related side-effects like setting :target (used for
-  // e.g. in history restoration to override the scroll offset). The scroll
+  // If |should_scroll| is passed it can be used to prevent scrolling/focusing
+  // while still performing all related side-effects like setting :target (used
+  // for e.g. in history restoration to override the scroll offset). The scroll
   // offset is maintained during the frame loading process.
-  void ProcessUrlFragment(const KURL&, bool should_scroll = true);
+  void ProcessUrlFragment(const KURL&,
+                          bool same_document_navigation,
+                          bool should_scroll = true);
   FragmentAnchor* GetFragmentAnchor() { return fragment_anchor_; }
   void InvokeFragmentAnchor();
 

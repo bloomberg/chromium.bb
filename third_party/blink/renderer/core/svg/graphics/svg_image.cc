@@ -504,7 +504,7 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const KURL& url) {
 
   // Always call processUrlFragment, even if the url is empty, because
   // there may have been a previous url/fragment that needs to be reset.
-  view->ProcessUrlFragment(url);
+  view->ProcessUrlFragment(url, /*same_document_navigation=*/false);
 
   // If the image was reset, we need to rewind the timeline back to 0. This
   // needs to be done before painting, or else we wouldn't get the correct
