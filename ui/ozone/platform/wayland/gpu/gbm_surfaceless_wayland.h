@@ -11,22 +11,22 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
 #include "ui/ozone/public/overlay_plane.h"
 #include "ui/ozone/public/swap_completion_callback.h"
 
 namespace ui {
 
 class WaylandBufferManagerGpu;
-class WaylandSurfaceFactory;
 
 // A GLSurface for Wayland Ozone platform that uses surfaceless drawing. Drawing
 // and displaying happens directly through NativePixmap buffers. CC would call
 // into SurfaceFactoryOzone to allocate the buffers and then call
 // ScheduleOverlayPlane(..) to schedule the buffer for presentation.
-class GbmSurfacelessWayland : public gl::SurfacelessEGL {
+class GbmSurfacelessWayland : public gl::SurfacelessEGL,
+                              public WaylandSurfaceGpu {
  public:
-  GbmSurfacelessWayland(WaylandSurfaceFactory* surface_factory,
-                        WaylandBufferManagerGpu* buffer_manager,
+  GbmSurfacelessWayland(WaylandBufferManagerGpu* buffer_manager,
                         gfx::AcceleratedWidget widget);
 
   void QueueOverlayPlane(OverlayPlane plane);
@@ -58,12 +58,14 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
 
-  void OnSubmission(uint32_t buffer_id, const gfx::SwapResult& swap_result);
-  void OnPresentation(uint32_t buffer_id,
-                      const gfx::PresentationFeedback& feedback);
-
  private:
   ~GbmSurfacelessWayland() override;
+
+  // WaylandSurfaceGpu overrides:
+  void OnSubmission(uint32_t buffer_id,
+                    const gfx::SwapResult& swap_result) override;
+  void OnPresentation(uint32_t buffer_id,
+                      const gfx::PresentationFeedback& feedback) override;
 
   struct PendingFrame {
     PendingFrame();
@@ -91,7 +93,6 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
   EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(PendingFrame* frame);
 
-  WaylandSurfaceFactory* const surface_factory_;
   WaylandBufferManagerGpu* const buffer_manager_;
   std::vector<OverlayPlane> planes_;
 

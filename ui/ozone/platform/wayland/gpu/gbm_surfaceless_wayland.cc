@@ -12,7 +12,6 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 
 namespace ui {
 
@@ -27,17 +26,15 @@ void WaitForFence(EGLDisplay display, EGLSyncKHR fence) {
 }  // namespace
 
 GbmSurfacelessWayland::GbmSurfacelessWayland(
-    WaylandSurfaceFactory* surface_factory,
     WaylandBufferManagerGpu* buffer_manager,
     gfx::AcceleratedWidget widget)
     : SurfacelessEGL(gfx::Size()),
-      surface_factory_(surface_factory),
       buffer_manager_(buffer_manager),
       widget_(widget),
       has_implicit_external_sync_(
           HasEGLExtension("EGL_ARM_implicit_external_sync")),
       weak_factory_(this) {
-  surface_factory_->RegisterSurface(widget_, this);
+  buffer_manager_->RegisterSurface(widget_, this);
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 }
 
@@ -168,7 +165,7 @@ void GbmSurfacelessWayland::SetRelyOnImplicitSync() {
 }
 
 GbmSurfacelessWayland::~GbmSurfacelessWayland() {
-  surface_factory_->UnregisterSurface(widget_);
+  buffer_manager_->UnregisterSurface(widget_);
 }
 
 GbmSurfacelessWayland::PendingFrame::PendingFrame() {}

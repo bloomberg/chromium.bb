@@ -22,18 +22,14 @@
 #include "ui/ozone/common/linux/gbm_device.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/public/overlay_plane.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 namespace ui {
 
-GbmPixmapWayland::GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
-                                   WaylandBufferManagerGpu* buffer_manager,
+GbmPixmapWayland::GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager,
                                    gfx::AcceleratedWidget widget)
-    : surface_manager_(surface_manager),
-      buffer_manager_(buffer_manager),
-      widget_(widget) {}
+    : buffer_manager_(buffer_manager), widget_(widget) {}
 
 GbmPixmapWayland::~GbmPixmapWayland() {
   if (gbm_bo_ && widget_ != gfx::kNullAcceleratedWidget)
@@ -130,8 +126,12 @@ bool GbmPixmapWayland::ScheduleOverlayPlane(
     const gfx::RectF& crop_rect,
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
-  GbmSurfacelessWayland* surfaceless = surface_manager_->GetSurface(widget);
+  auto* surface = buffer_manager_->GetSurface(widget);
+  DCHECK(surface);
+  GbmSurfacelessWayland* surfaceless =
+      static_cast<GbmSurfacelessWayland*>(surface);
   DCHECK(surfaceless);
+
   surfaceless->QueueOverlayPlane(
       OverlayPlane(this, std::move(gpu_fence), plane_z_order, plane_transform,
                    display_bounds, crop_rect, enable_blend));

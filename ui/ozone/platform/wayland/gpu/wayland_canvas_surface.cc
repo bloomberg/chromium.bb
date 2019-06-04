@@ -28,9 +28,13 @@ void DeleteSharedMemoryMapping(void* pixels, void* context) {
 WaylandCanvasSurface::WaylandCanvasSurface(
     WaylandBufferManagerGpu* buffer_manager,
     gfx::AcceleratedWidget widget)
-    : buffer_manager_(buffer_manager), widget_(widget) {}
+    : buffer_manager_(buffer_manager), widget_(widget) {
+  buffer_manager_->RegisterSurface(widget_, this);
+}
 
 WaylandCanvasSurface::~WaylandCanvasSurface() {
+  buffer_manager_->UnregisterSurface(widget_);
+
   if (sk_surface_)
     buffer_manager_->DestroyBuffer(widget_, buffer_id_);
 }
@@ -86,17 +90,27 @@ void WaylandCanvasSurface::ResizeCanvas(const gfx::Size& viewport_size) {
 }
 
 void WaylandCanvasSurface::PresentCanvas(const gfx::Rect& damage) {
-  // TODO(https://crbug.com/930664): add support for submission and presentation
-  // callbacks.
   buffer_manager_->CommitBuffer(widget_, buffer_id_, damage);
 }
 
 std::unique_ptr<gfx::VSyncProvider>
 WaylandCanvasSurface::CreateVSyncProvider() {
   // TODO(https://crbug.com/930662): This can be implemented with information
-  // from frame callbacks, and possibly output refresh rate.
+  // from presentation feedback.
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
+}
+
+void WaylandCanvasSurface::OnSubmission(uint32_t buffer_id,
+                                        const gfx::SwapResult& swap_result) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WaylandCanvasSurface::OnPresentation(
+    uint32_t buffer_id,
+    const gfx::PresentationFeedback& feedback) {
+  // TODO(https://crbug.com/930662): this can be used for the vsync provider.
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 }  // namespace ui

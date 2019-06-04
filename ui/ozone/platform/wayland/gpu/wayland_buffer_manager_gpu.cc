@@ -12,13 +12,12 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
 
 namespace ui {
 
-WaylandBufferManagerGpu::WaylandBufferManagerGpu(WaylandSurfaceFactory* factory)
-    : factory_(factory),
-      associated_binding_(this),
+WaylandBufferManagerGpu::WaylandBufferManagerGpu()
+    : associated_binding_(this),
       gpu_thread_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 WaylandBufferManagerGpu::~WaylandBufferManagerGpu() = default;
@@ -43,7 +42,7 @@ void WaylandBufferManagerGpu::OnSubmission(gfx::AcceleratedWidget widget,
                                            gfx::SwapResult swap_result) {
   DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
   DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
-  auto* surface = factory_->GetSurface(widget);
+  auto* surface = GetSurface(widget);
   // There can be a race between destruction and submitting the last frames. The
   // surface can be destroyed by the time the host receives a request to destroy
   // a buffer, and is able to call the OnSubmission for that specific buffer.
@@ -57,12 +56,30 @@ void WaylandBufferManagerGpu::OnPresentation(
     const gfx::PresentationFeedback& feedback) {
   DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
   DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
-  auto* surface = factory_->GetSurface(widget);
+  auto* surface = GetSurface(widget);
   // There can be a race between destruction and presenting the last frames. The
   // surface can be destroyed by the time the host receives a request to destroy
   // a buffer, and is able to call the OnPresentation for that specific buffer.
   if (surface)
     surface->OnPresentation(buffer_id, feedback);
+}
+
+void WaylandBufferManagerGpu::RegisterSurface(gfx::AcceleratedWidget widget,
+                                              WaylandSurfaceGpu* surface) {
+  widget_to_surface_map_.insert(std::make_pair(widget, surface));
+}
+
+void WaylandBufferManagerGpu::UnregisterSurface(gfx::AcceleratedWidget widget) {
+  widget_to_surface_map_.erase(widget);
+}
+
+WaylandSurfaceGpu* WaylandBufferManagerGpu::GetSurface(
+    gfx::AcceleratedWidget widget) const {
+  WaylandSurfaceGpu* surface = nullptr;
+  auto it = widget_to_surface_map_.find(widget);
+  if (it != widget_to_surface_map_.end())
+    surface = it->second;
+  return surface;
 }
 
 void WaylandBufferManagerGpu::CreateDmabufBasedBuffer(

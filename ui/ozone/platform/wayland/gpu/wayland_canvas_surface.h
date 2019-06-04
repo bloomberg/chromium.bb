@@ -12,13 +12,15 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {
 
 class WaylandBufferManagerGpu;
 
-class WaylandCanvasSurface : public SurfaceOzoneCanvas {
+class WaylandCanvasSurface : public SurfaceOzoneCanvas,
+                             public WaylandSurfaceGpu {
  public:
   WaylandCanvasSurface(WaylandBufferManagerGpu* buffer_manager,
                        gfx::AcceleratedWidget widget);
@@ -31,6 +33,12 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas {
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
 
  private:
+  // WaylandSurfaceGpu overrides:
+  void OnSubmission(uint32_t buffer_id,
+                    const gfx::SwapResult& swap_result) override;
+  void OnPresentation(uint32_t buffer_id,
+                      const gfx::PresentationFeedback& feedback) override;
+
   void OnGetSizeForWidget(const gfx::Size& widget_size) { size_ = widget_size; }
 
   WaylandBufferManagerGpu* const buffer_manager_;

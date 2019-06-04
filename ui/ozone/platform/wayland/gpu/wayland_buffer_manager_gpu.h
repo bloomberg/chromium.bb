@@ -28,7 +28,7 @@ class Rect;
 namespace ui {
 
 class WaylandConnection;
-class WaylandSurfaceFactory;
+class WaylandSurfaceGpu;
 class WaylandWindow;
 
 // Forwards calls through an associated mojo connection to WaylandBufferManager
@@ -40,7 +40,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
  public:
   using BufferManagerHostPtr = ozone::mojom::WaylandBufferManagerHostPtr;
 
-  explicit WaylandBufferManagerGpu(WaylandSurfaceFactory* factory);
+  WaylandBufferManagerGpu();
   ~WaylandBufferManagerGpu() override;
 
   // WaylandBufferManagerGpu overrides:
@@ -58,6 +58,15 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   void OnPresentation(gfx::AcceleratedWidget widget,
                       uint32_t buffer_id,
                       const gfx::PresentationFeedback& feedback) override;
+
+  // If the client, which uses this manager and implements WaylandSurfaceGpu,
+  // wants to receive OnSubmission and OnPresentation callbacks and know the
+  // result of the below operations, they must register themselves with the
+  // below APIs.
+  void RegisterSurface(gfx::AcceleratedWidget widget,
+                       WaylandSurfaceGpu* surface);
+  void UnregisterSurface(gfx::AcceleratedWidget widget);
+  WaylandSurfaceGpu* GetSurface(gfx::AcceleratedWidget widget) const;
 
   // Methods, which can be used when in both in-process-gpu and out of process
   // modes. These calls are forwarded to the browser process through the
@@ -133,10 +142,6 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
 
   void BindHostInterface();
 
-  // Non-owned. Only used to get registered surfaces and notify them about
-  // submission and presentation of buffers.
-  WaylandSurfaceFactory* const factory_;
-
 #if defined(WAYLAND_GBM)
   // A DRM render node based gbm device.
   std::unique_ptr<GbmDevice> gbm_device_;
@@ -159,6 +164,8 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   // browser process, which calls back to a right sequence after a
   // CommitBuffer call.
   scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_runner_;
+
+  std::map<gfx::AcceleratedWidget, WaylandSurfaceGpu*> widget_to_surface_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerGpu);
 };

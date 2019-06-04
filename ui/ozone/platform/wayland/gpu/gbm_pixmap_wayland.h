@@ -17,13 +17,11 @@
 
 namespace ui {
 
-class WaylandSurfaceFactory;
 class WaylandBufferManagerGpu;
 
 class GbmPixmapWayland : public gfx::NativePixmap {
  public:
-  GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
-                   WaylandBufferManagerGpu* buffer_manager,
+  GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager,
                    gfx::AcceleratedWidget widget);
 
   // Creates a buffer object and initializes the pixmap buffer.
@@ -57,8 +55,6 @@ class GbmPixmapWayland : public gfx::NativePixmap {
 
   // gbm_bo wrapper for struct gbm_bo.
   std::unique_ptr<GbmBuffer> gbm_bo_;
-
-  WaylandSurfaceFactory* const surface_manager_;
 
   // Represents a connection to Wayland.
   WaylandBufferManagerGpu* const buffer_manager_;
