@@ -68,8 +68,7 @@ void BrowserAccessibility::Init(BrowserAccessibilityManager* manager,
 }
 
 bool BrowserAccessibility::PlatformIsLeaf() const {
-  if (!HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId) &&
-      InternalChildCount() == 0)
+  if (InternalChildCount() == 0)
     return true;
 
   // These types of objects may have children that we use as internal
