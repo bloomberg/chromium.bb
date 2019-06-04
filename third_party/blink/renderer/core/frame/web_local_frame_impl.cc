@@ -1805,9 +1805,10 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
 
 std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
     HTMLPortalElement* portal,
-    mojom::blink::PortalAssociatedRequest request,
-    mojom::blink::PortalClientAssociatedPtrInfo client) {
-  auto pair = client_->CreatePortal(request.PassHandle(), client.PassHandle());
+    mojo::PendingAssociatedReceiver<mojom::blink::Portal> portal_receiver,
+    mojo::PendingAssociatedRemote<mojom::blink::PortalClient> portal_client) {
+  auto pair = client_->CreatePortal(portal_receiver.PassHandle(),
+                                    portal_client.PassHandle());
   WebRemoteFrameImpl* portal_frame = ToWebRemoteFrameImpl(pair.first);
   portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal,
                                     g_null_atom);
@@ -2552,9 +2553,9 @@ void WebLocalFrameImpl::OnPortalActivated(
 
   PortalActivateEvent* event = PortalActivateEvent::Create(
       frame_.Get(), portal_token,
-      mojom::blink::PortalAssociatedPtr(mojom::blink::PortalAssociatedPtrInfo(
-          std::move(portal_pipe), mojom::blink::Portal::Version_)),
-      mojom::blink::PortalClientAssociatedRequest(
+      mojo::PendingAssociatedRemote<mojom::blink::Portal>(
+          std::move(portal_pipe), mojom::blink::Portal::Version_),
+      mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>(
           std::move(portal_client_pipe)),
       std::move(blink_data.message), ports, std::move(callback));
 

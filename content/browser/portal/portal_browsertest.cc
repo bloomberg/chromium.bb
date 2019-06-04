@@ -43,8 +43,8 @@ class PortalInterceptorForTesting final
  public:
   static PortalInterceptorForTesting* Create(
       RenderFrameHostImpl* render_frame_host_impl,
-      blink::mojom::PortalAssociatedRequest request,
-      blink::mojom::PortalClientAssociatedPtr client);
+      mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
+      mojo::AssociatedRemote<blink::mojom::PortalClient> client);
   static PortalInterceptorForTesting* From(content::Portal* portal);
 
   void Activate(blink::TransferableMessage data,
@@ -102,14 +102,14 @@ class PortalInterceptorForTesting final
 // static
 PortalInterceptorForTesting* PortalInterceptorForTesting::Create(
     RenderFrameHostImpl* render_frame_host_impl,
-    blink::mojom::PortalAssociatedRequest request,
-    blink::mojom::PortalClientAssociatedPtr client) {
+    mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
+    mojo::AssociatedRemote<blink::mojom::PortalClient> client) {
   auto test_portal_ptr =
       base::WrapUnique(new PortalInterceptorForTesting(render_frame_host_impl));
   PortalInterceptorForTesting* test_portal = test_portal_ptr.get();
   test_portal->GetPortal()->SetBindingForTesting(
-      mojo::MakeStrongAssociatedBinding(std::move(test_portal_ptr),
-                                        std::move(request)));
+      mojo::MakeStrongAssociatedBinding<blink::mojom::Portal>(
+          std::move(test_portal_ptr), std::move(receiver)));
   test_portal->GetPortal()->SetClientForTesting(std::move(client));
   return test_portal;
 }
@@ -142,13 +142,15 @@ class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
     return render_frame_host_impl_;
   }
 
-  void CreatePortal(blink::mojom::PortalAssociatedRequest request,
-                    blink::mojom::PortalClientAssociatedPtrInfo client,
-                    CreatePortalCallback callback) override {
+  void CreatePortal(
+      mojo::PendingAssociatedReceiver<blink::mojom::Portal> portal,
+      mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
+      CreatePortalCallback callback) override {
     PortalInterceptorForTesting* portal_interceptor =
         PortalInterceptorForTesting::Create(
-            render_frame_host_impl_, std::move(request),
-            blink::mojom::PortalClientAssociatedPtr(std::move(client)));
+            render_frame_host_impl_, std::move(portal),
+            mojo::AssociatedRemote<blink::mojom::PortalClient>(
+                std::move(client)));
     portal_ = portal_interceptor->GetPortal();
     RenderFrameProxyHost* proxy_host = portal_->CreateProxyAndAttachPortal();
     std::move(callback).Run(proxy_host->GetRoutingID(), portal_->portal_token(),

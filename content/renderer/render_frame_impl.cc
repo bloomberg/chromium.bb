@@ -2732,8 +2732,8 @@ void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id,
 
 void RenderFrameImpl::OnPortalActivated(
     const base::UnguessableToken& portal_token,
-    blink::mojom::PortalAssociatedPtrInfo portal,
-    blink::mojom::PortalClientAssociatedRequest portal_client,
+    mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
+    mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
     blink::TransferableMessage data,
     OnPortalActivatedCallback callback) {
   frame_->OnPortalActivated(portal_token, portal.PassHandle(),
@@ -4344,15 +4344,17 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 }
 
 std::pair<blink::WebRemoteFrame*, base::UnguessableToken>
-RenderFrameImpl::CreatePortal(mojo::ScopedInterfaceEndpointHandle request,
-                              mojo::ScopedInterfaceEndpointHandle client) {
+RenderFrameImpl::CreatePortal(
+    mojo::ScopedInterfaceEndpointHandle portal_endpoint,
+    mojo::ScopedInterfaceEndpointHandle client_endpoint) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   base::UnguessableToken portal_token;
   base::UnguessableToken devtools_frame_token;
   GetFrameHost()->CreatePortal(
-      blink::mojom::PortalAssociatedRequest(std::move(request)),
-      blink::mojom::PortalClientAssociatedPtrInfo(
-          std::move(client), blink::mojom::PortalClient::Version_),
+      mojo::PendingAssociatedReceiver<blink::mojom::Portal>(
+          std::move(portal_endpoint)),
+      mojo::PendingAssociatedRemote<blink::mojom::PortalClient>(
+          std::move(client_endpoint), blink::mojom::PortalClient::Version_),
       &proxy_routing_id, &portal_token, &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
       this, proxy_routing_id, devtools_frame_token);

@@ -856,10 +856,10 @@ LocalFrame* LocalFrameClientImpl::CreateFrame(
 std::pair<RemoteFrame*, base::UnguessableToken>
 LocalFrameClientImpl::CreatePortal(
     HTMLPortalElement* portal,
-    mojom::blink::PortalAssociatedRequest request,
-    mojom::blink::PortalClientAssociatedPtrInfo client) {
-  return web_frame_->CreatePortal(portal, std::move(request),
-                                  std::move(client));
+    mojo::PendingAssociatedReceiver<mojom::blink::Portal> portal_receiver,
+    mojo::PendingAssociatedRemote<mojom::blink::PortalClient> portal_client) {
+  return web_frame_->CreatePortal(portal, std::move(portal_receiver),
+                                  std::move(portal_client));
 }
 
 RemoteFrame* LocalFrameClientImpl::AdoptPortal(HTMLPortalElement* portal) {

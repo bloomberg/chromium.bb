@@ -12,6 +12,10 @@
 #include "content/common/frame.mojom.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
@@ -43,17 +47,19 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // Creates a Portal and binds it to the pipe specified in the |request|. This
   // function creates a strong binding, so the ownership of the Portal is
   // delegated to the binding.
-  static Portal* Create(RenderFrameHostImpl* owner_render_frame_host,
-                        blink::mojom::PortalAssociatedRequest request,
-                        blink::mojom::PortalClientAssociatedPtrInfo client);
+  static Portal* Create(
+      RenderFrameHostImpl* owner_render_frame_host,
+      mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
+      mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client);
 
   // Creates a portal without binding it to any pipe. Only used in tests.
   static std::unique_ptr<Portal> CreateForTesting(
       RenderFrameHostImpl* owner_render_frame_host);
 
-  static void BindPortalHostRequest(
+  static void BindPortalHostReceiver(
       RenderFrameHostImpl* frame,
-      blink::mojom::PortalHostAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<blink::mojom::PortalHost>
+          pending_receiver);
 
   // Called from a synchronous IPC from the renderer process in order to create
   // the proxy.
@@ -101,9 +107,10 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   }
   void SetBindingForTesting(
       mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding);
-  void SetClientForTesting(blink::mojom::PortalClientAssociatedPtr client);
+  void SetClientForTesting(
+      mojo::AssociatedRemote<blink::mojom::PortalClient> client);
 
-  blink::mojom::PortalClient& client() { return *client_; }
+  blink::mojom::PortalClient& client() { return *(client_.get()); }
 
  private:
   explicit Portal(RenderFrameHostImpl* owner_render_frame_host);
@@ -120,11 +127,11 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding_;
 
   // Receives messages from the inner render process.
-  mojo::AssociatedBinding<blink::mojom::PortalHost> portal_host_binding_;
+  mojo::AssociatedReceiver<blink::mojom::PortalHost> portal_host_receiver_;
 
   // Used to communicate with the HTMLPortalElement in the renderer that
   // hosts this Portal.
-  blink::mojom::PortalClientAssociatedPtr client_;
+  mojo::AssociatedRemote<blink::mojom::PortalClient> client_;
 
   // When the portal is not attached, the Portal owns its WebContents.
   std::unique_ptr<WebContents> portal_contents_;

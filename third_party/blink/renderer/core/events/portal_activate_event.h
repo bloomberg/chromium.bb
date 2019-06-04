@@ -6,6 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_PORTAL_ACTIVATE_EVENT_H_
 
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/unpacked_serialized_script_value.h"
@@ -36,9 +39,9 @@ class CORE_EXPORT PortalActivateEvent : public Event {
   static PortalActivateEvent* Create(
       LocalFrame* frame,
       const base::UnguessableToken& predecessor_portal_token,
-      mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
-      mojom::blink::PortalClientAssociatedRequest
-          predecessor_portal_client_request,
+      mojo::PendingAssociatedRemote<mojom::blink::Portal> predecessor_portal,
+      mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
+          predecessor_portal_client_receiver,
       scoped_refptr<SerializedScriptValue> data,
       MessagePortArray* ports,
       OnPortalActivatedCallback callback);
@@ -47,14 +50,15 @@ class CORE_EXPORT PortalActivateEvent : public Event {
   static PortalActivateEvent* Create(const AtomicString& type,
                                      const PortalActivateEventInit*);
 
-  PortalActivateEvent(Document* document,
-                      const base::UnguessableToken& predecessor_portal_token,
-                      mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
-                      mojom::blink::PortalClientAssociatedRequest
-                          predecessor_portal_client_request,
-                      UnpackedSerializedScriptValue* data,
-                      MessagePortArray*,
-                      OnPortalActivatedCallback callback);
+  PortalActivateEvent(
+      Document* document,
+      const base::UnguessableToken& predecessor_portal_token,
+      mojo::PendingAssociatedRemote<mojom::blink::Portal> predecessor_portal,
+      mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
+          predecessor_portal_client_receiver,
+      UnpackedSerializedScriptValue* data,
+      MessagePortArray*,
+      OnPortalActivatedCallback callback);
   PortalActivateEvent(const AtomicString& type, const PortalActivateEventInit*);
 
   ~PortalActivateEvent() override;
@@ -73,9 +77,9 @@ class CORE_EXPORT PortalActivateEvent : public Event {
  private:
   Member<Document> document_;
   base::UnguessableToken predecessor_portal_token_;
-  mojom::blink::PortalAssociatedPtr predecessor_portal_ptr_;
-  mojom::blink::PortalClientAssociatedRequest
-      predecessor_portal_client_request_;
+  mojo::AssociatedRemote<mojom::blink::Portal> predecessor_portal_;
+  mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
+      predecessor_portal_client_receiver_;
 
   // Set if this came from a serialized value.
   Member<UnpackedSerializedScriptValue> data_;

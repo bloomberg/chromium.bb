@@ -37,7 +37,7 @@ Portal::Portal(RenderFrameHostImpl* owner_render_frame_host)
           WebContents::FromRenderFrameHost(owner_render_frame_host)),
       owner_render_frame_host_(owner_render_frame_host),
       portal_token_(base::UnguessableToken::Create()),
-      portal_host_binding_(this) {
+      portal_host_receiver_(this) {
   auto pair = g_portal_token_map.Get().emplace(portal_token_, this);
   DCHECK(pair.second);
 }
@@ -65,14 +65,15 @@ Portal* Portal::FromToken(const base::UnguessableToken& portal_token) {
 }
 
 // static
-Portal* Portal::Create(RenderFrameHostImpl* owner_render_frame_host,
-                       blink::mojom::PortalAssociatedRequest request,
-                       blink::mojom::PortalClientAssociatedPtrInfo client) {
+Portal* Portal::Create(
+    RenderFrameHostImpl* owner_render_frame_host,
+    mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
+    mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client) {
   auto portal_ptr = base::WrapUnique(new Portal(owner_render_frame_host));
   Portal* portal = portal_ptr.get();
-  portal->binding_ = mojo::MakeStrongAssociatedBinding(std::move(portal_ptr),
-                                                       std::move(request));
-  portal->client_ = blink::mojom::PortalClientAssociatedPtr(std::move(client));
+  portal->binding_ = mojo::MakeStrongAssociatedBinding<blink::mojom::Portal>(
+      std::move(portal_ptr), std::move(receiver));
+  portal->client_.Bind(std::move(client));
   return portal;
 }
 
@@ -83,9 +84,10 @@ std::unique_ptr<Portal> Portal::CreateForTesting(
 }
 
 // static
-void Portal::BindPortalHostRequest(
+void Portal::BindPortalHostReceiver(
     RenderFrameHostImpl* frame,
-    blink::mojom::PortalHostAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<blink::mojom::PortalHost>
+        pending_receiver) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(frame));
 
@@ -103,10 +105,10 @@ void Portal::BindPortalHostRequest(
   // we rebind with the new request. An example scenario is a new document after
   // a portal navigation trying to create a connection, but the old document
   // hasn't been destroyed yet (and the pipe hasn't been closed).
-  auto& binding = web_contents->portal()->portal_host_binding_;
-  if (binding.is_bound())
-    binding.Close();
-  binding.Bind(std::move(request));
+  auto& receiver = web_contents->portal()->portal_host_receiver_;
+  if (receiver.is_bound())
+    receiver.reset();
+  receiver.Bind(std::move(pending_receiver));
 }
 
 RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
@@ -216,17 +218,20 @@ void Portal::Activate(blink::TransferableMessage data,
 
   portal_contents_impl_->set_portal(nullptr);
 
-  blink::mojom::PortalAssociatedPtr portal_ptr;
-  blink::mojom::PortalClientAssociatedPtr portal_client_ptr;
-  auto portal_client_request = mojo::MakeRequest(&portal_client_ptr);
+  mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal;
+  auto portal_receiver = pending_portal.InitWithNewEndpointAndPassReceiver();
+
+  mojo::PendingAssociatedRemote<blink::mojom::PortalClient> pending_client;
+  auto client_receiver = pending_client.InitWithNewEndpointAndPassReceiver();
+
   Portal* portal =
-      Create(portal_contents_impl_->GetMainFrame(),
-             mojo::MakeRequest(&portal_ptr), portal_client_ptr.PassInterface());
+      Create(portal_contents_impl_->GetMainFrame(), std::move(portal_receiver),
+             std::move(pending_client));
   portal->SetPortalContents(std::move(predecessor_web_contents));
 
   portal_contents_impl_->GetMainFrame()->OnPortalActivated(
-      portal->portal_token_, portal_ptr.PassInterface(),
-      std::move(portal_client_request), std::move(data), std::move(callback));
+      portal->portal_token_, std::move(pending_portal),
+      std::move(client_receiver), std::move(data), std::move(callback));
 
   devtools_instrumentation::PortalActivated(outer_contents->GetMainFrame());
 }
@@ -290,7 +295,7 @@ void Portal::SetBindingForTesting(
 }
 
 void Portal::SetClientForTesting(
-    blink::mojom::PortalClientAssociatedPtr client) {
+    mojo::AssociatedRemote<blink::mojom::PortalClient> client) {
   client_ = std::move(client);
 }
 

@@ -881,8 +881,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // PortalActivateEvent.
   void OnPortalActivated(
       const base::UnguessableToken& portal_token,
-      blink::mojom::PortalAssociatedPtrInfo portal,
-      blink::mojom::PortalClientAssociatedRequest portal_client,
+      mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
+      mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
       blink::TransferableMessage data,
       base::OnceCallback<void(bool)> callback);
 
@@ -1173,9 +1173,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
                        CreateNewWindowCallback callback) override;
-  void CreatePortal(blink::mojom::PortalAssociatedRequest request,
-                    blink::mojom::PortalClientAssociatedPtrInfo client,
-                    CreatePortalCallback callback) override;
+  void CreatePortal(
+      mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
+      mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
+      CreatePortalCallback callback) override;
   void AdoptPortal(const base::UnguessableToken& portal_token,
                    AdoptPortalCallback callback) override;
   void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override;

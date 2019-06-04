@@ -643,8 +643,8 @@ class CONTENT_EXPORT RenderFrameImpl
       JavaScriptExecuteRequestInIsolatedWorldCallback callback) override;
   void OnPortalActivated(
       const base::UnguessableToken& portal_token,
-      blink::mojom::PortalAssociatedPtrInfo portal,
-      blink::mojom::PortalClientAssociatedRequest portal_client,
+      mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
+      mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
       blink::TransferableMessage data,
       OnPortalActivatedCallback callback) override;
 
@@ -698,8 +698,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebFrameOwnerProperties& frame_owner_properties,
       blink::FrameOwnerElementType frame_owner_element_type) override;
   std::pair<blink::WebRemoteFrame*, base::UnguessableToken> CreatePortal(
-      mojo::ScopedInterfaceEndpointHandle request,
-      mojo::ScopedInterfaceEndpointHandle client) override;
+      mojo::ScopedInterfaceEndpointHandle portal_endpoint,
+      mojo::ScopedInterfaceEndpointHandle client_endpoint) override;
   blink::WebRemoteFrame* AdoptPortal(
       const base::UnguessableToken& portal_token) override;
   blink::WebFrame* FindFrame(const blink::WebString& name) override;

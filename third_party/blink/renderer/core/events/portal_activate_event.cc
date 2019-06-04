@@ -21,16 +21,16 @@ namespace blink {
 PortalActivateEvent* PortalActivateEvent::Create(
     LocalFrame* frame,
     const base::UnguessableToken& predecessor_portal_token,
-    mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
-    mojom::blink::PortalClientAssociatedRequest
-        predecessor_portal_client_request,
+    mojo::PendingAssociatedRemote<mojom::blink::Portal> predecessor_portal,
+    mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
+        predecessor_portal_client_receiver,
     scoped_refptr<SerializedScriptValue> data,
     MessagePortArray* ports,
     OnPortalActivatedCallback callback) {
   return MakeGarbageCollected<PortalActivateEvent>(
       frame->GetDocument(), predecessor_portal_token,
-      std::move(predecessor_portal_ptr),
-      std::move(predecessor_portal_client_request),
+      std::move(predecessor_portal),
+      std::move(predecessor_portal_client_receiver),
       SerializedScriptValue::Unpack(std::move(data)), ports,
       std::move(callback));
 }
@@ -44,9 +44,9 @@ PortalActivateEvent* PortalActivateEvent::Create(
 PortalActivateEvent::PortalActivateEvent(
     Document* document,
     const base::UnguessableToken& predecessor_portal_token,
-    mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
-    mojom::blink::PortalClientAssociatedRequest
-        predecessor_portal_client_request,
+    mojo::PendingAssociatedRemote<mojom::blink::Portal> predecessor_portal,
+    mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
+        predecessor_portal_client_receiver,
     UnpackedSerializedScriptValue* data,
     MessagePortArray* ports,
     OnPortalActivatedCallback callback)
@@ -56,9 +56,9 @@ PortalActivateEvent::PortalActivateEvent(
             CurrentTimeTicks()),
       document_(document),
       predecessor_portal_token_(predecessor_portal_token),
-      predecessor_portal_ptr_(std::move(predecessor_portal_ptr)),
-      predecessor_portal_client_request_(
-          std::move(predecessor_portal_client_request)),
+      predecessor_portal_(std::move(predecessor_portal)),
+      predecessor_portal_client_receiver_(
+          std::move(predecessor_portal_client_receiver)),
       data_(data),
       ports_(ports),
       on_portal_activated_callback_(std::move(callback)) {}
@@ -120,7 +120,7 @@ const AtomicString& PortalActivateEvent::InterfaceName() const {
 
 HTMLPortalElement* PortalActivateEvent::adoptPredecessor(
     ExceptionState& exception_state) {
-  if (!predecessor_portal_ptr_) {
+  if (!predecessor_portal_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The PortalActivateEvent is not associated with a predecessor browsing "
@@ -129,16 +129,16 @@ HTMLPortalElement* PortalActivateEvent::adoptPredecessor(
   }
 
   HTMLPortalElement* portal = MakeGarbageCollected<HTMLPortalElement>(
-      *document_, predecessor_portal_token_, std::move(predecessor_portal_ptr_),
-      std::move(predecessor_portal_client_request_));
+      *document_, predecessor_portal_token_, std::move(predecessor_portal_),
+      std::move(predecessor_portal_client_receiver_));
   std::move(on_portal_activated_callback_).Run(true);
   return portal;
 }
 
 void PortalActivateEvent::DetachPortalIfNotAdopted() {
-  if (predecessor_portal_ptr_) {
+  if (predecessor_portal_) {
     std::move(on_portal_activated_callback_).Run(false);
-    predecessor_portal_ptr_.reset();
+    predecessor_portal_.reset();
   }
 }
 

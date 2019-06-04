@@ -230,10 +230,11 @@ interface FrameNavigationControl {
   // PortalActivateEvent. The return value |was_adopted| indicates if the portal
   // for the predecessor (identified by |portal_token|) was adopted by the
   // current frame.
-  OnPortalActivated(mojo_base.mojom.UnguessableToken portal_token,
-                    associated blink.mojom.Portal portal,
-                    associated blink.mojom.PortalClient& portal_client,
-                    blink.mojom.TransferableMessage data) => (bool was_adopted);
+  OnPortalActivated(
+      mojo_base.mojom.UnguessableToken portal_token,
+      pending_associated_remote<blink.mojom.Portal> portal,
+      pending_associated_receiver<blink.mojom.PortalClient> portal_client,
+      blink.mojom.TransferableMessage data) => (bool was_adopted);
 };
 
 // Implemented by the frame (e.g. renderer processes).
@@ -346,8 +347,9 @@ interface FrameHost {
   // used to communicate back with the caller. Returns |proxy_routing_id|, which
   // is the routing id of the RenderFrameProxy and |portal_token|, which is the
   // unique identifier for the portal.
-  [Sync] CreatePortal(associated blink.mojom.Portal& portal,
-                      associated blink.mojom.PortalClient client)
+  [Sync] CreatePortal(
+      pending_associated_receiver<blink.mojom.Portal> portal,
+      pending_associated_remote<blink.mojom.PortalClient> client)
       => (int32 proxy_routing_id,
           mojo_base.mojom.UnguessableToken portal_token,
           mojo_base.mojom.UnguessableToken devtools_frame_token);

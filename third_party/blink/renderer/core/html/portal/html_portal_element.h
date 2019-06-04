@@ -6,7 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_HTML_PORTAL_ELEMENT_H_
 
 #include "base/unguessable_token.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -33,9 +35,9 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
   explicit HTMLPortalElement(
       Document& document,
       const base::UnguessableToken& portal_token = base::UnguessableToken(),
-      mojom::blink::PortalAssociatedPtr portal_ptr = nullptr,
-      mojom::blink::PortalClientAssociatedRequest portal_client_request =
-          nullptr);
+      mojo::AssociatedRemote<mojom::blink::Portal> remote_portal = {},
+      mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
+          portal_client_receiver = {});
   ~HTMLPortalElement() override;
 
   // ScriptWrappable overrides.
@@ -110,8 +112,8 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
   network::mojom::ReferrerPolicy referrer_policy_ =
       network::mojom::ReferrerPolicy::kDefault;
 
-  mojom::blink::PortalAssociatedPtr portal_ptr_;
-  mojo::AssociatedBinding<mojom::blink::PortalClient> portal_client_binding_;
+  mojo::AssociatedRemote<mojom::blink::Portal> remote_portal_;
+  mojo::AssociatedReceiver<mojom::blink::PortalClient> portal_client_receiver_;
 };
 
 }  // namespace blink

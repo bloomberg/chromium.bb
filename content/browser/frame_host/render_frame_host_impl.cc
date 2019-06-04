@@ -1089,8 +1089,8 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
 
 void RenderFrameHostImpl::OnPortalActivated(
     const base::UnguessableToken& portal_token,
-    blink::mojom::PortalAssociatedPtrInfo portal,
-    blink::mojom::PortalClientAssociatedRequest portal_client,
+    mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
+    mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
     blink::TransferableMessage data,
     base::OnceCallback<void(bool)> callback) {
   GetNavigationControl()->OnPortalActivated(
@@ -3876,8 +3876,8 @@ void RenderFrameHostImpl::CreateNewWindow(
 }
 
 void RenderFrameHostImpl::CreatePortal(
-    blink::mojom::PortalAssociatedRequest request,
-    blink::mojom::PortalClientAssociatedPtrInfo client,
+    mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
+    mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
     CreatePortalCallback callback) {
   // We don't support attaching a portal inside a nested browsing context.
   if (frame_tree_node()->parent()) {
@@ -3885,7 +3885,8 @@ void RenderFrameHostImpl::CreatePortal(
         "RFHI::CreatePortal called in a nested browsing context");
     return;
   }
-  Portal* portal = Portal::Create(this, std::move(request), std::move(client));
+  Portal* portal =
+      Portal::Create(this, std::move(pending_receiver), std::move(client));
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
   std::move(callback).Run(proxy_host->GetRoutingID(), portal->portal_token(),
                           portal->GetDevToolsFrameToken());
@@ -5090,8 +5091,15 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   associated_registry_->AddInterface(
       base::BindRepeating(make_binding, base::Unretained(this)));
 
+  // TODO(crbug.com/955171): This shim is necessary due to the Mojo change from
+  // AssociatedInterfaceRequest to PendingAssociatedReceiver. It can be
+  // simplified once that is complete.
   associated_registry_->AddInterface(base::BindRepeating(
-      &Portal::BindPortalHostRequest, base::Unretained(this)));
+      [](RenderFrameHostImpl* self,
+         mojo::AssociatedInterfaceRequest<blink::mojom::PortalHost> request) {
+        Portal::BindPortalHostReceiver(self, std::move(request));
+      },
+      base::Unretained(this)));
 
   RegisterMojoInterfaces();
   mojom::FrameFactoryPtr frame_factory;

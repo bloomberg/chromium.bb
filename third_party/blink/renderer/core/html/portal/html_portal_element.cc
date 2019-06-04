@@ -47,12 +47,13 @@ namespace blink {
 HTMLPortalElement::HTMLPortalElement(
     Document& document,
     const base::UnguessableToken& portal_token,
-    mojom::blink::PortalAssociatedPtr portal_ptr,
-    mojom::blink::PortalClientAssociatedRequest portal_client_request)
+    mojo::AssociatedRemote<mojom::blink::Portal> remote_portal,
+    mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
+        portal_client_receiver)
     : HTMLFrameOwnerElement(html_names::kPortalTag, document),
       portal_token_(portal_token),
-      portal_ptr_(std::move(portal_ptr)),
-      portal_client_binding_(this, std::move(portal_client_request)) {}
+      remote_portal_(std::move(remote_portal)),
+      portal_client_receiver_(this, std::move(portal_client_receiver)) {}
 
 HTMLPortalElement::~HTMLPortalElement() {}
 
@@ -63,7 +64,7 @@ void HTMLPortalElement::Trace(Visitor* visitor) {
 
 void HTMLPortalElement::Navigate() {
   KURL url = GetNonEmptyURLAttribute(html_names::kSrcAttr);
-  if (!portal_ptr_ || url.IsEmpty())
+  if (!remote_portal_ || url.IsEmpty())
     return;
 
   if (!url.ProtocolIsInHTTPFamily()) {
@@ -82,7 +83,7 @@ void HTMLPortalElement::Navigate() {
   auto mojo_referrer = mojom::blink::Referrer::New(
       KURL(NullURL(), referrer.referrer), referrer.referrer_policy);
 
-  portal_ptr_->Navigate(url, std::move(mojo_referrer));
+  remote_portal_->Navigate(url, std::move(mojo_referrer));
 }
 
 void HTMLPortalElement::ConsumePortal() {
@@ -90,8 +91,8 @@ void HTMLPortalElement::ConsumePortal() {
     DocumentPortals::From(GetDocument()).OnPortalRemoved(this);
     portal_token_ = base::UnguessableToken();
   }
-  portal_ptr_.reset();
-  portal_client_binding_.Close();
+  remote_portal_.reset();
+  portal_client_receiver_.reset();
 }
 
 namespace {
@@ -158,7 +159,7 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
                                  ExceptionState::kExecutionContext,
                                  "HTMLPortalElement", "activate");
 
-  if (!portal_ptr_) {
+  if (!remote_portal_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The HTMLPortalElement is not associated with a portal context.");
@@ -200,12 +201,12 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
   // We also pass the ownership of the PortalPtr, which guarantees that the
   // PortalPtr stays alive until the callback is called.
   is_activating_ = true;
-  auto* raw_portal_ptr = portal_ptr_.get();
-  raw_portal_ptr->Activate(
+  auto* raw_remote_portal = remote_portal_.get();
+  raw_remote_portal->Activate(
       std::move(data),
       WTF::Bind(
           [](HTMLPortalElement* portal,
-             mojom::blink::PortalAssociatedPtr portal_ptr,
+             mojo::AssociatedRemote<mojom::blink::Portal>,
              ScriptPromiseResolver* resolver, bool was_adopted) {
             if (was_adopted)
               portal->GetDocument().GetPage()->SetInsidePortal(true);
@@ -213,7 +214,7 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
             portal->is_activating_ = false;
             portal->ConsumePortal();
           },
-          WrapPersistent(this), std::move(portal_ptr_),
+          WrapPersistent(this), std::move(remote_portal_),
           WrapPersistent(resolver)));
   return promise;
 }
@@ -234,7 +235,7 @@ void HTMLPortalElement::postMessage(ScriptState* script_state,
                                     const ScriptValue& message,
                                     const WindowPostMessageOptions* options,
                                     ExceptionState& exception_state) {
-  if (!portal_ptr_ || is_activating_) {
+  if (!remote_portal_ || is_activating_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The HTMLPortalElement is not associated with a portal context");
@@ -253,8 +254,8 @@ void HTMLPortalElement::postMessage(ScriptState* script_state,
   if (exception_state.HadException())
     return;
 
-  portal_ptr_->PostMessageToGuest(std::move(transferable_message),
-                                  target_origin);
+  remote_portal_->PostMessageToGuest(std::move(transferable_message),
+                                     target_origin);
 }
 
 EventListener* HTMLPortalElement::onmessage() {
@@ -277,7 +278,7 @@ void HTMLPortalElement::ForwardMessageFromGuest(
     BlinkTransferableMessage message,
     const scoped_refptr<const SecurityOrigin>& source_origin,
     const scoped_refptr<const SecurityOrigin>& target_origin) {
-  if (!portal_ptr_)
+  if (!remote_portal_)
     return;
 
   PortalPostMessageHelper::CreateAndDispatchMessageEvent(
@@ -285,7 +286,7 @@ void HTMLPortalElement::ForwardMessageFromGuest(
 }
 
 void HTMLPortalElement::DispatchLoadEvent() {
-  if (!portal_ptr_)
+  if (!remote_portal_)
     return;
 
   DispatchLoad();
@@ -309,20 +310,21 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
     return result;
   }
 
-  if (portal_ptr_) {
+  if (remote_portal_) {
     // The interface is already bound if the HTMLPortalElement is adopting the
     // predecessor.
     portal_frame_ = GetDocument().GetFrame()->Client()->AdoptPortal(this);
-    portal_ptr_.set_connection_error_handler(
+    remote_portal_.set_disconnect_handler(
         WTF::Bind(&HTMLPortalElement::ConsumePortal, WrapWeakPersistent(this)));
     DocumentPortals::From(GetDocument()).OnPortalInserted(this);
   } else {
-    mojom::blink::PortalClientAssociatedPtr client;
-    portal_client_binding_.Bind(mojo::MakeRequest(&client));
+    mojo::PendingAssociatedRemote<mojom::blink::PortalClient> client;
+    portal_client_receiver_.Bind(client.InitWithNewEndpointAndPassReceiver());
     std::tie(portal_frame_, portal_token_) =
         GetDocument().GetFrame()->Client()->CreatePortal(
-            this, mojo::MakeRequest(&portal_ptr_), client.PassInterface());
-    portal_ptr_.set_connection_error_handler(
+            this, remote_portal_.BindNewEndpointAndPassReceiver(),
+            std::move(client));
+    remote_portal_.set_disconnect_handler(
         WTF::Bind(&HTMLPortalElement::ConsumePortal, WrapWeakPersistent(this)));
     DocumentPortals::From(GetDocument()).OnPortalInserted(this);
     Navigate();
