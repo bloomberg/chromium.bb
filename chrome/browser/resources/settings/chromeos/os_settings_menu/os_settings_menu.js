@@ -83,4 +83,10 @@ Polymer({
   arrowState_: function(opened) {
     return opened ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
   },
+
+  /** @return {boolean} Whether the advanced submenu is open. */
+  isAdvancedSubmenuOpenedForTest: function() {
+    const submenu = /** @type {IronCollapseElement} */ (this.$.advancedSubmenu);
+    return submenu.opened;
+  },
 });

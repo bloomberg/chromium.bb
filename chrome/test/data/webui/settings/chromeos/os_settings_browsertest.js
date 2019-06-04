@@ -19,7 +19,7 @@ GEN('#include "chromeos/constants/chromeos_features.h"');
 const OSSettingsBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/chromeos/';
+    return 'chrome://os-settings/';
   }
 
   /** @override */
@@ -29,15 +29,14 @@ const OSSettingsBrowserTest = class extends PolymerTest {
 
   /** @override */
   get extraLibraries() {
-    return super.extraLibraries.concat([
-      BROWSER_SETTINGS_PATH + 'ensure_lazy_loaded.js',
-    ]);
+    return super.extraLibraries.concat(
+        [BROWSER_SETTINGS_PATH + 'ensure_lazy_loaded.js']);
   }
 
   /** @override */
   setUp() {
     super.setUp();
-    settings.ensureLazyLoaded();
+    settings.ensureLazyLoaded('chromeos');
   }
 };
 
@@ -46,7 +45,8 @@ const OSSettingsBrowserTest = class extends PolymerTest {
 var OSSettingsSmbPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'os_downloads_page/smb_shares_page.html';
+    return super.browsePreload +
+        'chromeos/os_downloads_page/smb_shares_page.html';
   }
 
   /** @override */
@@ -59,7 +59,7 @@ var OSSettingsSmbPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// OSSettingsSmbPageTest.All is flaky on debug. See https://crbug.com/968608.
+// Settings tests are flaky on debug. See https://crbug.com/968608.
 GEN('#if !defined(NDEBUG)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
@@ -67,5 +67,21 @@ GEN('#define MAYBE_All All');
 GEN('#endif');
 
 TEST_F('OSSettingsSmbPageTest', 'MAYBE_All', function() {
+  mocha.run();
+});
+
+// Tests for the side-nav menu.
+// eslint-disable-next-line no-var
+var OSSettingsMenuTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + 'test_util.js',
+      'os_settings_menu_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsMenuTest', 'MAYBE_All', function() {
   mocha.run();
 });
