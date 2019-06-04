@@ -429,6 +429,10 @@ component("vr_base") {
     "//services/metrics/public/cpp:ukm_builders",
     "//skia",
   ]
+
+  if (is_android) {
+    deps += [ "//chrome/android/features/vr:jni_headers" ]
+  }
 }
 
 source_set("vr_gl_bindings") {

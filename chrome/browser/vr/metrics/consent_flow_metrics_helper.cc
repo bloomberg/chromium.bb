@@ -6,6 +6,13 @@
 
 #include "base/metrics/histogram_macros.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_string.h"
+#include "jni/ConsentFlowMetrics_jni.h"
+
+using base::android::JavaParamRef;
+#endif
+
 namespace vr {
 namespace {
 static constexpr base::TimeDelta kUserActionBounceTime =
@@ -62,6 +69,51 @@ void ConsentFlowMetricsHelper::LogConsentFlowDurationWhenUserAborted() {
   UMA_HISTOGRAM_MEDIUM_TIMES("XR.WebXR.ConsentFlowDuration.ConsentFlowAborted",
                              base::TimeTicks::Now() - dialog_presented_at_);
 }
+
+#if defined(OS_ANDROID)
+void ConsentFlowMetricsHelper::OnDialogClosedWithConsent(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& jurl,
+    jboolean is_granted) {
+  OnDialogClosedWithConsent(base::android::ConvertJavaStringToUTF8(env, jurl),
+                            !!is_granted);
+}
+
+void ConsentFlowMetricsHelper::LogUserAction(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint action) {
+  LogUserAction(static_cast<ConsentDialogAction>(action));
+}
+
+void ConsentFlowMetricsHelper::LogConsentFlowDurationWhenConsentGranted(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  LogConsentFlowDurationWhenConsentGranted();
+}
+
+void ConsentFlowMetricsHelper::LogConsentFlowDurationWhenConsentNotGranted(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  LogConsentFlowDurationWhenConsentNotGranted();
+}
+
+void ConsentFlowMetricsHelper::LogConsentFlowDurationWhenUserAborted(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  LogConsentFlowDurationWhenUserAborted();
+}
+
+static jlong JNI_ConsentFlowMetrics_Init(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  return reinterpret_cast<intptr_t>(
+      ConsentFlowMetricsHelper::InitFromWebContents(web_contents));
+}
+#endif
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ConsentFlowMetricsHelper)
 }  // namespace vr

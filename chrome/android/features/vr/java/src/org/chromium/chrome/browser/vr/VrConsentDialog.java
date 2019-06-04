@@ -5,24 +5,20 @@
 package org.chromium.chrome.browser.vr;
 
 import android.content.res.Resources;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * Provides a consent dialog shown before entering an immersive VR session.
@@ -34,30 +30,21 @@ public class VrConsentDialog implements ModalDialogProperties.Controller {
         void onUserConsentResult(long nativeGvrConsentHelperImpl, boolean allowed);
     }
 
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({UserAction.ALLOWED, UserAction.DENIED, UserAction.CONSENT_FLOW_ABORTED})
-    @interface UserAction {
-        // Don't reuse or reorder values. If you add something, update NUM_ENTRIES.
-        // Also, keep these in sync with ConsentDialogAction enums in
-        // XrSessionRequestConsentDialogDelegate
-        int ALLOWED = 0;
-        int DENIED = 1;
-        int CONSENT_FLOW_ABORTED = 2;
-        int NUM_ENTRIES = 3;
-    }
-
     private ModalDialogManager mModalDialogManager;
     private VrConsentListener mListener;
-    private static long sDialogOpenTimeStampMillis;
     private long mNativeInstance;
+    private ConsentFlowMetrics mMetrics;
+    private String mUrl;
 
-    private VrConsentDialog(long instance) {
+    private VrConsentDialog(long instance, WebContents webContents) {
         mNativeInstance = instance;
+        mMetrics = new ConsentFlowMetrics(webContents);
+        mUrl = webContents.getLastCommittedUrl();
     }
 
     @CalledByNative
     private static VrConsentDialog promptForUserConsent(long instance, final Tab tab) {
-        VrConsentDialog dialog = new VrConsentDialog(instance);
+        VrConsentDialog dialog = new VrConsentDialog(instance, tab.getWebContents());
         dialog.show(tab.getActivity(), new VrConsentListener() {
             @Override
             public void onUserConsent(boolean allowed) {
@@ -90,7 +77,6 @@ public class VrConsentDialog implements ModalDialogProperties.Controller {
                                       .build();
         mModalDialogManager = activity.getModalDialogManager();
         mModalDialogManager.showDialog(model, ModalDialogManager.ModalDialogType.TAB);
-        sDialogOpenTimeStampMillis = System.currentTimeMillis();
     }
 
     @Override
@@ -106,47 +92,18 @@ public class VrConsentDialog implements ModalDialogProperties.Controller {
     public void onDismiss(PropertyModel model, int dismissalCause) {
         if (dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED) {
             mListener.onUserConsent(true);
-            logUserAction(UserAction.ALLOWED);
-            logConsentFlowDurationWhenConsentGranted();
+            mMetrics.logUserAction(ConsentDialogAction.USER_ALLOWED);
+            mMetrics.logConsentFlowDurationWhenConsentGranted();
         } else if (dismissalCause == DialogDismissalCause.NEGATIVE_BUTTON_CLICKED) {
             mListener.onUserConsent(false);
-            logUserAction(UserAction.DENIED);
-            logConsentFlowDurationWhenConsentNotGranted();
+            mMetrics.logUserAction(ConsentDialogAction.USER_DENIED);
+            mMetrics.logConsentFlowDurationWhenConsentNotGranted();
         } else {
             mListener.onUserConsent(false);
-            logUserAction(UserAction.CONSENT_FLOW_ABORTED);
-            logConsentFlowDurationWhenUserAborted();
+            mMetrics.logUserAction(ConsentDialogAction.USER_ABORTED_CONSENT_FLOW);
+            mMetrics.logConsentFlowDurationWhenUserAborted();
         }
+        mMetrics.onDialogClosedWithConsent(
+                mUrl, dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
     }
-
-    private static void logUserAction(@UserAction int action) {
-        // TODO(crbug.com/965538): call c++ functions that update the same histogram instead of
-        // calling this java method.
-        RecordHistogram.recordEnumeratedHistogram(
-                "XR.WebXR.ConsentFlow", action, UserAction.NUM_ENTRIES);
-    }
-
-    private static void logConsentFlowDurationWhenConsentGranted() {
-        // TODO(crbug.com/965538): call c++ functions that update the same histogram instead of
-        // calling this java method.
-        RecordHistogram.recordMediumTimesHistogram("XR.WebXR.ConsentFlowDuration.ConsentGranted",
-                System.currentTimeMillis() - sDialogOpenTimeStampMillis);
-    }
-
-    private static void logConsentFlowDurationWhenConsentNotGranted() {
-        // TODO(crbug.com/965538): call c++ functions that update the same histogram instead of
-        // calling this java method.
-        RecordHistogram.recordMediumTimesHistogram("XR.WebXR.ConsentFlowDuration.ConsentNotGranted",
-                System.currentTimeMillis() - sDialogOpenTimeStampMillis);
-    }
-
-    private static void logConsentFlowDurationWhenUserAborted() {
-        // TODO(crbug.com/965538): call c++ functions that update the same histogram instead of
-        // calling this java method.
-        RecordHistogram.recordMediumTimesHistogram(
-                "XR.WebXR.ConsentFlowDuration.ConsentFlowAborted",
-                System.currentTimeMillis() - sDialogOpenTimeStampMillis);
-    }
-
-    // TODO(sumankancherla): Add bounce metrics by addressing crbug.com/965538.
 }
