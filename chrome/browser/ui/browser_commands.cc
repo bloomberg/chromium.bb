@@ -134,7 +134,7 @@
 
 namespace {
 
-const char kOsOverrideForTabletSite[] = "Linux; Android 4.0.3";
+const char kOsOverrideForTabletSite[] = "Linux; Android 9; Chrome tablet";
 
 translate::TranslateBubbleUiEvent TranslateBubbleResultToUiEvent(
     ShowTranslateBubbleResult result) {
@@ -1243,16 +1243,24 @@ void ToggleRequestTabletSite(Browser* browser) {
   NavigationEntry* entry = controller.GetLastCommittedEntry();
   if (!entry)
     return;
-  if (entry->GetIsOverridingUserAgent()) {
+  if (entry->GetIsOverridingUserAgent())
     entry->SetIsOverridingUserAgent(false);
-  } else {
+  else
+    SetAndroidOsForTabletSite(current_tab);
+  controller.Reload(content::ReloadType::ORIGINAL_REQUEST_URL, true);
+}
+
+void SetAndroidOsForTabletSite(content::WebContents* current_tab) {
+  DCHECK(current_tab);
+  NavigationEntry* entry = current_tab->GetController().GetLastCommittedEntry();
+  if (entry) {
     entry->SetIsOverridingUserAgent(true);
-    std::string product = version_info::GetProductNameAndVersionForUserAgent();
+    std::string product =
+        version_info::GetProductNameAndVersionForUserAgent() + " Mobile";
     current_tab->SetUserAgentOverride(content::BuildUserAgentFromOSAndProduct(
                                           kOsOverrideForTabletSite, product),
                                       false);
   }
-  controller.Reload(content::ReloadType::ORIGINAL_REQUEST_URL, true);
 }
 
 void ToggleFullscreenMode(Browser* browser) {
