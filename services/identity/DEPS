@@ -5,7 +5,6 @@ include_rules = [
   "+components/signin/core/browser/account_tracker_service.h",
   "+components/signin/core/browser/device_id_helper.h",
   "+components/signin/core/browser/fake_profile_oauth2_token_service.h",
-  "+components/signin/core/browser/fake_signin_manager.h",
   "+components/signin/core/browser/profile_oauth2_token_service.h",
   "+components/signin/core/browser/set_accounts_in_cookie_result.h",
   "+components/signin/core/browser/signin_manager_base.h",
