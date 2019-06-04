@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "services/network/public/cpp/features.h"
 
 namespace android_webview {
 
@@ -71,6 +72,9 @@ bool AwDownloadManagerDelegate::InterceptDownloadIfApplicable(
     const std::string& request_origin,
     int64_t content_length,
     content::WebContents* web_contents) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return false;
+
   if (!web_contents)
     return false;
 
