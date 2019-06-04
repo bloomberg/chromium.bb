@@ -267,6 +267,11 @@ class CONTENT_EXPORT NavigationHandle {
   // scheme, returns an empty object.
   virtual const base::Optional<net::SSLInfo> GetSSLInfo() = 0;
 
+  // Returns the AuthChallengeInfo for the request, if the response contained an
+  // authentication challenge.
+  virtual const base::Optional<net::AuthChallengeInfo>&
+  GetAuthChallengeInfo() = 0;
+
   // Returns the ID of the URLRequest associated with this navigation. Can only
   // be called from NavigationThrottle::WillProcessResponse and
   // WebContentsObserver::ReadyToCommitNavigation.

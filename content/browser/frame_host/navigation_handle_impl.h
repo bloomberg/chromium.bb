@@ -92,6 +92,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const net::HttpResponseHeaders* GetResponseHeaders() override;
   net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
   const base::Optional<net::SSLInfo> GetSSLInfo() override;
+  const base::Optional<net::AuthChallengeInfo>& GetAuthChallengeInfo() override;
   void RegisterThrottleForTesting(
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
   bool IsDeferredForTesting() override;

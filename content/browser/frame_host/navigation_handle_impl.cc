@@ -330,6 +330,11 @@ const base::Optional<net::SSLInfo> NavigationHandleImpl::GetSSLInfo() {
   return navigation_request_->ssl_info();
 }
 
+const base::Optional<net::AuthChallengeInfo>&
+NavigationHandleImpl::GetAuthChallengeInfo() {
+  return navigation_request_->auth_challenge_info();
+}
+
 bool NavigationHandleImpl::IsWaitingToCommit() {
   return state() == NavigationRequest::READY_TO_COMMIT;
 }

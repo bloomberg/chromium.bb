@@ -1033,6 +1033,7 @@ void NavigationRequest::OnRequestRedirected(
     const scoped_refptr<network::ResourceResponse>& response) {
   response_ = response;
   ssl_info_ = response->head.ssl_info;
+  auth_challenge_info_ = response->head.auth_challenge_info;
 #if defined(OS_ANDROID)
   base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
 
@@ -1234,6 +1235,7 @@ void NavigationRequest::OnResponseStarted(
   state_ = RESPONSE_STARTED;
   response_ = response;
   ssl_info_ = response->head.ssl_info;
+  auth_challenge_info_ = response->head.auth_challenge_info;
 
   // Check if the response should be sent to a renderer.
   response_should_be_rendered_ =

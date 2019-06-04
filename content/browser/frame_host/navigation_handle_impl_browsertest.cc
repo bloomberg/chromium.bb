@@ -2818,4 +2818,22 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
   EXPECT_THAT(offsets_, testing::ElementsAre(1, 0));
 }
 
+// Tests that the correct net::AuthChallengeInfo is exposed from the
+// NavigationHandle when the page requests authentication.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, AuthChallengeInfo) {
+  GURL url(embedded_test_server()->GetURL("/auth-basic"));
+  NavigationHandleObserver observer(shell()->web_contents(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(observer.has_committed());
+  ASSERT_TRUE(observer.auth_challenge_info().has_value());
+  EXPECT_FALSE(observer.auth_challenge_info()->is_proxy);
+  EXPECT_EQ(url::Origin::Create(url),
+            observer.auth_challenge_info()->challenger);
+  EXPECT_EQ("basic", observer.auth_challenge_info()->scheme);
+  EXPECT_EQ("testrealm", observer.auth_challenge_info()->realm);
+  EXPECT_EQ("Basic realm=\"testrealm\"",
+            observer.auth_challenge_info()->challenge);
+  EXPECT_EQ("/auth-basic", observer.auth_challenge_info()->path);
+}
+
 }  // namespace content

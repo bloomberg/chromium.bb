@@ -22,6 +22,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
+#include "chrome/browser/ui/login/login_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
@@ -129,6 +130,13 @@ void LoginHandler::Start(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents());
   DCHECK(!WasAuthHandled());
+
+  if (base::FeatureList::IsEnabled(features::kHTTPAuthCommittedInterstitials)) {
+    // When committed interstitials are enabled, the login prompt is not shown
+    // until the interstitial is committed. Create the LoginTabHelper here so
+    // that it can observe the interstitial committing and show the prompt then.
+    LoginTabHelper::CreateForWebContents(web_contents());
+  }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // If the WebRequest API wants to take a shot at intercepting this, we can
@@ -455,6 +463,14 @@ void LoginHandler::MaybeSetUpLoginPrompt(
                  content::NotificationService::AllBrowserContextsAndSources());
   prompt_started_ = true;
 
+  // When committed interstitials are enabled, a login prompt is triggered once
+  // the interstitial commits (that is, when |mode| is POST_COMMIT).
+  if (base::FeatureList::IsEnabled(features::kHTTPAuthCommittedInterstitials) &&
+      mode == POST_COMMIT) {
+    ShowLoginPrompt(request_url);
+    return;
+  }
+
   // Check if this is a main frame navigation and
   // (a) if the request is cross origin or
   // (b) if an interstitial is already being shown or
@@ -491,23 +507,15 @@ void LoginHandler::MaybeSetUpLoginPrompt(
           blink::kWebDisplayModeStandalone) {
     RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
 
+    // When committed interstitials are enabled, cancel the request in order to
+    // commit an interstitial; the login prompt will be shown in POST_COMMIT
+    // mode once the interstitial commits.
     if (base::FeatureList::IsEnabled(
-            features::kHTTPAuthCommittedInterstitials)) {
-      switch (mode) {
-        case PRE_COMMIT:
-          prompt_started_ = false;
-          CancelAuth();
-          return;
-        case POST_COMMIT:
-          // TODO(https://crbug.com/963313): add a WebContentsObserver which
-          // observes when LoginHandler does the PRE_COMMIT cancel and triggers
-          // the login prompt in POST_COMMIT mode on top of the committed error
-          // page.
-          NOTREACHED();
-          ShowLoginPrompt(request_url);
-          return;
-      }
-      NOTREACHED();
+            features::kHTTPAuthCommittedInterstitials) &&
+        mode == PRE_COMMIT) {
+      prompt_started_ = false;
+      CancelAuth();
+      return;
     }
 
     // Show a blank interstitial for main-frame, cross origin requests

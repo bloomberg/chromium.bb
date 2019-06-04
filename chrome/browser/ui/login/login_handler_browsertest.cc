@@ -1672,4 +1672,34 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_EQ(0, observer.auth_cancelled_count());
 }
+
+// Tests that when HTTP Auth committed interstitials are enabled, the login
+// prompt is shown on top of a committed error page when there is a cross-origin
+// main-frame auth challenge.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       PromptShowsWithCommittedInterstitials) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kHTTPAuthCommittedInterstitials);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+
+  GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
+  ui_test_utils::NavigateToURL(browser(), test_page);
+
+  const base::string16 kExpectedTitle =
+      base::ASCIIToUTF16("Denied: Missing Authorization Header");
+  content::TitleWatcher title_watcher(contents, kExpectedTitle);
+  EXPECT_EQ(kExpectedTitle, title_watcher.WaitAndGetTitle());
+
+  auth_needed_waiter.Wait();
+  ASSERT_EQ(1u, observer.handlers().size());
+}
+
 }  // namespace

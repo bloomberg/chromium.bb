@@ -251,6 +251,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   const GlobalRequestID& request_id() const { return request_id_; }
   bool is_download() const { return is_download_; }
   const base::Optional<net::SSLInfo>& ssl_info() { return ssl_info_; }
+  const base::Optional<net::AuthChallengeInfo>& auth_challenge_info() {
+    return auth_challenge_info_;
+  }
 
   void SetWaitingForRendererResponse();
 
@@ -737,6 +740,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   scoped_refptr<network::ResourceResponse> response_;
   network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints_;
   base::Optional<net::SSLInfo> ssl_info_;
+  base::Optional<net::AuthChallengeInfo> auth_challenge_info_;
   bool is_download_ = false;
   GlobalRequestID request_id_;
 
