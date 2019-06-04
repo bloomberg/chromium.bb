@@ -3539,10 +3539,19 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [SizeClassRecorder pageLoadedWithHorizontalSizeClass:sizeClass];
   }
 
-  // If there is no first responder, try to make the webview the first
+  // If there is no first responder, try to make the webview or the NTP first
   // responder to have it answer keyboard commands (e.g. space bar to scroll).
-  if (!GetFirstResponder() && self.currentWebState)
-    [self.currentWebState->GetWebViewProxy() becomeFirstResponder];
+  if (!GetFirstResponder() && self.currentWebState) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(webState);
+    if (NTPHelper && NTPHelper->IsActive()) {
+      UIViewController* viewController =
+          _ntpCoordinatorsForWebStates[webState].viewController;
+      [viewController becomeFirstResponder];
+    } else {
+      [self.currentWebState->GetWebViewProxy() becomeFirstResponder];
+    }
+  }
 }
 
 #pragma mark - OmniboxPopupPresenterDelegate methods.
