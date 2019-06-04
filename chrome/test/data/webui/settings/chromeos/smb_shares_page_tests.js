@@ -9,6 +9,8 @@ class TestSmbBrowserProxy extends TestBrowserProxy {
       'smbMount',
       'startDiscovery',
     ]);
+    /** @type{!SmbMountResult} */
+    this.smbMountResult = SmbMountResult.SUCCESS;
   }
 
   /** @override */
@@ -16,7 +18,7 @@ class TestSmbBrowserProxy extends TestBrowserProxy {
     this.methodCalled(
         'smbMount',
         [smbUrl, smbName, username, password, authMethod, inSettings]);
-    return Promise.resolve(SmbMountResult.SUCCESS);
+    return Promise.resolve(this.smbMountResult);
   }
 
   /** @override */
@@ -137,6 +139,7 @@ suite('AddSmbShareDialogTests', function() {
     addDialog.authenticationMethod_ = expectedAuthMethod;
     addDialog.shouldOpenFileManagerAfterMount = expectedShouldOpenFileManager;
 
+    smbBrowserProxy.resetResolver('smbMount');
     addButton.click();
     return smbBrowserProxy.whenCalled('smbMount').then(function(args) {
       expectEquals(expectedSmbUrl, args[0]);
@@ -230,4 +233,29 @@ suite('AddSmbShareDialogTests', function() {
     expectEquals(expectedSmbUrl, addDialog.mountUrl_);
     expectEquals(expectedSmbUrl, addDialog.mountUrl_);
   });
+
+  test('InvalidUrlErrorDisablesAddButton', function() {
+    const url = addDialog.$.address;
+    const addButton = addDialog.$$('.action-button');
+
+    // Invalid URL, but passes regex test.
+    url.value = 'smb://foo\\\\/bar';
+    expectFalse(addButton.disabled);
+
+    smbBrowserProxy.smbMountResult = SmbMountResult.INVALID_URL;
+    addButton.click();
+
+    return new Promise((resolve, reject) => {
+      const pollFunc = () => {
+        if (url.errorMessage && addButton.disabled) {
+          resolve();
+          return;
+        }
+        setTimeout(pollFunc, 100);
+      };
+      // url.errorMessage can't be observed for a change, so instead, poll.
+      pollFunc();
+    });
+  });
+
 });

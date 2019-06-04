@@ -115,7 +115,7 @@
           [[i18n('cancel')]]
         </paper-button>
         <paper-button class="action-button" on-click="onAddButtonTap_"
-            disabled="[[!canAddShare_(mountUrl_, inProgress_)]]">
+            disabled="[[!canAddShare_(mountUrl_, inProgress_, currentMountError_)]]">
           [[i18n('add')]]
         </paper-button>
       </div>

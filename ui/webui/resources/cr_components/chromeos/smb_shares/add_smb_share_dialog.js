@@ -298,7 +298,7 @@ Polymer({
    * @private
    */
   isShareUrlValid_: function() {
-    if (!this.mountUrl_) {
+    if (!this.mountUrl_ || this.shouldShowPathError_()) {
       return false;
     }
     return smb_shares.SMB_SHARE_URL_REGEX.test(this.mountUrl_);
