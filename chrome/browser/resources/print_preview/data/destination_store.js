@@ -924,10 +924,17 @@ cr.define('print_preview', function() {
       }
 
       // Should be fetching the Google Drive destination.
+      return this.startLoadGoogleDrive();
+    }
+
+    /**
+     * Tries to load the Google Drive destination for the active user.
+     * @return {boolean}
+     */
+    startLoadGoogleDrive() {
       const driveKey = print_preview.createDestinationKey(
           print_preview.Destination.GooglePromotedId.DOCS,
           print_preview.DestinationOrigin.COOKIES, this.activeUser_);
-      assert(key === driveKey);
       return this.fetchPreselectedDestination_({
         id: print_preview.Destination.GooglePromotedId.DOCS,
         origin: print_preview.DestinationOrigin.COOKIES,

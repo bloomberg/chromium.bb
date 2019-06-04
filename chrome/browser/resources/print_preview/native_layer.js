@@ -44,7 +44,8 @@ print_preview.LocalDestinationInfo;
  *   serializedAppStateStr: ?string,
  *   serializedDefaultDestinationSelectionRulesStr: ?string,
  *   cloudPrintURL: (string | undefined),
- *   userAccounts: (Array<string> | undefined)
+ *   userAccounts: (Array<string> | undefined),
+ *   syncAvailable: boolean
  * }}
  * @see corresponding field name definitions in print_preview_handler.cc
  */

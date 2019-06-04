@@ -95,7 +95,7 @@ cr.define('destination_select_test', function() {
       destinationSettings.init(
           initialSettings.printerName,
           initialSettings.serializedDefaultDestinationSelectionRulesStr,
-          initialSettings.userAccounts);
+          initialSettings.userAccounts, true /* syncAvailable */);
       destinationSettings.disabled = false;
       return opt_expectPrinterFailure ? Promise.resolve() : Promise.race([
         nativeLayer.whenCalled('getPrinterCapabilities'), whenCapabilitiesReady
