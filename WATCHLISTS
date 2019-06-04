@@ -1553,6 +1553,9 @@
       'filepath': 'chrome/browser/safe_browsing/settings_reset_prompt/'\
                   '|chrome/browser/ui/views/settings_reset_prompt',
     },
+    'sharing': {
+      'filepath': 'chrome/browser/sharing/',
+    },
     'site_engagement': {
       'filepath': 'chrome/browser/engagement/|'\
                   'chrome/browser/ui/webui/engagement/',
@@ -2543,6 +2546,8 @@
     'settings_os_settings': [
                  'jhawkins+watch@chromium.org'],
     'settings_reset_prompt': ['alito+watch@chromium.org'],
+    'sharing': ['peter@chromium.org',
+                'unido-reviews@chromium.org'],
     'site_engagement': ['dominickn+watch-engagement@chromium.org'],
     'site_instance': ['ajwong+watch@chromium.org',
                       'alexmos+watch@chromium.org',
