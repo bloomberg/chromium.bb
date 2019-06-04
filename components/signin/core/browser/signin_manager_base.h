@@ -65,10 +65,6 @@ class SigninManagerBase {
 
    protected:
     virtual ~Observer() {}
-
-   private:
-    // SigninManagers that fire notifications.
-    friend class SigninManager;
   };
 
 // On non-ChromeOS platforms, SigninManagerBase should only be instantiated
