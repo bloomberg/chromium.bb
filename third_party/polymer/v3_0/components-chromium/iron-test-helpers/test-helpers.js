@@ -9,7 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {dom, flush} from '../polymer/lib/legacy/polymer.dom.js';
+import {dom, flush} from '../polymer/polymer_bundled.min.js';
 
 /**
  * Forces distribution of light children, and lifecycle callbacks on the

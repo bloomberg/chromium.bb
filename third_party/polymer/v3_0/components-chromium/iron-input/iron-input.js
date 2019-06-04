@@ -8,13 +8,13 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-import '../polymer/polymer-legacy.js';
+import '../polymer/polymer_bundled.min.js';
 
 import {IronA11yAnnouncer} from '../iron-a11y-announcer/iron-a11y-announcer.js';
 import {IronValidatableBehavior} from '../iron-validatable-behavior/iron-validatable-behavior.js';
-import {Polymer} from '../polymer/lib/legacy/polymer-fn.js';
-import {dom} from '../polymer/lib/legacy/polymer.dom.js';
-import {html} from '../polymer/lib/utils/html-tag.js';
+import {Polymer} from '../polymer/polymer_bundled.min.js';
+import {dom} from '../polymer/polymer_bundled.min.js';
+import {html} from '../polymer/polymer_bundled.min.js';
 
 /**
 `<iron-input>` is a wrapper to a native `<input>` element, that adds two-way

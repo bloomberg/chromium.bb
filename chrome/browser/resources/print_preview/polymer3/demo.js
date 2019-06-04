@@ -4,7 +4,7 @@
 
 import 'chrome://resources/polymer/v3_0/paper-button/paper-button.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer-element.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 class HelloPolymer3Element extends PolymerElement {
   static get template() {

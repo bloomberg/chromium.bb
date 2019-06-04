@@ -8,8 +8,8 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-import '../polymer/polymer-legacy.js';
-import {html} from '../polymer/lib/utils/html-tag.js';
+import '../polymer/polymer_bundled.min.js';
+import {html} from '../polymer/polymer_bundled.min.js';
 
 /*
 A set of layout classes that let you specify layout properties directly in

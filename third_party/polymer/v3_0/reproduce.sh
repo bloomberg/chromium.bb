@@ -48,6 +48,14 @@ find components-chromium/polymer/ -mindepth 3 -maxdepth 3 -name '*.js' \
 # Apply additional chrome specific patches.
 patch -p1 --forward -r - < chromium.patch
 
+echo 'Minifying Polymer 3, since it comes non-minified from NPM.'
+python minify_polymer.py
+
+echo 'Updating paper/iron elements to point to the minified file.'
+# Replace all paths that point to within polymer/ to point to the bundle.
+find components-chromium/ -name '*.js' -exec sed -i \
+  's/\/polymer\/[a-zA-Z\/\.-]\+/\/polymer\/polymer_bundled.min.js/' {} +
+
 new=$(git status --porcelain components-chromium | grep '^??' | \
       cut -d' ' -f2 | egrep '\.(js|css)$' || true)
 

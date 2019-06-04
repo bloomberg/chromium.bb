@@ -8,8 +8,8 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-import '../polymer/polymer-legacy.js';
-import {html} from '../polymer/lib/utils/html-tag.js';
+import '../polymer/polymer_bundled.min.js';
+import {html} from '../polymer/polymer_bundled.min.js';
 
 /**
 The `<iron-flex-layout>` component provides simple ways to use
@@ -40,7 +40,7 @@ file in every element that needs to use them.
     ```
 
     ```js
-    import {html} from '../polymer/lib/utils/html-tag.js';
+    import {html} from '../polymer/polymer_bundled.min.js';
     import '../iron-flex-layout/iron-flex-layout-classes.js';
 
     const template = html`

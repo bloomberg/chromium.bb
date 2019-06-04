@@ -17,10 +17,10 @@ line heights and weights for CJK typesetting. See the notes in the Material
 Design typography section.
 */
 
-import '../polymer/polymer-legacy.js';
+import '../polymer/polymer_bundled.min.js';
 import '../font-roboto/roboto.js';
 
-import {html} from '../polymer/lib/utils/html-tag.js';
+import {html} from '../polymer/polymer_bundled.min.js';
 const template = html`<custom-style>
   <style is="custom-style">
     html {

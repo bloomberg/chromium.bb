@@ -8,21 +8,21 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-import '../polymer/polymer-legacy.js';
+import '../polymer/polymer_bundled.min.js';
 import '../iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
 
 import {IronResizableBehavior} from '../iron-resizable-behavior/iron-resizable-behavior.js';
 import {IronScrollTargetBehavior} from '../iron-scroll-target-behavior/iron-scroll-target-behavior.js';
-import {OptionalMutableDataBehavior} from '../polymer/lib/legacy/mutable-data-behavior.js';
-import {Polymer as Polymer} from '../polymer/lib/legacy/polymer-fn.js';
-import {dom} from '../polymer/lib/legacy/polymer.dom.js';
-import {Templatizer} from '../polymer/lib/legacy/templatizer-behavior.js';
-import {animationFrame, idlePeriod, microTask} from '../polymer/lib/utils/async.js';
-import {Debouncer} from '../polymer/lib/utils/debounce.js';
-import {enqueueDebouncer, flush} from '../polymer/lib/utils/flush.js';
-import {html} from '../polymer/lib/utils/html-tag.js';
-import {matches, translate} from '../polymer/lib/utils/path.js';
-import {TemplateInstanceBase} from '../polymer/lib/utils/templatize.js';
+import {OptionalMutableDataBehavior} from '../polymer/polymer_bundled.min.js';
+import {Polymer as Polymer} from '../polymer/polymer_bundled.min.js';
+import {dom} from '../polymer/polymer_bundled.min.js';
+import {Templatizer} from '../polymer/polymer_bundled.min.js';
+import {animationFrame, idlePeriod, microTask} from '../polymer/polymer_bundled.min.js';
+import {Debouncer} from '../polymer/polymer_bundled.min.js';
+import {enqueueDebouncer, flush} from '../polymer/polymer_bundled.min.js';
+import {html} from '../polymer/polymer_bundled.min.js';
+import {matches, translate} from '../polymer/polymer_bundled.min.js';
+import {TemplateInstanceBase} from '../polymer/polymer_bundled.min.js';
 
 var IOS = navigator.userAgent.match(/iP(?:hone|ad;(?: U;)? CPU) OS (\d+)/);
 var IOS_TOUCH_SCROLLING = IOS && IOS[1] >= 8;

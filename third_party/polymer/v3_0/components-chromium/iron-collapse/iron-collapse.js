@@ -9,10 +9,10 @@ part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
 import {IronResizableBehavior} from '../iron-resizable-behavior/iron-resizable-behavior.js';
-import {Polymer} from '../polymer/lib/legacy/polymer-fn.js';
-import {dom} from '../polymer/lib/legacy/polymer.dom.js';
-import {html} from '../polymer/lib/utils/html-tag.js';
-import {Base} from '../polymer/polymer-legacy.js';
+import {Polymer} from '../polymer/polymer_bundled.min.js';
+import {dom} from '../polymer/polymer_bundled.min.js';
+import {html} from '../polymer/polymer_bundled.min.js';
+import {Base} from '../polymer/polymer_bundled.min.js';
 
 /**
 `iron-collapse` creates a collapsible block of content.  By default, the content

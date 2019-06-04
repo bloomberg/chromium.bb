@@ -8,9 +8,9 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-import '../polymer/polymer-legacy.js';
+import '../polymer/polymer_bundled.min.js';
 
-import {dom} from '../polymer/lib/legacy/polymer.dom.js';
+import {dom} from '../polymer/polymer_bundled.min.js';
 /**
  * Used to calculate the scroll direction during touch events.
  * @type {!Object}

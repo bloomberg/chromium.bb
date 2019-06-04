@@ -17,7 +17,7 @@ you import this file.
 For a set of styles that can be applied to an element, check
 paper-styles/shadow.js.
 */
-import {html} from '../../polymer/lib/utils/html-tag.js';
+import {html} from '../../polymer/polymer_bundled.min.js';
 const template = html`
 <style>
 .shadow-transition {

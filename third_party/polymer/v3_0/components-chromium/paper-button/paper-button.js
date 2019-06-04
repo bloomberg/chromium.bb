@@ -12,8 +12,8 @@ import '../iron-flex-layout/iron-flex-layout.js';
 import '../paper-styles/element-styles/paper-material-styles.js';
 
 import {PaperButtonBehavior, PaperButtonBehaviorImpl} from '../paper-behaviors/paper-button-behavior.js';
-import {Polymer} from '../polymer/lib/legacy/polymer-fn.js';
-import {html} from '../polymer/polymer-legacy.js';
+import {Polymer} from '../polymer/polymer_bundled.min.js';
+import {html} from '../polymer/polymer_bundled.min.js';
 
 const template = html`
   <style include="paper-material-styles">

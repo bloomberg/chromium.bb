@@ -8,10 +8,10 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-import '../polymer/polymer-legacy.js';
+import '../polymer/polymer_bundled.min.js';
 
 import {IronA11yKeysBehavior} from '../iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
-import {Polymer} from '../polymer/lib/legacy/polymer-fn.js';
+import {Polymer} from '../polymer/polymer_bundled.min.js';
 /**
 `iron-a11y-keys` provides a cross-browser interface for processing
 keyboard commands. The interface adheres to [WAI-ARIA best

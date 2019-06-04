@@ -18,7 +18,7 @@ For a set of styles that can be applied to an element, check
 paper-styles/typography.html.
 */
 import '../../font-roboto/roboto.js';
-import {html} from '../../polymer/lib/utils/html-tag.js';
+import {html} from '../../polymer/polymer_bundled.min.js';
 const template = html`
 <style>
 

@@ -9,7 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {Base} from '../polymer/polymer-legacy.js';
+import {Base} from '../polymer/polymer_bundled.min.js';
 
 const HAS_NEW_MOUSE = (() => {
   let has = false;
