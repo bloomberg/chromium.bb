@@ -1874,6 +1874,24 @@
             ]
         }
     ],
+    "DownloadResumptionWithoutStrongValidators": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "download_validation_length": "1024"
+                    },
+                    "enable_features": [
+                        "AllowDownloadResumptionWithoutStrongValidators"
+                    ]
+                }
+            ]
+        }
+    ],
     "DownloadsLocationChange": [
         {
             "platforms": [
