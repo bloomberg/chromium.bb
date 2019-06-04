@@ -48,6 +48,7 @@ constexpr char kCRDResponseHello[] = "helloResponse";
 constexpr char kCRDResponseConnect[] = "connectResponse";
 constexpr char kCRDStateChanged[] = "hostStateChanged";
 constexpr char kCRDResponseDisconnect[] = "disconnectResponse";
+constexpr char kCRDResponseError[] = "error";
 
 // Connect message parameters:
 constexpr char kCRDConnectUserName[] = "userName";
@@ -359,7 +360,7 @@ void CRDHostDelegate::PostMessageFromNativeHost(const std::string& message) {
   } else if (type == kCRDResponseDisconnect) {
     OnDisconnectResponse();
     return;
-  } else if (type == kCRDStateChanged) {
+  } else if (type == kCRDStateChanged || type == kCRDResponseError) {
     // Handle CRD host state changes
     auto* state_value =
         message_value->FindKeyOfType(kCRDStateKey, base::Value::Type::STRING);
@@ -385,7 +386,7 @@ void CRDHostDelegate::PostMessageFromNativeHost(const std::string& message) {
     }
     return;
   }
-  LOG(WARNING) << "Unknown message type :" << type;
+  LOG(WARNING) << "Unknown message type: " << type;
 }
 
 void CRDHostDelegate::OnHelloResponse() {
