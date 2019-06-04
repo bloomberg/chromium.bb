@@ -1642,11 +1642,15 @@ bool PaintLayer::RequiresScrollableArea() const {
 void PaintLayer::UpdateScrollableArea() {
   if (RequiresScrollableArea() && !scrollable_area_) {
     scrollable_area_ = PaintLayerScrollableArea::Create(*this);
-    Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+    if (Compositor()) {
+      Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+    }
   } else if (!RequiresScrollableArea() && scrollable_area_) {
     scrollable_area_->Dispose();
     scrollable_area_.Clear();
-    Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+    if (Compositor()) {
+      Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+    }
   }
 }
 
@@ -2820,8 +2824,11 @@ void PaintLayer::ClearCompositedLayerMapping(bool layer_being_destroyed) {
       // work with CompositeAfterPaint. Some transform tree changes may still
       // produce incorrect behavior from JankTracker (see discussion on review
       // thread of http://crrev.com/c/1636403).
-      Compositor()->ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
-          layout_object_);
+      if (Compositor()) {
+        Compositor()
+            ->ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
+                layout_object_);
+      }
     }
   } else {
     // We need to make sure our decendants get a geometry update. In principle,
