@@ -115,6 +115,9 @@ public class TabGroupUiCoordinator
      */
     @Override
     public void destroy() {
+        // Early return if the component hasn't initialized yet.
+        if (mActivity == null) return;
+
         mTabStripCoordinator.destroy();
         mTabGridSheetCoordinator.destroy();
         mMediator.destroy();
