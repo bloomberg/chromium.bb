@@ -280,6 +280,11 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 // Tests that a POST followed by tapping back to the form page and then tapping
 // forward to the result page resends data.
 - (void)testRepostFormAfterTappingBackAndForward {
+  // TODO(crbug.com/968296): Test is failing on iPad for slim nav.
+  if (IsIPadIdiom() && web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
