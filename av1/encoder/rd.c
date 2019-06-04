@@ -600,7 +600,9 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   set_block_thresholds(cm, rd);
 
-  av1_initialize_cost_tables(cm, x);
+  if (!cpi->sf.use_nonrd_pick_mode || frame_is_intra_only(cm) ||
+      (cm->current_frame.frame_number & 0x07) == 1)
+    av1_initialize_cost_tables(cm, x);
 
   if (frame_is_intra_only(cm) && cm->allow_screen_content_tools &&
       cpi->oxcf.pass != 1) {
