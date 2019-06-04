@@ -23,7 +23,6 @@
 #include "media/base/limits.h"
 #include "media/base/media.h"
 #include "media/base/timestamp_constants.h"
-#include "media/gpu/android/android_video_decode_accelerator.h"
 
 namespace media {
 

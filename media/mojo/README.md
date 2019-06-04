@@ -200,7 +200,6 @@ by all local/remote media components to handle encrypted buffers:
 2. Remote media components hosted in `MediaService`, e.g. by
    `MojoRendererService`, `MojoAudioDecoderService` and
    `MojoVideoDecoderService`.
-3. Legacy remote media components like `AndroidVideoDecodeAccelerator`.
 
 At the JavaScript layer, the media player and MediaKeys are connected via
 [`setMediaKeys()`](https://w3c.github.io/encrypted-media/#dom-htmlmediaelement-setmediakeys).
@@ -223,13 +222,12 @@ calls to the `Decryptor` in the remote CDM.
 #### Using CdmContext
 
 In some cases the media component is set to work with a specific CDM. For
-example, on Android, MediaCodec-based decoders (e.g. `MediaCodecAudioDecoder`
-and `AndroidVideoDecodeAccelerator`) can only use MediaDrm-based CDM via
-`MediaCryptoContext`. The media component and the CDM must live in the same
-process because the interaction of these two are typically happening deep at the
-OS level. In theory, they can both live in the render process. But in practice,
-typically both the CDM and the media component are hosted by the MediaService in
-a remote (e.g. GPU) process.
+example, on Android, MediaCodec-based decoders (e.g. `MediaCodecAudioDecoder`)
+can only use MediaDrm-based CDM via `MediaCryptoContext`. The media component
+and the CDM must live in the same process because the interaction of these two
+are typically happening deep at the OS level. In theory, they can both live in
+the render process. But in practice, typically both the CDM and the media
+component are hosted by the MediaService in a remote (e.g. GPU) process.
 
 To be able to attach a remote CDM with a remote media component, each
 `InterfaceFactoryImpl` instance (corresponding to one `RenderFrame`) in the

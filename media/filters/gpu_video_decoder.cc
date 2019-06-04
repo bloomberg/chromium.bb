@@ -455,8 +455,6 @@ void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   }
 
   memcpy(shared_memory->memory(), buffer->data(), size);
-  // AndroidVideoDecodeAccelerator needs the timestamp to output frames in
-  // presentation order.
   BitstreamBuffer bitstream_buffer(
       next_bitstream_buffer_id_, shared_memory->handle(), false /* read_only */,
       size, 0, buffer->timestamp());

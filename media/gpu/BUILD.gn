@@ -91,21 +91,12 @@ component("gpu") {
 
   if (is_android) {
     sources += [
-      "android/android_video_decode_accelerator.cc",
-      "android/android_video_decode_accelerator.h",
       "android/android_video_encode_accelerator.cc",
       "android/android_video_encode_accelerator.h",
       "android/android_video_surface_chooser.cc",
       "android/android_video_surface_chooser.h",
       "android/android_video_surface_chooser_impl.cc",
       "android/android_video_surface_chooser_impl.h",
-      "android/avda_codec_image.cc",
-      "android/avda_codec_image.h",
-      "android/avda_picture_buffer_manager.cc",
-      "android/avda_picture_buffer_manager.h",
-      "android/avda_shared_state.cc",
-      "android/avda_shared_state.h",
-      "android/avda_state_provider.h",
       "android/avda_surface_bundle.cc",
       "android/avda_surface_bundle.h",
       "android/codec_allocator.cc",
@@ -149,13 +140,6 @@ component("gpu") {
     ]
     if (enable_vulkan) {
       deps += [ "//gpu/vulkan:vulkan" ]
-    }
-
-    # TODO(crbug.com/789435): This is needed for AVDA to access the CDM
-    # directly.  Remove this dependency after VDAs are also running as part of
-    # the mojo media service. See http://crbug.com/522298
-    if (mojo_media_host == "gpu") {
-      deps += [ "//media/cdm:cdm_manager" ]
     }
   }
 
@@ -455,7 +439,6 @@ source_set("android_video_decode_accelerator_unittests") {
   if (is_android) {
     testonly = true
     sources = [
-      "android/android_video_decode_accelerator_unittest.cc",
       "android/android_video_surface_chooser_impl_unittest.cc",
       "android/codec_allocator_unittest.cc",
       "android/codec_image_group_unittest.cc",

@@ -106,31 +106,6 @@ source_set("cdm") {
   }
 }
 
-config("cdm_manager_implementation") {
-  defines = [ "CDM_MANAGER_IMPLEMENTATION" ]
-}
-
-# cdm_manager must not be a source_set() because CdmManager exposes a static
-# singleton, shared by multiple component()s.
-#
-# TODO(xhwang): Remove this component once AVDA no longer depends on it.
-component("cdm_manager") {
-  visibility = [
-    "//media/gpu",
-    "//media/mojo/services",
-  ]
-  sources = [
-    "cdm_manager.cc",
-    "cdm_manager.h",
-    "cdm_manager_export.h",
-  ]
-  configs += [ ":cdm_manager_implementation" ]
-  deps = [
-    "//base",
-    "//media",
-  ]
-}
-
 static_library("cdm_paths") {
   sources = [
     "cdm_paths.cc",

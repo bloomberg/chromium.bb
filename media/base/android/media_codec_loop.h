@@ -29,7 +29,7 @@
 // One MediaCodecLoop instance owns a single MediaCodec(Bridge) instance, and
 // drives it to perform decoding in conjunction with a MediaCodecLoop::Client.
 // The Client provides the input data and consumes the output data.  A typical
-// example is AndroidVideoDecodeAccelerator.
+// example is MediaCodecAudioDecoder.
 
 // Implementation notes.
 //

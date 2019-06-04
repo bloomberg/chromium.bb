@@ -53,7 +53,7 @@ import java.util.UUID;
 
 /**
  * A wrapper of the android MediaDrm class. Each MediaDrmBridge manages multiple sessions for
- * MediaCodecAudioDecoders, and AndroidVideoDecodeAccelerators or MediaCodecVideoDecoders.
+ * MediaCodecAudioDecoders or MediaCodecVideoDecoders.
  */
 @JNINamespace("media")
 @MainDex
