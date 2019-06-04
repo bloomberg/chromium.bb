@@ -15,11 +15,10 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "net/base/io_buffer.h"
@@ -125,7 +124,7 @@ int PostToCallbackIfNeeded(bool sync_possible,
                            net::CompletionOnceCallback callback,
                            int rv) {
   if (!sync_possible && !callback.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), rv));
     return net::ERR_IO_PENDING;
   } else {
@@ -383,7 +382,7 @@ void SimpleEntryImpl::Doom() {
 }
 
 void SimpleEntryImpl::Close() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LT(0, open_count_);
 
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_CLOSE_CALL);
@@ -401,23 +400,23 @@ void SimpleEntryImpl::Close() {
 }
 
 std::string SimpleEntryImpl::GetKey() const {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return key_;
 }
 
 Time SimpleEntryImpl::GetLastUsed() const {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(cache_type_ != net::APP_CACHE);
   return last_used_;
 }
 
 Time SimpleEntryImpl::GetLastModified() const {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return last_modified_;
 }
 
 int32_t SimpleEntryImpl::GetDataSize(int stream_index) const {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, data_size_[stream_index]);
   return data_size_[stream_index];
 }
@@ -427,7 +426,7 @@ int SimpleEntryImpl::ReadData(int stream_index,
                               net::IOBuffer* buf,
                               int buf_len,
                               CompletionOnceCallback callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (net_log_.IsCapturing()) {
     net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_READ_CALL,
@@ -471,7 +470,7 @@ int SimpleEntryImpl::WriteData(int stream_index,
                                int buf_len,
                                CompletionOnceCallback callback,
                                bool truncate) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (net_log_.IsCapturing()) {
     net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_CALL,
@@ -551,7 +550,7 @@ int SimpleEntryImpl::ReadSparseData(int64_t offset,
                                     net::IOBuffer* buf,
                                     int buf_len,
                                     CompletionOnceCallback callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (net_log_.IsCapturing()) {
     net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_READ_SPARSE_CALL,
@@ -577,7 +576,7 @@ int SimpleEntryImpl::WriteSparseData(int64_t offset,
                                      net::IOBuffer* buf,
                                      int buf_len,
                                      CompletionOnceCallback callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (net_log_.IsCapturing()) {
     net_log_.AddEvent(
@@ -604,7 +603,7 @@ int SimpleEntryImpl::GetAvailableRange(int64_t offset,
                                        int len,
                                        int64_t* start,
                                        CompletionOnceCallback callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (offset < 0 || len < 0)
     return net::ERR_INVALID_ARGUMENT;
 
@@ -615,20 +614,20 @@ int SimpleEntryImpl::GetAvailableRange(int64_t offset,
 }
 
 bool SimpleEntryImpl::CouldBeSparse() const {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(morlovich): Actually check.
   return true;
 }
 
 void SimpleEntryImpl::CancelSparseIO() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The Simple Cache does not return distinct objects for the same non-doomed
   // entry, so there's no need to coordinate which object is performing sparse
   // I/O.  Therefore, CancelSparseIO and ReadyForSparseIO succeed instantly.
 }
 
 net::Error SimpleEntryImpl::ReadyForSparseIO(CompletionOnceCallback callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The simple Cache does not return distinct objects for the same non-doomed
   // entry, so there's no need to coordinate which object is performing sparse
   // I/O.  Therefore, CancelSparseIO and ReadyForSparseIO succeed instantly.
@@ -654,7 +653,7 @@ void SimpleEntryImpl::SetPriority(uint32_t entry_priority) {
 }
 
 SimpleEntryImpl::~SimpleEntryImpl() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(0U, pending_operations_.size());
 
   // STATE_IO_PENDING is possible here in one corner case: the entry had
@@ -675,7 +674,7 @@ void SimpleEntryImpl::PostClientCallback(net::CompletionOnceCallback callback,
     return;
   // Note that the callback is posted rather than directly invoked to avoid
   // reentrancy issues.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&InvokeCallbackIfBackendIsAlive, backend_,
                                 std::move(callback), result));
 }
@@ -724,7 +723,7 @@ void SimpleEntryImpl::ReturnEntryToCallerAndPostCallback(
   // potentially call ReturnEntryToCaller and then roll it back rather than
   // delay ReturnEntryToCaller: it protects |this| till any potential ownership
   // share transfer is sorted out.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&InvokeCallbackIfBackendIsAliveOrCloseEntry, backend_,
                      base::Unretained(this), std::move(callback)));
@@ -740,7 +739,7 @@ void SimpleEntryImpl::MarkAsDoomed(DoomState new_state) {
 }
 
 void SimpleEntryImpl::RunNextOperationIfNeeded() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!pending_operations_.empty() && state_ != STATE_IO_PENDING) {
     SimpleEntryOperation operation = std::move(pending_operations_.front());
     pending_operations_.pop();
@@ -953,7 +952,7 @@ void SimpleEntryImpl::OpenOrCreateEntryInternal(
 }
 
 void SimpleEntryImpl::CloseInternal() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (open_count_ != 0) {
     // Entry got resurrected in between Close and CloseInternal, nothing to do
@@ -1017,7 +1016,7 @@ int SimpleEntryImpl::ReadDataInternal(bool sync_possible,
                                       net::IOBuffer* buf,
                                       int buf_len,
                                       net::CompletionOnceCallback callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ScopedOperationRunner operation_runner(this);
 
   if (net_log_.IsCapturing()) {
@@ -1111,7 +1110,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
                                         int buf_len,
                                         net::CompletionOnceCallback callback,
                                         bool truncate) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ScopedOperationRunner operation_runner(this);
 
   if (net_log_.IsCapturing()) {
@@ -1127,7 +1126,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
                         CreateNetLogReadWriteCompleteCallback(net::ERR_FAILED));
     }
     if (!callback.is_null()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), net::ERR_FAILED));
     }
     // |this| may be destroyed after return here.
@@ -1140,7 +1139,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   if (stream_index == 0) {
     int ret_value = SetStream0Data(buf, offset, buf_len, truncate);
     if (!callback.is_null()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), ret_value));
     }
     return;
@@ -1153,7 +1152,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
       RecordWriteResult(cache_type_,
                         SIMPLE_ENTRY_WRITE_RESULT_FAST_EMPTY_RETURN);
       if (!callback.is_null()) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
+        base::SequencedTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::BindOnce(std::move(callback), 0));
       }
       return;
@@ -1229,7 +1228,7 @@ void SimpleEntryImpl::ReadSparseDataInternal(
     net::IOBuffer* buf,
     int buf_len,
     net::CompletionOnceCallback callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ScopedOperationRunner operation_runner(this);
 
   if (net_log_.IsCapturing()) {
@@ -1245,7 +1244,7 @@ void SimpleEntryImpl::ReadSparseDataInternal(
           CreateNetLogReadWriteCompleteCallback(net::ERR_FAILED));
     }
     if (!callback.is_null()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), net::ERR_FAILED));
     }
     // |this| may be destroyed after return here.
@@ -1274,7 +1273,7 @@ void SimpleEntryImpl::WriteSparseDataInternal(
     net::IOBuffer* buf,
     int buf_len,
     net::CompletionOnceCallback callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ScopedOperationRunner operation_runner(this);
 
   if (net_log_.IsCapturing()) {
@@ -1290,7 +1289,7 @@ void SimpleEntryImpl::WriteSparseDataInternal(
           CreateNetLogReadWriteCompleteCallback(net::ERR_FAILED));
     }
     if (!callback.is_null()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), net::ERR_FAILED));
     }
     // |this| may be destroyed after return here.
@@ -1330,12 +1329,12 @@ void SimpleEntryImpl::GetAvailableRangeInternal(
     int len,
     int64_t* out_start,
     net::CompletionOnceCallback callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ScopedOperationRunner operation_runner(this);
 
   if (state_ == STATE_FAILURE || state_ == STATE_UNINITIALIZED) {
     if (!callback.is_null()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), net::ERR_FAILED));
     }
     // |this| may be destroyed after return here.
@@ -1424,7 +1423,7 @@ void SimpleEntryImpl::CreationOperationComplete(
     Entry** out_entry,
     bool* out_opened,
     net::NetLogEventType end_event_type) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, STATE_IO_PENDING);
   DCHECK(in_results);
   ScopedOperationRunner operation_runner(this);
@@ -1528,7 +1527,7 @@ void SimpleEntryImpl::EntryOperationComplete(
     net::CompletionOnceCallback completion_callback,
     const SimpleEntryStat& entry_stat,
     int result) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_IO_PENDING, state_);
   if (result < 0) {
@@ -1540,7 +1539,7 @@ void SimpleEntryImpl::EntryOperationComplete(
   }
 
   if (!completion_callback.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(completion_callback), result));
   }
   RunNextOperationIfNeeded();
@@ -1552,7 +1551,7 @@ void SimpleEntryImpl::ReadOperationComplete(
     net::CompletionOnceCallback completion_callback,
     std::unique_ptr<SimpleEntryStat> entry_stat,
     std::unique_ptr<SimpleSynchronousEntry::ReadResult> read_result) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_IO_PENDING, state_);
   DCHECK(read_result);
@@ -1623,7 +1622,7 @@ void SimpleEntryImpl::ReadSparseOperationComplete(
     net::CompletionOnceCallback completion_callback,
     std::unique_ptr<base::Time> last_used,
     std::unique_ptr<int> result) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(synchronous_entry_);
   DCHECK(result);
 
@@ -1641,7 +1640,7 @@ void SimpleEntryImpl::WriteSparseOperationComplete(
     net::CompletionOnceCallback completion_callback,
     std::unique_ptr<SimpleEntryStat> entry_stat,
     std::unique_ptr<int> result) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(synchronous_entry_);
   DCHECK(result);
 
@@ -1656,7 +1655,7 @@ void SimpleEntryImpl::WriteSparseOperationComplete(
 void SimpleEntryImpl::GetAvailableRangeOperationComplete(
     net::CompletionOnceCallback completion_callback,
     std::unique_ptr<int> result) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(synchronous_entry_);
   DCHECK(result);
 
@@ -1681,7 +1680,7 @@ void SimpleEntryImpl::DoomOperationComplete(
 void SimpleEntryImpl::RecordReadResultConsideringChecksum(
     const std::unique_ptr<SimpleSynchronousEntry::ReadResult>& read_result)
     const {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_IO_PENDING, state_);
 
@@ -1716,7 +1715,7 @@ void SimpleEntryImpl::CloseOperationComplete(
 
 void SimpleEntryImpl::UpdateDataFromEntryStat(
     const SimpleEntryStat& entry_stat) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_READY, state_);
 
@@ -1787,7 +1786,7 @@ int SimpleEntryImpl::SetStream0Data(net::IOBuffer* buf,
   base::Time modification_time = base::Time::Now();
 
   // Reset checksum; SimpleSynchronousEntry::Close will compute it for us,
-  // and do it off the I/O thread.
+  // and do it off the source creation sequence.
   crc32s_end_offset_[0] = 0;
 
   UpdateDataFromEntryStat(

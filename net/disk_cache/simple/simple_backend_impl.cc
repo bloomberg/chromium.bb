@@ -23,12 +23,12 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -286,7 +286,7 @@ net::Error SimpleBackendImpl::Init(CompletionOnceCallback completion_callback) {
       base::MakeRefCounted<net::PrioritizedTaskRunner>(worker_pool);
 
   index_ = std::make_unique<SimpleIndex>(
-      base::ThreadTaskRunnerHandle::Get(), cleanup_tracker_.get(), this,
+      base::SequencedTaskRunnerHandle::Get(), cleanup_tracker_.get(), this,
       GetCacheType(),
       std::make_unique<SimpleIndexFile>(cache_runner_, worker_pool.get(),
                                         GetCacheType(), path_));
