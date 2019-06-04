@@ -56,6 +56,7 @@ touchless_java_sources = [
   "touchless/java/src/org/chromium/chrome/browser/touchless/ui/iph/KeyFunctionsIPHProperties.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ui/iph/KeyFunctionsIPHView.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ui/iph/KeyFunctionsIPHViewBinder.java",
+  "touchless/java/src/org/chromium/chrome/browser/touchless/ui/progressbar/PillProgressBarView.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ui/progressbar/ProgressBarCoordinator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ui/progressbar/ProgressBarMediator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ui/progressbar/ProgressBarProperties.java",

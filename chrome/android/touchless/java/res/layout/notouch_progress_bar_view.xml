@@ -10,12 +10,11 @@
     android:layout_gravity="center_horizontal"
     android:background="@drawable/progress_bar_shadow">
 
-    <ProgressBar
+    <org.chromium.chrome.browser.touchless.ui.progressbar.PillProgressBarView
         android:id="@+id/notouch_progress_bar_view"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="192dp"
-        android:layout_height="36dp"
-        android:progressDrawable="@drawable/notouch_progress_bar_drawable" />
+        android:layout_height="36dp"/>
 
     <TextView
         android:id="@+id/notouch_url_text_view"
