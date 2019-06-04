@@ -17,7 +17,6 @@
 #include "media/base/video_frame.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_types.h"
 #include "third_party/blink/public/platform/modules/mediastream/secure_display_link_tracker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
@@ -179,7 +178,7 @@ class BLINK_EXPORT MediaStreamVideoSource
   // captured frames.
   virtual void StartSourceImpl(
       const VideoCaptureDeliverFrameCB& frame_callback) = 0;
-  void OnStartDone(mojom::MediaStreamRequestResult result);
+  void OnStartDone(MediaStreamRequestResult result);
 
   // A subclass that supports restart must override this method such that it
   // immediately stop producing video frames after this method is called.

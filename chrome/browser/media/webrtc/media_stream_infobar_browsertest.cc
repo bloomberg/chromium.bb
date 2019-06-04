@@ -28,7 +28,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 // MediaStreamPermissionTest ---------------------------------------------------
 
@@ -76,7 +75,7 @@ class MediaStreamPermissionTest : public WebRtcTestBase {
   // Dummy callback for when we deny the current request directly.
   static void OnMediaStreamResponse(
       const blink::MediaStreamDevices& devices,
-      blink::mojom::MediaStreamRequestResult result,
+      blink::MediaStreamRequestResult result,
       std::unique_ptr<content::MediaStreamUI> ui) {}
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamPermissionTest);

@@ -11,7 +11,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -104,7 +103,7 @@ class MediaStreamUI {
 // Callback used return results of media access requests.
 using MediaResponseCallback =
     base::OnceCallback<void(const blink::MediaStreamDevices& devices,
-                            blink::mojom::MediaStreamRequestResult result,
+                            blink::MediaStreamRequestResult result,
                             std::unique_ptr<MediaStreamUI> ui)>;
 }  // namespace content
 

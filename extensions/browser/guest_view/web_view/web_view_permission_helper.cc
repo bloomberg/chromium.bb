@@ -20,7 +20,6 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 using base::UserMetricsAction;
 using content::BrowserPluginGuestDelegate;
@@ -225,18 +224,16 @@ void WebViewPermissionHelper::OnMediaPermissionResponse(
     bool allow,
     const std::string& user_input) {
   if (!allow) {
-    std::move(callback).Run(
-        blink::MediaStreamDevices(),
-        blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
-        std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_PERMISSION_DENIED,
+                            std::unique_ptr<content::MediaStreamUI>());
     return;
   }
   if (!web_view_guest()->attached() ||
       !web_view_guest()->embedder_web_contents()->GetDelegate()) {
-    std::move(callback).Run(
-        blink::MediaStreamDevices(),
-        blink::mojom::MediaStreamRequestResult::INVALID_STATE,
-        std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_INVALID_STATE,
+                            std::unique_ptr<content::MediaStreamUI>());
     return;
   }
 

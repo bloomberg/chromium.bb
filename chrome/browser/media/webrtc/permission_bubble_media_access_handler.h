@@ -11,7 +11,6 @@
 #include "chrome/browser/media/media_access_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 // MediaAccessHandler for permission bubble requests.
 class PermissionBubbleMediaAccessHandler
@@ -49,7 +48,7 @@ class PermissionBubbleMediaAccessHandler
   void OnAccessRequestResponse(content::WebContents* web_contents,
                                int request_id,
                                const blink::MediaStreamDevices& devices,
-                               blink::mojom::MediaStreamRequestResult result,
+                               blink::MediaStreamRequestResult result,
                                std::unique_ptr<content::MediaStreamUI> ui);
 
   // content::NotificationObserver implementation.

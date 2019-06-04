@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 namespace content {
 
@@ -38,14 +37,13 @@ MockMediaStreamVideoSource::~MockMediaStreamVideoSource() {}
 void MockMediaStreamVideoSource::StartMockedSource() {
   DCHECK(attempted_to_start_);
   attempted_to_start_ = false;
-  OnStartDone(blink::mojom::MediaStreamRequestResult::OK);
+  OnStartDone(blink::MEDIA_DEVICE_OK);
 }
 
 void MockMediaStreamVideoSource::FailToStartMockedSource() {
   DCHECK(attempted_to_start_);
   attempted_to_start_ = false;
-  OnStartDone(
-      blink::mojom::MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO);
+  OnStartDone(blink::MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO);
 }
 
 void MockMediaStreamVideoSource::RequestRefreshFrame() {

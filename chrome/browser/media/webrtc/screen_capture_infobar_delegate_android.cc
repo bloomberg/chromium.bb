@@ -44,10 +44,9 @@ ScreenCaptureInfoBarDelegateAndroid::ScreenCaptureInfoBarDelegateAndroid(
 
 ScreenCaptureInfoBarDelegateAndroid::~ScreenCaptureInfoBarDelegateAndroid() {
   if (!callback_.is_null()) {
-    std::move(callback_).Run(
-        blink::MediaStreamDevices(),
-        blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
-        nullptr);
+    std::move(callback_).Run(blink::MediaStreamDevices(),
+                             blink::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
+                             nullptr);
   }
 }
 
@@ -73,26 +72,26 @@ base::string16 ScreenCaptureInfoBarDelegateAndroid::GetButtonLabel(
 }
 
 bool ScreenCaptureInfoBarDelegateAndroid::Accept() {
-  RunCallback(blink::mojom::MediaStreamRequestResult::OK);
+  RunCallback(blink::MEDIA_DEVICE_OK);
   return true;
 }
 
 bool ScreenCaptureInfoBarDelegateAndroid::Cancel() {
-  RunCallback(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED);
+  RunCallback(blink::MEDIA_DEVICE_PERMISSION_DENIED);
   return true;
 }
 
 void ScreenCaptureInfoBarDelegateAndroid::InfoBarDismissed() {
-  RunCallback(blink::mojom::MediaStreamRequestResult::PERMISSION_DISMISSED);
+  RunCallback(blink::MEDIA_DEVICE_PERMISSION_DISMISSED);
 }
 
 void ScreenCaptureInfoBarDelegateAndroid::RunCallback(
-    blink::mojom::MediaStreamRequestResult result) {
+    blink::MediaStreamRequestResult result) {
   DCHECK(!callback_.is_null());
 
   blink::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
-  if (result == blink::mojom::MediaStreamRequestResult::OK) {
+  if (result == blink::MEDIA_DEVICE_OK) {
     content::DesktopMediaID screen_id = content::DesktopMediaID(
         content::DesktopMediaID::TYPE_SCREEN, webrtc::kFullDesktopScreenId);
     devices.push_back(

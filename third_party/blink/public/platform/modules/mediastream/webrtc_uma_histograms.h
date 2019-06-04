@@ -9,7 +9,6 @@
 #include "base/memory/singleton.h"
 #include "base/sequence_checker.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rtc_api_name.h"
 
@@ -32,7 +31,7 @@ enum MediaStreamRequestState {
 BLINK_PLATFORM_EXPORT void LogUserMediaRequestWithNoResult(
     MediaStreamRequestState state);
 BLINK_PLATFORM_EXPORT void LogUserMediaRequestResult(
-    mojom::MediaStreamRequestResult result);
+    MediaStreamRequestResult result);
 
 // Helper method used to collect information about the number of times
 // different WebRTC APIs are called from JavaScript.

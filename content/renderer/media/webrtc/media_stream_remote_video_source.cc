@@ -18,7 +18,6 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/api/video/video_sink_interface.h"
 #include "third_party/webrtc/rtc_base/time_utils.h"  // for TimeMicros
@@ -233,7 +232,7 @@ void MediaStreamRemoteVideoSource::StartSourceImpl(
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->AddOrUpdateSink(delegate_.get(), rtc::VideoSinkWants());
-  OnStartDone(blink::mojom::MediaStreamRequestResult::OK);
+  OnStartDone(blink::MEDIA_DEVICE_OK);
 }
 
 void MediaStreamRemoteVideoSource::StopSourceImpl() {

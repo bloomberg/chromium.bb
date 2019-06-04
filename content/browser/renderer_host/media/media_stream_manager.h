@@ -54,7 +54,6 @@
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 namespace media {
 class AudioSystem;
@@ -87,7 +86,7 @@ class CONTENT_EXPORT MediaStreamManager
                               std::unique_ptr<MediaStreamUIProxy> ui)>;
 
   using GenerateStreamCallback =
-      base::OnceCallback<void(blink::mojom::MediaStreamRequestResult result,
+      base::OnceCallback<void(blink::MediaStreamRequestResult result,
                               const std::string& label,
                               const blink::MediaStreamDevices& audio_devices,
                               const blink::MediaStreamDevices& video_devices)>;
@@ -364,7 +363,7 @@ class CONTENT_EXPORT MediaStreamManager
       const std::string& label,
       const media::AudioParameters& output_parameters,
       const blink::MediaStreamDevices& devices,
-      blink::mojom::MediaStreamRequestResult result);
+      blink::MediaStreamRequestResult result);
   void HandleChangeSourceRequestResponse(
       const std::string& label,
       DeviceRequest* request,
@@ -450,7 +449,7 @@ class CONTENT_EXPORT MediaStreamManager
   void FinalizeGenerateStream(const std::string& label, DeviceRequest* request);
   void FinalizeRequestFailed(const std::string& label,
                              DeviceRequest* request,
-                             blink::mojom::MediaStreamRequestResult result);
+                             blink::MediaStreamRequestResult result);
   void FinalizeOpenDevice(const std::string& label, DeviceRequest* request);
   void FinalizeChangeDevice(const std::string& label, DeviceRequest* request);
   void FinalizeMediaAccessRequest(const std::string& label,

@@ -10,7 +10,6 @@
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/public/browser/file_select_listener.h"
 #include "ipc/ipc_message.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -63,7 +62,7 @@ void RenderFrameHostDelegate::RequestMediaAccessPermission(
   LOG(ERROR) << "RenderFrameHostDelegate::RequestMediaAccessPermission: "
              << "Not supported.";
   std::move(callback).Run(blink::MediaStreamDevices(),
-                          blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED,
+                          blink::MEDIA_DEVICE_NOT_SUPPORTED,
                           std::unique_ptr<MediaStreamUI>());
 }
 

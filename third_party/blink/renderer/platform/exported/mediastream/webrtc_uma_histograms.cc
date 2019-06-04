@@ -5,7 +5,6 @@
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 
 namespace blink {
 
@@ -14,10 +13,9 @@ void LogUserMediaRequestWithNoResult(MediaStreamRequestState state) {
                             NUM_MEDIA_STREAM_REQUEST_WITH_NO_RESULT);
 }
 
-void LogUserMediaRequestResult(mojom::blink::MediaStreamRequestResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "WebRTC.UserMediaRequest.Result2", result,
-      mojom::blink::MediaStreamRequestResult::NUM_MEDIA_REQUEST_RESULTS);
+void LogUserMediaRequestResult(MediaStreamRequestResult result) {
+  UMA_HISTOGRAM_ENUMERATION("WebRTC.UserMediaRequest.Result2", result,
+                            NUM_MEDIA_REQUEST_RESULTS);
 }
 
 void UpdateWebRTCMethodCount(WebRTCAPIName api_name) {

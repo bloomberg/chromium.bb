@@ -22,6 +22,16 @@ struct BLINK_COMMON_EXPORT
 };
 
 template <>
+struct BLINK_COMMON_EXPORT EnumTraits<blink::mojom::MediaStreamRequestResult,
+                                      blink::MediaStreamRequestResult> {
+  static blink::mojom::MediaStreamRequestResult ToMojom(
+      blink::MediaStreamRequestResult result);
+
+  static bool FromMojom(blink::mojom::MediaStreamRequestResult input,
+                        blink::MediaStreamRequestResult* out);
+};
+
+template <>
 struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::MediaStreamDeviceDataView,
                                         blink::MediaStreamDevice> {
   static const blink::MediaStreamType& type(

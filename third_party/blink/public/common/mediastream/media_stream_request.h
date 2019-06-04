@@ -57,6 +57,28 @@ enum MediaStreamRequestType {
   MEDIA_OPEN_DEVICE_PEPPER_ONLY  // Only used in requests made by Pepper.
 };
 
+// Elements in this enum should not be deleted or rearranged; the only
+// permitted operation is to add new elements before NUM_MEDIA_REQUEST_RESULTS.
+enum MediaStreamRequestResult {
+  MEDIA_DEVICE_OK = 0,
+  MEDIA_DEVICE_PERMISSION_DENIED = 1,
+  MEDIA_DEVICE_PERMISSION_DISMISSED = 2,
+  MEDIA_DEVICE_INVALID_STATE = 3,
+  MEDIA_DEVICE_NO_HARDWARE = 4,
+  MEDIA_DEVICE_INVALID_SECURITY_ORIGIN = 5,
+  MEDIA_DEVICE_TAB_CAPTURE_FAILURE = 6,
+  MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE = 7,
+  MEDIA_DEVICE_CAPTURE_FAILURE = 8,
+  MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED = 9,
+  MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO = 10,
+  MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO = 11,
+  MEDIA_DEVICE_NOT_SUPPORTED = 12,
+  MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN = 13,
+  MEDIA_DEVICE_KILL_SWITCH_ON = 14,
+  MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED = 15,
+  NUM_MEDIA_REQUEST_RESULTS
+};
+
 // Convenience predicates to determine whether the given type represents some
 // audio or some video device.
 BLINK_COMMON_EXPORT bool IsAudioInputMediaType(MediaStreamType type);

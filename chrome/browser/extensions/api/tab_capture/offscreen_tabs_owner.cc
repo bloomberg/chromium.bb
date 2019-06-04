@@ -15,7 +15,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 using content::WebContents;
 
@@ -95,11 +94,10 @@ void OffscreenTabsOwner::RequestMediaAccessPermission(
   DVLOG(2) << "Allowing " << devices.size()
            << " capture devices for OffscreenTab content.";
 
-  std::move(callback).Run(
-      devices,
-      devices.empty() ? blink::mojom::MediaStreamRequestResult::INVALID_STATE
-                      : blink::mojom::MediaStreamRequestResult::OK,
-      nullptr);
+  std::move(callback).Run(devices,
+                          devices.empty() ? blink::MEDIA_DEVICE_INVALID_STATE
+                                          : blink::MEDIA_DEVICE_OK,
+                          nullptr);
 }
 
 void OffscreenTabsOwner::DestroyTab(OffscreenTab* tab) {

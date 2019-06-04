@@ -11,7 +11,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/window_container_type.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace background_loader {
@@ -37,12 +36,10 @@ class BackgroundLoaderContentsTest : public testing::Test,
   bool can_download_delegate_called() { return delegate_called_; }
 
   void MediaAccessCallback(const blink::MediaStreamDevices& devices,
-                           blink::mojom::MediaStreamRequestResult result,
+                           blink::MediaStreamRequestResult result,
                            std::unique_ptr<content::MediaStreamUI> ui);
   blink::MediaStreamDevices devices() { return devices_; }
-  blink::mojom::MediaStreamRequestResult request_result() {
-    return request_result_;
-  }
+  blink::MediaStreamRequestResult request_result() { return request_result_; }
   content::MediaStreamUI* media_stream_ui() { return media_stream_ui_.get(); }
 
   void WaitForSignal() { waiter_.Wait(); }
@@ -52,7 +49,7 @@ class BackgroundLoaderContentsTest : public testing::Test,
   bool download_;
   bool delegate_called_;
   blink::MediaStreamDevices devices_;
-  blink::mojom::MediaStreamRequestResult request_result_;
+  blink::MediaStreamRequestResult request_result_;
   std::unique_ptr<content::MediaStreamUI> media_stream_ui_;
   base::WaitableEvent waiter_;
 };
@@ -92,7 +89,7 @@ void BackgroundLoaderContentsTest::SetDelegate() {
 
 void BackgroundLoaderContentsTest::MediaAccessCallback(
     const blink::MediaStreamDevices& devices,
-    blink::mojom::MediaStreamRequestResult result,
+    blink::MediaStreamRequestResult result,
     std::unique_ptr<content::MediaStreamUI> ui) {
   devices_ = devices;
   request_result_ = result;
@@ -174,7 +171,7 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotGiveMediaAccessPermission) {
   // No devices allowed.
   ASSERT_TRUE(devices().empty());
   // Permission has been dismissed rather than denied.
-  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DISMISSED,
+  ASSERT_EQ(blink::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED,
             request_result());
   ASSERT_EQ(nullptr, media_stream_ui());
 }

@@ -82,6 +82,119 @@ bool EnumTraits<blink::mojom::MediaStreamType, blink::MediaStreamType>::
 }
 
 // static
+blink::mojom::MediaStreamRequestResult EnumTraits<
+    blink::mojom::MediaStreamRequestResult,
+    blink::MediaStreamRequestResult>::ToMojom(blink::MediaStreamRequestResult
+                                                  result) {
+  switch (result) {
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_OK:
+      return blink::mojom::MediaStreamRequestResult::OK;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DENIED:
+      return blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED:
+      return blink::mojom::MediaStreamRequestResult::PERMISSION_DISMISSED;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_INVALID_STATE:
+      return blink::mojom::MediaStreamRequestResult::INVALID_STATE;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_NO_HARDWARE:
+      return blink::mojom::MediaStreamRequestResult::NO_HARDWARE;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_INVALID_SECURITY_ORIGIN:
+      return blink::mojom::MediaStreamRequestResult::INVALID_SECURITY_ORIGIN;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_TAB_CAPTURE_FAILURE:
+      return blink::mojom::MediaStreamRequestResult::TAB_CAPTURE_FAILURE;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE:
+      return blink::mojom::MediaStreamRequestResult::SCREEN_CAPTURE_FAILURE;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_CAPTURE_FAILURE:
+      return blink::mojom::MediaStreamRequestResult::CAPTURE_FAILURE;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED:
+      return blink::mojom::MediaStreamRequestResult::CONSTRAINT_NOT_SATISFIED;
+    case blink::MediaStreamRequestResult::
+        MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO:
+      return blink::mojom::MediaStreamRequestResult::TRACK_START_FAILURE_AUDIO;
+    case blink::MediaStreamRequestResult::
+        MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO:
+      return blink::mojom::MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_NOT_SUPPORTED:
+      return blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN:
+      return blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_KILL_SWITCH_ON:
+      return blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED:
+      return blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return blink::mojom::MediaStreamRequestResult::OK;
+}
+
+// static
+bool EnumTraits<blink::mojom::MediaStreamRequestResult,
+                blink::MediaStreamRequestResult>::
+    FromMojom(blink::mojom::MediaStreamRequestResult input,
+              blink::MediaStreamRequestResult* out) {
+  switch (input) {
+    case blink::mojom::MediaStreamRequestResult::OK:
+      *out = blink::MediaStreamRequestResult::MEDIA_DEVICE_OK;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED:
+      *out = blink::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DENIED;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::PERMISSION_DISMISSED:
+      *out = blink::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::INVALID_STATE:
+      *out = blink::MediaStreamRequestResult::MEDIA_DEVICE_INVALID_STATE;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::NO_HARDWARE:
+      *out = blink::MediaStreamRequestResult::MEDIA_DEVICE_NO_HARDWARE;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::INVALID_SECURITY_ORIGIN:
+      *out =
+          blink::MediaStreamRequestResult::MEDIA_DEVICE_INVALID_SECURITY_ORIGIN;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::TAB_CAPTURE_FAILURE:
+      *out = blink::MediaStreamRequestResult::MEDIA_DEVICE_TAB_CAPTURE_FAILURE;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::SCREEN_CAPTURE_FAILURE:
+      *out =
+          blink::MediaStreamRequestResult::MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::CAPTURE_FAILURE:
+      *out = blink::MediaStreamRequestResult::MEDIA_DEVICE_CAPTURE_FAILURE;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::CONSTRAINT_NOT_SATISFIED:
+      *out = blink::MediaStreamRequestResult::
+          MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::TRACK_START_FAILURE_AUDIO:
+      *out = blink::MediaStreamRequestResult::
+          MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO:
+      *out = blink::MediaStreamRequestResult::
+          MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED:
+      *out = blink::MediaStreamRequestResult::MEDIA_DEVICE_NOT_SUPPORTED;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN:
+      *out =
+          blink::MediaStreamRequestResult::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON:
+      *out = blink::MediaStreamRequestResult::MEDIA_DEVICE_KILL_SWITCH_ON;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED:
+      *out = blink::MediaStreamRequestResult::
+          MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<blink::mojom::MediaStreamDeviceDataView,
                   blink::MediaStreamDevice>::
     Read(blink::mojom::MediaStreamDeviceDataView input,

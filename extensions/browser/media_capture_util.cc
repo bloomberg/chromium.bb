@@ -13,7 +13,6 @@
 #include "content/public/browser/media_capture_devices.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 using blink::MediaStreamDevice;
 using blink::MediaStreamDevices;
@@ -77,11 +76,10 @@ void GrantMediaStreamRequest(content::WebContents* web_contents,
 
   // TODO(jamescook): Should we show a recording icon somewhere? If so, where?
   std::unique_ptr<MediaStreamUI> ui;
-  std::move(callback).Run(
-      devices,
-      devices.empty() ? blink::mojom::MediaStreamRequestResult::INVALID_STATE
-                      : blink::mojom::MediaStreamRequestResult::OK,
-      std::move(ui));
+  std::move(callback).Run(devices,
+                          devices.empty() ? blink::MEDIA_DEVICE_INVALID_STATE
+                                          : blink::MEDIA_DEVICE_OK,
+                          std::move(ui));
 }
 
 void VerifyMediaAccessPermission(blink::MediaStreamType type,

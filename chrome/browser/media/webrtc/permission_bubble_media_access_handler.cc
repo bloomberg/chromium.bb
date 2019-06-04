@@ -43,7 +43,7 @@ using content::BrowserThread;
 
 using RepeatingMediaResponseCallback =
     base::RepeatingCallback<void(const blink::MediaStreamDevices& devices,
-                                 blink::mojom::MediaStreamRequestResult result,
+                                 blink::MediaStreamRequestResult result,
                                  std::unique_ptr<content::MediaStreamUI> ui)>;
 
 #if defined(OS_MACOSX)
@@ -127,9 +127,8 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
           chrome::android::kUserMediaScreenCapturing)) {
     // If screen capturing isn't enabled on Android, we'll use "invalid state"
     // as result, same as on desktop.
-    std::move(callback).Run(
-        blink::MediaStreamDevices(),
-        blink::mojom::MediaStreamRequestResult::INVALID_STATE, nullptr);
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_INVALID_STATE, nullptr);
     return;
   }
 #endif  // defined(OS_ANDROID)
@@ -210,7 +209,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
     content::WebContents* web_contents,
     int request_id,
     const blink::MediaStreamDevices& devices,
-    blink::mojom::MediaStreamRequestResult result,
+    blink::MediaStreamRequestResult result,
     std::unique_ptr<content::MediaStreamUI> ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -229,12 +228,12 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
   if (request_it == requests_map.end())
     return;
 
-  blink::mojom::MediaStreamRequestResult final_result = result;
+  blink::MediaStreamRequestResult final_result = result;
 
 #if defined(OS_MACOSX)
   // If the request was approved, ask for system permissions if needed, and run
   // this function again when done.
-  if (result == blink::mojom::MediaStreamRequestResult::OK) {
+  if (result == blink::MEDIA_DEVICE_OK) {
     const content::MediaStreamRequest& request = request_it->second.request;
     if (request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
       const SystemPermission system_audio_permission =
@@ -254,8 +253,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
         return;
       } else if (system_audio_permission == SystemPermission::kRestricted ||
                  system_audio_permission == SystemPermission::kDenied) {
-        final_result =
-            blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED;
+        final_result = blink::MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED;
         system_media_permissions::SystemAudioCapturePermissionBlocked();
       }
     }
@@ -277,8 +275,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
         return;
       } else if (system_video_permission == SystemPermission::kRestricted ||
                  system_video_permission == SystemPermission::kDenied) {
-        final_result =
-            blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED;
+        final_result = blink::MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED;
         system_media_permissions::SystemVideoCapturePermissionBlocked();
       }
     }

@@ -20,7 +20,6 @@
 #include "content/renderer/media/webrtc/track_observer.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
@@ -141,10 +140,10 @@ class MediaStreamRemoteVideoSourceTest
 
  private:
   void OnTrackStarted(blink::WebPlatformMediaStreamSource* source,
-                      blink::mojom::MediaStreamRequestResult result,
+                      blink::MediaStreamRequestResult result,
                       const blink::WebString& result_name) {
     ASSERT_EQ(source, remote_source_);
-    if (result == blink::mojom::MediaStreamRequestResult::OK)
+    if (result == blink::MEDIA_DEVICE_OK)
       ++number_of_successful_track_starts_;
     else
       ++number_of_failed_track_starts_;

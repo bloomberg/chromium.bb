@@ -69,12 +69,11 @@ class MediaStreamUIProxy::Core {
   void RequestAccess(std::unique_ptr<MediaStreamRequest> request);
   void OnStarted(gfx::NativeViewId* window_id, bool has_source_callback);
 
-  void ProcessAccessRequestResponse(
-      int render_process_id,
-      int render_frame_id,
-      const blink::MediaStreamDevices& devices,
-      blink::mojom::MediaStreamRequestResult result,
-      std::unique_ptr<MediaStreamUI> stream_ui);
+  void ProcessAccessRequestResponse(int render_process_id,
+                                    int render_frame_id,
+                                    const blink::MediaStreamDevices& devices,
+                                    blink::MediaStreamRequestResult result,
+                                    std::unique_ptr<MediaStreamUI> stream_ui);
 
  private:
   friend class FakeMediaStreamUIProxy;
@@ -118,8 +117,7 @@ void MediaStreamUIProxy::Core::RequestAccess(
   if (!render_delegate) {
     ProcessAccessRequestResponse(
         request->render_process_id, request->render_frame_id,
-        blink::MediaStreamDevices(),
-        blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
+        blink::MediaStreamDevices(), blink::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
         std::unique_ptr<MediaStreamUI>());
     return;
   }
@@ -153,7 +151,7 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
     int render_process_id,
     int render_frame_id,
     const blink::MediaStreamDevices& devices,
-    blink::mojom::MediaStreamRequestResult result,
+    blink::MediaStreamRequestResult result,
     std::unique_ptr<MediaStreamUI> stream_ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -175,9 +173,8 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
 
     filtered_devices.push_back(device);
   }
-  if (filtered_devices.empty() &&
-      result == blink::mojom::MediaStreamRequestResult::OK)
-    result = blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
+  if (filtered_devices.empty() && result == blink::MEDIA_DEVICE_OK)
+    result = blink::MEDIA_DEVICE_PERMISSION_DENIED;
 
   if (stream_ui)
     ui_ = std::move(stream_ui);
@@ -274,7 +271,7 @@ void MediaStreamUIProxy::OnStarted(
 
 void MediaStreamUIProxy::ProcessAccessRequestResponse(
     const blink::MediaStreamDevices& devices,
-    blink::mojom::MediaStreamRequestResult result) {
+    blink::MediaStreamRequestResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!response_callback_.is_null());
 
@@ -336,12 +333,12 @@ void FakeMediaStreamUIProxy::RequestAccess(
     // Immediately deny the request.
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            &MediaStreamUIProxy::Core::ProcessAccessRequestResponse,
-            base::Unretained(core_.get()), request->render_process_id,
-            request->render_frame_id, blink::MediaStreamDevices(),
-            blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
-            std::unique_ptr<MediaStreamUI>()));
+        base::BindOnce(&MediaStreamUIProxy::Core::ProcessAccessRequestResponse,
+                       base::Unretained(core_.get()),
+                       request->render_process_id, request->render_frame_id,
+                       blink::MediaStreamDevices(),
+                       blink::MEDIA_DEVICE_PERMISSION_DENIED,
+                       std::unique_ptr<MediaStreamUI>()));
     return;
   }
 
@@ -380,9 +377,8 @@ void FakeMediaStreamUIProxy::RequestAccess(
       base::BindOnce(&MediaStreamUIProxy::Core::ProcessAccessRequestResponse,
                      base::Unretained(core_.get()), request->render_process_id,
                      request->render_frame_id, devices_to_use,
-                     devices_to_use.empty()
-                         ? blink::mojom::MediaStreamRequestResult::NO_HARDWARE
-                         : blink::mojom::MediaStreamRequestResult::OK,
+                     devices_to_use.empty() ? blink::MEDIA_DEVICE_NO_HARDWARE
+                                            : blink::MEDIA_DEVICE_OK,
                      std::unique_ptr<MediaStreamUI>()));
 }
 

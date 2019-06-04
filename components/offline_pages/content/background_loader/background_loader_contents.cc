@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 namespace background_loader {
 
@@ -120,7 +119,7 @@ void BackgroundLoaderContents::RequestMediaAccessPermission(
   // No permissions granted, act as if dismissed.
   std::move(callback).Run(
       blink::MediaStreamDevices(),
-      blink::mojom::MediaStreamRequestResult::PERMISSION_DISMISSED,
+      blink::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED,
       std::unique_ptr<content::MediaStreamUI>());
 }
 
