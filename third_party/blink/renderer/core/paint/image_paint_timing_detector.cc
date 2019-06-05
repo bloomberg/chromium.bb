@@ -47,6 +47,7 @@ uint64_t DownScaleIfIntrinsicSizeIsSmaller(
   // |visual_size| * min(|displayed_image_size|, |intrinsic_image_size|) /
   // |displayed_image_size|
   if (intrinsic_image_size < displayed_image_size) {
+    DCHECK_GT(displayed_image_size, 0u);
     return static_cast<double>(visual_size) * intrinsic_image_size /
            displayed_image_size;
   }
@@ -259,8 +260,7 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
           .Size()
           .Area();
   rect_size = DownScaleIfIntrinsicSizeIsSmaller(
-      rect_size, intrinsic_size.Area(),
-      (visual_rect.Width() * visual_rect.Height()));
+      rect_size, intrinsic_size.Area(), visual_rect.Size().Area());
 
   if (rect_size == 0) {
     // Each invisible background image is tracked by its node id. In other
@@ -321,8 +321,7 @@ void ImagePaintTimingDetector::RecordImage(
           .Size()
           .Area();
   rect_size = DownScaleIfIntrinsicSizeIsSmaller(
-      rect_size, intrinsic_size.Area(),
-      visual_rect.Width() * visual_rect.Height());
+      rect_size, intrinsic_size.Area(), visual_rect.Size().Area());
   DVLOG(2) << "Node id (" << node_id << "): size=" << rect_size
            << ", type=" << object.DebugName();
   if (rect_size == 0) {
