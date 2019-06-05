@@ -20,6 +20,7 @@ import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
@@ -122,6 +123,7 @@ public final class ServicificationBackgroundServiceTest {
     @Feature({"ServicificationStartup"})
     @CommandLineFlags.Add({"enable-features=NetworkService,AllowStartingServiceManagerOnly,"
             + "WriteBasicSystemProfileToPersistentHistogramsFile"})
+    @DisabledTest(message = "https://crbug.com/970190")
     public void
     testHistogramsPersistedWithServiceManagerOnlyStart() {
         createBrowserMetricsSpareFile();
