@@ -35,6 +35,8 @@ enum CursorType {
   kColumnResize,
   kRowResize,
   kMiddlePanning,
+  kMiddlePanningVertical,
+  kMiddlePanningHorizontal,
   kEastPanning,
   kNorthPanning,
   kNorthEastPanning,

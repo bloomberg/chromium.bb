@@ -57,6 +57,10 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
       return ui::CursorType::kRowResize;
     case WebCursorInfo::kTypeMiddlePanning:
       return ui::CursorType::kMiddlePanning;
+    case WebCursorInfo::kTypeMiddlePanningVertical:
+      return ui::CursorType::kMiddlePanningVertical;
+    case WebCursorInfo::kTypeMiddlePanningHorizontal:
+      return ui::CursorType::kMiddlePanningHorizontal;
     case WebCursorInfo::kTypeEastPanning:
       return ui::CursorType::kEastPanning;
     case WebCursorInfo::kTypeNorthPanning:

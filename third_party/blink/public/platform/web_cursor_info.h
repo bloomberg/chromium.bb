@@ -91,6 +91,8 @@ struct WebCursorInfo {
     kTypeZoomOut,
     kTypeGrab,
     kTypeGrabbing,
+    kTypeMiddlePanningVertical,
+    kTypeMiddlePanningHorizontal,
     kTypeCustom,
     kTypeMaxValue = kTypeCustom
   };

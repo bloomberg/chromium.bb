@@ -224,6 +224,8 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
     case WebCursorInfo::kTypeRowResize:
       return [NSCursor resizeUpDownCursor];
     case WebCursorInfo::kTypeMiddlePanning:
+    case WebCursorInfo::kTypeMiddlePanningVertical:
+    case WebCursorInfo::kTypeMiddlePanningHorizontal:
     case WebCursorInfo::kTypeMove:
       return GetCoreCursorWithFallback(kMoveCursor,
                                        IDR_MOVE_CURSOR, 7, 7);

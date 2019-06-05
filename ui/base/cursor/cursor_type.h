@@ -13,6 +13,7 @@ enum class CursorType {
 
   // These cursors mirror WebKit cursors from WebCursorInfo, but are replicated
   // here so we don't introduce a WebKit dependency.
+  // TODO(crbug.com/969904): Merge this with WebCursorInfo
   kPointer = 1,
   kCross = 2,
   kHand = 3,
@@ -56,13 +57,15 @@ enum class CursorType {
   kZoomOut = 41,
   kGrab = 42,
   kGrabbing = 43,
-  kCustom = 44,
+  kMiddlePanningVertical = 44,
+  kMiddlePanningHorizontal = 45,
+  kCustom = 46,
 
   // These additional drag and drop cursors are not listed in WebCursorInfo.
-  kDndNone = 45,
-  kDndMove = 46,
-  kDndCopy = 47,
-  kDndLink = 48,
+  kDndNone = 47,
+  kDndMove = 48,
+  kDndCopy = 49,
+  kDndLink = 50,
 };
 
 enum class CursorSize { kNormal, kLarge };

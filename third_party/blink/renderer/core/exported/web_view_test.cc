@@ -3252,48 +3252,68 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
   ScopedMiddleClickAutoscrollForTest middle_click_autoscroll(true);
   RegisterMockedHttpURLLoad("content-width-1000.html");
 
-  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
-      base_url_ + "content-width-1000.html", nullptr, nullptr, &client);
-  web_view->MainFrameWidget()->Resize(WebSize(100, 100));
-  UpdateAllLifecyclePhases();
-  RunPendingTasks();
+  // We will be changing the size of the page to test each of the panning
+  // cursor variations. For reference, content-width-1000.html is 1000px wide
+  // and 2000px tall.
+  // 1. 100 x 100 - The page will be scrollable in both x and y directions, so
+  //      we expect to see the cursor with arrows in all four directions.
+  // 2. 1010 x 100 - The page will be scrollable in the y direction, but not x,
+  //      so we expect to see the cursor with only the vertical arrows.
+  // 3. 100 x 2010 - The page will be scrollable in the x direction, but not y,
+  //      so we expect to see the cursor with only the horizontal arrows.
+  struct CursorTests {
+    int resize_width;
+    int resize_height;
+    blink::Cursor::Type expected_cursor;
+  } cursor_tests[] = {{100, 100, MiddlePanningCursor().GetType()},
+                      {1010, 100, MiddlePanningVerticalCursor().GetType()},
+                      {100, 2010, MiddlePanningHorizontalCursor().GetType()}};
 
-  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
-                            WebInputEvent::kNoModifiers,
-                            WebInputEvent::GetStaticTimeStampForTests());
-  mouse_event.button = WebMouseEvent::Button::kMiddle;
-  mouse_event.SetPositionInWidget(1, 1);
-  mouse_event.click_count = 1;
+  for (const CursorTests current_test : cursor_tests) {
+    WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
+        base_url_ + "content-width-1000.html", nullptr, nullptr, &client);
+    web_view->MainFrameWidget()->Resize(
+        WebSize(current_test.resize_width, current_test.resize_height));
+    UpdateAllLifecyclePhases();
+    RunPendingTasks();
 
-  // Start middle-click autoscroll.
-  web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
-  mouse_event.SetType(WebInputEvent::kMouseUp);
-  web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
+    WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+                              WebInputEvent::kNoModifiers,
+                              WebInputEvent::GetStaticTimeStampForTests());
+    mouse_event.button = WebMouseEvent::Button::kMiddle;
+    mouse_event.SetPositionInWidget(1, 1);
+    mouse_event.click_count = 1;
 
-  EXPECT_EQ(MiddlePanningCursor().GetType(), client.GetLastCursorType());
+    // Start middle-click autoscroll.
+    web_view->MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(mouse_event));
+    mouse_event.SetType(WebInputEvent::kMouseUp);
+    web_view->MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(mouse_event));
 
-  LocalFrame* local_frame =
-      To<WebLocalFrameImpl>(web_view->MainFrame())->GetFrame();
+    EXPECT_EQ(current_test.expected_cursor, client.GetLastCursorType());
 
-  // Even if a plugin tries to change the cursor type, that should be ignored
-  // during middle-click autoscroll.
-  web_view->GetChromeClient().SetCursorForPlugin(WebCursorInfo(PointerCursor()),
-                                                 local_frame);
-  EXPECT_EQ(MiddlePanningCursor().GetType(), client.GetLastCursorType());
+    LocalFrame* local_frame =
+        To<WebLocalFrameImpl>(web_view->MainFrame())->GetFrame();
 
-  // End middle-click autoscroll.
-  mouse_event.SetType(WebInputEvent::kMouseDown);
-  web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
-  mouse_event.SetType(WebInputEvent::kMouseUp);
-  web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
+    // Even if a plugin tries to change the cursor type, that should be ignored
+    // during middle-click autoscroll.
+    web_view->GetChromeClient().SetCursorForPlugin(
+        WebCursorInfo(PointerCursor()), local_frame);
+    EXPECT_EQ(current_test.expected_cursor, client.GetLastCursorType());
 
-  web_view->GetChromeClient().SetCursorForPlugin(WebCursorInfo(IBeamCursor()),
-                                                 local_frame);
-  EXPECT_EQ(IBeamCursor().GetType(), client.GetLastCursorType());
+    // End middle-click autoscroll.
+    mouse_event.SetType(WebInputEvent::kMouseDown);
+    web_view->MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(mouse_event));
+    mouse_event.SetType(WebInputEvent::kMouseUp);
+    web_view->MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(mouse_event));
+
+    web_view->GetChromeClient().SetCursorForPlugin(WebCursorInfo(IBeamCursor()),
+                                                   local_frame);
+    EXPECT_EQ(IBeamCursor().GetType(), client.GetLastCursorType());
+  }
 
   // Explicitly reset to break dependency on locally scoped client.
   web_view_helper_.Reset();

@@ -85,6 +85,8 @@ class PLATFORM_EXPORT Cursor {
     kZoomOut,
     kGrab,
     kGrabbing,
+    kMiddlePanningVertical,
+    kMiddlePanningHorizontal,
     kCustom
   };
 
@@ -148,6 +150,8 @@ PLATFORM_EXPORT const Cursor& NorthWestSouthEastResizeCursor();
 PLATFORM_EXPORT const Cursor& ColumnResizeCursor();
 PLATFORM_EXPORT const Cursor& RowResizeCursor();
 PLATFORM_EXPORT const Cursor& MiddlePanningCursor();
+PLATFORM_EXPORT const Cursor& MiddlePanningVerticalCursor();
+PLATFORM_EXPORT const Cursor& MiddlePanningHorizontalCursor();
 PLATFORM_EXPORT const Cursor& EastPanningCursor();
 PLATFORM_EXPORT const Cursor& NorthPanningCursor();
 PLATFORM_EXPORT const Cursor& NorthEastPanningCursor();

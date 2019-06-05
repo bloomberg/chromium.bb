@@ -60,6 +60,10 @@ EnumTraits<ui::mojom::CursorType, ui::CursorType>::ToMojom(
       return ui::mojom::CursorType::kRowResize;
     case ui::CursorType::kMiddlePanning:
       return ui::mojom::CursorType::kMiddlePanning;
+    case ui::CursorType::kMiddlePanningVertical:
+      return ui::mojom::CursorType::kMiddlePanningVertical;
+    case ui::CursorType::kMiddlePanningHorizontal:
+      return ui::mojom::CursorType::kMiddlePanningHorizontal;
     case ui::CursorType::kEastPanning:
       return ui::mojom::CursorType::kEastPanning;
     case ui::CursorType::kNorthPanning:
@@ -189,6 +193,12 @@ bool EnumTraits<ui::mojom::CursorType, ui::CursorType>::FromMojom(
       return true;
     case ui::mojom::CursorType::kMiddlePanning:
       *out = ui::CursorType::kMiddlePanning;
+      return true;
+    case ui::mojom::CursorType::kMiddlePanningVertical:
+      *out = ui::CursorType::kMiddlePanningVertical;
+      return true;
+    case ui::mojom::CursorType::kMiddlePanningHorizontal:
+      *out = ui::CursorType::kMiddlePanningHorizontal;
       return true;
     case ui::mojom::CursorType::kEastPanning:
       *out = ui::CursorType::kEastPanning;

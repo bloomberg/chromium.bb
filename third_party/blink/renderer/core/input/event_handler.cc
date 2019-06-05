@@ -241,9 +241,21 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
   AutoscrollController* controller = scroll_manager_->GetAutoscrollController();
   if (!controller)
     return;
+  LayoutBox* scrollable = LayoutBox::FindAutoscrollable(layout_object);
+  Page* page = frame_->GetPage();
+  bool vertical_scroll_offset = false;
+  bool horizontal_scroll_offset = false;
+  if (page) {
+    ScrollOffset maximum_scroll_offset =
+        page->GetVisualViewport().MaximumScrollOffset();
+    vertical_scroll_offset = maximum_scroll_offset.Height() > 0;
+    horizontal_scroll_offset = maximum_scroll_offset.Width() > 0;
+  }
   controller->StartMiddleClickAutoscroll(
       layout_object->GetFrame(), LastKnownMousePositionInRootFrame(),
-      mouse_event_manager_->LastKnownMouseScreenPosition());
+      mouse_event_manager_->LastKnownMouseScreenPosition(),
+      scrollable->HasScrollableOverflowY() || vertical_scroll_offset,
+      scrollable->HasScrollableOverflowX() || horizontal_scroll_offset);
   mouse_event_manager_->InvalidateClick();
 }
 

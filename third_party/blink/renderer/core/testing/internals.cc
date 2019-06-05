@@ -2658,6 +2658,10 @@ static const char* CursorTypeToString(Cursor::Type cursor_type) {
       return "RowResize";
     case Cursor::kMiddlePanning:
       return "MiddlePanning";
+    case Cursor::kMiddlePanningVertical:
+      return "MiddlePanningVertical";
+    case Cursor::kMiddlePanningHorizontal:
+      return "MiddlePanningHorizontal";
     case Cursor::kEastPanning:
       return "EastPanning";
     case Cursor::kNorthPanning:

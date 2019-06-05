@@ -254,6 +254,16 @@ const Cursor& MiddlePanningCursor() {
   return c;
 }
 
+const Cursor& MiddlePanningVerticalCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kMiddlePanningVertical));
+  return c;
+}
+
+const Cursor& MiddlePanningHorizontalCursor() {
+  DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kMiddlePanningHorizontal));
+  return c;
+}
+
 const Cursor& EastPanningCursor() {
   DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kEastPanning));
   return c;
@@ -358,5 +368,9 @@ STATIC_ASSERT_ENUM(WebCursorInfo::kTypeZoomIn, Cursor::kZoomIn);
 STATIC_ASSERT_ENUM(WebCursorInfo::kTypeZoomOut, Cursor::kZoomOut);
 STATIC_ASSERT_ENUM(WebCursorInfo::kTypeGrab, Cursor::kGrab);
 STATIC_ASSERT_ENUM(WebCursorInfo::kTypeGrabbing, Cursor::kGrabbing);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeMiddlePanningVertical,
+                   Cursor::kMiddlePanningVertical);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeMiddlePanningHorizontal,
+                   Cursor::kMiddlePanningHorizontal);
 STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCustom, Cursor::kCustom);
 }  // namespace blink

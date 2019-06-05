@@ -85,7 +85,8 @@ TEST_F(AutoscrollControllerTest, ContinueAutoscrollAfterMouseLeaveEvent) {
 
   EXPECT_FALSE(controller.IsAutoscrolling());
 
-  controller.StartMiddleClickAutoscroll(frame, FloatPoint(), FloatPoint());
+  controller.StartMiddleClickAutoscroll(frame, FloatPoint(), FloatPoint(),
+                                        false, false);
 
   EXPECT_TRUE(controller.IsAutoscrolling());
 
