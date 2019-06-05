@@ -976,7 +976,7 @@ void Bus::ListenForServiceOwnerChangeInternal(
   // Check if the callback has already been added.
   std::vector<GetServiceOwnerCallback>& callbacks = it->second;
   for (size_t i = 0; i < callbacks.size(); ++i) {
-    if (callbacks[i].Equals(callback))
+    if (callbacks[i] == callback)
       return;
   }
   callbacks.push_back(callback);
@@ -1008,7 +1008,7 @@ void Bus::UnlistenForServiceOwnerChangeInternal(
 
   std::vector<GetServiceOwnerCallback>& callbacks = it->second;
   for (size_t i = 0; i < callbacks.size(); ++i) {
-    if (callbacks[i].Equals(callback)) {
+    if (callbacks[i] == callback) {
       callbacks.erase(callbacks.begin() + i);
       break;  // There can be only one.
     }
