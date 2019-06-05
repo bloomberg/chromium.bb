@@ -1001,14 +1001,14 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
   TabAnimationState::TabPinnedness pinnedness =
       pinned ? TabAnimationState::TabPinnedness::kPinned
              : TabAnimationState::TabPinnedness::kUnpinned;
-  animator_->InsertTabAtNoAnimation(
-      model_index,
-      base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
-                     base::Unretained(this), base::Unretained(tab)),
-      activeness, pinnedness);
   if (tab_count() > 1 && GetWidget() && GetWidget()->IsVisible()) {
-    StartInsertTabAnimation(model_index);
+    StartInsertTabAnimation(model_index, activeness, pinnedness);
   } else {
+    animator_->InsertTabAtNoAnimation(
+        model_index,
+        base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
+                       base::Unretained(this), base::Unretained(tab)),
+        activeness, pinnedness);
     CompleteAnimationAndLayout();
   }
 
@@ -2081,30 +2081,51 @@ void TabStrip::Init() {
     bounds_animator_.SetAnimationDuration(0);
 }
 
-void TabStrip::StartInsertTabAnimation(int model_index) {
-  PrepareForAnimation();
+void TabStrip::StartInsertTabAnimation(
+    int model_index,
+    TabAnimationState::TabActiveness activeness,
+    TabAnimationState::TabPinnedness pinnedness) {
+  if (!bounds_animator_.IsAnimating() && !in_tab_close_) {
+    animator_->InsertTabAt(
+        model_index,
+        base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
+                       base::Unretained(this),
+                       base::Unretained(tab_at(model_index))),
+        activeness, pinnedness);
+  } else {
+    // TODO(958173): Delete this branch once |animator_| has taken over all
+    // animation responsibilities.
+    animator_->InsertTabAtNoAnimation(
+        model_index,
+        base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
+                       base::Unretained(this),
+                       base::Unretained(tab_at(model_index))),
+        activeness, pinnedness);
 
-  // The TabStrip can now use its entire width to lay out Tabs.
-  in_tab_close_ = false;
-  available_width_for_tabs_ = -1;
+    PrepareForAnimation();
 
-  UpdateIdealBounds();
+    // The TabStrip can now use its entire width to lay out Tabs.
+    in_tab_close_ = false;
+    available_width_for_tabs_ = -1;
 
-  // Insert the tab just after the current right edge of the previous tab, if
-  // any.
-  gfx::Rect bounds = ideal_bounds(model_index);
-  const int tab_overlap = TabStyle::GetTabOverlap();
-  if (model_index > 0)
-    bounds.set_x(tab_at(model_index - 1)->bounds().right() - tab_overlap);
+    UpdateIdealBounds();
 
-  // Start at the width of the overlap in order to animate at the same speed the
-  // surrounding tabs are moving, since at this width the subsequent tab is
-  // naturally positioned at the same X coordinate.
-  bounds.set_width(tab_overlap);
+    // Insert the tab just after the current right edge of the previous tab, if
+    // any.
+    gfx::Rect bounds = ideal_bounds(model_index);
+    const int tab_overlap = TabStyle::GetTabOverlap();
+    if (model_index > 0)
+      bounds.set_x(tab_at(model_index - 1)->bounds().right() - tab_overlap);
 
-  // Animate in to the full width.
-  tab_at(model_index)->SetBoundsRect(bounds);
-  AnimateToIdealBounds();
+    // Start at the width of the overlap in order to animate at the same speed
+    // the surrounding tabs are moving, since at this width the subsequent tab
+    // is naturally positioned at the same X coordinate.
+    bounds.set_width(tab_overlap);
+
+    // Animate in to the full width.
+    tab_at(model_index)->SetBoundsRect(bounds);
+    AnimateToIdealBounds();
+  }
 }
 
 void TabStrip::StartMoveTabAnimation() {

@@ -794,8 +794,11 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
 
   // Create a lot of tabs in order to make inactive tabs tiny.
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
-  while (GetInactiveTabWidth() != min_inactive_width)
+  while (GetInactiveTabWidth() != min_inactive_width) {
     controller_->CreateNewTab();
+    CompleteAnimationAndLayout();
+  }
+
   EXPECT_GT(tab_strip_->tab_count(), 1);
 
   const int active_index = controller_->GetActiveIndex();
@@ -826,6 +829,7 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
   const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
   while (GetInactiveTabWidth() >= (min_inactive_width + min_active_width) / 2) {
     controller_->CreateNewTab();
+    CompleteAnimationAndLayout();
   }
 
   // During mouse-based tab closure, inactive tabs shouldn't shrink
