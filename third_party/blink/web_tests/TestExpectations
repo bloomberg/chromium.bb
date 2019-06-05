@@ -5720,3 +5720,4 @@ crbug.com/971031 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Pass Failu
 crbug.com/971252 [ Mac ] external/wpt/media-source/mediasource-play.html [ Pass Timeout ]
 crbug.com/971259 media/controls/volumechange-stopimmediatepropagation.html [ Pass Failure ]
 crbug.com/971262 http/tests/devtools/profiler/live-line-level-heap-profile.js [ Pass Timeout ]
+crbug.com/971319 [ Mac ] media/audio-garbage-collect.html [ Pass Timeout ]
