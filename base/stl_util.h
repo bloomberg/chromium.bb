@@ -17,8 +17,10 @@
 #include <map>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -44,6 +46,38 @@ template <typename Iter>
 constexpr bool IsRandomAccessIter =
     std::is_same<typename std::iterator_traits<Iter>::iterator_category,
                  std::random_access_iterator_tag>::value;
+
+// Utility type traits used for specializing base::Contains() below.
+template <typename Container, typename Element, typename = void>
+struct HasFindWithNpos : std::false_type {};
+
+template <typename Container, typename Element>
+struct HasFindWithNpos<
+    Container,
+    Element,
+    void_t<decltype(std::declval<const Container&>().find(
+                        std::declval<const Element&>()) != Container::npos)>>
+    : std::true_type {};
+
+template <typename Container, typename Element, typename = void>
+struct HasFindWithEnd : std::false_type {};
+
+template <typename Container, typename Element>
+struct HasFindWithEnd<Container,
+                      Element,
+                      void_t<decltype(std::declval<const Container&>().find(
+                                          std::declval<const Element&>()) !=
+                                      std::declval<const Container&>().end())>>
+    : std::true_type {};
+
+template <typename Container, typename Element, typename = void>
+struct HasContains : std::false_type {};
+
+template <typename Container, typename Element>
+struct HasContains<Container,
+                   Element,
+                   void_t<decltype(std::declval<const Container&>().contains(
+                       std::declval<const Element&>()))>> : std::true_type {};
 
 }  // namespace internal
 
@@ -140,6 +174,65 @@ STLCount(const Container& container, const T& val) {
   return std::count(container.begin(), container.end(), val);
 }
 
+// General purpose implementation to check if |container| contains |value|.
+template <typename Container,
+          typename Value,
+          std::enable_if_t<
+              !internal::HasFindWithNpos<Container, Value>::value &&
+              !internal::HasFindWithEnd<Container, Value>::value &&
+              !internal::HasContains<Container, Value>::value>* = nullptr>
+bool Contains(const Container& container, const Value& value) {
+  using std::begin;
+  using std::end;
+  return std::find(begin(container), end(container), value) != end(container);
+}
+
+// Specialized Contains() implementation for when |container| has a find()
+// member function and a static npos member, but no contains() member function.
+template <typename Container,
+          typename Value,
+          std::enable_if_t<internal::HasFindWithNpos<Container, Value>::value &&
+                           !internal::HasContains<Container, Value>::value>* =
+              nullptr>
+bool Contains(const Container& container, const Value& value) {
+  return container.find(value) != Container::npos;
+}
+
+// Specialized Contains() implementation for when |container| has a find()
+// and end() member function, but no contains() member function.
+template <typename Container,
+          typename Value,
+          std::enable_if_t<internal::HasFindWithEnd<Container, Value>::value &&
+                           !internal::HasContains<Container, Value>::value>* =
+              nullptr>
+bool Contains(const Container& container, const Value& value) {
+  return container.find(value) != container.end();
+}
+
+// Specialized Contains() implementation for when |container| has a contains()
+// member function.
+template <
+    typename Container,
+    typename Value,
+    std::enable_if_t<internal::HasContains<Container, Value>::value>* = nullptr>
+bool Contains(const Container& container, const Value& value) {
+  return container.contains(value);
+}
+
+// Test to see if a set or map contains a particular key.
+// Returns true if the key is in the collection.
+template <typename Collection, typename Key>
+bool ContainsKey(const Collection& collection, const Key& key) {
+  return Contains(collection, key);
+}
+
+// Test to see if a collection like a vector contains a particular value.
+// Returns true if the value is in the collection.
+template <typename Collection, typename Value>
+bool ContainsValue(const Collection& collection, const Value& value) {
+  return Contains(collection, value);
+}
+
 // O(1) implementation of const casting an iterator for any sequence,
 // associative or unordered associative container in the STL.
 //
@@ -171,25 +264,7 @@ constexpr auto ConstCastIterator(Container& c, ConstIter it) {
   return begin(c) + (it - cbegin(c));
 }
 
-// Test to see if a set or map contains a particular key.
-// Returns true if the key is in the collection.
-template <typename Collection, typename Key>
-bool ContainsKey(const Collection& collection, const Key& key) {
-  return collection.find(key) != collection.end();
-}
-
 namespace internal {
-
-template <typename Collection>
-class HasKeyType {
-  template <typename C>
-  static std::true_type test(typename C::key_type*);
-  template <typename C>
-  static std::false_type test(...);
-
- public:
-  static constexpr bool value = decltype(test<Collection>(nullptr))::value;
-};
 
 template <typename Map, typename Key, typename Value>
 std::pair<typename Map::iterator, bool> InsertOrAssignImpl(Map& map,
@@ -280,19 +355,6 @@ typename Map::iterator TryEmplaceImpl(Map& map,
 }
 
 }  // namespace internal
-
-// Test to see if a collection like a vector contains a particular value.
-// Returns true if the value is in the collection.
-// Don't use this on collections such as sets or maps. This is enforced by
-// disabling this method if the collection defines a key_type.
-template <typename Collection,
-          typename Value,
-          typename std::enable_if<!internal::HasKeyType<Collection>::value,
-                                  int>::type = 0>
-bool ContainsValue(const Collection& collection, const Value& value) {
-  return std::find(std::begin(collection), std::end(collection), value) !=
-         std::end(collection);
-}
 
 // Implementation of C++17's std::map::insert_or_assign as a free function.
 template <typename Map, typename Value>

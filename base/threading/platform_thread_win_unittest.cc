@@ -13,8 +13,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::Contains;
-
 namespace base {
 
 // It has been observed that calling
@@ -71,7 +69,7 @@ TEST(PlatformThreadWinTest,
          // NORMAL_PRIORITY_CLASS process.
          THREAD_PRIORITY_IDLE, internal::kWin7BackgroundThreadModePriority});
     EXPECT_THAT(kExpectedWin7Priorities,
-                Contains(priority_after_thread_mode_background_begin));
+                testing::Contains(priority_after_thread_mode_background_begin));
   } else {
     EXPECT_EQ(priority_after_thread_mode_background_begin,
               THREAD_PRIORITY_NORMAL);
