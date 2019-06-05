@@ -475,6 +475,7 @@ CrOnc.getNetworkName = function(properties) {
   const name = CrOnc.getStateOrActiveString(properties.Name);
   const type = CrOnc.getStateOrActiveString(properties.Type);
   if (!name) {
+    assert(CrOncStrings);
     return CrOncStrings['OncType' + type];
   }
   if (type == 'VPN' && properties.VPN) {

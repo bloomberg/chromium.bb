@@ -70,6 +70,29 @@ TEST_F('OSSettingsSmbPageTest', 'MAYBE_All', function() {
   mocha.run();
 });
 
+// Test fixture for the main settings page.
+// eslint-disable-next-line no-var
+var OSSettingsMainTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/os_settings_main/os_settings_main.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'os_settings_main_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsMainTest', 'MAYBE_All', function() {
+  mocha.run();
+});
+
 // Tests for the side-nav menu.
 // eslint-disable-next-line no-var
 var OSSettingsMenuTest = class extends OSSettingsBrowserTest {

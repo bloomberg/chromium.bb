@@ -367,6 +367,7 @@ Polymer({
    * @private
    */
   getTitleText_: function() {
+    assert(CrOncStrings);
     return this.networkTitleText ||
         CrOncStrings['OncType' + this.activeNetworkState.Type];
   },
