@@ -444,6 +444,10 @@ sync_pb::SessionTab LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegate(
     sync_pb::TabNavigation* navigation = specifics.add_navigation();
     SessionNavigationToSyncData(serialized_entry).Swap(navigation);
 
+    const std::string page_language = tab_delegate.GetPageLanguageAtIndex(i);
+    if (!page_language.empty())
+      navigation->set_page_language(page_language);
+
     if (is_supervised) {
       navigation->set_blocked_state(
           sync_pb::TabNavigation_BlockedState_STATE_ALLOWED);

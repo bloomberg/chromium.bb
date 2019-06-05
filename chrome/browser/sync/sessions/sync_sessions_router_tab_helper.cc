@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
+#include "components/language/core/common/language_experiments.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -80,8 +81,8 @@ void SyncSessionsRouterTabHelper::DidOpenRequestedURL(
 
 void SyncSessionsRouterTabHelper::OnLanguageDetermined(
     const translate::LanguageDetectionDetails& details) {
-  // TODO (crbug.com/957657): NotifyRouter() when language is synced on
-  // notification.
+  if (base::FeatureList::IsEnabled(language::kNotifySyncOnLanguageDetermined))
+    NotifyRouter();
 }
 
 void SyncSessionsRouterTabHelper::SetSourceTabIdForChild(

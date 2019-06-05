@@ -143,6 +143,9 @@ TEST_F(LocalSessionEventHandlerImplTest, GetTabSpecificsFromDelegate) {
   TestSyncedTabDelegate* tab = AddTabWithTime(kWindowId1, kFoo1, kTime1);
   tab->Navigate(kBar1, kTime2);
   tab->Navigate(kBaz1, kTime3);
+  tab->SetPageLanguageAtIndex(0, "en");
+  tab->SetPageLanguageAtIndex(1, "fr");
+  tab->SetPageLanguageAtIndex(2, "in");
   InitHandler();
 
   const sync_pb::SessionTab session_tab =
@@ -171,6 +174,9 @@ TEST_F(LocalSessionEventHandlerImplTest, GetTabSpecificsFromDelegate) {
   EXPECT_FALSE(session_tab.navigation(0).has_blocked_state());
   EXPECT_FALSE(session_tab.navigation(1).has_blocked_state());
   EXPECT_FALSE(session_tab.navigation(2).has_blocked_state());
+  EXPECT_EQ("en", session_tab.navigation(0).page_language());
+  EXPECT_EQ("fr", session_tab.navigation(1).page_language());
+  EXPECT_EQ("in", session_tab.navigation(2).page_language());
 }
 
 // Ensure the current_navigation_index gets set properly when the navigation

@@ -45,6 +45,7 @@ void TestSyncedTabDelegate::Navigate(const std::string& url,
                                                                    entry.get());
 
   entries_.push_back(std::move(entry));
+  page_language_per_index_.push_back(std::string());
   set_current_entry_index(GetCurrentEntryIndex() + 1);
   notify_cb_.Run(this);
 }
@@ -60,6 +61,12 @@ void TestSyncedTabDelegate::set_blocked_navigations(
     blocked_navigations_.push_back(
         std::make_unique<sessions::SerializedNavigationEntry>(*entry));
   }
+}
+
+void TestSyncedTabDelegate::SetPageLanguageAtIndex(
+    int i,
+    const std::string& language) {
+  page_language_per_index_[i] = language;
 }
 
 bool TestSyncedTabDelegate::IsInitialBlankNavigation() const {
@@ -86,6 +93,11 @@ ui::PageTransition TestSyncedTabDelegate::GetTransitionAtIndex(int i) const {
   if (static_cast<size_t>(i) >= entries_.size())
     return ui::PAGE_TRANSITION_LINK;
   return entries_[i]->transition_type();
+}
+
+std::string TestSyncedTabDelegate::GetPageLanguageAtIndex(int i) const {
+  DCHECK(static_cast<size_t>(i) < page_language_per_index_.size());
+  return page_language_per_index_[i];
 }
 
 void TestSyncedTabDelegate::GetSerializedNavigationAtIndex(
@@ -227,6 +239,11 @@ GURL PlaceholderTabDelegate::GetFaviconURLAtIndex(int i) const {
 ui::PageTransition PlaceholderTabDelegate::GetTransitionAtIndex(int i) const {
   NOTREACHED();
   return ui::PageTransition();
+}
+
+std::string PlaceholderTabDelegate::GetPageLanguageAtIndex(int i) const {
+  NOTREACHED();
+  return std::string();
 }
 
 void PlaceholderTabDelegate::GetSerializedNavigationAtIndex(

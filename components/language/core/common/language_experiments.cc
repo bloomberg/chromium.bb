@@ -23,9 +23,13 @@ const base::Feature kImprovedGeoLanguageData{"ImprovedGeoLanguageData",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kUseFluentLanguageModel{"UseFluentLanguageModel",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNotifySyncOnLanguageDetermined{
+    "NotifySyncOnLanguageDetermined", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Base feature for Translate desktop UI experiment
 const base::Feature kUseButtonTranslateBubbleUI{
     "UseButtonTranslateBubbleUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Params:
 const char kBackoffThresholdKey[] = "backoff_threshold";
 const char kOverrideModelKey[] = "override_model";

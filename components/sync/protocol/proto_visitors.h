@@ -896,6 +896,7 @@ VISIT_PROTO_FIELDS(const sync_pb::TabNavigation& proto) {
   VISIT_REP(navigation_redirect);
   VISIT(last_navigation_redirect_url);
   VISIT(correct_referrer_policy);
+  VISIT(page_language);
   VISIT_ENUM(password_state);
   VISIT(task_id);
   VISIT_REP(ancestor_task_id);
