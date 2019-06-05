@@ -225,6 +225,7 @@ void StabilityMetricsHelper::BrowserChildProcessCrashed() {
 }
 
 void StabilityMetricsHelper::LogLoadStarted() {
+  base::RecordAction(base::UserMetricsAction("PageLoad"));
   IncrementPrefValue(prefs::kStabilityPageLoadCount);
   IncrementLongPrefsValue(prefs::kUninstallMetricsPageLoadCount);
   // We need to save the prefs, as page load count is a critical stat, and it

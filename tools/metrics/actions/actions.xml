@@ -15782,7 +15782,10 @@ should be able to be added at any place in this file.
 
 <action name="PageLoad" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <description>
+    When a page load starts. This can include page loads that are not completed,
+    sub frames, and pre sign-in ChromeOS pages.
+  </description>
 </action>
 
 <action name="PageLoadInIncognito" not_user_triggered="true">
