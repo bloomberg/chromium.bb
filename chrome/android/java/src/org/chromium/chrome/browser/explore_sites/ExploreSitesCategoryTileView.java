@@ -9,21 +9,13 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.ImageView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.ntp.TitleUtil;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.ViewHighlighter;
-import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.chrome.browser.widget.tile.TileWithTextView;
-import org.chromium.components.feature_engagement.FeatureConstants;
-import org.chromium.components.feature_engagement.Tracker;
-import org.chromium.ui.widget.ViewRectProvider;
 
 /**
  * A category tile for ExploreSites, containing an icon that is a composition of sites' favicons
@@ -67,52 +59,9 @@ public class ExploreSitesCategoryTileView extends TileWithTextView {
         mIconView.setLayoutParams(layoutParams);
         Context context = getContext();
 
-        if (mCategory.getType() == ExploreSitesCategory.CategoryType.MORE_BUTTON
-                && context instanceof ChromeActivity) {
-            ChromeActivity activity = (ChromeActivity) context;
-            if (isAttachedToWindow()) {
-                initializeIPH(profile, activity);
-            } else {
-                addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
-                    @Override
-                    public void onViewAttachedToWindow(View v) {
-                        initializeIPH(profile, activity);
-                    }
-
-                    @Override
-                    public void onViewDetachedFromWindow(View v) {}
-                });
-            }
+        if (mCategory.getType() == ExploreSitesCategory.CategoryType.MORE_BUTTON) {
+            ExploreSitesIPH.configureIPH(this, profile);
         }
-    }
-
-    private void initializeIPH(Profile profile, ChromeActivity activity) {
-        // Activity was destroyed; don't show IPH.
-        if (activity.isActivityFinishingOrDestroyed()) return;
-
-        final String contentString = getContext().getString(R.string.explore_sites_iph);
-        assert (contentString.length() > 0);
-
-        final String accessibilityString =
-                getContext().getString(R.string.explore_sites_iph_accessibility);
-        assert (accessibilityString.length() > 0);
-
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
-        if (!tracker.shouldTriggerHelpUI(FeatureConstants.EXPLORE_SITES_TILE_FEATURE)) return;
-
-        ViewRectProvider rectProvider = new ViewRectProvider(this);
-
-        TextBubble textBubble = new TextBubble(
-                this.getContext(), this, contentString, accessibilityString, true, rectProvider);
-        textBubble.setDismissOnTouchInteraction(true);
-        View foregroundView = findViewById(R.id.tile_view_highlight);
-        ViewHighlighter.turnOnHighlight(foregroundView, true);
-        textBubble.addOnDismissListener(() -> {
-            ViewHighlighter.turnOffHighlight(foregroundView);
-
-            tracker.dismissed(FeatureConstants.EXPLORE_SITES_TILE_FEATURE);
-        });
-        textBubble.show();
     }
 
     /** Retrieves url associated with this view. */

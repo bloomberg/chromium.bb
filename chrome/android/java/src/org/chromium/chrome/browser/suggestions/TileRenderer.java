@@ -22,6 +22,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesIPH;
 import org.chromium.chrome.browser.explore_sites.MostLikelyVariation;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
@@ -120,11 +121,11 @@ public class TileRenderer {
     }
 
     /**
-     * Record that the homepage tile was clicked for IPH reasons.
+     * Record that a tile was clicked for IPH reasons.
      */
-    private void recordHomepageTileClickedForIPH() {
+    private void recordTileClickedForIPH(String eventName) {
         Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-        tracker.notifyEvent(EventConstants.HOMEPAGE_TILE_CLICKED);
+        tracker.notifyEvent(eventName);
     }
 
     /**
@@ -180,11 +181,19 @@ public class TileRenderer {
 
         TileGroup.TileInteractionDelegate delegate = setupDelegate.createInteractionDelegate(tile);
         if (tile.getSource() == TileSource.HOMEPAGE) {
-            delegate.setOnClickRunnable(this ::recordHomepageTileClickedForIPH);
+            delegate.setOnClickRunnable(
+                    () -> recordTileClickedForIPH(EventConstants.HOMEPAGE_TILE_CLICKED));
+        } else if (tile.getSource() == TileSource.EXPLORE) {
+            delegate.setOnClickRunnable(
+                    () -> recordTileClickedForIPH(EventConstants.EXPLORE_SITES_TILE_TAPPED));
         }
 
         tileView.setOnClickListener(delegate);
         tileView.setOnCreateContextMenuListener(delegate);
+
+        if (tile.getSource() == TileSource.EXPLORE) {
+            ExploreSitesIPH.configureIPH(tileView, Profile.getLastUsedProfile());
+        }
 
         return tileView;
     }
