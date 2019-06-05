@@ -200,6 +200,16 @@ class TabListMediator {
         }
     };
 
+    private final TabActionListener mSelectableTabOnClickListener = new TabActionListener() {
+        @Override
+        public void run(int tabId) {
+            int index = mModel.indexFromId(tabId);
+            if (index == TabModel.INVALID_TAB_INDEX) return;
+            boolean selected = mModel.get(index).get(TabProperties.IS_SELECTED);
+            mModel.get(index).set(TabProperties.IS_SELECTED, !selected);
+        }
+    };
+
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
         public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {
@@ -686,6 +696,8 @@ class TabListMediator {
                         .with(TabProperties.ALPHA, 1f)
                         .with(TabProperties.CARD_ANIMATION_STATUS,
                                 TabListRecyclerView.ANIMATION_STATUS_RESTORE)
+                        .with(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER,
+                                mSelectableTabOnClickListener)
                         .build();
 
         if (index >= mModel.size()) {

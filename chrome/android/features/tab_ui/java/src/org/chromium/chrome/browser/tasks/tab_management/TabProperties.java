@@ -48,9 +48,13 @@ public class TabProperties {
     public static final PropertyModel.WritableIntPropertyKey CARD_ANIMATION_STATUS =
             new PropertyModel.WritableIntPropertyKey();
 
+    public static final PropertyModel.WritableObjectPropertyKey<TabListMediator.TabActionListener>
+            SELECTABLE_TAB_CLICKED_LISTENER = new PropertyModel.WritableObjectPropertyKey<>();
+
     public static final PropertyKey[] ALL_KEYS_TAB_GRID = new PropertyKey[] {TAB_ID,
             TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, THUMBNAIL_FETCHER, IPH_PROVIDER,
-            TITLE, IS_SELECTED, IS_HIDDEN, CREATE_GROUP_LISTENER, ALPHA, CARD_ANIMATION_STATUS};
+            TITLE, IS_SELECTED, IS_HIDDEN, CREATE_GROUP_LISTENER, ALPHA, CARD_ANIMATION_STATUS,
+            SELECTABLE_TAB_CLICKED_LISTENER};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP = new PropertyKey[] {
             TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, IS_SELECTED, TITLE};

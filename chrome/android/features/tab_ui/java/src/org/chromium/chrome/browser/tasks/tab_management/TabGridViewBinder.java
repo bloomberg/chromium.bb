@@ -14,6 +14,7 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -119,7 +120,27 @@ class TabGridViewBinder {
 
     private static void onBindSelectableTab(
             TabGridViewHolder holder, PropertyModel item, PropertyKey propertyKey) {
-        // TODO(meiliang): Bind SELECTABLE_TAB properties
+        assert holder instanceof SelectableTabGridViewHolder;
+
+        SelectableTabGridViewHolder selectionHolder = (SelectableTabGridViewHolder) holder;
+        if (TabProperties.IS_SELECTED == propertyKey) {
+            boolean isSelected = item.get(TabProperties.IS_SELECTED);
+            selectionHolder.actionButton.getBackground().setLevel(
+                    isSelected ? selectionHolder.selectedLevel : selectionHolder.defaultLevel);
+            selectionHolder.actionButton.setImageDrawable(
+                    isSelected ? selectionHolder.mCheckDrawable : null);
+            ApiCompatibilityUtils.setImageTintList(selectionHolder.actionButton,
+                    isSelected ? selectionHolder.iconColorList : null);
+            if (isSelected) selectionHolder.mCheckDrawable.start();
+        } else if (TabProperties.SELECTABLE_TAB_CLICKED_LISTENER == propertyKey) {
+            selectionHolder.itemView.setOnClickListener(view -> {
+                item.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(holder.getTabId());
+            });
+        } else if (TabProperties.TITLE == propertyKey) {
+            String title = item.get(TabProperties.TITLE);
+            holder.actionButton.setContentDescription(holder.itemView.getResources().getString(
+                    org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab, title));
+        }
     }
 
     private static void updateThumbnail(TabGridViewHolder holder, PropertyModel item) {

@@ -60,8 +60,7 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
         if (itemViewType == TabGridViewItemType.CLOSABLE_TAB) {
             return new ClosableTabGridViewHolder(view);
         } else {
-            // TODO(meiliang): Return SelectableTabGridViewHolder
-            return new TabGridViewHolder(view);
+            return new SelectableTabGridViewHolder(view);
         }
     }
 
