@@ -1394,8 +1394,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ASSERT_TRUE(synthetic_wheel_listener.WaitUntilSatisfied());
 }
 
+// TODO(crbug.com/961017): Fix memory leaks in tests and re-enable on LSAN.
+#if defined(LEAK_SANITIZER)
+#define MAYBE_PictureInPicture DISABLED_PictureInPicture
+#else
+#define MAYBE_PictureInPicture PictureInPicture
+#endif
+
 // Tests that platform apps can enter and exit Picture-in-Picture.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PictureInPicture) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_PictureInPicture) {
   LoadAndLaunchPlatformApp("picture_in_picture", "Launched");
 
   WebContents* web_contents = GetFirstAppWindowWebContents();
