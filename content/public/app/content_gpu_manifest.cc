@@ -23,6 +23,7 @@ const service_manager::Manifest& GetContentGpuManifest() {
                                 "content.mojom.ChildHistogramFetcherFactory",
                                 "content.mojom.ResourceUsageReporter",
                                 "IPC.mojom.ChannelBootstrap",
+                                "tracing.mojom.BackgroundTracingAgent",
                                 "ui.ozone.mojom.DeviceCursor",
                                 "ui.ozone.mojom.DrmDevice",
                                 "ui.ozone.mojom.WaylandBufferManagerGpu",

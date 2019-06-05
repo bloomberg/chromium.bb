@@ -89,6 +89,7 @@ target(link_target_type, "child") {
     "//components/discardable_memory/public/interfaces",
     "//components/tracing",
     "//components/tracing:startup_tracing",
+    "//components/tracing/common:interfaces",
     "//components/variations",
     "//components/webcrypto",
     "//content/app/resources",

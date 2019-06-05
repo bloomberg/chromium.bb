@@ -22,13 +22,18 @@
 #include "content/browser/tracing/background_memory_tracing_observer.h"
 #include "content/browser/tracing/background_startup_tracing_observer.h"
 #include "content/browser/tracing/background_tracing_active_scenario.h"
+#include "content/browser/tracing/background_tracing_agent_client_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
-#include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
+#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/tracing_delegate.h"
+#include "content/public/common/bind_interface_helpers.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
@@ -54,6 +59,35 @@ BackgroundTracingManager* BackgroundTracingManager::GetInstance() {
 BackgroundTracingManagerImpl* BackgroundTracingManagerImpl::GetInstance() {
   static base::NoDestructor<BackgroundTracingManagerImpl> manager;
   return manager.get();
+}
+
+// static
+void BackgroundTracingManagerImpl::ActivateForProcess(
+    BrowserChildProcessHost* host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  tracing::mojom::BackgroundTracingAgentPtr agent;
+  content::BindInterface(host->GetHost(), &agent);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(
+          [](int child_process_id,
+             tracing::mojom::BackgroundTracingAgentPtrInfo info) {
+            BackgroundTracingAgentClientImpl::Create(child_process_id,
+                                                     std::move(info));
+          },
+          host->GetData().id, agent.PassInterface()));
+}
+
+// static
+void BackgroundTracingManagerImpl::ActivateForProcess(RenderProcessHost* host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  tracing::mojom::BackgroundTracingAgentPtr agent;
+  content::BindInterface(host, &agent);
+  BackgroundTracingAgentClientImpl::Create(host->GetID(),
+                                           agent.PassInterface());
 }
 
 BackgroundTracingManagerImpl::BackgroundTracingManagerImpl()
@@ -190,43 +224,42 @@ void BackgroundTracingManagerImpl::RemoveEnabledStateObserver(
   background_tracing_observers_.erase(observer);
 }
 
-void BackgroundTracingManagerImpl::AddTraceMessageFilter(
-    TraceMessageFilter* trace_message_filter) {
+void BackgroundTracingManagerImpl::AddAgent(
+    tracing::mojom::BackgroundTracingAgent* agent) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  trace_message_filters_.insert(trace_message_filter);
+  agents_.insert(agent);
 
-  for (auto* observer : trace_message_filter_observers_) {
-    observer->OnTraceMessageFilterAdded(trace_message_filter);
+  for (auto* observer : agent_observers_) {
+    observer->OnAgentAdded(agent);
   }
 }
 
-void BackgroundTracingManagerImpl::RemoveTraceMessageFilter(
-    TraceMessageFilter* trace_message_filter) {
+void BackgroundTracingManagerImpl::RemoveAgent(
+    tracing::mojom::BackgroundTracingAgent* agent) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (auto* observer : trace_message_filter_observers_) {
-    observer->OnTraceMessageFilterRemoved(trace_message_filter);
+  for (auto* observer : agent_observers_) {
+    observer->OnAgentRemoved(agent);
   }
 
-  trace_message_filters_.erase(trace_message_filter);
+  agents_.erase(agent);
 }
 
-void BackgroundTracingManagerImpl::AddTraceMessageFilterObserver(
-    TraceMessageFilterObserver* observer) {
+void BackgroundTracingManagerImpl::AddAgentObserver(AgentObserver* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  trace_message_filter_observers_.insert(observer);
+  agent_observers_.insert(observer);
 
-  for (auto& filter : trace_message_filters_) {
-    observer->OnTraceMessageFilterAdded(filter.get());
+  for (auto* agent : agents_) {
+    observer->OnAgentAdded(agent);
   }
 }
 
-void BackgroundTracingManagerImpl::RemoveTraceMessageFilterObserver(
-    TraceMessageFilterObserver* observer) {
+void BackgroundTracingManagerImpl::RemoveAgentObserver(
+    AgentObserver* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  trace_message_filter_observers_.erase(observer);
+  agent_observers_.erase(observer);
 
-  for (auto& filter : trace_message_filters_) {
-    observer->OnTraceMessageFilterRemoved(filter.get());
+  for (auto* agent : agents_) {
+    observer->OnAgentRemoved(agent);
   }
 }
 
@@ -271,14 +304,7 @@ void BackgroundTracingManagerImpl::ValidateStartupScenario() {
 
 void BackgroundTracingManagerImpl::OnHistogramTrigger(
     const std::string& histogram_name) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&BackgroundTracingManagerImpl::OnHistogramTrigger,
-                       base::Unretained(this), histogram_name));
-    return;
-  }
-
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (active_scenario_) {
     active_scenario_->OnHistogramTrigger(histogram_name);
   }

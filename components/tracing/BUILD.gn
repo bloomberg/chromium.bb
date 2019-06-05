@@ -15,12 +15,10 @@ config("wrap_find_exidx") {
 
 component("tracing") {
   sources = [
-    "child/child_trace_message_filter.cc",
-    "child/child_trace_message_filter.h",
+    "child/background_tracing_agent_impl.cc",
+    "child/background_tracing_agent_impl.h",
     "common/graphics_memory_dump_provider_android.cc",
     "common/graphics_memory_dump_provider_android.h",
-    "common/tracing_messages.cc",
-    "common/tracing_messages.h",
     "common/tracing_sampler_profiler.cc",
     "common/tracing_sampler_profiler.h",
     "tracing_export.h",
@@ -30,6 +28,7 @@ component("tracing") {
 
   deps = [
     "//base",
+    "//components/tracing/common:interfaces",
     "//ipc",
   ]
 
@@ -70,7 +69,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "child/child_trace_message_filter_unittest.cc",
+    "child/background_tracing_agent_impl_unittest.cc",
     "common/graphics_memory_dump_provider_android_unittest.cc",
     "common/tracing_sampler_profiler_unittest.cc",
   ]
@@ -79,6 +78,7 @@ source_set("unit_tests") {
     ":startup_tracing",
     ":tracing",
     "//base/test:test_support",
+    "//components/tracing/common:interfaces",
     "//ipc",
     "//testing/gmock:gmock",
     "//testing/gtest",

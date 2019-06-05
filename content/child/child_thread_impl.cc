@@ -37,7 +37,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/tracing/child/child_trace_message_filter.h"
+#include "components/tracing/child/background_tracing_agent_impl.h"
 #include "content/child/child_histogram_fetcher_impl.h"
 #include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
@@ -446,10 +446,11 @@ void ChildThreadImpl::Init(const Options& options) {
   registry->AddInterface(base::Bind(&ChildThreadImpl::OnChildControlRequest,
                                     base::Unretained(this)),
                          base::ThreadTaskRunnerHandle::Get());
+  registry->AddInterface(
+      base::Bind(&tracing::BackgroundTracingAgentImpl::CreateFromRequest),
+      base::ThreadTaskRunnerHandle::Get());
   GetServiceManagerConnection()->AddConnectionFilter(
       std::make_unique<SimpleConnectionFilter>(std::move(registry)));
-
-  InitTracing();
 
   // In single process mode, browser-side tracing and memory will cover the
   // whole process including renderers.
@@ -537,25 +538,6 @@ void ChildThreadImpl::Init(const Options& options) {
     field_trial_syncer_->InitFieldTrialObserving(
         *base::CommandLine::ForCurrentProcess());
   }
-}
-
-void ChildThreadImpl::InitTracing() {
-  // In single process mode, browser-side tracing and memory will cover the
-  // whole process including renderers.
-  if (IsInBrowserProcess())
-    return;
-
-  // Tracing adds too much overhead to the profiling service. The only
-  // way to determine if this is the profiling service is by checking the
-  // sandbox type.
-  service_manager::SandboxType sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(
-          *base::CommandLine::ForCurrentProcess());
-  if (sandbox_type == service_manager::SANDBOX_TYPE_PROFILING)
-    return;
-
-  channel_->AddFilter(new tracing::ChildTraceMessageFilter(
-      ChildProcess::current()->io_task_runner()));
 }
 
 ChildThreadImpl::~ChildThreadImpl() {

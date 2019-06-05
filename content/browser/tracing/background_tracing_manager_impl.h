@@ -19,11 +19,18 @@ template <typename T>
 class NoDestructor;
 }  // namespace base
 
+namespace tracing {
+namespace mojom {
+class BackgroundTracingAgent;
+}  // namespace mojom
+}  // namespace tracing
+
 namespace content {
 
 class BackgroundTracingRule;
 class BackgroundTracingActiveScenario;
-class TraceMessageFilter;
+class BrowserChildProcessHost;
+class RenderProcessHost;
 class TracingDelegate;
 
 class BackgroundTracingManagerImpl : public BackgroundTracingManager {
@@ -48,10 +55,12 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
     virtual ~EnabledStateObserver() = default;
   };
 
-  class TraceMessageFilterObserver {
+  class AgentObserver {
    public:
-    virtual void OnTraceMessageFilterAdded(TraceMessageFilter* filter) = 0;
-    virtual void OnTraceMessageFilterRemoved(TraceMessageFilter* filter) = 0;
+    virtual void OnAgentAdded(
+        tracing::mojom::BackgroundTracingAgent* agent) = 0;
+    virtual void OnAgentRemoved(
+        tracing::mojom::BackgroundTracingAgent* agent) = 0;
   };
 
   // These values are used for a histogram. Do not reorder.
@@ -74,6 +83,9 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   static void RecordMetric(Metrics metric);
 
   CONTENT_EXPORT static BackgroundTracingManagerImpl* GetInstance();
+
+  static void ActivateForProcess(BrowserChildProcessHost* host);
+  static void ActivateForProcess(RenderProcessHost* host);
 
   bool SetActiveScenario(std::unique_ptr<BackgroundTracingConfig>,
                          ReceiveCallback,
@@ -99,11 +111,11 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   CONTENT_EXPORT void RemoveEnabledStateObserver(
       EnabledStateObserver* observer);
 
-  // Add/remove TraceMessageFilter{Observer}.
-  void AddTraceMessageFilter(TraceMessageFilter* trace_message_filter);
-  void RemoveTraceMessageFilter(TraceMessageFilter* trace_message_filter);
-  void AddTraceMessageFilterObserver(TraceMessageFilterObserver* observer);
-  void RemoveTraceMessageFilterObserver(TraceMessageFilterObserver* observer);
+  // Add/remove Agent{Observer}.
+  void AddAgent(tracing::mojom::BackgroundTracingAgent* agent);
+  void RemoveAgent(tracing::mojom::BackgroundTracingAgent* agent);
+  void AddAgentObserver(AgentObserver* observer);
+  void RemoveAgentObserver(AgentObserver* observer);
 
   void AddMetadataGeneratorFunction();
 
@@ -139,12 +151,11 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   std::map<TriggerHandle, std::string> trigger_handles_;
   int trigger_handle_ids_;
 
-  // There is no need to use base::ObserverList to store observers because we
-  // only access |background_tracing_observers_| and
-  // |trace_message_filter_observers_| from the UI thread.
+  // Note, these sets are not mutated during iteration so it is okay to not use
+  // base::ObserverList.
   std::set<EnabledStateObserver*> background_tracing_observers_;
-  std::set<scoped_refptr<TraceMessageFilter>> trace_message_filters_;
-  std::set<TraceMessageFilterObserver*> trace_message_filter_observers_;
+  std::set<tracing::mojom::BackgroundTracingAgent*> agents_;
+  std::set<AgentObserver*> agent_observers_;
 
   IdleCallback idle_callback_;
   base::RepeatingClosure tracing_enabled_callback_for_testing_;

@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
-#include "content/browser/tracing/trace_message_filter.h"
 #include "content/common/pepper_renderer_instance_data.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_message_macros.h"
@@ -39,7 +38,6 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
       new PepperMessageFilter());
   channel->AddFilter(pepper_message_filter->GetFilter());
   channel->AddFilter(browser_ppapi_host->message_filter().get());
-  channel->AddFilter((new TraceMessageFilter(render_process_id))->GetFilter());
 
   return browser_ppapi_host;
 }

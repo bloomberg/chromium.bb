@@ -179,9 +179,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void Init(const Options& options);
 
-  // Initializes tracing if necessary.
-  void InitTracing();
-
   // We create the channel first without connecting it so we can add filters
   // prior to any messages being received, then connect it afterwards.
   void ConnectChannel();

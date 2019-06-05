@@ -134,7 +134,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/browser/tracing/trace_message_filter.h"
+#include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/webrtc/webrtc_internals.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -1741,6 +1741,10 @@ bool RenderProcessHostImpl::Init() {
         base::BindRepeating(&RenderProcessHostImpl::OnMojoError, id_));
     channel_->Pause();
 
+    // In single process mode, browser-side tracing and memory will cover the
+    // whole process including renderers.
+    BackgroundTracingManagerImpl::ActivateForProcess(this);
+
     fast_shutdown_started_ = false;
   }
 
@@ -1914,7 +1918,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   p2p_socket_dispatcher_host_ =
       std::make_unique<P2PSocketDispatcherHost>(GetID());
 
-  AddFilter(new TraceMessageFilter(GetID()));
   AddFilter(new ResolveProxyMsgHelper(GetID()));
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context(

@@ -19,13 +19,15 @@ const service_manager::Manifest& GetNaClLoaderManifest() {
           // service, but they are requested from all child processes by common
           // browser-side code. We list them here to make the Service Manager
           // happy.
-          .ExposeCapability(
-              "browser",
-              std::set<const char*>{
-                  "IPC.mojom.ChannelBootstrap", "content.mojom.Child",
-                  "content.mojom.ChildControl",
-                  "content.mojom.ChildHistogramFetcherFactory",
-                  "content.mojom.ResourceUsageReporter"})
+          .ExposeCapability("browser",
+                            std::set<const char*>{
+                                "IPC.mojom.ChannelBootstrap",
+                                "content.mojom.Child",
+                                "content.mojom.ChildControl",
+                                "content.mojom.ChildHistogramFetcherFactory",
+                                "content.mojom.ResourceUsageReporter",
+                                "tracing.mojom.BackgroundTracingAgent",
+                            })
           .Build()};
   return *manifest;
 }

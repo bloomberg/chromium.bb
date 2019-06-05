@@ -14,9 +14,8 @@
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "components/tracing/common/tracing_messages.h"
+#include "components/tracing/common/background_tracing_agent.mojom.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
-#include "content/browser/tracing/trace_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -146,9 +145,8 @@ class NamedTriggerRule : public BackgroundTracingRule {
   std::string named_event_;
 };
 
-class HistogramRule
-    : public BackgroundTracingRule,
-      public BackgroundTracingManagerImpl::TraceMessageFilterObserver {
+class HistogramRule : public BackgroundTracingRule,
+                      public BackgroundTracingManagerImpl::AgentObserver {
  private:
   HistogramRule(const std::string& histogram_name,
                 int histogram_lower_value,
@@ -199,8 +197,7 @@ class HistogramRule
   ~HistogramRule() override {
     base::StatisticsRecorder::ClearCallback(histogram_name_);
     if (installed_) {
-      BackgroundTracingManagerImpl::GetInstance()
-          ->RemoveTraceMessageFilterObserver(this);
+      BackgroundTracingManagerImpl::GetInstance()->RemoveAgentObserver(this);
     }
   }
 
@@ -212,8 +209,7 @@ class HistogramRule
                    base::Unretained(this), histogram_name_,
                    histogram_lower_value_, histogram_upper_value_, repeat_));
 
-    BackgroundTracingManagerImpl::GetInstance()->AddTraceMessageFilterObserver(
-        this);
+    BackgroundTracingManagerImpl::GetInstance()->AddAgentObserver(this);
     installed_ = true;
   }
 
@@ -247,15 +243,14 @@ class HistogramRule
             base::Unretained(BackgroundTracingManagerImpl::GetInstance())));
   }
 
-  // BackgroundTracingManagerImpl::TraceMessageFilterObserver implementation
-  void OnTraceMessageFilterAdded(TraceMessageFilter* filter) override {
-    filter->Send(
-        new TracingMsg_SetUMACallback(histogram_name_, histogram_lower_value_,
-                                      histogram_upper_value_, repeat_));
+  // BackgroundTracingManagerImpl::AgentObserver implementation
+  void OnAgentAdded(tracing::mojom::BackgroundTracingAgent* agent) override {
+    agent->SetUMACallback(histogram_name_, histogram_lower_value_,
+                          histogram_upper_value_, repeat_);
   }
 
-  void OnTraceMessageFilterRemoved(TraceMessageFilter* filter) override {
-    filter->Send(new TracingMsg_ClearUMACallback(histogram_name_));
+  void OnAgentRemoved(tracing::mojom::BackgroundTracingAgent* agent) override {
+    agent->ClearUMACallback(histogram_name_);
   }
 
   void OnHistogramChangedCallback(const std::string& histogram_name,

@@ -34,7 +34,7 @@
 #include "content/browser/histogram_controller.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/service_manager/service_manager_context.h"
-#include "content/browser/tracing/trace_message_filter.h"
+#include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
@@ -164,7 +164,6 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
   child_process_host_ = ChildProcessHost::Create(this);
-  AddFilter(new TraceMessageFilter(data_.id));
 
   g_child_process_list.Get().push_back(this);
   GetContentClient()->browser()->BrowserChildProcessHostCreated(this);
@@ -333,6 +332,12 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
     cmd_line->AppendSwitchASCII(
         service_manager::switches::kServiceRequestChannelToken,
         child_connection_->service_token());
+
+    // Tracing adds too much overhead to the profiling service.
+    if (service_manager::SandboxTypeFromCommandLine(*cmd_line) !=
+        service_manager::SANDBOX_TYPE_PROFILING) {
+      BackgroundTracingManagerImpl::ActivateForProcess(this);
+    }
   }
 
   // All processes should have a non-empty metrics name.
