@@ -81,6 +81,8 @@ bool ConfigSupported(const VideoDecoderConfig& config,
 
       return true;
     }
+    case kCodecAV1:
+      return device_info->IsAv1DecoderAvailable();
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     case kCodecH264:
       return true;
@@ -161,6 +163,13 @@ MediaCodecVideoDecoder::GetSupportedConfigs() {
                                    gfx::Size(0, 0), gfx::Size(3840, 2160),
                                    true,   // allow_encrypted
                                    true);  // require_encrypted
+  }
+
+  if (MediaCodecUtil::IsAv1DecoderAvailable()) {
+    supported_configs.emplace_back(AV1PROFILE_MIN, AV1PROFILE_MAX,
+                                   gfx::Size(0, 0), gfx::Size(3840, 2160),
+                                   true,    // allow_encrypted
+                                   false);  // require_encrypted
   }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)

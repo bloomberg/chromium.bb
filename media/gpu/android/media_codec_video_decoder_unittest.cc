@@ -312,6 +312,10 @@ TEST_P(MediaCodecVideoDecoderVp8Test, SmallVp8IsRejected) {
   ASSERT_FALSE(Initialize(TestVideoConfig::Normal()));
 }
 
+TEST_P(MediaCodecVideoDecoderH264Test, Av1IsSupported) {
+  ASSERT_TRUE(Initialize(TestVideoConfig::Normal(kCodecAV1)));
+}
+
 TEST_P(MediaCodecVideoDecoderTest, InitializeDoesntInitSurfaceOrCodec) {
   CreateMcvd();
   EXPECT_CALL(*video_frame_factory_, Initialize(ExpectedOverlayMode(), _))

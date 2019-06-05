@@ -47,6 +47,7 @@ const char kAvcMimeType[] = "video/avc";
 const char kHevcMimeType[] = "video/hevc";
 const char kVp8MimeType[] = "video/x-vnd.on2.vp8";
 const char kVp9MimeType[] = "video/x-vnd.on2.vp9";
+const char kAv1MimeType[] = "video/av01";
 }  // namespace
 
 static CodecProfileLevel MediaCodecProfileLevelToChromiumProfileLevel(
@@ -63,8 +64,8 @@ static CodecProfileLevel MediaCodecProfileLevelToChromiumProfileLevel(
 
 static bool IsSupportedAndroidMimeType(const std::string& mime_type) {
   std::vector<std::string> supported{
-      kMp3MimeType, kAacMimeType,  kOpusMimeType, kVorbisMimeType,
-      kAvcMimeType, kHevcMimeType, kVp8MimeType,  kVp9MimeType};
+      kMp3MimeType,  kAacMimeType, kOpusMimeType, kVorbisMimeType, kAvcMimeType,
+      kHevcMimeType, kVp8MimeType, kVp9MimeType,  kAv1MimeType};
   return std::find(supported.begin(), supported.end(), mime_type) !=
          supported.end();
 }
@@ -132,6 +133,8 @@ std::string MediaCodecUtil::CodecToAndroidMimeType(VideoCodec codec) {
       return kVp8MimeType;
     case kCodecVP9:
       return kVp9MimeType;
+    case kCodecAV1:
+      return kAv1MimeType;
     default:
       return std::string();
   }
@@ -336,6 +339,11 @@ bool MediaCodecUtil::IsVp8EncoderAvailable() {
 // static
 bool MediaCodecUtil::IsVp9DecoderAvailable() {
   return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kVp9MimeType);
+}
+
+// static
+bool MediaCodecUtil::IsAv1DecoderAvailable() {
+  return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kAv1MimeType);
 }
 
 // static

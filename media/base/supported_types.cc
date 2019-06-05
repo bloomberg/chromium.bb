@@ -4,8 +4,8 @@
 
 #include "media/base/supported_types.h"
 
-#include "base/command_line.h"
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "media/base/media_client.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
@@ -14,6 +14,10 @@
 #if BUILDFLAG(ENABLE_LIBVPX)
 #include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_codec.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #endif
 
 namespace media {
@@ -232,11 +236,16 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
 
   switch (type.codec) {
     case media::kCodecAV1:
+      // If the AV1 decoder is enabled, or if we're on Q or later, yes.
 #if BUILDFLAG(ENABLE_AV1_DECODER)
       return IsColorSpaceSupported(type.color_space);
-#else
-      return false;
+#elif defined(OS_ANDROID)
+      if (base::android::BuildInfo::GetInstance()->is_at_least_q() &&
+          IsColorSpaceSupported(type.color_space)) {
+        return true;
+      }
 #endif
+      return false;
 
     case media::kCodecVP9:
       // Color management required for HDR to not look terrible.

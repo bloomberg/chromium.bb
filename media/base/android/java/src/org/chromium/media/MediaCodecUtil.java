@@ -18,6 +18,7 @@ import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -434,6 +435,8 @@ class MediaCodecUtil {
             if (Build.MODEL.equals("Nexus Player")) {
                 return false;
             }
+        } else if (mime.equals("video/av01")) {
+            if (!BuildInfo.isAtLeastQ()) return false;
         } else if (mime.equals("audio/opus")
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return false;
