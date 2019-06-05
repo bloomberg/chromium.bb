@@ -17,7 +17,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/logging.h"

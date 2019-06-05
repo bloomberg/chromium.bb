@@ -41,7 +41,6 @@ mojom("interfaces_internal") {
     "voice_interaction_controller.mojom",
     "vpn_list.mojom",
     "window_pin_type.mojom",
-    "window_properties.mojom",
   ]
 
   public_deps = [

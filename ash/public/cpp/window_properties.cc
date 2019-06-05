@@ -9,7 +9,6 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "ash/public/interfaces/window_properties.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_properties.h"
 
