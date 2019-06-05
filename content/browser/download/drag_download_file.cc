@@ -260,16 +260,20 @@ void DragDownloadFile::DownloadCompleted(bool is_successful) {
 
   state_ = is_successful ? SUCCESS : FAILURE;
 
-  if (is_successful)
-    observer_->OnDownloadCompleted(file_path_);
-  else
-    observer_->OnDownloadAborted();
-
+  scoped_refptr<ui::DownloadFileObserver> file_observer = observer_;
   // Release the observer since we do not need it any more.
   observer_ = nullptr;
-
   if (nested_loop_.running())
     nested_loop_.Quit();
+
+  // Calling file_observer->OnDownloadCompleted() could delete this
+  // object.
+  if (is_successful)
+    file_observer->OnDownloadCompleted(file_path_);
+  else
+    file_observer->OnDownloadAborted();
+
+  // Nothing should be called here as the object might get deleted.
 }
 
 void DragDownloadFile::CheckThread() {
