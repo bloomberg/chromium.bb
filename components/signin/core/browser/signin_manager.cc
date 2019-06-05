@@ -35,7 +35,6 @@ SigninManager::SigninManager(
       weak_pointer_factory_(this) {}
 
 SigninManager::~SigninManager() {
-  token_service()->RemoveObserver(this);
   local_state_pref_registrar_.RemoveAll();
 }
 
@@ -76,10 +75,6 @@ void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
     SignOutAndKeepAllAccounts(signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN,
                               signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
-
-  // It is important to only load credentials after starting to observe the
-  // token service.
-  token_service()->AddObserver(this);
 }
 
 void SigninManager::OnGoogleServicesUsernamePatternChanged() {
@@ -112,27 +107,4 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
   std::string pattern =
       local_state->GetString(prefs::kGoogleServicesUsernamePattern);
   return identity::IsUsernameAllowedByPattern(username, pattern);
-}
-
-void SigninManager::OnRefreshTokensLoaded() {
-  token_service()->RemoveObserver(this);
-
-  if (account_tracker_service()->GetMigrationState() ==
-      AccountTrackerService::MIGRATION_IN_PROGRESS) {
-    account_tracker_service()->SetMigrationDone();
-  }
-
-  // Remove account information from the account tracker service if needed.
-  if (token_service()->HasLoadCredentialsFinishedWithNoErrors()) {
-    std::vector<AccountInfo> accounts_in_tracker_service =
-        account_tracker_service()->GetAccounts();
-    for (const auto& account : accounts_in_tracker_service) {
-      if (GetAuthenticatedAccountId() != account.account_id &&
-          !token_service()->RefreshTokenIsAvailable(account.account_id)) {
-        DVLOG(0) << "Removed account from account tracker service: "
-                 << account.account_id;
-        account_tracker_service()->RemoveAccount(account.account_id);
-      }
-    }
-  }
 }

@@ -41,6 +41,8 @@ SigninManagerBase::SigninManagerBase(
 
 SigninManagerBase::~SigninManagerBase() {
   DCHECK(!observer_);
+
+  token_service_->RemoveObserver(this);
 }
 
 // static
@@ -152,7 +154,10 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
     SetAuthenticatedAccountId(account_id);
   }
   FinalizeInitBeforeLoadingRefreshTokens(local_state);
-  token_service()->LoadCredentials(GetAuthenticatedAccountId());
+  // It is important to only load credentials after starting to observe the
+  // token service.
+  token_service_->AddObserver(this);
+  token_service_->LoadCredentials(GetAuthenticatedAccountId());
 }
 
 void SigninManagerBase::FinalizeInitBeforeLoadingRefreshTokens(
@@ -249,8 +254,7 @@ void SigninManagerBase::ClearObserver() {
 
 #if !defined(OS_CHROMEOS)
 void SigninManagerBase::SignIn(const std::string& username) {
-  AccountInfo info =
-      account_tracker_service()->FindAccountInfoByEmail(username);
+  AccountInfo info = account_tracker_service_->FindAccountInfoByEmail(username);
   DCHECK(!info.gaia.empty());
   DCHECK(!info.email.empty());
 
@@ -348,13 +352,13 @@ void SigninManagerBase::OnSignoutDecisionReached(
   switch (remove_option) {
     case RemoveAccountsOption::kRemoveAllAccounts:
       VLOG(0) << "Revoking all refresh tokens on server. Reason: sign out";
-      token_service()->RevokeAllCredentials(
+      token_service_->RevokeAllCredentials(
           signin_metrics::SourceForRefreshTokenOperation::
               kSigninManager_ClearPrimaryAccount);
       break;
     case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
-      if (token_service()->RefreshTokenHasError(account_id))
-        token_service()->RevokeCredentials(
+      if (token_service_->RefreshTokenHasError(account_id))
+        token_service_->RevokeCredentials(
             account_id, signin_metrics::SourceForRefreshTokenOperation::
                             kSigninManager_ClearPrimaryAccount);
       break;
@@ -369,6 +373,29 @@ void SigninManagerBase::OnSignoutDecisionReached(
 void SigninManagerBase::FireGoogleSignedOut(const AccountInfo& account_info) {
   if (observer_ != nullptr) {
     observer_->GoogleSignedOut(account_info);
+  }
+}
+
+void SigninManagerBase::OnRefreshTokensLoaded() {
+  token_service_->RemoveObserver(this);
+
+  if (account_tracker_service_->GetMigrationState() ==
+      AccountTrackerService::MIGRATION_IN_PROGRESS) {
+    account_tracker_service_->SetMigrationDone();
+  }
+
+  // Remove account information from the account tracker service if needed.
+  if (token_service_->HasLoadCredentialsFinishedWithNoErrors()) {
+    std::vector<AccountInfo> accounts_in_tracker_service =
+        account_tracker_service_->GetAccounts();
+    for (const auto& account : accounts_in_tracker_service) {
+      if (GetAuthenticatedAccountId() != account.account_id &&
+          !token_service_->RefreshTokenIsAvailable(account.account_id)) {
+        DVLOG(0) << "Removed account from account tracker service: "
+                 << account.account_id;
+        account_tracker_service_->RemoveAccount(account.account_id);
+      }
+    }
   }
 }
 #endif  // !defined(OS_CHROMEOS)

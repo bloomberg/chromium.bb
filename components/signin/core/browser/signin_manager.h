@@ -32,19 +32,18 @@
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "net/cookies/canonical_cookie.h"
 
 class PrefService;
+class ProfileOAuth2TokenService;
 
 namespace identity {
 class IdentityManager;
 }  // namespace identity
 
-class SigninManager : public SigninManagerBase,
-                      public OAuth2TokenService::Observer {
+class SigninManager : public SigninManagerBase {
  public:
   SigninManager(SigninClient* client,
                 ProfileOAuth2TokenService* token_service,
@@ -65,9 +64,6 @@ class SigninManager : public SigninManagerBase,
 
   // Returns true if a signin to Chrome is allowed (by policy or pref).
   bool IsSigninAllowed() const;
-
-  // OAuth2TokenService::Observer:
-  void OnRefreshTokensLoaded() override;
 
   void OnSigninAllowedPrefChanged();
   void OnGoogleServicesUsernamePatternChanged();

@@ -37,6 +37,7 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 class AccountTrackerService;
 class PrefRegistrySimple;
@@ -44,7 +45,7 @@ class PrefService;
 class ProfileOAuth2TokenService;
 class SigninClient;
 
-class SigninManagerBase {
+class SigninManagerBase : public OAuth2TokenService::Observer {
  public:
   class Observer {
    public:
@@ -97,7 +98,7 @@ class SigninManagerBase {
   };
 #endif
 
-  virtual ~SigninManagerBase();
+  ~SigninManagerBase() override;
 
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -181,12 +182,6 @@ class SigninManagerBase {
  protected:
   SigninClient* signin_client() const { return client_; }
 
-  ProfileOAuth2TokenService* token_service() const { return token_service_; }
-
-  AccountTrackerService* account_tracker_service() const {
-    return account_tracker_service_;
-  }
-
   // Invoked at the end of |Initialize| before the refresh token for the primary
   // account is loaded.
   virtual void FinalizeInitBeforeLoadingRefreshTokens(PrefService* local_state);
@@ -231,6 +226,9 @@ class SigninManagerBase {
 
   // Send all observers |GoogleSignedOut| notifications.
   void FireGoogleSignedOut(const AccountInfo& account_info);
+
+  // OAuth2TokenService::Observer:
+  void OnRefreshTokensLoaded() override;
 #endif
 
   SigninClient* client_;
