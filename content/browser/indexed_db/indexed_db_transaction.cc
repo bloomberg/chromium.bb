@@ -611,8 +611,7 @@ void IndexedDBTransaction::AddObservation(
   auto it = connection_changes_map_.find(connection_id);
   if (it == connection_changes_map_.end()) {
     it = connection_changes_map_
-             .insert(std::make_pair(connection_id,
-                                    blink::mojom::IDBObserverChanges::New()))
+             .insert({connection_id, blink::mojom::IDBObserverChanges::New()})
              .first;
   }
   it->second->observations.push_back(std::move(observation));

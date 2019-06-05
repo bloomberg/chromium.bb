@@ -424,9 +424,8 @@ size_t IndexedDBContextImpl::GetConnectionCount(const Origin& origin) {
 
 std::vector<base::FilePath> IndexedDBContextImpl::GetStoragePaths(
     const Origin& origin) const {
-  std::vector<base::FilePath> paths;
-  paths.push_back(GetLevelDBPath(origin));
-  paths.push_back(GetBlobStorePath(origin));
+  std::vector<base::FilePath> paths = {GetLevelDBPath(origin),
+                                       GetBlobStorePath(origin)};
   return paths;
 }
 

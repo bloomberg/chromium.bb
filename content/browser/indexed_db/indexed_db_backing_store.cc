@@ -232,8 +232,7 @@ Status MergeDatabaseIntoBlobJournal(LevelDBDirectTransaction* transaction,
   Status s = GetBlobJournal(key, transaction, &journal);
   if (!s.ok())
     return s;
-  journal.push_back(
-      std::make_pair(database_id, DatabaseMetaDataKey::kAllBlobsKey));
+  journal.push_back({database_id, DatabaseMetaDataKey::kAllBlobsKey});
   UpdateBlobJournal(transaction, key, journal);
   return Status::OK();
 }
@@ -1612,8 +1611,7 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
     if (current_database_id == database_id &&
         (all_blobs || current_all_blobs || blob_key == current_blob_key)) {
       if (!all_blobs) {
-        primary_journal.push_back(
-            std::make_pair(database_id, current_blob_key));
+        primary_journal.push_back({database_id, current_blob_key});
         if (current_all_blobs)
           new_live_blob_journal.push_back(*journal_iter);
         new_live_blob_journal.insert(new_live_blob_journal.end(),
@@ -1626,8 +1624,7 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
     }
   }
   if (all_blobs) {
-    primary_journal.push_back(
-        std::make_pair(database_id, DatabaseMetaDataKey::kAllBlobsKey));
+    primary_journal.push_back({database_id, DatabaseMetaDataKey::kAllBlobsKey});
   }
   UpdatePrimaryBlobJournal(transaction.get(), primary_journal);
   UpdateLiveBlobJournal(transaction.get(), new_live_blob_journal);
@@ -2859,7 +2856,7 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
           pre_transaction.get(), database_id_, &next_blob_key);
       if (!result || next_blob_key < 0)
         return InternalInconsistencyStatus();
-      blobs_to_write_.push_back(std::make_pair(database_id_, next_blob_key));
+      blobs_to_write_.push_back({database_id_, next_blob_key});
       if (entry.is_file() && !entry.file_path().empty()) {
         new_files_to_write->push_back(
             WriteDescriptor(entry.file_path(), next_blob_key, entry.size(),
@@ -2883,7 +2880,7 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
       return InternalInconsistencyStatus();
     }
     new_blob_entries->push_back(
-        std::make_pair(blob_entry_key, EncodeBlobData(new_blob_keys)));
+        {blob_entry_key, EncodeBlobData(new_blob_keys)});
   }
 
   AppendBlobsToPrimaryBlobJournal(pre_transaction.get(), blobs_to_write_);
@@ -2926,7 +2923,7 @@ bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
         return false;
       }
       for (const auto& blob : blob_info) {
-        blobs_to_remove_.push_back(std::make_pair(database_id_, blob.key()));
+        blobs_to_remove_.push_back({database_id_, blob.key()});
         transaction_->Remove(blob_entry_key_bytes);
       }
     }

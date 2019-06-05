@@ -492,8 +492,7 @@ TEST_F(LevelDBScopeTest, EmptyRangeRevert) {
           [&failure_status](leveldb::Status s) { failure_status = s; }));
 
   std::vector<std::pair<std::string, std::string>> empty_ranges = {
-      std::make_pair(CreateKey(0), CreateKey(10)),
-      std::make_pair(CreateKey(30), CreateKey(50))};
+      {CreateKey(0), CreateKey(10)}, {CreateKey(30), CreateKey(50)}};
   leveldb::Status s = scopes.Initialize();
   EXPECT_TRUE(s.ok());
   scopes.StartRecoveryAndCleanupTasks();

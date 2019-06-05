@@ -507,7 +507,7 @@ bool DecodeBlobJournal(StringPiece* slice, BlobJournalType* journal) {
         (blob_key != DatabaseMetaDataKey::kAllBlobsKey)) {
       return false;
     }
-    output.push_back(std::make_pair(database_id, blob_key));
+    output.push_back({database_id, blob_key});
   }
   journal->swap(output);
   return true;

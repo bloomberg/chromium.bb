@@ -69,7 +69,7 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
   ~MockIDBBackingStore() override = default;
 
   void ReportBlobUnused(int64_t database_id, int64_t blob_key) override {
-    unused_blobs_.insert(std::make_pair(database_id, blob_key));
+    unused_blobs_.insert({database_id, blob_key});
   }
 
   bool CheckUnusedBlobsEmpty() const {
@@ -77,7 +77,7 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
   }
   bool CheckSingleUnusedBlob(int64_t database_id, int64_t blob_key) const {
     return !duplicate_calls_ && unused_blobs_.size() == 1 &&
-           unused_blobs_.count(std::make_pair(database_id, blob_key));
+           unused_blobs_.count({database_id, blob_key});
   }
 
   const KeyPairSet& unused_blobs() const { return unused_blobs_; }
