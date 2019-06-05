@@ -40,6 +40,18 @@
 
 namespace net {
 
+#if defined(NTLM_PORTABLE)
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class NtlmV2Usage : int {
+  kDisabledOverInsecure = 0,
+  kDisabledOverSecure,
+  kEnabledOverInsecure,
+  kEnabledOverSecure,
+  kMaxValue = kEnabledOverSecure
+};
+#endif
+
 class HttpAuthPreferences;
 
 // Code for handling HTTP NTLM authentication.

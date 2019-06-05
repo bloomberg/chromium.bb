@@ -4,12 +4,15 @@
 
 #include "net/http/http_auth_handler_ntlm.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/dns/host_resolver.h"
+#include "net/http/http_auth_handler_ntlm.h"
 #include "net/http/http_auth_preferences.h"
+#include "net/ssl/ssl_info.h"
 
 namespace net {
 
@@ -21,6 +24,14 @@ uint64_t GetMSTime() {
 
 void GenerateRandom(uint8_t* output, size_t n) {
   base::RandBytes(output, n);
+}
+
+void RecordNtlmV2Usage(bool is_v2, bool is_secure) {
+  auto bucket = is_v2 ? is_secure ? NtlmV2Usage::kEnabledOverSecure
+                                  : NtlmV2Usage::kEnabledOverInsecure
+                      : is_secure ? NtlmV2Usage::kDisabledOverSecure
+                                  : NtlmV2Usage::kDisabledOverInsecure;
+  UMA_HISTOGRAM_ENUMERATION("Net.HttpAuthNtlmV2Usage", bucket);
 }
 
 }  // namespace
@@ -133,6 +144,9 @@ int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
   if (!tmp_handler->InitFromChallenge(challenge, target, ssl_info, origin,
                                       net_log))
     return ERR_INVALID_RESPONSE;
+  RecordNtlmV2Usage(
+      http_auth_preferences() ? http_auth_preferences()->NtlmV2Enabled() : true,
+      ssl_info.is_valid());
   handler->swap(tmp_handler);
   return OK;
 }

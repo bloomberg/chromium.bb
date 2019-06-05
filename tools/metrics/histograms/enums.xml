@@ -28905,6 +28905,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="SpdyProxy Reject (Deprecated)"/>
 </enum>
 
+<enum name="HttpAuthNtlmV2Usage">
+  <int value="0" label="Disabled over unsecured connection"/>
+  <int value="1" label="Disabled over secure connection"/>
+  <int value="2" label="Enabled over unsecured connection"/>
+  <int value="3" label="Enabled over secure connection"/>
+</enum>
+
 <enum name="HttpAuthPromptType">
   <int value="0" label="Main frame with interstitial">
     Auth prompt displayed over a blank interstitial
