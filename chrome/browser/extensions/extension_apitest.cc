@@ -261,6 +261,11 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
       }
       if (flags & kFlagLoadForLoginScreen)
         browser_test_flags |= ExtensionBrowserTest::kFlagLoadForLoginScreen;
+      if (flags & kFlagRunAsServiceWorkerBasedExtension) {
+        browser_test_flags |=
+            ExtensionBrowserTest::kFlagRunAsServiceWorkerBasedExtension;
+      }
+
       extension = LoadExtensionWithFlags(extension_path, browser_test_flags);
     }
     if (!extension) {

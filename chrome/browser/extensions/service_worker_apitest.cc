@@ -1794,6 +1794,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, EventsAfterRestart) {
   EXPECT_TRUE(moved_tab_listener.WaitUntilSatisfied());
 }
 
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnCreated) {
+  ASSERT_TRUE(RunExtensionTestWithFlags("tabs/lazy_background_on_created",
+                                        kFlagRunAsServiceWorkerBasedExtension))
+      << message_;
+}
+
 // Tests that console messages logged by extension service workers, both via
 // the typical console.* methods and via our custom bindings console, are
 // passed through the normal ServiceWorker console messaging and are
