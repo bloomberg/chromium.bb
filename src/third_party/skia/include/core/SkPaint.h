@@ -23,6 +23,7 @@
 #include "SkColor.h"
 #include "SkFilterQuality.h"
 #include "SkRefCnt.h"
+#include "SkRect.h"
 
 class SkColorFilter;
 class SkColorSpace;
