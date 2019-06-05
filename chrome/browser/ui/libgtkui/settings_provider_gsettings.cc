@@ -6,6 +6,8 @@
 
 #include <gio/gio.h>
 
+#include <memory>
+
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
