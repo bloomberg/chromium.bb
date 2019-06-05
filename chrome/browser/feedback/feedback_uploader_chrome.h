@@ -28,19 +28,6 @@ class FeedbackUploaderChrome : public FeedbackUploader {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~FeedbackUploaderChrome() override;
 
-  class Delegate {
-   public:
-    // Notifies the delegate when we have started dispatching a feedback report.
-    virtual void OnStartDispatchingReport() = 0;
-
-   protected:
-    virtual ~Delegate() = default;
-  };
-
-  void set_feedback_uploader_delegate(Delegate* delegate) {
-    delegate_ = delegate;
-  }
-
  private:
   // feedback::FeedbackUploader:
   void StartDispatchingReport() override;
@@ -53,8 +40,6 @@ class FeedbackUploaderChrome : public FeedbackUploader {
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   std::string access_token_;
-
-  Delegate* delegate_ = nullptr;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackUploaderChrome);
 };

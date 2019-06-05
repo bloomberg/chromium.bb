@@ -10,8 +10,6 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
-#include "chrome/browser/feedback/feedback_uploader_chrome.h"
-#include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -94,18 +92,6 @@ class FeedbackTest : public ExtensionBrowserTest {
                                 GURL("http://www.test.com"), flow,
                                 from_assistant, include_bluetooth_logs);
   }
-};
-
-class TestFeedbackUploaderDelegate
-    : public feedback::FeedbackUploaderChrome::Delegate {
- public:
-  explicit TestFeedbackUploaderDelegate(base::RunLoop* quit_on_dispatch)
-      : quit_on_dispatch_(quit_on_dispatch) {}
-
-  void OnStartDispatchingReport() override { quit_on_dispatch_->Quit(); }
-
- private:
-  base::RunLoop* quit_on_dispatch_;
 };
 
 // Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
@@ -317,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ProvideBluetoothLogs) {
   EXPECT_TRUE(bool_result);
 }
 #endif  // if defined(CHROME_OS)
-
+  
 IN_PROC_BROWSER_TEST_F(FeedbackTest, GetTargetTabUrl) {
   const std::pair<std::string, std::string> test_cases[] = {
       {"https://www.google.com/", "https://www.google.com/"},
@@ -354,49 +340,4 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, GetTargetTabUrl) {
     DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
   }
 }
-
-IN_PROC_BROWSER_TEST_F(FeedbackTest, SubmissionTest) {
-  WaitForExtensionViewsToLoad();
-
-  ASSERT_TRUE(IsFeedbackAppAvailable());
-  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL, std::string());
-  VerifyFeedbackAppLaunch();
-
-  AppWindow* const window =
-      PlatformAppBrowserTest::GetFirstAppWindowForBrowser(browser());
-  ASSERT_TRUE(window);
-  content::WebContents* const content = window->web_contents();
-
-  // Set a delegate for the uploader which will be invoked when the report
-  // normally would have been uploaded. We have it setup to then quit the
-  // RunLoop which will then allow us to terminate.
-  base::RunLoop run_loop;
-  TestFeedbackUploaderDelegate delegate(&run_loop);
-  feedback::FeedbackUploaderFactoryChrome::GetInstance()
-      ->GetForBrowserContext(browser()->profile())
-      ->set_feedback_uploader_delegate(&delegate);
-
-  // Click the send button.
-  bool bool_result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      content,
-      "domAutomationController.send("
-      "  ((function() {"
-      "      if ($('send-report-button') != null) {"
-      "        document.getElementById('send-report-button').click();"
-      "        return true;"
-      "      }"
-      "      return false;"
-      "    })()));",
-      &bool_result));
-  EXPECT_TRUE(bool_result);
-
-  // This will DCHECK if the JS private API call doesn't return a value, which
-  // is the main case we are concerned about.
-  run_loop.Run();
-  feedback::FeedbackUploaderFactoryChrome::GetInstance()
-      ->GetForBrowserContext(browser()->profile())
-      ->set_feedback_uploader_delegate(nullptr);
-}
-
 }  // namespace extensions
