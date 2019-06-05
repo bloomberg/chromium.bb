@@ -136,10 +136,6 @@ void WinWindow::MoveCursorTo(const gfx::Point& location) {
 void WinWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
 }
 
-PlatformImeController* WinWindow::GetPlatformImeController() {
-  return nullptr;
-}
-
 void WinWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {}
 
 gfx::Rect WinWindow::GetRestoredBoundsInPixels() const {

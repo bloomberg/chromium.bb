@@ -150,11 +150,6 @@ void ScenicWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
-PlatformImeController* ScenicWindow::GetPlatformImeController() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 void ScenicWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }

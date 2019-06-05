@@ -134,10 +134,6 @@ void DrmWindowHost::ConfineCursorToBounds(const gfx::Rect& bounds) {
   cursor_->CommitBoundsChange(widget_, bounds_, bounds);
 }
 
-PlatformImeController* DrmWindowHost::GetPlatformImeController() {
-  return nullptr;
-}
-
 void DrmWindowHost::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
   NOTREACHED();
 }

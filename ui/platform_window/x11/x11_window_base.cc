@@ -295,10 +295,6 @@ void X11WindowBase::ConfineCursorToBounds(const gfx::Rect& bounds) {
   has_pointer_barriers_ = true;
 }
 
-PlatformImeController* X11WindowBase::GetPlatformImeController() {
-  return nullptr;
-}
-
 void X11WindowBase::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
   // TODO: https://crbug.com/848131
   NOTIMPLEMENTED();

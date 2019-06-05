@@ -46,7 +46,6 @@ class WIN_WINDOW_EXPORT WinWindow : public PlatformWindow,
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
-  PlatformImeController* GetPlatformImeController() override;
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Rect GetRestoredBoundsInPixels() const override;
 

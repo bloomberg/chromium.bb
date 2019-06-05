@@ -452,11 +452,6 @@ void WaylandWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
-PlatformImeController* WaylandWindow::GetPlatformImeController() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 void WaylandWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
   restored_bounds_ = bounds;
 }

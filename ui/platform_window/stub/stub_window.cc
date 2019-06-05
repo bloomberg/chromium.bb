@@ -70,10 +70,6 @@ void StubWindow::MoveCursorTo(const gfx::Point& location) {}
 
 void StubWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {}
 
-PlatformImeController* StubWindow::GetPlatformImeController() {
-  return nullptr;
-}
-
 void StubWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {}
 
 gfx::Rect StubWindow::GetRestoredBoundsInPixels() const {

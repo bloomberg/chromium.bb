@@ -47,7 +47,6 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
   PlatformWindowState GetPlatformWindowState() const override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
-  PlatformImeController* GetPlatformImeController() override;
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Rect GetRestoredBoundsInPixels() const override;
 

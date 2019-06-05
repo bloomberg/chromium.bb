@@ -6,19 +6,15 @@ import("//build/config/ui.gni")
 
 source_set("platform_window") {
   sources = [
-    "platform_ime_controller.h",
     "platform_window.h",
     "platform_window_delegate.h",
     "platform_window_init_properties.cc",
     "platform_window_init_properties.h",
-    "text_input_state.cc",
-    "text_input_state.h",
   ]
 
   deps = [
     "//base",
     "//ui/base",
-    "//ui/base/ime:text_input_types",
     "//ui/gfx",
   ]
 
