@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.compositor.scene_layer;
 
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTa
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCaptionControl;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabTitleControl;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -34,7 +33,15 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
 
     private final int mFaviconSizePx;
 
-    private String mCachedUrl;
+    /** Interface to get notified that favicon is available. */
+    private interface FaviconCallback {
+        /**
+         * Called when a favicon becomes available. Used to start the animation fading
+         * out the default icon and fading in the favicon.
+         */
+        @CalledByNative("FaviconCallback")
+        void onAvailable();
+    }
 
     /**
      * @param dpToPx The conversion multiple from dp to px for the device.
@@ -59,7 +66,8 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
         // Don't try to update the layer if not initialized or showing.
         if (resourceManager == null || !panel.isShowing()) return;
         if (!mIsInitialized) {
-            nativeCreateEphemeralTabLayer(mNativePtr, resourceManager);
+            nativeCreateEphemeralTabLayer(
+                    mNativePtr, resourceManager, () -> panel.startFaviconAnimation(true));
             int openInTabIconId = (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
                                           && panel.canPromoteToNewTab())
                     ? R.drawable.open_in_new_tab
@@ -99,14 +107,8 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
                 panel.getBarMarginTop() * mDpToPx, panel.getBarHeight() * mDpToPx,
                 panel.isBarBorderVisible(), panel.getBarBorderHeight() * mDpToPx,
                 panel.getBarShadowVisible(), panel.getBarShadowOpacity(), panel.getIconColor(),
-                panel.getDragHandlebarColor(), isProgressBarVisible, progressBarHeight * mDpToPx,
-                progressBarOpacity, progressBarCompletion);
-
-        String url = panel.getUrl();
-        if (!TextUtils.equals(mCachedUrl, url)) {
-            nativeGetFavicon(mNativePtr, Profile.getLastUsedProfile(), url, mFaviconSizePx);
-            mCachedUrl = url;
-        }
+                panel.getDragHandlebarColor(), panel.getFaviconOpacity(), isProgressBarVisible,
+                progressBarHeight * mDpToPx, progressBarOpacity, progressBarCompletion);
     }
 
     @Override
@@ -120,14 +122,11 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
     public void hideTree() {
         if (!mIsInitialized) return;
         nativeHideTree(mNativePtr);
-        mCachedUrl = null;
     }
 
     @Override
     protected void initializeNative() {
-        if (mNativePtr == 0) {
-            mNativePtr = nativeInit();
-        }
+        if (mNativePtr == 0) mNativePtr = nativeInit();
         assert mNativePtr != 0;
     }
 
@@ -142,8 +141,8 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
     }
 
     private native long nativeInit();
-    private native void nativeCreateEphemeralTabLayer(
-            long nativeEphemeralTabSceneLayer, ResourceManager resourceManager);
+    private native void nativeCreateEphemeralTabLayer(long nativeEphemeralTabSceneLayer,
+            ResourceManager resourceManager, FaviconCallback callback);
     private native void nativeSetContentTree(
             long nativeEphemeralTabSceneLayer, SceneLayer contentTree);
     private native void nativeHideTree(long nativeEphemeralTabSceneLayer);
@@ -151,8 +150,6 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
             int barTextResourceId, int barBackgroundResourceId, int barShadowResourceId,
             int panelIconResourceId, int dragHandlebarResourceId, int openTabIconResourceId,
             int closeIconResourceId);
-    private native void nativeGetFavicon(
-            long nativeEphemeralTabSceneLayer, Profile profile, String url, int size);
     private native void nativeUpdate(long nativeEphemeralTabSceneLayer, int titleViewId,
             int captionViewId, float captionAnimationPercentage, float textLayerMinHeight,
             float titleCaptionSpacing, boolean captionVisible, int progressBarBackgroundResourceId,
@@ -161,6 +158,6 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
             float panelWidth, float panelHeight, int barBackgroundColor, float barMarginSide,
             float barMarginTop, float barHeight, boolean barBorderVisible, float barBorderHeight,
             boolean barShadowVisible, float barShadowOpacity, int iconColor, int dragHandlebarColor,
-            boolean isProgressBarVisible, float progressBarHeight, float progressBarOpacity,
-            int progressBarCompletion);
+            float faviconOpacity, boolean isProgressBarVisible, float progressBarHeight,
+            float progressBarOpacity, int progressBarCompletion);
 }

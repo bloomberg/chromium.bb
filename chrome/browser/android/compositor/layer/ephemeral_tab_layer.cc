@@ -8,65 +8,50 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/favicon/content/content_favicon_driver.h"
-#include "components/favicon/core/favicon_service.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 namespace {
 
 void DisplayFavicon(scoped_refptr<cc::UIResourceLayer> layer,
-                    scoped_refptr<cc::UIResourceLayer> icon_layer,
                     const SkBitmap& favicon,
                     const float dp_to_px,
                     const float panel_width,
                     const float bar_height,
-                    const float padding) {
-  const float icon_width =
+                    const float bar_margin,
+                    const base::RepeatingCallback<void()>& favicon_callback) {
+  const float bounds_width =
       android::OverlayPanelLayer::kDefaultIconWidthDp * dp_to_px;
+
+  // Dimension to which favicons are resized - half the size of default icon.
+  const float icon_size = bounds_width / 2.0f;
+  const float padding = bar_margin + (bounds_width - icon_size) / 2.0f;
   layer->SetBitmap(favicon);
-  layer->SetBounds(gfx::Size(icon_width, icon_width));
+  layer->SetBounds(gfx::Size(icon_size, icon_size));
 
   bool is_rtl = l10n_util::IsLayoutRtl();
-  float icon_x = is_rtl ? panel_width - icon_width - padding : padding;
-  float icon_y = (bar_height - layer->bounds().height()) / 2;
-  icon_layer->SetIsDrawable(false);
-  layer->SetIsDrawable(true);
+  float icon_x = is_rtl ? panel_width - icon_size - padding : padding;
+  float icon_y = (bar_height - icon_size) / 2;
   layer->SetPosition(gfx::PointF(icon_x, icon_y));
-}
-
-void OnLocalFaviconAvailable(
-    scoped_refptr<cc::UIResourceLayer> layer,
-    scoped_refptr<cc::UIResourceLayer> icon_layer,
-    const float dp_to_px,
-    const float panel_width,
-    const float bar_height,
-    const float padding,
-    const favicon_base::FaviconRawBitmapResult& result) {
-  if (!result.is_valid())
-    return;
-  SkBitmap favicon_bitmap;
-  gfx::PNGCodec::Decode(result.bitmap_data->front(), result.bitmap_data->size(),
-                        &favicon_bitmap);
-  if (favicon_bitmap.isNull())
-    return;
-  favicon_bitmap.setImmutable();
-  DisplayFavicon(layer, icon_layer, favicon_bitmap, dp_to_px, panel_width,
-                 bar_height, padding);
+  favicon_callback.Run();
 }
 
 }  // namespace
 
 namespace android {
+
 // static
 scoped_refptr<EphemeralTabLayer> EphemeralTabLayer::Create(
-    ui::ResourceManager* resource_manager) {
-  return base::WrapRefCounted(new EphemeralTabLayer(resource_manager));
+    ui::ResourceManager* resource_manager,
+    base::RepeatingCallback<void()>&& favicon_callback) {
+  return base::WrapRefCounted(
+      new EphemeralTabLayer(resource_manager, std::move(favicon_callback)));
 }
 
 void EphemeralTabLayer::SetProperties(
@@ -95,6 +80,7 @@ void EphemeralTabLayer::SetProperties(
     float bar_shadow_opacity,
     int icon_color,
     int drag_handlebar_color,
+    jfloat favicon_opacity,
     bool progress_bar_visible,
     float progress_bar_height,
     float progress_bar_opacity,
@@ -137,6 +123,10 @@ void EphemeralTabLayer::SetProperties(
   panel_width_ = panel_width;
   bar_height_ = bar_height;
   bar_margin_side_ = bar_margin_side;
+  if (favicon_opacity > 0.f)
+    favicon_layer_->SetIsDrawable(true);
+  favicon_layer_->SetOpacity(favicon_opacity);
+  panel_icon_->SetOpacity(1 - favicon_opacity);
 }
 
 void EphemeralTabLayer::SetupTextLayer(float bar_top,
@@ -247,50 +237,29 @@ void EphemeralTabLayer::OnFaviconUpdated(
     const GURL& icon_url,
     bool icon_url_changed,
     const gfx::Image& image) {
-  if (notification_icon_type != NON_TOUCH_LARGEST &&
-      notification_icon_type != TOUCH_LARGEST) {
-    return;
-  }
-
   SkBitmap favicon_bitmap =
       image.AsImageSkia().GetRepresentation(1.0f).GetBitmap();
   if (favicon_bitmap.empty())
     return;
-  favicon_bitmap.setImmutable();
-  DisplayFavicon(favicon_layer_, panel_icon_, favicon_bitmap, dp_to_px_,
-                 panel_width_, bar_height_, bar_margin_side_);
-}
-
-void EphemeralTabLayer::GetLocalFaviconImageForURL(Profile* profile,
-                                                   const std::string& url,
-                                                   int size) {
-  panel_icon_->SetIsDrawable(true);
-  favicon_layer_->SetIsDrawable(false);
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
-  DCHECK(favicon_service);
-  if (!favicon_service)
+  std::string host = icon_url.host();
+  if (host == favicon_url_host_)
     return;
-
-  favicon_base::FaviconRawBitmapCallback callback_runner =
-      base::BindOnce(&OnLocalFaviconAvailable, favicon_layer_, panel_icon_,
-                     dp_to_px_, panel_width_, bar_height_, bar_margin_side_);
-
-  // Set |fallback_to_host|=true so the favicon database will fall back to
-  // matching only the hostname to have the best chance of finding a favicon.
-  const bool fallback_to_host = true;
-  favicon_service->GetRawFaviconForPageURL(
-      GURL(url),
-      {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
-       favicon_base::IconType::kTouchPrecomposedIcon,
-       favicon_base::IconType::kWebManifestIcon},
-      size, fallback_to_host, std::move(callback_runner),
-      cancelable_task_tracker_.get());
+  favicon_url_host_ = host;
+  favicon_bitmap.setImmutable();
+  DisplayFavicon(favicon_layer_, favicon_bitmap, dp_to_px_, panel_width_,
+                 bar_height_, bar_margin_side_, favicon_callback_);
 }
 
-EphemeralTabLayer::EphemeralTabLayer(ui::ResourceManager* resource_manager)
+void EphemeralTabLayer::OnHide() {
+  favicon_layer_->SetIsDrawable(false);
+  favicon_url_host_.clear();
+}
+
+EphemeralTabLayer::EphemeralTabLayer(
+    ui::ResourceManager* resource_manager,
+    base::RepeatingCallback<void()>&& favicon_callback)
     : OverlayPanelLayer(resource_manager),
+      favicon_callback_(std::move(favicon_callback)),
       title_(cc::UIResourceLayer::Create()),
       caption_(cc::UIResourceLayer::Create()),
       favicon_layer_(cc::UIResourceLayer::Create()),

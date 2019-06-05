@@ -14,6 +14,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator.AnimatorUpdateListener;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
@@ -34,6 +36,9 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.resources.ResourceManager;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * The panel containing an ephemeral tab.
@@ -65,6 +70,16 @@ public class EphemeralTabPanel extends OverlayPanel {
     /** Observers detecting various signals indicating the panel needs closing. */
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+
+    /** Favicon opacity. Fully visible when 1.f. */
+    private float mFaviconOpacity;
+
+    /** Animation effect for favicon display. */
+    private CompositorAnimator mFaviconAnimation;
+    private final AnimatorUpdateListener mFadeInAnimatorListener =
+            animator -> mFaviconOpacity = animator.getAnimatedValue();
+    private final AnimatorUpdateListener mFadeOutAnimatorListener =
+            animator -> mFaviconOpacity = 1.f - animator.getAnimatedValue();
 
     /**
      * Checks if this feature (a.k.a. "Preview page/image") is supported.
@@ -109,8 +124,18 @@ public class EphemeralTabPanel extends OverlayPanel {
 
     private class EphemeralTabPanelContentDelegate extends OverlayContentDelegate {
         @Override
-        public void onMainFrameNavigation(String url, boolean isExternalUrl, boolean isFailure) {
-            if (!isFailure) mUrl = url;
+        public void onMainFrameLoadStarted(String url, boolean isExternalUrl) {
+            try {
+                String newHost = new URL(url).getHost();
+                String curHost = new URL(mUrl).getHost();
+                if (!newHost.equals(curHost)) {
+                    mUrl = url;
+                    // Resets to default icon if favicon may need updating.
+                    startFaviconAnimation(false);
+                }
+            } catch (MalformedURLException e) {
+                assert false : "Malformed URL should not be passed.";
+            }
         }
     }
 
@@ -216,6 +241,29 @@ public class EphemeralTabPanel extends OverlayPanel {
         return super.updateOverlay(time, dt);
     }
 
+    /**
+     * Starts animation effect on the favicon.
+     * @param showFavicon If {@code true} show the favicon with fade-in effect. Otherwise
+     *         fade out the favicon to show the default one.
+     */
+    public void startFaviconAnimation(boolean showFavicon) {
+        if (mFaviconAnimation != null) mFaviconAnimation.cancel();
+        mFaviconAnimation = new CompositorAnimator(getAnimationHandler());
+        mFaviconAnimation.setDuration(BASE_ANIMATION_DURATION_MS);
+        mFaviconAnimation.removeAllListeners();
+        mFaviconAnimation.addUpdateListener(
+                showFavicon ? mFadeInAnimatorListener : mFadeOutAnimatorListener);
+        mFaviconOpacity = showFavicon ? 0.f : 1.f;
+        mFaviconAnimation.start();
+    }
+
+    /**
+     * @return Snaptshot value of the favicon opacity.
+     */
+    public float getFaviconOpacity() {
+        return mFaviconOpacity;
+    }
+
     // Generic Event Handling
 
     @Override
@@ -288,6 +336,7 @@ public class EphemeralTabPanel extends OverlayPanel {
     @Override
     protected void onClosed(@StateChangeReason int reason) {
         super.onClosed(reason);
+        mFaviconOpacity = 0.f;
         if (mSceneLayer != null) mSceneLayer.hideTree();
     }
 

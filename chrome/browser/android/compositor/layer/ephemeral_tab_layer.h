@@ -7,9 +7,8 @@
 
 #include "chrome/browser/android/compositor/layer/overlay_panel_layer.h"
 
+#include "base/callback.h"
 #include "components/favicon/core/favicon_driver_observer.h"
-
-class Profile;
 
 namespace base {
 class CancelableTaskTracker;
@@ -36,7 +35,8 @@ class EphemeralTabLayer : public OverlayPanelLayer,
                           public favicon::FaviconDriverObserver {
  public:
   static scoped_refptr<EphemeralTabLayer> Create(
-      ui::ResourceManager* resource_manager);
+      ui::ResourceManager* resource_manager,
+      base::RepeatingCallback<void()>&& favicon_callback);
   void SetProperties(content::WebContents* web_contents,
                      int title_view_resource_id,
                      int caption_view_resource_id,
@@ -62,6 +62,7 @@ class EphemeralTabLayer : public OverlayPanelLayer,
                      float bar_shadow_opacity,
                      int icon_color,
                      int drag_handlebar_color,
+                     jfloat favicon_opacity,
                      bool progress_bar_visible,
                      float progress_bar_height,
                      float progress_bar_opacity,
@@ -75,9 +76,7 @@ class EphemeralTabLayer : public OverlayPanelLayer,
                       int context_resource_id,
                       float title_caption_spacing);
 
-  void GetLocalFaviconImageForURL(Profile* profile,
-                                  const std::string& url,
-                                  int size);
+  void OnHide();
 
   // favicon::FaviconDriverObserver
   void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
@@ -87,7 +86,8 @@ class EphemeralTabLayer : public OverlayPanelLayer,
                         const gfx::Image& image) override;
 
  protected:
-  explicit EphemeralTabLayer(ui::ResourceManager* resource_manager);
+  EphemeralTabLayer(ui::ResourceManager* resource_manager,
+                    base::RepeatingCallback<void()>&& favicon_callback);
   ~EphemeralTabLayer() override;
 
  private:
@@ -96,6 +96,8 @@ class EphemeralTabLayer : public OverlayPanelLayer,
   float panel_width_;
   float bar_height_;
   float bar_margin_side_;
+  std::string favicon_url_host_;
+  base::RepeatingCallback<void()> favicon_callback_;
   scoped_refptr<cc::UIResourceLayer> title_;
   scoped_refptr<cc::UIResourceLayer> caption_;
   scoped_refptr<cc::UIResourceLayer> favicon_layer_;

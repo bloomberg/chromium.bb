@@ -3,18 +3,27 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/android/compositor/scene_layer/ephemeral_tab_scene_layer.h"
-#include "base/android/jni_string.h"
+
+#include "base/callback.h"
 #include "cc/layers/solid_color_layer.h"
 #include "chrome/browser/android/compositor/layer/ephemeral_tab_layer.h"
-#include "chrome/browser/profiles/profile_android.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/EphemeralTabSceneLayer_jni.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/view_android.h"
 
-using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
+using base::android::ScopedJavaGlobalRef;
+
+namespace {
+
+void OnFaviconAvailable(const ScopedJavaGlobalRef<jobject>& object) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  android::Java_FaviconCallback_onAvailable(env, object);
+}
+
+}  // namespace
 
 namespace android {
 
@@ -34,10 +43,13 @@ EphemeralTabSceneLayer::~EphemeralTabSceneLayer() {}
 void EphemeralTabSceneLayer::CreateEphemeralTabLayer(
     JNIEnv* env,
     const JavaParamRef<jobject>& object,
-    const JavaParamRef<jobject>& jresource_manager) {
+    const JavaParamRef<jobject>& jresource_manager,
+    const JavaParamRef<jobject>& jcallback) {
   ui::ResourceManager* resource_manager =
       ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
-  ephemeral_tab_layer_ = EphemeralTabLayer::Create(resource_manager);
+  ScopedJavaGlobalRef<jobject> java_obj(jcallback);
+  ephemeral_tab_layer_ = EphemeralTabLayer::Create(
+      resource_manager, base::BindRepeating(&OnFaviconAvailable, java_obj));
 
   // The layer is initially invisible.
   ephemeral_tab_layer_->layer()->SetHideLayerAndSubtree(true);
@@ -57,19 +69,6 @@ void EphemeralTabSceneLayer::SetResourceIds(JNIEnv* env,
       text_resource_id, bar_background_resource_id, bar_shadow_resource_id,
       panel_icon_resource_id, drag_handlebar_resource_id,
       open_tab_icon_resource_id, close_icon_resource_id);
-}
-
-void EphemeralTabSceneLayer::GetFavicon(JNIEnv* env,
-                                        const JavaParamRef<jobject>& object,
-                                        const JavaParamRef<jobject>& jprofile,
-                                        const JavaParamRef<jstring>& jurl,
-                                        jint size) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  DCHECK(profile);
-  if (!profile)
-    return;
-  ephemeral_tab_layer_->GetLocalFaviconImageForURL(
-      profile, ConvertJavaStringToUTF8(env, jurl), size);
 }
 
 void EphemeralTabSceneLayer::Update(JNIEnv* env,
@@ -100,6 +99,7 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
                                     jfloat bar_shadow_opacity,
                                     jint icon_color,
                                     jint drag_handlebar_color,
+                                    jfloat favicon_opacity,
                                     jboolean progress_bar_visible,
                                     jfloat progress_bar_height,
                                     jfloat progress_bar_opacity,
@@ -131,7 +131,7 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
       content_layer, panel_x, panel_y, panel_width, panel_height,
       bar_background_color, bar_margin_side, bar_margin_top, bar_height,
       bar_border_visible, bar_border_height, bar_shadow_visible,
-      bar_shadow_opacity, icon_color, drag_handlebar_color,
+      bar_shadow_opacity, icon_color, drag_handlebar_color, favicon_opacity,
       progress_bar_visible, progress_bar_height, progress_bar_opacity,
       progress_bar_completion);
   // Make the layer visible if it is not already.
@@ -155,6 +155,7 @@ void EphemeralTabSceneLayer::HideTree(JNIEnv* env,
                                       const JavaParamRef<jobject>& jobj) {
   // TODO(mdjones): Create super class for this logic.
   if (ephemeral_tab_layer_) {
+    ephemeral_tab_layer_->OnHide();
     ephemeral_tab_layer_->layer()->SetHideLayerAndSubtree(true);
   }
   // Reset base page brightness.

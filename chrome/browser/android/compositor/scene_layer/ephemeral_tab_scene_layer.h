@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_EPHEMERAL_TAB_SCENE_LAYER_H_
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 
@@ -28,7 +27,8 @@ class EphemeralTabSceneLayer : public SceneLayer {
   void CreateEphemeralTabLayer(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
-      const base::android::JavaParamRef<jobject>& jresource_manager);
+      const base::android::JavaParamRef<jobject>& jresource_manager,
+      const base::android::JavaParamRef<jobject>& jfavicon_callback);
 
   void SetResourceIds(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& object,
@@ -39,12 +39,6 @@ class EphemeralTabSceneLayer : public SceneLayer {
                       jint drag_handlebar_resource_id,
                       jint open_tab_icon_resource_id,
                       jint close_icon_resource_id);
-
-  void GetFavicon(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& object,
-                  const base::android::JavaParamRef<jobject>& jprofile,
-                  const base::android::JavaParamRef<jstring>& jurl,
-                  jint size);
 
   void Update(JNIEnv* env,
               const base::android::JavaParamRef<jobject>& object,
@@ -74,6 +68,7 @@ class EphemeralTabSceneLayer : public SceneLayer {
               jfloat bar_shadow_opacity,
               jint icon_color,
               jint drag_handlebar_color,
+              jfloat favicon_opacity,
               jboolean progress_bar_visible,
               jfloat progress_bar_height,
               jfloat progress_bar_opacity,
