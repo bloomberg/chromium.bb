@@ -100,14 +100,6 @@ void CastServiceSimple::OnWindowDestroyed() {}
 
 void CastServiceSimple::OnKeyEvent(const ui::KeyEvent& key_event) {}
 
-bool CastServiceSimple::OnAddMessageToConsoleReceived(
-    blink::mojom::ConsoleMessageLevel log_level,
-    const base::string16& message,
-    int32_t line_no,
-    const base::string16& source_id) {
-  return false;
-}
-
 bool CastServiceSimple::CanHandleGesture(GestureType gesture_type) {
   return false;
 }

@@ -107,12 +107,5 @@ std::string CastBrowserTest::GetId() {
   return "";
 }
 
-bool CastBrowserTest::OnAddMessageToConsoleReceived(
-    blink::mojom::ConsoleMessageLevel log_level,
-    const base::string16& message,
-    int32_t line_no,
-    const base::string16& source_id) {
-  return false;
-}
 }  // namespace shell
 }  // namespace chromecast

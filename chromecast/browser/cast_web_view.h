@@ -32,15 +32,6 @@ class CastWebView {
   class Delegate : public CastWebContents::Delegate,
                    public shell::CastContentWindow::Delegate {
    public:
-    // Called when there is console log output from web_contents.
-    // Returning true indicates that the delegate handled the message.
-    // If false is returned the default logging mechanism will be used.
-    virtual bool OnAddMessageToConsoleReceived(
-        blink::mojom::ConsoleMessageLevel log_level,
-        const base::string16& message,
-        int32_t line_no,
-        const base::string16& source_id) = 0;
-
     // Invoked by CastWebView when WebContentsDelegate::RunBluetoothChooser is
     // called. Returns a BluetoothChooser, a class used to solicit bluetooth
     // device selection from the user for WebBluetooth applications. If a
@@ -90,6 +81,10 @@ class CastWebView {
 
     // Whether this CastWebView should be managed by web ui window manager.
     bool managed = true;
+
+    // Prefix for JS console logs. This can be used to help identify the source
+    // of console log messages.
+    std::string log_prefix = "";
 
     CreateParams();
   };

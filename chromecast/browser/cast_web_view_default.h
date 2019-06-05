@@ -96,6 +96,7 @@ class CastWebViewDefault : public CastWebView,
   Delegate* const delegate_;
   const bool transparent_;
   const bool allow_media_access_;
+  const std::string log_prefix_;
 
   std::unique_ptr<content::WebContents> web_contents_;
   CastWebContentsImpl cast_web_contents_;

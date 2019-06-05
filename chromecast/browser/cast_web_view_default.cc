@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/chromecast_switches.h"
@@ -64,6 +66,7 @@ CastWebViewDefault::CastWebViewDefault(
       delegate_(params.delegate),
       transparent_(params.transparent),
       allow_media_access_(params.allow_media_access),
+      log_prefix_(params.log_prefix),
       web_contents_(CreateWebContents(browser_context_, site_instance_)),
       cast_web_contents_(web_contents_.get(), params.web_contents_params),
       window_(shell::CastContentWindow::Create(params.window_params)),
@@ -197,8 +200,14 @@ bool CastWebViewDefault::DidAddMessageToConsole(
     const base::string16& message,
     int32_t line_no,
     const base::string16& source_id) {
-  return delegate_->OnAddMessageToConsoleReceived(log_level, message, line_no,
-                                                  source_id);
+  base::string16 single_line_message;
+  // Mult-line message is not friendly to dumpstate redact.
+  base::ReplaceChars(message, base::ASCIIToUTF16("\n"),
+                     base::ASCIIToUTF16("\\n "), &single_line_message);
+  logging::LogMessage("CONSOLE", line_no, ::logging::LOG_INFO).stream()
+      << log_prefix_ << ": \"" << single_line_message
+      << "\", source: " << source_id << " (" << line_no << ")";
+  return true;
 }
 
 const blink::MediaStreamDevice* GetRequestedDeviceOrDefault(
