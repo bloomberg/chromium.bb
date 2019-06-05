@@ -130,7 +130,7 @@ target servers: Basic, Digest, Negotiate, NTLM.
 
 This works like an [HTTP proxy](#HTTP-proxy-scheme), except the
 communication to the proxy server is protected by TLS, and may negotiate
-HTTP/2.
+HTTP/2 (but not QUIC).
 
 Because the connection to the proxy server is secure, https:// requests
 sent through the proxy are not sent in the clear as with an HTTP proxy.
@@ -198,7 +198,19 @@ used to relay UDP traffic.
 * Example identifier (PAC): `QUIC proxy:8080`
 * Example identifier (URI): `quic://proxy:8080`
 
-TODO
+A QUIC proxy uses QUIC (UDP) as the underlying transport, but otherwise
+behaves as an HTTP proxy. It has similar properties to an [HTTPS
+proxy](#HTTPS-proxy-scheme), in that the connection to the proxy server
+is secure, and connection limits are less restrictive.
+
+Support for QUIC proxies in Chrome is currently experimental and not
+ready for production use. In particular, sending https:// and wss://
+URLs through a QUIC proxy is [disabled by
+default](https://bugs.chromium.org/p/chromium/issues/detail?id=969859).
+
+Another caveat is that QUIC does not currently support
+client certificates since it does not use a TLS
+handshake. This may change in future versions.
 
 ## Manual proxy settings
 
