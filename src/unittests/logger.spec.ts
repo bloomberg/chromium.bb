@@ -5,7 +5,8 @@ Also serves as a larger test of async test functions, and of the logging system.
 `;
 
 import { DefaultFixture } from '../framework/default_fixture.js';
-import { Logger, TestGroup } from '../framework/index.js';
+import { TestGroup } from '../framework/index.js';
+import { Logger } from '../framework/logger.js';
 
 export const group = new TestGroup();
 

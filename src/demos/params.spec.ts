@@ -26,31 +26,31 @@ for (const params of poptions('hello', [1, 2, 3])) {
 }
 
 for (const params of pcombine([])) {
-  group.testp('combine/none', params, DefaultFixture, (t) => {
+  group.testp('combine none', params, DefaultFixture, (t) => {
     t.fail("this test shouldn't run");
   });
 }
 
 for (const params of pcombine([[{}], [{}]])) {
-  group.testp('combine/unit_unit', params, DefaultFixture, print);
+  group.testp('combine unit unit', params, DefaultFixture, print);
 }
 
 for (const params of pcombine([ poptions('x', [1, 2]), poptions('y', ['a', 'b']), [{}] ])) {
-  group.testp('combine/lists', params, DefaultFixture, print);
+  group.testp('combine lists', params, DefaultFixture, print);
 }
 
 for (const params of pcombine([
     [{x: 1, y: 2}, {x: 10, y: 20}],
     [{z: 'z'}, {w: 'w'}],
   ])) {
-  group.testp('combine/arrays', params, DefaultFixture, print);
+  group.testp('combine arrays', params, DefaultFixture, print);
 }
 
 for (const params of pcombine([
     poptions('x', [1, 2]),
     [{z: 'z'}, {w: 'w'}],
   ])) {
-  group.testp('combine/mixed', params, DefaultFixture, print);
+  group.testp('combine mixed', params, DefaultFixture, print);
 }
 
 for (const params of pfilter(
