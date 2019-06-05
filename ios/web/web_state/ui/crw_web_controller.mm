@@ -891,9 +891,25 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)stopLoading {
   base::RecordAction(base::UserMetricsAction("Stop"));
-  // Discard the pending and transient entried before notifying the tab model
-  // observers of the change.
+  // Discard all pending and transient items before notifying WebState observers
   self.navigationManagerImpl->DiscardNonCommittedItems();
+  if (web::features::StorePendingItemInContext()) {
+    for (__strong id navigation in
+         [self.navigationHandler.navigationStates pendingNavigations]) {
+      if (navigation == [NSNull null]) {
+        // null is a valid navigation object passed to WKNavigationDelegate
+        // callbacks and represents window opening action.
+        navigation = nil;
+      }
+      // This will remove pending item for navigations which may still call
+      // WKNavigationDelegate callbacks see (crbug.com/969915).
+      web::NavigationContextImpl* context =
+          [self.navigationHandler.navigationStates
+              contextForNavigation:navigation];
+      context->ReleaseItem();
+    }
+  }
+
   [self.webView stopLoading];
   [self.navigationHandler stopLoading];
   [self.legacyNativeController stopLoading];

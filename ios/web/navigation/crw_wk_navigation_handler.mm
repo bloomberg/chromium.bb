@@ -542,6 +542,8 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
           web::GetItemWithUniqueID(self.navigationManagerImpl, context);
       if (!IsWKInternalUrl(webViewURL)) {
         if (item) {
+          // Item may not exist if navigation was stopped (see
+          // crbug.com/969915).
           item->SetURL(webViewURL);
         }
         context->SetUrl(webViewURL);
@@ -798,6 +800,8 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     if (web::features::StorePendingItemInContext() &&
         navigationManager->GetPendingItemIndex() == -1) {
       if (context->GetItem()) {
+        // Item may not exist if navigation was stopped (see
+        // crbug.com/969915).
         pendingURL = context->GetItem()->GetURL();
       }
     } else {
@@ -970,6 +974,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   web::NavigationItemImpl* item =
       context ? web::GetItemWithUniqueID(self.navigationManagerImpl, context)
               : nullptr;
+  // Item may not exist if navigation was stopped (see crbug.com/969915).
 
   // Invariant: every |navigation| should have a |context| and a |item|.
   // TODO(crbug.com/899383) Fix invariant violation when a new pending item is
@@ -984,12 +989,9 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     }
   }
   DCHECK(context);
-  DCHECK(item);
   UMA_HISTOGRAM_BOOLEAN("IOS.FinishedNavigationHasContext", context);
   UMA_HISTOGRAM_BOOLEAN("IOS.FinishedNavigationHasItem", item);
 
-  // TODO(crbug.com/864769): Remove this guard after fixing root cause of
-  // invariant violation in production.
   if (context && item) {
     GURL navigationURL = context->IsPlaceholderNavigation()
                              ? CreatePlaceholderUrlForUrl(context->GetUrl())

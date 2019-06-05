@@ -214,18 +214,10 @@ ACTION_P5(VerifyAbortedNavigationStartedContext,
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->IsRendererInitiated());
-  ASSERT_FALSE((*context)->GetResponseHeaders());
-  ASSERT_FALSE(web_state->IsLoading());
-  NavigationItem* pendig_item =
-      web_state->GetNavigationManager()->GetPendingItem();
-  if (web::features::StorePendingItemInContext()) {
-    ASSERT_TRUE(pendig_item);
-    EXPECT_EQ(url, pendig_item->GetURL());
-  } else {
-    // TODO(crbug.com/899827): Pending URL should exist and be owned by
-    // NavigationContext.
-    ASSERT_FALSE(pendig_item);
-  }
+  EXPECT_FALSE((*context)->GetResponseHeaders());
+  EXPECT_FALSE(web_state->IsLoading());
+  // Pending Item was removed by Stop call (see crbug.com/969915).
+  EXPECT_FALSE(web_state->GetNavigationManager()->GetPendingItem());
 }
 
 // Verifies correctness of |NavigationContext| (|arg1|) for new page navigation
@@ -2171,6 +2163,7 @@ TEST_P(WebStateObserverTest, ImmediatelyStopNavigation) {
   test::LoadUrl(web_state(), test_server_->GetURL("/hung"));
   web_state()->Stop();
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+  EXPECT_EQ("", web_state()->GetVisibleURL());
 }
 
 // Tests stopping a navigation after allowing the navigation from
