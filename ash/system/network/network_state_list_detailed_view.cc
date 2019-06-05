@@ -380,12 +380,8 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   const DeviceStateProperties* device =
       network ? model_->GetDevice(network->type) : nullptr;
   if (device) {
-    net::IPAddress ipv4(device->ipv4_address.data(),
-                        device->ipv4_address.size());
-    ipv4_address = ipv4.ToString();
-    net::IPAddress ipv6(device->ipv6_address.data(),
-                        device->ipv6_address.size());
-    ipv6_address = ipv6.ToString();
+    ipv4_address = device->ipv4_address.ToString();
+    ipv6_address = device->ipv6_address.ToString();
   }
 
   std::string ethernet_address, wifi_address;

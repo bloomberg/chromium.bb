@@ -249,12 +249,12 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
   net::IPAddress ipv4_address;
   if (ipv4_address.AssignFromIPLiteral(
           device->GetIpAddressByType(shill::kTypeIPv4))) {
-    result->ipv4_address = ipv4_address.CopyBytesToVector();
+    result->ipv4_address = ipv4_address;
   }
   net::IPAddress ipv6_address;
   if (ipv6_address.AssignFromIPLiteral(
           device->GetIpAddressByType(shill::kTypeIPv6))) {
-    result->ipv6_address = ipv6_address.CopyBytesToVector();
+    result->ipv6_address = ipv6_address;
   }
   result->mac_address =
       network_util::FormattedMacAddress(device->mac_address());

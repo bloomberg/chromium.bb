@@ -39,6 +39,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos/network:test_support",
     "//chromeos/services/network_config/public/cpp:test_support",
+    "//services/network/public/mojom:mojom_ip_address",
     "//testing/gtest",
   ]
 }

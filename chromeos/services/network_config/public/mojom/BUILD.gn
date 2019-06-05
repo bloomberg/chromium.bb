@@ -9,4 +9,8 @@ mojom("mojom") {
     "constants.mojom",
     "cros_network_config.mojom",
   ]
+
+  deps = [
+    "//services/network/public/mojom:mojom_ip_address",
+  ]
 }

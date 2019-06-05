@@ -10,6 +10,7 @@
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_observer.h"
+#include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -228,10 +229,11 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
         // IP address match those set up in FakeShillManagerClient::
         // SetupDefaultEnvironment(). TODO(stevenjb): Support setting
         // expectations explicitly in NetworkStateTestHelper.
-        std::vector<uint8_t> ipv4_expected{100, 0, 0, 1};
+        net::IPAddress ipv4_expected;
+        ASSERT_TRUE(ipv4_expected.AssignFromIPLiteral("100.0.0.1"));
         EXPECT_EQ(ipv4_expected, devices[0]->ipv4_address);
-        std::vector<uint8_t> ipv6_expected{0, 0, 0, 0, 0, 0, 0, 0,
-                                           1, 0, 0, 0, 0, 0, 0, 1};
+        net::IPAddress ipv6_expected;
+        ASSERT_TRUE(ipv6_expected.AssignFromIPLiteral("0:0:0:0:100:0:0:1"));
         EXPECT_EQ(ipv6_expected, devices[0]->ipv6_address);
 
         EXPECT_EQ(mojom::NetworkType::kEthernet, devices[1]->type);
