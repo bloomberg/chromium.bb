@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -77,7 +78,7 @@ public class TabListCoordinator implements Destroyable {
      */
     TabListCoordinator(@TabListMode int mode, Context context, TabModelSelector tabModelSelector,
             @Nullable TabListMediator.ThumbnailProvider thumbnailProvider,
-            @Nullable TabListMediator.TitleProvider titleProvider, boolean closeRelatedTabs,
+            @Nullable TabListMediator.TitleProvider titleProvider, boolean actionOnRelatedTabs,
             @Nullable TabListMediator.CreateGroupButtonProvider createGroupButtonProvider,
             @Nullable TabListMediator
                     .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
@@ -140,18 +141,21 @@ public class TabListCoordinator implements Destroyable {
                 new TabListFaviconProvider(context, Profile.getLastUsedProfile());
 
         mMediator = new TabListMediator(tabListModel, tabModelSelector, thumbnailProvider,
-                titleProvider, tabListFaviconProvider, closeRelatedTabs, createGroupButtonProvider,
-                gridCardOnClickListenerProvider, componentName);
+                titleProvider, tabListFaviconProvider, actionOnRelatedTabs,
+                createGroupButtonProvider, gridCardOnClickListenerProvider, componentName);
 
         if (mMode == TabListMode.GRID) {
             ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(
-                    context.getResources().getDimension(R.dimen.swipe_to_dismiss_threshold)));
+                    context.getResources().getDimension(R.dimen.swipe_to_dismiss_threshold),
+                    context.getResources().getDimension(R.dimen.tab_grid_merge_threshold),
+                    !FeatureUtilities.isTabGroupsAndroidEnabled()
+                            || FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()));
             touchHelper.attachToRecyclerView(mRecyclerView);
             mMediator.registerOrientationListener(
                     (GridLayoutManager) mRecyclerView.getLayoutManager());
         }
 
-        if (closeRelatedTabs) {
+        if (actionOnRelatedTabs) {
             // Only do this for Grid Tab Switcher.
             // TODO(crbug.com/964406): unregister the listener when we don't need it.
             mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(

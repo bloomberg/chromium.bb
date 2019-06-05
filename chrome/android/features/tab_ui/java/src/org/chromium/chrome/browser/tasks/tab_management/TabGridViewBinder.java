@@ -111,6 +111,9 @@ class TabGridViewBinder {
         } else if (TabProperties.IPH_PROVIDER == propertyKey) {
             TabListMediator.IphProvider provider = item.get(TabProperties.IPH_PROVIDER);
             if (provider != null) provider.showIPH(holder.thumbnail);
+        } else if (TabProperties.CARD_ANIMATION_STATUS == propertyKey) {
+            TabListRecyclerView.scaleTabGridCardView(
+                    holder.itemView, item.get(TabProperties.CARD_ANIMATION_STATUS));
         }
     }
 

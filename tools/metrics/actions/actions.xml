@@ -6050,6 +6050,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="GridTabSwitcher.DropTabToMerge">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    User drags a tab and drops it on another tab to form a group in grid tab
+    switcher.
+  </description>
+</action>
+
 <action name="GridTabSwitcher.UndoCloseTabGroup">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
@@ -20630,6 +20639,12 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="TabGrid.DragToReorder">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>User drags a tab to reorder it.</description>
+</action>
+
 <action name="TabGridSheet.UndoCloseTab">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
@@ -22154,6 +22169,16 @@ should be able to be added at any place in this file.
   <suffix name="TabGridSheet"
       label="Users swipe to close a tab in tab group bottom sheet."/>
   <affected-action name="MobileStackViewSwipeCloseTab"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="GridTabSwitcher"
+      label="Users drag to reorder tabs in grid layout TabSwitcher."/>
+  <suffix name="TabGridDialog"
+      label="Users drag to reorder tabs in tab grid dialog."/>
+  <suffix name="TabGridSheet"
+      label="Users drag to reorder tabs in tab group bottom sheet."/>
+  <affected-action name="TabGrid.DragToReorder"/>
 </action-suffix>
 
 </actions>

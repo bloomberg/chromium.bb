@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
@@ -28,6 +29,10 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
  */
 class TabListRecyclerView extends RecyclerView {
     public static final long BASE_ANIMATION_DURATION_MS = 218;
+    public static final long RESTORE_ANIMATION_DURATION_MS = 10;
+    public static final int ANIMATION_STATUS_RESTORE = 0;
+    public static final int ANIMATION_STATUS_ZOOM_OUT = 1;
+    public static final int ANIMATION_STATUS_ZOOM_IN = 2;
 
     /**
      * Field trial parameter for downsampling scaling factor.
@@ -234,5 +239,47 @@ class TabListRecyclerView extends RecyclerView {
         rect.top -= loc[1];
         rect.bottom -= loc[1];
         return rect;
+    }
+
+    static void scaleTabGridCardView(View view, int status) {
+        AnimatorSet scaleAnimator = new AnimatorSet();
+        float scale = status == ANIMATION_STATUS_ZOOM_IN ? 0.8f : 1f;
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", scale);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(view, "scaleY", scale);
+        scaleX.setDuration(status == ANIMATION_STATUS_RESTORE ? RESTORE_ANIMATION_DURATION_MS
+                                                              : BASE_ANIMATION_DURATION_MS);
+        scaleY.setDuration(status == ANIMATION_STATUS_RESTORE ? RESTORE_ANIMATION_DURATION_MS
+                                                              : BASE_ANIMATION_DURATION_MS);
+        scaleAnimator.play(scaleX).with(scaleY);
+        scaleAnimator.start();
+    }
+
+    /**
+     * This method finds out the index of the hovered tab's viewHolder in {@code recyclerView}.
+     * @param recyclerView   The recyclerview that owns the tabs' viewHolders.
+     * @param view           The view of the selected tab.
+     * @param dX             The X offset of the selected tab.
+     * @param dY             The Y offset of the selected tab.
+     * @param threshold      The threshold to judge whether two tabs are overlapped.
+     * @return The index of the hovered tab.
+     */
+    static int getHoveredTabIndex(
+            RecyclerView recyclerView, View view, float dX, float dY, float threshold) {
+        for (int i = 0; i < recyclerView.getChildCount(); i++) {
+            View child = recyclerView.getChildAt(i);
+            if (child.getLeft() == view.getLeft() && child.getTop() == view.getTop()) {
+                continue;
+            }
+            if (isOverlap(child.getLeft(), child.getTop(), view.getLeft() + dX, view.getTop() + dY,
+                        threshold)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static boolean isOverlap(
+            float left1, float top1, float left2, float top2, float threshold) {
+        return Math.abs(left1 - left2) < threshold && Math.abs(top1 - top2) < threshold;
     }
 }

@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
 
 import java.util.List;
 
@@ -38,6 +39,11 @@ public class TabCountProvider {
 
     /** The {@link TabModelObserver} that observes when the tab count may have changed. */
     private TabModelObserver mTabModelFilterObserver;
+
+    /**
+     * The {@link TabGroupModelFilter.Observer} that observes when the tab count may have changed.
+     */
+    private TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
 
     private int mTabCount;
 
@@ -136,6 +142,28 @@ public class TabCountProvider {
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(
                 mTabModelFilterObserver);
+
+        mTabGroupModelFilterObserver = new TabGroupModelFilter.Observer() {
+            @Override
+            public void didMergeTabToGroup(Tab movedTab, int selectedTabIdInGroup) {
+                updateTabCount();
+            }
+
+            @Override
+            public void didMoveTabGroup(Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {}
+
+            @Override
+            public void didMoveWithinGroup(
+                    Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {}
+        };
+
+        if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
+                        instanceof TabGroupModelFilter) {
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                            .getCurrentTabModelFilter())
+                    .addTabGroupObserver(mTabGroupModelFilterObserver);
+        }
+
         updateTabCount();
     }
 
@@ -146,6 +174,14 @@ public class TabCountProvider {
         if (mTabModelFilterObserver != null) {
             mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                     mTabModelFilterObserver);
+        }
+
+        if (mTabGroupModelFilterObserver != null
+                && mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
+                                instanceof TabGroupModelFilter) {
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                            .getCurrentTabModelFilter())
+                    .removeTabGroupObserver(mTabGroupModelFilterObserver);
         }
 
         if (mTabModelSelector != null) {
