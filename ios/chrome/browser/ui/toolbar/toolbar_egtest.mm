@@ -209,11 +209,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
 // Verifies that copying and pasting a URL includes the hidden protocol prefix.
 - (void)testCopyPasteURL {
-  if (IsRefreshLocationBarEnabled()) {
-    // TODO(crbug.com/834345): Enable this test when long press on the steady
-    // location bar is supported.
-    EARL_GREY_TEST_SKIPPED(@"Test not supported yet in UI Refresh.");
-  }
+  // TODO(crbug.com/834345): Enable this test when long press on the steady
+  // location bar is supported.
+  EARL_GREY_TEST_SKIPPED(@"Test not supported yet in UI Refresh.");
 
   // Clear generalPasteboard before and after the test.
   [UIPasteboard generalPasteboard].string = @"";
