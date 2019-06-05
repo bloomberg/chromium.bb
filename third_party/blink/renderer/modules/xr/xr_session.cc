@@ -233,8 +233,6 @@ void XRSession::UpdateStageParameters(
     const device::mojom::blink::VRStageParametersPtr& stage_parameters) {
   auto display_info = display_info_.Clone();
   display_info->stageParameters = stage_parameters.Clone();
-
-  // TODO(https://crbug.com/922175): Should bubble up to other events
   SetXRDisplayInfo(std::move(display_info));
 }
 
@@ -360,8 +358,6 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
         script_state, V8ThrowException::CreateTypeError(
                           script_state->GetIsolate(), kNoSpaceSpecified));
   }
-
-  // TODO(https://crbug.com/846411): use space.
 
   // Reject the promise if device doesn't support the hit-test API.
   // TODO(https://crbug.com/878936): Get the environment provider without going

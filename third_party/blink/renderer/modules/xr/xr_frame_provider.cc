@@ -207,8 +207,6 @@ void XRFrameProvider::ScheduleImmersiveFrame(
                                     WrapWeakPersistent(this)));
 }
 
-// TODO(lincolnfrog): add a ScheduleNonImmersiveARFrame, if we want camera RAF
-// alignment instead of doc RAF alignment.
 void XRFrameProvider::ScheduleNonImmersiveFrame(
     device::mojom::blink::XRFrameDataRequestOptionsPtr options) {
   TRACE_EVENT0("gpu", __FUNCTION__);
@@ -260,8 +258,6 @@ void XRFrameProvider::OnImmersiveFrameData(
 
   // We may have lost the immersive session since the last VSync request.
   if (!immersive_session_) {
-    // TODO(https://crbug.com/836496): do we need to include this in the
-    // image size calculation for AR? What about immersive AR (full-screen?)
     return;
   }
 

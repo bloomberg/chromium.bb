@@ -372,10 +372,6 @@ void XR::DispatchRequestSession(PendingSessionQuery* query) {
   device::mojom::blink::XRSessionOptionsPtr session_options =
       convertModeToMojo(query->mode);
 
-  // TODO(http://crbug.com/826899) Once device activation is sorted out for
-  // WebXR, either pass in the correct value for metrics to know whether
-  // this was triggered by device activation, or remove the value as soon as
-  // legacy API has been removed.
   outstanding_request_queries_.insert(query);
   device_->RequestSession(
       std::move(session_options),

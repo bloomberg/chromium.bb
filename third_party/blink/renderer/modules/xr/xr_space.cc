@@ -65,8 +65,9 @@ XRPose* XRSpace::getPose(XRSpace* other_space,
     return nullptr;
   }
 
-  // TODO(jacde): Update how EmulatedPosition is determined here once spec issue
-  // https://github.com/immersive-web/webxr/issues/534 has been resolved.
+  // TODO(crbug.com/969133): Update how EmulatedPosition is determined here once
+  // spec issue https://github.com/immersive-web/webxr/issues/534 has been
+  // resolved.
   TransformationMatrix this_from_other =
       this_from_mojo.Multiply(*mojo_from_other);
   return MakeGarbageCollected<XRPose>(this_from_other,

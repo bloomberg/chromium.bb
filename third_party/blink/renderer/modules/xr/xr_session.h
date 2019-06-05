@@ -149,7 +149,7 @@ class XRSession final : public EventTargetWithInlineData,
     return display_info_;
   }
 
-  // TODO(jacde): Update the mojom to deliver this per-frame.
+  // TODO(crbug.com/969131): Update the mojom to deliver this per-frame.
   bool EmulatedPosition() const {
     if (display_info_) {
       return !display_info_->capabilities->hasPosition;

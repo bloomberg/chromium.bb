@@ -36,7 +36,7 @@ void XRRigidTransform::DecomposeMatrix() {
         -decomposed.quaternion_x, -decomposed.quaternion_y,
         -decomposed.quaternion_z, decomposed.quaternion_w);
   } else {
-    // TODO: Is this the correct way to handle a failure here?
+    // TODO(crbug.com/969149): Is this the correct way to handle a failure here?
     position_ = DOMPointReadOnly::Create(0.0, 0.0, 0.0, 1.0);
     orientation_ = DOMPointReadOnly::Create(0.0, 0.0, 0.0, 1.0);
   }
