@@ -22,7 +22,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using CallStackProfileBuilder = metrics::CallStackProfileBuilder;
 using CallStackProfileParams = metrics::CallStackProfileParams;
@@ -187,18 +186,14 @@ void ThreadProfiler::SetBrowserProcessReceiverCallback(
 }
 
 // static
-void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
-    service_manager::Connector* connector) {
+void ThreadProfiler::SetCollectorForChildProcess(
+    mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
   DCHECK_NE(CallStackProfileParams::BROWSER_PROCESS, GetProcess());
-
-  metrics::mojom::CallStackProfileCollectorPtr browser_interface;
-  connector->BindInterface(content::mojom::kSystemServiceName,
-                           &browser_interface);
   CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
-      std::move(browser_interface));
+      metrics::mojom::CallStackProfileCollectorPtr(std::move(collector)));
 }
 
 // ThreadProfiler implementation synopsis:

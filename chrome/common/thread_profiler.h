@@ -16,11 +16,9 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/metrics/call_stack_profile_params.h"
+#include "components/metrics/public/interfaces/call_stack_profile_collector.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
-
-namespace service_manager {
-class Connector;
-}
 
 // PeriodicSamplingScheduler repeatedly schedules periodic sampling of the
 // thread through calls to GetTimeToNextCollection(). This class is exposed
@@ -95,8 +93,8 @@ class ThreadProfiler {
   // exposed to the child process, and metrics::mojom::CallStackProfileCollector
   // declared in chrome_content_browser_manifest_overlay.json, for the binding
   // to succeed.
-  static void SetServiceManagerConnectorForChildProcess(
-      service_manager::Connector* connector);
+  static void SetCollectorForChildProcess(
+      mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector);
 
  private:
   class WorkIdRecorder;

@@ -435,8 +435,15 @@ void ChromeContentRendererClient::RenderThreadStarted() {
           switches::kSingleProcess)) {
     main_thread_profiler_->SetMainThreadTaskRunner(
         base::ThreadTaskRunnerHandle::Get());
-    ThreadProfiler::SetServiceManagerConnectorForChildProcess(
-        thread->GetConnector());
+    mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
+    service_manager::Connector* connector = nullptr;
+    if (content::ChildThread::Get())
+      connector = content::ChildThread::Get()->GetConnector();
+    if (connector) {
+      connector->Connect(content::mojom::kBrowserServiceName,
+                         collector.InitWithNewPipeAndPassReceiver());
+      ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
+    }
   }
 }
 
