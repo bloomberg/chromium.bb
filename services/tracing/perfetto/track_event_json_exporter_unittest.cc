@@ -494,7 +494,7 @@ TEST_F(TrackEventJsonExporterTest, EmptyThreadDescriptor) {
   std::vector<perfetto::protos::TracePacket> trace_packet_protos;
   trace_analyzer::TraceEventVector events;
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   FinalizePackets(trace_packet_protos);
@@ -507,7 +507,7 @@ TEST_F(TrackEventJsonExporterTest, SortIndexThreadDescriptor) {
   std::vector<perfetto::protos::TracePacket> trace_packet_protos;
   trace_analyzer::TraceEventVector events;
   AddThreadDescriptorPacket(
-      /* sort_index = */ 2, ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+      /* sort_index = */ 2, ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
       base::nullopt, kReferenceTimeUs, kReferenceThreadTimeUs,
       &trace_packet_protos);
   FinalizePackets(trace_packet_protos);
@@ -527,7 +527,7 @@ TEST_F(TrackEventJsonExporterTest, ThreadNameThreadDescriptor) {
   std::vector<perfetto::protos::TracePacket> trace_packet_protos;
   trace_analyzer::TraceEventVector events;
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             kThreadName, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   FinalizePackets(trace_packet_protos);
@@ -542,11 +542,30 @@ TEST_F(TrackEventJsonExporterTest, ThreadNameThreadDescriptor) {
   EXPECT_EQ(kThreadName, events[0]->GetKnownArgAsString("name"));
 }
 
+TEST_F(TrackEventJsonExporterTest, MainThreadNameThreadDescriptor) {
+  std::vector<perfetto::protos::TracePacket> trace_packet_protos;
+  trace_analyzer::TraceEventVector events;
+  AddThreadDescriptorPacket(
+      /* sort_index = */ base::nullopt, ThreadDescriptor::CHROME_THREAD_MAIN,
+      base::nullopt, kReferenceTimeUs, kReferenceThreadTimeUs,
+      &trace_packet_protos);
+  FinalizePackets(trace_packet_protos);
+  ASSERT_EQ(1u, trace_analyzer()->FindEvents(
+                    Query(Query::EVENT_NAME) == Query::String("thread_name"),
+                    &events));
+  EXPECT_EQ("thread_name", events[0]->name);
+  EXPECT_EQ("__metadata", events[0]->category);
+  EXPECT_EQ('M', events[0]->phase);
+  EXPECT_EQ(0, events[0]->timestamp);
+  ASSERT_TRUE(events[0]->HasArg("name"));
+  EXPECT_EQ("CrProcessMain", events[0]->GetKnownArgAsString("name"));
+}
+
 TEST_F(TrackEventJsonExporterTest, MultipleThreadDescriptors) {
   std::vector<perfetto::protos::TracePacket> trace_packet_protos;
   trace_analyzer::TraceEventVector events;
   AddThreadDescriptorPacket(
-      /* sort_index = */ 2, ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+      /* sort_index = */ 2, ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
       kThreadName, kReferenceTimeUs, kReferenceThreadTimeUs,
       &trace_packet_protos);
   // This packet will be ignored because we've already emitted the sort_index of
@@ -554,13 +573,13 @@ TEST_F(TrackEventJsonExporterTest, MultipleThreadDescriptors) {
   // isn't supposed to have changed (even if reset).
   ASSERT_NE("different_thread_name", kThreadName);
   AddThreadDescriptorPacket(
-      /* sort_index = */ 3, ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+      /* sort_index = */ 3, ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
       "different_thread_name", kReferenceTimeUs, kReferenceThreadTimeUs,
       &trace_packet_protos);
   trace_packet_protos.back().set_incremental_state_cleared(true);
   // Empty packet doesn't change anything.
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   FinalizePackets(trace_packet_protos);
@@ -699,7 +718,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventFilledInState) {
 
   // This provides the pid & tid, as well as the timestamps reference points.
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   // To correctly use the state the thread descriptor has to come
@@ -732,7 +751,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventTimestampDelta) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -770,7 +789,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventPhase) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -805,7 +824,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventDuration) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -835,7 +854,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventId) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -916,7 +935,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventIdScope) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -955,7 +974,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventAsyncTts) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1001,7 +1020,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventBindId) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1040,7 +1059,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventBindToEnclosing) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1085,7 +1104,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventFlowEvents) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1132,7 +1151,7 @@ TEST_F(TrackEventJsonExporterTest, LegacyEventInstantEventScope) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1189,7 +1208,7 @@ TEST_F(TrackEventJsonExporterTest, TaskExecutionAddedAsArgs) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1243,7 +1262,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationRequiresName) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1269,7 +1288,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationBoolValue) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1310,7 +1329,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationUintValue) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1345,7 +1364,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationIntValue) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1380,7 +1399,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationDoubleValue) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1426,7 +1445,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationStringValue) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1460,7 +1479,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationPointerValue) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1494,7 +1513,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationComplexNestedValue) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1562,7 +1581,7 @@ TEST_F(TrackEventJsonExporterTest, DebugAnnotationLegacyJsonValue) {
   trace_analyzer::TraceEventVector events;
 
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "legacy_event_name_3", &trace_packet_protos);
@@ -1732,7 +1751,7 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
   // timestamps and one with an absolute timestamps 1 us further than the delta
   // events.
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(1, "sequence_1", &trace_packet_protos);
@@ -1757,7 +1776,7 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
   // Sequence 2 alternates between emitting an event dropping packets and
   // clearing incremental state.
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(2, "sequence_2", &trace_packet_protos);
@@ -1783,7 +1802,7 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
   // Reset the state.
   AddThreadDescriptorPacket(
       /* sort_index = */ base::nullopt,
-      ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+      ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
       /* thread_name = */ base::nullopt, kReferenceTimeUs + 4 * 3,
       kReferenceThreadTimeUs + 3 * 3, &trace_packet_protos);
   trace_packet_protos.back().set_incremental_state_cleared(true);
@@ -1802,7 +1821,7 @@ TEST_F(TrackEventJsonExporterTest, ComplexLongSequenceWithDroppedPackets) {
   // Sequence 3 emits a single event to ensure that sequence 2 doesn't prevent
   // these events from being emitted.
   AddThreadDescriptorPacket(/* sort_index = */ base::nullopt,
-                            ThreadDescriptor::THREAD_TYPE_UNSPECIFIED,
+                            ThreadDescriptor::CHROME_THREAD_UNSPECIFIED,
                             /* thread_name = */ base::nullopt, kReferenceTimeUs,
                             kReferenceThreadTimeUs, &trace_packet_protos);
   AddInternedLegacyEventName(3, "sequence_3", &trace_packet_protos);
