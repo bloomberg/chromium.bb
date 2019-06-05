@@ -925,7 +925,7 @@
 <translation id="2391762656119864333">Revoca</translation>
 <translation id="2392369802118427583">Activa</translation>
 <translation id="2394566832561516196">La configuració s'esborrarà en tornar a carregar.</translation>
-<translation id="2395616325548404795">El teu dispositiu <ph name="DEVICE_TYPE" /> s'ha inscrit correctament a la gestió empresarial, però no ha pogut enviar la informació d'elements i d'ubicació. Introdueix aquesta informació manualment a la Consola d'administració del dispositiu.</translation>
+<translation id="2395616325548404795">El teu dispositiu <ph name="DEVICE_TYPE" /> s'ha inscrit correctament a la gestió empresarial, però no ha pogut enviar la informació d'elements i d'ubicació. Introdueix aquesta informació manualment a la consola d'administració del dispositiu.</translation>
 <translation id="2396783860772170191">Introdueix un PIN de 4 dígits (0000-9999)</translation>
 <translation id="2408955596600435184">Introdueix el PIN</translation>
 <translation id="241082044617551207">Connector desconegut</translation>
@@ -3312,7 +3312,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6082651258230788217">Mostra a la barra d'eines</translation>
 <translation id="6086846494333236931">Extensió instal·lada per l'administrador</translation>
 <translation id="6087960857463881712">Cara de fascinació</translation>
-<translation id="6089481419520884864">Condensa la pàgina</translation>
 <translation id="6091761513005122595">L'ús compartit s'ha activat correctament.</translation>
 <translation id="6093888419484831006">S’està cancel·lant l’actualització...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3340,6 +3339,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6125479973208104919">Cal que tornis a afegir el teu compte en aquest <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6129691635767514872">Les dades seleccionades s'han suprimit de Chrome i dels dispositius sincronitzats. És possible que el teu compte de Google tingui altres formes de l'historial de navegació, com ara les cerques i l'activitat d'altres serveis de Google a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Comentari de certificat de Netscape</translation>
+<translation id="6129953537138746214">Espai</translation>
 <translation id="6135622770221372891">Identificadors de canal</translation>
 <translation id="6136114942382973861">Tanca la barra de baixades</translation>
 <translation id="6137767437444130246">Certificat d'usuari</translation>

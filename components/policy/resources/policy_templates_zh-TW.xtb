@@ -1168,24 +1168,6 @@
       如果將這項政策設為 False，系統會停用 WPAD 最佳化設定，因而延長 <ph name="PRODUCT_NAME" /> 等待 DNS 型 WPAD 伺服器回應的時間。如果未設定或已啟用這項政策，系統會啟用 WPAD 最佳化設定。
 
       無論系統是否設定這項政策或這項政策的設定方式為何，使用者一律無法變更 WPAD 最佳化設定。</translation>
-<translation id="3071839057966069710">設定印表機清單。
-
-      這項政策可讓管理員為使用者提供印表機設定。
-
-      「<ph name="PRINTER_DISPLAY_NAME" />」和「<ph name="PRINTER_DESCRIPTION" />」可填入形式不拘的自訂字串，方便使用者選取印表機。「<ph name="PRINTER_MANUFACTURER" />」和「<ph name="PRINTER_MODEL" />」可讓使用者輕鬆識別印表機，兩者分別代表印表機的製造商和型號。<ph name="PRINTER_URI" /> 必須是可透過用戶端電腦連線的位址，包括 <ph name="URI_SCHEME" />、<ph name="URI_PORT" /> 和 <ph name="URI_QUEUE" />。<ph name="PRINTER_UUID" /> 為選填欄位。如有提供這項資訊，系統會用來刪除重複的 <ph name="ZEROCONF_DISCOVERY" /> 印表機。
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> 必須與其中一個代表 <ph name="PRODUCT_NAME" />支援的印表機字串相符。系統會利用這個字串找出並安裝印表機適用的 PPD。詳情請參閱 https://support.google.com/chrome?p=noncloudprint。
-
-      <ph name="PRINTER_AUTOCONF" /> 是布林值標記，表示是否要使用 IPP Everywhere 設定印表機。<ph name="PRODUCT_OS_NAME" /> 76 以上版本支援這個標記。
-
-      你可以選擇在 <ph name="PRINTER_EFFECTIVE_MODEL" /> 中納入印表機名稱，或將 <ph name="PRINTER_AUTOCONF" /> 設為 True。如果同時設定 (或同時不設定) 這兩個印表機屬性，系統將予以忽略。
-
-      首次使用印表機時，系統會完成印表機設定程序。PPD 則會在有人使用印表機時才下載。之後系統會快取常用的 PPD。
-
-      這項政策對使用者是否能在個別裝置上設定印表機沒有影響，而是補足個別使用者的印表機設定。
-
-      如果是 Active Directory 管理的裝置，這項政策支援將 <ph name="MACHINE_NAME_VARIABLE" /> 擴充為 Active Directory 電腦名稱或其子字串。舉例來說，如果電腦名稱為 <ph name="MACHINE_NAME_EXAMPLE" />，則系統會以第 6 個字元後的 4 個字元取代 <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />，也就是 <ph name="MACHINE_NAME_PART_EXAMPLE" />。請注意，字元序數從 0 開始計算。
-      </translation>
 <translation id="3072045631333522102">在零售模式下登入畫面所使用的螢幕保護程式</translation>
 <translation id="3072847235228302527">為裝置本機帳戶設定《服務條款》</translation>
 <translation id="3077183141551274418">啟用或停用分頁生命週期功能</translation>
@@ -1321,13 +1303,6 @@
           設定這項政策後，使用者即無法變更或覆寫。
 
           如果未設定這項政策，系統預設會關閉用電尖峰轉移功能，且使用者無法啟用這項功能。</translation>
-<translation id="3388153794103186066">允許設定一組網址清單，當中指定的網站會自動取得權限，可存取具有特定廠商和產品 ID 的 USB 裝置。清單中的每個項目都必須包含裝置和網址，這項政策才具效力。裝置中的每個項目可包含廠商 ID 和產品 ID 欄位。如有省略的 ID，系統將視作萬用字元處理，但如未指定廠商 ID，將無法指定產品 ID。在其他情況下，這項政策一律不具效力，系統會予以忽略。
-
-        USB 權限模型會使用要求網站的網址 (簡稱「要求網址」) 以及頂層頁框網站的網址 (簡稱「內嵌網址」)，將 USB 裝置存取權限授予要求網址。當網站在 iframe 中載入時，要求網址可能與內嵌網址不同。因此，「urls」欄位最多可包含兩個網址字串 (以半形逗號分隔)，以依序指定要求網址和內嵌網址。如果只指定一個網址，只要要求網站的網址與指定的網址相符，不論其是否為內嵌網址，系統都會授予相應 USB 裝置的存取權限。「urls」中的網址必須是有效網址，否則系統將忽略這項政策。
-
-        如果不設定這項政策，所有網站將使用「DefaultWebUsbGuardSetting」政策的全域預設值 (如有設定的話) 或使用者的個人設定值。
-
-        這項政策中的網址模式與透過 WebUsbAskForUrls 所設定的網址模式應保持一致。如果兩者不符，這項政策的優先順序高於 WebUsbBlockedForUrls 和 WebUsbAskForUrls。</translation>
 <translation id="3414260318408232239">如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設最低版本 TLS 1.0。
 
       這項政策可使用的設定值包括：「tls1」、「tls1.1」或「tls1.2」。設定後，<ph name="PRODUCT_NAME" /> 就不會使用低於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
@@ -2144,7 +2119,7 @@
       如果將這項政策設為 True 或不設定這項政策，當 Chrome 分頁改以其他瀏覽器開啟後，Chrome 中仍會有至少一個分頁保持開啟。
 
       如果將這項政策設為 False，當 Chrome 分頁改以其他瀏覽器開啟後，Chrome 將關閉該分頁，即使該分頁是最後一個分頁也一樣。這會導致 Chrome 完全關閉。</translation>
-<translation id="5102203758995933166">這項政策可將網路設定強制套用至 <ph name="PRODUCT_OS_NAME" />裝置 (依使用者區分)。這個網路設定是根據「開放網路設定」格式所定義的 JSON 格式字串。</translation>
+<translation id="5102203758995933166">這項政策可依使用者將網路設定強制套用至 <ph name="PRODUCT_OS_NAME" />裝置。這個網路設定是根據「開放網路設定」格式所定義的 JSON 格式字串。</translation>
 <translation id="5105313908130842249">在電池供電環境下執行時的螢幕鎖定延遲時間</translation>
 <translation id="5108031557082757679">已停用企業裝置印表機</translation>
 <translation id="5124368997194894978">啟用「連接 AC (交流電) 電源時啟動」功能</translation>
@@ -3116,7 +3091,7 @@
       Google 可能會依照工作階段 ID 將這些記錄和 Google 服務本身收集的其他記錄建立關聯，目的是簡化偵錯作業。
       </translation>
 <translation id="706669471845501145">允許網站顯示桌面通知</translation>
-<translation id="7068108874199666656">這項政策可將網路設定強制套用至所有使用者的 <ph name="PRODUCT_OS_NAME" />裝置。這個網路設定是根據「開放網路設定」格式所定義的 JSON 格式字串。</translation>
+<translation id="7068108874199666656">這項政策可將網路設定強制套用至 <ph name="PRODUCT_OS_NAME" />裝置的所有使用者。這個網路設定是根據「開放網路設定」格式所定義的 JSON 格式字串。</translation>
 <translation id="7070525176564511548">每週 (168 小時) 需輸入一次密碼</translation>
 <translation id="7072208053150563108">裝置密碼變更頻率</translation>
 <translation id="7079519252486108041">封鎖這些網站的彈出式視窗</translation>

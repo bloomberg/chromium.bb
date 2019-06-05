@@ -1428,7 +1428,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (使用硬體加密金鑰)</translation>
 <translation id="3161522574479303604">所有語言</translation>
 <translation id="3163201441334626963">供應商 <ph name="VENDOR_ID" /> 提供的不明產品 <ph name="PRODUCT_ID" /></translation>
-<translation id="3164329792803560526">將這個分頁與 <ph name="APP_NAME" /> 共用</translation>
+<translation id="3164329792803560526">這個分頁正與 <ph name="APP_NAME" /> 共用</translation>
 <translation id="3165390001037658081">部分電信業者可能會封鎖這項功能。</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">你也可以略過登入程序，<ph name="LINK_START" />以訪客身分瀏覽<ph name="LINK_END" />。</translation>
@@ -3313,7 +3313,6 @@
 <translation id="6082651258230788217">顯示在工具列中</translation>
 <translation id="6086846494333236931">由您的管理員安裝</translation>
 <translation id="6087960857463881712">好看的臉蛋</translation>
-<translation id="6089481419520884864">提取頁面</translation>
 <translation id="6091761513005122595">已成功共用掛接的裝置。</translation>
 <translation id="6093888419484831006">正在取消更新...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3341,6 +3340,7 @@
 <translation id="6125479973208104919">很抱歉，你需要重新在 <ph name="DEVICE_TYPE" /> 上新增帳戶。</translation>
 <translation id="6129691635767514872">系統已將所選資料從 Chrome 和其他同步的裝置中移除。你的 Google 帳戶仍可能保留了其他類型的瀏覽記錄，例如其他 Google 服務中的搜尋和活動記錄 (可前往 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 查詢)。</translation>
 <translation id="6129938384427316298">Netscape 憑證評論</translation>
+<translation id="6129953537138746214">空格</translation>
 <translation id="6135622770221372891">頻道 ID</translation>
 <translation id="6136114942382973861">關閉下載內容列</translation>
 <translation id="6137767437444130246">使用者憑證</translation>

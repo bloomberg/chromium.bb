@@ -1525,7 +1525,7 @@
 <translation id="3319048459796106952">नवीन &amp;गुप्त विंडो</translation>
 <translation id="3323521181261657960">बोनस! तुम्हाला आणखी स्क्रीन वेळ मिळाला</translation>
 <translation id="3325910708063135066">Mac सिस्टम प्राधान्ये मधील कॅमेरा आणि मायक्रोफोन बंद आहे</translation>
-<translation id="3330615614570718993">या डिव्हाइस वर प्लग-इन VM सुरू करण्यासाठी कृपया तुमच्या ॲडमिनशी संपर्क साधा.</translation>
+<translation id="3330615614570718993">या डिव्हाइसवर प्लग-इन VM सुरू करण्यासाठी कृपया तुमच्या ॲडमिनशी संपर्क साधा.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">ॲप माहिती</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - चित्रात-चित्र मोडमध्ये व्हिडिओ प्ले करत आहे</translation>
@@ -1728,7 +1728,7 @@
 <translation id="3629631988386925734">Smart Lock सुरू करण्यासाठी तुमचा पासवर्ड एंटर करा. पुढील वेळेस तुमचा फोन तुमचे <ph name="DEVICE_TYPE" /> अनलॉक करेल. तुम्ही सेटिंग्जमध्ये Smart Lock बंद करू शकता.</translation>
 <translation id="3630132874740063857">तुमचा फोन</translation>
 <translation id="3630995161997703415">कधीही वापरण्‍यासाठी ही साइट तुमच्या शेल्‍फवर जोडा</translation>
-<translation id="3635256809897331115">प्लग-इन VM वापरण्यासाठी लाँच करा क्लिक किंवा टॅप करा. भविष्यात, तुम्ही लाँचरमध्ये आयकन निवडून प्लग-इन VM सुरू करू शकता.</translation>
+<translation id="3635256809897331115">प्लग-इन VM वापरण्यासाठी लाँच करा वर क्लिक किंवा टॅप करा. भविष्यात, तुम्ही लाँचरमध्ये आयकन निवडून प्लग-इन VM सुरू करू शकता.</translation>
 <translation id="3636096452488277381">कसे आहात, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> शिल्लक</translation>
 <translation id="3637682276779847508">तुम्ही योग्य पिन अनलॉक की एंटर न केल्यास तुमचे सिम कार्ड कायमचे अक्षम केले जाईल.</translation>
@@ -2200,7 +2200,7 @@
 <translation id="4340515029017875942">"<ph name="EXTENSION_NAME" />" अ‍ॅपसह <ph name="ORIGIN" /> संवाद प्रस्थापित करू इच्छितो</translation>
 <translation id="4342311272543222243">अरेरे, TPM एरर.</translation>
 <translation id="4345587454538109430">कॉन्फिगर करा...</translation>
-<translation id="4345732373643853732">सर्व्हरला वापरकर्तानाव माहीत नाही</translation>
+<translation id="4345732373643853732">सर्व्हरला वापर कर्ता नाव माहीत नाही</translation>
 <translation id="4348766275249686434">एरर संकलित करा</translation>
 <translation id="4350019051035968019">एका भिन्न डोमेनद्वारे व्यवस्थापनासाठी डिव्हाइस चिन्हांकित केले असल्यामुळे तुमचे खाते ज्या मालकीचे आहे त्या डोमेवर या डिव्हाइसची नोंदणी केली जाऊ शकत नाही.</translation>
 <translation id="4354344420232759511">तुम्ही भेट दिलेल्या साइट येथे दिसतील</translation>
@@ -2334,7 +2334,7 @@
 <translation id="4563880231729913339">तिसरे बोट</translation>
 <translation id="4565377596337484307">पासवर्ड लपवा</translation>
 <translation id="4567772783389002344">शब्द जोडा</translation>
-<translation id="4568025708905928793">सिक्युरिटी की साठी विनंती केली आहे</translation>
+<translation id="4568025708905928793">सिक्युरिटी कीसाठी विनंती केली आहे</translation>
 <translation id="4568213207643490790">क्षमस्व, Google खात्यांना या डिव्हाइसवर अनुमती नाही.</translation>
 <translation id="4569747168316751899">निष्क्रिय असताना</translation>
 <translation id="4570387585180509432">पत्ते, फोन नंबर आणि अधिक</translation>
@@ -3315,7 +3315,6 @@
 <translation id="6082651258230788217">टूलबारमध्ये दर्शवा</translation>
 <translation id="6086846494333236931">तुमच्या अॅडमिनिस्ट्रेटरद्वारे इंस्टॉल केले</translation>
 <translation id="6087960857463881712">छान चेहरा</translation>
-<translation id="6089481419520884864">Distill पृष्ठ</translation>
 <translation id="6091761513005122595">शेअर यशस्वीरीत्‍‍‍‍या माउंट केले आहे.</translation>
 <translation id="6093888419484831006">अपडेट रद्द करत आहे...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3343,6 +3342,7 @@
 <translation id="6125479973208104919">दुर्दैवाने, तुम्हाला या <ph name="DEVICE_TYPE" /> वर तुमचे खाते पुन्हा जोडावे लागेल.</translation>
 <translation id="6129691635767514872">निवडलेला डेटा Chrome आणि सिंक केलेल्या डिव्हाइसमधून काढला गेला आहे. तुमच्‍या Google खात्यामध्ये Google च्या इतर सेवांमधील शोध आणि अॅक्टिव्हिटी यासारख्या ब्राउझिंग इतिहासाची इतर स्वरूपे <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> वर असू शकतात.</translation>
 <translation id="6129938384427316298">Netscape सर्टिफिकेट टिप्पणी</translation>
+<translation id="6129953537138746214">जागा</translation>
 <translation id="6135622770221372891">चॅनेल आय़डी</translation>
 <translation id="6136114942382973861">डाउनलोड बार बंद करा</translation>
 <translation id="6137767437444130246">वापरकर्ता सर्टिफिकेट</translation>

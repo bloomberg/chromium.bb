@@ -3307,7 +3307,6 @@
 <translation id="6082651258230788217">在工具栏中显示</translation>
 <translation id="6086846494333236931">这是您的管理员安装的</translation>
 <translation id="6087960857463881712">酷炫表情</translation>
-<translation id="6089481419520884864">提取页面</translation>
 <translation id="6091761513005122595">已成功装载共享资源。</translation>
 <translation id="6093888419484831006">正在取消更新...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3335,6 +3334,7 @@
 <translation id="6125479973208104919">抱歉，您需要再次向此 <ph name="DEVICE_TYPE" /> 添加您的帐号。</translation>
 <translation id="6129691635767514872">系统已从 Chrome 和同步的设备中移除了您所选的数据。不过，您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能还有其他形式的浏览记录（例如，在其他 Google 服务中的搜索记录和活动记录）。</translation>
 <translation id="6129938384427316298">Netscape 证书评论</translation>
+<translation id="6129953537138746214">空格</translation>
 <translation id="6135622770221372891">版本 ID</translation>
 <translation id="6136114942382973861">关闭下载内容栏</translation>
 <translation id="6137767437444130246">用户证书</translation>

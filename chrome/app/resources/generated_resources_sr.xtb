@@ -151,7 +151,7 @@
 <translation id="1206407435587370571">Истражите Chromebook</translation>
 <translation id="1209796539517632982">Аутоматски сервери назива</translation>
 <translation id="1211364473545090084">Прегледајте веб без чувања историје прегледања у прозору без архивирања</translation>
-<translation id="1211769675100312947">Ви припремате пречице</translation>
+<translation id="1211769675100312947">Ви одређујете пречице</translation>
 <translation id="1213037489357051291">Отисци прстију (<ph name="NUM_FINGERPRINTS" />) су подешени</translation>
 <translation id="1215411991991485844">Нова апликација у позадини је додата</translation>
 <translation id="1217483152325416304">Локални подаци се ускоро бришу</translation>
@@ -1600,7 +1600,7 @@
 <translation id="3453612417627951340">Потребно је овлашћење</translation>
 <translation id="3454157711543303649">Активација је довршена</translation>
 <translation id="345693547134384690">Отвори &amp;слику на новој картици</translation>
-<translation id="3457500881955698515">Предузеће или организација тражи ажурирање за овај уређај одмах</translation>
+<translation id="3457500881955698515">Ваше предузеће или организација захтева ажурирање за овај уређај одмах</translation>
 <translation id="3459509316159669723">Штампање</translation>
 <translation id="3459697287128633276">Да бисте омогућили налогу да приступа Google Play продавници, потврдите идентитет помоћу добављача идентитета.</translation>
 <translation id="3459774175445953971">Последњи пут измењено:</translation>
@@ -2091,7 +2091,7 @@
 <translation id="4130750466177569591">Прихватам</translation>
 <translation id="413121957363593859">Компоненте</translation>
 <translation id="4131410914670010031">Црно-бело</translation>
-<translation id="4136203100490971508">Ноћно светло се аутоматски укључује када сунце изађе</translation>
+<translation id="4136203100490971508">Ноћно светло се аутоматски искључује када сунце изађе</translation>
 <translation id="4138267921960073861">Приказуј корисничка имена и слике на екрану за пријављивање</translation>
 <translation id="4144218403971135344">Пронађите видео садржај бољег квалитета и продужите трајање батерије. Видео ће се пуштати само на екрану који подржава Cast.</translation>
 <translation id="4145922204387553806">Дозволите Помоћнику да вам приказује информације на основу онога што је на екрану</translation>
@@ -3313,7 +3313,6 @@
 <translation id="6082651258230788217">Прикажи на траци с алаткама</translation>
 <translation id="6086846494333236931">Инсталирао је администратор</translation>
 <translation id="6087960857463881712">Задовољно лице</translation>
-<translation id="6089481419520884864">Пречишћавање странице</translation>
 <translation id="6091761513005122595">Дељена датотека је учитана.</translation>
 <translation id="6093888419484831006">Отказивање ажурирања...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3341,6 +3340,7 @@
 <translation id="6125479973208104919">Нажалост, треба поново да додате налог на овај <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6129691635767514872">Изабрани подаци су уклоњени из Chrome-а и са синхронизованих уређаја. Google налог можда има друге облике историје прегледања, попут претрага и активности на другим Google услугама на <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Коментар Netscape сертификата</translation>
+<translation id="6129953537138746214">Размак</translation>
 <translation id="6135622770221372891">ИД-ови канала</translation>
 <translation id="6136114942382973861">Затвори траку са преузимањима</translation>
 <translation id="6137767437444130246">Кориснички сертификат</translation>

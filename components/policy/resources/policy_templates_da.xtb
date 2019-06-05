@@ -1165,25 +1165,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik angives som Falsk, deaktiveres WPAD-optimering, så <ph name="PRODUCT_NAME" /> skal vente længere på DNS-baserede WPAD-servere. Hvis politikken ikke er indstillet, eller hvis den er aktiveret, er WPAD-optimering aktiveret.
 
       Uafhængigt af om politikken er indstillet og hvordan, kan indstillingen for WPAD-optimering ikke ændres af brugerne.</translation>
-<translation id="3071839057966069710">Konfigurerer en liste over printere.
-
-      Med denne politik kan administratorer angive printerkonfigurationer for
-      deres brugere.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenge i frit format, der kan tilpasses, så det bliver nemmere at vælge printer. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> gør det nemmere for slutbrugerne at identificere printere. De repræsenterer printerproducenten og -modellen. <ph name="PRINTER_URI" /> skal være en adresse, der er tilgængelig fra en klientcomputer, bl.a. <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfri. Hvis den angives, bruges den som en hjælp til at deduplikere <ph name="ZEROCONF_DISCOVERY" />-printere.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> skal stemme overens med en af de strenge, der repræsenterer en <ph name="PRODUCT_NAME" />-understøttet printer. Strengen bruges til at identificere og installere den relevante PPD-fil til printeren. Du kan finde flere oplysninger på https://support.google.com/chrome?p=noncloudprint.
-
-      <ph name="PRINTER_AUTOCONF" /> er en boolesk markering, der indikerer, om IPP Everywhere skal bruges til at konfigurere printeren. Markeringen understøttes i <ph name="PRODUCT_OS_NAME" />-version 76 og nyere.
-
-      Enten skal <ph name="PRINTER_EFFECTIVE_MODEL" /> indeholde navnet på printeren, eller også skal <ph name="PRINTER_AUTOCONF" /> angives som Sand. Printere med begge eller ingen af egenskaberne ignoreres.
-
-      Printerkonfigurationen fuldføres, første gang printeren tages i brug.  PPD-filer downloades ikke, før printeren benyttes.  Derefter gemmes ofte anvendte PPD-filer i cachen.
-
-      Politikken påvirker ikke, om brugerne kan konfigurere printere på individuelle enheder.  Den er beregnet til at fungere som supplement til den enkelte brugers konfiguration af printere.
-
-      Politikken understøtter udvidelse af <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-enhedsnavnet eller en af dets understrenge på enheder, der administreres med Active Directory. Hvis enhedsnavnet f.eks. er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> af de fire tegn, der kommer efter den sjette position, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Bemærk, at positionen er nulbaseret.
-      </translation>
 <translation id="3072045631333522102">Pauseskærm, som skal bruges på loginskærmen i detailtilstand</translation>
 <translation id="3072847235228302527">Konfigurer servicevilkårene for en enhedslokal konto</translation>
 <translation id="3077183141551274418">Aktiverer eller deaktiverer livscyklus for faner</translation>
@@ -1319,13 +1300,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis du konfigurerer denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
           Hvis denne politik ikke er konfigureret, er ændringen ved strømspidsbelastning deaktiveret og kan ikke aktiveres af brugeren.</translation>
-<translation id="3388153794103186066">Gør det muligt at angive en liste over webadresser, der angiver, hvilke sider der automatisk får adgangstilladelse til en USB-enhed med de givne leverandør- og produkt-id'er. Hvert element på listen skal indeholde både enheder og webadresser, før politikken er gyldig. Hvert element på enheder kan indeholde felter til leverandør-id og produkt-id. Alle id'er, der udelades, behandles som et jokertegn – et produkt-id kan dog ikke angives, uden at der også angives et leverandør-id. Hvis ikke disse regler overholdes, regnes politikken som ugyldig og ignoreres.
-
-        USB-tilladelsesmodellen anvender webadressen til det anmodende website ("anmodende webadresse") og webadressen til indramningswebsitet på øverste niveau ("integrerende webadresse") til at give den anmodende webadresse adgang til USB-enheden. Den anmodende webadresse kan adskille sig fra den integrerende webadresse, når det anmodende website indlæses i en iframe. Feltet "webadresser" kan derfor indeholde op til to webadressestrenge, adskilt af et komma, for at angive henholdsvis den anmodende og den integrerende webadresse. Hvis der kun angives én webadresse, gives der adgang til de tilsvarende USB-enheder, når webadressen til det anmodende website stemmer overens med denne webadresse, uanset hvilken integreringsstatus den har. Webadresserne i feltet "webadresser" skal være gyldige webadresser, ellers ignoreres politikken.
-
-        Hvis politikken ikke konfigureres, anvendes den globale standardværdi fra politikken "DefaultWebUsbGuardSetting" til alle websites, og hvis denne ikke er konfigureret, anvendes brugerens personlige konfiguration.
-
-        Webadressemønstre i denne politik må ikke være i strid med dem, der er konfigureret via WebUsbBlockedForUrls. Hvis de er i strid med hinanden, har denne politik forrang frem for WebUsbBlockedForUrls og WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Hvis denne politik ikke konfigureres, anvender <ph name="PRODUCT_NAME" /> en standardminimumversion, som er TLS 1.0.
 
       Den kan også angives til en af følgende værdier: "tls1", "tls1.1" eller "tls1.2". Når der er angivet en værdi, anvender <ph name="PRODUCT_NAME" /> ikke SSL/TLS-versioner, der er mindre end den angivne version. Ukendte værdier ignoreres.</translation>

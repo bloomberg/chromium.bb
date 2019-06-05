@@ -1206,25 +1206,6 @@
       Kung nakatakda sa false ang patakarang ito, madi-disable ang pag-optimize ng WPAD na magsasanhi sa <ph name="PRODUCT_NAME" /> na maghintay nang mas matagal para sa mga DNS-based na WPAD server.  Kung hindi nakatakda o naka-enable ang patakarang ito, ie-enable ang pag-optimize ng WPAD.
 
       Nakatakda man o paano man itinakda ang patakarang ito, hindi mababago ng mga user ang setting ng pag-optimize ng WPAD.</translation>
-<translation id="3071839057966069710">Nagko-configure ng listahan ng mga printer.
-
-      Nagbibigay-daan ang patakarang ito sa mga administrator na magbigay ng mga configuration ng printer para sa
-      kanilang mga user.
-
-      Ang <ph name="PRINTER_DISPLAY_NAME" /> at <ph name="PRINTER_DESCRIPTION" /> ay mga free form na string na puwedeng i-customize para sa mas madaling pagpili ng printer. Pinapadali ng <ph name="PRINTER_MANUFACTURER" /> at <ph name="PRINTER_MODEL" /> ang pagtukoy ng printer ng mga end user. Kinakatawan ng mga ito ang manufacturer at modelo ng printer. Ang <ph name="PRINTER_URI" /> ay dapat isang address na mapupuntahan mula sa isang client na computer kabilang ang <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, at <ph name="URI_QUEUE" />. Opsyonal ang <ph name="PRINTER_UUID" />. Kung ibibigay, gagamitin ito para makatulong na mag-deduplicate ng mga printer sa <ph name="ZEROCONF_DISCOVERY" />.
-
-      Tumutugma dapat ang <ph name="PRINTER_EFFECTIVE_MODEL" /> sa isa sa mga string na kumakatawan sa printer na sinusuportahan ng <ph name="PRODUCT_NAME" />. Gagamitin ang string para tukuyin at i-install ang naaangkop na PPD para sa printer. Makakahanap ng higit pang impormasyon sa https://support.google.com/chrome?p=noncloudprint.
-
-      Ang <ph name="PRINTER_AUTOCONF" /> ay isang boolean flag na nagsasaad kung dapat gamitin ang IPP Everywhere para i-set up ang printer. Sinusuportahan ang flag na ito sa bersyon 76 pataas ng <ph name="PRODUCT_OS_NAME" />.
-
-      Dapat ay naglalaman ang <ph name="PRINTER_EFFECTIVE_MODEL" /> ng pangalan ng printer o nakatakda ang <ph name="PRINTER_AUTOCONF" /> sa true. Babalewalain ang mga printer na may pareho o walang anumang property.
-
-      Makukumpleto ang pag-set up ng printer sa unang paggamit ng printer.  Hindi mada-download ang mga PPD hanggang magamit ang printer.  Pagkatapos noon, maka-cache ang mga PPD na madalas gamitin.
-
-      Walang epekto ang patakarang ito sa kung puwedeng mag-configure ng mga printer ang mga user sa mga indibidwal na device.  Ginawa ito para maging karagdagan sa configuration ng mga printer ng mga indibidwal na user.
-
-      Para sa mga device na pinapamahalaan ng Active Directory, sinusuportahan ng patakarang ito ang pag-expand ng <ph name="MACHINE_NAME_VARIABLE" /> sa pangalan ng machine ng Active Directory o sa isang substring nito. Halimbawa, kung ang pangalan ng machine ay <ph name="MACHINE_NAME_EXAMPLE" />, mapapalitan ang <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> ng 4 na character simula sa ikaw-6 na posisyon, ibig sabihin, ang <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tandaang nakabtay sa zero ang posisyon.
-      </translation>
 <translation id="3072045631333522102">Screen saver na gagamitin sa screen sa pag-sign-in sa mode ng retail</translation>
 <translation id="3072847235228302527">Itakda ang Mga Tuntunin ng Serbisyo para sa isang account na lokal sa device</translation>
 <translation id="3077183141551274418">Ine-enable o dini-disable ang mga lifecycle ng tab</translation>
@@ -1364,13 +1345,6 @@
           Kung itatakda mo ang patakarang ito, hindi ito maaaring baguhin o i-override ng mga user.
 
           Kung hindi naitakda ang patakarang ito, idi-disable muna ang power peak shift at hindi maaaring i-enable ng user.</translation>
-<translation id="3388153794103186066">Nagbibigay-daan sa iyong magtakda ng listahan ng mga url na tumutukoy kung aling mga site ang awtomatikong bibigyan ng pahintulot na mag-access ng USB device gamit ang mga ibinigay na vendor at product ID. Dapat makita sa bawat item sa listahan ang mga device at url para maging valid ang patakaran. Maaaring makakita sa bawat item sa mga device ng field ng vendor ID at product ID. Ang anumang ID na aalisin ay ituturing na wildcard maliban sa isang exception, at iyon ay hindi makakatukoy ng product ID kung hindi tutukoy ng vendor ID. Kung hindi, hindi magiging valid ang patakaran at babalewalain ito.
-
-        Ginagamit ng model ng pahintulot sa USB ang URL ng humihiling na site ("humihiling na URL") at ang URL ng nangungunang frame site ("nag-e-embed na URL") para magbigay ng pahintulot sa humihiling na URL na i-access ang USB device. Maaaring iba ang humihiling na URL sa nag-e-embed na URL kapag na-load ang humihiling na site sa iframe. Kung kaya, maaaring magkaroon ang field ng "mga url" ng hanggang dalawang string ng URL na dine-delimit ng kuwit para matukoy ang humihiling at nag-e-embed na URL. Kung isang URL lang ang tutukuyin, magbibigay ng access sa mga kaukulang USB device kapag tumugma ang URL ng humihiling na site sa URL na ito anuman ang status ng pag-embed. Ang mga URL sa "mga url" ay dapat mga valid na URL, kung hindi ay babalewalain ang patakaran.
-
-        Kung hahayaang hindi nakatakda ang patakarang ito, gagamitin ang pangkalahatang default na value para sa lahat ng site mula sa patakarang 'DefaultWebUsbGuardSetting' kung nakatakda ito, o kung hindi ay ang personal na configuration ng user.
-
-        Hindi dapat sumalungat ang mga pattern ng URL sa patakarang ito sa mga pattern na na-configure sa pamamagitan ng WebUsbBlockedForUrls. Kung magkakaroon ng salungatan, mananaig ang patakarang ito sa WebUsbBlockedForUrls at WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Kung hindi na-configure ang patakarang ito, gumagamit ang <ph name="PRODUCT_NAME" /> ng default na minimum na bersyon na TLS 1.0.
 
       Kung hindi, maaari itong itakda sa isa sa mga sumusunod na value: "tls1", "tls1.1" o "tls1.2". Kapag naitakda, hindi gagamit ang <ph name="PRODUCT_NAME" /> ng mga bersyon ng SSL/TLS na mas luma kaysa sa tinukoy na bersyon. Babalewalain ang hindi kinikilalang value.</translation>

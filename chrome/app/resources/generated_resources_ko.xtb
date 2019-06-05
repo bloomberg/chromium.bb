@@ -3313,7 +3313,6 @@
 <translation id="6082651258230788217">툴바에서 보기</translation>
 <translation id="6086846494333236931">관리자가 설치함</translation>
 <translation id="6087960857463881712">멋진 얼굴</translation>
-<translation id="6089481419520884864">페이지 추출</translation>
 <translation id="6091761513005122595">공유가 성공적으로 마운트되었습니다.</translation>
 <translation id="6093888419484831006">업데이트를 취소하는 중...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3341,6 +3340,7 @@
 <translation id="6125479973208104919">이 <ph name="DEVICE_TYPE" />에 계정을 다시 추가해야 합니다.</translation>
 <translation id="6129691635767514872">선택한 데이터가 Chrome 및 동기화된 기기에서 삭제되었습니다. <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />에서 검색이나 기타 Google 서비스에서의 활동 등 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>
 <translation id="6129938384427316298">Netscape Certificate Comment</translation>
+<translation id="6129953537138746214">공백</translation>
 <translation id="6135622770221372891">채널 ID</translation>
 <translation id="6136114942382973861">다운로드바 닫기</translation>
 <translation id="6137767437444130246">사용자 인증서</translation>

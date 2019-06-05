@@ -3315,7 +3315,6 @@
 <translation id="6082651258230788217">แสดงในแถบเครื่องมือ</translation>
 <translation id="6086846494333236931">ติดตั้งโดยผู้ดูแลระบบ</translation>
 <translation id="6087960857463881712">ใบหน้าเจ๋ง</translation>
-<translation id="6089481419520884864">สกัดหน้า</translation>
 <translation id="6091761513005122595">ต่อเชื่อมพื้นที่แชร์สำเร็จแล้ว</translation>
 <translation id="6093888419484831006">กำลังยกเลิกการอัปเดต…</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3343,6 +3342,7 @@
 <translation id="6125479973208104919">ขออภัย คุณจะต้องเพิ่มบัญชีของคุณลงใน <ph name="DEVICE_TYPE" /> นี้อีกครั้ง</translation>
 <translation id="6129691635767514872">นำข้อมูลที่เลือกออกจาก Chrome และอุปกรณ์ที่ซิงค์แล้ว บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่น เช่น การค้นหาและกิจกรรมจากบริการอื่นๆ ของ Google ที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6129938384427316298">ความคิดเห็นเกี่ยวกับใบรับรองของ Netscape</translation>
+<translation id="6129953537138746214">ช่องว่าง</translation>
 <translation id="6135622770221372891">รหัสช่อง</translation>
 <translation id="6136114942382973861">ปิดแถบดาวน์โหลด</translation>
 <translation id="6137767437444130246">ใบรับรองของผู้ใช้</translation>

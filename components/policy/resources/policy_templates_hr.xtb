@@ -1171,25 +1171,6 @@
       Ako se to pravilo postavi na "False", optimizacija WPAD-a nije omogućena, pa <ph name="PRODUCT_NAME" /> dulje čeka WPAD poslužitelje temeljene na DNS-u. Ako se pravilo ne postavi ili ako se omogući, optimizacija WPAD-a omogućena je.
 
       Neovisno o tome hoće li se to pravilo postaviti i na koji način, korisnici ne mogu mijenjati postavku optimizacije WPAD-a.</translation>
-<translation id="3071839057966069710">Konfigurira popis pisača.
-
-      To pravilo omogućuje administratorima da navedu konfiguracije pisača za
-      korisnike.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> predstavljaju nizove slobodnog oblika koji se mogu prilagoditi radi lakšeg odabira pisača. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> krajnjim korisnicima omogućuju da lakše prepoznaju pisač tako što predstavljaju proizvođača i model pisača. <ph name="PRINTER_URI" /> treba biti adresa kojoj se može pristupiti s računala klijenta, uključujući <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. Polje <ph name="PRINTER_UUID" /> nije obavezno. Ako se navede, služi za uklanjanje duplikata <ph name="ZEROCONF_DISCOVERY" /> pisača.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> mora odgovarati jednom od nizova koji predstavljaju pisač koji <ph name="PRODUCT_NAME" /> podržava. Niz će se upotrebljavati za određivanje i instaliranje odgovarajućeg PPD-a za pisač. Više informacija dostupno je na https://support.google.com/chrome?p=noncloudprint.
-
-      <ph name="PRINTER_AUTOCONF" /> je Booleova oznaka koja naznačuje treba li se za postavljanje pisača upotrijebiti IPP Everywhere. <ph name="PRODUCT_OS_NAME" /> podržava tu oznaku od verzije 76 nadalje.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> treba sadržavati naziv pisača ili se <ph name="PRINTER_AUTOCONF" /> treba postaviti na true. Pisači s oba ta svojstva ili bez ijednog od tih svojstava zanemarit će se.
-
-      Postavljanje pisača dovršava se po prvoj upotrebi pisača.  PPD-ovi će se preuzeti tek prilikom upotrebe pisača.  Nakon toga često korišteni PPD-ovi spremit će se u predmemoriju.
-
-      To pravilo ne utječe na mogućnost korisnika da konfiguriraju pisače na pojedinačnim uređajima.  Ono služi kao dodatno pravilo za konfiguraciju pisača pojedinačnih korisnika.
-
-      Za uređaje kojima upravlja Active Directory to pravilo podržava proširivanje naziva uređaja <ph name="MACHINE_NAME_VARIABLE" /> na naziv uređaja Active Directoryja ili njegov podniz. Na primjer, ako naziv uređaja glasi <ph name="MACHINE_NAME_EXAMPLE" />, onda će se <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamijeniti s četiri znaka iza šestog položaja, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj se temelji na nuli.
-      </translation>
 <translation id="3072045631333522102">Čuvar zaslona koji će se upotrebljavati na zaslonu prijave u prodajnom načinu</translation>
 <translation id="3072847235228302527">Postavi Uvjete pružanja usluge za lokalni račun na uređaju</translation>
 <translation id="3077183141551274418">Omogućuje ili onemogućuje životne cikluse kartica</translation>
@@ -1321,13 +1302,6 @@
           Ako postavite to pravilo, korisnici ga neće moći promijeniti ili nadjačati.
 
           Ako se to pravilo ne postavi, prebacivanje napajanja radi uštede energije bit će onemogućeno i korisnik ga neće moći omogućiti.</translation>
-<translation id="3388153794103186066">Omogućuje postavljanje popisa URL-ova koji navode koje će web-lokacije automatski dobiti dopuštenje za pristup USB uređaju s navedenim ID-jem dobavljača i ID-jem proizvoda. Svaka stavka na popisu mora sadržavati uređaje i URL-ove da bi pravilo bilo važeće. Svaka stavka na uređaju može sadržavati polje ID-ja dobavljača i ID-ja proizvoda. Svaki izostavljeni ID smatra se zamjenskim znakom s jednom iznimkom, a ta je iznimka da se ID proizvoda ne može navesti, a da se ne navede i ID dobavljača. U suprotnom pravilo neće biti važeće i zanemarit će se.
-
-        Model dopuštenja za USB upotrebljava URL web-lokacije koja šalje zahtjev ("URL koji šalje zahtjev") i URL vršnih web-lokacija u okviru ("URL koji se ugrađuje") kako bi se URL-u koji šalje zahtjev dopustio pristup USB uređaju. URL koji šalje zahtjev može se razlikovati od URL-a koji se ugrađuje ako se web-lokacija koja šalje zahtjev učitava u iframeu. Stoga, da bi se odredio URL koji šalje zahtjev i URL koji se ugrađuje, polje za "URL-ove" može sadržavati najviše dva niza URL-a razdvojena zarezom. Ako se odredi samo jedan URL, pristup će biti dopušten odgovarajućim USB uređajima kada se URL web-lokacije koja šalje zahtjev podudara s ovim URL-om, bez obzira na status ugrađivanja. URL-ovi u polju "URL-ovi" moraju biti važeći. U protivnom će se pravilo zanemariti.
-
-        Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultWebUsbGuardSetting" ako je to pravilo postavljeno, a ako nije, upotrebljavat će se korisnikova osobna konfiguracija.
-
-        Uzorci URL-a u ovom pravilu ne bi trebali biti u sukobu s onima koji su konfigurirani pravilom WebUsbBlockedForUrls. Ako se pojavi sukob, ovo će pravilo imati prednost pred pravilima WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Ako se to pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu minimalnu verziju, a to je TLS 1.0.
 
       U suprotnom se može postaviti na jednu od sljedećih vrijednosti: "tls1", "tls1.1" ili "tls1.2". Kad se to pravilo postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a manje od navedene verzije. Vrijednost koja se ne prepozna ignorirat će se.</translation>

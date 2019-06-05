@@ -323,7 +323,7 @@
 <translation id="2609632851001447353">Varianter</translation>
 <translation id="2618023639789766142">C10 (Envelope)</translation>
 <translation id="2625385379895617796">Dit ur er foran</translation>
-<translation id="2634124572758952069">IP-adressen på serveren for <ph name="HOST_NAME" /> kunne ikke findes.</translation>
+<translation id="2634124572758952069">IP-adressen på serveren for <ph name="HOST_NAME" /> blev ikke fundet.</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Der blev nægtet adgang til filen</translation>

@@ -1179,24 +1179,6 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
       Sera hii ikiwekwa kuwa sivyo, uboreshaji wa WPAD utazimwa na kusababisha <ph name="PRODUCT_NAME" /> kusubiri muda mrefu zaidi kwa seva za WPAD zinazotegemea DNS. Sera hii isipowekwa au ikiwashwa, uboreshaji wa WPAD utawashwa.
 
       Kwa kutotogemea ikiwa au jinsi sera hii inavyowekwa, mipangilio ya uboreshaji wa WPAD haiwezi kubadilishwa na watumiaji.</translation>
-<translation id="3071839057966069710">Huweka mipangilio ya orodha ya printa.
-
-      Sera hii huruhusu wasimamizi kuweka mipangilio ya printa kwa ajili ya watumiaji wake.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> na <ph name="PRINTER_DESCRIPTION" /> ni mifuatano huru ambayo inaweza kuwekewa mapendeleo ili kurahisisha shughuli ya kuchagua printa. <ph name="PRINTER_MANUFACTURER" /> na <ph name="PRINTER_MODEL" /> hutumika kurahisisha shughuli ya kutambua printa kwa watumiaji wake wa mwisho. Huwakilisha mtengenezaji na muundo wa printa. <ph name="PRINTER_URI" /> inapaswa kuwa anwani ambayo inafikiwa kutoka kompyuta teja, ikiwa ni pamoja na <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> na <ph name="URI_QUEUE" />. Si lazima <ph name="PRINTER_UUID" /> iwekwe. Ikiwekwa, itasaidia kuondoa nakala za printa za <ph name="ZEROCONF_DISCOVERY" />.
-
-      Ni lazima <ph name="PRINTER_EFFECTIVE_MODEL" /> ilingane na mojawapo ya mifuatano inayowakilisha printa inayotumika ya <ph name="PRODUCT_NAME" />. Mfuatano huo utatumiwa kutambua na kusakinisha PPD inayofaa kwenye printa. Maelezo zaidi yanaweza kupatikana katika https://support.google.com/chrome?p=noncloudprint.
-
-      <ph name="PRINTER_AUTOCONF" /> ni ripoti ya Boolean inayoonyesha ikiwa IPP Everywhere inapaswa kutumika kuweka mipangilio ya printa. Ripoti hii inatumika kwenye <ph name="PRODUCT_OS_NAME" /> toleo la 76 na mapya zaidi.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> inapaswa kuwa na jina la printa au <ph name="PRINTER_AUTOCONF" /> inapaswa kuwekwa kuwa 'ndivyo'. Printa zenye sifa zote mbili au zisizo na sifa yoyote hazitatumika.
-
-      Shughuli ya kuweka mipangilio ya printa hukamilika baada ya kutumia printa mara ya kwanza.  PPD hazipakuliwi mpaka printa itumike.  Baada ya hapo, PPD zinazotumiwa sana huwekwa katika akiba.
-
-      Sera hii haiwezi kubaini iwapo watumiaji wanaweza kuweka mipangilio ya printa kwenye vifaa mahususi.  Inakusudiwa kuwa mbinu ya ziada ya kuweka mipangilio ya printa na watumiaji mahususi.
-
-      Kwa vifaa vinavyodhibitiwa na Saraka Inayotumika, sera hii inatumia upanuzi wa <ph name="MACHINE_NAME_VARIABLE" /> kwenye jina la mashine ya Saraka Inayotumika au kiambishi husika cha msimbo. Kwa mfano, ikiwa jina la mashine ni<ph name="MACHINE_NAME_EXAMPLE" />, inamaanisha kuwa nafasi ya <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> itawekwa herufi 4 baada ya nafasi ya 6, yaani <ph name="MACHINE_NAME_PART_EXAMPLE" />. Kumbuka kwamba nafasi hii inatumia sufuri.
-      </translation>
 <translation id="3072045631333522102">Seva ya skrini kutumiwa kwenye skrini ya kuingia katika modi rejareja</translation>
 <translation id="3072847235228302527">Weka Sheria na Masharti kwa akaunti ya kifaa cha karibu nawe</translation>
 <translation id="3077183141551274418">Huwasha au kuzima muda wa matumizi ya kichupo</translation>
@@ -1337,13 +1319,6 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
           Sera hii ikiwekwa, watumiaji hawawezi kuibadilisha au kuibatilisha.
 
           Sera hii isipowekwa, kipengele kinachopunguza matumizi ya betri kwa kubadilisha mfumo kuendeshwa kwenye nguvu za betri kitazima kwanza na hakiwezi kuwashwa na mtumiaji.</translation>
-<translation id="3388153794103186066">Hukuruhusu kuweka orodha ya urls ambazo zinabainisha tovuti zitakazopewa ruhusa kiotomatiki ya kufikia kifaa cha USB chenye Vitambulisho husika vya muuzaji na bidhaa. Lazima kila kipengee kwenye orodha kijumuishe vifaa na urls ili sera itumike. Kila kipengee kwenye vifaa kinaweza kujumuisha sehemu ya Kitambulisho cha muuzaji na Kitambulisho cha bidhaa. Kitambulisho chochote kisichowekwa kinachukuliwa kuwa herufi wakilishi isiyofuata kanuni moja na kanuni hii ni kwamba kitambulisho cha bidhaa hakiwezi kubainishwa bila kitambulisho cha muuzaji kubainishwa pia. Vinginevyo, sera haitakuwa sahihi na itapuuzwa.
-
-        Muundo wa ruhusa za USB hutumia URL ya tovuti inayotuma ombi ("URL inayotuma ombi") na URL ya tovuti maarufu ya fremu ("URL iliyopachikwa") ili kutoa ruhusa kwa URL inayotuma ombi iweze kufikia kifaa cha USB. URL inayotuma ombi inaweza kuwa tofauti na URL iliyopachikwa wakati tovuti inayotuma ombi imepakiwa kwenye iframe. Kwa hivyo, sehemu ya "urls" inaweza kujumuisha hadi mifuatano miwili ya URL inayotenganishwa kwa koma ili kubainisha URL ya kutuma ombi na URL iliyopachikwa mtawalia. Ikiwa URL moja tu imebainishwa, basi ufikiaji wa vifaa vinavyolingana vya USB utatolewa wakati URL ya tovuti inayotuma ombi inalingana na URL hii bila kuzingatia hali ya upachikwaji. Lazima URL kwenye "urls" ziwe URL sahihi, vinginevyo sera hii itapuuzwa.
-
-        Sera hii isipowekwa, thamani chaguomsingi ya jumla itatumiwa kwenye tovuti zote, kutoka sera ya 'DefaultWebUsbGuardSetting' ikiwa sera imewekwa au vinginevyo kutoka mipangilio ya binafsi ya mtumiaji.
-
-        Ruwaza za URL katika sera hii hazipaswi kukinzana na zile ambazo mipangilio yake huwekwa kupitia WebUsbBlockedForUrls. Kama zinakinzana, sera hii itatumika kwanza kabla ya WebUsbBlockedForUrls na WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Ikiwa hujaweka mipangilio ya sera hii inamaanisha kuwa <ph name="PRODUCT_NAME" /> itatumia toleo la chini zaidi katika mipangilio chaguomsingi ambalo ni TLS 1.0.
 
       Vinginevyo, inaweza kuwekwa kuwa mojawapo ya thamani zifuatazo: "tls1", "tls1.1" au "tls1.2". Ikiwekwa, <ph name="PRODUCT_NAME" /> itatumia matoleo ya SSL/TLS yaliyo chini ya toleo lililobainishwa. Haitazingatia thamani ambayo haitambuliki.</translation>

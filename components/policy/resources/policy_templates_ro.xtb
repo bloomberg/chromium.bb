@@ -1171,25 +1171,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această politică este dezactivată, optimizarea pentru WPAD este, de asemenea, dezactivată, iar <ph name="PRODUCT_NAME" /> va aștepta mai mult timp un răspuns de la serverele WPAD bazate pe DNS. Dacă politica nu este configurată sau este activată, optimizarea pentru WPAD este activată.
 
       Indiferent dacă politica este configurată sau nu și indiferent de modul în care este configurată, utilizatorii nu pot să modifice setarea privind optimizarea pentru WPAD.</translation>
-<translation id="3071839057966069710">Configurează o listă de imprimante.
-
-      Această politică permite administratorilor să ofere utilizatorilor configurații ale
-      imprimantelor.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri cu formă liberă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> sunt folosite pentru a simplifica identificarea imprimantei de utilizatorii finali. Acestea reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe un computer client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, acesta este folosit pentru a deduplica imprimantele <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să corespundă unuia dintre șirurile care reprezintă o imprimantă <ph name="PRODUCT_NAME" /> compatibilă. Șirul va fi folosit pentru a identifica și instala PPD-ul corespunzător imprimantei. Mai multe informații sunt disponibile la https://support.google.com/chrome?p=noncloudprint.
-
-      <ph name="PRINTER_AUTOCONF" /> este un semnal boolean care indică dacă IPP Everywhere trebuie folosit pentru configurarea imprimantei. Acest semnal este compatibil cu versiunea 76 și versiunile ulterioare de <ph name="PRODUCT_OS_NAME" />.
-
-      Ori <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să conțină numele imprimantei, ori <ph name="PRINTER_AUTOCONF" /> trebuie să fie activat. Imprimantele cu ambele proprietăți sau fără niciuna vor fi ignorate.
-
-      Configurarea imprimantei este finalizată la prima folosire a acesteia.  PPD-urile nu sunt descărcate înainte de folosirea imprimantei.  După aceea, PPD-urile folosite frecvent sunt stocate în memoria cache.
-
-      Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe dispozitive individuale.  Este menită să fie suplimentară față de configurarea imprimantelor de utilizatori individuali.
-
-      Pentru dispozitivele gestionate cu Active Directory, această politică acceptă extinderea <ph name="MACHINE_NAME_VARIABLE" /> la numele computerului cu Active Directory sau la un subșir al acestuia. De exemplu, dacă numele computerului este <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> va fi înlocuit de cele 4 caractere care urmează după cea de-a 6-a poziție, adică <ph name="MACHINE_NAME_PART_EXAMPLE" />. Reține că poziția începe de la zero.
-      </translation>
 <translation id="3072045631333522102">Screen saver setat pentru ecranul de conectare în modul Vânzare</translation>
 <translation id="3072847235228302527">Setați Termenii și condițiile pentru un cont local de pe dispozitiv</translation>
 <translation id="3077183141551274418">Activează sau dezactivează ciclurile de viață ale filelor</translation>
@@ -1325,13 +1306,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
 
           Dacă politica nu este setată, modul de alimentare Peak shift este dezactivat inițial și nu poate fi activat de utilizator.</translation>
-<translation id="3388153794103186066">Îți permite să setezi o listă de adrese URL ce specifică site-urile care vor primi automat permisiunea să acceseze un dispozitiv USB cu ID-ul de furnizor și de produs oferit. Fiecare articol din listă trebuie să conțină atât dispozitivele, cât și adresele URL pentru ca politica să fie validă. Fiecare articol din dispozitive poate conține un câmp pentru ID-ul furnizorului și ID-ul produsului. Orice ID omis este considerat un metacaracter, cu o excepție: un ID de produs nu poate fi specificat fără să fie specificat și un ID de furnizor. În caz contrar, politica nu va fi validă și va fi ignorată.
-
-        Modelul permisiunii USB folosește adresa URL a site-ului care face solicitarea („adresa URL solicitantă”) și adresa URL a site-ului cadru de nivel superior („adresa URL încorporantă”) pentru a acorda permisiunea adresei URL solicitante de a accesa dispozitivul USB. Adresa URL solicitantă poate fi diferită de adresa URL încorporantă când site-ul solicitant este încărcat într-un iframe. De aceea, câmpul „urls” poate conține până la două șiruri separate cu o virgulă pentru a specifica adresa URL încorporantă și, respectiv, solicitantă. Dacă este specificată o singură adresă URL, accesul la dispozitivele USB corespunzătoare va fi acordat când adresa URL a site-ului solicitant este aceeași cu această adresă URL, indiferent de starea încorporării. Adresele URL din „urls” trebuie să fie adrese URL valide; în caz contrar, politica va fi ignorată.
-
-        Dacă această politică nu este setată, valoarea globală prestabilită va fi folosită pentru toate site-urile, fie din politica „DefaultWebUsbGuardSetting”, dacă este setată, fie din configurația personală a utilizatorului, în caz contrar.
-
-        Șabloanele de adrese URL din această politică nu trebuie să fie în contradicție cu cele configurate prin WebUsbBlockedForUrls. Dacă există o contradicție, această politică va avea întâietate în fața WebUsbBlockedForUrls și WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> folosește versiunea minimă prestabilită, care este TLS 1.0.
 
       În caz contrar, politica poate fi configurată la una dintre următoarele valori: „tls1”, „tls1.1” sau „tls1.2”. Când este configurată, <ph name="PRODUCT_NAME" /> nu va folosi versiunile SSL/TLS inferioare versiunii specificate. Valorile nerecunoscute vor fi ignorate.</translation>

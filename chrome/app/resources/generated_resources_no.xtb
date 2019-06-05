@@ -3308,7 +3308,6 @@
 <translation id="6082651258230788217">Vis i verktøyraden</translation>
 <translation id="6086846494333236931">Installert av administratoren din</translation>
 <translation id="6087960857463881712">Fantastisk-fjes</translation>
-<translation id="6089481419520884864">Destiller siden</translation>
 <translation id="6091761513005122595">Delingen er aktivert.</translation>
 <translation id="6093888419484831006">Avbryter oppdatering …</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3336,6 +3335,7 @@
 <translation id="6125479973208104919">Du må dessverre legge til kontoen din på denne <ph name="DEVICE_TYPE" />-enheten på nytt.</translation>
 <translation id="6129691635767514872">De valgte dataene er fjernet fra Chrome og alle synkroniserte enheter. Det kan hende Google-kontoen din har andre typer nettleserlogger, for eksempel for søk og aktivitet fra andre Google-tjenester, på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Kommentar til Netscape-sertifikat</translation>
+<translation id="6129953537138746214">Mellomrom</translation>
 <translation id="6135622770221372891">ID-er for kanal</translation>
 <translation id="6136114942382973861">Lukk nedlastingsraden</translation>
 <translation id="6137767437444130246">Brukersertifikat</translation>

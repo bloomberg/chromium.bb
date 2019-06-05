@@ -3316,7 +3316,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6082651258230788217">Afficher dans la barre d'outils</translation>
 <translation id="6086846494333236931">Installée par votre administrateur</translation>
 <translation id="6087960857463881712">Visage "Génial"</translation>
-<translation id="6089481419520884864">Convertir la page</translation>
 <translation id="6091761513005122595">Le partage a bien été installé.</translation>
 <translation id="6093888419484831006">Annulation de la mise à jour...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3344,6 +3343,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6125479973208104919">Malheureusement, vous devrez ajouter à nouveau votre compte sur cet appareil <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6129691635767514872">Les données sélectionnées ont été supprimées de Chrome et des appareils synchronisés. Votre compte Google conserve peut-être d'autres formes d'historique de navigation, comme vos recherches ou vos activités via d'autres services Google sur la page <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Commentaire du certificat Netscape</translation>
+<translation id="6129953537138746214">Espace</translation>
 <translation id="6135622770221372891">Identifiants de version</translation>
 <translation id="6136114942382973861">Fermer la barre de téléchargements</translation>
 <translation id="6137767437444130246">Certificat utilisateur</translation>

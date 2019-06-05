@@ -3315,7 +3315,6 @@
 <translation id="6082651258230788217">ツールバーに表示</translation>
 <translation id="6086846494333236931">管理者によりインストールされています</translation>
 <translation id="6087960857463881712">エピック スマイリー</translation>
-<translation id="6089481419520884864">ページを抽出</translation>
 <translation id="6091761513005122595">共有フォルダが正常にマウントされました。</translation>
 <translation id="6093888419484831006">更新をキャンセルしています...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3343,6 +3342,7 @@
 <translation id="6125479973208104919">アカウントをもう一度この <ph name="DEVICE_TYPE" /> に追加する必要があります。</translation>
 <translation id="6129691635767514872">選択したデータが Chrome から削除され、同期されたデバイスからも削除されました。他の Google サービスでの検索や操作など、Google アカウントの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="6129938384427316298">Netscape 証明書コメント</translation>
+<translation id="6129953537138746214">Space</translation>
 <translation id="6135622770221372891">チャンネル ID</translation>
 <translation id="6136114942382973861">ダウンロード バーを閉じる</translation>
 <translation id="6137767437444130246">ユーザー証明書</translation>

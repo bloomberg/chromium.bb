@@ -1179,24 +1179,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er satt til false (usann), er WPAD-optimalisering slått av, noe som fører til at <ph name="PRODUCT_NAME" /> må vente lenger på DNS-baserte WPAD-tjenere. Hvis denne regelen er slått på, eller hvis du ikke har spesifisert den, er WPAD-optimalisering slått på.
 
       Innstillingen for WPAD-optimalisering kan ikke endres av brukerne. Dette gjelder uansett hvordan eller om denne regelen er konfigurert.</translation>
-<translation id="3071839057966069710">Konfigurerer en liste over skrivere.
-
-      Med denne regelen kan administratorer levere skriveroppsett til brukerne sine.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenger som kan tilpasses fritt for å gjøre det lett å velge skriver. Formålet med <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> er å gjøre det lett for brukere å identifisere skriverne. Strengene representerer skriverprodusenten og -modellen. <ph name="PRINTER_URI" /> skal være en adresse som klientdatamaskiner kan nå, inkludert <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfritt. Hvis den angis, kan den bidra til å deduplisere <ph name="ZEROCONF_DISCOVERY" />-skrivere.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> må samsvare med en av strengene som representerer en skriver som støttes av <ph name="PRODUCT_NAME" />. Strengen brukes til å identifisere og installere riktig PPD for skriveren. Du finner mer informasjon på https://support.google.com/chrome?p=noncloudprint.
-
-      <ph name="PRINTER_AUTOCONF" /> er et boolsk flagg som indikerer om IPP Everywhere skal brukes til å sette opp skriveren. Dette flagget støttes i <ph name="PRODUCT_OS_NAME" /> versjon 76 og nyere.
-
-      Enten må <ph name="PRINTER_EFFECTIVE_MODEL" /> inneholde navnet på skriveren, eller så må <ph name="PRINTER_AUTOCONF" /> være satt til «true» (sann). Skrivere med begge eller uten noen av egenskapene ignoreres.
-
-      Skriveroppsettet fullføres første gang en skriver tas i bruk.  PPD-er lastes ikke ned før skriveren tas i bruk.  Deretter blir mye brukte PPD-er bufret.
-
-      Denne regelen har ingen innvirkning på om brukere kan konfigurere skrivere på enhetene sine.  Den er ment å supplere skriveroppsettene til individuelle brukere.
-
-      For enheter som administreres via Active Directory, har denne regelen støtte for å utvide <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-maskinnavnet eller en delstreng av dette. Hvis maskinnavnet for eksempel er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> med de fire tegnene som kommer etter den sjette posisjonen, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Legg merke til at posisjonen er nullbasert.
-      </translation>
 <translation id="3072045631333522102">Skjermsparer som skal brukes på påloggingssiden i detaljistmodus</translation>
 <translation id="3072847235228302527">Angi bruksvilkårene for en konto på enheten</translation>
 <translation id="3077183141551274418">Aktiverer eller deaktiverer fanelivssykluser</translation>
@@ -1328,13 +1310,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
 
           Hvis denne regelen ikke angis, er strømtoppskift av og kan ikke slås på av brukerne.</translation>
-<translation id="3388153794103186066">Lar deg angi en liste over nettadresser som spesifiserer nettsteder som automatisk får tilgang til USB-enheter fra gjeldende leverandører og produkt-ID-er. Hvert element på listen må inneholde både enhetene og nettadressene for at regelen skal gjelde. Hvert element i enheter kan inneholde felt for leverandør-ID og produkt-ID. Eventuelle ID-er som ikke føres opp på listen, behandles som jokertegn, med ett unntak: Du kan ikke angi en produkt-ID uten å angi en leverandør-ID. Hvis ikke er regelen ugyldig og den blir ignorert.
-
-        USB-tillatelsesmodellen bruker nettadressen forespørselen kommer fra («forespørsel-nettadressen»), og nettadressen med den innebygde iframe-koden («nettadressen med innebygging») for å gi nettadressen forespørselen kommer fra, tilgang til USB-enheten. Forespørsel-nettadressen kan være forskjellig fra nettadressen med innebygging når nettstedet forespørselen kommer fra, ligger i en iframe. Derfor kan feltet «urls» (nettadresser) inneholde opptil to nettadressestrenger atskilt med komma for å spesifisere henholdsvis forespørsel-nettadressen og nettadressen med innebygging. Hvis kun én nettadresse er spesifisert, gis tilgang til de samsvarende USB-enhetene når forespørsel-nettadressen samsvarer med denne nettadressen, uavhengig av innebyggingsstatus. Nettadressene i «urls» (nettadresser) må være gyldige, ellers blir regelen ignorert.
-
-        Hvis denne regelen ikke er angitt, brukes den globale standardverdien for alle nettsteder fra «DefaultWebUsbGuardSetting»-regelen hvis den er angitt, eller brukerens personlige konfigurasjon hvis den ikke er angitt.
-
-        Nettadressemønstre i denne regelen må ikke kollidere med de som er konfigurert via WebUsbBlockedForUrls. Hvis de kolliderer, har denne regelen prioritet over WebUsbBlockedForUrls og WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Hvis denne regelen ikke er konfigurert, bruker <ph name="PRODUCT_NAME" /> en standard minimumsversjon, som er TLS 1.0.
 
       Ellers kan den angis som en av de følgende verdiene: «tls1», «tls1.1» eller «tls1.2». Når den er angitt, bruker ikke <ph name="PRODUCT_NAME" /> lavere SSL/TLS-versjoner enn den angitte versjonen. Ukjente verdier blir ignorert.</translation>

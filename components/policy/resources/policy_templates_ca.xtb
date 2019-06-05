@@ -1068,24 +1068,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Si aquesta política s'estableix en "false", l'optimització WPAD es desactiva i <ph name="PRODUCT_NAME" /> ha d'esperar més temps els servidors WPAD basats en DNS. Si la política no s'estableix o està activada, l'optimització WPAD s'activa.
 
       Tant si la política s'estableix com si no, els usuaris no poden canviar la configuració de l'optimització WPAD.</translation>
-<translation id="3071839057966069710">Configura una llista d'impressores.
-
-      Aquesta política permet als administradors proporcionar configuracions d'impressores als usuaris.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> són cadenes de format lliure que es poden personalitzar per facilitar la selecció de la impressora. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> serveixen perquè els usuaris finals puguin identificar la impressora més fàcilment. Representen el fabricant i el model de la impressora. <ph name="PRINTER_URI" /> ha de ser una adreça accessible des d'un ordinador de client, com ara <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> o <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> és opcional. Si s'indica, s'utilitza per eliminar la duplicació d'impressores <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> ha de coincidir amb una de les cadenes que representen una impressora compatible amb <ph name="PRODUCT_NAME" />. La cadena s'utilitzarà per identificar i instal·lar el fitxer PPD adequat per a la impressora. Pots trobar-ne més informació a https://support.google.com/chrome?p=noncloudprint.
-
-      <ph name="PRINTER_AUTOCONF" /> és un indicador booleà que indica si cal usar IPP Everywhere per configurar la impressora. Aquest indicador s'admet a <ph name="PRODUCT_OS_NAME" /> versió 76 i posteriors.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> hauria de contenir el nom de la impressora o bé <ph name="PRINTER_AUTOCONF" /> s'hauria d'establir en "true". Les impressores que no tinguin cap d'aquestes propietats o que les tinguin totes dues s'ignoraran.
-
-      La configuració de la impressora finalitza quan la impressora s'utilitza per primera vegada.  Els fitxers PPD no es baixen fins que s'utilitza la impressora.  Passat aquest temps, els fitxers PPD que s'utilitzen amb freqüència es desen a la memòria cau.
-
-      Aquesta política no repercuteix en la possibilitat dels usuaris de configurar les impressores en dispositius individuals.  La seva finalitat és complementar la configuració d'impressores per part d'usuaris individuals.
-
-      En dispositius gestionats per Active Directory, aquesta política admet afegir <ph name="MACHINE_NAME_VARIABLE" /> al nom de l'ordinador gestionat per Active Directory o a una subcadena d'aquest. Per exemple, si el nom de l'ordinador fos <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se substituiria pels 4 caràcters que segueixen la 6a posició, per exemple, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tingues en compte que aquesta posició es basa en zero.
-      </translation>
 <translation id="3072045631333522102">Estalvi de pantalla per utilitzar a la pantalla d'inici de sessió en mode botiga</translation>
 <translation id="3072847235228302527">Defineix els Termes i condicions d'un compte local del dispositiu</translation>
 <translation id="3077183141551274418">Activa o desactiva els cicles de vida de les pestanyes</translation>
@@ -1214,13 +1196,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Si estableixes aquesta política, els usuaris no la podran canviar ni substituir.
 
           Si aquesta política es deixa sense establir, el canvi d'alimentació en pics d'ús estarà desactivat d'entrada i l'usuari no el podrà activar.</translation>
-<translation id="3388153794103186066">Permet definir una llista d'URL que especifiquin quins llocs web obtindran permís automàticament per accedir a un dispositiu USB amb els identificadors de proveïdor i producte que s'indiquin. Perquè la política sigui vàlida, tots els elements de la llista han d'incloure tant dispositius com URL. A més, cada dispositiu pot incloure un camp per a l'identificador de proveïdor i per al de producte. Els identificadors omesos es tracten com un comodí, amb excepció dels identificadors de producte, que no es poden especificar si no hi ha un identificador de proveïdor. En cas contrari, la política no serà vàlida i s'ignorarà.
-
-        El model de permisos per a USB utilitza l'URL del lloc web que sol·licita permís ("URL sol·licitant") i l'URL del lloc web de marcs de nivell superior ("URL d'inserció") per concedir permís a l'URL sol·licitant per accedir al dispositiu USB. Si el lloc web que sol·licita permís es carrega en un iframe, l'URL sol·licitant pot ser diferent de l'URL d'inserció. Per tant, el camp urls pot incloure fins a dues cadenes d'URL delimitades per una coma a fi d'especificar l'URL sol·licitant i el d'inserció, respectivament. Si només se n'especifica un, l'accés als dispositius USB corresponents es concedeix quan l'URL del lloc web sol·licitant coincideixi amb aquest URL independentment de l'estat d'inserció. Els URL del camp urls han de ser vàlids. Si no, la política s'ignorarà.
-
-        Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat general per a tots els llocs web, ja sigui de la política DefaultWebUsbGuardSetting si està establerta o de la configuració personal de l'usuari si no ho està.
-
-        Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. Si hi ha un conflicte, aquesta política té prioritat sobre WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitzarà TLS 1.0 com a versió mínima predeterminada.
 
       També es pot definir en un dels valors següents: "tls1", "tls1.1" o "tls1.2". Quan s'hagi definit, <ph name="PRODUCT_NAME" /> no utilitzarà versions SSL/TLS inferiors a la versió especificada. Els valors que no es reconeguin s'ignoraran.</translation>
@@ -1256,7 +1231,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3487623755010328395">
         Si s'estableix aquesta política, <ph name="PRODUCT_NAME" /> provarà de registrar-se sense ajuda i d'aplicar en tots els perfils la política per al núvol associada.
 
-        El valor d'aquesta política és un testimoni d'inscripció que es pot recuperar de la Consola d'administració de Google.</translation>
+        El valor d'aquesta política és un testimoni d'inscripció que es pot recuperar de la consola d'administració de Google.</translation>
 <translation id="3496296378755072552">Gestor de contrasenyes</translation>
 <translation id="3500732098526756068">Et permet controlar l'activació d'un advertiment sobre la protecció de contrasenyes, que avisa els usuaris quan reutilitzen una contrasenya protegida en llocs web potencialment sospitosos.
 
@@ -1279,9 +1254,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3528000905991875314">Activa les pàgines d'error alternatives</translation>
 <translation id="3545457887306538845">Et permet controlar on es poden utilitzar les Eines per a desenvolupadors.
 
-      Si aquesta política s'estableix en "DeveloperToolsDisallowedForForceInstalledExtensions" (valor 0, que és el predeterminat), es podrà accedir en general a les Eines per a desenvolupadors i a la Consola de JavaScript, però no s'hi podrà accedir quan les extensions estiguin instal·lades per la política d'empresa.
-      Si aquesta política s'estableix en "DeveloperToolsAllowed" (valor 1), es podrà accedir en qualsevol context a les Eines per a desenvolupadors i a la Consola de JavaScript, i es podran utilitzar en tots els contextos, fins i tot en extensions instal·lades per la política d'empresa.
-      Si aquesta política s'estableix en "DeveloperToolsDisallowed" (valor 2), no es podrà accedir a les Eines per a desenvolupadors i ja no es podran inspeccionar els elements del lloc web. Es desactivaran totes les dreceres de teclat i les entrades de menú o de menú contextual que obrin les Eines per a desenvolupadors o la Consola de JavaScript.</translation>
+      Si aquesta política s'estableix en "DeveloperToolsDisallowedForForceInstalledExtensions" (valor 0, que és el predeterminat), es podrà accedir en general a les Eines per a desenvolupadors i a la consola de JavaScript, però no s'hi podrà accedir quan les extensions estiguin instal·lades per la política d'empresa.
+      Si aquesta política s'estableix en "DeveloperToolsAllowed" (valor 1), es podrà accedir en qualsevol context a les Eines per a desenvolupadors i a la consola de JavaScript, i es podran utilitzar en tots els contextos, fins i tot en extensions instal·lades per la política d'empresa.
+      Si aquesta política s'estableix en "DeveloperToolsDisallowed" (valor 2), no es podrà accedir a les Eines per a desenvolupadors i ja no es podran inspeccionar els elements del lloc web. Es desactivaran totes les dreceres de teclat i les entrades de menú o de menú contextual que obrin les Eines per a desenvolupadors o la consola de JavaScript.</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="3550875587920006460">Permet definir una programació personalitzada per comprovar si hi ha actualitzacions. S'aplica a tots els usuaris i a totes les interfícies del dispositiu. Un cop definida, el dispositiu comprovarà si hi ha actualitzacions segons la programació. Cal suprimir la política per cancel·lar les comprovacions d'actualitzacions programades.</translation>
 <translation id="355118380775352753">Llocs web que s'obriran al navegador alternatiu</translation>
@@ -1793,7 +1768,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si l'activeu o el desactiveu, els usuaris no podran canviar ni substituir aquesta configuració a <ph name="PRODUCT_NAME" />.
 
       Si no es defineix aquesta política, aquest paràmetre s'activarà, però l'usuari podrà canviar-lo.</translation>
-<translation id="4531706050939927436">Es pot utilitzar Google Play des de la Consola d'administració de Google per forçar la instal·lació de les aplicacions per a Android. No utilitzen aquesta política.</translation>
+<translation id="4531706050939927436">Es pot utilitzar Google Play des de la consola d'administració de Google per forçar la instal·lació de les aplicacions per a Android. No utilitzen aquesta política.</translation>
 <translation id="4534500438517478692">Nom de la restricció d'Android:</translation>
 <translation id="4541530620466526913">Comptes locals del dispositiu</translation>
 <translation id="4543502256674577024">Configuració de l'actualització del dispositiu</translation>
@@ -2483,10 +2458,10 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si la política <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> s'estableix en "<ph name="BLOCK_GEOLOCATION_SETTING" />", aquesta política s'ignora i els serveis d'ubicació de Google es mantenen desactivats permanentment.</translation>
 <translation id="6145799962557135888">Us permet definir una llista de patrons d'URL que especifiquen els llocs que no poden executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultJavaScriptSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="614662973812186053">Aquesta política també controla la recollida de dades d'ús i de diagnòstic d'Android.</translation>
-<translation id="6153048425064249648">Aquesta política controla els informes al núvol de <ph name="PRODUCT_NAME" />, que carreguen informació sobre el funcionament del navegador a la Consola d'administració de Google.
+<translation id="6153048425064249648">Aquesta política controla els informes al núvol de <ph name="PRODUCT_NAME" />, que carreguen informació sobre el funcionament del navegador a la consola d'administració de Google.
 
       Si aquesta política no es defineix o es defineix en "false", no es recopilaran ni es penjaran dades.
-      Si aquesta política es defineix en "true", les dades es recopilaran i es penjaran a la Consola d'administració de Google.
+      Si aquesta política es defineix en "true", les dades es recopilaran i es penjaran a la consola d'administració de Google.
       Per controlar les dades que es pengen, utilitza les polítiques del grup Chrome Reporting Extension.
 
       Aquesta política només funciona quan l'ordinador està inscrit amb <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
@@ -3035,11 +3010,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7261252191178797385">Imatge de fons de pantalla del dispositiu</translation>
 <translation id="7264704483008663819">Aquesta política es considera obsoleta a M68; en lloc seu, utilitza DeveloperToolsAvailability.
 
-      Desactiva les Eines per a desenvolupadors i la Consola de JavaScript.
+      Desactiva les Eines per a desenvolupadors i la consola de JavaScript.
 
-      Si actives aquesta opció de configuració, ja no es podrà accedir a les Eines per a desenvolupadors ni inspeccionar els elements del lloc web. Es desactivaran les tecles de drecera i les entrades als menús o als menús contextuals que obrin les Eines per a desenvolupadors o la Consola de JavaScript.
+      Si actives aquesta opció de configuració, ja no es podrà accedir a les Eines per a desenvolupadors ni inspeccionar els elements del lloc web. Es desactivaran les tecles de drecera i les entrades als menús o als menús contextuals que obrin les Eines per a desenvolupadors o la consola de JavaScript.
 
-      Si aquesta opció es desactiva o es deixa sense establir, l'usuari podrà utilitzar les Eines per a desenvolupadors i la Consola de JavaScript.
+      Si aquesta opció es desactiva o es deixa sense establir, l'usuari podrà utilitzar les Eines per a desenvolupadors i la consola de JavaScript.
 
       Si s'estableix la política DeveloperToolsAvailability, s'ignora el valor establert a DeveloperToolsDisabled.</translation>
 <translation id="7266471712301230894">Aquesta política no està disponible des de la versió 64 de <ph name="PRODUCT_NAME" />.
@@ -3810,7 +3785,7 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 
       Si aquesta política no es defineix, Google Sync estarà disponible perquè l'usuari pugui escollir si la vol utilitzar o no.
 
-      Per desactivar el servei Google Sync per complet, et recomanem que el desactivis a la Consola d'administració de Google.
+      Per desactivar el servei Google Sync per complet, et recomanem que el desactivis a la consola d'administració de Google.
 
       Aquesta política no s'ha d'activar si la política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> està activada, ja que aquesta funció comparteix la mateixa funcionalitat al costat del client. En aquest cas, la sincronització allotjada a Google es desactiva completament.</translation>
 <translation id="8955719471735800169">Torna a dalt</translation>

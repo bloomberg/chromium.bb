@@ -319,7 +319,7 @@
 <translation id="1478340334823509079">Chi tiết: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Cài đặt chưa được bật</translation>
 <translation id="1483493594462132177">Gửi</translation>
-<translation id="1483829627339988491">Kiểm soát của phụ huynh</translation>
+<translation id="1483829627339988491">Quyền kiểm soát của cha mẹ</translation>
 <translation id="1484979925941077974">Trang web đang sử dụng Bluetooth</translation>
 <translation id="1485015260175968628">Tiện ích/ứng dụng giờ đây có thể:</translation>
 <translation id="1485141095922496924">Phiên bản <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -1604,7 +1604,7 @@
 <translation id="3453612417627951340">Cần cấp phép</translation>
 <translation id="3454157711543303649">Đã kích hoạt xong</translation>
 <translation id="345693547134384690">Mở &amp;hình ảnh trong tab mới</translation>
-<translation id="3457500881955698515">Công ty hoặc tổ chức của bạn yêu cầu cập nhật ngay thiết bị này</translation>
+<translation id="3457500881955698515">Công ty hoặc tổ chức của bạn yêu cầu bạn cập nhật thiết bị này ngay bây giờ</translation>
 <translation id="3459509316159669723">In</translation>
 <translation id="3459697287128633276">Để cho phép tài khoản của bạn truy cập vào Cửa hàng Google Play, vui lòng xác thực với Nhà cung cấp danh tính của bạn.</translation>
 <translation id="3459774175445953971">Sửa đổi lần cuối:</translation>
@@ -1673,7 +1673,7 @@
 <translation id="3552780134252864554">Xóa khi thoát</translation>
 <translation id="3555812735919707620">Xóa tiện ích</translation>
 <translation id="3556000484321257665">Công cụ tìm kiếm của bạn đã được thay đổi thành <ph name="URL" />.</translation>
-<translation id="3557101512409028104">Đặt ra các hạn chế về trang web và giới hạn thời gian sử dụng thiết bị bằng Family Link</translation>
+<translation id="3557101512409028104">Đặt các hạn chế về trang web và giới hạn thời gian sử dụng thiết bị bằng Family Link</translation>
 <translation id="3559262020195162408">Không cài đặt được chính sách trên thiết bị.</translation>
 <translation id="3560034655160545939">&amp;Kiểm tra chính tả</translation>
 <translation id="3562423906127931518">Quá trình này có thể mất vài phút. Đang thiết lập vùng chứa Linux.</translation>
@@ -3315,7 +3315,6 @@
 <translation id="6082651258230788217">Hiển thị trên thanh công cụ</translation>
 <translation id="6086846494333236931">Do quản trị viên của bạn cài đặt</translation>
 <translation id="6087960857463881712">Khuôn mặt vui nhộn</translation>
-<translation id="6089481419520884864">Lọc trang</translation>
 <translation id="6091761513005122595">Đã kết nối thành công với thư mục chia sẻ.</translation>
 <translation id="6093888419484831006">Đang hủy cập nhật...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3343,6 +3342,7 @@
 <translation id="6125479973208104919">Rất tiếc, bạn sẽ cần phải thêm lại tài khoản của mình vào <ph name="DEVICE_TYPE" /> này.</translation>
 <translation id="6129691635767514872">Dữ liệu được chọn đã bị xóa khỏi Chrome và các thiết bị được đồng bộ hóa. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác, chẳng hạn như tìm kiếm và hoạt động từ các dịch vụ khác của Google tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Nhận xét về Chứng chỉ Netscape</translation>
+<translation id="6129953537138746214">Dấu cách</translation>
 <translation id="6135622770221372891">ID kênh</translation>
 <translation id="6136114942382973861">Đóng thanh tệp đã tải xuống</translation>
 <translation id="6137767437444130246">Chứng chỉ người dùng</translation>
@@ -4311,7 +4311,7 @@
 <translation id="7644543211198159466">Màu sắc và giao diện</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (chủ sở hữu)</translation>
 <translation id="7647403192093989392">Không có hoạt động nào gần đây</translation>
-<translation id="7648142322539582331">Kết nối Internet để thiết lập tính năng Kiểm soát của phụ huynh</translation>
+<translation id="7648142322539582331">Kết nối Internet để thiết lập tính năng Quyền kiểm soát của cha mẹ</translation>
 <translation id="7648992873808071793">Lưu trữ tệp trên thiết bị này</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7650511557061837441">"<ph name="TRIGGERING_EXTENSION_NAME" />" muốn xóa "<ph name="EXTENSION_NAME" />".</translation>

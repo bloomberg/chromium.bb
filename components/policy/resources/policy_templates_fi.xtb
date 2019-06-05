@@ -1183,25 +1183,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos tämän käytännön arvo on Epätosi, WPAD-optimointi poistetaan käytöstä, jolloin <ph name="PRODUCT_NAME" /> odottaa nimipalveluun perustuvia WPAD-palvelimia kauemmin. Jos käytäntöä ei aseteta tai sen arvo on Tosi, WPAD-optimointia käytetään.
 
       Käyttäjät eivät voi muuttaa WPAD-optimoinnin asetuksia tästä käytännöstä riippumatta.</translation>
-<translation id="3071839057966069710">Määrittää tulostinluettelon.
-
-      Tämän käytännön avulla järjestelmänvalvojat voivat määrittää tulostinasetuksia
-      käyttäjiä varten.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> ovat vapaamuotoisia merkkijonoja, joita voidaan muokata tulostimen valinnan helpottamiseksi. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> auttavat käyttäjiä tunnistamaan tulostimet. Ne vastaavat tulostimen valmistajaa ja mallia. Määritä kohteen <ph name="PRINTER_URI" /> arvoksi osoite, joka on käytettävissä asiakastietokoneelta ja johon sisältyvät <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valinnainen arvo. Sen tarkoituksena on auttaa <ph name="ZEROCONF_DISCOVERY" /> ‑tulostinkopioiden poistamisessa.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> on oltava sama kuin jokin <ph name="PRODUCT_NAME" /> ‑yhteensopivia tulostimia edustavista merkkijonoista. Merkkijonoa käytetään oikean PPD:n tunnistamiseen ja asentamiseen tulostinta varten. Saat lisätietoja osoitteesta https://support.google.com/chrome?p=noncloudprint.
-
-      <ph name="PRINTER_AUTOCONF" /> on totuusarvo, joka määrittää, pitäisikö tulostimen määritykseen käyttää IPP Everywhereä. Tätä arvoa tuetaan tuotteen <ph name="PRODUCT_OS_NAME" /> versiossa 76 ja sitä uudemmissa.
-
-      Joko kohteen <ph name="PRINTER_EFFECTIVE_MODEL" /> pitäisi sisältää tulostimen nimen tai kohteen <ph name="PRINTER_AUTOCONF" /> arvoksi pitäisi olla asetettu tosi. Sellaiset tulostimet ohitetaan, joissa on joko molemmat ominaisuudet tai ei kumpaakaan.
-
-      Tulostin määritetään sen ensimmäisen käyttökerran yhteydessä.  PPD:t ladataan vasta, kun tulostinta käytetään.  Tämän jälkeen PPD:t tallennetaan välimuistiin, jos niitä käytetään usein.
-
-      Tämä käytäntö ei vaikuta siihen, voivatko käyttäjät määrittää tulostimia yksittäisillä laitteilla.  Se on tarkoitettu käytettäväksi yksittäisten käyttäjien tekemien tulostinmääritysten lisäksi.
-
-      Jos laitetta hallinnoidaan Active Directoryn avulla, tämä käytäntö sallii, että <ph name="MACHINE_NAME_VARIABLE" /> liitetään Active Directory ‑koneen nimeen tai sen alimerkkijonoon. Jos koneen nimi on esimerkiksi <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> korvattaisiin kuudennetta kohtaa seuraavilla neljällä merkillä: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Huomaa, että kohtien laskeminen aloitetaan nollasta.
-      </translation>
 <translation id="3072045631333522102">Näytönsäästäjä, jota käytetään kirjautumisruudulla jälleenmyyntitilassa</translation>
 <translation id="3072847235228302527">Aseta laitteen paikallisen tilin käyttöehdot</translation>
 <translation id="3077183141551274418">Ottaa välilehtien elinkaaret käyttöön tai poistaa ne käytöstä</translation>
@@ -1337,13 +1318,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
 
           Jos tätä käytäntöä ei ole määritetty, ruuhka-ajan virranvaihto on oletuksena poistettu käytöstä eikä käyttäjä voi ottaa sitä käyttöön.</translation>
-<translation id="3388153794103186066">Voit määrittää luettelon URL-osoitemalleja, jonka sivustot saavat automaattisesti pyytää käyttäjältä USB-laitteen käyttöoikeutta, jos sillä on tietty myyjän ja tuotteen tunnus. Luettelon jokaisessa kohteessa on oltava laitteita ja URL-osoitemalleja, jotta käytäntö voi astua voimaan. Jokainen laitekohta voi sisältää kentät myyjän tunnukselle ja tuotteen tunnukselle. Jos tunnusta ei mainita, tätä pidetään jokerimerkkinä, paitsi jos tuotteen tunnus mainitaan ilman myyjän tunnuksen mainitsemista – tämä ei ole mahdollista. Muuten käytäntö ei voi astua voimaan. Virheelliset käytännön arvot ohitetaan.
-
-        USB-lupamallissa on pyytävän sivuston URL-osoite (pyytävä URL) ja ylimmän tason kehyssivuston URL-osoite (upottava URL), joiden avulla pyytävälle URL-osoitteelle annetaan lupa käyttää USB-laitetta. Pyytävä ja upottava URL-osoite voivat olla erilaiset, kun pyytävä sivusto ladataan iframella. Siksi "urls"-kentässä voi olla enintään kaksi URL-osoitekohtaa pilkulla erotettuna: pyytävä ja upottava URL-osoite. Jos vain yksi URL-osoite mainitaan, kyseisten USB-laitteiden käyttölupa annetaan, jos tämä osoite vastaa pyytävän sivun URL-osoitetta upotustilasta huolimatta. "urls"-kentän osoitteiden on oltava hyväksyttäviä URL-osoitteita, tai käytäntö ohitetaan.
-
-        Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultWebUsbGuardSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista arvoa.
-
-        Tämän käytännön URL-osoitemallien on sovittava yhteen WebUsbBlockedForUrls-mallien kanssa. Ristiriitatilanteissa tätä käytäntöä sovelletaan ennen WebUsbBlockedForUrls- ja WebUsbAskForUrls-käytäntöjä.</translation>
 <translation id="3414260318408232239">Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena vanhinta versiota, joka on TLS 1.0.
 
       Muussa tapauksessa käytännön arvoksi voidaan määrittää tls1, tls1.1 tai tls1.2. Jos arvo on jokin näistä, <ph name="PRODUCT_NAME" /> ei käytä kyseistä arvoa vanhempaa SSL/TLS-versiota. Tunnistamattomat arvot ohitetaan.</translation>

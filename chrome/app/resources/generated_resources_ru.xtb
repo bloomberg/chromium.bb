@@ -3315,7 +3315,6 @@
 <translation id="6082651258230788217">Добавить на панель инструментов</translation>
 <translation id="6086846494333236931">Установлено администратором</translation>
 <translation id="6087960857463881712">Модник</translation>
-<translation id="6089481419520884864">Сжать страницу</translation>
 <translation id="6091761513005122595">Ресурс подключен.</translation>
 <translation id="6093888419484831006">Отмена обновления...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3343,6 +3342,7 @@
 <translation id="6125479973208104919">Необходимо заново добавить аккаунт на <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6129691635767514872">Выбранные данные удалены из Chrome и с синхронизированных устройств. История также может храниться в вашем аккаунте Google, например в виде поисковых запросов и сведений из сервисов Google. Их можно найти на сайте <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Комментарий к сертификату Netscape</translation>
+<translation id="6129953537138746214">Пробел</translation>
 <translation id="6135622770221372891">Идентификаторы каналов</translation>
 <translation id="6136114942382973861">Закрыть панель загрузок</translation>
 <translation id="6137767437444130246">Сертификат пользователя</translation>

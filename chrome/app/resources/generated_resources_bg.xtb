@@ -3315,7 +3315,6 @@
 <translation id="6082651258230788217">Показване в лентата с инструменти</translation>
 <translation id="6086846494333236931">Инсталирано от администратора ви</translation>
 <translation id="6087960857463881712">Страхотно лице</translation>
-<translation id="6089481419520884864">Създаване на сбит вариант на страницата</translation>
 <translation id="6091761513005122595">Дялът е свързан успешно.</translation>
 <translation id="6093888419484831006">Актуализирането се анулира...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -3343,6 +3342,7 @@
 <translation id="6125479973208104919">За съжаление, трябва отново да добавите профила си към това устройство <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6129691635767514872">Избраните данни са премахнати от Chrome и синхронизираните устройства. Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> – например търсения и активност от други наши услуги.</translation>
 <translation id="6129938384427316298">Коментар на сертификат на Netscape</translation>
+<translation id="6129953537138746214">Интервал</translation>
 <translation id="6135622770221372891">Идентификатори на каналите</translation>
 <translation id="6136114942382973861">Затваряне на лентата на изтеглянето</translation>
 <translation id="6137767437444130246">Потребителски сертификат</translation>
