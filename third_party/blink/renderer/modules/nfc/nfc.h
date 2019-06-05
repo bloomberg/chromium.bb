@@ -19,6 +19,7 @@ namespace blink {
 
 class NFCPushOptions;
 using NDEFMessageSource = StringOrArrayBufferOrNDEFMessage;
+using NDEFRecordData = StringOrUnrestrictedDoubleOrArrayBufferOrDictionary;
 class NFCWatchOptions;
 class ScriptPromiseResolver;
 

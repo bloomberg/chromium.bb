@@ -96,21 +96,21 @@ NFCWatchMode toNFCWatchMode(const String& watchMode) {
 // If NDEFRecord type is not provided, deduce NDEFRecord type from JS data type:
 // String or Number => 'text' record
 // ArrayBuffer => 'opaque' record
-// JSON serializable Object => 'json' record
+// Dictionary, JSON serializable Object => 'json' record
 NDEFRecordType deduceRecordTypeFromDataType(const blink::NDEFRecord* record) {
   if (record->hasData()) {
-    v8::Local<v8::Value> value = record->data().V8Value();
+    const blink::NDEFRecordData& value = record->data();
 
-    if (value->IsString() ||
-        (value->IsNumber() && !std::isnan(value.As<v8::Number>()->Value()))) {
+    if (value.IsString() || (value.IsUnrestrictedDouble() &&
+                             !std::isnan(value.GetAsUnrestrictedDouble()))) {
       return NDEFRecordType::TEXT;
     }
 
-    if (value->IsObject() && !value->IsArrayBuffer()) {
+    if (value.IsDictionary()) {
       return NDEFRecordType::JSON;
     }
 
-    if (value->IsArrayBuffer()) {
+    if (value.IsArrayBuffer()) {
       return NDEFRecordType::OPAQUE_RECORD;
     }
   }
@@ -176,31 +176,27 @@ struct TypeConverter<NDEFMessagePtr, String> {
 };
 
 template <>
-struct TypeConverter<base::Optional<Vector<uint8_t>>, blink::ScriptValue> {
+struct TypeConverter<base::Optional<Vector<uint8_t>>, blink::NDEFRecordData> {
   static base::Optional<Vector<uint8_t>> Convert(
-      const blink::ScriptValue& scriptValue) {
-    v8::Local<v8::Value> value = scriptValue.V8Value();
-
-    if (value->IsNumber()) {
+      const blink::NDEFRecordData& value) {
+    if (value.IsUnrestrictedDouble()) {
       return mojo::ConvertTo<Vector<uint8_t>>(
-          String::Number(value.As<v8::Number>()->Value()));
+          String::Number(value.GetAsUnrestrictedDouble()));
     }
 
-    if (value->IsString()) {
-      blink::V8StringResource<> stringResource = value;
-      if (stringResource.Prepare()) {
-        return mojo::ConvertTo<Vector<uint8_t>>(String(stringResource));
-      }
+    if (value.IsString()) {
+      return mojo::ConvertTo<Vector<uint8_t>>(value.GetAsString());
     }
 
-    if (value->IsObject() && !value->IsArray() && !value->IsArrayBuffer()) {
+    if (value.IsDictionary()) {
       v8::Local<v8::String> jsonString;
-      v8::Isolate* isolate = scriptValue.GetIsolate();
+      blink::Dictionary dictionary = value.GetAsDictionary();
+      v8::Isolate* isolate = dictionary.GetIsolate();
       v8::TryCatch try_catch(isolate);
 
       // https://w3c.github.io/web-nfc/#mapping-json-to-ndef
       // If serialization throws, reject promise with a "SyntaxError" exception.
-      if (!v8::JSON::Stringify(scriptValue.GetContext(), value.As<v8::Object>())
+      if (!v8::JSON::Stringify(dictionary.V8Context(), dictionary.V8Value())
                .ToLocal(&jsonString) ||
           try_catch.HasCaught()) {
         return base::nullopt;
@@ -211,9 +207,8 @@ struct TypeConverter<base::Optional<Vector<uint8_t>>, blink::ScriptValue> {
       return mojo::ConvertTo<Vector<uint8_t>>(string);
     }
 
-    if (value->IsArrayBuffer()) {
-      return mojo::ConvertTo<Vector<uint8_t>>(
-          blink::V8ArrayBuffer::ToImpl(value.As<v8::Object>()));
+    if (value.IsArrayBuffer()) {
+      return mojo::ConvertTo<Vector<uint8_t>>(value.GetAsArrayBuffer());
     }
 
     return base::nullopt;
@@ -383,9 +378,10 @@ ScriptPromise RejectWithDOMException(ScriptState* script_state,
 
 ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
                                         const NDEFRecord* record) {
-  v8::Local<v8::Value> value = record->data().V8Value();
-  if (!value->IsString() &&
-      !(value->IsNumber() && !std::isnan(value.As<v8::Number>()->Value()))) {
+  const NDEFRecordData& value = record->data();
+
+  if (!value.IsString() && !(value.IsUnrestrictedDouble() &&
+                             !std::isnan(value.GetAsUnrestrictedDouble()))) {
     return RejectWithTypeError(script_state,
                                "The data for 'text' NDEFRecords must be of "
                                "String or UnrestrctedDouble type.");
@@ -402,14 +398,12 @@ ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
 
 ScriptPromise RejectIfInvalidURLRecord(ScriptState* script_state,
                                        const NDEFRecord* record) {
-  if (!record->data().V8Value()->IsString()) {
+  if (!record->data().IsString()) {
     return RejectWithTypeError(
         script_state, "The data for 'url' NDEFRecord must be of String type.");
   }
 
-  blink::V8StringResource<> string_resource = record->data().V8Value();
-  if (!string_resource.Prepare() ||
-      !KURL(NullURL(), string_resource).IsValid()) {
+  if (!KURL(NullURL(), record->data().GetAsString()).IsValid()) {
     return RejectWithDOMException(script_state, DOMExceptionCode::kSyntaxError,
                                   "Cannot parse data for 'url' record.");
   }
@@ -419,8 +413,7 @@ ScriptPromise RejectIfInvalidURLRecord(ScriptState* script_state,
 
 ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
                                         const NDEFRecord* record) {
-  v8::Local<v8::Value> value = record->data().V8Value();
-  if (!value->IsObject() || value->IsArrayBuffer()) {
+  if (!record->data().IsDictionary()) {
     return RejectWithTypeError(
         script_state, "The data for 'json' NDEFRecord must be of Object type.");
   }
@@ -440,7 +433,7 @@ ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
 
 ScriptPromise RejectIfInvalidOpaqueRecord(ScriptState* script_state,
                                           const NDEFRecord* record) {
-  if (!record->data().V8Value()->IsArrayBuffer()) {
+  if (!record->data().IsArrayBuffer()) {
     return RejectWithTypeError(
         script_state,
         "The data for 'opaque' NDEFRecord must be of ArrayBuffer type.");
@@ -557,8 +550,10 @@ String ToNDEFRecordType(const device::mojom::blink::NDEFRecordType& type) {
   return String();
 }
 
-v8::Local<v8::Value> ToV8(ScriptState* script_state,
-                          const device::mojom::blink::NDEFRecordPtr& record) {
+NDEFRecordData BuildRecordData(
+    ScriptState* script_state,
+    const device::mojom::blink::NDEFRecordPtr& record) {
+  NDEFRecordData result = NDEFRecordData();
   switch (record->record_type) {
     case device::mojom::blink::NDEFRecordType::TEXT:
     case device::mojom::blink::NDEFRecordType::URL:
@@ -570,41 +565,51 @@ v8::Local<v8::Value> ToV8(ScriptState* script_state,
             record->data.size());
       }
 
-      v8::Isolate* isolate = script_state->GetIsolate();
-      v8::Local<v8::String> string = V8String(isolate, string_data);
+      // Convert back the stringified double.
+      if (record->record_type == device::mojom::blink::NDEFRecordType::TEXT) {
+        bool can_convert = false;
+        double number = string_data.ToDouble(&can_convert);
+        if (can_convert) {
+          result.SetUnrestrictedDouble(number);
+          return result;
+        }
+      }
 
       // Stringified JSON must be converted back to an Object.
       if (record->record_type == device::mojom::blink::NDEFRecordType::JSON) {
+        v8::Isolate* isolate = script_state->GetIsolate();
+        v8::Local<v8::String> string = V8String(isolate, string_data);
         v8::Local<v8::Value> json_object;
         v8::TryCatch try_catch(isolate);
-        if (!v8::JSON::Parse(script_state->GetContext(), string)
-                 .ToLocal(&json_object)) {
-          return v8::Null(isolate);
-        }
+        NonThrowableExceptionState exception_state;
 
-        return json_object;
+        if (v8::JSON::Parse(script_state->GetContext(), string)
+                .ToLocal(&json_object)) {
+          result.SetDictionary(
+              Dictionary(isolate, json_object, exception_state));
+          return result;
+        }
       }
 
-      return string;
+      result.SetString(string_data);
+      return result;
     }
 
     case device::mojom::blink::NDEFRecordType::OPAQUE_RECORD: {
       if (!record->data.IsEmpty()) {
-        DOMArrayBuffer* buffer = DOMArrayBuffer::Create(
-            static_cast<void*>(&record->data.front()), record->data.size());
-        return ToV8(buffer, script_state->GetContext()->Global(),
-                    script_state->GetIsolate());
+        result.SetArrayBuffer(DOMArrayBuffer::Create(
+            static_cast<void*>(&record->data.front()), record->data.size()));
       }
 
-      return v8::Null(script_state->GetIsolate());
+      return result;
     }
 
     case device::mojom::blink::NDEFRecordType::EMPTY:
-      return v8::Null(script_state->GetIsolate());
+      return result;
   }
 
   NOTREACHED();
-  return v8::Local<v8::Value>();
+  return result;
 }
 
 NDEFRecord* ToNDEFRecord(ScriptState* script_state,
@@ -612,7 +617,7 @@ NDEFRecord* ToNDEFRecord(ScriptState* script_state,
   NDEFRecord* nfc_record = NDEFRecord::Create();
   nfc_record->setMediaType(record->media_type);
   nfc_record->setRecordType(ToNDEFRecordType(record->record_type));
-  nfc_record->setData(ScriptValue(script_state, ToV8(script_state, record)));
+  nfc_record->setData(BuildRecordData(script_state, record));
   return nfc_record;
 }
 

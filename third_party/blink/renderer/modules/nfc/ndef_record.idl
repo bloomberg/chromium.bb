@@ -6,9 +6,7 @@
 
 enum NDEFRecordType { "empty", "text", "url", "json", "opaque" };
 
-// TODO(riju): Fix http://crbug.com/935912
-// typedef (DOMString or unrestricted double or ArrayBuffer or Dictionary) NDEFRecordData;
-typedef any NDEFRecordData;
+typedef (DOMString or unrestricted double or ArrayBuffer or Dictionary) NDEFRecordData;
 
 dictionary NDEFRecord {
     NDEFRecordType recordType;
