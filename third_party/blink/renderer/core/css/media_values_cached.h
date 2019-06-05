@@ -113,9 +113,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
 template <>
 struct CrossThreadCopier<MediaValuesCached::MediaValuesCachedData> {
   typedef MediaValuesCached::MediaValuesCachedData Type;
-  static Type Copy(const MediaValuesCached::MediaValuesCachedData& data) {
-    return data.DeepCopy();
-  }
+  static Type Copy(const Type& data) { return data.DeepCopy(); }
 };
 
 }  // namespace blink
