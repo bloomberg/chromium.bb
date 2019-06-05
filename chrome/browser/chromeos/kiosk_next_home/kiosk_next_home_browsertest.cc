@@ -119,6 +119,14 @@ class KioskNextHomeBrowserTest : public MixinBasedInProcessBrowserTest {
     return result;
   }
 
+  // Similar to RunJSAndGetStringResult, but for a double result.
+  double RunJSAndGetDoubleResult(const std::string& js_script) {
+    double result;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractDouble(app_render_frame_host_,
+                                                       js_script, &result));
+    return result;
+  }
+
   LoginManagerMixin::TestUserInfo test_user_{
       AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId)};
 
@@ -294,6 +302,26 @@ IN_PROC_BROWSER_TEST_F(KioskNextHomeRefreshTokenBrowserTest, GetAccessToken) {
       R"(kioskNextHome.getChromeOsBridge().getAccessToken(['fake_scope'])
            .then(token => domAutomationController.send(token)))");
   EXPECT_EQ(access_token, FakeGaiaMixin::kFakeAllScopeAccessToken);
+}
+
+IN_PROC_BROWSER_TEST_F(KioskNextHomeRefreshTokenBrowserTest,
+                       FetchAccessTokenExpiration) {
+  // Access token fetchers take a 10% margin from token expirations before
+  // sending them to avoid returning an expired token.
+  int expected_expiration = FakeGaiaMixin::kFakeAccessTokenExpiration * 9 / 10;
+
+  double raw_expiration_time = RunJSAndGetDoubleResult(
+      R"(kioskNextHome.getChromeOsBridge().fetchAccessToken(['fake_scope'])
+           .then(tokenInfo => {
+                   domAutomationController.send(tokenInfo.expirationTime);
+                 }))");
+  base::Time expiration_time = base::Time::FromJsTime(raw_expiration_time);
+  base::TimeDelta actual_expiration = expiration_time - base::Time::Now();
+
+  // We give a 5 second margin of error for the token expiration. In this test
+  // we are mostly interested if the expiration reaches the Kiosk Next Home, not
+  // in per second precision.
+  EXPECT_NEAR(actual_expiration.InSeconds(), expected_expiration, 5);
 }
 
 IN_PROC_BROWSER_TEST_F(KioskNextHomeRefreshTokenBrowserTest, GetAccountId) {

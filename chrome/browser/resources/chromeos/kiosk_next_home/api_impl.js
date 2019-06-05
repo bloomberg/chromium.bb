@@ -43,6 +43,23 @@ function getReadiness(mojoApp) {
 }
 
 /**
+ * Converts the given mojo time to milliseconds since the Unix epoch.
+ * @param {!mojoBase.mojom.Time} mojoTime
+ * @return {number}
+ */
+function getMillisecondsSinceUnixEpoch(mojoTime) {
+  // The mojo time representation is based on base::Time, which in turn
+  // represents the number of microseconds since the Windows epoch. The
+  // following code then mostly reimplements the base::Time::ToJSTime function.
+  const windowsEpoch = Date.UTC(1601, 0, 1, 0, 0, 0, 0);
+  const unixEpoch = Date.UTC(1970, 0, 1, 0, 0, 0, 0);
+  const epochDelta = unixEpoch - windowsEpoch;
+
+  // Converting to milliseconds and from BigInt to Number.
+  return Number(mojoTime.internalValue / BigInt(1000)) - epochDelta;
+}
+
+/**
  * Builds an app from its mojo representation coming from the AppController.
  * @param {!chromeos.kioskNextHome.mojom.App} mojoApp
  * @return {!kioskNextHome.App} A bridge representation of an app.
@@ -134,6 +151,11 @@ class KioskNextHomeBridge {
 
   /** @override */
   getAccessToken(scopes) {
+    return this.fetchAccessToken(scopes).then(accessToken => accessToken.token);
+  }
+
+  /** @override */
+  fetchAccessToken(scopes) {
     return this.identityAccessorProxy_.getPrimaryAccountWhenAvailable()
         .then(account => {
           return this.identityAccessorProxy_.getAccessToken(
@@ -142,8 +164,13 @@ class KioskNextHomeBridge {
         })
         .then(tokenInfo => {
           if (tokenInfo.token) {
-            return tokenInfo.token;
+            return {
+              token: tokenInfo.token,
+              expirationTime:
+                  getMillisecondsSinceUnixEpoch(tokenInfo.expirationTime),
+            };
           }
+
           throw 'Unable to get access token.';
         });
   }

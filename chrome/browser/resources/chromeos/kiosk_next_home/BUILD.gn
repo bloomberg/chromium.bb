@@ -15,7 +15,6 @@ js_library("kiosk_next_api") {
     "api.js",
     "api_impl.js",
   ]
-  externs_list = [ "$externs_path/arc_apps_private.js" ]
   deps = [
     "//chrome/browser/chromeos/kiosk_next_home/mojom:mojom_js_library_for_compile",
   ]

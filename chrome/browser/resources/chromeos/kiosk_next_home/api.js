@@ -46,8 +46,19 @@ kioskNextHome.Bridge = class {
    * @param {!Array<string>} scopes List of scopes to use when obtaining access
    *     token.
    * @return {!Promise<string>} Promise for the access token.
+   * @deprecated Use fetchAccessToken instead. This version doesn't return the
+   *    token expiration.
    */
   getAccessToken(scopes) {}
+
+  /**
+   * Returns an access token with the requested scopes.
+   * @param {!Array<string>} scopes List of scopes to use when obtaining access
+   *     token.
+   * @return {!Promise<kioskNextHome.AccessToken>} Promise for the access
+   *     token.
+   */
+  fetchAccessToken(scopes) {}
 
   /**
    * Returns the Android ID for the ARC++ container. This call might fail if the
@@ -96,6 +107,22 @@ kioskNextHome.Bridge = class {
    * @return {kioskNextHome.NetworkState}
    */
   getNetworkState() {}
+};
+
+/**
+ * A record representing an access token.
+ * @record
+ */
+kioskNextHome.AccessToken = class {
+  constructor() {
+    /** @type {string} The access token. */
+    this.token;
+    /**
+     * @type {number} Time when this token will expire in milliseconds from the
+     * Unix epoch.
+     */
+    this.expirationTime;
+  }
 };
 
 /**
