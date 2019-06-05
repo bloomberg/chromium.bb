@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/browser/bad_message.h"
@@ -81,7 +82,12 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       BluetoothDeviceScanningPromptController* prompt_controller);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           BluetoothScanningPermissionRevokedWhenTabHidden);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           BluetoothScanningPermissionRevokedWhenTabOccluded);
   friend class FrameConnectedBluetoothDevicesTest;
+  friend class WebBluetoothServiceImplTest;
   using PrimaryServicesRequestCallback =
       base::OnceCallback<void(device::BluetoothDevice*)>;
   using ScanFilters = std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>;
@@ -133,6 +139,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // These functions should always check that the affected RenderFrameHost
   // is this->render_frame_host_ and not some other frame in the same tab.
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+  void OnVisibilityChanged(Visibility visibility) override;
 
   // BluetoothAdapter::Observer:
   void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
