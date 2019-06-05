@@ -13,7 +13,6 @@
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -36,6 +35,8 @@ class TestURLLoaderFactory;
 class PrefRegistrySimple;
 class SigninManagerAndroid;
 
+class GaiaCookieManagerService;
+
 namespace identity {
 
 class AccountsMutator;
@@ -52,7 +53,6 @@ struct CookieParams;
 class IdentityManager : public SigninManagerBase::Observer,
                         public OAuth2TokenService::DiagnosticsObserver,
                         public OAuth2TokenService::Observer,
-                        public GaiaCookieManagerService::Observer,
                         public AccountTrackerService::Observer {
  public:
   class Observer {
@@ -596,12 +596,12 @@ class IdentityManager : public SigninManagerBase::Observer,
   void OnAuthErrorChanged(const std::string& account_id,
                           const GoogleServiceAuthError& auth_error) override;
 
-  // GaiaCookieManagerService::Observer:
+  // GaiaCookieManagerService callbacks:
   void OnGaiaAccountsInCookieUpdated(
       const std::vector<gaia::ListedAccount>& signed_in_accounts,
       const std::vector<gaia::ListedAccount>& signed_out_accounts,
-      const GoogleServiceAuthError& error) override;
-  void OnGaiaCookieDeletedByUserAction() override;
+      const GoogleServiceAuthError& error);
+  void OnGaiaCookieDeletedByUserAction();
 
   // OAuth2TokenService::DiagnosticsObserver:
   void OnAccessTokenRequested(

@@ -38,13 +38,12 @@ namespace {
 using MockAddAccountToCookieCompletedCallback = base::MockCallback<
     GaiaCookieManagerService::AddAccountToCookieCompletedCallback>;
 
-class MockObserver : public GaiaCookieManagerService::Observer {
+class MockObserver {
  public:
-  explicit MockObserver(GaiaCookieManagerService* helper) : helper_(helper) {
-    helper_->AddObserver(this);
+  explicit MockObserver(GaiaCookieManagerService* helper) {
+    helper->SetGaiaAccountsInCookieUpdatedCallback(base::BindRepeating(
+        &MockObserver::OnGaiaAccountsInCookieUpdated, base::Unretained(this)));
   }
-
-  ~MockObserver() override { helper_->RemoveObserver(this); }
 
   MOCK_METHOD3(OnGaiaAccountsInCookieUpdated,
                void(const std::vector<gaia::ListedAccount>&,
@@ -52,7 +51,6 @@ class MockObserver : public GaiaCookieManagerService::Observer {
                     const GoogleServiceAuthError&));
 
  private:
-  GaiaCookieManagerService* helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
