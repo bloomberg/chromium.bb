@@ -58,8 +58,6 @@ class MediaCodecBridge {
     private ByteBuffer[] mInputBuffers;
     private ByteBuffer[] mOutputBuffers;
 
-    private boolean mFlushed;
-    private long mLastPresentationTimeUs;
     private @BitrateAdjuster.Type int mBitrateAdjuster;
 
     // To support both the synchronous and asynchronous version of MediaCodec
@@ -242,8 +240,6 @@ class MediaCodecBridge {
             MediaCodec mediaCodec, @BitrateAdjuster.Type int bitrateAdjuster, boolean useAsyncApi) {
         assert mediaCodec != null;
         mMediaCodec = mediaCodec;
-        mLastPresentationTimeUs = 0;
-        mFlushed = true;
         mBitrateAdjuster = bitrateAdjuster;
         mUseAsyncApi = useAsyncApi;
 
@@ -310,7 +306,6 @@ class MediaCodecBridge {
         // Drop buffers that come in during a flush.
         if (mPendingStart) return;
 
-        updateLastPresentationTime(info);
         mPendingOutputBuffers.add(new DequeueOutputResult(MediaCodecStatus.OK, index, info.flags,
                 info.offset, info.presentationTimeUs, info.size));
         notifyBuffersAvailable();
@@ -327,16 +322,6 @@ class MediaCodecBridge {
         // Ignore events from the past.
         if (mSequenceCounter != sequenceCounter) return;
         mPendingStart = false;
-    }
-
-    void updateLastPresentationTime(MediaCodec.BufferInfo info) {
-        if (info.presentationTimeUs < mLastPresentationTimeUs) {
-            // TODO(qinmin): return a special code through DequeueOutputResult
-            // to notify the native code the the frame has a wrong presentation
-            // timestamp and should be skipped.
-            info.presentationTimeUs = mLastPresentationTimeUs;
-        }
-        mLastPresentationTimeUs = info.presentationTimeUs;
     }
 
     @CalledByNative
@@ -442,7 +427,6 @@ class MediaCodecBridge {
     @CalledByNative
     private int flush() {
         try {
-            mFlushed = true;
             mMediaCodec.flush();
 
             // MediaCodec.flush() invalidates all returned indices, but there
@@ -533,7 +517,6 @@ class MediaCodecBridge {
     @CalledByNative
     private int queueInputBuffer(
             int index, int offset, int size, long presentationTimeUs, int flags) {
-        resetLastPresentationTimeIfNeeded(presentationTimeUs);
         try {
             mMediaCodec.queueInputBuffer(index, offset, size, presentationTimeUs, flags);
         } catch (Exception e) {
@@ -592,7 +575,6 @@ class MediaCodecBridge {
     private int queueSecureInputBuffer(int index, int offset, byte[] iv, byte[] keyId,
             int[] numBytesOfClearData, int[] numBytesOfEncryptedData, int numSubSamples,
             int cipherMode, int patternEncrypt, int patternSkip, long presentationTimeUs) {
-        resetLastPresentationTimeIfNeeded(presentationTimeUs);
         try {
             cipherMode = translateCipherModeValue(cipherMode);
             if (cipherMode == MEDIA_CODEC_UNKNOWN_CIPHER_MODE) {
@@ -672,7 +654,6 @@ class MediaCodecBridge {
         int index = -1;
         try {
             int indexOrStatus = dequeueOutputBufferInternal(info, timeoutUs);
-            updateLastPresentationTime(info);
 
             if (indexOrStatus >= 0) { // index!
                 status = MediaCodecStatus.OK;
@@ -746,14 +727,6 @@ class MediaCodecBridge {
             Log.e(TAG, "Cannot configure the audio codec", e);
         }
         return false;
-    }
-
-    private void resetLastPresentationTimeIfNeeded(long presentationTimeUs) {
-        if (mFlushed) {
-            mLastPresentationTimeUs =
-                    Math.max(presentationTimeUs - MAX_PRESENTATION_TIMESTAMP_SHIFT_US, 0);
-            mFlushed = false;
-        }
     }
 
     @SuppressWarnings("deprecation")
