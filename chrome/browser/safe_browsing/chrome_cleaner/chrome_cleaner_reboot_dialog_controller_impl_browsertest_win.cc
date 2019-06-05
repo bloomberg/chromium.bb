@@ -20,6 +20,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -68,10 +69,9 @@ class ChromeCleanerRebootFlowTest : public InProcessBrowserTest {
   }
 
   void OpenPage(const GURL& gurl, Browser* browser) {
-    chrome::AddSelectedTabWithURL(browser, gurl,
-                                  ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-    content::TestNavigationObserver observer(
-        browser->tab_strip_model()->GetActiveWebContents());
+    content::WebContents* contents = chrome::AddSelectedTabWithURL(
+        browser, gurl, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+    content::TestNavigationObserver observer(contents);
     observer.Wait();
   }
 
