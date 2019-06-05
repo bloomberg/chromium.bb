@@ -10,6 +10,7 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -248,6 +249,14 @@ void ShellTestApi::WaitForLauncherAnimationState(
   base::RunLoop run_loop;
   new LauncherStateWaiter(target_state, run_loop.QuitWhenIdleClosure());
   run_loop.Run();
+}
+
+PaginationModel* ShellTestApi::GetAppListPaginationModel() {
+  app_list::AppListView* view =
+      Shell::Get()->app_list_controller()->presenter()->GetView();
+  if (!view)
+    return nullptr;
+  return view->GetAppsPaginationModel();
 }
 
 std::vector<aura::Window*> ShellTestApi::GetItemWindowListInOverviewGrids() {

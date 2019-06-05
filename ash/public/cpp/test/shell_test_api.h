@@ -21,6 +21,7 @@ enum class AppListViewState;
 class DragDropController;
 class MessageCenterController;
 class NativeCursorManagerAsh;
+class PaginationModel;
 class PowerPrefs;
 class ScreenPositionController;
 class Shell;
@@ -93,6 +94,10 @@ class ASH_EXPORT ShellTestApi {
   // Runs the callback when the launcher state becomes |state| after
   // state transition animation.
   void WaitForLauncherAnimationState(AppListViewState state);
+
+  // Returns the pagination model of the currently visible app-list view.
+  // It returns nullptr when app-list is not shown.
+  PaginationModel* GetAppListPaginationModel();
 
   // Returns the list of windows used in overview item. Returns empty
   // if not in the overview mode.
