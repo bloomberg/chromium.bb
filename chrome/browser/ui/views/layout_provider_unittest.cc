@@ -245,8 +245,7 @@ TEST_F(LayoutProviderTest, RequestFontBySize) {
 #if defined(OS_MACOSX)
   EXPECT_EQ(25, headline_font.GetHeight());
 #elif defined(OS_WIN)
-  EXPECT_EQ(ChromeTypographyProvider::GetPlatformFontHeight(CONTEXT_HEADLINE),
-            headline_font.GetHeight());
+  EXPECT_EQ(27, headline_font.GetHeight());
 #else
   EXPECT_EQ(24, headline_font.GetHeight());
 #endif
@@ -268,9 +267,7 @@ TEST_F(LayoutProviderTest, RequestFontBySize) {
 #if defined(OS_MACOSX)
   EXPECT_EQ(16, body1_font.GetHeight());  // Add 4.
 #elif defined(OS_WIN)
-  EXPECT_EQ(
-      ChromeTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_LARGE),
-      body1_font.GetHeight());
+  EXPECT_EQ(18, body1_font.GetHeight());
 #else  // Linux.
   EXPECT_EQ(17, body1_font.GetHeight());  // Add 3.
 #endif
@@ -279,9 +276,7 @@ TEST_F(LayoutProviderTest, RequestFontBySize) {
 
 // Body2 font leading should be 20.
 #if defined(OS_WIN)
-  EXPECT_EQ(
-      ChromeTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_SMALL),
-      body2_font.GetHeight());
+  EXPECT_EQ(16, body2_font.GetHeight());
 #else
   EXPECT_EQ(15, body2_font.GetHeight());  // Other platforms: Add 5.
 #endif
@@ -290,9 +285,7 @@ TEST_F(LayoutProviderTest, RequestFontBySize) {
 
 // Button leading not specified (shouldn't be needed: no multiline buttons).
 #if defined(OS_WIN)
-  EXPECT_EQ(
-      ChromeTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_SMALL),
-      button_font.GetHeight());
+  EXPECT_EQ(16, button_font.GetHeight());
 #else
   EXPECT_EQ(15, button_font.GetHeight());
 #endif
