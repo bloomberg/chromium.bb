@@ -49,6 +49,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
+// TODO(crbug.com/961068): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_TestQuotaOnTruncation DISABLED_TestQuotaOnTruncation
+#else
+#define MAYBE_TestQuotaOnTruncation TestQuotaOnTruncation
+#endif
+
 using content::AsyncFileTestHelper;
 using storage::FileSystemContext;
 using storage::FileSystemOperation;
@@ -978,7 +985,7 @@ TEST_P(ObfuscatedFileUtilTest, TestTruncate) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestQuotaOnTruncation) {
+TEST_P(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnTruncation) {
   bool created = false;
   FileSystemURL url = CreateURLFromUTF8("file");
 
