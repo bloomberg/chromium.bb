@@ -134,6 +134,10 @@ struct AXTreeUpdateState {
   // decisions about when to notify observers of removals or reparenting.
   std::set<int> changed_node_ids;
 
+  // keeps track of parents whose unignored children have changed. Used for
+  // caching unignored relationships.
+  std::unordered_set<int> changed_unignored_parent_ids;
+
   // Keeps track of new nodes created during this update.
   std::set<const AXNode*> new_nodes;
 
@@ -500,6 +504,12 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     changes.push_back(AXTreeObserver::Change(node, change));
   }
 
+  for (int parent_id : update_state.changed_unignored_parent_ids) {
+    AXNode* parent = GetFromId(parent_id);
+    if (parent)
+      parent->UpdateUnignoredCachedValues();
+  }
+
   // Tree is no longer updating.
   SetTreeUpdateInProgressState(false);
 
@@ -568,6 +578,10 @@ AXNode* AXTree::CreateNode(AXNode* parent,
     else
       observer.OnNodeReparented(this, new_node);
   }
+  AXNode* unignored_parent = new_node->GetUnignoredParent();
+  if (unignored_parent) {
+    update_state->changed_unignored_parent_ids.insert(unignored_parent->id());
+  }
   return new_node;
 }
 
@@ -591,10 +605,18 @@ bool AXTree::UpdateNode(const AXNodeData& src,
     if (!update_state->IsNewNode(node) ||
         update_state->IsReparentedNode(node)) {
       auto it = update_state->reparented_node_id_to_data.find(node->id());
-      if (it != update_state->reparented_node_id_to_data.end())
-        CallNodeChangeCallbacks(node, it->second, src);
-      else
-        CallNodeChangeCallbacks(node, node->data(), src);
+      const AXNodeData& old_data =
+          it != update_state->reparented_node_id_to_data.end() ? it->second
+                                                               : node->data();
+      CallNodeChangeCallbacks(node, old_data, src);
+      if (old_data.HasState(ax::mojom::State::kIgnored) !=
+          src.HasState(ax::mojom::State::kIgnored)) {
+        AXNode* unignored_parent = node->GetUnignoredParent();
+        if (unignored_parent) {
+          update_state->changed_unignored_parent_ids.insert(
+              unignored_parent->id());
+        }
+      }
     }
     UpdateReverseRelations(node, src);
     node->SetData(src);
@@ -853,6 +875,10 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
   for (auto* child : node->children())
     DestroyNodeAndSubtree(child, update_state);
   if (update_state) {
+    AXNode* unignored_parent = node->GetUnignoredParent();
+    if (unignored_parent) {
+      update_state->changed_unignored_parent_ids.insert(unignored_parent->id());
+    }
     update_state->pending_nodes.erase(node);
     update_state->removed_node_ids.insert(node->id());
   }
@@ -972,8 +998,8 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
   bool node_is_radio_button =
       (original_node.data().role == ax::mojom::Role::kRadioButton);
 
-  for (size_t i = 0; i < local_parent->children().size(); ++i) {
-    const AXNode* child = local_parent->children()[i];
+  for (size_t i = 0; i < local_parent->GetUnignoredChildCount(); ++i) {
+    const AXNode* child = local_parent->GetUnignoredChildAtIndex(i);
 
     // Invisible children should not be counted.
     // However, in the collapsed container case (e.g. a combobox), items can

@@ -87,7 +87,7 @@ void AXSlider::AddChildren() {
 
   // Before actually adding the value indicator to the hierarchy,
   // allow the platform to make a final decision about it.
-  if (thumb->AccessibilityIsIgnored())
+  if (!thumb->AccessibilityIsIncludedInTree())
     cache.Remove(thumb->AXObjectID());
   else
     children_.push_back(thumb);

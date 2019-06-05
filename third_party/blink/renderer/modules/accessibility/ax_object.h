@@ -497,8 +497,17 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool CanSetFocusAttribute() const;
   bool CanSetValueAttribute() const;
 
-  // Whether objects are ignored, i.e. not included in the tree.
+  // Whether objects are ignored, i.e. hidden from the AT.
+  // TODO(janewman) Ignored nodes that are included in the tree should be marked
+  // with ax::mojom::State::kIgnored
   bool AccessibilityIsIgnored() const;
+
+  // Whether objects are included in the tree. Nodes that are included in the
+  // tree are serialized, even if they are ignored. This allows browser-side
+  // accessibility code to have a more accurate representation of the tree. e.g.
+  // inspect hidden nodes referenced by labeled-by, know where line breaking
+  // elements are, etc.
+  bool AccessibilityIsIncludedInTree() const;
   typedef HeapVector<IgnoredReason> IgnoredReasons;
   virtual bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const {
     return true;
@@ -1028,6 +1037,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   mutable int last_modification_count_;
   mutable RGBA32 cached_background_color_;
   mutable bool cached_is_ignored_ : 1;
+
   mutable bool cached_is_inert_or_aria_hidden_ : 1;
   mutable bool cached_is_descendant_of_leaf_node_ : 1;
   mutable bool cached_is_descendant_of_disabled_node_ : 1;

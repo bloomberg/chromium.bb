@@ -23,21 +23,22 @@ AXNode::AXNode(AXNode::OwnerTree* tree,
                size_t index_in_parent)
     : tree_(tree),
       index_in_parent_(index_in_parent),
+      unignored_child_count_(0),
       parent_(parent),
       language_info_(nullptr) {
   data_.id = id;
+  // If this node is the root, use the given index_in_parent to provide
+  // consistency.
+  if (!parent)
+    unignored_index_in_parent_ = index_in_parent_;
+  else
+    unignored_index_in_parent_ = 0;
 }
 
 AXNode::~AXNode() = default;
 
 size_t AXNode::GetUnignoredChildCount() const {
-  size_t count = 0;
-  for (const AXNode* child : children_) {
-    count += (child->data().HasState(ax::mojom::State::kIgnored))
-                 ? child->GetUnignoredChildCount()
-                 : 1;
-  }
-  return count;
+  return unignored_child_count_;
 }
 
 AXNodeData&& AXNode::TakeData() {
@@ -70,15 +71,8 @@ AXNode* AXNode::GetUnignoredParent() const {
 }
 
 size_t AXNode::GetUnignoredIndexInParent() const {
-  AXNode* parent = GetUnignoredParent();
-  if (parent) {
-    for (size_t i = 0; i < parent->GetUnignoredChildCount(); ++i) {
-      if (parent->GetUnignoredChildAtIndex(i) == this)
-        return i;
-    }
-  }
-
-  return 0;
+  DCHECK(!data().HasState(ax::mojom::State::kIgnored));
+  return unignored_index_in_parent_;
 }
 
 bool AXNode::IsText() const {
@@ -110,6 +104,11 @@ void AXNode::SetLocation(int32_t offset_container_id,
 
 void AXNode::SetIndexInParent(size_t index_in_parent) {
   index_in_parent_ = index_in_parent;
+}
+
+void AXNode::UpdateUnignoredCachedValues() {
+  if (!data().HasState(ax::mojom::State::kIgnored))
+    UpdateUnignoredCachedValuesRecursive(0);
 }
 
 void AXNode::SwapChildren(std::vector<AXNode*>& children) {
@@ -680,6 +679,20 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
     default:
       return false;
   }
+}
+
+int AXNode::UpdateUnignoredCachedValuesRecursive(int startIndex) {
+  int count = 0;
+  for (AXNode* child : children_) {
+    if (child->data().HasState(ax::mojom::State::kIgnored)) {
+      child->unignored_index_in_parent_ = 0;
+      count += child->UpdateUnignoredCachedValuesRecursive(startIndex + count);
+    } else {
+      child->unignored_index_in_parent_ = startIndex + count++;
+    }
+  }
+  unignored_child_count_ = count;
+  return count;
 }
 
 // Finds ordered set that immediately contains node.

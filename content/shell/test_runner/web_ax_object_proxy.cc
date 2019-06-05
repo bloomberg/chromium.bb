@@ -1657,7 +1657,8 @@ bool WebAXObjectProxy::IsPressActionSupported() {
 v8::Local<v8::Object> WebAXObjectProxy::ParentElement() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   blink::WebAXObject parent_object = accessibility_object_.ParentObject();
-  while (parent_object.AccessibilityIsIgnored())
+  while (!parent_object.IsNull() &&
+         !parent_object.AccessibilityIsIncludedInTree())
     parent_object = parent_object.ParentObject();
   return factory_->GetOrCreate(parent_object);
 }

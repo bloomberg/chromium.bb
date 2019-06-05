@@ -183,6 +183,7 @@ void AccessibilityTreeFormatterBlink::AddDefaultFilters(
   AddPropertyFilter(property_filters, "flowtoIds*");
   AddPropertyFilter(property_filters, "detailsIds*");
   AddPropertyFilter(property_filters, "invalidState=*");
+  AddPropertyFilter(property_filters, "ignored*");
   AddPropertyFilter(property_filters, "invalidState=false",
                     PropertyFilter::DENY);  // Don't show false value
   AddPropertyFilter(property_filters, "roleDescription=*");
@@ -204,8 +205,9 @@ uint32_t AccessibilityTreeFormatterBlink::ChildCount(
     const BrowserAccessibility& node) const {
   if (node.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
     return node.PlatformChildCount();
-  else
-    return node.InternalChildCount();
+  // We don't want to use InternalGetChild as we want to include
+  // ignored nodes in the tree for tests.
+  return node.node()->children().size();
 }
 
 BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
@@ -213,8 +215,13 @@ BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
     uint32_t i) const {
   if (node.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
     return node.PlatformGetChild(i);
-  else
-    return node.InternalGetChild(i);
+  // We don't want to use InternalGetChild as we want to include
+  // ignored nodes in the tree for tests.
+  if (i < 0 && i >= node.node()->children().size())
+    return nullptr;
+  ui::AXNode* child_node = node.node()->children()[i];
+  DCHECK(child_node);
+  return node.manager()->GetFromAXNode(child_node);
 }
 
 void AccessibilityTreeFormatterBlink::AddProperties(

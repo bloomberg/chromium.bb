@@ -188,8 +188,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, root->data().role);
 
   // Check properties of the BODY element.
-  ASSERT_EQ(1u, root->children().size());
-  const ui::AXNode* body = root->children().front();
+  ASSERT_EQ(1u, root->GetUnignoredChildCount());
+  const ui::AXNode* body = root->GetUnignoredChildAtIndex(0);
   EXPECT_EQ(ax::mojom::Role::kGenericContainer, body->data().role);
   EXPECT_STREQ("body",
                GetAttr(body, ax::mojom::StringAttribute::kHtmlTag).c_str());
@@ -197,9 +197,9 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                GetAttr(body, ax::mojom::StringAttribute::kDisplay).c_str());
 
   // Check properties of the two children of the BODY element.
-  ASSERT_EQ(2u, body->children().size());
+  ASSERT_EQ(2u, body->GetUnignoredChildCount());
 
-  const ui::AXNode* button = body->children()[0];
+  const ui::AXNode* button = body->GetUnignoredChildAtIndex(0);
   EXPECT_EQ(ax::mojom::Role::kButton, button->data().role);
   EXPECT_STREQ("input",
                GetAttr(button, ax::mojom::StringAttribute::kHtmlTag).c_str());
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_STREQ("value", button->data().html_attributes[1].first.c_str());
   EXPECT_STREQ("push", button->data().html_attributes[1].second.c_str());
 
-  const ui::AXNode* checkbox = body->children()[1];
+  const ui::AXNode* checkbox = body->GetUnignoredChildAtIndex(1);
   EXPECT_EQ(ax::mojom::Role::kCheckBox, checkbox->data().role);
   EXPECT_STREQ("input",
                GetAttr(checkbox, ax::mojom::StringAttribute::kHtmlTag).c_str());
@@ -238,10 +238,10 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
-  ASSERT_EQ(1u, root->children().size());
-  const ui::AXNode* body = root->children().front();
-  ASSERT_EQ(1u, body->children().size());
-  const ui::AXNode* text = body->children().front();
+  ASSERT_EQ(1u, root->GetUnignoredChildCount());
+  const ui::AXNode* body = root->GetUnignoredChildAtIndex(0);
+  ASSERT_EQ(1u, body->GetUnignoredChildCount());
+  const ui::AXNode* text = body->GetUnignoredChildAtIndex(0);
   EXPECT_EQ(ax::mojom::Role::kTextField, text->data().role);
   EXPECT_STREQ("input",
                GetAttr(text, ax::mojom::StringAttribute::kHtmlTag).c_str());
@@ -269,10 +269,10 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
-  ASSERT_EQ(1u, root->children().size());
-  const ui::AXNode* body = root->children().front();
-  ASSERT_EQ(1u, body->children().size());
-  const ui::AXNode* text = body->children().front();
+  ASSERT_EQ(1u, root->GetUnignoredChildCount());
+  const ui::AXNode* body = root->GetUnignoredChildAtIndex(0);
+  ASSERT_EQ(1u, body->GetUnignoredChildCount());
+  const ui::AXNode* text = body->GetUnignoredChildAtIndex(0);
   EXPECT_EQ(ax::mojom::Role::kTextField, text->data().role);
   EXPECT_STREQ("input",
                GetAttr(text, ax::mojom::StringAttribute::kHtmlTag).c_str());
@@ -323,33 +323,33 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
-  ASSERT_EQ(1u, root->children().size());
-  const ui::AXNode* body = root->children().front();
-  ASSERT_EQ(3u, body->children().size());
+  ASSERT_EQ(1u, root->GetUnignoredChildCount());
+  const ui::AXNode* body = root->GetUnignoredChildAtIndex(0);
+  ASSERT_EQ(3u, body->GetUnignoredChildCount());
 
-  const ui::AXNode* button1 = body->children()[0];
+  const ui::AXNode* button1 = body->GetUnignoredChildAtIndex(0);
   EXPECT_EQ(ax::mojom::Role::kButton, button1->data().role);
   EXPECT_STREQ("Button 1",
                GetAttr(button1, ax::mojom::StringAttribute::kName).c_str());
 
-  const ui::AXNode* iframe = body->children()[1];
+  const ui::AXNode* iframe = body->GetUnignoredChildAtIndex(1);
   EXPECT_STREQ("iframe",
                GetAttr(iframe, ax::mojom::StringAttribute::kHtmlTag).c_str());
-  ASSERT_EQ(1u, iframe->children().size());
+  ASSERT_EQ(1u, iframe->GetUnignoredChildCount());
 
-  const ui::AXNode* sub_document = iframe->children().front();
+  const ui::AXNode* sub_document = iframe->GetUnignoredChildAtIndex(0);
   EXPECT_EQ(ax::mojom::Role::kWebArea, sub_document->data().role);
-  ASSERT_EQ(1u, sub_document->children().size());
+  ASSERT_EQ(1u, sub_document->GetUnignoredChildCount());
 
-  const ui::AXNode* sub_body = sub_document->children().front();
-  ASSERT_EQ(1u, sub_body->children().size());
+  const ui::AXNode* sub_body = sub_document->GetUnignoredChildAtIndex(0);
+  ASSERT_EQ(1u, sub_body->GetUnignoredChildCount());
 
-  const ui::AXNode* button2 = sub_body->children().front();
+  const ui::AXNode* button2 = sub_body->GetUnignoredChildAtIndex(0);
   EXPECT_EQ(ax::mojom::Role::kButton, button2->data().role);
   EXPECT_STREQ("Button 2",
                GetAttr(button2, ax::mojom::StringAttribute::kName).c_str());
 
-  const ui::AXNode* button3 = body->children()[2];
+  const ui::AXNode* button3 = body->GetUnignoredChildAtIndex(2);
   EXPECT_EQ(ax::mojom::Role::kButton, button3->data().role);
   EXPECT_STREQ("Button 3",
                GetAttr(button3, ax::mojom::StringAttribute::kName).c_str());
@@ -396,18 +396,24 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest, MAYBE_TableSpan) {
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
-  const ui::AXNode* table = root->children().front();
+  const ui::AXNode* table = root->GetUnignoredChildAtIndex(0);
   EXPECT_EQ(ax::mojom::Role::kTable, table->data().role);
-  ASSERT_GE(table->children().size(), 2u);
-  EXPECT_EQ(ax::mojom::Role::kRow, table->children()[0]->data().role);
-  EXPECT_EQ(ax::mojom::Role::kRow, table->children()[1]->data().role);
+  ASSERT_GE(table->GetUnignoredChildCount(), 2u);
+  EXPECT_EQ(ax::mojom::Role::kRow,
+            table->GetUnignoredChildAtIndex(0)->data().role);
+  EXPECT_EQ(ax::mojom::Role::kRow,
+            table->GetUnignoredChildAtIndex(1)->data().role);
   EXPECT_EQ(3, GetIntAttr(table, ax::mojom::IntAttribute::kTableColumnCount));
   EXPECT_EQ(2, GetIntAttr(table, ax::mojom::IntAttribute::kTableRowCount));
 
-  const ui::AXNode* cell1 = table->children()[0]->children()[0];
-  const ui::AXNode* cell2 = table->children()[0]->children()[1];
-  const ui::AXNode* cell3 = table->children()[1]->children()[0];
-  const ui::AXNode* cell4 = table->children()[1]->children()[1];
+  const ui::AXNode* cell1 =
+      table->GetUnignoredChildAtIndex(0)->GetUnignoredChildAtIndex(0);
+  const ui::AXNode* cell2 =
+      table->GetUnignoredChildAtIndex(0)->GetUnignoredChildAtIndex(1);
+  const ui::AXNode* cell3 =
+      table->GetUnignoredChildAtIndex(1)->GetUnignoredChildAtIndex(0);
+  const ui::AXNode* cell4 =
+      table->GetUnignoredChildAtIndex(1)->GetUnignoredChildAtIndex(1);
 
   EXPECT_EQ(0,
             GetIntAttr(cell1, ax::mojom::IntAttribute::kTableCellColumnIndex));
@@ -440,8 +446,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest, WritableElement) {
   NavigateToURL(shell(), url);
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
-  ASSERT_EQ(1u, root->children().size());
-  const ui::AXNode* textbox = root->children().front();
+  ASSERT_EQ(1u, root->GetUnignoredChildCount());
+  const ui::AXNode* textbox = root->GetUnignoredChildAtIndex(0);
   EXPECT_TRUE(textbox->data().HasAction(ax::mojom::Action::kSetValue));
 }
 
@@ -462,17 +468,17 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
-  const ui::AXNode* table = root->children().front();
+  const ui::AXNode* table = root->GetUnignoredChildAtIndex(0);
   EXPECT_EQ(ax::mojom::Role::kTable, table->data().role);
-  EXPECT_EQ(1u, table->children().size());
-  const ui::AXNode* row = table->children().front();
-  EXPECT_EQ(5u, row->children().size());
+  EXPECT_EQ(1u, table->GetUnignoredChildCount());
+  const ui::AXNode* row = table->GetUnignoredChildAtIndex(0);
+  EXPECT_EQ(5u, row->GetUnignoredChildCount());
 
-  const ui::AXNode* header1 = row->children()[0];
-  const ui::AXNode* header2 = row->children()[1];
-  const ui::AXNode* header3 = row->children()[2];
-  const ui::AXNode* header4 = row->children()[3];
-  const ui::AXNode* header5 = row->children()[4];
+  const ui::AXNode* header1 = row->GetUnignoredChildAtIndex(0);
+  const ui::AXNode* header2 = row->GetUnignoredChildAtIndex(1);
+  const ui::AXNode* header3 = row->GetUnignoredChildAtIndex(2);
+  const ui::AXNode* header4 = row->GetUnignoredChildAtIndex(3);
+  const ui::AXNode* header5 = row->GetUnignoredChildAtIndex(4);
 
   EXPECT_EQ(static_cast<int>(ax::mojom::SortDirection::kAscending),
             GetIntAttr(header1, ax::mojom::IntAttribute::kSortDirection));
@@ -607,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       base::ASCIIToUTF16("highlighted content"));
 
   // Android doesn't always have a child in this case.
-  if (mark_node->PlatformChildCount() > 0) {
+  if (mark_node->PlatformChildCount() > 0u) {
     BrowserAccessibility* mark_text_node = mark_node->PlatformGetChild(0);
     ASSERT_EQ(0u, mark_text_node->PlatformChildCount());
     TestGetStyleNameAttributeAsLocalizedString(
