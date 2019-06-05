@@ -266,12 +266,10 @@ void CloudPolicyClientRegistrationHelper::OnGetUserInfoSuccess(
   // Kick off registration of the CloudPolicyClient with our newly minted
   // oauth_access_token_.
   client_->Register(
-      registration_type_,
-      enterprise_management::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
-      enterprise_management::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-      enterprise_management::LicenseType::UNDEFINED, oauth_access_token_,
-      std::string() /* client_id */, std::string() /* requisition */,
-      std::string() /* current_state_key */);
+      CloudPolicyClient::RegistrationParameters(
+          registration_type_, enterprise_management::DeviceRegisterRequest::
+                                  FLAVOR_USER_REGISTRATION),
+      std::string() /* client_id */, oauth_access_token_);
 }
 
 void CloudPolicyClientRegistrationHelper::OnPolicyFetched(

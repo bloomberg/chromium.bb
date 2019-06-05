@@ -151,6 +151,13 @@ TranslatePolicyValidationResultSeverity(
 
 }  // namespace
 
+CloudPolicyClient::RegistrationParameters::RegistrationParameters(
+    em::DeviceRegisterRequest::Type registration_type,
+    em::DeviceRegisterRequest::Flavor flavor)
+    : registration_type(registration_type), flavor(flavor) {}
+
+CloudPolicyClient::RegistrationParameters::~RegistrationParameters() = default;
+
 CloudPolicyClient::Observer::~Observer() {}
 
 CloudPolicyClient::CloudPolicyClient(
@@ -208,14 +215,9 @@ void CloudPolicyClient::SetClientId(const std::string& client_id) {
   client_id_ = client_id.empty() ?  base::GenerateGUID() : client_id;
 }
 
-void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
-                                 em::DeviceRegisterRequest::Flavor flavor,
-                                 em::DeviceRegisterRequest::Lifetime lifetime,
-                                 em::LicenseType::LicenseTypeEnum license_type,
-                                 const std::string& oauth_token,
+void CloudPolicyClient::Register(const RegistrationParameters& parameters,
                                  const std::string& client_id,
-                                 const std::string& requisition,
-                                 const std::string& current_state_key) {
+                                 const std::string& oauth_token) {
   DCHECK(service_);
   DCHECK(!oauth_token.empty());
   DCHECK(!is_registered());
@@ -231,8 +233,8 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
 
   em::DeviceRegisterRequest* request =
       config->request()->mutable_register_request();
-  CreateDeviceRegisterRequest(type, flavor, lifetime, license_type, client_id,
-                              requisition, current_state_key, request);
+  CreateDeviceRegisterRequest(parameters, client_id, request);
+
   if (requires_reregistration())
     request->set_reregistration_dm_token(reregistration_dm_token_);
 
@@ -240,15 +242,10 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
 }
 
 void CloudPolicyClient::RegisterWithCertificate(
-    em::DeviceRegisterRequest::Type type,
-    em::DeviceRegisterRequest::Flavor flavor,
-    em::DeviceRegisterRequest::Lifetime lifetime,
-    em::LicenseType::LicenseTypeEnum license_type,
+    const RegistrationParameters& parameters,
+    const std::string& client_id,
     std::unique_ptr<DMAuth> auth,
     const std::string& pem_certificate_chain,
-    const std::string& client_id,
-    const std::string& requisition,
-    const std::string& current_state_key,
     const std::string& sub_organization) {
   DCHECK(signing_service_);
   DCHECK(service_);
@@ -262,8 +259,7 @@ void CloudPolicyClient::RegisterWithCertificate(
   data.set_device_certificate(pem_certificate_chain);
 
   em::DeviceRegisterRequest* request = data.mutable_device_register_request();
-  CreateDeviceRegisterRequest(type, flavor, lifetime, license_type, client_id,
-                              requisition, current_state_key, request);
+  CreateDeviceRegisterRequest(parameters, client_id, request);
   if (!sub_organization.empty()) {
     em::DeviceRegisterConfiguration* configuration =
         data.mutable_device_register_configuration();
@@ -1166,17 +1162,14 @@ void CloudPolicyClient::NotifyClientError() {
 }
 
 void CloudPolicyClient::CreateDeviceRegisterRequest(
-    em::DeviceRegisterRequest::Type type,
-    em::DeviceRegisterRequest::Flavor flavor,
-    em::DeviceRegisterRequest::Lifetime lifetime,
-    em::LicenseType::LicenseTypeEnum license_type,
+    const RegistrationParameters& params,
     const std::string& client_id,
-    const std::string& requisition,
-    const std::string& current_state_key,
     em::DeviceRegisterRequest* request) {
   if (!client_id.empty())
     request->set_reregister(true);
-  request->set_type(type);
+  request->set_type(params.registration_type);
+  request->set_flavor(params.flavor);
+  request->set_lifetime(params.lifetime);
   if (!machine_id_.empty())
     request->set_machine_id(machine_id_);
   if (!machine_model_.empty())
@@ -1189,14 +1182,12 @@ void CloudPolicyClient::CreateDeviceRegisterRequest(
     request->set_dock_mac_address(dock_mac_address_);
   if (!manufacture_date_.empty())
     request->set_manufacture_date(manufacture_date_);
-  if (!requisition.empty())
-    request->set_requisition(requisition);
-  if (!current_state_key.empty())
-    request->set_server_backed_state_key(current_state_key);
-  request->set_flavor(flavor);
-  if (license_type != em::LicenseType::UNDEFINED)
-    request->mutable_license_type()->set_license_type(license_type);
-  request->set_lifetime(lifetime);
+  if (!params.requisition.empty())
+    request->set_requisition(params.requisition);
+  if (!params.current_state_key.empty())
+    request->set_server_backed_state_key(params.current_state_key);
+  if (params.license_type != em::LicenseType::UNDEFINED)
+    request->mutable_license_type()->set_license_type(params.license_type);
 }
 
 }  // namespace policy

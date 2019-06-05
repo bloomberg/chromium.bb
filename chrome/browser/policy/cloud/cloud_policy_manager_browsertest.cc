@@ -219,18 +219,16 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
 
     // Give a bogus OAuth token to the |policy_manager|. This should make its
     // CloudPolicyClient fetch the DMToken.
-    em::DeviceRegisterRequest::Type registration_type =
+    CloudPolicyClient::RegistrationParameters parameters(
 #if defined(OS_CHROMEOS)
-        em::DeviceRegisterRequest::USER;
+        em::DeviceRegisterRequest::USER,
 #else
-        em::DeviceRegisterRequest::BROWSER;
+        em::DeviceRegisterRequest::BROWSER,
 #endif
+        em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION);
     policy_manager()->core()->client()->Register(
-        registration_type, em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
-        em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-        em::LicenseType::UNDEFINED, "oauth_token_unused" /* oauth_token */,
-        std::string() /* client_id */, std::string() /* requisition */,
-        std::string() /* current_state_key */);
+        parameters, std::string() /* client_id */,
+        "oauth_token_unused" /* oauth_token */);
     run_loop.Run();
     Mock::VerifyAndClearExpectations(&observer);
     policy_manager()->core()->client()->RemoveObserver(&observer);

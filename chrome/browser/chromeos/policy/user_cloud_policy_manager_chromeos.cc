@@ -631,18 +631,16 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
 
     // Start client registration. Either OnRegistrationStateChanged() or
     // OnClientError() will be called back.
-    const auto lifetime =
-        user_manager::UserManager::Get()->IsCurrentUserCryptohomeDataEphemeral()
-            ? em::DeviceRegisterRequest::LIFETIME_EPHEMERAL_USER
-            : em::DeviceRegisterRequest::LIFETIME_INDEFINITE;
+    CloudPolicyClient::RegistrationParameters parameters(
+        em::DeviceRegisterRequest::USER,
+        em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION);
+    if (user_manager::UserManager::Get()
+            ->IsCurrentUserCryptohomeDataEphemeral())
+      parameters.lifetime = em::DeviceRegisterRequest::LIFETIME_EPHEMERAL_USER;
     std::string client_id;
     if (client()->requires_reregistration())
       client_id = client()->client_id();
-    client()->Register(em::DeviceRegisterRequest::USER,
-                       em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
-                       lifetime, em::LicenseType::UNDEFINED, policy_token,
-                       client_id, std::string() /* requisition */,
-                       std::string() /* current_state_key */);
+    client()->Register(parameters, client_id, policy_token);
   } else {
     UMA_HISTOGRAM_ENUMERATION(kUMAInitialFetchOAuth2Error, error.state(),
                               GoogleServiceAuthError::NUM_STATES);

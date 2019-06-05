@@ -98,6 +98,32 @@ class POLICY_EXPORT CloudPolicyClient {
     virtual void OnClientError(CloudPolicyClient* client) = 0;
   };
 
+  struct POLICY_EXPORT RegistrationParameters {
+   public:
+    RegistrationParameters(
+        enterprise_management::DeviceRegisterRequest::Type registration_type,
+        enterprise_management::DeviceRegisterRequest::Flavor flavor);
+    ~RegistrationParameters();
+
+    enterprise_management::DeviceRegisterRequest::Type registration_type;
+    enterprise_management::DeviceRegisterRequest::Flavor flavor;
+
+    // Lifetime of registration. Used for easier clean up of ephemeral session
+    // registrations.
+    enterprise_management::DeviceRegisterRequest::Lifetime lifetime =
+        enterprise_management::DeviceRegisterRequest::LIFETIME_INDEFINITE;
+
+    // Selected license type if user is allowed to select it.
+    enterprise_management::LicenseType::LicenseTypeEnum license_type =
+        enterprise_management::LicenseType::UNDEFINED;
+
+    // Device requisition.
+    std::string requisition;
+
+    // Server-backed state keys (used for forced enrollment check).
+    std::string current_state_key;
+  };
+
   // If non-empty, |machine_id|, |machine_model|, |brand_code|,
   // |ethernet_mac_address|, |dock_mac_address| and |manufacture_date| are
   // passed to the server verbatim. As these reveal machine identity, they must
@@ -132,33 +158,24 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Attempts to register with the device management service. Results in a
   // registration change or error notification.
-  virtual void Register(
-      enterprise_management::DeviceRegisterRequest::Type registration_type,
-      enterprise_management::DeviceRegisterRequest::Flavor flavor,
-      enterprise_management::DeviceRegisterRequest::Lifetime lifetime,
-      enterprise_management::LicenseType::LicenseTypeEnum license_type,
-      const std::string& oauth_token,
-      const std::string& client_id,
-      const std::string& requisition,
-      const std::string& current_state_key);
+  virtual void Register(const RegistrationParameters& parameters,
+                        const std::string& client_id,
+                        const std::string& oauth_token);
 
   // Attempts to register with the device management service using a
   // registration certificate. Results in a registration change or
   // error notification.
-  virtual void RegisterWithCertificate(
-      enterprise_management::DeviceRegisterRequest::Type registration_type,
-      enterprise_management::DeviceRegisterRequest::Flavor flavor,
-      enterprise_management::DeviceRegisterRequest::Lifetime lifetime,
-      enterprise_management::LicenseType::LicenseTypeEnum license_type,
-      std::unique_ptr<DMAuth> auth,
-      const std::string& pem_certificate_chain,
-      const std::string& client_id,
-      const std::string& requisition,
-      const std::string& current_state_key,
-      const std::string& sub_organization);
+  virtual void RegisterWithCertificate(const RegistrationParameters& parameters,
+                                       const std::string& client_id,
+                                       std::unique_ptr<DMAuth> auth,
+                                       const std::string& pem_certificate_chain,
+                                       const std::string& sub_organization);
 
   // Attempts to enroll with the device management service using an enrollment
   // token. Results in a registration change or error notification.
+  // This method is used to register browser (e.g. for machine-level policies).
+  // Device registration with enrollment token should be performed using
+  // RegisterWithCertificate method.
   virtual void RegisterWithToken(const std::string& token,
                                  const std::string& client_id);
 
@@ -584,13 +601,8 @@ class POLICY_EXPORT CloudPolicyClient {
   // Fills in the common fields of a DeviceRegisterRequest for |Register| and
   // |RegisterWithCertificate|.
   void CreateDeviceRegisterRequest(
-      enterprise_management::DeviceRegisterRequest::Type registration_type,
-      enterprise_management::DeviceRegisterRequest::Flavor flavor,
-      enterprise_management::DeviceRegisterRequest::Lifetime lifetime,
-      enterprise_management::LicenseType::LicenseTypeEnum license_type,
+      const RegistrationParameters& params,
       const std::string& client_id,
-      const std::string& requisition,
-      const std::string& current_state_key,
       enterprise_management::DeviceRegisterRequest* request);
 
   // Prepare the certificate upload request field for uploading a certificate.
