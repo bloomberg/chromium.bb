@@ -1930,7 +1930,7 @@ message DeviceRemoteCommandResponse {
   // (and vice versa).
   //
   // The secure_commands.data field contains a serialized
-  // RemoteCommand. The  ecure_commands.signature field is a
+  // RemoteCommand. The secure_commands.signature field is a
   // signature of the data field with the policy key for the
   // domain the device belongs to.
   repeated SignedData secure_commands = 2;
