@@ -6266,7 +6266,7 @@
           'caption': '''Screen lock delays''',
         },
       ],
-      'supported_on': ['chrome.*:76-'],
+      'supported_on': ['chrome.*:76-', 'chrome_os:76-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
