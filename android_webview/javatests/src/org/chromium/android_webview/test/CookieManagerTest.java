@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.support.annotation.IntDef;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
@@ -30,9 +31,10 @@ import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,6 +46,24 @@ import java.util.Set;
 public class CookieManagerTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+
+    @IntDef({CookieLifetime.OUTLIVE_THE_TEST_SEC, CookieLifetime.EXPIRE_DURING_TEST_SEC,
+            CookieLifetime.ALREADY_EXPIRED_SEC})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface CookieLifetime {
+        /** Longer than the limit of tests, so cookies will not expire during the test. */
+        final int OUTLIVE_THE_TEST_SEC = 10 * 60; // 10 minutes
+
+        /**
+         * Shorter than the limit of tests, so cookies may expire during the test. Be sure to wait
+         * at least this duration after <b>setting</b> the cookie (ex. via {@link
+         * AwCookieManager#setCookie(String)}).
+         */
+        final int EXPIRE_DURING_TEST_SEC = 1;
+
+        /** Guarantees the cookie is expired, immediately when set. */
+        final int ALREADY_EXPIRED_SEC = -1;
+    }
 
     private AwCookieManager mCookieManager;
     private TestAwContentsClient mContentsClient;
@@ -271,7 +291,8 @@ public class CookieManagerTest {
         final String normalCookie = "cookie2=sue";
 
         mCookieManager.setCookie(url, sessionCookie);
-        mCookieManager.setCookie(url, makeExpiringCookie(normalCookie, 600));
+        mCookieManager.setCookie(
+                url, makeExpiringCookie(normalCookie, CookieLifetime.OUTLIVE_THE_TEST_SEC));
 
         mCookieManager.removeSessionCookies();
 
@@ -444,7 +465,8 @@ public class CookieManagerTest {
         int callCount = callback.getOnResultHelper().getCallCount();
 
         mCookieManager.setCookie(url, sessionCookie);
-        mCookieManager.setCookie(url, makeExpiringCookie(normalCookie, 600));
+        mCookieManager.setCookie(
+                url, makeExpiringCookie(normalCookie, CookieLifetime.OUTLIVE_THE_TEST_SEC));
 
         // When there is a session cookie then it is removed.
         removeSessionCookiesOnUiThread(callback);
@@ -471,7 +493,8 @@ public class CookieManagerTest {
         final String normalCookie = "cookie2=sue";
 
         mCookieManager.setCookie(url, sessionCookie);
-        mCookieManager.setCookie(url, makeExpiringCookie(normalCookie, 600));
+        mCookieManager.setCookie(
+                url, makeExpiringCookie(normalCookie, CookieLifetime.OUTLIVE_THE_TEST_SEC));
         String allCookies = mCookieManager.getCookie(url);
         Assert.assertTrue(allCookies.contains(sessionCookie));
         Assert.assertTrue(allCookies.contains(normalCookie));
@@ -492,7 +515,8 @@ public class CookieManagerTest {
         final String url = "http://www.example.com";
         final String cookie = "cookie1=peter";
 
-        mCookieManager.setCookie(url, makeExpiringCookie(cookie, -1));
+        mCookieManager.setCookie(
+                url, makeExpiringCookie(cookie, CookieLifetime.ALREADY_EXPIRED_SEC));
         assertNoCookies(url);
     }
 
@@ -503,10 +527,10 @@ public class CookieManagerTest {
         final String url = "http://www.example.com";
         final String cookie = "cookie1=peter";
 
-        mCookieManager.setCookie(url, makeExpiringCookieMs(cookie, 1200));
+        mCookieManager.setCookie(
+                url, makeExpiringCookie(cookie, CookieLifetime.EXPIRE_DURING_TEST_SEC));
 
-        // The cookie exists:
-        Assert.assertTrue(mCookieManager.hasCookies());
+        Assert.assertTrue("Cookie should exist before expiration", mCookieManager.hasCookies());
 
         // But eventually expires:
         AwActivityTestRule.pollInstrumentationThread(() -> !mCookieManager.hasCookies());
@@ -521,7 +545,8 @@ public class CookieManagerTest {
         final String longCookie = "cookie2=marc";
 
         mCookieManager.setCookie(url, sessionCookie);
-        mCookieManager.setCookie(url, makeExpiringCookie(longCookie, 600));
+        mCookieManager.setCookie(
+                url, makeExpiringCookie(longCookie, CookieLifetime.OUTLIVE_THE_TEST_SEC));
 
         String allCookies = mCookieManager.getCookie(url);
         Assert.assertTrue(allCookies.contains(sessionCookie));
@@ -1130,15 +1155,17 @@ public class CookieManagerTest {
                 foundCookieNamesSet);
     }
 
-    private String makeExpiringCookie(String cookie, int secondsTillExpiry) {
-        return makeExpiringCookieMs(cookie, secondsTillExpiry * 1000);
-    }
-
+    /**
+     * Makes a cookie which expires {@code secondsTillExpiry} seconds after the cookie is set. Note:
+     * cookie expiration can only be specified to a precisiion of seconds, not to the millisecond.
+     * See https://tools.ietf.org/html/rfc6265#section-4.1 and
+     * https://tools.ietf.org/html/rfc7231#section-7.1.1.2 for details.
+     */
     @SuppressWarnings("deprecation")
-    private String makeExpiringCookieMs(String cookie, int millisecondsTillExpiry) {
-        Date date = new Date();
-        date.setTime(date.getTime() + millisecondsTillExpiry);
-        return cookie + "; expires=" + date.toGMTString();
+    private String makeExpiringCookie(String cookie, @CookieLifetime int secondsTillExpiry) {
+        // Use "Max-Age" instead of "Expires", since "Max-Age" is relative to the time the cookie is
+        // set, rather than a call to the Date constructor when building this cookie string.
+        return cookie + "; Max-Age=" + secondsTillExpiry;
     }
 
     /**
