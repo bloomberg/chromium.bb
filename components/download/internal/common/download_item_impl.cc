@@ -2043,7 +2043,8 @@ void DownloadItemImpl::InterruptWithPartialState(
 
   RecordDownloadInterrupted(reason, GetReceivedBytes(), total_bytes_,
                             job_ && job_->IsParallelizable(),
-                            IsParallelDownloadEnabled(), download_source_);
+                            IsParallelDownloadEnabled(), download_source_,
+                            received_bytes_at_length_mismatch_ > 0);
 
   base::TimeDelta time_since_start = base::Time::Now() - GetStartTime();
   int resulting_file_size = GetReceivedBytes();
