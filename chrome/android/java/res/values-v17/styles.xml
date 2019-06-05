@@ -260,6 +260,11 @@
         <item name="android:paddingEnd">@dimen/pref_list_padding_kitkat</item>
     </style>
 
+    <style name="Theme.Chromium.PreferenceItemNoDividers">
+        <item name="allowDividerAbove">false</item>
+        <item name="allowDividerBelow">false</item>
+    </style>
+
     <style name="PreferenceActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
       <item name="titleTextStyle">@style/TextAppearance.BlackHeadline</item>
     </style>
