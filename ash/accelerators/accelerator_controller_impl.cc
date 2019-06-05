@@ -223,6 +223,11 @@ void RecordImeSwitchByAccelerator() {
                             ImeSwitchType::kAccelerator);
 }
 
+void RecordImeSwitchByModeChangeKey() {
+  UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeSwitch",
+                            ImeSwitchType::kModeChangeKey);
+}
+
 void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_PrevWindow_Tab"));
@@ -346,9 +351,12 @@ bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
   return !keyboard::KeyboardController::Get()->IsKeyboardVisible();
 }
 
-void HandleSwitchToNextIme() {
+void HandleSwitchToNextIme(const ui::Accelerator& accelerator) {
   base::RecordAction(UserMetricsAction("Accel_Next_Ime"));
-  RecordImeSwitchByAccelerator();
+  if (accelerator.key_code() == ui::VKEY_MODECHANGE)
+    RecordImeSwitchByModeChangeKey();
+  else
+    RecordImeSwitchByAccelerator();
   Shell::Get()->ime_controller()->SwitchToNextIme();
 }
 
@@ -610,11 +618,6 @@ void HandleShowImeMenuBubble() {
       ime_menu_tray->ShowBubble(false /* show_by_click */);
     }
   }
-}
-
-void HandleShowOrSwitchIme() {
-  base::RecordAction(UserMetricsAction("Accel_Show_Or_Switch_Ime"));
-  Shell::Get()->ime_controller()->ShowOrSwitchIme();
 }
 
 void HandleCrosh() {
@@ -1475,7 +1478,6 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case RESTORE_TAB:
     case ROTATE_WINDOW:
     case SHOW_IME_MENU_BUBBLE:
-    case SHOW_OR_SWITCH_IME:
     case SHOW_SHORTCUT_VIEWER:
     case SHOW_TASK_MANAGER:
     case SUSPEND:
@@ -1711,9 +1713,6 @@ void AcceleratorControllerImpl::PerformAction(
     case SHOW_IME_MENU_BUBBLE:
       HandleShowImeMenuBubble();
       break;
-    case SHOW_OR_SWITCH_IME:
-      HandleShowOrSwitchIme();
-      break;
     case SHOW_SHORTCUT_VIEWER:
       HandleShowKeyboardShortcutViewer();
       break;
@@ -1739,7 +1738,7 @@ void AcceleratorControllerImpl::PerformAction(
       HandleSwitchToLastUsedIme(accelerator);
       break;
     case SWITCH_TO_NEXT_IME:
-      HandleSwitchToNextIme();
+      HandleSwitchToNextIme(accelerator);
       break;
     case SWITCH_TO_NEXT_USER:
       HandleCycleUser(CycleUserDirection::NEXT);

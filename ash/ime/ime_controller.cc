@@ -238,22 +238,6 @@ void ImeController::FlushMojoForTesting() {
   client_.FlushForTesting();
 }
 
-void ImeController::ShowOrSwitchIme() {
-  if (mode_indicator_observer_->active_widget()) {
-    SwitchToNextIme();
-
-    UMA_HISTOGRAM_ENUMERATION("InputMethod.ModeChangeKeyAction",
-                              ModeChangeKeyAction::kSwitchIme);
-    UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeSwitch",
-                              ImeSwitchType::kModeChangeKey);
-  } else {
-    client_->ShowModeIndicator();
-
-    UMA_HISTOGRAM_ENUMERATION("InputMethod.ModeChangeKeyAction",
-                              ModeChangeKeyAction::kShowIndicator);
-  }
-}
-
 bool ImeController::IsCapsLockEnabled() const {
   return is_caps_lock_enabled_;
 }
