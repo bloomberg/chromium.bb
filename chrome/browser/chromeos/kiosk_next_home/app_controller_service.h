@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/kiosk_next_home/mojom/app_controller.mojom.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/arc/common/app.mojom.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -34,9 +36,11 @@ class IntentConfigHelper;
 // Service implementation for the Kiosk Next AppController.
 // This class is responsible for managing Chrome OS apps and returning useful
 // information about them to the Kiosk Next Home.
-class AppControllerService : public mojom::AppController,
-                             public KeyedService,
-                             public apps::AppRegistryCache::Observer {
+class AppControllerService
+    : public mojom::AppController,
+      public KeyedService,
+      public apps::AppRegistryCache::Observer,
+      public arc::ConnectionObserver<arc::mojom::AppInstance> {
  public:
   // Returns the AppControllerService singleton attached to this |context|.
   static AppControllerService* Get(content::BrowserContext* context);
@@ -61,6 +65,10 @@ class AppControllerService : public mojom::AppController,
   void OnAppUpdate(const apps::AppUpdate& update) override;
   void OnAppRegistryCacheWillBeDestroyed(
       apps::AppRegistryCache* cache) override;
+
+  // arc::ConnectionObserver:
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
   // Allows overriding the intent config helper for tests.
   void SetIntentConfigHelperForTesting(
@@ -94,6 +102,9 @@ class AppControllerService : public mojom::AppController,
   // ARC++ already lost the information about app, so keeping a cache on our end
   // is necessary.
   std::map<std::string, std::string> android_package_map_;
+
+  // The current arc status that is reported to observers.
+  mojom::ArcStatus arc_status_ = mojom::ArcStatus::kStopped;
 
   DISALLOW_COPY_AND_ASSIGN(AppControllerService);
 };

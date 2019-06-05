@@ -21,8 +21,18 @@ kioskNextHome.Bridge = class {
   /**
    * Adds listener for system events.
    * @param {!kioskNextHome.Listener} listener Listener for system events.
+   * @deprecated Use setListener instead.
+   * TODO(ltenorio): Remove usage and remove this method.
    */
   addListener(listener) {}
+
+  /**
+   * Sets the current listener for system events. If null, we will no longer
+   * send events to the previous listener.
+   *
+   * @param {?kioskNextHome.Listener} listener Listener for system events.
+   */
+  setListener(listener) {}
 
   /**
    * @return {!Promise<string>} Promise for the user's given name.
@@ -204,6 +214,15 @@ kioskNextHome.NetworkState = {
 };
 
 /**
+ * Current status for ARC instance.
+ * @enum {string}
+ */
+kioskNextHome.ArcStatus = {
+  STOPPED: 'stopped',
+  READY: 'ready',
+};
+
+/**
  * Interface for a listener of system events, subscribed via
  * {!kioskNextHome.Bridge}.
  *
@@ -212,10 +231,16 @@ kioskNextHome.NetworkState = {
 kioskNextHome.Listener = class {
   /**
    * Called when an app state changes.
-   * TODO(brunoad): Adapt for AppService calls.
    * @param {!kioskNextHome.App} app The app whose state changed.
    */
   onAppChanged(app) {}
+
+  /**
+   * Called when the ARC status changes. Called at first when the listener is
+   * set.
+   * @param {!kioskNextHome.ArcStatus} status The new ARC status.
+   */
+  onArcStatusChanged(status) {}
 
   /**
    * Called when the network state changes.

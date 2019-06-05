@@ -28,10 +28,21 @@ struct App {
   apps.mojom.Readiness readiness;
 };
 
+enum ArcStatus {
+  // Arc is still booting up or encountered an error.
+  kStopped,
+  // Arc is connected and ready to be used. Android ID is available.
+  kReady,
+};
+
 // Interface used by AppController clients to receive app related events.
 interface AppControllerClient {
   // Called when any field from the given app changes.
   OnAppChanged(App app);
+
+  // Called when the Arc status changes. Called at first when the client is
+  // set.
+  OnArcStatusChanged(ArcStatus status);
 };
 
 // Interface for managing Chrome OS apps from the Kiosk Next Home.

@@ -80,8 +80,8 @@ function buildApp(mojoApp) {
 /** @implements {kioskNextHome.Bridge} */
 class KioskNextHomeBridge {
   constructor() {
-    /** @private @const {!Array<!kioskNextHome.Listener>} */
-    this.listeners_ = [];
+    /** @private {?kioskNextHome.Listener} */
+    this.listener_ = null;
     /** @private @const */
     this.identityAccessorProxy_ = new identity.mojom.IdentityAccessorProxy();
     /** @private @const */
@@ -106,15 +106,20 @@ class KioskNextHomeBridge {
     // Attaching app listeners.
     this.appControllerClientCallbackRouter_.onAppChanged.addListener(
         mojoApp => {
-          const bridgeApp = buildApp(mojoApp);
-          for (const listener of this.listeners_) {
-            listener.onAppChanged(
-                /** @type{!kioskNextHome.App} */ (
-                    Object.assign({}, bridgeApp)));
+          if (this.listener_) {
+            this.listener_.onAppChanged(buildApp(mojoApp));
           }
         });
-    this.appControllerProxy_.setClient(
-        this.appControllerClientCallbackRouter_.createProxy());
+    this.appControllerClientCallbackRouter_.onArcStatusChanged.addListener(
+        mojoArcStatus => {
+          const status =
+              mojoArcStatus == chromeos.kioskNextHome.mojom.ArcStatus.kReady ?
+              kioskNextHome.ArcStatus.READY :
+              kioskNextHome.ArcStatus.STOPPED;
+          if (this.listener_) {
+            this.listener_.onArcStatusChanged(status);
+          }
+        });
 
     // Attaching network status listeners.
     window.addEventListener(
@@ -127,8 +132,18 @@ class KioskNextHomeBridge {
   }
 
   /** @override */
+  setListener(listener) {
+    this.listener_ = listener;
+    this.appControllerProxy_.setClient(
+        this.appControllerClientCallbackRouter_.createProxy());
+  }
+
+  /** @override */
   addListener(listener) {
-    this.listeners_.push(listener);
+    console.warn(
+        'Setting bridge listener by using deprecated method addListener(). ' +
+        'Use setListener() instead.');
+    this.setListener(listener);
   }
 
   /** @override */
@@ -223,8 +238,8 @@ class KioskNextHomeBridge {
    *     state.
    */
   notifyNetworkStateChange(networkState) {
-    for (const listener of this.listeners_) {
-      listener.onNetworkStateChanged(networkState);
+    if (this.listener_) {
+      this.listener_.onNetworkStateChanged(networkState);
     }
   }
 }

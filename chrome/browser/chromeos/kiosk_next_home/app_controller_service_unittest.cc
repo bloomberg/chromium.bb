@@ -53,15 +53,25 @@ class FakeAppControllerClient : public mojom::AppControllerClient {
       : binding_(this, std::move(request)) {}
 
   const std::vector<mojom::AppPtr>& app_updates() { return app_updates_; }
+  const std::vector<mojom::ArcStatus>& arc_status() { return arc_status_; }
 
   // mojom::AppControllerClient:
   void OnAppChanged(mojom::AppPtr app) override {
     app_updates_.push_back(std::move(app));
   }
 
+  void OnArcStatusChanged(mojom::ArcStatus status) override {
+    arc_status_.push_back(status);
+  }
+
+  // Flushes the internal mojo message pipe. Call this any time you trigger a
+  // new mojo method, so the test waits for the full communication to occur.
+  void Flush() { binding_.FlushForTesting(); }
+
  private:
   mojo::Binding<mojom::AppControllerClient> binding_;
   std::vector<mojom::AppPtr> app_updates_;
+  std::vector<mojom::ArcStatus> arc_status_;
 };
 
 // Mock instance for the AppServiceProxy. It only overrides a subset of the
@@ -101,21 +111,30 @@ class AppControllerServiceTest : public testing::Test {
     arc_test_.SetUp(profile());
     proxy_ = MockAppServiceProxy::OverrideRealProxyForProfile(profile());
 
-    app_controller_service_ = AppControllerService::Get(profile());
-
-    mojom::AppControllerClientPtr client_proxy;
-    client_ = std::make_unique<FakeAppControllerClient>(
-        mojo::MakeRequest(&client_proxy));
-    app_controller_service_->SetClient(std::move(client_proxy));
+    app_controller_service_ = std::make_unique<AppControllerService>(profile());
+    ResetClient();
   }
 
-  void TearDown() override { arc_test_.TearDown(); }
+  void TearDown() override {
+    // We need to mimic the destruction order from production code, first the
+    // AppControllerService, then arc.
+    app_controller_service_.reset();
+    arc_test_.TearDown();
+  }
 
   Profile* profile() { return profile_.get(); }
 
   MockAppServiceProxy* proxy() { return proxy_; }
 
-  AppControllerService* service() { return app_controller_service_; }
+  AppControllerService* service() { return app_controller_service_.get(); }
+
+  void ResetClient() {
+    mojom::AppControllerClientPtr client_proxy;
+    client_ = std::make_unique<FakeAppControllerClient>(
+        mojo::MakeRequest(&client_proxy));
+    app_controller_service_->SetClient(std::move(client_proxy));
+    client_->Flush();
+  }
 
   std::string GetAppIdFromAndroidPackage(const std::string& package) {
     return ArcAppListPrefs::GetAppId(package, kFakeActivity);
@@ -138,16 +157,22 @@ class AppControllerServiceTest : public testing::Test {
     arc_test_.app_instance()->set_android_id(android_id);
   }
 
-  void StopArc() { arc_test_.StopArcInstance(); }
+  void StopArc() {
+    arc_test_.StopArcInstance();
+    client_->Flush();
+  }
+
+  void RestartArc() {
+    arc_test_.RestartArcInstance();
+    client_->Flush();
+  }
 
   void AddAppDeltaToAppService(apps::mojom::AppPtr delta) {
     std::vector<apps::mojom::AppPtr> deltas;
     deltas.push_back(std::move(delta));
     proxy_->AppRegistryCache().OnApps(std::move(deltas));
 
-    // We just triggered some mojo calls by adding the above delta, we need to
-    // wait for them to finish before we continue with the test.
-    base::RunLoop().RunUntilIdle();
+    client_->Flush();
   }
 
   // Gets all apps from the AppControllerService instance being tested and
@@ -252,6 +277,15 @@ class AppControllerServiceTest : public testing::Test {
     }
   }
 
+  void ExpectArcStatusUpdates(
+      const std::vector<mojom::ArcStatus>& expected_updates) {
+    ASSERT_EQ(expected_updates.size(), client_->arc_status().size());
+
+    for (std::size_t i = 0; i < expected_updates.size(); ++i) {
+      EXPECT_EQ(expected_updates[i], client_->arc_status()[i]);
+    }
+  }
+
   void ExpectBridgeActionRecorded(BridgeAction action, int count) {
     // Since seeding apps may fire bridge actions, check only the bucket of
     // interest.
@@ -274,7 +308,7 @@ class AppControllerServiceTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   ArcAppTest arc_test_;
   MockAppServiceProxy* proxy_ = nullptr;
-  AppControllerService* app_controller_service_ = nullptr;
+  std::unique_ptr<AppControllerService> app_controller_service_;
   std::unique_ptr<FakeAppControllerClient> client_;
   base::HistogramTester histogram_tester_;
 
@@ -713,6 +747,27 @@ TEST_F(AppControllerServiceTest, ClientIsNotNotifiedOfSuperfluousChanges) {
   AddAppDeltaToAppService(app_delta.Clone());
   ExpectAppChangedUpdates({first_app_state});
   ExpectBridgeActionRecorded(BridgeAction::kNotifiedAppChange, 1);
+}
+
+TEST_F(AppControllerServiceTest, ClientIsNotifiedOfArcStatusWhenArcStops) {
+  ExpectArcStatusUpdates({mojom::ArcStatus::kReady});
+
+  StopArc();
+
+  ExpectArcStatusUpdates(
+      {mojom::ArcStatus::kReady, mojom::ArcStatus::kStopped});
+}
+
+TEST_F(AppControllerServiceTest, ClientIsNotifiedOfArcStatusWhenArcStarts) {
+  // Since our fake arc instance starts ready, we need to stop it first and
+  // reset the client.
+  StopArc();
+  ResetClient();
+  ExpectArcStatusUpdates({mojom::ArcStatus::kStopped});
+
+  RestartArc();
+  ExpectArcStatusUpdates(
+      {mojom::ArcStatus::kStopped, mojom::ArcStatus::kReady});
 }
 
 TEST_F(AppControllerServiceTest, LaunchAppCallsAppServiceCorrectly) {

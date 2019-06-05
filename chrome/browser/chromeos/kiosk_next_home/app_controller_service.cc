@@ -67,6 +67,9 @@ AppControllerService::AppControllerService(Profile* profile)
   DCHECK(profile);
   Observe(&app_service_proxy_->AppRegistryCache());
 
+  // ArcServiceManager is always set in production code.
+  arc::ArcServiceManager::Get()->arc_bridge_service()->app()->AddObserver(this);
+
   // Add the chrome://app-icon URL data source.
   // TODO(ltenorio): Move this to a more suitable location when we change
   // the Kiosk Next Home to WebUI.
@@ -74,7 +77,10 @@ AppControllerService::AppControllerService(Profile* profile)
                               std::make_unique<apps::AppIconSource>(profile));
 }
 
-AppControllerService::~AppControllerService() = default;
+AppControllerService::~AppControllerService() {
+  arc::ArcServiceManager::Get()->arc_bridge_service()->app()->RemoveObserver(
+      this);
+}
 
 void AppControllerService::BindRequest(mojom::AppControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
@@ -99,6 +105,8 @@ void AppControllerService::GetApps(
 
 void AppControllerService::SetClient(mojom::AppControllerClientPtr client) {
   client_ = std::move(client);
+
+  client_->OnArcStatusChanged(arc_status_);
 }
 
 void AppControllerService::LaunchApp(const std::string& app_id) {
@@ -172,6 +180,18 @@ void AppControllerService::OnAppUpdate(const apps::AppUpdate& update) {
 void AppControllerService::OnAppRegistryCacheWillBeDestroyed(
     apps::AppRegistryCache* cache) {
   Observe(nullptr);
+}
+
+void AppControllerService::OnConnectionReady() {
+  arc_status_ = mojom::ArcStatus::kReady;
+  if (client_)
+    client_->OnArcStatusChanged(arc_status_);
+}
+
+void AppControllerService::OnConnectionClosed() {
+  arc_status_ = mojom::ArcStatus::kStopped;
+  if (client_)
+    client_->OnArcStatusChanged(arc_status_);
 }
 
 void AppControllerService::SetIntentConfigHelperForTesting(
