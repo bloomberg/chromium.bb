@@ -67,7 +67,6 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
   // For Off-Thread PaintWorklet, we just collect the necessary inputs together
   // and defer the actual JavaScript call until much later (during cc Raster).
   if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
-
     // TODO(crbug.com/946515): Break dependency on LayoutObject.
     const LayoutObject& layout_object =
         static_cast<const LayoutObject&>(client);
