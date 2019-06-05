@@ -81,6 +81,7 @@ class TryserverApi(recipe_api.RecipeApi):
         o_params=['ALL_REVISIONS', 'DOWNLOAD_COMMANDS'],
         limit=1,
         name='fetch current CL info',
+        timeout=600,
         step_test_data=lambda: self.m.json.test_api.output(mock_res))[0]
 
     self._gerrit_change_target_ref = res['branch']
