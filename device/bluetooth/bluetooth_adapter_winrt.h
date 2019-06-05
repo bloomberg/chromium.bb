@@ -136,6 +136,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   };
 
   static StaticsInterfaces PerformSlowInitTasks();
+  static StaticsInterfaces GetAgileReferencesForStatics(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics>
+          adapter_statics,
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Devices::Enumeration::IDeviceInformationStatics>
+          device_information_statics,
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Radios::IRadioStatics>
+          radio_statics);
 
   // CompleteInitAgile is a proxy to CompleteInit that resolves agile
   // references.
