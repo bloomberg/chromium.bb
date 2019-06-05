@@ -1735,17 +1735,12 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   _nyc_hwtest_boards = frozenset([
-      'cyan',
-      'samus',
-      'veyron_minnie',
+      'veyron_jerry',
+      'gandof',
   ])
-  _nyc_hwtest_skylab_boards = frozenset([
-      'samus',
-      'veyron_minnie',
-  ])
+  _nyc_hwtest_skylab_boards = frozenset([])
   _nyc_no_hwtest_boards = frozenset([
-      'bob',
-      'hana',
+      'veyron_tiger',
   ])
   _nyc_no_hwtest_experimental_boards = frozenset([])
   _nyc_vmtest_boards = frozenset([
@@ -2126,6 +2121,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz-accelerator',
       'fizz-moblab',
       'flapjack',
+      'gandof',
       'glados',
       'gale',
       'gonzo',

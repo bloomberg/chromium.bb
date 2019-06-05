@@ -74,6 +74,7 @@
     fizz-paladin
     flapjack-paladin
     gale-paladin
+    gandof-paladin
     glados-paladin
     gonzo-paladin
     grunt-paladin
@@ -382,11 +383,9 @@
   master-nyc-android-pfq
     betty-arc64-nyc-android-pfq
     betty-nyc-android-pfq
-    bob-nyc-android-pfq
-    cyan-nyc-android-pfq
-    hana-nyc-android-pfq
-    samus-nyc-android-pfq
-    veyron_minnie-nyc-android-pfq
+    gandof-nyc-android-pfq
+    veyron_jerry-nyc-android-pfq
+    veyron_tiger-nyc-android-pfq
 
 == pi_android_pfq ==
   master-pi-android-pfq
@@ -1072,7 +1071,6 @@
   bob-llvm-next-toolchain-tryjob
   bob-llvm-toolchain-tryjob
   bob-no-vmtest-pre-cq
-  bob-nyc-android-pfq-tryjob
   bob-paladin-tryjob
   bob-payloads-tryjob
   bob-postsubmit-tryjob
@@ -1404,7 +1402,6 @@
   cyan-llvm-next-toolchain-tryjob
   cyan-llvm-toolchain-tryjob
   cyan-no-vmtest-pre-cq
-  cyan-nyc-android-pfq-tryjob
   cyan-paladin-tryjob
   cyan-payloads-tryjob
   cyan-postsubmit-tryjob
@@ -1976,6 +1973,7 @@
   gandof-llvm-next-toolchain-tryjob
   gandof-llvm-toolchain-tryjob
   gandof-no-vmtest-pre-cq
+  gandof-nyc-android-pfq-tryjob
   gandof-paladin-tryjob
   gandof-payloads-tryjob
   gandof-postsubmit-tryjob
@@ -2191,7 +2189,6 @@
   hana-llvm-next-toolchain-tryjob
   hana-llvm-toolchain-tryjob
   hana-no-vmtest-pre-cq
-  hana-nyc-android-pfq-tryjob
   hana-paladin-tryjob
   hana-payloads-tryjob
   hana-postsubmit-tryjob
@@ -2631,11 +2628,9 @@
   master-nyc-android-pfq-tryjob
     betty-arc64-nyc-android-pfq-tryjob
     betty-nyc-android-pfq-tryjob
-    bob-nyc-android-pfq-tryjob
-    cyan-nyc-android-pfq-tryjob
-    hana-nyc-android-pfq-tryjob
-    samus-nyc-android-pfq-tryjob
-    veyron_minnie-nyc-android-pfq-tryjob
+    gandof-nyc-android-pfq-tryjob
+    veyron_jerry-nyc-android-pfq-tryjob
+    veyron_tiger-nyc-android-pfq-tryjob
   master-paladin-tryjob
     amd64-generic-paladin-tryjob
     arm-generic-paladin-tryjob
@@ -2671,6 +2666,7 @@
     fizz-paladin-tryjob
     flapjack-paladin-tryjob
     gale-paladin-tryjob
+    gandof-paladin-tryjob
     glados-paladin-tryjob
     gonzo-paladin-tryjob
     grunt-paladin-tryjob
@@ -3605,7 +3601,6 @@
   samus-llvm-next-toolchain-tryjob
   samus-llvm-toolchain-tryjob
   samus-no-vmtest-pre-cq
-  samus-nyc-android-pfq-tryjob
   samus-paladin-tryjob
   samus-payloads-tryjob
   samus-postsubmit-tryjob
@@ -3974,6 +3969,7 @@
   veyron_jerry-llvm-next-toolchain-tryjob
   veyron_jerry-llvm-toolchain-tryjob
   veyron_jerry-no-vmtest-pre-cq
+  veyron_jerry-nyc-android-pfq-tryjob
   veyron_jerry-paladin-tryjob
   veyron_jerry-payloads-tryjob
   veyron_jerry-postsubmit-tryjob
@@ -4045,7 +4041,6 @@
   veyron_minnie-llvm-next-toolchain-tryjob
   veyron_minnie-llvm-toolchain-tryjob
   veyron_minnie-no-vmtest-pre-cq
-  veyron_minnie-nyc-android-pfq-tryjob
   veyron_minnie-paladin-tryjob
   veyron_minnie-payloads-tryjob
   veyron_minnie-postsubmit-tryjob
@@ -4104,6 +4099,7 @@
   veyron_tiger-llvm-next-toolchain-tryjob
   veyron_tiger-llvm-toolchain-tryjob
   veyron_tiger-no-vmtest-pre-cq
+  veyron_tiger-nyc-android-pfq-tryjob
   veyron_tiger-paladin-tryjob
   veyron_tiger-payloads-tryjob
   veyron_tiger-postsubmit-tryjob
