@@ -6,12 +6,12 @@
 #define CONTENT_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_DIRECTORY_HANDLE_IMPL_H_
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom.h"
-
 
 namespace content {
 class NativeFileSystemTransferTokenImpl;
@@ -79,9 +79,11 @@ class NativeFileSystemDirectoryHandleImpl
                      bool is_directory,
                      base::File::Error result);
 
-  // Returns a FileSystemURL for a (direct) child of this directory with the
-  // given name.
-  storage::FileSystemURL GetChildURL(const std::string& name);
+  // Calculates a FileSystemURL for a (direct) child of this directory with the
+  // given name.  Returns an error when |name| includes invalid input like "/".
+  base::File::Error GetChildURL(const std::string& name,
+                                storage::FileSystemURL* result)
+      WARN_UNUSED_RESULT;
 
   // Helper to create a blink::mojom::NativeFileSystemEntry struct.
   blink::mojom::NativeFileSystemEntryPtr CreateEntry(

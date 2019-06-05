@@ -26,6 +26,27 @@ using blink::mojom::NativeFileSystemTransferTokenRequest;
 
 namespace content {
 
+namespace {
+
+// Returns true when |name| contains a path separator like "/".
+bool ContainsPathSeparator(const std::string& name) {
+  const base::FilePath filepath_name = storage::StringToFilePath(name);
+
+  const size_t separator_position =
+      filepath_name.value().find_first_of(base::FilePath::kSeparators);
+
+  return separator_position != base::FilePath::StringType::npos;
+}
+
+// Returns true when |name| is "." or "..".
+bool IsCurrentOrParentDirectory(const std::string& name) {
+  const base::FilePath filepath_name = storage::StringToFilePath(name);
+  return filepath_name.value() == base::FilePath::kCurrentDirectory ||
+         filepath_name.value() == base::FilePath::kParentDirectory;
+}
+
+}  // namespace
+
 struct NativeFileSystemDirectoryHandleImpl::ReadDirectoryState {
   GetEntriesCallback callback;
   std::vector<NativeFileSystemEntryPtr> entries;
@@ -48,7 +69,14 @@ void NativeFileSystemDirectoryHandleImpl::GetFile(const std::string& name,
                                                   bool create,
                                                   GetFileCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  storage::FileSystemURL child_url = GetChildURL(name);
+
+  storage::FileSystemURL child_url;
+  const base::File::Error file_error = GetChildURL(name, &child_url);
+  if (file_error != base::File::FILE_OK) {
+    std::move(callback).Run(NativeFileSystemError::New(file_error), nullptr);
+    return;
+  }
+
   if (create) {
     operation_runner()->CreateFile(
         child_url, /*exclusive=*/false,
@@ -70,7 +98,13 @@ void NativeFileSystemDirectoryHandleImpl::GetDirectory(
     GetDirectoryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  storage::FileSystemURL child_url = GetChildURL(name);
+  storage::FileSystemURL child_url;
+  const base::File::Error file_error = GetChildURL(name, &child_url);
+  if (file_error != base::File::FILE_OK) {
+    std::move(callback).Run(NativeFileSystemError::New(file_error), nullptr);
+    return;
+  }
+
   if (create) {
     operation_runner()->CreateDirectory(
         child_url, /*exclusive=*/false, /*recursive=*/false,
@@ -189,8 +223,16 @@ void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
 
   for (const auto& entry : file_list) {
     std::string name = storage::FilePathToString(entry.name);
+
+    storage::FileSystemURL child_url;
+    const base::File::Error file_error = GetChildURL(name, &child_url);
+
+    // All entries must exist in this directory as a direct child with a valid
+    // |name|.
+    CHECK_EQ(file_error, base::File::FILE_OK);
+
     state->entries.push_back(
-        CreateEntry(name, GetChildURL(name),
+        CreateEntry(name, child_url,
                     entry.type == filesystem::mojom::FsFileType::DIRECTORY));
   }
 
@@ -216,7 +258,13 @@ void NativeFileSystemDirectoryHandleImpl::DoCopyOrMoveFrom(
     return;
   }
 
-  storage::FileSystemURL url = GetChildURL(new_name);
+  storage::FileSystemURL url;
+  const base::File::Error file_error = GetChildURL(new_name, &url);
+  if (file_error != base::File::FILE_OK) {
+    std::move(callback).Run(NativeFileSystemError::New(file_error), nullptr);
+    return;
+  }
+
   if (url == source->url()) {
     std::move(callback).Run(
         NativeFileSystemError::New(base::File::FILE_ERROR_INVALID_OPERATION),
@@ -258,12 +306,21 @@ void NativeFileSystemDirectoryHandleImpl::DidCopyOrMove(
                           CreateEntry(new_name, new_url, is_directory));
 }
 
-storage::FileSystemURL NativeFileSystemDirectoryHandleImpl::GetChildURL(
-    const std::string& name) {
+base::File::Error NativeFileSystemDirectoryHandleImpl::GetChildURL(
+    const std::string& name,
+    storage::FileSystemURL* result) {
   // TODO(mek): Rather than doing URL serialization and parsing we should just
   // have a way to get a child FileSystemURL directly from its parent.
-  // TODO(https://crbug.com/960411): Also we need a way for GetChildURL to fail,
-  // to indicate invalid input, for example containing ".." or "/".
+
+  if (name.empty()) {
+    return base::File::FILE_ERROR_NOT_FOUND;
+  }
+
+  if (ContainsPathSeparator(name) || IsCurrentOrParentDirectory(name)) {
+    // |name| must refer to a entry that exists in this directory as a direct
+    // child.
+    return base::File::FILE_ERROR_SECURITY;
+  }
 
   std::string escaped_name =
       net::EscapeQueryParamValue(name, /*use_plus=*/false);
@@ -274,7 +331,8 @@ storage::FileSystemURL NativeFileSystemDirectoryHandleImpl::GetChildURL(
   replacements.SetPathStr(path);
   GURL child_url = parent_url.ReplaceComponents(replacements);
 
-  return file_system_context()->CrackURL(child_url);
+  *result = file_system_context()->CrackURL(child_url);
+  return base::File::FILE_OK;
 }
 
 NativeFileSystemEntryPtr NativeFileSystemDirectoryHandleImpl::CreateEntry(
