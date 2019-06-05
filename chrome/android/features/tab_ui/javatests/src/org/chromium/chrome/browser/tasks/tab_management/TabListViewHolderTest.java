@@ -187,7 +187,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @MediumTest
     @UiThreadTest
     public void testClickToClose() throws Exception {
-        mTabGridViewHolder.closeButton.performClick();
+        mTabGridViewHolder.actionButton.performClick();
         Assert.assertTrue(mCloseClicked.get());
         mCloseClicked.set(false);
 

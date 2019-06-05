@@ -3,7 +3,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <!-- TODO(crbug/928388): Handle elevation for KitKat.-->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.chromium.chrome.browser.tasks.tab_management.TabGridView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
@@ -68,11 +69,11 @@
                 style="@style/FilledButton"/>
     </RelativeLayout>
     <org.chromium.ui.widget.ChromeImageView
-        android:id="@+id/close_button"
+        android:id="@+id/action_button"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:scaleType="center"
         android:layout_gravity="end"
-        android:tint="@color/modern_grey_800"
-        android:contentDescription="@string/accessibility_tabstrip_btn_close_tab"/>
-</FrameLayout>
+        android:tint="@color/modern_grey_800"/>
+</org.chromium.chrome.browser.tasks.tab_management.TabGridView>
+
