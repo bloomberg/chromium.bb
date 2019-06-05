@@ -98,7 +98,8 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   // content::WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  void SetManagedForTesting(bool managed) { managed_ = managed; }
+  void SetAccountManagedForTesting(bool managed) { account_managed_ = managed; }
+  void SetDeviceManagedForTesting(bool managed) { device_managed_ = managed; }
 
   static std::string GetAccountDomain(Profile* profile);
 
@@ -113,12 +114,16 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
                                  Profile* profile);
   void AddExtensionReportingInfo(base::Value* report_sources);
 
-  base::DictionaryValue GetContextualManagedData(Profile* profile) const;
+  base::DictionaryValue GetContextualManagedData(Profile* profile);
   virtual policy::PolicyService* GetPolicyService() const;
   virtual const extensions::Extension* GetEnabledExtension(
       const std::string& extensionId) const;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+#if defined(OS_CHROMEOS)
+  // Protected for testing.
+  virtual const std::string GetDeviceDomain() const;
+#endif  // defined(OS_CHROMEOS)
  private:
   void GetManagementStatus(Profile* profile, base::Value* status) const;
 
@@ -145,7 +150,7 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
                            const extensions::Extension* extension,
                            extensions::UnloadedExtensionReason reason) override;
 
-  void OnManagedStateChanged();
+  void UpdateManagedState();
 
   // policy::PolicyService::Observer
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
@@ -155,10 +160,12 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   void AddObservers();
   void RemoveObservers();
 
+  bool managed_() const { return account_managed_ || device_managed_; }
+  bool account_managed_ = false;
+  bool device_managed_ = false;
   // To avoid double-removing the observers, which would cause a DCHECK()
   // failure.
   bool has_observers_ = false;
-  bool managed_ = false;
   std::string web_ui_data_source_name_;
 
   PrefChangeRegistrar pref_registrar_;

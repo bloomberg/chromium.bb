@@ -48,12 +48,7 @@ Polymer({
     /** @private */
     managementOverview_: String,
 
-    /** @private {?management.ManagedInfo} */
-    deviceManagedInfo_: Object,
     // </if>
-
-    /** @private {?management.ManagedInfo} */
-    accountManagedInfo_: Object,
 
     /** @private */
     subtitle_: String,
@@ -249,10 +244,8 @@ Polymer({
       this.managed_ = data.managed;
       this.extensionReportingSubtitle_ = data.extensionReportingTitle;
       this.subtitle_ = data.pageSubtitle;
-      this.accountManagedInfo_ = data.accountManagedInfo;
       // <if expr="chromeos">
       this.managementOverview_ = data.overview;
-      this.deviceManagedInfo_ = data.deviceManagedInfo;
       // </if>
       // <if expr="not chromeos">
       this.managementNoticeHtml_ = data.browserManagementNotice;
