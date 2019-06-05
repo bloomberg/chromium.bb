@@ -21,6 +21,7 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/token.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
@@ -39,7 +40,9 @@
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_types.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_state.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::NavigationEntry;
@@ -85,6 +88,16 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
       service()->SetSelectedNavigationIndex(
           window_id, tab_id, navigation.index());
     }
+  }
+
+  SessionID CreateTabWithTestNavigationData(SessionID window_id,
+                                            int visual_index) {
+    const SessionID tab_id = SessionID::NewUnique();
+    const SerializedNavigationEntry nav =
+        SerializedNavigationEntryTestHelper::CreateNavigationForTest();
+    helper_.PrepareTabInWindow(window_id, tab_id, visual_index, true);
+    UpdateNavigation(window_id, tab_id, nav, true);
+    return tab_id;
   }
 
   void ReadWindows(
@@ -1162,6 +1175,46 @@ TEST_F(SessionServiceTest, IgnoreBlacklistedUrls) {
   sessions::SessionTab* tab = windows[0]->tabs[0].get();
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
+}
+
+TEST_F(SessionServiceTest, TabGroupDefaultsToNone) {
+  CreateTabWithTestNavigationData(window_id, 0);
+
+  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
+  ReadWindows(&windows, nullptr);
+
+  ASSERT_EQ(1U, windows.size());
+  ASSERT_EQ(1U, windows[0]->tabs.size());
+
+  // Verify that the recorded tab has no group.
+  sessions::SessionTab* tab = windows[0]->tabs[0].get();
+  EXPECT_EQ(base::nullopt, tab->group);
+}
+
+TEST_F(SessionServiceTest, TabGroupIdsSaved) {
+  const auto group1_token = base::Token::CreateRandom();
+  const auto group2_token = base::Token::CreateRandom();
+  constexpr int kNumTabs = 5;
+  const std::array<base::Optional<base::Token>, kNumTabs> groups = {
+      base::nullopt, group1_token, group1_token, base::nullopt, group2_token};
+
+  // Create |kNumTabs| tabs with group IDs in |groups|.
+  for (int tab_ndx = 0; tab_ndx < kNumTabs; ++tab_ndx) {
+    const SessionID tab_id =
+        CreateTabWithTestNavigationData(window_id, tab_ndx);
+    service()->SetTabGroup(window_id, tab_id, groups[tab_ndx]);
+  }
+
+  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
+  ReadWindows(&windows, nullptr);
+
+  ASSERT_EQ(1U, windows.size());
+  ASSERT_EQ(kNumTabs, static_cast<int>(windows[0]->tabs.size()));
+
+  for (int tab_ndx = 0; tab_ndx < kNumTabs; ++tab_ndx) {
+    sessions::SessionTab* tab = windows[0]->tabs[tab_ndx].get();
+    EXPECT_EQ(groups[tab_ndx], tab->group);
+  }
 }
 
 // Functions used by GetSessionsAndDestroy.

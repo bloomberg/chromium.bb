@@ -103,9 +103,9 @@ class TabLoaderTest : public testing::Test {
     // TabLoadTracker needs the resource_coordinator WebContentsData to be
     // initialized.
     ResourceCoordinatorTabHelper::CreateForWebContents(test_contents);
-    restored_tabs_.push_back(
-        RestoredTab(test_contents, is_active /* is_active */,
-                    false /* is_app */, false /* is_pinned */));
+    restored_tabs_.push_back(RestoredTab(
+        test_contents, is_active /* is_active */, false /* is_app */,
+        false /* is_pinned */, base::nullopt /* group */));
 
     // If the tab is active start "loading" it right away for consistency with
     // session restore code.

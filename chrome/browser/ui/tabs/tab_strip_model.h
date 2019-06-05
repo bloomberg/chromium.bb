@@ -392,10 +392,10 @@ class TabStripModel {
 
   // Create a new tab group and add the set of tabs pointed to be |indices| to
   // it. Pins all of the tabs if any of them were pinned, and reorders the tabs
-  // so they are contiguous and do not split an existing group in half.
-  // |indices| must be sorted in ascending order. This feature is in development
-  // and gated behind a feature flag. https://crbug.com/915956.
-  void AddToNewGroup(const std::vector<int>& indices);
+  // so they are contiguous and do not split an existing group in half. Returns
+  // the new group. |indices| must be sorted in ascending order. This feature is
+  // in development and gated behind a feature flag. https://crbug.com/915956.
+  TabGroupId AddToNewGroup(const std::vector<int>& indices);
 
   // Add the set of tabs pointed to by |indices| to the given tab group |group|.
   // The tabs take on the pinnedness of the tabs already in the group, and are
@@ -403,6 +403,11 @@ class TabStripModel {
   // be sorted in ascending order. This feature is in development and gated
   // behind a feature flag (see https://crbug.com/915956).
   void AddToExistingGroup(const std::vector<int>& indices, TabGroupId group);
+
+  // Similar to AddToExistingGroup(), but creates a group with id |group| if it
+  // doesn't exist. This is only intended to be called from session restore
+  // code.
+  void AddToGroupForRestore(const std::vector<int>& indices, TabGroupId group);
 
   // Removes the set of tabs pointed to by |indices| from the the groups they
   // are in, if any. The tabs are moved out of the group if necessary. |indices|
@@ -608,6 +613,15 @@ class TabStripModel {
   // Implementation of MoveSelectedTabsTo. Moves |length| of the selected tabs
   // starting at |start| to |index|. See MoveSelectedTabsTo for more details.
   void MoveSelectedTabsToImpl(int index, size_t start, size_t length);
+
+  // Adds tabs to newly-allocated group id |new_group|. This group must be new
+  // and have no tabs in it.
+  void AddToNewGroupImpl(const std::vector<int>& indices, TabGroupId new_group);
+
+  // Adds tabs to existing group |group|. This group must have been initialized
+  // by a previous call to |AddToNewGroupImpl()|.
+  void AddToExistingGroupImpl(const std::vector<int>& indices,
+                              TabGroupId group);
 
   // Moves the set of tabs indicated by |indices| to precede the tab at index
   // |destination_index|, maintaining their order and the order of tabs not

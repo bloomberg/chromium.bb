@@ -12,6 +12,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/pickle.h"
+#include "base/token.h"
 #include "components/sessions/core/base_session_service_commands.h"
 #include "components/sessions/core/base_session_service_delegate.h"
 #include "components/sessions/core/session_command.h"
@@ -56,6 +57,7 @@ static const SessionCommand::id_type kCommandLastActiveTime = 21;
 // static const SessionCommand::id_type kCommandSetWindowWorkspace = 22;
 static const SessionCommand::id_type kCommandSetWindowWorkspace2 = 23;
 static const SessionCommand::id_type kCommandTabNavigationPathPruned = 24;
+static const SessionCommand::id_type kCommandSetTabGroup = 25;
 
 namespace {
 
@@ -108,6 +110,18 @@ struct TabNavigationPathPrunedPayload {
   int32_t index;
   // Number of entries removed.
   int32_t count;
+};
+
+struct SerializedTabGroupId {
+  // These fields correspond to the high and low fields of |base::Token|.
+  uint64_t id_high;
+  uint64_t id_low;
+};
+
+struct TabGroupPayload {
+  SessionID::id_type tab_id;
+  SerializedTabGroupId maybe_group;
+  bool has_group;
 };
 
 struct PinnedStatePayload {
@@ -544,6 +558,21 @@ bool CreateTabsAndWindows(
         break;
       }
 
+      case kCommandSetTabGroup: {
+        TabGroupPayload payload;
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          DVLOG(1) << "Failed reading command " << command->id();
+          return true;
+        }
+        SessionTab* session_tab =
+            GetTab(SessionID::FromSerializedValue(payload.tab_id), tabs);
+        const base::Token token(payload.maybe_group.id_high,
+                                payload.maybe_group.id_low);
+        session_tab->group =
+            payload.has_group ? base::make_optional(token) : base::nullopt;
+        break;
+      }
+
       case kCommandSetPinnedState: {
         PinnedStatePayload payload;
         if (!command->GetPayload(&payload, sizeof(payload))) {
@@ -743,6 +772,20 @@ std::unique_ptr<SessionCommand> CreateSetWindowTypeCommand(
   payload.id = window_id.id();
   payload.index = static_cast<int32_t>(type);
   return CreateSessionCommandForPayload(kCommandSetWindowType, payload);
+}
+
+std::unique_ptr<SessionCommand> CreateTabGroupCommand(
+    const SessionID& tab_id,
+    base::Optional<base::Token> group) {
+  TabGroupPayload payload = {0};
+  payload.tab_id = tab_id.id();
+  if (group.has_value()) {
+    DCHECK(!group.value().is_zero());
+    payload.maybe_group.id_high = group.value().high();
+    payload.maybe_group.id_low = group.value().low();
+    payload.has_group = true;
+  }
+  return CreateSessionCommandForPayload(kCommandSetTabGroup, payload);
 }
 
 std::unique_ptr<SessionCommand> CreatePinnedStateCommand(

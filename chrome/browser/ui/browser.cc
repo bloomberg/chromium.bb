@@ -1026,9 +1026,12 @@ void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
                       replace->index);
       break;
     }
-    case TabStripModelChange::kGroupChanged:
-      // TODO(crbug.com/930991): Save Tab Group data to SessionService.
+    case TabStripModelChange::kGroupChanged: {
+      auto* group_change = change.GetGroupChange();
+      OnTabGroupChanged(group_change->index, group_change->old_group,
+                        group_change->new_group);
       break;
+    }
     case TabStripModelChange::kSelectionOnly:
       break;
   }
@@ -2261,6 +2264,24 @@ void Browser::OnTabReplacedAt(WebContents* old_contents,
   }
 }
 
+void Browser::OnTabGroupChanged(int index,
+                                base::Optional<TabGroupId> old_group,
+                                base::Optional<TabGroupId> new_group) {
+  content::WebContents* const web_contents =
+      tab_strip_model_->GetWebContentsAt(index);
+  SessionService* const session_service =
+      SessionServiceFactory::GetForProfile(profile_);
+  if (session_service) {
+    SessionTabHelper* const session_tab_helper =
+        SessionTabHelper::FromWebContents(web_contents);
+    const base::Optional<base::Token> raw_id =
+        new_group.has_value() ? base::make_optional(new_group.value().token())
+                              : base::nullopt;
+    session_service->SetTabGroup(session_id(), session_tab_helper->session_id(),
+                                 raw_id);
+  }
+}
+
 void Browser::OnDevToolsAvailabilityChanged() {
   using DTPH = policy::DeveloperToolsPolicyHandler;
   // We close all windows as a safety measure, even for
@@ -2429,6 +2450,15 @@ void Browser::SyncHistoryWithTabs(int index) {
         session_service->SetPinnedState(session_id(),
                                         session_tab_helper->session_id(),
                                         tab_strip_model_->IsTabPinned(i));
+
+        base::Optional<TabGroupId> group_id =
+            tab_strip_model_->GetTabGroupForTab(i);
+        base::Optional<base::Token> raw_group_id =
+            group_id.has_value()
+                ? base::Optional<base::Token>(group_id.value().token())
+                : base::nullopt;
+        session_service->SetTabGroup(
+            session_id(), session_tab_helper->session_id(), raw_group_id);
       }
     }
   }

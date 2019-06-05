@@ -226,7 +226,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
           use_new_window ? 0 : browser->tab_strip_model()->active_index() + 1;
       web_contents = chrome::AddRestoredTab(
           browser, tab.navigations, tab_index, selected_index,
-          tab.extension_app_id,
+          tab.extension_app_id, base::nullopt,
           disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB,  // selected
           tab.pinned, true, base::TimeTicks(), nullptr, tab.user_agent_override,
           true /* from_session_restore */);
@@ -531,6 +531,11 @@ class SessionRestoreImpl : public content::NotificationObserver {
         latest_last_active_time = tab.last_active_time;
     }
 
+    // TODO(crbug.com/930991): Check that tab groups are contiguous in |window|
+    // to ensure tabs will not be reordered when restoring. This is not possible
+    // yet due the ordering of TabStripModelObserver notifications in an edge
+    // case.
+
     for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
       const sessions::SessionTab& tab = *(window.tabs[i]);
 
@@ -585,16 +590,14 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     WebContents* web_contents = chrome::AddRestoredTab(
         browser, tab.navigations, tab_index, selected_index,
-        tab.extension_app_id, is_selected_tab, tab.pinned, true,
+        tab.extension_app_id, tab.group, is_selected_tab, tab.pinned, true,
         last_active_time, session_storage_namespace.get(),
         tab.user_agent_override, true /* from_session_restore */);
-
-    // RestoreTab can return nullptr if |tab| doesn't have valid data.
-    if (!web_contents)
-      return;
+    DCHECK(web_contents);
 
     RestoredTab restored_tab(web_contents, is_selected_tab,
-                             tab.extension_app_id.empty(), tab.pinned);
+                             tab.extension_app_id.empty(), tab.pinned,
+                             tab.group);
     created_contents->push_back(restored_tab);
 
     // If this isn't the selected tab, there's nothing else to do.

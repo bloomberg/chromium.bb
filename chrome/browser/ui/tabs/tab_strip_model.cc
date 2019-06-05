@@ -769,7 +769,7 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
 }
 
 bool TabStripModel::IsTabPinned(int index) const {
-  DCHECK(ContainsIndex(index));
+  DCHECK(ContainsIndex(index)) << index;
   return contents_data_[index]->pinned();
 }
 
@@ -981,39 +981,17 @@ void TabStripModel::MoveTabPrevious() {
   MoveWebContentsAt(active_index(), new_index, true);
 }
 
-void TabStripModel::AddToNewGroup(const std::vector<int>& indices) {
+TabGroupId TabStripModel::AddToNewGroup(const std::vector<int>& indices) {
   DCHECK(!reentrancy_guard_);
   base::AutoReset<bool> resetter(&reentrancy_guard_, true);
 
+  // The odds of |new_group| colliding with an existing group are astronomically
+  // low. If there is a collision, a DCHECK will fail in |AddToNewGroupImpl()|,
+  // in which case there is probably something wrong with
+  // |TabGroupId::GenerateNew()|.
   const TabGroupId new_group = TabGroupId::GenerateNew();
-  // If the random generator is working correctly, the odds of this happening
-  // are astronomically low. If this DCHECK fails, something is probably wrong
-  // in |TabGroupId::GenerateNew()|.
-  DCHECK(!std::any_of(
-      contents_data_.cbegin(), contents_data_.cend(),
-      [new_group](const auto& datum) { return datum->group() == new_group; }));
-
-  group_data_[new_group] = std::make_unique<TabGroupData>();
-
-  // Find a destination for the first tab that's not inside another group. We
-  // will stack the rest of the tabs up to its right.
-  int destination_index = -1;
-  for (int i = indices[0]; i < count(); i++) {
-    const int destination_candidate = i + 1;
-    const bool end_of_strip = !ContainsIndex(destination_candidate);
-    if (end_of_strip || !GetTabGroupForTab(destination_candidate).has_value() ||
-        GetTabGroupForTab(destination_candidate) !=
-            GetTabGroupForTab(indices[0])) {
-      destination_index = destination_candidate;
-      break;
-    }
-  }
-
-  std::vector<int> new_indices = indices;
-  if (IsTabPinned(new_indices[0]))
-    new_indices = SetTabsPinned(new_indices, true);
-
-  MoveTabsIntoGroup(new_indices, destination_index, new_group);
+  AddToNewGroupImpl(indices, new_group);
+  return new_group;
 }
 
 void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
@@ -1021,25 +999,19 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
   DCHECK(!reentrancy_guard_);
   base::AutoReset<bool> resetter(&reentrancy_guard_, true);
 
-  int destination_index = -1;
-  bool pin = false;
-  for (int i = contents_data_.size() - 1; i >= 0; i--) {
-    if (contents_data_[i]->group() == group) {
-      destination_index = i + 1;
-      pin = IsTabPinned(i);
-      break;
-    }
-  }
+  AddToExistingGroupImpl(indices, group);
+}
 
-  // Ignore indices that are already in the group.
-  std::vector<int> new_indices;
-  for (int candidate_index : indices) {
-    if (GetTabGroupForTab(candidate_index) != group)
-      new_indices.push_back(candidate_index);
-  }
-  new_indices = SetTabsPinned(new_indices, pin);
+void TabStripModel::AddToGroupForRestore(const std::vector<int>& indices,
+                                         TabGroupId group) {
+  DCHECK(!reentrancy_guard_);
+  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
 
-  MoveTabsIntoGroup(new_indices, destination_index, group);
+  const bool group_exists = base::ContainsKey(group_data_, group);
+  if (group_exists)
+    AddToExistingGroupImpl(indices, group);
+  else
+    AddToNewGroupImpl(indices, group);
 }
 
 void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
@@ -1765,6 +1737,58 @@ void TabStripModel::MoveSelectedTabsToImpl(int index,
     tab_index++;
     target_index++;
   }
+}
+
+void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
+                                      TabGroupId new_group) {
+  DCHECK(!std::any_of(
+      contents_data_.cbegin(), contents_data_.cend(),
+      [new_group](const auto& datum) { return datum->group() == new_group; }));
+
+  group_data_[new_group] = std::make_unique<TabGroupData>();
+
+  // Find a destination for the first tab that's not inside another group. We
+  // will stack the rest of the tabs up to its right.
+  int destination_index = -1;
+  for (int i = indices[0]; i < count(); i++) {
+    const int destination_candidate = i + 1;
+    const bool end_of_strip = !ContainsIndex(destination_candidate);
+    if (end_of_strip || !GetTabGroupForTab(destination_candidate).has_value() ||
+        GetTabGroupForTab(destination_candidate) !=
+            GetTabGroupForTab(indices[0])) {
+      destination_index = destination_candidate;
+      break;
+    }
+  }
+
+  std::vector<int> new_indices = indices;
+  if (IsTabPinned(new_indices[0]))
+    new_indices = SetTabsPinned(new_indices, true);
+
+  MoveTabsIntoGroup(new_indices, destination_index, new_group);
+}
+
+void TabStripModel::AddToExistingGroupImpl(const std::vector<int>& indices,
+                                           TabGroupId group) {
+  int destination_index = -1;
+  bool pin = false;
+  for (int i = contents_data_.size() - 1; i >= 0; i--) {
+    if (contents_data_[i]->group() == group) {
+      destination_index = i + 1;
+      pin = IsTabPinned(i);
+      break;
+    }
+  }
+
+  // Ignore indices that are already in the group.
+  std::vector<int> new_indices;
+  for (int candidate_index : indices) {
+    if (GetTabGroupForTab(candidate_index) != group)
+      new_indices.push_back(candidate_index);
+  }
+  new_indices = SetTabsPinned(new_indices, pin);
+
+  MoveTabsIntoGroup(new_indices, destination_index, group);
 }
 
 void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,

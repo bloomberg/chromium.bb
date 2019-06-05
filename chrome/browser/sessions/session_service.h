@@ -13,8 +13,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "base/token.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/sessions/session_common_utils.h"
 #include "chrome/browser/sessions/session_service_utils.h"
@@ -128,6 +130,11 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   void SetTabIndexInWindow(const SessionID& window_id,
                            const SessionID& tab_id,
                            int new_index);
+
+  // Sets a tab's group ID, if any.
+  void SetTabGroup(const SessionID& window_id,
+                   const SessionID& tab_id,
+                   base::Optional<base::Token> group);
 
   // Sets the pinned state of the tab.
   void SetPinnedState(const SessionID& window_id,
@@ -268,12 +275,12 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   // direction from the current navigation index).
   // A pair is added to tab_to_available_range indicating the range of
   // indices that were written.
-  void BuildCommandsForTab(
-      const SessionID& window_id,
-      content::WebContents* tab,
-      int index_in_window,
-      bool is_pinned,
-      IdToRange* tab_to_available_range);
+  void BuildCommandsForTab(const SessionID& window_id,
+                           content::WebContents* tab,
+                           int index_in_window,
+                           base::Optional<base::Token> group,
+                           bool is_pinned,
+                           IdToRange* tab_to_available_range);
 
   // Adds commands to create the specified browser, and invokes
   // BuildCommandsForTab for each of the tabs in the browser. This ignores

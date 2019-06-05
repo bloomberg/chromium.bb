@@ -9,6 +9,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -870,6 +872,134 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {
   GoBack(new_browser);
   ASSERT_EQ(url1_,
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+namespace {
+
+// Groups the tabs in |model| according to |specified_groups|.
+void CreateTabGroups(TabStripModel* model,
+                     base::span<const base::Optional<int>> specified_groups) {
+  ASSERT_EQ(model->count(), static_cast<int>(specified_groups.size()));
+
+  // Maps |specified_groups| IDs to actual group IDs in |model|.
+  base::flat_map<int, TabGroupId> group_map;
+
+  for (int i = 0; i < model->count(); ++i) {
+    if (specified_groups[i] == base::nullopt)
+      continue;
+
+    const int specified_group = specified_groups[i].value();
+    auto match = group_map.find(specified_group);
+
+    // If |group_map| doesn't contain a value for |specified_group|, we can
+    // assume we haven't created the group yet.
+    if (match == group_map.end()) {
+      const TabGroupId actual_group = model->AddToNewGroup({i});
+      group_map.insert(std::make_pair(specified_group, actual_group));
+    } else {
+      const content::WebContents* const contents = model->GetWebContentsAt(i);
+      model->AddToExistingGroup({i}, match->second);
+      // Make sure we didn't move the tab.
+      EXPECT_EQ(contents, model->GetWebContentsAt(i));
+    }
+  }
+}
+
+// Checks that the grouping of tabs in |model| is equivalent to that specified
+// in |specified_groups| up to relabeling of the group IDs.
+void CheckTabGrouping(TabStripModel* model,
+                      base::span<const base::Optional<int>> specified_groups) {
+  ASSERT_EQ(model->count(), static_cast<int>(specified_groups.size()));
+
+  // Maps |specified_groups| IDs to actual group IDs in |model|.
+  base::flat_map<int, TabGroupId> group_map;
+
+  for (int i = 0; i < model->count(); ++i) {
+    SCOPED_TRACE(i);
+
+    const base::Optional<int> specified_group = specified_groups[i];
+    const base::Optional<TabGroupId> actual_group = model->GetTabGroupForTab(i);
+
+    // The tab should be grouped iff it's grouped in |specified_groups|.
+    EXPECT_EQ(actual_group.has_value(), specified_group.has_value());
+
+    if (actual_group.has_value() && specified_group.has_value()) {
+      auto match = group_map.find(specified_group.value());
+      if (match == group_map.end()) {
+        group_map.insert(
+            std::make_pair(specified_group.value(), actual_group.value()));
+      } else {
+        EXPECT_EQ(actual_group.value(), match->second);
+      }
+    }
+  }
+}
+
+// Returns the optional group ID for each tab in a vector.
+std::vector<base::Optional<TabGroupId>> GetTabGroups(
+    const TabStripModel* model) {
+  std::vector<base::Optional<TabGroupId>> result(model->count());
+  for (int i = 0; i < model->count(); ++i)
+    result[i] = model->GetTabGroupForTab(i);
+  return result;
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroups) {
+  constexpr int kNumTabs = 6;
+  const std::array<base::Optional<int>, kNumTabs> group_spec = {
+      0, 0, base::nullopt, base::nullopt, 1, 1};
+
+  // Open |kNumTabs| tabs.
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  for (int i = 1; i < kNumTabs; ++i) {
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  }
+  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
+
+  CreateTabGroups(browser()->tab_strip_model(), group_spec);
+  ASSERT_NO_FATAL_FAILURE(
+      CheckTabGrouping(browser()->tab_strip_model(), group_spec));
+  const auto groups = GetTabGroups(browser()->tab_strip_model());
+
+  Browser* new_browser = QuitBrowserAndRestore(browser(), kNumTabs);
+  ASSERT_EQ(kNumTabs, new_browser->tab_strip_model()->count());
+  EXPECT_EQ(groups, GetTabGroups(new_browser->tab_strip_model()));
+}
+
+// Test that tab groups are restored correctly after the command set is rebuilt
+// from the browser state.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroupsCommandReset) {
+  constexpr int kNumTabs = 6;
+  const std::array<base::Optional<int>, kNumTabs> group_spec = {
+      0, 0, base::nullopt, base::nullopt, 1, 1};
+
+  // Open |kNumTabs| tabs.
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  for (int i = 1; i < kNumTabs; ++i) {
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  }
+  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
+
+  CreateTabGroups(browser()->tab_strip_model(), group_spec);
+  ASSERT_NO_FATAL_FAILURE(
+      CheckTabGrouping(browser()->tab_strip_model(), group_spec));
+  const auto groups = GetTabGroups(browser()->tab_strip_model());
+
+  // Rebuild commands.
+  SessionService* const session_service =
+      SessionServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(session_service);
+  session_service->ResetFromCurrentBrowsers();
+
+  Browser* new_browser = QuitBrowserAndRestore(browser(), kNumTabs);
+  ASSERT_EQ(kNumTabs, new_browser->tab_strip_model()->count());
+  EXPECT_EQ(groups, GetTabGroups(new_browser->tab_strip_model()));
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAfterDelete) {

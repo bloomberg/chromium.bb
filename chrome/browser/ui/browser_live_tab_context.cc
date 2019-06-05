@@ -90,8 +90,8 @@ sessions::LiveTab* BrowserLiveTabContext::AddRestoredTab(
 
   WebContents* web_contents = chrome::AddRestoredTab(
       browser_, navigations, tab_index, selected_navigation, extension_app_id,
-      select, pin, from_last_session, base::TimeTicks(), storage_namespace,
-      user_agent_override, false /* from_session_restore */);
+      base::nullopt, select, pin, from_last_session, base::TimeTicks(),
+      storage_namespace, user_agent_override, false /* from_session_restore */);
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   // The focused tab will be loaded by Browser, and TabLoader will load the
@@ -104,7 +104,7 @@ sessions::LiveTab* BrowserLiveTabContext::AddRestoredTab(
   }
   std::vector<TabLoader::RestoredTab> restored_tabs;
   restored_tabs.emplace_back(web_contents, select, !extension_app_id.empty(),
-                             pin);
+                             pin, base::nullopt);
   TabLoader::RestoreTabs(restored_tabs, base::TimeTicks::Now());
 #else   // BUILDFLAG(ENABLE_SESSION_SERVICE)
   // Load the tab manually if there is no TabLoader.
