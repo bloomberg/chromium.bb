@@ -266,6 +266,11 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
   const auto& match =
       autocomplete_controller_->result().match_at(selected_index);
   SuggestionAnswer::LogAnswerUsed(match.answer);
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "Omnibox.SuggestionUsed.RichEntity",
+      match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
+
   if (match.type == AutocompleteMatchType::CLIPBOARD_URL) {
     UMA_HISTOGRAM_LONG_TIMES_100(
         "MobileOmnibox.PressedClipboardSuggestionAge",
