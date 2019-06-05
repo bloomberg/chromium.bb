@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "build/build_config.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -124,7 +125,14 @@ class PictureInPictureServiceImplTest : public RenderViewHostImplTestHarness {
   PictureInPictureServiceImpl* service_impl_;
 };
 
-TEST_F(PictureInPictureServiceImplTest, EnterPictureInPicture) {
+// Flaky on Android. https://crbug.com/970866
+#if defined(OS_ANDROID)
+#define MAYBE_EnterPictureInPicture DISABLED_EnterPictureInPicture
+#else
+#define MAYBE_EnterPictureInPicture EnterPictureInPicture
+#endif
+
+TEST_F(PictureInPictureServiceImplTest, MAYBE_EnterPictureInPicture) {
   const int kPlayerVideoOnlyId = 30;
 
   DummyPictureInPictureSessionObserver observer;
