@@ -104,7 +104,7 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   PrintedDocument* document() const;
 
   // Access stored settings.
-  const PrintSettings& settings() const { return settings_; }
+  const PrintSettings& settings() const;
 
   // Posts the given task to be run.
   bool PostTask(const base::Location& from_here, base::OnceClosure task);
@@ -117,7 +117,6 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
 
   // The functions below are used for tests only.
   void set_job_pending(bool pending);
-  void set_settings(const PrintSettings& settings);
 
   // Updates |document_| to a new instance. Protected so that tests can access
   // it.
@@ -180,9 +179,6 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   // are blocking and enters a message loop without your consent. There is one
   // worker thread per print job.
   std::unique_ptr<PrintJobWorker> worker_;
-
-  // Cache of the print context settings for access in the UI thread.
-  PrintSettings settings_;
 
   // The printed document.
   scoped_refptr<PrintedDocument> document_;

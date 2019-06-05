@@ -23,8 +23,6 @@ void TestPrintJob::Initialize(std::unique_ptr<PrinterQuery> query,
   // when this function exits.
   std::unique_ptr<PrintJobWorker> worker = query->DetachWorker();
 
-  set_settings(query->settings());
-
   scoped_refptr<PrintedDocument> new_doc =
       base::MakeRefCounted<PrintedDocument>(query->settings(), name,
                                             query->cookie());
