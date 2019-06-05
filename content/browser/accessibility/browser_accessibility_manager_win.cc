@@ -82,6 +82,10 @@ void BrowserAccessibilityManagerWin::OnSubtreeWillBeDeleted(ui::AXTree* tree,
   BrowserAccessibility* obj = GetFromAXNode(node);
   FireWinAccessibilityEvent(EVENT_OBJECT_HIDE, obj);
   FireUiaStructureChangedEvent(StructureChangeType_ChildRemoved, obj);
+  if (obj && obj->GetRole() == ax::mojom::Role::kMenu) {
+    FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPEND, obj);
+    FireUiaAccessibilityEvent(UIA_MenuClosedEventId, obj);
+  }
 }
 
 void BrowserAccessibilityManagerWin::UserIsReloading() {
@@ -98,9 +102,6 @@ void BrowserAccessibilityManagerWin::FireFocusEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireFocusEvent(node);
   DCHECK(node);
-
-  if (node->GetRole() == ax::mojom::Role::kMenu)
-    FireUiaAccessibilityEvent(UIA_MenuOpenedEventId, node);
 
   FireWinAccessibilityEvent(EVENT_OBJECT_FOCUS, node);
   FireUiaAccessibilityEvent(UIA_AutomationFocusChangedEventId, node);
@@ -347,6 +348,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::SUBTREE_CREATED:
       FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
       FireUiaStructureChangedEvent(StructureChangeType_ChildAdded, node);
+      if (node->GetRole() == ax::mojom::Role::kMenu) {
+        FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPSTART, node);
+        FireUiaAccessibilityEvent(UIA_MenuOpenedEventId, node);
+      }
       break;
     case ui::AXEventGenerator::Event::VALUE_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_VALUECHANGE, node);
@@ -393,9 +398,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
 void BrowserAccessibilityManagerWin::OnFocusLost(BrowserAccessibility* node) {
   BrowserAccessibilityManager::OnFocusLost(node);
   DCHECK(node);
-
-  if (node->GetRole() == ax::mojom::Role::kMenu)
-    FireUiaAccessibilityEvent(UIA_MenuClosedEventId, node);
 }
 
 void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
