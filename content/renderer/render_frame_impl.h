@@ -119,7 +119,6 @@ class WebContentDecryptionModule;
 class WebElement;
 class WebLayerTreeView;
 class WebLocalFrame;
-class WebPushClient;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
@@ -163,7 +162,6 @@ class MediaPermissionDispatcher;
 class MediaStreamDeviceObserver;
 class NavigationClient;
 class PepperPluginInstanceImpl;
-class PushMessagingClient;
 class RenderAccessibilityImpl;
 class RendererPpapiHost;
 class RenderFrameObserver;
@@ -824,7 +822,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                 int world_id) override;
   void DidChangeScrollOffset() override;
-  blink::WebPushClient* PushClient() override;
   void WillStartUsingPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandler* handler) override;
   blink::WebUserMediaClient* UserMediaClient() override;
@@ -1584,9 +1581,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // The media permission dispatcher attached to this frame.
   std::unique_ptr<MediaPermissionDispatcher> media_permission_dispatcher_;
-
-  // The PushMessagingClient attached to this frame, lazily initialized.
-  PushMessagingClient* push_messaging_client_;
 
   service_manager::BinderRegistry registry_;
   service_manager::InterfaceProvider remote_interfaces_;

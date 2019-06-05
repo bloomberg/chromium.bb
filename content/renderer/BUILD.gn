@@ -389,8 +389,6 @@ target(link_target_type, "renderer") {
     "p2p/socket_dispatcher.h",
     "peripheral_content_heuristic.cc",
     "peripheral_content_heuristic.h",
-    "push_messaging/push_messaging_client.cc",
-    "push_messaging/push_messaging_client.h",
     "push_messaging/push_messaging_utils.cc",
     "push_messaging/push_messaging_utils.h",
     "queue_message_swap_promise.cc",

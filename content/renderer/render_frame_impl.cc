@@ -132,7 +132,6 @@
 #include "content/renderer/navigation_state.h"
 #include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
-#include "content/renderer/push_messaging/push_messaging_client.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -1805,7 +1804,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
       web_user_media_client_(nullptr),
-      push_messaging_client_(nullptr),
       render_accessibility_(nullptr),
       previews_state_(PREVIEWS_UNSPECIFIED),
       effective_connection_type_(
@@ -5560,12 +5558,6 @@ void RenderFrameImpl::DidChangeScrollOffset() {
 
   for (auto& observer : observers_)
     observer.DidChangeScrollOffset();
-}
-
-blink::WebPushClient* RenderFrameImpl::PushClient() {
-  if (!push_messaging_client_)
-    push_messaging_client_ = new PushMessagingClient(this);
-  return push_messaging_client_;
 }
 
 void RenderFrameImpl::WillStartUsingPeerConnectionHandler(
