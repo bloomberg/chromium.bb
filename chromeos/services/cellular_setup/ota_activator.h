@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace chromeos {
 
@@ -23,6 +23,9 @@ class OtaActivator : public mojom::CarrierPortalHandler {
  public:
   ~OtaActivator() override;
 
+  // Generates an InterfacePtr bound to this instance. Only one InterfacePtr may
+  // be bound to a single OtaActivator instance, so this function can only be
+  // called once.
   mojom::CarrierPortalHandlerPtr GenerateInterfacePtr();
 
  protected:
@@ -31,7 +34,7 @@ class OtaActivator : public mojom::CarrierPortalHandler {
   void InvokeOnFinishedCallback();
 
   base::OnceClosure on_finished_callback_;
-  mojo::BindingSet<mojom::CarrierPortalHandler> bindings_;
+  mojo::Binding<mojom::CarrierPortalHandler> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(OtaActivator);
 };
