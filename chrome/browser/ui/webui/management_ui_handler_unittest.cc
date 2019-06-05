@@ -35,13 +35,7 @@ using testing::ReturnRef;
 struct ContextualManagementSourceUpdate {
   base::string16* extension_reporting_title;
   base::string16* subtitle;
-  base::string16* management_account_overview;
-  base::string16* management_account_overview_data_notice;
-  base::string16* management_account_overview_setup_notice;
 #if defined(OS_CHROMEOS)
-  base::string16* management_device_overview;
-  base::string16* management_device_overview_data_notice;
-  base::string16* management_device_overview_setup_notice;
   base::string16* management_overview;
 #else
   base::string16* browser_management_notice;
@@ -114,19 +108,7 @@ class ManagementUIHandlerTests : public testing::Test {
     data.GetString("extensionReportingTitle",
                    extracted.extension_reporting_title);
     data.GetString("pageSubtitle", extracted.subtitle);
-    data.GetString("accountManagedInfo.overview",
-                   extracted.management_account_overview);
-    data.GetString("accountManagedInfo.data",
-                   extracted.management_account_overview_data_notice);
-    data.GetString("accountManagedInfo.setup",
-                   extracted.management_account_overview_setup_notice);
 #if defined(OS_CHROMEOS)
-    data.GetString("deviceManagedInfo.overview",
-                   extracted.management_device_overview);
-    data.GetString("deviceManagedInfo.data",
-                   extracted.management_device_overview_data_notice);
-    data.GetString("deviceManagedInfo.setup",
-                   extracted.management_device_overview_setup_notice);
     data.GetString("overview", extracted.management_overview);
 #else
     data.GetString("browserManagementNotice",
@@ -150,17 +132,11 @@ TEST_F(ManagementUIHandlerTests,
 
   base::string16 extension_reporting_title;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extension_reporting_title,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
       &browser_management_notice,
       &managed};
 
@@ -177,9 +153,6 @@ TEST_F(ManagementUIHandlerTests,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
   EXPECT_EQ(subtitle,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
-  EXPECT_EQ(management_account_overview, base::string16());
-  EXPECT_EQ(management_account_overview_data_notice, base::string16());
-  EXPECT_EQ(management_account_overview_setup_notice, base::string16());
 }
 
 TEST_F(ManagementUIHandlerTests,
@@ -188,17 +161,11 @@ TEST_F(ManagementUIHandlerTests,
 
   base::string16 extension_reporting_title;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extension_reporting_title,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
       &browser_management_notice,
       &managed};
 
@@ -206,7 +173,7 @@ TEST_F(ManagementUIHandlerTests,
   auto data = handler_.GetContextualManagedDataForTesting(profile.get());
   ExtractContextualSourceUpdate(data, extracted);
 
-  EXPECT_EQ(data.DictSize(), 5u);
+  EXPECT_EQ(data.DictSize(), 4u);
   EXPECT_EQ(extension_reporting_title,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
   EXPECT_EQ(browser_management_notice,
@@ -214,13 +181,6 @@ TEST_F(ManagementUIHandlerTests,
                 IDS_MANAGEMENT_BROWSER_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
   EXPECT_EQ(subtitle, l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE));
-  EXPECT_EQ(management_account_overview,
-            l10n_util::GetStringUTF16(
-                IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION_UNKNOWN_DOMAIN));
-  EXPECT_EQ(management_account_overview_data_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA));
-  EXPECT_EQ(management_account_overview_setup_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP));
   EXPECT_TRUE(managed);
 }
 
@@ -232,17 +192,11 @@ TEST_F(ManagementUIHandlerTests,
 
   base::string16 extensions_installed;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extensions_installed,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
       &browser_management_notice,
       &managed};
 
@@ -250,7 +204,7 @@ TEST_F(ManagementUIHandlerTests,
   auto data = handler_.GetContextualManagedDataForTesting(profile.get());
   ExtractContextualSourceUpdate(data, extracted);
 
-  EXPECT_EQ(data.DictSize(), 5u);
+  EXPECT_EQ(data.DictSize(), 4u);
   EXPECT_EQ(extensions_installed,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
   EXPECT_EQ(browser_management_notice,
@@ -258,13 +212,6 @@ TEST_F(ManagementUIHandlerTests,
                 IDS_MANAGEMENT_BROWSER_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
   EXPECT_EQ(subtitle, l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE));
-  EXPECT_EQ(management_account_overview,
-            l10n_util::GetStringUTF16(
-                IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION_UNKNOWN_DOMAIN));
-  EXPECT_EQ(management_account_overview_data_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA));
-  EXPECT_EQ(management_account_overview_setup_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP));
   EXPECT_TRUE(managed);
 }
 
@@ -276,17 +223,11 @@ TEST_F(ManagementUIHandlerTests,
 
   base::string16 extension_reporting_title;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extension_reporting_title,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
       &browser_management_notice,
       &managed};
 
@@ -305,9 +246,6 @@ TEST_F(ManagementUIHandlerTests,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
   EXPECT_EQ(subtitle,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
-  EXPECT_EQ(management_account_overview, base::string16());
-  EXPECT_EQ(management_account_overview_data_notice, base::string16());
-  EXPECT_EQ(management_account_overview_setup_notice, base::string16());
   EXPECT_FALSE(managed);
 }
 
@@ -319,17 +257,11 @@ TEST_F(ManagementUIHandlerTests,
 
   base::string16 extension_reporting_title;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extension_reporting_title,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
       &browser_management_notice,
       &managed};
 
@@ -347,9 +279,6 @@ TEST_F(ManagementUIHandlerTests,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
   EXPECT_EQ(subtitle,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
-  EXPECT_EQ(management_account_overview, base::string16());
-  EXPECT_EQ(management_account_overview_data_notice, base::string16());
-  EXPECT_EQ(management_account_overview_setup_notice, base::string16());
   EXPECT_FALSE(managed);
 }
 
@@ -361,17 +290,11 @@ TEST_F(ManagementUIHandlerTests,
 
   base::string16 extension_reporting_title;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
   base::string16 browser_management_notice;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extension_reporting_title,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
       &browser_management_notice,
       &managed};
 
@@ -380,7 +303,7 @@ TEST_F(ManagementUIHandlerTests,
   auto data = handler_.GetContextualManagedDataForTesting(profile.get());
   ExtractContextualSourceUpdate(data, extracted);
 
-  EXPECT_EQ(data.DictSize(), 5u);
+  EXPECT_EQ(data.DictSize(), 4u);
   EXPECT_EQ(extension_reporting_title,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        base::UTF8ToUTF16("manager.com")));
@@ -391,14 +314,6 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_EQ(subtitle,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                        base::UTF8ToUTF16("manager.com")));
-  EXPECT_EQ(
-      management_account_overview,
-      l10n_util::GetStringFUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION,
-                                 base::UTF8ToUTF16("manager.com")));
-  EXPECT_EQ(management_account_overview_data_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA));
-  EXPECT_EQ(management_account_overview_setup_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP));
   EXPECT_TRUE(managed);
 }
 
@@ -414,23 +329,11 @@ TEST_F(ManagementUIHandlerTests,
 
   base::string16 extension_reporting_title;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
-  base::string16 management_device_overview;
-  base::string16 management_device_overview_data_notice;
-  base::string16 management_device_overview_setup_notice;
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extension_reporting_title,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
-      &management_device_overview,
-      &management_device_overview_data_notice,
-      &management_device_overview_setup_notice,
       &management_overview,
       &managed};
 
@@ -447,17 +350,6 @@ TEST_F(ManagementUIHandlerTests,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                        l10n_util::GetStringUTF16(device_type),
                                        base::UTF8ToUTF16("manager.com")));
-  EXPECT_EQ(
-      management_account_overview,
-      l10n_util::GetStringFUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION,
-                                 base::UTF8ToUTF16("manager.com")));
-  EXPECT_EQ(management_account_overview_data_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA));
-  EXPECT_EQ(management_account_overview_setup_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP));
-  EXPECT_EQ(management_device_overview, base::string16());
-  EXPECT_EQ(management_device_overview_data_notice, base::string16());
-  EXPECT_EQ(management_device_overview_setup_notice, base::string16());
   EXPECT_EQ(management_overview,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
                                        base::UTF8ToUTF16("manager.com")));
@@ -472,23 +364,11 @@ TEST_F(ManagementUIHandlerTests,
 
   base::string16 extension_reporting_title;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
-  base::string16 management_device_overview;
-  base::string16 management_device_overview_data_notice;
-  base::string16 management_device_overview_setup_notice;
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extension_reporting_title,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
-      &management_device_overview,
-      &management_device_overview_data_notice,
-      &management_device_overview_setup_notice,
       &management_overview,
       &managed};
 
@@ -503,13 +383,6 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_EQ(subtitle,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
                                        l10n_util::GetStringUTF16(device_type)));
-  EXPECT_EQ(management_account_overview_data_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA));
-  EXPECT_EQ(management_account_overview_setup_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP));
-  EXPECT_EQ(management_device_overview, base::string16());
-  EXPECT_EQ(management_device_overview_data_notice, base::string16());
-  EXPECT_EQ(management_device_overview_setup_notice, base::string16());
   EXPECT_EQ(management_overview, base::string16());
   EXPECT_TRUE(managed);
 }
@@ -523,23 +396,11 @@ TEST_F(ManagementUIHandlerTests,
 
   base::string16 extension_reporting_title;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
-  base::string16 management_device_overview;
-  base::string16 management_device_overview_data_notice;
-  base::string16 management_device_overview_setup_notice;
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extension_reporting_title,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
-      &management_device_overview,
-      &management_device_overview_data_notice,
-      &management_device_overview_setup_notice,
       &management_overview,
       &managed};
 
@@ -555,16 +416,6 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_EQ(extension_reporting_title,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        device_domain()));
-  EXPECT_EQ(management_account_overview, base::string16());
-  EXPECT_EQ(management_account_overview_data_notice, base::string16());
-  EXPECT_EQ(management_account_overview_setup_notice, base::string16());
-  EXPECT_EQ(management_device_overview,
-            l10n_util::GetStringFUTF16(
-                IDS_MANAGEMENT_DEVICE_MANAGED_CLARIFICATION, device_domain()));
-  EXPECT_EQ(management_device_overview_data_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_MANAGED_DATA));
-  EXPECT_EQ(management_device_overview_setup_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_MANAGED_SETUP));
   EXPECT_EQ(management_overview, base::string16());
   EXPECT_TRUE(managed);
 }
@@ -578,23 +429,11 @@ TEST_F(ManagementUIHandlerTests,
 
   base::string16 extension_reporting_title;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
-  base::string16 management_device_overview;
-  base::string16 management_device_overview_data_notice;
-  base::string16 management_device_overview_setup_notice;
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extension_reporting_title,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
-      &management_device_overview,
-      &management_device_overview_data_notice,
-      &management_device_overview_setup_notice,
       &management_overview,
       &managed};
 
@@ -610,19 +449,6 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_EQ(extension_reporting_title,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        device_domain()));
-  EXPECT_EQ(management_account_overview, base::string16());
-  EXPECT_EQ(management_account_overview_data_notice, base::string16());
-  EXPECT_EQ(management_account_overview_setup_notice, base::string16());
-  EXPECT_EQ(management_device_overview,
-            l10n_util::GetStringFUTF16(
-                IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_CLARIFICATION,
-                device_domain()));
-  EXPECT_EQ(management_device_overview_data_notice,
-            l10n_util::GetStringUTF16(
-                IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_DATA));
-  EXPECT_EQ(management_device_overview_setup_notice,
-            l10n_util::GetStringUTF16(
-                IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_SETUP));
   EXPECT_EQ(management_overview,
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY, device_domain()));
@@ -638,23 +464,11 @@ TEST_F(ManagementUIHandlerTests,
 
   base::string16 extension_reporting_title;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
-  base::string16 management_device_overview;
-  base::string16 management_device_overview_data_notice;
-  base::string16 management_device_overview_setup_notice;
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extension_reporting_title,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
-      &management_device_overview,
-      &management_device_overview_data_notice,
-      &management_device_overview_setup_notice,
       &management_overview,
       &managed};
 
@@ -670,17 +484,6 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_EQ(extension_reporting_title,
             l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                        device_domain()));
-  EXPECT_EQ(management_account_overview_data_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA));
-  EXPECT_EQ(management_account_overview_setup_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP));
-  EXPECT_EQ(management_device_overview,
-            l10n_util::GetStringFUTF16(
-                IDS_MANAGEMENT_DEVICE_MANAGED_CLARIFICATION, device_domain()));
-  EXPECT_EQ(management_device_overview_data_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_MANAGED_DATA));
-  EXPECT_EQ(management_device_overview_setup_notice,
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_MANAGED_SETUP));
   EXPECT_EQ(management_overview,
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_DEVICE_MANAGED_BY_ACCOUNT_MANAGED_BY,
@@ -694,23 +497,11 @@ TEST_F(ManagementUIHandlerTests, ManagementContextualSourceUpdateUnmanaged) {
 
   base::string16 extension_reporting_title;
   base::string16 subtitle;
-  base::string16 management_account_overview;
-  base::string16 management_account_overview_data_notice;
-  base::string16 management_account_overview_setup_notice;
-  base::string16 management_device_overview;
-  base::string16 management_device_overview_data_notice;
-  base::string16 management_device_overview_setup_notice;
   base::string16 management_overview;
   bool managed;
   ContextualManagementSourceUpdate extracted{
       &extension_reporting_title,
       &subtitle,
-      &management_account_overview,
-      &management_account_overview_data_notice,
-      &management_account_overview_setup_notice,
-      &management_device_overview,
-      &management_device_overview_data_notice,
-      &management_device_overview_setup_notice,
       &management_overview,
       &managed};
 
@@ -723,12 +514,6 @@ TEST_F(ManagementUIHandlerTests, ManagementContextualSourceUpdateUnmanaged) {
                                        l10n_util::GetStringUTF16(device_type)));
   EXPECT_EQ(extension_reporting_title,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
-  EXPECT_EQ(management_account_overview, base::string16());
-  EXPECT_EQ(management_account_overview_data_notice, base::string16());
-  EXPECT_EQ(management_account_overview_setup_notice, base::string16());
-  EXPECT_EQ(management_device_overview, base::string16());
-  EXPECT_EQ(management_device_overview_data_notice, base::string16());
-  EXPECT_EQ(management_device_overview_setup_notice, base::string16());
   EXPECT_EQ(management_overview,
             l10n_util::GetStringUTF16(IDS_MANAGEMENT_DEVICE_NOT_MANAGED));
   EXPECT_FALSE(managed);

@@ -30,18 +30,7 @@ management.BrowserReportingResponse;
 
 /**
  * @typedef {{
- *   overview: string,
- *   setup: string,
- *   data: string,
- * }}
- */
-management.ManagedInfo;
-
-/**
- * @typedef {{
- *   accountManagedInfo: ?management.ManagedInfo,
  *   browserManagementNotice: string,
- *   deviceManagedInfo: ?management.ManagedInfo,
  *   extensionReportingTitle: string,
  *   pageSubtitle: string,
  *   managed: boolean,

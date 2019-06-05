@@ -194,36 +194,15 @@
               [[subtitle_]]
             </h2>
           </section>
-          <section class="overview-section">
+          <section class="overview-section" hidden="[[!managementOverview_]]">
 <if expr="not chromeos">
             <div inner-h-t-m-l="[[managementNoticeHtml_]]"></div>
 </if>
 <if expr="chromeos">
             <div class="overview-container">
-              <img src="[[customerLogo_]]" hidden="[[!customerLogo_]]"
-                  alt="" aria-hidden="true">
-              <div>
-                <div>[[managementOverview_]]</div>
-                <div>[[deviceManagedInfo_.overview]]</div>
-                <ul class="overview-messages"
-                    hidden="[[!deviceManagedInfo_]]">
-                  <li>
-                    [[deviceManagedInfo_.setup]]
-                    <a href="$i18nRaw{managementDeviceLearnMoreUrl}"
-                        target="_blank">$i18n{learnMore}</a>
-                  </li>
-                  <li>[[deviceManagedInfo_.data]]</li>
-                </ul>
-                <div>[[accountManagedInfo_.overview]]</div>
-                <ul class="overview-messages" hidden="[[!accountManagedInfo_]]">
-                  <li>
-                    [[accountManagedInfo_.setup]]
-                    <a href="$i18nRaw{managementAccountLearnMoreUrl}"
-                        target="_blank">$i18n{learnMore}</a>
-                  </li>
-                  <li>[[accountManagedInfo_.data]]</li>
-                </ul>
-              </div>
+              <img src="[[customerLogo_]]" alt="" aria-hidden="true"
+                  hidden="[[!customerLogo_]]">
+              <div>[[managementOverview_]]</div>
             </div>
 </if>
           </section>

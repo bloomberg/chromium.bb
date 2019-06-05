@@ -119,13 +119,11 @@ const char kManagementReportNetworkInterfaces[] =
     "managementReportNetworkInterfaces";
 const char kManagementReportUsers[] = "managementReportUsers";
 const char kManagementPrinting[] = "managementPrinting";
+const char kAccountManagedInfo[] = "accountManagedInfo";
 const char kDeviceManagedInfo[] = "deviceManagedInfo";
+const char kOverview[] = "overview";
 #endif  // defined(OS_CHROMEOS)
 
-const char kOverview[] = "overview";
-const char kAccountManagedInfo[] = "accountManagedInfo";
-const char kSetup[] = "setup";
-const char kData[] = "data";
 const char kCustomerLogo[] = "customerLogo";
 
 namespace {
@@ -625,26 +623,6 @@ void ManagementUIHandler::OnFetchComplete(const GURL& url,
   FireWebUIListener("managed_data_changed");
 }
 
-void AddStatusAccountManagedInfo(base::Value* status,
-                                 const std::string& account_domain) {
-  base::Value info(base::Value::Type::DICTIONARY);
-  if (account_domain.empty()) {
-    info.SetKey(
-        kOverview,
-        base::Value(l10n_util::GetStringUTF16(
-            IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION_UNKNOWN_DOMAIN)));
-  } else {
-    info.SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
-                               IDS_MANAGEMENT_ACCOUNT_MANAGED_CLARIFICATION,
-                               base::UTF8ToUTF16(account_domain))));
-  }
-  info.SetKey(kSetup, base::Value(l10n_util::GetStringUTF16(
-                          IDS_MANAGEMENT_ACCOUNT_MANAGED_SETUP)));
-  info.SetKey(kData, base::Value(l10n_util::GetStringUTF16(
-                         IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA)));
-  status->SetKey(kAccountManagedInfo, std::move(info));
-}
-
 #if defined(OS_CHROMEOS)
 void AddStatusOverviewManagedDeviceAndAccount(
     base::Value* status,
@@ -657,40 +635,14 @@ void AddStatusOverviewManagedDeviceAndAccount(
     status->SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
                                   IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY,
                                   base::UTF8ToUTF16(device_domain))));
-    base::Value info(base::Value::Type::DICTIONARY);
-    info.SetKey(kOverview,
-                base::Value(l10n_util::GetStringFUTF16(
-                    IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_CLARIFICATION,
-                    base::UTF8ToUTF16(device_domain))));
-    info.SetKey(kSetup, base::Value(l10n_util::GetStringUTF16(
-                            IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_SETUP)));
-    info.SetKey(kData, base::Value(l10n_util::GetStringUTF16(
-                           IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_DATA)));
-    status->SetKey(kDeviceManagedInfo, std::move(info));
 
     return;
   }
 
-  if (account_managed) {
-    AddStatusAccountManagedInfo(
-        status, !account_domain.empty() ? account_domain : device_domain);
-    if (!account_domain.empty()) {
-      status->SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
-                                    IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
-                                    base::UTF8ToUTF16(account_domain))));
-    }
-  }
-
-  if (device_managed) {
-    base::Value info(base::Value::Type::DICTIONARY);
-    info.SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
-                               IDS_MANAGEMENT_DEVICE_MANAGED_CLARIFICATION,
-                               base::UTF8ToUTF16(device_domain))));
-    info.SetKey(kSetup, base::Value(l10n_util::GetStringUTF16(
-                            IDS_MANAGEMENT_DEVICE_MANAGED_SETUP)));
-    info.SetKey(kData, base::Value(l10n_util::GetStringUTF16(
-                           IDS_MANAGEMENT_DEVICE_MANAGED_DATA)));
-    status->SetKey(kDeviceManagedInfo, std::move(info));
+  if (account_managed && !account_domain.empty()) {
+    status->SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
+                                  IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
+                                  base::UTF8ToUTF16(account_domain))));
   }
 
   if (account_managed && device_managed && !account_domain.empty() &&
@@ -744,9 +696,6 @@ void ManagementUIHandler::GetManagementStatus(Profile* profile,
   AddStatusOverviewManagedDeviceAndAccount(
       status, device_managed_, account_managed_ || primary_user_managed,
       device_domain, account_domain);
-#else
-  if (managed_())
-    AddStatusAccountManagedInfo(status, GetAccountDomain(profile));
 #endif  // defined(OS_CHROMEOS)
 }
 
