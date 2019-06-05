@@ -124,9 +124,11 @@ class GFX_EXPORT Font {
   NativeFont GetNativeFont() const;
 #endif
 
+#if defined(OS_WIN)
   // Raw access to the underlying platform font implementation. Can be
   // static_cast to a known implementation type if needed.
   PlatformFont* platform_font() const { return platform_font_.get(); }
+#endif
 
  private:
   // Wrapped platform font implementation.

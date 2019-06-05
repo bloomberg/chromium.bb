@@ -13,7 +13,6 @@
 #include "ui/gfx/font_names_testing.h"
 
 #if defined(OS_WIN)
-#include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/system_fonts_win.h"
 #endif
 
@@ -21,6 +20,19 @@ namespace gfx {
 namespace {
 
 using FontTest = testing::Test;
+
+TEST_F(FontTest, DefaultFont) {
+  Font cf;
+  EXPECT_EQ(cf.GetStyle(), Font::NORMAL);
+  EXPECT_EQ(cf.GetWeight(), Font::Weight::NORMAL);
+  // Ensures that font metrics are generated. Some fonts backends do not provide
+  // some metrics (e.g. DWrite do not produce average character width).
+  EXPECT_GT(cf.GetFontSize(), 0);
+  EXPECT_GT(cf.GetHeight(), 0);
+  EXPECT_GT(cf.GetBaseline(), 0);
+  EXPECT_GT(cf.GetCapHeight(), 0);
+  EXPECT_GT(cf.GetExpectedTextWidth(1), 0);
+}
 
 TEST_F(FontTest, LoadArial) {
   Font cf(kTestFontName, 16);
