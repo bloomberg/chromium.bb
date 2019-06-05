@@ -79,22 +79,10 @@ void RecordFaviconServerGroupingMetric(FaviconRequestOrigin origin,
 const bool kFallbackToHost = true;
 
 // Parameter used for local bitmap queries by page url.
-favicon_base::IconTypeSet GetIconTypesForLocalQuery(
-    FaviconRequestPlatform platform) {
-  // The value must agree with the one written in the local data for retrieved
-  // server icons so that we can find them on the second lookup. This depends on
-  // whether the caller is a mobile UI or not.
-  switch (platform) {
-    case FaviconRequestPlatform::kMobile:
-      return favicon_base::IconTypeSet{
-          favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
+favicon_base::IconTypeSet GetIconTypesForLocalQuery() {
+  return {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
           favicon_base::IconType::kTouchPrecomposedIcon,
           favicon_base::IconType::kWebManifestIcon};
-    case FaviconRequestPlatform::kDesktop:
-      return favicon_base::IconTypeSet{favicon_base::IconType::kFavicon};
-  }
-  NOTREACHED();
-  return favicon_base::IconTypeSet{};
 }
 
 bool CanOriginQueryGoogleServer(FaviconRequestOrigin origin) {
@@ -151,8 +139,8 @@ void FaviconRequestHandler::GetRawFaviconForPageURL(
 
   // First attempt to find the icon locally.
   favicon_service->GetRawFaviconForPageURL(
-      page_url, GetIconTypesForLocalQuery(request_platform),
-      desired_size_in_pixel, kFallbackToHost,
+      page_url, GetIconTypesForLocalQuery(), desired_size_in_pixel,
+      kFallbackToHost,
       base::BindOnce(&FaviconRequestHandler::OnBitmapLocalDataAvailable,
                      weak_ptr_factory_.GetWeakPtr(), page_url,
                      desired_size_in_pixel,
@@ -240,8 +228,8 @@ void FaviconRequestHandler::OnBitmapLocalDataAvailable(
         base::BindOnce(
             base::IgnoreResult(&FaviconService::GetRawFaviconForPageURL),
             base::Unretained(favicon_service), page_url,
-            GetIconTypesForLocalQuery(platform), desired_size_in_pixel,
-            kFallbackToHost, repeating_response_callback, tracker),
+            GetIconTypesForLocalQuery(), desired_size_in_pixel, kFallbackToHost,
+            repeating_response_callback, tracker),
         large_icon_service, icon_url_for_uma, origin);
     return;
   }
