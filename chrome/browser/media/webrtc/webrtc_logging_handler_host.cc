@@ -230,7 +230,7 @@ void WebRtcLoggingHandlerHost::StartRtpDump(
         stop_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(stop_rtp_dump_callback_.is_null() ||
-         stop_rtp_dump_callback_.Equals(stop_callback));
+         stop_rtp_dump_callback_ == stop_callback);
 
   stop_rtp_dump_callback_ = stop_callback;
 

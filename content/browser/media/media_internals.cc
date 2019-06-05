@@ -669,7 +669,7 @@ void MediaInternals::AddUpdateCallback(const UpdateCallback& callback) {
 void MediaInternals::RemoveUpdateCallback(const UpdateCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (size_t i = 0; i < update_callbacks_.size(); ++i) {
-    if (update_callbacks_[i].Equals(callback)) {
+    if (update_callbacks_[i] == callback) {
       update_callbacks_.erase(update_callbacks_.begin() + i);
       break;
     }
