@@ -316,9 +316,17 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
         NOTREACHED();
     }
 
+    ScrollableArea::ScrollCallback callback;
+    if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
+      callback = ScrollableArea::ScrollCallback(base::BindOnce(
+          [](WeakPersistent<ScrollableArea> area) {
+            if (area)
+              area->MarkHoverStateDirty();
+          },
+          scrollable_area));
+    }
     ScrollResult result = scrollable_area->UserScroll(
-        granularity, ToScrollDelta(physical_direction, 1),
-        ScrollableArea::ScrollCallback());
+        granularity, ToScrollDelta(physical_direction, 1), std::move(callback));
 
     if (result.DidScroll())
       return true;
