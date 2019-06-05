@@ -120,6 +120,10 @@ const char kCPUTempFilePattern[] = "temp*_input";
 // The location where storage device statistics are read from.
 const char kStorageInfoPath[] = "/var/log/storage_info.txt";
 
+// Generic device name when reported from runtime_probe. Used to filter out
+// data for components.
+const char kGenericDeviceName[] = "generic";
+
 // How often the child's usage time is stored.
 static constexpr base::TimeDelta kUpdateChildActiveTimeInterval =
     base::TimeDelta::FromSeconds(30);
@@ -577,6 +581,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       em::PowerStatus* const power_status =
           response_params_.device_status->mutable_power_status();
       for (const auto& battery : probe_result.value().battery()) {
+        if (battery.name() != kGenericDeviceName)
+          continue;
         em::BatteryInfo* const battery_info = power_status->add_batteries();
         battery_info->set_serial(battery.values().serial_number());
         battery_info->set_manufacturer(battery.values().manufacturer());
@@ -613,6 +619,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       em::StorageStatus* const storage_status =
           response_params_.device_status->mutable_storage_status();
       for (const auto& storage : probe_result.value().storage()) {
+        if (storage.name() != kGenericDeviceName)
+          continue;
         em::DiskInfo* const disk_info = storage_status->add_disks();
         disk_info->set_serial(base::NumberToString(storage.values().serial()));
         disk_info->set_manufacturer(
@@ -629,6 +637,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       // while logically it should be optional. Using iteration + value checks
       // just for future-proofing code.
       for (const auto& vpd_values : probe_result.value().vpd_cached()) {
+        if (vpd_values.name() != kGenericDeviceName)
+          continue;
         const std::string& sku_number = vpd_values.values().vpd_sku_number();
         if (!sku_number.empty())
           system_status->set_vpd_sku_number(sku_number);
@@ -1163,6 +1173,8 @@ void DeviceStatusCollector::SampleProbeData(
     return;
 
   for (const auto& battery : result.value().battery()) {
+    if (battery.name() != kGenericDeviceName)
+      continue;
     enterprise_management::BatterySample battery_sample;
     battery_sample.set_timestamp(sample->timestamp.ToJavaTime());
     // Convert uV to mV
