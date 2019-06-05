@@ -52,6 +52,12 @@ class SafeBrowsingTriggeredPopupBlockerTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
+    system_request_context_getter_ =
+        base::MakeRefCounted<net::TestURLRequestContextGetter>(
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {content::BrowserThread::IO}));
+    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
+        system_request_context_getter_.get());
     // Set up safe browsing service with the fake database manager.
     //
     // TODO(csharrison): This is a bit ugly. See if the instructions in
@@ -87,6 +93,8 @@ class SafeBrowsingTriggeredPopupBlockerTest
     // all cleanup related to these classes actually happens.
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
     base::RunLoop().RunUntilIdle();
+    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
+    system_request_context_getter_ = nullptr;
 
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -141,6 +149,7 @@ class SafeBrowsingTriggeredPopupBlockerTest
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   scoped_refptr<FakeSafeBrowsingDatabaseManager> fake_safe_browsing_database_;
   SafeBrowsingTriggeredPopupBlocker* popup_blocker_ = nullptr;
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingTriggeredPopupBlockerTest);
 };

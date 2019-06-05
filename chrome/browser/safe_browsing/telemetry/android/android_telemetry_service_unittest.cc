@@ -54,6 +54,12 @@ class AndroidTelemetryServiceTest : public testing::Test {
   void SetUp() override {
     browser_process_ = TestingBrowserProcess::GetGlobal();
 
+    system_request_context_getter_ =
+        base::MakeRefCounted<net::TestURLRequestContextGetter>(
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {content::BrowserThread::IO}));
+    browser_process_->SetSystemRequestContext(
+        system_request_context_getter_.get());
     safe_browsing::SafeBrowsingServiceInterface::RegisterFactory(
         GetSafeBrowsingServiceFactory());
     // TODO(crbug/925153): Port consumers of the |sb_service_| to use
@@ -102,6 +108,7 @@ class AndroidTelemetryServiceTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   scoped_refptr<safe_browsing::SafeBrowsingService> sb_service_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
   std::unique_ptr<AndroidTelemetryService> telemetry_service_;
 };
 

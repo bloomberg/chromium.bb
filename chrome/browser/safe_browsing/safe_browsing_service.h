@@ -267,9 +267,17 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // use.
   network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
 
+  // The SafeBrowsingURLRequestContextGetter used to access
+  // |url_request_context_|. Accessed on UI thread.
+  // This is only valid if the network service is disabled.
+  scoped_refptr<SafeBrowsingURLRequestContextGetter>
+      url_request_context_getter_;
+
   std::unique_ptr<ProxyConfigMonitor> proxy_config_monitor_;
 
-  // This owns the URLRequestContext inside the network service. This is used by
+  // If the network service is disabled, this is a wrapper around
+  // |url_request_context_getter_|. Otherwise it's what owns the
+  // URLRequestContext inside the network service. This is used by
   // SimpleURLLoader for safe browsing requests.
   std::unique_ptr<safe_browsing::SafeBrowsingNetworkContext> network_context_;
 

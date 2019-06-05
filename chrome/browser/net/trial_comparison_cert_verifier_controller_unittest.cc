@@ -124,6 +124,15 @@ class TrialComparisonCertVerifierControllerTest : public testing::Test {
     reporting_service_test_helper()->SetFailureMode(
         certificate_reporting_test_utils::REPORTS_SUCCESSFUL);
 
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      system_request_context_getter_ =
+          base::MakeRefCounted<net::TestURLRequestContextGetter>(
+              base::CreateSingleThreadTaskRunnerWithTraits(
+                  {content::BrowserThread::IO}));
+      TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
+          system_request_context_getter_.get());
+    }
+
     // Creating the profile before the SafeBrowsingService ensures the
     // ServiceManagerConnection is initialized.
     profile_manager_ = std::make_unique<TestingProfileManager>(
@@ -170,6 +179,8 @@ class TrialComparisonCertVerifierControllerTest : public testing::Test {
       TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
       TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
     }
+    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
+    system_request_context_getter_ = nullptr;
 
     TrialComparisonCertVerifierController::SetFakeOfficialBuildForTesting(
         false);
@@ -209,6 +220,7 @@ class TrialComparisonCertVerifierControllerTest : public testing::Test {
       reporting_service_test_helper_;
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<safe_browsing::SafeBrowsingService> sb_service_;
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
 

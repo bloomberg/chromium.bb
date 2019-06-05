@@ -311,6 +311,12 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
  public:
   RemoveSafeBrowsingCookieTester()
       : browser_process_(TestingBrowserProcess::GetGlobal()) {
+    system_request_context_getter_ =
+        base::MakeRefCounted<net::TestURLRequestContextGetter>(
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {content::BrowserThread::IO}));
+    browser_process_->SetSystemRequestContext(
+        system_request_context_getter_.get());
     // TODO(crbug/925153): Port consumers of the |sb_service| to use the
     // interface in components/safe_browsing, and remove this cast.
     scoped_refptr<safe_browsing::SafeBrowsingService> sb_service =
@@ -343,6 +349,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
 
  private:
   TestingBrowserProcess* browser_process_;
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveSafeBrowsingCookieTester);
 };

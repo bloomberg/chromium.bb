@@ -18,7 +18,6 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequence_local_storage_slot.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/sync_event_watcher.h"
 
 namespace mojo {
@@ -106,11 +105,7 @@ class SequenceLocalSyncEventWatcher::SequenceLocalState {
     if (registered_watchers_.empty()) {
       // If no more watchers are registered, clear our sequence-local storage.
       // Deletes |this|.
-      // Check if the current task runner is valid before doing this to avoid
-      // races at shutdown when other objects use SequenceLocalStorageSlot and
-      // indirectly call to here.
-      if (base::SequencedTaskRunnerHandle::IsSet())
-        GetStorageSlot().reset();
+      GetStorageSlot().reset();
     }
   }
 

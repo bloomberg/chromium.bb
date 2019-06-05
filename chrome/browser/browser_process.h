@@ -78,6 +78,10 @@ namespace metrics_services_manager {
 class MetricsServicesManager;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace net_log {
 class ChromeNetLog;
 }
@@ -145,6 +149,7 @@ class BrowserProcess {
   virtual rappor::RapporServiceImpl* rappor_service() = 0;
   virtual ProfileManager* profile_manager() = 0;
   virtual PrefService* local_state() = 0;
+  virtual net::URLRequestContextGetter* system_request_context() = 0;
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   shared_url_loader_factory() = 0;
   virtual variations::VariationsService* variations_service() = 0;

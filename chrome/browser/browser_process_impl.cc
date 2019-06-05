@@ -715,6 +715,11 @@ PrefService* BrowserProcessImpl::local_state() {
   return local_state_.get();
 }
 
+net::URLRequestContextGetter* BrowserProcessImpl::system_request_context() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return io_thread()->system_url_request_context_getter();
+}
+
 variations::VariationsService* BrowserProcessImpl::variations_service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetMetricsServicesManager()->GetVariationsService();
@@ -1173,6 +1178,7 @@ void BrowserProcessImpl::PreCreateThreads(
     SystemNetworkContextManager::CreateInstance(local_state());
   io_thread_ = std::make_unique<IOThread>(
       local_state(), policy_service(), net_log_.get(),
+      extension_event_router_forwarder(),
       SystemNetworkContextManager::GetInstance());
 }
 
