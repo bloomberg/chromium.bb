@@ -6,10 +6,8 @@
 
 #include <type_traits>
 
-#include "base/no_destructor.h"
 #include "base/task/task_traits.h"
 #include "base/task/task_traits_extension.h"
-#include "base/threading/thread_local.h"
 
 namespace base {
 
@@ -30,18 +28,12 @@ static_assert(
     TaskTraitsExtensionStorage::kInvalidExtensionId == 0,
     "TaskExecutorMap depends on 0 being an invalid TaskTraits extension ID");
 
-ThreadLocalPointer<TaskExecutor>* GetTLSForCurrentTaskExecutor() {
-  static NoDestructor<ThreadLocalPointer<TaskExecutor>> instance;
-  return instance.get();
-}
-
 }  // namespace
 
 void RegisterTaskExecutor(uint8_t extension_id, TaskExecutor* task_executor) {
   DCHECK_NE(extension_id, TaskTraitsExtensionStorage::kInvalidExtensionId);
   DCHECK_LE(extension_id, TaskTraitsExtensionStorage::kMaxExtensionId);
   DCHECK_EQ((*GetTaskExecutorMap())[extension_id - 1], nullptr);
-  GetTLSForCurrentTaskExecutor()->Set(task_executor);
 
   (*GetTaskExecutorMap())[extension_id - 1] = task_executor;
 }
@@ -50,16 +42,11 @@ void UnregisterTaskExecutorForTesting(uint8_t extension_id) {
   DCHECK_NE(extension_id, TaskTraitsExtensionStorage::kInvalidExtensionId);
   DCHECK_LE(extension_id, TaskTraitsExtensionStorage::kMaxExtensionId);
   DCHECK_NE((*GetTaskExecutorMap())[extension_id - 1], nullptr);
+
   (*GetTaskExecutorMap())[extension_id - 1] = nullptr;
 }
 
 TaskExecutor* GetRegisteredTaskExecutorForTraits(const TaskTraits& traits) {
-  if (traits.use_current_thread()) {
-    auto* current_task_executor = GetTLSForCurrentTaskExecutor()->Get();
-    DCHECK(current_task_executor);
-    return current_task_executor;
-  }
-
   uint8_t extension_id = traits.extension_id();
   if (extension_id != TaskTraitsExtensionStorage::kInvalidExtensionId) {
     TaskExecutor* executor = (*GetTaskExecutorMap())[extension_id - 1];
