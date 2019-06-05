@@ -88,11 +88,11 @@ component("ui_devtools") {
   }
 
   deps = [
+    ":devtools_protocol_encoding",
     ":protocol_generated_sources",
     "//base",
     "//net",
     "//ui/gfx",
-    "//third_party/inspector_protocol:encoding",
   ]
 
   public_deps = [
@@ -108,8 +108,20 @@ static_library("test_support") {
     "ui_devtools_unittest_utils.h",
   ]
   public_deps = [
+    ":devtools_protocol_encoding",
     ":ui_devtools",
     "//testing/gmock",
+  ]
+}
+
+static_library("devtools_protocol_encoding") {
+  sources = [
+    "devtools_protocol_encoding.cc",
+    "devtools_protocol_encoding.h",
+  ]
+  deps = [
+    "//base",
+    "//third_party/inspector_protocol:encoding",
   ]
 }
 

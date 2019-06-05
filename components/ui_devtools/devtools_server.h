@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/threading/thread.h"
 #include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/Forward.h"
@@ -62,7 +63,7 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
                                int default_port);
 
   void AttachClient(std::unique_ptr<UiDevToolsClient> client);
-  void SendOverWebSocket(int connection_id, const protocol::String& message);
+  void SendOverWebSocket(int connection_id, base::StringPiece message);
 
   int port() const { return port_; }
 
