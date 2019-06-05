@@ -45730,6 +45730,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PerformanceMeasureParameterType">
+  <obsolete>
+    Deprecated as of June 2019.
+  </obsolete>
   <int value="0" label="OBJECT_OBJECT"/>
   <int value="1" label="UNLOAD_EVENT_START"/>
   <int value="2" label="UNLOAD_EVENT_END"/>
