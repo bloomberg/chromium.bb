@@ -42,6 +42,8 @@ const base::Feature kEnableCastDiscovery{"EnableCastDiscovery",
 const base::Feature kCastMediaRouteProvider{"CastMediaRouteProvider",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCastAllowAllIPsFeature{"CastAllowAllIPs",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
@@ -67,7 +69,7 @@ bool MediaRouterEnabled(content::BrowserContext* context) {
   // The component extension cannot be loaded in guest sessions.
   // TODO(crbug.com/756243): Figure out why.
   return !Profile::FromBrowserContext(context)->IsGuestSession();
-#else  // !(defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS))
+#else   // !(defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS))
   return false;
 #endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 }
@@ -83,9 +85,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kMediaRouterReceiverIdHashToken, "",
                                PrefRegistry::PUBLIC);
 }
-
-const base::Feature kCastAllowAllIPsFeature{"CastAllowAllIPs",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool GetCastAllowAllIPsPref(PrefService* pref_service) {
   auto* pref = pref_service->FindPreference(prefs::kMediaRouterCastAllowAllIPs);
