@@ -30,7 +30,13 @@ PrefetchBrowserTestBase::ResponseEntry::ResponseEntry(
     const std::vector<std::pair<std::string, std::string>>& headers)
     : content(content), content_type(content_type), headers(headers) {}
 
+PrefetchBrowserTestBase::ResponseEntry::ResponseEntry(ResponseEntry&& other) =
+    default;
+
 PrefetchBrowserTestBase::ResponseEntry::~ResponseEntry() = default;
+
+PrefetchBrowserTestBase::ResponseEntry& PrefetchBrowserTestBase::ResponseEntry::
+operator=(ResponseEntry&& other) = default;
 
 PrefetchBrowserTestBase::ScopedSignedExchangeHandlerFactory::
     ScopedSignedExchangeHandlerFactory(SignedExchangeHandlerFactory* factory) {
@@ -61,8 +67,8 @@ void PrefetchBrowserTestBase::SetUpOnMainThread() {
 }
 
 void PrefetchBrowserTestBase::RegisterResponse(const std::string& url,
-                                               const ResponseEntry& entry) {
-  response_map_[url] = entry;
+                                               ResponseEntry&& entry) {
+  response_map_[url] = std::move(entry);
 }
 
 std::unique_ptr<net::test_server::HttpResponse>

@@ -29,10 +29,14 @@ class PrefetchBrowserTestBase : public ContentBrowserTest {
  public:
   struct ResponseEntry {
     ResponseEntry();
-    explicit ResponseEntry(
+    ResponseEntry(
         const std::string& content,
         const std::string& content_types = "text/html",
         const std::vector<std::pair<std::string, std::string>>& headers = {});
+    ResponseEntry(const ResponseEntry&) = delete;
+    ResponseEntry(ResponseEntry&& other);
+    ResponseEntry& operator=(const ResponseEntry&) = delete;
+    ResponseEntry& operator=(ResponseEntry&&);
     ~ResponseEntry();
 
     std::string content;
@@ -52,7 +56,7 @@ class PrefetchBrowserTestBase : public ContentBrowserTest {
   void SetUpOnMainThread() override;
 
  protected:
-  void RegisterResponse(const std::string& url, const ResponseEntry& entry);
+  void RegisterResponse(const std::string& url, ResponseEntry&& entry);
 
   std::unique_ptr<net::test_server::HttpResponse> ServeResponses(
       const net::test_server::HttpRequest& request);
