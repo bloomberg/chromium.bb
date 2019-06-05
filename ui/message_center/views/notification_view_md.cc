@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "components/url_formatter/elide_url.h"
 #include "ui/base/class_property.h"
@@ -196,6 +197,21 @@ std::unique_ptr<views::View> CreateItemView(const NotificationItem& item) {
   message->SetAutoColorReadabilityEnabled(false);
   view->AddChildView(message);
   return view;
+}
+
+// Enum used to record click actions on the notification header.
+// Do not re-order or delete these entries; they are used in a UMA histogram.
+// Please edit NotificationHeaderClickAction in enums.xml if a value is added.
+enum class HeaderClickAction {
+  kNone = 0,
+  kExpanded = 1,
+  kCollapsed = 2,
+  kMaxValue = kCollapsed,
+};
+
+// static
+void RecordHeaderClickAction(HeaderClickAction action) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.HeaderClick", action);
 }
 
 }  // anonymous namespace
@@ -720,6 +736,8 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   // |expand_button| can be focused by TAB.
   if (sender == header_row_) {
     if (IsExpandable() && content_row_->GetVisible()) {
+      RecordHeaderClickAction(IsExpanded() ? HeaderClickAction::kCollapsed
+                                           : HeaderClickAction::kExpanded);
       SetManuallyExpandedOrCollapsed(true);
       auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
       ToggleExpanded();
@@ -729,6 +747,8 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
         return;
       Layout();
       SchedulePaint();
+    } else {
+      RecordHeaderClickAction(HeaderClickAction::kNone);
     }
     return;
   }

@@ -41777,6 +41777,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Invalid Argument error"/>
 </enum>
 
+<enum name="NotificationHeaderClickAction">
+  <int value="0" label="No action performed"/>
+  <int value="1" label="Notification expanded"/>
+  <int value="2" label="Notification collapsed"/>
+</enum>
+
 <enum name="NotificationHelperComServerModuleStatus">
   <int value="0" label="SUCCESS"/>
   <int value="1" label="FACTORY_CREATION_FAILED"/>
