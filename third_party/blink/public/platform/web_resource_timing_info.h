@@ -35,7 +35,7 @@ struct WebServerTimingInfo {
 #endif
 
   WebString name;
-  double duration;
+  double duration = 0.0;
   WebString description;
 };
 
@@ -64,12 +64,12 @@ struct WebResourceTimingInfo {
   base::TimeTicks last_redirect_end_time;
   base::TimeTicks response_end;
 
-  uint64_t transfer_size;
-  uint64_t encoded_body_size;
-  uint64_t decoded_body_size;
+  uint64_t transfer_size = 0U;
+  uint64_t encoded_body_size = 0U;
+  uint64_t decoded_body_size = 0U;
 
-  bool did_reuse_connection;
-  bool is_secure_context;
+  bool did_reuse_connection = false;
+  bool is_secure_context = false;
 
   // TODO(dcheng): The way this code works is fairly confusing: it might seem
   // unusual to store policy members like |allow_timing_details| inline, rather
@@ -77,8 +77,8 @@ struct WebResourceTimingInfo {
   // PerformanceNavigationTiming inherits and shares many of the same fields
   // exposed by PerformanceResourceTiming, but the underlying behavior is a
   // little different.
-  bool allow_timing_details;
-  bool allow_redirect_details;
+  bool allow_timing_details = false;
+  bool allow_redirect_details = false;
 
   // Normally, the timestamps are relative to the time origin. In most cases,
   // these timestamps should be positive value, so 0 is used to mark invalid
@@ -87,7 +87,7 @@ struct WebResourceTimingInfo {
   // However, ServiceWorker navigation preloads may be negative, since these
   // requests may be started before the service worker started. In those cases,
   // this flag should be set to true.
-  bool allow_negative_values;
+  bool allow_negative_values = false;
 
   WebVector<WebServerTimingInfo> server_timing;
 };
