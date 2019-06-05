@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 
-class PrefService;
 class Profile;
 
 namespace extensions {
@@ -34,8 +33,6 @@ class ExtensionServiceInterface;
 class ComponentLoader {
  public:
   ComponentLoader(ExtensionServiceInterface* extension_service,
-                  PrefService* prefs,
-                  PrefService* local_state,
                   Profile* browser_context);
   virtual ~ComponentLoader();
 
@@ -215,8 +212,6 @@ class ComponentLoader {
   void FinishLoadSpeechSynthesisExtension(const char* extension_id);
 #endif
 
-  PrefService* profile_prefs_;
-  PrefService* local_state_;
   Profile* profile_;
 
   ExtensionServiceInterface* extension_service_;

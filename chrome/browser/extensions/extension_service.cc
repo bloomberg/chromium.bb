@@ -32,7 +32,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
@@ -339,8 +338,7 @@ ExtensionService::ExtensionService(Profile* profile,
                    profile)));
   }
 
-  component_loader_.reset(new ComponentLoader(
-      this, profile->GetPrefs(), g_browser_process->local_state(), profile));
+  component_loader_ = std::make_unique<ComponentLoader>(this, profile);
 
   if (extensions_enabled_) {
     ExternalProviderImpl::CreateExternalProviders(
