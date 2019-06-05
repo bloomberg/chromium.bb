@@ -59,6 +59,15 @@
 #include "ui/base/ui_base_features.h"
 #endif
 
+// TODO(crbug.com/961075): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_SetSelectionIndices_NestedButtons \
+  DISABLED_SetSelectionIndices_NestedButtons
+#else
+#define MAYBE_SetSelectionIndices_NestedButtons \
+  SetSelectionIndices_NestedButtons
+#endif
+
 namespace views {
 namespace test {
 
@@ -2256,7 +2265,7 @@ TEST_F(MenuControllerTest, SetSelectionIndices_Buttons_SkipHiddenAndDisabled) {
   EXPECT_EQ(5, data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
 }
 
-TEST_F(MenuControllerTest, SetSelectionIndices_NestedButtons) {
+TEST_F(MenuControllerTest, MAYBE_SetSelectionIndices_NestedButtons) {
   class DummyButtonListener : public ButtonListener {
    public:
     ~DummyButtonListener() override = default;
