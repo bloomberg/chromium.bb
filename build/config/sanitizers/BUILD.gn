@@ -436,6 +436,9 @@ config("coverage_flags") {
 config("hwasan_flags") {
   if (is_hwasan) {
     cflags = [ "-fsanitize=hwaddress" ]
+    if (hwasan_platform) {
+      cflags += [ "-fsanitize-hwaddress-abi=platform" ]
+    }
   }
 }
 
