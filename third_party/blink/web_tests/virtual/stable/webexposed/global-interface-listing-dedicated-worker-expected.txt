@@ -999,6 +999,21 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method formData
 [Worker]     method json
 [Worker]     method text
+[Worker] interface SecurityPolicyViolationEvent : Event
+[Worker]     attribute @@toStringTag
+[Worker]     getter blockedURI
+[Worker]     getter columnNumber
+[Worker]     getter disposition
+[Worker]     getter documentURI
+[Worker]     getter effectiveDirective
+[Worker]     getter lineNumber
+[Worker]     getter originalPolicy
+[Worker]     getter referrer
+[Worker]     getter sample
+[Worker]     getter sourceFile
+[Worker]     getter statusCode
+[Worker]     getter violatedDirective
+[Worker]     method constructor
 [Worker] interface ServiceWorkerRegistration : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter active

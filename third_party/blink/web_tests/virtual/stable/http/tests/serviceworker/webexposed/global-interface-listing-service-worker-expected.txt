@@ -1065,6 +1065,21 @@ interface Response
     method formData
     method json
     method text
+interface SecurityPolicyViolationEvent : Event
+    attribute @@toStringTag
+    getter blockedURI
+    getter columnNumber
+    getter disposition
+    getter documentURI
+    getter effectiveDirective
+    getter lineNumber
+    getter originalPolicy
+    getter referrer
+    getter sample
+    getter sourceFile
+    getter statusCode
+    getter violatedDirective
+    method constructor
 interface ServiceWorkerGlobalScope : WorkerGlobalScope
     attribute @@toStringTag
     method constructor
