@@ -1179,6 +1179,8 @@ jumbo_source_set("browser") {
     "loader/sec_fetch_site_resource_handler.h",
     "loader/shared_cors_origin_access_list_impl.cc",
     "loader/shared_cors_origin_access_list_impl.h",
+    "loader/single_request_url_loader_factory.cc",
+    "loader/single_request_url_loader_factory.h",
     "loader/source_stream_to_data_pipe.cc",
     "loader/source_stream_to_data_pipe.h",
     "loader/throttling_resource_handler.cc",

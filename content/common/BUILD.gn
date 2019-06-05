@@ -227,8 +227,6 @@ source_set("common") {
     "service_worker/service_worker_types.h",
     "service_worker/service_worker_utils.cc",
     "service_worker/service_worker_utils.h",
-    "single_request_url_loader_factory.cc",
-    "single_request_url_loader_factory.h",
     "skia_utils.cc",
     "skia_utils.h",
     "swapped_out_messages.cc",
