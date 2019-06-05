@@ -19,38 +19,43 @@ message WifiConfigurationSpecificsData {
   // May contain NUL, not necessarily UTF-8 encoded.
   optional bytes ssid = 1;
   enum SecurityType {
-    SECURITY_TYPE_NONE = 0;
-    SECURITY_TYPE_WEP = 1;
-    SECURITY_TYPE_PSK = 2;  // WPA-PSK or RSN-PSK
+    SECURITY_TYPE_UNSPECIFIED = 0;
+    SECURITY_TYPE_NONE = 1;
+    SECURITY_TYPE_WEP = 2;
+    SECURITY_TYPE_PSK = 3;  // WPA-PSK or RSN-PSK
   }
   optional SecurityType security_type = 2;
   // The passphrase can be ASCII, UTF-8, or a string of hex digits.
   optional bytes passphrase = 3;
   enum AutomaticallyConnectOption {
-    AUTOMATICALLY_CONNECT_DISABLED = 0;
-    AUTOMATICALLY_CONNECT_ENABLED = 1;
+    AUTOMATICALLY_CONNECT_UNSPECIFIED = 0;
+    AUTOMATICALLY_CONNECT_DISABLED = 1;
+    AUTOMATICALLY_CONNECT_ENABLED = 2;
   }
   optional AutomaticallyConnectOption automatically_connect = 4;
   enum IsPreferredOption {
-    IS_PREFERRED_DISABLED = 0;
-    IS_PREFERRED_ENABLED = 1;
+    IS_PREFERRED_UNSPECIFIED = 0;
+    IS_PREFERRED_DISABLED = 1;
+    IS_PREFERRED_ENABLED = 2;
   }
   optional IsPreferredOption is_preferred = 5;
   enum MeteredOption {
-    METERED_OPTION_NO = 0;
-    METERED_OPTION_YES = 1;
+    METERED_OPTION_UNSPECIFIED = 0;
+    METERED_OPTION_NO = 1;
+    METERED_OPTION_YES = 2;
     // Allows the device to use heuristics to determine if network is metered.
-    METERED_OPTION_AUTO = 2;
+    METERED_OPTION_AUTO = 3;
   }
   optional MeteredOption metered = 6;
   message ProxyConfiguration {
     enum ProxyOption {
-      PROXY_OPTION_DISABLED = 0;
+      PROXY_OPTION_UNSPECIFIED = 0;
+      PROXY_OPTION_DISABLED = 1;
       // Use a Proxy Auto-config(PAC) Url, set in proxy_url
-      PROXY_OPTION_AUTOMATIC = 1;
+      PROXY_OPTION_AUTOMATIC = 2;
       // Uses Web Proxy Auto-Discovery Protocol (WPAD) to discover the proxy
       // settings using DHCP/DNS.
-      PROXY_OPTION_AUTODISCOVERY = 2;
+      PROXY_OPTION_AUTODISCOVERY = 3;
       // User sets proxy_url, proxy_port, and whitelisted_domains manually.
       PROXY_OPTION_MANUAL = 4;
     }

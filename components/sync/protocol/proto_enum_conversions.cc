@@ -539,8 +539,10 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::WifiConfigurationSpecificsData::SecurityType security_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::WifiConfigurationSpecificsData, SecurityType,
-                     SECURITY_TYPE_NONE, SECURITY_TYPE_PSK);
+                     SECURITY_TYPE_UNSPECIFIED, SECURITY_TYPE_PSK);
   switch (security_type) {
+    ENUM_CASE(sync_pb::WifiConfigurationSpecificsData,
+              SECURITY_TYPE_UNSPECIFIED);
     ENUM_CASE(sync_pb::WifiConfigurationSpecificsData, SECURITY_TYPE_NONE);
     ENUM_CASE(sync_pb::WifiConfigurationSpecificsData, SECURITY_TYPE_WEP);
     ENUM_CASE(sync_pb::WifiConfigurationSpecificsData, SECURITY_TYPE_PSK);
@@ -552,10 +554,12 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::WifiConfigurationSpecificsData::AutomaticallyConnectOption
         automatically_connect_option) {
-  ASSERT_ENUM_BOUNDS(sync_pb::WifiConfigurationSpecificsData,
-                     AutomaticallyConnectOption, AUTOMATICALLY_CONNECT_DISABLED,
-                     AUTOMATICALLY_CONNECT_ENABLED);
+  ASSERT_ENUM_BOUNDS(
+      sync_pb::WifiConfigurationSpecificsData, AutomaticallyConnectOption,
+      AUTOMATICALLY_CONNECT_UNSPECIFIED, AUTOMATICALLY_CONNECT_ENABLED);
   switch (automatically_connect_option) {
+    ENUM_CASE(sync_pb::WifiConfigurationSpecificsData,
+              AUTOMATICALLY_CONNECT_UNSPECIFIED);
     ENUM_CASE(sync_pb::WifiConfigurationSpecificsData,
               AUTOMATICALLY_CONNECT_DISABLED);
     ENUM_CASE(sync_pb::WifiConfigurationSpecificsData,
@@ -569,10 +573,27 @@ const char* ProtoEnumToString(
     sync_pb::WifiConfigurationSpecificsData::IsPreferredOption
         is_preferred_option) {
   ASSERT_ENUM_BOUNDS(sync_pb::WifiConfigurationSpecificsData, IsPreferredOption,
-                     IS_PREFERRED_DISABLED, IS_PREFERRED_ENABLED);
+                     IS_PREFERRED_UNSPECIFIED, IS_PREFERRED_ENABLED);
   switch (is_preferred_option) {
+    ENUM_CASE(sync_pb::WifiConfigurationSpecificsData,
+              IS_PREFERRED_UNSPECIFIED);
     ENUM_CASE(sync_pb::WifiConfigurationSpecificsData, IS_PREFERRED_DISABLED);
     ENUM_CASE(sync_pb::WifiConfigurationSpecificsData, IS_PREFERRED_ENABLED);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::WifiConfigurationSpecificsData::MeteredOption metered_option) {
+  ASSERT_ENUM_BOUNDS(sync_pb::WifiConfigurationSpecificsData, MeteredOption,
+                     METERED_OPTION_UNSPECIFIED, METERED_OPTION_AUTO);
+  switch (metered_option) {
+    ENUM_CASE(sync_pb::WifiConfigurationSpecificsData,
+              METERED_OPTION_UNSPECIFIED);
+    ENUM_CASE(sync_pb::WifiConfigurationSpecificsData, METERED_OPTION_NO);
+    ENUM_CASE(sync_pb::WifiConfigurationSpecificsData, METERED_OPTION_YES);
+    ENUM_CASE(sync_pb::WifiConfigurationSpecificsData, METERED_OPTION_AUTO);
   }
   NOTREACHED();
   return "";
@@ -583,8 +604,10 @@ const char* ProtoEnumToString(
         proxy_option) {
   ASSERT_ENUM_BOUNDS(
       sync_pb::WifiConfigurationSpecificsData::ProxyConfiguration, ProxyOption,
-      PROXY_OPTION_DISABLED, PROXY_OPTION_MANUAL);
+      PROXY_OPTION_UNSPECIFIED, PROXY_OPTION_MANUAL);
   switch (proxy_option) {
+    ENUM_CASE(sync_pb::WifiConfigurationSpecificsData::ProxyConfiguration,
+              PROXY_OPTION_UNSPECIFIED);
     ENUM_CASE(sync_pb::WifiConfigurationSpecificsData::ProxyConfiguration,
               PROXY_OPTION_DISABLED);
     ENUM_CASE(sync_pb::WifiConfigurationSpecificsData::ProxyConfiguration,
