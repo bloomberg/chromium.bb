@@ -179,7 +179,7 @@ void MediaStreamDispatcherHost::StopStreamDevice(const std::string& device_id,
 
 void MediaStreamDispatcherHost::OpenDevice(int32_t page_request_id,
                                            const std::string& device_id,
-                                           blink::MediaStreamType type,
+                                           blink::mojom::MediaStreamType type,
                                            OpenDeviceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -196,7 +196,7 @@ void MediaStreamDispatcherHost::OpenDevice(int32_t page_request_id,
 void MediaStreamDispatcherHost::DoOpenDevice(
     int32_t page_request_id,
     const std::string& device_id,
-    blink::MediaStreamType type,
+    blink::mojom::MediaStreamType type,
     OpenDeviceCallback callback,
     MediaDeviceSaltAndOrigin salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -222,7 +222,7 @@ void MediaStreamDispatcherHost::CloseDevice(const std::string& label) {
 
 void MediaStreamDispatcherHost::SetCapturingLinkSecured(
     int32_t session_id,
-    blink::MediaStreamType type,
+    blink::mojom::MediaStreamType type,
     bool is_secure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

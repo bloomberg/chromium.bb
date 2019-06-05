@@ -331,7 +331,8 @@ TEST_F(StatusUploaderTest, NoUploadAfterVideoCapture) {
 
   // Now mock video capture, and no session data should be allowed.
   MediaCaptureDevicesDispatcher::GetInstance()->OnMediaRequestStateChanged(
-      0, 0, 0, GURL("http://www.google.com"), blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+      0, 0, 0, GURL("http://www.google.com"),
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
       content::MEDIA_REQUEST_STATE_OPENING);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(uploader->IsSessionDataUploadAllowed());

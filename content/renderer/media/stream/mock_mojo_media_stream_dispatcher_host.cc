@@ -88,7 +88,7 @@ void MockMojoMediaStreamDispatcherHost::StopStreamDevice(
 void MockMojoMediaStreamDispatcherHost::OpenDevice(
     int32_t request_id,
     const std::string& device_id,
-    blink::MediaStreamType type,
+    blink::mojom::MediaStreamType type,
     OpenDeviceCallback callback) {
   blink::MediaStreamDevice device;
   device.id = device_id;

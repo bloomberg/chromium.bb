@@ -162,13 +162,13 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
 
     ~StreamOpenedWaiter() override { aidm_->UnregisterListener(this); }
 
-    void Opened(blink::MediaStreamType stream_type,
+    void Opened(blink::mojom::MediaStreamType stream_type,
                 int capture_session_id) override {
       std::move(cb_).Run();
     }
-    void Closed(blink::MediaStreamType stream_type,
+    void Closed(blink::mojom::MediaStreamType stream_type,
                 int capture_session_id) override {}
-    void Aborted(blink::MediaStreamType stream_type,
+    void Aborted(blink::mojom::MediaStreamType stream_type,
                  int capture_session_id) override {}
 
    private:
@@ -178,7 +178,8 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
 
   void CallOpenWithTestDeviceAndStoreSessionIdOnIO(int* session_id) {
     *session_id = audio_input_device_manager()->Open(blink::MediaStreamDevice(
-        blink::MEDIA_DEVICE_AUDIO_CAPTURE, kDeviceId, kDeviceName));
+        blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, kDeviceId,
+        kDeviceName));
   }
 
   const media::AudioParameters kParams =
@@ -208,7 +209,8 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
       mojo::MakeRequest(&factory_ptr), media_stream_manager_.get(), main_rfh());
 
   int session_id = audio_input_device_manager()->Open(blink::MediaStreamDevice(
-      blink::MEDIA_DEVICE_AUDIO_CAPTURE, kDeviceId, kDeviceName));
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, kDeviceId,
+      kDeviceName));
   base::RunLoop().RunUntilIdle();
 
   mojom::RendererAudioInputStreamFactoryClientPtr client;
@@ -232,7 +234,8 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
   WebContentsMediaCaptureId capture_id(main_frame->GetProcess()->GetID(),
                                        main_frame->GetRoutingID());
   int session_id = audio_input_device_manager()->Open(blink::MediaStreamDevice(
-      blink::MEDIA_GUM_TAB_AUDIO_CAPTURE, capture_id.ToString(), kDeviceName));
+      blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE,
+      capture_id.ToString(), kDeviceName));
   base::RunLoop().RunUntilIdle();
 
   mojom::RendererAudioInputStreamFactoryClientPtr client;
@@ -256,7 +259,8 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
   WebContentsMediaCaptureId capture_id(main_frame->GetProcess()->GetID(),
                                        main_frame->GetRoutingID());
   int session_id = audio_input_device_manager()->Open(blink::MediaStreamDevice(
-      blink::MEDIA_GUM_TAB_AUDIO_CAPTURE, capture_id.ToString(), kDeviceName));
+      blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE,
+      capture_id.ToString(), kDeviceName));
   base::RunLoop().RunUntilIdle();
 
   source_contents.reset();

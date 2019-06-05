@@ -56,10 +56,12 @@ namespace {
 bool ContentTypeIsRequested(ContentSettingsType type,
                             const content::MediaStreamRequest& request) {
   if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
-    return request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE;
+    return request.audio_type ==
+           blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE;
 
   if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
-    return request.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE;
+    return request.video_type ==
+           blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE;
 
   return false;
 }
@@ -351,8 +353,10 @@ blink::MediaStreamDevices MediaStreamDevicesController::GetDevices(
       // not empty, return the desired device if it's available. Otherwise,
       // return no device.
       if (audio_allowed &&
-          request_.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
-        DCHECK_EQ(blink::MEDIA_NO_SERVICE, request_.video_type);
+          request_.audio_type ==
+              blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
+        DCHECK_EQ(blink::mojom::MediaStreamType::NO_SERVICE,
+                  request_.video_type);
         if (!request_.requested_audio_device_id.empty()) {
           device =
               MediaCaptureDevicesDispatcher::GetInstance()
@@ -362,8 +366,10 @@ blink::MediaStreamDevices MediaStreamDevicesController::GetDevices(
                        ->GetFirstAvailableAudioDevice();
         }
       } else if (video_allowed &&
-                 request_.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE) {
-        DCHECK_EQ(blink::MEDIA_NO_SERVICE, request_.audio_type);
+                 request_.video_type ==
+                     blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
+        DCHECK_EQ(blink::mojom::MediaStreamType::NO_SERVICE,
+                  request_.audio_type);
         // Pepper API opens only one device at a time.
         if (!request_.requested_video_device_id.empty()) {
           device =

@@ -117,7 +117,7 @@ class MockMediaStreamDispatcherHost
 
   void OnOpenDevice(int page_request_id,
                     const std::string& device_id,
-                    blink::MediaStreamType type,
+                    blink::mojom::MediaStreamType type,
                     const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::OpenDevice(
@@ -193,9 +193,9 @@ class MockMediaStreamDispatcherHost
 
   void OnDeviceStoppedInternal(const std::string& label,
                                const blink::MediaStreamDevice& device) {
-    if (IsVideoInputMediaType(device.type))
+    if (blink::IsVideoInputMediaType(device.type))
       EXPECT_TRUE(device.IsSameDevice(video_devices_[0]));
-    if (IsAudioInputMediaType(device.type))
+    if (blink::IsAudioInputMediaType(device.type))
       EXPECT_TRUE(device.IsSameDevice(audio_devices_[0]));
 
     OnDeviceStopSuccess();
@@ -365,7 +365,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     EXPECT_CALL(*host_, OnDeviceOpenSuccess());
     base::RunLoop run_loop;
     host_->OnOpenDevice(page_request_id, device_id,
-                        blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                        blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
                         run_loop.QuitClosure());
     run_loop.Run();
     EXPECT_FALSE(DoesContainRawIds(host_->video_devices_));
@@ -377,7 +377,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     EXPECT_CALL(*host_, OnDeviceOpenSuccess()).Times(0);
     base::RunLoop run_loop;
     host_->OnOpenDevice(page_request_id, device_id,
-                        blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                        blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
                         run_loop.QuitClosure());
     run_loop.Run();
     EXPECT_FALSE(DoesContainRawIds(host_->video_devices_));

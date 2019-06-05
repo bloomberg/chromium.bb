@@ -200,7 +200,7 @@ void WebContentsDelegate::RequestMediaAccessPermission(
 bool WebContentsDelegate::CheckMediaAccessPermission(
     RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   LOG(ERROR) << "WebContentsDelegate::CheckMediaAccessPermission: "
              << "Not supported.";
   return false;
@@ -208,7 +208,7 @@ bool WebContentsDelegate::CheckMediaAccessPermission(
 
 std::string WebContentsDelegate::GetDefaultMediaDeviceID(
     WebContents* web_contents,
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   return std::string();
 }
 

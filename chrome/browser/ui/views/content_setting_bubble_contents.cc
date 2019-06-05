@@ -67,10 +67,10 @@ struct LayoutRow {
 // in the content setting bubble.
 class MediaComboboxModel : public ui::ComboboxModel {
  public:
-  explicit MediaComboboxModel(blink::MediaStreamType type);
+  explicit MediaComboboxModel(blink::mojom::MediaStreamType type);
   ~MediaComboboxModel() override;
 
-  blink::MediaStreamType type() const { return type_; }
+  blink::mojom::MediaStreamType type() const { return type_; }
   const blink::MediaStreamDevices& GetDevices() const;
   int GetDeviceIndex(const blink::MediaStreamDevice& device) const;
 
@@ -79,7 +79,7 @@ class MediaComboboxModel : public ui::ComboboxModel {
   base::string16 GetItemAt(int index) override;
 
  private:
-  blink::MediaStreamType type_;
+  blink::mojom::MediaStreamType type_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaComboboxModel);
 };
@@ -117,7 +117,7 @@ class MediaMenuBlock : public views::View {
       first_row = false;
 
       layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-      blink::MediaStreamType stream_type = i->first;
+      blink::mojom::MediaStreamType stream_type = i->first;
       const ContentSettingBubbleModel::MediaMenu& menu = i->second;
 
       views::Label* label = new views::Label(menu.label);
@@ -151,10 +151,10 @@ class MediaMenuBlock : public views::View {
 
 // MediaComboboxModel ----------------------------------------------------------
 
-MediaComboboxModel::MediaComboboxModel(blink::MediaStreamType type)
+MediaComboboxModel::MediaComboboxModel(blink::mojom::MediaStreamType type)
     : type_(type) {
-  DCHECK(type_ == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type_ == blink::MEDIA_DEVICE_VIDEO_CAPTURE);
+  DCHECK(type_ == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE ||
+         type_ == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE);
 }
 
 MediaComboboxModel::~MediaComboboxModel() {}
@@ -162,7 +162,7 @@ MediaComboboxModel::~MediaComboboxModel() {}
 const blink::MediaStreamDevices& MediaComboboxModel::GetDevices() const {
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
-  return type_ == blink::MEDIA_DEVICE_AUDIO_CAPTURE
+  return type_ == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE
              ? dispatcher->GetAudioCaptureDevices()
              : dispatcher->GetVideoCaptureDevices();
 }

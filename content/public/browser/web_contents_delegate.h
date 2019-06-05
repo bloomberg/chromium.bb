@@ -509,13 +509,14 @@ class CONTENT_EXPORT WebContentsDelegate {
   // or MEDIA_DEVICE_VIDEO_CAPTURE.
   virtual bool CheckMediaAccessPermission(RenderFrameHost* render_frame_host,
                                           const GURL& security_origin,
-                                          blink::MediaStreamType type);
+                                          blink::mojom::MediaStreamType type);
 
   // Returns the ID of the default device for the given media device |type|.
   // If the returned value is an empty string, it means that there is no
   // default device for the given |type|.
-  virtual std::string GetDefaultMediaDeviceID(WebContents* web_contents,
-                                              blink::MediaStreamType type);
+  virtual std::string GetDefaultMediaDeviceID(
+      WebContents* web_contents,
+      blink::mojom::MediaStreamType type);
 
 #if defined(OS_ANDROID)
   // Returns true if the given media should be blocked to load.

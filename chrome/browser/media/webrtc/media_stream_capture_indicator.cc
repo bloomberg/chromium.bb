@@ -115,7 +115,7 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
   void NotifyStopped();
 
  private:
-  int& GetStreamCount(blink::MediaStreamType type);
+  int& GetStreamCount(blink::mojom::MediaStreamType type);
 
   // content::WebContentsObserver overrides.
   void WebContentsDestroyed() override {
@@ -231,26 +231,26 @@ void MediaStreamCaptureIndicator::WebContentsDeviceUsage::NotifyStopped() {
 }
 
 int& MediaStreamCaptureIndicator::WebContentsDeviceUsage::GetStreamCount(
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   switch (type) {
-    case blink::MEDIA_DEVICE_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:
       return audio_stream_count_;
 
-    case blink::MEDIA_DEVICE_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
       return video_stream_count_;
 
-    case blink::MEDIA_GUM_TAB_AUDIO_CAPTURE:
-    case blink::MEDIA_GUM_TAB_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
       return mirroring_stream_count_;
 
-    case blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
-    case blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE:
-    case blink::MEDIA_DISPLAY_VIDEO_CAPTURE:
-    case blink::MEDIA_DISPLAY_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE:
       return desktop_stream_count_;
 
-    case blink::MEDIA_NO_SERVICE:
-    case blink::NUM_MEDIA_TYPES:
+    case blink::mojom::MediaStreamType::NO_SERVICE:
+    case blink::mojom::MediaStreamType::NUM_MEDIA_TYPES:
       NOTREACHED();
       return video_stream_count_;
   }

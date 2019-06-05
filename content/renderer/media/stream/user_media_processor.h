@@ -18,7 +18,6 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/media_stream_dispatcher_eventhandler.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"

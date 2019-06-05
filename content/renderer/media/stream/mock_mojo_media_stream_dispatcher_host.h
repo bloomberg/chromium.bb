@@ -33,12 +33,12 @@ class MockMojoMediaStreamDispatcherHost
                         int32_t session_id) override;
   void OpenDevice(int32_t request_id,
                   const std::string& device_id,
-                  blink::MediaStreamType type,
+                  blink::mojom::MediaStreamType type,
                   OpenDeviceCallback callback) override;
 
   MOCK_METHOD1(CloseDevice, void(const std::string&));
   MOCK_METHOD3(SetCapturingLinkSecured,
-               void(int32_t, blink::MediaStreamType, bool));
+               void(int32_t, blink::mojom::MediaStreamType, bool));
   MOCK_METHOD1(OnStreamStarted, void(const std::string&));
 
   void IncrementSessionId() { ++session_id_; }

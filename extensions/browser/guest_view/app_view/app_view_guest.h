@@ -68,7 +68,7 @@ class AppViewGuest : public guest_view::GuestView<AppViewGuest> {
       content::MediaResponseCallback callback) final;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  blink::MediaStreamType type) final;
+                                  blink::mojom::MediaStreamType type) final;
 
   void CompleteCreateWebContents(const GURL& url,
                                  const Extension* guest_extension,

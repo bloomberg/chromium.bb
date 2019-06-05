@@ -4510,8 +4510,8 @@ class MediaStreamDevicesControllerBrowserTest
   void TearDownOnMainThread() override { prompt_factory_.reset(); }
 
   content::MediaStreamRequest CreateRequest(
-      blink::MediaStreamType audio_request_type,
-      blink::MediaStreamType video_request_type) {
+      blink::mojom::MediaStreamType audio_request_type,
+      blink::mojom::MediaStreamType video_request_type) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_EQ(request_url_,
@@ -4567,8 +4567,9 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   void FinishAudioTest() {
-    content::MediaStreamRequest request(CreateRequest(
-        blink::MEDIA_DEVICE_AUDIO_CAPTURE, blink::MEDIA_NO_SERVICE));
+    content::MediaStreamRequest request(
+        CreateRequest(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                      blink::mojom::MediaStreamType::NO_SERVICE));
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
     MediaStreamDevicesController::RequestPermissions(
@@ -4579,8 +4580,9 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   void FinishVideoTest() {
-    content::MediaStreamRequest request(CreateRequest(
-        blink::MEDIA_NO_SERVICE, blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+    content::MediaStreamRequest request(
+        CreateRequest(blink::mojom::MediaStreamType::NO_SERVICE,
+                      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
     MediaStreamDevicesController::RequestPermissions(
@@ -4600,8 +4602,9 @@ class MediaStreamDevicesControllerBrowserTest
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        AudioCaptureAllowed) {
   blink::MediaStreamDevices audio_devices;
-  blink::MediaStreamDevice fake_audio_device(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
-                                             "fake_dev", "Fake Audio Device");
+  blink::MediaStreamDevice fake_audio_device(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, "fake_dev",
+      "Fake Audio Device");
   audio_devices.push_back(fake_audio_device);
 
   PolicyMap policies;
@@ -4623,8 +4626,9 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        AudioCaptureAllowedUrls) {
   blink::MediaStreamDevices audio_devices;
-  blink::MediaStreamDevice fake_audio_device(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
-                                             "fake_dev", "Fake Audio Device");
+  blink::MediaStreamDevice fake_audio_device(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, "fake_dev",
+      "Fake Audio Device");
   audio_devices.push_back(fake_audio_device);
 
   const char* allow_pattern[] = {
@@ -4658,8 +4662,9 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        VideoCaptureAllowed) {
   blink::MediaStreamDevices video_devices;
-  blink::MediaStreamDevice fake_video_device(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
-                                             "fake_dev", "Fake Video Device");
+  blink::MediaStreamDevice fake_video_device(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, "fake_dev",
+      "Fake Video Device");
   video_devices.push_back(fake_video_device);
 
   PolicyMap policies;
@@ -4681,8 +4686,9 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        VideoCaptureAllowedUrls) {
   blink::MediaStreamDevices video_devices;
-  blink::MediaStreamDevice fake_video_device(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
-                                             "fake_dev", "Fake Video Device");
+  blink::MediaStreamDevice fake_video_device(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, "fake_dev",
+      "Fake Video Device");
   video_devices.push_back(fake_video_device);
 
   const char* allow_pattern[] = {

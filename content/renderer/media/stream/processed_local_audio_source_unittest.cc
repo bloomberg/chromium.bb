@@ -102,10 +102,10 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
     std::unique_ptr<ProcessedLocalAudioSource> source =
         std::make_unique<ProcessedLocalAudioSource>(
             -1 /* consumer_render_frame_id is N/A for non-browser tests */,
-            blink::MediaStreamDevice(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
-                                     "mock_audio_device_id",
-                                     "Mock audio device", kSampleRate,
-                                     kChannelLayout, kRequestedBufferSize),
+            blink::MediaStreamDevice(
+                blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                "mock_audio_device_id", "Mock audio device", kSampleRate,
+                kChannelLayout, kRequestedBufferSize),
             false /* disable_local_echo */, properties, base::DoNothing(),
             &mock_dependency_factory_,
             blink::scheduler::GetSingleThreadTaskRunnerForTesting());

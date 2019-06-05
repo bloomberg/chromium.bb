@@ -27,7 +27,7 @@ class TestWebContentsDelegate : public content::WebContentsDelegate {
 
   bool CheckMediaAccessPermission(RenderFrameHost* render_Frame_host,
                                   const GURL& security_origin,
-                                  blink::MediaStreamType type) override {
+                                  blink::mojom::MediaStreamType type) override {
     return true;
   }
 };

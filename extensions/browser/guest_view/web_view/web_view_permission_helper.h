@@ -65,7 +65,7 @@ class WebViewPermissionHelper
                                     content::MediaResponseCallback callback);
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  blink::MediaStreamType type);
+                                  blink::mojom::MediaStreamType type);
   void CanDownload(const GURL& url,
                    const std::string& request_method,
                    base::OnceCallback<void(bool)> callback);

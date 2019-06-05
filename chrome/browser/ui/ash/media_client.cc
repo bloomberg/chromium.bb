@@ -205,7 +205,7 @@ void MediaClient::SuspendMediaSessions() {
 
 void MediaClient::OnRequestUpdate(int render_process_id,
                                   int render_frame_id,
-                                  blink::MediaStreamType stream_type,
+                                  blink::mojom::MediaStreamType stream_type,
                                   const content::MediaRequestState state) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
   // The PostTask is necessary because the state of MediaStreamCaptureIndicator

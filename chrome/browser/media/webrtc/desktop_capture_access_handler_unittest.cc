@@ -46,13 +46,13 @@ class DesktopCaptureAccessHandlerTest : public ChromeRenderViewHostTestHarness {
          true /* expect_tabs */, request_audio /* expect_audio */,
          fake_desktop_media_id_response /* selected_source */}};
     picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
-    blink::MediaStreamType audio_type =
-        request_audio ? blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE
-                      : blink::MEDIA_NO_SERVICE;
+    blink::mojom::MediaStreamType audio_type =
+        request_audio ? blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE
+                      : blink::mojom::MediaStreamType::NO_SERVICE;
     content::MediaStreamRequest request(
         0, 0, 0, GURL("http://origin/"), false, request_type, std::string(),
-        std::string(), audio_type, blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-        false);
+        std::string(), audio_type,
+        blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE, false);
 
     base::RunLoop wait_loop;
     content::MediaResponseCallback callback = base::BindOnce(
@@ -102,7 +102,8 @@ TEST_F(DesktopCaptureAccessHandlerTest,
                  false /*request_audio*/);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(1u, devices.size());
-  EXPECT_EQ(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, devices[0].type);
+  EXPECT_EQ(blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+            devices[0].type);
 }
 
 TEST_F(DesktopCaptureAccessHandlerTest,
@@ -116,8 +117,10 @@ TEST_F(DesktopCaptureAccessHandlerTest,
                  true /* request_audio */);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(2u, devices.size());
-  EXPECT_EQ(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, devices[0].type);
-  EXPECT_EQ(blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, devices[1].type);
+  EXPECT_EQ(blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+            devices[0].type);
+  EXPECT_EQ(blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE,
+            devices[1].type);
 }
 
 TEST_F(DesktopCaptureAccessHandlerTest, ChangeSourcePermissionDenied) {
@@ -134,8 +137,8 @@ TEST_F(DesktopCaptureAccessHandlerTest,
   const int render_process_id = 0;
   const int render_frame_id = 0;
   const int page_request_id = 0;
-  const blink::MediaStreamType stream_type =
-      blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
+  const blink::mojom::MediaStreamType stream_type =
+      blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE;
   FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
       {false /* expect_screens */, false /* expect_windows*/,
        true /* expect_tabs */, false /* expect_audio */,
@@ -144,7 +147,8 @@ TEST_F(DesktopCaptureAccessHandlerTest,
   content::MediaStreamRequest request(
       render_process_id, render_frame_id, page_request_id,
       GURL("http://origin/"), false, blink::MEDIA_DEVICE_UPDATE, std::string(),
-      std::string(), blink::MEDIA_NO_SERVICE, stream_type, false);
+      std::string(), blink::mojom::MediaStreamType::NO_SERVICE, stream_type,
+      false);
   content::MediaResponseCallback callback;
   access_handler_->HandleRequest(web_contents(), request, std::move(callback),
                                  nullptr /* extension */);
@@ -173,8 +177,8 @@ TEST_F(DesktopCaptureAccessHandlerTest, ChangeSourceWebContentsDestroyed) {
   picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
   content::MediaStreamRequest request(
       0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_DEVICE_UPDATE,
-      std::string(), std::string(), blink::MEDIA_NO_SERVICE,
-      blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, false);
+      std::string(), std::string(), blink::mojom::MediaStreamType::NO_SERVICE,
+      blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE, false);
   content::MediaResponseCallback callback;
   access_handler_->HandleRequest(web_contents(), request, std::move(callback),
                                  nullptr /* extension */);
@@ -210,8 +214,8 @@ TEST_F(DesktopCaptureAccessHandlerTest, ChangeSourceMultipleRequests) {
   for (size_t i = 0; i < kTestFlagCount; ++i) {
     content::MediaStreamRequest request(
         0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_DEVICE_UPDATE,
-        std::string(), std::string(), blink::MEDIA_NO_SERVICE,
-        blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, false);
+        std::string(), std::string(), blink::mojom::MediaStreamType::NO_SERVICE,
+        blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE, false);
     content::MediaResponseCallback callback = base::BindOnce(
         [](base::RunLoop* wait_loop,
            blink::mojom::MediaStreamRequestResult* request_result,
@@ -232,7 +236,8 @@ TEST_F(DesktopCaptureAccessHandlerTest, ChangeSourceMultipleRequests) {
   EXPECT_TRUE(test_flags[0].picker_deleted);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(1u, devices.size());
-  EXPECT_EQ(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, devices[0].type);
+  EXPECT_EQ(blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+            devices[0].type);
 
   blink::MediaStreamDevice first_device = devices[0];
   EXPECT_TRUE(test_flags[1].picker_created);
@@ -241,7 +246,8 @@ TEST_F(DesktopCaptureAccessHandlerTest, ChangeSourceMultipleRequests) {
   EXPECT_TRUE(test_flags[1].picker_deleted);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(1u, devices.size());
-  EXPECT_EQ(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, devices[0].type);
+  EXPECT_EQ(blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+            devices[0].type);
   EXPECT_FALSE(devices[0].IsSameDevice(first_device));
 
   access_handler_.reset();

@@ -130,7 +130,7 @@ class OffscreenTab : protected content::WebContentsDelegate,
       content::MediaResponseCallback callback) final;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  blink::MediaStreamType type) final;
+                                  blink::mojom::MediaStreamType type) final;
 
   // content::WebContentsObserver overrides
   void DidShowFullscreenWidget() final;

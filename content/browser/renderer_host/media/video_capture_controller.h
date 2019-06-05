@@ -43,7 +43,7 @@ class CONTENT_EXPORT VideoCaptureController
  public:
   VideoCaptureController(
       const std::string& device_id,
-      blink::MediaStreamType stream_type,
+      blink::mojom::MediaStreamType stream_type,
       const media::VideoCaptureParams& params,
       std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher,
       base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
@@ -147,7 +147,7 @@ class CONTENT_EXPORT VideoCaptureController
                                       base::OnceClosure done_cb);
   int serial_id() const { return serial_id_; }
   const std::string& device_id() const { return device_id_; }
-  blink::MediaStreamType stream_type() const { return stream_type_; }
+  blink::mojom::MediaStreamType stream_type() const { return stream_type_; }
   const media::VideoCaptureParams& parameters() const { return parameters_; }
 
  private:
@@ -244,7 +244,7 @@ class CONTENT_EXPORT VideoCaptureController
 
   const int serial_id_;
   const std::string device_id_;
-  const blink::MediaStreamType stream_type_;
+  const blink::mojom::MediaStreamType stream_type_;
   const media::VideoCaptureParams parameters_;
   std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher_;
   base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;

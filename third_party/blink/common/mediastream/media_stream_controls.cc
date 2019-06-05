@@ -8,7 +8,7 @@ namespace blink {
 
 TrackControls::TrackControls() {}
 
-TrackControls::TrackControls(bool request, MediaStreamType type)
+TrackControls::TrackControls(bool request, mojom::MediaStreamType type)
     : requested(request), stream_type(type) {}
 
 TrackControls::TrackControls(const TrackControls& other) = default;
@@ -19,9 +19,11 @@ StreamControls::StreamControls() {}
 
 StreamControls::StreamControls(bool request_audio, bool request_video)
     : audio(request_audio,
-            request_audio ? MEDIA_DEVICE_AUDIO_CAPTURE : MEDIA_NO_SERVICE),
+            request_audio ? mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE
+                          : mojom::MediaStreamType::NO_SERVICE),
       video(request_video,
-            request_video ? MEDIA_DEVICE_VIDEO_CAPTURE : MEDIA_NO_SERVICE) {}
+            request_video ? mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE
+                          : mojom::MediaStreamType::NO_SERVICE) {}
 
 StreamControls::~StreamControls() {}
 

@@ -35,8 +35,9 @@ class MockCDQualityAudioSource : public blink::MediaStreamAudioSource {
         media::AudioParameters::kAudioCDSampleRate,
         media::AudioParameters::kAudioCDSampleRate / 100));
     SetDevice(blink::MediaStreamDevice(
-        blink::MEDIA_DEVICE_AUDIO_CAPTURE, "mock_audio_device_id",
-        "Mock audio device", media::AudioParameters::kAudioCDSampleRate,
+        blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+        "mock_audio_device_id", "Mock audio device",
+        media::AudioParameters::kAudioCDSampleRate,
         media::CHANNEL_LAYOUT_STEREO,
         media::AudioParameters::kAudioCDSampleRate / 100));
   }

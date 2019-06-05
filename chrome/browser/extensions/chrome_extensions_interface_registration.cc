@@ -92,9 +92,9 @@ void TranslateVideoDeviceId(
          const std::string& source_id,
          base::OnceCallback<void(const base::Optional<std::string>&)>
              callback) {
-        content::GetMediaDeviceIDForHMAC(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
-                                         salt, std::move(origin), source_id,
-                                         std::move(callback));
+        content::GetMediaDeviceIDForHMAC(
+            blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, salt,
+            std::move(origin), source_id, std::move(callback));
       },
       salt, std::move(origin), source_id, std::move(callback));
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},

@@ -39,7 +39,8 @@ ScreenCaptureInfoBarDelegateAndroid::ScreenCaptureInfoBarDelegateAndroid(
     : web_contents_(web_contents),
       request_(request),
       callback_(std::move(callback)) {
-  DCHECK_EQ(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, request.video_type);
+  DCHECK_EQ(blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+            request.video_type);
 }
 
 ScreenCaptureInfoBarDelegateAndroid::~ScreenCaptureInfoBarDelegateAndroid() {
@@ -95,9 +96,9 @@ void ScreenCaptureInfoBarDelegateAndroid::RunCallback(
   if (result == blink::mojom::MediaStreamRequestResult::OK) {
     content::DesktopMediaID screen_id = content::DesktopMediaID(
         content::DesktopMediaID::TYPE_SCREEN, webrtc::kFullDesktopScreenId);
-    devices.push_back(
-        blink::MediaStreamDevice(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                 screen_id.ToString(), "Screen"));
+    devices.push_back(blink::MediaStreamDevice(
+        blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+        screen_id.ToString(), "Screen"));
 
     ui = MediaCaptureDevicesDispatcher::GetInstance()
              ->GetMediaStreamCaptureIndicator()

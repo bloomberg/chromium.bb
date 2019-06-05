@@ -789,9 +789,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
 
   // Simulate that a video stream is now being captured.
   blink::MediaStreamDevices video_devices(1);
-  video_devices[0] =
-      blink::MediaStreamDevice(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
-                               "fake_media_device", "fake_media_device");
+  video_devices[0] = blink::MediaStreamDevice(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, "fake_media_device",
+      "fake_media_device");
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   dispatcher->SetTestVideoCaptureDevices(video_devices);

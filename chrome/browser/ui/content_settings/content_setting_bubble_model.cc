@@ -1205,13 +1205,13 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
 }
 
 void ContentSettingMediaStreamBubbleModel::UpdateDefaultDeviceForType(
-    blink::MediaStreamType type,
+    blink::mojom::MediaStreamType type,
     const std::string& device) {
   PrefService* prefs = GetProfile()->GetPrefs();
-  if (type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
+  if (type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
     prefs->SetString(prefs::kDefaultAudioCaptureDevice, device);
   } else {
-    DCHECK_EQ(blink::MEDIA_DEVICE_VIDEO_CAPTURE, type);
+    DCHECK_EQ(blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, type);
     prefs->SetString(prefs::kDefaultVideoCaptureDevice, device);
   }
 }
@@ -1250,7 +1250,8 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
       mic_menu.default_device = GetMediaDeviceById(preferred_mic, microphones);
       mic_menu.selected_device = mic_menu.default_device;
     }
-    add_media_menu(blink::MEDIA_DEVICE_AUDIO_CAPTURE, mic_menu);
+    add_media_menu(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                   mic_menu);
   }
 
   if (CameraAccessed()) {
@@ -1275,7 +1276,8 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
           GetMediaDeviceById(preferred_camera, cameras);
       camera_menu.selected_device = camera_menu.default_device;
     }
-    add_media_menu(blink::MEDIA_DEVICE_VIDEO_CAPTURE, camera_menu);
+    add_media_menu(blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
+                   camera_menu);
   }
 }
 
@@ -1294,15 +1296,15 @@ void ContentSettingMediaStreamBubbleModel::SetCustomLink() {
 }
 
 void ContentSettingMediaStreamBubbleModel::OnMediaMenuClicked(
-    blink::MediaStreamType type,
+    blink::mojom::MediaStreamType type,
     const std::string& selected_device_id) {
-  DCHECK(type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == blink::MEDIA_DEVICE_VIDEO_CAPTURE);
+  DCHECK(type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE ||
+         type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE);
   DCHECK_EQ(1U, bubble_content().media_menus.count(type));
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   const blink::MediaStreamDevices& devices =
-      (type == blink::MEDIA_DEVICE_AUDIO_CAPTURE)
+      (type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE)
           ? dispatcher->GetAudioCaptureDevices()
           : dispatcher->GetVideoCaptureDevices();
   set_selected_device(GetMediaDeviceById(selected_device_id, devices));

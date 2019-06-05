@@ -224,12 +224,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // or MEDIA_DEVICE_VIDEO_CAPTURE.
   virtual bool CheckMediaAccessPermission(RenderFrameHost* render_frame_host,
                                           const url::Origin& security_origin,
-                                          blink::MediaStreamType type);
+                                          blink::mojom::MediaStreamType type);
 
   // Returns the ID of the default device for the given media device |type|.
   // If the returned value is an empty string, it means that there is no
   // default device for the given |type|.
-  virtual std::string GetDefaultMediaDeviceID(blink::MediaStreamType type);
+  virtual std::string GetDefaultMediaDeviceID(
+      blink::mojom::MediaStreamType type);
 
   // Get the accessibility mode for the WebContents that owns this frame.
   virtual ui::AXMode GetAccessibilityMode();

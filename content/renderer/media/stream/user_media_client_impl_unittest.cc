@@ -377,7 +377,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
         bool EnsureSourceIsStarted() override { return false; }
       };
       source = std::make_unique<FailedAtLifeAudioSource>();
-    } else if (IsDesktopCaptureMediaType(device.type)) {
+    } else if (blink::IsDesktopCaptureMediaType(device.type)) {
       local_audio_source_ = new MockLocalMediaStreamAudioSource();
       source = base::WrapUnique(local_audio_source_);
     } else {
@@ -1408,8 +1408,8 @@ TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSource) {
   MockMediaStreamVideoCapturerSource* video_source =
       user_media_processor_->last_created_video_source();
   blink::MediaStreamDevice fake_video_device(
-      blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, kFakeVideoInputDeviceId1,
-      "Fake Video Device");
+      blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+      kFakeVideoInputDeviceId1, "Fake Video Device");
   EXPECT_CALL(*video_source, ChangeSourceImpl(_));
   user_media_processor_->OnDeviceChanged(video_source->device(),
                                          fake_video_device);
@@ -1419,8 +1419,8 @@ TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSource) {
       user_media_processor_->last_created_local_audio_source();
   EXPECT_NE(audio_source, nullptr);
   blink::MediaStreamDevice fake_audio_device(
-      blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, kFakeVideoInputDeviceId1,
-      "Fake Audio Device");
+      blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE,
+      kFakeVideoInputDeviceId1, "Fake Audio Device");
   EXPECT_CALL(*audio_source, EnsureSourceIsStopped()).Times(2);
   user_media_processor_->OnDeviceChanged(audio_source->device(),
                                          fake_audio_device);
@@ -1451,7 +1451,8 @@ TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSourceWithoutAudio) {
       user_media_processor_->last_created_local_audio_source();
   EXPECT_NE(audio_source, nullptr);
   EXPECT_CALL(*audio_source, EnsureSourceIsStopped()).Times(1);
-  blink::MediaStreamDevice fake_audio_device(blink::MEDIA_NO_SERVICE, "", "");
+  blink::MediaStreamDevice fake_audio_device(
+      blink::mojom::MediaStreamType::NO_SERVICE, "", "");
   user_media_processor_->OnDeviceChanged(audio_source->device(),
                                          fake_audio_device);
   base::RunLoop().RunUntilIdle();

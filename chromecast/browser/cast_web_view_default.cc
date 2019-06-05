@@ -182,7 +182,7 @@ void CastWebViewDefault::ActivateContents(content::WebContents* contents) {
 bool CastWebViewDefault::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   if (!chromecast::IsFeatureEnabled(kAllowUserMediaAccess) &&
       !allow_media_access_) {
     LOG(WARNING) << __func__ << ": media access is disabled.";
@@ -241,7 +241,8 @@ void CastWebViewDefault::RequestMediaAccessPermission(
            << " video_devices=" << video_devices.size();
 
   blink::MediaStreamDevices devices;
-  if (request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
+  if (request.audio_type ==
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
     const blink::MediaStreamDevice* device = GetRequestedDeviceOrDefault(
         audio_devices, request.requested_audio_device_id);
     if (device) {
@@ -251,7 +252,8 @@ void CastWebViewDefault::RequestMediaAccessPermission(
     }
   }
 
-  if (request.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE) {
+  if (request.video_type ==
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
     const blink::MediaStreamDevice* device = GetRequestedDeviceOrDefault(
         video_devices, request.requested_video_device_id);
     if (device) {

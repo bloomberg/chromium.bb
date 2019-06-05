@@ -1432,17 +1432,21 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
 
   // Mic should always be blocked.
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetMainFrame(), url1, blink::MEDIA_DEVICE_AUDIO_CAPTURE));
+      web_contents->GetMainFrame(), url1,
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
 
   // Camera should be allowed if allowed by the whitelist, otherwise blocked.
   EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetMainFrame(), url1, blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+      web_contents->GetMainFrame(), url1,
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetMainFrame(), url2, blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+      web_contents->GetMainFrame(), url2,
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetMainFrame(), url3, blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+      web_contents->GetMainFrame(), url3,
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   // Camera should be blocked in the login screen, even if it's allowed via
   // content setting.
@@ -1454,7 +1458,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
                                       std::string(), CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetMainFrame(), url3, blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+      web_contents->GetMainFrame(), url3,
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 
 class SAMLPasswordAttributesTest : public SAMLPolicyTest,

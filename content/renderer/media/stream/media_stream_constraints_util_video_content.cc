@@ -291,7 +291,7 @@ int ClampToValidScreenCastDimension(int value) {
 VideoCaptureSettings SelectResultFromCandidates(
     const VideoContentCaptureCandidates& candidates,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
-    blink::MediaStreamType stream_type,
+    blink::mojom::MediaStreamType stream_type,
     int screen_width,
     int screen_height) {
   std::string device_id = SelectDeviceIDFromCandidates(
@@ -331,7 +331,7 @@ VideoCaptureSettings SelectResultFromCandidates(
 
   // This default comes from the old algorithm.
   media::ResolutionChangePolicy default_resolution_policy =
-      stream_type == blink::MEDIA_GUM_TAB_VIDEO_CAPTURE
+      stream_type == blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE
           ? media::ResolutionChangePolicy::FIXED_RESOLUTION
           : media::ResolutionChangePolicy::ANY_WITHIN_LIMIT;
 
@@ -383,7 +383,7 @@ VideoCaptureSettings UnsatisfiedConstraintsResult(
 
 VideoCaptureSettings SelectSettingsVideoContentCapture(
     const blink::WebMediaConstraints& constraints,
-    blink::MediaStreamType stream_type,
+    blink::mojom::MediaStreamType stream_type,
     int screen_width,
     int screen_height) {
   VideoContentCaptureCandidates candidates;

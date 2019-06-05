@@ -63,8 +63,8 @@ void CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(
 class MediaStreamConstraintsUtilVideoContentTest : public testing::Test {
  protected:
   blink::VideoCaptureSettings SelectSettings(
-      blink::MediaStreamType stream_type =
-          blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
+      blink::mojom::MediaStreamType stream_type =
+          blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
     blink::WebMediaConstraints constraints =
         constraint_factory_.CreateWebMediaConstraints();
     return SelectSettingsVideoContentCapture(constraints, stream_type,
@@ -2133,7 +2133,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   }
   {
     constraint_factory_.Reset();
-    auto result = SelectSettings(blink::MEDIA_GUM_TAB_VIDEO_CAPTURE);
+    auto result =
+        SelectSettings(blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE);
     EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
     EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
     // Default policy for tab capture is fixed resolution.

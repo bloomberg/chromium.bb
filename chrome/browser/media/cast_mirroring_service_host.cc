@@ -45,7 +45,7 @@ namespace mirroring {
 namespace {
 
 void CreateVideoCaptureHostOnIO(const std::string& device_id,
-                                blink::MediaStreamType type,
+                                blink::mojom::MediaStreamType type,
                                 media::mojom::VideoCaptureHostRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner =
@@ -62,20 +62,20 @@ void CreateVideoCaptureHostOnIO(const std::string& device_id,
       std::move(request));
 }
 
-blink::MediaStreamType ConvertVideoStreamType(
+blink::mojom::MediaStreamType ConvertVideoStreamType(
     content::DesktopMediaID::Type type) {
   switch (type) {
     case content::DesktopMediaID::TYPE_NONE:
-      return blink::MediaStreamType::MEDIA_NO_SERVICE;
+      return blink::mojom::MediaStreamType::NO_SERVICE;
     case content::DesktopMediaID::TYPE_WEB_CONTENTS:
-      return blink::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE;
+      return blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE;
     case content::DesktopMediaID::TYPE_SCREEN:
     case content::DesktopMediaID::TYPE_WINDOW:
-      return blink::MediaStreamType::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
+      return blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE;
   }
 
   // To suppress compiler warning on Windows.
-  return blink::MediaStreamType::MEDIA_NO_SERVICE;
+  return blink::mojom::MediaStreamType::NO_SERVICE;
 }
 
 // Get the content::WebContents associated with the given |id|.

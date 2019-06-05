@@ -62,11 +62,11 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                         int32_t session_id) override;
   void OpenDevice(int32_t request_id,
                   const std::string& device_id,
-                  blink::MediaStreamType type,
+                  blink::mojom::MediaStreamType type,
                   OpenDeviceCallback callback) override;
   void CloseDevice(const std::string& label) override;
   void SetCapturingLinkSecured(int32_t session_id,
-                               blink::MediaStreamType type,
+                               blink::mojom::MediaStreamType type,
                                bool is_secure) override;
   void OnStreamStarted(const std::string& label) override;
 
@@ -77,7 +77,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                         MediaDeviceSaltAndOrigin salt_and_origin);
   void DoOpenDevice(int32_t request_id,
                     const std::string& device_id,
-                    blink::MediaStreamType type,
+                    blink::mojom::MediaStreamType type,
                     OpenDeviceCallback callback,
                     MediaDeviceSaltAndOrigin salt_and_origin);
 

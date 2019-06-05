@@ -1429,26 +1429,32 @@ AudioCaptureSettings SelectSettingsAudioCapture(
     blink::MediaStreamAudioSource* source,
     const blink::WebMediaConstraints& constraints) {
   DCHECK(source);
-  if (source->device().type != blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
-      source->device().type != blink::MEDIA_GUM_TAB_AUDIO_CAPTURE &&
-      source->device().type != blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE) {
+  if (source->device().type !=
+          blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE &&
+      source->device().type !=
+          blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE &&
+      source->device().type !=
+          blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE) {
     return AudioCaptureSettings();
   }
 
   std::string media_stream_source = GetMediaStreamSource(constraints);
-  if (source->device().type == blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
+  if (source->device().type ==
+          blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE &&
       !media_stream_source.empty()) {
     return AudioCaptureSettings(
         constraints.Basic().media_stream_source.GetName());
   }
 
-  if (source->device().type == blink::MEDIA_GUM_TAB_AUDIO_CAPTURE &&
+  if (source->device().type ==
+          blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE &&
       !media_stream_source.empty() &&
       media_stream_source != blink::kMediaStreamSourceTab) {
     return AudioCaptureSettings(
         constraints.Basic().media_stream_source.GetName());
   }
-  if (source->device().type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
+  if (source->device().type ==
+          blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE &&
       !media_stream_source.empty() &&
       media_stream_source != blink::kMediaStreamSourceSystem &&
       media_stream_source != blink::kMediaStreamSourceDesktop) {

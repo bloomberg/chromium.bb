@@ -99,7 +99,7 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
   // MediaCaptureDevicesDispatcher::Observer implementation.
   void OnRequestUpdate(int target_render_process_id,
                        int target_render_frame_id,
-                       blink::MediaStreamType stream_type,
+                       blink::mojom::MediaStreamType stream_type,
                        const content::MediaRequestState state) override;
 
   // Send a StatusChanged event containing the current state of |request|.

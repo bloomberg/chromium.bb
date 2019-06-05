@@ -22,16 +22,16 @@ TabCaptureAccessHandler::~TabCaptureAccessHandler() {
 
 bool TabCaptureAccessHandler::SupportsStreamType(
     content::WebContents* web_contents,
-    const blink::MediaStreamType type,
+    const blink::mojom::MediaStreamType type,
     const extensions::Extension* extension) {
-  return type == blink::MEDIA_GUM_TAB_VIDEO_CAPTURE ||
-         type == blink::MEDIA_GUM_TAB_AUDIO_CAPTURE;
+  return type == blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE ||
+         type == blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE;
 }
 
 bool TabCaptureAccessHandler::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type,
+    blink::mojom::MediaStreamType type,
     const extensions::Extension* extension) {
   return false;
 }
@@ -62,16 +62,20 @@ void TabCaptureAccessHandler::HandleRequest(
   const bool tab_capture_allowed = tab_capture_registry->VerifyRequest(
       request.render_process_id, request.render_frame_id, extension_id);
 
-  if (request.audio_type == blink::MEDIA_GUM_TAB_AUDIO_CAPTURE &&
+  if (request.audio_type ==
+          blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE &&
       tab_capture_allowed) {
     devices.push_back(blink::MediaStreamDevice(
-        blink::MEDIA_GUM_TAB_AUDIO_CAPTURE, std::string(), std::string()));
+        blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE, std::string(),
+        std::string()));
   }
 
-  if (request.video_type == blink::MEDIA_GUM_TAB_VIDEO_CAPTURE &&
+  if (request.video_type ==
+          blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE &&
       tab_capture_allowed) {
     devices.push_back(blink::MediaStreamDevice(
-        blink::MEDIA_GUM_TAB_VIDEO_CAPTURE, std::string(), std::string()));
+        blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE, std::string(),
+        std::string()));
   }
 
   if (!devices.empty()) {

@@ -257,7 +257,8 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
             weak_ptr_factory_.GetWeakPtr(), std::move(client), audio_params,
             shared_memory_count, capture_id.disable_local_echo));
 
-    if (device->type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)
+    if (device->type ==
+        blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE)
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     return;
   } else {
@@ -268,7 +269,8 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
 
     // Only count for captures from desktop media picker dialog and system loop
     // back audio.
-    if (device->type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
+    if (device->type ==
+            blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE &&
         (media::AudioDeviceDescription::IsLoopbackDevice(device->id))) {
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     }

@@ -55,7 +55,7 @@ class FakeDeviceLauncher final : public content::VideoCaptureDeviceLauncher {
 
   // content::VideoCaptureDeviceLauncher implementation.
   void LaunchDeviceAsync(const std::string& device_id,
-                         blink::MediaStreamType stream_type,
+                         blink::mojom::MediaStreamType stream_type,
                          const VideoCaptureParams& params,
                          base::WeakPtr<VideoFrameReceiver> receiver,
                          base::OnceClosure connection_lost_cb,
@@ -168,7 +168,7 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
  public:
   SingleClientVideoCaptureHostTest() : weak_factory_(this) {
     auto host_impl = std::make_unique<SingleClientVideoCaptureHost>(
-        std::string(), blink::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE,
+        std::string(), blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE,
         base::BindRepeating(
             &SingleClientVideoCaptureHostTest::CreateDeviceLauncher,
             base::Unretained(this)));

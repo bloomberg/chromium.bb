@@ -31,8 +31,8 @@ struct CONTENT_EXPORT MediaStreamRequest {
                      blink::MediaStreamRequestType request_type,
                      const std::string& requested_audio_device_id,
                      const std::string& requested_video_device_id,
-                     blink::MediaStreamType audio_type,
-                     blink::MediaStreamType video_type,
+                     blink::mojom::MediaStreamType audio_type,
+                     blink::mojom::MediaStreamType video_type,
                      bool disable_local_echo);
 
   MediaStreamRequest(const MediaStreamRequest& other);
@@ -70,10 +70,10 @@ struct CONTENT_EXPORT MediaStreamRequest {
   std::string requested_video_device_id;
 
   // Flag to indicate if the request contains audio.
-  blink::MediaStreamType audio_type;
+  blink::mojom::MediaStreamType audio_type;
 
   // Flag to indicate if the request contains video.
-  blink::MediaStreamType video_type;
+  blink::mojom::MediaStreamType video_type;
 
   // Flag for desktop or tab share to indicate whether to prevent the captured
   // audio being played out locally.

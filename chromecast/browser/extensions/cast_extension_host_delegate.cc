@@ -52,7 +52,7 @@ void CastExtensionHostDelegate::ProcessMediaAccessRequest(
 bool CastExtensionHostDelegate::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type,
+    blink::mojom::MediaStreamType type,
     const Extension* extension) {
   return media_capture_util::CheckMediaAccessPermission(type, extension);
 }

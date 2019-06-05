@@ -16,7 +16,6 @@ traits_headers = [
 
 type_mappings = [
   "blink.mojom.MediaStreamDevice=blink::MediaStreamDevice",
-  "blink.mojom.MediaStreamType=blink::MediaStreamType",
   "blink.mojom.StreamControls=blink::StreamControls",
   "blink.mojom.TrackControls=blink::TrackControls",
 ]

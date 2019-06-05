@@ -57,7 +57,7 @@ MediaStreamDeviceObserver::GetNonScreenCaptureDevices() {
   blink::MediaStreamDevices video_devices;
   for (const auto& stream_it : label_stream_map_) {
     for (const auto& video_device : stream_it.second.video_devices) {
-      if (!IsScreenCaptureMediaType(video_device.type))
+      if (!blink::IsScreenCaptureMediaType(video_device.type))
         video_devices.push_back(video_device);
     }
   }
@@ -87,7 +87,7 @@ void MediaStreamDeviceObserver::OnDeviceStopped(
     return;
   }
   Stream* stream = &it->second;
-  if (IsAudioInputMediaType(device.type))
+  if (blink::IsAudioInputMediaType(device.type))
     RemoveStreamDeviceFromArray(device, &stream->audio_devices);
   else
     RemoveStreamDeviceFromArray(device, &stream->video_devices);
@@ -129,11 +129,11 @@ void MediaStreamDeviceObserver::OnDeviceChanged(
 
   // Update device list only for device changing. Removing device will be
   // handled in its own callback.
-  if (old_device.type != blink::MEDIA_NO_SERVICE &&
-      new_device.type != blink::MEDIA_NO_SERVICE) {
+  if (old_device.type != blink::mojom::MediaStreamType::NO_SERVICE &&
+      new_device.type != blink::mojom::MediaStreamType::NO_SERVICE) {
     if (RemoveStreamDeviceFromArray(old_device, &stream->audio_devices) ||
         RemoveStreamDeviceFromArray(old_device, &stream->video_devices)) {
-      if (IsAudioInputMediaType(new_device.type))
+      if (blink::IsAudioInputMediaType(new_device.type))
         stream->audio_devices.push_back(new_device);
       else
         stream->video_devices.push_back(new_device);
@@ -167,9 +167,9 @@ void MediaStreamDeviceObserver::AddStream(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   Stream stream;
-  if (IsAudioInputMediaType(device.type))
+  if (blink::IsAudioInputMediaType(device.type))
     stream.audio_devices.push_back(device);
-  else if (IsVideoInputMediaType(device.type))
+  else if (blink::IsVideoInputMediaType(device.type))
     stream.video_devices.push_back(device);
   else
     NOTREACHED();

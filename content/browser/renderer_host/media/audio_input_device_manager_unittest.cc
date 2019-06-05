@@ -39,9 +39,9 @@ class MockAudioInputDeviceManagerListener
   MockAudioInputDeviceManagerListener() {}
   ~MockAudioInputDeviceManagerListener() override {}
 
-  MOCK_METHOD2(Opened, void(blink::MediaStreamType, const int));
-  MOCK_METHOD2(Closed, void(blink::MediaStreamType, const int));
-  MOCK_METHOD2(Aborted, void(blink::MediaStreamType, int));
+  MOCK_METHOD2(Opened, void(blink::mojom::MediaStreamType, const int));
+  MOCK_METHOD2(Closed, void(blink::mojom::MediaStreamType, const int));
+  MOCK_METHOD2(Aborted, void(blink::mojom::MediaStreamType, int));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioInputDeviceManagerListener);
@@ -73,10 +73,10 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     // Use fake devices.
-    devices_.emplace_back(blink::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_device_1",
-                          "Fake Device 1");
-    devices_.emplace_back(blink::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_device_2",
-                          "Fake Device 2");
+    devices_.emplace_back(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                          "fake_device_1", "Fake Device 1");
+    devices_.emplace_back(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                          "fake_device_2", "Fake Device 2");
   }
 
   void SetUp() override {
@@ -131,15 +131,17 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenAndCloseDevice) {
     int session_id = manager_->Open(*iter);
 
     // Expected mock call with expected return value.
-    EXPECT_CALL(*audio_input_listener_,
-                Opened(blink::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
+    EXPECT_CALL(
+        *audio_input_listener_,
+        Opened(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, session_id))
         .Times(1);
     // Waits for the callback.
     WaitForOpenCompletion();
 
     manager_->Close(session_id);
-    EXPECT_CALL(*audio_input_listener_,
-                Closed(blink::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
+    EXPECT_CALL(
+        *audio_input_listener_,
+        Closed(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, session_id))
         .Times(1);
 
     // Waits for the callback.
@@ -164,7 +166,8 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenMultipleDevices) {
 
     // Expected mock call with expected returned value.
     EXPECT_CALL(*audio_input_listener_,
-                Opened(blink::MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
+                Opened(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                       session_id[index]))
         .Times(1);
 
     // Waits for the callback.
@@ -182,7 +185,8 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenMultipleDevices) {
     // Closes the devices.
     manager_->Close(session_id[i]);
     EXPECT_CALL(*audio_input_listener_,
-                Closed(blink::MEDIA_DEVICE_AUDIO_CAPTURE, session_id[i]))
+                Closed(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                       session_id[i]))
         .Times(1);
 
     // Waits for the callback.
@@ -194,14 +198,16 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenMultipleDevices) {
 TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenNotExistingDevice) {
   InSequence s;
 
-  blink::MediaStreamType stream_type = blink::MEDIA_DEVICE_AUDIO_CAPTURE;
+  blink::mojom::MediaStreamType stream_type =
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE;
   std::string device_name("device_doesnt_exist");
   std::string device_id("id_doesnt_exist");
   blink::MediaStreamDevice dummy_device(stream_type, device_id, device_name);
 
   int session_id = manager_->Open(dummy_device);
-  EXPECT_CALL(*audio_input_listener_,
-              Opened(blink::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
+  EXPECT_CALL(
+      *audio_input_listener_,
+      Opened(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
 
   // Waits for the callback.
@@ -221,10 +227,12 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenDeviceTwice) {
   // Expected mock calls with expected returned values.
   EXPECT_NE(first_session_id, second_session_id);
   EXPECT_CALL(*audio_input_listener_,
-              Opened(blink::MEDIA_DEVICE_AUDIO_CAPTURE, first_session_id))
+              Opened(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                     first_session_id))
       .Times(1);
   EXPECT_CALL(*audio_input_listener_,
-              Opened(blink::MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
+              Opened(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                     second_session_id))
       .Times(1);
   // Waits for the callback.
   WaitForOpenCompletion();
@@ -232,10 +240,12 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenDeviceTwice) {
   manager_->Close(first_session_id);
   manager_->Close(second_session_id);
   EXPECT_CALL(*audio_input_listener_,
-              Closed(blink::MEDIA_DEVICE_AUDIO_CAPTURE, first_session_id))
+              Closed(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                     first_session_id))
       .Times(1);
   EXPECT_CALL(*audio_input_listener_,
-              Closed(blink::MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
+              Closed(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                     second_session_id))
       .Times(1);
   // Waits for the callback.
   base::RunLoop().RunUntilIdle();
@@ -258,7 +268,8 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessAndCloseSession) {
     // stopped the device before calling close.
     session_id[index] = manager_->Open(*iter);
     EXPECT_CALL(*audio_input_listener_,
-                Opened(blink::MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
+                Opened(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                       session_id[index]))
         .Times(1);
     WaitForOpenCompletion();
 
@@ -268,7 +279,8 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessAndCloseSession) {
     EXPECT_EQ(iter->id, device->id);
     manager_->Close(session_id[index]);
     EXPECT_CALL(*audio_input_listener_,
-                Closed(blink::MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
+                Closed(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                       session_id[index]))
         .Times(1);
     base::RunLoop().RunUntilIdle();
   }
@@ -281,8 +293,9 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessInvalidSession) {
   // Opens the first device.
   blink::MediaStreamDevices::const_iterator iter = devices_.begin();
   int session_id = manager_->Open(*iter);
-  EXPECT_CALL(*audio_input_listener_,
-              Opened(blink::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
+  EXPECT_CALL(
+      *audio_input_listener_,
+      Opened(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
   WaitForOpenCompletion();
 
@@ -294,8 +307,9 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessInvalidSession) {
   DCHECK(!device);
 
   manager_->Close(session_id);
-  EXPECT_CALL(*audio_input_listener_,
-              Closed(blink::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
+  EXPECT_CALL(
+      *audio_input_listener_,
+      Closed(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
   base::RunLoop().RunUntilIdle();
 }
@@ -312,12 +326,13 @@ class AudioInputDeviceManagerNoDevicesTest
         std::make_unique<media::AudioThreadImpl>());
 
     // Devices to request from AudioInputDeviceManager.
-    devices_.emplace_back(blink::MEDIA_GUM_TAB_AUDIO_CAPTURE, "tab_capture",
-                          "Tab capture");
-    devices_.emplace_back(blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
-                          "desktop_capture", "Desktop capture");
-    devices_.emplace_back(blink::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_device",
-                          "Fake Device");
+    devices_.emplace_back(blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE,
+                          "tab_capture", "Tab capture");
+    devices_.emplace_back(
+        blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE,
+        "desktop_capture", "Desktop capture");
+    devices_.emplace_back(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                          "fake_device", "Fake Device");
   }
 
  private:

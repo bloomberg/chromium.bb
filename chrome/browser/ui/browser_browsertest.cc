@@ -2531,23 +2531,23 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DefaultMediaDevices) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  auto GetDeviceID = [web_contents](blink::MediaStreamType type) {
+  auto GetDeviceID = [web_contents](blink::mojom::MediaStreamType type) {
     return web_contents->GetDelegate()->GetDefaultMediaDeviceID(web_contents,
                                                                 type);
   };
   EXPECT_EQ(kDefaultAudioCapture1,
-            GetDeviceID(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
+            GetDeviceID(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
   EXPECT_EQ(kDefaultVideoCapture1,
-            GetDeviceID(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+            GetDeviceID(blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   const std::string kDefaultAudioCapture2 = "test_default_audio_capture_2";
   const std::string kDefaultVideoCapture2 = "test_default_video_capture_2";
   SetString(prefs::kDefaultAudioCaptureDevice, kDefaultAudioCapture2);
   SetString(prefs::kDefaultVideoCaptureDevice, kDefaultVideoCapture2);
   EXPECT_EQ(kDefaultAudioCapture2,
-            GetDeviceID(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
+            GetDeviceID(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
   EXPECT_EQ(kDefaultVideoCapture2,
-            GetDeviceID(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+            GetDeviceID(blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 
 namespace {

@@ -94,13 +94,13 @@ class MediaStreamConstraintsUtilAudioTestBase {
   virtual std::string GetMediaStreamSource() { return std::string(); }
   bool IsDeviceCapture() { return GetMediaStreamSource().empty(); }
 
-  blink::MediaStreamType GetMediaStreamType() {
+  blink::mojom::MediaStreamType GetMediaStreamType() {
     std::string media_source = GetMediaStreamSource();
     if (media_source.empty())
-      return blink::MEDIA_DEVICE_AUDIO_CAPTURE;
+      return blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE;
     else if (media_source == blink::kMediaStreamSourceTab)
-      return blink::MEDIA_GUM_TAB_AUDIO_CAPTURE;
-    return blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
+      return blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE;
+    return blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE;
   }
 
   std::unique_ptr<ProcessedLocalAudioSource> GetProcessedLocalAudioSource(

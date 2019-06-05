@@ -89,7 +89,7 @@ InProcessVideoCaptureDeviceLauncher::~InProcessVideoCaptureDeviceLauncher() {
 
 void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
     const std::string& device_id,
-    blink::MediaStreamType stream_type,
+    blink::mojom::MediaStreamType stream_type,
     const media::VideoCaptureParams& params,
     base::WeakPtr<media::VideoFrameReceiver> receiver_on_io_thread,
     base::OnceClosure /* connection_lost_cb */,
@@ -121,7 +121,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
                      base::Unretained(this), callbacks, std::move(done_cb)));
 
   switch (stream_type) {
-    case blink::MEDIA_DEVICE_VIDEO_CAPTURE: {
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE: {
       if (!video_capture_system_) {
         // Clients who create an instance of |this| without providing a
         // VideoCaptureSystem instance are expected to know that
@@ -142,7 +142,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 
 #if defined(ENABLE_SCREEN_CAPTURE)
 #if !defined(OS_ANDROID)
-    case blink::MEDIA_GUM_TAB_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
       start_capture_closure = base::BindOnce(
           &InProcessVideoCaptureDeviceLauncher::DoStartTabCaptureOnDeviceThread,
           base::Unretained(this), device_id, params, std::move(receiver),
@@ -150,9 +150,9 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
       break;
 #endif  // !defined(OS_ANDROID)
 
-    case blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
       FALLTHROUGH;
-    case blink::MEDIA_DISPLAY_VIDEO_CAPTURE: {
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE: {
       const DesktopMediaID desktop_id = DesktopMediaID::Parse(device_id);
       if (desktop_id.is_null()) {
         DLOG(ERROR) << "Desktop media ID is null";

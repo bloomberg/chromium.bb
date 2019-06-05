@@ -45,7 +45,7 @@ class CONTENT_EXPORT VideoCaptureDeviceLauncher {
   // during the asynchronous processing stays alive.
   virtual void LaunchDeviceAsync(
       const std::string& device_id,
-      blink::MediaStreamType stream_type,
+      blink::mojom::MediaStreamType stream_type,
       const media::VideoCaptureParams& params,
       base::WeakPtr<media::VideoFrameReceiver> receiver,
       base::OnceClosure connection_lost_cb,

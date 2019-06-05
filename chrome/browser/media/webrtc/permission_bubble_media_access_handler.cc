@@ -78,30 +78,30 @@ PermissionBubbleMediaAccessHandler::~PermissionBubbleMediaAccessHandler() {}
 
 bool PermissionBubbleMediaAccessHandler::SupportsStreamType(
     content::WebContents* web_contents,
-    const blink::MediaStreamType type,
+    const blink::mojom::MediaStreamType type,
     const extensions::Extension* extension) {
 #if defined(OS_ANDROID)
-  return type == blink::MEDIA_DEVICE_VIDEO_CAPTURE ||
-         type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
-         type == blink::MEDIA_DISPLAY_VIDEO_CAPTURE;
+  return type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE ||
+         type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE ||
+         type == blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
+         type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE;
 #else
-  return type == blink::MEDIA_DEVICE_VIDEO_CAPTURE ||
-         type == blink::MEDIA_DEVICE_AUDIO_CAPTURE;
+  return type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE ||
+         type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE;
 #endif
 }
 
 bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type,
+    blink::mojom::MediaStreamType type,
     const extensions::Extension* extension) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ContentSettingsType content_settings_type =
-      type == blink::MEDIA_DEVICE_AUDIO_CAPTURE
+      type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE
           ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
           : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
 
@@ -122,7 +122,7 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(OS_ANDROID)
-  if (IsScreenCaptureMediaType(request.video_type) &&
+  if (blink::IsScreenCaptureMediaType(request.video_type) &&
       !base::FeatureList::IsEnabled(
           chrome::android::kUserMediaScreenCapturing)) {
     // If screen capturing isn't enabled on Android, we'll use "invalid state"
@@ -162,7 +162,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
   const content::MediaStreamRequest& request =
       it->second.begin()->second.request;
 #if defined(OS_ANDROID)
-  if (IsScreenCaptureMediaType(request.video_type)) {
+  if (blink::IsScreenCaptureMediaType(request.video_type)) {
     ScreenCaptureInfoBarDelegateAndroid::Create(
         web_contents, request,
         base::Bind(&PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
@@ -181,7 +181,7 @@ void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(
     int render_process_id,
     int render_frame_id,
     int page_request_id,
-    blink::MediaStreamType stream_type,
+    blink::mojom::MediaStreamType stream_type,
     content::MediaRequestState state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (state != content::MEDIA_REQUEST_STATE_CLOSING)
@@ -236,7 +236,8 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
   // this function again when done.
   if (result == blink::mojom::MediaStreamRequestResult::OK) {
     const content::MediaStreamRequest& request = request_it->second.request;
-    if (request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
+    if (request.audio_type ==
+        blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
       const SystemPermission system_audio_permission =
           system_media_permissions::CheckSystemAudioCapturePermission();
       UMA_HISTOGRAM_ENUMERATION(
@@ -259,7 +260,8 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
         system_media_permissions::SystemAudioCapturePermissionBlocked();
       }
     }
-    if (request.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE) {
+    if (request.video_type ==
+        blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
       const SystemPermission system_video_permission =
           system_media_permissions::CheckSystemVideoCapturePermission();
       UMA_HISTOGRAM_ENUMERATION(

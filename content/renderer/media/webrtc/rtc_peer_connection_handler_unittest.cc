@@ -311,8 +311,9 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         new ProcessedLocalAudioSource(
             -1 /* consumer_render_frame_id is N/A for non-browser tests */,
             blink::MediaStreamDevice(
-                blink::MEDIA_DEVICE_AUDIO_CAPTURE, "mock_device_id",
-                "Mock device", media::AudioParameters::kAudioCDSampleRate,
+                blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                "mock_device_id", "Mock device",
+                media::AudioParameters::kAudioCDSampleRate,
                 media::CHANNEL_LAYOUT_STEREO,
                 media::AudioParameters::kAudioCDSampleRate / 100),
             false /* disable_local_echo */, blink::AudioProcessingProperties(),

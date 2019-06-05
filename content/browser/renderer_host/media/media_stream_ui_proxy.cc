@@ -161,13 +161,13 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
   RenderFrameHost* host =
       RenderFrameHost::FromID(render_process_id, render_frame_id);
   for (const blink::MediaStreamDevice& device : devices) {
-    if (device.type == blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
+    if (device.type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE &&
         !IsFeatureEnabled(host, tests_use_fake_render_frame_hosts_,
                           blink::mojom::FeaturePolicyFeature::kMicrophone)) {
       continue;
     }
 
-    if (device.type == blink::MEDIA_DEVICE_VIDEO_CAPTURE &&
+    if (device.type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE &&
         !IsFeatureEnabled(host, tests_use_fake_render_frame_hosts_,
                           blink::mojom::FeaturePolicyFeature::kCamera)) {
       continue;
@@ -353,15 +353,15 @@ void FakeMediaStreamUIProxy::RequestAccess(
   // fake UI.
   for (blink::MediaStreamDevices::const_iterator it = devices_.begin();
        it != devices_.end(); ++it) {
-    if (!accepted_audio &&
-        IsAudioInputMediaType(request->audio_type) &&
-        IsAudioInputMediaType(it->type) &&
+    if (!accepted_audio && blink::IsAudioInputMediaType(request->audio_type) &&
+        blink::IsAudioInputMediaType(it->type) &&
         (request->requested_audio_device_id.empty() ||
          request->requested_audio_device_id == it->id)) {
       devices_to_use.push_back(*it);
       accepted_audio = true;
-    } else if (!accepted_video && IsVideoInputMediaType(request->video_type) &&
-               IsVideoInputMediaType(it->type) &&
+    } else if (!accepted_video &&
+               blink::IsVideoInputMediaType(request->video_type) &&
+               blink::IsVideoInputMediaType(it->type) &&
                (request->requested_video_device_id.empty() ||
                 request->requested_video_device_id == it->id)) {
       devices_to_use.push_back(*it);
@@ -370,8 +370,10 @@ void FakeMediaStreamUIProxy::RequestAccess(
   }
 
   // Fail the request if a device doesn't exist for the requested type.
-  if ((request->audio_type != blink::MEDIA_NO_SERVICE && !accepted_audio) ||
-      (request->video_type != blink::MEDIA_NO_SERVICE && !accepted_video)) {
+  if ((request->audio_type != blink::mojom::MediaStreamType::NO_SERVICE &&
+       !accepted_audio) ||
+      (request->video_type != blink::mojom::MediaStreamType::NO_SERVICE &&
+       !accepted_video)) {
     devices_to_use.clear();
   }
 

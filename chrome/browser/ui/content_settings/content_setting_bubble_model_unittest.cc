@@ -364,11 +364,14 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
 
   blink::MediaStreamDevices audio_devices;
   blink::MediaStreamDevice fake_audio_device1(
-      blink::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_dev1", "Fake Audio Device 1");
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, "fake_dev1",
+      "Fake Audio Device 1");
   blink::MediaStreamDevice fake_audio_device2(
-      blink::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_dev2", "Fake Audio Device 2");
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, "fake_dev2",
+      "Fake Audio Device 2");
   blink::MediaStreamDevice fake_audio_device3(
-      blink::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_dev3", "Fake Audio Device 3");
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, "fake_dev3",
+      "Fake Audio Device 3");
   audio_devices.push_back(fake_audio_device1);
   audio_devices.push_back(fake_audio_device2);
   audio_devices.push_back(fake_audio_device3);
@@ -396,7 +399,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
     EXPECT_TRUE(bubble_content.custom_link.empty());
 
     EXPECT_EQ(1U, bubble_content.media_menus.size());
-    EXPECT_EQ(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+    EXPECT_EQ(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
               bubble_content.media_menus.begin()->first);
     EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
     // The first audio device should be selected by default.
@@ -405,7 +408,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
 
     // Select a different (the second) device.
     content_setting_bubble_model->OnMediaMenuClicked(
-        blink::MEDIA_DEVICE_AUDIO_CAPTURE, fake_audio_device2.id);
+        blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+        fake_audio_device2.id);
     content_setting_bubble_model->CommitChanges();
   }
   {
@@ -416,7 +420,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
     std::unique_ptr<FakeOwner> owner = FakeOwner::Create(
         *content_setting_bubble_model, bubble_content.radio_group.default_item);
     EXPECT_EQ(1U, bubble_content.media_menus.size());
-    EXPECT_EQ(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+    EXPECT_EQ(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
               bubble_content.media_menus.begin()->first);
     EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
     // The second audio device should be selected.
@@ -457,7 +461,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
     EXPECT_TRUE(bubble_content.custom_link.empty());
 
     EXPECT_EQ(1U, bubble_content.media_menus.size());
-    EXPECT_EQ(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+    EXPECT_EQ(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
               bubble_content.media_menus.begin()->first);
     EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
     EXPECT_TRUE(fake_audio_device2.IsSameDevice(
@@ -465,7 +469,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
 
     // Select a different different device.
     content_setting_bubble_model->OnMediaMenuClicked(
-        blink::MEDIA_DEVICE_AUDIO_CAPTURE, fake_audio_device3.id);
+        blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+        fake_audio_device3.id);
     content_setting_bubble_model->CommitChanges();
   }
 
@@ -506,7 +511,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
 
     // Though the audio menu setting should have persisted.
     EXPECT_EQ(1U, bubble_content.media_menus.size());
-    EXPECT_EQ(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+    EXPECT_EQ(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
               bubble_content.media_menus.begin()->first);
     EXPECT_FALSE(bubble_content.media_menus.begin()->second.disabled);
     EXPECT_TRUE(fake_audio_device3.IsSameDevice(
@@ -552,7 +557,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
   EXPECT_FALSE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_text.empty());
   EXPECT_EQ(1U, bubble_content.media_menus.size());
-  EXPECT_EQ(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+  EXPECT_EQ(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
             bubble_content.media_menus.begin()->first);
 
   // Change the microphone access.
@@ -583,7 +588,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
   EXPECT_FALSE(new_bubble_content.custom_link_enabled);
   EXPECT_FALSE(new_bubble_content.manage_text.empty());
   EXPECT_EQ(1U, new_bubble_content.media_menus.size());
-  EXPECT_EQ(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+  EXPECT_EQ(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
             new_bubble_content.media_menus.begin()->first);
 }
 
@@ -625,7 +630,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
   EXPECT_FALSE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_text.empty());
   EXPECT_EQ(1U, bubble_content.media_menus.size());
-  EXPECT_EQ(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+  EXPECT_EQ(blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
             bubble_content.media_menus.begin()->first);
 
   // Change the camera access.
@@ -657,7 +662,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
   EXPECT_FALSE(new_bubble_content.custom_link_enabled);
   EXPECT_FALSE(new_bubble_content.manage_text.empty());
   EXPECT_EQ(1U, new_bubble_content.media_menus.size());
-  EXPECT_EQ(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+  EXPECT_EQ(blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
             new_bubble_content.media_menus.begin()->first);
 }
 
@@ -698,7 +703,7 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
             l10n_util::GetStringUTF16(IDS_ALLOWED_MEDIASTREAM_MIC_BLOCK));
   EXPECT_EQ(0, bubble_content.radio_group.default_item);
   EXPECT_EQ(1U, bubble_content.media_menus.size());
-  EXPECT_EQ(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+  EXPECT_EQ(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
             bubble_content.media_menus.begin()->first);
 
   // Then add camera access.

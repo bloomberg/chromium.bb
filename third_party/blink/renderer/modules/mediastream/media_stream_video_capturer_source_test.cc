@@ -390,8 +390,9 @@ TEST_F(MediaStreamVideoCapturerSourceTest, ChangeSource) {
   // |ChangeSourceImpl()| will recreate the |delegate_|, so check the
   // |MockStartCapture()| invoking in the |RecreateVideoCapturerSource()|.
   EXPECT_CALL(mock_delegate(), MockStopCapture());
-  MediaStreamDevice fake_video_device(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                      "Fake_Video_Device", "Fake Video Device");
+  MediaStreamDevice fake_video_device(
+      mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE, "Fake_Video_Device",
+      "Fake Video Device");
   source_->ChangeSourceImpl(fake_video_device);
   EXPECT_EQ(WebMediaStreamSource::kReadyStateLive,
             webkit_source_.GetReadyState());

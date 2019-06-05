@@ -354,11 +354,11 @@ void OffscreenTab::RequestMediaAccessPermission(
 bool OffscreenTab::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(),
             content::WebContents::FromRenderFrameHost(render_frame_host));
-  return type == blink::MEDIA_GUM_TAB_AUDIO_CAPTURE ||
-         type == blink::MEDIA_GUM_TAB_VIDEO_CAPTURE;
+  return type == blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE ||
+         type == blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE;
 }
 
 void OffscreenTab::DidShowFullscreenWidget() {

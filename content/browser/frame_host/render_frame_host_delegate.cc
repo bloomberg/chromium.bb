@@ -70,14 +70,14 @@ void RenderFrameHostDelegate::RequestMediaAccessPermission(
 bool RenderFrameHostDelegate::CheckMediaAccessPermission(
     RenderFrameHost* render_frame_host,
     const url::Origin& security_origin,
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   LOG(ERROR) << "RenderFrameHostDelegate::CheckMediaAccessPermission: "
              << "Not supported.";
   return false;
 }
 
 std::string RenderFrameHostDelegate::GetDefaultMediaDeviceID(
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   return std::string();
 }
 

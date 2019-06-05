@@ -42,13 +42,13 @@ std::string GetDefaultMediaDeviceIDOnUIThread(
   if (!delegate)
     return std::string();
 
-  blink::MediaStreamType media_stream_type;
+  blink::mojom::MediaStreamType media_stream_type;
   switch (device_type) {
     case blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT:
-      media_stream_type = blink::MEDIA_DEVICE_AUDIO_CAPTURE;
+      media_stream_type = blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE;
       break;
     case blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT:
-      media_stream_type = blink::MEDIA_DEVICE_VIDEO_CAPTURE;
+      media_stream_type = blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE;
       break;
     default:
       return std::string();

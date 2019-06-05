@@ -55,7 +55,8 @@ void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
     return;
   }
 
-  if (request_.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
+  if (request_.audio_type ==
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
     const MediaStreamDevices& audio_devices =
         audio_test_devices_.empty()
             ? MediaCaptureDevices::GetInstance()->GetAudioCaptureDevices()
@@ -66,7 +67,8 @@ void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
       devices.push_back(*device);
   }
 
-  if (request_.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE) {
+  if (request_.video_type ==
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
     const MediaStreamDevices& video_devices =
         video_test_devices_.empty()
             ? MediaCaptureDevices::GetInstance()->GetVideoCaptureDevices()
@@ -88,10 +90,12 @@ const GURL& MediaAccessPermissionRequest::GetOrigin() {
 }
 
 int64_t MediaAccessPermissionRequest::GetResources() {
-  return (request_.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE
+  return (request_.audio_type ==
+                  blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE
               ? AwPermissionRequest::AudioCapture
               : 0) |
-         (request_.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE
+         (request_.video_type ==
+                  blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE
               ? AwPermissionRequest::VideoCapture
               : 0);
 }

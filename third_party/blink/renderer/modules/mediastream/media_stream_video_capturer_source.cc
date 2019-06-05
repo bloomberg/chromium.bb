@@ -111,8 +111,8 @@ void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
   if (!internal_state_->frame())
     return;
   internal_state_->GetMediaStreamDispatcherHost()->SetCapturingLinkSecured(
-      device().session_id, static_cast<mojom::MediaStreamType>(device().type),
-      is_secure);
+      device().session_id,
+      static_cast<mojom::blink::MediaStreamType>(device().type), is_secure);
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
@@ -142,7 +142,7 @@ void MediaStreamVideoCapturerSource::StopSourceForRestartImpl() {
 
   // Force state update for nondevice sources, since they do not
   // automatically update state after StopCapture().
-  if (device().type == MEDIA_NO_SERVICE)
+  if (device().type == mojom::blink::MediaStreamType::NO_SERVICE)
     OnRunStateChanged(capture_params_, false);
 }
 

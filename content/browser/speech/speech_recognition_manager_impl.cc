@@ -731,7 +731,8 @@ void SpeechRecognitionManagerImpl::SessionStart(const Session& session) {
   } else {
     // From the ask_user=true path, use the selected device.
     DCHECK_EQ(1u, devices.size());
-    DCHECK_EQ(blink::MEDIA_DEVICE_AUDIO_CAPTURE, devices.front().type);
+    DCHECK_EQ(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+              devices.front().type);
     device_id = devices.front().id;
   }
 

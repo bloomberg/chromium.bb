@@ -82,13 +82,17 @@ void OffscreenTabsOwner::RequestMediaAccessPermission(
   if (tab_capture_registry &&
       tab_capture_registry->VerifyRequest(
           request.render_process_id, request.render_frame_id, extension_id)) {
-    if (request.audio_type == blink::MEDIA_GUM_TAB_AUDIO_CAPTURE) {
+    if (request.audio_type ==
+        blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE) {
       devices.push_back(blink::MediaStreamDevice(
-          blink::MEDIA_GUM_TAB_AUDIO_CAPTURE, std::string(), std::string()));
+          blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE, std::string(),
+          std::string()));
     }
-    if (request.video_type == blink::MEDIA_GUM_TAB_VIDEO_CAPTURE) {
+    if (request.video_type ==
+        blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE) {
       devices.push_back(blink::MediaStreamDevice(
-          blink::MEDIA_GUM_TAB_VIDEO_CAPTURE, std::string(), std::string()));
+          blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE, std::string(),
+          std::string()));
     }
   }
 

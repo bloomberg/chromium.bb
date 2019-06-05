@@ -48,24 +48,24 @@ static const int kInfiniteRatio = 99999;
       name, (height) ? ((width)*100) / (height) : kInfiniteRatio);
 
 void LogVideoFrameDrop(media::VideoCaptureFrameDropReason reason,
-                       blink::MediaStreamType stream_type) {
+                       blink::mojom::MediaStreamType stream_type) {
   const int kEnumCount =
       static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1;
   UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop", reason, kEnumCount);
   switch (stream_type) {
-    case blink::MEDIA_DEVICE_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop.DeviceCapture",
                                 reason, kEnumCount);
       break;
-    case blink::MEDIA_GUM_TAB_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop.GumTabCapture",
                                 reason, kEnumCount);
       break;
-    case blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.FrameDrop.GumDesktopCapture", reason, kEnumCount);
       break;
-    case blink::MEDIA_DISPLAY_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop.DisplayCapture",
                                 reason, kEnumCount);
       break;
@@ -77,28 +77,28 @@ void LogVideoFrameDrop(media::VideoCaptureFrameDropReason reason,
 
 void LogMaxConsecutiveVideoFrameDropCountExceeded(
     media::VideoCaptureFrameDropReason reason,
-    blink::MediaStreamType stream_type) {
+    blink::mojom::MediaStreamType stream_type) {
   const int kEnumCount =
       static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1;
   UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.MaxFrameDropExceeded", reason,
                             kEnumCount);
   switch (stream_type) {
-    case blink::MEDIA_DEVICE_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.MaxFrameDropExceeded.DeviceCapture", reason,
           kEnumCount);
       break;
-    case blink::MEDIA_GUM_TAB_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.MaxFrameDropExceeded.GumTabCapture", reason,
           kEnumCount);
       break;
-    case blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.MaxFrameDropExceeded.GumDesktopCapture", reason,
           kEnumCount);
       break;
-    case blink::MEDIA_DISPLAY_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.MaxFrameDropExceeded.DisplayCapture", reason,
           kEnumCount);
@@ -255,7 +255,7 @@ VideoCaptureController::FrameDropLogState::FrameDropLogState(
 
 VideoCaptureController::VideoCaptureController(
     const std::string& device_id,
-    blink::MediaStreamType stream_type,
+    blink::mojom::MediaStreamType stream_type,
     const media::VideoCaptureParams& params,
     std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher,
     base::RepeatingCallback<void(const std::string&)> emit_log_message_cb)

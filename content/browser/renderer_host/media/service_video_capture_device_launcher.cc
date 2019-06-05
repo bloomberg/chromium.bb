@@ -64,7 +64,7 @@ ServiceVideoCaptureDeviceLauncher::~ServiceVideoCaptureDeviceLauncher() {
 
 void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
     const std::string& device_id,
-    blink::MediaStreamType stream_type,
+    blink::mojom::MediaStreamType stream_type,
     const media::VideoCaptureParams& params,
     base::WeakPtr<media::VideoFrameReceiver> receiver,
     base::OnceClosure connection_lost_cb,
@@ -73,8 +73,8 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(state_ == State::READY_TO_LAUNCH);
 
-  if (stream_type != blink::MEDIA_DEVICE_VIDEO_CAPTURE) {
-    // This launcher only supports MEDIA_DEVICE_VIDEO_CAPTURE.
+  if (stream_type != blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
+    // This launcher only supports MediaStreamType::DEVICE_VIDEO_CAPTURE.
     NOTREACHED();
     return;
   }

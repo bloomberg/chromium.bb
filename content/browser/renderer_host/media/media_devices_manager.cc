@@ -591,7 +591,7 @@ media::VideoCaptureFormats MediaDevicesManager::GetVideoInputFormats(
   if (try_in_use_first) {
     base::Optional<media::VideoCaptureFormat> format =
         video_capture_manager_->GetDeviceFormatInUse(
-            blink::MEDIA_DEVICE_VIDEO_CAPTURE, device_id);
+            blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, device_id);
     if (format.has_value()) {
       formats.push_back(format.value());
       ReplaceInvalidFrameRatesWithFallback(&formats);

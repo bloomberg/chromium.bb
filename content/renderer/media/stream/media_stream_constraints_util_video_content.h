@@ -29,7 +29,7 @@ CONTENT_EXPORT extern const double kDefaultScreenCastFrameRate;
 // for content video capture based on the given |constraints|.
 blink::VideoCaptureSettings CONTENT_EXPORT
 SelectSettingsVideoContentCapture(const blink::WebMediaConstraints& constraints,
-                                  blink::MediaStreamType stream_type,
+                                  blink::mojom::MediaStreamType stream_type,
                                   int screen_width,
                                   int screen_height);
 

@@ -48,9 +48,9 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
     content::MediaStreamRequest request(
         0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
         std::string(), std::string(),
-        request_audio ? blink::MEDIA_DISPLAY_AUDIO_CAPTURE
-                      : blink::MEDIA_NO_SERVICE,
-        blink::MEDIA_DISPLAY_VIDEO_CAPTURE, false);
+        request_audio ? blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE
+                      : blink::mojom::MediaStreamType::NO_SERVICE,
+        blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE, false);
 
     base::RunLoop wait_loop;
     content::MediaResponseCallback callback = base::BindOnce(
@@ -98,7 +98,8 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
                  &result, &devices, false /* request_audio */);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(1u, devices.size());
-  EXPECT_EQ(blink::MEDIA_DISPLAY_VIDEO_CAPTURE, devices[0].type);
+  EXPECT_EQ(blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
+            devices[0].type);
   EXPECT_TRUE(devices[0].display_media_info.has_value());
 }
 
@@ -111,9 +112,11 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGivenToRequestWithAudio) {
   ProcessRequest(fake_media_id, &result, &devices, true /* request_audio */);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(2u, devices.size());
-  EXPECT_EQ(blink::MEDIA_DISPLAY_VIDEO_CAPTURE, devices[0].type);
+  EXPECT_EQ(blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
+            devices[0].type);
   EXPECT_TRUE(devices[0].display_media_info.has_value());
-  EXPECT_EQ(blink::MEDIA_DISPLAY_AUDIO_CAPTURE, devices[1].type);
+  EXPECT_EQ(blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE,
+            devices[1].type);
   EXPECT_TRUE(devices[1].input.IsValid());
 }
 
@@ -130,10 +133,10 @@ TEST_F(DisplayMediaAccessHandlerTest, UpdateMediaRequestStateWithClosing) {
   const int render_process_id = 0;
   const int render_frame_id = 0;
   const int page_request_id = 0;
-  const blink::MediaStreamType video_stream_type =
-      blink::MEDIA_DISPLAY_VIDEO_CAPTURE;
-  const blink::MediaStreamType audio_stream_type =
-      blink::MEDIA_DISPLAY_AUDIO_CAPTURE;
+  const blink::mojom::MediaStreamType video_stream_type =
+      blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE;
+  const blink::mojom::MediaStreamType audio_stream_type =
+      blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE;
   FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
       {true /* expect_screens */, true /* expect_windows*/,
        true /* expect_tabs */, true /* expect_audio */,
@@ -172,8 +175,8 @@ TEST_F(DisplayMediaAccessHandlerTest, WebContentsDestroyed) {
   picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
   content::MediaStreamRequest request(
       0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
-      std::string(), std::string(), blink::MEDIA_NO_SERVICE,
-      blink::MEDIA_DISPLAY_VIDEO_CAPTURE, false);
+      std::string(), std::string(), blink::mojom::MediaStreamType::NO_SERVICE,
+      blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE, false);
   content::MediaResponseCallback callback;
   access_handler_->HandleRequest(web_contents(), request, std::move(callback),
                                  nullptr /* extension */);
@@ -209,8 +212,8 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   for (size_t i = 0; i < kTestFlagCount; ++i) {
     content::MediaStreamRequest request(
         0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
-        std::string(), std::string(), blink::MEDIA_NO_SERVICE,
-        blink::MEDIA_DISPLAY_VIDEO_CAPTURE, false);
+        std::string(), std::string(), blink::mojom::MediaStreamType::NO_SERVICE,
+        blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE, false);
     content::MediaResponseCallback callback = base::BindOnce(
         [](base::RunLoop* wait_loop,
            blink::mojom::MediaStreamRequestResult* request_result,
@@ -231,7 +234,8 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   EXPECT_TRUE(test_flags[0].picker_deleted);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(1u, devices.size());
-  EXPECT_EQ(blink::MEDIA_DISPLAY_VIDEO_CAPTURE, devices[0].type);
+  EXPECT_EQ(blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
+            devices[0].type);
 
   blink::MediaStreamDevice first_device = devices[0];
   EXPECT_TRUE(test_flags[1].picker_created);
@@ -240,7 +244,8 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   EXPECT_TRUE(test_flags[1].picker_deleted);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(1u, devices.size());
-  EXPECT_EQ(blink::MEDIA_DISPLAY_VIDEO_CAPTURE, devices[0].type);
+  EXPECT_EQ(blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
+            devices[0].type);
   EXPECT_FALSE(devices[0].IsSameDevice(first_device));
 
   access_handler_.reset();

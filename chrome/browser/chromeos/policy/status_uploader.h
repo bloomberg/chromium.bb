@@ -55,7 +55,7 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
   // MediaCaptureDevicesDispatcher::Observer implementation
   void OnRequestUpdate(int render_process_id,
                        int render_frame_id,
-                       blink::MediaStreamType stream_type,
+                       blink::mojom::MediaStreamType stream_type,
                        const content::MediaRequestState state) override;
 
   // Returns true if the next status upload has been scheduled successfully.

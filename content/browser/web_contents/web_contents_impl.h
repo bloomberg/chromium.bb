@@ -655,8 +655,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                     MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(RenderFrameHost* render_frame_host,
                                   const url::Origin& security_origin,
-                                  blink::MediaStreamType type) override;
-  std::string GetDefaultMediaDeviceID(blink::MediaStreamType type) override;
+                                  blink::mojom::MediaStreamType type) override;
+  std::string GetDefaultMediaDeviceID(
+      blink::mojom::MediaStreamType type) override;
   SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) override;
   SessionStorageNamespaceMap GetSessionStorageNamespaceMap() override;

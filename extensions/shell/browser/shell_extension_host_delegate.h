@@ -31,7 +31,7 @@ class ShellExtensionHostDelegate : public ExtensionHostDelegate {
                                  const Extension* extension) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  blink::MediaStreamType type,
+                                  blink::mojom::MediaStreamType type,
                                   const Extension* extension) override;
   ExtensionHostQueue* GetExtensionHostQueue() const override;
   gfx::Size EnterPictureInPicture(content::WebContents* web_contents,

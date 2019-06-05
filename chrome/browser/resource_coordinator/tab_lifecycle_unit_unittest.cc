@@ -399,9 +399,9 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardVideoCapture) {
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
-  blink::MediaStreamDevices video_devices{
-      blink::MediaStreamDevice(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
-                               "fake_media_device", "fake_media_device")};
+  blink::MediaStreamDevices video_devices{blink::MediaStreamDevice(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, "fake_media_device",
+      "fake_media_device")};
   std::unique_ptr<content::MediaStreamUI> ui =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator()
@@ -422,9 +422,9 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardDesktopCapture) {
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
-  blink::MediaStreamDevices desktop_capture_devices{
-      blink::MediaStreamDevice(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                               "fake_media_device", "fake_media_device")};
+  blink::MediaStreamDevices desktop_capture_devices{blink::MediaStreamDevice(
+      blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+      "fake_media_device", "fake_media_device")};
   std::unique_ptr<content::MediaStreamUI> ui =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator()

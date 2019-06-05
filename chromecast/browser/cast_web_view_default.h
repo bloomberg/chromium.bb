@@ -75,7 +75,7 @@ class CastWebViewDefault : public CastWebView,
   void ActivateContents(content::WebContents* contents) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  blink::MediaStreamType type) override;
+                                  blink::mojom::MediaStreamType type) override;
   bool DidAddMessageToConsole(content::WebContents* source,
                               blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& message,
