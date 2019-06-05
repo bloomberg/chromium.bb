@@ -168,8 +168,6 @@ class CORE_EXPORT HTMLCanvasElement final
   bool OriginClean() const override;
   void SetOriginTainted() override { origin_clean_ = false; }
 
-  bool IsAnimated2d() const;
-
   Canvas2DLayerBridge* GetCanvas2DLayerBridge() {
     return canvas2d_bridge_.get();
   }

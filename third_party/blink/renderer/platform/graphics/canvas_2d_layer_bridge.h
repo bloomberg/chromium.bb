@@ -131,9 +131,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
 
   scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint);
-  bool WasDrawnToAfterSnapshot() const {
-    return snapshot_state_ == kDrawnToAfterSnapshot;
-  }
 
   // The values of the enum entries must not change because they are used for
   // usage metrics histograms. New values can be added to the end.
@@ -205,7 +202,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   enum SnapshotState {
     kInitialSnapshotState,
     kDidAcquireSnapshot,
-    kDrawnToAfterSnapshot,
   };
   mutable SnapshotState snapshot_state_;
 

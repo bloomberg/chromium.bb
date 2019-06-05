@@ -784,11 +784,6 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
     context_->MarkLayerComposited();
 }
 
-bool HTMLCanvasElement::IsAnimated2d() const {
-  return Is2d() && canvas2d_bridge_ &&
-         canvas2d_bridge_->WasDrawnToAfterSnapshot();
-}
-
 void HTMLCanvasElement::SetSurfaceSize(const IntSize& size) {
   size_ = size;
   did_fail_to_create_resource_provider_ = false;

@@ -606,8 +606,6 @@ cc::Layer* Canvas2DLayerBridge::Layer() {
 }
 
 void Canvas2DLayerBridge::DidDraw(const FloatRect& rect) {
-  if (snapshot_state_ == kDidAcquireSnapshot)
-    snapshot_state_ = kDrawnToAfterSnapshot;
   if (!is_deferral_enabled_)
     return;
 

@@ -131,7 +131,6 @@ enum DisableDeferralReason {
   kDisableDeferralReasonExpensiveOverdrawHeuristic = 1,
   kDisableDeferralReasonUsingTextureBackedPattern = 2,
   kDisableDeferralReasonDrawImageOfVideo = 3,
-  kDisableDeferralReasonDrawImageOfAnimated2dCanvas = 4,
   kDisableDeferralReasonSubPixelTextAntiAliasingSupport = 5,
   kDisableDeferralDrawImageWithTextureBackedSourceImage = 6,
   kDisableDeferralReasonLowEndDevice = 7,
