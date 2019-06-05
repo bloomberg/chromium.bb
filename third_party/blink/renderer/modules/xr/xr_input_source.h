@@ -69,7 +69,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
 
   uint32_t source_id() const { return source_id_; }
 
-  void SetPointerTransformMatrix(std::unique_ptr<TransformationMatrix>);
+  void SetPointerTransformMatrix(const TransformationMatrix*);
   void SetGamepadConnected(bool state);
 
   // Gamepad::Client
@@ -90,7 +90,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   void SetHandedness(Handedness);
   void SetTargetRayMode(TargetRayMode);
   void SetEmulatedPosition(bool emulated_position);
-  void SetBasePoseMatrix(std::unique_ptr<TransformationMatrix>);
+  void SetBasePoseMatrix(const TransformationMatrix*);
 
   // Use to check if the updates that would/should be made by a given
   // XRInputSourceState would invalidate any SameObject properties guaranteed
@@ -116,12 +116,10 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
 
   bool emulated_position_ = false;
 
-  // TODO(crbug.com/945947): Revisit use of std::unique_ptr.
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
 
   // This is the transform to apply to the base_pose_matrix_ to get the pointer
   // matrix. In most cases it should be static.
-  // TODO(crbug.com/945947): Revisit use of std::unique_ptr.
   std::unique_ptr<TransformationMatrix> pointer_transform_matrix_;
 
   // gamepad_ uses this to get relative timestamps.

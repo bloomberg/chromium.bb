@@ -19,13 +19,12 @@
 
 namespace blink {
 
-XRRay::XRRay(std::unique_ptr<TransformationMatrix> matrix) {
-  Set(std::move(matrix));
+XRRay::XRRay(const TransformationMatrix& matrix) {
+  Set(matrix);
 }
 
 XRRay::XRRay(XRRigidTransform* transform) {
   DOMFloat32Array* m = transform->matrix();
-
   Set(DOMFloat32ArrayToTransformationMatrix(m));
 }
 
@@ -47,9 +46,9 @@ XRRay::XRRay(DOMPointInit* origin, DOMPointInit* direction) {
   Set(o, d);
 }
 
-void XRRay::Set(std::unique_ptr<TransformationMatrix> matrix) {
-  FloatPoint3D origin = matrix->MapPoint(FloatPoint3D(0, 0, 0));
-  FloatPoint3D direction = matrix->MapPoint(FloatPoint3D(0, 0, -1));
+void XRRay::Set(const TransformationMatrix& matrix) {
+  FloatPoint3D origin = matrix.MapPoint(FloatPoint3D(0, 0, 0));
+  FloatPoint3D direction = matrix.MapPoint(FloatPoint3D(0, 0, -1));
   direction.Move(-origin.X(), -origin.Y(), -origin.Z());
 
   Set(origin, direction);

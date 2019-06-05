@@ -39,11 +39,11 @@ class XRSpace : public EventTargetWithInlineData {
       const TransformationMatrix& base_input_pose,
       const TransformationMatrix& base_pose);
 
-  virtual XRPose* getPose(
-      XRSpace* other_space,
-      std::unique_ptr<TransformationMatrix> base_pose_matrix);
+  virtual XRPose* getPose(XRSpace* other_space,
+                          const TransformationMatrix* base_pose_matrix);
+
   std::unique_ptr<TransformationMatrix> GetViewerPoseMatrix(
-      std::unique_ptr<TransformationMatrix> base_pose_matrix);
+      const TransformationMatrix* base_pose_matrix);
 
   XRSession* session() const { return session_; }
 

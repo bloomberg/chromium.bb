@@ -84,11 +84,10 @@ void XRViewData::UpdateOffset(float x, float y, float z) {
   offset_.Set(x, y, z);
 }
 
-std::unique_ptr<TransformationMatrix> XRViewData::UnprojectPointer(
-    double x,
-    double y,
-    double canvas_width,
-    double canvas_height) {
+TransformationMatrix XRViewData::UnprojectPointer(double x,
+                                                  double y,
+                                                  double canvas_width,
+                                                  double canvas_height) {
   // Recompute the inverse projection matrix if needed.
   if (inv_projection_dirty_) {
     inv_projection_ = projection_matrix_.Inverse();
@@ -127,10 +126,7 @@ std::unique_ptr<TransformationMatrix> XRViewData::UnprojectPointer(
                           -point_in_view_space.Z());
 
   // LookAt matrices are view matrices (inverted), so invert before returning.
-  std::unique_ptr<TransformationMatrix> pointer =
-      std::make_unique<TransformationMatrix>(inv_pointer.Inverse());
-
-  return pointer;
+  return inv_pointer.Inverse();
 }
 
 void XRViewData::UpdatePoseMatrix(const TransformationMatrix& pose_matrix) {

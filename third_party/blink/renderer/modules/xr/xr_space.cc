@@ -47,9 +47,8 @@ TransformationMatrix XRSpace::InverseOriginOffsetMatrix() {
   return identity;
 }
 
-XRPose* XRSpace::getPose(
-    XRSpace* other_space,
-    std::unique_ptr<TransformationMatrix> base_pose_matrix) {
+XRPose* XRSpace::getPose(XRSpace* other_space,
+                         const TransformationMatrix* base_pose_matrix) {
   std::unique_ptr<TransformationMatrix> mojo_from_this =
       GetTransformToMojoSpace();
   if (!mojo_from_this) {
@@ -70,13 +69,12 @@ XRPose* XRSpace::getPose(
   // https://github.com/immersive-web/webxr/issues/534 has been resolved.
   TransformationMatrix this_from_other =
       this_from_mojo.Multiply(*mojo_from_other);
-  return MakeGarbageCollected<XRPose>(
-      std::make_unique<TransformationMatrix>(this_from_other),
-      session()->EmulatedPosition());
+  return MakeGarbageCollected<XRPose>(this_from_other,
+                                      session()->EmulatedPosition());
 }
 
 std::unique_ptr<TransformationMatrix> XRSpace::GetViewerPoseMatrix(
-    std::unique_ptr<TransformationMatrix> base_pose_matrix) {
+    const TransformationMatrix* base_pose_matrix) {
   std::unique_ptr<TransformationMatrix> pose;
 
   // If we don't have a valid base pose, request the reference space's default

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_target_ray_space.h"
+#include "third_party/blink/renderer/modules/xr/xr_utils.h"
 
 namespace blink {
 
@@ -87,22 +88,17 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
     updated_source->SetEmulatedPosition(desc->emulated_position);
 
     if (desc->pointer_offset && desc->pointer_offset->matrix.has_value()) {
-      const WTF::Vector<float>& m = desc->pointer_offset->matrix.value();
-      std::unique_ptr<TransformationMatrix> pointer_matrix =
-          std::make_unique<TransformationMatrix>(
-              m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
-              m[11], m[12], m[13], m[14], m[15]);
-      updated_source->SetPointerTransformMatrix(std::move(pointer_matrix));
+      TransformationMatrix pointer_matrix =
+          WTFFloatVectorToTransformationMatrix(
+              desc->pointer_offset->matrix.value());
+      updated_source->SetPointerTransformMatrix(&pointer_matrix);
     }
   }
 
   if (state->grip && state->grip->matrix.has_value()) {
-    const Vector<float>& m = state->grip->matrix.value();
-    std::unique_ptr<TransformationMatrix> grip_matrix =
-        std::make_unique<TransformationMatrix>(
-            m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
-            m[11], m[12], m[13], m[14], m[15]);
-    updated_source->SetBasePoseMatrix(std::move(grip_matrix));
+    TransformationMatrix grip_matrix =
+        WTFFloatVectorToTransformationMatrix(state->grip->matrix.value());
+    updated_source->SetBasePoseMatrix(&grip_matrix);
   } else {
     updated_source->SetBasePoseMatrix(nullptr);
   }
@@ -153,15 +149,8 @@ XRInputSource::XRInputSource(const XRInputSource& other)
   SetTargetRayMode(other.target_ray_mode_);
   SetHandedness(other.handedness_);
 
-  if (other.base_pose_matrix_) {
-    base_pose_matrix_ = std::make_unique<TransformationMatrix>(
-        *(other.base_pose_matrix_.get()));
-  }
-
-  if (other.pointer_transform_matrix_) {
-    pointer_transform_matrix_ = std::make_unique<TransformationMatrix>(
-        *(other.pointer_transform_matrix_.get()));
-  }
+  SetBasePoseMatrix(other.base_pose_matrix_.get());
+  SetPointerTransformMatrix(other.pointer_transform_matrix_.get());
 }
 
 XRSpace* XRInputSource::gripSpace() const {
@@ -258,13 +247,23 @@ void XRInputSource::SetEmulatedPosition(bool emulated_position) {
 }
 
 void XRInputSource::SetBasePoseMatrix(
-    std::unique_ptr<TransformationMatrix> base_pose_matrix) {
-  base_pose_matrix_ = std::move(base_pose_matrix);
+    const TransformationMatrix* base_pose_matrix) {
+  if (base_pose_matrix) {
+    base_pose_matrix_ =
+        std::make_unique<TransformationMatrix>(*base_pose_matrix);
+  } else {
+    base_pose_matrix_ = nullptr;
+  }
 }
 
 void XRInputSource::SetPointerTransformMatrix(
-    std::unique_ptr<TransformationMatrix> pointer_transform_matrix) {
-  pointer_transform_matrix_ = std::move(pointer_transform_matrix);
+    const TransformationMatrix* pointer_transform_matrix) {
+  if (pointer_transform_matrix) {
+    pointer_transform_matrix_ =
+        std::make_unique<TransformationMatrix>(*pointer_transform_matrix);
+  } else {
+    pointer_transform_matrix_ = nullptr;
+  }
 }
 
 void XRInputSource::SetGamepadConnected(bool state) {

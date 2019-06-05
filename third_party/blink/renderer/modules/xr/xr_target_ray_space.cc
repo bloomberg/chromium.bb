@@ -59,7 +59,7 @@ std::unique_ptr<TransformationMatrix> XRTargetRaySpace::GetTrackedPointerPose(
 
 XRPose* XRTargetRaySpace::getPose(
     XRSpace* other_space,
-    std::unique_ptr<TransformationMatrix> base_pose_matrix) {
+    const TransformationMatrix* base_pose_matrix) {
   // If we don't have a valid base pose (most common when tracking is lost),
   // we can't get a target ray pose regardless of the mode.
   if (!base_pose_matrix) {
@@ -94,10 +94,9 @@ XRPose* XRTargetRaySpace::getPose(
 
   // Account for any changes made to the reference space's origin offset so that
   // things like teleportation works.
-  pointer_pose = std::make_unique<TransformationMatrix>(
-      other_space->InverseOriginOffsetMatrix().Multiply(*pointer_pose));
-
-  return MakeGarbageCollected<XRPose>(std::move(pointer_pose),
+  TransformationMatrix adjusted_pose =
+      other_space->InverseOriginOffsetMatrix().Multiply(*pointer_pose);
+  return MakeGarbageCollected<XRPose>(adjusted_pose,
                                       input_source_->emulatedPosition());
 }
 

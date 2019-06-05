@@ -31,10 +31,10 @@ XRPlane::XRPlane(XRSession* session,
 }
 
 XRPose* XRPlane::getPose(XRReferenceSpace* reference_space) const {
-  return MakeGarbageCollected<XRPose>(
-      reference_space->GetViewerPoseMatrix(
-          std::make_unique<TransformationMatrix>(pose_matrix_)),
-      session_->EmulatedPosition());
+  std::unique_ptr<TransformationMatrix> viewer_pose =
+      reference_space->GetViewerPoseMatrix(&pose_matrix_);
+  return MakeGarbageCollected<XRPose>(*viewer_pose,
+                                      session_->EmulatedPosition());
 }
 
 String XRPlane::orientation() const {

@@ -37,7 +37,6 @@ class XRFrame final : public ScriptWrappable {
   XRWorldInformation* worldInformation() const { return world_information_; }
 
   void SetBasePoseMatrix(const TransformationMatrix&);
-  std::unique_ptr<TransformationMatrix> CloneBasePoseMatrix() const;
 
   void Trace(blink::Visitor*) override;
 

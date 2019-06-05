@@ -23,7 +23,7 @@ class XRRay final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit XRRay(std::unique_ptr<TransformationMatrix> matrix);
+  explicit XRRay(const TransformationMatrix& matrix);
   explicit XRRay(XRRigidTransform* transform);
   XRRay(DOMPointInit* origin, DOMPointInit* direction);
   ~XRRay() override;
@@ -40,7 +40,7 @@ class XRRay final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  void Set(std::unique_ptr<TransformationMatrix> matrix);
+  void Set(const TransformationMatrix& matrix);
   void Set(FloatPoint3D origin, FloatPoint3D direction);
 
   Member<DOMPointReadOnly> origin_;

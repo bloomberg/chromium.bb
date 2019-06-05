@@ -412,8 +412,8 @@ void XRSession::OnHitTestResults(
 
   HeapVector<Member<XRHitResult>> hit_results;
   for (const auto& mojom_result : results.value()) {
-    XRHitResult* hit_result = MakeGarbageCollected<XRHitResult>(
-        std::make_unique<TransformationMatrix>(
+    XRHitResult* hit_result =
+        MakeGarbageCollected<XRHitResult>(TransformationMatrix(
             mojom_result->hit_matrix[0], mojom_result->hit_matrix[1],
             mojom_result->hit_matrix[2], mojom_result->hit_matrix[3],
             mojom_result->hit_matrix[4], mojom_result->hit_matrix[5],

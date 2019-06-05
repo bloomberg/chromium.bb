@@ -10,10 +10,9 @@
 
 namespace blink {
 
-XRViewerPose::XRViewerPose(
-    XRSession* session,
-    std::unique_ptr<TransformationMatrix> pose_model_matrix)
-    : XRPose(std::move(pose_model_matrix), session->EmulatedPosition()) {
+XRViewerPose::XRViewerPose(XRSession* session,
+                           const TransformationMatrix& pose_model_matrix)
+    : XRPose(pose_model_matrix, session->EmulatedPosition()) {
   WTF::Vector<XRViewData>& view_data = session->views();
 
   // Snapshot the session's current views.

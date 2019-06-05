@@ -20,16 +20,6 @@ XRRigidTransform::XRRigidTransform(
   DecomposeMatrix();
 }
 
-// takes ownership of transformationMatrix instead of copying it
-XRRigidTransform::XRRigidTransform(
-    std::unique_ptr<TransformationMatrix> transformationMatrix)
-    : matrix_(std::move(transformationMatrix)) {
-  if (!matrix_) {
-    matrix_ = std::make_unique<TransformationMatrix>();
-  }
-  DecomposeMatrix();
-}
-
 void XRRigidTransform::DecomposeMatrix() {
   // decompose matrix to position and orientation
   TransformationMatrix::DecomposedType decomposed;
