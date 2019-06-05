@@ -14,9 +14,9 @@ class ButtonListener;
 
 namespace ash {
 
-// Sign out button shown in TopShortcutView with TopShortcutButtons.
+// Sign out button to be shown in TopShortcutView with TopShortcutButtons.
 // Shows the label like "Sign out", "Exit guest", etc. depending on the session
-// status. Not visible when not signed in.
+// status.
 class SignOutButton : public RoundedLabelButton {
  public:
   explicit SignOutButton(views::ButtonListener* listener);

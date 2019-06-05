@@ -7,6 +7,7 @@
 #include <numeric>
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -166,39 +167,44 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   container_ = new TopShortcutButtonContainer();
   AddChildView(container_);
 
-  if (Shell::Get()->session_controller()->login_status() !=
-      LoginStatus::NOT_LOGGED_IN) {
+  ash::Shell* shell = Shell::Get();
+
+  bool is_on_login_screen =
+      shell->session_controller()->login_status() == LoginStatus::NOT_LOGGED_IN;
+  bool is_kiosk_next = shell->kiosk_next_shell_controller()->IsEnabled();
+  bool can_show_settings = TrayPopupUtils::CanOpenWebUISettings();
+  bool can_lock_screen = shell->session_controller()->CanLockScreen();
+
+  if (!is_on_login_screen) {
     user_avatar_button_ = new UserAvatarButton(this);
     user_avatar_button_->SetEnabled(
         UserChooserDetailedViewController::IsUserChooserEnabled());
     container_->AddUserAvatarButton(user_avatar_button_);
+
+    sign_out_button_ = new SignOutButton(this);
+    container_->AddSignOutButton(sign_out_button_);
   }
 
-  // Show the buttons in this row as disabled if the user is at the login
-  // screen, lock screen, or in a secondary account flow. The exception is
-  // |power_button_| which is always shown as enabled.
-  const bool can_show_web_ui = TrayPopupUtils::CanOpenWebUISettings();
+  if (!is_kiosk_next) {
+    bool reboot = shell->shutdown_controller()->reboot_on_shutdown();
+    power_button_ = new TopShortcutButton(
+        this, kUnifiedMenuPowerIcon,
+        reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN);
+    power_button_->SetID(VIEW_ID_POWER_BUTTON);
+    container_->AddChildView(power_button_);
+  }
 
-  sign_out_button_ = new SignOutButton(this);
-  container_->AddSignOutButton(sign_out_button_);
+  if (can_show_settings && can_lock_screen && !is_kiosk_next) {
+    lock_button_ = new TopShortcutButton(this, kUnifiedMenuLockIcon,
+                                         IDS_ASH_STATUS_TRAY_LOCK);
+    container_->AddChildView(lock_button_);
+  }
 
-  bool reboot = Shell::Get()->shutdown_controller()->reboot_on_shutdown();
-  power_button_ = new TopShortcutButton(
-      this, kUnifiedMenuPowerIcon,
-      reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN);
-  power_button_->SetID(VIEW_ID_POWER_BUTTON);
-  container_->AddChildView(power_button_);
-
-  lock_button_ = new TopShortcutButton(this, kUnifiedMenuLockIcon,
-                                       IDS_ASH_STATUS_TRAY_LOCK);
-  lock_button_->SetVisible(can_show_web_ui &&
-                           Shell::Get()->session_controller()->CanLockScreen());
-  container_->AddChildView(lock_button_);
-
-  settings_button_ = new TopShortcutButton(this, kUnifiedMenuSettingsIcon,
-                                           IDS_ASH_STATUS_TRAY_SETTINGS);
-  settings_button_->SetVisible(can_show_web_ui);
-  container_->AddChildView(settings_button_);
+  if (can_show_settings) {
+    settings_button_ = new TopShortcutButton(this, kUnifiedMenuSettingsIcon,
+                                             IDS_ASH_STATUS_TRAY_SETTINGS);
+    container_->AddChildView(settings_button_);
+  }
 
   // |collapse_button_| should be right-aligned, so we make the buttons
   // container flex occupying all remaining space.
@@ -209,7 +215,7 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
 
   OnAccessibilityStatusChanged();
 
-  Shell::Get()->accessibility_controller()->AddObserver(this);
+  shell->accessibility_controller()->AddObserver(this);
 }
 
 TopShortcutsView::~TopShortcutsView() {

@@ -4,6 +4,9 @@
 
 #include "ash/system/unified/top_shortcuts_view.h"
 
+#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
+#include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/system/unified/collapse_button.h"
 #include "ash/system/unified/sign_out_button.h"
@@ -11,8 +14,8 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
-
-using views::Button;
+#include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 
 namespace ash {
 
@@ -23,6 +26,8 @@ class TopShortcutsViewTest : public NoSessionAshTestBase {
   ~TopShortcutsViewTest() override = default;
 
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
+
     NoSessionAshTestBase::SetUp();
 
     model_ = std::make_unique<UnifiedSystemTrayModel>();
@@ -41,7 +46,12 @@ class TopShortcutsViewTest : public NoSessionAshTestBase {
     top_shortcuts_view_ = std::make_unique<TopShortcutsView>(controller_.get());
   }
 
-    views::View* GetUserAvatar() {
+  void CreateKioskNextSession() {
+    kiosk_next_shell_client_ = BindMockKioskNextShellClient();
+    LogInKioskNextUser(GetSessionControllerClient());
+  }
+
+  views::View* GetUserAvatar() {
     return top_shortcuts_view_->user_avatar_button_;
   }
 
@@ -61,10 +71,12 @@ class TopShortcutsViewTest : public NoSessionAshTestBase {
     return top_shortcuts_view_->collapse_button_;
   }
 
-  void Layout() {
-    top_shortcuts_view_->Layout();
-  }
+  void Layout() { top_shortcuts_view_->Layout(); }
+
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<MockKioskNextShellClient> kiosk_next_shell_client_;
+
   std::unique_ptr<UnifiedSystemTrayModel> model_;
   std::unique_ptr<UnifiedSystemTrayController> controller_;
   std::unique_ptr<TopShortcutsView> top_shortcuts_view_;
@@ -76,9 +88,9 @@ class TopShortcutsViewTest : public NoSessionAshTestBase {
 TEST_F(TopShortcutsViewTest, ButtonStatesNotLoggedIn) {
   SetUpView();
   EXPECT_EQ(nullptr, GetUserAvatar());
-  EXPECT_FALSE(GetSignOutButton()->GetVisible());
-  EXPECT_FALSE(GetLockButton()->GetVisible());
-  EXPECT_FALSE(GetSettingsButton()->GetVisible());
+  EXPECT_EQ(nullptr, GetSignOutButton());
+  EXPECT_EQ(nullptr, GetLockButton());
+  EXPECT_EQ(nullptr, GetSettingsButton());
   EXPECT_TRUE(GetPowerButton()->GetVisible());
   EXPECT_TRUE(GetCollapseButton()->GetVisible());
 }
@@ -87,7 +99,7 @@ TEST_F(TopShortcutsViewTest, ButtonStatesNotLoggedIn) {
 TEST_F(TopShortcutsViewTest, ButtonStatesLoggedIn) {
   CreateUserSessions(1);
   SetUpView();
-  EXPECT_NE(nullptr, GetUserAvatar());
+  EXPECT_TRUE(GetUserAvatar()->GetVisible());
   EXPECT_TRUE(GetSignOutButton()->GetVisible());
   EXPECT_TRUE(GetLockButton()->GetVisible());
   EXPECT_TRUE(GetSettingsButton()->GetVisible());
@@ -99,10 +111,10 @@ TEST_F(TopShortcutsViewTest, ButtonStatesLoggedIn) {
 TEST_F(TopShortcutsViewTest, ButtonStatesLockScreen) {
   BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
   SetUpView();
-  EXPECT_NE(nullptr, GetUserAvatar());
+  EXPECT_TRUE(GetUserAvatar()->GetVisible());
   EXPECT_TRUE(GetSignOutButton()->GetVisible());
-  EXPECT_FALSE(GetLockButton()->GetVisible());
-  EXPECT_FALSE(GetSettingsButton()->GetVisible());
+  EXPECT_EQ(nullptr, GetLockButton());
+  EXPECT_EQ(nullptr, GetSettingsButton());
   EXPECT_TRUE(GetPowerButton()->GetVisible());
   EXPECT_TRUE(GetCollapseButton()->GetVisible());
 }
@@ -113,10 +125,10 @@ TEST_F(TopShortcutsViewTest, ButtonStatesAddingUser) {
   CreateUserSessions(1);
   SetUserAddingScreenRunning(true);
   SetUpView();
-  EXPECT_NE(nullptr, GetUserAvatar());
+  EXPECT_TRUE(GetUserAvatar()->GetVisible());
   EXPECT_TRUE(GetSignOutButton()->GetVisible());
-  EXPECT_FALSE(GetLockButton()->GetVisible());
-  EXPECT_FALSE(GetSettingsButton()->GetVisible());
+  EXPECT_EQ(nullptr, GetLockButton());
+  EXPECT_EQ(nullptr, GetSettingsButton());
   EXPECT_TRUE(GetPowerButton()->GetVisible());
   EXPECT_TRUE(GetCollapseButton()->GetVisible());
 }
@@ -130,9 +142,9 @@ TEST_F(TopShortcutsViewTest, ButtonStatesSupervisedUserFlow) {
       "foo@example.com", user_manager::USER_TYPE_REGULAR, enable_settings);
   SetUpView();
   EXPECT_EQ(nullptr, GetUserAvatar());
-  EXPECT_FALSE(GetSignOutButton()->GetVisible());
-  EXPECT_FALSE(GetLockButton()->GetVisible());
-  EXPECT_FALSE(GetSettingsButton()->GetVisible());
+  EXPECT_EQ(nullptr, GetSignOutButton());
+  EXPECT_EQ(nullptr, GetLockButton());
+  EXPECT_EQ(nullptr, GetSettingsButton());
   EXPECT_TRUE(GetPowerButton()->GetVisible());
   EXPECT_TRUE(GetCollapseButton()->GetVisible());
 }
@@ -173,4 +185,30 @@ TEST_F(TopShortcutsViewTest, ButtonLayoutSupervisedUserFlow) {
   SetUpView();
   Layout();
 }
+
+// Some buttons are hidden in Kiosk Next sessions.
+TEST_F(TopShortcutsViewTest, ButtonStatesKioskNextLoggedIn) {
+  CreateKioskNextSession();
+  SetUpView();
+  EXPECT_TRUE(GetUserAvatar()->GetVisible());
+  EXPECT_TRUE(GetSignOutButton()->GetVisible());
+  EXPECT_EQ(nullptr, GetLockButton());
+  EXPECT_TRUE(GetSettingsButton()->GetVisible());
+  EXPECT_EQ(nullptr, GetPowerButton());
+  EXPECT_TRUE(GetCollapseButton()->GetVisible());
+}
+
+// Settings button is also hidden at the lock screen in Kiosk Next sessions.
+TEST_F(TopShortcutsViewTest, ButtonStatesKioskNextLockScreen) {
+  CreateKioskNextSession();
+  GetSessionControllerClient()->LockScreen();
+  SetUpView();
+  EXPECT_TRUE(GetUserAvatar()->GetVisible());
+  EXPECT_TRUE(GetSignOutButton()->GetVisible());
+  EXPECT_EQ(nullptr, GetLockButton());
+  EXPECT_EQ(nullptr, GetSettingsButton());
+  EXPECT_EQ(nullptr, GetPowerButton());
+  EXPECT_TRUE(GetCollapseButton()->GetVisible());
+}
+
 }  // namespace ash

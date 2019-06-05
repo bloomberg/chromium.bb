@@ -14,10 +14,7 @@ SignOutButton::SignOutButton(views::ButtonListener* listener)
     : RoundedLabelButton(listener,
                          user::GetLocalizedSignOutStringForStatus(
                              Shell::Get()->session_controller()->login_status(),
-                             false /* multiline */)) {
-  SetVisible(Shell::Get()->session_controller()->login_status() !=
-             LoginStatus::NOT_LOGGED_IN);
-}
+                             false /* multiline */)) {}
 
 SignOutButton::~SignOutButton() = default;
 
