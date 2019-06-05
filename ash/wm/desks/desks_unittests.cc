@@ -31,7 +31,9 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/window_parenting_client.h"
+#include "ui/compositor_extra/shadow.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -880,11 +882,19 @@ TEST_F(DesksTest, DragWindowToDesk) {
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
 
+  ui::Shadow* shadow = ::wm::ShadowController::GetShadowForWindow(window.get());
+  ASSERT_TRUE(shadow);
+  ASSERT_TRUE(shadow->layer());
+  EXPECT_TRUE(shadow->layer()->GetTargetVisibility());
+
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(1u, overview_grid->size());
+
+  // While in overview mode, the window's shadow is hidden.
+  EXPECT_FALSE(shadow->layer()->GetTargetVisibility());
 
   auto* overview_session = overview_controller->overview_session();
   auto* overview_item =
@@ -920,6 +930,10 @@ TEST_F(DesksTest, DragWindowToDesk) {
   EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
   EXPECT_TRUE(desk_2->windows().contains(window.get()));
   EXPECT_FALSE(overview_grid->drop_target_widget());
+
+  // After the window is dropped onto another desk, its shadow should be
+  // restored properly.
+  EXPECT_TRUE(shadow->layer()->GetTargetVisibility());
 }
 
 TEST_F(DesksTest, DragWindowToNonMiniViewPoints) {
