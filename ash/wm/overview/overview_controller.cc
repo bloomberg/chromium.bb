@@ -302,7 +302,7 @@ bool OverviewController::ToggleOverview(
   base::EraseIf(windows, wm::ShouldExcludeForOverview);
   // Overview windows will handle showing their transient related windows, so if
   // a window in |windows| has a transient root also in |windows|, we can remove
-  // it as the tranisent root will handle showing the window.
+  // it as the transient root will handle showing the window.
   wm::RemoveTransientDescendants(&windows);
 
   // We may want to slide the overview grid in or out in some cases, even if

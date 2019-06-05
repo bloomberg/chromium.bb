@@ -27,6 +27,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_observer.h"
@@ -177,37 +178,39 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
       original_mask_layer_(window_->layer()->layer_mask_layer()),
       weak_ptr_factory_(this) {
   type_ = GetWindowDimensionsType(window);
-  original_event_targeting_policy_ = window_->event_targeting_policy();
-  window_->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
-  window_->SetProperty(kIsShowingInOverviewKey, true);
 
-  // Hide transient children which have been specified to be hidden in overview
-  // mode.
   std::vector<aura::Window*> transient_children_to_hide;
   for (auto* transient : wm::GetTransientTreeIterator(window)) {
-    if (transient == window)
-      continue;
-
-    if (transient->GetProperty(kHideInOverviewKey))
-      transient_children_to_hide.push_back(transient);
-
+    targeting_policy_map_[transient] = transient->event_targeting_policy();
+    transient->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
     transient->SetProperty(kIsShowingInOverviewKey, true);
+
+    // Hide transient children which have been specified to be hidden in
+    // overview mode.
+    if (transient != window && transient->GetProperty(kHideInOverviewKey))
+      transient_children_to_hide.push_back(transient);
   }
 
   if (!transient_children_to_hide.empty()) {
     hidden_transient_children_ = std::make_unique<ScopedOverviewHideWindows>(
         std::move(transient_children_to_hide), /*forced_hidden=*/true);
   }
+
+  aura::client::GetTransientWindowClient()->AddObserver(this);
 }
 
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
-  for (auto* transient : wm::GetTransientTreeIterator(window_))
+  for (auto* transient : wm::GetTransientTreeIterator(window_)) {
     transient->ClearProperty(kIsShowingInOverviewKey);
-  DCHECK(!window_->GetProperty(kIsShowingInOverviewKey));
+    DCHECK(targeting_policy_map_.contains(transient));
+    auto it = targeting_policy_map_.find(transient);
+    transient->SetEventTargetingPolicy(it->second);
+    targeting_policy_map_.erase(it);
+  }
 
-  window_->SetEventTargetingPolicy(original_event_targeting_policy_);
   UpdateMask(/*show=*/false);
   StopObservingImplicitAnimations();
+  aura::client::GetTransientWindowClient()->RemoveObserver(this);
 }
 
 // static
@@ -437,17 +440,6 @@ void ScopedOverviewTransformWindow::PrepareForOverview() {
   }
 }
 
-void ScopedOverviewTransformWindow::CloseWidget() {
-  aura::Window* parent_window = ::wm::GetTransientRoot(window_);
-  if (parent_window)
-    wm::CloseWidgetForWindow(parent_window);
-}
-
-// static
-void ScopedOverviewTransformWindow::SetImmediateCloseForTests() {
-  immediate_close_for_tests = true;
-}
-
 void ScopedOverviewTransformWindow::EnsureVisible() {
   original_opacity_ = 1.f;
 }
@@ -502,10 +494,45 @@ void ScopedOverviewTransformWindow::OnImplicitAnimationsCompleted() {
   overview_item_->OnDragAnimationCompleted();
 }
 
+void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(
+    aura::Window* parent,
+    aura::Window* transient_child) {
+  if (parent != window_ && !::wm::HasTransientAncestor(parent, window_))
+    return;
+
+  DCHECK(!targeting_policy_map_.contains(transient_child));
+  targeting_policy_map_[transient_child] =
+      transient_child->event_targeting_policy();
+  transient_child->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
+}
+
+void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
+    aura::Window* parent,
+    aura::Window* transient_child) {
+  if (parent != window_ && !::wm::HasTransientAncestor(parent, window_))
+    return;
+
+  DCHECK(targeting_policy_map_.contains(transient_child));
+  auto it = targeting_policy_map_.find(transient_child);
+  transient_child->SetEventTargetingPolicy(it->second);
+  targeting_policy_map_.erase(it);
+}
+
 gfx::Rect ScopedOverviewTransformWindow::GetMaskBoundsForTesting() const {
   if (!mask_)
     return gfx::Rect();
   return mask_->layer()->bounds();
+}
+
+void ScopedOverviewTransformWindow::CloseWidget() {
+  aura::Window* parent_window = ::wm::GetTransientRoot(window_);
+  if (parent_window)
+    wm::CloseWidgetForWindow(parent_window);
+}
+
+// static
+void ScopedOverviewTransformWindow::SetImmediateCloseForTests() {
+  immediate_close_for_tests = true;
 }
 
 }  // namespace ash

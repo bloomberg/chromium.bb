@@ -281,6 +281,62 @@ TEST_F(ScopedOverviewTransformWindowTest, InvisibleTransients) {
   EXPECT_TRUE(child2->transform().IsIdentity());
 }
 
+// Tests that the event targeting policies of a given window and transient
+// descendants gets set as expected.
+TEST_F(ScopedOverviewTransformWindowTest, EventTargetingPolicy) {
+  using etp = aura::EventTargetingPolicy;
+
+  // Helper for creating popups that will be transients for testing.
+  auto create_popup = [this] {
+    std::unique_ptr<aura::Window> popup =
+        CreateTestWindow(gfx::Rect(10, 10), aura::client::WINDOW_TYPE_POPUP);
+    popup->SetEventTargetingPolicy(etp::kTargetAndDescendants);
+    return popup;
+  };
+
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+  window->SetEventTargetingPolicy(etp::kTargetAndDescendants);
+
+  auto transient = create_popup();
+  auto transient1 = create_popup();
+  auto transient2 = create_popup();
+  ::wm::AddTransientChild(window.get(), transient.get());
+
+  {
+    // Tests that after creating the scoped object, the window and its current
+    // transient child have |kNone| targeting policy.
+    ScopedOverviewTransformWindow scoped_window(nullptr, window.get());
+    EXPECT_EQ(etp::kNone, window->event_targeting_policy());
+    EXPECT_EQ(etp::kNone, transient->event_targeting_policy());
+
+    // Tests that after adding transient children, one to the window itself and
+    // one to the current transient child, they will both have |kNone| targeting
+    // policy.
+    ::wm::AddTransientChild(window.get(), transient1.get());
+    ::wm::AddTransientChild(transient.get(), transient2.get());
+    EXPECT_EQ(etp::kNone, transient1->event_targeting_policy());
+    EXPECT_EQ(etp::kNone, transient2->event_targeting_policy());
+
+    // Tests that adding a transient child which does not have |window| as its
+    // descendant does not have its targeting policy altered.
+    auto window2 = CreateTestWindow(gfx::Rect(200, 200));
+    auto transient3 = create_popup();
+    ::wm::AddTransientChild(window2.get(), transient3.get());
+    EXPECT_EQ(etp::kTargetAndDescendants, transient3->event_targeting_policy());
+
+    // Tests that removing a transient child from |window| will reset its
+    // targeting policy.
+    ::wm::RemoveTransientChild(window.get(), transient1.get());
+    EXPECT_EQ(etp::kTargetAndDescendants, transient1->event_targeting_policy());
+  }
+
+  // Tests that when the scoped object is destroyed, the targeting policies all
+  // get reset.
+  EXPECT_EQ(etp::kTargetAndDescendants, window->event_targeting_policy());
+  EXPECT_EQ(etp::kTargetAndDescendants, transient->event_targeting_policy());
+  EXPECT_EQ(etp::kTargetAndDescendants, transient2->event_targeting_policy());
+}
+
 class ScopedOverviewTransformWindowWithMaskTest
     : public ScopedOverviewTransformWindowTest {
  public:

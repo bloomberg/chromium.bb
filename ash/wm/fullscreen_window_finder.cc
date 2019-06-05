@@ -52,7 +52,7 @@ aura::Window* GetTopMostWindowInContainer(aura::Window* container) {
   return nullptr;
 }
 
-// Given a |topmost_window|, returns it or one of its tranisent parents if the
+// Given a |topmost_window|, returns it or one of its transient parents if the
 // returned window is fullscreen or pinned. Otherwise, return nullptr.
 aura::Window* FindFullscreenOrPinnedWindow(aura::Window* topmost_window) {
   while (topmost_window) {
