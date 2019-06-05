@@ -127,7 +127,10 @@ class NET_EXPORT HostResolverManager
   ~HostResolverManager() override;
 
   // If |host_cache| is non-null, its HostCache::Invalidator must have already
-  // been added (via AddHostCacheInvalidator()).
+  // been added (via AddHostCacheInvalidator()). If |optional_parameters|
+  // specifies any cache usage other than LOCAL_ONLY, there must be a 1:1
+  // correspondence between |request_context| and |host_cache|, and both should
+  // come from the same ContextHostResolver.
   std::unique_ptr<CancellableRequest> CreateRequest(
       const HostPortPair& host,
       const NetLogWithSource& net_log,
@@ -303,16 +306,16 @@ class NET_EXPORT HostResolverManager
                                                bool resolve_canonname,
                                                const IPAddress* ip_address);
 
-  // Returns the result iff a positive match is found for |key| in the cache.
-  // |out_stale_info| must be non-null, and will be filled in with details of
-  // the entry's staleness if an entry is returned, otherwise it will be set to
-  // |base::nullopt|.
-  //
-  // If |allow_stale| is true, then stale cache entries can be returned.
-  base::Optional<HostCache::Entry> ServeFromCache(
+  // Returns the result iff |cache_usage| permits cache lookups and a positive
+  // match is found for |key| in |cache|. |out_stale_info| must be non-null, and
+  // will be filled in with details of the entry's staleness if an entry is
+  // returned, otherwise it will be set to |base::nullopt|.
+  base::Optional<HostCache::Entry> MaybeServeFromCache(
       HostCache* cache,
       const HostCache::Key& key,
-      bool allow_stale,
+      ResolveHostParameters::CacheUsage cache_usage,
+      bool ignore_secure,
+      const NetLogWithSource& source_net_log,
       base::Optional<HostCache::EntryStaleness>* out_stale_info);
 
   // Iff we have a DnsClient with a valid DnsConfig, and |key| can be resolved

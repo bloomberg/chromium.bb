@@ -1496,7 +1496,9 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       DnsQueryType query_type,
       HostResolverFlags host_resolver_flags,
       HostResolverSource requested_source,
+      ResolveHostParameters::CacheUsage cache_usage,
       URLRequestContext* request_context,
+      HostCache* host_cache,
       std::deque<TaskType> tasks,
       RequestPriority priority,
       scoped_refptr<base::TaskRunner> proc_task_runner,
@@ -1507,7 +1509,9 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
         query_type_(query_type),
         host_resolver_flags_(host_resolver_flags),
         requested_source_(requested_source),
+        cache_usage_(cache_usage),
         request_context_(request_context),
+        host_cache_(host_cache),
         tasks_(tasks),
         job_running_(false),
         priority_tracker_(priority),
@@ -1573,6 +1577,10 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   }
 
   void AddRequest(RequestImpl* request) {
+    // Job currently assumes a 1:1 correspondence between URLRequestContext and
+    // HostCache. Since the URLRequestContext is part of the JobKey, any request
+    // added to any existing Job should share the same HostCache.
+    DCHECK_EQ(host_cache_, request->host_cache());
     DCHECK_EQ(hostname_, request->request_host().host());
 
     request->AssignJob(this);
@@ -1893,8 +1901,21 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   }
 
   void InsecureCacheLookup() {
-    // TODO(crbug.com/878582): Check insecure cache.
-    RunNextTask();
+    // Insecure cache lookups for requests allowing stale results should have
+    // occurred prior to Job creation.
+    DCHECK(cache_usage_ != ResolveHostParameters::CacheUsage::STALE_ALLOWED);
+    base::Optional<HostCache::EntryStaleness> stale_info;
+    base::Optional<HostCache::Entry> resolved = resolver_->MaybeServeFromCache(
+        host_cache_, GenerateCacheKey(false), cache_usage_,
+        false /* ignore_secure */, net_log_, &stale_info);
+
+    if (resolved) {
+      DCHECK(stale_info);
+      DCHECK(!stale_info.value().is_stale());
+      CompleteRequestsWithoutCache(resolved.value(), std::move(stale_info));
+    } else {
+      RunNextTask();
+    }
   }
 
   void StartDnsTask(bool secure) {
@@ -2052,7 +2073,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     } else {
       // MDNS uses a separate cache, so skip saving result to cache.
       // TODO(crbug.com/926300): Consider merging caches.
-      CompleteRequestsWithoutCache(results);
+      CompleteRequestsWithoutCache(results, base::nullopt /* stale_info */);
     }
   }
 
@@ -2149,18 +2170,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     // If the request did not complete, don't cache it.
     if (!results.did_complete())
       return;
-
-    // Multiple requests will usually share caches, so avoid duplicate cache
-    // adds.
-    std::set<HostCache*> caches;
-    for (auto* node = requests_.head(); node != requests_.end();
-         node = node->next()) {
-      if (node->value()->host_cache())
-        caches.insert(node->value()->host_cache());
-    }
     HostCache::Key cache_key = GenerateCacheKey(secure);
-    for (HostCache* cache : caches)
-      resolver_->CacheResult(cache, cache_key, results, ttl);
+    resolver_->CacheResult(host_cache_, cache_key, results, ttl);
   }
 
   // Performs Job's last rites. Completes all Requests. Deletes this.
@@ -2241,7 +2252,17 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     }
   }
 
-  void CompleteRequestsWithoutCache(const HostCache::Entry& results) {
+  void CompleteRequestsWithoutCache(
+      const HostCache::Entry& results,
+      base::Optional<HostCache::EntryStaleness> stale_info) {
+    // Record the stale_info for all non-speculative requests, if it exists.
+    if (stale_info) {
+      for (auto* node = requests_.head(); node != requests_.end();
+           node = node->next()) {
+        if (!node->value()->parameters().is_speculative)
+          node->value()->set_stale_info(std::move(stale_info).value());
+      }
+    }
     CompleteRequests(results, base::TimeDelta(), false /* allow_cache */,
                      false /* secure */);
   }
@@ -2267,7 +2288,11 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   const DnsQueryType query_type_;
   const HostResolverFlags host_resolver_flags_;
   const HostResolverSource requested_source_;
+  const ResolveHostParameters::CacheUsage cache_usage_;
   URLRequestContext* const request_context_;
+  // TODO(crbug.com/969847): Consider allowing requests within a single Job to
+  // have different HostCaches.
+  HostCache* const host_cache_;
 
   struct CompletionResult {
     const HostCache::Entry entry;
@@ -2676,28 +2701,31 @@ HostCache::Entry HostResolverManager::ResolveLocally(
   if (resolved)
     return resolved.value();
 
-  // TODO(crbug.com/878582): Respect the type of cache lookup that should be
-  // performed.
+  // Do initial cache lookup.
   if (!out_tasks->empty() &&
       (out_tasks->front() == TaskType::SECURE_CACHE_LOOKUP ||
        out_tasks->front() == TaskType::INSECURE_CACHE_LOOKUP ||
        out_tasks->front() == TaskType::CACHE_LOOKUP)) {
+    HostCache::Key key(hostname, *out_effective_query_type,
+                       *out_effective_host_resolver_flags, source);
+
+    if (out_tasks->front() == TaskType::SECURE_CACHE_LOOKUP)
+      key.secure = true;
+
+    bool ignore_secure = false;
+    if (out_tasks->front() == TaskType::CACHE_LOOKUP)
+      ignore_secure = true;
+
     out_tasks->pop_front();
-    if (cache_usage == ResolveHostParameters::CacheUsage::ALLOWED ||
-        cache_usage == ResolveHostParameters::CacheUsage::STALE_ALLOWED) {
-      HostCache::Key key(hostname, *out_effective_query_type,
-                         *out_effective_host_resolver_flags, source);
-      resolved = ServeFromCache(
-          cache, key,
-          cache_usage == ResolveHostParameters::CacheUsage::STALE_ALLOWED,
-          out_stale_info);
-      if (resolved) {
-        DCHECK(out_stale_info->has_value());
-        source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT,
-                                resolved.value().CreateNetLogCallback());
-        // |ServeFromCache()| will update |*stale_info| as needed.
-        return resolved.value();
-      }
+
+    resolved = MaybeServeFromCache(cache, key, cache_usage, ignore_secure,
+                                   source_net_log, out_stale_info);
+    if (resolved) {
+      // |MaybeServeFromCache()| will update |*out_stale_info| as needed.
+      DCHECK(out_stale_info->has_value());
+      source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT,
+                              resolved.value().CreateNetLogCallback());
+      return resolved.value();
     }
     DCHECK(!out_stale_info->has_value());
   }
@@ -2731,9 +2759,10 @@ int HostResolverManager::CreateAndStartJob(
     auto new_job = std::make_unique<Job>(
         weak_ptr_factory_.GetWeakPtr(), request->request_host().host(),
         effective_query_type, effective_host_resolver_flags,
-        request->parameters().source, request->request_context(),
-        std::move(tasks), request->priority(), proc_task_runner_,
-        request->source_net_log(), tick_clock_);
+        request->parameters().source, request->parameters().cache_usage,
+        request->request_context(), request->host_cache(), std::move(tasks),
+        request->priority(), proc_task_runner_, request->source_net_log(),
+        tick_clock_);
     job = new_job.get();
     new_job->Schedule(false);
     DCHECK(new_job->is_running() || new_job->is_queued());
@@ -2789,15 +2818,20 @@ base::Optional<HostCache::Entry> HostResolverManager::ResolveAsIP(
                           HostCache::Entry::SOURCE_UNKNOWN);
 }
 
-base::Optional<HostCache::Entry> HostResolverManager::ServeFromCache(
+base::Optional<HostCache::Entry> HostResolverManager::MaybeServeFromCache(
     HostCache* cache,
     const HostCache::Key& key,
-    bool allow_stale,
+    ResolveHostParameters::CacheUsage cache_usage,
+    bool ignore_secure,
+    const NetLogWithSource& source_net_log,
     base::Optional<HostCache::EntryStaleness>* out_stale_info) {
   DCHECK(out_stale_info);
   *out_stale_info = base::nullopt;
 
   if (!cache)
+    return base::nullopt;
+
+  if (cache_usage == ResolveHostParameters::CacheUsage::DISALLOWED)
     return base::nullopt;
 
   // Local-only requests search the cache for non-local-only results.
@@ -2807,19 +2841,22 @@ base::Optional<HostCache::Entry> HostResolverManager::ServeFromCache(
 
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result;
   HostCache::EntryStaleness staleness;
-  if (allow_stale) {
+  if (cache_usage == ResolveHostParameters::CacheUsage::STALE_ALLOWED) {
     cache_result = cache->LookupStale(effective_key, tick_clock_->NowTicks(),
-                                      &staleness, true /* ignore_secure */);
+                                      &staleness, ignore_secure);
   } else {
-    cache_result = cache->Lookup(effective_key, tick_clock_->NowTicks(),
-                                 true /* ignore_secure */);
+    DCHECK(cache_usage == ResolveHostParameters::CacheUsage::ALLOWED);
+    cache_result =
+        cache->Lookup(effective_key, tick_clock_->NowTicks(), ignore_secure);
     staleness = HostCache::kNotStale;
   }
-  if (!cache_result)
-    return base::nullopt;
-
-  *out_stale_info = std::move(staleness);
-  return cache_result->second;
+  if (cache_result) {
+    *out_stale_info = std::move(staleness);
+    source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT,
+                            cache_result->second.CreateNetLogCallback());
+    return cache_result->second;
+  }
+  return base::nullopt;
 }
 
 base::Optional<HostCache::Entry> HostResolverManager::ServeFromHosts(

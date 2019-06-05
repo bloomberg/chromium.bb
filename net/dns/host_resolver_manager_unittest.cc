@@ -563,6 +563,13 @@ class HostResolverManagerTest : public TestWithScopedTaskEnvironment {
     return resolver_->IsIPv6Reachable(net_log);
   }
 
+  void PopulateCache(HostCache::Key& key, IPEndPoint endpoint) {
+    resolver_->CacheResult(host_cache_.get(), key,
+                           HostCache::Entry(OK, AddressList(endpoint),
+                                            HostCache::Entry::SOURCE_UNKNOWN),
+                           base::TimeDelta::FromSeconds(1));
+  }
+
   const std::pair<const HostCache::Key, HostCache::Entry>* GetCacheHit(
       const HostCache::Key& key) {
     DCHECK(host_cache_);
@@ -2353,52 +2360,6 @@ TEST_F(HostResolverManagerTest, IsSpeculative) {
 
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
   EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No increase.
-}
-
-// Test that if a Job with multiple requests, each with its own different
-// HostCache, completes, the result is cached in all request HostCaches.
-TEST_F(HostResolverManagerTest, MultipleCachesForMultipleRequests) {
-  proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
-
-  std::unique_ptr<HostCache> cache2 = HostCache::CreateDefaultCache();
-  resolver_->AddHostCacheInvalidator(cache2->invalidator());
-
-  ResolveHostResponseHelper response1(resolver_->CreateRequest(
-      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt,
-      request_context_.get(), host_cache_.get()));
-  ResolveHostResponseHelper response2(resolver_->CreateRequest(
-      HostPortPair("just.testing", 85), NetLogWithSource(), base::nullopt,
-      request_context_.get(), cache2.get()));
-  ASSERT_EQ(1u, resolver_->num_jobs_for_testing());
-
-  proc_->SignalMultiple(1u);
-  EXPECT_THAT(response1.result_error(), IsOk());
-  EXPECT_THAT(response2.result_error(), IsOk());
-
-  HostResolver::ResolveHostParameters local_resolve_parameters;
-  local_resolve_parameters.source = HostResolverSource::LOCAL_ONLY;
-
-  // Confirm |host_cache_| contains the result.
-  ResolveHostResponseHelper cached_response1(resolver_->CreateRequest(
-      HostPortPair("just.testing", 81), NetLogWithSource(),
-      local_resolve_parameters, request_context_.get(), host_cache_.get()));
-  EXPECT_THAT(cached_response1.result_error(), IsOk());
-  EXPECT_THAT(
-      cached_response1.request()->GetAddressResults().value().endpoints(),
-      testing::ElementsAre(CreateExpected("192.168.1.42", 81)));
-  EXPECT_TRUE(cached_response1.request()->GetStaleInfo());
-
-  // Confirm |cache2| contains the result.
-  ResolveHostResponseHelper cached_response2(resolver_->CreateRequest(
-      HostPortPair("just.testing", 82), NetLogWithSource(),
-      local_resolve_parameters, request_context_.get(), cache2.get()));
-  EXPECT_THAT(cached_response2.result_error(), IsOk());
-  EXPECT_THAT(
-      cached_response2.request()->GetAddressResults().value().endpoints(),
-      testing::ElementsAre(CreateExpected("192.168.1.42", 82)));
-  EXPECT_TRUE(cached_response2.request()->GetStaleInfo());
-
-  resolver_->RemoveHostCacheInvalidator(cache2->invalidator());
 }
 
 #if BUILDFLAG(ENABLE_MDNS)
@@ -4699,6 +4660,59 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic) {
               testing::ElementsAre(CreateExpected("192.168.1.100", 80)));
 }
 
+TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_SecureCache) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  // Populate cache with a secure entry.
+  HostCache::Key cached_secure_key =
+      HostCache::Key("automatic_cached", DnsQueryType::UNSPECIFIED,
+                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  cached_secure_key.secure = true;
+  IPEndPoint kExpectedSecureIP = CreateExpected("192.168.1.102", 80);
+  PopulateCache(cached_secure_key, kExpectedSecureIP);
+
+  // The secure cache should be checked prior to any DoH request being sent.
+  ResolveHostResponseHelper response_secure_cached(resolver_->CreateRequest(
+      HostPortPair("automatic_cached", 80), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response_secure_cached.result_error(), IsOk());
+  EXPECT_THAT(
+      response_secure_cached.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(kExpectedSecureIP));
+  EXPECT_FALSE(
+      response_secure_cached.request()->GetStaleInfo().value().is_stale());
+}
+
+TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_InsecureCache) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  // Populate cache with an insecure entry.
+  HostCache::Key cached_insecure_key =
+      HostCache::Key("insecure_automatic_cached", DnsQueryType::UNSPECIFIED,
+                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  IPEndPoint kExpectedInsecureIP = CreateExpected("192.168.1.103", 80);
+  PopulateCache(cached_insecure_key, kExpectedInsecureIP);
+
+  // The insecure cache should be checked after DoH requests fail.
+  ResolveHostResponseHelper response_insecure_cached(resolver_->CreateRequest(
+      HostPortPair("insecure_automatic_cached", 80), NetLogWithSource(),
+      base::nullopt, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response_insecure_cached.result_error(), IsOk());
+  EXPECT_THAT(response_insecure_cached.request()
+                  ->GetAddressResults()
+                  .value()
+                  .endpoints(),
+              testing::ElementsAre(kExpectedInsecureIP));
+  EXPECT_FALSE(
+      response_insecure_cached.request()->GetStaleInfo().value().is_stale());
+}
+
 TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Downgrade) {
   ChangeDnsConfig(CreateValidDnsConfig());
   // Remove all DoH servers from the config so there is no DoH server available.
@@ -4708,6 +4722,39 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Downgrade) {
   overrides.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
   resolver_->SetDnsConfigOverrides(overrides);
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result;
+
+  // Populate cache with both secure and insecure entries.
+  HostCache::Key cached_secure_key =
+      HostCache::Key("automatic_cached", DnsQueryType::UNSPECIFIED,
+                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  cached_secure_key.secure = true;
+  IPEndPoint kExpectedSecureIP = CreateExpected("192.168.1.102", 80);
+  PopulateCache(cached_secure_key, kExpectedSecureIP);
+  HostCache::Key cached_insecure_key =
+      HostCache::Key("insecure_automatic_cached", DnsQueryType::UNSPECIFIED,
+                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  IPEndPoint kExpectedInsecureIP = CreateExpected("192.168.1.103", 80);
+  PopulateCache(cached_insecure_key, kExpectedInsecureIP);
+
+  // The secure cache should still be checked first.
+  ResolveHostResponseHelper response_cached(resolver_->CreateRequest(
+      HostPortPair("automatic_cached", 80), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response_cached.result_error(), IsOk());
+  EXPECT_THAT(
+      response_cached.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(kExpectedSecureIP));
+
+  // The insecure cache should be checked before any insecure requests are sent.
+  ResolveHostResponseHelper insecure_response_cached(resolver_->CreateRequest(
+      HostPortPair("insecure_automatic_cached", 80), NetLogWithSource(),
+      base::nullopt, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(insecure_response_cached.result_error(), IsOk());
+  EXPECT_THAT(insecure_response_cached.request()
+                  ->GetAddressResults()
+                  .value()
+                  .endpoints(),
+              testing::ElementsAre(kExpectedInsecureIP));
 
   // The DnsConfig doesn't contain DoH servers so AUTOMATIC mode will be
   // downgraded to OFF. A successful plaintext DNS request should result in an
@@ -4724,6 +4771,35 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Downgrade) {
                      0 /* host_resolver_flags */, HostResolverSource::ANY);
   cache_result = GetCacheHit(key);
   EXPECT_TRUE(!!cache_result);
+}
+
+TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Stale) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  // Populate cache with insecure entry.
+  HostCache::Key cached_stale_key =
+      HostCache::Key("automatic_stale", DnsQueryType::UNSPECIFIED,
+                     0 /* host_resolver_flags */, HostResolverSource::ANY);
+  IPEndPoint kExpectedStaleIP = CreateExpected("192.168.1.102", 80);
+  PopulateCache(cached_stale_key, kExpectedStaleIP);
+  MakeCacheStale();
+
+  HostResolver::ResolveHostParameters stale_allowed_parameters;
+  stale_allowed_parameters.cache_usage =
+      HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+
+  // The insecure cache should be checked before secure requests are made since
+  // stale results are allowed.
+  ResolveHostResponseHelper response_stale(resolver_->CreateRequest(
+      HostPortPair("automatic_stale", 80), NetLogWithSource(),
+      stale_allowed_parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response_stale.result_error(), IsOk());
+  EXPECT_THAT(response_stale.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(kExpectedStaleIP));
+  EXPECT_TRUE(response_stale.request()->GetStaleInfo()->is_stale());
 }
 
 TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Secure) {
