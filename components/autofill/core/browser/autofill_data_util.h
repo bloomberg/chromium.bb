@@ -57,6 +57,10 @@ bool ContainsPhone(uint32_t groups);
 // PHONE_HOME FieldTypeGroups are associated with the given |field_types|.
 uint32_t DetermineGroups(const std::vector<ServerFieldType>& types);
 
+// Returns true if a form has address fields or has least two supported
+// non-address fields.
+bool IsSupportedFormType(uint32_t groups);
+
 // Truncates a string to the nearest UTF-8 character that will leave
 // the string less than or equal to the specified byte size.
 std::string TruncateUTF8(const std::string& data);

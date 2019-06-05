@@ -6445,6 +6445,7 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressOnly) {
   base::HistogramTester histogram_tester;
   autofill_manager_->DidShowSuggestions(/*has_autofill_suggestions=*/true, form,
                                         form.fields[0]);
+
   histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address.AddressOnly",
                                      FORM_EVENT_SUGGESTIONS_SHOWN, 1);
   histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address.AddressOnly",
@@ -6452,13 +6453,58 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressOnly) {
 
   // Logging is not done for other types of address forms.
   const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(histograms,
-              Not(AnyOf("Autofill.FormEvents.Address.AddressPlusContact",
-                        "Autofill.FormEvents.Address.AddressPlusEmail",
-                        "Autofill.FormEvents.Address.AddressPlusEmailPlusPhone",
-                        "Autofill.FormEvents.Address.AddressPlusPhone",
-                        "Autofill.FormEvents.Address.ContactOnly",
-                        "Autofill.FormEvents.Address.Other")));
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusContact"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.Other"))));
+}
+
+TEST_F(AutofillManagerTest,
+       DidShowSuggestions_LogByType_AddressOnlyWithoutName) {
+  // Create a form with address fields.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.button_titles = {std::make_pair(
+      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.url = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  form.main_frame_origin =
+      url::Origin::Create(GURL("https://myform_root.com/form.html"));
+  form.submission_event = SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+
+  FormFieldData field;
+  test::CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address Line 2", "addr2", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Postal Code", "zipcode", "", "text", &field);
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidShowSuggestions(/*has_autofill_suggestions=*/true, form,
+                                        form.fields[0]);
+
+  histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address.AddressOnly",
+                                     FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address.AddressOnly",
+                                     FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusContact"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
 TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_ContactOnly) {
@@ -6491,13 +6537,57 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_ContactOnly) {
 
   // Logging is not done for other types of address forms.
   const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(histograms,
-              Not(AnyOf("Autofill.FormEvents.Address.AddressPlusContact",
-                        "Autofill.FormEvents.Address.AddressPlusEmail",
-                        "Autofill.FormEvents.Address.AddressPlusEmailPlusPhone",
-                        "Autofill.FormEvents.Address.AddressPlusPhone",
-                        "Autofill.FormEvents.Address.AddressOnly",
-                        "Autofill.FormEvents.Address.Other")));
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusContact"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+          HasSubstr("Autofill.FormEvents.Address.Other"))));
+}
+
+TEST_F(AutofillManagerTest,
+       DidShowSuggestions_LogByType_ContactOnlyWithoutName) {
+  // Create a form with contact fields.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.button_titles = {std::make_pair(
+      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.url = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  form.main_frame_origin =
+      url::Origin::Create(GURL("https://myform_root.com/form.html"));
+  form.submission_event = SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+
+  FormFieldData field;
+  test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "email", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "email", &field);
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidShowSuggestions(/*has_autofill_suggestions=*/true, form,
+                                        form.fields[0]);
+  histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address.ContactOnly",
+                                     FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address.ContactOnly",
+                                     FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusContact"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+          HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
 TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_Other) {
@@ -6530,17 +6620,19 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_Other) {
 
   // Logging is not done for other types of address forms.
   const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(histograms,
-              Not(AnyOf("Autofill.FormEvents.Address.AddressPlusContact",
-                        "Autofill.FormEvents.Address.AddressPlusEmail",
-                        "Autofill.FormEvents.Address.AddressPlusEmailPlusPhone",
-                        "Autofill.FormEvents.Address.AddressPlusPhone",
-                        "Autofill.FormEvents.Address.AddressOnly",
-                        "Autofill.FormEvents.Address.ContactOnly")));
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusContact"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+          HasSubstr("Autofill.FormEvents.Address.ContactOnly"))));
 }
 
 TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressPlusEmail) {
-  // Create a form with name fields.
+  // Create a form with name, address, and email fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
   form.button_titles = {std::make_pair(
@@ -6579,12 +6671,63 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressPlusEmail) {
 
   // Logging is not done for other types of address forms.
   const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(histograms,
-              Not(AnyOf("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone",
-                        "Autofill.FormEvents.Address.AddressPlusPhone",
-                        "Autofill.FormEvents.Address.AddressOnly",
-                        "Autofill.FormEvents.Address.ContactOnly",
-                        "Autofill.FormEvents.Address.Other")));
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+          HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.Other"))));
+}
+
+TEST_F(AutofillManagerTest,
+       DidShowSuggestions_LogByType_AddressPlusEmailWithoutName) {
+  // Create a form with address and email fields.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.button_titles = {std::make_pair(
+      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.url = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  form.main_frame_origin =
+      url::Origin::Create(GURL("https://myform_root.com/form.html"));
+  form.submission_event = SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+
+  FormFieldData field;
+  test::CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address Line 2", "addr2", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "email", &field);
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidShowSuggestions(/*has_autofill_suggestions=*/true, form,
+                                        form.fields[0]);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusEmail",
+      FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusEmail",
+      FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusContact",
+      FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusContact",
+      FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+          HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
 TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressPlusPhone) {
@@ -6627,17 +6770,68 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressPlusPhone) {
 
   // Logging is not done for other types of address forms.
   const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(histograms,
-              Not(AnyOf("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone",
-                        "Autofill.FormEvents.Address.AddressPlusEmail",
-                        "Autofill.FormEvents.Address.AddressOnly",
-                        "Autofill.FormEvents.Address.ContactOnly",
-                        "Autofill.FormEvents.Address.Other")));
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+          HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.Other"))));
+}
+
+TEST_F(AutofillManagerTest,
+       DidShowSuggestions_LogByType_AddressPlusPhoneWithoutName) {
+  // Create a form with name, address, and phone fields.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.button_titles = {std::make_pair(
+      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.url = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  form.main_frame_origin =
+      url::Origin::Create(GURL("https://myform_root.com/form.html"));
+  form.submission_event = SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+
+  FormFieldData field;
+  test::CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address Line 2", "addr2", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidShowSuggestions(/*has_autofill_suggestions=*/true, form,
+                                        form.fields[0]);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusPhone",
+      FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusPhone",
+      FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusContact",
+      FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusContact",
+      FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+          HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
 TEST_F(AutofillManagerTest,
        DidShowSuggestions_LogByType_AddressPlusEmailPlusPhone) {
-  // Create a form with name fields.
+  // Create a form with name, address, phone, and email fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
   form.button_titles = {std::make_pair(
@@ -6678,12 +6872,61 @@ TEST_F(AutofillManagerTest,
 
   // Logging is not done for other types of address forms.
   const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(histograms,
-              Not(AnyOf("Autofill.FormEvents.Address.AddressPlusPhone",
-                        "Autofill.FormEvents.Address.AddressPlusEmail",
-                        "Autofill.FormEvents.Address.AddressOnly",
-                        "Autofill.FormEvents.Address.ContactOnly",
-                        "Autofill.FormEvents.Address.Other")));
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
+                HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
+                HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+                HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+                HasSubstr("Autofill.FormEvents.Address.Other"))));
+}
+
+TEST_F(AutofillManagerTest,
+       DidShowSuggestions_LogByType_AddressPlusEmailPlusPhoneWithoutName) {
+  // Create a form with address, phone, and email fields.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.button_titles = {std::make_pair(
+      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.url = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  form.main_frame_origin =
+      url::Origin::Create(GURL("https://myform_root.com/form.html"));
+  form.submission_event = SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+
+  FormFieldData field;
+  test::CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "email", &field);
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidShowSuggestions(/*has_autofill_suggestions=*/true, form,
+                                        form.fields[0]);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusEmailPlusPhone",
+      FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusEmailPlusPhone",
+      FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusContact",
+      FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address.AddressPlusContact",
+      FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
+                HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
+                HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+                HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+                HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
 TEST_F(AutofillManagerTest,
