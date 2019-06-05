@@ -1364,6 +1364,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadHandlersArePowerful) {
   RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
   RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
 
+  // Increase SwapOut/Unload timeout to prevent the previous document from
+  // being deleleted before it has finished running B2 unload handler.
+  A1->DisableSwapOutTimerForTesting();
+  B2->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
+
   // Add an unload handler to the subframe and try in that handler to preserve
   // state that we will try to recover later.
   ASSERT_TRUE(ExecJs(B2, R"(
@@ -1450,6 +1455,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
   RenderFrameHostImpl* C3 = B2->child_at(0)->current_frame_host();
 
+  // Increase SwapOut/Unload timeout to prevent the previous document from
+  // being deleleted before it has finished running C3 unload handler.
+  A1->DisableSwapOutTimerForTesting();
+  B2->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
+  C3->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
+
   // Add an unload handler to the subframe and try in that handler to preserve
   // state that we will try to recover later.
   ASSERT_TRUE(ExecJs(C3, R"(
@@ -1494,21 +1505,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  RenderFrameHostImpl* A4 = web_contents()->GetMainFrame();
-  RenderFrameHostImpl* B5 = A4->child_at(0)->current_frame_host();
-  RenderFrameHostImpl* C6 = B5->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* A5 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B6 = A5->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* C7 = B6->child_at(0)->current_frame_host();
 
   // Verify that we can recover the data that should have been persisted by the
   // unload handler.
   EXPECT_EQ("localstorage_test_value",
-            EvalJs(C6, "localStorage.localstorage_test_key"));
-  EXPECT_EQ("cookie_test_key=cookie_test_value", EvalJs(C6, "document.cookie"));
+            EvalJs(C7, "localStorage.localstorage_test_key"));
+  EXPECT_EQ("cookie_test_key=cookie_test_value", EvalJs(C7, "document.cookie"));
 
   // TODO(lukasza): https://crbug.com/960976: Make the verification below
   // unconditional, once the bug is fixed.
   if (!AreAllSitesIsolatedForTesting()) {
     EXPECT_EQ("history_test_value",
-              EvalJs(C6, "history.state.history_test_key"));
+              EvalJs(C7, "history.state.history_test_key"));
   }
 }
 
