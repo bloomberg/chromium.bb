@@ -114,6 +114,10 @@ void ArcCustomTabView::Attach(gfx::NativeView view) {
   native_view_container_->AddObserver(this);
 }
 
+gfx::NativeView ArcCustomTabView::GetHostView() {
+  return host_->native_view();
+}
+
 void ArcCustomTabView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (previous_bounds.size() != size()) {
     InvalidateLayout();

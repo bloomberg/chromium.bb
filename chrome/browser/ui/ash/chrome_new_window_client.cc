@@ -47,6 +47,9 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/user_agent.h"
@@ -58,6 +61,9 @@
 #include "ui/aura/window.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -100,7 +106,10 @@ std::string GetPathAndQuery(const GURL& url) {
 }
 
 // Implementation of CustomTabSession interface.
-class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
+class CustomTabSessionImpl
+    : public arc::mojom::CustomTabSession,
+      public web_modal::WebContentsModalDialogHost,
+      public web_modal::WebContentsModalDialogManagerDelegate {
  public:
   static arc::mojom::CustomTabSessionPtr Create(
       Profile* profile,
@@ -116,7 +125,32 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     return ptr;
   }
 
-  // arc::mojom::CustomTabSession override:
+  // web_modal::WebContentsModalDialogManagerDelegate:
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+      override {
+    return this;
+  }
+
+  // web_modal::WebContentsModalDialogHost:
+  gfx::NativeView GetHostView() const override {
+    return custom_tab_->GetHostView();
+  }
+
+  gfx::Point GetDialogPosition(const gfx::Size& size) override {
+    return web_contents_->GetViewBounds().origin();
+  }
+
+  gfx::Size GetMaximumDialogSize() override {
+    return web_contents_->GetViewBounds().size();
+  }
+
+  void AddObserver(web_modal::ModalDialogHostObserver* observer) override {
+  }
+
+  void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override {
+  }
+
+  // arc::mojom::CustomTabSession:
   void OnOpenInChromeClicked() override { forwarded_to_normal_tab_ = true; }
 
  private:
@@ -187,6 +221,15 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     // Add a flag to remember this tab originated in the ARC context.
     web_contents->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
                               std::make_unique<arc::ArcWebContentsData>());
+
+    // Attach any required WebContents helpers. Browser tabs automatically get
+    // them attached in TabHelpers::AttachTabHelpers.
+    web_modal::WebContentsModalDialogManager::CreateForWebContents(
+        web_contents.get());
+    web_modal::WebContentsModalDialogManager::FromWebContents(
+        web_contents.get())
+        ->SetDelegate(this);
+
     return web_contents;
   }
 

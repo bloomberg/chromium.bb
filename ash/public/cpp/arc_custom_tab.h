@@ -27,6 +27,10 @@ class ASH_EXPORT ArcCustomTab {
 
   virtual void Attach(gfx::NativeView view) = 0;
 
+  // Returns the view against which a view or dialog is positioned and parented
+  // in an ArcCustomTab.
+  virtual gfx::NativeView GetHostView() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcCustomTab);
 };
