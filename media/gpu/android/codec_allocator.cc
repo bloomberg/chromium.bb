@@ -206,22 +206,6 @@ scoped_refptr<base::SingleThreadTaskRunner> CodecAllocator::TaskRunnerFor(
   return threads_[task_type]->thread.task_runner();
 }
 
-std::unique_ptr<MediaCodecBridge> CodecAllocator::CreateMediaCodecSync(
-    scoped_refptr<CodecConfig> codec_config) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-
-  auto task_type =
-      TaskTypeForAllocation(codec_config->software_codec_forbidden);
-  if (!task_type)
-    return nullptr;
-
-  auto codec = CreateMediaCodecInternal(factory_cb_, codec_config,
-                                        task_type == SW_CODEC);
-  if (codec)
-    codec_task_types_[codec.get()] = *task_type;
-  return codec;
-}
-
 void CodecAllocator::CreateMediaCodecAsync(
     base::WeakPtr<CodecAllocatorClient> client,
     scoped_refptr<CodecConfig> codec_config) {

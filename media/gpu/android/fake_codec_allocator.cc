@@ -28,25 +28,6 @@ void FakeCodecAllocator::StartThread(CodecAllocatorClient* client) {}
 
 void FakeCodecAllocator::StopThread(CodecAllocatorClient* client) {}
 
-std::unique_ptr<MediaCodecBridge> FakeCodecAllocator::CreateMediaCodecSync(
-    scoped_refptr<CodecConfig> config) {
-  CopyCodecConfig(config);
-  MockCreateMediaCodecSync(most_recent_overlay, most_recent_texture_owner);
-
-  std::unique_ptr<MockMediaCodecBridge> codec;
-  if (allow_sync_creation) {
-    codec = std::make_unique<MockMediaCodecBridge>();
-    most_recent_codec = codec.get();
-    most_recent_codec_destruction_observer = codec->CreateDestructionObserver();
-    most_recent_codec_destruction_observer->DoNotAllowDestruction();
-  } else {
-    most_recent_codec = nullptr;
-    most_recent_codec_destruction_observer = nullptr;
-  }
-
-  return std::move(codec);
-}
-
 void FakeCodecAllocator::CreateMediaCodecAsync(
     base::WeakPtr<CodecAllocatorClient> client,
     scoped_refptr<CodecConfig> config) {

@@ -144,10 +144,6 @@ class MEDIA_GPU_EXPORT CodecAllocator {
   virtual void StartThread(CodecAllocatorClient* client);
   virtual void StopThread(CodecAllocatorClient* client);
 
-  // Create and configure a MediaCodec synchronously.
-  virtual std::unique_ptr<MediaCodecBridge> CreateMediaCodecSync(
-      scoped_refptr<CodecConfig> codec_config);
-
   // Create and configure a MediaCodec asynchronously. The result is delivered
   // via OnCodecConfigured().
   virtual void CreateMediaCodecAsync(base::WeakPtr<CodecAllocatorClient> client,

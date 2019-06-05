@@ -30,7 +30,6 @@ class FakeCodecAllocator : public testing::NiceMock<CodecAllocator> {
   // These are called with some parameters of the codec config by our
   // implementation of their respective functions.  This allows tests to set
   // expectations on them.
-  MOCK_METHOD2(MockCreateMediaCodecSync, void(AndroidOverlay*, TextureOwner*));
   MOCK_METHOD2(MockCreateMediaCodecAsync, void(AndroidOverlay*, TextureOwner*));
 
   // Note that this doesn't exactly match the signature, since unique_ptr
@@ -39,8 +38,6 @@ class FakeCodecAllocator : public testing::NiceMock<CodecAllocator> {
   MOCK_METHOD3(MockReleaseMediaCodec,
                void(MediaCodecBridge*, AndroidOverlay*, TextureOwner*));
 
-  std::unique_ptr<MediaCodecBridge> CreateMediaCodecSync(
-      scoped_refptr<CodecConfig> config) override;
   void CreateMediaCodecAsync(base::WeakPtr<CodecAllocatorClient> client,
                              scoped_refptr<CodecConfig> config) override;
   void ReleaseMediaCodec(
