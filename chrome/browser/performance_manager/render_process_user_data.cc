@@ -116,4 +116,9 @@ void RenderProcessUserData::RenderProcessExited(
                      base::Unretained(process_node_.get()), info.exit_code));
 }
 
+void RenderProcessUserData::RenderProcessHostDestroyed(
+    content::RenderProcessHost* host) {
+  host->RemoveUserData(kRenderProcessUserDataKey);
+}
+
 }  // namespace performance_manager

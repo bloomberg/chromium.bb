@@ -47,6 +47,7 @@ class RenderProcessUserData : public base::SupportsUserData::Data,
   void RenderProcessExited(
       content::RenderProcessHost* host,
       const content::ChildProcessTerminationInfo& info) override;
+  void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
   // All instances are linked together in a doubly linked list to allow orderly
   // destruction at browser shutdown time.
