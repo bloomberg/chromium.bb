@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "base/bind_internal.h"
@@ -179,26 +180,39 @@ template <bool is_once, bool is_method, typename... Args>
 using MakeUnwrappedTypeList =
     typename MakeUnwrappedTypeListImpl<is_once, is_method, Args...>::Type;
 
-}  // namespace internal
+// Used below in BindImpl to determine whether to use Invoker::Run or
+// Invoker::RunOnce.
+// Note: Simply using `kIsOnce ? &Invoker::RunOnce : &Invoker::Run` does not
+// work, since the compiler needs to check whether both expressions are
+// well-formed. Using `Invoker::Run` with a OnceCallback triggers a
+// static_assert, which is why the ternary expression does not compile.
+// TODO(crbug.com/752720): Remove this indirection once we have `if constexpr`.
+template <bool is_once, typename Invoker>
+struct InvokeFuncImpl;
 
-// Bind as OnceCallback.
-template <typename Functor, typename... Args>
-inline OnceCallback<MakeUnboundRunType<Functor, Args...>>
-BindOnce(Functor&& functor, Args&&... args) {
-  static_assert(!internal::IsOnceCallback<std::decay_t<Functor>>() ||
-                    (std::is_rvalue_reference<Functor&&>() &&
-                     !std::is_const<std::remove_reference_t<Functor>>()),
-                "BindOnce requires non-const rvalue for OnceCallback binding."
-                " I.e.: base::BindOnce(std::move(callback)).");
+template <typename Invoker>
+struct InvokeFuncImpl<true, Invoker> {
+  static constexpr auto Value = &Invoker::RunOnce;
+};
 
+template <typename Invoker>
+struct InvokeFuncImpl<false, Invoker> {
+  static constexpr auto Value = &Invoker::Run;
+};
+
+template <template <typename> class CallbackT,
+          typename Functor,
+          typename... Args>
+decltype(auto) BindImpl(Functor&& functor, Args&&... args) {
   // This block checks if each |args| matches to the corresponding params of the
   // target function. This check does not affect the behavior of Bind, but its
   // error message should be more readable.
+  static constexpr bool kIsOnce = IsOnceCallback<CallbackT<void()>>::value;
   using Helper = internal::BindTypeHelper<Functor, Args...>;
   using FunctorTraits = typename Helper::FunctorTraits;
   using BoundArgsList = typename Helper::BoundArgsList;
   using UnwrappedArgsList =
-      internal::MakeUnwrappedTypeList<true, FunctorTraits::is_method,
+      internal::MakeUnwrappedTypeList<kIsOnce, FunctorTraits::is_method,
                                       Args&&...>;
   using BoundParamsList = typename Helper::BoundParamsList;
   static_assert(internal::AssertBindArgsValidity<
@@ -209,18 +223,35 @@ BindOnce(Functor&& functor, Args&&... args) {
   using BindState = internal::MakeBindStateType<Functor, Args...>;
   using UnboundRunType = MakeUnboundRunType<Functor, Args...>;
   using Invoker = internal::Invoker<BindState, UnboundRunType>;
-  using CallbackType = OnceCallback<UnboundRunType>;
+  using CallbackType = CallbackT<UnboundRunType>;
 
   // Store the invoke func into PolymorphicInvoke before casting it to
   // InvokeFuncStorage, so that we can ensure its type matches to
   // PolymorphicInvoke, to which CallbackType will cast back.
   using PolymorphicInvoke = typename CallbackType::PolymorphicInvoke;
-  PolymorphicInvoke invoke_func = &Invoker::RunOnce;
+  PolymorphicInvoke invoke_func = InvokeFuncImpl<kIsOnce, Invoker>::Value;
 
   using InvokeFuncStorage = internal::BindStateBase::InvokeFuncStorage;
   return CallbackType(BindState::Create(
       reinterpret_cast<InvokeFuncStorage>(invoke_func),
       std::forward<Functor>(functor), std::forward<Args>(args)...));
+}
+
+}  // namespace internal
+
+// Bind as OnceCallback.
+template <typename Functor, typename... Args>
+inline OnceCallback<MakeUnboundRunType<Functor, Args...>> BindOnce(
+    Functor&& functor,
+    Args&&... args) {
+  static_assert(!internal::IsOnceCallback<std::decay_t<Functor>>() ||
+                    (std::is_rvalue_reference<Functor&&>() &&
+                     !std::is_const<std::remove_reference_t<Functor>>()),
+                "BindOnce requires non-const rvalue for OnceCallback binding."
+                " I.e.: base::BindOnce(std::move(callback)).");
+
+  return internal::BindImpl<OnceCallback>(std::forward<Functor>(functor),
+                                          std::forward<Args>(args)...);
 }
 
 // Bind as RepeatingCallback.
@@ -231,36 +262,8 @@ BindRepeating(Functor&& functor, Args&&... args) {
       !internal::IsOnceCallback<std::decay_t<Functor>>(),
       "BindRepeating cannot bind OnceCallback. Use BindOnce with std::move().");
 
-  // This block checks if each |args| matches to the corresponding params of the
-  // target function. This check does not affect the behavior of Bind, but its
-  // error message should be more readable.
-  using Helper = internal::BindTypeHelper<Functor, Args...>;
-  using FunctorTraits = typename Helper::FunctorTraits;
-  using BoundArgsList = typename Helper::BoundArgsList;
-  using UnwrappedArgsList =
-      internal::MakeUnwrappedTypeList<false, FunctorTraits::is_method,
-                                      Args&&...>;
-  using BoundParamsList = typename Helper::BoundParamsList;
-  static_assert(internal::AssertBindArgsValidity<
-                    std::make_index_sequence<Helper::num_bounds>, BoundArgsList,
-                    UnwrappedArgsList, BoundParamsList>::ok,
-                "The bound args need to be convertible to the target params.");
-
-  using BindState = internal::MakeBindStateType<Functor, Args...>;
-  using UnboundRunType = MakeUnboundRunType<Functor, Args...>;
-  using Invoker = internal::Invoker<BindState, UnboundRunType>;
-  using CallbackType = RepeatingCallback<UnboundRunType>;
-
-  // Store the invoke func into PolymorphicInvoke before casting it to
-  // InvokeFuncStorage, so that we can ensure its type matches to
-  // PolymorphicInvoke, to which CallbackType will cast back.
-  using PolymorphicInvoke = typename CallbackType::PolymorphicInvoke;
-  PolymorphicInvoke invoke_func = &Invoker::Run;
-
-  using InvokeFuncStorage = internal::BindStateBase::InvokeFuncStorage;
-  return CallbackType(BindState::Create(
-      reinterpret_cast<InvokeFuncStorage>(invoke_func),
-      std::forward<Functor>(functor), std::forward<Args>(args)...));
+  return internal::BindImpl<RepeatingCallback>(std::forward<Functor>(functor),
+                                               std::forward<Args>(args)...);
 }
 
 // Unannotated Bind.
