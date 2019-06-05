@@ -42,7 +42,7 @@
 //   class C : public base::RefCounted<C> { void F(); };
 //   auto instance = base::MakeRefCounted<C>();
 //   auto cb = base::BindOnce(&C::F, instance);
-//   cb.Run();  // Identical to instance->F()
+//   std::move(cb).Run();  // Identical to instance->F()
 //
 // base::Bind is currently a type alias for base::BindRepeating(). In the
 // future, we expect to flip this to default to base::BindOnce().
