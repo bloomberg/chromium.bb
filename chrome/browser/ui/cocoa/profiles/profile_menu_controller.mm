@@ -21,7 +21,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
@@ -39,6 +41,13 @@ enum ValidateMenuItemSelector {
   SWITCH_PROFILE_DOCK,
   MAX_VALIDATE_MENU_SELECTOR,
 };
+
+// Check Add Person pref.
+bool IsAddPersonEnabled() {
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  return service->GetBoolean(prefs::kBrowserAddPersonEnabled);
+}
 
 }  // namespace
 
@@ -181,6 +190,9 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
            [menuItem action] != @selector(editProfile:);
   }
 
+  if (!IsAddPersonEnabled())
+    return [menuItem action] != @selector(newProfile:);
+
   size_t index = avatarMenu_->GetActiveProfileIndex();
   if (avatarMenu_->GetNumberOfItems() <= index) {
     ValidateMenuItemSelector currentSelector = UNKNOWN_SELECTOR;
@@ -241,11 +253,14 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
                                         action:@selector(editProfile:)];
   [[self menu] addItem:item];
 
-  [[self menu] addItem:[NSMenuItem separatorItem]];
-  item = [self createItemWithTitle:l10n_util::GetNSStringWithFixup(
-      IDS_PROFILES_CREATE_NEW_PROFILE_OPTION)
-                            action:@selector(newProfile:)];
-  [[self menu] addItem:item];
+  if (IsAddPersonEnabled()) {
+    [[self menu] addItem:[NSMenuItem separatorItem]];
+
+    item = [self createItemWithTitle:l10n_util::GetNSStringWithFixup(
+                                         IDS_PROFILES_CREATE_NEW_PROFILE_OPTION)
+                              action:@selector(newProfile:)];
+    [[self menu] addItem:item];
+  }
 
   [self rebuildMenu];
 }
