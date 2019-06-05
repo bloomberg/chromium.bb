@@ -163,7 +163,8 @@ class TokenResponse {
 
   // PinAuth returns a pinAuth parameter for a request that will use the given
   // client-data hash.
-  std::vector<uint8_t> PinAuth(const std::array<uint8_t, 32> client_data_hash);
+  std::vector<uint8_t> PinAuth(
+      base::span<const uint8_t> client_data_hash) const;
 
   const std::vector<uint8_t>& token() { return token_; }
 

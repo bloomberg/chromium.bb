@@ -351,7 +351,7 @@ base::Optional<TokenResponse> TokenResponse::Parse(
 }
 
 std::vector<uint8_t> TokenResponse::PinAuth(
-    const std::array<uint8_t, 32> client_data_hash) {
+    base::span<const uint8_t> client_data_hash) const {
   return MakePinAuth(token_, client_data_hash);
 }
 
