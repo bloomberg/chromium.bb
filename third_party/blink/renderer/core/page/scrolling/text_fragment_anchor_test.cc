@@ -397,9 +397,9 @@ TEST_F(TextFragmentAnchorTest, MultipleNonMatchingStrings) {
 
 // Test matching a text range within the same element
 TEST_F(TextFragmentAnchorTest, SameElementTextRange) {
-  SimRequest request("https://example.com/test.html#targetText=this,page",
+  SimRequest request("https://example.com/test.html#targetText=This,page",
                      "text/html");
-  LoadURL("https://example.com/test.html#targetText=this,page");
+  LoadURL("https://example.com/test.html#targetText=This,page");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -619,9 +619,9 @@ TEST_F(TextFragmentAnchorTest, DistantElementTextRange) {
 // Test a text range with both context terms in the same element.
 TEST_F(TextFragmentAnchorTest, TextRangeWithContext) {
   SimRequest request(
-      "https://example.com/test.html#targetText=this-,is,test,-page",
+      "https://example.com/test.html#targetText=This-,is,test,-page",
       "text/html");
-  LoadURL("https://example.com/test.html#targetText=this-,is,test,-page");
+  LoadURL("https://example.com/test.html#targetText=This-,is,test,-page");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <p id="text">This is a test page</p>
@@ -661,9 +661,9 @@ TEST_F(TextFragmentAnchorTest, PrefixNotFound) {
 // Ensure that we do not match a text range if the suffix is not found.
 TEST_F(TextFragmentAnchorTest, SuffixNotFound) {
   SimRequest request(
-      "https://example.com/test.html#targetText=this-,is,test,-suffix",
+      "https://example.com/test.html#targetText=This-,is,test,-suffix",
       "text/html");
-  LoadURL("https://example.com/test.html#targetText=this-,is,test,-suffix");
+  LoadURL("https://example.com/test.html#targetText=This-,is,test,-suffix");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <p id="text">This is a test page</p>
@@ -678,11 +678,11 @@ TEST_F(TextFragmentAnchorTest, SuffixNotFound) {
 // Test a text range with context terms in different elements
 TEST_F(TextFragmentAnchorTest, TextRangeWithCrossElementContext) {
   SimRequest request(
-      "https://example.com/test.html#targetText=header%202-,a,text,-footer%201",
+      "https://example.com/test.html#targetText=Header%202-,A,text,-Footer%201",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=header%202-,a,text,-footer%201");
+      "test.html#targetText=Header%202-,A,text,-Footer%201");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <h1>Header 1</h1>
@@ -714,11 +714,11 @@ TEST_F(TextFragmentAnchorTest, TextRangeWithCrossElementContext) {
 TEST_F(TextFragmentAnchorTest, CrossElementAndWhitespaceContext) {
   SimRequest request(
       "https://example.com/"
-      "test.html#targetText=list%202-,cat,-good%20cat",
+      "test.html#targetText=List%202-,Cat,-Good%20cat",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=list%202-,cat,-good%20cat");
+      "test.html#targetText=List%202-,Cat,-Good%20cat");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <h1> List 1 </h1>
@@ -791,9 +791,9 @@ TEST_F(TextFragmentAnchorTest, CrossEmptySiblingAndParentElementContext) {
 // Ensure we scroll to text when its prefix and suffix are out of view.
 TEST_F(TextFragmentAnchorTest, DistantElementContext) {
   SimRequest request(
-      "https://example.com/test.html#targetText=prefix-,cats,-suffix",
+      "https://example.com/test.html#targetText=Prefix-,Cats,-Suffix",
       "text/html");
-  LoadURL("https://example.com/test.html#targetText=prefix-,cats,-suffix");
+  LoadURL("https://example.com/test.html#targetText=Prefix-,Cats,-Suffix");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1008,6 +1008,31 @@ TEST_F(TextFragmentAnchorTest, DisabledInSamePageNavigation) {
   RunAsyncMatchingTasks();
 
   EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
+}
+
+// Make sure matching is case sensitive.
+TEST_F(TextFragmentAnchorTest, CaseSensitive) {
+  SimRequest request("https://example.com/test.html#targetText=Test",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=Test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">test</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
+  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
 }
 
 }  // namespace

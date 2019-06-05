@@ -24,9 +24,9 @@ const char kNoContext[] = "";
 EphemeralRangeInFlatTree FindMatchInRange(String search_text,
                                           PositionInFlatTree search_start,
                                           PositionInFlatTree search_end) {
-  const FindOptions find_options = kCaseInsensitive;
   const EphemeralRangeInFlatTree search_range(search_start, search_end);
-  return FindBuffer::FindMatchInRange(search_range, search_text, find_options);
+  return FindBuffer::FindMatchInRange(search_range, search_text,
+                                      /*find_options=*/0);
 }
 
 PositionInFlatTree NextTextPosition(PositionInFlatTree position,
@@ -56,10 +56,9 @@ EphemeralRangeInFlatTree FindImmediateMatch(String search_text,
     return EphemeralRangeInFlatTree();
 
   FindBuffer buffer(EphemeralRangeInFlatTree(search_start, search_end));
-  const FindOptions find_options = kCaseInsensitive;
 
   std::unique_ptr<FindBuffer::Results> match_results =
-      buffer.FindMatches(search_text, find_options);
+      buffer.FindMatches(search_text, /*find_options=*/0);
 
   if (!match_results->IsEmpty() && match_results->front().start == 0u) {
     FindBuffer::BufferMatchResult match = match_results->front();
