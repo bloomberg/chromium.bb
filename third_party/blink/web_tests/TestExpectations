@@ -5719,3 +5719,4 @@ crbug.com/970142 virtual/blink-cors/http/tests/security/mixedContent/insecure-cs
 crbug.com/971031 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 crbug.com/971252 [ Mac ] external/wpt/media-source/mediasource-play.html [ Pass Timeout ]
 crbug.com/971259 media/controls/volumechange-stopimmediatepropagation.html [ Pass Failure ]
+crbug.com/971262 http/tests/devtools/profiler/live-line-level-heap-profile.js [ Pass Timeout ]
