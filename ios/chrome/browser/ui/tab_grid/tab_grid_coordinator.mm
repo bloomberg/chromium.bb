@@ -302,6 +302,7 @@
   }
 
   self.bvcContainer = [[BVCContainerViewController alloc] init];
+  self.bvcContainer.modalPresentationStyle = UIModalPresentationFullScreen;
   self.bvcContainer.currentBVC = viewController;
   self.bvcContainer.transitioningDelegate = self.transitionHandler;
   BOOL animated = !self.animationsDisabledForTesting;

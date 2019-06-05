@@ -56,7 +56,17 @@ namespace {
 const size_t kBacktraceDepth = 20;
 
 // The original implementation for |-[NSObject dealloc]|.
-IMP g_originalDeallocIMP = NULL;
+#if OBJC_OLD_DISPATCH_PROTOTYPES
+using RealIMP = IMP;
+#else
+// With !OBJC_OLD_DISPATCH_PROTOTYPES the runtime hasn't changed and IMP is
+// still what it always was, but the SDK is hiding the details now outside the
+// objc runtime. It is safe to define |RealIMP| to match the older definition of
+// |IMP|.
+using RealIMP = id (*)(id, SEL, ...);
+#endif
+
+RealIMP g_originalDeallocIMP = NULL;
 
 // Classes which freed objects become.  |g_fatZombieSize| is the
 // minimum object size which can be made into a fat zombie (which can
@@ -252,8 +262,8 @@ BOOL ZombieInit() {
     return YES;
 
   Class rootClass = [NSObject class];
-  g_originalDeallocIMP =
-      class_getMethodImplementation(rootClass, @selector(dealloc));
+  g_originalDeallocIMP = reinterpret_cast<RealIMP>(
+      class_getMethodImplementation(rootClass, @selector(dealloc)));
   // objc_getClass() so CrZombie doesn't need +class.
   g_zombieClass = objc_getClass("CrZombie");
   g_fatZombieClass = objc_getClass("CrFatZombie");
@@ -346,9 +356,10 @@ bool ZombieEnable(bool zombieAllObjects,
   if (!m)
     return false;
 
-  const IMP prevDeallocIMP = method_setImplementation(m, (IMP)ZombieDealloc);
+  const RealIMP prevDeallocIMP = reinterpret_cast<RealIMP>(
+      method_setImplementation(m, reinterpret_cast<IMP>(ZombieDealloc)));
   DCHECK(prevDeallocIMP == g_originalDeallocIMP ||
-         prevDeallocIMP == (IMP)ZombieDealloc);
+         prevDeallocIMP == reinterpret_cast<RealIMP>(ZombieDealloc));
 
   // Grab the current set of zombies.  This is thread-safe because
   // only the main thread can change these.
@@ -420,7 +431,7 @@ void ZombieDisable() {
   // Put back the original implementation of -[NSObject dealloc].
   Method m = class_getInstanceMethod([NSObject class], @selector(dealloc));
   DCHECK(m);
-  method_setImplementation(m, g_originalDeallocIMP);
+  method_setImplementation(m, reinterpret_cast<IMP>(g_originalDeallocIMP));
 
   // Can safely grab this because it only happens on the main thread.
   const size_t oldCount = g_zombieCount;

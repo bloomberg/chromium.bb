@@ -2,7 +2,7 @@
   "comments": [
     "Runs tests on 64-bit iOS 11.4 and 12.1 and 13.0 tests"
   ],
-  "xcode build version": "10e125",
+  "xcode build version": "11m336w",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -22,7 +22,7 @@
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPhone X",
-      "os": "12.2",
+      "os": "13.0",
       "pool":"Chrome",
       "host os": "Mac-10.14.3",
       "optional_dimensions": {
@@ -35,7 +35,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s Plus",
-      "os": "12.2",
+      "os": "13.0",
       "pool":"Chrome",
       "host os": "Mac-10.14.3",
       "optional_dimensions": {
@@ -48,7 +48,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s",
-      "os": "12.2",
+      "os": "13.0",
       "pool":"Chrome",
       "host os": "Mac-10.14.3",
       "optional_dimensions": {
@@ -61,7 +61,7 @@
     {
       "include": "common_tests.json",
       "device type": "iPhone 6s",
-      "os": "12.2",
+      "os": "13.0",
       "pool":"Chrome",
       "host os": "Mac-10.14.3",
       "optional_dimensions": {
@@ -74,7 +74,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone 7",
-      "os": "12.2",
+      "os": "13.0",
       "pool":"Chrome",
       "host os": "Mac-10.14.3",
       "optional_dimensions": {
@@ -87,7 +87,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
-      "os": "12.2",
+      "os": "13.0",
       "pool":"Chrome",
       "host os": "Mac-10.14.3",
       "optional_dimensions": {
@@ -100,7 +100,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
-      "os": "12.2",
+      "os": "13.0",
       "pool":"Chrome",
       "host os": "Mac-10.14.3",
       "optional_dimensions": {
@@ -113,7 +113,7 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
-      "os": "12.2",
+      "os": "13.0",
       "pool":"Chrome",
       "host os": "Mac-10.14.3",
       "optional_dimensions": {
@@ -126,7 +126,7 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
-      "os": "12.2",
+      "os": "13.0",
       "pool":"Chrome",
       "host os": "Mac-10.14.3",
       "optional_dimensions": {

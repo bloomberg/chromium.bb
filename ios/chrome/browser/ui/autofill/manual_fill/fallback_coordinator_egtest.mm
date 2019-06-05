@@ -210,7 +210,6 @@ void UndockKeyboard() {
   CGRect keyboardContainerFrame = KeyboardContainerForLayout(layout).frame;
   CGPoint pointToKey = {keyFrame.origin.x - keyboardContainerFrame.origin.x,
                         keyFrame.origin.y - keyboardContainerFrame.origin.y};
-  CGRectIntersection(keyFrame, keyboardContainerFrame);
   CGPoint startPoint = CGPointMake((pointToKey.x + keyFrame.size.width / 2.0) /
                                        keyboardContainerFrame.size.width,
                                    (pointToKey.y + keyFrame.size.height / 2.0) /

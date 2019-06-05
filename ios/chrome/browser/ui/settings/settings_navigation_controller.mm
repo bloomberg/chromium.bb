@@ -249,9 +249,13 @@ initWithRootViewController:(UIViewController*)rootViewController
                   delegate:(id<SettingsNavigationControllerDelegate>)delegate {
   DCHECK(browserState);
   DCHECK(!browserState->IsOffTheRecord());
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  self = [super initWithRootViewController:rootViewController];
+#else
   self = rootViewController
              ? [super initWithRootViewController:rootViewController]
              : [super init];
+#endif
   if (self) {
     mainBrowserState_ = browserState;
     delegate_ = delegate;
