@@ -334,6 +334,7 @@ textarea {
   background: var(--input-background);
   border-radius: 3px;
   box-sizing: border-box;
+  color: inherit;
   font-size: .8125rem;
   margin: 0;
   min-height: 3em;
