@@ -62,6 +62,13 @@ Example:
      "register": 500,
    }
    "allow_set_device_attributes" : false,
+   "initial_enrollment_state": {
+     "TEST_serial": {
+       "initial_enrollment_mode": 2,
+       "management_domain": "test-domain.com",
+       "is_license_packaged_with_device": true
+     }
+   }
 }
 
 """
@@ -327,6 +334,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       response = self.ProcessPolicy(rmsg, request_type)
     elif request_type == 'enterprise_check':
       response = self.ProcessAutoEnrollment(rmsg.auto_enrollment_request)
+    elif request_type == 'device_initial_enrollment_state':
+      response = self.ProcessDeviceInitialEnrollmentState(
+          rmsg.device_initial_enrollment_state_request)
     elif request_type == 'device_state_retrieval':
       response = self.ProcessDeviceStateRetrievalRequest(
           rmsg.device_state_retrieval_request)
@@ -638,7 +648,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Handles an auto-enrollment check request.
 
     The reply depends on the value of the modulus:
-      1: replies with no new modulus and the sha256 hash of "0"
+      1: replies with no new modulus and corresponding sha256 hashes.
       2: replies with a new modulus, 4.
       4: replies with a new modulus, 2.
       8: fails with error 400.
@@ -657,8 +667,14 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     auto_enrollment_response = dm.DeviceAutoEnrollmentResponse()
 
     if msg.modulus == 1:
-      auto_enrollment_response.hashes.extend(
-          self.server.GetMatchingStateKeyHashes(msg.modulus, msg.remainder))
+      if (msg.enrollment_check_type == dm.DeviceAutoEnrollmentRequest.
+          ENROLLMENT_CHECK_TYPE_FRE):
+        auto_enrollment_response.hashes.extend(
+            self.server.GetMatchingStateKeyHashes(msg.modulus, msg.remainder))
+      elif (msg.enrollment_check_type == dm.DeviceAutoEnrollmentRequest.
+            ENROLLMENT_CHECK_TYPE_FORCED_ENROLLMENT):
+        auto_enrollment_response.hashes.extend(
+            self.server.GetMatchingSerialHashes(msg.modulus, msg.remainder))
     elif msg.modulus == 2:
       auto_enrollment_response.expected_modulus = 4
     elif msg.modulus == 4:
@@ -672,6 +688,36 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     response = dm.DeviceManagementResponse()
     response.auto_enrollment_response.CopyFrom(auto_enrollment_response)
+    return (200, response)
+
+  def ProcessDeviceInitialEnrollmentState(self, msg):
+    """Handles a device initial enrollment state request.
+
+    Response data is taken from server configuration.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client.
+    """
+    device_initial_enrollment_state_response = (
+        dm.DeviceInitialEnrollmentStateResponse())
+
+    brand_serial_id = msg.brand_code + '_' + msg.serial_number;
+    initial_state_dict = (self.server.GetPolicies().
+                          get('initial_enrollment_state', {}))
+    state = initial_state_dict.get(brand_serial_id, {})
+
+    FIELDS = [
+        'initial_enrollment_mode',
+        'management_domain',
+        'is_license_packaged_with_device',
+    ]
+    for field in FIELDS:
+      if field in state:
+        setattr(device_initial_enrollment_state_response, field, state[field])
+
+    response = dm.DeviceManagementResponse()
+    response.device_initial_enrollment_state_response.CopyFrom(
+        device_initial_enrollment_state_response)
     return (200, response)
 
   def ProcessDeviceStateRetrievalRequest(self, msg):
@@ -1532,6 +1578,21 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     return filter(
         lambda hash : int(hash.encode('hex'), 16) % modulus == remainder,
         hashed_keys)
+
+  def GetMatchingSerialHashes(self, modulus, remainder):
+    """Returns all serial hashes from configuration.
+
+    Returns:
+      The list of hashes
+    """
+    brand_serial_keys = (self.GetPolicies().get('initial_enrollment_state', {}).
+                         keys())
+    hashed_keys = map(lambda key: hashlib.sha256(key).digest()[0:8],
+                      brand_serial_keys)
+    return filter(
+        lambda hash : int(hash.encode('hex'), 16) % modulus == remainder,
+        hashed_keys)
+
 
   def UnregisterDevice(self, dmtoken):
     """Unregisters a device identified by the given DM token.

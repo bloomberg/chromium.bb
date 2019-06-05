@@ -80,6 +80,14 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
           restore_mode,
       const std::string& managemement_domain);
 
+  bool SetDeviceInitialEnrollmentResponse(
+      const std::string& device_brand_code,
+      const std::string& device_serial_number,
+      enterprise_management::DeviceInitialEnrollmentStateResponse::
+          InitialEnrollmentMode initial_mode,
+      const base::Optional<std::string>& management_domain,
+      const base::Optional<bool> is_license_packaged_with_device);
+
  private:
   std::unique_ptr<policy::LocalPolicyTestServer> policy_test_server_;
   base::Value server_config_;

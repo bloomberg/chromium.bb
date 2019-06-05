@@ -44,6 +44,9 @@ namespace chromeos {
 namespace {
 
 constexpr char kTestDomain[] = "test-domain.com";
+constexpr char kTestRlzBrandCodeKey[] = "TEST";
+constexpr char kTestSerialNumber[] = "111111";
+constexpr char kTestHardwareClass[] = "hw";
 
 std::string GetDmTokenFromPolicy(const std::string& blob) {
   enterprise_management::PolicyFetchResponse policy;
@@ -143,7 +146,8 @@ class AutoEnrollmentWithStatistics : public AutoEnrollmentLocalPolicyServer {
   AutoEnrollmentWithStatistics() : AutoEnrollmentLocalPolicyServer() {
     // AutoEnrollmentController assumes that VPD is in valid state if
     // "serial_number" or "Product_S/N" could be read from it.
-    fake_statistics_provider_.SetMachineStatistic("serial_number", "111111");
+    fake_statistics_provider_.SetMachineStatistic(
+        system::kSerialNumberKeyForTest, kTestSerialNumber);
   }
 
   ~AutoEnrollmentWithStatistics() override = default;
@@ -160,7 +164,8 @@ class AutoEnrollmentWithStatistics : public AutoEnrollmentLocalPolicyServer {
   }
 
   void SetVPDCorrupted() {
-    fake_statistics_provider_.ClearMachineStatistic("serial_number");
+    fake_statistics_provider_.ClearMachineStatistic(
+        system::kSerialNumberKeyForTest);
   }
 
  private:
@@ -182,6 +187,30 @@ class AutoEnrollmentNoStateKeys : public AutoEnrollmentWithStatistics {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentNoStateKeys);
+};
+
+class InitialEnrollmentTest : public EnrollmentLocalPolicyServerBase {
+ public:
+  InitialEnrollmentTest() {
+    fake_statistics_provider_.SetMachineStatistic(system::kRlzBrandCodeKey,
+                                                  kTestRlzBrandCodeKey);
+    fake_statistics_provider_.SetMachineStatistic(
+        system::kSerialNumberKeyForTest, kTestSerialNumber);
+    fake_statistics_provider_.SetMachineStatistic(system::kHardwareClassKey,
+                                                  kTestHardwareClass);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnrollmentLocalPolicyServerBase::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(
+        switches::kEnterpriseEnableInitialEnrollment,
+        AutoEnrollmentController::kInitialEnrollmentAlways);
+  }
+
+ private:
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  DISALLOW_COPY_AND_ASSIGN(InitialEnrollmentTest);
 };
 
 // Simple manual enrollment.
@@ -655,6 +684,84 @@ IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, DifferentDomain) {
   enrollment_ui_.ExpectErrorMessage(
       IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_USER, true);
   enrollment_ui_.RetryAfterError();
+}
+
+IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest, EnrollmentForced) {
+  auto initial_enrollment =
+      enterprise_management::DeviceInitialEnrollmentStateResponse::
+          INITIAL_ENROLLMENT_MODE_ENROLLMENT_ENFORCED;
+  policy_server_.SetDeviceInitialEnrollmentResponse(
+      kTestRlzBrandCodeKey, kTestSerialNumber, initial_enrollment, kTestDomain,
+      base::nullopt /* is_license_packaged_with_device */);
+
+  host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
+  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
+
+  // User can't skip.
+  enrollment_ui_.SetExitHandler();
+  enrollment_screen()->OnCancel();
+  EXPECT_EQ(EnrollmentScreen::Result::BACK, enrollment_ui_.WaitForScreenExit());
+
+  // Domain is actually different from what the server sent down. But Chrome
+  // does not enforce that domain if device is not locked.
+  enrollment_screen()->OnLoginDone(FakeGaiaMixin::kEnterpriseUser1,
+                                   FakeGaiaMixin::kFakeAuthCode);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsEnterpriseManaged());
+}
+
+// Zero touch with attestation authentication fail. Attestation fails because we
+// send empty cert request. Should switch to interactive authentication.
+IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest, ZeroTouchForcedAttestationFail) {
+  auto initial_enrollment =
+      enterprise_management::DeviceInitialEnrollmentStateResponse::
+          INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED;
+  policy_server_.SetDeviceInitialEnrollmentResponse(
+      kTestRlzBrandCodeKey, kTestSerialNumber, initial_enrollment, kTestDomain,
+      base::nullopt /* is_license_packaged_with_device */);
+
+  host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
+  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
+
+  // First it tries with attestation auth and should fail.
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(
+      IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_CERT_FETCH_FAILED,
+      /* can retry */ true);
+
+  // Cancel bring up Gaia sing-in page.
+  enrollment_screen()->OnCancel();
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSignin);
+
+  // User can't skip.
+  enrollment_ui_.SetExitHandler();
+  enrollment_screen()->OnCancel();
+  EXPECT_EQ(EnrollmentScreen::Result::BACK, enrollment_ui_.WaitForScreenExit());
+
+  // Domain is actually different from what the server sent down. But Chrome
+  // does not enforce that domain if device is not locked.
+  enrollment_screen()->OnLoginDone(FakeGaiaMixin::kEnterpriseUser1,
+                                   FakeGaiaMixin::kFakeAuthCode);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsEnterpriseManaged());
+}
+
+IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest,
+                       ZeroTouchForcedAttestationSuccess) {
+  policy_server_.SetFakeAttestationFlow();
+  auto initial_enrollment =
+      enterprise_management::DeviceInitialEnrollmentStateResponse::
+          INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED;
+  policy_server_.SetDeviceInitialEnrollmentResponse(
+      kTestRlzBrandCodeKey, kTestSerialNumber, initial_enrollment, kTestDomain,
+      base::nullopt /* is_license_packaged_with_device */);
+
+  host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
 }
 
 }  // namespace chromeos

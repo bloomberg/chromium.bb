@@ -209,6 +209,32 @@ bool LocalPolicyTestServerMixin::SetDeviceStateRetrievalResponse(
   return policy_test_server_->SetConfig(server_config_);
 }
 
+bool LocalPolicyTestServerMixin::SetDeviceInitialEnrollmentResponse(
+    const std::string& device_brand_code,
+    const std::string& device_serial_number,
+    enterprise_management::DeviceInitialEnrollmentStateResponse::
+        InitialEnrollmentMode initial_mode,
+    const base::Optional<std::string>& management_domain,
+    const base::Optional<bool> is_license_packaged_with_device) {
+  base::Value serial_entry(base::Value::Type::DICTIONARY);
+  serial_entry.SetKey("initial_enrollment_mode", base::Value(initial_mode));
+
+  if (management_domain.has_value())
+    serial_entry.SetKey("management_domain",
+                        base::Value(management_domain.value()));
+
+  if (is_license_packaged_with_device.has_value())
+    serial_entry.SetKey("is_license_packaged_with_device",
+                        base::Value(is_license_packaged_with_device.value()));
+
+  const std::string brand_serial_id =
+      device_brand_code + "_" + device_serial_number;
+  server_config_.SetPath("initial_enrollment_state." + brand_serial_id,
+                         std::move(serial_entry));
+  policy_test_server_->SetConfig(server_config_);
+  return true;
+}
+
 LocalPolicyTestServerMixin::~LocalPolicyTestServerMixin() = default;
 
 }  // namespace chromeos
