@@ -178,7 +178,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   // includes the caret and is with respect to absolute coordinates.
   void GetScrollParamsForFocusedEditableElement(
       const Element& element,
-      LayoutRect& rect_to_scroll,
+      PhysicalRect& rect_to_scroll,
       WebScrollIntoViewParams& params);
 
   base::Optional<WebSize> size_;

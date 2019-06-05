@@ -315,7 +315,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   IntSize MaximumScrollOffsetInt() const override;
   IntRect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
-  LayoutRect VisibleScrollSnapportRect(
+  PhysicalRect VisibleScrollSnapportRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
   IntSize ContentsSize() const override;
 
@@ -346,9 +346,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // See renderer/core/layout/README.md for an explanation of scroll origin.
   IntPoint ScrollOrigin() const { return scroll_origin_; }
   bool ScrollOriginChanged() const { return scroll_origin_changed_; }
-
-  // FIXME: We shouldn't allow access to m_overflowRect outside this class.
-  LayoutRect OverflowRect() const { return overflow_rect_; }
 
   void ScrollToAbsolutePosition(
       const FloatPoint& position,
@@ -425,8 +422,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   // Returns the new offset, after scrolling, of the given rect in absolute
   // coordinates, clipped by the parent's client rect.
-  LayoutRect ScrollIntoView(const LayoutRect&,
-                            const WebScrollIntoViewParams&) override;
+  PhysicalRect ScrollIntoView(const PhysicalRect&,
+                              const WebScrollIntoViewParams&) override;
 
   // Returns true if scrollable area is in the FrameView's collection of
   // scrollable areas. This can only happen if we're scrollable, visible to hit
@@ -592,7 +589,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   void UpdateScrollCornerStyle();
   LayoutSize MinimumSizeForResizing(float zoom_factor);
-  LayoutRect LayoutContentRect(IncludeScrollbarsInRect) const;
+  PhysicalRect LayoutContentRect(IncludeScrollbarsInRect) const;
 
   // See comments on isPointInResizeControl.
   void UpdateResizerAreaSet();
@@ -673,7 +670,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // This is OverflowModel's layout overflow translated to physical
   // coordinates. See OverflowModel for the different overflow and
   // LayoutBoxModelObject for the coordinate systems.
-  LayoutRect overflow_rect_;
+  PhysicalRect overflow_rect_;
 
   // ScrollbarManager holds the Scrollbar instances.
   ScrollbarManager scrollbar_manager_;

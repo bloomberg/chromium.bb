@@ -112,14 +112,6 @@ static const int kDefaultMinimumHeightForResizing = 15;
 
 }  // namespace
 
-static LayoutRect LocalToAbsolute(const LayoutBox& box, LayoutRect rect) {
-  return box.LocalToAbsoluteRect(PhysicalRectToBeNoop(rect)).ToLayoutRect();
-}
-
-static LayoutRect AbsoluteToLocal(const LayoutBox& box, LayoutRect rect) {
-  return box.AbsoluteToLocalRect(PhysicalRectToBeNoop(rect)).ToLayoutRect();
-}
-
 PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() = default;
 
 const int kResizerControlExpandRatioForTouch = 2;
@@ -610,7 +602,7 @@ void PaintLayerScrollableArea::VisibleSizeChanged() {
   ShowOverlayScrollbars();
 }
 
-LayoutRect PaintLayerScrollableArea::LayoutContentRect(
+PhysicalRect PaintLayerScrollableArea::LayoutContentRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   // LayoutContentRect is conceptually the same as the box's client rect.
   LayoutSize layer_size(Layer()->Size());
@@ -628,29 +620,29 @@ LayoutRect PaintLayerScrollableArea::LayoutContentRect(
             : 0);
   }
 
-  return LayoutRect(
-      LayoutPoint(ScrollPosition()),
-      LayoutSize(
-          layer_size.Width() - border_width - vertical_scrollbar_width,
-          layer_size.Height() - border_height - horizontal_scrollbar_height)
-          .ExpandedTo(LayoutSize()));
+  PhysicalSize size(
+      layer_size.Width() - border_width - vertical_scrollbar_width,
+      layer_size.Height() - border_height - horizontal_scrollbar_height);
+  size.ClampNegativeToZero();
+  return PhysicalRect(PhysicalOffset::FromFloatPointRound(ScrollPosition()),
+                      size);
 }
 
 IntRect PaintLayerScrollableArea::VisibleContentRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
-  LayoutRect layout_content_rect(LayoutContentRect(scrollbar_inclusion));
+  PhysicalRect layout_content_rect(LayoutContentRect(scrollbar_inclusion));
   // TODO(szager): It's not clear that Floor() is the right thing to do here;
   // what is the correct behavior for fractional scroll offsets?
-  return IntRect(FlooredIntPoint(layout_content_rect.Location()),
-                 PixelSnappedIntSize(layout_content_rect.Size(),
+  return IntRect(FlooredIntPoint(layout_content_rect.offset),
+                 PixelSnappedIntSize(layout_content_rect.size.ToLayoutSize(),
                                      GetLayoutBox()->Location()));
 }
 
-LayoutRect PaintLayerScrollableArea::VisibleScrollSnapportRect(
+PhysicalRect PaintLayerScrollableArea::VisibleScrollSnapportRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   const ComputedStyle* style = GetLayoutBox()->Style();
-  LayoutRect layout_content_rect(LayoutContentRect(scrollbar_inclusion));
-  layout_content_rect.MoveBy(LayoutPoint(-ScrollOrigin()));
+  PhysicalRect layout_content_rect(LayoutContentRect(scrollbar_inclusion));
+  layout_content_rect.Move(PhysicalOffset(-ScrollOrigin()));
   LayoutRectOutsets padding(MinimumValueForLength(style->ScrollPaddingTop(),
                                                   layout_content_rect.Height()),
                             MinimumValueForLength(style->ScrollPaddingRight(),
@@ -673,7 +665,7 @@ IntSize PaintLayerScrollableArea::ContentsSize() const {
 
 IntSize PaintLayerScrollableArea::PixelSnappedContentsSize(
     const PhysicalOffset& paint_offset) const {
-  return PixelSnappedIntRect(PhysicalRect(paint_offset, overflow_rect_.Size()))
+  return PixelSnappedIntRect(PhysicalRect(paint_offset, overflow_rect_.size))
       .Size();
 }
 
@@ -841,12 +833,12 @@ LayoutUnit PaintLayerScrollableArea::ScrollHeight() const {
 void PaintLayerScrollableArea::UpdateScrollOrigin() {
   // This should do nothing prior to first layout; the if-clause will catch
   // that.
-  if (OverflowRect().IsEmpty())
+  if (overflow_rect_.IsEmpty())
     return;
-  LayoutRect scrollable_overflow(overflow_rect_);
-  scrollable_overflow.Move(-GetLayoutBox()->BorderLeft(),
-                           -GetLayoutBox()->BorderTop());
-  IntPoint new_origin(FlooredIntPoint(-scrollable_overflow.Location()) +
+  PhysicalRect scrollable_overflow = overflow_rect_;
+  scrollable_overflow.Move(-PhysicalOffset(GetLayoutBox()->BorderLeft(),
+                                           GetLayoutBox()->BorderTop()));
+  IntPoint new_origin(FlooredIntPoint(-scrollable_overflow.offset) +
                       GetLayoutBox()->OriginAdjustmentForScrollbars());
   if (new_origin != scroll_origin_)
     scroll_origin_changed_ = true;
@@ -854,17 +846,15 @@ void PaintLayerScrollableArea::UpdateScrollOrigin() {
 }
 
 void PaintLayerScrollableArea::UpdateScrollDimensions() {
-  LayoutRect new_overflow_rect = GetLayoutBox()->LayoutOverflowRect();
-  GetLayoutBox()->DeprecatedFlipForWritingMode(new_overflow_rect);
+  PhysicalRect new_overflow_rect = GetLayoutBox()->PhysicalLayoutOverflowRect();
 
   // The layout viewport can be larger than the document's layout overflow when
   // top controls are hidden.  Expand the overflow here to ensure that our
   // contents size >= visible size.
-  new_overflow_rect.Unite(
-      LayoutRect(new_overflow_rect.Location(),
-                 LayoutContentRect(kExcludeScrollbars).Size()));
+  new_overflow_rect.Unite(PhysicalRect(
+      new_overflow_rect.offset, LayoutContentRect(kExcludeScrollbars).size));
 
-  if (overflow_rect_.Size() != new_overflow_rect.Size())
+  if (overflow_rect_.size != new_overflow_rect.size)
     ContentsResized();
   overflow_rect_ = new_overflow_rect;
   UpdateScrollOrigin();
@@ -1161,7 +1151,7 @@ static bool CanHaveOverflowScrollbars(const LayoutBox& box) {
 void PaintLayerScrollableArea::UpdateAfterStyleChange(
     const ComputedStyle* old_style) {
   // Don't do this on first style recalc, before layout has ever happened.
-  if (!OverflowRect().Size().IsZero()) {
+  if (!overflow_rect_.size.IsZero()) {
     UpdateScrollableAreaSet();
   }
 
@@ -1519,10 +1509,10 @@ bool PaintLayerScrollableArea::TryRemovingAutoScrollbars(
         !GetLayoutBox()->HasAutoHorizontalScrollbar())
       return false;
 
-    LayoutSize client_size_with_scrollbars =
-        LayoutContentRect(kIncludeScrollbars).Size();
-    if (ScrollWidth() <= client_size_with_scrollbars.Width() &&
-        ScrollHeight() <= client_size_with_scrollbars.Height()) {
+    PhysicalSize client_size_with_scrollbars =
+        LayoutContentRect(kIncludeScrollbars).size;
+    if (ScrollWidth() <= client_size_with_scrollbars.width &&
+        ScrollHeight() <= client_size_with_scrollbars.height) {
       return true;
     }
   }
@@ -2036,17 +2026,18 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
   // keep the point under the cursor in view.
 }
 
-LayoutRect PaintLayerScrollableArea::ScrollIntoView(
-    const LayoutRect& absolute_rect,
+PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
+    const PhysicalRect& absolute_rect,
     const WebScrollIntoViewParams& params) {
-  LayoutRect local_expose_rect =
-      AbsoluteToLocal(*GetLayoutBox(), absolute_rect);
-  LayoutSize border_origin_to_scroll_origin =
-      LayoutSize(-GetLayoutBox()->BorderLeft(), -GetLayoutBox()->BorderTop()) +
-      LayoutSize(GetScrollOffset());
+  PhysicalRect local_expose_rect =
+      GetLayoutBox()->AbsoluteToLocalRect(absolute_rect);
+  PhysicalOffset border_origin_to_scroll_origin(-GetLayoutBox()->BorderLeft(),
+                                                -GetLayoutBox()->BorderTop());
+  border_origin_to_scroll_origin +=
+      PhysicalOffset::FromFloatSizeRound(GetScrollOffset());
   // Represent the rect in the container's scroll-origin coordinate.
   local_expose_rect.Move(border_origin_to_scroll_origin);
-  LayoutRect scroll_snapport_rect = VisibleScrollSnapportRect();
+  PhysicalRect scroll_snapport_rect = VisibleScrollSnapportRect();
 
   ScrollOffset target_offset = ScrollAlignment::GetScrollOffsetToExpose(
       scroll_snapport_rect, local_expose_rect, params.GetScrollAlignmentX(),
@@ -2090,18 +2081,20 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
   // The container hasn't performed the scroll yet if it's for scroll sequence.
   // To calculate the result from the scroll, we move the |local_expose_rect| to
   // the will-be-scrolled location.
-  local_expose_rect.Move(-LayoutSize(scroll_offset_difference));
+  local_expose_rect.Move(
+      -PhysicalOffset::FromFloatSizeRound(scroll_offset_difference));
 
   // Represent the rects in the container's border-box coordinate.
   local_expose_rect.Move(-border_origin_to_scroll_origin);
   scroll_snapport_rect.Move(-border_origin_to_scroll_origin);
-  LayoutRect intersect = Intersection(scroll_snapport_rect, local_expose_rect);
+  PhysicalRect intersect =
+      Intersection(scroll_snapport_rect, local_expose_rect);
 
   if (intersect.IsEmpty() && !scroll_snapport_rect.IsEmpty() &&
       !local_expose_rect.IsEmpty()) {
-    return LocalToAbsolute(*GetLayoutBox(), local_expose_rect);
+    return GetLayoutBox()->LocalToAbsoluteRect(local_expose_rect);
   }
-  intersect = LocalToAbsolute(*GetLayoutBox(), intersect);
+  intersect = GetLayoutBox()->LocalToAbsoluteRect(intersect);
   return intersect;
 }
 

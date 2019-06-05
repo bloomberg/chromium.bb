@@ -60,7 +60,7 @@ enum ScrollAlignmentBehavior {
   kScrollAlignmentClosestEdge
 };
 
-class LayoutRect;
+struct PhysicalRect;
 
 struct CORE_EXPORT ScrollAlignment {
   STACK_ALLOCATED();
@@ -86,8 +86,8 @@ struct CORE_EXPORT ScrollAlignment {
   // visible rect contracted by its scroll-padding.
   // FIXME: This function should probably go somewhere else but where?
   static ScrollOffset GetScrollOffsetToExpose(
-      const LayoutRect& visible_scroll_snapport_rect,
-      const LayoutRect& expose_rect,
+      const PhysicalRect& visible_scroll_snapport_rect,
+      const PhysicalRect& expose_rect,
       const ScrollAlignment& align_x,
       const ScrollAlignment& align_y,
       const ScrollOffset& current_scroll_offset);

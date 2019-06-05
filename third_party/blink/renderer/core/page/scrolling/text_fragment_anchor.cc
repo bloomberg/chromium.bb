@@ -155,7 +155,7 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
   if (first_match_needs_scroll_) {
     first_match_needs_scroll_ = false;
 
-    LayoutRect bounding_box = LayoutRect(ComputeTextRect(range));
+    PhysicalRect bounding_box(ComputeTextRect(range));
 
     // Set the bounding box height to zero because we want to center the top of
     // the text range.
@@ -167,7 +167,7 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
 
     DCHECK(node.GetLayoutObject());
 
-    LayoutRect scrolled_bounding_box =
+    PhysicalRect scrolled_bounding_box =
         node.GetLayoutObject()->ScrollRectToVisible(
             bounding_box,
             WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
@@ -183,7 +183,7 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
     // actually in document coordinates and therefore does not change with a
     // main document scroll.
     if (!frame_->View()->GetScrollableArea()->GetScrollOffset().IsZero() ||
-        scrolled_bounding_box.Location() != bounding_box.Location()) {
+        scrolled_bounding_box.offset != bounding_box.offset) {
       metrics_->DidNonZeroScroll();
     }
   }

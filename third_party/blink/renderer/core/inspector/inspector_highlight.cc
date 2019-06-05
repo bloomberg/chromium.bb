@@ -400,8 +400,8 @@ void CollectQuads(Node* node, Vector<FloatQuad>& out_quads) {
   }
 }
 
-std::unique_ptr<protocol::Array<double>> RectForLayoutRect(
-    const LayoutRect& rect) {
+std::unique_ptr<protocol::Array<double>> RectForPhysicalRect(
+    const PhysicalRect& rect) {
   std::unique_ptr<protocol::Array<double>> result =
       protocol::Array<double>::create();
 
@@ -413,25 +413,25 @@ std::unique_ptr<protocol::Array<double>> RectForLayoutRect(
 }
 
 // Returns |layout_object|'s bounding box in document coordinates.
-LayoutRect RectInRootFrame(const LayoutObject* layout_object) {
+PhysicalRect RectInRootFrame(const LayoutObject* layout_object) {
   LocalFrameView* local_frame_view = layout_object->GetFrameView();
-  LayoutRect rect_in_absolute(layout_object->AbsoluteBoundingBoxFloatRect());
+  PhysicalRect rect_in_absolute = PhysicalRect::EnclosingRect(
+      layout_object->AbsoluteBoundingBoxFloatRect());
   return local_frame_view
              ? local_frame_view->ConvertToRootFrame(rect_in_absolute)
              : rect_in_absolute;
 }
 
-LayoutRect TextFragmentRectInRootFrame(
+PhysicalRect TextFragmentRectInRootFrame(
     const LayoutObject* layout_object,
     const LayoutText::TextBoxInfo& text_box) {
   PhysicalRect absolute_coords_text_box_rect =
       layout_object->LocalToAbsoluteRect(
           layout_object->FlipForWritingMode(text_box.local_rect));
   LocalFrameView* local_frame_view = layout_object->GetFrameView();
-  return (local_frame_view ? local_frame_view->ConvertToRootFrame(
-                                 absolute_coords_text_box_rect)
-                           : absolute_coords_text_box_rect)
-      .ToLayoutRect();
+  return local_frame_view ? local_frame_view->ConvertToRootFrame(
+                                absolute_coords_text_box_rect)
+                          : absolute_coords_text_box_rect;
 }
 
 }  // namespace
@@ -511,10 +511,11 @@ void InspectorHighlight::AppendDistanceInfo(Node* node) {
   }
 
   VisitAndCollectDistanceInfo(&(node->GetDocument()));
-  LayoutRect document_rect(node->GetDocument().GetLayoutView()->DocumentRect());
+  PhysicalRect document_rect(
+      node->GetDocument().GetLayoutView()->DocumentRect());
   LocalFrameView* local_frame_view = node->GetDocument().View();
   boxes_->addItem(
-      RectForLayoutRect(local_frame_view->ConvertToRootFrame(document_rect)));
+      RectForPhysicalRect(local_frame_view->ConvertToRootFrame(document_rect)));
 }
 
 void InspectorHighlight::VisitAndCollectDistanceInfo(Node* node) {
@@ -563,13 +564,13 @@ void InspectorHighlight::AddLayoutBoxToDistanceInfo(
   if (layout_object->IsText()) {
     LayoutText* layout_text = ToLayoutText(layout_object);
     for (const auto& text_box : layout_text->GetTextBoxInfo()) {
-      LayoutRect text_rect(
+      PhysicalRect text_rect(
           TextFragmentRectInRootFrame(layout_object, text_box));
-      boxes_->addItem(RectForLayoutRect(text_rect));
+      boxes_->addItem(RectForPhysicalRect(text_rect));
     }
   } else {
-    LayoutRect rect(RectInRootFrame(layout_object));
-    boxes_->addItem(RectForLayoutRect(rect));
+    PhysicalRect rect(RectInRootFrame(layout_object));
+    boxes_->addItem(RectForPhysicalRect(rect));
   }
 }
 

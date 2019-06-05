@@ -27,9 +27,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLABLE_AREA_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
@@ -47,18 +47,17 @@ class AnimationHost;
 }
 
 namespace blink {
+class ChromeClient;
 class CompositorAnimationTimeline;
 class GraphicsLayer;
 class LayoutBox;
 class LayoutObject;
 class PaintLayer;
-class ChromeClient;
 class ProgrammaticScrollAnimator;
 class ScrollAnchor;
 class ScrollAnimatorBase;
 struct SerializedAnchor;
 class SmoothScrollSequencer;
-class CompositorAnimationTimeline;
 struct WebScrollIntoViewParams;
 
 enum IncludeScrollbarsInRect {
@@ -110,8 +109,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // Scrolls the area so that the given rect, given in absolute coordinates,
   // such that it's visible in the area. Returns the new location of the input
   // rect in absolute coordinates.
-  virtual LayoutRect ScrollIntoView(const LayoutRect&,
-                                    const WebScrollIntoViewParams&);
+  virtual PhysicalRect ScrollIntoView(const PhysicalRect&,
+                                      const WebScrollIntoViewParams&);
 
   static bool ScrollBehaviorFromString(const String&, ScrollBehavior&);
 
@@ -264,9 +263,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // container for the scroll snap areas when calculating snap positions. It's
   // the box's scrollport contracted by its scroll-padding.
   // https://drafts.csswg.org/css-scroll-snap-1/#scroll-padding
-  virtual LayoutRect VisibleScrollSnapportRect(
+  virtual PhysicalRect VisibleScrollSnapportRect(
       IncludeScrollbarsInRect scrollbar_inclusion = kExcludeScrollbars) const {
-    return LayoutRect(VisibleContentRect(scrollbar_inclusion));
+    return PhysicalRect(VisibleContentRect(scrollbar_inclusion));
   }
 
   virtual IntPoint LastKnownMousePosition() const { return IntPoint(); }

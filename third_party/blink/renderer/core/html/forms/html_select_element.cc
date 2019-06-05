@@ -915,7 +915,7 @@ void HTMLSelectElement::ScrollToOptionTask() {
   GetDocument().UpdateStyleAndLayout();
   if (!GetLayoutObject() || !GetLayoutObject()->IsListBox())
     return;
-  LayoutRect bounds = option->BoundingBoxForScrollIntoView();
+  PhysicalRect bounds = option->BoundingBoxForScrollIntoView();
   ToLayoutListBox(GetLayoutObject())->ScrollToRect(bounds);
 }
 

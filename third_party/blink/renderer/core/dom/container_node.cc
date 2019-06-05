@@ -1019,12 +1019,10 @@ void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {
     AppendChild(child.Clone(GetDocument(), CloneChildrenFlag::kClone));
 }
 
-LayoutRect ContainerNode::BoundingBox() const {
+PhysicalRect ContainerNode::BoundingBox() const {
   if (!GetLayoutObject())
-    return LayoutRect();
-  return GetLayoutObject()
-      ->AbsoluteBoundingBoxRectHandlingEmptyInline()
-      .ToLayoutRect();
+    return PhysicalRect();
+  return GetLayoutObject()->AbsoluteBoundingBoxRectHandlingEmptyInline();
 }
 
 // This is used by FrameSelection to denote when the active-state of the page

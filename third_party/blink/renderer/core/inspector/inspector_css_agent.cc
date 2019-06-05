@@ -151,7 +151,7 @@ HeapVector<Member<CSSStyleRule>> FilterDuplicateRules(CSSRuleList* rule_list) {
 }
 
 // Get the elements which overlap the given rectangle.
-HeapVector<Member<Element>> ElementsFromRect(PhysicalRect rect,
+HeapVector<Member<Element>> ElementsFromRect(const PhysicalRect& rect,
                                              Document& document) {
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                          HitTestRequest::kListBased |
@@ -242,7 +242,7 @@ void AddColorsFromImageStyle(const ComputedStyle& style,
 // walking up all the elements returned by a hit test (but not going beyond
 // |topElement|) covering the area of the rect, and blending their background
 // colors.
-bool GetColorsFromRect(const PhysicalRect& rect,
+bool GetColorsFromRect(PhysicalRect rect,
                        Document& document,
                        Element* top_element,
                        Vector<Color>& colors) {
@@ -301,8 +301,7 @@ bool GetColorsFromRect(const PhysicalRect& rect,
     AddColorsFromImageStyle(*style, colors, found_opaque_color,
                             found_non_transparent_color, *layout_object);
 
-    bool contains = found_top_element ||
-                    element->BoundingBox().Contains(rect.ToLayoutRect());
+    bool contains = found_top_element || element->BoundingBox().Contains(rect);
     if (!contains && found_non_transparent_color) {
       // Only return colors if some opaque element covers up this one.
       colors.clear();
@@ -2344,7 +2343,7 @@ void InspectorCSSAgent::GetBackgroundColors(Element* element,
     return;
   }
 
-  PhysicalRect content_bounds = PhysicalRectToBeNoop(text_node->BoundingBox());
+  PhysicalRect content_bounds = text_node->BoundingBox();
   LocalFrameView* view = text_node->GetDocument().View();
   if (!view)
     return;
