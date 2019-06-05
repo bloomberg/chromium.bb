@@ -18,6 +18,7 @@
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
+#include "ui/ozone/common/linux/scoped_gbm_device.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -108,7 +109,7 @@ std::vector<gfx::BufferFormat> EnumerateSupportedBufferFormatsForTexturing() {
     if (!dev_path_file.IsValid())
       break;
 
-    gbm_device* device = gbm_create_device(dev_path_file.GetPlatformFile());
+    ScopedGbmDevice device(gbm_create_device(dev_path_file.GetPlatformFile()));
     if (!device) {
       LOG(ERROR) << "Couldn't create Gbm Device at " << dev_path.MaybeAsASCII();
       return supported_buffer_formats;
@@ -119,12 +120,11 @@ std::vector<gfx::BufferFormat> EnumerateSupportedBufferFormatsForTexturing() {
       if (base::ContainsValue(supported_buffer_formats, buffer_format))
         continue;
       if (gbm_device_is_format_supported(
-              device, GetFourCCFormatFromBufferFormat(buffer_format),
+              device.get(), GetFourCCFormatFromBufferFormat(buffer_format),
               GBM_BO_USE_TEXTURING)) {
         supported_buffer_formats.push_back(buffer_format);
       }
     }
-    gbm_device_destroy(device);
   }
   return supported_buffer_formats;
 }
