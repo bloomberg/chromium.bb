@@ -274,6 +274,22 @@ std::string Sha256WithRSAEncryption() {
                      std::end(kSha256WithRSAEncryption));
 }
 
+std::string Sha1WithRSAEncryption() {
+  const uint8_t kSha1WithRSAEncryption[] = {0x30, 0x0D, 0x06, 0x09, 0x2a,
+                                            0x86, 0x48, 0x86, 0xf7, 0x0d,
+                                            0x01, 0x01, 0x05, 0x05, 0x00};
+  return std::string(std::begin(kSha1WithRSAEncryption),
+                     std::end(kSha1WithRSAEncryption));
+}
+
+std::string Md5WithRSAEncryption() {
+  const uint8_t kMd5WithRSAEncryption[] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
+                                           0x86, 0x48, 0x86, 0xf7, 0x0d,
+                                           0x01, 0x01, 0x04, 0x05, 0x00};
+  return std::string(std::begin(kMd5WithRSAEncryption),
+                     std::end(kMd5WithRSAEncryption));
+}
+
 // Adds bytes (specified as a StringPiece) to the given CBB.
 // The argument ordering follows the boringssl CBB_* api style.
 bool CBBAddBytes(CBB* cbb, base::StringPiece bytes) {
@@ -460,11 +476,7 @@ class CertBuilder {
       }
 
       case DigestAlgorithm::Sha1: {
-        const uint8_t kSha1WithRSAEncryption[] = {0x30, 0x0D, 0x06, 0x09, 0x2a,
-                                                  0x86, 0x48, 0x86, 0xf7, 0x0d,
-                                                  0x01, 0x01, 0x05, 0x05, 0x00};
-        SetSignatureAlgorithm(std::string(std::begin(kSha1WithRSAEncryption),
-                                          std::end(kSha1WithRSAEncryption)));
+        SetSignatureAlgorithm(Sha1WithRSAEncryption());
         break;
       }
 
@@ -2998,7 +3010,33 @@ class CertVerifyProcInternalWithNetFetchingTest
   // as revoked.
   // Returns the DER-encoded CRL.
   static std::string CreateCrl(CertBuilder* crl_issuer,
-                               const std::vector<uint64_t>& revoked_serials) {
+                               const std::vector<uint64_t>& revoked_serials,
+                               DigestAlgorithm digest) {
+    std::string signature_algorithm;
+    const EVP_MD* md = nullptr;
+    switch (digest) {
+      case DigestAlgorithm::Sha256: {
+        signature_algorithm = Sha256WithRSAEncryption();
+        md = EVP_sha256();
+        break;
+      }
+
+      case DigestAlgorithm::Sha1: {
+        signature_algorithm = Sha1WithRSAEncryption();
+        md = EVP_sha1();
+        break;
+      }
+
+      case DigestAlgorithm::Md5: {
+        signature_algorithm = Md5WithRSAEncryption();
+        md = EVP_md5();
+        break;
+      }
+
+      default:
+        ADD_FAILURE();
+        return std::string();
+    }
     //    TBSCertList  ::=  SEQUENCE  {
     //         version                 Version OPTIONAL,
     //                                      -- if present, MUST be v2
@@ -3020,7 +3058,7 @@ class CertVerifyProcInternalWithNetFetchingTest
     if (!CBB_init(tbs_cbb.get(), 10) ||
         !CBB_add_asn1(tbs_cbb.get(), &tbs_cert_list, CBS_ASN1_SEQUENCE) ||
         !CBB_add_asn1_uint64(&tbs_cert_list, 1 /* V2 */) ||
-        !CBBAddBytes(&tbs_cert_list, Sha256WithRSAEncryption()) ||
+        !CBBAddBytes(&tbs_cert_list, signature_algorithm) ||
         !CBBAddBytes(&tbs_cert_list, crl_issuer->GetSubject()) ||
         !CBBAddTime(&tbs_cert_list,
                     base::Time::Now() - base::TimeDelta::FromDays(1)) ||
@@ -3063,10 +3101,10 @@ class CertVerifyProcInternalWithNetFetchingTest
     if (!CBB_init(crl_cbb.get(), 10) ||
         !CBB_add_asn1(crl_cbb.get(), &cert_list, CBS_ASN1_SEQUENCE) ||
         !CBBAddBytes(&cert_list, tbs_tlv) ||
-        !CBBAddBytes(&cert_list, Sha256WithRSAEncryption()) ||
+        !CBBAddBytes(&cert_list, signature_algorithm) ||
         !CBB_add_asn1(&cert_list, &signature, CBS_ASN1_BITSTRING) ||
         !CBB_add_u8(&signature, 0 /* no unused bits */) ||
-        !EVP_DigestSignInit(ctx.get(), nullptr, EVP_sha256(), nullptr,
+        !EVP_DigestSignInit(ctx.get(), nullptr, md, nullptr,
                             crl_issuer->GetKey()) ||
         !EVP_DigestSign(ctx.get(), nullptr, &sig_len,
                         reinterpret_cast<const uint8_t*>(tbs_tlv.data()),
@@ -3086,8 +3124,9 @@ class CertVerifyProcInternalWithNetFetchingTest
   // as revoked, and registers it to be served by the test server.
   // Returns the full URL to retrieve the CRL from the test server.
   GURL CreateAndServeCrl(CertBuilder* crl_issuer,
-                         const std::vector<uint64_t>& revoked_serials) {
-    std::string crl = CreateCrl(crl_issuer, revoked_serials);
+                         const std::vector<uint64_t>& revoked_serials,
+                         DigestAlgorithm digest = DigestAlgorithm::Sha256) {
+    std::string crl = CreateCrl(crl_issuer, revoked_serials, digest);
     std::string crl_path = MakeRandomPath(".crl");
     return RegisterSimpleTestServerHandler(crl_path, HTTP_OK,
                                            "application/pkix-crl", crl);
@@ -4002,6 +4041,106 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   } else {
     // Should fail, intermediate is revoked.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+  }
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
+TEST_P(CertVerifyProcInternalWithNetFetchingTest,
+       RevocationSoftFailLeafRevokedBySha1Crl) {
+  if (!SupportsSoftFailRevChecking()) {
+    LOG(INFO) << "Skipping test as verifier doesn't support "
+                 "VERIFY_REV_CHECKING_ENABLED";
+    return;
+  }
+
+  const char kHostname[] = "www.example.com";
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CreateSimpleCertBuilderChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+
+  // Root-issued CRL which does not revoke intermediate.
+  intermediate->SetCrlDistributionPointUrl(CreateAndServeCrl(root.get(), {}));
+
+  // Leaf is revoked by intermediate issued CRL which is signed with
+  // sha1WithRSAEncryption.
+  leaf->SetCrlDistributionPointUrl(CreateAndServeCrl(
+      intermediate.get(), {leaf->GetSerialNumber()}, DigestAlgorithm::Sha1));
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
+      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  ASSERT_TRUE(chain.get());
+
+  // Verify with soft-fail revocation checking.
+  const int flags = CertVerifyProc::VERIFY_REV_CHECKING_ENABLED;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
+
+  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
+    // TODO(mattm): CertVerifyProcBuiltin CRL handling.
+    EXPECT_THAT(error, IsOk());
+  } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
+             IsMacAtLeastOS10_12()) {
+    // CRL handling seems broken on macOS >= 10.12.
+    // TODO(mattm): followup on this.
+    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
+  } else {
+    // Should fail, leaf is revoked.
+    EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+  }
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
+TEST_P(CertVerifyProcInternalWithNetFetchingTest,
+       RevocationSoftFailLeafRevokedByMd5Crl) {
+  if (!SupportsSoftFailRevChecking()) {
+    LOG(INFO) << "Skipping test as verifier doesn't support "
+                 "VERIFY_REV_CHECKING_ENABLED";
+    return;
+  }
+
+  const char kHostname[] = "www.example.com";
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CreateSimpleCertBuilderChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+
+  // Root-issued CRL which does not revoke intermediate.
+  intermediate->SetCrlDistributionPointUrl(CreateAndServeCrl(root.get(), {}));
+
+  // Leaf is revoked by intermediate issued CRL which is signed with
+  // md5WithRSAEncryption.
+  leaf->SetCrlDistributionPointUrl(CreateAndServeCrl(
+      intermediate.get(), {leaf->GetSerialNumber()}, DigestAlgorithm::Md5));
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
+      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  ASSERT_TRUE(chain.get());
+
+  // Verify with soft-fail revocation checking.
+  const int flags = CertVerifyProc::VERIFY_REV_CHECKING_ENABLED;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
+
+  if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
+    // CRL handling seems broken on macOS >= 10.12.
+    // TODO(mattm): followup on this.
+    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
+  } else if (verify_proc_type() == CERT_VERIFY_PROC_WIN ||
+             verify_proc_type() == CERT_VERIFY_PROC_MAC) {
+    // Windows and Mac <= 10.11 honor MD5 CRLs. ¯\_(ツ)_/¯
+    EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+  } else {
+    // Verification should succeed: MD5 signature algorithm is not supported
+    // and soft-fail checking will ignore the inability to get revocation
+    // status.
+    EXPECT_THAT(error, IsOk());
   }
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
