@@ -27,7 +27,7 @@
 namespace {
 const int kTestConnectionId = 42;
 const int kInitialConnectTimeoutMs = 250;
-const int kConnectionTimeoutErrorDeltaMs = 100;
+const int kConnectionTimeoutErrorDeltaMs = 250;
 const int kLargeResponseTimeoutMs = 500;
 const int kLargeMessageSizeBytes = 256 * 1024;
 }  // namespace
