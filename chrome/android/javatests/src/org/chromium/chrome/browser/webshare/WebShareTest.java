@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.webshare;
 
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +23,8 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -108,7 +110,6 @@ public class WebShareTest {
         // Clean up some state that might have been changed by tests.
         ShareHelper.setForceCustomChooserForTesting(false);
         ShareHelper.setFakeIntentReceiverForTesting(null);
-
     }
 
     /**
