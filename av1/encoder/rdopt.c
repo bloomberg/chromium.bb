@@ -9601,20 +9601,6 @@ static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
   return 0;
 }
 
-static INLINE int get_ref_mv_offset(PREDICTION_MODE single_mode,
-                                    uint8_t ref_mv_idx) {
-  assert(is_inter_singleref_mode(single_mode));
-  int ref_mv_offset;
-  if (single_mode == NEARESTMV) {
-    ref_mv_offset = 0;
-  } else if (single_mode == NEARMV) {
-    ref_mv_offset = ref_mv_idx + 1;
-  } else {
-    ref_mv_offset = -1;
-  }
-  return ref_mv_offset;
-}
-
 static INLINE void get_this_mv(int_mv *this_mv, PREDICTION_MODE this_mode,
                                int ref_idx, int ref_mv_idx,
                                const MV_REFERENCE_FRAME *ref_frame,
@@ -9630,7 +9616,7 @@ static INLINE void get_this_mv(int_mv *this_mv, PREDICTION_MODE this_mode,
     *this_mv = mbmi_ext->global_mvs[ref_frame[ref_idx]];
   } else {
     assert(single_mode == NEARMV || single_mode == NEARESTMV);
-    const int ref_mv_offset = get_ref_mv_offset(single_mode, ref_mv_idx);
+    const int ref_mv_offset = single_mode == NEARESTMV ? 0 : ref_mv_idx + 1;
     if (ref_mv_offset < mbmi_ext->ref_mv_count[ref_frame_type]) {
       assert(ref_mv_offset >= 0);
       if (ref_idx == 0) {
