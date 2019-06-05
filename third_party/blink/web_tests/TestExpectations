@@ -4645,7 +4645,7 @@ crbug.com/771492 [ Mac ] external/wpt/css/css-tables/table-model-fixup-2.html [ 
 # Suspended WebRTC tests
 # Timeout due to events not firing
 crbug.com/781935 fast/mediastream/MediaStreamTrack-observer-iterate-no-crash.html [ Timeout ]
-crbug.com/781935 fast/mediastream/MediaStreamTrack.html [ Timeout ]
+crbug.com/781935 fast/mediastream/MediaStreamTrack.html [ Pass Failure Timeout ]
 
 crbug.com/807191 fast/media/mq-color-gamut-picture.html [ Pass Failure Timeout ]
 
