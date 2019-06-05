@@ -280,7 +280,7 @@ class BASE_EXPORT AbstractPromise
 
     struct VTable {
       void (*destructor)(void* self);
-      PrerequisitePolicy (*get_prerequsite_policy)(const void* self);
+      PrerequisitePolicy (*get_prerequisite_policy)(const void* self);
       bool (*is_cancelled)(const void* self);
 #if DCHECK_IS_ON()
       ArgumentPassingType (*resolve_argument_passing_type)(const void* self);
@@ -390,6 +390,12 @@ class BASE_EXPORT AbstractPromise
 
     bool DecrementPrerequisiteCountAndCheckIfZero();
 
+    // Called for each prerequisites that resolves or rejects for
+    // PrerequisitePolicy::kAny and each prerequisite that rejects for
+    // PrerequisitePolicy::kAll. This saves |settled_prerequisite| and returns
+    // true iff called for the first time.
+    bool MarkPrerequisiteAsSettling(AbstractPromise* settled_prerequisite);
+
     std::vector<AdjacencyListNode> prerequisite_list;
 
     // PrerequisitePolicy::kAny waits for at most 1 resolve or N cancellations.
@@ -397,11 +403,11 @@ class BASE_EXPORT AbstractPromise
     // PrerequisitePolicy::kNever doesn't use this.
     std::atomic_int action_prerequisite_count;
 
-    // Stores the address of the first rejecting promise. The purpose of this is
-    // two-fold, first to ensure that Promises::All/Race return the first
-    // prerequisite that rejected and secondly to prevent the executor from
-    // being run multiple times if there's multiple rejection.
-    std::atomic<uintptr_t> first_rejecting_promise{0};
+    // For PrerequisitePolicy::kAll the address of the first rejected
+    // prerequisite if any.
+    // For PrerequisitePolicy::kAll the address of the first rejected or
+    // resolved rerequsite if any.
+    std::atomic<uintptr_t> first_settled_prerequisite{0};
   };
 
   const std::vector<AdjacencyListNode>* prerequisite_list() const {
@@ -418,7 +424,10 @@ class BASE_EXPORT AbstractPromise
     return prerequisites_->prerequisite_list[0].prerequisite.get();
   }
 
-  AbstractPromise* GetFirstRejectedPrerequisite() const;
+  // For PrerequisitePolicy::kAll returns the first rejected prerequisite if
+  // any. For PrerequisitePolicy::kAny returns the first rejected or resolved
+  // rerequsite if any.
+  AbstractPromise* GetFirstSettledPrerequisite() const;
 
   // Calls |RunExecutor()| or posts a task to do so if |from_here_| is not
   // nullopt.
@@ -498,10 +507,10 @@ class BASE_EXPORT AbstractPromise
 
   // Checks if the promise is now ready to be executed and if so posts it on the
   // given task runner.
-  void OnPrerequisiteResolved();
+  void OnPrerequisiteResolved(AbstractPromise* resolved_prerequisite);
 
   // Schedules the promise for execution.
-  void OnPrerequisiteRejected(AbstractPromise* rejected_promise);
+  void OnPrerequisiteRejected(AbstractPromise* rejected_prerequisite);
 
   // Returns true if we are still potentially eligible to run despite the
   // cancellation.

@@ -26,8 +26,10 @@ class AllContainerPromiseExecutor {
 
   void Execute(AbstractPromise* promise) {
     // All is rejected if any prerequisites are rejected.
-    if (AbstractPromise* rejected = promise->GetFirstRejectedPrerequisite()) {
-      AllPromiseRejectHelper<Rejected<RejectType>>::Reject(promise, rejected);
+    AbstractPromise* first_settled = promise->GetFirstSettledPrerequisite();
+    if (first_settled && first_settled->IsRejected()) {
+      AllPromiseRejectHelper<Rejected<RejectType>>::Reject(promise,
+                                                           first_settled);
       promise->OnRejected();
       return;
     }

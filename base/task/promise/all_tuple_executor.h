@@ -62,8 +62,9 @@ class AllTuplePromiseExecutor {
 
   void Execute(AbstractPromise* promise) {
     // All is rejected if any prerequisites are rejected.
-    if (AbstractPromise* rejected = promise->GetFirstRejectedPrerequisite()) {
-      AllPromiseRejectHelper<RejectT>::Reject(promise, rejected);
+    AbstractPromise* first_settled = promise->GetFirstSettledPrerequisite();
+    if (first_settled && first_settled->IsRejected()) {
+      AllPromiseRejectHelper<RejectT>::Reject(promise, first_settled);
       promise->OnRejected();
       return;
     }

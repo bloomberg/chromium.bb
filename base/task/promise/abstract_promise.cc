@@ -80,7 +80,7 @@ bool AbstractPromise::InsertDependentOnAnyThread(DependentList::Node* node) {
       break;
 
     case DependentList::InsertResult::FAIL_PROMISE_RESOLVED:
-      dependent->OnPrerequisiteResolved();
+      dependent->OnPrerequisiteResolved(this);
       break;
 
     case DependentList::InsertResult::FAIL_PROMISE_REJECTED:
@@ -242,11 +242,12 @@ AbstractPromise::GetPrerequisitePolicy() {
   return executor->GetPrerequisitePolicy();
 }
 
-AbstractPromise* AbstractPromise::GetFirstRejectedPrerequisite() const {
+AbstractPromise* AbstractPromise::GetFirstSettledPrerequisite() const {
   if (!prerequisites_)
     return nullptr;
   return reinterpret_cast<AbstractPromise*>(
-      prerequisites_->first_rejecting_promise.load(std::memory_order_acquire));
+      prerequisites_->first_settled_prerequisite.load(
+          std::memory_order_acquire));
 }
 
 void AbstractPromise::Execute() {
@@ -264,14 +265,7 @@ void AbstractPromise::Execute() {
   }
 #endif
 
-  if (IsResolvedWithPromise()) {
-    bool settled = DispatchIfNonCurriedRootSettled();
-    DCHECK(settled);
-
-    prerequisites_->prerequisite_list.clear();
-    return;
-  }
-
+  DCHECK(!IsResolvedWithPromise());
   DCHECK(GetExecutor()) << from_here_.ToString() << " value_ contains "
                         << value_.type();
 
@@ -302,8 +296,12 @@ bool AbstractPromise::DispatchIfNonCurriedRootSettled() {
   return true;
 }
 
-void AbstractPromise::OnPrerequisiteResolved() {
+void AbstractPromise::OnPrerequisiteResolved(
+    AbstractPromise* resolved_prerequisite) {
+  DCHECK(resolved_prerequisite->IsResolved());
   if (IsResolvedWithPromise()) {
+    // The executor has already run so we don't need to call
+    // MarkPrerequisiteAsSettling.
     bool settled = DispatchIfNonCurriedRootSettled();
     DCHECK(settled);
     return;
@@ -317,7 +315,8 @@ void AbstractPromise::OnPrerequisiteResolved() {
 
     case Executor::PrerequisitePolicy::kAny:
       // PrerequisitePolicy::kAny should resolve immediately.
-      DispatchPromise();
+      if (prerequisites_->MarkPrerequisiteAsSettling(resolved_prerequisite))
+        DispatchPromise();
       break;
 
     case Executor::PrerequisitePolicy::kNever:
@@ -326,20 +325,17 @@ void AbstractPromise::OnPrerequisiteResolved() {
 }
 
 void AbstractPromise::OnPrerequisiteRejected(
-    AbstractPromise* rejected_promise) {
-  DCHECK(rejected_promise->IsRejected());
-  uintptr_t expected = 0;
-  // Promises::All (or Race if we add that) can have multiple prerequsites and
-  // it will reject as soon as any prerequsite rejects. Multiple prerequsites
-  // can reject, but we wish to record only the first one.
-  bool is_first_rejection =
-      prerequisites_->first_rejecting_promise.compare_exchange_strong(
-          expected, reinterpret_cast<uintptr_t>(rejected_promise),
-          std::memory_order_acq_rel);
-  // We only want to dispatch a promise the first time a prerequisite is
-  // rejected because the executors can only be invoked once.
-  if (is_first_rejection)
+    AbstractPromise* rejected_prerequisite) {
+  DCHECK(rejected_prerequisite->IsRejected());
+
+  // Promises::All (or Race if we add that) can have multiple prerequisites and
+  // it will reject as soon as any prerequisite rejects. Multiple prerequisites
+  // can reject, but we wish to record only the first one. Also we can only
+  // invoke executors once.
+  if (prerequisites_->MarkPrerequisiteAsSettling(rejected_prerequisite) &&
+      !DispatchIfNonCurriedRootSettled()) {
     DispatchPromise();
+  }
 }
 
 bool AbstractPromise::OnPrerequisiteCancelled() {
@@ -382,7 +378,7 @@ void AbstractPromise::OnResolveDispatchReadyDependents() {
     // OnPrerequisiteResolved might post a task which destructs |node| on
     // another thread so load |node->next| now.
     next = node->next.load(std::memory_order_relaxed);
-    dependent->OnPrerequisiteResolved();
+    dependent->OnPrerequisiteResolved(this);
   }
 }
 
@@ -468,10 +464,6 @@ void AbstractPromise::OnResolved() {
       // The curried promise isn't already settled we need to throw away any
       // existing dependencies and make |curried_promise| the only dependency of
       // this promise.
-
-      if (!curried_promise->prerequisites_)
-        curried_promise->prerequisites_ = std::make_unique<AdjacencyList>();
-
 #if DCHECK_IS_ON()
       {
         CheckedAutoLock lock(GetCheckedLock());
@@ -479,7 +471,11 @@ void AbstractPromise::OnResolved() {
         ancestor_that_could_reject_ = nullptr;
       }
 #endif
-      prerequisites_->ResetWithSingleDependency(curried_promise);
+      if (prerequisites_) {
+        prerequisites_->ResetWithSingleDependency(curried_promise);
+      } else {
+        prerequisites_ = std::make_unique<AdjacencyList>(curried_promise);
+      }
       AddAsDependentForAllPrerequisites();
     }
   } else {
@@ -559,6 +555,18 @@ bool AbstractPromise::AdjacencyList::
   return action_prerequisite_count.fetch_sub(1, std::memory_order_acq_rel) == 1;
 }
 
+// For PrerequisitePolicy::kAll this is called for the first rejected
+// prerequisite. For PrerequisitePolicy:kAny this is called for the first
+// resolving or rejecting prerequisite.
+bool AbstractPromise::AdjacencyList::MarkPrerequisiteAsSettling(
+    AbstractPromise* settled_prerequisite) {
+  DCHECK(settled_prerequisite->IsSettled());
+  uintptr_t expected = 0;
+  return first_settled_prerequisite.compare_exchange_strong(
+      expected, reinterpret_cast<uintptr_t>(settled_prerequisite),
+      std::memory_order_acq_rel);
+}
+
 void AbstractPromise::AdjacencyList::ResetWithSingleDependency(
     scoped_refptr<AbstractPromise> prerequisite) {
   prerequisite_list.clear();
@@ -572,7 +580,7 @@ AbstractPromise::Executor::~Executor() {
 
 AbstractPromise::Executor::PrerequisitePolicy
 AbstractPromise::Executor::GetPrerequisitePolicy() const {
-  return vtable_->get_prerequsite_policy(storage_);
+  return vtable_->get_prerequisite_policy(storage_);
 }
 
 bool AbstractPromise::Executor::IsCancelled() const {
