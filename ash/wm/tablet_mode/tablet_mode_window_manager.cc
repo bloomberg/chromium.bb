@@ -75,6 +75,46 @@ void DoSplitView(
 
 }  // namespace
 
+// Class which tells tablet mode controller to observe a given window for UMA
+// logging purposes. Created before the window animations start. When this goes
+// out of scope and the given window is not actually animating, tells tablet
+// mode controller to stop observing.
+class ScopedObserveWindowAnimation {
+ public:
+  ScopedObserveWindowAnimation(aura::Window* window,
+                               TabletModeWindowManager* manager)
+      : window_(window), manager_(manager) {
+    if (Shell::Get()->tablet_mode_controller() && window_) {
+      Shell::Get()->tablet_mode_controller()->MaybeObserveBoundsAnimation(
+          window_);
+    }
+  }
+  ~ScopedObserveWindowAnimation() {
+    // May be null on shutdown.
+    if (!Shell::Get()->tablet_mode_controller())
+      return;
+
+    if (!window_)
+      return;
+
+    // Stops observing if |window_| is not animating, or if it is not tracked by
+    // TabletModeWindowManager.
+    if (window_->layer()->GetAnimator()->is_animating())
+      return;
+
+    if (manager_->IsTrackingWindow(window_))
+      return;
+
+    Shell::Get()->tablet_mode_controller()->StopObservingAnimation(
+        /*record_stats=*/false);
+  }
+
+ private:
+  aura::Window* window_;
+  TabletModeWindowManager* manager_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedObserveWindowAnimation);
+};
+
 TabletModeWindowManager::~TabletModeWindowManager() = default;
 
 void TabletModeWindowManager::Init() {
@@ -82,7 +122,10 @@ void TabletModeWindowManager::Init() {
   // guarantee the proper order, it will be turned off from here.
   CancelOverview();
 
-  ArrangeWindowsForTabletMode();
+  {
+    ScopedObserveWindowAnimation scoped_observe(GetTopWindow(), this);
+    ArrangeWindowsForTabletMode();
+  }
   AddWindowCreationObservers();
   EnableBackdropBehindTopWindowOnEachDisplay(true);
   display::Screen::GetScreen()->AddObserver(this);
@@ -108,6 +151,8 @@ void TabletModeWindowManager::Shutdown() {
   display::Screen::GetScreen()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
+
+  ScopedObserveWindowAnimation scoped_observe(GetTopWindow(), this);
   ArrangeWindowsForDesktopMode(was_in_overview);
 }
 
@@ -140,6 +185,13 @@ void TabletModeWindowManager::WindowStateDestroyed(aura::Window* window) {
   auto it = window_state_map_.find(window);
   if (it != window_state_map_.end())
     window_state_map_.erase(it);
+}
+
+aura::Window* TabletModeWindowManager::GetTopWindow() {
+  MruWindowTracker::WindowList windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
+
+  return windows.empty() ? nullptr : windows[0];
 }
 
 void TabletModeWindowManager::OnOverviewModeEndingAnimationComplete(
@@ -363,13 +415,6 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
   }
 }
 
-void TabletModeWindowManager::OnPostWindowStateTypeChange(
-    wm::WindowState* window_state,
-    WindowStateType old_type) {
-  Shell::Get()->tablet_mode_controller()->MaybeObserveBoundsAnimation(
-      window_state->window());
-}
-
 void TabletModeWindowManager::SetIgnoreWmEventsForExit() {
   for (auto& pair : window_state_map_)
     pair.second->set_ignore_wm_events(true);
@@ -461,13 +506,8 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
 void TabletModeWindowManager::ArrangeWindowsForDesktopMode(
     bool was_in_overview) {
   while (window_state_map_.size()) {
-    // Observe the window state so that when TabletModeWindowState gets detached
-    // and default state gets attached, we can see the change without adding a
-    // dependency in DefaultState.
     aura::Window* window = window_state_map_.begin()->first;
-    wm::GetWindowState(window)->AddObserver(this);
     ForgetWindow(window, /*destroyed=*/false, was_in_overview);
-    wm::GetWindowState(window)->RemoveObserver(this);
   }
 }
 

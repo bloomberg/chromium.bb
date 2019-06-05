@@ -118,13 +118,17 @@ class ASH_EXPORT TabletModeController
   // Otherwise, returns false.
   bool TriggerRecordLidAngleTimerForTesting() WARN_UNUSED_RESULT;
 
-  // Called from a WindowState object when the bounds of |window| changes.
+  // Starts observing |window| for animation changes.
   void MaybeObserveBoundsAnimation(aura::Window* window);
 
   // TabletMode:
   void SetTabletModeToggleObserver(TabletModeToggleObserver* observer) override;
   bool IsEnabled() const override;
   void SetEnabledForTest(bool enabled) override;
+
+  // Stops observing the window which is being animated from tablet <->
+  // clamshell.
+  void StopObservingAnimation(bool record_stats);
 
   // ShellObserver:
   void OnShellInitialized() override;
@@ -267,10 +271,6 @@ class ASH_EXPORT TabletModeController
   // Resets |occlusion_tracker_pauser_|.
   void ResetPauser();
 
-  // Called by LayerAnimationObserver overrides. Stops observing the window
-  // which is being animated from tablet <-> clamshell.
-  void StopObservingAnimation(bool record_stats);
-
   // The maximized window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
 
@@ -366,9 +366,10 @@ class ASH_EXPORT TabletModeController
   // Observer to observe the bluetooth devices.
   std::unique_ptr<BluetoothDevicesObserver> bluetooth_devices_observer_;
 
-  // The window we are observing when animating from clamshell to tablet mode or
-  // vice versa.
+  // The window and layer we are observing when animating from clamshell to
+  // tablet mode or vice versa.
   aura::Window* observed_window_ = nullptr;
+  ui::Layer* observed_layer_ = nullptr;
 
   std::unique_ptr<TabletModeTransitionFpsCounter> fps_counter_;
 
