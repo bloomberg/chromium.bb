@@ -57,8 +57,6 @@ CastComponent::CastComponent(
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 
   frame()->SetEnableInput(false);
-  InitializeCastPlatformBindings();
-
   frame()->SetNavigationEventListener(
       navigation_listener_binding_.NewBinding());
   api_bindings_client_->AttachToFrame(
@@ -66,6 +64,8 @@ CastComponent::CastComponent(
       base::BindOnce(&CastComponent::DestroyComponent, base::Unretained(this),
                      kBindingsFailureExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR));
+
+  InitializeCastPlatformBindings();
 }
 
 CastComponent::~CastComponent() = default;

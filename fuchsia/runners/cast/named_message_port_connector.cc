@@ -142,7 +142,6 @@ void NamedMessagePortConnector::OnConnectRequest(
 
     port_connected_handlers_[port_name].Run(
         std::move(transferable.message_port()));
-
-    ReceiveNextConnectRequest();
   }
+  ReceiveNextConnectRequest();
 }
