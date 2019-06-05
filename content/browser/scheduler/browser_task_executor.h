@@ -109,24 +109,23 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
       const base::TaskTraits& traits);
 
   // base::TaskExecutor implementation.
-  bool PostDelayedTaskWithTraits(const base::Location& from_here,
-                                 const base::TaskTraits& traits,
-                                 base::OnceClosure task,
-                                 base::TimeDelta delay) override;
+  bool PostDelayedTask(const base::Location& from_here,
+                       const base::TaskTraits& traits,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override;
 
-  scoped_refptr<base::TaskRunner> CreateTaskRunnerWithTraits(
+  scoped_refptr<base::TaskRunner> CreateTaskRunner(
       const base::TaskTraits& traits) override;
 
-  scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
+  scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunner(
       const base::TaskTraits& traits) override;
 
-  scoped_refptr<base::SingleThreadTaskRunner>
-  CreateSingleThreadTaskRunnerWithTraits(
+  scoped_refptr<base::SingleThreadTaskRunner> CreateSingleThreadTaskRunner(
       const base::TaskTraits& traits,
       base::SingleThreadTaskRunnerThreadMode thread_mode) override;
 
 #if defined(OS_WIN)
-  scoped_refptr<base::SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
+  scoped_refptr<base::SingleThreadTaskRunner> CreateCOMSTATaskRunner(
       const base::TaskTraits& traits,
       base::SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)

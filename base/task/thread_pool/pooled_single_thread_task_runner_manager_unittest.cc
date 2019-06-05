@@ -91,15 +91,13 @@ void ShouldNotRun() {
 
 TEST_F(PooledSingleThreadTaskRunnerManagerTest, DifferentThreadsUsed) {
   scoped_refptr<SingleThreadTaskRunner> task_runner_1 =
-      single_thread_task_runner_manager_
-          ->CreateSingleThreadTaskRunnerWithTraits(
-              {TaskShutdownBehavior::BLOCK_SHUTDOWN},
-              SingleThreadTaskRunnerThreadMode::DEDICATED);
+      single_thread_task_runner_manager_->CreateSingleThreadTaskRunner(
+          {TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          SingleThreadTaskRunnerThreadMode::DEDICATED);
   scoped_refptr<SingleThreadTaskRunner> task_runner_2 =
-      single_thread_task_runner_manager_
-          ->CreateSingleThreadTaskRunnerWithTraits(
-              {TaskShutdownBehavior::BLOCK_SHUTDOWN},
-              SingleThreadTaskRunnerThreadMode::DEDICATED);
+      single_thread_task_runner_manager_->CreateSingleThreadTaskRunner(
+          {TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          SingleThreadTaskRunnerThreadMode::DEDICATED);
 
   PlatformThreadRef thread_ref_1;
   task_runner_1->PostTask(FROM_HERE,
@@ -117,15 +115,13 @@ TEST_F(PooledSingleThreadTaskRunnerManagerTest, DifferentThreadsUsed) {
 
 TEST_F(PooledSingleThreadTaskRunnerManagerTest, SameThreadUsed) {
   scoped_refptr<SingleThreadTaskRunner> task_runner_1 =
-      single_thread_task_runner_manager_
-          ->CreateSingleThreadTaskRunnerWithTraits(
-              {TaskShutdownBehavior::BLOCK_SHUTDOWN},
-              SingleThreadTaskRunnerThreadMode::SHARED);
+      single_thread_task_runner_manager_->CreateSingleThreadTaskRunner(
+          {TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          SingleThreadTaskRunnerThreadMode::SHARED);
   scoped_refptr<SingleThreadTaskRunner> task_runner_2 =
-      single_thread_task_runner_manager_
-          ->CreateSingleThreadTaskRunnerWithTraits(
-              {TaskShutdownBehavior::BLOCK_SHUTDOWN},
-              SingleThreadTaskRunnerThreadMode::SHARED);
+      single_thread_task_runner_manager_->CreateSingleThreadTaskRunner(
+          {TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          SingleThreadTaskRunnerThreadMode::SHARED);
 
   PlatformThreadRef thread_ref_1;
   task_runner_1->PostTask(FROM_HERE,
@@ -143,15 +139,13 @@ TEST_F(PooledSingleThreadTaskRunnerManagerTest, SameThreadUsed) {
 
 TEST_F(PooledSingleThreadTaskRunnerManagerTest, RunsTasksInCurrentSequence) {
   scoped_refptr<SingleThreadTaskRunner> task_runner_1 =
-      single_thread_task_runner_manager_
-          ->CreateSingleThreadTaskRunnerWithTraits(
-              {TaskShutdownBehavior::BLOCK_SHUTDOWN},
-              SingleThreadTaskRunnerThreadMode::DEDICATED);
+      single_thread_task_runner_manager_->CreateSingleThreadTaskRunner(
+          {TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          SingleThreadTaskRunnerThreadMode::DEDICATED);
   scoped_refptr<SingleThreadTaskRunner> task_runner_2 =
-      single_thread_task_runner_manager_
-          ->CreateSingleThreadTaskRunnerWithTraits(
-              {TaskShutdownBehavior::BLOCK_SHUTDOWN},
-              SingleThreadTaskRunnerThreadMode::DEDICATED);
+      single_thread_task_runner_manager_->CreateSingleThreadTaskRunner(
+          {TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          SingleThreadTaskRunnerThreadMode::DEDICATED);
 
   EXPECT_FALSE(task_runner_1->RunsTasksInCurrentSequence());
   EXPECT_FALSE(task_runner_2->RunsTasksInCurrentSequence());
@@ -183,7 +177,7 @@ TEST_F(PooledSingleThreadTaskRunnerManagerTest,
        SharedWithBaseSyncPrimitivesDCHECKs) {
   testing::GTEST_FLAG(death_test_style) = "threadsafe";
   EXPECT_DCHECK_DEATH({
-    single_thread_task_runner_manager_->CreateSingleThreadTaskRunnerWithTraits(
+    single_thread_task_runner_manager_->CreateSingleThreadTaskRunner(
         {WithBaseSyncPrimitives()}, SingleThreadTaskRunnerThreadMode::SHARED);
   });
 }
@@ -197,7 +191,7 @@ TEST_F(PooledSingleThreadTaskRunnerManagerTest,
   // Post a CONTINUE_ON_SHUTDOWN task that waits on
   // |task_can_continue| to a shared SingleThreadTaskRunner.
   single_thread_task_runner_manager_
-      ->CreateSingleThreadTaskRunnerWithTraits(
+      ->CreateSingleThreadTaskRunner(
           {TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
           SingleThreadTaskRunnerThreadMode::SHARED)
       ->PostTask(FROM_HERE, base::BindOnce(
@@ -215,9 +209,8 @@ TEST_F(PooledSingleThreadTaskRunnerManagerTest,
 
   // Post a BLOCK_SHUTDOWN task to a shared SingleThreadTaskRunner.
   single_thread_task_runner_manager_
-      ->CreateSingleThreadTaskRunnerWithTraits(
-          {TaskShutdownBehavior::BLOCK_SHUTDOWN},
-          SingleThreadTaskRunnerThreadMode::SHARED)
+      ->CreateSingleThreadTaskRunner({TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                                     SingleThreadTaskRunnerThreadMode::SHARED)
       ->PostTask(FROM_HERE, DoNothing());
 
   // Shutdown should not hang even though the first task hasn't finished.
@@ -241,8 +234,8 @@ class PooledSingleThreadTaskRunnerManagerCommonTest
 
   scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(
       TaskTraits traits = TaskTraits()) {
-    return single_thread_task_runner_manager_
-        ->CreateSingleThreadTaskRunnerWithTraits(traits, GetParam());
+    return single_thread_task_runner_manager_->CreateSingleThreadTaskRunner(
+        traits, GetParam());
   }
 
  private:
@@ -496,10 +489,10 @@ TEST_F(PooledSingleThreadTaskRunnerManagerJoinTest, ConcurrentJoin) {
   WaitableEvent task_blocking;
 
   {
-    auto task_runner = single_thread_task_runner_manager_
-                           ->CreateSingleThreadTaskRunnerWithTraits(
-                               {WithBaseSyncPrimitives()},
-                               SingleThreadTaskRunnerThreadMode::DEDICATED);
+    auto task_runner =
+        single_thread_task_runner_manager_->CreateSingleThreadTaskRunner(
+            {WithBaseSyncPrimitives()},
+            SingleThreadTaskRunnerThreadMode::DEDICATED);
     EXPECT_TRUE(task_runner->PostTask(
         FROM_HERE,
         BindOnce(&WaitableEvent::Signal, Unretained(&task_running))));
@@ -524,10 +517,10 @@ TEST_F(PooledSingleThreadTaskRunnerManagerJoinTest,
   WaitableEvent task_blocking;
 
   {
-    auto task_runner = single_thread_task_runner_manager_
-                           ->CreateSingleThreadTaskRunnerWithTraits(
-                               {WithBaseSyncPrimitives()},
-                               SingleThreadTaskRunnerThreadMode::DEDICATED);
+    auto task_runner =
+        single_thread_task_runner_manager_->CreateSingleThreadTaskRunner(
+            {WithBaseSyncPrimitives()},
+            SingleThreadTaskRunnerThreadMode::DEDICATED);
     EXPECT_TRUE(task_runner->PostTask(
         FROM_HERE,
         BindOnce(&WaitableEvent::Signal, Unretained(&task_running))));
@@ -549,7 +542,7 @@ TEST_F(PooledSingleThreadTaskRunnerManagerJoinTest,
 
 TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, COMSTAInitialized) {
   scoped_refptr<SingleThreadTaskRunner> com_task_runner =
-      single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
+      single_thread_task_runner_manager_->CreateCOMSTATaskRunner(
           {TaskShutdownBehavior::BLOCK_SHUTDOWN}, GetParam());
 
   com_task_runner->PostTask(FROM_HERE, BindOnce(&win::AssertComApartmentType,
@@ -560,11 +553,11 @@ TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, COMSTAInitialized) {
 
 TEST_F(PooledSingleThreadTaskRunnerManagerTest, COMSTASameThreadUsed) {
   scoped_refptr<SingleThreadTaskRunner> task_runner_1 =
-      single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
+      single_thread_task_runner_manager_->CreateCOMSTATaskRunner(
           {TaskShutdownBehavior::BLOCK_SHUTDOWN},
           SingleThreadTaskRunnerThreadMode::SHARED);
   scoped_refptr<SingleThreadTaskRunner> task_runner_2 =
-      single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
+      single_thread_task_runner_manager_->CreateCOMSTATaskRunner(
           {TaskShutdownBehavior::BLOCK_SHUTDOWN},
           SingleThreadTaskRunnerThreadMode::SHARED);
 
@@ -629,7 +622,7 @@ class PooledSingleThreadTaskRunnerManagerTestWin
 
 TEST_F(PooledSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
   scoped_refptr<SingleThreadTaskRunner> com_task_runner =
-      single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
+      single_thread_task_runner_manager_->CreateCOMSTATaskRunner(
           {TaskShutdownBehavior::BLOCK_SHUTDOWN},
           SingleThreadTaskRunnerThreadMode::DEDICATED);
   HWND hwnd = nullptr;
@@ -679,7 +672,7 @@ TEST_F(PooledSingleThreadTaskRunnerManagerStartTest, PostTaskBeforeStart) {
   AtomicFlag manager_started;
   WaitableEvent task_finished;
   single_thread_task_runner_manager_
-      ->CreateSingleThreadTaskRunnerWithTraits(
+      ->CreateSingleThreadTaskRunner(
           TaskTraits(), SingleThreadTaskRunnerThreadMode::DEDICATED)
       ->PostTask(
           FROM_HERE,

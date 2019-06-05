@@ -82,24 +82,23 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   void SetHasBestEffortFence(bool has_best_effort_fence) override;
 
   // TaskExecutor:
-  bool PostDelayedTaskWithTraits(const Location& from_here,
-                                 const TaskTraits& traits,
-                                 OnceClosure task,
-                                 TimeDelta delay) override;
-  scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
+  bool PostDelayedTask(const Location& from_here,
+                       const TaskTraits& traits,
+                       OnceClosure task,
+                       TimeDelta delay) override;
+  scoped_refptr<TaskRunner> CreateTaskRunner(const TaskTraits& traits) override;
+  scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunner(
       const TaskTraits& traits) override;
-  scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
-      const TaskTraits& traits) override;
-  scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
+  scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunner(
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode) override;
 #if defined(OS_WIN)
-  scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
+  scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunner(
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)
   scoped_refptr<UpdateableSequencedTaskRunner>
-  CreateUpdateableSequencedTaskRunnerWithTraits(const TaskTraits& traits);
+  CreateUpdateableSequencedTaskRunner(const TaskTraits& traits);
 
  private:
   // Invoked after |has_fence_| or |has_best_effort_fence_| is updated. Sets the

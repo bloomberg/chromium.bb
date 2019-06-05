@@ -534,20 +534,18 @@ void PooledSingleThreadTaskRunnerManager::DidUpdateCanRunPolicy() {
 }
 
 scoped_refptr<SingleThreadTaskRunner>
-PooledSingleThreadTaskRunnerManager::CreateSingleThreadTaskRunnerWithTraits(
+PooledSingleThreadTaskRunnerManager::CreateSingleThreadTaskRunner(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
-  return CreateTaskRunnerWithTraitsImpl<WorkerThreadDelegate>(traits,
-                                                              thread_mode);
+  return CreateTaskRunnerImpl<WorkerThreadDelegate>(traits, thread_mode);
 }
 
 #if defined(OS_WIN)
 scoped_refptr<SingleThreadTaskRunner>
-PooledSingleThreadTaskRunnerManager::CreateCOMSTATaskRunnerWithTraits(
+PooledSingleThreadTaskRunnerManager::CreateCOMSTATaskRunner(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
-  return CreateTaskRunnerWithTraitsImpl<WorkerThreadCOMDelegate>(traits,
-                                                                 thread_mode);
+  return CreateTaskRunnerImpl<WorkerThreadCOMDelegate>(traits, thread_mode);
 }
 #endif  // defined(OS_WIN)
 
@@ -562,7 +560,7 @@ PooledSingleThreadTaskRunnerManager::TraitsToContinueOnShutdown(
 
 template <typename DelegateType>
 scoped_refptr<PooledSingleThreadTaskRunnerManager::PooledSingleThreadTaskRunner>
-PooledSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
+PooledSingleThreadTaskRunnerManager::CreateTaskRunnerImpl(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
   DCHECK(thread_mode != SingleThreadTaskRunnerThreadMode::SHARED ||

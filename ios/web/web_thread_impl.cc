@@ -152,27 +152,26 @@ class WebThreadTaskExecutor : public base::TaskExecutor {
   ~WebThreadTaskExecutor() override {}
 
   // base::TaskExecutor implementation.
-  bool PostDelayedTaskWithTraits(const base::Location& from_here,
-                                 const base::TaskTraits& traits,
-                                 base::OnceClosure task,
-                                 base::TimeDelta delay) override {
+  bool PostDelayedTask(const base::Location& from_here,
+                       const base::TaskTraits& traits,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override {
     return PostTaskHelper(
         GetWebThreadIdentifier(traits), from_here, std::move(task), delay,
         traits.GetExtension<WebTaskTraitsExtension>().nestable());
   }
 
-  scoped_refptr<base::TaskRunner> CreateTaskRunnerWithTraits(
+  scoped_refptr<base::TaskRunner> CreateTaskRunner(
       const base::TaskTraits& traits) override {
     return GetTaskRunnerForThread(GetWebThreadIdentifier(traits));
   }
 
-  scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
+  scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunner(
       const base::TaskTraits& traits) override {
     return GetTaskRunnerForThread(GetWebThreadIdentifier(traits));
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner>
-  CreateSingleThreadTaskRunnerWithTraits(
+  scoped_refptr<base::SingleThreadTaskRunner> CreateSingleThreadTaskRunner(
       const base::TaskTraits& traits,
       base::SingleThreadTaskRunnerThreadMode thread_mode) override {
     // It's not possible to request DEDICATED access to a WebThread.

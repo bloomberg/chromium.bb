@@ -26,47 +26,44 @@ namespace {
 class MockTaskExecutor : public TaskExecutor {
  public:
   MockTaskExecutor() {
-    ON_CALL(*this, PostDelayedTaskWithTraitsMock(_, _, _, _))
+    ON_CALL(*this, PostDelayedTaskMock(_, _, _, _))
         .WillByDefault(Invoke([this](const Location& from_here,
                                      const TaskTraits& traits,
                                      OnceClosure& task, TimeDelta delay) {
           return runner_->PostDelayedTask(from_here, std::move(task), delay);
         }));
-    ON_CALL(*this, CreateTaskRunnerWithTraits(_))
-        .WillByDefault(Return(runner_));
-    ON_CALL(*this, CreateSequencedTaskRunnerWithTraits(_))
-        .WillByDefault(Return(runner_));
-    ON_CALL(*this, CreateSingleThreadTaskRunnerWithTraits(_, _))
+    ON_CALL(*this, CreateTaskRunner(_)).WillByDefault(Return(runner_));
+    ON_CALL(*this, CreateSequencedTaskRunner(_)).WillByDefault(Return(runner_));
+    ON_CALL(*this, CreateSingleThreadTaskRunner(_, _))
         .WillByDefault(Return(runner_));
 #if defined(OS_WIN)
-    ON_CALL(*this, CreateCOMSTATaskRunnerWithTraits(_, _))
-        .WillByDefault(Return(runner_));
+    ON_CALL(*this, CreateCOMSTATaskRunner(_, _)).WillByDefault(Return(runner_));
 #endif  // defined(OS_WIN)
   }
 
   // TaskExecutor:
   // Helper because gmock doesn't support move-only types.
-  bool PostDelayedTaskWithTraits(const Location& from_here,
-                                 const TaskTraits& traits,
-                                 OnceClosure task,
-                                 TimeDelta delay) override {
-    return PostDelayedTaskWithTraitsMock(from_here, traits, task, delay);
+  bool PostDelayedTask(const Location& from_here,
+                       const TaskTraits& traits,
+                       OnceClosure task,
+                       TimeDelta delay) override {
+    return PostDelayedTaskMock(from_here, traits, task, delay);
   }
-  MOCK_METHOD4(PostDelayedTaskWithTraitsMock,
+  MOCK_METHOD4(PostDelayedTaskMock,
                bool(const Location& from_here,
                     const TaskTraits& traits,
                     OnceClosure& task,
                     TimeDelta delay));
-  MOCK_METHOD1(CreateTaskRunnerWithTraits,
+  MOCK_METHOD1(CreateTaskRunner,
                scoped_refptr<TaskRunner>(const TaskTraits& traits));
-  MOCK_METHOD1(CreateSequencedTaskRunnerWithTraits,
+  MOCK_METHOD1(CreateSequencedTaskRunner,
                scoped_refptr<SequencedTaskRunner>(const TaskTraits& traits));
-  MOCK_METHOD2(CreateSingleThreadTaskRunnerWithTraits,
+  MOCK_METHOD2(CreateSingleThreadTaskRunner,
                scoped_refptr<SingleThreadTaskRunner>(
                    const TaskTraits& traits,
                    SingleThreadTaskRunnerThreadMode thread_mode));
 #if defined(OS_WIN)
-  MOCK_METHOD2(CreateCOMSTATaskRunnerWithTraits,
+  MOCK_METHOD2(CreateCOMSTATaskRunner,
                scoped_refptr<SingleThreadTaskRunner>(
                    const TaskTraits& traits,
                    SingleThreadTaskRunnerThreadMode thread_mode));
@@ -103,34 +100,33 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {
   EXPECT_TRUE(PostTask(FROM_HERE, DoNothing()));
   EXPECT_FALSE(executor_.runner()->HasPendingTask());
 
-  EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, {MayBlock()}, DoNothing()));
+  EXPECT_TRUE(PostTask(FROM_HERE, {MayBlock()}, DoNothing()));
   EXPECT_FALSE(executor_.runner()->HasPendingTask());
 
-  EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, {ThreadPool()}, DoNothing()));
+  EXPECT_TRUE(PostTask(FROM_HERE, {ThreadPool()}, DoNothing()));
   EXPECT_FALSE(executor_.runner()->HasPendingTask());
 
   // Task runners without extension should not be the executor's.
-  auto task_runner = CreateTaskRunnerWithTraits({});
+  auto task_runner = CreateTaskRunner({});
   EXPECT_NE(executor_.runner(), task_runner);
-  auto sequenced_task_runner = CreateSequencedTaskRunnerWithTraits({});
+  auto sequenced_task_runner = CreateSequencedTaskRunner({});
   EXPECT_NE(executor_.runner(), sequenced_task_runner);
-  auto single_thread_task_runner = CreateSingleThreadTaskRunnerWithTraits({});
+  auto single_thread_task_runner = CreateSingleThreadTaskRunner({});
   EXPECT_NE(executor_.runner(), single_thread_task_runner);
 #if defined(OS_WIN)
-  auto comsta_task_runner = CreateCOMSTATaskRunnerWithTraits({});
+  auto comsta_task_runner = CreateCOMSTATaskRunner({});
   EXPECT_NE(executor_.runner(), comsta_task_runner);
 #endif  // defined(OS_WIN)
 
   // Thread pool task runners should not be the executor's.
-  task_runner = CreateTaskRunnerWithTraits({ThreadPool()});
+  task_runner = CreateTaskRunner({ThreadPool()});
   EXPECT_NE(executor_.runner(), task_runner);
-  sequenced_task_runner = CreateSequencedTaskRunnerWithTraits({ThreadPool()});
+  sequenced_task_runner = CreateSequencedTaskRunner({ThreadPool()});
   EXPECT_NE(executor_.runner(), sequenced_task_runner);
-  single_thread_task_runner =
-      CreateSingleThreadTaskRunnerWithTraits({ThreadPool()});
+  single_thread_task_runner = CreateSingleThreadTaskRunner({ThreadPool()});
   EXPECT_NE(executor_.runner(), single_thread_task_runner);
 #if defined(OS_WIN)
-  comsta_task_runner = CreateCOMSTATaskRunnerWithTraits({ThreadPool()});
+  comsta_task_runner = CreateCOMSTATaskRunner({ThreadPool()});
   EXPECT_NE(executor_.runner(), comsta_task_runner);
 #endif  // defined(OS_WIN)
 }
@@ -139,27 +135,24 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
   // Tasks with extension should go to the executor.
   {
     TaskTraits traits = {TestExtensionBoolTrait()};
-    EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(_, traits, _, _))
-        .Times(1);
-    EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, traits, DoNothing()));
+    EXPECT_CALL(executor_, PostDelayedTaskMock(_, traits, _, _)).Times(1);
+    EXPECT_TRUE(PostTask(FROM_HERE, traits, DoNothing()));
     EXPECT_TRUE(executor_.runner()->HasPendingTask());
     executor_.runner()->ClearPendingTasks();
   }
 
   {
     TaskTraits traits = {MayBlock(), TestExtensionBoolTrait()};
-    EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(_, traits, _, _))
-        .Times(1);
-    EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, traits, DoNothing()));
+    EXPECT_CALL(executor_, PostDelayedTaskMock(_, traits, _, _)).Times(1);
+    EXPECT_TRUE(PostTask(FROM_HERE, traits, DoNothing()));
     EXPECT_TRUE(executor_.runner()->HasPendingTask());
     executor_.runner()->ClearPendingTasks();
   }
 
   {
     TaskTraits traits = {TestExtensionEnumTrait::kB, TestExtensionBoolTrait()};
-    EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(_, traits, _, _))
-        .Times(1);
-    EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, traits, DoNothing()));
+    EXPECT_CALL(executor_, PostDelayedTaskMock(_, traits, _, _)).Times(1);
+    EXPECT_TRUE(PostTask(FROM_HERE, traits, DoNothing()));
     EXPECT_TRUE(executor_.runner()->HasPendingTask());
     executor_.runner()->ClearPendingTasks();
   }
@@ -167,22 +160,18 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
   // Task runners with extension should be the executor's.
   {
     TaskTraits traits = {TestExtensionBoolTrait()};
-    EXPECT_CALL(executor_, CreateTaskRunnerWithTraits(traits)).Times(1);
-    auto task_runner = CreateTaskRunnerWithTraits(traits);
+    EXPECT_CALL(executor_, CreateTaskRunner(traits)).Times(1);
+    auto task_runner = CreateTaskRunner(traits);
     EXPECT_EQ(executor_.runner(), task_runner);
-    EXPECT_CALL(executor_, CreateSequencedTaskRunnerWithTraits(traits))
-        .Times(1);
-    auto sequenced_task_runner = CreateSequencedTaskRunnerWithTraits(traits);
+    EXPECT_CALL(executor_, CreateSequencedTaskRunner(traits)).Times(1);
+    auto sequenced_task_runner = CreateSequencedTaskRunner(traits);
     EXPECT_EQ(executor_.runner(), sequenced_task_runner);
-    EXPECT_CALL(executor_, CreateSingleThreadTaskRunnerWithTraits(traits, _))
-        .Times(1);
-    auto single_thread_task_runner =
-        CreateSingleThreadTaskRunnerWithTraits(traits);
+    EXPECT_CALL(executor_, CreateSingleThreadTaskRunner(traits, _)).Times(1);
+    auto single_thread_task_runner = CreateSingleThreadTaskRunner(traits);
     EXPECT_EQ(executor_.runner(), single_thread_task_runner);
 #if defined(OS_WIN)
-    EXPECT_CALL(executor_, CreateCOMSTATaskRunnerWithTraits(traits, _))
-        .Times(1);
-    auto comsta_task_runner = CreateCOMSTATaskRunnerWithTraits(traits);
+    EXPECT_CALL(executor_, CreateCOMSTATaskRunner(traits, _)).Times(1);
+    auto comsta_task_runner = CreateCOMSTATaskRunner(traits);
     EXPECT_EQ(executor_.runner(), comsta_task_runner);
 #endif  // defined(OS_WIN)
   }
@@ -201,10 +190,10 @@ TEST_F(PostTaskTestWithExecutor, PriorityInherited) {
   TaskTraits traits_with_inherited_priority = traits;
   traits_with_inherited_priority.InheritPriority(TaskPriority::BEST_EFFORT);
   EXPECT_FALSE(traits_with_inherited_priority.priority_set_explicitly());
-  EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(
-                             _, traits_with_inherited_priority, _, _))
+  EXPECT_CALL(executor_,
+              PostDelayedTaskMock(_, traits_with_inherited_priority, _, _))
       .Times(1);
-  EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, traits, DoNothing()));
+  EXPECT_TRUE(PostTask(FROM_HERE, traits, DoNothing()));
   EXPECT_TRUE(executor_.runner()->HasPendingTask());
   executor_.runner()->ClearPendingTasks();
 }

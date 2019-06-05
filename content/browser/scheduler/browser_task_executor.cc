@@ -172,11 +172,10 @@ void BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
   run_loop.Run();
 }
 
-bool BrowserTaskExecutor::PostDelayedTaskWithTraits(
-    const base::Location& from_here,
-    const base::TaskTraits& traits,
-    base::OnceClosure task,
-    base::TimeDelta delay) {
+bool BrowserTaskExecutor::PostDelayedTask(const base::Location& from_here,
+                                          const base::TaskTraits& traits,
+                                          base::OnceClosure task,
+                                          base::TimeDelta delay) {
   DCHECK_EQ(BrowserTaskTraitsExtension::kExtensionId, traits.extension_id());
   const BrowserTaskTraitsExtension& extension =
       traits.GetExtension<BrowserTaskTraitsExtension>();
@@ -189,19 +188,18 @@ bool BrowserTaskExecutor::PostDelayedTaskWithTraits(
   }
 }
 
-scoped_refptr<base::TaskRunner> BrowserTaskExecutor::CreateTaskRunnerWithTraits(
+scoped_refptr<base::TaskRunner> BrowserTaskExecutor::CreateTaskRunner(
     const base::TaskTraits& traits) {
   return GetTaskRunner(traits);
 }
 
 scoped_refptr<base::SequencedTaskRunner>
-BrowserTaskExecutor::CreateSequencedTaskRunnerWithTraits(
-    const base::TaskTraits& traits) {
+BrowserTaskExecutor::CreateSequencedTaskRunner(const base::TaskTraits& traits) {
   return GetTaskRunner(traits);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-BrowserTaskExecutor::CreateSingleThreadTaskRunnerWithTraits(
+BrowserTaskExecutor::CreateSingleThreadTaskRunner(
     const base::TaskTraits& traits,
     base::SingleThreadTaskRunnerThreadMode thread_mode) {
   return GetTaskRunner(traits);
@@ -209,7 +207,7 @@ BrowserTaskExecutor::CreateSingleThreadTaskRunnerWithTraits(
 
 #if defined(OS_WIN)
 scoped_refptr<base::SingleThreadTaskRunner>
-BrowserTaskExecutor::CreateCOMSTATaskRunnerWithTraits(
+BrowserTaskExecutor::CreateCOMSTATaskRunner(
     const base::TaskTraits& traits,
     base::SingleThreadTaskRunnerThreadMode thread_mode) {
   return GetTaskRunner(traits);
