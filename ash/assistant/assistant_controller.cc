@@ -241,6 +241,10 @@ void AssistantController::OpenUrl(const GURL& url, bool from_server) {
     return;
   }
 
+  // Give observers an opportunity to perform any necessary handling before we
+  // open the specified |url| in a new browser tab.
+  NotifyOpeningUrl(url, from_server);
+
   // The new tab should be opened with a user activation since the user
   // interacted with the Assistant to open the url.
   NewWindowDelegate::GetInstance()->NewTabWithUrl(
@@ -298,6 +302,11 @@ void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
     observer.OnDeepLinkReceived(type, params);
 
   view_delegate_.NotifyDeepLinkReceived(type, params);
+}
+
+void AssistantController::NotifyOpeningUrl(const GURL& url, bool from_server) {
+  for (AssistantControllerObserver& observer : observers_)
+    observer.OnOpeningUrl(url, from_server);
 }
 
 void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {

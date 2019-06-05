@@ -253,7 +253,7 @@ void AssistantUiController::OnDeepLinkReceived(
   UpdateUiMode(AssistantUiMode::kWebUi);
 }
 
-void AssistantUiController::OnUrlOpened(const GURL& url, bool from_server) {
+void AssistantUiController::OnOpeningUrl(const GURL& url, bool from_server) {
   if (model_.visibility() != AssistantVisibility::kVisible)
     return;
 
