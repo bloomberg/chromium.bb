@@ -656,7 +656,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
           (sb_service ? sb_service->download_protection_service() : nullptr);
       if (protection_service)
         protection_service->ShowDetailsForDownload(
-            *download_, download_commands->GetBrowser());
+            download_, download_commands->GetBrowser());
 #else
       // Should only be getting invoked if we are using safe browsing.
       NOTREACHED();

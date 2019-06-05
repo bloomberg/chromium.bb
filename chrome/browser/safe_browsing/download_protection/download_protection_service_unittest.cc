@@ -2227,7 +2227,7 @@ TEST_F(DownloadProtectionServiceTest, ShowDetailsForDownloadHasContext) {
       .WillOnce(Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST));
   EXPECT_CALL(mock_page_navigator, OpenURL(OpenURLParamsWithContextValue("7")));
 
-  download_service_->ShowDetailsForDownload(mock_download_item,
+  download_service_->ShowDetailsForDownload(&mock_download_item,
                                             &mock_page_navigator);
 }
 
