@@ -132,6 +132,9 @@ class BigEndianReader {
   size_t remaining() const { return end_ - current_; }
   size_t offset() const { return current_ - begin_; }
 
+ protected:
+  void set_current(const uint8_t* value) { current_ = value; }
+
  private:
   const uint8_t* begin_;
   const uint8_t* current_;
@@ -163,6 +166,9 @@ class BigEndianWriter {
   size_t length() const { return end_ - begin_; }
   size_t remaining() const { return end_ - current_; }
   size_t offset() const { return current_ - begin_; }
+
+protected:
+  void set_current(uint8_t* value) { current_ = value; }
 
  private:
   uint8_t* begin_;

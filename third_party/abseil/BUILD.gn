@@ -14,11 +14,12 @@ if (build_with_chromium) {
 } else {
   config("abseil_config") {
     include_dirs = [ "//third_party/abseil/src" ]
+    cflags_cc = [
+      "-Wno-sign-compare",
+    ]
   }
 
   source_set("abseil") {
-    cflags_cc = [ "-Wno-sign-compare" ]
-
     sources = [
       "src/absl/base/attributes.h",
       "src/absl/base/config.h",
@@ -35,6 +36,12 @@ if (build_with_chromium) {
       "src/absl/base/optimization.h",
       "src/absl/base/policy_checks.h",
       "src/absl/base/port.h",
+      "src/absl/container/internal/common.h",
+      "src/absl/hash/internal/city.cc",
+      "src/absl/hash/internal/city.h",
+      "src/absl/hash/internal/hash.cc",
+      "src/absl/hash/internal/hash.h",
+      "src/absl/hash/hash.h",
       "src/absl/memory/memory.h",
       "src/absl/meta/type_traits.h",
       "src/absl/strings/ascii.cc",
@@ -49,6 +56,7 @@ if (build_with_chromium) {
       "src/absl/strings/internal/charconv_parse.h",
       "src/absl/strings/internal/memutil.cc",
       "src/absl/strings/internal/memutil.h",
+      "src/absl/strings/internal/str_join_internal.h",
       "src/absl/strings/internal/utf8.cc",
       "src/absl/strings/internal/utf8.h",
       "src/absl/strings/match.cc",
@@ -57,6 +65,7 @@ if (build_with_chromium) {
       "src/absl/strings/numbers.h",
       "src/absl/strings/str_cat.cc",
       "src/absl/strings/str_cat.h",
+      "src/absl/strings/str_join.h",
       "src/absl/strings/string_view.cc",
       "src/absl/strings/string_view.h",
       "src/absl/strings/substitute.cc",

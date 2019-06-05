@@ -115,10 +115,12 @@ include_rules = [
     # Abseil whitelist.
     '+absl/algorithm/container.h',
     '+absl/base/thread_annotations.h',
+    '+absl/hash/hash.h',
     '+absl/strings/ascii.h',
     '+absl/strings/match.h',
     '+absl/strings/numbers.h',
     '+absl/strings/str_cat.h',
+    '+absl/strings/str_join.h',
     '+absl/strings/string_view.h',
     '+absl/strings/substitute.h',
     '+absl/types/optional.h',
