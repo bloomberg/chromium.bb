@@ -521,6 +521,8 @@ class TabListMediator {
             for (int i = 0; i < tabs.size(); i++) {
                 Tab tab = tabs.get(i);
 
+                mModel.get(i).set(TabProperties.IS_HIDDEN, false);
+
                 boolean isSelected = mTabModelSelector.getCurrentTab() == tab;
                 mModel.get(i).set(TabProperties.IS_SELECTED, isSelected);
 
@@ -545,6 +547,15 @@ class TabListMediator {
             addTabInfoToModel(tabs.get(i), i, tabs.get(i).getId() == currentTab.getId());
         }
         return false;
+    }
+
+    /**
+     * @see GridTabSwitcherMediator.ResetHandler#softCleanup
+     */
+    void softCleanup() {
+        for (int i = 0; i < mModel.size(); i++) {
+            mModel.get(i).set(TabProperties.IS_HIDDEN, true);
+        }
     }
 
     /**
@@ -698,6 +709,7 @@ class TabListMediator {
                         .with(TabProperties.FAVICON,
                                 mTabListFaviconProvider.getDefaultFaviconDrawable())
                         .with(TabProperties.IS_SELECTED, isSelected)
+                        .with(TabProperties.IS_HIDDEN, false)
                         .with(TabProperties.IPH_PROVIDER, showIPH ? mIphProvider : null)
                         .with(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)

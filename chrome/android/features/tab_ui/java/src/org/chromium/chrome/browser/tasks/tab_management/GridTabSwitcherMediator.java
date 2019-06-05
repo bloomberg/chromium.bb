@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_PADDING;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 
@@ -58,10 +59,14 @@ class GridTabSwitcherMediator
     private static final int DEFAULT_TOP_PADDING = 0;
 
     /** Field trial parameter for the {@link TabListRecyclerView} cleanup delay. */
+    private static final String SOFT_CLEANUP_DELAY_PARAM = "soft-cleanup-delay";
+    private static final int DEFAULT_SOFT_CLEANUP_DELAY_MS = 3_000;
     private static final String CLEANUP_DELAY_PARAM = "cleanup-delay";
-    private static final int DEFAULT_CLEANUP_DELAY_MS = 10_000;
+    private static final int DEFAULT_CLEANUP_DELAY_MS = 30_000;
+    private Integer mSoftCleanupDelayMsForTesting;
     private Integer mCleanupDelayMsForTesting;
     private final Handler mHandler;
+    private final Runnable mSoftClearTabListRunnable;
     private final Runnable mClearTabListRunnable;
 
     private final ResetHandler mResetHandler;
@@ -106,6 +111,11 @@ class GridTabSwitcherMediator
          * @return Whether the {@link TabListRecyclerView} can be shown quickly.
          */
         boolean resetWithTabList(TabList tabList);
+
+        /**
+         * Release the thumbnail {@link Bitmap} but keep the {@link TabGridViewHolder}.
+         */
+        void softCleanup();
     }
 
     /**
@@ -184,8 +194,21 @@ class GridTabSwitcherMediator
         mCompositorViewHolder = compositorViewHolder;
         mTabGridDialogResetHandler = tabGridDialogResetHandler;
 
+        mSoftClearTabListRunnable = mResetHandler::softCleanup;
         mClearTabListRunnable = () -> mResetHandler.resetWithTabList(null);
         mHandler = new Handler();
+    }
+
+    private int getSoftCleanupDelay() {
+        if (mSoftCleanupDelayMsForTesting != null) return mSoftCleanupDelayMsForTesting;
+
+        String delay = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.TAB_TO_GTS_ANIMATION, SOFT_CLEANUP_DELAY_PARAM);
+        try {
+            return Integer.valueOf(delay);
+        } catch (NumberFormatException e) {
+            return DEFAULT_SOFT_CLEANUP_DELAY_MS;
+        }
     }
 
     private int getCleanupDelay() {
@@ -237,6 +260,7 @@ class GridTabSwitcherMediator
     }
 
     boolean prepareOverview() {
+        mHandler.removeCallbacks(mSoftClearTabListRunnable);
         mHandler.removeCallbacks(mClearTabListRunnable);
         boolean quick = mResetHandler.resetWithTabList(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter());
@@ -290,7 +314,15 @@ class GridTabSwitcherMediator
      * @see GridTabSwitcher#postHiding
      */
     void postHiding() {
+        mHandler.postDelayed(mSoftClearTabListRunnable, getSoftCleanupDelay());
         mHandler.postDelayed(mClearTabListRunnable, getCleanupDelay());
+    }
+
+    /**
+     * Set the delay for soft cleanup.
+     */
+    void setSoftCleanupDelayForTesting(int timeoutMs) {
+        mSoftCleanupDelayMsForTesting = timeoutMs;
     }
 
     /**

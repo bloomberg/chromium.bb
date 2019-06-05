@@ -152,6 +152,11 @@ public class GridTabSwitcherCoordinator
     }
 
     @Override
+    public void softCleanup() {
+        mTabGridCoordinator.softCleanup();
+    }
+
+    @Override
     public void destroy() {
         mTabGridCoordinator.destroy();
         mContainerViewChangeProcessor.destroy();
