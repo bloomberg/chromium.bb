@@ -861,14 +861,16 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
   EXPECT_EQ(true, content::EvalJs(shell(), checkVisibleScript));
 }
 
+// Disabled: https://crbug.com/970219
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       FocusElementWithScrollIntoViewNeeded) {
+                       DISABLED_FocusElementWithScrollIntoViewNeeded) {
   TestScrollIntoView(/* initial_window_scroll_y= */ 0,
                      /* initial_container_scroll_y=*/0);
 }
 
+// Disabled: https://crbug.com/970219
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       FocusElementWithScrollIntoViewNotNeeded) {
+                       DISABLED_FocusElementWithScrollIntoViewNotNeeded) {
   TestScrollIntoView(/* initial_window_scroll_y= */ 0,
                      /* initial_container_scroll_y=*/200);
 }
