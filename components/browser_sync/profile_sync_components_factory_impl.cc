@@ -166,23 +166,14 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     // Autofill sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
-      if (FeatureList::IsEnabled(switches::kSyncUSSAutofillProfile)) {
-        controllers.push_back(
-            std::make_unique<AutofillProfileModelTypeController>(
-                std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-                    db_thread_,
-                    base::BindRepeating(
-                        &AutofillProfileDelegateFromDataService,
-                        base::RetainedRef(web_data_service_on_disk_))),
-                sync_client_->GetPrefService(), sync_service));
-      } else {
-        controllers.push_back(
-            std::make_unique<AutofillProfileDataTypeController>(
-                db_thread_, dump_stack, sync_service, sync_client_,
-                base::BindRepeating(&BrowserSyncClient::GetPersonalDataManager,
-                                    base::Unretained(sync_client_)),
-                web_data_service_on_disk_));
-      }
+      controllers.push_back(
+          std::make_unique<AutofillProfileModelTypeController>(
+              std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+                  db_thread_,
+                  base::BindRepeating(
+                      &AutofillProfileDelegateFromDataService,
+                      base::RetainedRef(web_data_service_on_disk_))),
+              sync_client_->GetPrefService(), sync_service));
     }
 
     // Wallet data sync is enabled by default. Register unless explicitly

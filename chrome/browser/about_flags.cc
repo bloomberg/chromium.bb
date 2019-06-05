@@ -3261,11 +3261,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLookalikeUrlNavigationSuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kLookalikeUrlNavigationSuggestionsUI)},
 
-    {"sync-USS-autofill-profile",
-     flag_descriptions::kSyncUSSAutofillProfileName,
-     flag_descriptions::kSyncUSSAutofillProfileDescription, kOsAll,
-     FEATURE_VALUE_TYPE(switches::kSyncUSSAutofillProfile)},
-
     {"sync-USS-autofill-wallet-metadata",
      flag_descriptions::kSyncUSSAutofillWalletMetadataName,
      flag_descriptions::kSyncUSSAutofillWalletMetadataDescription, kOsAll,

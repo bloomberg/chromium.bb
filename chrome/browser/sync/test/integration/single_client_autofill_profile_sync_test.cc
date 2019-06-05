@@ -38,19 +38,16 @@ class AutofillProfileDisabledChecker : public SingleClientStatusChangeChecker {
   }
 };
 
-class SingleClientAutofillProfileSyncTest : public FeatureToggler,
-                                            public SyncTest {
+class SingleClientAutofillProfileSyncTest : public SyncTest {
  public:
-  SingleClientAutofillProfileSyncTest()
-      : FeatureToggler(switches::kSyncUSSAutofillProfile),
-        SyncTest(SINGLE_CLIENT) {}
+  SingleClientAutofillProfileSyncTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientAutofillProfileSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientAutofillProfileSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_P(SingleClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientAutofillProfileSyncTest,
                        DisablingAutofillAlsoDisablesSyncing) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(GetClient(0)->service()->GetActiveDataTypes().Has(
@@ -78,9 +75,5 @@ IN_PROC_BROWSER_TEST_P(SingleClientAutofillProfileSyncTest,
   // The autofill profile itself should still be there though.
   EXPECT_EQ(1uL, pdm->GetProfiles().size());
 }
-
-INSTANTIATE_TEST_SUITE_P(USS,
-                         SingleClientAutofillProfileSyncTest,
-                         ::testing::Values(false, true));
 
 }  // namespace

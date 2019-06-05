@@ -51,28 +51,7 @@ enum ModelTypeEntityChange {
   MODEL_TYPE_ENTITY_CHANGE_COUNT = 6
 };
 
-// Class that enables or disables USS based on test parameter. Must be the first
-// base class of the test fixture.
-// TODO(jkrcal): When the new implementation fully launches, remove this class,
-// convert all tests from *_P back to *_F and remove the instance at the end.
-class UssSwitchToggler : public testing::WithParamInterface<bool> {
- public:
-  UssSwitchToggler() {
-    if (GetParam()) {
-      override_features_.InitAndEnableFeature(
-          switches::kSyncUSSAutofillProfile);
-    } else {
-      override_features_.InitAndDisableFeature(
-          switches::kSyncUSSAutofillProfile);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
-class TwoClientAutofillProfileSyncTest : public UssSwitchToggler,
-                                         public SyncTest {
+class TwoClientAutofillProfileSyncTest : public SyncTest {
  public:
   TwoClientAutofillProfileSyncTest() : SyncTest(TWO_CLIENT) {}
   ~TwoClientAutofillProfileSyncTest() override {}
@@ -87,7 +66,7 @@ class TwoClientAutofillProfileSyncTest : public UssSwitchToggler,
   DISALLOW_COPY_AND_ASSIGN(TwoClientAutofillProfileSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        PersonalDataManagerSanity) {
   ASSERT_TRUE(SetupSync());
 
@@ -136,7 +115,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                                LOCAL_DELETION, 2);
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        SyncHistogramsInitialSync) {
   ASSERT_TRUE(SetupClients());
 
@@ -172,7 +151,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                               6);
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddDuplicateProfiles) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, AddDuplicateProfiles) {
   ASSERT_TRUE(SetupClients());
   // TODO(crbug.com/904390): Once the investigation is over, remove the
   // histogram checks for zero LOCAL_DELETIONS here and in all further tests.
@@ -188,7 +167,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddDuplicateProfiles) {
                                LOCAL_DELETION, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        SameProfileWithConflict) {
   ASSERT_TRUE(SetupClients());
   base::HistogramTester histograms;
@@ -208,7 +187,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                                LOCAL_DELETION, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        AddDuplicateProfiles_OneIsVerified) {
   ASSERT_TRUE(SetupClients());
   base::HistogramTester histograms;
@@ -233,7 +212,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                                LOCAL_DELETION, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     TwoClientAutofillProfileSyncTest,
     AddDuplicateProfiles_OneIsVerified_NonverifiedComesLater) {
   ASSERT_TRUE(SetupClients());
@@ -270,7 +249,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 // Tests that a null profile does not get synced across clients.
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddEmptyProfile) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, AddEmptyProfile) {
   ASSERT_TRUE(SetupSync());
 
   AddProfile(0, CreateAutofillProfile(PROFILE_NULL));
@@ -280,7 +259,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddEmptyProfile) {
 
 // Tests that adding a profile on one client results in it being added on the
 // other client when sync is running.
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddProfile) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, AddProfile) {
   ASSERT_TRUE(SetupSync());
   base::HistogramTester histograms;
 
@@ -299,7 +278,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddProfile) {
 
 // Tests that adding a profile on one client results in it being added on the
 // other client when sync gets started.
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        AddProfile_BeforeSyncStart) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed";
   base::HistogramTester histograms;
@@ -321,7 +300,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 
 // Tests that adding the same profile on the two clients before sync is started
 // results in each client only having one profile after sync is started
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        ClientsAddSameProfile) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed";
   base::HistogramTester histograms;
@@ -352,7 +331,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 
 // Tests that adding multiple profiles to one client results in all of them
 // being added to the other client.
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        AddMultipleProfilesOnOneClient) {
   ASSERT_TRUE(SetupClients());
   base::HistogramTester histograms;
@@ -370,7 +349,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 
 // Tests that adding multiple profiles to two client results both clients having
 // all profiles.
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        AddMultipleProfilesOnTwoClients) {
   ASSERT_TRUE(SetupClients());
   base::HistogramTester histograms;
@@ -388,7 +367,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 
 // Tests that deleting a profile on one client results in it being deleted on
 // the other client.
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, DeleteProfile) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, DeleteProfile) {
   ASSERT_TRUE(SetupSync());
   base::HistogramTester histograms;
 
@@ -410,7 +389,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, DeleteProfile) {
 
 // Tests that modifying a profile while syncing results in the other client
 // getting the updated profile.
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, UpdateFields) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, UpdateFields) {
   ASSERT_TRUE(SetupSync());
   base::HistogramTester histograms;
 
@@ -445,7 +424,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, UpdateFields) {
 // Tests that modifying a profile at the same time one two clients while
 // syncing results in the both client having the same profile (doesn't matter
 // which one).
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        UpdateConflictingFields) {
   ASSERT_TRUE(SetupSync());
   base::HistogramTester histograms;
@@ -474,7 +453,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 // Tests that modifying a profile at the same time one two clients while
 // syncing results in the both client having the same profile (doesn't matter
 // which one).
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        UpdateConflictingFieldsDuringInitialMerge) {
   ASSERT_TRUE(SetupClients());
   base::HistogramTester histograms;
@@ -503,7 +482,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 // Tests that modifying a profile at the same time on two clients while
 // syncing results in both client having the same profile (doesn't matter which
 // one).
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, DeleteAndUpdate) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, DeleteAndUpdate) {
   ASSERT_TRUE(SetupSync());
   base::HistogramTester histograms;
 
@@ -529,17 +508,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, DeleteAndUpdate) {
 // syncing results in a conflict where the update wins. This only works with
 // a server that supports a strong consistency model and is hence capable of
 // detecting conflicts server-side.
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        DeleteAndUpdateWithStrongConsistency) {
-  if (GetParam() == false) {
-    // TODO(crbug.com/890746): There seems to be a bug in directory code that
-    // resolves conflicts in a way that local deletion wins over a remote
-    // update, which makes this test non-deterministic, because the logic is
-    // asymmetric (so the outcome depends on which client commits first).
-    // For now, we "disable" the test.
-    return;
-  }
-
   ASSERT_TRUE(SetupSync());
   base::HistogramTester histograms;
   GetFakeServer()->EnableStrongConsistencyWithConflictDetectionModel();
@@ -565,7 +535,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
                                LOCAL_DELETION, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, MaxLength) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, MaxLength) {
   ASSERT_TRUE(SetupSync());
   base::HistogramTester histograms;
 
@@ -593,7 +563,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, MaxLength) {
                                LOCAL_DELETION, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, ExceedsMaxLength) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, ExceedsMaxLength) {
   ASSERT_TRUE(SetupSync());
   base::HistogramTester histograms;
 
@@ -628,7 +598,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, ExceedsMaxLength) {
 }
 
 // Test credit cards don't sync.
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, NoCreditCardSync) {
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, NoCreditCardSync) {
   ASSERT_TRUE(SetupSync());
   base::HistogramTester histograms;
 
@@ -654,7 +624,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, NoCreditCardSync) {
                                LOCAL_DELETION, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
                        E2E_ONLY(TwoClientsAddAutofillProfiles)) {
   ASSERT_TRUE(SetupSync());
   base::HistogramTester histograms;
@@ -682,11 +652,5 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
   histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
                                LOCAL_DELETION, 0);
 }
-
-// Only parametrize the tests above that test autofill_profile, the tests below
-// address autocomplete and thus do not need parametrizing.
-INSTANTIATE_TEST_SUITE_P(USS,
-                         TwoClientAutofillProfileSyncTest,
-                         ::testing::Values(false, true));
 
 }  // namespace
