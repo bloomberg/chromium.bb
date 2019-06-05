@@ -49,6 +49,8 @@ const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature{
     "IPH_DownloadInfoBarDownloadContinuing", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature{
     "IPH_DownloadInfoBarDownloadsAreFaster", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHFeedCardMenuFeature{"IPH_FeedCardMenu",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHHomePageButtonFeature{
     "IPH_HomePageButton", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHHomepageTileFeature{"IPH_HomepageTile",

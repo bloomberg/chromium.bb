@@ -27,8 +27,6 @@ import com.google.android.libraries.feed.api.host.stream.SnackbarApi;
 import com.google.android.libraries.feed.api.host.stream.SnackbarCallbackApi;
 import com.google.android.libraries.feed.api.host.stream.StreamConfiguration;
 import com.google.android.libraries.feed.api.host.stream.TooltipApi;
-import com.google.android.libraries.feed.api.host.stream.TooltipCallbackApi;
-import com.google.android.libraries.feed.api.host.stream.TooltipInfo;
 import com.google.android.libraries.feed.api.internal.scope.FeedProcessScope;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -37,6 +35,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
+import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
@@ -102,14 +101,6 @@ public class FeedNewTabPage extends NewTabPage {
         public void show(String message, String action, SnackbarCallbackApi callback) {
             // TODO(https://crbug.com/924742): Set action text and correctly invoke callback.
             show(message);
-        }
-    }
-
-    private static class BasicTooltipApi implements TooltipApi {
-        @Override
-        public boolean maybeShowHelpUi(
-                TooltipInfo tooltipInfo, View view, TooltipCallbackApi tooltipCallback) {
-            return false;
         }
     }
 

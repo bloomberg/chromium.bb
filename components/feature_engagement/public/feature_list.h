@@ -74,6 +74,7 @@ DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadContinuingFeature,
                        "IPH_DownloadInfoBarDownloadContinuing");
 DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadsAreFasterFeature,
                        "IPH_DownloadInfoBarDownloadsAreFaster");
+DEFINE_VARIATION_PARAM(kIPHFeedCardMenuFeature, "IPH_FeedCardMenu");
 DEFINE_VARIATION_PARAM(kIPHHomePageButtonFeature, "IPH_HomePageButton");
 DEFINE_VARIATION_PARAM(kIPHHomepageTileFeature, "IPH_HomepageTile");
 DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryAddressFillingFeature,
@@ -137,6 +138,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHDownloadSettingsFeature),
         VARIATION_ENTRY(kIPHDownloadInfoBarDownloadContinuingFeature),
         VARIATION_ENTRY(kIPHDownloadInfoBarDownloadsAreFasterFeature),
+        VARIATION_ENTRY(kIPHFeedCardMenuFeature),
         VARIATION_ENTRY(kIPHHomePageButtonFeature),
         VARIATION_ENTRY(kIPHHomepageTileFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryAddressFillingFeature),

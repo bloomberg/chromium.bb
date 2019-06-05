@@ -38,6 +38,7 @@ extern const base::Feature kIPHContextualSuggestionsFeature;
 extern const base::Feature kIPHDownloadSettingsFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature;
+extern const base::Feature kIPHFeedCardMenuFeature;
 extern const base::Feature kIPHHomePageButtonFeature;
 extern const base::Feature kIPHHomepageTileFeature;
 extern const base::Feature kIPHKeyboardAccessoryAddressFillingFeature;

@@ -33,7 +33,8 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_FEATURE,
         FeatureConstants.TAB_GROUPS_QUICKLY_COMPARE_PAGES_FEATURE,
         FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE,
-        FeatureConstants.TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE})
+        FeatureConstants.TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE,
+        FeatureConstants.FEED_CARD_MENU_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
@@ -108,4 +109,9 @@ public @interface FeatureConstants {
      * An IPH feature to show on tab switcher cards with multiple tab thumbnails.
      */
     String TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE = "IPH_TabGroupsYourTabsTogether";
+
+    /**
+     * An IPH feature to show on a card menu on the FeedNewTabPage.
+     */
+    String FEED_CARD_MENU_FEATURE = "IPH_FeedCardMenu";
 }
