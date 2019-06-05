@@ -351,28 +351,6 @@ class GitWrapper(SCMWrapper):
               self.Print('FAILED to break lock: %s: %s' % (to_break, ex))
               raise
 
-  # TODO(ehmaldonado): Remove after bot_update is modified to pass the patch's
-  # branch.
-  def _GetTargetBranchForCommit(self, commit):
-    """Get the remote branch a commit is part of."""
-    _WELL_KNOWN_BRANCHES = [
-        'refs/remotes/origin/master',
-        'refs/remotes/origin/infra/config',
-        'refs/remotes/origin/lkgr',
-    ]
-    for branch in _WELL_KNOWN_BRANCHES:
-      if scm.GIT.IsAncestor(self.checkout_path, commit, branch):
-        return branch
-    remote_refs = self._Capture(
-        ['for-each-ref', 'refs/remotes/%s' % self.remote,
-         '--format=%(refname)']).splitlines()
-    for ref in sorted(remote_refs, reverse=True):
-      if scm.GIT.IsAncestor(self.checkout_path, commit, ref):
-        return ref
-    self.Print('Failed to find a remote ref that contains %s. '
-               'Candidate refs were %s.' % (commit, remote_refs))
-    return None
-
   def apply_patch_ref(self, patch_repo, patch_rev, target_rev, options,
                       file_list):
     """Apply a patch on top of the revision we're synced at.
@@ -419,8 +397,7 @@ class GitWrapper(SCMWrapper):
     base_rev = self._Capture(['rev-parse', 'HEAD'])
 
     if not target_rev:
-      # TODO(ehmaldonado): Raise an error once |target_rev| is mandatory.
-      target_rev = self._GetTargetBranchForCommit(base_rev) or base_rev
+      raise gclient_utils.Error('A target revision for the patch must be given')
     elif target_rev.startswith('refs/heads/'):
       # If |target_rev| is in refs/heads/**, try first to find the corresponding
       # remote ref for it, since |target_rev| might point to a local ref which

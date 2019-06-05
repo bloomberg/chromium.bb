@@ -1168,8 +1168,9 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     scm.update(self.options, None, file_list)
     self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
 
-    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', None, self.options,
-                        file_list)
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        file_list)
 
     self.assertCommits([1, 2, 3, 4, 5, 6])
     self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
@@ -1190,8 +1191,9 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertEqual(self.githash('repo_1', 1), self.gitrevparse(self.root_dir))
 
     # Apply the change on top of that.
-    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', None, self.options,
-                        file_list)
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        file_list)
 
     self.assertCommits([1, 5, 6])
     self.assertEqual(self.githash('repo_1', 1), self.gitrevparse(self.root_dir))
@@ -1207,8 +1209,9 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertEqual(self.githash('repo_1', 9), self.gitrevparse(self.root_dir))
 
     # Apply the change on top of that.
-    scm.apply_patch_ref(self.url, 'refs/changes/36/1236/1', None, self.options,
-                        file_list)
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/36/1236/1', 'refs/heads/feature', self.options,
+        file_list)
 
     self.assertCommits([1, 2, 7, 8, 9, 10])
     self.assertEqual(self.githash('repo_1', 9), self.gitrevparse(self.root_dir))
@@ -1225,8 +1228,9 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertEqual(self.githash('repo_1', 7), self.gitrevparse(self.root_dir))
 
     # Apply the change on top of that.
-    scm.apply_patch_ref(self.url, 'refs/changes/36/1236/1', None, self.options,
-                        file_list)
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/36/1236/1', 'refs/heads/feature', self.options,
+        file_list)
 
     # We shouldn't have rebased on top of 2 (which is the merge base between
     # remote's master branch and the change) but on top of 7 (which is the
@@ -1245,8 +1249,9 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
 
     # Apply refs/changes/34/1234/1, created for remote's master branch on top of
     # remote's feature branch.
-    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', 'refs/heads/master',
-                        self.options, file_list)
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        file_list)
 
     # Commits 5 and 6 are part of the patch, and commits 1, 2, 7, 8 and 9 are
     # part of remote's feature branch.
@@ -1264,8 +1269,9 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
 
     # Apply the change on top of that.
-    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', None, self.options,
-                        file_list)
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        file_list)
 
     self.assertCommits([1, 2, 3, 5, 6])
     self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
@@ -1283,8 +1289,9 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertEqual(self.githash('repo_1', 1), self.gitrevparse(self.root_dir))
 
     # Apply the change on top of that.
-    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', None, self.options,
-                        file_list)
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        file_list)
 
     self.assertCommits([1, 2, 3, 5, 6])
     self.assertEqual(self.githash('repo_1', 1), self.gitrevparse(self.root_dir))
@@ -1298,8 +1305,9 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     scm.update(self.options, None, file_list)
     self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
 
-    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', None, self.options,
-                        file_list)
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        file_list)
 
     self.assertCommits([1, 2, 3, 4, 5, 6])
     # The commit hash after cherry-picking is not known, but it must be
@@ -1318,15 +1326,17 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     # Checkout 'refs/changes/34/1234/1' modifies the 'change' file, so trying to
     # patch 'refs/changes/36/1236/1' creates a patch failure.
     with self.assertRaises(subprocess2.CalledProcessError) as cm:
-      scm.apply_patch_ref(self.url, 'refs/changes/36/1236/1', None,
-                          self.options, file_list)
+      scm.apply_patch_ref(
+          self.url, 'refs/changes/36/1236/1', 'refs/heads/master', self.options,
+          file_list)
     self.assertEqual(cm.exception.cmd[:2], ['git', 'cherry-pick'])
     self.assertIn('error: could not apply', cm.exception.stderr)
 
     # Try to apply 'refs/changes/35/1235/1', which doesn't have a merge
     # conflict.
-    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', None, self.options,
-                        file_list)
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        file_list)
     self.assertCommits([1, 2, 3, 5, 6])
     self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))
 
@@ -1343,8 +1353,9 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     # 'refs/changes/34/1234/1' will be an empty commit, since the changes were
     # already present in the tree as commit 11.
     # Make sure we deal with this gracefully.
-    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', None, self.options,
-                        file_list)
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/feature', self.options,
+        file_list)
     self.assertCommits([1, 2, 3, 5, 6, 12])
     self.assertEqual(self.githash('repo_1', 12),
                      self.gitrevparse(self.root_dir))
@@ -1366,8 +1377,9 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
 
     # Try to apply 'refs/changes/35/1235/1', which doesn't have a merge
     # conflict.
-    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', None, self.options,
-                        file_list)
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        file_list)
     self.assertCommits([1, 2, 3, 5, 6])
     self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))
 
