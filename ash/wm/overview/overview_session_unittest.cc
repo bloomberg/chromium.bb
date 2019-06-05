@@ -4402,6 +4402,27 @@ TEST_F(SplitViewOverviewSessionTest, ExitOverviewWithOneSnapped) {
   EXPECT_FALSE(InOverviewSession());
 }
 
+// Test that in tablet mode, pressing tab key in overview should not crash.
+TEST_F(SplitViewOverviewSessionTest, NoCrashWhenPressTabKey) {
+  std::unique_ptr<aura::Window> window(CreateWindow(gfx::Rect(400, 400)));
+  std::unique_ptr<aura::Window> window2(CreateWindow(gfx::Rect(400, 400)));
+
+  // In overview, there should be no crash when pressing tab key.
+  ToggleOverview();
+  EXPECT_TRUE(InOverviewSession());
+  SendKey(ui::VKEY_TAB);
+  EXPECT_TRUE(InOverviewSession());
+
+  // When splitview and overview are both active, there should be no crash when
+  // pressing tab key.
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+
+  SendKey(ui::VKEY_TAB);
+  EXPECT_TRUE(InOverviewSession());
+}
+
 // Test the split view and overview functionalities in clamshell mode. Split
 // view is only active when overview is active in clamshell mode.
 class SplitViewOverviewSessionInClamshellTest

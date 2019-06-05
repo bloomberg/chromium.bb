@@ -820,8 +820,11 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
   // TODO(crbug.com/952315): Explore better ways to handle this splitview +
   // overview + applist case.
   Shell* shell = Shell::Get();
-  if (shell->app_list_controller() && shell->app_list_controller()->IsVisible())
+  if (shell->app_list_controller() &&
+      shell->app_list_controller()->IsVisible() &&
+      Shell::Get()->split_view_controller()->InClamshellSplitViewMode()) {
     return;
+  }
 
   if (event->type() != ui::ET_KEY_PRESSED)
     return;
