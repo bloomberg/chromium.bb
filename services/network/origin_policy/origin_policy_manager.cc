@@ -7,18 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
 #include "base/optional.h"
 #include "net/http/http_util.h"
-#include "services/network/origin_policy/origin_policy_fetcher.h"
-
-namespace {
-
-// Marker for (temporarily) exempted origins. The presence of the "?" guarantees
-// that this is not a valid policy as it is not a valid http token.
-const char kExemptedOriginPolicyVersion[] = "exception?";
-
-}  // namespace
+#include "services/network/origin_policy/origin_policy_constants.h"
 
 namespace network {
 
@@ -37,82 +28,47 @@ void OriginPolicyManager::RetrieveOriginPolicy(
     const url::Origin& origin,
     const std::string& header_value,
     RetrieveOriginPolicyCallback callback) {
-  DCHECK(origin.GetURL().is_valid());
-  DCHECK(!origin.opaque());
-
   OriginPolicyHeaderValues header_info =
       GetRequestedPolicyAndReportGroupFromHeaderString(header_value);
-
-  auto iter = latest_version_map_.find(origin);
-
-  // Process policy deletion first!
-  if (header_info.policy_version == kOriginPolicyDeletePolicy) {
-    if (iter != latest_version_map_.end())
-      latest_version_map_.erase(iter);
-    InvokeCallbackWithPolicyState(origin,
-                                  mojom::OriginPolicyState::kNoPolicyApplies,
-                                  std::move(callback));
-    return;
-  }
-
-  // Process policy exceptions.
-  if (iter != latest_version_map_.end() &&
-      iter->second == kExemptedOriginPolicyVersion) {
-    InvokeCallbackWithPolicyState(origin,
-                                  mojom::OriginPolicyState::kNoPolicyApplies,
-                                  std::move(callback));
-    return;
-  }
-
-  // No policy applies to this request or invalid header present.
   if (header_info.policy_version.empty()) {
-    // If there header has no policy version is present, use cached version, if
-    // there is one. Otherwise, fail.
-    if (iter == latest_version_map_.end()) {
-      InvokeCallbackWithPolicyState(
-          origin,
-          header_value.empty() ? mojom::OriginPolicyState::kNoPolicyApplies
-                               : mojom::OriginPolicyState::kCannotLoadPolicy,
-          std::move(callback));
-      return;
+    if (callback) {
+      auto result = mojom::OriginPolicy::New();
+      result->state = mojom::OriginPolicyState::kCannotLoadPolicy;
+      std::move(callback).Run(std::move(result));
     }
-    header_info.policy_version = iter->second;
-  } else if (iter == latest_version_map_.end()) {
-    latest_version_map_.emplace(origin, header_info.policy_version);
-  } else {
-    iter->second = header_info.policy_version;
+    return;
   }
 
-  origin_policy_fetchers_.emplace(std::make_unique<OriginPolicyFetcher>(
-      this, header_info.policy_version, header_info.report_to, origin,
-      url_loader_factory_.get(), std::move(callback)));
-}
-
-void OriginPolicyManager::AddExceptionFor(const url::Origin& origin) {
-  latest_version_map_[origin] = kExemptedOriginPolicyVersion;
-}
-
-void OriginPolicyManager::FetcherDone(OriginPolicyFetcher* fetcher,
-                                      mojom::OriginPolicyPtr origin_policy,
-                                      RetrieveOriginPolicyCallback callback) {
-  std::move(callback).Run(std::move(origin_policy));
-
-  auto it = origin_policy_fetchers_.find(fetcher);
-  DCHECK(it != origin_policy_fetchers_.end());
-  origin_policy_fetchers_.erase(it);
+  // Here we might check the cache and only then start the fetch.
+  StartPolicyFetch(origin, header_info, std::move(callback));
 }
 
 void OriginPolicyManager::RetrieveDefaultOriginPolicy(
     const url::Origin& origin,
     RetrieveOriginPolicyCallback callback) {
-  origin_policy_fetchers_.emplace(std::make_unique<OriginPolicyFetcher>(
-      this, std::string() /* report_to */, origin, url_loader_factory_.get(),
-      std::move(callback)));
+  // Here we might check the cache and only then start the fetch.
+  StartPolicyFetch(origin, OriginPolicyHeaderValues(), std::move(callback));
 }
 
-// static
-const char* OriginPolicyManager::GetExemptedVersionForTesting() {
-  return kExemptedOriginPolicyVersion;
+void OriginPolicyManager::StartPolicyFetch(
+    const url::Origin& origin,
+    const OriginPolicyHeaderValues& header_info,
+    RetrieveOriginPolicyCallback callback) {
+  if (header_info.policy_version.empty()) {
+    origin_policy_fetchers_.emplace(std::make_unique<OriginPolicyFetcher>(
+        this, header_info.report_to, origin, url_loader_factory_.get(),
+        std::move(callback)));
+  } else {
+    origin_policy_fetchers_.emplace(std::make_unique<OriginPolicyFetcher>(
+        this, header_info.policy_version, header_info.report_to, origin,
+        url_loader_factory_.get(), std::move(callback)));
+  }
+}
+
+void OriginPolicyManager::FetcherDone(OriginPolicyFetcher* fetcher) {
+  auto it = origin_policy_fetchers_.find(fetcher);
+  DCHECK(it != origin_policy_fetchers_.end());
+  origin_policy_fetchers_.erase(it);
 }
 
 // static
@@ -144,17 +100,6 @@ OriginPolicyManager::GetRequestedPolicyAndReportGroupFromHeaderString(
   if (!valid)
     return OriginPolicyHeaderValues();
   return OriginPolicyHeaderValues({policy.value(), report_to.value_or("")});
-}
-
-// static
-void OriginPolicyManager::InvokeCallbackWithPolicyState(
-    const url::Origin& origin,
-    mojom::OriginPolicyState state,
-    RetrieveOriginPolicyCallback callback) {
-  mojom::OriginPolicyPtr result = mojom::OriginPolicy::New();
-  result->state = state;
-  result->policy_url = OriginPolicyFetcher::GetDefaultPolicyURL(origin);
-  std::move(callback).Run(std::move(result));
 }
 
 }  // namespace network

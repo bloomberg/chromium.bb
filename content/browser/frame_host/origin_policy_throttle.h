@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 
@@ -60,7 +59,7 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   // otherwise invalid) policy. This is meant to be called by the security
   // interstitial.
   // This will exempt the entire origin, rather than only the given URL.
-  static void AddExceptionFor(BrowserContext* browser_context, const GURL& url);
+  static void AddExceptionFor(const GURL& url);
 
   ~OriginPolicyThrottle() override;
 
@@ -71,11 +70,20 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   using KnownVersionMap = std::map<url::Origin, std::string>;
   static KnownVersionMap& GetKnownVersionsForTesting();
 
+  // TODO(andypaicu): Remove this when we move the store to the network
+  // service layer.
+  static PolicyVersionAndReportTo
+  GetRequestedPolicyAndReportGroupFromHeaderStringForTesting(
+      const std::string& header);
+
+  static bool IsExemptedForTesting(const url::Origin& origin);
+
  private:
   explicit OriginPolicyThrottle(NavigationHandle* handle);
 
-  // TODO(andypaicu): Remove when we have moved reporting logic to the network
-  // service.
+  static KnownVersionMap& GetKnownVersions();
+
+  // Get the policy name and the reporting group from the header string.
   PolicyVersionAndReportTo GetRequestedPolicyAndReportGroupFromHeader() const;
   static PolicyVersionAndReportTo
   GetRequestedPolicyAndReportGroupFromHeaderString(const std::string& header);

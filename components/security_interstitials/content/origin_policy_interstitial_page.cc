@@ -117,8 +117,7 @@ void OriginPolicyInterstitialPage::CommandReceived(const std::string& command) {
 }
 
 void OriginPolicyInterstitialPage::OnProceed() {
-  content::OriginPolicyAddExceptionFor(web_contents()->GetBrowserContext(),
-                                       request_url());
+  content::OriginPolicyAddExceptionFor(request_url());
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
