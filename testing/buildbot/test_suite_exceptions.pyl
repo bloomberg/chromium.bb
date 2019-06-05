@@ -1476,9 +1476,9 @@
         },
       },
       'linux-chromeos-google-rel': {
-        # TODO(https://crbug.com/932269): Promote out of experiment when the
-        # tests are green.
-        'experiment_percentage': 100,
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.unit_tests.filter',
+        ],
       },
     },
   },

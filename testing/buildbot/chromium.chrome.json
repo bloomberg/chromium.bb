@@ -2003,7 +2003,9 @@
         "test": "ui_touch_selection_unittests"
       },
       {
-        "experiment_percentage": 100,
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.unit_tests.filter"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
