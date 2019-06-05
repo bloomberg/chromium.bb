@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,6 +15,10 @@ source_set("osp_base") {
     "export.h",
     "ip_address.cc",
     "ip_address.h",
+    "json/json_reader.cc",
+    "json/json_reader.h",
+    "json/json_writer.cc",
+    "json/json_writer.h",
     "location.cc",
     "location.h",
     "macros.h",
@@ -28,6 +32,7 @@ source_set("osp_base") {
   deps = [
     "../third_party/abseil",
     "../third_party/boringssl",
+    "../third_party/jsoncpp",
   ]
 
   configs += [ "../build:allow_build_from_embedder" ]
@@ -40,6 +45,8 @@ source_set("osp_base_unittests") {
     "big_endian_unittest.cc",
     "error_unittest.cc",
     "ip_address_unittest.cc",
+    "json/json_reader_unittest.cc",
+    "json/json_writer_unittest.cc",
     "location_unittest.cc",
     "scoped_pipe_unittest.cc",
   ]
@@ -49,6 +56,7 @@ source_set("osp_base_unittests") {
     "../third_party/abseil",
     "../third_party/googletest:gmock",
     "../third_party/googletest:gtest",
+    "../third_party/jsoncpp",
   ]
 
   configs += [ "../build:allow_build_from_embedder" ]

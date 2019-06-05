@@ -73,6 +73,9 @@ class Error {
     kAlreadyClosed,
     kNoStartedPresentation,
     kPresentationAlreadyStarted,
+
+    kJsonParseError,
+    kJsonWriteError,
   };
 
   Error();

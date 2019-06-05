@@ -2,5 +2,6 @@ abseil/src/
 boringssl/src/
 chromium_quic/src/
 googletest/src/
+jsoncpp/src/
 mDNSResponder/src/
 tinycbor/src/

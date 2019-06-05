@@ -1,0 +1,53 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build_overrides/build.gni")
+
+if (build_with_chromium) {
+  source_set("jsoncpp") {
+    public_deps = [
+      "//third_party/jsoncpp",
+    ]
+  }
+} else {
+  config("jsoncpp_config") {
+    include_dirs = [ "//third_party/jsoncpp/src/include" ]
+    cflags_cc = [
+      "-Wno-exit-time-destructors",
+      "-Wno-implicit-fallthrough",
+    ]
+  }
+
+  source_set("jsoncpp") {
+    sources = [
+      "overrides.h",
+      "src/include/json/assertions.h",
+      "src/include/json/autolink.h",
+      "src/include/json/config.h",
+      "src/include/json/features.h",
+      "src/include/json/forwards.h",
+      "src/include/json/json.h",
+      "src/include/json/reader.h",
+      "src/include/json/value.h",
+      "src/include/json/writer.h",
+      "src/src/lib_json/json_batchallocator.h",
+      "src/src/lib_json/json_reader.cpp",
+      "src/src/lib_json/json_tool.h",
+      "src/src/lib_json/json_value.cpp",
+      "src/src/lib_json/json_writer.cpp",
+    ]
+
+    include_dirs = [ "src/src/lib_json" ]
+
+    defines = [ "JSON_USE_EXCEPTION=0" ]
+
+    # Need exceptions on for throwRuntimeError. This will result in an abort
+    # once it crosses into parent code (which is compiled without exceptions).
+    # TODO(jophba): remove once jsoncpp patch fixing JSON_USE_EXCEPTION
+    # is upstreamed and DEPS rolled.
+    configs -= [ "//build/config:no_exceptions" ]
+
+    public_configs = [ ":jsoncpp_config" ]
+  }
+}

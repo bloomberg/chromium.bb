@@ -33,8 +33,23 @@ config("compiler_defaults") {
 }
 
 config("no_exceptions") {
-  cflags_cc = [ "-fno-exceptions" ]
-  cflags_objcc = [ "-fno-exceptions" ]
+  # -fno-exceptions causes the compiler to choose the implementation of the STL
+  # that uses abort() calls instead of throws, as well as issue compile errors
+  # for throw calls in user ccode. The no*unwind-tables flags disable generation
+  # of static unwind tables that are typically used for exceptions, resulting
+  # in typically smaller object sizes. For some information, see:
+  # https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#index-funwind-tables-1203
+  cflags_cc = [
+    "-fno-exceptions",
+    "-fno-unwind-tables",
+    "-fno-asynchronous-unwind-tables",
+  ]
+
+  cflags_objcc = [
+    "-fno-exceptions",
+    "-fno-unwind-tables",
+    "-fno-asynchronous-unwind-tables",
+  ]
 }
 
 config("no_rtti") {

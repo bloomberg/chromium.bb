@@ -14,7 +14,7 @@ vars = {
     'chromium_git': 'https://chromium.googlesource.com',
 
     # TODO(jophba): move to googlesource external for github repos.
-    'github': "https://github.com",
+    'github': 'https://github.com',
 
     # NOTE: Strangely enough, this will be overridden by any _parent_ DEPS, so
     # in Chromium it will correctly be True.
@@ -34,11 +34,13 @@ deps = {
             '@' + '703984f9d1674c2cfc259904a5a7fba4990cca4b',
         'condition': 'checkout_openscreen_cast_internal',
     },
+
     'buildtools': {
         'url': Var('chromium_git')+ '/chromium/src/buildtools' +
             '@' + 'd5c58b84d50d256968271db459cd29b22bff1ba2',
         'condition': 'not build_with_chromium',
     },
+
     'buildtools/linux64': {
         'packages': [
             {
@@ -49,6 +51,7 @@ deps = {
         'dep_type': 'cipd',
         'condition': 'checkout_linux',
     },
+
     'buildtools/mac': {
         'packages': [
             {
@@ -59,6 +62,14 @@ deps = {
         'dep_type': 'cipd',
         'condition': 'checkout_mac',
     },
+
+    'third_party/jsoncpp/src': {
+        'url': Var('chromium_git') +
+            '/external/github.com/open-source-parsers/jsoncpp.git' +
+            '@' + '5b91551f3944d69e0090d6b6528852207de78078',
+        'condition': 'not build_with_chromium',
+    },
+
     'third_party/googletest/src': {
         'url': Var('chromium_git') +
             '/external/github.com/google/googletest.git' +
