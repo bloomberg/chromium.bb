@@ -830,7 +830,7 @@ static int64_t warp_error(WarpedMotionParams *wm, const uint8_t *const ref,
   int warp_w, warp_h;
   const int error_bsize_w = AOMMIN(p_width, WARP_ERROR_BLOCK);
   const int error_bsize_h = AOMMIN(p_height, WARP_ERROR_BLOCK);
-  uint8_t tmp[WARP_ERROR_BLOCK * WARP_ERROR_BLOCK];
+  DECLARE_ALIGNED(16, uint8_t, tmp[WARP_ERROR_BLOCK * WARP_ERROR_BLOCK]);
   ConvolveParams conv_params = get_conv_params(0, 0, 8);
   conv_params.use_dist_wtd_comp_avg = 0;
 
