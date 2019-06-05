@@ -85,8 +85,7 @@ void CardboardGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     pad.is_xr = true;
     CopyToUString(pad.id, Gamepad::kIdLengthCap,
                   base::UTF8ToUTF16("Cardboard Button"));
-    CopyToUString(pad.mapping, Gamepad::kMappingLengthCap,
-                  base::UTF8ToUTF16(""));
+    pad.mapping = GamepadMapping::kNone;
     pad.buttons_length = 1;
     pad.axes_length = 0;
 

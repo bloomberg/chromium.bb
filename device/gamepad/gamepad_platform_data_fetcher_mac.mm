@@ -230,12 +230,8 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   CopyNSStringAsUTF16LittleEndian(ident, state->data.id,
                                   sizeof(state->data.id));
 
-  if (state->mapper) {
-    CopyNSStringAsUTF16LittleEndian(@"standard", state->data.mapping,
-                                    sizeof(state->data.mapping));
-  } else {
-    state->data.mapping[0] = 0;
-  }
+  state->data.mapping =
+      state->mapper ? GamepadMapping::kStandard : GamepadMapping::kNone;
 
   devices_[slot] = std::make_unique<GamepadDeviceMac>(location_int, device,
                                                       vendor_int, product_int);

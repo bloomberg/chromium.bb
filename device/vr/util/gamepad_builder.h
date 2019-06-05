@@ -14,8 +14,6 @@ namespace device {
 
 class GamepadBuilder {
  public:
-  // TODO(crbug.com/955809): Switch this to device::Gamepad's mapping enum.
-  enum class GamepadMapping { kNone = 0, kStandard = 1, kXRStandard = 2 };
 
   // Helper struct that we don't want to pollute the device namespace
   struct ButtonData {
@@ -48,10 +46,9 @@ class GamepadBuilder {
   double ApplyAxisDeadzoneToValue(double value) const;
 
   GamepadHand GetHandedness() const { return gamepad_.hand; }
-  GamepadMapping GetMapping() const { return mapping_; }
+  GamepadMapping GetMapping() const { return gamepad_.mapping; }
 
  private:
-  const GamepadMapping mapping_;
   double axis_deadzone_ = 0.0;
   Gamepad gamepad_;
 

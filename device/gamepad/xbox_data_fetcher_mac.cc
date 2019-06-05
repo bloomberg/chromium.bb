@@ -322,9 +322,8 @@ void XboxDataFetcher::AddController(XboxControllerMac* controller) {
 
   CopyToUString(state->data.id, base::size(state->data.id),
                 base::UTF8ToUTF16(controller->GetIdString()));
-  CopyToUString(state->data.mapping, base::size(state->data.mapping),
-                base::UTF8ToUTF16("standard"));
 
+  state->data.mapping = GamepadMapping::kStandard;
   state->data.connected = true;
   state->data.axes_length = 4;
   state->data.buttons_length = 17;

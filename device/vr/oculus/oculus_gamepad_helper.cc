@@ -202,7 +202,7 @@ class OculusGamepadBuilder : public GamepadBuilder {
   // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
   OculusGamepadBuilder(ovrInputState state, ovrHandType hand)
       : GamepadBuilder("oculus-touch",
-                       GamepadMapping::kXRStandard,
+                       GamepadMapping::kXrStandard,
                        OculusToMojomHand(hand)),
         state_(state) {}
 

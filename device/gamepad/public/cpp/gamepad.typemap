@@ -24,6 +24,7 @@ type_mappings = [
   "device.mojom.GamepadHand=device::GamepadHand",
   "device.mojom.GamepadHapticActuator=device::GamepadHapticActuator[nullable_is_same_type]",
   "device.mojom.GamepadHapticActuatorType=device::GamepadHapticActuatorType",
+  "device.mojom.GamepadMapping=device::GamepadMapping",
   "device.mojom.GamepadPose=device::GamepadPose[nullable_is_same_type]",
   "device.mojom.GamepadQuaternion=device::GamepadQuaternion[nullable_is_same_type]",
   "device.mojom.GamepadVector=device::GamepadVector[nullable_is_same_type]",

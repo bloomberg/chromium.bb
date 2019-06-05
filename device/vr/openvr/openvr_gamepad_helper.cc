@@ -252,7 +252,7 @@ class OpenVRGamepadBuilder : public GamepadBuilder {
                        vr::VRControllerState_t controller_state,
                        device::mojom::XRHandedness handedness)
       : GamepadBuilder(GetGamepadId(vr_system, controller_id),
-                       GamepadMapping::kXRStandard,
+                       GamepadMapping::kXrStandard,
                        handedness),
         controller_state_(controller_state) {
     supported_buttons_ = vr_system->GetUint64TrackedDeviceProperty(

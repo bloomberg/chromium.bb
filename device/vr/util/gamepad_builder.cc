@@ -25,48 +25,26 @@ GamepadHand MojoToGamepadHandedness(device::mojom::XRHandedness handedness) {
   NOTREACHED();
 }
 
-// TODO(crbug.com/955809): Once Gamepad uses an enum this method can be removed.
-std::string GamepadMappingToString(GamepadBuilder::GamepadMapping mapping) {
-  switch (mapping) {
-    case GamepadBuilder::GamepadMapping::kNone:
-      return "";
-      break;
-    case GamepadBuilder::GamepadMapping::kStandard:
-      return "standard";
-      break;
-    case GamepadBuilder::GamepadMapping::kXRStandard:
-      return "xr-standard";
-      break;
-  }
-
-  NOTREACHED();
-}
-
 }  // anonymous namespace
 
 GamepadBuilder::GamepadBuilder(const std::string& gamepad_id,
                                GamepadMapping mapping,
-                               device::mojom::XRHandedness handedness)
-    : mapping_(mapping) {
+                               device::mojom::XRHandedness handedness) {
   DCHECK_LT(gamepad_id.size(), Gamepad::kIdLengthCap);
-
-  auto mapping_str = GamepadMappingToString(mapping);
-  DCHECK_LT(mapping_str.size(), Gamepad::kMappingLengthCap);
 
   gamepad_.connected = true;
   gamepad_.timestamp = base::TimeTicks::Now().since_origin().InMicroseconds();
+  gamepad_.mapping = mapping;
   gamepad_.hand = MojoToGamepadHandedness(handedness);
   CopyToUString(base::UTF8ToUTF16(gamepad_id), gamepad_.id,
                 Gamepad::kIdLengthCap);
-  CopyToUString(base::UTF8ToUTF16(mapping_str), gamepad_.mapping,
-                Gamepad::kMappingLengthCap);
 }
 
 GamepadBuilder::~GamepadBuilder() = default;
 
 bool GamepadBuilder::IsValid() const {
-  switch (mapping_) {
-    case GamepadMapping::kXRStandard:
+  switch (GetMapping()) {
+    case GamepadMapping::kXrStandard:
       // In order to satisfy the XRStandard mapping at least two buttons and one
       // set of axes need to have been added.
       return gamepad_.axes_length >= 2 && gamepad_.buttons_length >= 2;

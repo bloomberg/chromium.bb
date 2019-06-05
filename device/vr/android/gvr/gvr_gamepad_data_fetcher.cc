@@ -85,8 +85,7 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     // initialization
     CopyToUString(pad.id, Gamepad::kIdLengthCap,
                   base::UTF8ToUTF16("Daydream Controller"));
-    CopyToUString(pad.mapping, Gamepad::kMappingLengthCap,
-                  base::UTF8ToUTF16(""));
+    pad.mapping = GamepadMapping::kNone;
     pad.buttons_length = 1;
     pad.axes_length = 2;
 

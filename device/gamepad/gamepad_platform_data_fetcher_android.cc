@@ -102,12 +102,7 @@ static void JNI_GamepadList_SetGamepadData(
            name_to_copy * sizeof(base::string16::value_type));
     pad.id[name_to_copy] = 0;
 
-    base::string16 mapping_name = base::UTF8ToUTF16(mapping ? "standard" : "");
-    const size_t mapping_to_copy =
-        std::min(mapping_name.size(), Gamepad::kMappingLengthCap - 1);
-    memcpy(pad.mapping, mapping_name.data(),
-           mapping_to_copy * sizeof(base::string16::value_type));
-    pad.mapping[mapping_to_copy] = 0;
+    pad.mapping = mapping ? GamepadMapping::kStandard : GamepadMapping::kNone;
   }
 
   pad.connected = true;

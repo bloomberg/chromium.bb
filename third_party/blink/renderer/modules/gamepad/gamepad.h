@@ -72,7 +72,7 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   DOMHighResTimeStamp timestamp() const { return timestamp_; }
 
   const String& mapping() const { return mapping_; }
-  void SetMapping(const String& val) { mapping_ = val; }
+  void SetMapping(device::GamepadMapping mapping);
 
   const DoubleVector& axes();
   void SetAxes(unsigned count, const double* data);

@@ -185,6 +185,8 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
 
     seen_gamepads.insert(source->controller_id);
     dest.timestamp = TimeInMicroseconds(source->timestamp);
+    // WebVR did not support mapping.
+    dest.mapping = GamepadMapping::kNone;
     dest.pose = GamepadPoseFromXRPose(source->pose.get());
     dest.pose.has_position = source->can_provide_position;
     dest.pose.has_orientation = source->can_provide_orientation;
@@ -250,8 +252,6 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     TRACE_COUNTER1(
         "input", "XR gamepad sample age (ms)",
         (base::TimeTicks::Now() - source->timestamp).InMilliseconds());
-
-    dest.mapping[0] = 0;
   }
 
   // Remove any gamepads that aren't connected.

@@ -137,8 +137,7 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices() {
         swprintf(base::as_writable_wcstr(pad.id), Gamepad::kIdLengthCap,
                  L"Xbox 360 Controller (XInput STANDARD %ls)",
                  GamepadSubTypeName(caps.SubType));
-        swprintf(base::as_writable_wcstr(pad.mapping),
-                 Gamepad::kMappingLengthCap, L"standard");
+        pad.mapping = GamepadMapping::kStandard;
       }
     }
   }

@@ -74,18 +74,10 @@ void GamepadDataFetcher::UpdateGamepadStrings(const std::string& name,
   memset(pad.id, 0, sizeof(pad.id));
   tmp16.copy(pad.id, base::size(pad.id) - 1);
 
-  // Set the mapper string to "standard" if the gamepad has a standard mapping,
-  // or the empty string otherwise.
-  if (has_standard_mapping) {
-    std::string mapping = "standard";
-    base::TruncateUTF8ToByteSize(mapping, Gamepad::kMappingLengthCap - 1,
-                                 &mapping);
-    tmp16 = base::UTF8ToUTF16(mapping);
-    memset(pad.mapping, 0, sizeof(pad.mapping));
-    tmp16.copy(pad.mapping, base::size(pad.mapping) - 1);
-  } else {
-    pad.mapping[0] = 0;
-  }
+  // Set GamepadMapping::kStandard if the gamepad has a standard mapping, or
+  // GamepadMapping::kNone otherwise.
+  pad.mapping =
+      has_standard_mapping ? GamepadMapping::kStandard : GamepadMapping::kNone;
 }
 
 // static

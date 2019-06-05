@@ -208,8 +208,7 @@ mojom::XRGamepadPtr GetWebVRGamepad(ParsedInputState input_state) {
 
   // We have to use the GamepadBuilder because the mojom serialization complains
   // if some of the values are missing/invalid.
-  GamepadBuilder builder(gamepad_id, GamepadBuilder::GamepadMapping::kNone,
-                         handedness);
+  GamepadBuilder builder(gamepad_id, GamepadMapping::kNone, handedness);
 
   auto input_source_state = mojom::XRInputSourceState::New();
   input_source_state->gamepad = builder.GetGamepad();
@@ -232,8 +231,7 @@ base::Optional<Gamepad> GetWebXRGamepad(ParsedInputState& input_state) {
 
   // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
   // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
-  GamepadBuilder builder("windows-mixed-reality",
-                         GamepadBuilder::GamepadMapping::kXRStandard,
+  GamepadBuilder builder("windows-mixed-reality", GamepadMapping::kXrStandard,
                          handedness);
 
   builder.SetAxisDeadzone(kDeadzoneMinimum);

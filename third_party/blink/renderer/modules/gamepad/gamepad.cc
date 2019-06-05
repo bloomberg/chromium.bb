@@ -89,6 +89,21 @@ void Gamepad::UpdateFromDeviceState(const device::Gamepad& device_gamepad) {
   }
 }
 
+void Gamepad::SetMapping(device::GamepadMapping mapping) {
+  switch (mapping) {
+    case device::GamepadMapping::kNone:
+      mapping_ = "";
+      return;
+    case device::GamepadMapping::kStandard:
+      mapping_ = "standard";
+      return;
+    case device::GamepadMapping::kXrStandard:
+      mapping_ = "xr-standard";
+      return;
+  }
+  NOTREACHED();
+}
+
 const Gamepad::DoubleVector& Gamepad::axes() {
   is_axis_data_dirty_ = false;
   return axes_;
