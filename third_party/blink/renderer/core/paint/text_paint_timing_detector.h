@@ -79,6 +79,7 @@ class TextRecordsManager {
   void StopRecordingLargestTextPaint();
   bool IsRecordingLargestTextPaint() const { return is_recording_ltp_; }
 
+  bool HasTextElementTiming() const { return !!text_element_timing_; }
   void SetTextElementTiming(TextElementTiming* text_element_timing) {
     text_element_timing_ = text_element_timing;
   }
@@ -105,7 +106,7 @@ class TextRecordsManager {
   TextRecordSet size_ordered_set_;
   Deque<base::WeakPtr<TextRecord>> texts_queued_for_paint_time_;
   TextRecord* cached_largest_paint_candidate_;
-  WeakMember<TextElementTiming> text_element_timing_;
+  Member<TextElementTiming> text_element_timing_;
 
   DISALLOW_COPY_AND_ASSIGN(TextRecordsManager);
 };

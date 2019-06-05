@@ -76,7 +76,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                            TimeTicks processing_end,
                            bool cancelable);
 
-  void AddElementTiming(const String& url,
+  void AddElementTiming(const AtomicString& name,
+                        const String& url,
                         const FloatRect& rect,
                         TimeTicks start_time,
                         TimeTicks response_end,

@@ -32,6 +32,11 @@ constexpr const unsigned kInlineImageMaxChars = 100u;
 // static
 const char ImageElementTiming::kSupplementName[] = "ImageElementTiming";
 
+AtomicString ImagePaintString() {
+  DEFINE_STATIC_LOCAL(const AtomicString, kImagePaint, ("image-paint"));
+  return kImagePaint;
+}
+
 // static
 ImageElementTiming& ImageElementTiming::From(LocalDOMWindow& window) {
   ImageElementTiming* timing =
@@ -109,7 +114,7 @@ void ImageElementTiming::NotifyImagePaintedInternal(
          performance->ShouldBufferEntries())) {
       // Create an entry with a |startTime| of 0.
       performance->AddElementTiming(
-          url.GetString(), intersection_rect, TimeTicks(),
+          ImagePaintString(), url.GetString(), intersection_rect, TimeTicks(),
           cached_image.LoadResponseEnd(), attr,
           cached_image.IntrinsicSize(kDoNotRespectImageOrientation), id,
           element);
@@ -200,8 +205,8 @@ void ImageElementTiming::ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
                       performance->ShouldBufferEntries())) {
     for (const auto& element_timing : element_timings_) {
       performance->AddElementTiming(
-          element_timing->url, element_timing->rect, timestamp,
-          element_timing->response_end, element_timing->identifier,
+          ImagePaintString(), element_timing->url, element_timing->rect,
+          timestamp, element_timing->response_end, element_timing->identifier,
           element_timing->intrinsic_size, element_timing->id,
           element_timing->element);
     }

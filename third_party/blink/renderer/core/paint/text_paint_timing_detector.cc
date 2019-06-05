@@ -44,14 +44,7 @@ TextPaintTimingDetector::TextPaintTimingDetector(LocalFrameView* frame_view)
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
              &TextPaintTimingDetector::TimerFired),
-      frame_view_(frame_view) {
-  Document* document = frame_view_->GetFrame().GetDocument();
-  if (document && RuntimeEnabledFeatures::ElementTimingEnabled(document)) {
-    LocalDOMWindow* window = document->domWindow();
-    if (window)
-      records_manager_.SetTextElementTiming(&TextElementTiming::From(*window));
-  }
-}
+      frame_view_(frame_view) {}
 
 void TextPaintTimingDetector::PopulateTraceValue(
     TracedValue& value,
@@ -160,6 +153,16 @@ void TextPaintTimingDetector::RegisterNotifySwapTime(
 
 void TextPaintTimingDetector::ReportSwapTime(WebWidgetClient::SwapResult result,
                                              base::TimeTicks timestamp) {
+  if (!records_manager_.HasTextElementTiming()) {
+    Document* document = frame_view_->GetFrame().GetDocument();
+    if (document && RuntimeEnabledFeatures::ElementTimingEnabled(document)) {
+      LocalDOMWindow* window = document->domWindow();
+      if (window) {
+        records_manager_.SetTextElementTiming(
+            &TextElementTiming::From(*window));
+      }
+    }
+  }
   records_manager_.AssignPaintTimeToQueuedNodes(timestamp);
   awaiting_swap_promise_ = false;
 }

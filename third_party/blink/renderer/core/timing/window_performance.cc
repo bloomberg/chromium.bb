@@ -392,7 +392,8 @@ void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
   event_timings_.clear();
 }
 
-void WindowPerformance::AddElementTiming(const String& url,
+void WindowPerformance::AddElementTiming(const AtomicString& name,
+                                         const String& url,
                                          const FloatRect& rect,
                                          TimeTicks start_time,
                                          TimeTicks response_end,
@@ -402,7 +403,7 @@ void WindowPerformance::AddElementTiming(const String& url,
                                          Element* element) {
   DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(GetExecutionContext()));
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
-      url, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
+      name, url, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(response_end), identifier,
       intrinsic_size.Width(), intrinsic_size.Height(), id, element);
   if (HasObserverFor(PerformanceEntry::kElement)) {

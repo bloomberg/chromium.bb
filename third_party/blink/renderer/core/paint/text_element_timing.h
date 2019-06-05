@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 
@@ -33,6 +34,8 @@ class CORE_EXPORT TextElementTiming final
   void OnTextNodesPainted(const Deque<base::WeakPtr<TextRecord>>&);
 
   void Trace(blink::Visitor* visitor) override;
+
+  Member<WindowPerformance> performance_;
 
   DISALLOW_COPY_AND_ASSIGN(TextElementTiming);
 };

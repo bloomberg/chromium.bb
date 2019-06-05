@@ -21,7 +21,8 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceElementTiming* Create(const String& url,
+  static PerformanceElementTiming* Create(const AtomicString& name,
+                                          const String& url,
                                           const FloatRect& intersection_rect,
                                           DOMHighResTimeStamp start_time,
                                           DOMHighResTimeStamp response_end,
@@ -30,7 +31,8 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
                                           int naturalHeight,
                                           const AtomicString& id,
                                           Element*);
-  PerformanceElementTiming(const String& url,
+  PerformanceElementTiming(const AtomicString& name,
+                           const String& url,
                            const FloatRect& intersection_rect,
                            DOMHighResTimeStamp start_time,
                            DOMHighResTimeStamp response_end,

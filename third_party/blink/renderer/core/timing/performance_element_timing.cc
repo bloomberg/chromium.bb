@@ -11,6 +11,7 @@ namespace blink {
 
 // static
 PerformanceElementTiming* PerformanceElementTiming::Create(
+    const AtomicString& name,
     const String& url,
     const FloatRect& intersection_rect,
     DOMHighResTimeStamp start_time,
@@ -26,11 +27,12 @@ PerformanceElementTiming* PerformanceElementTiming::Create(
   DCHECK_GE(naturalHeight, 0);
   DCHECK(element);
   return MakeGarbageCollected<PerformanceElementTiming>(
-      url, intersection_rect, start_time, response_end, identifier,
+      name, url, intersection_rect, start_time, response_end, identifier,
       naturalWidth, naturalHeight, id, element);
 }
 
 PerformanceElementTiming::PerformanceElementTiming(
+    const AtomicString& name,
     const String& url,
     const FloatRect& intersection_rect,
     DOMHighResTimeStamp start_time,
@@ -40,7 +42,7 @@ PerformanceElementTiming::PerformanceElementTiming(
     int naturalHeight,
     const AtomicString& id,
     Element* element)
-    : PerformanceEntry("image-paint", start_time, start_time),
+    : PerformanceEntry(name, start_time, start_time),
       element_(element),
       intersection_rect_(DOMRectReadOnly::FromFloatRect(intersection_rect)),
       response_end_(response_end),
