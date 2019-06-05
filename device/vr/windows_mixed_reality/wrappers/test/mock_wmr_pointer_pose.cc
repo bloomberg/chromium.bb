@@ -9,18 +9,19 @@
 
 namespace device {
 
-MockWMRPointerPose::MockWMRPointerPose() {}
+MockWMRPointerPose::MockWMRPointerPose(ControllerFrameData data)
+    : data_(data) {}
 
 MockWMRPointerPose::~MockWMRPointerPose() = default;
 
 bool MockWMRPointerPose::IsValid() const {
-  return true;
+  return data_.pose_data.is_valid;
 }
 
 std::unique_ptr<WMRPointerSourcePose>
 MockWMRPointerPose::TryGetInteractionSourcePose(
     const WMRInputSource* source) const {
-  return std::make_unique<MockWMRPointerSourcePose>();
+  return std::make_unique<MockWMRPointerSourcePose>(data_);
 }
 
 ABI::Windows::Foundation::Numerics::Vector3 MockWMRPointerPose::HeadForward()

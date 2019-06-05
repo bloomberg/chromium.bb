@@ -128,15 +128,7 @@ bool MockWMRCameraPose::TryGetViewTransform(
 
   // We need to get the inverse of the given transform, as it's the
   // device-to-origin transform and we need the origin-to-device transform.
-  float* t = pose_data.device_to_origin;
-  // The gfx::Transform constructor takes arguments in row-major order, but
-  // we're given data in column-major order. Construct in column-major order and
-  // transpose since it looks cleaner than manually transposing the arguments
-  // passed to the constructor.
-  gfx::Transform device_to_origin(t[0], t[1], t[2], t[3], t[4], t[5], t[6],
-                                  t[7], t[8], t[9], t[10], t[11], t[12], t[13],
-                                  t[14], t[15]);
-  device_to_origin.Transpose();
+  gfx::Transform device_to_origin = PoseFrameDataToTransform(pose_data);
   gfx::Transform origin_to_device = device_to_origin;
   auto success = origin_to_device.GetInverse(&origin_to_device);
   DCHECK(success);
