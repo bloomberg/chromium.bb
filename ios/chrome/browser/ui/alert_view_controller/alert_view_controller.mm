@@ -64,6 +64,10 @@ constexpr int kButtonTextDefaultColor = 0x0579ff;
 constexpr int kButtonTextDestructiveColor = 0xdf322f;
 constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
+// This is how many bits UIViewAnimationCurve needs to be shifted to be in
+// UIViewAnimationOptions format. Must match the one in UIView.h.
+constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
+
 }  // namespace
 
 @interface AlertViewController () <UITextFieldDelegate,
@@ -464,6 +468,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   if (additionalBottomInset > 0) {
     self.additionalSafeAreaInsets =
         UIEdgeInsetsMake(0, 0, additionalBottomInset, 0);
+    [self animateLayoutFromKeyboardNotification:notification];
   }
 
   self.tapRecognizer.enabled = YES;
@@ -472,9 +477,29 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
 - (void)handleKeyboardWillHide:(NSNotification*)notification {
   self.additionalSafeAreaInsets = UIEdgeInsetsZero;
+  [self animateLayoutFromKeyboardNotification:notification];
 
   self.tapRecognizer.enabled = NO;
   self.swipeRecognizer.enabled = NO;
+}
+
+- (void)animateLayoutFromKeyboardNotification:(NSNotification*)notification {
+  double duration =
+      [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey]
+          doubleValue];
+  UIViewAnimationCurve animationCurve = static_cast<UIViewAnimationCurve>(
+      [notification.userInfo[UIKeyboardAnimationCurveUserInfoKey]
+          integerValue]);
+  UIViewAnimationOptions options = animationCurve
+                                   << kUIViewAnimationCurveToOptionsShift;
+
+  [UIView animateWithDuration:duration
+                        delay:0
+                      options:options
+                   animations:^{
+                     [self.view layoutIfNeeded];
+                   }
+                   completion:nil];
 }
 
 - (void)didSelectActionForButton:(UIButton*)button {
