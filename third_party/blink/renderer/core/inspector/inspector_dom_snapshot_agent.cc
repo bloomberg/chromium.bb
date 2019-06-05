@@ -69,6 +69,19 @@ std::unique_ptr<protocol::Array<double>> BuildRectForLayoutRect2(
   return result;
 }
 
+std::unique_ptr<protocol::Array<double>> BuildRectForLayout(const int x,
+                                                            const int y,
+                                                            const int width,
+                                                            const int height) {
+  std::unique_ptr<protocol::Array<double>> result =
+      protocol::Array<double>::create();
+  result->addItem(x);
+  result->addItem(y);
+  result->addItem(width);
+  result->addItem(height);
+  return result;
+}
+
 // Returns |layout_object|'s bounding box in document coordinates.
 LayoutRect RectInDocument(const LayoutObject* layout_object) {
   LayoutRect rect_in_absolute(layout_object->AbsoluteBoundingBoxFloatRect());
@@ -290,6 +303,7 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
 
 protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
     std::unique_ptr<protocol::Array<String>> computed_styles,
+    protocol::Maybe<bool> include_dom_rects,
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>*
         documents,
     std::unique_ptr<protocol::Array<String>>* strings) {
@@ -306,6 +320,8 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
     css_property_filter_->push_back(
         std::make_pair(computed_styles->get(i), property_id));
   }
+
+  include_snapshot_dom_rects_ = include_dom_rects.fromMaybe(false);
 
   for (LocalFrame* frame : *inspected_frames_) {
     if (Document* document = frame->GetDocument())
@@ -576,6 +592,15 @@ void InspectorDOMSnapshotAgent::VisitDocument2(Document* document) {
     auto offset = document->View()->LayoutViewport()->GetScrollOffset();
     document_->setScrollOffsetX(offset.Width());
     document_->setScrollOffsetY(offset.Height());
+  }
+
+  if (include_snapshot_dom_rects_) {
+    document_->getLayout()->setOffsetRects(
+        protocol::Array<protocol::Array<double>>::create());
+    document_->getLayout()->setClientRects(
+        protocol::Array<protocol::Array<double>>::create());
+    document_->getLayout()->setScrollRects(
+        protocol::Array<protocol::Array<double>>::create());
   }
 
   VisitNode2(document, -1);
@@ -895,6 +920,39 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   layout_tree_snapshot->getStyles()->addItem(BuildStylesForNode(node));
   layout_tree_snapshot->getBounds()->addItem(
       BuildRectForLayoutRect2(RectInDocument(layout_object)));
+
+  if (include_snapshot_dom_rects_) {
+    protocol::Array<protocol::Array<double>>* offsetRects =
+        layout_tree_snapshot->getOffsetRects(nullptr);
+    DCHECK(offsetRects);
+
+    protocol::Array<protocol::Array<double>>* clientRects =
+        layout_tree_snapshot->getClientRects(nullptr);
+    DCHECK(clientRects);
+
+    protocol::Array<protocol::Array<double>>* scrollRects =
+        layout_tree_snapshot->getScrollRects(nullptr);
+    DCHECK(scrollRects);
+
+    if (node->IsElementNode()) {
+      auto* element = ToElement(node);
+      offsetRects->addItem(
+          BuildRectForLayout(element->OffsetLeft(), element->OffsetTop(),
+                             element->OffsetWidth(), element->OffsetHeight()));
+
+      clientRects->addItem(
+          BuildRectForLayout(element->clientLeft(), element->clientTop(),
+                             element->clientWidth(), element->clientHeight()));
+
+      scrollRects->addItem(
+          BuildRectForLayout(element->scrollLeft(), element->scrollTop(),
+                             element->scrollWidth(), element->scrollHeight()));
+    } else {
+      offsetRects->addItem(protocol::Array<double>::create());
+      clientRects->addItem(protocol::Array<double>::create());
+      scrollRects->addItem(protocol::Array<double>::create());
+    }
+  }
 
   if (layout_object->Style() && layout_object->Style()->IsStackingContext())
     SetRare(layout_tree_snapshot->getStackingContexts(), layout_index);
