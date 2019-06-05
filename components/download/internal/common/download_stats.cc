@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_util.h"
@@ -1259,5 +1260,17 @@ void RecordResumptionRestartReason(DownloadInterruptReason reason) {
 void RecordResumptionRestartCount(ResumptionRestartCountTypes type) {
   base::UmaHistogramEnumeration("Download.ResumptionRestart.Counts", type);
 }
+
+#if defined(OS_ANDROID)
+void RecordFirstBackgroundDownloadInterruptReason(
+    DownloadInterruptReason reason,
+    bool download_started) {
+  if (download_started)
+    base::UmaHistogramSparse("MobileDownload.FirstBackground.StartedReason",
+                             reason);
+  else
+    base::UmaHistogramSparse("MobileDownload.FirstBackground.Reason", reason);
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace download

@@ -15,6 +15,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_content.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_export.h"
@@ -437,6 +438,15 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionStrongValidators(
 
 COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionRestartCount(
     ResumptionRestartCountTypes type);
+
+#if defined(OS_ANDROID)
+// Records the download interrupt reason for the first background download.
+// If |download_started| is true, this records the last interrupt reason
+// before download is started manually or by the task scheduler.
+COMPONENTS_DOWNLOAD_EXPORT void RecordFirstBackgroundDownloadInterruptReason(
+    DownloadInterruptReason reason,
+    bool download_started);
+#endif  // defined(OS_ANDROID)
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_STATS_H_

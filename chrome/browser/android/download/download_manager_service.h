@@ -191,6 +191,14 @@ class DownloadManagerService
   // only mode.
   void CreateInProgressDownloadManager();
 
+  // Helper method to record the interrupt reason UMA for the first background
+  // download.
+  void RecordFirstBackgroundInterruptReason(
+      JNIEnv* env,
+      const JavaParamRef<jobject>& obj,
+      const JavaParamRef<jstring>& jdownload_guid,
+      jboolean download_started);
+
  protected:
   // Called to get the content::DownloadManager instance.
   virtual content::DownloadManager* GetDownloadManager(bool is_off_the_record);
