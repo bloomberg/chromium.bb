@@ -61,6 +61,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+// TODO(crbug.com/961023): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_TestSetBlacklistBoolDueToBlackListState \
+  DISABLED_TestSetBlacklistBoolDueToBlackListState
+#define MAYBE_TestDisallowPreviewBecauseOfBlackListState \
+  DISABLED_TestDisallowPreviewBecauseOfBlackListState
+#else
+#define MAYBE_TestSetBlacklistBoolDueToBlackListState \
+  TestSetBlacklistBoolDueToBlackListState
+#define MAYBE_TestDisallowPreviewBecauseOfBlackListState \
+  TestDisallowPreviewBecauseOfBlackListState
+#endif
+
 namespace previews {
 
 namespace {
@@ -515,7 +528,8 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowBasicAuthentication) {
 // Tests most of the reasons that a preview could be disallowed because of the
 // state of the blacklist. Excluded values are USER_RECENTLY_OPTED_OUT,
 // USER_BLACKLISTED, HOST_BLACKLISTED. These are internal to the blacklist.
-TEST_F(PreviewsDeciderImplTest, TestDisallowPreviewBecauseOfBlackListState) {
+TEST_F(PreviewsDeciderImplTest,
+       MAYBE_TestDisallowPreviewBecauseOfBlackListState) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   base::HistogramTester histogram_tester;
@@ -562,7 +576,7 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowPreviewBecauseOfBlackListState) {
   variations::testing::ClearAllVariationParams();
 }
 
-TEST_F(PreviewsDeciderImplTest, TestSetBlacklistBoolDueToBlackListState) {
+TEST_F(PreviewsDeciderImplTest, MAYBE_TestSetBlacklistBoolDueToBlackListState) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
 
