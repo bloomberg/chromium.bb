@@ -1003,6 +1003,10 @@ const char kPpapiAntialiasedTextEnabled[] = "ppapi-antialiased-text-enabled";
 // processes.
 const char kPpapiSubpixelRenderingSetting[] =
     "ppapi-subpixel-rendering-setting";
+
+// Causes the second GPU process used for gpu info collection to display a
+// dialog on launch.
+const char kGpu2StartupDialog[] = "gpu2-startup-dialog";
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

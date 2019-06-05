@@ -287,6 +287,7 @@ CONTENT_EXPORT extern const char kEnableWin7WebRtcHWH264Decoding[];
 CONTENT_EXPORT extern const char kFontCacheSharedHandle[];
 CONTENT_EXPORT extern const char kPpapiAntialiasedTextEnabled[];
 CONTENT_EXPORT extern const char kPpapiSubpixelRenderingSetting[];
+CONTENT_EXPORT extern const char kGpu2StartupDialog[];
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

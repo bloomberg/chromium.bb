@@ -621,8 +621,15 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
 
   gpu_preferences->watchdog_starts_backgrounded = !application_is_visible_;
 
-  if (kind == GPU_PROCESS_KIND_UNSANDBOXED_NO_GL)
-    gpu_preferences->gpu_startup_dialog = false;
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  gpu_preferences->gpu_startup_dialog =
+#if defined(OS_WIN)
+      (kind == GPU_PROCESS_KIND_UNSANDBOXED_NO_GL &&
+       command_line->HasSwitch(switches::kGpu2StartupDialog)) ||
+#endif
+      (kind == GPU_PROCESS_KIND_SANDBOXED &&
+       command_line->HasSwitch(switches::kGpuStartupDialog));
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
