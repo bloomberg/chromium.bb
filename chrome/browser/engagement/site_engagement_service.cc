@@ -188,10 +188,8 @@ SiteEngagementService::GetAllDetailsInBackground(
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
     : SiteEngagementService(profile, base::DefaultClock::GetInstance()) {
-  content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE,
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&SiteEngagementService::AfterStartupTask,
                      weak_factory_.GetWeakPtr()));
 
