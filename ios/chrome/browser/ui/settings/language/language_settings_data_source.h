@@ -25,6 +25,9 @@
 // Returns whether or not Translate is enabled.
 - (BOOL)translateEnabled;
 
+// Stops observing the model. This is required during the shutdown.
+- (void)stopObservingModel;
+
 // The consumer for this protocol.
 @property(nonatomic, weak) id<LanguageSettingsConsumer> consumer;
 

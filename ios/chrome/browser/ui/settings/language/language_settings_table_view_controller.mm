@@ -159,6 +159,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self setTranslateSwitchItemEnabled:!self.isEditing];
 }
 
+#pragma mark - SettingsControllerProtocol
+
+- (void)settingsWillBeDismissed {
+  [self.dataSource stopObservingModel];
+}
+
 #pragma mark - UITableViewDelegate
 
 - (UITableViewCellEditingStyle)tableView:(UITableView*)tableView
