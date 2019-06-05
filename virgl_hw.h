@@ -23,6 +23,8 @@
 #ifndef VIRGL_HW_H
 #define VIRGL_HW_H
 
+#include <stdint.h>
+
 struct virgl_box {
 	uint32_t x, y, z;
 	uint32_t w, h, d;
@@ -37,6 +39,7 @@ enum virgl_formats {
    VIRGL_FORMAT_B5G5R5A1_UNORM          = 5,
    VIRGL_FORMAT_B4G4R4A4_UNORM          = 6,
    VIRGL_FORMAT_B5G6R5_UNORM            = 7,
+   VIRGL_FORMAT_R10G10B10A2_UNORM       = 8,
    VIRGL_FORMAT_L8_UNORM                = 9,    /**< ubyte luminance */
    VIRGL_FORMAT_A8_UNORM                = 10,   /**< ubyte alpha */
    VIRGL_FORMAT_L8A8_UNORM              = 12,   /**< ubyte alpha, luminance */
@@ -83,6 +86,7 @@ enum virgl_formats {
    VIRGL_FORMAT_L8A8_SRGB               = 96,
    VIRGL_FORMAT_B8G8R8A8_SRGB           = 100,
    VIRGL_FORMAT_B8G8R8X8_SRGB           = 101,
+   VIRGL_FORMAT_R8G8B8A8_SRGB           = 104,
 
    /* compressed formats */
    VIRGL_FORMAT_DXT1_RGB                = 105,
@@ -111,6 +115,8 @@ enum virgl_formats {
    VIRGL_FORMAT_B10G10R10A2_UNORM       = 131,
    VIRGL_FORMAT_R8G8B8X8_UNORM          = 134,
    VIRGL_FORMAT_B4G4R4X4_UNORM          = 135,
+   VIRGL_FORMAT_X24S8_UINT              = 136,
+   VIRGL_FORMAT_S8X24_UINT              = 137,
    VIRGL_FORMAT_B2G3R3_UNORM            = 139,
 
    VIRGL_FORMAT_L16A16_UNORM            = 140,
@@ -131,6 +137,12 @@ enum virgl_formats {
    VIRGL_FORMAT_A32_FLOAT               = 159,
    VIRGL_FORMAT_L32_FLOAT               = 160,
    VIRGL_FORMAT_L32A32_FLOAT            = 161,
+
+   VIRGL_FORMAT_YV12                    = 163,
+   VIRGL_FORMAT_YV16                    = 164,
+   VIRGL_FORMAT_IYUV                    = 165,  /**< aka I420 */
+   VIRGL_FORMAT_NV12                    = 166,
+   VIRGL_FORMAT_NV21                    = 167,
 
    VIRGL_FORMAT_R8_UINT                 = 177,
    VIRGL_FORMAT_R8G8_UINT               = 178,
@@ -185,17 +197,75 @@ enum virgl_formats {
    VIRGL_FORMAT_L32_SINT                = 223,
    VIRGL_FORMAT_L32A32_SINT             = 224,
 
-   VIRGL_FORMAT_B10G10R10A2_UINT        = 225, 
+   VIRGL_FORMAT_B10G10R10A2_UINT        = 225,
    VIRGL_FORMAT_R8G8B8X8_SNORM          = 229,
 
    VIRGL_FORMAT_R8G8B8X8_SRGB           = 230,
 
+   VIRGL_FORMAT_R8G8B8X8_UINT           = 231,
+   VIRGL_FORMAT_R8G8B8X8_SINT           = 232,
    VIRGL_FORMAT_B10G10R10X2_UNORM       = 233,
    VIRGL_FORMAT_R16G16B16X16_UNORM      = 234,
    VIRGL_FORMAT_R16G16B16X16_SNORM      = 235,
-   VIRGL_FORMAT_MAX,
+   VIRGL_FORMAT_R16G16B16X16_FLOAT      = 236,
+   VIRGL_FORMAT_R16G16B16X16_UINT       = 237,
+   VIRGL_FORMAT_R16G16B16X16_SINT       = 238,
+
+   VIRGL_FORMAT_R10G10B10A2_UINT        = 253,
+
+   VIRGL_FORMAT_BPTC_RGBA_UNORM         = 255,
+   VIRGL_FORMAT_BPTC_SRGBA              = 256,
+   VIRGL_FORMAT_BPTC_RGB_FLOAT          = 257,
+   VIRGL_FORMAT_BPTC_RGB_UFLOAT         = 258,
+
+   VIRGL_FORMAT_R10G10B10X2_UNORM       = 308,
+   VIRGL_FORMAT_A4B4G4R4_UNORM          = 311,
+
+   VIRGL_FORMAT_R8_SRGB                 = 312,
+   VIRGL_FORMAT_MAX /* = PIPE_FORMAT_COUNT */,
+
+   /* Below formats must not be used in the guest. */
+   VIRGL_FORMAT_B8G8R8X8_UNORM_EMULATED,
+   VIRGL_FORMAT_B8G8R8A8_UNORM_EMULATED,
+   VIRGL_FORMAT_MAX_EXTENDED
 };
 
+/* These are used by the capability_bits field in virgl_caps_v2. */
+#define VIRGL_CAP_NONE 0
+#define VIRGL_CAP_TGSI_INVARIANT       (1 << 0)
+#define VIRGL_CAP_TEXTURE_VIEW         (1 << 1)
+#define VIRGL_CAP_SET_MIN_SAMPLES      (1 << 2)
+#define VIRGL_CAP_COPY_IMAGE           (1 << 3)
+#define VIRGL_CAP_TGSI_PRECISE         (1 << 4)
+#define VIRGL_CAP_TXQS                 (1 << 5)
+#define VIRGL_CAP_MEMORY_BARRIER       (1 << 6)
+#define VIRGL_CAP_COMPUTE_SHADER       (1 << 7)
+#define VIRGL_CAP_FB_NO_ATTACH         (1 << 8)
+#define VIRGL_CAP_ROBUST_BUFFER_ACCESS (1 << 9)
+#define VIRGL_CAP_TGSI_FBFETCH         (1 << 10)
+#define VIRGL_CAP_SHADER_CLOCK         (1 << 11)
+#define VIRGL_CAP_TEXTURE_BARRIER      (1 << 12)
+#define VIRGL_CAP_TGSI_COMPONENTS      (1 << 13)
+#define VIRGL_CAP_GUEST_MAY_INIT_LOG   (1 << 14)
+#define VIRGL_CAP_SRGB_WRITE_CONTROL   (1 << 15)
+#define VIRGL_CAP_QBO                  (1 << 16)
+#define VIRGL_CAP_TRANSFER             (1 << 17)
+#define VIRGL_CAP_FBO_MIXED_COLOR_FORMATS  (1 << 18)
+#define VIRGL_CAP_FAKE_FP64            (1 << 19)
+#define VIRGL_CAP_BIND_COMMAND_ARGS    (1 << 20)
+#define VIRGL_CAP_MULTI_DRAW_INDIRECT  (1 << 21)
+#define VIRGL_CAP_INDIRECT_PARAMS      (1 << 22)
+#define VIRGL_CAP_TRANSFORM_FEEDBACK3  (1 << 23)
+#define VIRGL_CAP_3D_ASTC              (1 << 24)
+#define VIRGL_CAP_INDIRECT_INPUT_ADDR  (1 << 25)
+#define VIRGL_CAP_COPY_TRANSFER        (1 << 26)
+#define VIRGL_CAP_CLIP_HALFZ           (1 << 27)
+#define VIRGL_CAP_APP_TWEAK_SUPPORT    (1 << 28)
+#define VIRGL_CAP_BGRA_SRGB_IS_EMULATED  (1 << 29)
+
+/* virgl bind flags - these are compatible with mesa 10.5 gallium.
+ * but are fixed, no other should be passed to virgl either.
+ */
 #define VIRGL_BIND_DEPTH_STENCIL (1 << 0)
 #define VIRGL_BIND_RENDER_TARGET (1 << 1)
 #define VIRGL_BIND_SAMPLER_VIEW  (1 << 3)
@@ -203,10 +273,20 @@ enum virgl_formats {
 #define VIRGL_BIND_INDEX_BUFFER  (1 << 5)
 #define VIRGL_BIND_CONSTANT_BUFFER (1 << 6)
 #define VIRGL_BIND_DISPLAY_TARGET (1 << 7)
+#define VIRGL_BIND_COMMAND_ARGS  (1 << 8)
 #define VIRGL_BIND_STREAM_OUTPUT (1 << 11)
+#define VIRGL_BIND_SHADER_BUFFER (1 << 14)
+#define VIRGL_BIND_QUERY_BUFFER  (1 << 15)
 #define VIRGL_BIND_CURSOR        (1 << 16)
 #define VIRGL_BIND_CUSTOM        (1 << 17)
 #define VIRGL_BIND_SCANOUT       (1 << 18)
+/* Used for buffers that are backed by guest storage and
+ * are only read by the host.
+ */
+#define VIRGL_BIND_STAGING       (1 << 19)
+#define VIRGL_BIND_SHARED        (1 << 20)
+
+#define VIRGL_BIND_PREFER_EMULATED_BGRA  (1 << 21)
 
 struct virgl_caps_bool_set1 {
         unsigned indep_blend_enable:1;
@@ -232,6 +312,16 @@ struct virgl_caps_bool_set1 {
         unsigned poly_stipple:1; /* not in GL 3.1 core profile */
         unsigned mirror_clamp:1;
         unsigned texture_query_lod:1;
+        unsigned has_fp64:1;
+        unsigned has_tessellation_shaders:1;
+        unsigned has_indirect_draw:1;
+        unsigned has_sample_shading:1;
+        unsigned has_cull:1;
+        unsigned conditional_render_inverted:1;
+        unsigned derivative_control:1;
+        unsigned polygon_offset_clamp:1;
+        unsigned transform_feedback_overflow_query:1;
+        /* DO NOT ADD ANYMORE MEMBERS - need to add another 32-bit to v2 caps */
 };
 
 /* endless expansion capabilites - current gallium has 252 formats */
@@ -259,9 +349,61 @@ struct virgl_caps_v1 {
         uint32_t max_texture_gather_components;
 };
 
+/*
+ * This struct should be growable when used in capset 2,
+ * so we shouldn't have to add a v3 ever.
+ */
+struct virgl_caps_v2 {
+        struct virgl_caps_v1 v1;
+        float min_aliased_point_size;
+        float max_aliased_point_size;
+        float min_smooth_point_size;
+        float max_smooth_point_size;
+        float min_aliased_line_width;
+        float max_aliased_line_width;
+        float min_smooth_line_width;
+        float max_smooth_line_width;
+        float max_texture_lod_bias;
+        uint32_t max_geom_output_vertices;
+        uint32_t max_geom_total_output_components;
+        uint32_t max_vertex_outputs;
+        uint32_t max_vertex_attribs;
+        uint32_t max_shader_patch_varyings;
+        int32_t min_texel_offset;
+        int32_t max_texel_offset;
+        int32_t min_texture_gather_offset;
+        int32_t max_texture_gather_offset;
+        uint32_t texture_buffer_offset_alignment;
+        uint32_t uniform_buffer_offset_alignment;
+        uint32_t shader_buffer_offset_alignment;
+        uint32_t capability_bits;
+        uint32_t sample_locations[8];
+        uint32_t max_vertex_attrib_stride;
+        uint32_t max_shader_buffer_frag_compute;
+        uint32_t max_shader_buffer_other_stages;
+        uint32_t max_shader_image_frag_compute;
+        uint32_t max_shader_image_other_stages;
+        uint32_t max_image_samples;
+        uint32_t max_compute_work_group_invocations;
+        uint32_t max_compute_shared_memory_size;
+        uint32_t max_compute_grid_size[3];
+        uint32_t max_compute_block_size[3];
+        uint32_t max_texture_2d_size;
+        uint32_t max_texture_3d_size;
+        uint32_t max_texture_cube_size;
+        uint32_t max_combined_shader_buffers;
+        uint32_t max_atomic_counters[6];
+        uint32_t max_atomic_counter_buffers[6];
+        uint32_t max_combined_atomic_counters;
+        uint32_t max_combined_atomic_counter_buffers;
+        uint32_t host_feature_check_version;
+        struct virgl_supported_format_mask supported_readback_formats;
+};
+
 union virgl_caps {
         uint32_t max_version;
         struct virgl_caps_v1 v1;
+        struct virgl_caps_v2 v2;
 };
 
 enum virgl_errors {
@@ -279,8 +421,9 @@ enum virgl_ctx_errors {
         VIRGL_ERROR_CTX_ILLEGAL_SURFACE,
         VIRGL_ERROR_CTX_ILLEGAL_VERTEX_FORMAT,
         VIRGL_ERROR_CTX_ILLEGAL_CMD_BUFFER,
+        VIRGL_ERROR_CTX_GLES_HAVE_TES_BUT_MISS_TCS,
+        VIRGL_ERROR_GL_ANY_SAMPLES_PASSED,
 };
-
 
 #define VIRGL_RESOURCE_Y_0_TOP (1 << 0)
 #endif
