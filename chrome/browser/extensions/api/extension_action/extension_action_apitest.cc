@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -27,6 +28,7 @@
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -78,6 +80,19 @@ class ExtensionActionAPITest : public ExtensionApiTest {
         return manifest_keys::kBrowserAction;
       case ActionInfo::TYPE_PAGE:
         return manifest_keys::kPageAction;
+    }
+    NOTREACHED();
+    return nullptr;
+  }
+
+  const char* GetAPIName(ActionInfo::Type action_type) {
+    switch (action_type) {
+      case ActionInfo::TYPE_ACTION:
+        return "action";
+      case ActionInfo::TYPE_BROWSER:
+        return "browserAction";
+      case ActionInfo::TYPE_PAGE:
+        return "pageAction";
     }
     NOTREACHED();
     return nullptr;
@@ -267,6 +282,63 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, TitleLocalization) {
   EXPECT_EQ(base::WideToUTF8(L"Hreggvi\u00F0ur"), action->GetTitle(tab_id));
   EXPECT_EQ(base::WideToUTF8(L"Hreggvi\u00F0ur"),
             action->GetTitle(ExtensionAction::kDefaultTabId));
+}
+
+// Tests dispatching the onClicked event to listeners when the extension action
+// in the toolbar is pressed.
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest, OnClickedDispatching) {
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Test Clicking",
+           "manifest_version": 2,
+           "version": "0.1",
+           "%s": {},
+           "background": { "scripts": ["background.js"] }
+         })";
+  constexpr char kBackgroundJsTemplate[] =
+      R"(chrome.%s.onClicked.addListener((tab) => {
+           // Check a few properties on the tabs object to make sure it's sane.
+           chrome.test.assertTrue(!!tab);
+           chrome.test.assertTrue(tab.id > 0);
+           chrome.test.assertTrue(tab.index > -1);
+           chrome.test.notifyPass();
+         });)";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  test_dir.WriteFile(
+      FILE_PATH_LITERAL("background.js"),
+      base::StringPrintf(kBackgroundJsTemplate, GetAPIName(GetParam())));
+
+  // Though this says "BrowserActionTestUtil", it's actually used for all
+  // toolbar actions.
+  // TODO(devlin): Rename it to ToolbarActionTestUtil.
+  std::unique_ptr<BrowserActionTestUtil> toolbar_helper =
+      BrowserActionTestUtil::Create(browser());
+  EXPECT_EQ(0, toolbar_helper->NumberOfBrowserActions());
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  ASSERT_EQ(1, toolbar_helper->NumberOfBrowserActions());
+  EXPECT_EQ(extension->id(), toolbar_helper->GetExtensionId(0));
+
+  auto* action_manager = ExtensionActionManager::Get(profile());
+  ExtensionAction* action = action_manager->GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+
+  const int tab_id = SessionTabHelper::IdForTab(
+                         browser()->tab_strip_model()->GetActiveWebContents())
+                         .id();
+  bool is_visible = action->GetIsVisible(tab_id);
+  // The action should only be disabled if that was its default state.
+  EXPECT_EQ(is_visible ? ActionInfo::STATE_ENABLED : ActionInfo::STATE_DISABLED,
+            action->default_state());
+  if (!is_visible)
+    action->SetIsVisible(tab_id, true);
+
+  ResultCatcher result_catcher;
+  toolbar_helper->Press(0);
+  ASSERT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
 }
 
 INSTANTIATE_TEST_SUITE_P(,
