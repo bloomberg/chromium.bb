@@ -105,6 +105,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnDocumentTitleChanged();
   void OnSubtreeCreated();
   void OnSubtreeWillBeDeleted();
+  void OnWindowVisibilityChanged();
 
   bool SupportsSelectionWithAtkSelection();
   bool SelectionAndFocusAreTheSame();
@@ -192,6 +193,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // Some weak pointers which help us track ATK embeds / embedded by relations.
   AtkObject* embedded_document_ = nullptr;
   AtkObject* embedding_window_ = nullptr;
+
+  // Whether or not this node (if it is a frame or a window) was
+  // minimized the last time it's visibility changed.
+  bool was_minimized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeAuraLinux);
 };

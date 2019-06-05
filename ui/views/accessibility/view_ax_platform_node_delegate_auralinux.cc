@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
@@ -33,7 +34,8 @@ namespace {
 // top-level widget to a vector so we can return the list of all top-level
 // windows as children of this application object.
 class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
-                             public WidgetObserver {
+                             public WidgetObserver,
+                             public aura::WindowObserver {
  public:
   // Get the single instance of this class.
   static AuraLinuxApplication* GetInstance() {
@@ -53,6 +55,11 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
 
     widgets_.push_back(widget);
     widget->AddObserver(this);
+
+    aura::Window* window = widget->GetNativeWindow();
+    if (!window)
+      return;
+    window->AddObserver(this);
   }
 
   gfx::NativeViewAccessible GetNativeViewAccessible() {
@@ -67,6 +74,20 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
     auto iter = std::find(widgets_.begin(), widgets_.end(), widget);
     if (iter != widgets_.end())
       widgets_.erase(iter);
+  }
+
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
+    for (Widget* widget : widgets_) {
+      if (widget->GetNativeWindow() != window)
+        continue;
+
+      View* root_view = widget->GetRootView();
+      if (!root_view)
+        continue;
+
+      root_view->NotifyAccessibilityEvent(
+          ax::mojom::Event::kWindowVisibilityChanged, true);
+    }
   }
 
   // ui::AXPlatformNodeDelegate:

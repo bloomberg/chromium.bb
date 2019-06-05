@@ -124,6 +124,8 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
       return api::automation::EVENT_TYPE_WINDOWACTIVATED;
     case ax::mojom::Event::kWindowDeactivated:
       return api::automation::EVENT_TYPE_WINDOWDEACTIVATED;
+    case ax::mojom::Event::kWindowVisibilityChanged:
+      return api::automation::EVENT_TYPE_WINDOWVISIBILITYCHANGED;
     case ax::mojom::Event::kTreeChanged:
       return api::automation::EVENT_TYPE_TREECHANGED;
     case ax::mojom::Event::kValueChanged:
@@ -525,6 +527,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_SCROLLEDTOANCHOR:
     case api::automation::EVENT_TYPE_WINDOWACTIVATED:
     case api::automation::EVENT_TYPE_WINDOWDEACTIVATED:
+    case api::automation::EVENT_TYPE_WINDOWVISIBILITYCHANGED:
       return false;
 
     // These events might need to be migrated to AXEventGenerator.

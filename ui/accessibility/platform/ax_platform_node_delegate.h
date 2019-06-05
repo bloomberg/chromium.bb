@@ -148,6 +148,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get whether this node is offscreen.
   virtual bool IsOffscreen() const = 0;
 
+  // Get whether this node is a minimized window.
+  virtual bool IsMinimized() const = 0;
+
   // Get whether this node is in web content.
   virtual bool IsWebContent() const = 0;
 

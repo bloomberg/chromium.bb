@@ -399,6 +399,11 @@ base::string16 ViewAXPlatformNodeDelegate::GetAuthorUniqueId() const {
   return base::string16();
 }
 
+bool ViewAXPlatformNodeDelegate::IsMinimized() const {
+  Widget* widget = view()->GetWidget();
+  return widget && widget->IsMinimized();
+}
+
 const ui::AXUniqueId& ViewAXPlatformNodeDelegate::GetUniqueId() const {
   return ViewAccessibility::GetUniqueId();
 }

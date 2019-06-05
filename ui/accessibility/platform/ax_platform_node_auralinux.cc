@@ -2589,6 +2589,10 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
       FindAtkObjectParentFrame(GetActiveMenus().back()) == atk_object_)
     atk_state_set_add_state(atk_state_set, ATK_STATE_ACTIVE);
 
+  bool is_minimized = delegate_->IsMinimized();
+  if (is_minimized && data.role == ax::mojom::Role::kWindow)
+    atk_state_set_add_state(atk_state_set, ATK_STATE_ICONIFIED);
+
   if (data.HasState(ax::mojom::State::kCollapsed))
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDABLE);
   if (data.HasState(ax::mojom::State::kDefault))
@@ -2608,7 +2612,7 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_HORIZONTAL);
   if (!data.HasState(ax::mojom::State::kInvisible)) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_VISIBLE);
-    if (!delegate_->IsOffscreen())
+    if (!delegate_->IsOffscreen() && !is_minimized)
       atk_state_set_add_state(atk_state_set, ATK_STATE_SHOWING);
   }
   if (data.HasState(ax::mojom::State::kMultiselectable))
@@ -3195,6 +3199,24 @@ void AXPlatformNodeAuraLinux::OnWindowDeactivated() {
   atk_object_notify_state_change(parent_frame, ATK_STATE_ACTIVE, FALSE);
 }
 
+void AXPlatformNodeAuraLinux::OnWindowVisibilityChanged() {
+  DCHECK(atk_object_);
+
+  if (atk_object_get_role(atk_object_) != ATK_ROLE_FRAME)
+    return;
+
+  bool minimized = delegate_->IsMinimized();
+  if (minimized == was_minimized_)
+    return;
+
+  was_minimized_ = minimized;
+  if (minimized)
+    g_signal_emit_by_name(atk_object_, "minimize");
+  else
+    g_signal_emit_by_name(atk_object_, "restore");
+  atk_object_notify_state_change(atk_object_, ATK_STATE_ICONIFIED, minimized);
+}
+
 void AXPlatformNodeAuraLinux::OnFocused() {
   DCHECK(atk_object_);
 
@@ -3423,6 +3445,9 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       break;
     case ax::mojom::Event::kWindowDeactivated:
       OnWindowDeactivated();
+      break;
+    case ax::mojom::Event::kWindowVisibilityChanged:
+      OnWindowVisibilityChanged();
       break;
     case ax::mojom::Event::kLoadComplete:
     case ax::mojom::Event::kDocumentTitleChanged:

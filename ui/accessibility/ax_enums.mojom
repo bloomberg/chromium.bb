@@ -78,8 +78,9 @@ enum Event {
   kShow,                     // Remove: http://crbug.com/392502
   kStateChanged,             // Native / Automation
   kTextChanged,
-  kWindowActivated,    // Native
-  kWindowDeactivated,  // Native
+  kWindowActivated,             // Native
+  kWindowDeactivated,           // Native
+  kWindowVisibilityChanged,     // Native
   kTextSelectionChanged,
   kTreeChanged,  // Accessibility tree changed. Don't
                  // explicitly fire an accessibility event,
