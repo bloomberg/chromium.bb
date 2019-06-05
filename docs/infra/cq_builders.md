@@ -1,7 +1,7 @@
 # List of CQ builders
 
 This page is auto generated using the script
-//infra/config/cq_config_presubmit.py. Do not manually edit.
+//infra/config/cq_cfg_presubmit.py. Do not manually edit.
 
 [TOC]
 
@@ -225,13 +225,6 @@ builder.
     * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
     * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=LayoutNG`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=LayoutNG)
     * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/)
-
-* [linux_mojo](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_mojo) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux_mojo)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_mojo))
-
-  Path regular expressions:
-    * [`//services/network/.+`](https://cs.chromium.org/chromium/src/services/network/)
-    * [`//testing/buildbot/filters/mojo\\.fyi\\.network_.*`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:testing/buildbot/filters/mojo\\.fyi\\.network_.*)
-    * [`//third_party/blink/web_tests/FlagExpectations/enable-features=NetworkService`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-features=NetworkService)
 
 * [linux_optional_gpu_tests_rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_optional_gpu_tests_rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux_optional_gpu_tests_rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_optional_gpu_tests_rel))
 
