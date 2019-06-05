@@ -653,7 +653,8 @@ TEST_F(AutofillProfileSyncBridgeTest, MergeSyncData_SimilarProfiles) {
   AddAutofillProfilesToTable({local1, local2});
 
   // The synced profiles are identical to the local ones, except that the guids
-  // and use_count values are different.
+  // and use_count values are different. Remote ones have additional company
+  // name which makes them not be identical.
   AutofillProfileSpecifics remote1 =
       CreateAutofillProfileSpecifics(kGuidC, kHttpsOrigin);
   remote1.add_name_first("John");
@@ -672,10 +673,7 @@ TEST_F(AutofillProfileSyncBridgeTest, MergeSyncData_SimilarProfiles) {
   // should never overwrite a verified one.
   AutofillProfileSpecifics merged1(remote1);
   merged1.set_origin(kHttpOrigin);
-  // TODO(jkrcal): This is taken over from the previous test suite without any
-  // reasoning why this happens. This indeed happens, deep in
-  // AutofillProfileComparator when merging profiles both without NAME_FULL, we
-  // obtain a profile with NAME_FULL. Not sure if intended.
+  // When merging, full name gets populated.
   merged1.add_name_full("John");
   // Merging two profile takes their max use count.
   merged1.set_use_count(27);
@@ -695,11 +693,6 @@ TEST_F(AutofillProfileSyncBridgeTest, MergeSyncData_SimilarProfiles) {
                   WithUsageStats(CreateAutofillProfile(merged1)), local2,
                   WithUsageStats(CreateAutofillProfile(remote2))));
 }
-
-// TODO(jkrcal): All the MergeSimilarProfiles_* tests need some diff in Info to
-// trigger the merge similar code path (we create the diff using phone number).
-// Otherwise, we trigger the merge same code path and none of the tests pass. Is
-// it desired?
 
 // Tests that MergeSimilarProfiles keeps the most recent use date of the two
 // profiles being merged.

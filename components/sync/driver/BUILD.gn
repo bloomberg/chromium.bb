@@ -164,8 +164,6 @@ static_library("test_support") {
     "sync_client_mock.h",
     "sync_user_settings_mock.cc",
     "sync_user_settings_mock.h",
-    "test_profile_sync_service.cc",
-    "test_profile_sync_service.h",
     "test_sync_service.cc",
     "test_sync_service.h",
     "test_sync_user_settings.cc",

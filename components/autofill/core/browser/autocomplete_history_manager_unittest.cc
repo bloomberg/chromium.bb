@@ -27,7 +27,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/version_info/version_info.h"
-#include "components/webdata_services/web_data_service_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"

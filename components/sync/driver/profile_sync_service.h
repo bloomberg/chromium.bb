@@ -258,8 +258,6 @@ class ProfileSyncService : public SyncService,
   SyncClient* GetSyncClientForTest();
 
  private:
-  friend class TestProfileSyncService;
-
   // Passed as an argument to StopImpl to control whether or not the sync
   // engine should clear its data directory when it shuts down. See StopImpl
   // for more information.

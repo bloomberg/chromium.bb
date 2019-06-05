@@ -3318,7 +3318,6 @@ test("unit_tests") {
     "//components/sync_user_events:test_support",
     "//components/ukm/content",
     "//components/version_info:generate_version_info",
-    "//components/webdata_services:test_support",
     "//content/app/resources",
     "//content/public/app:both",
     "//content/test:test_support",

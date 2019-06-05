@@ -27,18 +27,3 @@ static_library("webdata_services") {
     deps += [ "//components/payments/content:utils" ]
   }
 }
-
-static_library("test_support") {
-  testonly = true
-  sources = [
-    "web_data_service_test_util.cc",
-    "web_data_service_test_util.h",
-  ]
-
-  deps = [
-    ":webdata_services",
-    "//base",
-    "//components/autofill/core/browser",
-    "//components/signin/core/browser",
-  ]
-}

@@ -41,7 +41,6 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "profile_sync_service_autofill_unittest.cc",
     "profile_sync_service_bookmark_unittest.cc",
   ]
 
@@ -68,7 +67,6 @@ source_set("unit_tests") {
     "//components/version_info",
     "//components/version_info:generate_version_info",
     "//components/webdata/common",
-    "//components/webdata_services:test_support",
     "//services/identity/public/cpp:test_support",
     "//services/network:test_support",
     "//testing/gmock",
@@ -79,8 +77,6 @@ source_set("unit_tests") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "abstract_profile_sync_service_test.cc",
-    "abstract_profile_sync_service_test.h",
     "test_http_bridge_factory.cc",
     "test_http_bridge_factory.h",
   ]
