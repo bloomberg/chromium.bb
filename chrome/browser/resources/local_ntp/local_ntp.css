@@ -7,19 +7,13 @@ html {
   --md-tile-margin: 16px;
   --md-tile-size: 112px;
 
-  /* This will be overridden based on the viewport width, see below.
-   * TODO(kristipark): Combine these.
-   */
-  --column-count: 2;
-  --shortcut-column-count: 3;
+  /* This will be overridden based on the viewport width, see below. */
+  --column-count: 3;
 
-  --content-width: calc(
-      (var(--column-count) * (var(--tile-width) + var(--tile-margin)))
+  --content-width: calc(var(--column-count) * var(--md-tile-size)
       /* We add an extra pixel because rounding errors on different zooms can
        * make the width shorter than it should be. */
       + 1px);
-
-  --shortcuts-width: calc(var(--shortcut-column-count) * var(--md-tile-size));
 
   --logo-height: 200px; /* Normal height of a doodle. */
   --logo-margin-top: 56px; /* Expected OGB height, so logo doesn't overlap. */
@@ -35,9 +29,6 @@ html {
   --logo-iframe-height: var(--logo-height);
   --logo-iframe-resize-duration: 150ms;
   --logo-iframe-width: 500px;
-  --tile-height: 128px;
-  --tile-margin: 16px;
-  --tile-width: 154px;
 
   --mv-notice-time: 10s;
 
@@ -56,19 +47,17 @@ html[darkmode=true] body:not(.light-chip) {
   --text-color-link: rgb(var(--GB400-dark-rgb));
 }
 
-/* width >= (3 cols * (16px + 154px) - 16px + 200px) */
-@media (min-width: 694px) {
+/* width >= (4 cols * 112px (tile width) + 112px (1 tile margin)) */
+@media (min-width: 560px) {
   html {
-    --column-count: 3;
-    --shortcut-column-count: 4;
+    --column-count: 4;
   }
 }
 
-/* width >= (4 cols * (16px + 154px) - 16px + 200px) */
-@media (min-width: 864px) {
+/* width >= (5 cols * 112px (tile width) + 112px (1 tile margin)) */
+@media (min-width: 672px) {
   html {
-    --column-count: 4;
-    --shortcut-column-count: 5;
+    --column-count: 5;
   }
 }
 
@@ -114,7 +103,7 @@ button {
    * single row, but also works for a row of icons, and works well on small
    * screens (like Pixelbook), as well as high-res screens. */
   height: 155px;
-  left: calc(50% - var(--shortcuts-width)/2);
+  left: calc(50% - var(--content-width)/2);
   position: absolute;
   top: calc(50% - 155px);
 }
@@ -407,7 +396,7 @@ body.remove-fakebox #user-content {
   text-align: -webkit-auto;
   /* Add 2*6px to account for drop shadow on the tiles. If you change this, also
    * change the corresponding padding in most_visited_single.css. */
-  width: calc(var(--shortcuts-width) + 12px);
+  width: calc(var(--content-width) + 12px);
 }
 
 #mv-notice-container {
