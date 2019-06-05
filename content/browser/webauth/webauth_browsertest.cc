@@ -95,7 +95,7 @@ constexpr char kRelyingPartyRpIconUrlSecurityErrorMessage[] =
     "webauth: SecurityError: 'rp.icon' should be a secure URL";
 
 constexpr char kAbortErrorMessage[] =
-    "webauth: AbortError: The user aborted a request.";
+    "webauth: AbortError: Request has been aborted.";
 
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for

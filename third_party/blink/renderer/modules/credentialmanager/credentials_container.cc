@@ -292,7 +292,8 @@ DOMException* CredentialManagerErrorToDOMException(
           "this device unless the device is secured "
           "with a screen lock.");
     case CredentialManagerError::ABORT:
-      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError);
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
+                                                "Request has been aborted.");
     case CredentialManagerError::UNKNOWN:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotReadableError,
@@ -523,8 +524,8 @@ ScriptPromise CredentialsContainer::get(
 
     if (options->hasSignal()) {
       if (options->signal()->aborted()) {
-        resolver->Reject(
-            MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kAbortError, "Request has been aborted."));
         return promise;
       }
       options->signal()->AddAlgorithm(
@@ -705,8 +706,8 @@ ScriptPromise CredentialsContainer::create(
 
     if (options->hasSignal()) {
       if (options->signal()->aborted()) {
-        resolver->Reject(
-            MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kAbortError, "Request has been aborted."));
         return promise;
       }
       options->signal()->AddAlgorithm(
