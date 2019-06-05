@@ -26,10 +26,12 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -326,6 +328,44 @@ static bool IsVP8(VideoCodecProfile profile) {
 static bool IsVP9(VideoCodecProfile profile) {
   return profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX;
 }
+
+#if defined(OS_CHROMEOS)
+// Determine the test is known-to-fail and should be skipped.
+bool ShouldSkipTest() {
+  struct Pattern {
+    const char* board_pattern;
+    const char* suite_name_prefix;
+  };
+
+  // Warning: The list should be only used as a last resort for known vendor
+  // issues that will never be fixed.
+  constexpr Pattern kSkipTestPatterns[] = {
+      // crbug.com/769722: MTK driver doesn't compute bitrate correctly.
+      // Disable mid_stream_bitrate_switch test cases for elm/hana.
+      {"elm", "MidStreamParamSwitchBitrate"},
+      {"elm", "MultipleEncoders"},
+      {"hana", "MidStreamParamSwitchBitrate"},
+      {"hana", "MultipleEncoders"},
+  };
+
+  const std::string board = base::SysInfo::GetLsbReleaseBoard();
+  if (board == "unknown") {
+    LOG(WARNING) << "Cannot get CrOS board name. Do you run at CrOS device?";
+    return false;
+  }
+
+  const std::string suite_name = ::testing::UnitTest::GetInstance()
+                                     ->current_test_info()
+                                     ->test_suite_name();
+  for (const auto& pattern : kSkipTestPatterns) {
+    if (suite_name.find(pattern.suite_name_prefix) == 0 &&
+        base::MatchPattern(board, pattern.board_pattern)) {
+      return true;
+    }
+  }
+  return false;
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Helper functions to do string conversions.
 static base::FilePath::StringType StringToFilePathStringType(
@@ -2675,6 +2715,11 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   const bool verify_output_timestamp = std::get<8>(GetParam());
   const bool force_level = std::get<9>(GetParam());
 
+#if defined(OS_CHROMEOS)
+  if (ShouldSkipTest())
+    GTEST_SKIP();
+#endif  // defined(OS_CHROMEOS)
+
   if (force_level) {
     // Skip ForceLevel test if "--force_level=false".
     if (!g_force_level) {
@@ -2800,6 +2845,11 @@ void SimpleTestFunc() {
 TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
   const int test_type = GetParam();
   ASSERT_LT(test_type, 2) << "Invalid test type=" << test_type;
+
+#if defined(OS_CHROMEOS)
+  if (ShouldSkipTest())
+    GTEST_SKIP();
+#endif  // defined(OS_CHROMEOS)
 
   if (test_type == 0)
     SimpleTestFunc<VEANoInputClient>();
