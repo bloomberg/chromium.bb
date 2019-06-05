@@ -128,7 +128,6 @@ Bug(none) fast/sub-pixel/should-not-repaint-subpixel-composited-layer.html [ Fai
 Bug(none) fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
 Bug(none) fragmentation/outline-crossing-columns.html [ Crash ]
 Bug(none) fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
-Bug(none) http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failure ]
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
@@ -148,7 +147,6 @@ crbug.com/907601 virtual/threaded/fast/scrolling/events/scrollend-event-fired-af
 crbug.com/959949 external/wpt/element-timing/invisible-images.html [ Failure Pass ]
 
 # Single pixel difference around one of the radiused borders.
-Bug(none) external/wpt/css/filter-effects/backdrop-filter-clip-rect.html [ Failure ]
 Bug(none) external/wpt/css/filter-effects/backdrop-filter-reference-filter.html [ Failure ]
 
 # Less invalidations or different invalidations without pixel failures.
@@ -360,8 +358,6 @@ Bug(none) paint/invalidation/compositing/subpixel-offset-scaled-transform-compos
 Bug(none) paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
 Bug(none) paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 
-crbug.com/832928 compositing/geometry/child-layer-position-with-clip-path-overflow.html [ Failure ]
-
 crbug.com/882075 compositing/overflow/composited-sticky-element-with-non-integer-relative-position-to-container.html [ Failure ]
 
 Bug(none) compositing/overflow/ancestor-with-clip-path.html [ Failure ]
@@ -393,6 +389,7 @@ crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-non-composited-scr
 
 # Backdrop filter
 crbug.com/923429 css3/filters/backdrop-filter-basic-blur.html [ Timeout Failure ]
+crbug.com/923429 css3/filters/backdrop-filter-boundary.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-browser-zoom.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-border-radius.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-clip-rect-zoom.html [ Failure ]
@@ -404,15 +401,35 @@ crbug.com/923429 css3/filters/backdrop-filter-edge-pixels.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic-background-color.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic.html [ Failure ]
+crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-clip-rect.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-fixed-clip.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-isolation.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-isolation-fixed.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-isolation-isolate.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-update.html [ Failure ]
+crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-clipped.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-basic-blur.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-border-radius.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-boundary.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-browser-zoom.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-clip-rect-zoom.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-edge-pixels.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-plus-filter.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-rendering.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-transform.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-background-color.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-clipped.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-fixed-clip.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-isolation-fixed.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-isolation-isolate.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-isolation.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-update.html [ Failure ]
 
 crbug.com/940033 virtual/fractional_scrolling_threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
 crbug.com/940033 virtual/threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
-
 
 # Missing composited layer for fixed-position
 crbug.com/931491 compositing/layer-creation/fixed-position-change-out-of-view-in-view.html [ Failure ]
@@ -431,8 +448,6 @@ crbug.com/931491 compositing/squashing/squash-above-fixed-1.html [ Failure ]
 crbug.com/931491 compositing/squashing/squash-above-fixed-2.html [ Failure ]
 crbug.com/931491 compositing/squashing/squash-above-fixed-3.html [ Failure ]
 crbug.com/931491 compositing/squashing/squash-paint-invalidation-fixed-position.html [ Failure ]
-
-Bug(none) css3/filters/blur-filter-page-scroll-self.html [ Failure ]
 
 # Crash during PictureLayer::GetPicture() when DisplayItemList is finished twice.
 Bug(none) http/tests/devtools/layers/layer-canvas-log.js [ Crash ]
@@ -460,11 +475,7 @@ Bug(none) external/wpt/css/css-masking/clip-path-svg-content/mask-nested-clip-pa
 Bug(none) external/wpt/css/css-masking/clip-path-svg-content/mask-nested-clip-path-panning-001.svg [ Failure ]
 Bug(none) external/wpt/css/css-masking/mask-svg-content/mask-type-002.svg [ Failure ]
 Bug(none) external/wpt/css/css-masking/mask-svg-content/mask-type-003.svg [ Failure ]
-Bug(none) images/color-profile-mask-image-svg.html [ Failure ]
 Bug(none) svg/W3C-SVG-1.1/masking-intro-01-f.svg [ Failure ]
-Bug(none) svg/W3C-SVG-1.1/masking-mask-01-b.svg [ Failure ]
-Bug(none) svg/W3C-SVG-1.1/masking-path-04-b.svg [ Failure ]
-Bug(none) svg/batik/text/textEffect2.svg [ Failure ]
 Bug(none) svg/clip-path/clip-in-mask.svg [ Failure ]
 Bug(none) svg/clip-path/deep-nested-clip-in-mask-different-unitTypes.svg [ Failure ]
 Bug(none) svg/clip-path/deep-nested-clip-in-mask-panning.svg [ Failure ]
@@ -482,7 +493,6 @@ Bug(none) svg/custom/masking-clipping-hidpi.svg [ Failure ]
 Bug(none) svg/filters/filter-clip.svg [ Failure ]
 Bug(none) svg/masking/mask-type-luminance.svg [ Failure ]
 Bug(none) svg/masking/mask-type-not-set.svg [ Failure ]
-Bug(none) svg/zoom/page/zoom-mask-with-percentages.svg [ Failure ]
 
 crbug.com/962191 animations/stability/base-render-style-crash.html [ Crash ]
 crbug.com/962191 animations/stability/option-element-crash.html [ Crash ]
@@ -527,7 +537,6 @@ crbug.com/962191 external/wpt/web-animations/timing-model/animations/seamlessly-
 crbug.com/962191 external/wpt/web-animations/timing-model/animations/setting-the-current-time-of-an-animation.html [ Crash ]
 crbug.com/962191 external/wpt/web-animations/timing-model/animations/setting-the-playback-rate-of-an-animation.html [ Crash ]
 crbug.com/962191 external/wpt/web-animations/timing-model/animations/setting-the-start-time-of-an-animation.html [ Crash ]
-crbug.com/962191 external/wpt/web-animations/timing-model/animations/setting-the-target-effect-of-an-animation.html [ Crash ]
 crbug.com/962191 external/wpt/web-animations/timing-model/animations/setting-the-timeline-of-an-animation.html [ Crash ]
 crbug.com/962191 external/wpt/web-animations/timing-model/animations/the-current-time-of-an-animation.html [ Crash ]
 crbug.com/962191 external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Crash ]
@@ -605,9 +614,3 @@ crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to
 crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Skip ]
 crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-window.html [ Skip ]
 crbug.com/966981 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Skip ]
-
-Bug(none) fast/borders/border-radius-mask-canvas-border.html [ Failure ]
-Bug(none) fast/borders/border-radius-mask-canvas.html [ Failure ]
-Bug(none) fast/borders/border-radius-mask-video-ratio.html [ Failure ]
-Bug(none) fast/borders/border-radius-mask-video-shadow.html [ Failure ]
-Bug(none) fast/borders/border-radius-mask-video.html [ Failure ]
