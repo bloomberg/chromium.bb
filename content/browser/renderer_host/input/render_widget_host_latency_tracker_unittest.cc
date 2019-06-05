@@ -6,6 +6,7 @@
 
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/test_rappor_service.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -212,7 +213,16 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestValidEventTiming) {
       "Event.Latency.ScrollBegin.Wheel.GpuSwap2", 0, 1);
 }
 
-TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
+// Flaky on Android. https://crbug.com/970841
+#if defined(OS_ANDROID)
+#define MAYBE_TestWheelToFirstScrollHistograms \
+  DISABLED_TestWheelToFirstScrollHistograms
+#else
+#define MAYBE_TestWheelToFirstScrollHistograms TestWheelToFirstScrollHistograms
+#endif
+
+TEST_F(RenderWidgetHostLatencyTrackerTest,
+       MAYBE_TestWheelToFirstScrollHistograms) {
   const GURL url(kUrl);
   size_t total_ukm_entry_count = 0;
   contents()->NavigateAndCommit(url);
@@ -318,7 +328,14 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
   }
 }
 
-TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
+// Flaky on Android. https://crbug.com/970841
+#if defined(OS_ANDROID)
+#define MAYBE_TestWheelToScrollHistograms DISABLED_TestWheelToScrollHistograms
+#else
+#define MAYBE_TestWheelToScrollHistograms TestWheelToScrollHistograms
+#endif
+
+TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestWheelToScrollHistograms) {
   const GURL url(kUrl);
   size_t total_ukm_entry_count = 0;
   contents()->NavigateAndCommit(url);
@@ -424,7 +441,16 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
   }
 }
 
-TEST_F(RenderWidgetHostLatencyTrackerTest, TestInertialToScrollHistograms) {
+// Flaky on Android. https://crbug.com/970841
+#if defined(OS_ANDROID)
+#define MAYBE_TestInertialToScrollHistograms \
+  DISABLED_TestInertialToScrollHistograms
+#else
+#define MAYBE_TestInertialToScrollHistograms TestInertialToScrollHistograms
+#endif
+
+TEST_F(RenderWidgetHostLatencyTrackerTest,
+       MAYBE_TestInertialToScrollHistograms) {
   const GURL url(kUrl);
   contents()->NavigateAndCommit(url);
   for (bool rendering_on_main : {false, true}) {
@@ -475,7 +501,16 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestInertialToScrollHistograms) {
   }
 }
 
-TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
+// Flaky on Android. https://crbug.com/970841
+#if defined(OS_ANDROID)
+#define MAYBE_TestTouchToFirstScrollHistograms \
+  DISABLED_TestTouchToFirstScrollHistograms
+#else
+#define MAYBE_TestTouchToFirstScrollHistograms TestTouchToFirstScrollHistograms
+#endif
+
+TEST_F(RenderWidgetHostLatencyTrackerTest,
+       MAYBE_TestTouchToFirstScrollHistograms) {
   const GURL url(kUrl);
   contents()->NavigateAndCommit(url);
   size_t total_ukm_entry_count = 0;
@@ -585,7 +620,14 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
   }
 }
 
-TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
+// Flaky on Android. https://crbug.com/970841
+#if defined(OS_ANDROID)
+#define MAYBE_TestTouchToScrollHistograms DISABLED_TestTouchToScrollHistograms
+#else
+#define MAYBE_TestTouchToScrollHistograms TestTouchToScrollHistograms
+#endif
+
+TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestTouchToScrollHistograms) {
   const GURL url(kUrl);
   contents()->NavigateAndCommit(url);
   size_t total_ukm_entry_count = 0;
@@ -692,7 +734,14 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
   }
 }
 
-TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollbarEndToEndHistograms) {
+// Flaky on Android. https://crbug.com/970841
+#if defined(OS_ANDROID)
+#define MAYBE_ScrollbarEndToEndHistograms DISABLED_ScrollbarEndToEndHistograms
+#else
+#define MAYBE_ScrollbarEndToEndHistograms ScrollbarEndToEndHistograms
+#endif
+
+TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_ScrollbarEndToEndHistograms) {
   // For all combinations of ScrollBegin/ScrollUpdate main/impl rendering,
   // ensure that the LatencyTracker logs the correct set of histograms.
   const GURL url(kUrl);
