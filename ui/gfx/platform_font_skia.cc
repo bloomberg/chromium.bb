@@ -112,7 +112,7 @@ bool PlatformFontSkia::InitDefaultFont() {
 
   bool success = false;
   std::string family = kFallbackFontFamilyName;
-  int size_pixels = 12;
+  int size_pixels = PlatformFont::kDefaultBaseFontSize;
   int style = Font::NORMAL;
   Font::Weight weight = Font::Weight::NORMAL;
   FontRenderParams params;
