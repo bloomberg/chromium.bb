@@ -8,14 +8,13 @@
 #include <vector>
 
 #include "base/sequence_checker.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyThrottleManager;
 struct DataReductionProxyTypeInfo;
 
 // Handles Data Reduction Proxy logic that needs to be applied to each request.
@@ -27,7 +26,7 @@ struct DataReductionProxyTypeInfo;
 //   * Marking data reduction proxies to be bypassed for future requests.
 class DataReductionProxyURLLoaderThrottle
     : public content::URLLoaderThrottle,
-      public mojom::DataReductionProxyThrottleConfigObserver {
+      public DataReductionProxyThrottleConfigCheckedObserver {
  public:
   // |manager| is shared between all the DRP Throttles.
   DataReductionProxyURLLoaderThrottle(
@@ -55,9 +54,11 @@ class DataReductionProxyURLLoaderThrottle
   void WillOnCompleteWithError(const network::URLLoaderCompletionStatus& status,
                                bool* defer) override;
 
-  // mojom::DataReductionProxyThrottleConfigObserver:
+  // DataReductionProxyThrottleConfigCheckedObserver:
   void OnThrottleConfigChanged(
       mojom::DataReductionProxyThrottleConfigPtr config) override;
+  void OnThrottleManagerDestroyed(
+      DataReductionProxyThrottleManager* manager) override;
 
  private:
   // As the throttle instance is being moved to another sequence, this
@@ -90,6 +91,9 @@ class DataReductionProxyURLLoaderThrottle
   std::vector<GURL> url_chain_;
   std::string request_method_;
 
+  // The throttle must be initialized with a valid manager, but can later be
+  // disassociated from it if the manager is destroyed earlier or if the
+  // throttle is moved to a different sequence.
   DataReductionProxyThrottleManager* manager_ = nullptr;
 
   // Throttles that run on the same sequence as the manager share the manager's

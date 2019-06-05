@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
@@ -140,6 +141,31 @@ class DataReductionProxyURLLoaderThrottleTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockMojoDataReductionProxy mock_mojo_data_reduction_proxy_;
 };
+
+TEST_F(DataReductionProxyURLLoaderThrottleTest, ThrottleDiesFirst) {
+  auto manager = CreateManager(mock_mojo_data_reduction_proxy());
+  DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
+                                               manager.get());
+}
+
+TEST_F(DataReductionProxyURLLoaderThrottleTest,
+       ThrottleDiesOnDifferentSequence) {
+  auto manager = CreateManager(mock_mojo_data_reduction_proxy());
+  auto throttle = std::make_unique<DataReductionProxyURLLoaderThrottle>(
+      (net::HttpRequestHeaders()), manager.get());
+  throttle->DetachFromCurrentSequence();
+
+  auto task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits());
+  task_runner->DeleteSoon(FROM_HERE, throttle.release());
+}
+
+TEST_F(DataReductionProxyURLLoaderThrottleTest, ManagerDiesFirst) {
+  auto manager = CreateManager(mock_mojo_data_reduction_proxy());
+  DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
+                                               manager.get());
+  manager.reset();
+}
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest, AcceptTransformHeaderSet) {
   auto manager = CreateManager(mock_mojo_data_reduction_proxy());

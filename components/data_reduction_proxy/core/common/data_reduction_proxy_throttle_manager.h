@@ -13,6 +13,17 @@
 namespace data_reduction_proxy {
 
 class DataReductionProxyServer;
+class DataReductionProxyThrottleManager;
+
+// A throttle config observer that is additionally notified about the manager's
+// destruction.
+class DataReductionProxyThrottleConfigCheckedObserver
+    : public mojom::DataReductionProxyThrottleConfigObserver,
+      public base::CheckedObserver {
+ public:
+  virtual void OnThrottleManagerDestroyed(
+      DataReductionProxyThrottleManager* manager) = 0;
+};
 
 // Helper that encapsulates the shared state between
 // DataReductionProxyURLThrottles, whose main responsibility is keeping the
@@ -36,9 +47,9 @@ class DataReductionProxyThrottleManager
   // sign up for / sign out of receiving
   // mojom::DataReductionProxyThrottleConfigObserver events.
   void AddSameSequenceObserver(
-      mojom::DataReductionProxyThrottleConfigObserver* observer);
+      DataReductionProxyThrottleConfigCheckedObserver* observer);
   void RemoveSameSequenceObserver(
-      mojom::DataReductionProxyThrottleConfigObserver* observer);
+      DataReductionProxyThrottleConfigCheckedObserver* observer);
 
   mojom::DataReductionProxy* data_reduction_proxy() {
     return shared_data_reduction_proxy_;
@@ -57,7 +68,8 @@ class DataReductionProxyThrottleManager
   // for the interfaces mojom::DataReductionProxy and
   // mojom::DataReductionProxyThrottleConfigObserver.
   mojom::DataReductionProxy* const shared_data_reduction_proxy_;
-  base::ObserverList<mojom::DataReductionProxyThrottleConfigObserver>::Unchecked
+  base::ObserverList<DataReductionProxyThrottleConfigCheckedObserver,
+                     /* check_empty = */ true>
       same_sequence_observers_;
 
   mojo::Binding<
