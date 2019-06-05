@@ -323,6 +323,40 @@ TEST_F(ColorAnalysisTest, CalculateKMeanColorOfBitmap) {
   EXPECT_TRUE(ChannelApproximatelyEqual(200, SkColorGetB(color)));
 }
 
+// Regression test for heap-buffer-underlow. https://crbug.com/970343
+TEST_F(ColorAnalysisTest, CalculateKMeanColorOfSmallImage) {
+  SkBitmap bitmap;
+
+  // Create a 1x41 bitmap, so it is not wide enough to have 1 pixel of padding
+  // on both sides.
+  bitmap.allocN32Pixels(1, 41);
+  bitmap.eraseARGB(255, 100, 150, 200);
+
+  SkColor color = CalculateKMeanColorOfBitmap(bitmap);
+  EXPECT_EQ(255u, SkColorGetA(color));
+  EXPECT_TRUE(ChannelApproximatelyEqual(100, SkColorGetR(color)));
+  EXPECT_TRUE(ChannelApproximatelyEqual(150, SkColorGetG(color)));
+  EXPECT_TRUE(ChannelApproximatelyEqual(200, SkColorGetB(color)));
+
+  // Test a wide but narrow bitmap.
+  bitmap.allocN32Pixels(41, 1);
+  bitmap.eraseARGB(255, 100, 150, 200);
+  color = CalculateKMeanColorOfBitmap(bitmap);
+  EXPECT_EQ(255u, SkColorGetA(color));
+  EXPECT_TRUE(ChannelApproximatelyEqual(100, SkColorGetR(color)));
+  EXPECT_TRUE(ChannelApproximatelyEqual(150, SkColorGetG(color)));
+  EXPECT_TRUE(ChannelApproximatelyEqual(200, SkColorGetB(color)));
+
+  // Test a tiny bitmap.
+  bitmap.allocN32Pixels(1, 1);
+  bitmap.eraseARGB(255, 100, 150, 200);
+  color = CalculateKMeanColorOfBitmap(bitmap);
+  EXPECT_EQ(255u, SkColorGetA(color));
+  EXPECT_TRUE(ChannelApproximatelyEqual(100, SkColorGetR(color)));
+  EXPECT_TRUE(ChannelApproximatelyEqual(150, SkColorGetG(color)));
+  EXPECT_TRUE(ChannelApproximatelyEqual(200, SkColorGetB(color)));
+}
+
 TEST_F(ColorAnalysisTest, ComputeColorCovarianceTrivial) {
   SkBitmap bitmap;
   bitmap.setInfo(SkImageInfo::MakeN32Premul(100, 200));

@@ -30,7 +30,7 @@ namespace color_utils {
 namespace {
 
 // RGBA KMean Constants
-const uint32_t kNumberOfClusters = 4;
+const int kNumberOfClusters = 4;
 const int kNumberOfIterations = 50;
 
 const HSL kDefaultLowerHSLBound = {-1, -1, 0.15};
@@ -413,12 +413,13 @@ int GridSampler::GetSample(int width, int height) {
   // ..........
   // .3.7......
   // ..........
-  const int kPadX = 1;
-  const int kPadY = 1;
-  int x = kPadX +
-      (calls_ / kNumberOfClusters) * ((width - 2 * kPadX) / kNumberOfClusters);
-  int y = kPadY +
-      (calls_ % kNumberOfClusters) * ((height - 2 * kPadY) / kNumberOfClusters);
+  // But don't inset if the image is too narrow or too short.
+  const int kInsetX = (width > 2 ? 1 : 0);
+  const int kInsetY = (height > 2 ? 1 : 0);
+  int x = kInsetX + (calls_ / kNumberOfClusters) *
+                        ((width - 2 * kInsetX) / kNumberOfClusters);
+  int y = kInsetY + (calls_ % kNumberOfClusters) *
+                        ((height - 2 * kInsetY) / kNumberOfClusters);
   int index = x + (y * width);
   ++calls_;
   return index % (width * height);
@@ -468,7 +469,7 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
   SkColor color = kDefaultBgColor;
   if (img_width > 0 && img_height > 0) {
     std::vector<KMeanCluster> clusters;
-    clusters.resize(kNumberOfClusters, KMeanCluster());
+    clusters.resize(static_cast<size_t>(kNumberOfClusters), KMeanCluster());
 
     // Pick a starting point for each cluster
     auto new_cluster = clusters.begin();
