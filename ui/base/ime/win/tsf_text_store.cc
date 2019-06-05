@@ -856,6 +856,7 @@ STDMETHODIMP TSFTextStore::OnEndEdit(ITfContext* context,
     if (SUCCEEDED(
             context_composition->EnumCompositions(&enum_composition_view))) {
       Microsoft::WRL::ComPtr<ITfCompositionView> composition_view;
+      bool has_composition = false;
       if (enum_composition_view->Next(1, &composition_view, nullptr) == S_OK) {
         Microsoft::WRL::ComPtr<ITfRange> range;
         if (SUCCEEDED(composition_view->GetRange(&range))) {
@@ -864,14 +865,21 @@ STDMETHODIMP TSFTextStore::OnEndEdit(ITfContext* context,
             LONG start = 0;
             LONG length = 0;
             if (SUCCEEDED(range_acp->GetExtent(&start, &length))) {
-              composition_start_ = start;
-              has_composition_range_ = true;
-              composition_range_.set_start(start);
-              composition_range_.set_end(start + length);
+              // We should only consider it as a valid composition if the
+              // composition range is not collapsed (length > 0).
+              if (length > 0) {
+                has_composition = true;
+                composition_start_ = start;
+                has_composition_range_ = true;
+                composition_range_.set_start(start);
+                composition_range_.set_end(start + length);
+              }
             }
           }
         }
-      } else {
+      }
+
+      if (!has_composition) {
         composition_start_ = selection_.start();
         if (has_composition_range_) {
           has_composition_range_ = false;
