@@ -90,7 +90,8 @@ LayoutUnit LayoutButton::BaselinePosition(
   // We want to call the LayoutBlock version of firstLineBoxBaseline to
   // avoid LayoutFlexibleBox synthesizing a baseline that we don't want.
   // We use this check as a proxy for "are there any line boxes in this button"
-  if (!HasLineIfEmpty() && LayoutBlock::FirstLineBoxBaseline() == -1) {
+  if (!HasLineIfEmpty() && !ShouldApplyLayoutContainment() &&
+      LayoutBlock::FirstLineBoxBaseline() == -1) {
     // To ensure that we have a consistent baseline when we have no children,
     // even when we have the anonymous LayoutBlock child, we calculate the
     // baseline for the empty case manually here.

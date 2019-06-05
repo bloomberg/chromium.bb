@@ -564,7 +564,6 @@ crbug.com/613753 external/wpt/css/css-tables/border-spacing-included-in-sizes-00
 crbug.com/880802 external/wpt/css/css-contain/contain-layout-017.html [ Failure ]
 crbug.com/671132 external/wpt/css/css-contain/contain-layout-baseline-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-layout-breaks-002.html [ Failure ]
-crbug.com/965740 external/wpt/css/css-contain/contain-layout-button-001.html [ Failure ]
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-005.html [ Failure ]
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
 crbug.com/880802 external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
