@@ -106,7 +106,7 @@ std::vector<AndroidAppInfoPtr> GetAppsInfo() {
 }
 
 void NotifyAndroidAppListRefreshed(
-    mojo::InterfacePtrSet<chromeos::assistant::mojom::AppListEventSubscriber>
+    mojo::InterfacePtrSet<chromeos::assistant::mojom::AppListEventSubscriber>&
         subscribers) {
   std::vector<AndroidAppInfoPtr> android_apps_info = GetAppsInfo();
 
