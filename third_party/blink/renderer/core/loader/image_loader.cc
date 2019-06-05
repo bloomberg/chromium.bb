@@ -568,17 +568,16 @@ void ImageLoader::DoUpdateFromElement(
         const LazyLoadImageEligibility lazy_load_image_eligibility =
             DetermineLazyLoadImageEligibility(*frame, *html_image,
                                               params.Url());
-        const auto lazy_load_image_enabled_state =
-            frame->GetLazyLoadImageEnabledState();
+        const auto lazy_load_image_setting = frame->GetLazyLoadImageSetting();
 
         if ((lazy_load_image_eligibility ==
                  LazyLoadImageEligibility::kEnabledExplicit &&
-             lazy_load_image_enabled_state !=
-                 LocalFrame::LazyLoadImageEnabledState::kDisabled) ||
+             lazy_load_image_setting !=
+                 LocalFrame::LazyLoadImageSetting::kDisabled) ||
             (lazy_load_image_eligibility ==
                  LazyLoadImageEligibility::kEnabledAutomatic &&
-             lazy_load_image_enabled_state ==
-                 LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic)) {
+             lazy_load_image_setting ==
+                 LocalFrame::LazyLoadImageSetting::kEnabledAutomatic)) {
           if (IsDimensionAbsoluteLarge(*html_image)) {
             params.SetLazyImageDeferred();
           } else {

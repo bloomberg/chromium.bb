@@ -306,8 +306,8 @@ class TokenPreloadScanner::StartTagScanner {
         break;
       case LoadingAttrValue::kLazy:
         is_lazy_load_image_enabled =
-            document_parameters.lazy_load_image_enabled_state !=
-            LocalFrame::LazyLoadImageEnabledState::kDisabled;
+            document_parameters.lazy_load_image_setting !=
+            LocalFrame::LazyLoadImageSetting::kDisabled;
         break;
       case LoadingAttrValue::kAuto:
         if ((width_attr_dimension_type_ ==
@@ -319,8 +319,8 @@ class TokenPreloadScanner::StartTagScanner {
           is_lazy_load_image_enabled = false;
         } else {
           is_lazy_load_image_enabled =
-              document_parameters.lazy_load_image_enabled_state ==
-              LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic;
+              document_parameters.lazy_load_image_setting ==
+              LocalFrame::LazyLoadImageSetting::kEnabledAutomatic;
         }
         break;
     }
@@ -1087,11 +1087,10 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   integrity_features = SubresourceIntegrityHelper::GetFeatures(document);
   lazyload_policy_enforced = document->IsLazyLoadPolicyEnforced();
   if (document->Loader() && document->Loader()->GetFrame()) {
-    lazy_load_image_enabled_state =
-        document->Loader()->GetFrame()->GetLazyLoadImageEnabledState();
+    lazy_load_image_setting =
+        document->Loader()->GetFrame()->GetLazyLoadImageSetting();
   } else {
-    lazy_load_image_enabled_state =
-        LocalFrame::LazyLoadImageEnabledState::kDisabled;
+    lazy_load_image_setting = LocalFrame::LazyLoadImageSetting::kDisabled;
   }
 }
 

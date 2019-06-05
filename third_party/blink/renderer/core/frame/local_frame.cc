@@ -1290,23 +1290,22 @@ bool LocalFrame::IsClientLoFiAllowed(const ResourceRequest& request) const {
                          request, Client()->GetPreviewsStateForFrame());
 }
 
-LocalFrame::LazyLoadImageEnabledState LocalFrame::GetLazyLoadImageEnabledState()
-    const {
+LocalFrame::LazyLoadImageSetting LocalFrame::GetLazyLoadImageSetting() const {
   DCHECK(GetSettings());
   if (!RuntimeEnabledFeatures::LazyImageLoadingEnabled() ||
       !GetSettings()->GetLazyLoadEnabled()) {
-    return LocalFrame::LazyLoadImageEnabledState::kDisabled;
+    return LocalFrame::LazyLoadImageSetting::kDisabled;
   }
   if (!RuntimeEnabledFeatures::AutomaticLazyImageLoadingEnabled())
-    return LocalFrame::LazyLoadImageEnabledState::kEnabledExplicit;
+    return LocalFrame::LazyLoadImageSetting::kEnabledExplicit;
   if (RuntimeEnabledFeatures::
           RestrictAutomaticLazyImageLoadingToDataSaverEnabled() &&
       !is_save_data_enabled_) {
-    return LocalFrame::LazyLoadImageEnabledState::kEnabledExplicit;
+    return LocalFrame::LazyLoadImageSetting::kEnabledExplicit;
   }
   if (Owner() && !Owner()->ShouldLazyLoadChildren())
-    return LocalFrame::LazyLoadImageEnabledState::kEnabledExplicit;
-  return LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic;
+    return LocalFrame::LazyLoadImageSetting::kEnabledExplicit;
+  return LocalFrame::LazyLoadImageSetting::kEnabledAutomatic;
 }
 
 WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {
