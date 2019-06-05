@@ -211,7 +211,7 @@ bool ShouldEnforceInitiatorLock() {
 // confirmation sniffing because images, scripts, etc. are frequently
 // mislabelled by http servers as HTML/JSON/XML).
 base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
-  static base::NoDestructor<base::flat_set<std::string>> s_types({
+  static base::NoDestructor<base::flat_set<std::string>> s_types{{
       // The list below has been populated based on most commonly used content
       // types according to HTTP Archive - see:
       // https://github.com/whatwg/fetch/issues/860#issuecomment-457330454
@@ -224,7 +224,7 @@ base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
       "application/x-www-form-urlencoded",
       "application/zip",
       "text/event-stream",
-  });
+  }};
 
   // All items need to be lower-case, to support case-insensitive comparisons
   // later.
