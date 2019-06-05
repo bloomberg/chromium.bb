@@ -259,7 +259,7 @@ class LegacyCacheStorage::SimpleCacheLoader
       int64_t cache_size,
       int64_t cache_padding,
       std::unique_ptr<SymmetricKey> cache_padding_key) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(base::ContainsKey(cache_name_to_cache_dir_, cache_name));
 
     std::string cache_dir = cache_name_to_cache_dir_[cache_name];
@@ -272,7 +272,7 @@ class LegacyCacheStorage::SimpleCacheLoader
 
   void PrepareNewCacheDestination(const std::string& cache_name,
                                   CacheCallback callback) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     PostTaskAndReplyWithResult(
         cache_task_runner_.get(), FROM_HERE,
@@ -311,7 +311,7 @@ class LegacyCacheStorage::SimpleCacheLoader
   }
 
   void CleanUpDeletedCache(CacheStorageCache* cache) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(base::ContainsKey(doomed_cache_to_path_, cache));
 
     base::FilePath cache_path =
@@ -330,7 +330,7 @@ class LegacyCacheStorage::SimpleCacheLoader
 
   void WriteIndex(const CacheStorageIndex& index,
                   BoolCallback callback) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     // 1. Create the index file as a string. (WriteIndex)
     // 2. Write the file to disk. (WriteIndexWriteToFileInPool)
@@ -387,7 +387,7 @@ class LegacyCacheStorage::SimpleCacheLoader
   }
 
   void LoadIndex(CacheStorageIndexLoadCallback callback) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     PostTaskAndReplyWithResult(
         cache_task_runner_.get(), FROM_HERE,
@@ -399,7 +399,7 @@ class LegacyCacheStorage::SimpleCacheLoader
 
   void LoadIndexDidReadIndex(CacheStorageIndexLoadCallback callback,
                              proto::CacheStorageIndex protobuf_index) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     std::unique_ptr<std::set<std::string>> cache_dirs(
         new std::set<std::string>);
@@ -549,6 +549,7 @@ class LegacyCacheStorage::SimpleCacheLoader
   std::map<std::string, std::string> cache_name_to_cache_dir_;
   std::map<CacheStorageCache*, std::string> doomed_cache_to_path_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<SimpleCacheLoader> weak_ptr_factory_;
 };
 
@@ -610,7 +611,7 @@ void LegacyCacheStorage::DropHandleRef() {
 void LegacyCacheStorage::OpenCache(const std::string& cache_name,
                                    int64_t trace_id,
                                    CacheAndErrorCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!initialized_)
     LazyInit();
@@ -633,7 +634,7 @@ void LegacyCacheStorage::OpenCache(const std::string& cache_name,
 void LegacyCacheStorage::HasCache(const std::string& cache_name,
                                   int64_t trace_id,
                                   BoolAndErrorCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!initialized_)
     LazyInit();
@@ -652,7 +653,7 @@ void LegacyCacheStorage::HasCache(const std::string& cache_name,
 void LegacyCacheStorage::DoomCache(const std::string& cache_name,
                                    int64_t trace_id,
                                    ErrorCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!initialized_)
     LazyInit();
@@ -670,7 +671,7 @@ void LegacyCacheStorage::DoomCache(const std::string& cache_name,
 
 void LegacyCacheStorage::EnumerateCaches(int64_t trace_id,
                                          EnumerateCachesCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!initialized_)
     LazyInit();
@@ -692,7 +693,7 @@ void LegacyCacheStorage::MatchCache(
     blink::mojom::CacheQueryOptionsPtr match_options,
     int64_t trace_id,
     CacheStorageCache::ResponseCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!initialized_)
     LazyInit();
@@ -714,7 +715,7 @@ void LegacyCacheStorage::MatchAllCaches(
     blink::mojom::CacheQueryOptionsPtr match_options,
     int64_t trace_id,
     CacheStorageCache::ResponseCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!initialized_)
     LazyInit();
@@ -737,7 +738,7 @@ void LegacyCacheStorage::WriteToCache(
     blink::mojom::FetchAPIResponsePtr response,
     int64_t trace_id,
     LegacyCacheStorage::ErrorCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!initialized_)
     LazyInit();
@@ -755,7 +756,7 @@ void LegacyCacheStorage::WriteToCache(
 }
 
 void LegacyCacheStorage::GetSizeThenCloseAllCaches(SizeCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!initialized_)
     LazyInit();
@@ -768,7 +769,7 @@ void LegacyCacheStorage::GetSizeThenCloseAllCaches(SizeCallback callback) {
 }
 
 void LegacyCacheStorage::Size(LegacyCacheStorage::SizeCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!initialized_)
     LazyInit();
@@ -791,7 +792,7 @@ void LegacyCacheStorage::NotifyCacheContentChanged(
 
 void LegacyCacheStorage::ScheduleWriteIndex() {
   static const int64_t kWriteIndexDelaySecs = 5;
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   index_write_task_.Reset(base::BindOnce(&LegacyCacheStorage::WriteIndex,
                                          weak_factory_.GetWeakPtr(),
                                          base::DoNothing::Once<bool>()));
@@ -801,7 +802,7 @@ void LegacyCacheStorage::ScheduleWriteIndex() {
 }
 
 void LegacyCacheStorage::WriteIndex(base::OnceCallback<void(bool)> callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scheduler_->ScheduleOperation(
       CacheStorageSchedulerOp::kWriteIndex,
       base::BindOnce(&LegacyCacheStorage::WriteIndexImpl,
@@ -811,13 +812,13 @@ void LegacyCacheStorage::WriteIndex(base::OnceCallback<void(bool)> callback) {
 
 void LegacyCacheStorage::WriteIndexImpl(
     base::OnceCallback<void(bool)> callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cache_loader_->WriteIndex(*cache_index_, std::move(callback));
 }
 
 bool LegacyCacheStorage::InitiateScheduledIndexWriteForTest(
     base::OnceCallback<void(bool)> callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (index_write_pending()) {
     index_write_task_.Cancel();
     WriteIndex(std::move(callback));
@@ -842,7 +843,7 @@ void LegacyCacheStorage::CacheSizeUpdated(
 }
 
 void LegacyCacheStorage::ReleaseUnreferencedCaches() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& entry : cache_map_) {
     if (entry.second && entry.second->IsUnreferenced())
       entry.second.reset();
@@ -886,7 +887,7 @@ void LegacyCacheStorage::CompleteAsyncOperationForTesting() {
 
 // Init is run lazily so that it is called on the proper MessageLoop.
 void LegacyCacheStorage::LazyInit() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!initialized_);
 
   if (initializing_)
@@ -902,7 +903,7 @@ void LegacyCacheStorage::LazyInit() {
 }
 
 void LegacyCacheStorage::LazyInitImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!initialized_);
   DCHECK(initializing_);
 
@@ -917,7 +918,7 @@ void LegacyCacheStorage::LazyInitImpl() {
 
 void LegacyCacheStorage::LazyInitDidLoadIndex(
     std::unique_ptr<CacheStorageIndex> index) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(cache_map_.empty());
 
   for (const auto& cache_metadata : index->ordered_cache_metadata()) {
@@ -958,7 +959,7 @@ void LegacyCacheStorage::CreateCacheDidCreateCache(
     int64_t trace_id,
     CacheAndErrorCallback callback,
     std::unique_ptr<LegacyCacheStorageCache> cache) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   TRACE_EVENT_WITH_FLOW0("CacheStorage",
                          "LegacyCacheStorage::CreateCacheDidCreateCache",
@@ -999,7 +1000,7 @@ void LegacyCacheStorage::CreateCacheDidWriteIndex(
     CacheStorageCacheHandle cache_handle,
     int64_t trace_id,
     bool success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(cache_handle.value());
 
   TRACE_EVENT_WITH_FLOW0("CacheStorage",
@@ -1052,7 +1053,7 @@ void LegacyCacheStorage::DeleteCacheDidWriteIndex(
     ErrorCallback callback,
     int64_t trace_id,
     bool success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto* impl = LegacyCacheStorageCache::From(cache_handle);
 
   TRACE_EVENT_WITH_FLOW0("CacheStorage",
@@ -1264,7 +1265,7 @@ void LegacyCacheStorage::WriteToCacheImpl(
 
 CacheStorageCacheHandle LegacyCacheStorage::GetLoadedCache(
     const std::string& cache_name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(initialized_);
 
   auto map_iter = cache_map_.find(cache_name);
@@ -1303,7 +1304,7 @@ void LegacyCacheStorage::SizeRetrievedFromCache(
 }
 
 void LegacyCacheStorage::GetSizeThenCloseAllCachesImpl(SizeCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(initialized_);
 
   std::unique_ptr<int64_t> accumulator(new int64_t(0));
@@ -1332,7 +1333,7 @@ void LegacyCacheStorage::GetSizeThenCloseAllCachesImpl(SizeCallback callback) {
 }
 
 void LegacyCacheStorage::SizeImpl(SizeCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(initialized_);
 
   if (cache_index_->GetPaddedStorageSize() != kSizeUnknown) {

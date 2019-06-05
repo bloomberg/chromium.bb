@@ -26,7 +26,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
@@ -42,7 +41,6 @@
 #include "content/browser/cache_storage/legacy/legacy_cache_storage.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/referrer_type_converters.h"
@@ -577,7 +575,7 @@ void LegacyCacheStorageCache::WriteSideData(ErrorCallback callback,
                                             scoped_refptr<net::IOBuffer> buffer,
                                             int buf_len) {
   if (backend_state_ == BACKEND_CLOSED) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    scheduler_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             std::move(callback),
@@ -588,7 +586,7 @@ void LegacyCacheStorageCache::WriteSideData(ErrorCallback callback,
   // GetUsageAndQuota is called before entering a scheduled operation since it
   // can call Size, another scheduled operation.
   quota_manager_proxy_->GetUsageAndQuota(
-      base::ThreadTaskRunnerHandle::Get().get(), origin_,
+      scheduler_task_runner_.get(), origin_,
       blink::mojom::StorageType::kTemporary,
       base::BindOnce(&LegacyCacheStorageCache::WriteSideDataDidGetQuota,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback), url,
@@ -606,7 +604,7 @@ void LegacyCacheStorageCache::BatchOperation(
   base::Optional<std::string> message;
 
   if (backend_state_ == BACKEND_CLOSED) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    scheduler_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             std::move(callback),
@@ -633,7 +631,7 @@ void LegacyCacheStorageCache::BatchOperation(
     message.emplace(
         base::StringPrintf("duplicate requests (%s)", url_list_string.c_str()));
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    scheduler_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
                        CacheStorageVerboseError::New(
@@ -655,9 +653,9 @@ void LegacyCacheStorageCache::BatchOperation(
     }
   }
   if (!safe_space_required.IsValid() || !safe_side_data_size.IsValid()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, std::move(bad_message_callback));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    scheduler_task_runner_->PostTask(FROM_HERE,
+                                     std::move(bad_message_callback));
+    scheduler_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             std::move(callback),
@@ -675,7 +673,7 @@ void LegacyCacheStorageCache::BatchOperation(
     // Put runs, the cache might already be full and the origin will be larger
     // than it's supposed to be.
     quota_manager_proxy_->GetUsageAndQuota(
-        base::ThreadTaskRunnerHandle::Get().get(), origin_,
+        scheduler_task_runner_.get(), origin_,
         blink::mojom::StorageType::kTemporary,
         base::BindOnce(&LegacyCacheStorageCache::BatchDidGetUsageAndQuota,
                        weak_ptr_factory_.GetWeakPtr(), std::move(operations),
@@ -714,9 +712,9 @@ void LegacyCacheStorageCache::BatchDidGetUsageAndQuota(
   safe_space_required_with_side_data = safe_space_required + side_data_size;
   if (!safe_space_required.IsValid() ||
       !safe_space_required_with_side_data.IsValid()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, std::move(bad_message_callback));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    scheduler_task_runner_->PostTask(FROM_HERE,
+                                     std::move(bad_message_callback));
+    scheduler_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             std::move(callback),
@@ -728,7 +726,7 @@ void LegacyCacheStorageCache::BatchDidGetUsageAndQuota(
   }
   if (status_code != blink::mojom::QuotaStatusCode::kOk ||
       safe_space_required.ValueOrDie() > quota) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    scheduler_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   CacheStorageVerboseError::New(
                                       CacheStorageError::kErrorQuotaExceeded,
@@ -849,8 +847,8 @@ void LegacyCacheStorageCache::Close(base::OnceClosure callback) {
 void LegacyCacheStorageCache::Size(SizeCallback callback) {
   if (backend_state_ == BACKEND_CLOSED) {
     // TODO(jkarlin): Delete caches that can't be initialized.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), 0));
+    scheduler_task_runner_->PostTask(FROM_HERE,
+                                     base::BindOnce(std::move(callback), 0));
     return;
   }
 
@@ -863,8 +861,8 @@ void LegacyCacheStorageCache::Size(SizeCallback callback) {
 
 void LegacyCacheStorageCache::GetSizeThenClose(SizeCallback callback) {
   if (backend_state_ == BACKEND_CLOSED) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), 0));
+    scheduler_task_runner_->PostTask(FROM_HERE,
+                                     base::BindOnce(std::move(callback), 0));
     return;
   }
 
@@ -924,10 +922,11 @@ LegacyCacheStorageCache::LegacyCacheStorageCache(
       cache_name_(cache_name),
       path_(path),
       cache_storage_(cache_storage),
+      scheduler_task_runner_(std::move(scheduler_task_runner)),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
       blob_storage_context_(blob_context),
       scheduler_(new CacheStorageScheduler(CacheStorageSchedulerClient::kCache,
-                                           std::move(scheduler_task_runner))),
+                                           scheduler_task_runner_)),
       cache_size_(cache_size),
       cache_padding_(cache_padding),
       cache_padding_key_(std::move(cache_padding_key)),
@@ -1071,7 +1070,7 @@ void LegacyCacheStorageCache::QueryCacheOpenNextEntry(
     return;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  scheduler_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(std::move(open_entry_callback), rv));
 }
 
@@ -1356,7 +1355,7 @@ void LegacyCacheStorageCache::WriteSideDataDidGetQuota(
 
   if (status_code != blink::mojom::QuotaStatusCode::kOk ||
       (buf_len > quota - usage)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    scheduler_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   CacheStorageError::kErrorQuotaExceeded));
     return;
@@ -2185,14 +2184,14 @@ void LegacyCacheStorageCache::SizeImpl(SizeCallback callback) {
 
   // TODO(cmumford): Can CacheStorage::kSizeUnknown be returned instead of zero?
   if (backend_state_ != BACKEND_OPEN) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), 0));
+    scheduler_task_runner_->PostTask(FROM_HERE,
+                                     base::BindOnce(std::move(callback), 0));
     return;
   }
 
   int64_t size = backend_state_ == BACKEND_OPEN ? PaddedCacheSize() : 0;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), size));
+  scheduler_task_runner_->PostTask(FROM_HERE,
+                                   base::BindOnce(std::move(callback), size));
 }
 
 void LegacyCacheStorageCache::GetSizeThenCloseDidGetSize(SizeCallback callback,

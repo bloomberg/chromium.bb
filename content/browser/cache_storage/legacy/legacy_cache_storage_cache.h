@@ -513,6 +513,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   // as long this cache object is also referenced.
   CacheStorageHandle cache_storage_handle_;
 
+  const scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   BackendState backend_state_ = BACKEND_UNINITIALIZED;
