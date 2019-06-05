@@ -278,6 +278,7 @@ source_set("lib") {
     "//base/third_party/dynamic_annotations",
     "//chrome/common:constants",
     "//chrome/common:version_header",
+    "//components/crx_file",
     "//components/version_info:generate_version_info",
     "//crypto",
     "//net",
