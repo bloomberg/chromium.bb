@@ -610,15 +610,15 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ReorderCustomLinks) {
       &title));
 
   // Move the tile to the front.
-  std::string tid;
+  std::string rid;
   ASSERT_TRUE(instant_test_utils::GetStringFromJS(
       iframe,
       "document.querySelectorAll('#mv-tiles "
-      ".md-tile')[1].getAttribute('data-tid')",
-      &tid));
+      ".md-tile')[1].getAttribute('data-rid')",
+      &rid));
   local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
       iframe, "window.chrome.embeddedSearch.newTabPage.reorderCustomLink(" +
-                  tid + ", 0)");
+                  rid + ", 0)");
 
   // Check that the first tile is the tile that was moved.
   std::string new_title;
@@ -632,11 +632,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ReorderCustomLinks) {
   ASSERT_TRUE(instant_test_utils::GetStringFromJS(
       iframe,
       "document.querySelectorAll('#mv-tiles "
-      ".md-tile')[0].getAttribute('data-tid')",
-      &tid));
+      ".md-tile')[0].getAttribute('data-rid')",
+      &rid));
   local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
       iframe, "window.chrome.embeddedSearch.newTabPage.reorderCustomLink(" +
-                  tid + ", " + end_index + ")");
+                  rid + ", " + end_index + ")");
 
   // Check that the last tile is the tile that was moved.
   new_title = std::string();

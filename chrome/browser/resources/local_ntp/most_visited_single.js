@@ -903,8 +903,8 @@ function updateTheme(info) {
  * @param {!Object} info Data received in the message.
  */
 function focusTileMenu(info) {
-  const tile = document.querySelector(`a.md-tile[data-tid="${info.tid}"]`);
-  if (info.tid === -1 /* Add shortcut tile */) {
+  const tile = document.querySelector(`a.md-tile[data-rid="${info.rid}"]`);
+  if (info.rid === -1 /* Add shortcut tile */) {
     tile.focus();
   } else {
     tile.parentNode.childNodes[1].focus();
@@ -937,7 +937,7 @@ function swapInNewTiles() {
   // number of tiles.
   if (isCustomLinksEnabled && cur.childNodes.length < maxNumTiles) {
     const data = {
-      'tid': -1,
+      'rid': -1,
       'title': queryArgs['addLink'],
       'url': '',
       'isAddButton': true,
@@ -1033,10 +1033,9 @@ function addTile(args) {
       return;
     }
 
-    data.tid = data.rid;
     if (!data.faviconUrl) {
       data.faviconUrl = 'chrome-search://favicon/size/16@' +
-          window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
+          window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.rid;
     }
     tiles.appendChild(renderTile(data));
   } else {
@@ -1052,10 +1051,10 @@ function addTile(args) {
  * @param {Element} tile DOM node of the tile we want to remove.
  */
 function blacklistTile(tile) {
-  const tid = Number(tile.firstChild.getAttribute('data-tid'));
+  const rid = Number(tile.firstChild.getAttribute('data-rid'));
 
   if (isCustomLinksEnabled) {
-    chrome.embeddedSearch.newTabPage.deleteMostVisitedItem(tid);
+    chrome.embeddedSearch.newTabPage.deleteMostVisitedItem(rid);
   } else {
     tile.classList.add('blacklisted');
     tile.addEventListener('transitionend', function(ev) {
@@ -1063,7 +1062,7 @@ function blacklistTile(tile) {
         return;
       }
       window.parent.postMessage(
-          {cmd: 'tileBlacklisted', tid: Number(tid)}, DOMAIN_ORIGIN);
+          {cmd: 'tileBlacklisted', rid: Number(rid)}, DOMAIN_ORIGIN);
     });
   }
 }
@@ -1072,10 +1071,10 @@ function blacklistTile(tile) {
 /**
  * Starts edit custom link flow. Tells host page to show the edit custom link
  * dialog and pre-populate it with data obtained using the link's id.
- * @param {?number} tid Restricted id of the tile we want to edit.
+ * @param {?number} rid Restricted id of the tile we want to edit.
  */
-function editCustomLink(tid) {
-  window.parent.postMessage({cmd: 'startEditLink', tid: tid}, DOMAIN_ORIGIN);
+function editCustomLink(rid) {
+  window.parent.postMessage({cmd: 'startEditLink', rid: rid}, DOMAIN_ORIGIN);
 }
 
 
@@ -1117,7 +1116,7 @@ function stopReorder(tile) {
     allTiles[i].setAttribute('data-pos', i);
   }
   chrome.embeddedSearch.newTabPage.reorderCustomLink(
-      Number(tile.firstChild.getAttribute('data-tid')),
+      Number(tile.firstChild.getAttribute('data-rid')),
       Number(tile.firstChild.getAttribute('data-pos')));
 }
 
@@ -1225,7 +1224,7 @@ function renderMaterialDesignTile(data) {
   const mdTile = document.createElement('a');
   mdTile.className = CLASSES.MD_TILE;
   mdTile.tabIndex = 0;
-  mdTile.setAttribute('data-tid', data.tid);
+  mdTile.setAttribute('data-rid', data.rid);
   mdTile.setAttribute('data-pos', position);
   if (utils.isSchemeAllowed(data.url)) {
     mdTile.href = data.url;
@@ -1355,7 +1354,7 @@ function renderMaterialDesignTile(data) {
           'aria-label',
           (queryArgs['editLinkTooltip'] || '') + ' ' + data.title);
       mdMenu.addEventListener('click', function(ev) {
-        editCustomLink(data.tid);
+        editCustomLink(data.rid);
         ev.preventDefault();
         ev.stopPropagation();
         logEvent(LOG_TYPE.NTP_CUSTOMIZE_EDIT_SHORTCUT_CLICKED);
@@ -1383,7 +1382,7 @@ function renderMaterialDesignTile(data) {
 
   if (isGridEnabled) {
     return currGrid.createGridTile(
-        mdTileContainer, data.tid, !!data.isAddButton);
+        mdTileContainer, data.rid, !!data.isAddButton);
   } else {
     // Enable reordering.
     if (isCustomLinksEnabled && !data.isAddButton) {

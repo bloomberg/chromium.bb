@@ -1029,14 +1029,14 @@ function handlePostMessage(event) {
       showNotification(
           configData.translatedStrings.thumbnailRemovedNotification);
     }
-    lastBlacklistedTile = args.tid;
+    lastBlacklistedTile = args.rid;
 
-    ntpApiHandle.deleteMostVisitedItem(args.tid);
+    ntpApiHandle.deleteMostVisitedItem(args.rid);
   } else if (cmd === 'resizeDoodle') {
     doodles.resizeDoodleHandler(args);
   } else if (cmd === 'startEditLink') {
     $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
-        .contentWindow.postMessage({cmd: 'linkData', tid: args.tid}, '*');
+        .contentWindow.postMessage({cmd: 'linkData', rid: args.rid}, '*');
     // Small delay to allow the dialog to finish setting up before displaying.
     window.setTimeout(function() {
       $(IDS.CUSTOM_LINKS_EDIT_IFRAME_DIALOG).showModal();
@@ -1047,7 +1047,7 @@ function handlePostMessage(event) {
     // Focus the edited tile's menu or the add shortcut tile after closing the
     // custom link edit dialog without saving.
     $(IDS.TILES_IFRAME)
-        .contentWindow.postMessage({cmd: 'focusMenu', tid: args.tid}, '*');
+        .contentWindow.postMessage({cmd: 'focusMenu', rid: args.rid}, '*');
   }
 }
 

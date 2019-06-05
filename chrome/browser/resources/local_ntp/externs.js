@@ -14,7 +14,7 @@
  *     InstantMostVisitedItem
  *  @typedef {{dataGenerationTime: Date,
  *             isAddButton: boolean,
- *             tid: number,
+ *             rid: number,
  *             tileSource: number,
  *             tileTitleSource: number,
  *             title: ?,
@@ -170,7 +170,7 @@ window.chrome.embeddedSearch.newTabPage.blacklistSearchSuggestion;
 window.chrome.embeddedSearch.newTabPage.blacklistSearchSuggestionWithHash;
 
 /**
- * @param {number} tid
+ * @param {number} rid
  */
 window.chrome.embeddedSearch.newTabPage.deleteMostVisitedItem;
 
@@ -180,7 +180,7 @@ window.chrome.embeddedSearch.newTabPage.deleteMostVisitedItem;
 window.chrome.embeddedSearch.newTabPage.fixupAndValidateUrl;
 
 /**
- * @param {number} tid
+ * @param {number} rid
  */
 window.chrome.embeddedSearch.newTabPage.getMostVisitedItemData;
 

@@ -197,7 +197,7 @@ function closeDialog() {
  */
 function focusBackOnCancel(event) {
   if (event.keyCode === KEYCODES.ENTER || event.keyCode === KEYCODES.SPACE) {
-    const message = {cmd: 'focusMenu', tid: prepopulatedLink.rid};
+    const message = {cmd: 'focusMenu', rid: prepopulatedLink.rid};
     window.parent.postMessage(message, DOMAIN_ORIGIN);
     event.preventDefault();
     closeDialog();
@@ -222,10 +222,10 @@ function handlePostMessage(event) {
   const cmd = event.data.cmd;
   const args = event.data;
   if (cmd === 'linkData') {
-    if (args.tid) {  // We are editing a link, prepopulate the link data.
+    if (args.rid) {  // We are editing a link, prepopulate the link data.
       document.title = editLinkTitle;
       $(IDS.DIALOG_TITLE).textContent = editLinkTitle;
-      prepopulateFields(args.tid);
+      prepopulateFields(args.rid);
     } else {  // We are adding a link, disable the delete button.
       document.title = addLinkTitle;
       $(IDS.DIALOG_TITLE).textContent = addLinkTitle;
