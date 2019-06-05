@@ -258,8 +258,6 @@ void RecentTabHelper::DidFinishNavigation(
       << OfflinePageModel::CanSaveURL(web_contents()->GetLastCommittedURL())
       << ", " << (current_offline_page == nullptr) << ")";
 
-  UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
-
   if (!can_save)
     snapshot_controller_->Stop();
   // Last N should be disabled when:

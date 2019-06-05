@@ -338,8 +338,6 @@ TEST_F(RecentTabHelperTest, RecentTabHelperInstanceExists) {
 TEST_F(RecentTabHelperTest, LastNCaptureAfterLoad) {
   // Navigate and finish loading. Nothing should be saved.
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
 
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   // Move the snapshot controller's time forward so it gets past timeouts.
@@ -363,8 +361,6 @@ TEST_F(RecentTabHelperTest, LastNCaptureAfterLoad) {
 TEST_F(RecentTabHelperTest, NoLastNCaptureIfTabHiddenTooEarlyInPageLoad) {
   // Commit the navigation and hide the tab. Nothing should be saved.
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(0U, page_added_count());
@@ -388,7 +384,6 @@ TEST_F(RecentTabHelperTest, NoTabIdNoCapture) {
       std::make_unique<TestDelegate>(this, kTabId, false));
 
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectTotalCount("OfflinePages.CanSaveRecentPage", 0);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
@@ -410,8 +405,6 @@ TEST_F(RecentTabHelperTest, LastNDisabledOnSvelte) {
 
   // Navigate and finish loading then hide the tab. Nothing should be saved.
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
 
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
@@ -438,8 +431,6 @@ TEST_F(RecentTabHelperTest, LastNWontSaveCustomTab) {
 
   // Navigate and finish loading then hide the tab. Nothing should be saved.
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
@@ -473,8 +464,7 @@ TEST_F(RecentTabHelperTest, LastNWontSaveCustomTab) {
 // up with one snapshot, the 1st being replaced by the 2nd.
 TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoad) {
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
+
   // Set page loading state to the 1st snapshot-able stage. No capture so far.
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
@@ -557,8 +547,6 @@ TEST_F(RecentTabHelperTest, DISABLED_TwoCapturesWhere2ndFailsSamePageLoad) {
 TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrl) {
   // Fully load the page. Hide the tab and check for a snapshot.
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
@@ -574,8 +562,6 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrl) {
   // Reload the same URL until the page is minimally loaded. The previous
   // snapshot should have been removed.
   NavigateAndCommitTyped(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         2);
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
   EXPECT_EQ(1U, page_added_count());
@@ -600,8 +586,6 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrl) {
 TEST_F(RecentTabHelperTest, TwoCapturesWhere2ndFailsDifferentPageLoadsSameUrl) {
   // Fully load the page then hide the tab. A capture is expected.
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
@@ -622,8 +606,6 @@ TEST_F(RecentTabHelperTest, TwoCapturesWhere2ndFailsDifferentPageLoadsSameUrl) {
   // Fully load the page once more then hide the tab again. A capture happens
   // and fails but no snapshot should remain.
   NavigateAndCommitTyped(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         2);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
@@ -640,8 +622,6 @@ TEST_F(RecentTabHelperTest, TwoCapturesWhere2ndFailsDifferentPageLoadsSameUrl) {
 TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsDifferentUrls) {
   // Fully load the first URL then hide the tab and check for a snapshot.
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
 
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
@@ -656,8 +636,6 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsDifferentUrls) {
 
   // Fully load the second URL. The previous snapshot should have been deleted.
   NavigateAndCommitTyped(kTestPageUrlOther);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         2);
 
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
@@ -684,8 +662,6 @@ TEST_F(RecentTabHelperTest, TwoLastNAndTwoDownloadCapturesSamePage) {
   // Fully loads the page with intermediary steps where the tab is hidden. Then
   // check that two last_n snapshots were created but only one was kept.
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
@@ -752,8 +728,6 @@ TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
                                                      123L, "");
   RunUntilIdle();
   ASSERT_EQ(0U, GetAllPages().size());
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage",
-                                         false, 1);
   histogram_tester()->ExpectTotalCount("OfflinePages.LastN.IsSavingSamePage",
                                        0);
 }
@@ -764,8 +738,6 @@ TEST_F(RecentTabHelperTest, LastNFeatureNotEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(kOffliningRecentPagesFeature);
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
@@ -788,8 +760,6 @@ TEST_F(RecentTabHelperTest, DownloadRequestEarlyInLoad) {
   // Commit the navigation and request the snapshot from downloads. No captures
   // so far.
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   const ClientId client_id = NewDownloadClientId();
   recent_tab_helper()->ObserveAndDownloadCurrentPage(client_id, 153L, "");
   FastForwardSnapshotController();
@@ -823,8 +793,6 @@ TEST_F(RecentTabHelperTest, DownloadRequestEarlyInLoad) {
 // kept.
 TEST_F(RecentTabHelperTest, DownloadRequestLaterInLoad) {
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
   ASSERT_EQ(0U, GetAllPages().size());
@@ -851,8 +819,6 @@ TEST_F(RecentTabHelperTest, DownloadRequestLaterInLoad) {
 // is completed. Should end up with one offline page.
 TEST_F(RecentTabHelperTest, DownloadRequestAfterFullyLoad) {
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   ASSERT_EQ(0U, GetAllPages().size());
@@ -874,8 +840,6 @@ TEST_F(RecentTabHelperTest, DownloadRequestAfterFullyLoad) {
 // is completed. Should end up with one offline page.
 TEST_F(RecentTabHelperTest, DownloadRequestAfterFullyLoadWithOrigin) {
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   ASSERT_EQ(0U, GetAllPages().size());
@@ -897,8 +861,6 @@ TEST_F(RecentTabHelperTest, DownloadRequestAfterFullyLoadWithOrigin) {
 // fully loaded page.
 TEST_F(RecentTabHelperTest, SimultaneousCapturesFromLastNAndDownloads) {
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
@@ -930,8 +892,6 @@ TEST_F(RecentTabHelperTest, SimultaneousCapturesFromLastNAndDownloads) {
 // signals are poor signals for those).
 TEST_F(RecentTabHelperTest, DuplicateTabHiddenEventsShouldTriggerNewSnapshots) {
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
@@ -983,8 +943,6 @@ TEST_F(RecentTabHelperTest, DuplicateTabHiddenEventsShouldTriggerNewSnapshots) {
 TEST_F(RecentTabHelperTest, OverlappingDownloadRequestsAreIgnored) {
   // Navigates and commits then make two download snapshot requests.
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   const ClientId client_id_1 = NewDownloadClientId();
   const int64_t offline_id_1 = 153L;
   recent_tab_helper()->ObserveAndDownloadCurrentPage(client_id_1, offline_id_1,
@@ -1027,8 +985,6 @@ TEST_F(RecentTabHelperTest, OverlappingDownloadRequestsAreIgnored) {
 TEST_F(RecentTabHelperTest, SaveSameDocumentNavigationSnapshots) {
   // Navigates and load fully then hide the tab so that a snapshot is created.
   NavigateAndCommit(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
@@ -1043,8 +999,6 @@ TEST_F(RecentTabHelperTest, SaveSameDocumentNavigationSnapshots) {
   // Another snapshot should be created to the updated URL.
   const GURL kTestPageUrlWithFragment(kTestPageUrl.spec() + "#aaa");
   NavigateAndCommit(kTestPageUrlWithFragment);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
   recent_tab_helper()->OnVisibilityChanged(content::Visibility::HIDDEN);
   RunUntilIdle();
   EXPECT_EQ(2U, page_added_count());
@@ -1139,14 +1093,10 @@ TEST_F(RecentTabHelperTest, NoSaveIfTabIsClosing) {
 }
 
 TEST_F(RecentTabHelperTest, NoSaveOfflinePageCacheForPost) {
-  // Navigate and finish loading. Nothing should be saved, but we should record
-  // that it is possible to save the page.
+  // Navigate and finish loading, then move the snapshot controller's time
+  // forward so it gets past timeouts. Nothing should be saved.
   NavigateAndCommitPost(kTestPageUrl);
-  histogram_tester()->ExpectUniqueSample("OfflinePages.CanSaveRecentPage", true,
-                                         1);
-
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
-  // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   ASSERT_EQ(0U, GetAllPages().size());
 
