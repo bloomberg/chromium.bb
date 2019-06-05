@@ -20,6 +20,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -195,7 +196,12 @@ public class TabContentManager {
             return null;
         }
 
-        View viewToDraw = isNativeViewShowing ? tab.getContentView() : nativePage.getView();
+        View viewToDraw = null;
+        if (isNativeViewShowing) {
+            viewToDraw = tab.getContentView();
+        } else if (!(nativePage instanceof FrozenNativePage)) {
+            viewToDraw = nativePage.getView();
+        }
         if (viewToDraw == null || viewToDraw.getWidth() == 0 || viewToDraw.getHeight() == 0) {
             return null;
         }
