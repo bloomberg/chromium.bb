@@ -703,7 +703,7 @@ static const CSSPropertyID kStaticBlockProperties[] = {
     CSSPropertyID::kTextAlignLast, CSSPropertyID::kTextIndent,
     CSSPropertyID::kTextJustify, CSSPropertyID::kWidows};
 
-static Vector<const CSSProperty*>& BlockPropertiesVector() {
+static const Vector<const CSSProperty*>& BlockPropertiesVector() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(

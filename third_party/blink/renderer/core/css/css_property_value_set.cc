@@ -507,7 +507,7 @@ void MutableCSSPropertyValueSet::Clear() {
   property_vector_.clear();
 }
 
-inline bool ContainsId(const CSSProperty** set,
+inline bool ContainsId(const CSSProperty* const set[],
                        unsigned length,
                        CSSPropertyID id) {
   for (unsigned i = 0; i < length; ++i) {
@@ -517,8 +517,9 @@ inline bool ContainsId(const CSSProperty** set,
   return false;
 }
 
-bool MutableCSSPropertyValueSet::RemovePropertiesInSet(const CSSProperty** set,
-                                                       unsigned length) {
+bool MutableCSSPropertyValueSet::RemovePropertiesInSet(
+    const CSSProperty* const set[],
+    unsigned length) {
   if (property_vector_.IsEmpty())
     return false;
 
