@@ -77,7 +77,7 @@ void ClipRect::Intersect(const ClipRect& other) {
 bool ClipRect::Intersects(const HitTestLocation& hit_test_location) const {
   if (is_infinite_)
     return true;
-  return hit_test_location.Intersects(rect_.ToLayoutRect());
+  return hit_test_location.Intersects(rect_);
 }
 
 void ClipRect::Reset() {

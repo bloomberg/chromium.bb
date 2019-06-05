@@ -145,7 +145,7 @@ bool LineBoxList::RangeIntersectsRect(LineLayoutBoxModel layout_object,
                                       LayoutUnit logical_top,
                                       LayoutUnit logical_bottom,
                                       const CullRect& cull_rect,
-                                      const LayoutPoint& offset) const {
+                                      const PhysicalOffset& offset) const {
   LineLayoutBox block;
   if (layout_object.IsBox())
     block = LineLayoutBox(layout_object);
@@ -157,11 +157,11 @@ bool LineBoxList::RangeIntersectsRect(LineLayoutBoxModel layout_object,
   physical_start = std::min(physical_start, physical_end);
 
   if (layout_object.StyleRef().IsHorizontalWritingMode()) {
-    physical_start += offset.Y();
+    physical_start += offset.top;
     return cull_rect.IntersectsVerticalRange(physical_start,
                                              physical_start + physical_extent);
   } else {
-    physical_start += offset.X();
+    physical_start += offset.left;
     return cull_rect.IntersectsHorizontalRange(
         physical_start, physical_start + physical_extent);
   }
@@ -169,7 +169,7 @@ bool LineBoxList::RangeIntersectsRect(LineLayoutBoxModel layout_object,
 
 bool LineBoxList::AnyLineIntersectsRect(LineLayoutBoxModel layout_object,
                                         const CullRect& cull_rect,
-                                        const LayoutPoint& offset) const {
+                                        const PhysicalOffset& offset) const {
   // We can check the first box and last box and avoid painting/hit testing if
   // we don't intersect. This is a quick short-circuit that we can take to avoid
   // walking any lines.
@@ -190,7 +190,7 @@ bool LineBoxList::AnyLineIntersectsRect(LineLayoutBoxModel layout_object,
 bool LineBoxList::LineIntersectsDirtyRect(LineLayoutBoxModel layout_object,
                                           InlineFlowBox* box,
                                           const CullRect& cull_rect,
-                                          const LayoutPoint& offset) const {
+                                          const PhysicalOffset& offset) const {
   RootInlineBox& root = box->Root();
   LayoutUnit logical_top = std::min<LayoutUnit>(
       box->LogicalTopVisualOverflow(root.LineTop()), root.SelectionTop());
@@ -204,7 +204,7 @@ bool LineBoxList::LineIntersectsDirtyRect(LineLayoutBoxModel layout_object,
 bool LineBoxList::HitTest(LineLayoutBoxModel layout_object,
                           HitTestResult& result,
                           const HitTestLocation& location_in_container,
-                          const LayoutPoint& accumulated_offset,
+                          const PhysicalOffset& accumulated_offset,
                           HitTestAction hit_test_action) const {
   if (hit_test_action != kHitTestForeground)
     return false;
@@ -217,14 +217,14 @@ bool LineBoxList::HitTest(LineLayoutBoxModel layout_object,
   if (!First())
     return false;
 
-  const LayoutPoint& point = location_in_container.Point();
+  const PhysicalOffset& point = location_in_container.Point();
   IntRect hit_search_bounding_box = location_in_container.EnclosingIntRect();
 
   CullRect cull_rect(
       First()->IsHorizontal()
-          ? IntRect(point.X().ToInt(), hit_search_bounding_box.Y(), 1,
+          ? IntRect(point.left.ToInt(), hit_search_bounding_box.Y(), 1,
                     hit_search_bounding_box.Height())
-          : IntRect(hit_search_bounding_box.X(), point.Y().ToInt(),
+          : IntRect(hit_search_bounding_box.X(), point.top.ToInt(),
                     hit_search_bounding_box.Width(), 1));
 
   if (!AnyLineIntersectsRect(layout_object, cull_rect, accumulated_offset))
@@ -244,8 +244,7 @@ bool LineBoxList::HitTest(LineLayoutBoxModel layout_object,
                             root.LineTop(), root.LineBottom());
       if (inside) {
         layout_object.UpdateHitTestResult(
-            result,
-            location_in_container.Point() - ToLayoutSize(accumulated_offset));
+            result, location_in_container.Point() - accumulated_offset);
         return true;
       }
     }

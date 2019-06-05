@@ -297,7 +297,7 @@ bool SVGInlineTextBox::HitTestFragments(
 
 bool SVGInlineTextBox::NodeAtPoint(HitTestResult& result,
                                    const HitTestLocation& location_in_container,
-                                   const LayoutPoint& accumulated_offset,
+                                   const PhysicalOffset& accumulated_offset,
                                    LayoutUnit,
                                    LayoutUnit) {
   // FIXME: integrate with InlineTextBox::nodeAtPoint better.
@@ -315,13 +315,13 @@ bool SVGInlineTextBox::NodeAtPoint(HitTestResult& result,
        (style.SvgStyle().HasStroke() || !hit_rules.require_stroke)) ||
       (hit_rules.can_hit_fill &&
        (style.SvgStyle().HasFill() || !hit_rules.require_fill))) {
-    LayoutRect rect(Location(), Size());
-    rect.MoveBy(accumulated_offset);
+    // Currently SVGInlineTextBox doesn't flip in blocks direction.
+    PhysicalRect rect{PhysicalOffset(Location()), PhysicalSize(Size())};
+    rect.Move(accumulated_offset);
     if (location_in_container.Intersects(rect)) {
       if (HitTestFragments(location_in_container)) {
         line_layout_item.UpdateHitTestResult(
-            result,
-            location_in_container.Point() - ToLayoutSize(accumulated_offset));
+            result, location_in_container.Point() - accumulated_offset);
         if (result.AddNodeToListBasedTestResult(line_layout_item.GetNode(),
                                                 location_in_container,
                                                 rect) == kStopHitTesting)

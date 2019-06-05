@@ -80,7 +80,7 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
   }
 
   LineBoxListPainter(*layout_inline_.LineBoxes())
-      .Paint(layout_inline_, local_paint_info, paint_offset.ToLayoutPoint());
+      .Paint(layout_inline_, local_paint_info, paint_offset);
 }
 
 }  // namespace blink

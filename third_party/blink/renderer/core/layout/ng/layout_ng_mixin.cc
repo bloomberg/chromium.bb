@@ -280,25 +280,23 @@ template <typename Base>
 bool LayoutNGMixin<Base>::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
+    const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
   const NGPaintFragment* paint_fragment = PaintFragment();
   if (!paint_fragment) {
     return LayoutBlockFlow::NodeAtPoint(result, location_in_container,
                                         accumulated_offset, action);
   }
-  // In LayoutBox::NodeAtPoint() and subclass overrides, it is guaranteed that
-  // |accumulated_offset + Location()| equals the physical offset of the current
-  // LayoutBox in the paint layer, regardless of writing mode or whether the box
-  // was placed by NG or legacy.
-  const LayoutPoint physical_offset = accumulated_offset + Base::Location();
+
+  const PhysicalOffset physical_offset =
+      accumulated_offset + Base::PhysicalLocation();
   if (!this->IsEffectiveRootScroller()) {
     // Check if we need to do anything at all.
     // If we have clipping, then we can't have any spillout.
-    LayoutRect overflow_box = Base::HasOverflowClip()
-                                  ? Base::BorderBoxRect()
-                                  : Base::VisualOverflowRect();
-    overflow_box.MoveBy(physical_offset);
+    PhysicalRect overflow_box = Base::HasOverflowClip()
+                                    ? Base::PhysicalBorderBoxRect()
+                                    : Base::PhysicalVisualOverflowRect();
+    overflow_box.Move(physical_offset);
     if (!location_in_container.Intersects(overflow_box))
       return false;
   }

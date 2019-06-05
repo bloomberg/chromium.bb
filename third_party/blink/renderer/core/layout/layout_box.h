@@ -769,11 +769,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool HitTestAllPhases(HitTestResult&,
                         const HitTestLocation& location_in_container,
-                        const LayoutPoint& accumulated_offset,
+                        const PhysicalOffset& accumulated_offset,
                         HitTestFilter = kHitTestAll) final;
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
   LayoutUnit MinPreferredLogicalWidth() const override;
@@ -1465,8 +1465,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void AddCustomLayoutChildIfNeeded();
   void ClearCustomLayoutChild();
 
-  bool HitTestClippedOutByBorder(const HitTestLocation& location_in_container,
-                                 const LayoutPoint& border_box_location) const;
+  bool HitTestClippedOutByBorder(
+      const HitTestLocation& location_in_container,
+      const PhysicalOffset& border_box_location) const;
 
   // Returns true if the box intersects the viewport visible to the user.
   bool IntersectsVisibleViewport() const;
@@ -1614,12 +1615,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   virtual bool HitTestOverflowControl(HitTestResult&,
                                       const HitTestLocation&,
-                                      const LayoutPoint&) {
+                                      const PhysicalOffset&) {
     return false;
   }
   virtual bool HitTestChildren(HitTestResult&,
                                const HitTestLocation& location_in_container,
-                               const LayoutPoint& accumulated_offset,
+                               const PhysicalOffset& accumulated_offset,
                                HitTestAction);
 
   void InvalidatePaint(const PaintInvalidatorContext&) const override;

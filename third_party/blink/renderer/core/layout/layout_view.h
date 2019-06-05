@@ -173,7 +173,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   LayoutState* GetLayoutState() const { return layout_state_; }
 
-  void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) const override;
+  void UpdateHitTestResult(HitTestResult&,
+                           const PhysicalOffset&) const override;
 
   ViewFragmentationContext* FragmentationContext() const {
     return fragmentation_context_.get();

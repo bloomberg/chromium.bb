@@ -1203,25 +1203,24 @@ LayoutUnit LayoutBlock::TextIndentOffset() const {
 
 bool LayoutBlock::IsPointInOverflowControl(
     HitTestResult& result,
-    const LayoutPoint& location_in_container,
-    const LayoutPoint& accumulated_offset) const {
+    const PhysicalOffset& location_in_container,
+    const PhysicalOffset& accumulated_offset) const {
   if (!ScrollsOverflow())
     return false;
 
   return Layer()->GetScrollableArea()->HitTestOverflowControls(
-      result, RoundedIntPoint(location_in_container -
-                              ToLayoutSize(accumulated_offset)));
+      result, RoundedIntPoint(location_in_container - accumulated_offset));
 }
 
 bool LayoutBlock::HitTestOverflowControl(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& adjusted_location) {
+    const PhysicalOffset& adjusted_location) {
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
       IsPointInOverflowControl(result, location_in_container.Point(),
                                adjusted_location)) {
-    UpdateHitTestResult(result, location_in_container.Point() -
-                                    ToLayoutSize(adjusted_location));
+    UpdateHitTestResult(result,
+                        location_in_container.Point() - adjusted_location);
     // FIXME: isPointInOverflowControl() doesn't handle rect-based tests yet.
     if (result.AddNodeToListBasedTestResult(
             NodeForHitTest(), location_in_container) == kStopHitTesting)
@@ -1232,7 +1231,7 @@ bool LayoutBlock::HitTestOverflowControl(
 
 bool LayoutBlock::HitTestChildren(HitTestResult& result,
                                   const HitTestLocation& location_in_container,
-                                  const LayoutPoint& accumulated_offset,
+                                  const PhysicalOffset& accumulated_offset,
                                   HitTestAction hit_test_action) {
   // We may use legacy code to hit-test the anonymous fieldset content wrapper
   // child. The layout object for the rendered legend will be a child of that
@@ -1241,9 +1240,9 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
   bool may_contain_rendered_legend = IsAnonymousNGFieldsetContentWrapper();
 
   DCHECK(!ChildrenInline());
-  LayoutPoint scrolled_offset(HasOverflowClip()
-                                  ? accumulated_offset - ScrolledContentOffset()
-                                  : accumulated_offset);
+  PhysicalOffset scrolled_offset = accumulated_offset;
+  if (HasOverflowClip())
+    scrolled_offset -= PhysicalOffset(ScrolledContentOffset());
   HitTestAction child_hit_test = hit_test_action;
   if (hit_test_action == kHitTestChildBlockBackgrounds)
     child_hit_test = kHitTestChildBlockBackground;
@@ -1253,25 +1252,21 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
         (may_contain_rendered_legend && child->IsRenderedLegend()))
       continue;
 
-    LayoutPoint child_point =
-        FlipForWritingModeForChild(child, scrolled_offset);
-
     bool did_hit;
     if (child->IsFloating()) {
       if (hit_test_action != kHitTestFloat || !IsLayoutNGObject())
         continue;
       // Hit-test the floats in regular tree order if this is LayoutNG. Only
       // legacy layout uses the FloatingObjects list.
-      did_hit =
-          child->HitTestAllPhases(result, location_in_container, child_point);
+      did_hit = child->HitTestAllPhases(result, location_in_container,
+                                        scrolled_offset);
     } else {
-      did_hit = child->NodeAtPoint(result, location_in_container, child_point,
-                                   child_hit_test);
+      did_hit = child->NodeAtPoint(result, location_in_container,
+                                   scrolled_offset, child_hit_test);
     }
     if (did_hit) {
-      UpdateHitTestResult(
-          result, DeprecatedFlipForWritingMode(ToLayoutPoint(
-                      location_in_container.Point() - accumulated_offset)));
+      UpdateHitTestResult(result,
+                          location_in_container.Point() - accumulated_offset);
       return true;
     }
   }
@@ -1448,6 +1443,11 @@ void LayoutBlock::OffsetForContents(LayoutPoint& offset) const {
     offset += LayoutSize(ScrolledContentOffset());
 
   offset = DeprecatedFlipForWritingMode(offset);
+}
+
+void LayoutBlock::OffsetForContents(PhysicalOffset& offset) const {
+  if (HasOverflowClip())
+    offset += PhysicalOffset(ScrolledContentOffset());
 }
 
 void LayoutBlock::ScrollbarsChanged(bool horizontal_scrollbar_changed,

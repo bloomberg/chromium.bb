@@ -426,7 +426,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // LayoutObject to consider for hit testing.
   bool HitTest(const HitTestLocation& location,
                HitTestResult&,
-               const LayoutRect& hit_test_area);
+               const PhysicalRect& hit_test_area);
 
   bool IntersectsDamageRect(const PhysicalRect& layer_bounds,
                             const PhysicalRect& damage_rect,
@@ -955,9 +955,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const PhysicalOffset* offset_from_root = nullptr,
       const PhysicalOffset& sub_pixel_accumulation = PhysicalOffset()) const;
 
-  LayoutPoint LayoutBoxLocation() const {
-    return GetLayoutObject().IsBox() ? ToLayoutBox(GetLayoutObject()).Location()
-                                     : LayoutPoint();
+  PhysicalOffset LayoutBoxPhysicalLocation() const {
+    return GetLayoutObject().IsBox()
+               ? ToLayoutBox(GetLayoutObject()).PhysicalLocation()
+               : PhysicalOffset();
   }
 
   enum TransparencyClipBoxBehavior {
@@ -1123,12 +1124,12 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void UpdateHasSelfPaintingLayerDescendant() const;
 
   struct HitTestRecursionData {
-    const LayoutRect& rect;
+    const PhysicalRect& rect;
     // Whether location.Intersects(rect) returns true.
     const HitTestLocation& location;
     const HitTestLocation& original_location;
     const bool intersects_location;
-    HitTestRecursionData(const LayoutRect& rect_arg,
+    HitTestRecursionData(const PhysicalRect& rect_arg,
                          const HitTestLocation& location_arg,
                          const HitTestLocation& original_location_arg);
   };
@@ -1147,7 +1148,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const HitTestRecursionData& recursion_data,
       HitTestingTransformState* = nullptr,
       double* z_offset = nullptr,
-      const LayoutPoint& translation_offset = LayoutPoint());
+      const PhysicalOffset& translation_offset = PhysicalOffset());
   PaintLayer* HitTestChildren(
       ChildrenIteration,
       PaintLayer* root_layer,
@@ -1164,14 +1165,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       PaintLayer* container_layer,
       const HitTestRecursionData& recursion_data,
       const HitTestingTransformState* container_transform_state,
-      const LayoutPoint& translation_offset = LayoutPoint()) const;
+      const PhysicalOffset& translation_offset = PhysicalOffset()) const;
 
   bool HitTestContents(HitTestResult&,
-                       const LayoutPoint& fragment_offset,
+                       const PhysicalOffset& fragment_offset,
                        const HitTestLocation&,
                        HitTestFilter) const;
   bool HitTestContentsForFragments(const PaintLayerFragments&,
-                                   const LayoutPoint& offset,
+                                   const PhysicalOffset& offset,
                                    HitTestResult&,
                                    const HitTestLocation&,
                                    HitTestFilter,

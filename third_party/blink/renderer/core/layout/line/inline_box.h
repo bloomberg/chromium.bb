@@ -103,7 +103,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
                      LayoutUnit line_bottom) const;
   virtual bool NodeAtPoint(HitTestResult&,
                            const HitTestLocation& location_in_container,
-                           const LayoutPoint& accumulated_offset,
+                           const PhysicalOffset& accumulated_offset,
                            LayoutUnit line_top,
                            LayoutUnit line_bottom);
 
@@ -353,7 +353,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
   // Physical location of the top-left corner of the box in the containing
   // block.
-  LayoutPoint PhysicalLocation() const;
+  PhysicalOffset PhysicalLocation() const;
 
   // TODO(szager): The Rect versions should return a rect, not modify the
   // argument.

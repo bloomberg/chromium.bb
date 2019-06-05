@@ -438,7 +438,7 @@ bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
 bool SVGLayoutSupport::HitTestChildren(LayoutObject* last_child,
                                        HitTestResult& result,
                                        const HitTestLocation& location,
-                                       const LayoutPoint& accumulated_offset,
+                                       const PhysicalOffset& accumulated_offset,
                                        HitTestAction hit_test_action) {
   for (LayoutObject* child = last_child; child;
        child = child->PreviousSibling()) {

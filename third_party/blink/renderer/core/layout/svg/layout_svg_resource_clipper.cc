@@ -257,7 +257,7 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
     DCHECK(!layout_object->IsBoxModelObject() ||
            !ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer());
 
-    if (layout_object->NodeAtPoint(result, *local_location, LayoutPoint(),
+    if (layout_object->NodeAtPoint(result, *local_location, PhysicalOffset(),
                                    kHitTestForeground))
       return true;
   }

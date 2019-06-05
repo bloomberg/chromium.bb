@@ -11268,7 +11268,7 @@ TEST_F(WebFrameSimTest, HitTestWithIgnoreClippingAtNegativeOffset) {
                            HitTestRequest::kActive |
                            HitTestRequest::kIgnoreClipping;
   HitTestLocation location(
-      frame_view->ConvertFromRootFrame(LayoutPoint(100, -50)));
+      frame_view->ConvertFromRootFrame(PhysicalOffset(100, -50)));
   HitTestResult result(request, location);
   frame_view->GetLayoutView()->HitTest(location, result);
 

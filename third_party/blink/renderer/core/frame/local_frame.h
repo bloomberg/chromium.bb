@@ -262,8 +262,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   String SelectedTextForClipboard() const;
 
   PositionWithAffinityTemplate<EditingAlgorithm<NodeTraversal>>
-  PositionForPoint(const LayoutPoint& frame_point);
-  Document* DocumentAtPoint(const LayoutPoint&);
+  PositionForPoint(const PhysicalOffset& frame_point);
+  Document* DocumentAtPoint(const PhysicalOffset&);
 
   void RemoveSpellingMarkersUnderWords(const Vector<String>& words);
 

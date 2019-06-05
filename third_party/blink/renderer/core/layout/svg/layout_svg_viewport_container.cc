@@ -78,7 +78,7 @@ SVGTransformChange LayoutSVGViewportContainer::CalculateLocalTransform() {
 bool LayoutSVGViewportContainer::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_parent,
-    const LayoutPoint& accumulated_offset,
+    const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
   // Respect the viewport clip which is in parent coordinates.
   if (SVGLayoutSupport::IsOverflowHidden(*this)) {

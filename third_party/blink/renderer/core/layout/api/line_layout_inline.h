@@ -67,7 +67,7 @@ class LineLayoutInline : public LineLayoutBoxModel {
 
   bool HitTestCulledInline(HitTestResult& result,
                            const HitTestLocation& location_in_container,
-                           const LayoutPoint& accumulated_offset) {
+                           const PhysicalOffset& accumulated_offset) {
     return ToInline()->HitTestCulledInline(result, location_in_container,
                                            accumulated_offset);
   }

@@ -177,9 +177,9 @@ void LayoutSVGContainer::UpdateCachedBoundaries() {
 bool LayoutSVGContainer::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
+    const PhysicalOffset& accumulated_offset,
     HitTestAction hit_test_action) {
-  DCHECK_EQ(accumulated_offset, LayoutPoint());
+  DCHECK_EQ(accumulated_offset, PhysicalOffset());
   TransformedHitTestLocation local_location(location_in_container,
                                             LocalToSVGParentTransform());
   if (!local_location)
@@ -199,9 +199,8 @@ bool LayoutSVGContainer::NodeAtPoint(
     // containers.
     if (IsObjectBoundingBoxValid() &&
         local_location->Intersects(ObjectBoundingBox())) {
-      const LayoutPoint& local_layout_point =
-          LayoutPoint(local_location->TransformedPoint());
-      UpdateHitTestResult(result, local_layout_point);
+      UpdateHitTestResult(result, PhysicalOffset::FromFloatPointRound(
+                                      local_location->TransformedPoint()));
       if (result.AddNodeToListBasedTestResult(GetElement(), *local_location) ==
           kStopHitTesting)
         return true;

@@ -257,7 +257,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // For Canvas HitRegions
   bool IsSupportedInteractiveCanvasFallback(const Element&);
-  HitTestCanvasResult* GetControlAndIdIfHitRegionExists(const LayoutPoint&);
+  HitTestCanvasResult* GetControlAndIdIfHitRegionExists(const PhysicalOffset&);
   String GetIdFromControl(const Element*);
 
   // For OffscreenCanvas that controls this html canvas element

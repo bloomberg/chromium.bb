@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -471,7 +472,7 @@ class CORE_EXPORT ChromeClient
   void SetToolTip(LocalFrame&, const HitTestLocation&, const HitTestResult&);
 
   WeakMember<Node> last_mouse_over_node_;
-  LayoutPoint last_tool_tip_point_;
+  PhysicalOffset last_tool_tip_point_;
   String last_tool_tip_text_;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipFlood);

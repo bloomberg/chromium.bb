@@ -318,9 +318,9 @@ RootInlineBox* LayoutSVGText::CreateRootInlineBox() {
 
 bool LayoutSVGText::NodeAtPoint(HitTestResult& result,
                                 const HitTestLocation& location_in_parent,
-                                const LayoutPoint& accumulated_offset,
+                                const PhysicalOffset& accumulated_offset,
                                 HitTestAction hit_test_action) {
-  DCHECK_EQ(accumulated_offset, LayoutPoint());
+  DCHECK_EQ(accumulated_offset, PhysicalOffset());
   // We only draw in the foreground phase, so we only hit-test then.
   if (hit_test_action != kHitTestForeground)
     return false;
@@ -341,9 +341,8 @@ bool LayoutSVGText::NodeAtPoint(HitTestResult& result,
   if (StyleRef().PointerEvents() == EPointerEvents::kBoundingBox) {
     if (IsObjectBoundingBoxValid() &&
         local_location->Intersects(ObjectBoundingBox())) {
-      const LayoutPoint& local_layout_point =
-          LayoutPoint(local_location->TransformedPoint());
-      UpdateHitTestResult(result, local_layout_point);
+      UpdateHitTestResult(result, PhysicalOffset::FromFloatPointRound(
+                                      local_location->TransformedPoint()));
       if (result.AddNodeToListBasedTestResult(GetElement(), *local_location) ==
           kStopHitTesting)
         return true;

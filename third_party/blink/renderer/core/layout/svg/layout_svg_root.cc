@@ -465,12 +465,12 @@ void LayoutSVGRoot::UpdateCachedBoundaries() {
 
 bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
                                 const HitTestLocation& location_in_container,
-                                const LayoutPoint& accumulated_offset,
+                                const PhysicalOffset& accumulated_offset,
                                 HitTestAction hit_test_action) {
-  LayoutPoint adjusted_location = accumulated_offset + Location();
+  PhysicalOffset adjusted_location = accumulated_offset + PhysicalLocation();
 
   HitTestLocation local_border_box_location(location_in_container,
-                                            ToLayoutSize(-adjusted_location));
+                                            -adjusted_location);
 
   // Only test SVG content if the point is in our content box, or in case we
   // don't clip to the viewport, the visual overflow rect.
@@ -478,14 +478,13 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
   // supported by nodeAtFloatPoint.
   bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
   if (!skip_children &&
-      (local_border_box_location.Intersects(
-           PhysicalContentBoxRect().ToLayoutRect()) ||
+      (local_border_box_location.Intersects(PhysicalContentBoxRect()) ||
        (!ShouldApplyViewportClip() &&
-        local_border_box_location.Intersects(VisualOverflowRect())))) {
+        local_border_box_location.Intersects(PhysicalVisualOverflowRect())))) {
     TransformedHitTestLocation local_location(local_border_box_location,
                                               LocalToBorderBoxTransform());
     if (local_location) {
-      LayoutPoint accumulated_offset_for_children;
+      PhysicalOffset accumulated_offset_for_children;
       if (SVGLayoutSupport::HitTestChildren(
               LastChild(), result, *local_location,
               accumulated_offset_for_children, hit_test_action))
@@ -506,7 +505,7 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
     // detect hits on the background of a <div> element.
     // If we'd return true here in the 'Foreground' phase, we are not able to
     // detect these hits anymore.
-    LayoutRect bounds_rect(accumulated_offset + Location(), Size());
+    PhysicalRect bounds_rect(accumulated_offset + PhysicalLocation(), Size());
     if (location_in_container.Intersects(bounds_rect)) {
       UpdateHitTestResult(result, local_border_box_location.Point());
       if (result.AddNodeToListBasedTestResult(GetNode(), location_in_container,

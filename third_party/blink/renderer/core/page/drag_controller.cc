@@ -238,8 +238,8 @@ void DragController::DragExited(DragData* drag_data, LocalFrame& local_root) {
 
 void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
   DCHECK(drag_data);
-  document_under_mouse_ =
-      local_root.DocumentAtPoint(LayoutPoint(drag_data->ClientPosition()));
+  document_under_mouse_ = local_root.DocumentAtPoint(
+      PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::NotifyUserActivation(
           document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr,
@@ -261,7 +261,7 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
         // When drop target is plugin element and it can process drag, we
         // should prevent default behavior.
         const HitTestLocation location(local_root.View()->ConvertFromRootFrame(
-            LayoutPoint(drag_data->ClientPosition())));
+            PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition())));
         const HitTestResult result =
             event_handler.HitTestResultAtLocation(location);
         prevented_default |=
@@ -332,8 +332,8 @@ DragOperation DragController::DragEnteredOrUpdated(DragData* drag_data,
                                                    LocalFrame& local_root) {
   DCHECK(drag_data);
 
-  MouseMovedIntoDocument(
-      local_root.DocumentAtPoint(LayoutPoint(drag_data->ClientPosition())));
+  MouseMovedIntoDocument(local_root.DocumentAtPoint(
+      PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition())));
 
   // TODO(esprehn): Replace acceptsLoadDrops with a Setting used in core.
   drag_destination_action_ =
@@ -363,7 +363,7 @@ static HTMLInputElement* AsFileInput(Node* node) {
 
 // This can return null if an empty document is loaded.
 static Element* ElementUnderMouse(Document* document_under_mouse,
-                                  const LayoutPoint& point) {
+                                  const PhysicalOffset& point) {
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestLocation location(point);
   HitTestResult result(request, location);
@@ -416,8 +416,8 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
 
   if ((action_mask & kDragDestinationActionEdit) &&
       CanProcessDrag(drag_data, local_root)) {
-    LayoutPoint point = frame_view->ConvertFromRootFrame(
-        LayoutPoint(drag_data->ClientPosition()));
+    PhysicalOffset point = frame_view->ConvertFromRootFrame(
+        PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
     Element* element = ElementUnderMouse(document_under_mouse_.Get(), point);
     if (!element)
       return false;
@@ -466,8 +466,8 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
 DragOperation DragController::OperationForLoad(DragData* drag_data,
                                                LocalFrame& local_root) {
   DCHECK(drag_data);
-  Document* doc =
-      local_root.DocumentAtPoint(LayoutPoint(drag_data->ClientPosition()));
+  Document* doc = local_root.DocumentAtPoint(
+      PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
 
   if (doc &&
       (did_initiate_drag_ || doc->IsPluginDocument() || HasEditableStyle(*doc)))
@@ -481,7 +481,7 @@ DragOperation DragController::OperationForLoad(DragData* drag_data,
 static bool SetSelectionToDragCaret(LocalFrame* frame,
                                     const SelectionInDOMTree& drag_caret,
                                     Range*& range,
-                                    const LayoutPoint& point) {
+                                    const PhysicalOffset& point) {
   frame->Selection().SetSelectionAndEndTyping(drag_caret);
   // TODO(editing-dev): The use of
   // UpdateStyleAndLayout
@@ -541,8 +541,8 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
   if (!document_under_mouse_)
     return false;
 
-  LayoutPoint point = document_under_mouse_->View()->ConvertFromRootFrame(
-      LayoutPoint(drag_data->ClientPosition()));
+  PhysicalOffset point = document_under_mouse_->View()->ConvertFromRootFrame(
+      PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
   Element* element = ElementUnderMouse(document_under_mouse_.Get(), point);
   if (!element)
     return false;
@@ -708,8 +708,8 @@ bool DragController::CanProcessDrag(DragData* drag_data,
   if (!local_root.ContentLayoutObject())
     return false;
 
-  LayoutPoint point = local_root.View()->ConvertFromRootFrame(
-      LayoutPoint(drag_data->ClientPosition()));
+  PhysicalOffset point = local_root.View()->ConvertFromRootFrame(
+      PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
 
   HitTestLocation location(point);
   HitTestResult result =
@@ -814,7 +814,7 @@ Node* DragController::DraggableNode(const LocalFrame* src,
                                     const IntPoint& drag_origin,
                                     SelectionDragPolicy selection_drag_policy,
                                     DragSourceAction& drag_type) const {
-  if (src->Selection().Contains(drag_origin)) {
+  if (src->Selection().Contains(PhysicalOffset(drag_origin))) {
     drag_type = kDragSourceActionSelection;
     if (selection_drag_policy == kImmediateSelectionDragResolution)
       return start_node;

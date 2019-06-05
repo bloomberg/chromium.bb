@@ -139,7 +139,7 @@ void LayoutTextControlSingleLine::UpdateLayout() {
 bool LayoutTextControlSingleLine::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
+    const PhysicalOffset& accumulated_offset,
     HitTestAction hit_test_action) {
   if (!LayoutTextControl::NodeAtPoint(result, location_in_container,
                                       accumulated_offset, hit_test_action))
@@ -153,13 +153,14 @@ bool LayoutTextControlSingleLine::NodeAtPoint(
   if (result.InnerNode()->IsDescendantOf(InnerEditorElement()) ||
       result.InnerNode() == GetNode() ||
       (container && container == result.InnerNode())) {
-    LayoutPoint point_in_parent = location_in_container.Point();
+    PhysicalOffset point_in_parent = location_in_container.Point();
     if (container && EditingViewPortElement()) {
-      if (EditingViewPortElement()->GetLayoutBox())
+      if (EditingViewPortElement()->GetLayoutBox()) {
         point_in_parent -=
-            ToLayoutSize(EditingViewPortElement()->GetLayoutBox()->Location());
+            EditingViewPortElement()->GetLayoutBox()->PhysicalLocation();
+      }
       if (container->GetLayoutBox())
-        point_in_parent -= ToLayoutSize(container->GetLayoutBox()->Location());
+        point_in_parent -= container->GetLayoutBox()->PhysicalLocation();
     }
     const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();
     if (!stop_node || stop_node->NodeForHitTest() != result.InnerNode()) {

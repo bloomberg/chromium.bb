@@ -234,7 +234,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   // In legacy, |parent_fragment| is always null, and all rects are regenerated.
   bool HitTestCulledInline(HitTestResult&,
                            const HitTestLocation& location_in_container,
-                           const LayoutPoint& accumulated_offset,
+                           const PhysicalOffset& accumulated_offset,
                            const NGPaintFragment* parent_fragment = nullptr);
 
   PhysicalOffset FirstLineBoxTopLeft() const {
@@ -333,7 +333,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) final;
 
   PaintLayerType LayerTypeRequired() const override;
@@ -383,7 +383,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   void ChildBecameNonInline(LayoutObject* child) final;
 
-  void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) const final;
+  void UpdateHitTestResult(HitTestResult&, const PhysicalOffset&) const final;
 
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) final;
 

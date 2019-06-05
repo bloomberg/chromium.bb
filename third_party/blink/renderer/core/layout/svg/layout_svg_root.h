@@ -139,7 +139,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,

@@ -4301,7 +4301,7 @@ network::mojom::ReferrerPolicy Document::GetReferrerPolicy() const {
 
 MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
     const HitTestRequest& request,
-    const LayoutPoint& document_point,
+    const PhysicalOffset& document_point,
     const WebMouseEvent& event) {
   DCHECK(!GetLayoutView() || GetLayoutView()->IsLayoutView());
 
@@ -4312,7 +4312,7 @@ MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
   // lead to a premature layout() happening, which could show a flash of white.
   // See also the similar code in EventHandler::hitTestResultAtPoint.
   if (!GetLayoutView() || !View() || !View()->DidFirstLayout()) {
-    HitTestLocation location((LayoutPoint()));
+    HitTestLocation location((PhysicalOffset()));
     return MouseEventWithHitTestResults(event, location,
                                         HitTestResult(request, location));
   }

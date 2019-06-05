@@ -96,7 +96,8 @@ void ContextMenuController::DocumentDetached(Document* document) {
 void ContextMenuController::HandleContextMenuEvent(MouseEvent* mouse_event) {
   DCHECK(mouse_event->type() == event_type_names::kContextmenu);
   LocalFrame* frame = mouse_event->target()->ToNode()->GetDocument().GetFrame();
-  LayoutPoint location(mouse_event->AbsoluteLocation());
+  PhysicalOffset location = PhysicalOffset::FromFloatPointRound(
+      FloatPoint(mouse_event->AbsoluteLocation()));
   if (ShowContextMenu(frame, location, mouse_event->GetMenuSourceType()))
     mouse_event->SetDefaultHandled();
 }
@@ -107,7 +108,8 @@ void ContextMenuController::ShowContextMenuAtPoint(
     float y,
     ContextMenuProvider* menu_provider) {
   menu_provider_ = menu_provider;
-  if (!ShowContextMenu(frame, LayoutPoint(x, y), kMenuSourceNone))
+  if (!ShowContextMenu(frame, PhysicalOffset(LayoutUnit(x), LayoutUnit(y)),
+                       kMenuSourceNone))
     ClearContextMenu();
 }
 
@@ -200,7 +202,7 @@ bool ContextMenuController::ShouldShowContextMenuFromTouch(
 }
 
 bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
-                                            const LayoutPoint& point,
+                                            const PhysicalOffset& point,
                                             WebMenuSourceType source_type) {
   // Displaying the context menu in this function is a big hack as we don't
   // have context, i.e. whether this is being invoked via a script or in

@@ -1801,7 +1801,7 @@ void PaintLayer::CollectFragments(
 }
 
 PaintLayer::HitTestRecursionData::HitTestRecursionData(
-    const LayoutRect& rect_arg,
+    const PhysicalRect& rect_arg,
     const HitTestLocation& location_arg,
     const HitTestLocation& original_location_arg)
     : rect(rect_arg),
@@ -1811,7 +1811,7 @@ PaintLayer::HitTestRecursionData::HitTestRecursionData(
 
 bool PaintLayer::HitTest(const HitTestLocation& hit_test_location,
                          HitTestResult& result,
-                         const LayoutRect& hit_test_area) {
+                         const PhysicalRect& hit_test_area) {
   DCHECK(IsSelfPaintingLayer() || HasSelfPaintingLayerDescendant());
 
   // LayoutView should make sure to update layout before entering hit testing
@@ -1845,9 +1845,7 @@ bool PaintLayer::HitTest(const HitTestLocation& hit_test_location,
       fallback = true;
     }
     if (fallback) {
-      GetLayoutObject().UpdateHitTestResult(
-          result, ToLayoutView(GetLayoutObject())
-                      .DeprecatedFlipForWritingMode(hit_test_location.Point()));
+      GetLayoutObject().UpdateHitTestResult(result, hit_test_location.Point());
       inside_layer = this;
 
       // Don't cache this result since it really wasn't a true hit.
@@ -1904,7 +1902,7 @@ HitTestingTransformState PaintLayer::CreateLocalTransformState(
     PaintLayer* container_layer,
     const HitTestRecursionData& recursion_data,
     const HitTestingTransformState* container_transform_state,
-    const LayoutPoint& translation_offset) const {
+    const PhysicalOffset& translation_offset) const {
   // If we're already computing transform state, then it's relative to the
   // container (which we know is non-null).
   // If this is the first time we need to make transform state, then base it
@@ -1922,7 +1920,7 @@ HitTestingTransformState PaintLayer::CreateLocalTransformState(
   else
     ConvertToLayerCoords(root_layer, offset);
 
-  offset += PhysicalOffsetToBeNoop(translation_offset);
+  offset += translation_offset;
 
   LayoutObject* container_layout_object =
       container_layer ? &container_layer->GetLayoutObject() : nullptr;
@@ -2135,7 +2133,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
   // Collect the fragments. This will compute the clip rectangles for each
   // layer fragment.
   base::Optional<PaintLayerFragments> layer_fragments;
-  LayoutPoint offset;
+  PhysicalOffset offset;
   if (recursion_data.intersects_location) {
     layer_fragments.emplace();
     if (applied_transform) {
@@ -2160,7 +2158,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
     // Next we want to see if the mouse pos is inside the child LayoutObjects of
     // the layer. Check every fragment in reverse order.
     if (IsSelfPaintingLayer()) {
-      offset = -LayoutBoxLocation();
+      offset = -LayoutBoxPhysicalLocation();
       // Hit test with a temporary HitTestResult, because we only want to commit
       // to 'result' if we know we're frontmost.
       HitTestResult temp_result(result.GetHitTestRequest(),
@@ -2229,7 +2227,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
 
 bool PaintLayer::HitTestContentsForFragments(
     const PaintLayerFragments& layer_fragments,
-    const LayoutPoint& offset,
+    const PhysicalOffset& offset,
     HitTestResult& result,
     const HitTestLocation& hit_test_location,
     HitTestFilter hit_test_filter,
@@ -2245,8 +2243,8 @@ bool PaintLayer::HitTestContentsForFragments(
          !fragment.foreground_rect.Intersects(hit_test_location)))
       continue;
     inside_clip_rect = true;
-    LayoutPoint fragment_offset = offset;
-    fragment_offset.MoveBy(fragment.layer_bounds.offset.ToLayoutPoint());
+    PhysicalOffset fragment_offset = offset;
+    fragment_offset += fragment.layer_bounds.offset;
     if (HitTestContents(result, fragment_offset, hit_test_location,
                         hit_test_filter))
       return true;
@@ -2275,12 +2273,12 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
     // Apply the page/column clip for this fragment, as well as any clips
     // established by layers in between us and the enclosing pagination layer.
     PhysicalRect clip_rect = fragment.background_rect.Rect();
-    if (!recursion_data.location.Intersects(clip_rect.ToLayoutRect()))
+    if (!recursion_data.location.Intersects(clip_rect))
       continue;
 
     PaintLayer* hit_layer = HitTestLayerByApplyingTransform(
         root_layer, container_layer, result, recursion_data, transform_state,
-        z_offset, fragment.fragment_data->PaginationOffset().ToLayoutPoint());
+        z_offset, fragment.fragment_data->PaginationOffset());
     if (hit_layer)
       return hit_layer;
   }
@@ -2295,7 +2293,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
     const HitTestRecursionData& recursion_data,
     HitTestingTransformState* transform_state,
     double* z_offset,
-    const LayoutPoint& translation_offset) {
+    const PhysicalOffset& translation_offset) {
   // Create a transform state to accumulate this transform.
   HitTestingTransformState new_transform_state =
       CreateLocalTransformState(root_layer, container_layer, recursion_data,
@@ -2314,7 +2312,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
   // been flattened (losing z) by our container.
   FloatPoint local_point = new_transform_state.MappedPoint();
   FloatQuad local_point_quad = new_transform_state.MappedQuad();
-  LayoutRect bounds_of_mapped_area = new_transform_state.BoundsOfMappedArea();
+  PhysicalRect bounds_of_mapped_area = new_transform_state.BoundsOfMappedArea();
   base::Optional<HitTestLocation> new_location;
   if (recursion_data.location.IsRectBasedTest())
     new_location.emplace(local_point, local_point_quad);
@@ -2329,7 +2327,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
 }
 
 bool PaintLayer::HitTestContents(HitTestResult& result,
-                                 const LayoutPoint& fragment_offset,
+                                 const PhysicalOffset& fragment_offset,
                                  const HitTestLocation& hit_test_location,
                                  HitTestFilter hit_test_filter) const {
   DCHECK(IsSelfPaintingLayer() || HasSelfPaintingLayerDescendant());
@@ -2519,7 +2517,7 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   else
     ConvertToLayerCoords(root_layer, origin);
 
-  FloatPoint point(hit_test_location.Point() - origin.offset.ToLayoutPoint());
+  FloatPoint point(hit_test_location.Point() - origin.offset);
   FloatRect reference_box(
       ClipPathClipper::LocalReferenceBox(GetLayoutObject()));
 

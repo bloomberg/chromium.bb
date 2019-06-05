@@ -3637,6 +3637,14 @@ LayoutPoint LocalFrameView::ViewportToFrame(
   return ConvertFromRootFrame(point_in_root_frame);
 }
 
+PhysicalOffset LocalFrameView::ViewportToFrame(
+    const PhysicalOffset& point_in_viewport) const {
+  PhysicalOffset point_in_root_frame = PhysicalOffset::FromFloatPointRound(
+      frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
+          FloatPoint(point_in_viewport)));
+  return ConvertFromRootFrame(point_in_root_frame);
+}
+
 FloatPoint LocalFrameView::ViewportToFrame(
     const FloatPoint& point_in_viewport) const {
   FloatPoint point_in_root_frame(

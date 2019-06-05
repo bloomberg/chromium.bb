@@ -196,8 +196,8 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
   unsigned bitfields2_;
   unsigned bitfields3_;
   // The following fields are in FragmentData.
-  LayoutRect visual_rect_;
-  LayoutPoint paint_offset_;
+  IntRect visual_rect_;
+  PhysicalOffset paint_offset_;
   std::unique_ptr<int> rare_data_;
   std::unique_ptr<FragmentData> next_fragment_;
 };
@@ -1706,7 +1706,7 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternal(
 }
 
 HitTestResult LayoutObject::HitTestForOcclusion(
-    const LayoutRect& hit_rect) const {
+    const PhysicalRect& hit_rect) const {
   LocalFrame* frame = GetDocument().GetFrame();
   DCHECK(!frame->View()->NeedsLayout());
   HitTestRequest::HitTestRequestType hit_type =
@@ -3285,7 +3285,7 @@ CompositingReasons LayoutObject::AdditionalCompositingReasons() const {
 bool LayoutObject::HitTestAllPhases(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
+    const PhysicalOffset& accumulated_offset,
     HitTestFilter hit_test_filter) {
   bool inside = false;
   if (hit_test_filter != kHitTestSelf) {
@@ -3328,7 +3328,7 @@ Node* LayoutObject::NodeForHitTest() const {
 }
 
 void LayoutObject::UpdateHitTestResult(HitTestResult& result,
-                                       const LayoutPoint& point) const {
+                                       const PhysicalOffset& point) const {
   if (result.InnerNode())
     return;
 
@@ -3338,7 +3338,7 @@ void LayoutObject::UpdateHitTestResult(HitTestResult& result,
 
 bool LayoutObject::NodeAtPoint(HitTestResult&,
                                const HitTestLocation& /*locationInContainer*/,
-                               const LayoutPoint& /*accumulatedOffset*/,
+                               const PhysicalOffset& /*accumulatedOffset*/,
                                HitTestAction) {
   return false;
 }
@@ -3693,7 +3693,7 @@ PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
   return CreatePositionWithAffinity(0);
 }
 
-CursorDirective LayoutObject::GetCursor(const LayoutPoint&, Cursor&) const {
+CursorDirective LayoutObject::GetCursor(const PhysicalOffset&, Cursor&) const {
   return kSetCursorBasedOnStyle;
 }
 

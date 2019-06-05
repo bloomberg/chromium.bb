@@ -696,7 +696,8 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
   // Take capture on a mouse down on a plugin so we can send it mouse events.
   // If the hit node is a plugin but a scrollbar is over it don't start mouse
   // capture because it will interfere with the scrollbar receiving events.
-  LayoutPoint point(event.PositionInWidget().x, event.PositionInWidget().y);
+  PhysicalOffset point(LayoutUnit(event.PositionInWidget().x),
+                       LayoutUnit(event.PositionInWidget().y));
   if (event.button == WebMouseEvent::Button::kLeft) {
     HitTestLocation location(
         LocalRootImpl()->GetFrameView()->ConvertFromRootFrame(point));
@@ -752,7 +753,8 @@ void WebFrameWidgetImpl::MouseContextMenu(const WebMouseEvent& event) {
       FlooredIntPoint(transformed_event.PositionInRootFrame());
 
   // Find the right target frame. See issue 1186900.
-  HitTestResult result = HitTestResultForRootFramePos(position_in_root_frame);
+  HitTestResult result =
+      HitTestResultForRootFramePos(PhysicalOffset(position_in_root_frame));
   Frame* target_frame;
   if (result.InnerNodeOrImageMapImage())
     target_frame = result.InnerNodeOrImageMapImage()->GetDocument().GetFrame();
@@ -1067,8 +1069,8 @@ HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
   LocalFrameView* view = LocalRootImpl()->GetFrameView();
-  IntPoint point_in_root_frame =
-      view->ViewportToFrame(IntPoint(point_in_viewport));
+  PhysicalOffset point_in_root_frame(
+      view->ViewportToFrame(IntPoint(point_in_viewport)));
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
@@ -1078,10 +1080,10 @@ void WebFrameWidgetImpl::ZoomToFindInPageRect(
 }
 
 HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
-    const LayoutPoint& pos_in_root_frame) {
-  LayoutPoint doc_point(
+    const PhysicalOffset& pos_in_root_frame) {
+  PhysicalOffset doc_point =
       LocalRootImpl()->GetFrame()->View()->ConvertFromRootFrame(
-          pos_in_root_frame));
+          pos_in_root_frame);
   HitTestLocation location(doc_point);
   HitTestResult result =
       LocalRootImpl()->GetFrame()->GetEventHandler().HitTestResultAtLocation(

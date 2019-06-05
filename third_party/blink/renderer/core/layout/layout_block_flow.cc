@@ -4176,11 +4176,11 @@ Node* LayoutBlockFlow::NodeForHitTest() const {
 bool LayoutBlockFlow::HitTestChildren(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
+    const PhysicalOffset& accumulated_offset,
     HitTestAction hit_test_action) {
-  LayoutPoint scrolled_offset(HasOverflowClip()
-                                  ? accumulated_offset - ScrolledContentOffset()
-                                  : accumulated_offset);
+  PhysicalOffset scrolled_offset = accumulated_offset;
+  if (HasOverflowClip())
+    scrolled_offset -= PhysicalOffset(ScrolledContentOffset());
 
   if (hit_test_action == kHitTestFloat && !IsLayoutNGObject()) {
     // Hit-test the floats using the FloatingObjects list if we're in legacy
@@ -4194,9 +4194,8 @@ bool LayoutBlockFlow::HitTestChildren(
     if (line_boxes_.HitTest(LineLayoutBoxModel(this), result,
                             location_in_container, scrolled_offset,
                             hit_test_action)) {
-      UpdateHitTestResult(
-          result, DeprecatedFlipForWritingMode(ToLayoutPoint(
-                      location_in_container.Point() - accumulated_offset)));
+      UpdateHitTestResult(result,
+                          location_in_container.Point() - accumulated_offset);
       return true;
     }
   } else if (LayoutBlock::HitTestChildren(result, location_in_container,
@@ -4211,7 +4210,7 @@ bool LayoutBlockFlow::HitTestChildren(
 bool LayoutBlockFlow::HitTestFloats(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset) {
+    const PhysicalOffset& accumulated_offset) {
   if (!floating_objects_)
     return false;
 
@@ -4223,16 +4222,15 @@ bool LayoutBlockFlow::HitTestFloats(
     if (floating_object.ShouldPaint() &&
         // TODO(wangxianzhu): Should this be a DCHECK?
         !floating_object.GetLayoutObject()->HasSelfPaintingLayer()) {
-      LayoutUnit x_offset = XPositionForFloatIncludingMargin(floating_object) -
-                            floating_object.GetLayoutObject()->Location().X();
-      LayoutUnit y_offset = YPositionForFloatIncludingMargin(floating_object) -
-                            floating_object.GetLayoutObject()->Location().Y();
-      LayoutPoint child_point = FlipFloatForWritingModeForChild(
-          floating_object, accumulated_offset + LayoutSize(x_offset, y_offset));
+      PhysicalOffset child_point = accumulated_offset;
+      child_point +=
+          PhysicalOffset(XPositionForFloatIncludingMargin(floating_object),
+                         YPositionForFloatIncludingMargin(floating_object));
+      child_point -= floating_object.GetLayoutObject()->PhysicalLocation();
       if (floating_object.GetLayoutObject()->HitTestAllPhases(
               result, location_in_container, child_point)) {
-        UpdateHitTestResult(
-            result, location_in_container.Point() - ToLayoutSize(child_point));
+        UpdateHitTestResult(result,
+                            location_in_container.Point() - child_point);
         return true;
       }
     }

@@ -14,9 +14,9 @@ namespace blink {
 
 struct FocusCandidate;
 class KeyboardEvent;
-class LayoutRect;
 class Node;
 class Page;
+struct PhysicalRect;
 
 // Encapsulates logic and state related to "spatial navigation". Spatial
 // Navigation is used to move and interact with a page in a purely directional
@@ -65,14 +65,14 @@ class CORE_EXPORT SpatialNavigationController
    *                               may be in a nested container.
    */
   bool AdvanceWithinContainer(Node& container,
-                              const LayoutRect& starting_rect_in_root_frame,
+                              const PhysicalRect& starting_rect_in_root_frame,
                               SpatialNavigationDirection direction,
                               Node* interest_child_in_container);
 
   // Parameters have same meanings as method above.
   FocusCandidate FindNextCandidateInContainer(
       Node& container,
-      const LayoutRect& starting_rect_in_root_frame,
+      const PhysicalRect& starting_rect_in_root_frame,
       SpatialNavigationDirection direction,
       Node* interest_child_in_container);
 

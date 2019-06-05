@@ -858,8 +858,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
                          TRACE_EVENT_SCOPE_THREAD);
 
     LocalFrameView* view = frame_->View();
-    LayoutPoint view_point = view->ConvertFromRootFrame(
-        FlooredIntPoint(gesture_event.PositionInRootFrame()));
+    PhysicalOffset view_point(view->ConvertFromRootFrame(
+        FlooredIntPoint(gesture_event.PositionInRootFrame())));
     HitTestRequest request(HitTestRequest::kReadOnly);
     HitTestLocation location(view_point);
     HitTestResult result(request, location);

@@ -168,7 +168,7 @@ void LayoutMultiColumnSpannerPlaceholder::Paint(
 bool LayoutMultiColumnSpannerPlaceholder::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
+    const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
   return !layout_object_in_flow_thread_->HasSelfPaintingLayer() &&
          layout_object_in_flow_thread_->NodeAtPoint(

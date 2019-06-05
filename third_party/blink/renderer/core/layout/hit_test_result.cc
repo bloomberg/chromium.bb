@@ -144,7 +144,7 @@ PositionWithAffinity HitTestResult::GetPosition() const {
     return PositionWithAffinity(MostForwardCaretPosition(
         Position(inner_node_, PositionAnchorType::kBeforeChildren)));
   }
-  return layout_object->PositionForPoint(LocalPoint());
+  return layout_object->PositionForPoint(FlippedLocalPoint());
 }
 
 LayoutObject* HitTestResult::GetLayoutObject() const {
@@ -392,7 +392,7 @@ bool HitTestResult::IsContentEditable() const {
 ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
     Node* node,
     const HitTestLocation& location,
-    const LayoutRect& rect) {
+    const PhysicalRect& rect) {
   // If not a list-based test, stop testing because the hit has been found.
   if (!GetHitTestRequest().ListBased())
     return kStopHitTesting;
@@ -470,7 +470,7 @@ HitTestResult::NodeSet& HitTestResult::MutableListBasedTestResult() {
 
 HitTestLocation HitTestResult::ResolveRectBasedTest(
     Node* resolved_inner_node,
-    const LayoutPoint& resolved_point_in_main_frame) {
+    const PhysicalOffset& resolved_point_in_main_frame) {
   point_in_inner_node_frame_ = resolved_point_in_main_frame;
   SetInnerNode(nullptr);
   list_based_test_result_ = nullptr;
@@ -481,7 +481,7 @@ HitTestLocation HitTestResult::ResolveRectBasedTest(
   // never use it so shouldn't bother with the cost of computing it.
   DCHECK(resolved_inner_node);
   if (auto* layout_object = resolved_inner_node->GetLayoutObject())
-    layout_object->UpdateHitTestResult(*this, LayoutPoint());
+    layout_object->UpdateHitTestResult(*this, PhysicalOffset());
 
   return HitTestLocation(resolved_point_in_main_frame);
 }
@@ -502,10 +502,10 @@ Node* HitTestResult::InnerNodeOrImageMapImage() const {
   return image_map_image_element;
 }
 
-void HitTestResult::SetNodeAndPosition(Node* node, const PhysicalOffset& p) {
-  SetNodeAndPosition(node, node && node->GetLayoutObject()
-                               ? node->GetLayoutObject()->FlipForWritingMode(p)
-                               : p.ToLayoutPoint());
+LayoutPoint HitTestResult::FlippedLocalPoint() const {
+  if (!inner_node_ || !inner_node_->GetLayoutObject())
+    return local_point_.ToLayoutPoint();
+  return inner_node_->GetLayoutObject()->FlipForWritingMode(local_point_);
 }
 
 }  // namespace blink

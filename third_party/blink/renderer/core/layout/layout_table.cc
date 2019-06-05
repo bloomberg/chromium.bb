@@ -1615,28 +1615,23 @@ PhysicalRect LayoutTable::OverflowClipRect(
 
 bool LayoutTable::NodeAtPoint(HitTestResult& result,
                               const HitTestLocation& location_in_container,
-                              const LayoutPoint& accumulated_offset,
+                              const PhysicalOffset& accumulated_offset,
                               HitTestAction action) {
-  LayoutPoint adjusted_location = accumulated_offset + Location();
+  PhysicalOffset adjusted_location = accumulated_offset + PhysicalLocation();
 
   // Check kids first.
   bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
   if (!skip_children &&
       (!HasOverflowClip() ||
-       location_in_container.Intersects(
-           OverflowClipRect(PhysicalOffsetToBeNoop(adjusted_location))
-               .ToLayoutRect()))) {
+       location_in_container.Intersects(OverflowClipRect(adjusted_location)))) {
     for (LayoutObject* child = LastChild(); child;
          child = child->PreviousSibling()) {
       if (child->IsBox() && !ToLayoutBox(child)->HasSelfPaintingLayer() &&
           (child->IsTableSection() || child->IsTableCaption())) {
-        LayoutPoint child_point =
-            FlipForWritingModeForChild(ToLayoutBox(child), adjusted_location);
-        if (child->NodeAtPoint(result, location_in_container, child_point,
+        if (child->NodeAtPoint(result, location_in_container, adjusted_location,
                                action)) {
           UpdateHitTestResult(
-              result,
-              ToLayoutPoint(location_in_container.Point() - child_point));
+              result, location_in_container.Point() - adjusted_location);
           return true;
         }
       }
@@ -1644,14 +1639,13 @@ bool LayoutTable::NodeAtPoint(HitTestResult& result,
   }
 
   // Check our bounds next.
-  LayoutRect bounds_rect(adjusted_location, Size());
+  PhysicalRect bounds_rect(adjusted_location, Size());
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
       (action == kHitTestBlockBackground ||
        action == kHitTestChildBlockBackground) &&
       location_in_container.Intersects(bounds_rect)) {
-    UpdateHitTestResult(
-        result, DeprecatedFlipForWritingMode(location_in_container.Point() -
-                                             ToLayoutSize(adjusted_location)));
+    UpdateHitTestResult(result,
+                        location_in_container.Point() - adjusted_location);
     if (result.AddNodeToListBasedTestResult(GetNode(), location_in_container,
                                             bounds_rect) == kStopHitTesting)
       return true;

@@ -124,7 +124,7 @@ PositionInFlatTreeWithAffinity PositionWithAffinityOfHitTestResult(
     const HitTestResult& hit_test_result) {
   return FromPositionInDOMTree<EditingInFlatTreeStrategy>(
       hit_test_result.InnerNode()->GetLayoutObject()->PositionForPoint(
-          hit_test_result.LocalPoint()));
+          hit_test_result.FlippedLocalPoint()));
 }
 
 DocumentMarker* SpellCheckMarkerAtPosition(
@@ -335,8 +335,8 @@ bool SelectionController::HandleSingleClick(
   // Don't restart the selection when the mouse is pressed on an
   // existing selection so we can allow for text dragging.
   if (LocalFrameView* view = frame_->View()) {
-    const LayoutPoint v_point = view->ConvertFromRootFrame(
-        FlooredIntPoint(event.Event().PositionInRootFrame()));
+    const PhysicalOffset v_point(view->ConvertFromRootFrame(
+        FlooredIntPoint(event.Event().PositionInRootFrame())));
     if (!extend_selection && this->Selection().Contains(v_point)) {
       mouse_down_was_single_click_in_selection_ = true;
       if (!event.Event().FromTouch())
@@ -472,8 +472,8 @@ static bool ShouldRespectSVGTextBoundaries(
 
 void SelectionController::UpdateSelectionForMouseDrag(
     const HitTestResult& hit_test_result,
-    const LayoutPoint& drag_start_pos,
-    const LayoutPoint& last_known_mouse_position) {
+    const PhysicalOffset& drag_start_pos,
+    const PhysicalOffset& last_known_mouse_position) {
   if (!mouse_down_may_start_select_)
     return;
 
@@ -623,9 +623,10 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
   // and isn't desirable for touch).
   HitTestResult adjusted_hit_test_result = result;
   if (select_input_event_type == SelectInputEventType::kTouch &&
-      result.GetImage())
+      result.GetImage()) {
     adjusted_hit_test_result.SetNodeAndPosition(result.InnerNode(),
-                                                LayoutPoint(0, 0));
+                                                PhysicalOffset());
+  }
 
   const PositionInFlatTreeWithAffinity pos =
       CreateVisiblePosition(
@@ -1014,8 +1015,8 @@ bool SelectionController::HandleMousePressEvent(
 void SelectionController::HandleMouseDraggedEvent(
     const MouseEventWithHitTestResults& event,
     const IntPoint& mouse_down_pos,
-    const LayoutPoint& drag_start_pos,
-    const LayoutPoint& last_known_mouse_position) {
+    const PhysicalOffset& drag_start_pos,
+    const PhysicalOffset& last_known_mouse_position) {
   TRACE_EVENT0("blink", "SelectionController::handleMouseDraggedEvent");
 
   if (!Selection().IsAvailable())
@@ -1034,8 +1035,8 @@ void SelectionController::HandleMouseDraggedEvent(
 }
 
 void SelectionController::UpdateSelectionForMouseDrag(
-    const LayoutPoint& drag_start_pos,
-    const LayoutPoint& last_known_mouse_position) {
+    const PhysicalOffset& drag_start_pos,
+    const PhysicalOffset& last_known_mouse_position) {
   LocalFrameView* view = frame_->View();
   if (!view)
     return;
@@ -1054,7 +1055,7 @@ void SelectionController::UpdateSelectionForMouseDrag(
 
 bool SelectionController::HandleMouseReleaseEvent(
     const MouseEventWithHitTestResults& event,
-    const LayoutPoint& drag_start_pos) {
+    const PhysicalOffset& drag_start_pos) {
   TRACE_EVENT0("blink", "SelectionController::handleMouseReleaseEvent");
 
   if (!Selection().IsAvailable())
@@ -1068,7 +1069,8 @@ bool SelectionController::HandleMouseReleaseEvent(
   // editing, place the caret.
   if (mouse_down_was_single_click_in_selection_ &&
       selection_state_ != SelectionState::kExtendedSelection &&
-      drag_start_pos == FlooredIntPoint(event.Event().PositionInRootFrame()) &&
+      drag_start_pos == PhysicalOffset(FlooredIntPoint(
+                            event.Event().PositionInRootFrame())) &&
       Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange() &&
       event.Event().button != WebPointerProperties::Button::kRight) {
     // TODO(editing-dev): Use of UpdateStyleAndLayout
@@ -1189,7 +1191,8 @@ static bool HitTestResultIsMisspelled(const HitTestResult& result) {
   if (!inner_node || !inner_node->GetLayoutObject())
     return false;
   PositionWithAffinity pos_with_affinity =
-      inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint());
+      inner_node->GetLayoutObject()->PositionForPoint(
+          result.FlippedLocalPoint());
   if (pos_with_affinity.IsNull())
     return false;
   // TODO(xiaochengh): Don't use |ParentAnchoredEquivalent()|.
@@ -1203,7 +1206,7 @@ static bool HitTestResultIsMisspelled(const HitTestResult& result) {
 
 void SelectionController::SendContextMenuEvent(
     const MouseEventWithHitTestResults& mev,
-    const LayoutPoint& position) {
+    const PhysicalOffset& position) {
   if (!Selection().IsAvailable())
     return;
   if (Selection().Contains(position) || mev.GetScrollbar() ||
@@ -1242,8 +1245,8 @@ void SelectionController::PassMousePressEventToSubframe(
   // greyed out even though we're clicking on the selection.  This looks
   // really strange (having the whole frame be greyed out), so we deselect the
   // selection.
-  IntPoint p = frame_->View()->ConvertFromRootFrame(
-      FlooredIntPoint(mev.Event().PositionInRootFrame()));
+  PhysicalOffset p(frame_->View()->ConvertFromRootFrame(
+      FlooredIntPoint(mev.Event().PositionInRootFrame())));
   if (!Selection().Contains(p))
     return;
 

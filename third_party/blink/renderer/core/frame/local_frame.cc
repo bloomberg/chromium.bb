@@ -831,7 +831,7 @@ String LocalFrame::SelectedTextForClipboard() const {
 }
 
 PositionWithAffinity LocalFrame::PositionForPoint(
-    const LayoutPoint& frame_point) {
+    const PhysicalOffset& frame_point) {
   HitTestLocation location(frame_point);
   HitTestResult result = GetEventHandler().HitTestResultAtLocation(location);
   Node* node = result.InnerNodeOrImageMapImage();
@@ -841,13 +841,14 @@ PositionWithAffinity LocalFrame::PositionForPoint(
   if (!layout_object)
     return PositionWithAffinity();
   const PositionWithAffinity position =
-      layout_object->PositionForPoint(result.LocalPoint());
+      layout_object->PositionForPoint(result.FlippedLocalPoint());
   if (position.IsNull())
     return PositionWithAffinity(FirstPositionInOrBeforeNode(*node));
   return position;
 }
 
-Document* LocalFrame::DocumentAtPoint(const LayoutPoint& point_in_root_frame) {
+Document* LocalFrame::DocumentAtPoint(
+    const PhysicalOffset& point_in_root_frame) {
   if (!View())
     return nullptr;
 

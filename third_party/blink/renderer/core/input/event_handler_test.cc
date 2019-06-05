@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -360,7 +361,7 @@ TEST_F(EventHandlerTest, draggedSVGImagePositionTest) {
 
 TEST_F(EventHandlerTest, HitOnNothingDoesNotShowIBeam) {
   SetHtmlInnerHTML("");
-  HitTestLocation location((LayoutPoint(10, 10)));
+  HitTestLocation location((PhysicalOffset(10, 10)));
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);

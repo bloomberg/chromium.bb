@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -1083,11 +1084,11 @@ TEST_F(FrameSelectionTest, SelectionContainsBidiBoundary) {
       SetSelectionOptions());
 
   // Check the right half of 'c'
-  const LayoutPoint c_right(35, 13);
+  const PhysicalOffset c_right(35, 13);
   EXPECT_TRUE(Selection().Contains(c_right));
 
   // Check the left half of "F"
-  const LayoutPoint f_left(45, 13);
+  const PhysicalOffset f_left(45, 13);
   EXPECT_TRUE(Selection().Contains(f_left));
 }
 

@@ -196,7 +196,7 @@ void SVGRootInlineBox::ReorderValueLists() {
 
 bool SVGRootInlineBox::NodeAtPoint(HitTestResult& result,
                                    const HitTestLocation& location_in_container,
-                                   const LayoutPoint& accumulated_offset,
+                                   const PhysicalOffset& accumulated_offset,
                                    LayoutUnit line_top,
                                    LayoutUnit line_bottom) {
   // Iterate the text boxes in reverse so that the top-most node will be considered first.

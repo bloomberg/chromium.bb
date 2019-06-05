@@ -35,7 +35,7 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
                                        LayoutUnit line_top,
                                        LayoutUnit line_bottom,
                                        const ComputedStyle& style) {
-  LayoutPoint box_origin = ellipsis_box_.PhysicalLocation();
+  LayoutPoint box_origin = ellipsis_box_.PhysicalLocation().ToLayoutPoint();
   box_origin.MoveBy(paint_offset);
 
   GraphicsContext& context = paint_info.context;

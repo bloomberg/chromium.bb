@@ -670,13 +670,12 @@ bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
 }
 
 HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
-    const LayoutPoint& location) {
+    const PhysicalOffset& location) {
   if (HitRegionsCount() <= 0)
     return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
 
   LayoutBox* box = canvas()->GetLayoutBox();
-  FloatPoint local_pos(
-      box->AbsoluteToLocalPoint(PhysicalOffsetToBeNoop(location)));
+  FloatPoint local_pos(box->AbsoluteToLocalPoint(location));
   if (box->StyleRef().HasBorder() || box->StyleRef().MayHavePadding())
     local_pos.Move(FloatSize(-box->PhysicalContentBoxOffset()));
   float scaleWidth = box->ContentWidth().ToFloat() == 0.0f

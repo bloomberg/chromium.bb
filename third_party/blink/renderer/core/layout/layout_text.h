@@ -365,7 +365,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void UpdateLayout() final { NOTREACHED(); }
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,
-                   const LayoutPoint&,
+                   const PhysicalOffset&,
                    HitTestAction) final {
     NOTREACHED();
     return false;

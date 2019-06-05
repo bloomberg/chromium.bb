@@ -135,7 +135,7 @@ void MouseEventManager::Clear() {
   mouse_down_timestamp_ = TimeTicks();
   mouse_down_ = WebMouseEvent();
   svg_pan_ = false;
-  drag_start_pos_ = LayoutPoint();
+  drag_start_pos_ = PhysicalOffset();
   hover_state_dirty_ = false;
   fake_mouse_move_event_timer_.Stop();
   ResetDragSource();
@@ -732,7 +732,8 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
 
   mouse_press_node_ = inner_node;
   frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(inner_node);
-  drag_start_pos_ = FlooredIntPoint(event.Event().PositionInRootFrame());
+  drag_start_pos_ =
+      PhysicalOffset(FlooredIntPoint(event.Event().PositionInRootFrame()));
 
   mouse_pressed_ = true;
 
@@ -767,8 +768,9 @@ WebInputEventResult MouseEventManager::HandleMouseReleaseEvent(
 void MouseEventManager::UpdateSelectionForMouseDrag() {
   frame_->GetEventHandler()
       .GetSelectionController()
-      .UpdateSelectionForMouseDrag(drag_start_pos_,
-                                   LayoutPoint(last_known_mouse_position_));
+      .UpdateSelectionForMouseDrag(
+          drag_start_pos_,
+          PhysicalOffset::FromFloatPointRound(last_known_mouse_position_));
 }
 
 bool MouseEventManager::HandleDragDropIfPossible(
@@ -880,7 +882,7 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
 
   frame_->GetEventHandler().GetSelectionController().HandleMouseDraggedEvent(
       event, mouse_down_pos_, drag_start_pos_,
-      LayoutPoint(last_known_mouse_position_));
+      PhysicalOffset::FromFloatPointRound(last_known_mouse_position_));
 
   // The call into HandleMouseDraggedEvent may have caused a re-layout,
   // so get the LayoutObject again.

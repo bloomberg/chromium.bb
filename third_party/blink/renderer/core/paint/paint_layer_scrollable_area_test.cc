@@ -983,22 +983,22 @@ TEST_P(PaintLayerScrollableAreaTest, HitTestOverlayScrollbars) {
   scrollable_area->SetScrollbarsHiddenIfOverlay(true);
 
   HitTestRequest hit_request(HitTestRequest::kMove | HitTestRequest::kReadOnly);
-  HitTestLocation location(LayoutPoint(95, 5));
+  HitTestLocation location(PhysicalOffset(95, 5));
   HitTestResult hit_result(hit_request, location);
   GetDocument().GetLayoutView()->HitTest(location, hit_result);
   EXPECT_EQ(hit_result.GetScrollbar(), nullptr);
-  location = HitTestLocation(LayoutPoint(5, 95));
+  location = HitTestLocation(PhysicalOffset(5, 95));
   hit_result = HitTestResult(hit_request, location);
   GetDocument().GetLayoutView()->HitTest(location, hit_result);
   EXPECT_EQ(hit_result.GetScrollbar(), nullptr);
 
   scrollable_area->SetScrollbarsHiddenIfOverlay(false);
 
-  location = HitTestLocation(LayoutPoint(95, 5));
+  location = HitTestLocation(PhysicalOffset(95, 5));
   hit_result = HitTestResult(hit_request, location);
   GetDocument().GetLayoutView()->HitTest(location, hit_result);
   EXPECT_EQ(hit_result.GetScrollbar(), scrollable_area->VerticalScrollbar());
-  location = HitTestLocation(LayoutPoint(5, 95));
+  location = HitTestLocation(PhysicalOffset(5, 95));
   hit_result = HitTestResult(hit_request, location);
   GetDocument().GetLayoutView()->HitTest(location, hit_result);
   EXPECT_EQ(hit_result.GetScrollbar(), scrollable_area->HorizontalScrollbar());

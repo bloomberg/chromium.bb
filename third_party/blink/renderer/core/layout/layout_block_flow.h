@@ -528,7 +528,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   Node* NodeForHitTest() const final;
   bool HitTestChildren(HitTestResult&,
                        const HitTestLocation& location_in_container,
-                       const LayoutPoint& accumulated_offset,
+                       const PhysicalOffset& accumulated_offset,
                        HitTestAction) override;
 
   PhysicalOffset AccumulateInFlowPositionOffsets() const override;
@@ -577,7 +577,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   bool HitTestFloats(HitTestResult&,
                      const HitTestLocation& location_in_container,
-                     const LayoutPoint& accumulated_offset);
+                     const PhysicalOffset& accumulated_offset);
 
   void ClearFloats(EClear);
 

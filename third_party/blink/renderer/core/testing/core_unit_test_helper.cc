@@ -45,7 +45,7 @@ RenderingTest::RenderingTest(LocalFrameClient* local_frame_client)
     : UseMockScrollbarSettings(), local_frame_client_(local_frame_client) {}
 
 const Node* RenderingTest::HitTest(int x, int y) {
-  HitTestLocation location(LayoutPoint(x, y));
+  HitTestLocation location(PhysicalOffset(x, y));
   HitTestResult result(
       HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                      HitTestRequest::kAllowChildFrameContent),
@@ -54,7 +54,8 @@ const Node* RenderingTest::HitTest(int x, int y) {
   return result.InnerNode();
 }
 
-HitTestResult::NodeSet RenderingTest::RectBasedHitTest(LayoutRect rect) {
+HitTestResult::NodeSet RenderingTest::RectBasedHitTest(
+    const PhysicalRect& rect) {
   HitTestLocation location(rect);
   HitTestResult result(
       HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |

@@ -83,7 +83,7 @@ class CORE_EXPORT SVGLayoutSupport {
   static bool HitTestChildren(LayoutObject* last_child,
                               HitTestResult&,
                               const HitTestLocation&,
-                              const LayoutPoint& accumulated_offset,
+                              const PhysicalOffset& accumulated_offset,
                               HitTestAction);
 
   static void ComputeContainerBoundingBoxes(const LayoutObject* container,

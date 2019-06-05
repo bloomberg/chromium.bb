@@ -180,7 +180,7 @@ void LayoutFlowThread::AddOutlineRects(
 
 bool LayoutFlowThread::NodeAtPoint(HitTestResult& result,
                                    const HitTestLocation& location_in_container,
-                                   const LayoutPoint& accumulated_offset,
+                                   const PhysicalOffset& accumulated_offset,
                                    HitTestAction hit_test_action) {
   if (hit_test_action == kHitTestBlockBackground)
     return false;

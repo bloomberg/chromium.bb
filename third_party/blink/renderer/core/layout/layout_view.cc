@@ -155,14 +155,14 @@ bool LayoutView::HitTestNoLifecycleUpdate(const HitTestLocation& location,
     result = cache_result;
   } else {
     LocalFrameView* frame_view = GetFrameView();
-    LayoutRect hit_test_area;
+    PhysicalRect hit_test_area;
     if (frame_view) {
       // Start with a rect sized to the frame, to ensure we include the
       // scrollbars.
-      hit_test_area = LayoutRect(LayoutPoint(), LayoutSize(frame_view->Size()));
+      hit_test_area.size = PhysicalSize(frame_view->Size());
       if (result.GetHitTestRequest().IgnoreClipping()) {
         hit_test_area.Unite(
-            frame_view->DocumentToFrame(LayoutRect(DocumentRect())));
+            frame_view->DocumentToFrame(PhysicalRect(DocumentRect())));
       }
     }
 
@@ -783,13 +783,15 @@ void LayoutView::UpdateAfterLayout() {
 }
 
 void LayoutView::UpdateHitTestResult(HitTestResult& result,
-                                     const LayoutPoint& point) const {
+                                     const PhysicalOffset& point) const {
   if (result.InnerNode())
     return;
 
   Node* node = GetDocument().documentElement();
   if (node) {
-    LayoutPoint adjusted_point = point;
+    PhysicalOffset adjusted_point = point;
+    if (const auto* layout_box = node->GetLayoutBox())
+      adjusted_point -= layout_box->PhysicalLocation();
     OffsetForContents(adjusted_point);
     result.SetNodeAndPosition(node, adjusted_point);
   }

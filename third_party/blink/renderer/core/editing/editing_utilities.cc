@@ -1311,14 +1311,13 @@ HTMLSpanElement* CreateTabSpanElement(Document& document) {
 
 PositionWithAffinity PositionRespectingEditingBoundary(
     const Position& position,
-    const LayoutPoint& local_point,
+    const PhysicalOffset& local_point,
     Node* target_node) {
   const LayoutObject* target_object = target_node->GetLayoutObject();
   if (!target_object)
     return PositionWithAffinity();
 
-  // Note that local_point is in flipped blocks direction.
-  LayoutPoint selection_end_point = local_point;
+  PhysicalOffset selection_end_point = local_point;
   Element* editable_element = RootEditableElementOf(position);
 
   if (editable_element && !editable_element->contains(target_node)) {
@@ -1326,17 +1325,18 @@ PositionWithAffinity PositionRespectingEditingBoundary(
     if (!editable_object)
       return PositionWithAffinity();
 
-    // TODO(yosin): This kIgnoreTransforms correct here?
+    // TODO(yosin): Is this kIgnoreTransforms correct here?
     PhysicalOffset absolute_point = target_object->LocalToAbsolutePoint(
-        target_object->FlipForWritingMode(selection_end_point),
-        kIgnoreTransforms);
-    selection_end_point = editable_object->FlipForWritingMode(
-        editable_object->AbsoluteToLocalPoint(absolute_point,
-                                              kIgnoreTransforms));
+        selection_end_point, kIgnoreTransforms);
+    selection_end_point = editable_object->AbsoluteToLocalPoint(
+        absolute_point, kIgnoreTransforms);
     target_object = editable_object;
   }
 
-  return target_object->PositionForPoint(selection_end_point);
+  // TODO(wangxianzhu): LayoutObject::PositionForPoint() still expects flipped
+  // coordinates.
+  return target_object->PositionForPoint(
+      target_object->FlipForWritingMode(selection_end_point));
 }
 
 Position ComputePositionForNodeRemoval(const Position& position,

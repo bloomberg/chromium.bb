@@ -1396,7 +1396,7 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
 }
 
 HitTestCanvasResult* HTMLCanvasElement::GetControlAndIdIfHitRegionExists(
-    const LayoutPoint& location) {
+    const PhysicalOffset& location) {
   if (Is2d())
     return context_->GetControlAndIdIfHitRegionExists(location);
   return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);

@@ -232,15 +232,16 @@ bool SpatialNavigationController::Advance(
 
   Node* container = ScrollableAreaOrDocumentOf(interest_node);
 
-  const LayoutRect visible_rect(page_->GetVisualViewport().VisibleRect());
-  const LayoutRect start_box =
+  const PhysicalRect visible_rect =
+      PhysicalRect::EnclosingRect(page_->GetVisualViewport().VisibleRect());
+  const PhysicalRect start_box =
       SearchOrigin(visible_rect, interest_node, direction);
 
   if (IsScrollableAreaOrDocument(interest_node) &&
       !IsOffscreen(interest_node)) {
     // A visible scroller has interest. Search inside of it from one of its
     // edges.
-    LayoutRect edge = OppositeEdge(direction, start_box);
+    PhysicalRect edge = OppositeEdge(direction, start_box);
     if (AdvanceWithinContainer(*interest_node, edge, direction, nullptr))
       return true;
   }
@@ -273,7 +274,7 @@ bool SpatialNavigationController::Advance(
 
 FocusCandidate SpatialNavigationController::FindNextCandidateInContainer(
     Node& container,
-    const LayoutRect& starting_rect_in_root_frame,
+    const PhysicalRect& starting_rect_in_root_frame,
     SpatialNavigationDirection direction,
     Node* interest_child_in_container) {
   Element* element = ElementTraversal::FirstWithin(container);
@@ -312,7 +313,7 @@ FocusCandidate SpatialNavigationController::FindNextCandidateInContainer(
 
 bool SpatialNavigationController::AdvanceWithinContainer(
     Node& container,
-    const LayoutRect& starting_rect_in_root_frame,
+    const PhysicalRect& starting_rect_in_root_frame,
     SpatialNavigationDirection direction,
     Node* interest_child_in_container) {
   DCHECK(IsScrollableAreaOrDocument(&container));

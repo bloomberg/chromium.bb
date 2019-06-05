@@ -27,7 +27,7 @@ HitTestResult HitTestResultInFrame(
   if (!frame || !frame->ContentLayoutObject())
     return result;
   if (LocalFrameView* frame_view = frame->View()) {
-    LayoutRect rect(LayoutPoint(), LayoutSize(frame_view->Size()));
+    PhysicalRect rect(PhysicalOffset(), PhysicalSize(frame_view->Size()));
     if (!location.Intersects(rect))
       return result;
   }
@@ -104,13 +104,15 @@ ContainerNode* ParentForClickEvent(const Node& node) {
   return FlatTreeTraversal::Parent(node);
 }
 
-LayoutPoint ContentPointFromRootFrame(LocalFrame* frame,
-                                      const FloatPoint& point_in_root_frame) {
+PhysicalOffset ContentPointFromRootFrame(
+    LocalFrame* frame,
+    const FloatPoint& point_in_root_frame) {
   LocalFrameView* view = frame->View();
   // FIXME: Is it really OK to use the wrong coordinates here when view is 0?
   // Historically the code would just crash; this is clearly no worse than that.
-  return LayoutPoint(view ? view->ConvertFromRootFrame(point_in_root_frame)
-                          : point_in_root_frame);
+  return PhysicalOffset::FromFloatPointRound(
+      view ? view->ConvertFromRootFrame(point_in_root_frame)
+           : point_in_root_frame);
 }
 
 MouseEventWithHitTestResults PerformMouseEventHitTest(

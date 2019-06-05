@@ -251,7 +251,7 @@ class CORE_EXPORT MouseEventManager final
   TimeTicks mouse_down_timestamp_;
   WebMouseEvent mouse_down_;
 
-  LayoutPoint drag_start_pos_;
+  PhysicalOffset drag_start_pos_;
   // This indicates that whether we should update the hover at each begin
   // frame. This is set to be true after the compositor or main thread scroll
   // ends, and at each begin frame, we will dispatch a fake mouse move event to

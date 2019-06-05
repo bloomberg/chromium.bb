@@ -81,7 +81,7 @@ class LineLayoutItem {
     return layout_object_->IsDescendantOf(item.layout_object_);
   }
 
-  void UpdateHitTestResult(HitTestResult& result, const LayoutPoint& point) {
+  void UpdateHitTestResult(HitTestResult& result, const PhysicalOffset& point) {
     return layout_object_->UpdateHitTestResult(result, point);
   }
 
@@ -235,7 +235,7 @@ class LineLayoutItem {
 
   bool HitTestAllPhases(HitTestResult& result,
                         const HitTestLocation& location_in_container,
-                        const LayoutPoint& accumulated_offset) {
+                        const PhysicalOffset& accumulated_offset) {
     return layout_object_->HitTestAllPhases(result, location_in_container,
                                             accumulated_offset);
   }

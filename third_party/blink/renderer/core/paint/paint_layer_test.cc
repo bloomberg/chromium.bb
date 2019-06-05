@@ -1610,7 +1610,7 @@ TEST_P(PaintLayerTest, HitTestWithStopNode) {
 
   // Regular hit test over 'child'
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestLocation location((LayoutPoint(50, 25)));
+  HitTestLocation location((PhysicalOffset(50, 25)));
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(child, result.InnerNode());
@@ -1624,7 +1624,7 @@ TEST_P(PaintLayerTest, HitTestWithStopNode) {
 
   // Regular hit test over 'overlap'
   request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  location = HitTestLocation((LayoutPoint(50, 75)));
+  location = HitTestLocation((PhysicalOffset(50, 75)));
   result = HitTestResult(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(overlap, result.InnerNode());
@@ -1641,7 +1641,7 @@ TEST_P(PaintLayerTest, HitTestWithStopNode) {
   request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                                HitTestRequest::kListBased,
                            hit->GetLayoutObject());
-  location = HitTestLocation((LayoutRect(40, 15, 20, 20)));
+  location = HitTestLocation((PhysicalRect(40, 15, 20, 20)));
   result = HitTestResult(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(1u, result.ListBasedTestResult().size());
@@ -1670,7 +1670,7 @@ TEST_P(PaintLayerTest, HitTestTableWithStopNode) {
   Element* table = GetDocument().getElementById("table");
   Element* cell11 = GetDocument().getElementById("cell11");
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestLocation location((LayoutPoint(50, 50)));
+  HitTestLocation location((PhysicalOffset(50, 50)));
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(cell11, result.InnerNode());
@@ -1691,7 +1691,7 @@ TEST_P(PaintLayerTest, HitTestSVGWithStopNode) {
   Element* svg = GetDocument().getElementById("svg");
   Element* circle = GetDocument().getElementById("circle");
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestLocation location((LayoutPoint(50, 50)));
+  HitTestLocation location((PhysicalOffset(50, 50)));
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(circle, result.InnerNode());
@@ -1744,7 +1744,7 @@ TEST_P(PaintLayerTest, HitTestPseudoElementWithContinuation) {
   )HTML");
   Element* target = GetDocument().getElementById("target");
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestLocation location(PhysicalOffset(10, 10));
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
@@ -1768,7 +1768,7 @@ TEST_P(PaintLayerTest, HitTestFirstLetterPseudoElement) {
   Element* target = GetDocument().getElementById("target");
   Element* container = GetDocument().getElementById("container");
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestLocation location(PhysicalOffset(10, 10));
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
@@ -1793,7 +1793,7 @@ TEST_P(PaintLayerTest, HitTestFirstLetterInBeforePseudoElement) {
   Element* target = GetDocument().getElementById("target");
   Element* container = GetDocument().getElementById("container");
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestLocation location(PhysicalOffset(10, 10));
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
@@ -1819,7 +1819,7 @@ TEST_P(PaintLayerTest, HitTestFloatInsideInlineBoxContainer) {
   )HTML");
   Node* target = GetDocument().getElementById("target")->firstChild();
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestLocation location(LayoutPoint(55, 5));  // At the center of "bar"
+  HitTestLocation location(PhysicalOffset(55, 5));  // At the center of "bar"
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
@@ -1842,7 +1842,7 @@ TEST_P(PaintLayerTest, HitTestFirstLetterPseudoElementDisplayContents) {
   Element* target = GetDocument().getElementById("target");
   Element* container = GetDocument().getElementById("container");
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestLocation location(PhysicalOffset(10, 10));
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());

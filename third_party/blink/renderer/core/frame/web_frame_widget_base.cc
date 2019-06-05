@@ -77,7 +77,7 @@ WebRect WebFrameWidgetBase::ComputeBlockBound(
     const gfx::Point& point_in_root_frame,
     bool ignore_clipping) const {
   HitTestLocation location(local_root_->GetFrameView()->ConvertFromRootFrame(
-      LayoutPoint(IntPoint(point_in_root_frame))));
+      PhysicalOffset(IntPoint(point_in_root_frame))));
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kReadOnly | HitTestRequest::kActive |
       (ignore_clipping ? HitTestRequest::kIgnoreClipping : 0);

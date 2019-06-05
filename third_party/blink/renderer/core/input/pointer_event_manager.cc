@@ -367,9 +367,10 @@ void PointerEventManager::AdjustTouchPointerEvent(
       HitTestRequest::kActive | HitTestRequest::kListBased;
   LocalFrame& root_frame = frame_->LocalFrameRoot();
   // TODO(szager): Shouldn't this be PositionInScreen() ?
-  LayoutPoint hit_test_point((FloatPoint)pointer_event.PositionInWidget());
-  hit_test_point.Move(-hit_rect_size * 0.5f);
-  HitTestLocation location(LayoutRect(hit_test_point, hit_rect_size));
+  PhysicalOffset hit_test_point =
+      PhysicalOffset::FromFloatPointRound(pointer_event.PositionInWidget());
+  hit_test_point -= PhysicalOffset(hit_rect_size * 0.5f);
+  HitTestLocation location(PhysicalRect(hit_test_point, hit_rect_size));
   HitTestResult hit_test_result =
       root_frame.GetEventHandler().HitTestResultAtLocation(location, hit_type);
   Node* adjusted_node = nullptr;
@@ -423,7 +424,8 @@ PointerEventManager::ComputePointerEventTarget(
                                                   HitTestRequest::kReadOnly |
                                                   HitTestRequest::kActive;
     HitTestLocation location(frame_->View()->ConvertFromRootFrame(
-        LayoutPoint(web_pointer_event.PositionInWidget())));
+        PhysicalOffset::FromFloatPointRound(
+            web_pointer_event.PositionInWidget())));
     HitTestResult hit_test_tesult =
         frame_->GetEventHandler().HitTestResultAtLocation(location, hit_type);
     Element* target = hit_test_tesult.InnerElement();

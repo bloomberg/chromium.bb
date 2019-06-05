@@ -1588,7 +1588,7 @@ LayoutUnit LayoutBox::AdjustContentBoxLogicalHeightForBoxSizing(
 // Hit Testing
 bool LayoutBox::HitTestAllPhases(HitTestResult& result,
                                  const HitTestLocation& location_in_container,
-                                 const LayoutPoint& accumulated_offset,
+                                 const PhysicalOffset& accumulated_offset,
                                  HitTestFilter hit_test_filter) {
   // Check if we need to do anything at all.
   // If we have clipping, then we can't have any spillout.
@@ -1604,8 +1604,8 @@ bool LayoutBox::HitTestAllPhases(HitTestResult& result,
                          : PhysicalVisualOverflowRect();
     }
 
-    LayoutRect adjusted_overflow_box = overflow_box.ToLayoutRect();
-    adjusted_overflow_box.MoveBy(accumulated_offset + Location());
+    PhysicalRect adjusted_overflow_box = overflow_box;
+    adjusted_overflow_box.Move(accumulated_offset + PhysicalLocation());
     if (!location_in_container.Intersects(adjusted_overflow_box))
       return false;
   }
@@ -1615,9 +1615,9 @@ bool LayoutBox::HitTestAllPhases(HitTestResult& result,
 
 bool LayoutBox::NodeAtPoint(HitTestResult& result,
                             const HitTestLocation& location_in_container,
-                            const LayoutPoint& accumulated_offset,
+                            const PhysicalOffset& accumulated_offset,
                             HitTestAction action) {
-  LayoutPoint adjusted_location = accumulated_offset + Location();
+  PhysicalOffset adjusted_location = accumulated_offset + PhysicalLocation();
 
   bool should_hit_test_self = IsInSelfHitTestingPhase(action);
 
@@ -1636,9 +1636,9 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
       skip_children = true;
     }
     if (!skip_children && StyleRef().HasBorderRadius()) {
-      LayoutRect bounds_rect(adjusted_location, Size());
+      PhysicalRect bounds_rect(adjusted_location, Size());
       skip_children = !location_in_container.Intersects(
-          StyleRef().GetRoundedInnerBorderFor(bounds_rect));
+          StyleRef().GetRoundedInnerBorderFor(bounds_rect.ToLayoutRect()));
     }
   }
 
@@ -1654,18 +1654,17 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
   // Now hit test ourselves.
   if (should_hit_test_self &&
       VisibleToHitTestRequest(result.GetHitTestRequest())) {
-    LayoutRect bounds_rect;
+    PhysicalRect bounds_rect;
     if (result.GetHitTestRequest().GetType() &
         HitTestRequest::kHitTestVisualOverflow) {
-      bounds_rect = PhysicalVisualOverflowRectIncludingFilters().ToLayoutRect();
+      bounds_rect = PhysicalVisualOverflowRectIncludingFilters();
     } else {
-      bounds_rect = BorderBoxRect();
+      bounds_rect = PhysicalBorderBoxRect();
     }
-    bounds_rect.Move(ToSize(adjusted_location));
+    bounds_rect.Move(adjusted_location);
     if (location_in_container.Intersects(bounds_rect)) {
-      UpdateHitTestResult(result, DeprecatedFlipForWritingMode(
-                                      location_in_container.Point() -
-                                      ToLayoutSize(adjusted_location)));
+      UpdateHitTestResult(result,
+                          location_in_container.Point() - adjusted_location);
       if (result.AddNodeToListBasedTestResult(NodeForHitTest(),
                                               location_in_container,
                                               bounds_rect) == kStopHitTesting)
@@ -1678,7 +1677,7 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
 
 bool LayoutBox::HitTestChildren(HitTestResult& result,
                                 const HitTestLocation& location_in_container,
-                                const LayoutPoint& accumulated_offset,
+                                const PhysicalOffset& accumulated_offset,
                                 HitTestAction action) {
   for (LayoutObject* child = SlowLastChild(); child;
        child = child->PreviousSibling()) {
@@ -1694,11 +1693,11 @@ bool LayoutBox::HitTestChildren(HitTestResult& result,
 
 bool LayoutBox::HitTestClippedOutByBorder(
     const HitTestLocation& location_in_container,
-    const LayoutPoint& border_box_location) const {
-  LayoutRect border_rect = BorderBoxRect();
-  border_rect.MoveBy(border_box_location);
+    const PhysicalOffset& border_box_location) const {
+  PhysicalRect border_rect = PhysicalBorderBoxRect();
+  border_rect.Move(border_box_location);
   return !location_in_container.Intersects(
-      StyleRef().GetRoundedBorderFor(border_rect));
+      StyleRef().GetRoundedBorderFor(border_rect.ToLayoutRect()));
 }
 
 void LayoutBox::Paint(const PaintInfo& paint_info) const {

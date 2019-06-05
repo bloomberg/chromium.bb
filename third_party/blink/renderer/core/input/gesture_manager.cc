@@ -427,8 +427,8 @@ WebInputEventResult GestureManager::SendContextMenuEventForGesture(
 
   if (!suppress_mouse_events_from_gestures_ && frame_->View()) {
     HitTestRequest request(HitTestRequest::kActive);
-    LayoutPoint document_point = frame_->View()->ConvertFromRootFrame(
-        FlooredIntPoint(targeted_event.Event().PositionInRootFrame()));
+    PhysicalOffset document_point(frame_->View()->ConvertFromRootFrame(
+        FlooredIntPoint(targeted_event.Event().PositionInRootFrame())));
     MouseEventWithHitTestResults mev =
         frame_->GetDocument()->PerformMouseEventHitTest(request, document_point,
                                                         mouse_event);

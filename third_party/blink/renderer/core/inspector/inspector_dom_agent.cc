@@ -1322,8 +1322,9 @@ Response InspectorDOMAgent::getNodeForLocation(
   bool include_user_agent_shadow_dom =
       optional_include_user_agent_shadow_dom.fromMaybe(false);
   Document* document = inspected_frames_->Root()->GetDocument();
-  LayoutPoint document_point(x * inspected_frames_->Root()->PageZoomFactor(),
-                             y * inspected_frames_->Root()->PageZoomFactor());
+  PhysicalOffset document_point(
+      LayoutUnit(x * inspected_frames_->Root()->PageZoomFactor()),
+      LayoutUnit(y * inspected_frames_->Root()->PageZoomFactor()));
   HitTestRequest request(HitTestRequest::kMove | HitTestRequest::kReadOnly |
                          HitTestRequest::kAllowChildFrameContent);
   HitTestLocation location(document->View()->DocumentToFrame(document_point));

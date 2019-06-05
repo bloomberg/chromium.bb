@@ -502,7 +502,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
               WebViewImpl* opener);
   ~WebViewImpl() override;
 
-  HitTestResult HitTestResultForRootFramePos(const LayoutPoint&);
+  HitTestResult HitTestResultForRootFramePos(const PhysicalOffset&);
 
   void ConfigureAutoResizeMode();
 

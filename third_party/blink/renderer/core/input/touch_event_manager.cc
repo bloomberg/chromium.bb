@@ -529,7 +529,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
   if (touch_sequence_document_ &&
       (!touch_node || &touch_node->GetDocument() != touch_sequence_document_)) {
     if (touch_sequence_document_->GetFrame()) {
-      HitTestLocation location(LayoutPoint(
+      HitTestLocation location(PhysicalOffset::FromFloatPointRound(
           touch_sequence_document_->GetFrame()->View()->ConvertFromRootFrame(
               event.PositionInWidget())));
       result = event_handling_util::HitTestResultInFrame(

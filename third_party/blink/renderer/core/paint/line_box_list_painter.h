@@ -10,10 +10,10 @@
 
 namespace blink {
 
-class LayoutPoint;
-struct PaintInfo;
 class LayoutBoxModelObject;
 class LineBoxList;
+struct PaintInfo;
+struct PhysicalOffset;
 
 class LineBoxListPainter {
   STACK_ALLOCATED();
@@ -24,7 +24,7 @@ class LineBoxListPainter {
 
   void Paint(const LayoutBoxModelObject&,
              const PaintInfo&,
-             const LayoutPoint& paint_offset) const;
+             const PhysicalOffset& paint_offset) const;
 
  private:
   const LineBoxList& line_box_list_;

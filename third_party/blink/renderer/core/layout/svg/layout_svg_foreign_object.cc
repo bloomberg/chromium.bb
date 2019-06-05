@@ -128,9 +128,9 @@ void LayoutSVGForeignObject::UpdateLayout() {
 bool LayoutSVGForeignObject::NodeAtPointFromSVG(
     HitTestResult& result,
     const HitTestLocation& location_in_parent,
-    const LayoutPoint& accumulated_offset,
+    const PhysicalOffset& accumulated_offset,
     HitTestAction) {
-  DCHECK_EQ(accumulated_offset, LayoutPoint());
+  DCHECK_EQ(accumulated_offset, PhysicalOffset());
   TransformedHitTestLocation local_location(location_in_parent,
                                             LocalSVGTransform());
   if (!local_location)
@@ -138,11 +138,10 @@ bool LayoutSVGForeignObject::NodeAtPointFromSVG(
 
   // |local_location| already includes the offset of the <foreignObject>
   // element, but PaintLayer::HitTestLayer assumes it has not been.
-  HitTestLocation local_without_offset(
-      *local_location, -ToLayoutSize(Layer()->LayoutBoxLocation()));
+  HitTestLocation local_without_offset(*local_location, -PhysicalLocation());
   HitTestResult layer_result(result.GetHitTestRequest(), local_without_offset);
   bool retval = Layer()->HitTest(local_without_offset, layer_result,
-                                 LayoutRect(LayoutRect::InfiniteIntRect()));
+                                 PhysicalRect(PhysicalRect::InfiniteIntRect()));
 
   // Preserve the "point in inner node frame" from the original request,
   // since |layer_result| is a hit test rooted at the <foreignObject> element,
@@ -150,7 +149,7 @@ bool LayoutSVGForeignObject::NodeAtPointFromSVG(
   // |point_in_foreign_object| as its "point in inner node frame".
   // TODO(chrishtr): refactor the PaintLayer and HitTestResults code around
   // this, to better support hit tests that don't start at frame boundaries.
-  LayoutPoint original_point_in_inner_node_frame =
+  PhysicalOffset original_point_in_inner_node_frame =
       result.PointInInnerNodeFrame();
   if (result.GetHitTestRequest().ListBased())
     result.Append(layer_result);
@@ -163,7 +162,7 @@ bool LayoutSVGForeignObject::NodeAtPointFromSVG(
 bool LayoutSVGForeignObject::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_parent,
-    const LayoutPoint& accumulated_offset,
+    const PhysicalOffset& accumulated_offset,
     HitTestAction hit_test_action) {
   // Skip LayoutSVGBlock's override.
   return LayoutBlockFlow::NodeAtPoint(result, location_in_parent,

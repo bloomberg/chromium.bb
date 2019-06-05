@@ -432,7 +432,8 @@ void WebViewImpl::MouseContextMenu(const WebMouseEvent& event) {
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(MainFrameImpl()->GetFrameView(), event);
   transformed_event.menu_source_type = kMenuSourceMouse;
-  LayoutPoint position_in_root_frame(transformed_event.PositionInRootFrame());
+  PhysicalOffset position_in_root_frame = PhysicalOffset::FromFloatPointRound(
+      transformed_event.PositionInRootFrame());
 
   // Find the right target frame. See issue 1186900.
   HitTestResult result = HitTestResultForRootFramePos(position_in_root_frame);
@@ -2779,7 +2780,7 @@ void WebViewImpl::PerformPluginAction(const WebPluginAction& action,
                                       const gfx::Point& location) {
   // FIXME: Location is probably in viewport coordinates
   HitTestResult result =
-      HitTestResultForRootFramePos(LayoutPoint(IntPoint(location)));
+      HitTestResultForRootFramePos(PhysicalOffset(IntPoint(location)));
   Node* node = result.InnerNode();
   if (!IsHTMLObjectElement(*node) && !IsHTMLEmbedElement(*node))
     return;
@@ -2824,8 +2825,8 @@ HitTestResult WebViewImpl::CoreHitTestResultAt(
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
   LocalFrameView* view = MainFrameImpl()->GetFrameView();
-  LayoutPoint point_in_root_frame =
-      view->ViewportToFrame(LayoutPoint(IntPoint(point_in_viewport)));
+  PhysicalOffset point_in_root_frame =
+      view->ViewportToFrame(PhysicalOffset(IntPoint(point_in_viewport)));
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
@@ -3170,7 +3171,7 @@ Element* WebViewImpl::FocusedElement() const {
 }
 
 HitTestResult WebViewImpl::HitTestResultForRootFramePos(
-    const LayoutPoint& pos_in_root_frame) {
+    const PhysicalOffset& pos_in_root_frame) {
   auto* main_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame());
   if (!main_frame)
     return HitTestResult();

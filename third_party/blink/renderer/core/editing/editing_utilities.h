@@ -256,7 +256,7 @@ bool IsRichlyEditablePosition(const Position&);
 
 PositionWithAffinity PositionRespectingEditingBoundary(
     const Position&,
-    const LayoutPoint& local_point,
+    const PhysicalOffset& local_point,
     Node* target_node);
 Position ComputePositionForNodeRemoval(const Position&, const Node&);
 

@@ -240,21 +240,14 @@ void InlineBox::Paint(const PaintInfo& paint_info,
 
 bool InlineBox::NodeAtPoint(HitTestResult& result,
                             const HitTestLocation& location_in_container,
-                            const LayoutPoint& accumulated_offset,
+                            const PhysicalOffset& accumulated_offset,
                             LayoutUnit /* lineTop */,
                             LayoutUnit /* lineBottom */) {
   // Hit test all phases of replaced elements atomically, as though the replaced
   // element established its own stacking context. (See Appendix E.2, section
   // 6.4 on inline block/table elements in the CSS2.1 specification.)
-  LayoutPoint child_point = accumulated_offset;
-  // Faster than calling containingBlock().
-  if (Parent()->GetLineLayoutItem().HasFlippedBlocksWritingMode())
-    child_point =
-        GetLineLayoutItem().ContainingBlock().FlipForWritingModeForChild(
-            LineLayoutBox(GetLineLayoutItem()), child_point);
-
   return GetLineLayoutItem().HitTestAllPhases(result, location_in_container,
-                                              child_point);
+                                              accumulated_offset);
 }
 
 const RootInlineBox& InlineBox::Root() const {
@@ -336,10 +329,10 @@ void InlineBox::ClearKnownToHaveNoOverflow() {
     Parent()->ClearKnownToHaveNoOverflow();
 }
 
-LayoutPoint InlineBox::PhysicalLocation() const {
+PhysicalOffset InlineBox::PhysicalLocation() const {
   LayoutRect rect(Location(), Size());
   FlipForWritingMode(rect);
-  return rect.Location();
+  return PhysicalOffset(rect.Location());
 }
 
 void InlineBox::FlipForWritingMode(LayoutRect& rect) const {

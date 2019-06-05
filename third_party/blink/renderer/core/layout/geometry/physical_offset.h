@@ -48,6 +48,11 @@ struct CORE_EXPORT PhysicalOffset {
     return left.HasFraction() || top.HasFraction();
   }
 
+  void ClampNegativeToZero() {
+    left = std::max(left, LayoutUnit());
+    top = std::max(top, LayoutUnit());
+  }
+
   PhysicalOffset operator+(const PhysicalOffset& other) const {
     return PhysicalOffset{this->left + other.left, this->top + other.top};
   }
@@ -92,6 +97,10 @@ struct CORE_EXPORT PhysicalOffset {
   explicit PhysicalOffset(const IntSize& size)
       : left(size.Width()), top(size.Height()) {}
 
+  static PhysicalOffset FromFloatPointFloor(const FloatPoint& point) {
+    return {LayoutUnit::FromFloatFloor(point.X()),
+            LayoutUnit::FromFloatFloor(point.Y())};
+  }
   static PhysicalOffset FromFloatPointRound(const FloatPoint& point) {
     return {LayoutUnit::FromFloatRound(point.X()),
             LayoutUnit::FromFloatRound(point.Y())};

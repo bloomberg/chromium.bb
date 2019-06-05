@@ -1441,19 +1441,25 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   CompositingState GetCompositingState() const;
   virtual CompositingReasons AdditionalCompositingReasons() const;
 
+  // |accumulated_offset| is accumulated physical offset from the same origin as
+  // |location_in_container|, not including the offset of the current object.
+  // The caller just ensures |location_in_container| and |accumulated_offset|
+  // are in the same coordinate space. The implementation should not assume any
+  // specific coordinate space of them.
   virtual bool HitTestAllPhases(HitTestResult&,
                                 const HitTestLocation& location_in_container,
-                                const LayoutPoint& accumulated_offset,
+                                const PhysicalOffset& accumulated_offset,
                                 HitTestFilter = kHitTestAll);
   // Returns the node that is ultimately added to the hit test result. Some
   // objects report a hit testing node that is not their own (such as
   // continuations and some psuedo elements) and it is important that the
   // node be consistent between point- and list-based hit test results.
   virtual Node* NodeForHitTest() const;
-  virtual void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) const;
+  virtual void UpdateHitTestResult(HitTestResult&, const PhysicalOffset&) const;
+  // See HitTestAllPhases for explanation of |accumulated_offset|.
   virtual bool NodeAtPoint(HitTestResult&,
                            const HitTestLocation& location_in_container,
-                           const LayoutPoint& accumulated_offset,
+                           const PhysicalOffset& accumulated_offset,
                            HitTestAction);
 
   virtual PositionWithAffinity PositionForPoint(const LayoutPoint&) const;
@@ -1733,7 +1739,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return StyleRef().VisitedDependentColor(color_property);
   }
 
-  virtual CursorDirective GetCursor(const LayoutPoint&, Cursor&) const;
+  virtual CursorDirective GetCursor(const PhysicalOffset&, Cursor&) const;
 
   // Return the LayoutBoxModelObject in the container chain which is responsible
   // for painting this object. The function crosses frames boundaries so the
@@ -1803,9 +1809,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       VisualRectFlags = kDefaultVisualRectFlags) const;
 
   // Do a rect-based hit test with this object as the stop node.
-  HitTestResult HitTestForOcclusion(const LayoutRect&) const;
+  HitTestResult HitTestForOcclusion(const PhysicalRect&) const;
   HitTestResult HitTestForOcclusion() const {
-    return HitTestForOcclusion(VisualRectInDocument().ToLayoutRect());
+    return HitTestForOcclusion(VisualRectInDocument());
   }
 
   // Return the offset to the column in which the specified point (in

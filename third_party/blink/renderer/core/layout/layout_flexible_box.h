@@ -105,7 +105,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   bool HitTestChildren(HitTestResult&,
                        const HitTestLocation& location_in_container,
-                       const LayoutPoint& accumulated_offset,
+                       const PhysicalOffset& accumulated_offset,
                        HitTestAction) override;
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;

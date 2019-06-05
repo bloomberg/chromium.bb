@@ -172,7 +172,7 @@ class CORE_EXPORT FrameSelection final
   // the frame you entirely selected.
   void SelectFrameElementInParentIfFullySelected();
 
-  bool Contains(const LayoutPoint&);
+  bool Contains(const PhysicalOffset&);
 
   bool Modify(SelectionModifyAlteration,
               SelectionModifyDirection,

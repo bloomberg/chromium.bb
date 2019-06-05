@@ -144,7 +144,6 @@ class HitTestRequest;
 class HttpRefreshScheduler;
 class IdleRequestOptions;
 class IntersectionObserverController;
-class LayoutPoint;
 class LayoutView;
 class LazyLoadImageObserver;
 class LiveNodeListBase;
@@ -200,6 +199,7 @@ class WorkletAnimationController;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
+struct PhysicalOffset;
 
 using MouseEventWithHitTestResults = EventWithHitTestResults<WebMouseEvent>;
 
@@ -765,7 +765,7 @@ class CORE_EXPORT Document : public ContainerNode,
   VisitedLinkState& GetVisitedLinkState() const { return *visited_link_state_; }
 
   MouseEventWithHitTestResults PerformMouseEventHitTest(const HitTestRequest&,
-                                                        const LayoutPoint&,
+                                                        const PhysicalOffset&,
                                                         const WebMouseEvent&);
 
   void SetHadKeyboardEvent(bool had_keyboard_event) {

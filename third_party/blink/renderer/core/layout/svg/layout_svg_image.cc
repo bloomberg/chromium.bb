@@ -176,9 +176,9 @@ void LayoutSVGImage::Paint(const PaintInfo& paint_info) const {
 
 bool LayoutSVGImage::NodeAtPoint(HitTestResult& result,
                                  const HitTestLocation& location_in_container,
-                                 const LayoutPoint& accumulated_offset,
+                                 const PhysicalOffset& accumulated_offset,
                                  HitTestAction hit_test_action) {
-  DCHECK_EQ(accumulated_offset, LayoutPoint());
+  DCHECK_EQ(accumulated_offset, PhysicalOffset());
   // We only draw in the forground phase, so we only hit-test then.
   if (hit_test_action != kHitTestForeground)
     return false;
@@ -200,9 +200,8 @@ bool LayoutSVGImage::NodeAtPoint(HitTestResult& result,
 
   if (hit_rules.can_hit_fill || hit_rules.can_hit_bounding_box) {
     if (local_location->Intersects(object_bounding_box_)) {
-      const LayoutPoint& local_layout_point =
-          LayoutPoint(local_location->TransformedPoint());
-      UpdateHitTestResult(result, local_layout_point);
+      UpdateHitTestResult(result, PhysicalOffset::FromFloatPointRound(
+                                      local_location->TransformedPoint()));
       if (result.AddNodeToListBasedTestResult(GetElement(), *local_location) ==
           kStopHitTesting)
         return true;

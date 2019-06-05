@@ -39,7 +39,7 @@ LayoutTextControlMultiLine::~LayoutTextControlMultiLine() = default;
 bool LayoutTextControlMultiLine::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
+    const PhysicalOffset& accumulated_offset,
     HitTestAction hit_test_action) {
   if (!LayoutTextControl::NodeAtPoint(result, location_in_container,
                                       accumulated_offset, hit_test_action))

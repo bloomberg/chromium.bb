@@ -105,7 +105,7 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
   explicit RenderingTest(LocalFrameClient* = nullptr);
 
   const Node* HitTest(int x, int y);
-  HitTestResult::NodeSet RectBasedHitTest(LayoutRect rect);
+  HitTestResult::NodeSet RectBasedHitTest(const PhysicalRect& rect);
 
  protected:
   void SetUp() override;

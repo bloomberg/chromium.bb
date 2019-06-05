@@ -1507,10 +1507,8 @@ void LayoutTableSection::Paint(const PaintInfo& paint_info) const {
 }
 
 LayoutRect LayoutTableSection::LogicalRectForWritingModeAndDirection(
-    const LayoutRect& rect) const {
-  LayoutRect table_aligned_rect(rect);
-
-  DeprecatedFlipForWritingMode(table_aligned_rect);
+    const PhysicalRect& rect) const {
+  LayoutRect table_aligned_rect = FlipForWritingMode(rect);
 
   if (!TableStyle().IsHorizontalWritingMode())
     table_aligned_rect = table_aligned_rect.TransposedRect();
@@ -1791,7 +1789,7 @@ void LayoutTableSection::SplitEffectiveColumn(unsigned pos, unsigned first) {
 bool LayoutTableSection::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
+    const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
   // If we have no children then we have nothing to do.
   if (!FirstRow())
@@ -1799,7 +1797,7 @@ bool LayoutTableSection::NodeAtPoint(
 
   // Table sections cannot ever be hit tested.  Effectively they do not exist.
   // Just forward to our children always.
-  LayoutPoint adjusted_location = accumulated_offset + Location();
+  PhysicalOffset adjusted_location = accumulated_offset + PhysicalLocation();
 
   if (HasOverflowClip() &&
       !location_in_container.Intersects(OverflowClipRect(adjusted_location)))
@@ -1812,13 +1810,10 @@ bool LayoutTableSection::NodeAtPoint(
       // ever implement a table-specific hit-test method (which we should do for
       // performance reasons anyway), then we can remove this check.
       if (!row->HasSelfPaintingLayer()) {
-        LayoutPoint child_point =
-            FlipForWritingModeForChild(row, adjusted_location);
-        if (row->NodeAtPoint(result, location_in_container, child_point,
+        if (row->NodeAtPoint(result, location_in_container, adjusted_location,
                              action)) {
           UpdateHitTestResult(
-              result,
-              ToLayoutPoint(location_in_container.Point() - child_point));
+              result, location_in_container.Point() - adjusted_location);
           return true;
         }
       }
@@ -1828,8 +1823,8 @@ bool LayoutTableSection::NodeAtPoint(
 
   RecalcCellsIfNeeded();
 
-  LayoutRect hit_test_rect = LayoutRect(location_in_container.BoundingBox());
-  hit_test_rect.MoveBy(-adjusted_location);
+  PhysicalRect hit_test_rect = location_in_container.BoundingBox();
+  hit_test_rect.Move(-adjusted_location);
 
   LayoutRect table_aligned_rect =
       LogicalRectForWritingModeAndDirection(hit_test_rect);
@@ -1851,12 +1846,10 @@ bool LayoutTableSection::NodeAtPoint(
       for (unsigned i = grid_cell.Cells().size(); i;) {
         --i;
         LayoutTableCell* cell = grid_cell.Cells()[i];
-        LayoutPoint cell_point =
-            FlipForWritingModeForChild(cell, adjusted_location);
         if (static_cast<LayoutObject*>(cell)->NodeAtPoint(
-                result, location_in_container, cell_point, action)) {
+                result, location_in_container, adjusted_location, action)) {
           UpdateHitTestResult(
-              result, location_in_container.Point() - ToLayoutSize(cell_point));
+              result, location_in_container.Point() - adjusted_location);
           return true;
         }
       }

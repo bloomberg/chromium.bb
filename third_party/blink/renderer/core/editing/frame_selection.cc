@@ -568,7 +568,7 @@ void FrameSelection::PaintCaret(GraphicsContext& context,
   frame_caret_->PaintCaret(context, paint_offset);
 }
 
-bool FrameSelection::Contains(const LayoutPoint& point) {
+bool FrameSelection::Contains(const PhysicalOffset& point) {
   if (!GetDocument().GetLayoutView())
     return false;
 
@@ -596,7 +596,10 @@ bool FrameSelection::Contains(const LayoutPoint& point) {
 
   const PositionInFlatTreeWithAffinity pos_with_affinity =
       FromPositionInDOMTree<EditingInFlatTreeStrategy>(
-          inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint()));
+          // TODO(wangxianzhu): PositionForPoint still requires flipped
+          // coordinates.
+          inner_node->GetLayoutObject()->PositionForPoint(
+              result.FlippedLocalPoint()));
   if (pos_with_affinity.IsNull())
     return false;
 

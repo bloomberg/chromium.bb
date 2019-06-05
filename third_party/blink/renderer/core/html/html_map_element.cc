@@ -43,7 +43,7 @@ HTMLMapElement::HTMLMapElement(Document& document)
 HTMLMapElement::~HTMLMapElement() = default;
 
 HTMLAreaElement* HTMLMapElement::AreaForPoint(
-    const LayoutPoint& location,
+    const PhysicalOffset& location,
     const LayoutObject* container_object) {
   HTMLAreaElement* default_area = nullptr;
   for (HTMLAreaElement& area :

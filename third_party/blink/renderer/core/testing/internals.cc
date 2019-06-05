@@ -1472,10 +1472,10 @@ void Internals::HitTestRect(HitTestLocation& location,
                             Document* document) {
   document->UpdateStyleAndLayout();
   EventHandler& event_handler = document->GetFrame()->GetEventHandler();
-  LayoutPoint hit_test_point(
-      document->GetFrame()->View()->ConvertFromRootFrame(LayoutPoint(x, y)));
-  location = HitTestLocation(
-      (LayoutRect(hit_test_point, LayoutSize((int)width, (int)height))));
+  PhysicalRect rect{LayoutUnit(x), LayoutUnit(y), LayoutUnit(width),
+                    LayoutUnit(height)};
+  rect.offset = document->GetFrame()->View()->ConvertFromRootFrame(rect.offset);
+  location = HitTestLocation(rect);
   result = event_handler.HitTestResultAtLocation(
       location, HitTestRequest::kReadOnly | HitTestRequest::kActive |
                     HitTestRequest::kListBased);
@@ -1961,7 +1961,8 @@ StaticNodeList* Internals::nodesFromRect(
                                                 HitTestRequest::kActive |
                                                 HitTestRequest::kListBased;
   LocalFrame* frame = document->GetFrame();
-  LayoutRect rect(x, y, width, height);
+  PhysicalRect rect{LayoutUnit(x), LayoutUnit(y), LayoutUnit(width),
+                    LayoutUnit(height)};
   if (ignore_clipping) {
     hit_type |= HitTestRequest::kIgnoreClipping;
   } else if (!IntRect(IntPoint(), frame->View()->Size())

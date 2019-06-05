@@ -29,6 +29,9 @@ class LineLayoutBox : public LineLayoutBoxModel {
   LineLayoutBox() = default;
 
   LayoutPoint Location() const { return ToBox()->Location(); }
+  PhysicalOffset PhysicalLocation() const {
+    return ToBox()->PhysicalLocation();
+  }
 
   LayoutSize Size() const { return ToBox()->Size(); }
 

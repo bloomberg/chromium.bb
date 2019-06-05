@@ -71,7 +71,7 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_parent,
-                   const LayoutPoint& accumulated_offset,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
   AffineTransform LocalSVGTransform() const override {

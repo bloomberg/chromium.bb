@@ -100,7 +100,7 @@ class SVGInlineTextBox final : public InlineTextBox {
   bool HitTestFragments(const HitTestLocation& location_in_container) const;
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const PhysicalOffset& accumulated_offset,
                    LayoutUnit line_top,
                    LayoutUnit line_bottom) override;
 

@@ -80,7 +80,7 @@ class LayoutSVGBlock : public LayoutBlockFlow {
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
   // The inherited version doesn't check for SVG effects.

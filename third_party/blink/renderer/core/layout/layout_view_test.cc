@@ -24,10 +24,12 @@ class LayoutViewTest : public testing::WithParamInterface<bool>,
  protected:
   bool LayoutNG() { return GetParam(); }
   bool LayoutNGOrAndroidOrWindows() {
-    // TODO(crbug.com/966731): Why is the platform difference?
 #if defined(OS_WIN) || defined(OS_ANDROID)
+    // To deal with platform-specific editing behaviors.
     return true;
 #else
+    // TODO(crbug.com/971414): For now LayoutNG always uses Android/Windows
+    // behavior for ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom().
     return LayoutNG();
 #endif
   }
@@ -111,52 +113,57 @@ TEST_P(LayoutViewTest, HitTestHorizontal) {
 
   HitTestResult result;
   // In body, but not in any descendants.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(1, 1)), result);
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(1, 1)), result);
   EXPECT_EQ(GetDocument().body(), result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 1), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(1, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream),
             result.GetPosition());
 
   // Top-left corner of div and span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(51, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(51, 101)), result);
   EXPECT_EQ(text1, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 1), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(1, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream),
             result.GetPosition());
 
   // Top-right corner (outside) of div.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(251, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(251, 101)), result);
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
-  EXPECT_EQ(LayoutPoint(251, 101), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(251, 101), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 3), TextAffinity::kUpstream),
             result.GetPosition());
 
   // Top-right corner (inside) of div.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(249, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(249, 101)), result);
   EXPECT_EQ(div, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(199, 1), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(199, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 3), TextAffinity::kUpstream),
             result.GetPosition());
 
   // Top-right corner (inside) of span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(99, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(99, 101)), result);
   EXPECT_EQ(text1, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(49, 1), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(49, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text1, 5), TextAffinity::kUpstream),
             result.GetPosition());
 
   // Top-right corner (outside) of span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(101, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(101, 101)), result);
   EXPECT_EQ(div, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(51, 1), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(51, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 0), TextAffinity::kDownstream),
             result.GetPosition());
 
   // Bottom-left corner (outside) of div.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(51, 181)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(51, 181)), result);
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
-  EXPECT_EQ(LayoutPoint(51, 181), result.LocalPoint());
-  // TODO(crbug.com/966731): Verify if the difference reflects any issue.
+  EXPECT_EQ(PhysicalOffset(51, 181), result.LocalPoint());
   EXPECT_EQ(
       LayoutNGOrAndroidOrWindows()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
@@ -164,10 +171,10 @@ TEST_P(LayoutViewTest, HitTestHorizontal) {
       result.GetPosition());
 
   // Bottom-left corner (inside) of div.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(51, 179)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(51, 179)), result);
   EXPECT_EQ(div, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 79), result.LocalPoint());
-  // TODO(crbug.com/966731): Verify if the difference reflects any issue.
+  EXPECT_EQ(PhysicalOffset(1, 79), result.LocalPoint());
   EXPECT_EQ(
       LayoutNGOrAndroidOrWindows()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
@@ -175,10 +182,10 @@ TEST_P(LayoutViewTest, HitTestHorizontal) {
       result.GetPosition());
 
   // Bottom-left corner (outside) of span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(51, 111)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(51, 111)), result);
   EXPECT_EQ(div, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 11), result.LocalPoint());
-  // TODO(crbug.com/966731): Verify if the difference reflects any issue.
+  EXPECT_EQ(PhysicalOffset(1, 11), result.LocalPoint());
   EXPECT_EQ(
       LayoutNGOrAndroidOrWindows()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
@@ -186,9 +193,10 @@ TEST_P(LayoutViewTest, HitTestHorizontal) {
       result.GetPosition());
 
   // Top-left corner of span2.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(101, 131)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(101, 131)), result);
   EXPECT_EQ(text2, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(51, 1), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(51, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 0), TextAffinity::kDownstream),
             result.GetPosition());
 }
@@ -223,24 +231,25 @@ TEST_P(LayoutViewTest, HitTestVerticalLR) {
 
   HitTestResult result;
   // In body, but not in any descendants.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(1, 1)), result);
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(1, 1)), result);
   EXPECT_EQ(GetDocument().body(), result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 1), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(1, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream),
             result.GetPosition());
 
   // Top-left corner of div and span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(51, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(51, 101)), result);
   EXPECT_EQ(text1, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 1), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(1, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream),
             result.GetPosition());
 
   // Top-right corner (outside) of div.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(251, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(251, 101)), result);
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
-  EXPECT_EQ(LayoutPoint(251, 101), result.LocalPoint());
-  // TODO(crbug.com/966731): Verify if the difference reflects any issue.
+  EXPECT_EQ(PhysicalOffset(251, 101), result.LocalPoint());
   EXPECT_EQ(
       LayoutNGOrAndroidOrWindows()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
@@ -248,10 +257,10 @@ TEST_P(LayoutViewTest, HitTestVerticalLR) {
       result.GetPosition());
 
   // Top-right corner (inside) of div.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(249, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(249, 101)), result);
   EXPECT_EQ(div, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(199, 1), result.LocalPoint());
-  // TODO(crbug.com/966731): Verify if the difference reflects any issue.
+  EXPECT_EQ(PhysicalOffset(199, 1), result.LocalPoint());
   EXPECT_EQ(
       LayoutNGOrAndroidOrWindows()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
@@ -259,17 +268,18 @@ TEST_P(LayoutViewTest, HitTestVerticalLR) {
       result.GetPosition());
 
   // Top-right corner (inside) of span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(59, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(59, 101)), result);
   EXPECT_EQ(text1, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(9, 1), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(9, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream),
             result.GetPosition());
 
   // Top-right corner (outside) of span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(61, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(61, 101)), result);
   EXPECT_EQ(div, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(11, 1), result.LocalPoint());
-  // TODO(crbug.com/966731): Verify if the difference reflects any issue.
+  EXPECT_EQ(PhysicalOffset(11, 1), result.LocalPoint());
   EXPECT_EQ(
       LayoutNGOrAndroidOrWindows()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
@@ -277,23 +287,26 @@ TEST_P(LayoutViewTest, HitTestVerticalLR) {
       result.GetPosition());
 
   // Bottom-left corner (outside) of span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(51, 181)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(51, 181)), result);
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
-  EXPECT_EQ(LayoutPoint(51, 181), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(51, 181), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 3), TextAffinity::kUpstream),
             result.GetPosition());
 
   // Bottom-left corner (inside) of span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(51, 179)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(51, 179)), result);
   EXPECT_EQ(div, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 79), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(1, 79), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 3), TextAffinity::kUpstream),
             result.GetPosition());
 
   // Top-left corner of span2.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(81, 151)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(81, 151)), result);
   EXPECT_EQ(text2, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 51), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(1, 51), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 0), TextAffinity::kDownstream),
             result.GetPosition());
 }
@@ -328,17 +341,17 @@ TEST_P(LayoutViewTest, HitTestVerticalRL) {
 
   HitTestResult result;
   // In body, but not in any descendants.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(1, 1)), result);
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(1, 1)), result);
   EXPECT_EQ(GetDocument().body(), result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 1), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(1, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream),
             result.GetPosition());
 
   // Top-left corner of div.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(51, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(51, 101)), result);
   EXPECT_EQ(div, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(199, 1), result.LocalPoint());
-  // TODO(crbug.com/966731): Verify if the difference reflects any issue.
+  EXPECT_EQ(PhysicalOffset(1, 1), result.LocalPoint());
   EXPECT_EQ(
       LayoutNGOrAndroidOrWindows()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
@@ -346,10 +359,10 @@ TEST_P(LayoutViewTest, HitTestVerticalRL) {
       result.GetPosition());
 
   // Top-right corner (outside) of div.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(251, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(251, 101)), result);
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
-  EXPECT_EQ(LayoutPoint(251, 101), result.LocalPoint());
-  // TODO(crbug.com/966731): Verify if the difference reflects any issue.
+  EXPECT_EQ(PhysicalOffset(251, 101), result.LocalPoint());
   EXPECT_EQ(
       LayoutNGOrAndroidOrWindows()
           ? PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream)
@@ -357,38 +370,42 @@ TEST_P(LayoutViewTest, HitTestVerticalRL) {
       result.GetPosition());
 
   // Top-right corner (inside) of div and span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(249, 101)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(249, 101)), result);
   EXPECT_EQ(text1, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 1), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(199, 1), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text1, 0), TextAffinity::kDownstream),
             result.GetPosition());
 
   // Bottom-right corner (inside) of span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(249, 149)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(249, 149)), result);
   EXPECT_EQ(text1, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 49), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(199, 49), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text1, 5), TextAffinity::kUpstream),
             result.GetPosition());
 
   // Bottom-right corner (outside) of span1 but inside of div.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(249, 151)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(249, 151)), result);
   EXPECT_EQ(div, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 51), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(199, 51), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 0), TextAffinity::kDownstream),
             result.GetPosition());
 
   // Bottom-left corner (outside) of div.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(51, 181)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(51, 181)), result);
   EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
-  EXPECT_EQ(LayoutPoint(51, 181), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(51, 181), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 3), TextAffinity::kUpstream),
             result.GetPosition());
 
   // Bottom-left corner (inside) of div.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(51, 179)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(51, 179)), result);
   EXPECT_EQ(div, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(199, 79), result.LocalPoint());
-  // TODO(crbug.com/966731): Verify if the difference reflects any issue.
+  EXPECT_EQ(PhysicalOffset(1, 79), result.LocalPoint());
   EXPECT_EQ(
       LayoutNGOrAndroidOrWindows()
           ? PositionWithAffinity(Position(text2, 3), TextAffinity::kUpstream)
@@ -396,18 +413,109 @@ TEST_P(LayoutViewTest, HitTestVerticalRL) {
       result.GetPosition());
 
   // Bottom-left corner (outside) of span1.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(241, 151)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(241, 151)), result);
   EXPECT_EQ(div, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(9, 51), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(191, 51), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 0), TextAffinity::kDownstream),
             result.GetPosition());
 
   // Top-right corner (inside) of span2.
-  GetLayoutView().HitTest(HitTestLocation(LayoutPoint(219, 151)), result);
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(219, 151)), result);
   EXPECT_EQ(text2, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(1, 51), result.LocalPoint());
+  EXPECT_EQ(PhysicalOffset(199, 51), result.LocalPoint());
   EXPECT_EQ(PositionWithAffinity(Position(text2, 0), TextAffinity::kDownstream),
             result.GetPosition());
+}
+
+TEST_P(LayoutViewTest, HitTestVerticalRLRoot) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      html { writing-mode: vertical-rl; }
+      body { margin: 0 }
+    </style>
+    <div id="div" style="font: 10px/10px Ahem; width: 200px; height: 80px">
+      <span id="span">ABCDE</span>
+    </div>
+  )HTML");
+
+  // (0,0)     (600, 0)         (800, 0)
+  // +----...----+---------------+
+  // |           |              A|
+  // |           |              B|
+  // |           |              C|
+  // |           |     (div)    D|
+  // | (screen)  |              E|
+  // |           |               |
+  // |           |               |
+  // |           +---------------+ (800, 80)
+  // |       (600, 80)           |
+  // .                           .
+  // +----...--------------------+ (800, 600)
+
+  auto* div = GetDocument().getElementById("div");
+  auto* text = GetDocument().getElementById("span")->firstChild();
+  HitTestResult result;
+  // Not in any element. Should fallback to documentElement.
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(1, 1)), result);
+  EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
+  EXPECT_EQ(PhysicalOffset(-599, 1), result.LocalPoint());
+  EXPECT_EQ(
+      LayoutNGOrAndroidOrWindows()
+          ? PositionWithAffinity(Position(text, 0), TextAffinity::kDownstream)
+          : PositionWithAffinity(Position(text, 5), TextAffinity::kDownstream),
+      result.GetPosition());
+
+  // Top-left corner (inside) of div.
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(601, 1)), result);
+  EXPECT_EQ(div, result.InnerNode());
+  EXPECT_EQ(PhysicalOffset(1, 1), result.LocalPoint());
+  EXPECT_EQ(
+      LayoutNGOrAndroidOrWindows()
+          ? PositionWithAffinity(Position(text, 0), TextAffinity::kDownstream)
+          : PositionWithAffinity(Position(text, 5), TextAffinity::kDownstream),
+      result.GetPosition());
+
+  // Top-right corner (outside) of div. Should fallback to documentElement.
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(801, 1)), result);
+  EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
+  EXPECT_EQ(PhysicalOffset(201, 1), result.LocalPoint());
+  EXPECT_EQ(
+      LayoutNGOrAndroidOrWindows()
+          ? PositionWithAffinity(Position(text, 0), TextAffinity::kDownstream)
+          : PositionWithAffinity(Position(text, 0), TextAffinity::kDownstream),
+      result.GetPosition());
+
+  // Top-right corner (inside) of div and span.
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(799, 1)), result);
+  EXPECT_EQ(text, result.InnerNode());
+  EXPECT_EQ(PhysicalOffset(199, 1), result.LocalPoint());
+  EXPECT_EQ(PositionWithAffinity(Position(text, 0), TextAffinity::kDownstream),
+            result.GetPosition());
+
+  // Bottom-right corner (outside) of span1 but inside of div.
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(799, 51)), result);
+  EXPECT_EQ(div, result.InnerNode());
+  EXPECT_EQ(PhysicalOffset(199, 51), result.LocalPoint());
+  EXPECT_EQ(PositionWithAffinity(Position(text, 5), TextAffinity::kUpstream),
+            result.GetPosition());
+
+  // Bottom-left corner (outside) of div.
+  result = HitTestResult();
+  GetLayoutView().HitTest(HitTestLocation(PhysicalOffset(599, 81)), result);
+  EXPECT_EQ(GetDocument().documentElement(), result.InnerNode());
+  EXPECT_EQ(PhysicalOffset(-1, 81), result.LocalPoint());
+  EXPECT_EQ(
+      LayoutNGOrAndroidOrWindows()
+          ? PositionWithAffinity(Position(text, 5), TextAffinity::kUpstream)
+          : PositionWithAffinity(Position(text, 5), TextAffinity::kDownstream),
+      result.GetPosition());
 }
 
 }  // namespace blink

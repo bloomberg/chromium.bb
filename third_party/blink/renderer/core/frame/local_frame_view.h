@@ -497,6 +497,7 @@ class CORE_EXPORT LocalFrameView final
   IntPoint ViewportToFrame(const IntPoint&) const;
   FloatPoint ViewportToFrame(const FloatPoint&) const;
   LayoutPoint ViewportToFrame(const LayoutPoint&) const;
+  PhysicalOffset ViewportToFrame(const PhysicalOffset&) const;
 
   // FIXME: Some external callers expect to get back a rect that's positioned
   // in viewport space, but sized in CSS pixels. This is an artifact of the

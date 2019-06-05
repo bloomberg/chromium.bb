@@ -293,7 +293,7 @@ void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
     ObjectPainter(layout_block_).PaintInlineChildrenOutlines(paint_info);
   } else {
     LineBoxListPainter(To<LayoutBlockFlow>(layout_block_).LineBoxes())
-        .Paint(layout_block_, paint_info, paint_offset.ToLayoutPoint());
+        .Paint(layout_block_, paint_info, paint_offset);
   }
 
   // If we don't have any floats to paint, or we're in the wrong paint phase,

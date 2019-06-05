@@ -309,20 +309,18 @@ HitTestResult EventHandler::HitTestResultAtLocation(
           DCHECK(location.IsRectilinear());
           if (hit_type & HitTestRequest::kHitTestVisualOverflow) {
             // Apply ancestor transforms to location rect
-            PhysicalRect local_rect =
-                PhysicalRectToBeNoop(location.BoundingBox());
+            PhysicalRect local_rect = location.BoundingBox();
             PhysicalRect main_frame_rect =
                 frame_view->GetLayoutView()->LocalToAncestorRect(
                     local_rect, main_view->GetLayoutView(),
                     kTraverseDocumentBoundaries);
-            adjusted_location = HitTestLocation(main_frame_rect.ToLayoutRect());
+            adjusted_location = HitTestLocation(main_frame_rect);
           } else {
             // Don't apply ancestor transforms to bounding box
-            LayoutPoint main_content_point =
-                main_view->ConvertFromRootFrame(frame_view->ConvertToRootFrame(
-                    location.BoundingBox().Location()));
+            PhysicalOffset main_content_point = main_view->ConvertFromRootFrame(
+                frame_view->ConvertToRootFrame(location.BoundingBox().offset));
             adjusted_location = HitTestLocation(
-                LayoutRect(main_content_point, location.BoundingBox().Size()));
+                PhysicalRect(main_content_point, location.BoundingBox().size));
           }
         } else {
           adjusted_location = HitTestLocation(main_view->ConvertFromRootFrame(
@@ -492,8 +490,7 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
 
   if (layout_object) {
     Cursor override_cursor;
-    switch (layout_object->GetCursor(RoundedIntPoint(result.LocalPoint()),
-                                     override_cursor)) {
+    switch (layout_object->GetCursor(result.LocalPoint(), override_cursor)) {
       case kSetCursorBasedOnStyle:
         break;
       case kSetCursor:
@@ -673,8 +670,8 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   HitTestRequest request(HitTestRequest::kActive);
   // Save the document point we generate in case the window coordinate is
   // invalidated by what happens when we dispatch the event.
-  LayoutPoint document_point = frame_->View()->ConvertFromRootFrame(
-      FlooredIntPoint(mouse_event.PositionInRootFrame()));
+  PhysicalOffset document_point = frame_->View()->ConvertFromRootFrame(
+      PhysicalOffset(FlooredIntPoint(mouse_event.PositionInRootFrame())));
   MouseEventWithHitTestResults mev = GetMouseEventTarget(request, mouse_event);
   if (!mev.InnerNode()) {
     mouse_event_manager_->InvalidateClick();
@@ -935,7 +932,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   if (pointer_event_manager_->IsAnyTouchActive() && !force_leave)
     hit_type |= HitTestRequest::kActive | HitTestRequest::kReadOnly;
   HitTestRequest request(hit_type);
-  HitTestLocation out_location((LayoutPoint()));
+  HitTestLocation out_location((PhysicalOffset()));
   MouseEventWithHitTestResults mev = MouseEventWithHitTestResults(
       mouse_event, out_location, HitTestResult(request, out_location));
 
@@ -1805,9 +1802,10 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtLocation(
         location, hit_type);
   } else {
-    LayoutPoint top_left(adjusted_event.PositionInRootFrame());
-    top_left.Move(-hit_rect_size * 0.5f);
-    location = HitTestLocation(LayoutRect(top_left, hit_rect_size));
+    PhysicalOffset top_left = PhysicalOffset::FromFloatPointRound(
+        adjusted_event.PositionInRootFrame());
+    top_left -= PhysicalOffset(hit_rect_size * 0.5f);
+    location = HitTestLocation(PhysicalRect(top_left, hit_rect_size));
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtLocation(
         location, hit_type);
   }
@@ -1878,7 +1876,7 @@ void EventHandler::ApplyTouchAdjustment(WebGestureEvent* gesture_event,
   // FIXME: We should do this even when no candidate matches the node filter.
   // crbug.com/398914
   if (adjusted) {
-    LayoutPoint point = frame_->View()->ConvertFromRootFrame(adjusted_point);
+    PhysicalOffset point(frame_->View()->ConvertFromRootFrame(adjusted_point));
     DCHECK(location.ContainsPoint(FloatPoint(point)));
     DCHECK(location.IsRectBasedTest());
     location = hit_test_result->ResolveRectBasedTest(adjusted_node, point);
@@ -1900,8 +1898,8 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
   if (last_scrollbar_under_mouse_)
     last_scrollbar_under_mouse_->MouseUp(event);
 
-  LayoutPoint position_in_contents =
-      v->ConvertFromRootFrame(FlooredIntPoint(event.PositionInRootFrame()));
+  PhysicalOffset position_in_contents(
+      v->ConvertFromRootFrame(FlooredIntPoint(event.PositionInRootFrame())));
   HitTestRequest request(HitTestRequest::kActive);
   MouseEventWithHitTestResults mev =
       frame_->GetDocument()->PerformMouseEventHitTest(
@@ -2286,8 +2284,9 @@ void EventHandler::CaptureMouseEventsToWidget(bool capture) {
 MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
     const HitTestRequest& request,
     const WebMouseEvent& event) {
-  LayoutPoint document_point = event_handling_util::ContentPointFromRootFrame(
-      frame_, event.PositionInRootFrame());
+  PhysicalOffset document_point =
+      event_handling_util::ContentPointFromRootFrame(
+          frame_, event.PositionInRootFrame());
 
   // TODO(eirage): This does not handle chorded buttons yet.
   if (RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled() &&
@@ -2305,14 +2304,9 @@ MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
 
     if (capture_target) {
       LayoutObject* layout_object = capture_target->GetLayoutObject();
-
-      LayoutPoint local_point =
-          layout_object ? layout_object
-                              ->AbsoluteToLocalPoint(
-                                  PhysicalOffsetToBeNoop(document_point))
-                              .ToLayoutPoint()
+      PhysicalOffset local_point =
+          layout_object ? layout_object->AbsoluteToLocalPoint(document_point)
                         : document_point;
-
       result.SetNodeAndPosition(capture_target, local_point);
 
       result.SetScrollbar(last_scrollbar_under_mouse_);

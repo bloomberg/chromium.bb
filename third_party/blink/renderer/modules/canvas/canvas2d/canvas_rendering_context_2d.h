@@ -151,7 +151,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void StyleDidChange(const ComputedStyle* old_style,
                       const ComputedStyle& new_style) override;
   HitTestCanvasResult* GetControlAndIdIfHitRegionExists(
-      const LayoutPoint& location) override;
+      const PhysicalOffset& location) override;
   String GetIdFromControl(const Element*) override;
 
   // SVGResourceClient implementation

@@ -168,7 +168,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       inline_text_box_.GetLineLayoutItem().StyleRef(
           inline_text_box_.IsFirstLineStyle());
 
-  LayoutPoint box_origin(inline_text_box_.PhysicalLocation() + paint_offset);
+  LayoutPoint box_origin(inline_text_box_.PhysicalLocation().ToLayoutPoint() +
+                         paint_offset);
 
   // We round the y-axis to ensure consistent line heights.
   if (inline_text_box_.IsHorizontal()) {

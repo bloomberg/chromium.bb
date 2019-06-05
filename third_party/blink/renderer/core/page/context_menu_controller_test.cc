@@ -72,7 +72,8 @@ class ContextMenuControllerTest : public testing::Test {
         WebWidget::LifecycleUpdateReason::kTest);
   }
 
-  bool ShowContextMenu(const LayoutPoint& location, WebMenuSourceType source) {
+  bool ShowContextMenu(const PhysicalOffset& location,
+                       WebMenuSourceType source) {
     return web_view_helper_.GetWebView()
         ->GetPage()
         ->GetContextMenuController()
@@ -125,8 +126,8 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
       .WillRepeatedly(Return(false));
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.
@@ -186,8 +187,8 @@ TEST_F(ContextMenuControllerTest, VideoWithAudioOnly) {
       .WillRepeatedly(Return(true));
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.
@@ -243,8 +244,8 @@ TEST_F(ContextMenuControllerTest, PictureInPictureEnabledVideoLoaded) {
       .WillRepeatedly(Return(true));
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.
@@ -300,8 +301,8 @@ TEST_F(ContextMenuControllerTest, PictureInPictureDisabledVideoLoaded) {
       .WillRepeatedly(Return(true));
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.
@@ -359,8 +360,8 @@ TEST_F(ContextMenuControllerTest, MediaStreamVideoLoaded) {
       .WillRepeatedly(Return(true));
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.
@@ -421,8 +422,8 @@ TEST_F(ContextMenuControllerTest, InfiniteDurationVideoLoaded) {
   DurationChanged(video.Get());
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.

@@ -677,7 +677,7 @@ void Editor::AddToKillRing(const EphemeralRange& range) {
 
 EphemeralRange Editor::RangeForPoint(const IntPoint& frame_point) const {
   const PositionWithAffinity position_with_affinity =
-      GetFrame().PositionForPoint(frame_point);
+      GetFrame().PositionForPoint(PhysicalOffset(frame_point));
   if (position_with_affinity.IsNull())
     return EphemeralRange();
 

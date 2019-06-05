@@ -137,6 +137,12 @@ struct CORE_EXPORT PaintInfo {
 
   const CullRect& GetCullRect() const { return cull_rect_; }
 
+  bool IntersectsCullRect(
+      const PhysicalRect& rect,
+      const PhysicalOffset& offset = PhysicalOffset()) const {
+    return cull_rect_.Intersects(rect.ToLayoutRect(), offset.ToLayoutPoint());
+  }
+
   void ApplyInfiniteCullRect() { cull_rect_ = CullRect::Infinite(); }
 
   void TransformCullRect(const TransformPaintPropertyNode& transform) {

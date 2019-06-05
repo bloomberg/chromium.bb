@@ -41,7 +41,7 @@ class LayoutTextControlMultiLine final : public LayoutTextControl {
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
   float GetAvgCharWidth(const AtomicString& family) const override;
