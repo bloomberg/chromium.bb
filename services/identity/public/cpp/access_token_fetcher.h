@@ -104,7 +104,7 @@ class AccessTokenFetcher : public OAuth2TokenService::Observer,
   void StartAccessTokenRequest();
 
   // OAuth2TokenService::Observer implementation.
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
 
   // OAuth2TokenService::Consumer implementation.
   void OnGetTokenSuccess(

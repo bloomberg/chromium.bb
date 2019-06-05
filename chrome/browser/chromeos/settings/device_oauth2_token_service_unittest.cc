@@ -50,7 +50,7 @@ class MockOAuth2TokenServiceObserver : public OAuth2TokenService::Observer {
   MockOAuth2TokenServiceObserver();
   ~MockOAuth2TokenServiceObserver() override;
 
-  MOCK_METHOD1(OnRefreshTokenAvailable, void(const std::string&));
+  MOCK_METHOD1(OnRefreshTokenAvailable, void(const CoreAccountId&));
 };
 
 MockOAuth2TokenServiceObserver::MockOAuth2TokenServiceObserver() {}
@@ -454,7 +454,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, DoNotAnnounceTokenWithoutAccountID) {
 
   // Also make the robot account ID available. Verify that the token is
   // announced now.
-  EXPECT_CALL(observer, OnRefreshTokenAvailable("robot@example.com"));
+  EXPECT_CALL(observer,
+              OnRefreshTokenAvailable(CoreAccountId("robot@example.com")));
   SetRobotAccountId("robot@example.com");
   testing::Mock::VerifyAndClearExpectations(&observer);
 

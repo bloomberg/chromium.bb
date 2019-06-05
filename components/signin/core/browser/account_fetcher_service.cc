@@ -335,10 +335,10 @@ void AccountFetcherService::OnUserInfoFetchFailure(
 }
 
 void AccountFetcherService::OnRefreshTokenAvailable(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   TRACE_EVENT1("AccountFetcherService",
                "AccountFetcherService::OnRefreshTokenAvailable", "account_id",
-               account_id);
+               account_id.id);
   DVLOG(1) << "AVAILABLE " << account_id;
 
   // The SigninClient needs a "final init" in order to perform some actions
@@ -355,10 +355,10 @@ void AccountFetcherService::OnRefreshTokenAvailable(
 }
 
 void AccountFetcherService::OnRefreshTokenRevoked(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   TRACE_EVENT1("AccountFetcherService",
                "AccountFetcherService::OnRefreshTokenRevoked", "account_id",
-               account_id);
+               account_id.id);
   DVLOG(1) << "REVOKED " << account_id;
 
   // Short-circuit out if network fetches are not enabled.

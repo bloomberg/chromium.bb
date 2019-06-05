@@ -29,8 +29,8 @@ class OAuth2TokenServiceDelegateAndroidForTest
 
 class TestObserver : public OAuth2TokenService::Observer {
  public:
-  MOCK_METHOD1(OnRefreshTokenAvailable, void(const std::string&));
-  MOCK_METHOD1(OnRefreshTokenRevoked, void(const std::string&));
+  MOCK_METHOD1(OnRefreshTokenAvailable, void(const CoreAccountId&));
+  MOCK_METHOD1(OnRefreshTokenRevoked, void(const CoreAccountId&));
   MOCK_METHOD0(OnRefreshTokensLoaded, void());
 };
 }  // namespace
@@ -120,7 +120,7 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
       .InSequence(seq)
       .WillOnce(Return());
   // Stored account from |GetAccounts| must fire a revoked event
-  EXPECT_CALL(observer_, OnRefreshTokenRevoked(account1_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenRevoked(account1_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
 
@@ -137,7 +137,7 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
               SetAccounts(std::vector<CoreAccountId>({account1_.account_id})))
       .InSequence(seq)
       .WillOnce(Return());
-  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
 
@@ -154,7 +154,7 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
               SetAccounts(std::vector<CoreAccountId>({account1_.account_id})))
       .InSequence(seq)
       .WillOnce(Return());
-  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
 
@@ -172,10 +172,10 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
       .InSequence(seq)
       .WillOnce(Return());
   // Previously stored account is removed, new account is available
-  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
-  EXPECT_CALL(observer_, OnRefreshTokenRevoked(account2_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenRevoked(account2_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
 
@@ -191,7 +191,7 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
   EXPECT_CALL(*delegate_, SetAccounts(kEmptyVector))
       .InSequence(seq)
       .WillOnce(Return());
-  EXPECT_CALL(observer_, OnRefreshTokenRevoked(account1_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenRevoked(account1_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
 
@@ -218,7 +218,7 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
   EXPECT_CALL(*delegate_, SetAccounts(kEmptyVector))
       .InSequence(seq)
       .WillOnce(Return());
-  EXPECT_CALL(observer_, OnRefreshTokenRevoked(account1_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenRevoked(account1_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
 
@@ -236,10 +236,10 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
       .InSequence(seq)
       .WillOnce(Return());
   // OnRefreshTokenAvailable fired, signed in account should go first.
-  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account2_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account2_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
-  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
 
@@ -257,10 +257,10 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
       .InSequence(seq)
       .WillOnce(Return());
   // OnRefreshTokenAvailable fired, signed in account should go first.
-  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
-  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account2_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account2_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
   delegate_->UpdateAccountList(account1_.account_id, {account2_.account_id},
@@ -277,10 +277,10 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
       .InSequence(seq)
       .WillOnce(Return());
   // OnRefreshTokenAvailable fired, signed in account should go first.
-  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenAvailable(account1_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
-  EXPECT_CALL(observer_, OnRefreshTokenRevoked(account2_.account_id.id))
+  EXPECT_CALL(observer_, OnRefreshTokenRevoked(account2_.account_id))
       .InSequence(seq)
       .WillOnce(Return());
 

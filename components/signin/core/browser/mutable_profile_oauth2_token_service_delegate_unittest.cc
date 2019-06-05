@@ -188,17 +188,17 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   }
 
   // OAuth2TokenService::Observer implementation.
-  void OnRefreshTokenAvailable(const std::string& account_id) override {
+  void OnRefreshTokenAvailable(const CoreAccountId& account_id) override {
     ++token_available_count_;
   }
-  void OnRefreshTokenRevoked(const std::string& account_id) override {
+  void OnRefreshTokenRevoked(const CoreAccountId& account_id) override {
     ++token_revoked_count_;
   }
   void OnRefreshTokensLoaded() override { ++tokens_loaded_count_; }
 
   void OnEndBatchChanges() override { ++end_batch_changes_; }
 
-  void OnAuthErrorChanged(const std::string& account_id,
+  void OnAuthErrorChanged(const CoreAccountId& account_id,
                           const GoogleServiceAuthError& auth_error) override {
     ++auth_error_changed_count_;
   }
@@ -861,15 +861,15 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   class TokenServiceErrorObserver : public OAuth2TokenService::Observer {
    public:
     MOCK_METHOD2(OnAuthErrorChanged,
-                 void(const std::string&, const GoogleServiceAuthError&));
+                 void(const CoreAccountId&, const GoogleServiceAuthError&));
   };
 
   InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   TokenServiceErrorObserver observer;
   oauth2_service_delegate_->AddObserver(&observer);
 
-  const std::string account_id1 = "account_id1";
-  const std::string account_id2 = "account_id2";
+  const CoreAccountId account_id1("account_id1");
+  const CoreAccountId account_id2("account_id2");
 
   // This will be fired from UpdateCredentials.
   EXPECT_CALL(
@@ -1310,7 +1310,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, OnAuthErrorChanged) {
         MutableProfileOAuth2TokenServiceDelegate* delegate)
         : delegate_(delegate) {}
 
-    void OnAuthErrorChanged(const std::string& account_id,
+    void OnAuthErrorChanged(const CoreAccountId& account_id,
                             const GoogleServiceAuthError& auth_error) override {
       error_changed_ = true;
       EXPECT_EQ("account_id", account_id);
@@ -1382,7 +1382,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
         MutableProfileOAuth2TokenServiceDelegate* delegate)
         : delegate_(delegate) {}
 
-    void OnAuthErrorChanged(const std::string& account_id,
+    void OnAuthErrorChanged(const CoreAccountId& account_id,
                             const GoogleServiceAuthError& auth_error) override {
       error_changed_ = true;
       EXPECT_FALSE(token_available_)
@@ -1391,14 +1391,14 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
       CheckTokenState(account_id);
     }
 
-    void OnRefreshTokenAvailable(const std::string& account_id) override {
+    void OnRefreshTokenAvailable(const CoreAccountId& account_id) override {
       token_available_ = true;
       EXPECT_TRUE(error_changed_)
           << "OnAuthErrorChanged() should be called first";
       CheckTokenState(account_id);
     }
 
-    void CheckTokenState(const std::string& account_id) {
+    void CheckTokenState(const CoreAccountId& account_id) {
       EXPECT_EQ("account_id", account_id);
       EXPECT_TRUE(delegate_->RefreshTokenIsAvailable("account_id"));
       EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(

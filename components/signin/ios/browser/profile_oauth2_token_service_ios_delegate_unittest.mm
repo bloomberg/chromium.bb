@@ -76,14 +76,14 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   }
 
   // OAuth2TokenService::Observer implementation.
-  void OnRefreshTokenAvailable(const std::string& account_id) override {
+  void OnRefreshTokenAvailable(const CoreAccountId& account_id) override {
     ++token_available_count_;
   }
-  void OnRefreshTokenRevoked(const std::string& account_id) override {
+  void OnRefreshTokenRevoked(const CoreAccountId& account_id) override {
     ++token_revoked_count_;
   }
   void OnRefreshTokensLoaded() override { ++tokens_loaded_count_; }
-  void OnAuthErrorChanged(const std::string& account_id,
+  void OnAuthErrorChanged(const CoreAccountId& account_id,
                           const GoogleServiceAuthError& error) override {
     ++auth_error_changed_count_;
   }

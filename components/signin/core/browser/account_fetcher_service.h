@@ -92,8 +92,8 @@ class AccountFetcherService : public OAuth2TokenService::Observer {
 #endif
 
   // OAuth2TokenService::Observer implementation.
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
+  void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;
 
  private:

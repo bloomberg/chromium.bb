@@ -33,8 +33,8 @@ class DeviceIdentityProvider : public invalidation::IdentityProvider,
   void SetActiveAccountId(const std::string& account_id) override;
 
   // OAuth2TokenService::Observer:
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
+  void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
 
  private:
   chromeos::DeviceOAuth2TokenService* token_service_;

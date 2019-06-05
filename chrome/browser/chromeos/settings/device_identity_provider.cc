@@ -69,12 +69,12 @@ void DeviceIdentityProvider::InvalidateAccessToken(
 }
 
 void DeviceIdentityProvider::OnRefreshTokenAvailable(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   ProcessRefreshTokenUpdateForAccount(account_id);
 }
 
 void DeviceIdentityProvider::OnRefreshTokenRevoked(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   ProcessRefreshTokenRemovalForAccount(account_id);
 }
 

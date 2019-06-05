@@ -589,11 +589,11 @@ class IdentityManager : public SigninManagerBase::Observer,
   void AuthenticatedAccountCleared() override;
 
   // OAuth2TokenService::Observer:
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
+  void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;
   void OnEndBatchChanges() override;
-  void OnAuthErrorChanged(const std::string& account_id,
+  void OnAuthErrorChanged(const CoreAccountId& account_id,
                           const GoogleServiceAuthError& auth_error) override;
 
   // GaiaCookieManagerService callbacks:
