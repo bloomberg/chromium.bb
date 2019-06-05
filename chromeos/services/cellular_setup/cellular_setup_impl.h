@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_SERVICES_CELLULAR_SETUP_CELLULAR_SETUP_IMPL_H_
 #define CHROMEOS_SERVICES_CELLULAR_SETUP_CELLULAR_SETUP_IMPL_H_
 
+#include <memory>
+
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "chromeos/services/cellular_setup/cellular_setup_base.h"
 
@@ -12,7 +15,11 @@ namespace chromeos {
 
 namespace cellular_setup {
 
-// Concrete mojom::CellularSetup implementation.
+class OtaActivator;
+
+// Concrete mojom::CellularSetup implementation. This class creates a new
+// OtaActivator instance per each StartActivation() invocation and passes a
+// pointer back to the client.
 class CellularSetupImpl : public CellularSetupBase {
  public:
   class Factory {
@@ -31,6 +38,11 @@ class CellularSetupImpl : public CellularSetupBase {
   // mojom::CellularSetup:
   void StartActivation(mojom::ActivationDelegatePtr delegate,
                        StartActivationCallback callback) override;
+
+  void OnActivationAttemptFinished(size_t request_id);
+
+  size_t next_request_id_ = 0u;
+  base::IDMap<std::unique_ptr<OtaActivator>, size_t> ota_activator_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CellularSetupImpl);
 };
