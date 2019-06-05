@@ -88,20 +88,9 @@ class ManualFillingCoordinator implements ManualFillingComponent {
     }
 
     @Override
-    public void registerPasswordProvider(
+    public void registerSheetDataProvider(@AccessoryTabType int sheetType,
             PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider) {
-        mMediator.registerPasswordProvider(sheetDataProvider);
-    }
-
-    @Override
-    public void registerAddressProvider(
-            PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider) {
-        mMediator.registerAddressProvider(sheetDataProvider);
-    }
-
-    @Override
-    public void registerCreditCardProvider() {
-        mMediator.registerCreditCardProvider();
+        mMediator.registerSheetDataProvider(sheetType, sheetDataProvider);
     }
 
     @Override

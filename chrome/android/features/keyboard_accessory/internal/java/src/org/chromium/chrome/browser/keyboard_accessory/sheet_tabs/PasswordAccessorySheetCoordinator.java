@@ -13,11 +13,12 @@ import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
+import org.chromium.chrome.browser.keyboard_accessory.ManualFillingMetricsRecorder;
 import org.chromium.chrome.browser.keyboard_accessory.R;
-import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
-import org.chromium.chrome.browser.keyboard_accessory.data.Provider;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
@@ -29,6 +30,29 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
 public class PasswordAccessorySheetCoordinator extends AccessorySheetTabCoordinator {
     private final AccessorySheetTabModel mModel = new AccessorySheetTabModel();
     private final PasswordAccessorySheetMediator mMediator;
+
+    /**
+     * This class contains all logic for the password accessory sheet component. Changes to its
+     * internal
+     * {@link PropertyModel} are observed by a {@link PropertyModelChangeProcessor} and affect the
+     * password accessory sheet tab view.
+     */
+    private static class PasswordAccessorySheetMediator extends AccessorySheetTabMediator {
+        PasswordAccessorySheetMediator(AccessorySheetTabModel model) {
+            super(model, AccessoryTabType.PASSWORDS, Type.PASSWORD_INFO);
+        }
+
+        @Override
+        void onTabShown() {
+            super.onTabShown();
+
+            // This is a compromise: we log an impression, even if the user didn't scroll down far
+            // enough to see it. If we moved it into the view layer (i.e. when the actual button is
+            // created and shown), we could record multiple impressions of the user scrolls up and
+            // down repeatedly.
+            ManualFillingMetricsRecorder.recordActionImpression(AccessoryAction.MANAGE_PASSWORDS);
+        }
+    }
 
     /**
      * Provides the icon used in this sheet. Simplifies mocking in controller tests.
@@ -86,17 +110,8 @@ public class PasswordAccessorySheetCoordinator extends AccessorySheetTabCoordina
     }
 
     @Override
-    public void onTabShown() {
-        mMediator.onTabShown();
-    }
-
-    /**
-     * Registers the provider pushing a complete new instance of {@link AccessorySheetData} that
-     * should be displayed as sheet for this tab.
-     * @param accessorySheetDataProvider A {@link Provider<AccessorySheetData>}.
-     */
-    public void registerDataProvider(Provider<AccessorySheetData> accessorySheetDataProvider) {
-        accessorySheetDataProvider.addObserver(mMediator);
+    protected AccessorySheetTabMediator getMediator() {
+        return mMediator;
     }
 
     /**

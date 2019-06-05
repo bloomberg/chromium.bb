@@ -53,25 +53,13 @@ public interface ManualFillingComponent {
     void notifyPopupAvailable(DropdownPopupWindow popup);
 
     /**
-     * By registering this provider, an empty tab for passwords is created. Call
+     * By registering a provider, an empty tab of the given tab type is created. Call
      * {@link PropertyProvider#notifyObservers(Object)} to fill or update the sheet.
+     * @param sheetType The type of sheet to instantiate and to provide data for.
      * @param sheetDataProvider The {@link PropertyProvider} the tab will get it's data from.
      */
-    void registerPasswordProvider(
+    void registerSheetDataProvider(@AccessoryTabType int sheetType,
             PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider);
-
-    /**
-     * By registering this provider, an empty tab for addresses is created. Call
-     * {@link PropertyProvider#notifyObservers(Object)} to fill or update the sheet.
-     * @param sheetDataProvider The {@link PropertyProvider} the tab will get it's data from.
-     */
-    void registerAddressProvider(
-            PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider);
-
-    /**
-     * By calling this function, an empty tab for credit cards is created.
-     */
-    void registerCreditCardProvider();
 
     /**
      * Registers a provider, to provide actions for the keyboard accessory bar. Call

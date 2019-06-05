@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
+import android.support.annotation.CallSuper;
+
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
@@ -19,24 +21,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class contains all logic for the address accessory sheet component. Changes to its internal
+ * This class contains the logic for the simple accessory sheets. Changes to its internal
  * {@link PropertyModel} are observed by a {@link PropertyModelChangeProcessor} and affect the
- * address accessory sheet tab view.
+ * accessory sheet tab view.
  */
-class AddressAccessorySheetMediator implements Provider.Observer<AccessorySheetData> {
+class AccessorySheetTabMediator implements Provider.Observer<AccessorySheetData> {
     private final AccessorySheetTabModel mModel;
+    private final @AccessoryTabType int mTabType;
+    private final @Type int mUserInfoType;
 
     @Override
     public void onItemAvailable(int typeId, AccessorySheetData accessorySheetData) {
         mModel.set(splitIntoDataPieces(accessorySheetData));
     }
 
-    AddressAccessorySheetMediator(AccessorySheetTabModel model) {
+    AccessorySheetTabMediator(
+            AccessorySheetTabModel model, @AccessoryTabType int tabType, @Type int userInfoType) {
         mModel = model;
+        mTabType = tabType;
+        mUserInfoType = userInfoType;
     }
 
+    @CallSuper
     void onTabShown() {
-        AccessorySheetTabMetricsRecorder.recordSheetSuggestions(AccessoryTabType.ADDRESSES, mModel);
+        AccessorySheetTabMetricsRecorder.recordSheetSuggestions(mTabType, mModel);
     }
 
     private AccessorySheetDataPiece[] splitIntoDataPieces(AccessorySheetData accessorySheetData) {
@@ -47,7 +55,7 @@ class AddressAccessorySheetMediator implements Provider.Observer<AccessorySheetD
             items.add(new AccessorySheetDataPiece(accessorySheetData.getTitle(), Type.TITLE));
         }
         for (UserInfo userInfo : accessorySheetData.getUserInfoList()) {
-            items.add(new AccessorySheetDataPiece(userInfo, Type.ADDRESS_INFO));
+            items.add(new AccessorySheetDataPiece(userInfo, mUserInfoType));
         }
         for (FooterCommand command : accessorySheetData.getFooterCommands()) {
             items.add(new AccessorySheetDataPiece(command, Type.FOOTER_COMMAND));

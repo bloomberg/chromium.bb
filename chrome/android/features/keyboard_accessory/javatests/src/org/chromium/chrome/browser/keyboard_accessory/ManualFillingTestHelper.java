@@ -114,7 +114,8 @@ public class ManualFillingTestHelper {
             final ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mWebContentsRef.get());
             mInputMethodManagerWrapper = TestInputMethodManagerWrapper.create(imeAdapter);
             imeAdapter.setInputMethodManagerWrapper(mInputMethodManagerWrapper);
-            getManualFillingCoordinator().registerPasswordProvider(mSheetSuggestionsProvider);
+            getManualFillingCoordinator().registerSheetDataProvider(
+                    AccessoryTabType.PASSWORDS, mSheetSuggestionsProvider);
         });
         if (waitForNode) DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
         cacheCredentials(new String[0], new String[0]); // This caches the empty state.
@@ -254,11 +255,15 @@ public class ManualFillingTestHelper {
     }
 
     public PasswordAccessorySheetCoordinator getOrCreatePasswordAccessorySheet() {
-        return getManualFillingCoordinator().getMediatorForTesting().getOrCreatePasswordSheet();
+        return (PasswordAccessorySheetCoordinator) getManualFillingCoordinator()
+                .getMediatorForTesting()
+                .getOrCreateSheet(AccessoryTabType.PASSWORDS);
     }
 
     public AddressAccessorySheetCoordinator getOrCreateAddressAccessorySheet() {
-        return getManualFillingCoordinator().getMediatorForTesting().getOrCreateAddressSheet();
+        return (AddressAccessorySheetCoordinator) getManualFillingCoordinator()
+                .getMediatorForTesting()
+                .getOrCreateSheet(AccessoryTabType.ADDRESSES);
     }
 
     // ----------------------------------

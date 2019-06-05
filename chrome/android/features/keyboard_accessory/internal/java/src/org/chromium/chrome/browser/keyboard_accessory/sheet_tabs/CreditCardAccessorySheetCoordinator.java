@@ -11,12 +11,18 @@ import android.support.v7.widget.RecyclerView;
 
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.R;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type;
 
 /**
  * This component is a tab that can be added to the ManualFillingCoordinator. This tab
  * allows selecting credit card information from a sheet below the keyboard accessory.
  */
 public class CreditCardAccessorySheetCoordinator extends AccessorySheetTabCoordinator {
+    private AccessorySheetTabModel mModel = new AccessorySheetTabModel();
+    // TODO(crbug.com/926365): Consider creating a mediator for CCs (e.g. to record footer metrics).
+    private final AccessorySheetTabMediator mMediator = new AccessorySheetTabMediator(
+            mModel, AccessoryTabType.CREDIT_CARDS, Type.CREDIT_CARD_INFO);
+
     /**
      * Creates the credit cards tab.
      * @param context The {@link Context} containing resources like icons and layouts for this tab.
@@ -35,5 +41,7 @@ public class CreditCardAccessorySheetCoordinator extends AccessorySheetTabCoordi
     }
 
     @Override
-    public void onTabShown() {}
+    protected AccessorySheetTabMediator getMediator() {
+        return mMediator;
+    }
 }

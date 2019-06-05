@@ -58,7 +58,8 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
+@EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY,
+        ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AddressAccessoryIntegrationTest {
     @Rule
@@ -84,7 +85,7 @@ public class AddressAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
+    @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
     public void testAddressSheetIsAvailable() throws InterruptedException {
         mHelper.loadTestPage(false);
 
@@ -95,7 +96,7 @@ public class AddressAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @DisableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
+    @DisableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
     public void testAddressSheetUnavailableWithoutFeature() throws InterruptedException {
         mHelper.loadTestPage(false);
 
@@ -105,7 +106,7 @@ public class AddressAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
+    @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
     public void testDisplaysEmptyStateMessageWithoutSavedPasswords()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
@@ -125,7 +126,7 @@ public class AddressAccessoryIntegrationTest {
 
     @Test
     @MediumTest
-    @EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
+    @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
     public void testFillsSuggestionOnClick()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(FakeKeyboard::new);

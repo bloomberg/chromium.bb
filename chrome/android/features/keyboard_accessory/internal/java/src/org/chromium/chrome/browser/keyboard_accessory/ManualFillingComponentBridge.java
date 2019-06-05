@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.keyboard_accessory;
 
 import android.graphics.Bitmap;
 import android.support.annotation.Px;
+import android.util.SparseArray;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
@@ -21,10 +22,8 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 class ManualFillingComponentBridge {
-    private final PropertyProvider<AccessorySheetData> mPasswordSheetProvider =
-            new PropertyProvider<>();
-    private final PropertyProvider<AccessorySheetData> mAddressSheetProvider =
-            new PropertyProvider<>();
+    private final SparseArray<PropertyProvider<AccessorySheetData>> mProviders =
+            new SparseArray<>();
     private final PropertyProvider<Action[]> mActionProvider =
             new PropertyProvider<>(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
     private final ManualFillingComponent mManualFillingComponent;
@@ -35,10 +34,16 @@ class ManualFillingComponentBridge {
         mNativeView = nativeView;
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
         mManualFillingComponent = mActivity.getManualFillingComponent();
-        mManualFillingComponent.registerPasswordProvider(mPasswordSheetProvider);
-        mManualFillingComponent.registerAddressProvider(mAddressSheetProvider);
-        mManualFillingComponent.registerCreditCardProvider();
         mManualFillingComponent.registerActionProvider(mActionProvider);
+    }
+
+    PropertyProvider<AccessorySheetData> getOrCreateProvider(@AccessoryTabType int tabType) {
+        PropertyProvider<AccessorySheetData> provider = mProviders.get(tabType);
+        if (provider != null) return provider;
+        provider = new PropertyProvider<>();
+        mProviders.put(tabType, provider);
+        mManualFillingComponent.registerSheetDataProvider(tabType, provider);
+        return provider;
     }
 
     @CalledByNative
@@ -50,17 +55,7 @@ class ManualFillingComponentBridge {
     @CalledByNative
     private void onItemsAvailable(Object objAccessorySheetData) {
         AccessorySheetData accessorySheetData = (AccessorySheetData) objAccessorySheetData;
-        switch (accessorySheetData.getSheetType()) {
-            case AccessoryTabType.PASSWORDS:
-                mPasswordSheetProvider.notifyObservers((AccessorySheetData) objAccessorySheetData);
-                return;
-            case AccessoryTabType.CREDIT_CARDS:
-                // TODO(crbug.com/926365): Implement.
-                return;
-            case AccessoryTabType.ADDRESSES:
-                mAddressSheetProvider.notifyObservers((AccessorySheetData) objAccessorySheetData);
-                return;
-        }
+        getOrCreateProvider(accessorySheetData.getSheetType()).notifyObservers(accessorySheetData);
     }
 
     @CalledByNative
@@ -117,8 +112,9 @@ class ManualFillingComponentBridge {
 
     @CalledByNative
     private void destroy() {
-        mPasswordSheetProvider.notifyObservers(null);
-        mAddressSheetProvider.notifyObservers(null);
+        for (int i = 0; i < mProviders.size(); ++i) {
+            mProviders.valueAt(i).notifyObservers(null);
+        }
         mNativeView = 0;
     }
 

@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
+import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
+import org.chromium.chrome.browser.keyboard_accessory.data.Provider;
 
 /**
  * This coordinator aims to be the base class for sheets to be added to the ManualFillingCoordinator
@@ -32,7 +34,7 @@ public abstract class AccessorySheetTabCoordinator implements KeyboardAccessoryD
      * @param tabType The type of this tab as used in histograms.
      * @param scrollListener An optional listener that will be bound to an inflated recycler view.
      */
-    public AccessorySheetTabCoordinator(String title, Drawable icon, String contentDescription,
+    AccessorySheetTabCoordinator(String title, Drawable icon, String contentDescription,
             String openingAnnouncement, @LayoutRes int layout, @AccessoryTabType int tabType,
             @Nullable RecyclerView.OnScrollListener scrollListener) {
         mTab = new KeyboardAccessoryData.Tab(
@@ -46,6 +48,12 @@ public abstract class AccessorySheetTabCoordinator implements KeyboardAccessoryD
         AccessorySheetTabViewBinder.initializeView((RecyclerView) view, mScrollListener);
     }
 
+    @CallSuper
+    @Override
+    public void onTabShown() {
+        getMediator().onTabShown();
+    }
+
     /**
      * Returns the Tab object that describes the appearance of this class in the keyboard accessory
      * or its accessory sheet. The returned object doesn't change for this instance.
@@ -53,5 +61,21 @@ public abstract class AccessorySheetTabCoordinator implements KeyboardAccessoryD
      */
     public KeyboardAccessoryData.Tab getTab() {
         return mTab;
+    }
+
+    /**
+     * The mediator that is used to process the data pushed from sources added with
+     * {@link #registerDataProvider(Provider)}.
+     * @return A {@link Provider.Observer<AccessorySheetData>}.
+     */
+    abstract AccessorySheetTabMediator getMediator();
+
+    /**
+     * Registers the provider pushing a complete new instance of {@link AccessorySheetData} that
+     * should be displayed as sheet for this tab.
+     * @param sheetDataProvider A {@link Provider <AccessorySheetData>}.
+     */
+    public void registerDataProvider(Provider<AccessorySheetData> sheetDataProvider) {
+        sheetDataProvider.addObserver(getMediator());
     }
 }

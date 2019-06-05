@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.keyboard_accessory;
 
 import android.support.annotation.Nullable;
+import android.util.SparseArray;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.keyboard_accessory.data.CachedProviderAdapter;
@@ -12,9 +13,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.Provider;
-import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessorySheetCoordinator;
-import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
-import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabCoordinator;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
@@ -25,14 +24,23 @@ import java.util.ArrayList;
  * and its sheet for the {@link WebContents} it is attached to.
  */
 class ManualFillingState {
+    private final static int[] TAB_ORDER = {
+            AccessoryTabType.PASSWORDS, AccessoryTabType.CREDIT_CARDS, AccessoryTabType.ADDRESSES};
     private final WebContents mWebContents;
-    private boolean mWebContentsShowing;
+    private final SparseArray<SheetState> mSheetStates = new SparseArray<>();
     private @Nullable CachedProviderAdapter<KeyboardAccessoryData.Action[]> mActionsProvider;
-    private @Nullable CachedProviderAdapter<AccessorySheetData> mPasswordSheetDataProvider;
-    private @Nullable CachedProviderAdapter<AccessorySheetData> mAddressSheetDataProvider;
-    private @Nullable PasswordAccessorySheetCoordinator mPasswordAccessorySheet;
-    private @Nullable AddressAccessorySheetCoordinator mAddressAccessorySheet;
-    private @Nullable CreditCardAccessorySheetCoordinator mCreditCardAccessorySheet;
+    private boolean mWebContentsShowing;
+
+    private static class SheetState {
+        @Nullable
+        CachedProviderAdapter<AccessorySheetData> mDataProvider;
+        @Nullable
+        AccessorySheetTabCoordinator mSheet;
+
+        void notifyProviderObservers() {
+            if (mDataProvider != null) mDataProvider.notifyAboutCachedItems();
+        }
+    }
 
     private class Observer extends WebContentsObserver {
         public Observer(WebContents webContents) {
@@ -44,8 +52,9 @@ class ManualFillingState {
             super.wasShown();
             mWebContentsShowing = true;
             if (mActionsProvider != null) mActionsProvider.notifyAboutCachedItems();
-            if (mPasswordSheetDataProvider != null)
-                mPasswordSheetDataProvider.notifyAboutCachedItems();
+            for (int state : TAB_ORDER) {
+                getStateFor(state).notifyProviderObservers();
+            }
         }
 
         @Override
@@ -78,25 +87,35 @@ class ManualFillingState {
      */
     void notifyObservers() {
         if (mActionsProvider != null) mActionsProvider.notifyAboutCachedItems();
-        if (mPasswordSheetDataProvider != null) mPasswordSheetDataProvider.notifyAboutCachedItems();
+        for (int state : TAB_ORDER) {
+            // TODO(fhorschig): This needs controller tests for each state in the order!
+            getStateFor(state).notifyProviderObservers();
+        }
     }
 
     KeyboardAccessoryData.Tab[] getTabs() {
         ArrayList<KeyboardAccessoryData.Tab> tabs = new ArrayList<>();
-        if (mPasswordAccessorySheet != null) tabs.add(mPasswordAccessorySheet.getTab());
-        if (mCreditCardAccessorySheet != null) tabs.add(mCreditCardAccessorySheet.getTab());
-        if (mAddressAccessorySheet != null) tabs.add(mAddressAccessorySheet.getTab());
+        for (@AccessoryTabType int type : TAB_ORDER) {
+            SheetState state = getStateFor(type);
+            if (state.mSheet != null) tabs.add(state.mSheet.getTab());
+        }
         return tabs.toArray(new KeyboardAccessoryData.Tab[0]);
     }
 
     void destroy() {
         if (mWebContents != null) mWebContents.removeObserver(mWebContentsObserver);
         mActionsProvider = null;
-        mPasswordSheetDataProvider = null;
-        mPasswordAccessorySheet = null;
-        mCreditCardAccessorySheet = null;
-        mAddressAccessorySheet = null;
+        mSheetStates.clear();
         mWebContentsShowing = false;
+    }
+
+    private SheetState getStateFor(@AccessoryTabType int tabType) {
+        SheetState state = mSheetStates.get(tabType);
+        if (state == null) {
+            mSheetStates.put(tabType, new SheetState());
+            state = mSheetStates.get(tabType);
+        }
+        return state;
     }
 
     /**
@@ -119,64 +138,31 @@ class ManualFillingState {
     }
 
     /**
-     * Wraps the given provider for password data in a {@link CachedProviderAdapter} and stores it.
-     * @param provider A {@link PropertyProvider} providing password sheet data.
+     * Wraps the given provider for sheet data in a {@link CachedProviderAdapter} and stores it.
+     * @param provider A {@link PropertyProvider} providing sheet data.
      */
-    void wrapPasswordSheetDataProvider(PropertyProvider<AccessorySheetData> provider) {
-        mPasswordSheetDataProvider =
+    void wrapSheetDataProvider(
+            @AccessoryTabType int tabType, PropertyProvider<AccessorySheetData> provider) {
+        getStateFor(tabType).mDataProvider =
                 new CachedProviderAdapter<>(provider, null, this::onAdapterReceivedNewData);
     }
 
     /**
-     * Returns the wrapped provider set with {@link #wrapPasswordSheetDataProvider}.
+     * Returns the wrapped provider set with {@link #wrapSheetDataProvider}.
      * @return A {@link CachedProviderAdapter} wrapping a {@link PropertyProvider}.
      */
-    Provider<AccessorySheetData> getPasswordSheetDataProvider() {
-        return mPasswordSheetDataProvider;
+    Provider<AccessorySheetData> getSheetDataProvider(@AccessoryTabType int tabType) {
+        return getStateFor(tabType).mDataProvider;
     }
 
-    void setPasswordAccessorySheet(@Nullable PasswordAccessorySheetCoordinator sheet) {
-        mPasswordAccessorySheet = sheet;
-    }
-
-    @Nullable
-    PasswordAccessorySheetCoordinator getPasswordAccessorySheet() {
-        return mPasswordAccessorySheet;
-    }
-
-    /**
-     * Wraps the given provider for address data in a {@link CachedProviderAdapter} and stores it.
-     * @param provider A {@link PropertyProvider} providing password sheet data.
-     */
-    void wrapAddressSheetDataProvider(PropertyProvider<AccessorySheetData> provider) {
-        mAddressSheetDataProvider =
-                new CachedProviderAdapter<>(provider, null, this::onAdapterReceivedNewData);
-    }
-
-    /**
-     * Returns the wrapped provider set with {@link #wrapAddressSheetDataProvider}.
-     * @return A {@link CachedProviderAdapter} wrapping a {@link PropertyProvider}.
-     */
-    Provider<AccessorySheetData> getAddressSheetDataProvider() {
-        return mAddressSheetDataProvider;
-    }
-
-    void setAddressAccessorySheet(@Nullable AddressAccessorySheetCoordinator sheet) {
-        mAddressAccessorySheet = sheet;
+    void setAccessorySheet(
+            @AccessoryTabType int tabType, @Nullable AccessorySheetTabCoordinator sheet) {
+        getStateFor(tabType).mSheet = sheet;
     }
 
     @Nullable
-    AddressAccessorySheetCoordinator getAddressAccessorySheet() {
-        return mAddressAccessorySheet;
-    }
-
-    void setCreditCardAccessorySheet(@Nullable CreditCardAccessorySheetCoordinator sheet) {
-        mCreditCardAccessorySheet = sheet;
-    }
-
-    @Nullable
-    CreditCardAccessorySheetCoordinator getCreditCardAccessorySheet() {
-        return mCreditCardAccessorySheet;
+    AccessorySheetTabCoordinator getAccessorySheet(@AccessoryTabType int tabType) {
+        return getStateFor(tabType).mSheet;
     }
 
     private void onAdapterReceivedNewData(CachedProviderAdapter adapter) {

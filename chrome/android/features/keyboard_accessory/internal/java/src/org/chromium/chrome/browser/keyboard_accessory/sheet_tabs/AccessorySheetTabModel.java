@@ -40,9 +40,13 @@ class AccessorySheetTabModel extends ListModel<AccessorySheetTabModel.AccessoryS
              */
             int ADDRESS_INFO = 3;
             /**
+             * A section containing a payment information.
+             */
+            int CREDIT_CARD_INFO = 4;
+            /**
              * A command at the end of the accessory sheet tab.
              */
-            int FOOTER_COMMAND = 4;
+            int FOOTER_COMMAND = 5;
         }
 
         private Object mDataPiece;
