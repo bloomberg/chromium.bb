@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 
 namespace blink {
 
@@ -80,12 +81,21 @@ Response InspectorWebAudioAgent::getRealtimeData(
   BaseAudioContext* context = tracker->GetContextById(contextId);
   if (!context)
     return Response::Error("Cannot find BaseAudioContext with such id.");
-  *out_data = context
-      ? ContextRealtimeData::create()
+
+  if (!context->HasRealtimeConstraint()) {
+    return Response::Error(
+        "ContextRealtimeData is only avaliable for an AudioContext.");
+  }
+
+  // The realtime metric collection is only for AudioContext.
+  AudioCallbackMetric metric =
+      static_cast<AudioContext*>(context)->GetCallbackMetric();
+  *out_data = ContextRealtimeData::create()
           .setCurrentTime(context->currentTime())
-          .setRenderCapacity(context->RenderCapacity())
-          .build()
-      : ContextRealtimeData::create().build();
+          .setRenderCapacity(metric.render_capacity)
+          .setCallbackIntervalMean(metric.mean_callback_interval)
+          .setCallbackIntervalVariance(metric.variance_callback_interval)
+          .build();
   return Response::OK();
 }
 

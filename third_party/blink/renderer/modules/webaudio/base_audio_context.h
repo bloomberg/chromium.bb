@@ -329,10 +329,6 @@ class MODULES_EXPORT BaseAudioContext
   // occurs preventing us from determining the count.
   int32_t CallbackBufferSize();
 
-  // Returns the render capacity, which is the time spend on render divided by
-  // the hardware callback interval. Glitches happen when it goes beyond 1.0.
-  virtual double RenderCapacity() = 0;
-
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 

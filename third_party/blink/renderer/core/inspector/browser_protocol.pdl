@@ -6764,16 +6764,19 @@ experimental domain WebAudio
       running
       closed
 
-  # Fields in AudioContext that change in real-time. These are not updated
-  # on OfflineAudioContext.
+  # Fields in AudioContext that change in real-time.
   type ContextRealtimeData extends object
     properties
       # The current context time in second in BaseAudioContext.
-      optional number currentTime
+      number currentTime
       # The time spent on rendering graph divided by render qunatum duration,
       # and multiplied by 100. 100 means the audio renderer reached the full
       # capacity and glitch may occur.
-      optional number renderCapacity
+      number renderCapacity
+      # A running mean of callback interval.
+      number callbackIntervalMean
+      # A running variance of callback interval.
+      number callbackIntervalVariance
 
   # Protocol object for BaseAudioContext
   type BaseAudioContext extends object

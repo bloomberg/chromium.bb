@@ -22,6 +22,8 @@ got context realtime data: false
 [
     [0] : currentTime
     [1] : renderCapacity
+    [2] : callbackIntervalMean
+    [3] : callbackIntervalVariance
 ]
 Disabled successfully: true
 

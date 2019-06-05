@@ -80,7 +80,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
   void HandleAudibility(AudioBus* destination_bus);
 
-  double RenderCapacity() final;
+  AudioCallbackMetric GetCallbackMetric() const;
 
  protected:
   void Uninitialize() final;

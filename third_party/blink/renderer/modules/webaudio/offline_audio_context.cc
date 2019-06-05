@@ -487,11 +487,4 @@ bool OfflineAudioContext::HasPendingActivity() const {
   return is_rendering_started_;
 }
 
-double OfflineAudioContext::RenderCapacity() {
-  DCHECK(IsMainThread());
-
-  // Offline contexts don't have a meaningful render capacity. So return 0.
-  return 0.0;
-}
-
 }  // namespace blink

@@ -674,10 +674,13 @@ void AudioContext::OnAudioContextManagerServiceConnectionError() {
   audio_context_manager_ = nullptr;
 }
 
-double AudioContext::RenderCapacity() {
-  DCHECK(IsMainThread());
+AudioCallbackMetric AudioContext::GetCallbackMetric() const {
+  // Return a copy under the graph lock because returning a reference would
+  // allow seeing the audio thread changing the struct values. This method
+  // gets called once per second and the size of the struct is small, so
+  // creating a copy is acceptable here.
   GraphAutoLocker locker(this);
-  return callback_metric_.render_capacity;
+  return callback_metric_;
 }
 
 }  // namespace blink

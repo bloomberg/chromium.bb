@@ -99,8 +99,6 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   // Document notification
   bool HasPendingActivity() const final;
 
-  double RenderCapacity() final;
-
  private:
   // Fetch directly the destination handler.
   OfflineAudioDestinationHandler& DestinationHandler();
