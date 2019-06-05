@@ -817,40 +817,35 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       int_mv mv_ref_list[][MAX_MV_REF_CANDIDATES],
                       int_mv *global_mvs, int mi_row, int mi_col,
                       int16_t *mode_context) {
-  int_mv zeromv[2];
-  BLOCK_SIZE bsize = mi->sb_type;
-  MV_REFERENCE_FRAME rf[2];
-  av1_set_ref_frame(rf, ref_frame);
+  int_mv gm_mv[2];
+  const BLOCK_SIZE bsize = mi->sb_type;
 
-  if (global_mvs != NULL && ref_frame < REF_FRAMES) {
-    if (ref_frame != INTRA_FRAME) {
-      global_mvs[ref_frame] = gm_get_motion_vector(
+  if (ref_frame == INTRA_FRAME) {
+    gm_mv[0].as_int = gm_mv[1].as_int = 0;
+    if (global_mvs != NULL && ref_frame < REF_FRAMES) {
+      global_mvs[ref_frame].as_int = INVALID_MV;
+    }
+  } else {
+    if (ref_frame < REF_FRAMES) {
+      gm_mv[0] = gm_get_motion_vector(
           &cm->global_motion[ref_frame], cm->allow_high_precision_mv, bsize,
           mi_col, mi_row, cm->cur_frame_force_integer_mv);
+      gm_mv[1].as_int = 0;
+      if (global_mvs != NULL) global_mvs[ref_frame] = gm_mv[0];
     } else {
-      global_mvs[ref_frame].as_int = INVALID_MV;
+      MV_REFERENCE_FRAME rf[2];
+      av1_set_ref_frame(rf, ref_frame);
+      gm_mv[0] = gm_get_motion_vector(
+          &cm->global_motion[rf[0]], cm->allow_high_precision_mv, bsize, mi_col,
+          mi_row, cm->cur_frame_force_integer_mv);
+      gm_mv[1] = gm_get_motion_vector(
+          &cm->global_motion[rf[1]], cm->allow_high_precision_mv, bsize, mi_col,
+          mi_row, cm->cur_frame_force_integer_mv);
     }
   }
 
-  if (ref_frame != INTRA_FRAME) {
-    zeromv[0].as_int =
-        gm_get_motion_vector(&cm->global_motion[rf[0]],
-                             cm->allow_high_precision_mv, bsize, mi_col, mi_row,
-                             cm->cur_frame_force_integer_mv)
-            .as_int;
-    zeromv[1].as_int =
-        (rf[1] != NONE_FRAME)
-            ? gm_get_motion_vector(&cm->global_motion[rf[1]],
-                                   cm->allow_high_precision_mv, bsize, mi_col,
-                                   mi_row, cm->cur_frame_force_integer_mv)
-                  .as_int
-            : 0;
-  } else {
-    zeromv[0].as_int = zeromv[1].as_int = 0;
-  }
-
   setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack,
-                    ref_mv_weight, mv_ref_list, zeromv, mi_row, mi_col,
+                    ref_mv_weight, mv_ref_list, gm_mv, mi_row, mi_col,
                     mode_context);
 }
 
