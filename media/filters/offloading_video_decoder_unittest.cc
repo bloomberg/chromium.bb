@@ -7,15 +7,18 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using base::test::RunClosure;
+using base::test::RunOnceCallback;
+using base::test::RunOnceClosure;
 using testing::_;
 using testing::DoAll;
 using testing::SaveArg;

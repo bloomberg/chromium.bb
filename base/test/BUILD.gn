@@ -54,6 +54,7 @@ static_library("test_support") {
     "do_nothing_promise.cc",
     "do_nothing_promise.h",
     "fuzzed_data_provider.h",
+    "gmock_callback_support.h",
     "gtest_util.cc",
     "gtest_util.h",
     "gtest_xml_unittest_result_printer.cc",

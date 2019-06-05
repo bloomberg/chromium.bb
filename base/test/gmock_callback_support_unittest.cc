@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/gmock_callback_support.h"
+#include "base/test/gmock_callback_support.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -12,7 +12,8 @@
 using testing::ByRef;
 using testing::MockFunction;
 
-namespace media {
+namespace base {
+namespace test {
 
 typedef base::Callback<void(const bool& src, bool* dst)> TestCallback;
 
@@ -35,8 +36,7 @@ TEST(GmockCallbackSupportTest, IsNotNullCallback) {
 TEST(GmockCallbackSupportTest, RunClosure) {
   MockFunction<void(const base::Closure&)> check;
   bool dst = false;
-  EXPECT_CALL(check, Call(IsNotNullCallback()))
-      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(check, Call(IsNotNullCallback())).WillOnce(RunClosure<0>());
   check.Call(base::Bind(&SetBool, true, &dst));
   EXPECT_TRUE(dst);
 }
@@ -81,4 +81,5 @@ TEST(GmockCallbackSupportTest, RunCallbackPassByValue) {
   EXPECT_TRUE(dst);
 }
 
-}  // namespace media
+}  // namespace test
+}  // namespace base

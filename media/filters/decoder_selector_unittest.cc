@@ -9,10 +9,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "media/base/demuxer_stream.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
@@ -26,6 +26,7 @@
 #include "media/filters/decrypting_video_decoder.h"
 #endif  // !defined(OS_ANDROID)
 
+using ::base::test::RunCallback;
 using ::testing::_;
 using ::testing::IsNull;
 using ::testing::NiceMock;

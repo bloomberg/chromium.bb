@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "media/base/gmock_callback_support.h"
+#include "base/test/gmock_callback_support.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/mock_media_log.h"
@@ -20,6 +20,7 @@
 
 namespace media {
 
+using base::test::RunClosure;
 using testing::_;
 using testing::SaveArg;
 

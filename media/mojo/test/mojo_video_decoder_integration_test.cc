@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
@@ -22,7 +23,6 @@
 #include "media/base/decode_status.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/media_log.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/test_helpers.h"
@@ -38,11 +38,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_space.h"
 
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::HasSubstr;
-using ::testing::Invoke;
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::Return;
 using ::testing::SaveArg;

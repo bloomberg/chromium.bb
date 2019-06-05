@@ -22,6 +22,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -32,7 +33,6 @@
 #include "media/audio/test_audio_thread.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
-#include "media/base/gmock_callback_support.h"
 #include "services/audio/loopback_group_member.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,8 +49,9 @@ using media::AudioBus;
 using media::AudioManager;
 using media::AudioOutputStream;
 using media::AudioParameters;
-using media::RunClosure;
-using media::RunOnceClosure;
+
+using base::test::RunClosure;
+using base::test::RunOnceClosure;
 
 namespace audio {
 namespace {

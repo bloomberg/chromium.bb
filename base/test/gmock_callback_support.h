@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_GMOCK_CALLBACK_SUPPORT_H_
-#define MEDIA_BASE_GMOCK_CALLBACK_SUPPORT_H_
+#ifndef BASE_TEST_GMOCK_CALLBACK_SUPPORT_H_
+#define BASE_TEST_GMOCK_CALLBACK_SUPPORT_H_
 
 #include <tuple>
 
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace media {
+namespace base {
+namespace test {
 
 // Matchers for base::Callback and base::Closure.
 
@@ -27,7 +28,7 @@ MATCHER(IsNotNullCallback, "a non-null callback") {
 ACTION_TEMPLATE(RunClosure,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_0_VALUE_PARAMS()) {
-  std::get<k>(args).Run();
+  ::testing::get<k>(args).Run();
 }
 
 ACTION_P(RunClosure, closure) {
@@ -63,49 +64,49 @@ ACTION_P(RunClosure, closure) {
 ACTION_TEMPLATE(RunCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_0_VALUE_PARAMS()) {
-  return std::get<k>(args).Run();
+  return ::testing::get<k>(args).Run();
 }
 
 ACTION_TEMPLATE(RunCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p0)) {
-  return std::get<k>(args).Run(p0);
+  return ::testing::get<k>(args).Run(p0);
 }
 
 ACTION_TEMPLATE(RunCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_2_VALUE_PARAMS(p0, p1)) {
-  return std::get<k>(args).Run(p0, p1);
+  return ::testing::get<k>(args).Run(p0, p1);
 }
 
 ACTION_TEMPLATE(RunCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_3_VALUE_PARAMS(p0, p1, p2)) {
-  return std::get<k>(args).Run(p0, p1, p2);
+  return ::testing::get<k>(args).Run(p0, p1, p2);
 }
 
 ACTION_TEMPLATE(RunCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_4_VALUE_PARAMS(p0, p1, p2, p3)) {
-  return std::get<k>(args).Run(p0, p1, p2, p3);
+  return ::testing::get<k>(args).Run(p0, p1, p2, p3);
 }
 
 ACTION_TEMPLATE(RunCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_5_VALUE_PARAMS(p0, p1, p2, p3, p4)) {
-  return std::get<k>(args).Run(p0, p1, p2, p3, p4);
+  return ::testing::get<k>(args).Run(p0, p1, p2, p3, p4);
 }
 
 ACTION_TEMPLATE(RunCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_6_VALUE_PARAMS(p0, p1, p2, p3, p4, p5)) {
-  return std::get<k>(args).Run(p0, p1, p2, p3, p4, p5);
+  return ::testing::get<k>(args).Run(p0, p1, p2, p3, p4, p5);
 }
 
 ACTION_TEMPLATE(RunCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_7_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6)) {
-  return std::get<k>(args).Run(p0, p1, p2, p3, p4, p5, p6);
+  return ::testing::get<k>(args).Run(p0, p1, p2, p3, p4, p5, p6);
 }
 
 // Various overloads for RunOnceClosure and RunOnceCallback<N>(). These are
@@ -115,7 +116,7 @@ ACTION_TEMPLATE(RunCallback,
 ACTION_TEMPLATE(RunOnceClosure,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_0_VALUE_PARAMS()) {
-  std::move(std::get<k>(args)).Run();
+  std::move(::testing::get<k>(args)).Run();
 }
 
 ACTION_P(RunOnceClosure, closure) {
@@ -125,51 +126,52 @@ ACTION_P(RunOnceClosure, closure) {
 ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_0_VALUE_PARAMS()) {
-  return std::move(std::get<k>(args)).Run();
+  return std::move(::testing::get<k>(args)).Run();
 }
 
 ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p0)) {
-  return std::move(std::get<k>(args)).Run(p0);
+  return std::move(::testing::get<k>(args)).Run(p0);
 }
 
 ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_2_VALUE_PARAMS(p0, p1)) {
-  return std::move(std::get<k>(args)).Run(p0, p1);
+  return std::move(::testing::get<k>(args)).Run(p0, p1);
 }
 
 ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_3_VALUE_PARAMS(p0, p1, p2)) {
-  return std::move(std::get<k>(args)).Run(p0, p1, p2);
+  return std::move(::testing::get<k>(args)).Run(p0, p1, p2);
 }
 
 ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_4_VALUE_PARAMS(p0, p1, p2, p3)) {
-  return std::move(std::get<k>(args)).Run(p0, p1, p2, p3);
+  return std::move(::testing::get<k>(args)).Run(p0, p1, p2, p3);
 }
 
 ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_5_VALUE_PARAMS(p0, p1, p2, p3, p4)) {
-  return std::move(std::get<k>(args)).Run(p0, p1, p2, p3, p4);
+  return std::move(::testing::get<k>(args)).Run(p0, p1, p2, p3, p4);
 }
 
 ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_6_VALUE_PARAMS(p0, p1, p2, p3, p4, p5)) {
-  return std::move(std::get<k>(args)).Run(p0, p1, p2, p3, p4, p5);
+  return std::move(::testing::get<k>(args)).Run(p0, p1, p2, p3, p4, p5);
 }
 
 ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_7_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6)) {
-  return std::move(std::get<k>(args)).Run(p0, p1, p2, p3, p4, p5, p6);
+  return std::move(::testing::get<k>(args)).Run(p0, p1, p2, p3, p4, p5, p6);
 }
 
-}  // namespace media
+}  // namespace test
+}  // namespace base
 
-#endif  // MEDIA_BASE_GMOCK_CALLBACK_SUPPORT_H_
+#endif  // BASE_TEST_GMOCK_CALLBACK_SUPPORT_H_

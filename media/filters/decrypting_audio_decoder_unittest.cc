@@ -11,11 +11,11 @@
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
@@ -23,6 +23,7 @@
 #include "media/filters/decrypting_audio_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using ::base::test::RunCallback;
 using ::testing::_;
 using ::testing::AtMost;
 using ::testing::Return;

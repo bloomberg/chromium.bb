@@ -2690,6 +2690,7 @@ test("base_unittests") {
     "task/thread_pool/worker_thread_unittest.cc",
     "task_runner_util_unittest.cc",
     "template_util_unittest.cc",
+    "test/gmock_callback_support_unittest.cc",
     "test/launcher/test_launcher_unittest.cc",
     "test/launcher/unit_test_launcher_unittest.cc",
     "test/metrics/histogram_enum_reader_unittest.cc",

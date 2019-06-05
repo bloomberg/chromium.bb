@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
@@ -26,18 +27,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Templates for calling base::OnceCallback from gmock actions.
-ACTION_TEMPLATE(RunOnceCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_0_VALUE_PARAMS()) {
-  return std::move(std::get<k>(args)).Run();
-}
-
 namespace apps {
 
 using extensions::Extension;
 typedef extensions::AppWindowRegistry::AppWindowList AppWindowList;
 
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;

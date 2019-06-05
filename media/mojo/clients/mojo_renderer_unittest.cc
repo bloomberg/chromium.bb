@@ -8,13 +8,13 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/cdm/default_cdm_factory.h"
@@ -32,6 +32,8 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+using ::base::test::RunCallback;
+using ::base::test::RunClosure;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Return;

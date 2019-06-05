@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "base/task/post_task.h"
+#include "base/test/gmock_callback_support.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,7 +26,6 @@
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -493,7 +493,7 @@ class AudioOutputDelegateTest : public testing::Test {
     // the delegate along since destructing it will close the stream and void
     // the purpose of this test.
     EXPECT_CALL(event_handler_, OnStreamError(kStreamId))
-        .WillOnce(media::RunClosure(media::BindToCurrentLoop(base::Bind(
+        .WillOnce(base::test::RunClosure(media::BindToCurrentLoop(base::Bind(
             &AudioOutputDelegateTest::TrampolineToUI, base::Unretained(this),
             std::move(done), base::Passed(&delegate)))));
   }

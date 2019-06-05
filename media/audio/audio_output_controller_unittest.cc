@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -29,20 +30,21 @@
 #include "media/audio/test_audio_thread.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
-#include "media/base/gmock_callback_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::base::test::RunClosure;
+using ::base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Bool;
-using ::testing::TestWithParam;
 using ::testing::DoAll;
 using ::testing::Invoke;
+using ::testing::Mock;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::StrictMock;
-using ::testing::Mock;
+using ::testing::TestWithParam;
 
 namespace media {
 
