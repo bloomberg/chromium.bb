@@ -417,6 +417,13 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
     DCHECK(user->IsActiveDirectoryUser());
 
     ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
+  } else {
+    base::Optional<std::string> user_workgroup =
+        GetUserFromFileSystemId(file_system_info.file_system_id());
+    if (user_workgroup &&
+        !ParseUserName(*user_workgroup, &username, &workgroup)) {
+      LOG(ERROR) << "Failed to parse username/workgroup from file system ID";
+    }
   }
 
   SmbUrl parsed_url(share_path.value());

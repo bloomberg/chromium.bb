@@ -4,13 +4,17 @@
 
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 
+#include <string.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 
 namespace chromeos {
 namespace smb_client {
@@ -18,12 +22,12 @@ namespace {
 
 constexpr char kDelimiter[] = "@@";
 constexpr char kKerberosSymbol[] = "kerberos_chromad";
+constexpr char kUserPrefix[] = "user=";
 constexpr int kRandomIdBytes = 8;
 
 std::vector<std::string> GetComponents(const std::string& file_system_id) {
-  const std::vector<std::string> components =
-      SplitString(file_system_id, kDelimiter, base::TRIM_WHITESPACE,
-                  base::SPLIT_WANT_NONEMPTY);
+  std::vector<std::string> components = SplitStringUsingSubstr(
+      file_system_id, kDelimiter, base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   DCHECK_GE(components.size(), 2u);
   DCHECK_LE(components.size(), 3u);
@@ -51,6 +55,18 @@ std::string CreateFileSystemId(const base::FilePath& share_path,
   return file_system_id;
 }
 
+std::string CreateFileSystemIdForUser(const base::FilePath& share_path,
+                                      const std::string& username) {
+  // Disallow down-level logon names.
+  CHECK_EQ(username.find('\\'), std::string::npos);
+  const std::string base_file_system_id =
+      base::StrCat({GenerateRandomId(), kDelimiter, share_path.value()});
+  if (username.empty()) {
+    return base_file_system_id;
+  }
+  return base::StrCat({base_file_system_id, kDelimiter, kUserPrefix, username});
+}
+
 base::FilePath GetSharePathFromFileSystemId(const std::string& file_system_id) {
   const std::vector<std::string> components = GetComponents(file_system_id);
   DCHECK_GE(components.size(), 1u);
@@ -62,6 +78,17 @@ bool IsKerberosChromadFileSystemId(const std::string& file_system_id) {
   const std::vector<std::string> components = GetComponents(file_system_id);
 
   return components.size() >= 3 && components[2] == kKerberosSymbol;
+}
+
+base::Optional<std::string> GetUserFromFileSystemId(
+    const std::string& file_system_id) {
+  const std::vector<std::string> components = GetComponents(file_system_id);
+  if (components.size() < 3 ||
+      !base::StartsWith(components[2], kUserPrefix,
+                        base::CompareCase::SENSITIVE)) {
+    return {};
+  }
+  return components[2].substr(strlen(kUserPrefix));
 }
 
 }  // namespace smb_client
