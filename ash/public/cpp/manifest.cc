@@ -19,7 +19,6 @@
 #include "ash/public/interfaces/media.mojom.h"
 #include "ash/public/interfaces/night_light_controller.mojom.h"
 #include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
-#include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/public/interfaces/vpn_list.mojom.h"
@@ -66,9 +65,8 @@ const service_manager::Manifest& GetManifest() {
                   mojom::CrosDisplayConfigController, mojom::ImeController,
                   mojom::KeyboardController, mojom::LocaleUpdateController,
                   mojom::LoginScreen, mojom::MediaController,
-                  mojom::NightLightController, mojom::ShutdownController,
-                  mojom::TrayAction, mojom::VoiceInteractionController,
-                  mojom::VpnList>())
+                  mojom::NightLightController, mojom::TrayAction,
+                  mojom::VoiceInteractionController, mojom::VpnList>())
           .ExposeCapability("test", service_manager::Manifest::InterfaceList<
                                         mojom::ShelfIntegrationTestApi>())
           .RequireCapability("*", "accessibility")

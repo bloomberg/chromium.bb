@@ -10,9 +10,9 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/shutdown_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/shutdown_controller.h"
 #include "ash/shutdown_reason.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_button_controller_test_api.h"
@@ -58,6 +58,7 @@ class TestShutdownController : public ShutdownController {
 
  private:
   // ShutdownController:
+  void SetRebootOnShutdown(bool reboot_on_shutdown) override {}
   void ShutDownOrReboot(ShutdownReason reason) override {
     num_shutdown_requests_++;
   }
@@ -74,6 +75,7 @@ class LockStateControllerTest : public PowerButtonTestBase {
   LockStateControllerTest() = default;
   ~LockStateControllerTest() override = default;
 
+  // PowerButtonTestBase:
   void SetUp() override {
     PowerButtonTestBase::SetUp();
     InitPowerButtonControllerMembers(
@@ -81,15 +83,25 @@ class LockStateControllerTest : public PowerButtonTestBase {
 
     test_animator_ = new TestSessionStateAnimator;
     lock_state_controller_->set_animator_for_test(test_animator_);
-    lock_state_test_api_->set_shutdown_controller(&test_shutdown_controller_);
+
+    shutdown_controller_resetter_ =
+        std::make_unique<ShutdownController::ScopedResetterForTest>();
+    test_shutdown_controller_ = std::make_unique<TestShutdownController>();
+    lock_state_test_api_->set_shutdown_controller(
+        test_shutdown_controller_.get());
 
     a11y_controller_ = Shell::Get()->accessibility_controller();
     a11y_controller_->SetClient(a11y_client_.CreateInterfacePtrAndBind());
   }
+  void TearDown() override {
+    test_shutdown_controller_.reset();
+    shutdown_controller_resetter_.reset();
+    PowerButtonTestBase::TearDown();
+  }
 
  protected:
   int NumShutdownRequests() {
-    return test_shutdown_controller_.num_shutdown_requests();
+    return test_shutdown_controller_->num_shutdown_requests();
   }
 
   void Advance(SessionStateAnimator::AnimationSpeed speed) {
@@ -287,7 +299,9 @@ class LockStateControllerTest : public PowerButtonTestBase {
   // Simulate that shutdown sound duration callback is done.
   void ShutdownSoundPlayed() { a11y_controller_->FlushMojoForTest(); }
 
-  TestShutdownController test_shutdown_controller_;
+  std::unique_ptr<ShutdownController::ScopedResetterForTest>
+      shutdown_controller_resetter_;
+  std::unique_ptr<TestShutdownController> test_shutdown_controller_;
   TestSessionStateAnimator* test_animator_ = nullptr;   // not owned
   AccessibilityController* a11y_controller_ = nullptr;  // not owned
   TestAccessibilityControllerClient a11y_client_;

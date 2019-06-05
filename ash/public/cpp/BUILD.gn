@@ -143,6 +143,8 @@ component("cpp") {
     "shelf_types.h",
     "shell_window_ids.cc",
     "shell_window_ids.h",
+    "shutdown_controller.cc",
+    "shutdown_controller.h",
     "split_view.cc",
     "split_view.h",
     "spoken_feedback_event_rewriter_delegate.h",

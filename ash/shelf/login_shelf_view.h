@@ -15,7 +15,7 @@
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
-#include "ash/shutdown_controller.h"
+#include "ash/shutdown_controller_impl.h"
 #include "ash/system/locale/locale_update_controller.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/scoped_observer.h"
@@ -44,7 +44,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
                                   public views::ButtonListener,
                                   public TrayActionObserver,
                                   public LockScreenActionBackgroundObserver,
-                                  public ShutdownController::Observer,
+                                  public ShutdownControllerImpl::Observer,
                                   public LoginDataDispatcher::Observer,
                                   public LocaleChangeObserver {
  public:
@@ -135,7 +135,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void OnLockScreenActionBackgroundStateChanged(
       LockScreenActionBackgroundState state) override;
 
-  // ShutdownController::Observer:
+  // ShutdownControllerImpl::Observer:
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
 
   // LoginDataDispatcher::Observer:
@@ -175,7 +175,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
                  LockScreenActionBackgroundObserver>
       lock_screen_action_background_observer_{this};
 
-  ScopedObserver<ShutdownController, ShutdownController::Observer>
+  ScopedObserver<ShutdownControllerImpl, ShutdownControllerImpl::Observer>
       shutdown_controller_observer_{this};
 
   ScopedObserver<LocaleUpdateController, LocaleChangeObserver>

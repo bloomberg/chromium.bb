@@ -83,7 +83,7 @@
 #include "ash/shell_init_params.h"
 #include "ash/shell_observer.h"
 #include "ash/shell_state.h"
-#include "ash/shutdown_controller.h"
+#include "ash/shutdown_controller_impl.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
@@ -557,7 +557,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       session_controller_(std::make_unique<SessionControllerImpl>()),
       shell_delegate_(std::move(shell_delegate)),
       shell_state_(std::make_unique<ShellState>()),
-      shutdown_controller_(std::make_unique<ShutdownController>()),
+      shutdown_controller_(std::make_unique<ShutdownControllerImpl>()),
       system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
       vpn_list_(std::make_unique<VpnList>()),
       window_cycle_controller_(std::make_unique<WindowCycleController>()),

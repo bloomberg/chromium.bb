@@ -27,7 +27,6 @@
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/shutdown_controller.h"
 #include "ash/system/locale/locale_update_controller.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/network/vpn_list.h"
@@ -135,11 +134,6 @@ void BindShelfIntegrationTestApiRequestOnMainThread(
   ShelfIntegrationTestApi::BindRequest(std::move(request));
 }
 
-void BindShutdownControllerRequestOnMainThread(
-    mojom::ShutdownControllerRequest request) {
-  Shell::Get()->shutdown_controller()->BindRequest(std::move(request));
-}
-
 void BindTrayActionRequestOnMainThread(mojom::TrayActionRequest request) {
   Shell::Get()->tray_action()->BindRequest(std::move(request));
 }
@@ -213,9 +207,6 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindNightLightControllerRequestOnMainThread),
-      main_thread_task_runner);
-  registry->AddInterface(
-      base::BindRepeating(&BindShutdownControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindTrayActionRequestOnMainThread),
