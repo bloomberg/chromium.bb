@@ -32,7 +32,8 @@ static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 static const uint32_t dumb_texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
 							DRM_FORMAT_YVU420_ANDROID };
 
-static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_RG88 };
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_R8, DRM_FORMAT_RG88,
+						   DRM_FORMAT_YVU420_ANDROID };
 
 struct virtio_gpu_priv {
 	int has_3d;
@@ -55,6 +56,11 @@ static uint32_t translate_format(uint32_t drm_fourcc, uint32_t plane)
 		return VIRGL_FORMAT_R8_UNORM;
 	case DRM_FORMAT_RG88:
 		return VIRGL_FORMAT_R8G8_UNORM;
+	case DRM_FORMAT_NV12:
+		return VIRGL_FORMAT_NV12;
+	case DRM_FORMAT_YVU420:
+	case DRM_FORMAT_YVU420_ANDROID:
+		return VIRGL_FORMAT_YV12;
 	default:
 		return 0;
 	}
@@ -315,6 +321,8 @@ static int virtio_gpu_bo_flush(struct bo *bo, struct mapping *mapping)
 
 static uint32_t virtio_gpu_resolve_format(struct driver *drv, uint32_t format, uint64_t use_flags)
 {
+	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)drv->priv;
+
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
 		/* Camera subsystem requires NV12. */
@@ -323,7 +331,14 @@ static uint32_t virtio_gpu_resolve_format(struct driver *drv, uint32_t format, u
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
-		return DRM_FORMAT_YVU420;
+		/*
+		 * All of our host drivers prefer NV12 as their flexible media format.
+		 * If that changes, this will need to be modified.
+		 */
+		if (priv->has_3d)
+			return DRM_FORMAT_NV12;
+		else
+			return DRM_FORMAT_YVU420;
 	default:
 		return format;
 	}
