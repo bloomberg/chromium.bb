@@ -439,7 +439,7 @@ void BrowserTestBase::SimulateNetworkServiceCrash() {
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       mojom::kNetworkServiceName, &network_service_test);
 
-  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
   network_service_test.set_connection_error_handler(run_loop.QuitClosure());
 
   network_service_test->SimulateCrash();
@@ -631,12 +631,10 @@ void BrowserTestBase::InitializeNetworkProcess() {
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       mojom::kNetworkServiceName, &network_service_test);
 
-  // Allow nested tasks so that the mojo reply is dispatched.
-  base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
   // Send the DNS rules to network service process. Android needs the RunLoop
   // to dispatch a Java callback that makes network process to enter native
   // code.
-  base::RunLoop loop;
+  base::RunLoop loop{base::RunLoop::Type::kNestableTasksAllowed};
   network_service_test->AddRules(std::move(mojo_rules), loop.QuitClosure());
   loop.Run();
 }

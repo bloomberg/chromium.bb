@@ -1844,7 +1844,7 @@ void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server) {
 void WaitForInterstitialAttach(content::WebContents* web_contents) {
   if (web_contents->ShowingInterstitialPage())
     return;
-  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
   InterstitialObserver observer(web_contents, run_loop.QuitClosure(),
                                 base::OnceClosure());
   run_loop.Run();
@@ -2246,7 +2246,7 @@ bool DOMMessageQueue::WaitForMessage(std::string* message) {
   DCHECK(message);
   if (!renderer_crashed_ && message_queue_.empty()) {
     // This will be quit when a new message comes in.
-    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
     quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
@@ -2423,7 +2423,7 @@ void RenderFrameSubmissionObserver::Quit() {
 }
 
 void RenderFrameSubmissionObserver::Wait() {
-  base::RunLoop run_loop;
+  base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
 }
