@@ -161,14 +161,21 @@ in order to check for or reproduce flakiness.
 `--shared-prefs-file path/to/preference/json/file`
 
 Configures VrCore according to the provided file, e.g. changing the paired
-headset. The two most common files used are:
+headset. The currently supported files are:
 
 * `//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json`
-  This will pair the device with a Cardboard headset and disable controller
-  emulation.
+  will cause all cardboard-compatible tests to run. This will pair the device
+  with a Cardboard headset and disable controller emulation.
 * `//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json`
-  This will pair the device with a Daydream View headset, set the DON flow to be
-  skipped, and enable controller emulation.
+  will cause most Daydream View-compatible tests to run, with the exception of
+  those that require the DON flow to be enabled. This will pair the device with
+  a Daydream View headset, set the DON flow to be skipped, and enable controller
+  emulation.
+* `//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json`
+  combined with the extra `--vr-settings-service-enabled` and
+  `--annotation=Restriction=VR_Settings_Service` flags will cause all tests that
+  are using the `RESTRICTION_TYPE_VR_SETTINGS_SERVICE` restriction to run. See
+  the section below for more detail on this.
 
 The test runner will automatically revert any changed settings back to their
 pre-test values after the test suite has completed. If for whatever reason you
