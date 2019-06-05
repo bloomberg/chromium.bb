@@ -285,6 +285,9 @@ const char kCrosScheme[] = "cros";
 const char kCupsPrintLearnMoreURL[] =
     "https://support.google.com/chromebook?p=chromebook_printing";
 
+const char kCupsPrintPPDLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=chromebook_printing";
+
 const char kEasyUnlockLearnMoreUrl[] =
     "https://support.google.com/chromebook/?p=smart_lock";
 

@@ -1483,7 +1483,7 @@
       Manufacturer
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_DRIVER" desc="Label for the file selector to manually select a PPD file from the user's file system.">
-      Or specify your own driver:
+      Or specify your printer PPD
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER" desc="Text for the button which allows user to select a PPD file from the file system.">
       Browse
