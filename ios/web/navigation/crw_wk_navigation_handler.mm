@@ -1059,7 +1059,6 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   [self.navigationStates setState:web::WKNavigationState::FINISHED
                     forNavigation:navigation];
 
-  DCHECK(![self.delegate navigationHandlerWebViewIsHalted:self]);
   // Trigger JavaScript driven post-document-load-completion tasks.
   // TODO(crbug.com/546350): Investigate using
   // WKUserScriptInjectionTimeAtDocumentEnd to inject this material at the
@@ -1981,7 +1980,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   // TODO(crbug.com/821995):  Check if this function should be removed.
   if (self.navigationState != web::WKNavigationState::FINISHED) {
     self.navigationState = web::WKNavigationState::FINISHED;
-    if (![self.delegate navigationHandlerWebViewIsHalted:self]) {
+    if (![self.delegate navigationHandlerWebViewBeingDestroyed:self]) {
       self.webStateImpl->SetIsLoading(false);
     }
   }

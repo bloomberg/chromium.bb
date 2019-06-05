@@ -55,10 +55,6 @@ class WKBackForwardListItemHolder;
     legacyNativeContentControllerForNavigationHandler:
         (CRWWKNavigationHandler*)navigationHandler;
 
-// Returns YES if WKWebView is halted.
-- (BOOL)navigationHandlerWebViewIsHalted:
-    (CRWWKNavigationHandler*)navigationHandler;
-
 // Returns YES if WKWebView was deallocated or is being deallocated.
 - (BOOL)navigationHandlerWebViewBeingDestroyed:
     (CRWWKNavigationHandler*)navigationHandler;

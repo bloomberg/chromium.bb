@@ -205,7 +205,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   // and after web usage was disabled. Used by |-loadCurrentURLIfNecessary| to
   // prevent extra loads.
   BOOL _currentURLLoadWasTrigerred;
-  BOOL _isHalted;  // YES if halted. Halting happens prior to destruction.
   BOOL _isBeingDestroyed;  // YES if in the process of closing.
   // The actual URL of the document object (i.e., the last committed URL).
   // TODO(crbug.com/549616): Remove this in favor of just updating the
@@ -739,9 +738,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 // Stop doing stuff, especially network stuff. Close the request tracker.
 - (void)terminateNetworkActivity {
-  DCHECK(!_isHalted);
-  _isHalted = YES;
-
   // Cancel all outstanding perform requests, and clear anything already queued
   // (since this may be called from within the handling loop) to prevent any
   // asynchronous JavaScript invocation handling from continuing.
@@ -762,9 +758,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.swipeRecognizerProvider = nil;
   [self.legacyNativeController close];
 
-  if (!_isHalted) {
-    [self terminateNetworkActivity];
-  }
+  [self terminateNetworkActivity];
 
   // Mark the destruction sequence has started, in case someone else holds a
   // strong reference and tries to continue using the tab.
@@ -934,7 +928,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     [self.navigationHandler stopLoading];
   }
 
-  DCHECK(!_isHalted);
   self.webStateImpl->ClearTransientContent();
 
   web::NavigationItem* item = self.currentNavItem;
@@ -1106,7 +1099,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)wasHidden {
   self.visible = NO;
-  if (_isHalted)
+  if (_isBeingDestroyed)
     return;
   [self recordStateInHistory];
   [self.legacyNativeController wasHidden];
@@ -3608,11 +3601,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 #pragma mark - CRWWKNavigationHandlerDelegate
-
-- (BOOL)navigationHandlerWebViewIsHalted:
-    (CRWWKNavigationHandler*)navigationHandler {
-  return _isHalted;
-}
 
 - (BOOL)navigationHandlerWebViewBeingDestroyed:
     (CRWWKNavigationHandler*)navigationHandler {
