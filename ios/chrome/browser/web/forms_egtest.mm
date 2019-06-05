@@ -12,13 +12,13 @@
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -206,11 +206,6 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 
 // Tests that a POST followed by reloading the destination page resends data.
 - (void)testRepostFormAfterReload {
-  if (IsIPadIdiom() && web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // TODO(crbug.com/968296): Re-enable this test on iPad.
-    EARL_GREY_TEST_DISABLED(@"Test disabled with Slim Navigation.");
-  }
-
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
@@ -231,7 +226,22 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     // loading stops.
     CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
   }
-  [self confirmResendWarning];
+
+  {
+    // When slim navigation manager is enabled, synchronization must be disabled
+    // until after the repost confirmation is dismissed because it is presented
+    // during the load. It is always disabled, but immediately re-enabled if
+    // slim navigation manger is not enabled. This is necessary in order to keep
+    // the correct scope of ScopedSynchronizationDisabler which ensures
+    // synchronization is not left disabled if the test fails.
+    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+        std::make_unique<ScopedSynchronizationDisabler>();
+    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      disabler.reset();
+    }
+
+    [self confirmResendWarning];
+  }
 
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
@@ -242,11 +252,6 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 // Tests that a POST followed by navigating to a new page and then tapping back
 // to the form result page resends data.
 - (void)testRepostFormAfterTappingBack {
-  // TODO(crbug.com/968296): Test is failing on iPad for slim nav.
-  if (IsIPadIdiom() && web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
-
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
@@ -270,7 +275,22 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
   }
 
-  [self confirmResendWarning];
+  {
+    // When slim navigation manager is enabled, synchronization must be disabled
+    // until after the repost confirmation is dismissed because it is presented
+    // during the load. It is always disabled, but immediately re-enabled if
+    // slim navigation manger is not enabled. This is necessary in order to keep
+    // the correct scope of ScopedSynchronizationDisabler which ensures
+    // synchronization is not left disabled if the test fails.
+    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+        std::make_unique<ScopedSynchronizationDisabler>();
+    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      disabler.reset();
+    }
+
+    [self confirmResendWarning];
+  }
+
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
@@ -280,11 +300,6 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 // Tests that a POST followed by tapping back to the form page and then tapping
 // forward to the result page resends data.
 - (void)testRepostFormAfterTappingBackAndForward {
-  // TODO(crbug.com/968296): Test is failing on iPad for slim nav.
-  if (IsIPadIdiom() && web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
-
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
@@ -307,7 +322,22 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
   }
 
-  [self confirmResendWarning];
+  {
+    // When slim navigation manager is enabled, synchronization must be disabled
+    // until after the repost confirmation is dismissed because it is presented
+    // during the load. It is always disabled, but immediately re-enabled if
+    // slim navigation manger is not enabled. This is necessary in order to keep
+    // the correct scope of ScopedSynchronizationDisabler which ensures
+    // synchronization is not left disabled if the test fails.
+    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+        std::make_unique<ScopedSynchronizationDisabler>();
+    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      disabler.reset();
+    }
+
+    [self confirmResendWarning];
+  }
+
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:kDestinationText]);
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
@@ -373,8 +403,23 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
   }
 
-  [[EarlGrey selectElementWithMatcher:ElementToDismissAlert(@"Cancel")]
-      performAction:grey_tap()];
+  {
+    // When slim navigation manager is enabled, synchronization must be disabled
+    // until after the repost confirmation is dismissed because it is presented
+    // during the load. It is always disabled, but immediately re-enabled if
+    // slim navigation manger is not enabled. This is necessary in order to keep
+    // the correct scope of ScopedSynchronizationDisabler which ensures
+    // synchronization is not left disabled if the test fails.
+    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+        std::make_unique<ScopedSynchronizationDisabler>();
+    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      disabler.reset();
+    }
+
+    [[EarlGrey selectElementWithMatcher:ElementToDismissAlert(@"Cancel")]
+        performAction:grey_tap()];
+  }
+
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForPageToFinishLoading]);
 
   // Expected behavior is different between the two navigation manager
@@ -423,6 +468,18 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     // Legacy navigation manager presents repost confirmation dialog after
     // loading stops.
     CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey reload]);
+  }
+
+  // When slim navigation manager is enabled, synchronization must be disabled
+  // until after the repost confirmation is dismissed because it is presented
+  // during the load. It is always disabled, but immediately re-enabled if
+  // slim navigation manger is not enabled. This is necessary in order to keep
+  // the correct scope of ScopedSynchronizationDisabler which ensures
+  // synchronization is not left disabled if the test fails.
+  std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+      std::make_unique<ScopedSynchronizationDisabler>();
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    disabler.reset();
   }
 
   // Repost confirmation box should be visible.
