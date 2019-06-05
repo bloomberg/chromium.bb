@@ -37,8 +37,6 @@ crbug.com/928838 external/wpt/html/user-activation/activation-transfer-without-c
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Failure ]
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-cross-origin-with-click-two-child-frames.sub.tentative.html [ Failure ]
 
-crbug.com/898987 [ Android ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Pass Timeout ]
-
 # These two are left over from crbug.com/881040, I rebaselined them twice and
 # they continue to fail.
 crbug.com/881040 media/controls/lazy-loaded-style.html [ Failure Pass ]
@@ -279,7 +277,6 @@ Bug(none) http/tests/devtools/layers/layer-sticky-position-constraint-get.js [ S
 Bug(none) inspector-protocol/layers/get-layers.js [ Skip ]
 
 # Before we fully launch BlinkGenPropertyTrees, run visual/disable-blink-gen-property-trees/ on Linux.
-crbug.com/836884 [ Android ] virtual/disable-blink-gen-property-trees/ [ Skip ]
 crbug.com/836884 [ Win ] virtual/disable-blink-gen-property-trees/ [ Skip ]
 crbug.com/836884 [ Mac ] virtual/disable-blink-gen-property-trees/ [ Skip ]
 crbug.com/836884 [ Fuchsia ] virtual/disable-blink-gen-property-trees/ [ Skip ]
@@ -1632,9 +1629,6 @@ crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.
 crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
 
-# The following fail only on Android.
-crbug.com/891427 [ Android ] virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Failure Timeout Crash ]
-
 # These 6 are special. They are tied to both of these CLs:
 #   - https://chromium-review.googlesource.com/c/chromium/src/+/1213864
 #   - https://chromium-review.googlesource.com/c/chromium/src/+/1308038
@@ -1707,10 +1701,6 @@ crbug.com/787615 [ Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch
 crbug.com/953725 [ Win ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad-zoom-in-slow.html [ Failure Pass ]
 crbug.com/922508 [ Win ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure Pass ]
 
-crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure Timeout ]
-crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Failure Timeout ]
-crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure Timeout ]
-
 # gpuBenchmarking.pinchBy is not implemented on Mac for touchscreen pinch
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Skip ]
@@ -1768,7 +1758,6 @@ crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac ] virtual/scalefactor200withzoom/fast/hidpi/static/ [ Skip ]
-crbug.com/567837 [ Android ] virtual/scalefactor200withzoom/fast/hidpi/static/ [ Skip ]
 
 # Mac does not support fractional scale factor.
 crbug.com/567837 [ Mac ] virtual/scalefactor150/fast/hidpi/static [ Skip ]
@@ -3130,7 +3119,6 @@ crbug.com/626703 [ Win7 ] external/wpt/css/vendor-imports/mozilla/mozilla-centra
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-1b.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-indent/text-indent-percentage-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
-crbug.com/626703 [ Android ] external/wpt/css/css-layout-api/auto-block-size-absolute.https.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/auto-block-size-absolute.https.html [ Failure ]
 crbug.com/626703 external/wpt/infrastructure/testdriver/file_upload.sub.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-text/white-space/text-space-collapse-preserve-breaks-001.xht [ Failure ]
@@ -3737,10 +3725,8 @@ crbug.com/626703 external/wpt/css/css-ui/cursor-auto-006.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-ui/cursor-auto-007.html [ Skip ]
 crbug.com/626703 external/wpt/requestidlecallback/callback-timeout-when-busy.html [ Timeout ]
 crbug.com/810669 external/wpt/requestidlecallback/callback-removed-frame.html [ Skip ]
-crbug.com/626703 [ Android ] external/wpt/html/semantics/embedded-content/the-object-element/object-events.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/html/semantics/embedded-content/the-object-element/object-events.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/semantics/embedded-content/the-object-element/object-events.html [ Timeout ]
-crbug.com/626703 [ Android ] external/wpt/css/css-fonts/font-kerning-02.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/font-kerning-02.html [ Failure ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_arcto_001.htm [ Failure ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_beziercurveto_001.htm [ Failure ]
@@ -4120,10 +4106,6 @@ crbug.com/626703 external/wpt/css/css-ui/text-overflow-011.html [ Failure Crash 
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-quirks-mode.html [ Pass Crash ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-standards-mode.html [ Pass Crash Failure ]
 
-# Android doesn't support SharedWorker.
-crbug.com/154571 [ Android ] external/wpt/workers/semantics/reporting-errors/002.html [ Skip ]
-crbug.com/154571 [ Android ] virtual/omt-worker-fetch/external/wpt/workers/semantics/reporting-errors/002.html [ Skip ]
-
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
 
@@ -4374,24 +4356,6 @@ crbug.com/820334 virtual/streams-native/external/wpt/fetch/api/request/request-c
 
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Failure Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Failure Timeout ]
-crbug.com/716320 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-messagechannel-success.html [ Failure Timeout ]
-
-# SharedArrayBuffer is disabled on Android
-crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/identity-not-preserved.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/no-transferring.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-history.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-idb.any.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-idb.any.worker.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-notifications-api.any.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-notifications-api.any.worker.html [ Failure ]
-crbug.com/798864 [ Android ] virtual/not-site-per-process/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-serviceworker-failure.https.html [ Failure ]
-crbug.com/798864 [ Android ] virtual/not-site-per-process/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-simple-success.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism/canblock-dedicatedworker.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism/canblock-serviceworker.https.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism/canblock-sharedworker.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism/canblock-window.html [ Failure ]
 
 crbug.com/874302 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Timeout ]
 crbug.com/874302 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Timeout ]
@@ -5075,119 +5039,6 @@ crbug.com/882756 [ Debug ] external/wpt/requestidlecallback/cancel-invoked.html 
 # Sheriff 2018-07-27
 crbug.com/868317 [ Mac ] external/wpt/dom/ranges/Range-compareBoundaryPoints.html [ Timeout Pass ]
 
-# Android test failures that have crept in over 2018.
-crbug.com/824539 [ Android ] compositing/sibling-positioning.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] compositing/geometry/limit-layer-bounds-positioned-transition.html [ Failure ]
-crbug.com/824539 [ Android ] compositing/layer-creation/fixed-position-out-of-view.html [ Failure ]
-crbug.com/824539 [ Android ] css3/selectors3/html/css3-modsel-18.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] css3/selectors3/html/css3-modsel-61.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] css3/selectors3/xhtml/css3-modsel-17.xml [ Failure Timeout ]
-crbug.com/824539 [ Android ] css3/selectors3/xhtml/css3-modsel-18.xml [ Failure Timeout ]
-crbug.com/824539 [ Android ] css3/selectors3/xml/css3-modsel-17.xml [ Failure Timeout ]
-crbug.com/824539 [ Android ] css3/selectors3/xml/css3-modsel-18.xml [ Failure Timeout ]
-crbug.com/824539 [ Android ] css3/selectors3/xml/css3-modsel-61.xml [ Failure Timeout ]
-crbug.com/824539 [ Android ] device_orientation/motion/add-listener-from-callback.html [ Failure ]
-crbug.com/824539 [ Android ] editing/execCommand/5190926.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] editing/inserting/5156401-2.html [ Failure ]
-### See crbug.com/891427 comment near the top of this file:
-crbug.com/824539 [ Android ] editing/pasteboard/paste-line-endings-001.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] editing/pasteboard/paste-line-endings-002.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] editing/pasteboard/paste-line-endings-003.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] editing/pasteboard/paste-line-endings-004.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] editing/pasteboard/paste-line-endings-005.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] editing/pasteboard/paste-text-016.html [ Failure ]
-crbug.com/824539 [ Android ] editing/selection/4402375.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] editing/selection/6476.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] editing/selection/leave-requested-block.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] editing/selection/previous-line-position.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] editing/style/block-styles-007.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] external/wpt/bluetooth/requestDevice/canonicalizeFilter/no-arguments.https.html [ Crash Failure Timeout ]
-crbug.com/824539 [ Android ] external/wpt/gamepad/idlharness.html [ Failure ]
-crbug.com/824539 [ Android ] external/wpt/web-animations/timing-model/animations/finishing-an-animation.html [ Failure ]
-crbug.com/824539 [ Android ] fast/backgrounds/background-clip-text.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/block/basic/018.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/block/float/002.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/block/float/centered-float-avoidance-complexity.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/block/float/float-in-float-hit-testing.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/block/float/float-in-float-painting.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/block/margin-collapse/019.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/block/margin-collapse/020.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/block/margin-collapse/block-inside-inline/019.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/block/margin-collapse/block-inside-inline/020.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/child-style-can-override-visited-style.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/clip-zooming.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/compare-content-style.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/first-letter-hover.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/first-letter-visibility.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/focus-ring-multiline.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/font-face-default-font.html [ Timeout ]
-crbug.com/824539 [ Android ] fast/css/invalid-percentage-property.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/line-height-font-order.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/line-thickness-underline-strikethrough-overline.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/nth-child-dynamic.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/text-overflow-ellipsis-strict.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/text-overflow-ellipsis.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css/getComputedStyle/getComputedStyle-margin-percentage.html [ Failure ]
-crbug.com/824539 [ Android ] fast/css3-text/css3-text-decoration/text-decoration-style-inherit-links.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css3-text/css3-text-decoration/text-decoration-style-inherit-not-propagated-by-out-of-flow.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css3-text/css3-text-decoration/text-decoration-style-inherit-simple-underlines.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css3-text/css3-text-decoration/text-decoration-style-inherit.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/css3-text/css3-text-decoration/text-decoration-style.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/events/reveal-link-when-focused.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/events/wheel/wheelevent-in-text-node.html [ Crash Failure ]
-crbug.com/824539 [ Android ] fast/forms/date/date-chooseronly-defaultValue.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/forms/date-multiple-fields/date-multiple-fields-ax-value-changed-notification.html [ Failure ]
-crbug.com/824539 [ Android ] fast/harness/perftests/perf-runner-compute-statistics.html [ Failure ]
-crbug.com/824539 [ Android ] fast/hidpi/clip-text-in-hidpi.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/inline/inline-box-background-repeat-x.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/inline/inline-box-background-repeat-y.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/inline/inline-box-background.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/inline/inline-focus-ring.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/inline-block/14498-positionForCoordinates.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/inline-block/overflow-clip.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/invalid/009.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/layers/normal-flow-hit-test.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/layers/opacity-transforms.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/lists/003.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/lists/scrolled-marker-paint.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/overflow/position-fixed-transform-clipping.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/replaced/selection-rect-transform.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/selectors/018.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/selectors/061.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/shapes/crash-caused-by-dirtying-a-shape-while-computing-it-requires-a-long-filename-to-crash.html [ Crash Failure ]
-crbug.com/824539 [ Android ] fast/speech/scripted/speechrecognition-re-restart.html [ Failure ]
-crbug.com/824539 [ Android ] fast/table/border-collapsing/004.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/text/stroking-decorations.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/text/international/001.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/text/international/003.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/text/international/bidi-LDB-2-HTML.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/text/international/bidi-LDB-2-formatting-characters.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/text/international/bidi-neutral-directionality-paragraph-start.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] fast/writing-mode/english-lr-text.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] http/tests/plugins/navigator-plugins-in-cross-origin-frame.html [ Failure ]
-crbug.com/824539 [ Android ] http/tests/security/local-JavaScript-from-remote.html [ Crash Failure ]
-crbug.com/824539 [ Android ] images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] images/size-failure.html [ Failure ]
-crbug.com/824539 [ Android ] paint/invalidation/shadow-multiple.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] paint/invalidation/outline/focus-layers.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] paint/invalidation/selection/selected-replaced.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] paint/invalidation/selection/selection-in-composited-scrolling-container.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] presentation/presentationconnectionavailableevent-ctor-mock.html [ Failure ]
-crbug.com/824539 [ Android ] svg/as-background-image/svg-width-100p-as-background.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] svg/batik/text/textAnchor3.svg [ Failure Timeout ]
-crbug.com/824539 [ Android ] tables/mozilla/bugs/bug1188.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] tables/mozilla/bugs/bug2479-3.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] tables/mozilla/bugs/bug2479-4.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] tables/mozilla/bugs/bug59354.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] tables/mozilla/bugs/bug7342.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] tables/mozilla/bugs/bug8950.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] tables/mozilla/collapsing_borders/bug41262-3.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] tables/mozilla/core/bloomberg.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] tables/mozilla_expected_failures/bugs/bug1010.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] tables/mozilla_expected_failures/bugs/bug1055-2.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Failure Timeout ]
-crbug.com/824539 [ Android ] transforms/transformed-caret.html [ Failure Timeout ]
-
 # Sheriff 2018-07-30
 crbug.com/866166 virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Pass Timeout ]
 crbug.com/868706 external/wpt/css/css-layout-api/auto-block-size-inflow.https.html [ Pass Failure ]
@@ -5207,11 +5058,6 @@ crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainti
 crbug.com/875884 [ Linux ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
 crbug.com/875884 [ Win ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
 crbug.com/875884 [ Win ] virtual/threaded/lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
-
-# Sheriff 2018-08-16
-crbug.com/874733 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash ]
-crbug.com/874733 [ Android ] accessibility/aria-link-supports-press.html [ Crash ]
-crbug.com/874733 [ Android ] accessibility/insert-adjacent-html-causes-crash.xhtml [ Crash ]
 
 # Test frequently times out on Mac CQ bots.
 crbug.com/874703 [ Mac ] http/tests/devtools/extensions/extensions-panel.js [ Timeout Pass ]
@@ -5256,9 +5102,6 @@ crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/selection-aut
 # Flaky
 crbug.com/894077 virtual/android/fullscreen/video-fixed-background.html [ Pass Failure ]
 
-# Failures on 32-bit Android when using GPU instead of software rendering
-crbug.com/875172 [ Android ] http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
-
 # Does not set correct realm as scope in current implementation
 crbug.com/872138 external/wpt/client-hints/accept_ch.tentative.https.html [ Timeout Pass ]
 
@@ -5291,7 +5134,6 @@ crbug.com/884445 virtual/unified-autoplay/external/wpt/feature-policy/feature-po
 crbug.com/662010 [ Win7 ] http/tests/csspaint/invalidation-background-image.html [ Skip ]
 crbug.com/886566 [ Win10 ] http/tests/csspaint/invalidation-background-image.html [ Pass Timeout ]
 crbug.com/886566 [ Mac ] http/tests/csspaint/invalidation-background-image.html [ Pass Timeout ]
-crbug.com/886566 [ Android ] http/tests/csspaint/invalidation-background-image.html [ Pass Timeout ]
 crbug.com/886566 http/tests/csspaint/invalidation-border-image.html [ Pass Timeout ]
 crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Pass Timeout ]
 
@@ -5399,9 +5241,6 @@ crbug.com/914782 [ Linux ] fast/scrolling/no-hover-during-scroll.html [ Pass Fai
 # Sheriff 2018-12-14
 crbug.com/914782 [ Linux ] virtual/scroll_customization/fast/scrolling/no-hover-during-scroll.html [ Pass Failure ]
 crbug.com/913931 [ Mac10.11 ] external/wpt/css/css-layout-api/auto-block-size-absolute.https.html [ Pass Failure ]
-
-# Sheriff 2018-12-19
-crbug.com/915862 [ Android ] webmidi/permission.html [ Pass Failure ]
 
 crbug.com/919272 external/wpt/resource-timing/resource-timing.html [ Skip ]
 
@@ -5568,13 +5407,6 @@ crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ S
 
 # Sheriff 2019-02-12
 crbug.com/931349 [ Mac ] media/video-played-ranges-1.html [ Failure Timeout Pass ]
-
-# Viz on Android causes issues due to synchronization of view / renderer sizes.
-crbug.com/930934 [ Android ] compositing/rendering-contexts.html [ Failure ]
-crbug.com/930934 [ Android ] paint/invalidation/compositing/should-not-repaint-composited-opacity.html [ Failure ]
-crbug.com/930934 [ Android ] paint/invalidation/svg/animated-svg-as-image-transformed-offscreen.html [ Failure ]
-crbug.com/930934 [ Android ] paint/selection/selection-drag-image-in-iframe.html [ Failure ]
-crbug.com/930934 [ Android ] virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html [ Failure ]
 
 # Sheriff 2019-02-13
 crbug.com/931646 [ Win7 ] http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Failure Pass ]

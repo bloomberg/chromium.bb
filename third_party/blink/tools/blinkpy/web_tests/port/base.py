@@ -134,19 +134,13 @@ class Port(object):
         ('trusty', 'x86_64'),
 
         ('fuchsia', 'x86_64'),
-
-        # FIXME: Technically this should be 'arm', but adding a third
-        # architecture type breaks TestConfigurationConverter.
-        # If we need this to be 'arm' in the future, then we first have to
-        # fix TestConfigurationConverter.
-        ('kitkat', 'x86'),
     )
 
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': ['retina', 'mac10.10', 'mac10.11', 'mac10.12', 'mac10.13'],
         'win': ['win7', 'win10'],
         'linux': ['trusty'],
-        'android': ['kitkat'],
+        'fuschia': ['fuchsia'],
     }
 
     # List of ports open on the host that the tests will connect to. When tests
