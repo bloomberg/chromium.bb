@@ -149,7 +149,6 @@ CONTENT_EXPORT extern const base::Feature kWebUsb;
 CONTENT_EXPORT extern const base::Feature kWebXr;
 CONTENT_EXPORT extern const base::Feature kWebXrHitTest;
 CONTENT_EXPORT extern const base::Feature kWebXrPlaneDetection;
-CONTENT_EXPORT extern const base::Feature kWipeCorruptV2IDBDatabases;
 CONTENT_EXPORT extern const base::Feature kScriptStreamingOnPreload;
 
 #if defined(OS_ANDROID)

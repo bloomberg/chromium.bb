@@ -701,10 +701,6 @@ const base::Feature kWebXrHitTest{"WebXRHitTest",
 const base::Feature kWebXrPlaneDetection{"WebXRPlaneDetection",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Wipe corrupt v2 IndexedDB databases.
-const base::Feature kWipeCorruptV2IDBDatabases{
-    "WipeCorruptV2IDBDatabases", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Start streaming scripts on script preload.
 const base::Feature kScriptStreamingOnPreload{
     "ScriptStreamingOnPreload", base::FEATURE_DISABLED_BY_DEFAULT};

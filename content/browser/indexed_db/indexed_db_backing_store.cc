@@ -656,12 +656,8 @@ leveldb::Status IndexedDBBackingStore::Initialize(bool clean_live_journal) {
       indexed_db::ReportV2Schema(has_blobs, origin_);
       if (has_blobs) {
         INTERNAL_CONSISTENCY_ERROR(UPGRADING_SCHEMA_CORRUPTED_BLOBS);
-        // Put database wiping behind a flag so we can use finch to stop this
-        // behavior if first-party customers have problems.
-        if (base::FeatureList::IsEnabled(
-                features::kWipeCorruptV2IDBDatabases)) {
+        if (origin_.host() != "docs.google.com")
           return InternalInconsistencyStatus();
-        }
       } else {
         PutInt(transaction.get(), schema_version_key, db_schema_version);
       }
