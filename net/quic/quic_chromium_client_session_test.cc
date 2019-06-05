@@ -11,9 +11,12 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
+#include "net/base/features.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/http/transport_security_state.h"
@@ -1309,24 +1312,102 @@ TEST_P(QuicChromiumClientSessionTest, CanPool) {
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);
 
-  EXPECT_TRUE(
-      session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, SocketTag()));
-  EXPECT_FALSE(
-      session_->CanPool("www.example.org", PRIVACY_MODE_ENABLED, SocketTag()));
+  EXPECT_TRUE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED,
+                                SocketTag(), NetworkIsolationKey()));
+  EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_ENABLED,
+                                 SocketTag(), NetworkIsolationKey()));
 #if defined(OS_ANDROID)
   SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
   SocketTag tag2(getuid(), 0x87654321);
-  EXPECT_FALSE(
-      session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag1));
-  EXPECT_FALSE(
-      session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag2));
+  EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag1,
+                                 NetworkIsolationKey()));
+  EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag2,
+                                 NetworkIsolationKey()));
 #endif
   EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
-                                SocketTag()));
+                                SocketTag(), NetworkIsolationKey()));
   EXPECT_TRUE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
-                                SocketTag()));
-  EXPECT_FALSE(
-      session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED, SocketTag()));
+                                SocketTag(), NetworkIsolationKey()));
+  EXPECT_FALSE(session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED,
+                                 SocketTag(), NetworkIsolationKey()));
+
+  // Check that NetworkIsolationKey is respected when feature is enabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        features::kPartitionConnectionsByNetworkIsolationKey);
+    EXPECT_TRUE(session_->CanPool(
+        "mail.example.com", PRIVACY_MODE_DISABLED, SocketTag(),
+        NetworkIsolationKey(url::Origin::Create(GURL("http://foo.test/")))));
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        features::kPartitionConnectionsByNetworkIsolationKey);
+    EXPECT_FALSE(session_->CanPool(
+        "mail.example.com", PRIVACY_MODE_DISABLED, SocketTag(),
+        NetworkIsolationKey(url::Origin::Create(GURL("http://foo.test/")))));
+  }
+}
+
+// Much as above, but uses a non-empty NetworkIsolationKey.
+TEST_P(QuicChromiumClientSessionTest, CanPoolWithNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
+
+  const NetworkIsolationKey kNetworkIsolationKey1(
+      url::Origin::Create(GURL("http://foo.test/")));
+  const NetworkIsolationKey kNetworkIsolationKey2(
+      url::Origin::Create(GURL("http://bar.test/")));
+
+  session_key_ =
+      QuicSessionKey(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED,
+                     SocketTag(), kNetworkIsolationKey1);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  std::unique_ptr<quic::QuicEncryptedPacket> settings_packet(
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  MockWrite writes[] = {
+      MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
+  socket_data_.reset(new SequencedSocketData(reads, writes));
+  Initialize();
+  // Load a cert that is valid for:
+  //   www.example.org
+  //   mail.example.org
+  //   www.example.com
+
+  ProofVerifyDetailsChromium details;
+  details.cert_verify_result.verified_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(details.cert_verify_result.verified_cert.get());
+
+  CompleteCryptoHandshake();
+  session_->OnProofVerifyDetailsAvailable(details);
+
+  EXPECT_TRUE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED,
+                                SocketTag(), kNetworkIsolationKey1));
+  EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_ENABLED,
+                                 SocketTag(), kNetworkIsolationKey1));
+#if defined(OS_ANDROID)
+  SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
+  SocketTag tag2(getuid(), 0x87654321);
+  EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag1,
+                                 kNetworkIsolationKey1));
+  EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag2,
+                                 kNetworkIsolationKey1));
+#endif
+  EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
+                                SocketTag(), kNetworkIsolationKey1));
+  EXPECT_TRUE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
+                                SocketTag(), kNetworkIsolationKey1));
+  EXPECT_FALSE(session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED,
+                                 SocketTag(), kNetworkIsolationKey1));
+
+  EXPECT_FALSE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
+                                 SocketTag(), kNetworkIsolationKey2));
+  EXPECT_FALSE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
+                                 SocketTag(), NetworkIsolationKey()));
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
@@ -1366,8 +1447,8 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   session_->OnProofVerifyDetailsAvailable(details);
   QuicChromiumClientSessionPeer::SetHostname(session_.get(), kNoPinsHost);
 
-  EXPECT_FALSE(
-      session_->CanPool(kPreloadedPKPHost, PRIVACY_MODE_DISABLED, SocketTag()));
+  EXPECT_FALSE(session_->CanPool(kPreloadedPKPHost, PRIVACY_MODE_DISABLED,
+                                 SocketTag(), NetworkIsolationKey()));
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
@@ -1399,7 +1480,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
   QuicChromiumClientSessionPeer::SetHostname(session_.get(), "www.example.org");
 
   EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
-                                SocketTag()));
+                                SocketTag(), NetworkIsolationKey()));
 }
 
 TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {

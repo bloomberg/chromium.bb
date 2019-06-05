@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -20,9 +21,11 @@
 #include "base/time/tick_clock.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_activity_monitor.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/url_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
@@ -1285,12 +1288,17 @@ int QuicChromiumClientSession::GetNumSentClientHellos() const {
   return crypto_stream_->num_sent_client_hellos();
 }
 
-bool QuicChromiumClientSession::CanPool(const std::string& hostname,
-                                        PrivacyMode privacy_mode,
-                                        const SocketTag& socket_tag) const {
+bool QuicChromiumClientSession::CanPool(
+    const std::string& hostname,
+    PrivacyMode privacy_mode,
+    const SocketTag& socket_tag,
+    const NetworkIsolationKey& network_isolation_key) const {
   DCHECK(connection()->connected());
   if (privacy_mode != session_key_.privacy_mode() ||
-      socket_tag != session_key_.socket_tag()) {
+      socket_tag != session_key_.socket_tag() ||
+      (network_isolation_key != session_key_.network_isolation_key() &&
+       base::FeatureList::IsEnabled(
+           features::kPartitionConnectionsByNetworkIsolationKey))) {
     // Privacy mode and socket tag must always match.
     return false;
   }
@@ -3010,7 +3018,8 @@ const DatagramClientSocket* QuicChromiumClientSession::GetDefaultSocket()
 
 bool QuicChromiumClientSession::IsAuthorized(const std::string& hostname) {
   bool result =
-      CanPool(hostname, session_key_.privacy_mode(), session_key_.socket_tag());
+      CanPool(hostname, session_key_.privacy_mode(), session_key_.socket_tag(),
+              session_key_.network_isolation_key());
   if (result)
     streams_pushed_count_++;
   return result;

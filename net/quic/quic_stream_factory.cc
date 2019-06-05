@@ -921,6 +921,7 @@ int QuicStreamRequest::Request(
     PrivacyMode privacy_mode,
     RequestPriority priority,
     const SocketTag& socket_tag,
+    const NetworkIsolationKey& network_isolation_key,
     int cert_verify_flags,
     const GURL& url,
     const NetLogWithSource& net_log,
@@ -936,8 +937,8 @@ int QuicStreamRequest::Request(
   net_error_details_ = net_error_details;
   failed_on_default_network_callback_ =
       std::move(failed_on_default_network_callback);
-  session_key_ =
-      QuicSessionKey(HostPortPair::FromURL(url), privacy_mode, socket_tag);
+  session_key_ = QuicSessionKey(HostPortPair::FromURL(url), privacy_mode,
+                                socket_tag, network_isolation_key);
 
   int rv = factory_->Create(session_key_, destination, quic_version, priority,
                             cert_verify_flags, url, net_log, this);
@@ -1251,7 +1252,8 @@ bool QuicStreamFactory::CanUseExistingSession(const QuicSessionKey& session_key,
     QuicChromiumClientSession* session = key_value.second;
     if (destination.Equals(all_sessions_[session].destination()) &&
         session->CanPool(session_key.host(), session_key.privacy_mode(),
-                         session_key.socket_tag())) {
+                         session_key.socket_tag(),
+                         session_key.network_isolation_key())) {
       return true;
     }
   }
@@ -1334,7 +1336,8 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
                            session_key.server_id().privacy_mode_enabled()
                                ? PRIVACY_MODE_ENABLED
                                : PRIVACY_MODE_DISABLED,
-                           session_key.socket_tag())) {
+                           session_key.socket_tag(),
+                           session_key.network_isolation_key())) {
         request->SetSession(session->CreateHandle(destination));
         return OK;
       }
@@ -1413,12 +1416,11 @@ bool QuicStreamFactory::HasMatchingIpSession(const QuicSessionAliasKey& key,
 
     const SessionSet& sessions = ip_aliases_[address];
     for (QuicChromiumClientSession* session : sessions) {
-      if (!session->CanPool(server_id.host(),
-                            server_id.privacy_mode_enabled()
-                                ? PRIVACY_MODE_ENABLED
-                                : PRIVACY_MODE_DISABLED,
-                            key.session_key().socket_tag()))
+      if (!session->CanPool(server_id.host(), key.session_key().privacy_mode(),
+                            key.session_key().socket_tag(),
+                            key.session_key().network_isolation_key())) {
         continue;
+      }
       active_sessions_[key.session_key()] = session;
       session_aliases_[session].insert(key);
       return true;

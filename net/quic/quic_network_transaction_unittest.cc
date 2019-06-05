@@ -17,8 +17,10 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/features.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
@@ -8716,6 +8718,406 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
   EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
+}
+
+// Test that NetworkIsolationKey is respected by QUIC connections, when
+// kPartitionConnectionsByNetworkIsolationKey is enabled.
+TEST_P(QuicNetworkTransactionTest, NetworkIsolation) {
+  NetworkIsolationKey network_isolation_key1(
+      url::Origin::Create(GURL("http://origin1/")));
+  NetworkIsolationKey network_isolation_key2(
+      url::Origin::Create(GURL("http://origin2/")));
+
+  session_params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  // Whether to use an H2 proxy. When false, uses HTTPS H2 requests without a
+  // proxy, when true, uses HTTP requests over an H2 proxy. It's unnecessary to
+  // test tunneled HTTPS over an H2 proxy, since that path sets up H2 sessions
+  // the same way as the HTTP over H2 proxy case.
+  for (bool use_proxy : {false, true}) {
+    SCOPED_TRACE(use_proxy);
+
+    if (use_proxy) {
+      proxy_resolution_service_ =
+          ProxyResolutionService::CreateFixedFromPacResult(
+              "QUIC mail.example.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
+    } else {
+      proxy_resolution_service_ = ProxyResolutionService::CreateDirect();
+    }
+
+    GURL url1;
+    GURL url2;
+    GURL url3;
+    if (use_proxy) {
+      url1 = GURL("http://mail.example.org/1");
+      url2 = GURL("http://mail.example.org/2");
+      url3 = GURL("http://mail.example.org/3");
+    } else {
+      url1 = GURL("https://mail.example.org/1");
+      url2 = GURL("https://mail.example.org/2");
+      url3 = GURL("https://mail.example.org/3");
+    }
+
+    for (bool partition_connections : {false, true}) {
+      SCOPED_TRACE(partition_connections);
+
+      base::test::ScopedFeatureList feature_list;
+      if (partition_connections) {
+        feature_list.InitAndEnableFeature(
+            features::kPartitionConnectionsByNetworkIsolationKey);
+      } else {
+        feature_list.InitAndDisableFeature(
+            features::kPartitionConnectionsByNetworkIsolationKey);
+      }
+
+      // Reads and writes for the unpartitioned case, where only one socket is
+      // used.
+
+      session_params_.origins_to_force_quic_on.insert(
+          HostPortPair::FromString("mail.example.org:443"));
+
+      MockQuicData unpartitioned_mock_quic_data;
+      quic::QuicStreamOffset request_header_offset = 0;
+      quic::QuicStreamOffset response_header_offset = 0;
+      QuicTestPacketMaker client_maker1(
+          version_,
+          quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+          &clock_, kDefaultServerHostName, quic::Perspective::IS_CLIENT,
+          client_headers_include_h2_stream_dependency_);
+      QuicTestPacketMaker server_maker1(
+          version_,
+          quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+          &clock_, kDefaultServerHostName, quic::Perspective::IS_SERVER, false);
+
+      unpartitioned_mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          client_maker1.MakeInitialSettingsPacket(1, &request_header_offset));
+
+      unpartitioned_mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          client_maker1.MakeRequestHeadersPacketWithOffsetTracking(
+              2, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+              ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
+              GetRequestHeaders("GET", url1.scheme(), "/1"), 0,
+              &request_header_offset));
+      unpartitioned_mock_quic_data.AddRead(
+          ASYNC,
+          server_maker1.MakeResponseHeadersPacketWithOffsetTracking(
+              1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+              GetResponseHeaders("200 OK"), &response_header_offset));
+      unpartitioned_mock_quic_data.AddRead(
+          ASYNC, server_maker1.MakeDataPacket(
+                     2, GetNthClientInitiatedBidirectionalStreamId(0), false,
+                     true, 0, ConstructDataHeader(1) + "1"));
+      unpartitioned_mock_quic_data.AddWrite(
+          SYNCHRONOUS, ConstructClientAckPacket(3, 2, 1, 1));
+
+      unpartitioned_mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          client_maker1.MakeRequestHeadersPacketWithOffsetTracking(
+              4, GetNthClientInitiatedBidirectionalStreamId(1), false, true,
+              ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
+              GetRequestHeaders("GET", url2.scheme(), "/2"), 0,
+              &request_header_offset));
+      unpartitioned_mock_quic_data.AddRead(
+          ASYNC,
+          server_maker1.MakeResponseHeadersPacketWithOffsetTracking(
+              3, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
+              GetResponseHeaders("200 OK"), &response_header_offset));
+      unpartitioned_mock_quic_data.AddRead(
+          ASYNC, server_maker1.MakeDataPacket(
+                     4, GetNthClientInitiatedBidirectionalStreamId(1), false,
+                     true, 0, ConstructDataHeader(1) + "2"));
+      unpartitioned_mock_quic_data.AddWrite(
+          SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(5, 4, 3, 1));
+
+      unpartitioned_mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          client_maker1.MakeRequestHeadersPacketWithOffsetTracking(
+              6, GetNthClientInitiatedBidirectionalStreamId(2), false, true,
+              ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
+              GetRequestHeaders("GET", url3.scheme(), "/3"), 0,
+              &request_header_offset));
+      unpartitioned_mock_quic_data.AddRead(
+          ASYNC,
+          server_maker1.MakeResponseHeadersPacketWithOffsetTracking(
+              5, GetNthClientInitiatedBidirectionalStreamId(2), false, false,
+              GetResponseHeaders("200 OK"), &response_header_offset));
+      unpartitioned_mock_quic_data.AddRead(
+          ASYNC, server_maker1.MakeDataPacket(
+                     6, GetNthClientInitiatedBidirectionalStreamId(2), false,
+                     true, 0, ConstructDataHeader(1) + "3"));
+      unpartitioned_mock_quic_data.AddWrite(
+          SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(7, 6, 5, 1));
+
+      unpartitioned_mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+
+      // Reads and writes for the partitioned case, where two sockets are used.
+
+      MockQuicData partitioned_mock_quic_data1;
+      request_header_offset = 0;
+      response_header_offset = 0;
+      QuicTestPacketMaker client_maker2(
+          version_,
+          quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+          &clock_, kDefaultServerHostName, quic::Perspective::IS_CLIENT,
+          client_headers_include_h2_stream_dependency_);
+      QuicTestPacketMaker server_maker2(
+          version_,
+          quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+          &clock_, kDefaultServerHostName, quic::Perspective::IS_SERVER, false);
+
+      partitioned_mock_quic_data1.AddWrite(
+          SYNCHRONOUS,
+          client_maker2.MakeInitialSettingsPacket(1, &request_header_offset));
+
+      partitioned_mock_quic_data1.AddWrite(
+          SYNCHRONOUS,
+          client_maker2.MakeRequestHeadersPacketWithOffsetTracking(
+              2, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+              ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
+              GetRequestHeaders("GET", url1.scheme(), "/1"), 0,
+              &request_header_offset));
+      partitioned_mock_quic_data1.AddRead(
+          ASYNC,
+          server_maker2.MakeResponseHeadersPacketWithOffsetTracking(
+              1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+              GetResponseHeaders("200 OK"), &response_header_offset));
+      partitioned_mock_quic_data1.AddRead(
+          ASYNC, server_maker2.MakeDataPacket(
+                     2, GetNthClientInitiatedBidirectionalStreamId(0), false,
+                     true, 0, ConstructDataHeader(1) + "1"));
+      partitioned_mock_quic_data1.AddWrite(
+          SYNCHRONOUS, client_maker2.MakeAckPacket(3, 2, 1, 1, true));
+
+      partitioned_mock_quic_data1.AddWrite(
+          SYNCHRONOUS,
+          client_maker2.MakeRequestHeadersPacketWithOffsetTracking(
+              4, GetNthClientInitiatedBidirectionalStreamId(1), false, true,
+              ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
+              GetRequestHeaders("GET", url3.scheme(), "/3"), 0,
+              &request_header_offset));
+      partitioned_mock_quic_data1.AddRead(
+          ASYNC,
+          server_maker2.MakeResponseHeadersPacketWithOffsetTracking(
+              3, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
+              GetResponseHeaders("200 OK"), &response_header_offset));
+      partitioned_mock_quic_data1.AddRead(
+          ASYNC, server_maker2.MakeDataPacket(
+                     4, GetNthClientInitiatedBidirectionalStreamId(1), false,
+                     true, 0, ConstructDataHeader(1) + "3"));
+      partitioned_mock_quic_data1.AddWrite(
+          SYNCHRONOUS, client_maker2.MakeAckPacket(5, 4, 3, 1, true));
+
+      partitioned_mock_quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+
+      MockQuicData partitioned_mock_quic_data2;
+      request_header_offset = 0;
+      response_header_offset = 0;
+      QuicTestPacketMaker client_maker3(
+          version_,
+          quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+          &clock_, kDefaultServerHostName, quic::Perspective::IS_CLIENT,
+          client_headers_include_h2_stream_dependency_);
+      QuicTestPacketMaker server_maker3(
+          version_,
+          quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+          &clock_, kDefaultServerHostName, quic::Perspective::IS_SERVER, false);
+
+      partitioned_mock_quic_data2.AddWrite(
+          SYNCHRONOUS,
+          client_maker3.MakeInitialSettingsPacket(1, &request_header_offset));
+
+      partitioned_mock_quic_data2.AddWrite(
+          SYNCHRONOUS,
+          client_maker3.MakeRequestHeadersPacketWithOffsetTracking(
+              2, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+              ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
+              GetRequestHeaders("GET", url2.scheme(), "/2"), 0,
+              &request_header_offset));
+      partitioned_mock_quic_data2.AddRead(
+          ASYNC,
+          server_maker3.MakeResponseHeadersPacketWithOffsetTracking(
+              1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+              GetResponseHeaders("200 OK"), &response_header_offset));
+      partitioned_mock_quic_data2.AddRead(
+          ASYNC, server_maker3.MakeDataPacket(
+                     2, GetNthClientInitiatedBidirectionalStreamId(0), false,
+                     true, 0, ConstructDataHeader(1) + "2"));
+      partitioned_mock_quic_data2.AddWrite(
+          SYNCHRONOUS, client_maker3.MakeAckPacket(3, 2, 1, 1, true));
+
+      partitioned_mock_quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+
+      if (partition_connections) {
+        partitioned_mock_quic_data1.AddSocketDataToFactory(&socket_factory_);
+        partitioned_mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
+      } else {
+        unpartitioned_mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+      }
+
+      CreateSession();
+
+      TestCompletionCallback callback;
+      HttpRequestInfo request1;
+      request1.method = "GET";
+      request1.url = GURL(url1);
+      request1.traffic_annotation =
+          net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+      request1.network_isolation_key = network_isolation_key1;
+      HttpNetworkTransaction trans1(LOWEST, session_.get());
+      int rv = trans1.Start(&request1, callback.callback(), NetLogWithSource());
+      EXPECT_THAT(callback.GetResult(rv), IsOk());
+      std::string response_data1;
+      EXPECT_THAT(ReadTransaction(&trans1, &response_data1), IsOk());
+      EXPECT_EQ("1", response_data1);
+
+      HttpRequestInfo request2;
+      request2.method = "GET";
+      request2.url = GURL(url2);
+      request2.traffic_annotation =
+          net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+      request2.network_isolation_key = network_isolation_key2;
+      HttpNetworkTransaction trans2(LOWEST, session_.get());
+      rv = trans2.Start(&request2, callback.callback(), NetLogWithSource());
+      EXPECT_THAT(callback.GetResult(rv), IsOk());
+      std::string response_data2;
+      EXPECT_THAT(ReadTransaction(&trans2, &response_data2), IsOk());
+      EXPECT_EQ("2", response_data2);
+
+      HttpRequestInfo request3;
+      request3.method = "GET";
+      request3.url = GURL(url3);
+      request3.traffic_annotation =
+          net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+      request3.network_isolation_key = network_isolation_key1;
+      HttpNetworkTransaction trans3(LOWEST, session_.get());
+      rv = trans3.Start(&request3, callback.callback(), NetLogWithSource());
+      EXPECT_THAT(callback.GetResult(rv), IsOk());
+      std::string response_data3;
+      EXPECT_THAT(ReadTransaction(&trans3, &response_data3), IsOk());
+      EXPECT_EQ("3", response_data3);
+
+      if (partition_connections) {
+        EXPECT_TRUE(partitioned_mock_quic_data1.AllReadDataConsumed());
+        EXPECT_TRUE(partitioned_mock_quic_data1.AllWriteDataConsumed());
+        EXPECT_TRUE(partitioned_mock_quic_data2.AllReadDataConsumed());
+        EXPECT_TRUE(partitioned_mock_quic_data2.AllWriteDataConsumed());
+      } else {
+        EXPECT_TRUE(unpartitioned_mock_quic_data.AllReadDataConsumed());
+        EXPECT_TRUE(unpartitioned_mock_quic_data.AllWriteDataConsumed());
+      }
+    }
+  }
+}
+
+// Test that two requests to the same origin over QUIC tunnels use different
+// QUIC sessions if their NetworkIsolationKeys don't match, and
+// kPartitionConnectionsByNetworkIsolationKey is enabled.
+TEST_P(QuicNetworkTransactionTest, NetworkIsolationTunnel) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
+
+  session_params_.enable_quic = true;
+  session_params_.enable_quic_proxies_for_https_urls = true;
+  proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
+      "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  const char kGetRequest[] =
+      "GET / HTTP/1.1\r\n"
+      "Host: mail.example.org\r\n"
+      "Connection: keep-alive\r\n\r\n";
+  const char kGetResponse[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 10\r\n\r\n";
+
+  MockQuicData mock_quic_data[2];
+
+  for (int index : {0, 1}) {
+    QuicTestPacketMaker client_maker(
+        version_, quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+        &clock_, kDefaultServerHostName, quic::Perspective::IS_CLIENT,
+        client_headers_include_h2_stream_dependency_);
+    QuicTestPacketMaker server_maker(
+        version_, quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
+        &clock_, kDefaultServerHostName, quic::Perspective::IS_SERVER, false);
+
+    quic::QuicStreamOffset header_stream_offset = 0;
+    mock_quic_data[index].AddWrite(
+        SYNCHRONOUS,
+        client_maker.MakeInitialSettingsPacket(1, &header_stream_offset));
+
+    mock_quic_data[index].AddWrite(
+        SYNCHRONOUS,
+        client_maker.MakeRequestHeadersPacketWithOffsetTracking(
+            2, GetNthClientInitiatedBidirectionalStreamId(0), true, false,
+            ConvertRequestPriorityToQuicPriority(
+                HttpProxyConnectJob::kH2QuicTunnelPriority),
+            ConnectRequestHeaders("mail.example.org:443"), 0,
+            &header_stream_offset));
+    mock_quic_data[index].AddRead(
+        ASYNC, server_maker.MakeResponseHeadersPacketWithOffsetTracking(
+                   1, GetNthClientInitiatedBidirectionalStreamId(0), false,
+                   false, GetResponseHeaders("200 OK"), nullptr));
+
+    std::string header = ConstructDataHeader(strlen(kGetRequest));
+    if (version_.transport_version != quic::QUIC_VERSION_99) {
+      mock_quic_data[index].AddWrite(
+          SYNCHRONOUS,
+          client_maker.MakeAckAndDataPacket(
+              3, false, GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
+              false, 0, quic::QuicStringPiece(kGetRequest)));
+    } else {
+      mock_quic_data[index].AddWrite(
+          SYNCHRONOUS,
+          client_maker.MakeAckAndMultipleDataFramesPacket(
+              3, false, GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
+              false, 0, {header, std::string(kGetRequest)}));
+    }
+
+    std::string header2 = ConstructDataHeader(strlen(kGetResponse));
+    mock_quic_data[index].AddRead(
+        ASYNC, server_maker.MakeDataPacket(
+                   2, GetNthClientInitiatedBidirectionalStreamId(0), false,
+                   false, 0, header2 + std::string(kGetResponse)));
+    mock_quic_data[index].AddRead(
+        SYNCHRONOUS, server_maker.MakeDataPacket(
+                         3, GetNthClientInitiatedBidirectionalStreamId(0),
+                         false, false, strlen(kGetResponse) + header2.length(),
+                         ConstructDataHeader(10) + std::string("0123456789")));
+    mock_quic_data[index].AddWrite(
+        SYNCHRONOUS, client_maker.MakeAckPacket(4, 3, 2, 1, true));
+    mock_quic_data[index].AddRead(SYNCHRONOUS,
+                                  ERR_IO_PENDING);  // No more data to read
+
+    mock_quic_data[index].AddSocketDataToFactory(&socket_factory_);
+  }
+
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+  SSLSocketDataProvider ssl_data2(ASYNC, OK);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
+
+  CreateSession();
+
+  request_.url = GURL("https://mail.example.org/");
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  RunTransaction(&trans);
+  CheckResponseData(&trans, "0123456789");
+
+  HttpRequestInfo request2;
+  request_.network_isolation_key =
+      NetworkIsolationKey(url::Origin::Create(GURL("http://origin1/")));
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session_.get());
+  RunTransaction(&trans2);
+  CheckResponseData(&trans2, "0123456789");
+
+  EXPECT_TRUE(mock_quic_data[0].AllReadDataConsumed());
+  EXPECT_TRUE(mock_quic_data[0].AllWriteDataConsumed());
+  EXPECT_TRUE(mock_quic_data[1].AllReadDataConsumed());
+  EXPECT_TRUE(mock_quic_data[1].AllWriteDataConsumed());
 }
 
 }  // namespace test

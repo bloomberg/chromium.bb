@@ -775,7 +775,8 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     int rv = quic_request_.Request(
         destination, quic_version_.transport_version,
         request_info_.privacy_mode, priority_, request_info_.socket_tag,
-        ssl_config->GetCertVerifyFlags(), url, net_log_, &net_error_details_,
+        request_info_.network_isolation_key, ssl_config->GetCertVerifyFlags(),
+        url, net_log_, &net_error_details_,
         base::BindOnce(&Job::OnFailedOnDefaultNetwork,
                        ptr_factory_.GetWeakPtr()),
         io_callback_);

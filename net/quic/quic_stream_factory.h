@@ -65,6 +65,7 @@ class CTVerifier;
 class HostResolver;
 class HttpServerProperties;
 class NetLog;
+class NetworkIsolationKey;
 class QuicChromiumConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicServerInfo;
@@ -128,6 +129,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
               PrivacyMode privacy_mode,
               RequestPriority priority,
               const SocketTag& socket_tag,
+              const NetworkIsolationKey& network_isolation_key,
               int cert_verify_flags,
               const GURL& url,
               const NetLogWithSource& net_log,

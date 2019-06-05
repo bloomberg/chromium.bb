@@ -7,6 +7,7 @@
 #include "base/test/fuzzed_data_provider.h"
 
 #include "base/stl_util.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
@@ -162,8 +163,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   request.Request(
       env->host_port_pair,
       data_provider.PickValueInArray(quic::kSupportedTransportVersions),
-      PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY, SocketTag(), kCertVerifyFlags,
-      GURL(kUrl), env->net_log, &net_error_details,
+      PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY, SocketTag(),
+      NetworkIsolationKey(), kCertVerifyFlags, GURL(kUrl), env->net_log,
+      &net_error_details,
       /*failed_on_default_network_callback=*/CompletionOnceCallback(),
       callback.callback());
 

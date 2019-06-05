@@ -663,7 +663,7 @@ int HttpProxyConnectJob::DoQuicProxyCreateSession() {
       common_connect_job_params()->quic_supported_versions->front();
   return quic_stream_request_->Request(
       proxy_server, quic_version.transport_version, ssl_params->privacy_mode(),
-      kH2QuicTunnelPriority, socket_tag(),
+      kH2QuicTunnelPriority, socket_tag(), params_->network_isolation_key(),
       ssl_params->ssl_config().GetCertVerifyFlags(),
       GURL("https://" + proxy_server.ToString()), net_log(),
       &quic_net_error_details_,

@@ -52,6 +52,7 @@ namespace net {
 class CertVerifyResult;
 class DatagramClientSocket;
 class NetLog;
+class NetworkIsolationKey;
 class QuicCryptoClientStreamFactory;
 class QuicServerInfo;
 class QuicStreamFactory;
@@ -555,7 +556,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // presented during the handshake.
   bool CanPool(const std::string& hostname,
                PrivacyMode privacy_mode,
-               const SocketTag& socket_tag) const;
+               const SocketTag& socket_tag,
+               const NetworkIsolationKey& network_isolation_key) const;
 
   const quic::QuicServerId& server_id() const {
     return session_key_.server_id();

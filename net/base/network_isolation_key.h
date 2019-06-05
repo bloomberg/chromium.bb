@@ -35,6 +35,10 @@ class NET_EXPORT NetworkIsolationKey {
     return top_frame_origin_ == other.top_frame_origin_;
   }
 
+  bool operator!=(const NetworkIsolationKey& other) const {
+    return !(top_frame_origin_ == other.top_frame_origin_);
+  }
+
   bool operator<(const NetworkIsolationKey& other) const {
     return top_frame_origin_ < other.top_frame_origin_;
   }

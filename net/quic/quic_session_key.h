@@ -6,6 +6,7 @@
 #define NET_QUIC_QUIC_SESSION_KEY_H_
 
 #include "net/base/host_port_pair.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/socket/socket_tag.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
@@ -16,16 +17,24 @@ namespace net {
 // tag.
 class QUIC_EXPORT_PRIVATE QuicSessionKey {
  public:
+  // TODO(mmenke): Remove default NetworkIsolationKey() values, which are only
+  // used in tests.
   QuicSessionKey() = default;
-  QuicSessionKey(const HostPortPair& host_port_pair,
-                 PrivacyMode privacy_mode,
-                 const SocketTag& socket_tag);
-  QuicSessionKey(const std::string& host,
-                 uint16_t port,
-                 PrivacyMode privacy_mode,
-                 const SocketTag& socket_tag);
-  QuicSessionKey(const quic::QuicServerId& server_id,
-                 const SocketTag& socket_tag);
+  QuicSessionKey(
+      const HostPortPair& host_port_pair,
+      PrivacyMode privacy_mode,
+      const SocketTag& socket_tag,
+      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey());
+  QuicSessionKey(
+      const std::string& host,
+      uint16_t port,
+      PrivacyMode privacy_mode,
+      const SocketTag& socket_tag,
+      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey());
+  QuicSessionKey(
+      const quic::QuicServerId& server_id,
+      const SocketTag& socket_tag,
+      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey());
   ~QuicSessionKey() = default;
 
   // Needed to be an element of std::set.
@@ -43,11 +52,17 @@ class QUIC_EXPORT_PRIVATE QuicSessionKey {
 
   SocketTag socket_tag() const { return socket_tag_; }
 
+  const NetworkIsolationKey& network_isolation_key() const {
+    return network_isolation_key_;
+  }
+
   size_t EstimateMemoryUsage() const;
 
  private:
   quic::QuicServerId server_id_;
   SocketTag socket_tag_;
+  // Used to separate requests made in different contexts.
+  NetworkIsolationKey network_isolation_key_;
 };
 
 }  // namespace net
