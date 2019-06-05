@@ -1698,9 +1698,11 @@ base::string16 RenderText::Elide(const base::string16& text,
     // the valid range.
     // |last_guess| is merely used to verify that we're not repeating guesses.
     const size_t last_guess = guess;
-    guess = lo + static_cast<size_t>(ToRoundedInt((available_width - lo_width) *
-                                                  (hi - lo) /
-                                                  (hi_width - lo_width)));
+    if (hi_width != lo_width) {
+      guess = lo + static_cast<size_t>(
+                       ToRoundedInt((available_width - lo_width) * (hi - lo) /
+                                    (hi_width - lo_width)));
+    }
     guess = base::ClampToRange(guess, lo, hi);
     DCHECK_NE(last_guess, guess);
 
