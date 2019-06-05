@@ -47,7 +47,7 @@ namespace app_list {
 
 namespace {
 
-constexpr int kItemGridsBottomPadding = 24;
+constexpr int kFolderHeaderPadding = 12;
 constexpr int kOnscreenKeyboardTopPadding = 16;
 
 // Indexes of interesting views in ViewModel of AppListFolderView.
@@ -522,12 +522,12 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
 }
 
 gfx::Size AppListFolderView::CalculatePreferredSize() const {
-  gfx::Size size = items_grid_view_->GetTileGridSizeWithoutPadding();
+  gfx::Size size = items_grid_view_->GetTileGridSizeWithPadding();
   gfx::Size header_size = folder_header_view_->GetPreferredSize();
-  size.Enlarge(0, kItemGridsBottomPadding + header_size.height());
   const int folder_padding =
       AppListConfig::instance().grid_tile_spacing_in_folder();
-  size.Enlarge(folder_padding * 2, folder_padding * 2);
+  size.Enlarge(folder_padding * 2, folder_padding + kFolderHeaderPadding * 2 +
+                                       header_size.height());
   return size;
 }
 
@@ -696,21 +696,21 @@ void AppListFolderView::CalculateIdealBounds() {
 
   // Calculate bounds for items grid view.
   gfx::Rect grid_frame(rect);
-  grid_frame.Inset(items_grid_view_->GetTilePadding());
   grid_frame.set_height(items_grid_view_->GetPreferredSize().height());
   view_model_->set_ideal_bounds(kIndexChildItems, grid_frame);
 
   // Calculate bounds for folder header view.
   gfx::Rect header_frame(rect);
-  header_frame.set_y(grid_frame.bottom() +
-                     items_grid_view_->GetTilePadding().bottom() +
-                     kItemGridsBottomPadding);
+  header_frame.set_y(GetContentsBounds().bottom() - kFolderHeaderPadding -
+                     folder_header_view_->GetPreferredSize().height());
   header_frame.set_height(folder_header_view_->GetPreferredSize().height());
   view_model_->set_ideal_bounds(kIndexFolderHeader, header_frame);
 
   // Calculate bounds for page_switcher.
   gfx::Rect page_switcher_frame(rect);
   gfx::Size page_switcher_size = page_switcher_->GetPreferredSize();
+  page_switcher_size.set_height(
+      AppListConfig::instance().folder_header_height());
   page_switcher_frame.set_x(page_switcher_frame.right() -
                             page_switcher_size.width());
   page_switcher_frame.set_y(header_frame.y());

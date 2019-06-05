@@ -44,6 +44,11 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
 
   ~FolderNameView() override = default;
 
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(kMaxFolderNameWidth,
+                     AppListConfig::instance().folder_header_height());
+  }
+
   void OnFocus() override {
     SetText(base::UTF8ToUTF16(folder_header_view_->folder_item_->name()));
     starting_name_ = text();

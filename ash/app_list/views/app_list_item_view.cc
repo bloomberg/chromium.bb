@@ -238,15 +238,16 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_->SetHandlesTooltips(false);
   title_->SetFontList(AppListConfig::instance().app_title_font());
-  title_->SetLineHeight(AppListConfig::instance().app_title_max_line_height());
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetEnabledColor(apps_grid_view_->is_in_folder()
                               ? kFolderGridTitleColor
                               : AppListConfig::instance().grid_title_color());
   if (!is_in_folder) {
-    title_->SetShadows(
-        gfx::ShadowValues(1, gfx::ShadowValue(gfx::Vector2d(), kTitleShadowBlur,
-                                              kTitleShadowColor)));
+    gfx::ShadowValues title_shadow = gfx::ShadowValues(
+        1,
+        gfx::ShadowValue(gfx::Vector2d(), kTitleShadowBlur, kTitleShadowColor));
+    title_->SetShadows(title_shadow);
+    title_shadow_margins_ = gfx::ShadowValue::GetMargin(title_shadow);
   }
 
   AddChildView(icon_);
@@ -608,8 +609,13 @@ void AppListItemView::Layout() {
         GetIconBoundsForTargetViewBounds(rect, icon_shadow_->GetImage().size());
     icon_shadow_->SetBoundsRect(icon_shadow_bounds);
   }
-  title_->SetBoundsRect(
-      GetTitleBoundsForTargetViewBounds(rect, title_->GetPreferredSize()));
+
+  gfx::Rect title_bounds =
+      GetTitleBoundsForTargetViewBounds(rect, title_->GetPreferredSize());
+  if (!apps_grid_view_->is_in_folder())
+    title_bounds.Inset(title_shadow_margins_);
+  title_->SetBoundsRect(title_bounds);
+
   progress_bar_->SetBoundsRect(GetProgressBarBoundsForTargetViewBounds(
       rect, progress_bar_->GetPreferredSize()));
 }
@@ -866,7 +872,8 @@ gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
   gfx::Rect rect(target_bounds);
   rect.Inset(AppListConfig::instance().grid_title_horizontal_padding(),
              AppListConfig::instance().grid_title_top_padding(),
-             AppListConfig::instance().grid_title_horizontal_padding(), 0);
+             AppListConfig::instance().grid_title_horizontal_padding(),
+             AppListConfig::instance().grid_title_bottom_padding());
   rect.ClampToCenteredSize(title_size);
   return rect;
 }

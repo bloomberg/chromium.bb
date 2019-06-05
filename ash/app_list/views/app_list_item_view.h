@@ -265,6 +265,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // A timer to defer showing drag UI when the app item is touch pressed.
   base::OneShotTimer touch_drag_timer_;
 
+  // The shadow margins added to the app list item title.
+  gfx::Insets title_shadow_margins_;
+
   base::WeakPtrFactory<AppListItemView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);

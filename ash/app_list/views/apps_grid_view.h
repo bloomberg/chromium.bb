@@ -107,8 +107,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns the padding around a tile view.
   gfx::Insets GetTilePadding() const;
 
-  // Returns the size of the entire tile grid without padding.
-  gfx::Size GetTileGridSizeWithoutPadding() const;
+  // Returns the size of the entire tile grid with padding between tiles.
+  gfx::Size GetTileGridSizeWithPadding() const;
 
   // Returns the minimum size of the entire tile grid.
   gfx::Size GetMinimumTileGridSize(int cols, int rows_per_page) const;

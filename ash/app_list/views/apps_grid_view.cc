@@ -389,10 +389,22 @@ gfx::Insets AppsGridView::GetTilePadding() const {
   return gfx::Insets(-vertical_tile_padding_, -horizontal_tile_padding_);
 }
 
-gfx::Size AppsGridView::GetTileGridSizeWithoutPadding() const {
-  gfx::Size size = GetTileGridSize();
-  gfx::Insets grid_padding = GetTilePadding();
-  size.Enlarge(grid_padding.width(), grid_padding.height());
+gfx::Size AppsGridView::GetTileGridSizeWithPadding() const {
+  gfx::Size size(GetTileViewSize());
+  size.SetSize(size.width() * cols_, size.height() * rows_per_page_);
+
+  int horizontal_padding = horizontal_tile_padding_ * 2;
+  int vertical_padding = vertical_tile_padding_ * 2;
+
+  if (folder_delegate_) {
+    const int tile_padding_in_folder =
+        AppListConfig::instance().grid_tile_spacing_in_folder();
+    horizontal_padding = tile_padding_in_folder;
+    vertical_padding = tile_padding_in_folder;
+  }
+
+  size.Enlarge(horizontal_padding * (cols_ - 1),
+               vertical_padding * (rows_per_page_ - 1));
   return size;
 }
 
