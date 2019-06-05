@@ -186,6 +186,12 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
   // account is loaded.
   virtual void FinalizeInitBeforeLoadingRefreshTokens(PrefService* local_state);
 
+ private:
+  // Added only to allow SigninManager to call the SigninManagerBase
+  // constructor while disallowing any ad-hoc subclassing of
+  // SigninManagerBase.
+  friend class SigninManager;
+
   // Sets the authenticated user's account id.
   // If the user is already authenticated with the same account id, then this
   // method is a no-op.
@@ -200,16 +206,6 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
   // out by default. Subclasses implementing a sign-out functionality need to
   // call this.
   void ClearAuthenticatedAccountId();
-
-  // Observer to notify on signin events.
-  // There is a DCHECK on destruction that this has been cleared.
-  Observer* observer_ = nullptr;
-
- private:
-  // Added only to allow SigninManager to call the SigninManagerBase
-  // constructor while disallowing any ad-hoc subclassing of
-  // SigninManagerBase.
-  friend class SigninManager;
 
 #if !defined(OS_CHROMEOS)
   // Starts the sign out process.
@@ -230,6 +226,10 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
   // OAuth2TokenService::Observer:
   void OnRefreshTokensLoaded() override;
 #endif
+
+  // Observer to notify on signin events.
+  // There is a DCHECK on destruction that this has been cleared.
+  Observer* observer_ = nullptr;
 
   SigninClient* client_;
 
