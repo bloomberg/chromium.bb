@@ -56,7 +56,7 @@ void AddLabelledRowToGridLayout(GridLayout* layout,
   const float kRowDoesNotResizeVertically = 0.0;
   const int kPaddingRowHeight = 8;
   layout->StartRow(kRowDoesNotResizeVertically, kStretchyGridColumnSetId);
-  layout->AddView(MakePlainLabel(label_text).get());
+  layout->AddView(MakePlainLabel(label_text).release());
   for (auto& view : views)
     layout->AddView(view.release());
   // This gets added extraneously after the last row, but it doesn't hurt and
