@@ -3900,8 +3900,6 @@ static_library("test_support") {
 
   if (is_chromeos) {
     sources += [
-      "ash/ash_test_util.cc",
-      "ash/ash_test_util.h",
       "ash/fake_tablet_mode_controller.cc",
       "ash/fake_tablet_mode_controller.h",
       "ash/test_login_screen.cc",

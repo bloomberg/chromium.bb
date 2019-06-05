@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/ui/ash/ash_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -107,6 +107,41 @@ class MultiPointProducer
   DISALLOW_COPY_AND_ASSIGN(MultiPointProducer);
 };
 
+// Wait until the window's state changed to given snapped state.
+// The window should stay alive, so no need to observer destroying.
+class SnapWaiter : public aura::WindowObserver {
+ public:
+  SnapWaiter(aura::Window* window, ash::WindowStateType type)
+      : window_(window), type_(type) {
+    window->AddObserver(this);
+  }
+  ~SnapWaiter() override { window_->RemoveObserver(this); }
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    if (key == ash::kWindowStateTypeKey && IsSnapped())
+      run_loop_.Quit();
+  }
+
+  void Wait() {
+    if (!IsSnapped())
+      run_loop_.Run();
+  }
+
+ private:
+  bool IsSnapped() const {
+    return window_->GetProperty(ash::kWindowStateTypeKey) == type_;
+  }
+
+  aura::Window* window_;
+  ash::WindowStateType type_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(SnapWaiter);
+};
+
 }  // namespace
 
 // Test window resize performance in clamshell mode.
@@ -156,8 +191,13 @@ class WindowResizeTest
 
 IN_PROC_BROWSER_TEST_P(WindowResizeTest, Single) {
   aura::Window* browser_window = browser()->window()->GetNativeWindow();
-  test::ActivateAndSnapWindow(browser_window,
-                              ash::WindowStateType::kLeftSnapped);
+  SnapWaiter snap_waiter(browser_window, ash::WindowStateType::kLeftSnapped);
+  ui_controls::SendKeyPress(browser_window, ui::VKEY_OEM_4,
+                            /*control=*/false,
+                            /*shift=*/false,
+                            /*alt=*/true,
+                            /*command=*/false);
+  snap_waiter.Wait();
 
   gfx::Rect bounds = browser_window->GetBoundsInScreen();
   gfx::Point start_point = gfx::Point(bounds.right_center());
@@ -181,8 +221,15 @@ IN_PROC_BROWSER_TEST_P(WindowResizeTest, Single) {
 
 IN_PROC_BROWSER_TEST_P(WindowResizeTest, Multi) {
   aura::Window* browser_window = browser()->window()->GetNativeWindow();
-  test::ActivateAndSnapWindow(browser_window,
-                              ash::WindowStateType::kLeftSnapped);
+  {
+    SnapWaiter snap_waiter(browser_window, ash::WindowStateType::kLeftSnapped);
+    ui_controls::SendKeyPress(browser_window, ui::VKEY_OEM_4,
+                              /*control=*/false,
+                              /*shift=*/false,
+                              /*alt=*/true,
+                              /*command=*/false);
+    snap_waiter.Wait();
+  }
 
   Browser* browser2 = CreateBrowser(browser()->profile());
   if (use_ntp()) {
@@ -190,10 +237,18 @@ IN_PROC_BROWSER_TEST_P(WindowResizeTest, Multi) {
     ui_test_utils::NavigateToURL(browser2, ntp_url);
   }
 
-  aura::Window* browser_window2 = browser2->window()->GetNativeWindow();
   // Snap Right
-  test::ActivateAndSnapWindow(browser_window2,
-                              ash::WindowStateType::kRightSnapped);
+  {
+    aura::Window* browser_window2 = browser2->window()->GetNativeWindow();
+    SnapWaiter snap_waiter(browser_window2,
+                           ash::WindowStateType::kRightSnapped);
+    ui_controls::SendKeyPress(browser_window2, ui::VKEY_OEM_6,
+                              /*control=*/false,
+                              /*shift=*/false,
+                              /*alt=*/true,
+                              /*command=*/false);
+    snap_waiter.Wait();
+  }
 
   gfx::Rect bounds = browser_window->GetBoundsInScreen();
   gfx::Point start_point = gfx::Point(bounds.right_center());
