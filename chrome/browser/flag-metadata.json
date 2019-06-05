@@ -1992,7 +1992,7 @@
   {
     "name": "file-manager-feedback-panel",
     "owners": [ "adanilo" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 78
   },
   {
     // See https://crbug.com/904630, offical builds only.

@@ -47,7 +47,7 @@ const base::Feature kDiscoverApp{"DiscoverApp",
 // If enabled, DriveFS will be used for Drive sync.
 const base::Feature kDriveFs{"DriveFS", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// If enabled shows the new visual signals feedback panel.
+// If enabled shows the visual signals feedback panel.
 const base::Feature kEnableFileManagerFeedbackPanel{
     "EnableFeedbackPanel", base::FEATURE_DISABLED_BY_DEFAULT};
 

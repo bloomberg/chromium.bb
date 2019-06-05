@@ -3073,7 +3073,7 @@ const char kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[] =
     "user of text styling.";
 
 const char kFileManagerFeedbackPanelDescription[] =
-    "Enable new feedback panel in the Files app.";
+    "Enable feedback panel in the Files app.";
 const char kFileManagerFeedbackPanelName[] = "Files App. feedback panel";
 
 const char kFileManagerPiexWasmName[] = "Enable FilesApp piex-wasm module";

@@ -1386,8 +1386,8 @@ util.timeoutPromise = (promise, ms, opt_message) => {
 };
 
 /**
- * Examines whether the new feedback panel mode is enabled.
- * @return {boolean} True if the new feedback panel UI mode is enabled.
+ * Examines whether the feedback panel mode is enabled.
+ * @return {boolean} True if the feedback panel UI mode is enabled.
  */
 util.isFeedbackPanelEnabled = () => {
   return loadTimeData.getBoolean('FEEDBACK_PANEL_ENABLED');
