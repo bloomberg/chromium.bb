@@ -17,6 +17,7 @@
 #include "build/buildflag.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "mojo/core/embedder/embedder.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -145,7 +146,8 @@ base::RunTestSuiteCallback GetLaunchCallback(int argc, char** argv) {
   // components_unittests don't currently work with the Network Service enabled.
   // https://crbug.com/966633.
   auto test_suite = std::make_unique<content::UnitTestTestSuite>(
-      new ComponentsTestSuite(argc, argv), "NetworkService");
+      new ComponentsTestSuite(argc, argv),
+      network::features::kNetworkServiceFeatureName);
 #else
   auto test_suite = std::make_unique<ComponentsTestSuite>(argc, argv);
 #endif
