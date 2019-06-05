@@ -202,7 +202,9 @@ class LayoutUnit {
     return value_ > 0 ? LayoutUnit() : *this;
   }
 
-  bool HasFraction() const { return RawValue() % kFixedPointDenominator; }
+  constexpr bool HasFraction() const {
+    return RawValue() % kFixedPointDenominator;
+  }
 
   LayoutUnit Fraction() const {
     // Compute fraction using the mod operator to preserve the sign of the value
