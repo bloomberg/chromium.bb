@@ -67,7 +67,7 @@ namespace app_list {
 namespace {
 
 // The height of the half app list from the bottom of the screen.
-constexpr int kHalfAppListHeight = 561;
+constexpr int kHalfAppListHeight = 545;
 
 // The scroll offset in order to transition from PEEKING to FULLSCREEN
 constexpr int kAppListMinScrollToSwitchStates = 20;
@@ -829,6 +829,13 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
     return;
   }
 
+  // Close embedded Assistant UI if it is shown.
+  if (app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI()) {
+    Back();
+    search_box_view_->ClearSearchAndDeactivateSearchBox();
+    return;
+  }
+
   // Clear focus if the located event is not handled by any child view.
   GetFocusManager()->ClearFocus();
 
@@ -864,10 +871,6 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
       Dismiss();
     return;
   }
-
-  // Reset the AppListState if the embedded Assistant UI is shown.
-  if (app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI())
-    Back();
 
   search_box_view_->ClearSearchAndDeactivateSearchBox();
 }
@@ -1071,7 +1074,8 @@ void AppListView::MaybeIncreaseAssistantPrivacyInfoRowShownCount(
   switch (transition) {
     case kPeekingToHalf:
     case kFullscreenAllAppsToFullscreenSearch:
-      delegate_->MaybeIncreaseAssistantPrivacyInfoShownCount();
+      if (app_list_main_view()->contents_view()->IsShowingSearchResults())
+        delegate_->MaybeIncreaseAssistantPrivacyInfoShownCount();
       break;
     default:
       break;

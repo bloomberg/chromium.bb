@@ -163,10 +163,6 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Returns true if the Assistant feature is allowed and enabled.
   virtual bool IsAssistantAllowedAndEnabled() const = 0;
 
-  // Called when the app list view animation is completed.
-  virtual void OnStateTransitionAnimationCompleted(
-      ash::AppListViewState state) = 0;
-
   // Returns true if the Assistant privacy info view should be shown.
   virtual bool ShouldShowAssistantPrivacyInfo() const = 0;
 
@@ -177,6 +173,10 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Called when close button in the Assistant privacy info view is pressed to
   // indicate not to show the view any more.
   virtual void MarkAssistantPrivacyInfoDismissed() = 0;
+
+  // Called when the app list view animation is completed.
+  virtual void OnStateTransitionAnimationCompleted(
+      ash::AppListViewState state) = 0;
 
   // Fills the given AppLaunchedMetricParams with info known by the delegate.
   virtual void GetAppLaunchedMetricParams(

@@ -99,11 +99,11 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
   bool IsAssistantAllowedAndEnabled() const override;
-  void OnStateTransitionAnimationCompleted(
-      ash::AppListViewState state) override;
   bool ShouldShowAssistantPrivacyInfo() const override;
   void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
   void MarkAssistantPrivacyInfoDismissed() override;
+  void OnStateTransitionAnimationCompleted(
+      ash::AppListViewState state) override;
   void GetAppLaunchedMetricParams(
       app_list::AppLaunchedMetricParams* metric_params) override;
 

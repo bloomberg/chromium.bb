@@ -4,7 +4,10 @@
 
 #include "ash/app_list/views/assistant/assistant_main_stage.h"
 
+#include <numeric>
+
 #include "ash/assistant/model/assistant_query.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/main_stage/assistant_footer_view.h"
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
@@ -12,14 +15,17 @@
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/time/time.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
@@ -51,11 +57,129 @@ constexpr base::TimeDelta kFooterEntryAnimationFadeInDelay =
 constexpr base::TimeDelta kFooterEntryAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(167);
 
-// Progress animation.
-constexpr base::TimeDelta kProgressAnimationFadeInDelay =
+// Divider animation.
+constexpr base::TimeDelta kDividerAnimationFadeInDelay =
     base::TimeDelta::FromMilliseconds(233);
-constexpr base::TimeDelta kProgressAnimationFadeInDuration =
+constexpr base::TimeDelta kDividerAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(167);
+constexpr base::TimeDelta kDividerAnimationFadeOutDuration =
+    base::TimeDelta::FromMilliseconds(83);
+
+// Greeting animation.
+constexpr base::TimeDelta kGreetingAnimationFadeOutDuration =
+    base::TimeDelta::FromMilliseconds(83);
+
+// StackLayout -----------------------------------------------------------------
+// TODO(wutao): Move an implementation of StackLayout to ash/assistant/ui/base
+// so that it can be reused across standalone and embedded Assistant
+// implementations.
+
+// A layout manager which lays out its views atop each other. This differs from
+// FillLayout in that we respect the preferred size of views during layout. It's
+// possible to explicitly specify which dimension to respect. In contrast,
+// FillLayout will cause its views to match the bounds of the host.
+class StackLayout : public views::LayoutManager {
+ public:
+  enum class RespectDimension : uint32_t {
+    // Respect width. If enabled, child's preferred width will be used and will
+    // be horizontally center positioned. Otherwise, the child will be stretched
+    // to match parent width.
+    kWidth = 1,
+    // Respect height. If enabled, child's preferred height will be used.
+    // Otherwise, the child will be stretched to match parent height.
+    // Note that the child is always top-aligned.
+    kHeight = 1 << 1,
+    kAll = kWidth | kHeight,
+  };
+
+  enum class VerticalAlignment {
+    kCenter = 1,
+  };
+
+  StackLayout() = default;
+  ~StackLayout() override = default;
+
+  void Installed(views::View* host) override { host_ = host; }
+
+  void ViewRemoved(views::View* host, views::View* view) override {
+    DCHECK(view);
+    respect_dimension_map_.erase(view);
+    vertical_alignment_map_.erase(view);
+  }
+
+  void SetRespectDimensionForView(views::View* view,
+                                  RespectDimension dimension) {
+    DCHECK(host_ && view->parent() == host_);
+    respect_dimension_map_[view] = dimension;
+  }
+
+  void SetVerticalAlignmentForView(views::View* view,
+                                   VerticalAlignment alignment) {
+    DCHECK(host_ && view->parent() == host_);
+    vertical_alignment_map_[view] = alignment;
+  }
+
+  gfx::Size GetPreferredSize(const views::View* host) const override {
+    return std::accumulate(host->children().cbegin(), host->children().cend(),
+                           gfx::Size(), [](gfx::Size size, const auto* v) {
+                             size.SetToMax(v->GetPreferredSize());
+                             return size;
+                           });
+  }
+
+  int GetPreferredHeightForWidth(const views::View* host,
+                                 int width) const override {
+    const auto& children = host->children();
+    if (children.empty())
+      return 0;
+    std::vector<int> heights(children.size());
+    std::transform(
+        children.cbegin(), children.cend(), heights.begin(),
+        [width](const views::View* v) { return v->GetHeightForWidth(width); });
+    return *std::max_element(heights.cbegin(), heights.cend());
+  }
+
+  void Layout(views::View* host) override {
+    const int host_width = host->GetContentsBounds().width();
+    const int host_height = host->GetContentsBounds().height();
+
+    for (auto* child : host->children()) {
+      int child_width = host_width;
+      int child_height = host_height;
+
+      int child_x = 0;
+      uint32_t dimension = static_cast<uint32_t>(RespectDimension::kAll);
+
+      if (respect_dimension_map_.find(child) != respect_dimension_map_.end())
+        dimension = static_cast<uint32_t>(respect_dimension_map_[child]);
+
+      if (dimension & static_cast<uint32_t>(RespectDimension::kWidth)) {
+        child_width = std::min(child->GetPreferredSize().width(), host_width);
+        child_x = (host_width - child_width) / 2;
+      }
+
+      if (dimension & static_cast<uint32_t>(RespectDimension::kHeight))
+        child_height = child->GetHeightForWidth(child_width);
+
+      int child_y = 0;
+      auto iter = vertical_alignment_map_.find(child);
+      if (iter != vertical_alignment_map_.end()) {
+        VerticalAlignment vertical_alignment = iter->second;
+        if (vertical_alignment == VerticalAlignment::kCenter)
+          child_y = std::max(0, (host_height - child_height) / 2);
+      }
+
+      child->SetBounds(child_x, child_y, child_width, child_height);
+    }
+  }
+
+ private:
+  views::View* host_ = nullptr;
+  std::map<views::View*, RespectDimension> respect_dimension_map_;
+  std::map<views::View*, VerticalAlignment> vertical_alignment_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(StackLayout);
+};
 
 // HorizontalSeparator ---------------------------------------------------------
 
@@ -88,6 +212,12 @@ class HorizontalSeparator : public views::View {
   DISALLOW_COPY_AND_ASSIGN(HorizontalSeparator);
 };
 
+bool IsLayerVisible(views::View* view) {
+  DCHECK(view->layer());
+  return view->IsDrawn() &&
+         !cc::MathUtil::IsWithinEpsilon(view->layer()->GetTargetOpacity(), 0.f);
+}
+
 }  // namespace
 
 // AssistantMainStage ----------------------------------------------------------
@@ -104,9 +234,9 @@ AssistantMainStage::AssistantMainStage(ash::AssistantViewDelegate* delegate)
                   base::Unretained(this)))) {
   InitLayout();
 
-  // The view hierarchy will be destructed before |assistant_controller_| in
-  // Shell, which owns AssistantViewDelegate, so AssistantViewDelegate is
-  // guaranteed to outlive the AssistantMainStage.
+  // The view hierarchy will be destructed before AssistantController in Shell,
+  // which owns AssistantViewDelegate, so AssistantViewDelegate is guaranteed to
+  // outlive the AssistantMainStage.
   delegate_->AddInteractionModelObserver(this);
   delegate_->AddUiModelObserver(this);
 }
@@ -126,9 +256,17 @@ void AssistantMainStage::ChildPreferredSizeChanged(views::View* child) {
 
 void AssistantMainStage::OnViewPreferredSizeChanged(views::View* view) {
   PreferredSizeChanged();
+  Layout();
+  SchedulePaint();
 }
 
 void AssistantMainStage::InitLayout() {
+  // The children of AssistantMainStage will be animated on their own layers and
+  // we want them to be clipped by their parent layer.
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetMasksToBounds(true);
+
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical));
@@ -136,39 +274,115 @@ void AssistantMainStage::InitLayout() {
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  // The children of AssistantMainStage will be animated on their own layers and
-  // we want them to be clipped by their parent layer.
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetMasksToBounds(true);
+  auto* content_layout_container = CreateContentLayoutContainer();
+  AddChildView(content_layout_container);
+  layout->SetFlexForView(content_layout_container, 1);
 
-  // Separators: the progress indicator and the horizontal separator will be the
-  // separator when querying and showing the results, respectively. The height
-  // of the horizontal separator is set to be the same as the progress indicator
-  // in order to avoid height changes and relayout.
+  AddChildView(CreateFooterLayoutContainer());
+}
+
+views::View* AssistantMainStage::CreateContentLayoutContainer() {
+  // The content layout container stacks two views.
+  // On top is a main content container including the line separator, progress
+  // indicator query view and |ui_element_container_|.
+  // |greeting_label_| is laid out beneath of the main content container. As
+  // such, it appears underneath and does not cause repositioning to any of
+  // content layout's underlying views.
+  views::View* content_layout_container = new views::View();
+
+  InitGreetingLabel();
+  content_layout_container->AddChildView(greeting_label_);
+  auto* stack_layout = content_layout_container->SetLayoutManager(
+      std::make_unique<StackLayout>());
+
+  // We need to stretch |greeting_label_| to match its parent so that it
+  // won't use heuristics in Label to infer line breaking, which seems to cause
+  // text clipping with DPI adjustment. See b/112843496.
+  stack_layout->SetRespectDimensionForView(
+      greeting_label_, StackLayout::RespectDimension::kHeight);
+  stack_layout->SetVerticalAlignmentForView(
+      greeting_label_, StackLayout::VerticalAlignment::kCenter);
+
+  auto* main_content_layout_container = CreateMainContentLayoutContainer();
+  content_layout_container->AddChildView(main_content_layout_container);
+
+  // Do not respect height, otherwise bounds will not be set correctly for
+  // scrolling.
+  stack_layout->SetRespectDimensionForView(
+      main_content_layout_container, StackLayout::RespectDimension::kWidth);
+
+  return content_layout_container;
+}
+
+void AssistantMainStage::InitGreetingLabel() {
+  // Greeting label, which will be animated on its own layer.
+  greeting_label_ = new views::Label(
+      l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
+  greeting_label_->SetAutoColorReadabilityEnabled(false);
+  greeting_label_->SetEnabledColor(ash::kTextColorPrimary);
+  greeting_label_->SetFontList(
+      ash::assistant::ui::GetDefaultFontList()
+          .DeriveWithSizeDelta(8)
+          .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+  greeting_label_->SetHorizontalAlignment(
+      gfx::HorizontalAlignment::ALIGN_CENTER);
+  greeting_label_->SetMultiLine(true);
+  greeting_label_->SetPaintToLayer();
+  greeting_label_->layer()->SetFillsBoundsOpaquely(false);
+}
+
+views::View* AssistantMainStage::CreateMainContentLayoutContainer() {
+  views::View* content_layout_container = new views::View();
+  views::BoxLayout* content_layout = content_layout_container->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
+  content_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kCenter);
+  content_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+
+  content_layout_container->AddChildView(CreateDividerLayoutContainer());
+
+  // Query view. Will be animated on its own layer.
+  query_view_ = new ash::AssistantQueryView();
+  query_view_->SetPaintToLayer();
+  query_view_->layer()->SetFillsBoundsOpaquely(false);
+  query_view_->AddObserver(this);
+  content_layout_container->AddChildView(query_view_);
+
+  // UI element container.
+  ui_element_container_ = new ash::UiElementContainerView(delegate_);
+  ui_element_container_->AddObserver(this);
+  content_layout_container->AddChildView(ui_element_container_);
+  content_layout->SetFlexForView(ui_element_container_, 1,
+                                 /*use_min_size=*/true);
+
+  return content_layout_container;
+}
+
+views::View* AssistantMainStage::CreateDividerLayoutContainer() {
+  // Dividers: the progress indicator and the horizontal separator will be the
+  // separator when querying and showing the results, respectively.
+  views::View* divider_container = new views::View();
+  divider_container->SetLayoutManager(std::make_unique<StackLayout>());
+
   // Progress indicator, which will be animated on its own layer.
   progress_indicator_ = new ash::AssistantProgressIndicator();
   progress_indicator_->SetPaintToLayer();
   progress_indicator_->layer()->SetFillsBoundsOpaquely(false);
-  progress_indicator_->SetVisible(false);
-  AddChildView(progress_indicator_);
+  divider_container->AddChildView(progress_indicator_);
 
-  // Horizontal separator.
+  // Horizontal separator, which will be animated on its own layer.
   horizontal_separator_ = new HorizontalSeparator(
       kSeparatorWidthDip, progress_indicator_->GetPreferredSize().height());
-  AddChildView(horizontal_separator_);
+  horizontal_separator_->SetPaintToLayer();
+  horizontal_separator_->layer()->SetFillsBoundsOpaquely(false);
+  divider_container->AddChildView(horizontal_separator_);
 
-  // Query view.
-  query_view_ = new ash::AssistantQueryView();
-  AddChildView(query_view_);
+  return divider_container;
+}
 
-  // UI element container.
-  ui_element_container_ = new ash::UiElementContainerView(delegate_);
-  AddChildView(ui_element_container_);
-
-  layout->SetFlexForView(ui_element_container_, 1,
-                         /*use_min_size=*/true);
-
+views::View* AssistantMainStage::CreateFooterLayoutContainer() {
   // Footer.
   // Note that the |footer_| is placed within its own view container so that as
   // its visibility changes, its parent container will still reserve the same
@@ -185,36 +399,66 @@ void AssistantMainStage::InitLayout() {
   footer_->layer()->SetFillsBoundsOpaquely(false);
 
   footer_container->AddChildView(footer_);
-  AddChildView(footer_container);
+
+  return footer_container;
 }
 
 void AssistantMainStage::OnCommittedQueryChanged(
     const ash::AssistantQuery& query) {
+  // Update the view.
+  query_view_->SetQuery(query);
+
+  // If query is empty and we are showing greeting label, do not update the Ui.
+  if (query.Empty() && IsLayerVisible(greeting_label_))
+    return;
+
   using ash::assistant::util::CreateLayerAnimationSequence;
   using ash::assistant::util::CreateOpacityElement;
 
-  // TODO(wutao): Replace the visibility change by animations.
-  horizontal_separator_->SetVisible(false);
+  // Hide the horizontal separator.
+  horizontal_separator_->layer()->GetAnimator()->StartAnimation(
+      CreateLayerAnimationSequence(ash::assistant::util::CreateOpacityElement(
+          0.f, kDividerAnimationFadeOutDuration)));
 
   // Show the progress indicator.
-  progress_indicator_->SetVisible(true);
   progress_indicator_->layer()->GetAnimator()->StartAnimation(
       CreateLayerAnimationSequence(
           // Delay...
           ui::LayerAnimationElement::CreatePauseElement(
               ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-              kProgressAnimationFadeInDelay),
+              kDividerAnimationFadeInDelay),
           // ...then fade in.
           ash::assistant::util::CreateOpacityElement(
-              1.f, kProgressAnimationFadeInDuration)));
+              1.f, kDividerAnimationFadeInDuration)));
 
-  // Update the view.
-  query_view_->SetQuery(query);
+  MaybeHideGreetingLabel();
 }
 
 void AssistantMainStage::OnPendingQueryChanged(
     const ash::AssistantQuery& query) {
+  // Update the view.
   query_view_->SetQuery(query);
+
+  if (!IsLayerVisible(greeting_label_))
+    return;
+
+  using ash::assistant::util::CreateLayerAnimationSequence;
+  using ash::assistant::util::CreateOpacityElement;
+
+  // Animate the opacity to 100% with delay equal to |greeting_label_| fade out
+  // animation duration to avoid the two views displaying at the same time.
+  constexpr base::TimeDelta kQueryAnimationFadeInDuration =
+      base::TimeDelta::FromMilliseconds(433);
+  query_view_->layer()->SetOpacity(0.f);
+  query_view_->layer()->GetAnimator()->StartAnimation(
+      CreateLayerAnimationSequence(
+          ui::LayerAnimationElement::CreatePauseElement(
+              ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+              kGreetingAnimationFadeOutDuration),
+          CreateOpacityElement(1.f, kQueryAnimationFadeInDuration)));
+
+  if (!query.Empty())
+    MaybeHideGreetingLabel();
 }
 
 void AssistantMainStage::OnPendingQueryCleared() {
@@ -227,9 +471,26 @@ void AssistantMainStage::OnPendingQueryCleared() {
 
 void AssistantMainStage::OnResponseChanged(
     const std::shared_ptr<ash::AssistantResponse>& response) {
-  // TODO(wutao): Replace the visibility change by animations.
-  horizontal_separator_->SetVisible(true);
-  progress_indicator_->SetVisible(false);
+  MaybeHideGreetingLabel();
+
+  using ash::assistant::util::CreateLayerAnimationSequence;
+  using ash::assistant::util::CreateOpacityElement;
+
+  // Show the horizontal separator.
+  horizontal_separator_->layer()->GetAnimator()->StartAnimation(
+      CreateLayerAnimationSequence(
+          // Delay...
+          ui::LayerAnimationElement::CreatePauseElement(
+              ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+              kDividerAnimationFadeInDelay),
+          // ...then fade in.
+          ash::assistant::util::CreateOpacityElement(
+              1.f, kDividerAnimationFadeInDuration)));
+
+  // Hide the progress indicator.
+  progress_indicator_->layer()->GetAnimator()->StartAnimation(
+      CreateLayerAnimationSequence(ash::assistant::util::CreateOpacityElement(
+          0.f, kDividerAnimationFadeOutDuration)));
 
   UpdateFooter();
 }
@@ -241,10 +502,48 @@ void AssistantMainStage::OnUiVisibilityChanged(
     base::Optional<ash::AssistantExitPoint> exit_point) {
   if (ash::assistant::util::IsStartingSession(new_visibility, old_visibility)) {
     // When Assistant is starting a new session, we animate in the appearance of
-    // the footer.
+    // the greeting label and footer.
     using ash::assistant::util::CreateLayerAnimationSequence;
     using ash::assistant::util::CreateOpacityElement;
     using ash::assistant::util::CreateTransformElement;
+
+    const bool from_search =
+        entry_point == ash::AssistantEntryPoint::kLauncherSearchResult;
+    progress_indicator_->layer()->SetOpacity(0.f);
+    horizontal_separator_->layer()->SetOpacity(from_search ? 1.f : 0.f);
+
+    greeting_label_->layer()->GetAnimator()->StopAnimating();
+
+    // We're going to animate the greeting label up into position so we'll
+    // need to apply an initial transformation.
+    constexpr int kGreetingAnimationTranslationDip = 115;
+    gfx::Transform transform;
+    transform.Translate(0, kGreetingAnimationTranslationDip);
+
+    // Set up our pre-animation values.
+    greeting_label_->layer()->SetOpacity(0.f);
+    greeting_label_->layer()->SetTransform(transform);
+    if (!from_search) {
+      constexpr base::TimeDelta kGreetingAnimationFadeInDelay =
+          base::TimeDelta::FromMilliseconds(33);
+      constexpr base::TimeDelta kGreetingAnimationFadeInDuration =
+          base::TimeDelta::FromMilliseconds(167);
+      constexpr base::TimeDelta kGreetingAnimationTranslateUpDuration =
+          base::TimeDelta::FromMilliseconds(250);
+
+      // Start animating greeting label.
+      greeting_label_->layer()->GetAnimator()->StartTogether(
+          {// Animate the transformation.
+           CreateLayerAnimationSequence(CreateTransformElement(
+               gfx::Transform(), kGreetingAnimationTranslateUpDuration,
+               gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+           // Animate the opacity to 100% with delay.
+           CreateLayerAnimationSequence(
+               ui::LayerAnimationElement::CreatePauseElement(
+                   ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                   kGreetingAnimationFadeInDelay),
+               CreateOpacityElement(1.f, kGreetingAnimationFadeInDuration))});
+    }
 
     // Set up our pre-animation values.
     footer_->layer()->SetOpacity(0.f);
@@ -259,15 +558,21 @@ void AssistantMainStage::OnUiVisibilityChanged(
     return;
   }
 
-  if (!ash::assistant::util::IsFinishingSession(new_visibility))
-    return;
-
-  progress_indicator_->layer()->SetOpacity(0.f);
-  progress_indicator_->layer()->SetTransform(gfx::Transform());
-
   query_view_->SetQuery(ash::AssistantNullQuery());
 
   UpdateFooter();
+}
+
+void AssistantMainStage::MaybeHideGreetingLabel() {
+  if (!IsLayerVisible(greeting_label_))
+    return;
+
+  using ash::assistant::util::CreateLayerAnimationSequence;
+  using ash::assistant::util::CreateOpacityElement;
+
+  greeting_label_->layer()->GetAnimator()->StartAnimation(
+      CreateLayerAnimationSequence(
+          CreateOpacityElement(0.f, kGreetingAnimationFadeOutDuration)));
 }
 
 void AssistantMainStage::UpdateFooter() {
@@ -279,7 +584,7 @@ void AssistantMainStage::UpdateFooter() {
 
   // The footer is only visible when the progress indicator is not.
   // When it is not visible, it should not process events.
-  bool visible = !progress_indicator_->GetVisible();
+  bool visible = !IsLayerVisible(progress_indicator_);
 
   // Reset visibility to enable animation.
   footer_->SetVisible(true);
@@ -335,7 +640,7 @@ bool AssistantMainStage::OnFooterAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
   // The footer should only process events when visible. It is only visible when
   // the progress indicator is not visible.
-  bool visible = !progress_indicator_->GetVisible();
+  bool visible = !IsLayerVisible(progress_indicator_);
   footer_->set_can_process_events_within_subtree(visible);
   footer_->SetVisible(visible);
 

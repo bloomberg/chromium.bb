@@ -162,9 +162,6 @@ bool AppListTestViewDelegate::IsAssistantAllowedAndEnabled() const {
   return false;
 }
 
-void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
-    ash::AppListViewState state) {}
-
 bool AppListTestViewDelegate::ShouldShowAssistantPrivacyInfo() const {
   return false;
 }
@@ -172,6 +169,9 @@ bool AppListTestViewDelegate::ShouldShowAssistantPrivacyInfo() const {
 void AppListTestViewDelegate::MaybeIncreaseAssistantPrivacyInfoShownCount() {}
 
 void AppListTestViewDelegate::MarkAssistantPrivacyInfoDismissed() {}
+
+void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
+    ash::AppListViewState state) {}
 
 void AppListTestViewDelegate::GetAppLaunchedMetricParams(
     app_list::AppLaunchedMetricParams* metric_params) {}

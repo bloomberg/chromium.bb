@@ -19,6 +19,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
@@ -685,13 +686,8 @@ void AppListControllerImpl::OnUiVisibilityChanged(
              base::TimeTicks());
       }
 
-      if (!IsShowingEmbeddedAssistantUI()) {
-        if (presenter_.GetView()->app_list_state() ==
-            ash::AppListViewState::kPeeking) {
-          presenter_.GetView()->SetState(ash::AppListViewState::kHalf);
-        }
+      if (!IsShowingEmbeddedAssistantUI())
         presenter_.ShowEmbeddedAssistantUI(true);
-      }
       break;
     case AssistantVisibility::kHidden:
       NOTREACHED();
@@ -700,21 +696,21 @@ void AppListControllerImpl::OnUiVisibilityChanged(
       if (!IsShowingEmbeddedAssistantUI())
         break;
 
-      // Reset model state.
       // When Launcher is closing, we do not want to call
       // |ShowEmbeddedAssistantUI(false)|, which will show previous state page
-      // in Launcher and make the Ui flashing.
+      // in Launcher and make the UI flash.
       if (IsHomeScreenAvailable()) {
         presenter_.ShowEmbeddedAssistantUI(false);
-        presenter_.GetView()
-            ->app_list_main_view()
-            ->contents_view()
-            ->ResetForShow();
-        presenter_.GetView()->SetState(
-            ash::AppListViewState::kFullscreenAllApps);
+
+        if (exit_point != AssistantExitPoint::kBackInLauncher) {
+          presenter_.GetView()
+              ->search_box_view()
+              ->ClearSearchAndDeactivateSearchBox();
+        }
       } else if (exit_point != AssistantExitPoint::kBackInLauncher) {
         DismissAppList();
       }
+
       break;
   }
 }
@@ -1008,6 +1004,7 @@ void AppListControllerImpl::ViewClosing() {
 
   CloseAssistantUi(AssistantExitPoint::kLauncherClose);
   model_->SetState(AppListState::kInvalidState);
+
   if (client_)
     client_->ViewClosing();
 }
