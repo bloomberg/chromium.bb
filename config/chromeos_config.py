@@ -2206,7 +2206,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
       'kumo',
-      'lakitu-vca',
       'samus-kernelnext',
       'zork',
   ])
@@ -2820,14 +2819,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       board_configs['lakitu_next'],
   )
 
-  site_config.Add(
-      'lakitu-vca-incremental',
-      site_config.templates.incremental,
-      site_config.templates.internal_incremental,
-      site_config.templates.lakitu_notification_emails,
-      board_configs['lakitu-vca'],
-      profile='baremetal'
-  )
 
 def ReleaseAfdoBuilders(site_config, boards_dict, ge_build_config):
   """Create AFDO Performance tryjobs.
@@ -3899,12 +3890,6 @@ def ApplyCustomOverrides(site_config):
 
       'lakitu_next-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_notification_emails,
-      ),
-
-      'lakitu-vca-release': config_lib.BuildConfig().apply(
-          site_config.templates.lakitu_notification_emails,
-          sign_types=['base'],
-          paygen=False,
       ),
 
       # TODO(yshaul): find out if hwqual needs to go as well
