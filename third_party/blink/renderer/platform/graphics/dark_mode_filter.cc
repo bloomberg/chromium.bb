@@ -4,15 +4,39 @@
 
 #include "third_party/blink/renderer/platform/graphics/dark_mode_filter.h"
 
+#include <cmath>
+
+#include "base/logging.h"
 #include "base/optional.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_color_filter.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrix.h"
-#include "third_party/skia/include/effects/SkHighContrastFilter.h"
-#include "third_party/skia/include/effects/SkTableColorFilter.h"
 
 namespace blink {
 namespace {
+
+#if DCHECK_IS_ON()
+
+// Floats that differ by this amount or less are considered to be equal.
+const float kFloatEqualityEpsilon = 0.0001;
+
+bool AreFloatsEqual(float a, float b) {
+  return std::fabs(a - b) <= kFloatEqualityEpsilon;
+}
+
+void VerifySettingsAreUnchanged(const DarkModeSettings& a,
+                                const DarkModeSettings& b) {
+  if (a.mode == DarkMode::kOff)
+    return;
+
+  DCHECK_EQ(a.image_policy, b.image_policy);
+  DCHECK_EQ(a.text_policy, b.text_policy);
+  DCHECK_EQ(a.grayscale, b.grayscale);
+  DCHECK(AreFloatsEqual(a.contrast, b.contrast));
+  DCHECK(AreFloatsEqual(a.image_grayscale_percent, b.image_grayscale_percent));
+}
+
+#endif  // DCHECK_IS_ON()
 
 bool ShouldApplyToImage(const DarkModeSettings& settings,
                         const FloatRect& src_rect,
@@ -27,7 +51,8 @@ bool ShouldApplyToImage(const DarkModeSettings& settings,
   }
 }
 
-// |grayscale_percent| should be between 0.0 and 1.0.
+// TODO(gilmanmh): If grayscaling images in dark mode proves popular among
+// users, consider experimenting with different grayscale algorithms.
 sk_sp<SkColorFilter> MakeGrayscaleFilter(float grayscale_percent) {
   DCHECK_GE(grayscale_percent, 0.0f);
   DCHECK_LE(grayscale_percent, 1.0f);
@@ -40,62 +65,43 @@ sk_sp<SkColorFilter> MakeGrayscaleFilter(float grayscale_percent) {
 }  // namespace
 
 DarkModeFilter::DarkModeFilter()
-    : default_filter_(nullptr), image_filter_(nullptr) {
-  settings_.mode = DarkMode::kOff;
-  settings_.image_policy = DarkModeImagePolicy::kFilterNone;
+    : color_filter_(nullptr), image_filter_(nullptr) {
+  DarkModeSettings default_settings;
+  default_settings.mode = DarkMode::kOff;
+  UpdateSettings(default_settings);
 }
 
-void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
-  settings_ = new_settings;
+DarkModeFilter::~DarkModeFilter() {}
 
-  SkHighContrastConfig config;
-  transformer_ = base::nullopt;
-  switch (settings_.mode) {
-    case DarkMode::kOff:
-      default_filter_.reset(nullptr);
-      image_filter_.reset(nullptr);
-      return;
-    case DarkMode::kSimpleInvertForTesting: {
-      uint8_t identity[256], invert[256];
-      for (int i = 0; i < 256; ++i) {
-        identity[i] = i;
-        invert[i] = 255 - i;
-      }
-      default_filter_ =
-          SkTableColorFilter::MakeARGB(identity, invert, invert, invert);
-      image_filter_.reset(nullptr);
-      return;
-    }
-    case DarkMode::kInvertBrightness:
-      config.fInvertStyle =
-          SkHighContrastConfig::InvertStyle::kInvertBrightness;
-      break;
-    case DarkMode::kInvertLightness:
-      config.fInvertStyle = SkHighContrastConfig::InvertStyle::kInvertLightness;
-      break;
-    case DarkMode::kInvertLightnessLAB:
-      transformer_ = LabColorSpace::RGBLABTransformer();
-      config.fInvertStyle = SkHighContrastConfig::InvertStyle::kInvertLightness;
-      break;
+void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
+  // Dark mode can be activated or deactivated on a per-page basis, depending on
+  // whether the original page theme is already dark. However, there is
+  // currently no mechanism to change the other settings after starting Chrome.
+  // As such, if the mode doesn't change, we don't need to do anything.
+  if (settings_.mode == new_settings.mode) {
+#if DCHECK_IS_ON()
+    VerifySettingsAreUnchanged(settings_, new_settings);
+#endif
+    return;
   }
 
-  config.fGrayscale = settings_.grayscale;
-  config.fContrast = settings_.contrast;
-  default_filter_ = SkHighContrastFilter::Make(config);
+  settings_ = new_settings;
+  color_filter_ = DarkModeColorFilter::FromSettings(settings_);
+  if (!color_filter_) {
+    image_filter_ = nullptr;
+    return;
+  }
 
   if (settings_.image_grayscale_percent > 0.0f)
     image_filter_ = MakeGrayscaleFilter(settings_.image_grayscale_percent);
   else
-    image_filter_.reset(nullptr);
+    image_filter_ = color_filter_->ToSkColorFilter();
 }
 
-Color DarkModeFilter::ApplyIfNeeded(const Color& color) {
-  if (!default_filter_)
+Color DarkModeFilter::InvertColorIfNeeded(const Color& color) {
+  if (!IsDarkModeActive())
     return color;
-  if (!transformer_)
-    return Color(default_filter_->filterColor(color.Rgb()));
-
-  return InvertColor(color);
+  return color_filter_->InvertColor(color);
 }
 
 // TODO(gilmanmh): Investigate making |image| a const reference. This code
@@ -104,47 +110,33 @@ Color DarkModeFilter::ApplyIfNeeded(const Color& color) {
 void DarkModeFilter::ApplyToImageFlagsIfNeeded(const FloatRect& src_rect,
                                                Image* image,
                                                cc::PaintFlags* flags) {
-  sk_sp<SkColorFilter> filter = image_filter_;
-  if (!filter)
-    filter = default_filter_;
-
-  if (!filter || !ShouldApplyToImage(settings(), src_rect, image))
+  if (!image_filter_ || !ShouldApplyToImage(settings(), src_rect, image))
     return;
-  flags->setColorFilter(std::move(filter));
+  flags->setColorFilter(image_filter_);
 }
 
 base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
     const cc::PaintFlags& flags) {
-  if (!default_filter_)
+  if (!IsDarkModeActive())
     return base::nullopt;
 
   cc::PaintFlags dark_mode_flags = flags;
   if (flags.HasShader()) {
-    dark_mode_flags.setColorFilter(default_filter_);
+    dark_mode_flags.setColorFilter(color_filter_->ToSkColorFilter());
   } else {
-    auto invertedColor = ApplyIfNeeded(flags.getColor());
+    Color inverted_color = color_filter_->InvertColor(flags.getColor());
     dark_mode_flags.setColor(
-        SkColorSetARGB(invertedColor.Alpha(), invertedColor.Red(),
-                       invertedColor.Green(), invertedColor.Blue()));
+        SkColorSetARGB(inverted_color.Alpha(), inverted_color.Red(),
+                       inverted_color.Green(), inverted_color.Blue()));
   }
 
   return base::make_optional<cc::PaintFlags>(std::move(dark_mode_flags));
 }
 
-Color DarkModeFilter::InvertColor(const Color& color) const {
-  blink::FloatPoint3D rgb = {color.Red() / 255.0f, color.Green() / 255.0f,
-                             color.Blue() / 255.0f};
-  blink::FloatPoint3D lab = transformer_->sRGBToLab(rgb);
-  float invertedL = std::min(110.0f - lab.X(), 100.0f);
-  lab.SetX(invertedL);
-  rgb = transformer_->LabToSRGB(lab);
-
-  return Color(static_cast<unsigned int>(rgb.X() * 255 + 0.5),
-               static_cast<unsigned int>(rgb.Y() * 255 + 0.5),
-               static_cast<unsigned int>(rgb.Z() * 255 + 0.5), color.Alpha());
-}
-
 bool DarkModeFilter::ShouldInvertTextColor(const Color& color) const {
+  if (!IsDarkModeActive())
+    return false;
+
   if (settings_.text_policy == DarkModeTextPolicy::kInvertAll)
     return true;
 
@@ -155,6 +147,10 @@ bool DarkModeFilter::ShouldInvertTextColor(const Color& color) const {
     return false;
   }
   return true;
+}
+
+bool DarkModeFilter::IsDarkModeActive() const {
+  return !!color_filter_;
 }
 
 }  // namespace blink
