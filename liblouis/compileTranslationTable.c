@@ -828,8 +828,7 @@ addBackwardRuleWithSingleCell(FileInfo *nested, widechar cell,
 	TranslationTableRule *currentRule;
 	TranslationTableOffset *currentOffsetPtr;
 	TranslationTableCharacter *dots;
-	if (newRule->opcode == CTO_SwapCc || newRule->opcode == CTO_Repeated ||
-			(newRule->opcode == CTO_Always && newRule->charslen == 1))
+	if (newRule->opcode == CTO_SwapCc || newRule->opcode == CTO_Repeated)
 		return; /* too ambiguous */
 	// get the cell from the table, or if the cell is not defined yet, define it (without
 	// adding attributes)
