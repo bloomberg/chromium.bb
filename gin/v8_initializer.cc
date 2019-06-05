@@ -225,6 +225,13 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
                                sizeof(no_flush_bytecode) - 1);
   }
 
+  if (!base::FeatureList::IsEnabled(features::kV8LazyFeedbackAllocation)) {
+    static const char no_lazy_feedback_allocation[] =
+        "--no-lazy-feedback-allocation";
+    v8::V8::SetFlagsFromString(no_lazy_feedback_allocation,
+                               sizeof(no_lazy_feedback_allocation) - 1);
+  }
+
   if (!base::FeatureList::IsEnabled(features::kV8MemoryReducerForSmallHeaps)) {
     static const char no_memory_reducer[] =
         "--no-memory-reducer-for-small-heaps";
