@@ -311,9 +311,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     public void addAcceptedPaymentMethodIfRecognized(PaymentMethodData data) {
         assert data != null;
         String method = data.supportedMethod;
-        if (mCardIssuerNetworks.containsKey(method)) {
-            addAcceptedNetwork(method);
-        } else if (BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)) {
+        if (BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)) {
             Set<String> basicCardNetworks = BasicCardUtils.convertBasicCardToNetworks(data);
             mAcceptedBasicCardIssuerNetworks.addAll(basicCardNetworks);
             for (String network : basicCardNetworks) {
