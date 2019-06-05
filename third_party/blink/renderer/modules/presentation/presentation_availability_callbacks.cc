@@ -49,4 +49,8 @@ void PresentationAvailabilityCallbacks::RejectAvailabilityNotSupported() {
   resolver_->Reject(CreateAvailabilityNotSupportedError());
 }
 
+void PresentationAvailabilityCallbacks::Trace(blink::Visitor* visitor) {
+  visitor->Trace(resolver_);
+}
+
 }  // namespace blink

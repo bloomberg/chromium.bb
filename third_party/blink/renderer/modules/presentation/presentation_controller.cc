@@ -55,6 +55,7 @@ PresentationController* PresentationController::FromContext(
 void PresentationController::Trace(blink::Visitor* visitor) {
   visitor->Trace(presentation_);
   visitor->Trace(connections_);
+  visitor->Trace(availability_state_);
   Supplement<LocalFrame>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
@@ -70,11 +71,11 @@ void PresentationController::RegisterConnection(
 
 PresentationAvailabilityState* PresentationController::GetAvailabilityState() {
   if (!availability_state_) {
-    availability_state_.reset(
-        new PresentationAvailabilityState(GetPresentationService().get()));
+    availability_state_ = MakeGarbageCollected<PresentationAvailabilityState>(
+        GetPresentationService().get());
   }
 
-  return availability_state_.get();
+  return availability_state_;
 }
 
 void PresentationController::AddAvailabilityObserver(

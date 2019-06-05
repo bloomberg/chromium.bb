@@ -100,7 +100,7 @@ class MODULES_EXPORT PresentationController
       const mojom::blink::PresentationInfo&) const;
 
   // Lazily-instantiated when the page queries for availability.
-  std::unique_ptr<PresentationAvailabilityState> availability_state_;
+  Member<PresentationAvailabilityState> availability_state_;
 
   // The Presentation instance associated with that frame.
   WeakMember<Presentation> presentation_;
