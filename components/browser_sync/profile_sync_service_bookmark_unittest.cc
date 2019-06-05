@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/adapters.h"
 #include "base/containers/queue.h"
 #include "base/containers/stack.h"
 #include "base/files/file_util.h"
@@ -964,9 +965,8 @@ TEST_F(ProfileSyncServiceBookmarkTest,
     const BookmarkNode* folder = model()->AddFolder(
         model()->bookmark_bar_node(), i, base::ASCIIToUTF16("folder"));
     folder_ids[i] = folder->id();
-    if (i == kFolderToIncludeBookmarks) {
+    if (i == kFolderToIncludeBookmarks)
       parent_folder = folder;
-    }
   }
 
   for (int i = 0; i < kNumBookmarks; i++) {
@@ -988,7 +988,7 @@ TEST_F(ProfileSyncServiceBookmarkTest,
     syncer::WriteTransaction trans(FROM_HERE, test_user_share()->user_share());
     // Create in reverse order because AddFolderToShare passes null for
     // |predecessor| argument.
-    for (int i = kNumFolders - 1; i >= 0; i--) {
+    for (auto folder_id : base::Reversed(folder_ids)) {
       int64_t id = AddFolderToShare(&trans, "folder");
 
       // Pre-map sync folders to native folders by setting
@@ -998,16 +998,15 @@ TEST_F(ProfileSyncServiceBookmarkTest,
       // a wrong folder.
       syncer::WriteNode node(&trans);
       EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
-      node.GetMutableEntryForTest()->PutLocalExternalId(folder_ids[i]);
+      node.GetMutableEntryForTest()->PutLocalExternalId(folder_id);
 
-      if (i == kFolderToIncludeBookmarks) {
+      if (folder_id == parent_folder->id())
         parent_id = id;
-      }
     }
 
     // Create sync bookmark matching native bookmarks above in reverse order
     // because AddBookmarkToShare passes null for |predecessor| argument.
-    for (int i = kNumBookmarks - 1; i >= 0; i--) {
+    for (auto bookmark_id : base::Reversed(bookmark_ids)) {
       int id = AddBookmarkToShare(&trans, parent_id, "bookmark",
                                   "http://www.google.com/");
 
@@ -1016,11 +1015,10 @@ TEST_F(ProfileSyncServiceBookmarkTest,
       // the right ones despite all of them having identical names and URLs.
       syncer::WriteNode node(&trans);
       EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
-      node.GetMutableEntryForTest()->PutLocalExternalId(bookmark_ids[i]);
+      node.GetMutableEntryForTest()->PutLocalExternalId(bookmark_id);
 
-      if (i == kBookmarkToDelete) {
+      if (bookmark_id == bookmark_ids[kBookmarkToDelete])
         sync_bookmark_id_to_delete = id;
-      }
     }
   }
 

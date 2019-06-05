@@ -236,7 +236,8 @@ class TreeNodeModel : public TreeModel {
   }
 
   NodeType* Add(NodeType* parent, std::unique_ptr<NodeType> node, int index) {
-    DCHECK(parent && node);
+    DCHECK(parent);
+    DCHECK(node);
     NodeType* node_ptr = parent->Add(std::move(node), index);
     NotifyObserverTreeNodesAdded(parent, index, 1);
     return node_ptr;

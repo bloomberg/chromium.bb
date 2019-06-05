@@ -428,11 +428,6 @@ void RecordAppLaunch(Profile* profile, const GURL& url) {
 // DropLocation ---------------------------------------------------------------
 
 struct BookmarkBarView::DropLocation {
-  DropLocation()
-      : operation(ui::DragDropTypes::DRAG_NONE),
-        on(false),
-        button_type(DROP_BOOKMARK) {}
-
   bool Equals(const DropLocation& other) {
     return ((other.index == index) && (other.on == on) &&
             (other.button_type == button_type));
@@ -442,13 +437,13 @@ struct BookmarkBarView::DropLocation {
   base::Optional<size_t> index;
 
   // Drop constants.
-  int operation;
+  int operation = ui::DragDropTypes::DRAG_NONE;
 
   // If true, the user is dropping on a folder.
-  bool on;
+  bool on = false;
 
   // Type of button.
-  DropButtonType button_type;
+  DropButtonType button_type = DROP_BOOKMARK;
 };
 
 // DropInfo -------------------------------------------------------------------

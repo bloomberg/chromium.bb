@@ -188,10 +188,9 @@ class AddBookmarkTask : public BookmarkModelTask {
       if (!parent_node)
         parent_node = model->bookmark_bar_node();
 
-      if (is_folder)
-        node = model->AddFolder(parent_node, parent_node->child_count(), title);
-      else
-        node = model->AddURL(parent_node, 0, title, gurl);
+      node = is_folder ? model->AddFolder(parent_node,
+                                          parent_node->child_count(), title)
+                       : model->AddURL(parent_node, 0, title, gurl);
     }
 
     *result = node ? node ->id() : kInvalidBookmarkId;

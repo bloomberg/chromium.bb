@@ -148,11 +148,11 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
     parentId = model->other_node()->id();
   } else {
     if (!GetBookmarkIdAsInt64(*details.parent_id, &parentId))
-      return NULL;
+      return nullptr;
   }
   const BookmarkNode* parent = bookmarks::GetBookmarkNodeByID(model, parentId);
   if (!CanBeModified(parent))
-    return NULL;
+    return nullptr;
 
   int index;
   if (!details.index.get()) {  // Optional (defaults to end).
@@ -161,7 +161,7 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
     index = *details.index;
     if (index > parent->child_count() || index < 0) {
       error_ = bookmark_api_constants::kInvalidIndexError;
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -176,7 +176,7 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
   GURL url(url_string);
   if (!url_string.empty() && !url.is_valid()) {
     error_ = bookmark_api_constants::kInvalidUrlError;
-    return NULL;
+    return nullptr;
   }
 
   const BookmarkNode* node;

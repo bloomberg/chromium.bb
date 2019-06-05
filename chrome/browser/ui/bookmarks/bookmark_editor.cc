@@ -50,9 +50,7 @@ const BookmarkNode* CreateNewNode(BookmarkModel* model,
 
 }  // namespace
 
-BookmarkEditor::EditDetails::EditDetails(Type node_type)
-    : type(node_type), existing_node(NULL), parent_node(NULL), index(-1) {
-}
+BookmarkEditor::EditDetails::EditDetails(Type node_type) : type(node_type) {}
 
 BookmarkNode::Type BookmarkEditor::EditDetails::GetNodeType() const {
   BookmarkNode::Type node_type = BookmarkNode::URL;

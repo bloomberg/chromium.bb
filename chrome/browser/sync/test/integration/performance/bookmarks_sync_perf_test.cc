@@ -23,10 +23,7 @@ static const int kNumBookmarks = 150;
 
 class BookmarksSyncPerfTest : public SyncTest {
  public:
-  BookmarksSyncPerfTest()
-      : SyncTest(TWO_CLIENT),
-        url_number_(0),
-        url_title_number_(0) {}
+  BookmarksSyncPerfTest() : SyncTest(TWO_CLIENT) {}
 
   // Adds |num_urls| new unique bookmarks to the bookmark bar for |profile|.
   void AddURLs(int profile, int num_urls);
@@ -47,8 +44,8 @@ class BookmarksSyncPerfTest : public SyncTest {
   // Returns a new unique bookmark title.
   std::string NextIndexedURLTitle();
 
-  int url_number_;
-  int url_title_number_;
+  int url_number_ = 0;
+  int url_title_number_ = 0;
   DISALLOW_COPY_AND_ASSIGN(BookmarksSyncPerfTest);
 };
 

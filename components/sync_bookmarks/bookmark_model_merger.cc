@@ -273,9 +273,9 @@ void BookmarkModelMerger::MergeSubtree(
   }
   // At this point all the children nodes of the parent sync node have
   // corresponding children in the parent bookmark node and they are all in the
-  // right positions: from 0 to |updates_tree_.at(remote_update).size() - 1|. So
-  // the children starting from index |updates_tree_.at(remote_update).size()|
-  // in the parent bookmark node are the ones that are not present in the parent
+  // right positions: from 0 to updates_tree_.at(remote_update).size() - 1. So
+  // the children starting from index updates_tree_.at(remote_update).size() in
+  // the parent bookmark node are the ones that are not present in the parent
   // sync node and tracked yet. So create all of the remaining local nodes.
   const int index_of_new_local_nodes =
       updates_tree_.count(remote_update) > 0

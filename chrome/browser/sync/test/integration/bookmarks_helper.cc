@@ -787,12 +787,10 @@ void ReverseChildOrder(int profile, const BookmarkNode* parent) {
       parent)
       << "Node " << parent->GetTitle() << " does not belong to "
       << "Profile " << profile;
-  int child_count = parent->child_count();
-  if (child_count <= 0)
+  if (parent->children().empty())
     return;
-  for (int index = 0; index < child_count; ++index) {
-    Move(profile, parent->GetChild(index), parent, child_count - index);
-  }
+  for (int i = 0; i < parent->child_count(); ++i)
+    Move(profile, parent->GetChild(i), parent, parent->child_count() - i);
 }
 
 bool ModelMatchesVerifier(int profile) {
@@ -935,23 +933,23 @@ gfx::Image Create1xFaviconFromPNGFile(const std::string& path) {
 }
 
 std::string IndexedURL(int i) {
-  return base::StringPrintf("http://www.host.ext:1234/path/filename/%d", i);
+  return "http://www.host.ext:1234/path/filename/" + base::NumberToString(i);
 }
 
 std::string IndexedURLTitle(int i) {
-  return base::StringPrintf("URL Title %d", i);
+  return "URL Title " + base::NumberToString(i);
 }
 
 std::string IndexedFolderName(int i) {
-  return base::StringPrintf("Folder Name %d", i);
+  return "Folder Name " + base::NumberToString(i);
 }
 
 std::string IndexedSubfolderName(int i) {
-  return base::StringPrintf("Subfolder Name %d", i);
+  return "Subfolder Name " + base::NumberToString(i);
 }
 
 std::string IndexedSubsubfolderName(int i) {
-  return base::StringPrintf("Subsubfolder Name %d", i);
+  return "Subsubfolder Name " + base::NumberToString(i);
 }
 
 std::unique_ptr<syncer::LoopbackServerEntity> CreateBookmarkServerEntity(

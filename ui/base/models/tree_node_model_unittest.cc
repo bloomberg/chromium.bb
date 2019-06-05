@@ -19,11 +19,8 @@ namespace ui {
 
 class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
  public:
-  TreeNodeModelTest()
-      : added_count_(0),
-        removed_count_(0),
-        changed_count_(0) {}
-  ~TreeNodeModelTest() override {}
+  TreeNodeModelTest() = default;
+  ~TreeNodeModelTest() override = default;
 
  protected:
   std::string GetObserverCountStateAndClear() {
@@ -51,9 +48,9 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
     changed_count_++;
   }
 
-  int added_count_;
-  int removed_count_;
-  int changed_count_;
+  int added_count_ = 0;
+  int removed_count_ = 0;
+  int changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TreeNodeModelTest);
 };

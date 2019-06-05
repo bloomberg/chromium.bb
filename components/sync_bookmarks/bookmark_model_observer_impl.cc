@@ -292,8 +292,9 @@ syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
   const SyncedBookmarkTracker::Entity* successor_entity = nullptr;
 
   // Look for the first tracked predecessor.
-  for (int i = index - 1; i >= 0; i--) {
-    const bookmarks::BookmarkNode* predecessor_node = parent.GetChild(i);
+  for (auto i = parent.children().crend() - index;
+       i != parent.children().crend(); ++i) {
+    const bookmarks::BookmarkNode* predecessor_node = i->get();
     predecessor_entity =
         bookmark_tracker_->GetEntityForBookmarkNode(predecessor_node);
     if (predecessor_entity) {
@@ -302,8 +303,9 @@ syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
   }
 
   // Look for the first tracked successor.
-  for (int i = index + 1; i < parent.child_count(); i++) {
-    const bookmarks::BookmarkNode* successor_node = parent.GetChild(i);
+  for (auto i = parent.children().cbegin() + index + 1;
+       i != parent.children().cend(); ++i) {
+    const bookmarks::BookmarkNode* successor_node = i->get();
     successor_entity =
         bookmark_tracker_->GetEntityForBookmarkNode(successor_node);
     if (successor_entity) {

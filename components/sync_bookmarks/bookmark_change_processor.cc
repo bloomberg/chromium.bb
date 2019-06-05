@@ -250,12 +250,9 @@ void BookmarkChangeProcessor::CreateOrUpdateSyncNode(const BookmarkNode* node) {
     } else {
       const BookmarkNode* parent = node->parent();
       int index = parent->GetIndexOf(node);
-      sync_id = CreateSyncNode(parent,
-                               bookmark_model_,
-                               index,
-                               &trans,
-                               model_associator_,
-                               error_handler());
+      DCHECK_NE(-1, index);
+      sync_id = CreateSyncNode(parent, bookmark_model_, index, &trans,
+                               model_associator_, error_handler());
     }
   }
 
@@ -387,8 +384,10 @@ void BookmarkChangeProcessor::BookmarkMetaInfoChanged(
 }
 
 void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
-      const BookmarkNode* old_parent, int old_index,
-      const BookmarkNode* new_parent, int new_index) {
+                                                const BookmarkNode* old_parent,
+                                                int old_index,
+                                                const BookmarkNode* new_parent,
+                                                int new_index) {
   const BookmarkNode* child = new_parent->GetChild(new_index);
 
   if (!CanSyncNode(child))
@@ -507,9 +506,13 @@ void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
 }
 
 // static
-bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
-      const BookmarkNode* parent, int index, syncer::WriteTransaction* trans,
-      syncer::WriteNode* dst, BookmarkModelAssociator* associator) {
+bool BookmarkChangeProcessor::PlaceSyncNode(
+    MoveOrCreate operation,
+    const BookmarkNode* parent,
+    int index,
+    syncer::WriteTransaction* trans,
+    syncer::WriteNode* dst,
+    BookmarkModelAssociator* associator) {
   syncer::ReadNode sync_parent(trans);
   if (!associator->InitSyncNodeFromChromeId(parent->id(), &sync_parent)) {
     LOG(WARNING) << "Parent lookup failed";
