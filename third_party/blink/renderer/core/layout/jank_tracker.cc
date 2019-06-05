@@ -71,9 +71,8 @@ static bool SmallerThanRegionGranularity(const FloatRect& rect,
          rect.Height() * granularity_scale < 0.5;
 }
 
-static const TransformPaintPropertyNode& TransformNodeFor(
-    LayoutObject& object) {
-  return object.FirstFragment().LocalBorderBoxProperties().Transform();
+static const PropertyTreeState PropertyTreeStateFor(LayoutObject& object) {
+  return object.FirstFragment().LocalBorderBoxProperties();
 }
 
 static void RegionToTracedValue(const Region& region,
@@ -150,14 +149,41 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
   if (source.IsSVG())
     return;
 
-  const auto& local_xform = TransformNodeFor(painting_layer.GetLayoutObject());
-  const auto& root_xform = TransformNodeFor(*source.View());
+  const auto local_state =
+      PropertyTreeStateFor(painting_layer.GetLayoutObject());
+  const auto root_state = PropertyTreeStateFor(*source.View());
 
-  GeometryMapper::SourceToDestinationRect(local_xform, root_xform, old_rect);
-  GeometryMapper::SourceToDestinationRect(local_xform, root_xform, new_rect);
+  FloatClipRect clip_rect =
+      GeometryMapper::LocalToAncestorClipRect(local_state, root_state);
 
-  if (!old_rect.Intersects(viewport) && !new_rect.Intersects(viewport))
+  // If the clip region is empty, then the resulting layout shift isn't visible
+  // in the viewport so ignore it.
+  if (!clip_rect.IsInfinite() && clip_rect.Rect().IsEmpty())
     return;
+
+  GeometryMapper::SourceToDestinationRect(local_state.Transform(),
+                                          root_state.Transform(), old_rect);
+  GeometryMapper::SourceToDestinationRect(local_state.Transform(),
+                                          root_state.Transform(), new_rect);
+
+  FloatRect clipped_old_rect(old_rect), clipped_new_rect(new_rect);
+  if (!clip_rect.IsInfinite()) {
+    clipped_old_rect.Intersect(clip_rect.Rect());
+    clipped_new_rect.Intersect(clip_rect.Rect());
+  }
+
+  IntRect visible_old_rect = RoundedIntRect(clipped_old_rect);
+  visible_old_rect.Intersect(viewport);
+  IntRect visible_new_rect = RoundedIntRect(clipped_new_rect);
+  visible_new_rect.Intersect(viewport);
+
+  if (visible_old_rect.IsEmpty() && visible_new_rect.IsEmpty())
+    return;
+
+  // Compute move distance based on unclipped rects, to accurately determine how
+  // much the element moved.
+  float move_distance = GetMoveDistance(old_rect, new_rect, source);
+  frame_max_distance_ = std::max(frame_max_distance_, move_distance);
 
 #if DCHECK_IS_ON()
   LocalFrame& frame = frame_view_->GetFrame();
@@ -165,18 +191,11 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
     DVLOG(2) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
              << frame.GetDocument()->Url().GetString() << ", "
              << source.DebugName() << " moved from " << old_rect.ToString()
-             << " to " << new_rect.ToString();
+             << " to " << new_rect.ToString() << " (visible from "
+             << visible_old_rect.ToString() << " to "
+             << visible_new_rect.ToString() << ")";
   }
 #endif
-
-  frame_max_distance_ = std::max(frame_max_distance_,
-                                 GetMoveDistance(old_rect, new_rect, source));
-
-  IntRect visible_old_rect = RoundedIntRect(old_rect);
-  visible_old_rect.Intersect(viewport);
-
-  IntRect visible_new_rect = RoundedIntRect(new_rect);
-  visible_new_rect.Intersect(viewport);
 
   visible_old_rect.Scale(scale);
   visible_new_rect.Scale(scale);
