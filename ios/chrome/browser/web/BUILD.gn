@@ -381,7 +381,9 @@ source_set("eg2_tests") {
   ]
   testonly = true
 
-  sources = []
+  sources = [
+    "error_page_egtest.mm",
+  ]
 
   deps = [
     "//components/content_settings/core/common",
