@@ -3903,6 +3903,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kSplitSettings)},
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS)
+    {"gesture-properties-dbus-service",
+     flag_descriptions::kEnableGesturePropertiesDBusServiceName,
+     flag_descriptions::kEnableGesturePropertiesDBusServiceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kGesturePropertiesDBusService)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

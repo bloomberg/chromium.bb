@@ -3009,6 +3009,12 @@ const char kEnableEncryptionMigrationDescription[] =
     "If enabled and the device supports ARC, the user will be asked to update "
     "the encryption of user data when the user signs in.";
 
+const char kEnableGesturePropertiesDBusServiceName[] =
+    "Enable gesture properties D-Bus service";
+const char kEnableGesturePropertiesDBusServiceDescription[] =
+    "Enable a D-Bus service for accessing gesture properties, which are used "
+    "to configure input devices.";
+
 const char kEnableGoogleAssistantName[] = "Enable Google Assistant";
 const char kEnableGoogleAssistantDescription[] =
     "Enable an experimental Assistant implementation that will work on all "

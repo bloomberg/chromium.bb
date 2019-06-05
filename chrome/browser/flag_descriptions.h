@@ -1798,6 +1798,9 @@ extern const char kEnableDriveFsDescription[];
 extern const char kEnableEncryptionMigrationName[];
 extern const char kEnableEncryptionMigrationDescription[];
 
+extern const char kEnableGesturePropertiesDBusServiceName[];
+extern const char kEnableGesturePropertiesDBusServiceDescription[];
+
 extern const char kEnableGoogleAssistantName[];
 extern const char kEnableGoogleAssistantDescription[];
 

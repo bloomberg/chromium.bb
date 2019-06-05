@@ -80,6 +80,10 @@ const base::Feature kEnableSupervisionTransitionScreens{
 const base::Feature kFsNosymfollow{"FsNosymfollow",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable a D-Bus service for accessing gesture properties.
+const base::Feature kGesturePropertiesDBusService{
+    "GesturePropertiesDBusService", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable Unified Input Logic for FST decocder in the IME extension
 // on Chrome OS.
 const base::Feature kImeInputLogicFst{"ImeInputLogicFst",

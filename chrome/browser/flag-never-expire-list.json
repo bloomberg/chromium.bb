@@ -59,6 +59,7 @@
   "force-text-direction",
   "force-ui-direction",
   "force-update-menu-type",
+  "gesture-properties-dbus-service",
   "ignore-gpu-blacklist",
   "ignore-previews-blocklist",
   "in-product-help-demo-mode-choice",
