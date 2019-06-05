@@ -1265,6 +1265,9 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
 
 ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     ShelfVisibilityState visibility_state) const {
+  if (is_auto_hide_state_locked_)
+    return state_.auto_hide_state;
+
   // Shelf is not available before login.
   // TODO(crbug.com/701157): Remove this when the login webui fake-shelf is
   // replaced with views.

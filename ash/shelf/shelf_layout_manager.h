@@ -184,6 +184,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
     return state_.visibility_state;
   }
 
+  void LockAutoHideState(bool lock_auto_hide_state) {
+    is_auto_hide_state_locked_ = lock_auto_hide_state;
+  }
+
   bool is_status_area_visible() const { return state_.is_status_area_visible; }
 
   // Returns whether status area is shown without the shelf.
@@ -523,6 +527,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Location of the most recent mouse drag event in screen coordinate.
   gfx::Point last_mouse_drag_position_;
+
+  // When it is true, |CalculateAutoHideState| returns the current auto hide
+  // state.
+  bool is_auto_hide_state_locked_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

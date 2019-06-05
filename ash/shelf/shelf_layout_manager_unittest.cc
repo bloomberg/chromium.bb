@@ -24,6 +24,7 @@
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
@@ -34,8 +35,10 @@
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -57,6 +60,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -2860,6 +2864,49 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnMouseMove) {
   generator->MoveMouseTo(1, display.bounds().bottom() - 1);
   ASSERT_FALSE(TriggerAutoHideTimeout());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+}
+
+// Verifies that after showing the system tray by shortcut, the shelf item still
+// responds to the gesture event. (see https://crbug.com/921182)
+TEST_F(ShelfLayoutManagerTest, ShelfItemRespondToGestureEvent) {
+  // Prepare for the auto-hide shelf test.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  Shelf* shelf = GetPrimaryShelf();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(0, 0);
+
+  // Add ShelfItem.
+  ShelfController* controller = Shell::Get()->shelf_controller();
+  const std::string app_id("app_id");
+  ShelfItem item;
+  item.type = TYPE_APP;
+  item.id = ShelfID(app_id);
+  const int index = controller->model()->Add(item);
+
+  // Turn on the auto-hide mode for shelf. Check the initial states.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  layout_manager->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Show the system tray with the shortcut. Expect that the shelf is shown
+  // after triggering the accelerator.
+  generator->PressKey(ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  generator->ReleaseKey(ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Tap on the shelf button. Expect that the shelf button responds to gesture
+  // events.
+  base::UserActionTester user_action_tester;
+  user_action_tester.ResetCounts();
+  auto shelf_test_api = std::make_unique<ShelfViewTestAPI>(
+      GetPrimaryShelf()->GetShelfViewForTesting());
+  views::View* shelf_view = shelf_test_api->GetViewAt(index);
+  gfx::Point shelf_btn_center = shelf_view->GetBoundsInScreen().CenterPoint();
+  generator->GestureTapAt(shelf_btn_center);
+  EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_ClickOnApp"));
 }
 
 // Tests the auto-hide shelf status with mouse events.

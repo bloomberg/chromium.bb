@@ -24,6 +24,7 @@ class ShelfBezelEventHandler : public ui::EventHandler {
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
  private:
   bool IsShelfOnBezel(const gfx::Rect& screen, const gfx::Point& point) const;

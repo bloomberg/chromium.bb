@@ -5,6 +5,8 @@
 #include "ash/shelf/shelf_bezel_event_handler.h"
 
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -49,6 +51,27 @@ void ShelfBezelEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       }
       event->StopPropagation();
     }
+  }
+}
+
+void ShelfBezelEventHandler::OnTouchEvent(ui::TouchEvent* event) {
+  if (shelf_->auto_hide_behavior() != SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
+    return;
+
+  // The event target should be the shelf widget.
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  if (target != Shelf::ForWindow(target)->shelf_widget()->GetNativeView())
+    return;
+
+  // The touch-pressing event may hide the shelf. Lock the shelf's auto hide
+  // state to give the shelf a chance to handle the touch event before it being
+  // hidden.
+  ShelfLayoutManager* shelf_layout_manager = shelf_->shelf_layout_manager();
+  if (event->type() == ui::ET_TOUCH_PRESSED && shelf_->IsVisible()) {
+    shelf_layout_manager->LockAutoHideState(true);
+  } else if (event->type() == ui::ET_TOUCH_RELEASED ||
+             event->type() == ui::ET_TOUCH_CANCELLED) {
+    shelf_layout_manager->LockAutoHideState(false);
   }
 }
 
