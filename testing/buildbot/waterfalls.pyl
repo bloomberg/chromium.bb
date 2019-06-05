@@ -30,7 +30,7 @@
       'linux-archive-rel': {
         'mixins': [
           'linux-archive-rel-args',
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -1324,7 +1324,7 @@
       },
       'Linux ARM': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
           'arm_tester',
         ],
         'test_suites': {
@@ -1443,7 +1443,7 @@
       },
       'Mojo Linux': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'mojo_linux_gtests',
@@ -1470,7 +1470,7 @@
       },
       'VR Linux': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'vr_common_perftests',
@@ -1736,7 +1736,7 @@
       },
       'linux-annotator-rel': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
@@ -1744,7 +1744,7 @@
       },
       'linux-blink-animation-use-time-delta': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -1756,7 +1756,7 @@
       },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
@@ -1768,7 +1768,7 @@
       },
       'linux-blink-heap-unified-gc': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
@@ -1780,7 +1780,7 @@
       },
       'linux-blink-heap-verification': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
@@ -1847,7 +1847,7 @@
       'linux-code-coverage': {
         'mixins': [
           'code-coverage',
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',
@@ -3371,7 +3371,7 @@
       },
       'Leak Detection Linux': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'isolated_scripts': 'leak_detection_isolated_scripts',
@@ -3379,7 +3379,7 @@
       },
       'Linux Builder': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all'
@@ -3403,7 +3403,7 @@
       # linux-rel or ended up not being able to fold.
       'Linux Builder Code Coverage': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
           'code-coverage',
         ],
         'additional_compile_targets': [
@@ -3425,7 +3425,7 @@
       },
       'Linux Tests (dbg)(1)': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -3434,7 +3434,7 @@
       },
       'Linux Tests (dbg)(1)(32)': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -3445,7 +3445,7 @@
       # linux-rel or ended up not being able to fold.
       'Linux Tests Code Coverage': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
           'code-coverage',
         ],
         'test_suites': {
@@ -3715,7 +3715,7 @@
       },
       'Linux ASan Tests (sandboxed)': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'sandboxed_chromium_memory_linux_gtests',
@@ -3757,7 +3757,7 @@
       },
       'Linux MSan Tests': {
         'mixins': [
-          'linux-xenial',
+          'linux-trusty',
           'x86-64',
         ],
         'test_suites': {
@@ -4397,7 +4397,7 @@
       'linux-coverage-rel': {
         'mixins': [
           'code-coverage',
-          'linux-xenial',
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',
