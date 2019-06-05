@@ -83,6 +83,7 @@ extern const base::Feature kIntentBlockExternalFormRedirectsNoGesture;
 extern const base::Feature kJellyBeanSupported;
 extern const base::Feature kLanguagesPreference;
 extern const base::Feature kNewPhotoPicker;
+extern const base::Feature kNotificationSuspender;
 extern const base::Feature kNoCreditCardAbort;
 extern const base::Feature kNTPButton;
 extern const base::Feature kNTPLaunchAfterInactivity;

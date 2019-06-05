@@ -14,12 +14,14 @@ import java.util.List;
  * Class that tracks which sites are currently suspended.
  */
 public class SuspensionTracker {
-    private UsageStatsBridge mBridge;
-    private Promise<List<String>> mRootPromise;
+    private final UsageStatsBridge mBridge;
+    private final NotificationSuspender mNotificationSuspender;
+    private final Promise<List<String>> mRootPromise;
     private Promise<Void> mWritePromise;
 
-    public SuspensionTracker(UsageStatsBridge bridge) {
+    public SuspensionTracker(UsageStatsBridge bridge, NotificationSuspender notificationSuspender) {
         mBridge = bridge;
+        mNotificationSuspender = notificationSuspender;
         mRootPromise = new Promise<>();
         mBridge.getAllSuspensions((result) -> { mRootPromise.fulfill(result); });
         mWritePromise = Promise.fulfilled(null);
@@ -55,7 +57,7 @@ public class SuspensionTracker {
                                 } else {
                                     result.removeAll(fqdns);
                                 }
-
+                                mNotificationSuspender.setWebsitesSuspended(fqdns, suspended);
                                 newWritePromise.fulfill(null);
                             } else {
                                 newWritePromise.reject();

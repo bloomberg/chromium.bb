@@ -2585,6 +2585,7 @@ jumbo_split_static_library("browser") {
       "android/trusted_cdn.cc",
       "android/trusted_cdn.h",
       "android/url_utilities.cc",
+      "android/usage_stats/notification_suspender.cc",
       "android/usage_stats/usage_stats_bridge.cc",
       "android/usage_stats/usage_stats_bridge.h",
       "android/usage_stats/usage_stats_database.cc",

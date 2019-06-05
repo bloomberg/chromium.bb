@@ -145,6 +145,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kIntentBlockExternalFormRedirectsNoGesture,
     &kJellyBeanSupported,
     &kNewPhotoPicker,
+    &kNotificationSuspender,
     &kNoCreditCardAbort,
     &kNTPButton,
     &kNTPLaunchAfterInactivity,
@@ -451,6 +452,11 @@ const base::Feature kSearchEnginePromoNewDevice{
 
 const base::Feature kNewPhotoPicker{"NewPhotoPicker",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// TODO(knollr): This is a temporary kill switch, it can be removed once we feel
+// okay about leaving it on.
+const base::Feature kNotificationSuspender{"NotificationSuspender",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
                                        base::FEATURE_ENABLED_BY_DEFAULT};

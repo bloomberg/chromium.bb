@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.usage_stats.NotificationSuspender;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkServiceClient;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -62,7 +63,7 @@ public class NotificationPlatformBridge {
     // We always use the same integer id when showing and closing notifications. The notification
     // tag is always set, which is a safe and sufficient way of identifying a notification, so the
     // integer id is not needed anymore except it must not vary in an uncontrolled way.
-    @VisibleForTesting static final int PLATFORM_ID = -1;
+    public static final int PLATFORM_ID = -1;
 
     // We always use the same request code for pending intents. We use other ways to force
     // uniqueness of pending intents when necessary.
@@ -383,8 +384,7 @@ public class NotificationPlatformBridge {
      * tag, or if the notification tag didn't match the expected format.
      */
     @Nullable
-    @VisibleForTesting
-    static String getOriginFromNotificationTag(@Nullable String tag) {
+    public static String getOriginFromNotificationTag(@Nullable String tag) {
         if (tag == null
                 || !tag.startsWith(NotificationConstants.PERSISTENT_NOTIFICATION_TAG_PREFIX
                            + NotificationConstants.NOTIFICATION_TAG_SEPARATOR))
@@ -538,11 +538,16 @@ public class NotificationPlatformBridge {
 
         ChromeNotification notification =
                 buildNotification(notificationBuilder, notificationId, origin, actions, image);
-        // Display notification as Chrome.
-        mNotificationManager.notify(notification);
-        NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.SITES,
-                notification.getNotification());
+
+        // Store notification if its origin is suspended.
+        NotificationSuspender.maybeSuspendNotification(notification).then((suspended) -> {
+            if (suspended) return;
+            // Display notification as Chrome.
+            mNotificationManager.notify(notification);
+            NotificationUmaTracker.getInstance().onNotificationShown(
+                    NotificationUmaTracker.SystemNotificationType.SITES,
+                    notification.getNotification());
+        });
     }
 
     private NotificationBuilderBase prepareNotificationBuilder(String notificationId, String origin,
