@@ -52,7 +52,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
 
   void Initialize(OverlayMode overlay_mode, InitCb init_cb) override;
   void SetSurfaceBundle(
-      scoped_refptr<AVDASurfaceBundle> surface_bundle) override;
+      scoped_refptr<CodecSurfaceBundle> surface_bundle) override;
   void CreateVideoFrame(
       std::unique_ptr<CodecOutputBuffer> output_buffer,
       base::TimeDelta timestamp,

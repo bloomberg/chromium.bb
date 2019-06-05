@@ -6,20 +6,20 @@
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
-#include "media/gpu/android/avda_surface_bundle.h"
+#include "media/gpu/android/codec_surface_bundle.h"
 
 namespace media {
 
 CodecImageGroup::CodecImageGroup(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_refptr<AVDASurfaceBundle> surface_bundle)
+    scoped_refptr<CodecSurfaceBundle> surface_bundle)
     : surface_bundle_(std::move(surface_bundle)), weak_this_factory_(this) {
   // If the surface bundle has an overlay, then register for destruction
   // callbacks.  We thread-hop to the right thread, which means that we might
   // find out about destruction asynchronously.  Remember that the wp will be
   // cleared on |task_runner|.
-  if (surface_bundle_->overlay) {
-    surface_bundle_->overlay->AddSurfaceDestroyedCallback(base::BindOnce(
+  if (surface_bundle_->overlay()) {
+    surface_bundle_->overlay()->AddSurfaceDestroyedCallback(base::BindOnce(
         [](scoped_refptr<base::SequencedTaskRunner> task_runner,
            base::OnceCallback<void(AndroidOverlay*)> cb,
            AndroidOverlay* overlay) -> void {

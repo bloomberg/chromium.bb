@@ -59,7 +59,7 @@ class MockClient : public CodecAllocatorClient {
   MOCK_METHOD1(OnCodecConfiguredMock, void(MediaCodecBridge* media_codec));
   void OnCodecConfigured(
       std::unique_ptr<MediaCodecBridge> media_codec,
-      scoped_refptr<AVDASurfaceBundle> surface_bundle) override {
+      scoped_refptr<CodecSurfaceBundle> surface_bundle) override {
     media_codec_ = std::move(media_codec);
     OnCodecConfiguredMock(media_codec.get());
     codec_arrived_event_.Signal();
@@ -138,7 +138,7 @@ class CodecAllocatorTest : public testing::Test {
                       allocator->WaitForPendingReleaseForTesting(overlay);
                       return true;
                     },
-                    allocator_, surface_bundle_->overlay.get()));
+                    allocator_, surface_bundle_->overlay()));
   }
 
  protected:
@@ -171,7 +171,7 @@ class CodecAllocatorTest : public testing::Test {
     scoped_refptr<CodecConfig> codec_config(new CodecConfig);
     ON_CALL(*overlay, GetJavaSurface())
         .WillByDefault(ReturnRef(null_java_ref_));
-    surface_bundle_ = new AVDASurfaceBundle(std::move(overlay));
+    surface_bundle_ = new CodecSurfaceBundle(std::move(overlay));
   }
 
   void TearDown() override {
@@ -280,7 +280,7 @@ class CodecAllocatorTest : public testing::Test {
   NiceMock<MockClient>* avda3_ = &client3_;
 
   // Surface bundle that has an overlay.
-  scoped_refptr<AVDASurfaceBundle> surface_bundle_;
+  scoped_refptr<CodecSurfaceBundle> surface_bundle_;
   base::android::JavaRef<jobject> null_java_ref_;
 };
 

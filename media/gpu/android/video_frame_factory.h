@@ -21,8 +21,8 @@ class CommandBufferStub;
 
 namespace media {
 
-struct AVDASurfaceBundle;
 class CodecOutputBuffer;
+class CodecSurfaceBundle;
 class TextureOwner;
 class VideoFrame;
 
@@ -60,7 +60,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
   // Notify us about the current surface bundle that subsequent video frames
   // should use.
   virtual void SetSurfaceBundle(
-      scoped_refptr<AVDASurfaceBundle> surface_bundle) = 0;
+      scoped_refptr<CodecSurfaceBundle> surface_bundle) = 0;
 
   // Creates a new VideoFrame backed by |output_buffer|.  Runs |output_cb| on
   // the calling sequence to return the frame.

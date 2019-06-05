@@ -26,7 +26,7 @@
 #include "media/base/android/media_crypto_context.h"
 #include "media/base/media.h"
 #include "media/base/video_codecs.h"
-#include "media/gpu/android/avda_surface_bundle.h"
+#include "media/gpu/android/codec_surface_bundle.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -54,7 +54,7 @@ class MEDIA_GPU_EXPORT CodecConfig
   VideoCodec codec = kUnknownVideoCodec;
 
   // The surface that MediaCodec is configured to output to.
-  scoped_refptr<AVDASurfaceBundle> surface_bundle;
+  scoped_refptr<CodecSurfaceBundle> surface_bundle;
 
   // The MediaCrypto that MediaCodec is configured with for an encrypted stream.
   JavaObjectPtr media_crypto;
@@ -110,7 +110,7 @@ class CodecAllocatorClient {
   // |media_codec| will be null if configuration failed.
   virtual void OnCodecConfigured(
       std::unique_ptr<MediaCodecBridge> media_codec,
-      scoped_refptr<AVDASurfaceBundle> surface_bundle) = 0;
+      scoped_refptr<CodecSurfaceBundle> surface_bundle) = 0;
 
  protected:
   ~CodecAllocatorClient() {}
@@ -161,7 +161,7 @@ class MEDIA_GPU_EXPORT CodecAllocator {
   // that it outlives |media_codec|.
   virtual void ReleaseMediaCodec(
       std::unique_ptr<MediaCodecBridge> media_codec,
-      scoped_refptr<AVDASurfaceBundle> surface_bundle);
+      scoped_refptr<CodecSurfaceBundle> surface_bundle);
 
   // Return true if and only if there is any AVDA registered.
   bool IsAnyRegisteredAVDA();
@@ -186,10 +186,10 @@ class MEDIA_GPU_EXPORT CodecAllocator {
   // destruction to the right thread.
   struct MediaCodecAndSurface {
     MediaCodecAndSurface(std::unique_ptr<MediaCodecBridge> media_codec,
-                         scoped_refptr<AVDASurfaceBundle> surface_bundle);
+                         scoped_refptr<CodecSurfaceBundle> surface_bundle);
     ~MediaCodecAndSurface();
     std::unique_ptr<MediaCodecBridge> media_codec;
-    scoped_refptr<AVDASurfaceBundle> surface_bundle;
+    scoped_refptr<CodecSurfaceBundle> surface_bundle;
   };
 
   // Forward |media_codec|, which is configured to output to |surface_bundle|,
@@ -200,7 +200,7 @@ class MEDIA_GPU_EXPORT CodecAllocator {
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       base::WeakPtr<CodecAllocatorClient> client,
       TaskType task_type,
-      scoped_refptr<AVDASurfaceBundle> surface_bundle,
+      scoped_refptr<CodecSurfaceBundle> surface_bundle,
       std::unique_ptr<MediaCodecBridge> media_codec);
 
   // Forward |surface_bundle| and |media_codec| to |client| on the right thread
@@ -262,7 +262,7 @@ class MEDIA_GPU_EXPORT CodecAllocator {
   // |surface_bundle| is the surface bundle that the codec was using. It's
   // important to pass this through to ensure a) it outlives the codec, and b)
   // it's deleted on the right thread.
-  void OnMediaCodecReleased(scoped_refptr<AVDASurfaceBundle> surface_bundle);
+  void OnMediaCodecReleased(scoped_refptr<CodecSurfaceBundle> surface_bundle);
 
   // Stop the thread indicated by |index|. This signals stop_event_for_testing_
   // after both threads are stopped.

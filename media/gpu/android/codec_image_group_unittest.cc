@@ -12,7 +12,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "media/base/android/mock_android_overlay.h"
-#include "media/gpu/android/avda_surface_bundle.h"
+#include "media/gpu/android/codec_surface_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +24,7 @@ class CodecImageGroupWithDestructionHook : public CodecImageGroup {
  public:
   CodecImageGroupWithDestructionHook(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_refptr<AVDASurfaceBundle> surface_bundle)
+      scoped_refptr<CodecSurfaceBundle> surface_bundle)
       : CodecImageGroup(std::move(task_runner), std::move(surface_bundle)) {}
 
   void SetDestructionCallback(base::OnceClosure cb) {
@@ -67,11 +67,11 @@ class CodecImageGroupTest : public testing::Test {
   void TearDown() override {}
 
   struct Record {
-    scoped_refptr<AVDASurfaceBundle> surface_bundle;
+    scoped_refptr<CodecSurfaceBundle> surface_bundle;
     scoped_refptr<CodecImageGroupWithDestructionHook> image_group;
 
     MockAndroidOverlay* overlay() const {
-      return static_cast<MockAndroidOverlay*>(surface_bundle->overlay.get());
+      return static_cast<MockAndroidOverlay*>(surface_bundle->overlay());
     }
   };
 
@@ -82,7 +82,7 @@ class CodecImageGroupTest : public testing::Test {
     EXPECT_CALL(*overlay.get(), MockAddSurfaceDestroyedCallback());
     Record rec;
     rec.surface_bundle =
-        base::MakeRefCounted<AVDASurfaceBundle>(std::move(overlay));
+        base::MakeRefCounted<CodecSurfaceBundle>(std::move(overlay));
     rec.image_group = base::MakeRefCounted<CodecImageGroupWithDestructionHook>(
         gpu_task_runner_, rec.surface_bundle);
 
@@ -118,8 +118,8 @@ TEST_F(CodecImageGroupTest, GroupRegistersForOverlayDestruction) {
 TEST_F(CodecImageGroupTest, SurfaceBundleWithoutOverlayDoesntCrash) {
   // Make sure that it's okay not to have an overlay.  CodecImageGroup should
   // handle ST surface bundles without crashing.
-  scoped_refptr<AVDASurfaceBundle> surface_bundle =
-      base::MakeRefCounted<AVDASurfaceBundle>();
+  scoped_refptr<CodecSurfaceBundle> surface_bundle =
+      base::MakeRefCounted<CodecSurfaceBundle>();
   scoped_refptr<CodecImageGroup> image_group =
       base::MakeRefCounted<CodecImageGroup>(gpu_task_runner_, surface_bundle);
   // TODO(liberato): we should also make sure that adding an image doesn't call

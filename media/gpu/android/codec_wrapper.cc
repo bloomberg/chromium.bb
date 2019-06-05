@@ -40,8 +40,8 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   bool IsDrained() const;
   bool SupportsFlush(DeviceInfo* device_info) const;
   bool Flush();
-  bool SetSurface(scoped_refptr<AVDASurfaceBundle> surface_bundle);
-  scoped_refptr<AVDASurfaceBundle> SurfaceBundle();
+  bool SetSurface(scoped_refptr<CodecSurfaceBundle> surface_bundle);
+  scoped_refptr<CodecSurfaceBundle> SurfaceBundle();
   QueueStatus QueueInputBuffer(const DecoderBuffer& buffer,
                                const EncryptionScheme& encryption_scheme);
   DequeueStatus DequeueOutputBuffer(
@@ -74,7 +74,7 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   std::unique_ptr<MediaCodecBridge> codec_;
 
   // The currently configured surface.
-  scoped_refptr<AVDASurfaceBundle> surface_bundle_;
+  scoped_refptr<CodecSurfaceBundle> surface_bundle_;
 
   // Buffer ids are unique for a given CodecWrapper and map to MediaCodec buffer
   // indices.
@@ -359,7 +359,7 @@ CodecWrapperImpl::DequeueStatus CodecWrapperImpl::DequeueOutputBuffer(
 }
 
 bool CodecWrapperImpl::SetSurface(
-    scoped_refptr<AVDASurfaceBundle> surface_bundle) {
+    scoped_refptr<CodecSurfaceBundle> surface_bundle) {
   DVLOG(2) << __func__;
   base::AutoLock l(lock_);
   DCHECK(surface_bundle);
@@ -373,7 +373,7 @@ bool CodecWrapperImpl::SetSurface(
   return true;
 }
 
-scoped_refptr<AVDASurfaceBundle> CodecWrapperImpl::SurfaceBundle() {
+scoped_refptr<CodecSurfaceBundle> CodecWrapperImpl::SurfaceBundle() {
   base::AutoLock l(lock_);
   return surface_bundle_;
 }
@@ -487,11 +487,12 @@ CodecWrapper::DequeueStatus CodecWrapper::DequeueOutputBuffer(
                                     codec_buffer);
 }
 
-bool CodecWrapper::SetSurface(scoped_refptr<AVDASurfaceBundle> surface_bundle) {
+bool CodecWrapper::SetSurface(
+    scoped_refptr<CodecSurfaceBundle> surface_bundle) {
   return impl_->SetSurface(std::move(surface_bundle));
 }
 
-scoped_refptr<AVDASurfaceBundle> CodecWrapper::SurfaceBundle() {
+scoped_refptr<CodecSurfaceBundle> CodecWrapper::SurfaceBundle() {
   return impl_->SurfaceBundle();
 }
 

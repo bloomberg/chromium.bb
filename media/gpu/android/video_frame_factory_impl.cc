@@ -119,7 +119,7 @@ void VideoFrameFactoryImpl::Initialize(OverlayMode overlay_mode,
 }
 
 void VideoFrameFactoryImpl::SetSurfaceBundle(
-    scoped_refptr<AVDASurfaceBundle> surface_bundle) {
+    scoped_refptr<CodecSurfaceBundle> surface_bundle) {
   scoped_refptr<CodecImageGroup> image_group;
   if (!surface_bundle) {
     // Clear everything, just so we're not holding a reference.
@@ -127,7 +127,7 @@ void VideoFrameFactoryImpl::SetSurfaceBundle(
   } else {
     // If |surface_bundle| is using a TextureOwner, then get it.
     texture_owner_ =
-        surface_bundle->overlay ? nullptr : surface_bundle->texture_owner_;
+        surface_bundle->overlay() ? nullptr : surface_bundle->texture_owner();
 
     // Start a new image group.  Note that there's no reason that we can't have
     // more than one group per surface bundle; it's okay if we're called

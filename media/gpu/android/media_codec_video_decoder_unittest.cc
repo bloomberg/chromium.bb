@@ -59,7 +59,7 @@ struct DestructionObservableMCVD : public DestructionObservable,
 class MockVideoFrameFactory : public VideoFrameFactory {
  public:
   MOCK_METHOD2(Initialize, void(OverlayMode overlay_mode, InitCb init_cb));
-  MOCK_METHOD1(MockSetSurfaceBundle, void(scoped_refptr<AVDASurfaceBundle>));
+  MOCK_METHOD1(MockSetSurfaceBundle, void(scoped_refptr<CodecSurfaceBundle>));
   MOCK_METHOD5(
       MockCreateVideoFrame,
       void(CodecOutputBuffer* raw_output_buffer,
@@ -72,13 +72,13 @@ class MockVideoFrameFactory : public VideoFrameFactory {
   MOCK_METHOD0(CancelPendingCallbacks, void());
 
   void SetSurfaceBundle(
-      scoped_refptr<AVDASurfaceBundle> surface_bundle) override {
+      scoped_refptr<CodecSurfaceBundle> surface_bundle) override {
     MockSetSurfaceBundle(surface_bundle);
     if (!surface_bundle) {
       texture_owner_ = nullptr;
     } else {
       texture_owner_ =
-          surface_bundle->overlay ? nullptr : surface_bundle->texture_owner_;
+          surface_bundle->overlay() ? nullptr : surface_bundle->texture_owner();
     }
   }
 

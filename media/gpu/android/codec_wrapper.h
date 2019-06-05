@@ -17,7 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/decoder_buffer.h"
-#include "media/gpu/android/avda_surface_bundle.h"
+#include "media/gpu/android/codec_surface_bundle.h"
 #include "media/gpu/android/device_info.h"
 #include "media/gpu/media_gpu_export.h"
 
@@ -25,7 +25,7 @@ namespace media {
 class CodecWrapperImpl;
 
 using CodecSurfacePair = std::pair<std::unique_ptr<MediaCodecBridge>,
-                                   scoped_refptr<AVDASurfaceBundle>>;
+                                   scoped_refptr<CodecSurfaceBundle>>;
 
 // A MediaCodec output buffer that can be released on any thread. Releasing a
 // CodecOutputBuffer implicitly discards all CodecOutputBuffers that
@@ -110,11 +110,11 @@ class MEDIA_GPU_EXPORT CodecWrapper {
   bool Flush();
 
   // Sets the given surface and returns true on success.
-  bool SetSurface(scoped_refptr<AVDASurfaceBundle> surface_bundle);
+  bool SetSurface(scoped_refptr<CodecSurfaceBundle> surface_bundle);
 
   // Returns the surface bundle that the codec is currently configured with.
   // Returns null after TakeCodecSurfacePair() is called.
-  scoped_refptr<AVDASurfaceBundle> SurfaceBundle();
+  scoped_refptr<CodecSurfaceBundle> SurfaceBundle();
 
   // Queues |buffer| if the codec has an available input buffer.
   enum class QueueStatus { kOk, kError, kTryAgainLater, kNoKey };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_AVDA_SURFACE_BUNDLE_H_
-#define MEDIA_GPU_ANDROID_AVDA_SURFACE_BUNDLE_H_
+#ifndef MEDIA_GPU_ANDROID_CODEC_SURFACE_BUNDLE_H_
+#define MEDIA_GPU_ANDROID_CODEC_SURFACE_BUNDLE_H_
 
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "media/base/android/android_overlay.h"
@@ -13,22 +13,21 @@
 
 namespace media {
 
-// AVDASurfaceBundle is a Java surface, and the TextureOwner or Overlay that
+// CodecSurfaceBundle is a Java surface, and the TextureOwner or Overlay that
 // backs it.
 //
 // Once a MediaCodec is configured with an output surface, the corresponding
-// AVDASurfaceBundle should be kept alive as long as the codec to prevent
+// CodecSurfaceBundle should be kept alive as long as the codec to prevent
 // crashes due to the codec losing its output surface.
-// TODO(watk): Remove AVDA from the name.
-struct MEDIA_GPU_EXPORT AVDASurfaceBundle
-    : public base::RefCountedDeleteOnSequence<AVDASurfaceBundle> {
+class MEDIA_GPU_EXPORT CodecSurfaceBundle
+    : public base::RefCountedDeleteOnSequence<CodecSurfaceBundle> {
  public:
-  using ScheduleLayoutCB = base::RepeatingCallback<void(gfx::Rect)>;
+  using ScheduleLayoutCB = base::RepeatingCallback<void(const gfx::Rect&)>;
 
   // Create an empty bundle to be manually populated.
-  explicit AVDASurfaceBundle();
-  explicit AVDASurfaceBundle(std::unique_ptr<AndroidOverlay> overlay);
-  explicit AVDASurfaceBundle(scoped_refptr<TextureOwner> texture_owner);
+  CodecSurfaceBundle();
+  explicit CodecSurfaceBundle(std::unique_ptr<AndroidOverlay> overlay);
+  explicit CodecSurfaceBundle(scoped_refptr<TextureOwner> texture_owner);
 
   const base::android::JavaRef<jobject>& GetJavaSurface() const;
 
@@ -37,27 +36,32 @@ struct MEDIA_GPU_EXPORT AVDASurfaceBundle
   // |this|; the cb will do nothing if |this| is destroyed.
   ScheduleLayoutCB GetScheduleLayoutCB();
 
+  scoped_refptr<TextureOwner> texture_owner() const { return texture_owner_; }
+  AndroidOverlay* overlay() const { return overlay_.get(); }
+
+ private:
+  ~CodecSurfaceBundle();
+  friend class base::RefCountedDeleteOnSequence<CodecSurfaceBundle>;
+  friend class base::DeleteHelper<CodecSurfaceBundle>;
+
+  void ScheduleLayout(const gfx::Rect& rect);
+
   // The Overlay or TextureOwner.
-  std::unique_ptr<AndroidOverlay> overlay;
+  std::unique_ptr<AndroidOverlay> overlay_;
+
   scoped_refptr<TextureOwner> texture_owner_;
 
   // The Java surface for |texture_owner_|.
-  gl::ScopedJavaSurface texture_owner_surface;
-
- private:
-  ~AVDASurfaceBundle();
-  friend class base::RefCountedDeleteOnSequence<AVDASurfaceBundle>;
-  friend class base::DeleteHelper<AVDASurfaceBundle>;
-
-  void ScheduleLayout(gfx::Rect rect);
+  gl::ScopedJavaSurface texture_owner_surface_;
 
   // The last updated layout rect position for the |overlay|.
   gfx::Rect layout_rect_;
-  base::WeakPtrFactory<AVDASurfaceBundle> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(AVDASurfaceBundle);
+  base::WeakPtrFactory<CodecSurfaceBundle> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CodecSurfaceBundle);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_ANDROID_AVDA_SURFACE_BUNDLE_H_
+#endif  // MEDIA_GPU_ANDROID_CODEC_SURFACE_BUNDLE_H_

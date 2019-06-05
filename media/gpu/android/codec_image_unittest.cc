@@ -43,7 +43,7 @@ class CodecImageTest : public testing::Test {
     auto codec = std::make_unique<NiceMock<MockMediaCodecBridge>>();
     codec_ = codec.get();
     wrapper_ = std::make_unique<CodecWrapper>(
-        CodecSurfacePair(std::move(codec), new AVDASurfaceBundle()),
+        CodecSurfacePair(std::move(codec), new CodecSurfaceBundle()),
         base::DoNothing(), base::SequencedTaskRunnerHandle::Get());
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));

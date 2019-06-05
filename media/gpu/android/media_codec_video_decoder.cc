@@ -428,7 +428,7 @@ void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
     EnterTerminalState(State::kError);
     return;
   }
-  texture_owner_bundle_ = new AVDASurfaceBundle(std::move(texture_owner));
+  texture_owner_bundle_ = new CodecSurfaceBundle(std::move(texture_owner));
 
   // Overlays are disabled when |enable_threaded_texture_mailboxes| is true
   // (http://crbug.com/582170).
@@ -476,7 +476,7 @@ void MediaCodecVideoDecoder::OnSurfaceChosen(
     overlay->AddSurfaceDestroyedCallback(
         base::Bind(&MediaCodecVideoDecoder::OnSurfaceDestroyed,
                    weak_factory_.GetWeakPtr()));
-    target_surface_bundle_ = new AVDASurfaceBundle(std::move(overlay));
+    target_surface_bundle_ = new CodecSurfaceBundle(std::move(overlay));
   } else {
     target_surface_bundle_ = texture_owner_bundle_;
   }
@@ -506,10 +506,8 @@ void MediaCodecVideoDecoder::OnSurfaceDestroyed(AndroidOverlay* overlay) {
   }
 
   // Reset the target bundle if it is the one being destroyed.
-  if (target_surface_bundle_ &&
-      target_surface_bundle_->overlay.get() == overlay) {
+  if (target_surface_bundle_ && target_surface_bundle_->overlay() == overlay)
     target_surface_bundle_ = texture_owner_bundle_;
-  }
 
   // Transition the codec away from the overlay if necessary.
   if (SurfaceTransitionPending())
@@ -571,7 +569,7 @@ void MediaCodecVideoDecoder::CreateCodec() {
 
 void MediaCodecVideoDecoder::OnCodecConfigured(
     std::unique_ptr<MediaCodecBridge> codec,
-    scoped_refptr<AVDASurfaceBundle> surface_bundle) {
+    scoped_refptr<CodecSurfaceBundle> surface_bundle) {
   DCHECK(!codec_);
   DCHECK_EQ(state_, State::kRunning);
 
@@ -1036,7 +1034,7 @@ MediaCodecVideoDecoder::CreatePromotionHintCB() {
   // inline L1 content will fall into this case.
   return BindToCurrentLoop(base::BindRepeating(
       [](base::WeakPtr<MediaCodecVideoDecoder> mcvd,
-         AVDASurfaceBundle::ScheduleLayoutCB layout_cb,
+         CodecSurfaceBundle::ScheduleLayoutCB layout_cb,
          PromotionHintAggregator::Hint hint) {
         // If we're promotable, and we have a surface bundle, then also
         // position the overlay.  We could do this even if the overlay is
@@ -1054,7 +1052,8 @@ MediaCodecVideoDecoder::CreatePromotionHintCB() {
 }
 
 bool MediaCodecVideoDecoder::IsUsingOverlay() const {
-  return codec_ && codec_->SurfaceBundle() && codec_->SurfaceBundle()->overlay;
+  return codec_ && codec_->SurfaceBundle() &&
+         codec_->SurfaceBundle()->overlay();
 }
 
 void MediaCodecVideoDecoder::NotifyPromotionHint(

@@ -9,8 +9,8 @@
 
 #include "base/sequenced_task_runner.h"
 #include "media/base/android/mock_media_codec_bridge.h"
-#include "media/gpu/android/avda_surface_bundle.h"
 #include "media/gpu/android/codec_allocator.h"
+#include "media/gpu/android/codec_surface_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/android/surface_texture.h"
@@ -45,7 +45,7 @@ class FakeCodecAllocator : public testing::NiceMock<CodecAllocator> {
                              scoped_refptr<CodecConfig> config) override;
   void ReleaseMediaCodec(
       std::unique_ptr<MediaCodecBridge> media_codec,
-      scoped_refptr<AVDASurfaceBundle> surface_bundle) override;
+      scoped_refptr<CodecSurfaceBundle> surface_bundle) override;
 
   // Satisfies the pending codec creation with |codec| if given, or a new
   // MockMediaCodecBridge if not. Returns a raw pointer to the codec, or nullptr
@@ -85,7 +85,7 @@ class FakeCodecAllocator : public testing::NiceMock<CodecAllocator> {
   base::WeakPtr<CodecAllocatorClient> client_;
 
   // The surface bundle of the pending codec creation.
-  scoped_refptr<AVDASurfaceBundle> pending_surface_bundle_;
+  scoped_refptr<CodecSurfaceBundle> pending_surface_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCodecAllocator);
 };
