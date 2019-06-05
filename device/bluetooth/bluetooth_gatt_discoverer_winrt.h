@@ -63,6 +63,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDiscovererWinrt {
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattDeviceServicesResult> services_result);
 
+  void OnServiceOpen(
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::
+                                 GenericAttributeProfile::IGattDeviceService>
+          gatt_service,
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattOpenStatus
+          status);
+
   void OnGetCharacteristics(
       uint16_t service_attribute_handle,
       Microsoft::WRL::ComPtr<
