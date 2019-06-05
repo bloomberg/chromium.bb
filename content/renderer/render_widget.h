@@ -460,6 +460,16 @@ class CONTENT_EXPORT RenderWidget
                      base::OnceCallback<void(bool)> callback) override;
   void NotifySwapTime(ReportTimeCallback callback) override;
 
+  // Registers a SwapPromise to report presentation time and possibly swap time.
+  // If |swap_time_callback| is not a null callback, it would be called once
+  // swap happens. |presentation_time_callback| will be called some time after
+  // pixels are presented on screen. Swap time is needed only in tests and
+  // production code uses |NotifySwapTime()| above which calls this one passing
+  // a null callback as |swap_time_callback|.
+  void NotifySwapAndPresentationTime(
+      ReportTimeCallback swap_time_callback,
+      ReportTimeCallback presentation_time_callback);
+
   // Override point to obtain that the current input method state and caret
   // position.
   ui::TextInputType GetTextInputType();

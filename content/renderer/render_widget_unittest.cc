@@ -727,35 +727,56 @@ class NotifySwapTimesRenderWidgetUnittest : public RenderWidgetUnittest {
     color_layer->SetBackgroundColor(SK_ColorRED);
   }
 
-  base::TimeTicks CompositeAndReturnSwapTimestamp() {
+  // |swap_to_presentation| determines how long after swap should presentation
+  // happen. This can be negative, positive, or zero. If zero, an invalid (null)
+  // presentation time is used.
+  void CompositeAndWaitForPresentation(base::TimeDelta swap_to_presentation) {
+    base::RunLoop swap_run_loop;
+    base::RunLoop presentation_run_loop;
+
+    // Register callbacks for swap time and presentation time.
     base::TimeTicks swap_time;
-    base::RunLoop run_loop;
-    widget()->NotifySwapTime(base::BindOnce(
-        [](base::OnceClosure callback, base::TimeTicks* swap_time,
-           blink::WebWidgetClient::SwapResult result,
-           base::TimeTicks timestamp) {
-          *swap_time = timestamp;
-          std::move(callback).Run();
-        },
-        run_loop.QuitClosure(), &swap_time));
+    widget()->NotifySwapAndPresentationTime(
+        base::BindOnce(
+            [](base::OnceClosure swap_quit_closure, base::TimeTicks* swap_time,
+               blink::WebWidgetClient::SwapResult result,
+               base::TimeTicks timestamp) {
+              DCHECK(!timestamp.is_null());
+              *swap_time = timestamp;
+              std::move(swap_quit_closure).Run();
+            },
+            swap_run_loop.QuitClosure(), &swap_time),
+        base::BindOnce(
+            [](base::OnceClosure presentation_quit_closure,
+               blink::WebWidgetClient::SwapResult result,
+               base::TimeTicks timestamp) {
+              DCHECK(!timestamp.is_null());
+              std::move(presentation_quit_closure).Run();
+            },
+            presentation_run_loop.QuitClosure()));
+
+    // Composite and wait for the swap to complete.
     widget()->layer_tree_view()->layer_tree_host()->Composite(
-        base::TimeTicks::Now(), /*raster=*/true);
-    // The swap time notify comes as a posted task.
-    run_loop.Run();
-    return swap_time;
+        base::TimeTicks::Now(),
+        /*raster=*/true);
+    swap_run_loop.Run();
+
+    // Present and wait for it to complete.
+    base::TimeTicks presentation_time;
+    if (!swap_to_presentation.is_zero())
+      presentation_time = swap_time + swap_to_presentation;
+    widget()->layer_tree_view()->DidPresentCompositorFrame(
+        1, gfx::PresentationFeedback(presentation_time,
+                                     base::TimeDelta::FromMilliseconds(16), 0));
+    presentation_run_loop.Run();
   }
 };
 
 TEST_F(NotifySwapTimesRenderWidgetUnittest, PresentationTimestampValid) {
   base::HistogramTester histograms;
 
-  base::TimeTicks swap_time = CompositeAndReturnSwapTimestamp();
-  ASSERT_FALSE(swap_time.is_null());
+  CompositeAndWaitForPresentation(base::TimeDelta::FromMilliseconds(2));
 
-  widget()->layer_tree_view()->DidPresentCompositorFrame(
-      1, gfx::PresentationFeedback(
-             swap_time + base::TimeDelta::FromMilliseconds(2),
-             base::TimeDelta::FromMilliseconds(16), 0));
   EXPECT_THAT(histograms.GetAllSamples(
                   "PageLoad.Internal.Renderer.PresentationTime.Valid"),
               testing::ElementsAre(base::Bucket(true, 1)));
@@ -768,11 +789,8 @@ TEST_F(NotifySwapTimesRenderWidgetUnittest, PresentationTimestampValid) {
 TEST_F(NotifySwapTimesRenderWidgetUnittest, PresentationTimestampInvalid) {
   base::HistogramTester histograms;
 
-  base::TimeTicks swap_time = CompositeAndReturnSwapTimestamp();
-  ASSERT_FALSE(swap_time.is_null());
+  CompositeAndWaitForPresentation(base::TimeDelta());
 
-  widget()->layer_tree_view()->DidPresentCompositorFrame(
-      1, gfx::PresentationFeedback());
   EXPECT_THAT(histograms.GetAllSamples(
                   "PageLoad.Internal.Renderer.PresentationTime.Valid"),
               testing::ElementsAre(base::Bucket(false, 1)));
@@ -786,13 +804,8 @@ TEST_F(NotifySwapTimesRenderWidgetUnittest,
        PresentationTimestampEarlierThanSwaptime) {
   base::HistogramTester histograms;
 
-  base::TimeTicks swap_time = CompositeAndReturnSwapTimestamp();
-  ASSERT_FALSE(swap_time.is_null());
+  CompositeAndWaitForPresentation(base::TimeDelta::FromMilliseconds(-2));
 
-  widget()->layer_tree_view()->DidPresentCompositorFrame(
-      1, gfx::PresentationFeedback(
-             swap_time - base::TimeDelta::FromMilliseconds(2),
-             base::TimeDelta::FromMilliseconds(16), 0));
   EXPECT_THAT(histograms.GetAllSamples(
                   "PageLoad.Internal.Renderer.PresentationTime.Valid"),
               testing::ElementsAre(base::Bucket(false, 1)));

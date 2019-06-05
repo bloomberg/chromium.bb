@@ -3362,10 +3362,12 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   using ReportTimeCallback = blink::WebWidgetClient::ReportTimeCallback;
 
  public:
-  ReportTimeSwapPromise(ReportTimeCallback callback,
+  ReportTimeSwapPromise(ReportTimeCallback swap_time_callback,
+                        ReportTimeCallback presentation_time_callback,
                         scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                         base::WeakPtr<RenderWidget> render_widget)
-      : callback_(std::move(callback)),
+      : swap_time_callback_(std::move(swap_time_callback)),
+        presentation_time_callback_(std::move(presentation_time_callback)),
         task_runner_(std::move(task_runner)),
         render_widget_(std::move(render_widget)) {}
   ~ReportTimeSwapPromise() override = default;
@@ -3381,21 +3383,10 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   void DidSwap() override {
     DCHECK_GT(frame_token_, 0u);
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](base::TimeTicks timestamp, ReportTimeCallback callback,
-               base::WeakPtr<RenderWidget> render_widget, int frame_token) {
-              std::move(callback).Run(
-                  blink::WebWidgetClient::SwapResult::kDidSwap, timestamp);
-              if (render_widget) {
-                render_widget->layer_tree_view()->AddPresentationCallback(
-                    frame_token,
-                    base::BindOnce(&RecordSwapTimeToPresentationTime,
-                                   timestamp));
-              }
-            },
-            base::TimeTicks::Now(), std::move(callback_), render_widget_,
-            frame_token_));
+        FROM_HERE, base::BindOnce(&RunCallbackAfterSwap, base::TimeTicks::Now(),
+                                  std::move(swap_time_callback_),
+                                  std::move(presentation_time_callback_),
+                                  std::move(render_widget_), frame_token_));
   }
 
   cc::SwapPromise::DidNotSwapAction DidNotSwap(
@@ -3419,14 +3410,45 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
     // using presentation or swap timestamps.
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback_), result, base::TimeTicks::Now()));
+        base::BindOnce(
+            [](blink::WebWidgetClient::SwapResult result,
+               base::TimeTicks swap_time, ReportTimeCallback swap_time_callback,
+               ReportTimeCallback presentation_time_callback) {
+              ReportTime(std::move(swap_time_callback), result, swap_time);
+              ReportTime(std::move(presentation_time_callback), result,
+                         swap_time);
+            },
+            result, base::TimeTicks::Now(), std::move(swap_time_callback_),
+            std::move(presentation_time_callback_)));
     return DidNotSwapAction::BREAK_PROMISE;
   }
 
   int64_t TraceId() const override { return 0; }
 
  private:
-  static void RecordSwapTimeToPresentationTime(
+  static void RunCallbackAfterSwap(
+      base::TimeTicks swap_time,
+      ReportTimeCallback swap_time_callback,
+      ReportTimeCallback presentation_time_callback,
+      base::WeakPtr<RenderWidget> render_widget,
+      int frame_token) {
+    if (render_widget) {
+      render_widget->layer_tree_view()->AddPresentationCallback(
+          frame_token,
+          base::BindOnce(&RunCallbackAfterPresentation,
+                         std::move(presentation_time_callback), swap_time));
+      ReportTime(std::move(swap_time_callback),
+                 blink::WebWidgetClient::SwapResult::kDidSwap, swap_time);
+    } else {
+      ReportTime(std::move(swap_time_callback),
+                 blink::WebWidgetClient::SwapResult::kDidSwap, swap_time);
+      ReportTime(std::move(presentation_time_callback),
+                 blink::WebWidgetClient::SwapResult::kDidSwap, swap_time);
+    }
+  }
+
+  static void RunCallbackAfterPresentation(
+      ReportTimeCallback presentation_time_callback,
       base::TimeTicks swap_time,
       base::TimeTicks presentation_time) {
     DCHECK(!swap_time.is_null());
@@ -3440,9 +3462,20 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
           "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime",
           presentation_time - swap_time);
     }
+    ReportTime(std::move(presentation_time_callback),
+               blink::WebWidgetClient::SwapResult::kDidSwap,
+               presentation_time_is_valid ? presentation_time : swap_time);
   }
 
-  ReportTimeCallback callback_;
+  static void ReportTime(ReportTimeCallback callback,
+                         blink::WebWidgetClient::SwapResult result,
+                         base::TimeTicks time) {
+    if (callback)
+      std::move(callback).Run(result, time);
+  }
+
+  ReportTimeCallback swap_time_callback_;
+  ReportTimeCallback presentation_time_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<RenderWidget> render_widget_;
   uint32_t frame_token_ = 0;
@@ -3451,11 +3484,17 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
 };
 
 void RenderWidget::NotifySwapTime(ReportTimeCallback callback) {
+  NotifySwapAndPresentationTime(base::NullCallback(), std::move(callback));
+}
+
+void RenderWidget::NotifySwapAndPresentationTime(
+    ReportTimeCallback swap_time_callback,
+    ReportTimeCallback presentation_time_callback) {
   cc::LayerTreeHost* layer_tree_host = layer_tree_view_->layer_tree_host();
   // When the WebWidget is closed we cancel any pending SwapPromise that would
   // call back into blink, so we use |close_weak_ptr_factory_|.
   layer_tree_host->QueueSwapPromise(std::make_unique<ReportTimeSwapPromise>(
-      std::move(callback),
+      std::move(swap_time_callback), std::move(presentation_time_callback),
       layer_tree_host->GetTaskRunnerProvider()->MainThreadTaskRunner(),
       close_weak_ptr_factory_.GetWeakPtr()));
 }
