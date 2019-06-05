@@ -999,7 +999,7 @@ Response InspectorDOMAgent::performSearch(
     attribute_query = attribute_query.Left(attribute_query.length() - 1);
 
   HeapVector<Member<Document>> docs = Documents();
-  HeapListHashSet<Member<Node>> result_collector;
+  HeapLinkedHashSet<Member<Node>> result_collector;
 
   for (Document* document : docs) {
     Node* document_element = document->documentElement();
