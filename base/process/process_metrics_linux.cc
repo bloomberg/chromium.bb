@@ -307,14 +307,6 @@ ProcessMetrics::ProcessMetrics(ProcessHandle process)
 ProcessMetrics::ProcessMetrics(ProcessHandle process) : process_(process) {}
 #endif
 
-#if defined(OS_CHROMEOS)
-ProcessMetrics::TotalsSummary ProcessMetrics::GetTotalsSummary() const {
-  ProcessMetrics::TotalsSummary summary = {};
-  summary.swap_kb = GetVmSwapBytes() >> 10;
-  return summary;
-}
-#endif
-
 size_t GetSystemCommitCharge() {
   SystemMemoryInfoKB meminfo;
   if (!GetSystemMemoryInfo(&meminfo))

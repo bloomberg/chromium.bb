@@ -98,14 +98,6 @@ class BASE_EXPORT ProcessMetrics {
   BASE_EXPORT size_t GetResidentSetSize() const;
 #endif
 
-#if defined(OS_CHROMEOS)
-  struct TotalsSummary {
-    size_t swap_kb;
-  };
-  // Returns memory stats for the process.
-  BASE_EXPORT TotalsSummary GetTotalsSummary() const;
-#endif
-
   // Returns the percentage of time spent executing, across all threads of the
   // process, in the interval since the last time the method was called. Since
   // this considers the total execution time across all threads in a process,
