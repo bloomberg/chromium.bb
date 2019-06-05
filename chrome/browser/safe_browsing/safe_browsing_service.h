@@ -27,7 +27,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 
 #if defined(FULL_SAFE_BROWSING)
@@ -52,6 +51,7 @@ namespace mojom {
 class NetworkContext;
 }
 class SharedURLLoaderFactory;
+class SharedURLLoaderFactoryInfo;
 }  // namespace network
 
 namespace prefs {
@@ -136,10 +136,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // Flushes above two interfaces to avoid races in tests.
   void FlushNetworkInterfaceForTesting();
-
-  // Called to get a SharedURLLoaderFactory that can be used on the IO thread.
-  scoped_refptr<network::SharedURLLoaderFactory>
-  GetURLLoaderFactoryOnIOThread();
 
   const scoped_refptr<SafeBrowsingUIManager>& ui_manager() const;
 
@@ -228,7 +224,8 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // Called to initialize objects that are used on the io_thread.  This may be
   // called multiple times during the life of the SafeBrowsingService.
-  void StartOnIOThread();
+  void StartOnIOThread(
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory);
 
   // Called to stop or shutdown operations on the io_thread. This may be called
   // multiple times to stop during the life of the SafeBrowsingService. If
@@ -266,11 +263,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   void CreateTriggerManager();
 
-  // Called on the UI thread to create a URLLoaderFactory interface ptr for
-  // the IO thread.
-  void CreateURLLoaderFactoryForIO(
-      network::mojom::URLLoaderFactoryRequest request);
-
   // Creates a configured NetworkContextParams when the network service is in
   // use.
   network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
@@ -288,11 +280,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // URLRequestContext inside the network service. This is used by
   // SimpleURLLoader for safe browsing requests.
   std::unique_ptr<safe_browsing::SafeBrowsingNetworkContext> network_context_;
-
-  // A SharedURLLoaderFactory and its interfaceptr used on the IO thread.
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_on_io_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      shared_url_loader_factory_on_io_;
 
   // Provides phishing and malware statistics. Accessed on UI thread.
   std::unique_ptr<PingManager> ping_manager_;

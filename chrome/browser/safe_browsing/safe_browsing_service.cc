@@ -48,6 +48,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
@@ -240,21 +241,6 @@ void SafeBrowsingService::FlushNetworkInterfaceForTesting() {
     network_context_->FlushForTesting();
 }
 
-scoped_refptr<network::SharedURLLoaderFactory>
-SafeBrowsingService::GetURLLoaderFactoryOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!shared_url_loader_factory_on_io_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&SafeBrowsingService::CreateURLLoaderFactoryForIO, this,
-                       MakeRequest(&url_loader_factory_on_io_)));
-    shared_url_loader_factory_on_io_ =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            url_loader_factory_on_io_.get());
-  }
-  return shared_url_loader_factory_on_io_;
-}
-
 const scoped_refptr<SafeBrowsingUIManager>& SafeBrowsingService::ui_manager()
     const {
   return ui_manager_;
@@ -362,7 +348,8 @@ void SafeBrowsingService::SetDatabaseManagerForTest(
   services_delegate_->SetDatabaseManagerForTest(database_manager);
 }
 
-void SafeBrowsingService::StartOnIOThread() {
+void SafeBrowsingService::StartOnIOThread(
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
     return;
@@ -370,8 +357,9 @@ void SafeBrowsingService::StartOnIOThread() {
 
   V4ProtocolConfig v4_config = GetV4ProtocolConfig();
 
-  services_delegate_->StartOnIOThread(GetURLLoaderFactoryOnIOThread(),
-                                      v4_config);
+  services_delegate_->StartOnIOThread(
+      network::SharedURLLoaderFactory::Create(std::move(url_loader_factory)),
+      v4_config);
 }
 
 void SafeBrowsingService::StopOnIOThread(bool shutdown) {
@@ -382,10 +370,6 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
   if (enabled_) {
     enabled_ = false;
   }
-
-  if (shared_url_loader_factory_on_io_)
-    shared_url_loader_factory_on_io_->Detach();
-  url_loader_factory_on_io_.reset();
 }
 
 void SafeBrowsingService::Start() {
@@ -398,7 +382,10 @@ void SafeBrowsingService::Start() {
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&SafeBrowsingService::StartOnIOThread, this));
+      base::BindOnce(
+          &SafeBrowsingService::StartOnIOThread, this,
+          std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(
+              GetURLLoaderFactory())));
 }
 
 void SafeBrowsingService::Stop(bool shutdown) {
@@ -524,19 +511,6 @@ void SafeBrowsingService::CreateTriggerManager() {
   trigger_manager_ = std::make_unique<TriggerManager>(
       ui_manager_.get(), navigation_observer_manager_.get(),
       g_browser_process->local_state());
-}
-
-void SafeBrowsingService::CreateURLLoaderFactoryForIO(
-    network::mojom::URLLoaderFactoryRequest request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (shutdown_)
-    return;  // We've been shut down already.
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->process_id = network::mojom::kBrowserProcessId;
-  params->is_corb_enabled = false;
-  GetNetworkContext()->CreateURLLoaderFactory(std::move(request),
-                                              std::move(params));
 }
 
 network::mojom::NetworkContextParamsPtr
