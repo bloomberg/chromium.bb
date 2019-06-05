@@ -820,6 +820,31 @@ void InspectorPageAgent::DidNavigateWithinDocument(LocalFrame* frame) {
   }
 }
 
+scoped_refptr<DOMWrapperWorld> InspectorPageAgent::EnsureDOMWrapperWorld(
+    LocalFrame* frame,
+    const String& world_name,
+    bool grant_universal_access) {
+  if (!isolated_worlds_.Contains(frame))
+    isolated_worlds_.Set(frame, FrameIsolatedWorlds());
+  FrameIsolatedWorlds& frame_worlds = isolated_worlds_.find(frame)->value;
+
+  auto world_it = frame_worlds.find(world_name);
+  if (world_it != frame_worlds.end())
+    return world_it->value;
+  scoped_refptr<DOMWrapperWorld> world =
+      frame->GetScriptController().CreateNewInspectorIsolatedWorld(world_name);
+  if (!world)
+    return nullptr;
+  frame_worlds.Set(world_name, world);
+  scoped_refptr<SecurityOrigin> security_origin =
+      frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
+  if (grant_universal_access)
+    security_origin->GrantUniversalAccess();
+  DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world->GetWorldId(),
+                                                  security_origin);
+  return world;
+}
+
 void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
   if (!GetFrontend())
     return;
@@ -829,7 +854,6 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
               return Decimal::FromString(a) < Decimal::FromString(b);
             });
 
-  HashMap<String, int> world_id_by_name;
   for (const WTF::String& key : keys) {
     const String source = scripts_to_evaluate_on_load_.Get(key);
     const String world_name = worlds_to_evaluate_on_load_.Get(key);
@@ -840,31 +864,16 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
       continue;
     }
 
-    auto it = world_id_by_name.find(world_name);
-    int world_id = 0;
-    if (it != world_id_by_name.end()) {
-      world_id = it->value;
-    } else {
-      scoped_refptr<DOMWrapperWorld> world =
-          frame->GetScriptController().CreateNewInspectorIsolatedWorld(
-              world_name);
-      if (!world)
-        continue;
-      world_id = world->GetWorldId();
-      world_id_by_name.Set(world_name, world_id);
-
-      scoped_refptr<SecurityOrigin> security_origin =
-          frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
-      security_origin->GrantUniversalAccess();
-      DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world_id,
-                                                      security_origin);
-    }
+    scoped_refptr<DOMWrapperWorld> world = EnsureDOMWrapperWorld(
+        frame, world_name, true /* grant_universal_access */);
+    if (!world)
+      continue;
 
     // Note: An error event in an isolated world will never be dispatched to
     // a foreign world.
     v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
     frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-        world_id, source, KURL(), SanitizeScriptErrors::kSanitize);
+        world->GetWorldId(), source, KURL(), SanitizeScriptErrors::kSanitize);
   }
 
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {
@@ -1206,18 +1215,10 @@ protocol::Response InspectorPageAgent::createIsolatedWorld(
   if (!frame)
     return Response::Error("No frame for given id found");
 
-  scoped_refptr<DOMWrapperWorld> world =
-      frame->GetScriptController().CreateNewInspectorIsolatedWorld(
-          world_name.fromMaybe(""));
+  scoped_refptr<DOMWrapperWorld> world = EnsureDOMWrapperWorld(
+      frame, world_name.fromMaybe(""), grant_universal_access.fromMaybe(false));
   if (!world)
     return Response::Error("Could not create isolated world");
-
-  scoped_refptr<SecurityOrigin> security_origin =
-      frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
-  if (grant_universal_access.fromMaybe(false))
-    security_origin->GrantUniversalAccess();
-  DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world->GetWorldId(),
-                                                  security_origin);
 
   LocalWindowProxy* isolated_world_window_proxy =
       frame->GetScriptController().WindowProxy(*world);
@@ -1370,6 +1371,7 @@ protocol::Response InspectorPageAgent::generateTestReport(const String& message,
 void InspectorPageAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(inspector_resource_content_loader_);
+  visitor->Trace(isolated_worlds_);
   InspectorBaseAgent::Trace(visitor);
 }
 
