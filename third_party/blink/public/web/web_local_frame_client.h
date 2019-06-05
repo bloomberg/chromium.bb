@@ -109,7 +109,6 @@ class WebMediaPlayerSource;
 class WebNavigationControl;
 class WebServiceWorkerProvider;
 class WebPlugin;
-class WebPushClient;
 class WebRTCPeerConnectionHandler;
 class WebRelatedAppsFetcher;
 class WebSocketHandshakeThrottle;
@@ -534,11 +533,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // PlzNavigate
   // Called to abort a navigation that is being handled by the browser process.
   virtual void AbortClientNavigation() {}
-
-  // Push API ---------------------------------------------------
-
-  // Used to access the embedder for the Push API.
-  virtual WebPushClient* PushClient() { return nullptr; }
 
   // InstalledApp API ----------------------------------------------------
 

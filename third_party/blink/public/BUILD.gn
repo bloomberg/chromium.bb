@@ -149,7 +149,6 @@ source_set("blink_headers") {
     "platform/modules/mediastream/web_platform_media_stream_source.h",
     "platform/modules/mediastream/web_platform_media_stream_track.h",
     "platform/modules/mediastream/webrtc_uma_histograms.h",
-    "platform/modules/push_messaging/web_push_client.h",
     "platform/modules/push_messaging/web_push_error.h",
     "platform/modules/push_messaging/web_push_subscription.h",
     "platform/modules/remoteplayback/web_remote_playback_client.h",
