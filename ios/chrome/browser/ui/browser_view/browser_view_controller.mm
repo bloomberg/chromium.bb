@@ -2424,7 +2424,21 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
-    [self viewForWebState:webState].frame = self.contentArea.bounds;
+    CGRect webStateViewFrame = self.contentArea.bounds;
+    if (!ios::GetChromeBrowserProvider()
+             ->GetFullscreenProvider()
+             ->IsInitialized()) {
+      // If the FullscreenProvider is initialized, the WebState view is not
+      // resized, and should always match the bounds of the content area.  When
+      // the provider is not initialized, viewport insets resize the webview, so
+      // they should be accounted for here to prevent animation jitter.
+      UIEdgeInsets viewportInsets =
+          FullscreenControllerFactory::GetForBrowserState(self.browserState)
+              ->GetCurrentViewportInsets();
+      webStateViewFrame =
+          UIEdgeInsetsInsetRect(webStateViewFrame, viewportInsets);
+    }
+    [self viewForWebState:webState].frame = webStateViewFrame;
 
     [_toolbarUIUpdater updateState];
     NewTabPageTabHelper* NTPHelper =
