@@ -24,6 +24,14 @@
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(crbug.com/961073): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_InterceptRequestPreviewsState \
+  DISABLED_InterceptRequestPreviewsState
+#else
+#define MAYBE_InterceptRequestPreviewsState InterceptRequestPreviewsState
+#endif
+
 namespace previews {
 
 namespace {
@@ -80,7 +88,7 @@ class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
 };
 
 TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
-       InterceptRequestPreviewsState) {
+       MAYBE_InterceptRequestPreviewsState) {
   base::HistogramTester histogram_tester;
 
   network::ResourceRequest request;

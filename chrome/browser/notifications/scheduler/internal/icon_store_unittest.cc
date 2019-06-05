@@ -16,6 +16,15 @@
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(crbug.com/961073): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_AddDuplicate DISABLED_AddDuplicate
+#define MAYBE_Add DISABLED_Add
+#else
+#define MAYBE_AddDuplicate AddDuplicate
+#define MAYBE_Add Add
+#endif
+
 namespace notifications {
 namespace {
 
@@ -117,7 +126,7 @@ TEST_F(IconStoreTest, LoadFailed) {
   EXPECT_FALSE(load_result());
 }
 
-TEST_F(IconStoreTest, Add) {
+TEST_F(IconStoreTest, MAYBE_Add) {
   InitDb();
 
   auto new_entry = std::make_unique<IconEntry>();
@@ -134,7 +143,7 @@ TEST_F(IconStoreTest, Add) {
   VerifyEntry(kEntryId2, kEntryData);
 }
 
-TEST_F(IconStoreTest, AddDuplicate) {
+TEST_F(IconStoreTest, MAYBE_AddDuplicate) {
   InitDb();
 
   auto new_entry = std::make_unique<IconEntry>();

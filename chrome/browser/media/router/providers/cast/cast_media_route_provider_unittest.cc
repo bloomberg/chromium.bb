@@ -22,6 +22,24 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(crbug.com/969812): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_CreateRoute DISABLED_CreateRoute
+#define MAYBE_CreateRouteFailsInvalidSource \
+  DISABLED_CreateRouteFailsInvalidSource
+#define MAYBE_StartObservingMediaSinks DISABLED_StartObservingMediaSinks
+#define MAYBE_TerminateRoute DISABLED_TerminateRoute
+#define MAYBE_BroadcastRequest DISABLED_BroadcastRequest
+#define MAYBE_CreateRouteFailsInvalidSink DISABLED_CreateRouteFailsInvalidSink
+#else
+#define MAYBE_CreateRoute CreateRoute
+#define MAYBE_CreateRouteFailsInvalidSource CreateRouteFailsInvalidSource
+#define MAYBE_StartObservingMediaSinks StartObservingMediaSinks
+#define MAYBE_TerminateRoute TerminateRoute
+#define MAYBE_BroadcastRequest BroadcastRequest
+#define MAYBE_CreateRouteFailsInvalidSink CreateRouteFailsInvalidSink
+#endif
+
 using ::testing::_;
 
 namespace media_router {
@@ -122,7 +140,7 @@ class CastMediaRouteProviderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CastMediaRouteProviderTest);
 };
 
-TEST_F(CastMediaRouteProviderTest, StartObservingMediaSinks) {
+TEST_F(CastMediaRouteProviderTest, MAYBE_StartObservingMediaSinks) {
   MediaSource::Id non_cast_source("not-a-cast-source:foo");
   EXPECT_CALL(app_discovery_service_, DoStartObservingMediaSinks(_)).Times(0);
   provider_->StartObservingMediaSinks(non_cast_source);
@@ -135,7 +153,7 @@ TEST_F(CastMediaRouteProviderTest, StartObservingMediaSinks) {
   EXPECT_TRUE(app_discovery_service_.callbacks().empty());
 }
 
-TEST_F(CastMediaRouteProviderTest, BroadcastRequest) {
+TEST_F(CastMediaRouteProviderTest, MAYBE_BroadcastRequest) {
   media_sink_service_.AddOrUpdateSink(CreateCastSink(1));
   media_sink_service_.AddOrUpdateSink(CreateCastSink(2));
   MediaSource::Id source_id(
@@ -153,7 +171,7 @@ TEST_F(CastMediaRouteProviderTest, BroadcastRequest) {
   EXPECT_TRUE(app_discovery_service_.callbacks().empty());
 }
 
-TEST_F(CastMediaRouteProviderTest, CreateRouteFailsInvalidSink) {
+TEST_F(CastMediaRouteProviderTest, MAYBE_CreateRouteFailsInvalidSink) {
   // Sink does not exist.
   provider_->CreateRoute(
       kCastSource, "sinkId", kPresentationId, origin_, kTabId, kRouteTimeout,
@@ -163,7 +181,7 @@ TEST_F(CastMediaRouteProviderTest, CreateRouteFailsInvalidSink) {
                      RouteRequestResult::ResultCode::SINK_NOT_FOUND));
 }
 
-TEST_F(CastMediaRouteProviderTest, CreateRouteFailsInvalidSource) {
+TEST_F(CastMediaRouteProviderTest, MAYBE_CreateRouteFailsInvalidSource) {
   MediaSinkInternal sink = CreateCastSink(1);
   media_sink_service_.AddOrUpdateSink(sink);
 
@@ -175,7 +193,7 @@ TEST_F(CastMediaRouteProviderTest, CreateRouteFailsInvalidSource) {
                      RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER));
 }
 
-TEST_F(CastMediaRouteProviderTest, CreateRoute) {
+TEST_F(CastMediaRouteProviderTest, MAYBE_CreateRoute) {
   MediaSinkInternal sink = CreateCastSink(1);
   media_sink_service_.AddOrUpdateSink(sink);
 
@@ -188,7 +206,7 @@ TEST_F(CastMediaRouteProviderTest, CreateRoute) {
           base::Unretained(this)));
 }
 
-TEST_F(CastMediaRouteProviderTest, TerminateRoute) {
+TEST_F(CastMediaRouteProviderTest, MAYBE_TerminateRoute) {
   MediaSinkInternal sink = CreateCastSink(1);
   media_sink_service_.AddOrUpdateSink(sink);
 
