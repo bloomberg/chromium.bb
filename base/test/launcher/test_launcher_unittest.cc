@@ -4,8 +4,12 @@
 
 #include <stddef.h>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/json/json_reader.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/scoped_task_environment.h"
@@ -15,6 +19,33 @@
 
 namespace base {
 namespace {
+
+TestResult GenerateTestResult(
+    const std::string& test_name,
+    TestResult::Status status,
+    TimeDelta elapsed_td = TimeDelta::FromMilliseconds(30),
+    const std::string& output_snippet = "output") {
+  TestResult result;
+  result.full_name = test_name;
+  result.status = status;
+  result.elapsed_time = elapsed_td;
+  result.output_snippet = output_snippet;
+  return result;
+}
+
+TestResultPart GenerateTestResultPart(TestResultPart::Type type,
+                                      const std::string& file_name,
+                                      int line_number,
+                                      const std::string& summary,
+                                      const std::string& message) {
+  TestResultPart test_result_part;
+  test_result_part.type = type;
+  test_result_part.file_name = file_name;
+  test_result_part.line_number = line_number;
+  test_result_part.summary = summary;
+  test_result_part.message = message;
+  return test_result_part;
+}
 
 // Mock TestLauncher to mock CreateAndStartThreadPool,
 // unit test will provide a ScopedTaskEnvironment.
@@ -76,10 +107,20 @@ class TestLauncherTest : public testing::Test {
         .WillRepeatedly(testing::Return(true));
   }
 
+  void ReadSummary(FilePath path) {
+    File resultFile(path, File::FLAG_OPEN | File::FLAG_READ);
+    const int size = 2048;
+    std::string json;
+    ASSERT_TRUE(ReadFileToStringWithMaxSize(path, &json, size));
+    root = JSONReader::Read(json);
+  }
+
   std::unique_ptr<CommandLine> command_line;
   MockTestLauncher test_launcher;
   MockTestLauncherDelegate delegate;
   base::test::ScopedTaskEnvironment scoped_task_environment;
+  ScopedTempDir dir;
+  Optional<Value> root;
 
  private:
   std::vector<TestIdentifier> tests_;
@@ -87,9 +128,14 @@ class TestLauncherTest : public testing::Test {
 
 // Action to mock delegate invoking OnTestFinish on test launcher.
 ACTION_P2(OnTestResult, full_name, status) {
-  TestResult result;
-  result.full_name = full_name;
-  result.status = status;
+  TestResult result = GenerateTestResult(full_name, status);
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      BindOnce(&TestLauncher::OnTestFinished, Unretained(arg0), result));
+}
+
+// Action to mock delegate invoking OnTestFinish on test launcher.
+ACTION_P(OnTestResult, result) {
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       BindOnce(&TestLauncher::OnTestFinished, Unretained(arg0), result));
@@ -196,10 +242,8 @@ TEST_F(TestLauncherTest, RunningMultipleIterations) {
   command_line->AppendSwitchASCII("gtest_repeat", "2");
   using ::testing::_;
   EXPECT_CALL(delegate, RunTests(_, _))
-      .WillOnce(::testing::DoAll(
-          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
-          testing::Return(1)))
-      .WillOnce(::testing::DoAll(
+      .Times(2)
+      .WillRepeatedly(::testing::DoAll(
           OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
           testing::Return(1)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
@@ -314,6 +358,171 @@ TEST_F(TestLauncherTest, RedirectStdio) {
           testing::Return(1)));
   std::vector<std::string> tests_names = {"Test.firstTest"};
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
+}
+
+void ValidateKeyValue(Value* dict_value,
+                      const std::string& key,
+                      const std::string& expected_value) {
+  const std::string* value = dict_value->FindStringKey(key);
+  ASSERT_TRUE(value);
+  EXPECT_EQ(expected_value, *value);
+}
+
+// Validate a json child node for a particular test result.
+void ValidateTestResult(Value* root, TestResult& result) {
+  Value* val = root->FindListKey(result.full_name);
+  ASSERT_TRUE(val);
+  ASSERT_EQ(1u, val->GetList().size());
+  val = &val->GetList().at(0);
+  ASSERT_TRUE(val->is_dict());
+
+  EXPECT_EQ(result.elapsed_time.InMilliseconds(),
+            val->FindIntKey("elapsed_time_ms").value_or(0));
+  EXPECT_EQ(true, val->FindBoolKey("losless_snippet").value_or(false));
+  ValidateKeyValue(val, "output_snippet", result.output_snippet);
+
+  std::string base64_output_snippet;
+  Base64Encode(result.output_snippet, &base64_output_snippet);
+  ValidateKeyValue(val, "output_snippet_base64", base64_output_snippet);
+  ValidateKeyValue(val, "status", result.StatusAsString());
+
+  Value* value = val->FindListKey("result_parts");
+  ASSERT_TRUE(value);
+  EXPECT_EQ(result.test_result_parts.size(), value->GetList().size());
+  for (unsigned i = 0; i < result.test_result_parts.size(); i++) {
+    TestResultPart result_part = result.test_result_parts.at(0);
+    Value* part_dict = &(value->GetList().at(i));
+    ASSERT_TRUE(part_dict);
+    ASSERT_TRUE(part_dict->is_dict());
+    ValidateKeyValue(part_dict, "type", result_part.TypeAsString());
+    ValidateKeyValue(part_dict, "file", result_part.file_name);
+    EXPECT_EQ(result_part.line_number,
+              part_dict->FindIntKey("line").value_or(0));
+    ValidateKeyValue(part_dict, "summary", result_part.summary);
+    ValidateKeyValue(part_dict, "message", result_part.message);
+  }
+}
+
+void ValidateStringList(Optional<Value>& root,
+                        const std::string& key,
+                        std::vector<const char*> values) {
+  Value* val = root->FindListKey(key);
+  ASSERT_TRUE(val);
+  ASSERT_EQ(values.size(), val->GetList().size());
+  for (unsigned i = 0; i < values.size(); i++) {
+    ASSERT_TRUE(val->GetList().at(i).is_string());
+    EXPECT_EQ(values.at(i), val->GetList().at(i).GetString());
+  }
+}
+
+void ValidateTestLocation(Value* root,
+                          const std::string& key,
+                          const std::string& file,
+                          int line) {
+  Value* val = root->FindDictKey(key);
+  ASSERT_TRUE(val);
+  EXPECT_EQ(2u, val->DictSize());
+  ValidateKeyValue(val, "file", file);
+  EXPECT_EQ(line, val->FindIntKey("line").value_or(0));
+}
+
+// Unit tests to validate TestLauncher outputs the correct JSON file.
+TEST_F(TestLauncherTest, JsonSummary) {
+  AddMockedTests("DISABLED_TestDisabled", {"firstTest"});
+  AddMockedTests("Test",
+                 {"firstTest", "secondTest", "DISABLED_firstTestDisabled"});
+  SetUpExpectCalls();
+
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath path = dir.GetPath().AppendASCII("SaveSummaryResult.json");
+  command_line->AppendSwitchPath("test-launcher-summary-output", path);
+  command_line->AppendSwitchASCII("gtest_repeat", "2");
+
+  // Setup results to be returned by the test launcher delegate.
+  TestResult first_result =
+      GenerateTestResult("Test.firstTest", TestResult::TEST_SUCCESS,
+                         TimeDelta::FromMilliseconds(30), "output_first");
+  first_result.test_result_parts.push_back(GenerateTestResultPart(
+      TestResultPart::kSuccess, "TestFile", 110, "summary", "message"));
+  TestResult second_result =
+      GenerateTestResult("Test.secondTest", TestResult::TEST_SUCCESS,
+                         TimeDelta::FromMilliseconds(50), "output_second");
+
+  using ::testing::_;
+  EXPECT_CALL(delegate, RunTests(_, _))
+      .Times(2)
+      .WillRepeatedly(::testing::DoAll(OnTestResult(first_result),
+                                       OnTestResult(second_result),
+                                       testing::Return(2)));
+  EXPECT_TRUE(test_launcher.Run(command_line.get()));
+
+  // Validate the resulting JSON file is the expected output.
+  ReadSummary(path);
+  ValidateStringList(root, "all_tests",
+                     {"Test.firstTest", "Test.firstTestDisabled",
+                      "Test.secondTest", "TestDisabled.firstTest"});
+  ValidateStringList(root, "disabled_tests",
+                     {"Test.firstTestDisabled", "TestDisabled.firstTest"});
+
+  Value* val = root->FindDictKey("test_locations");
+  ASSERT_TRUE(val);
+  EXPECT_EQ(2u, val->DictSize());
+  ValidateTestLocation(val, "Test.firstTest", "File", 100);
+  ValidateTestLocation(val, "Test.secondTest", "File", 100);
+
+  val = root->FindListKey("per_iteration_data");
+  ASSERT_TRUE(val);
+  ASSERT_EQ(2u, val->GetList().size());
+  for (size_t i = 0; i < val->GetList().size(); i++) {
+    Value* iteration_val = &(val->GetList().at(i));
+    ASSERT_TRUE(iteration_val);
+    ASSERT_TRUE(iteration_val->is_dict());
+    EXPECT_EQ(2u, iteration_val->DictSize());
+    ValidateTestResult(iteration_val, first_result);
+    ValidateTestResult(iteration_val, second_result);
+  }
+}
+
+// Validate TestLauncher outputs the correct JSON file
+// when running disabled tests.
+TEST_F(TestLauncherTest, JsonSummaryWithDisabledTests) {
+  AddMockedTests("Test", {"DISABLED_Test"});
+  SetUpExpectCalls();
+
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath path = dir.GetPath().AppendASCII("SaveSummaryResult.json");
+  command_line->AppendSwitchPath("test-launcher-summary-output", path);
+  command_line->AppendSwitch("gtest_also_run_disabled_tests");
+
+  // Setup results to be returned by the test launcher delegate.
+  TestResult test_result =
+      GenerateTestResult("Test.DISABLED_Test", TestResult::TEST_SUCCESS,
+                         TimeDelta::FromMilliseconds(50), "output_second");
+
+  using ::testing::_;
+  EXPECT_CALL(delegate, RunTests(_, _))
+      .WillOnce(
+          ::testing::DoAll(OnTestResult(test_result), testing::Return(1)));
+  EXPECT_TRUE(test_launcher.Run(command_line.get()));
+
+  // Validate the resulting JSON file is the expected output.
+  ReadSummary(path);
+  Value* val = root->FindDictKey("test_locations");
+  ASSERT_TRUE(val);
+  EXPECT_EQ(1u, val->DictSize());
+  ValidateTestLocation(val, "Test.DISABLED_Test", "File", 100);
+
+  val = root->FindListKey("per_iteration_data");
+  ASSERT_TRUE(val);
+  ASSERT_EQ(1u, val->GetList().size());
+
+  Value* iteration_val = &(val->GetList().at(0));
+  ASSERT_TRUE(iteration_val);
+  ASSERT_TRUE(iteration_val->is_dict());
+  EXPECT_EQ(1u, iteration_val->DictSize());
+  // We expect the result to be stripped of disabled prefix.
+  test_result.full_name = "Test.Test";
+  ValidateTestResult(iteration_val, test_result);
 }
 
 }  // namespace
