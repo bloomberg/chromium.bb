@@ -97,15 +97,17 @@ function setUp() {
 
   isScanningForTest = false;
 
-  directoryModel = /** @type {!DirectoryModel} */ ({
-    __proto__: cr.EventTarget.prototype,
-    getFileList: function() {
+  class TestDirectoryModel extends cr.EventTarget {
+    getFileList() {
       return fileListModel;
-    },
-    isScanning: function() {
+    }
+    isScanning() {
       return isScanningForTest;
-    },
-  });
+    }
+  }
+
+  /** @suppress {checkTypes} */
+  directoryModel = /** @type {!DirectoryModel} */ (new TestDirectoryModel());
 
   const fakeVolumeManager = /** @type {!VolumeManager} */ ({
     getVolumeInfo: function(entry) {
