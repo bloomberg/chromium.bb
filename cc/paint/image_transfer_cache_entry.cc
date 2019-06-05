@@ -308,6 +308,10 @@ bool ServiceImageTransferCacheEntry::MakeSkImage(
     }
   }
 
+  // Make sure the GPU work to create the backing texture is issued.
+  if (image_)
+    image_->getBackendTexture(true /* flushPendingGrContextIO */);
+
   return !!image_;
 }
 

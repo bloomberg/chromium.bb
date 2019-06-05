@@ -2274,9 +2274,9 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   locked_handles_.clear();
 
   // We just flushed a tile's worth of GPU work from the SkSurface in
-  // flush above. Use kDeferLaterCommands to ensure we yield to
-  // the Scheduler before processing more commands.
-  current_decoder_error_ = error::kDeferLaterCommands;
+  // flush above. Yield to the Scheduler to allow pre-emption before
+  // processing more commands.
+  ExitCommandProcessingEarly();
 }
 
 void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
@@ -2340,6 +2340,12 @@ void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
                        "Failure to deserialize transfer cache entry.");
     return;
   }
+
+  // The only entry using the GrContext are image transfer cache entries for
+  // image uploads. Since this tends to a slow operation, yield to allow the
+  // decoder to be pre-empted.
+  if (context_for_entry)
+    ExitCommandProcessingEarly();
 }
 
 void RasterDecoderImpl::DoUnlockTransferCacheEntryINTERNAL(
