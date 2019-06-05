@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
@@ -113,7 +114,15 @@ IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest, BrowserNotLaunched) {
 
 // Checks that the Kiosk Next Home window does not launch in sign-in when
 // its pref is disabled.
-IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest, KioskNextShellNotLaunched) {
+//
+// See https://crbug.com/971256
+#if defined(OS_LINUX)
+#define MAYBE_KioskNextShellNotLaunched DISABLED_KioskNextShellNotLaunched
+#else
+#define MAYBE_KioskNextShellNotLaunched KioskNextShellNotLaunched
+#endif
+IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest,
+                       MAYBE_KioskNextShellNotLaunched) {
   // Enable all component extensions.
   extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
 
