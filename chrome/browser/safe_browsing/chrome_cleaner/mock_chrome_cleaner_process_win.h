@@ -22,16 +22,12 @@ namespace safe_browsing {
 //
 // MULTIPROCESS_TEST_MAIN(MockChromeCleanerProcessMain) {
 //   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-//   MockChromeCleanerProcess::Options options;
-//   EXPECT_TRUE(MockChromeCleanerProcess::Options::FromCommandLine(
-//       *command_line, &options));
-//   std::string chrome_mojo_pipe_token = ...
-//   EXPECT_FALSE(chrome_mojo_pipe_token.empty())
 //
+//   MockChromeCleanerProcess mock_cleaner_process;
+//   EXPECT_TRUE(mock_cleaner_process.InitWithCommandLine(*command_line));
 //   if (::testing::Test::HasFailure())
 //     return MockChromeCleanerProcess::kInternalTestFailureExitCode;
-//   MockChromeCleanerProcess mock_cleaner_process(options,
-//                                                 chrome_mojo_pipe_token);
+//
 //   return mock_cleaner_process.Run();
 // }
 class MockChromeCleanerProcess {
@@ -157,8 +153,10 @@ class MockChromeCleanerProcess {
         chrome_cleaner::mojom::PromptAcceptance::UNSPECIFIED;
   };
 
-  MockChromeCleanerProcess(const Options& options,
-                           const std::string& chrome_mojo_pipe_token);
+  MockChromeCleanerProcess() = default;
+  ~MockChromeCleanerProcess() = default;
+
+  bool InitWithCommandLine(const base::CommandLine& command_line);
 
   // Call this in the main function of the mock Chrome Cleaner process. Returns
   // the exit code that should be used when the process exits.

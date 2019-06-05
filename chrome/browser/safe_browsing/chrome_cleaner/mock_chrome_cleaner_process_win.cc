@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/chrome_cleaner/public/constants/constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -323,10 +324,16 @@ int MockChromeCleanerProcess::Options::ExpectedExitCode(
   return kDeclinedExitCode;
 }
 
-MockChromeCleanerProcess::MockChromeCleanerProcess(
-    const Options& options,
-    const std::string& chrome_mojo_pipe_token)
-    : options_(options), chrome_mojo_pipe_token_(chrome_mojo_pipe_token) {}
+bool MockChromeCleanerProcess::InitWithCommandLine(
+    const base::CommandLine& command_line) {
+  if (!Options::FromCommandLine(command_line, &options_))
+    return false;
+  chrome_mojo_pipe_token_ = command_line.GetSwitchValueASCII(
+      chrome_cleaner::kChromeMojoPipeTokenSwitch);
+  if (chrome_mojo_pipe_token_.empty())
+    return false;
+  return true;
+}
 
 int MockChromeCleanerProcess::Run() {
   // We use EXPECT_*() macros to get good log lines, but since this code is run

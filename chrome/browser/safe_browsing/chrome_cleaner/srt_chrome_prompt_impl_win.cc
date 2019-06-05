@@ -53,26 +53,25 @@ void ChromePromptImpl::PromptUser(
       ChromeCleanerScannerResults::RegistryKeyCollection;
   using ExtensionCollection = ChromeCleanerScannerResults::ExtensionCollection;
 
-  if (on_prompt_user_) {
-    if (base::FeatureList::IsEnabled(kChromeCleanupExtensionsFeature) &&
-        extension_ids) {
-      extension_ids_ = extension_ids.value();
-    } else {
-      extension_ids_.clear();
-    }
-
-    ChromeCleanerScannerResults scanner_results(
-        FileCollection(files_to_delete.begin(), files_to_delete.end()),
-        registry_keys ? RegistryKeyCollection(registry_keys->begin(),
-                                              registry_keys->end())
-                      : RegistryKeyCollection(),
-        extension_ids_.empty() ? ExtensionCollection()
-                               : ExtensionCollection(extension_ids_.begin(),
-                                                     extension_ids_.end()));
-
-    std::move(on_prompt_user_)
-        .Run(std::move(scanner_results), std::move(callback));
+  DCHECK(on_prompt_user_);
+  if (base::FeatureList::IsEnabled(kChromeCleanupExtensionsFeature) &&
+      extension_ids) {
+    extension_ids_ = extension_ids.value();
+  } else {
+    extension_ids_.clear();
   }
+
+  ChromeCleanerScannerResults scanner_results(
+      FileCollection(files_to_delete.begin(), files_to_delete.end()),
+      registry_keys
+          ? RegistryKeyCollection(registry_keys->begin(), registry_keys->end())
+          : RegistryKeyCollection(),
+      extension_ids_.empty()
+          ? ExtensionCollection()
+          : ExtensionCollection(extension_ids_.begin(), extension_ids_.end()));
+
+  std::move(on_prompt_user_)
+      .Run(std::move(scanner_results), std::move(callback));
 }
 
 // The |extensions_ids| passed to this function are a subset of the

@@ -158,6 +158,7 @@ TEST_F(ExtensionDeletionEnabledTest, CantDeleteNonPromptedExtensions) {
       std::make_unique<ChromePromptImpl>(extension_service, nullptr,
                                          base::DoNothing(), base::DoNothing());
 
+  // Call DisableExtensions without prompting.
   std::vector<base::string16> extensions_to_disable{extension_ids[0]};
   chrome_prompt->DisableExtensions(
       extensions_to_disable,
@@ -186,6 +187,7 @@ TEST_F(ExtensionDeletionEnabledTest, CantDeleteNonPromptedExtensions) {
                 base::UTF16ToUTF8(extension_ids[2])),
             nullptr);
 
+  // Prompt for an extension but try to disable different ones.
   chrome_prompt->PromptUser({}, {}, {{extension_ids[2]}}, base::DoNothing());
   chrome_prompt->DisableExtensions(
       {extension_ids[0], extension_ids[1]},
@@ -244,6 +246,7 @@ TEST_F(ExtensionDeletionEnabledTest, NotInstalledExtensionTest) {
       std::make_unique<ChromePromptImpl>(extension_service, nullptr,
                                          base::DoNothing(), base::DoNothing());
 
+  chrome_prompt->PromptUser({}, {}, extension_ids, base::DoNothing());
   chrome_prompt->DisableExtensions(
       extension_ids, base::BindOnce([](bool result) { EXPECT_FALSE(result); }));
 }

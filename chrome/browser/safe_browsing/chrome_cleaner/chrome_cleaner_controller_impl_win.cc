@@ -637,6 +637,7 @@ void ChromeCleanerControllerImpl::WeakOnPromptUser(
     base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
         ->PostTask(FROM_HERE, base::BindOnce(std::move(prompt_user_callback),
                                              PromptAcceptance::DENIED));
+    return;
   }
 
   controller->OnPromptUser(std::move(scanner_results),

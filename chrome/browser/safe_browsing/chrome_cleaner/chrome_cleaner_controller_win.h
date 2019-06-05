@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/sw_reporter_invocation_win.h"
-#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 
 class Profile;
 
