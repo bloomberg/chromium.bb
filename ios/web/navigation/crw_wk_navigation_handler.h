@@ -93,10 +93,6 @@ class WKBackForwardListItemHolder;
             rendererInitiated:(BOOL)renderedInitiated
         placeholderNavigation:(BOOL)placeholderNavigation;
 
-// Instructs the delegate to clear the web frames list.
-- (void)navigationHandlerRemoveAllWebFrames:
-    (CRWWKNavigationHandler*)navigationHandler;
-
 // Instructs the delegate to display the webView.
 - (void)navigationHandlerDisplayWebView:
     (CRWWKNavigationHandler*)navigationHandler;

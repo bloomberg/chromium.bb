@@ -698,7 +698,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     }
   }
 
-  [self.delegate navigationHandlerRemoveAllWebFrames:self];
+  [self removeAllWebFrames];
   // This must be reset at the end, since code above may need information about
   // the pending load.
   self.pendingNavigationInfo = nil;
@@ -831,7 +831,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 
   [self commitPendingNavigationInfoInWebView:webView];
 
-  [self.delegate navigationHandlerRemoveAllWebFrames:self];
+  [self removeAllWebFrames];
 
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
@@ -1091,7 +1091,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
           forNavigation:navigation
                 webView:webView
         provisionalLoad:NO];
-  [self.delegate navigationHandlerRemoveAllWebFrames:self];
+  [self removeAllWebFrames];
   _certVerificationErrors->Clear();
   [self forgetNullWKNavigation:navigation];
 }
@@ -1144,6 +1144,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 
   _certVerificationErrors->Clear();
   self.webProcessCrashed = YES;
+  [self removeAllWebFrames];
 
   [self.delegate navigationHandlerWebProcessDidCrash:self];
 }
@@ -1966,6 +1967,16 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
                         forContext:context];
   self.webStateImpl->SetIsLoading(false);
   self.webStateImpl->OnPageLoaded(failingURL, NO);
+}
+
+// Clears the frames list.
+- (void)removeAllWebFrames {
+  web::WebFramesManagerImpl* framesManager =
+      web::WebFramesManagerImpl::FromWebState(self.webStateImpl);
+  for (auto* frame : framesManager->GetAllWebFrames()) {
+    self.webStateImpl->OnWebFrameUnavailable(frame);
+  }
+  framesManager->RemoveAllWebFrames();
 }
 
 #pragma mark - Public methods

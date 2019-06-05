@@ -354,8 +354,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 - (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message;
 // Handles frame became unavailable message.
 - (void)frameBecameUnavailableWithMessage:(WKScriptMessage*)message;
-// Clears the frames list.
-- (void)removeAllWebFrames;
 
 // Restores the state for this page from session history.
 - (void)restoreStateFromHistory;
@@ -2243,15 +2241,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 }
 
-- (void)removeAllWebFrames {
-  web::WebFramesManagerImpl* framesManager =
-      web::WebFramesManagerImpl::FromWebState([self webState]);
-  for (auto* frame : framesManager->GetAllWebFrames()) {
-    self.webStateImpl->OnWebFrameUnavailable(frame);
-  }
-  framesManager->RemoveAllWebFrames();
-}
-
 #pragma mark - JavaScript message handlers
 // Handlers for JavaScript messages. |message| contains a JavaScript command and
 // data relevant to the message, and |context| contains contextual information
@@ -3695,11 +3684,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                    placeholderNavigation:placeholderNavigation];
 }
 
-- (void)navigationHandlerRemoveAllWebFrames:
-    (CRWWKNavigationHandler*)navigationHandler {
-  [self removeAllWebFrames];
-}
-
 - (void)navigationHandlerDisplayWebView:
     (CRWWKNavigationHandler*)navigationHandler {
   [self displayWebView];
@@ -3737,7 +3721,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)navigationHandlerWebProcessDidCrash:
     (CRWWKNavigationHandler*)navigationHandler {
-  [self removeAllWebFrames];
   // On iOS 11 WKWebView does not repaint after crash and reload. Recreating
   // web view fixes the issue. TODO(crbug.com/770914): Remove this workaround
   // once rdar://35063950 is fixed.
