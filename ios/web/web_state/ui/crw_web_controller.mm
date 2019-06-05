@@ -324,8 +324,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 // Returns a NSMutableURLRequest that represents the current NavigationItem.
 - (NSMutableURLRequest*)requestForCurrentNavigationItem;
 
-// Aborts any load for both the web view and web controller.
-- (void)abortLoad;
 // Called following navigation completion to generate final navigation lifecycle
 // events. Navigation is considered complete when the document has finished
 // loading, or when other page load mechanics are completed on a
@@ -900,9 +898,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)stopLoading {
   base::RecordAction(base::UserMetricsAction("Stop"));
   // Discard the pending and transient entried before notifying the tab model
-  // observers of the change via |-abortLoad|.
+  // observers of the change.
   self.navigationManagerImpl->DiscardNonCommittedItems();
-  [self abortLoad];
+  [self.webView stopLoading];
+  [self.navigationHandler stopLoading];
   [self.legacyNativeController stopLoading];
 }
 
@@ -930,8 +929,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // Abort any outstanding page load. This ensures the delegate gets informed
   // about the outgoing page, and further messages from the page are suppressed.
   if (self.navigationHandler.navigationState !=
-      web::WKNavigationState::FINISHED)
-    [self abortLoad];
+      web::WKNavigationState::FINISHED) {
+    [self.webView stopLoading];
+    [self.navigationHandler stopLoading];
+  }
 
   DCHECK(!_isHalted);
   self.webStateImpl->ClearTransientContent();
@@ -1727,11 +1728,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 #pragma mark - End of loading
-
-- (void)abortLoad {
-  [self.webView stopLoading];
-  [self.navigationHandler stopLoading];
-}
 
 - (void)didFinishNavigation:(web::NavigationContextImpl*)context {
   // This can be called at multiple times after the document has loaded. Do
@@ -3004,8 +3000,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.webStateImpl->CancelDialogs();
   self.navigationManagerImpl->DetachFromWebView();
 
-  [self abortLoad];
+  [self.webView stopLoading];
   [self.webView removeFromSuperview];
+  [self.navigationHandler stopLoading];
   [_containerView resetContent];
   [self setWebView:nil];
 
@@ -3662,11 +3659,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)navigationHandlerStopLoading:
     (CRWWKNavigationHandler*)navigationHandler {
   [self stopLoading];
-}
-
-- (void)navigationHandlerAbortLoading:
-    (CRWWKNavigationHandler*)navigationHandler {
-  [self abortLoad];
 }
 
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler

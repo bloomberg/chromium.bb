@@ -79,10 +79,6 @@ class WKBackForwardListItemHolder;
 // Stop Loading current page.
 - (void)navigationHandlerStopLoading:(CRWWKNavigationHandler*)navigationHandler;
 
-// Aborts any load for both the web view and its controller.
-- (void)navigationHandlerAbortLoading:
-    (CRWWKNavigationHandler*)navigationHandler;
-
 // Returns YES if |url| should be loaded in a native view.
 - (BOOL)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
     shouldLoadURLInNativeView:(const GURL&)url;

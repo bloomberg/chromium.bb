@@ -590,7 +590,8 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     // process (which may potentially be controller by an attacker) is
     // dangerous.
     if (web::GetWebClient()->IsAppSpecificURL(self.documentURL)) {
-      [self.delegate navigationHandlerAbortLoading:self];
+      [webView stopLoading];
+      [self stopLoading];
       web::NavigationManager::WebLoadParams params(webViewURL);
       self.navigationManagerImpl->LoadURLWithParams(params);
     }
