@@ -62,7 +62,7 @@
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
-#include "ash/media/media_controller.h"
+#include "ash/media/media_controller_impl.h"
 #include "ash/media/media_notification_controller_impl.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/policy/policy_recommendation_restorer.h"
@@ -553,7 +553,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       keyboard_brightness_control_delegate_(
           std::make_unique<KeyboardBrightnessController>()),
       locale_update_controller_(std::make_unique<LocaleUpdateController>()),
-      media_controller_(std::make_unique<MediaController>(connector)),
+      media_controller_(std::make_unique<MediaControllerImpl>(connector)),
       session_controller_(std::make_unique<SessionControllerImpl>()),
       shell_delegate_(std::move(shell_delegate)),
       shell_state_(std::make_unique<ShellState>()),

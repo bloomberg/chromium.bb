@@ -32,7 +32,7 @@
 #include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
-#include "chrome/browser/ui/ash/media_client.h"
+#include "chrome/browser/ui/ash/media_client_impl.h"
 #include "chrome/browser/ui/ash/network/mobile_data_notifications.h"
 #include "chrome/browser/ui/ash/network/network_connect_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
@@ -168,10 +168,11 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   login_screen_client_ = std::make_unique<LoginScreenClient>();
-  // https://crbug.com/884127 ensuring that LoginScreenClient is initialized before using it InitializeDeviceDisablingManager.
+  // https://crbug.com/884127 ensuring that LoginScreenClient is initialized
+  // before using it InitializeDeviceDisablingManager.
   g_browser_process->platform_part()->InitializeDeviceDisablingManager();
 
-  media_client_ = std::make_unique<MediaClient>();
+  media_client_ = std::make_unique<MediaClientImpl>();
   media_client_->Init();
 
   // Instantiate DisplaySettingsHandler after CrosSettings has been

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/media/media_controller.h"
+#include "ash/media/media_controller_impl.h"
 
+#include "ash/public/cpp/media_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -29,7 +30,7 @@ bool IsMediaSessionActionEligibleForKeyControl(
 
 }  // namespace
 
-MediaController::MediaController(service_manager::Connector* connector)
+MediaControllerImpl::MediaControllerImpl(service_manager::Connector* connector)
     : connector_(connector) {
   // If media session media key handling is enabled this will setup a connection
   // and bind an observer to the media session service.
@@ -37,42 +38,35 @@ MediaController::MediaController(service_manager::Connector* connector)
     GetMediaSessionController();
 }
 
-MediaController::~MediaController() = default;
+MediaControllerImpl::~MediaControllerImpl() = default;
 
-void MediaController::BindRequest(mojom::MediaControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
-void MediaController::AddObserver(MediaCaptureObserver* observer) {
+void MediaControllerImpl::AddObserver(MediaCaptureObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void MediaController::RemoveObserver(MediaCaptureObserver* observer) {
+void MediaControllerImpl::RemoveObserver(MediaCaptureObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void MediaController::SetClient(mojom::MediaClientAssociatedPtrInfo client) {
-  client_.Bind(std::move(client));
+void MediaControllerImpl::SetClient(MediaClient* client) {
+  client_ = client;
 
   // When |client_| is changed or encounters an error we should reset the
   // |force_media_client_key_handling_| bit.
   ResetForceMediaClientKeyHandling();
-  client_.set_connection_error_handler(
-      base::BindOnce(&MediaController::ResetForceMediaClientKeyHandling,
-                     base::Unretained(this)));
 }
 
-void MediaController::SetForceMediaClientKeyHandling(bool enabled) {
+void MediaControllerImpl::SetForceMediaClientKeyHandling(bool enabled) {
   force_media_client_key_handling_ = enabled;
 }
 
-void MediaController::NotifyCaptureState(
-    const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states) {
+void MediaControllerImpl::NotifyCaptureState(
+    const base::flat_map<AccountId, MediaCaptureState>& capture_states) {
   for (auto& observer : observers_)
     observer.OnMediaCaptureChanged(capture_states);
 }
 
-void MediaController::HandleMediaPlayPause() {
+void MediaControllerImpl::HandleMediaPlayPause() {
   if (Shell::Get()->session_controller()->IsScreenLocked())
     return;
 
@@ -89,13 +83,11 @@ void MediaController::HandleMediaPlayPause() {
     switch (media_session_info_->playback_state) {
       case media_session::mojom::MediaPlaybackState::kPaused:
         GetMediaSessionController()->Resume();
-        ui::RecordMediaHardwareKeyAction(
-            ui::MediaHardwareKeyAction::kPlay);
+        ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kPlay);
         break;
       case media_session::mojom::MediaPlaybackState::kPlaying:
         GetMediaSessionController()->Suspend();
-        ui::RecordMediaHardwareKeyAction(
-            ui::MediaHardwareKeyAction::kPause);
+        ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kPause);
         break;
     }
 
@@ -104,19 +96,17 @@ void MediaController::HandleMediaPlayPause() {
 
   // If media session does not handle the key then we don't know whether the
   // action will play or pause so we should record a generic "play/pause".
-  ui::RecordMediaHardwareKeyAction(
-      ui::MediaHardwareKeyAction::kPlayPause);
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kPlayPause);
 
   if (client_)
     client_->HandleMediaPlayPause();
 }
 
-void MediaController::HandleMediaNextTrack() {
+void MediaControllerImpl::HandleMediaNextTrack() {
   if (Shell::Get()->session_controller()->IsScreenLocked())
     return;
 
-  ui::RecordMediaHardwareKeyAction(
-      ui::MediaHardwareKeyAction::kNextTrack);
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kNextTrack);
 
   // If the |client_| is force handling the keys then we should forward them.
   if (client_ && force_media_client_key_handling_) {
@@ -135,12 +125,11 @@ void MediaController::HandleMediaNextTrack() {
     client_->HandleMediaNextTrack();
 }
 
-void MediaController::HandleMediaPrevTrack() {
+void MediaControllerImpl::HandleMediaPrevTrack() {
   if (Shell::Get()->session_controller()->IsScreenLocked())
     return;
 
-  ui::RecordMediaHardwareKeyAction(
-      ui::MediaHardwareKeyAction::kPreviousTrack);
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kPreviousTrack);
 
   // If the |client_| is force handling the keys then we should forward them.
   if (client_ && force_media_client_key_handling_) {
@@ -159,22 +148,22 @@ void MediaController::HandleMediaPrevTrack() {
     client_->HandleMediaPrevTrack();
 }
 
-void MediaController::RequestCaptureState() {
+void MediaControllerImpl::RequestCaptureState() {
   if (client_)
     client_->RequestCaptureState();
 }
 
-void MediaController::SuspendMediaSessions() {
+void MediaControllerImpl::SuspendMediaSessions() {
   if (client_)
     client_->SuspendMediaSessions();
 }
 
-void MediaController::MediaSessionInfoChanged(
+void MediaControllerImpl::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr session_info) {
   media_session_info_ = std::move(session_info);
 }
 
-void MediaController::MediaSessionActionsChanged(
+void MediaControllerImpl::MediaSessionActionsChanged(
     const std::vector<media_session::mojom::MediaSessionAction>& actions) {
   supported_media_session_action_ = false;
 
@@ -186,22 +175,19 @@ void MediaController::MediaSessionActionsChanged(
   }
 }
 
-void MediaController::SetMediaSessionControllerForTest(
+void MediaControllerImpl::SetMediaSessionControllerForTest(
     media_session::mojom::MediaControllerPtr controller) {
   media_session_controller_ptr_ = std::move(controller);
   BindMediaControllerObserver();
 }
 
-void MediaController::FlushForTesting() {
-  if (client_)
-    client_.FlushForTesting();
-
+void MediaControllerImpl::FlushForTesting() {
   if (media_session_controller_ptr_)
     media_session_controller_ptr_.FlushForTesting();
 }
 
 media_session::mojom::MediaController*
-MediaController::GetMediaSessionController() {
+MediaControllerImpl::GetMediaSessionController() {
   // |connector_| can be null in tests.
   if (connector_ && !media_session_controller_ptr_.is_bound()) {
     media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
@@ -211,7 +197,7 @@ MediaController::GetMediaSessionController() {
         mojo::MakeRequest(&media_session_controller_ptr_));
 
     media_session_controller_ptr_.set_connection_error_handler(
-        base::BindRepeating(&MediaController::OnMediaSessionControllerError,
+        base::BindRepeating(&MediaControllerImpl::OnMediaSessionControllerError,
                             base::Unretained(this)));
 
     BindMediaControllerObserver();
@@ -220,12 +206,12 @@ MediaController::GetMediaSessionController() {
   return media_session_controller_ptr_.get();
 }
 
-void MediaController::OnMediaSessionControllerError() {
+void MediaControllerImpl::OnMediaSessionControllerError() {
   media_session_controller_ptr_.reset();
   supported_media_session_action_ = false;
 }
 
-void MediaController::BindMediaControllerObserver() {
+void MediaControllerImpl::BindMediaControllerObserver() {
   if (!media_session_controller_ptr_.is_bound())
     return;
 
@@ -234,13 +220,13 @@ void MediaController::BindMediaControllerObserver() {
   media_session_controller_ptr_->AddObserver(std::move(observer));
 }
 
-bool MediaController::ShouldUseMediaSession() {
+bool MediaControllerImpl::ShouldUseMediaSession() {
   return base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling) &&
          GetMediaSessionController() && supported_media_session_action_ &&
          !media_session_info_.is_null();
 }
 
-void MediaController::ResetForceMediaClientKeyHandling() {
+void MediaControllerImpl::ResetForceMediaClientKeyHandling() {
   force_media_client_key_handling_ = false;
 }
 

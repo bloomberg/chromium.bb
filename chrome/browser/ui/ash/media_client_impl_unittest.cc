@@ -2,40 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/media_client.h"
+#include "chrome/browser/ui/ash/media_client_impl.h"
 
 #include <memory>
 
-#include "ash/public/interfaces/media.mojom.h"
+#include "ash/public/cpp/media_controller.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/account_id/account_id.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/accelerators/media_keys_listener.h"
 
 namespace {
 
-class TestMediaController : public ash::mojom::MediaController {
+class TestMediaController : public ash::MediaController {
  public:
   TestMediaController() = default;
   ~TestMediaController() override = default;
 
-  ash::mojom::MediaControllerPtr CreateMediaControllerPtr() {
-    ash::mojom::MediaControllerPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
-  // mojom::MediaController:
-  void SetClient(ash::mojom::MediaClientAssociatedPtrInfo client) override {}
+  // ash::MediaController:
+  void SetClient(ash::MediaClient* client) override {}
   void SetForceMediaClientKeyHandling(bool enabled) override {
     force_media_client_key_handling_ = enabled;
   }
   void NotifyCaptureState(
-      const base::flat_map<AccountId, ash::mojom::MediaCaptureState>&
-          capture_states) override {}
+      const base::flat_map<AccountId, ash::MediaCaptureState>& capture_states)
+      override {}
 
   bool force_media_client_key_handling() const {
     return force_media_client_key_handling_;
@@ -43,8 +36,6 @@ class TestMediaController : public ash::mojom::MediaController {
 
  private:
   bool force_media_client_key_handling_ = false;
-
-  mojo::Binding<ash::mojom::MediaController> binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaController);
 };
@@ -74,7 +65,7 @@ class TestMediaKeysDelegate : public ui::MediaKeysListener::Delegate {
 
 class MediaClientTest : public BrowserWithTestWindowTest {
  public:
-  MediaClientTest() {}
+  MediaClientTest() = default;
   ~MediaClientTest() override = default;
 
   void SetUp() override {
@@ -87,14 +78,15 @@ class MediaClientTest : public BrowserWithTestWindowTest {
     extensions::MediaPlayerAPI::Get(profile());
 
     test_delegate_ = std::make_unique<TestMediaKeysDelegate>();
+
+    media_controller_resetter_ =
+        std::make_unique<ash::MediaController::ScopedResetterForTest>();
     test_media_controller_ = std::make_unique<TestMediaController>();
 
-    media_client_ = std::make_unique<MediaClient>();
-    media_client_->InitForTesting(
-        test_media_controller_->CreateMediaControllerPtr());
+    media_client_ = std::make_unique<MediaClientImpl>();
+    media_client_->InitForTesting(test_media_controller_.get());
 
     BrowserList::SetLastActive(browser());
-    client()->FlushForTesting();
 
     ASSERT_FALSE(test_media_controller_->force_media_client_key_handling());
     ASSERT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
@@ -103,6 +95,7 @@ class MediaClientTest : public BrowserWithTestWindowTest {
   void TearDown() override {
     media_client_.reset();
     test_media_controller_.reset();
+    media_controller_resetter_.reset();
     test_delegate_.reset();
 
     alt_browser_->tab_strip_model()->CloseAllTabs();
@@ -112,7 +105,7 @@ class MediaClientTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
-  MediaClient* client() { return media_client_.get(); }
+  MediaClientImpl* client() { return media_client_.get(); }
 
   TestMediaController* controller() { return test_media_controller_.get(); }
 
@@ -124,8 +117,10 @@ class MediaClientTest : public BrowserWithTestWindowTest {
 
  private:
   std::unique_ptr<TestMediaKeysDelegate> test_delegate_;
+  std::unique_ptr<ash::MediaController::ScopedResetterForTest>
+      media_controller_resetter_;
   std::unique_ptr<TestMediaController> test_media_controller_;
-  std::unique_ptr<MediaClient> media_client_;
+  std::unique_ptr<MediaClientImpl> media_client_;
 
   std::unique_ptr<Browser> alt_browser_;
   std::unique_ptr<BrowserWindow> alt_window_;
@@ -140,7 +135,6 @@ TEST_F(MediaClientTest, HandleMediaPlayPause) {
   // Enable custom media key handling for the current browser. Ensure that the
   // client set the override on the controller.
   client()->EnableCustomMediaKeyHandler(profile(), delegate());
-  client()->FlushForTesting();
   EXPECT_TRUE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check that the delegate received it.
@@ -149,7 +143,6 @@ TEST_F(MediaClientTest, HandleMediaPlayPause) {
 
   // Change the active browser and ensure the override was disabled.
   BrowserList::SetLastActive(alt_browser());
-  client()->FlushForTesting();
   EXPECT_FALSE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check that the delegate did not receive it.
@@ -158,7 +151,6 @@ TEST_F(MediaClientTest, HandleMediaPlayPause) {
 
   // Change the active browser back and ensure the override was enabled.
   BrowserList::SetLastActive(browser());
-  client()->FlushForTesting();
   EXPECT_TRUE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check the delegate received it.
@@ -168,7 +160,6 @@ TEST_F(MediaClientTest, HandleMediaPlayPause) {
   // Disable custom media key handling for the current browser and ensure the
   // override was disabled.
   client()->DisableCustomMediaKeyHandler(profile(), delegate());
-  client()->FlushForTesting();
   EXPECT_FALSE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check the delegate did not receive it.
@@ -183,7 +174,6 @@ TEST_F(MediaClientTest, HandleMediaNextTrack) {
   // Enable custom media key handling for the current browser. Ensure that the
   // client set the override on the controller.
   client()->EnableCustomMediaKeyHandler(profile(), delegate());
-  client()->FlushForTesting();
   EXPECT_TRUE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check that the delegate received it.
@@ -192,7 +182,6 @@ TEST_F(MediaClientTest, HandleMediaNextTrack) {
 
   // Change the active browser and ensure the override was disabled.
   BrowserList::SetLastActive(alt_browser());
-  client()->FlushForTesting();
   EXPECT_FALSE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check that the delegate did not receive it.
@@ -201,7 +190,6 @@ TEST_F(MediaClientTest, HandleMediaNextTrack) {
 
   // Change the active browser back and ensure the override was enabled.
   BrowserList::SetLastActive(browser());
-  client()->FlushForTesting();
   EXPECT_TRUE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check the delegate received it.
@@ -211,7 +199,6 @@ TEST_F(MediaClientTest, HandleMediaNextTrack) {
   // Disable custom media key handling for the current browser and ensure the
   // override was disabled.
   client()->DisableCustomMediaKeyHandler(profile(), delegate());
-  client()->FlushForTesting();
   EXPECT_FALSE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check the delegate did not receive it.
@@ -226,7 +213,6 @@ TEST_F(MediaClientTest, HandleMediaPrevTrack) {
   // Enable custom media key handling for the current browser. Ensure that the
   // client set the override on the controller.
   client()->EnableCustomMediaKeyHandler(profile(), delegate());
-  client()->FlushForTesting();
   EXPECT_TRUE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check that the delegate received it.
@@ -235,7 +221,6 @@ TEST_F(MediaClientTest, HandleMediaPrevTrack) {
 
   // Change the active browser and ensure the override was disabled.
   BrowserList::SetLastActive(alt_browser());
-  client()->FlushForTesting();
   EXPECT_FALSE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check that the delegate did not receive it.
@@ -244,7 +229,6 @@ TEST_F(MediaClientTest, HandleMediaPrevTrack) {
 
   // Change the active browser back and ensure the override was enabled.
   BrowserList::SetLastActive(browser());
-  client()->FlushForTesting();
   EXPECT_TRUE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check the delegate received it.
@@ -254,7 +238,6 @@ TEST_F(MediaClientTest, HandleMediaPrevTrack) {
   // Disable custom media key handling for the current browser and ensure the
   // override was disabled.
   client()->DisableCustomMediaKeyHandler(profile(), delegate());
-  client()->FlushForTesting();
   EXPECT_FALSE(controller()->force_media_client_key_handling());
 
   // Simulate the media key and check the delegate did not receive it.

@@ -136,7 +136,7 @@ class LogoutConfirmationController;
 class LoginScreenController;
 class MagnificationController;
 class TabletModeController;
-class MediaController;
+class MediaControllerImpl;
 class MediaNotificationControllerImpl;
 class MessageCenterController;
 class MouseCursorEventFilter;
@@ -402,7 +402,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   MagnificationController* magnification_controller() {
     return magnification_controller_.get();
   }
-  MediaController* media_controller() { return media_controller_.get(); }
+  MediaControllerImpl* media_controller() { return media_controller_.get(); }
   MediaNotificationControllerImpl* media_notification_controller() {
     return media_notification_controller_.get();
   }
@@ -666,7 +666,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<LoginScreenController> login_screen_controller_;
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
   std::unique_ptr<TabletModeController> tablet_mode_controller_;
-  std::unique_ptr<MediaController> media_controller_;
+  std::unique_ptr<MediaControllerImpl> media_controller_;
   std::unique_ptr<MediaNotificationControllerImpl>
       media_notification_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;

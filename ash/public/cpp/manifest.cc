@@ -16,7 +16,6 @@
 #include "ash/public/interfaces/kiosk_next_shell.mojom.h"
 #include "ash/public/interfaces/locale.mojom.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
-#include "ash/public/interfaces/media.mojom.h"
 #include "ash/public/interfaces/night_light_controller.mojom.h"
 #include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
@@ -64,9 +63,9 @@ const service_manager::Manifest& GetManifest() {
                   mojom::KioskNextShellController,
                   mojom::CrosDisplayConfigController, mojom::ImeController,
                   mojom::KeyboardController, mojom::LocaleUpdateController,
-                  mojom::LoginScreen, mojom::MediaController,
-                  mojom::NightLightController, mojom::TrayAction,
-                  mojom::VoiceInteractionController, mojom::VpnList>())
+                  mojom::LoginScreen, mojom::NightLightController,
+                  mojom::TrayAction, mojom::VoiceInteractionController,
+                  mojom::VpnList>())
           .ExposeCapability("test", service_manager::Manifest::InterfaceList<
                                         mojom::ShelfIntegrationTestApi>())
           .RequireCapability("*", "accessibility")

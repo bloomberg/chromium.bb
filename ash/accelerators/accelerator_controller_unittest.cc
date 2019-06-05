@@ -20,7 +20,7 @@
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/media/media_controller.h"
+#include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -1966,8 +1966,8 @@ class MediaSessionAcceleratorTest
     client_ = std::make_unique<TestMediaClient>();
     controller_ = std::make_unique<media_session::test::TestMediaController>();
 
-    MediaController* media_controller = Shell::Get()->media_controller();
-    media_controller->SetClient(client_->CreateAssociatedPtrInfo());
+    MediaControllerImpl* media_controller = Shell::Get()->media_controller();
+    media_controller->SetClient(client_.get());
     media_controller->SetMediaSessionControllerForTest(
         controller_->CreateMediaControllerPtr());
     media_controller->SetForceMediaClientKeyHandling(

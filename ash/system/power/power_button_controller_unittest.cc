@@ -8,7 +8,7 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
-#include "ash/media/media_controller.h"
+#include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -709,7 +709,7 @@ TEST_F(PowerButtonControllerTest, SyncTouchscreenEnabled) {
 // sessions should be suspended.
 TEST_F(PowerButtonControllerTest, SuspendMediaSessions) {
   TestMediaClient client;
-  Shell::Get()->media_controller()->SetClient(client.CreateAssociatedPtrInfo());
+  Shell::Get()->media_controller()->SetClient(&client);
   ASSERT_FALSE(client.media_sessions_suspended());
 
   EnableTabletMode(true);

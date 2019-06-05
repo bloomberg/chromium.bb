@@ -32,7 +32,6 @@ mojom("interfaces_internal") {
     "kiosk_next_shell.mojom",
     "locale.mojom",
     "login_screen.mojom",
-    "media.mojom",
     "night_light_controller.mojom",
     "shelf_integration_test_api.mojom",
     "tray_action.mojom",

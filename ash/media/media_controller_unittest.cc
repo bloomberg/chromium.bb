@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/media/media_controller.h"
+#include "ash/media/media_controller_impl.h"
 
 #include <memory>
 
@@ -25,7 +25,7 @@ class MediaControllerTest : public AshTestBase {
 
     controller_ = std::make_unique<media_session::test::TestMediaController>();
 
-    MediaController* media_controller = Shell::Get()->media_controller();
+    MediaControllerImpl* media_controller = Shell::Get()->media_controller();
     media_controller->SetMediaSessionControllerForTest(
         controller_->CreateMediaControllerPtr());
     media_controller->FlushForTesting();

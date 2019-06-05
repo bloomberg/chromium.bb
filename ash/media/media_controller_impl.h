@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MEDIA_MEDIA_CONTROLLER_H_
-#define ASH_MEDIA_MEDIA_CONTROLLER_H_
+#ifndef ASH_MEDIA_MEDIA_CONTROLLER_IMPL_H_
+#define ASH_MEDIA_MEDIA_CONTROLLER_IMPL_H_
 
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/media.mojom.h"
+#include "ash/public/cpp/media_controller.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/account_id/interfaces/account_id.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "components/account_id/account_id.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 namespace service_manager {
@@ -20,13 +19,14 @@ class Connector;
 
 namespace ash {
 
+class MediaClient;
+
 // Forwards notifications from the MediaController to observers.
 class MediaCaptureObserver {
  public:
   // Called when media capture state has changed.
   virtual void OnMediaCaptureChanged(
-      const base::flat_map<AccountId, mojom::MediaCaptureState>&
-          capture_states) = 0;
+      const base::flat_map<AccountId, MediaCaptureState>& capture_states) = 0;
 
  protected:
   virtual ~MediaCaptureObserver() {}
@@ -35,25 +35,22 @@ class MediaCaptureObserver {
 // Provides the MediaController interface to the outside world. This lets a
 // consumer of ash provide a MediaClient, which we will dispatch to if one has
 // been provided to us.
-class ASH_EXPORT MediaController
-    : public mojom::MediaController,
+class ASH_EXPORT MediaControllerImpl
+    : public MediaController,
       public media_session::mojom::MediaControllerObserver {
  public:
   // |connector| can be null in tests.
-  explicit MediaController(service_manager::Connector* connector);
-  ~MediaController() override;
-
-  void BindRequest(mojom::MediaControllerRequest request);
+  explicit MediaControllerImpl(service_manager::Connector* connector);
+  ~MediaControllerImpl() override;
 
   void AddObserver(MediaCaptureObserver* observer);
   void RemoveObserver(MediaCaptureObserver* observer);
 
-  // mojom::MediaController:
-  void SetClient(mojom::MediaClientAssociatedPtrInfo client) override;
+  // MediaController:
+  void SetClient(MediaClient* client) override;
   void SetForceMediaClientKeyHandling(bool enabled) override;
-  void NotifyCaptureState(
-      const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states)
-      override;
+  void NotifyCaptureState(const base::flat_map<AccountId, MediaCaptureState>&
+                              capture_states) override;
 
   // If media session accelerators are enabled then these methods will use the
   // media session service to control playback. Otherwise it will forward to
@@ -133,16 +130,13 @@ class ASH_EXPORT MediaController
   mojo::Binding<media_session::mojom::MediaControllerObserver>
       media_controller_observer_binding_{this};
 
-  // Bindings for users of the mojo interface.
-  mojo::BindingSet<mojom::MediaController> bindings_;
-
-  mojom::MediaClientAssociatedPtr client_;
+  MediaClient* client_ = nullptr;
 
   base::ObserverList<MediaCaptureObserver>::Unchecked observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaController);
+  DISALLOW_COPY_AND_ASSIGN(MediaControllerImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_MEDIA_MEDIA_CONTROLLER_H_
+#endif  // ASH_MEDIA_MEDIA_CONTROLLER_IMPL_H_

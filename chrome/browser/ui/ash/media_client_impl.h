@@ -2,35 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_MEDIA_CLIENT_H_
-#define CHROME_BROWSER_UI_ASH_MEDIA_CLIENT_H_
+#ifndef CHROME_BROWSER_UI_ASH_MEDIA_CLIENT_IMPL_H_
+#define CHROME_BROWSER_UI_ASH_MEDIA_CLIENT_IMPL_H_
 
-#include "ash/public/interfaces/media.mojom.h"
+#include "ash/public/cpp/media_client.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/base/accelerators/media_keys_listener.h"
 
-class MediaClient : public ash::mojom::MediaClient,
-                    public BrowserListObserver,
-                    MediaCaptureDevicesDispatcher::Observer {
- public:
-  MediaClient();
-  ~MediaClient() override;
+namespace ash {
+enum class MediaCaptureState;
+class MediaController;
+}  // namespace ash
 
-  // Initializes and connects to ash.
+class MediaClientImpl : public ash::MediaClient,
+                        public BrowserListObserver,
+                        public MediaCaptureDevicesDispatcher::Observer {
+ public:
+  MediaClientImpl();
+  ~MediaClientImpl() override;
+
+  // Initializes and set as client for ash.
   void Init();
 
   // Tests can provide a mock mojo interface for the ash controller.
-  void InitForTesting(ash::mojom::MediaControllerPtr controller);
+  void InitForTesting(ash::MediaController* controller);
 
   // Returns a pointer to the singleton MediaClient, or nullptr if none exists.
-  static MediaClient* Get();
+  static MediaClientImpl* Get();
 
-  // ash::mojom::MediaClient:
+  // ash::MediaClient:
   void HandleMediaNextTrack() override;
   void HandleMediaPlayPause() override;
   void HandleMediaPrevTrack() override;
@@ -53,12 +57,7 @@ class MediaClient : public ash::mojom::MediaClient,
   void DisableCustomMediaKeyHandler(content::BrowserContext* context,
                                     ui::MediaKeysListener::Delegate* delegate);
 
-  void FlushForTesting();
-
  private:
-  // Binds this object to its mojo interface and sets it as the ash client.
-  void BindAndSetClient();
-
   // Sets |is_forcing_media_client_key_handling_| to true if
   // |GetCurrentMediaKeyDelegate| returns a delegate. This will also mirror the
   // value of |is_forcing_media_client_key_handling_| to Ash.
@@ -73,14 +72,14 @@ class MediaClient : public ash::mojom::MediaClient,
   // Returns the media capture state for the current user at
   // |user_index|. (Note that this isn't stable, see implementation comment on
   // RequestCaptureState()).
-  ash::mojom::MediaCaptureState GetMediaCaptureStateByIndex(int user_index);
+  ash::MediaCaptureState GetMediaCaptureStateByIndex(int user_index);
 
   // Handles the media key action for the key with |code|. If there is a
   // |GetCurrentMediaKeyDelegate| then the action will be forwarded to the
   // delegate. Otherwise, we will forward the action to the extensions API.
   void HandleMediaAction(ui::KeyboardCode code);
 
-  ash::mojom::MediaControllerPtr media_controller_;
+  ash::MediaController* media_controller_ = nullptr;
 
   base::flat_map<content::BrowserContext*, ui::MediaKeysListener::Delegate*>
       media_key_delegates_;
@@ -91,11 +90,9 @@ class MediaClient : public ash::mojom::MediaClient,
 
   content::BrowserContext* active_context_ = nullptr;
 
-  mojo::AssociatedBinding<ash::mojom::MediaClient> binding_{this};
+  base::WeakPtrFactory<MediaClientImpl> weak_ptr_factory_{this};
 
-  base::WeakPtrFactory<MediaClient> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MediaClient);
+  DISALLOW_COPY_AND_ASSIGN(MediaClientImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_MEDIA_CLIENT_H_
+#endif  // CHROME_BROWSER_UI_ASH_MEDIA_CLIENT_IMPL_H_

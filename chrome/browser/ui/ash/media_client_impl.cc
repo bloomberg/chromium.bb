@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/media_client.h"
+#include "chrome/browser/ui/ash/media_client_impl.h"
 
 #include <utility>
 
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/cpp/media_controller.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -29,18 +29,17 @@
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-using ash::mojom::MediaCaptureState;
+using ash::MediaCaptureState;
 
 namespace {
 
-MediaClient* g_media_client_ = nullptr;
+MediaClientImpl* g_media_client = nullptr;
 
 MediaCaptureState& operator|=(MediaCaptureState& lhs, MediaCaptureState rhs) {
   lhs = static_cast<MediaCaptureState>(static_cast<int>(lhs) |
@@ -55,9 +54,9 @@ void GetMediaCaptureState(const MediaStreamCaptureIndicator* indicator,
   bool audio = indicator->IsCapturingAudio(web_contents);
 
   if (video)
-    *media_state_out |= MediaCaptureState::VIDEO;
+    *media_state_out |= MediaCaptureState::kVideo;
   if (audio)
-    *media_state_out |= MediaCaptureState::AUDIO;
+    *media_state_out |= MediaCaptureState::kAudio;
 }
 
 void GetBrowserMediaCaptureState(const MediaStreamCaptureIndicator* indicator,
@@ -73,7 +72,7 @@ void GetBrowserMediaCaptureState(const MediaStreamCaptureIndicator* indicator,
       if (web_contents->GetBrowserContext() != context)
         continue;
       GetMediaCaptureState(indicator, web_contents, media_state_out);
-      if (*media_state_out == MediaCaptureState::AUDIO_VIDEO)
+      if (*media_state_out == MediaCaptureState::kAudioVideo)
         return;
     }
   }
@@ -88,7 +87,7 @@ void GetAppMediaCaptureState(const MediaStreamCaptureIndicator* indicator,
            apps.begin();
        iter != apps.end(); ++iter) {
     GetMediaCaptureState(indicator, (*iter)->web_contents(), media_state_out);
-    if (*media_state_out == MediaCaptureState::AUDIO_VIDEO)
+    if (*media_state_out == MediaCaptureState::kAudioVideo)
       return;
   }
 }
@@ -104,7 +103,7 @@ void GetExtensionMediaCaptureState(const MediaStreamCaptureIndicator* indicator,
     if (!web_contents)
       continue;
     GetMediaCaptureState(indicator, web_contents, media_state_out);
-    if (*media_state_out == MediaCaptureState::AUDIO_VIDEO)
+    if (*media_state_out == MediaCaptureState::kAudioVideo)
       return;
   }
 }
@@ -112,22 +111,22 @@ void GetExtensionMediaCaptureState(const MediaStreamCaptureIndicator* indicator,
 MediaCaptureState GetMediaCaptureStateOfAllWebContents(
     content::BrowserContext* context) {
   if (!context)
-    return MediaCaptureState::NONE;
+    return MediaCaptureState::kNone;
 
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator();
 
-  MediaCaptureState media_state = MediaCaptureState::NONE;
+  MediaCaptureState media_state = MediaCaptureState::kNone;
   // Browser windows
   GetBrowserMediaCaptureState(indicator.get(), context, &media_state);
-  if (media_state == MediaCaptureState::AUDIO_VIDEO)
-    return MediaCaptureState::AUDIO_VIDEO;
+  if (media_state == MediaCaptureState::kAudioVideo)
+    return MediaCaptureState::kAudioVideo;
 
   // App windows
   GetAppMediaCaptureState(indicator.get(), context, &media_state);
-  if (media_state == MediaCaptureState::AUDIO_VIDEO)
-    return MediaCaptureState::AUDIO_VIDEO;
+  if (media_state == MediaCaptureState::kAudioVideo)
+    return MediaCaptureState::kAudioVideo;
 
   // Extensions
   GetExtensionMediaCaptureState(indicator.get(), context, &media_state);
@@ -137,55 +136,56 @@ MediaCaptureState GetMediaCaptureStateOfAllWebContents(
 
 }  // namespace
 
-MediaClient::MediaClient() {
+MediaClientImpl::MediaClientImpl() {
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
   BrowserList::GetInstance()->AddObserver(this);
 
-  DCHECK(!g_media_client_);
-  g_media_client_ = this;
+  DCHECK(!g_media_client);
+  g_media_client = this;
 }
 
-MediaClient::~MediaClient() {
-  g_media_client_ = nullptr;
+MediaClientImpl::~MediaClientImpl() {
+  g_media_client = nullptr;
+
+  if (media_controller_ && ash::MediaController::Get() == media_controller_)
+    media_controller_->SetClient(nullptr);
 
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
   BrowserList::GetInstance()->RemoveObserver(this);
 }
 
 // static
-MediaClient* MediaClient::Get() {
-  return g_media_client_;
+MediaClientImpl* MediaClientImpl::Get() {
+  return g_media_client;
 }
 
-void MediaClient::Init() {
-  DCHECK(!media_controller_.is_bound());
+void MediaClientImpl::Init() {
+  DCHECK(!media_controller_);
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &media_controller_);
-  BindAndSetClient();
+  media_controller_ = ash::MediaController::Get();
+  media_controller_->SetClient(this);
 }
 
-void MediaClient::InitForTesting(ash::mojom::MediaControllerPtr controller) {
-  DCHECK(!media_controller_.is_bound());
+void MediaClientImpl::InitForTesting(ash::MediaController* controller) {
+  DCHECK(!media_controller_);
 
-  media_controller_ = std::move(controller);
-  BindAndSetClient();
+  media_controller_ = controller;
+  media_controller_->SetClient(this);
 }
 
-void MediaClient::HandleMediaNextTrack() {
+void MediaClientImpl::HandleMediaNextTrack() {
   HandleMediaAction(ui::VKEY_MEDIA_NEXT_TRACK);
 }
 
-void MediaClient::HandleMediaPlayPause() {
+void MediaClientImpl::HandleMediaPlayPause() {
   HandleMediaAction(ui::VKEY_MEDIA_PLAY_PAUSE);
 }
 
-void MediaClient::HandleMediaPrevTrack() {
+void MediaClientImpl::HandleMediaPrevTrack() {
   HandleMediaAction(ui::VKEY_MEDIA_PREV_TRACK);
 }
 
-void MediaClient::RequestCaptureState() {
+void MediaClientImpl::RequestCaptureState() {
   base::flat_map<AccountId, MediaCaptureState> capture_states;
   for (user_manager::User* user :
        user_manager::UserManager::Get()->GetLRULoggedInUsers()) {
@@ -196,32 +196,32 @@ void MediaClient::RequestCaptureState() {
   media_controller_->NotifyCaptureState(std::move(capture_states));
 }
 
-void MediaClient::SuspendMediaSessions() {
+void MediaClientImpl::SuspendMediaSessions() {
   for (auto* web_contents : AllTabContentses()) {
     content::MediaSession::Get(web_contents)
         ->Suspend(content::MediaSession::SuspendType::kSystem);
   }
 }
 
-void MediaClient::OnRequestUpdate(int render_process_id,
-                                  int render_frame_id,
-                                  blink::mojom::MediaStreamType stream_type,
-                                  const content::MediaRequestState state) {
+void MediaClientImpl::OnRequestUpdate(int render_process_id,
+                                      int render_frame_id,
+                                      blink::mojom::MediaStreamType stream_type,
+                                      const content::MediaRequestState state) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
   // The PostTask is necessary because the state of MediaStreamCaptureIndicator
   // gets updated after this.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&MediaClient::RequestCaptureState,
+      FROM_HERE, base::BindOnce(&MediaClientImpl::RequestCaptureState,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MediaClient::OnBrowserSetLastActive(Browser* browser) {
+void MediaClientImpl::OnBrowserSetLastActive(Browser* browser) {
   active_context_ = browser ? browser->profile() : nullptr;
 
   UpdateForceMediaClientKeyHandling();
 }
 
-void MediaClient::EnableCustomMediaKeyHandler(
+void MediaClientImpl::EnableCustomMediaKeyHandler(
     content::BrowserContext* context,
     ui::MediaKeysListener::Delegate* delegate) {
   auto it = media_key_delegates_.find(context);
@@ -234,7 +234,7 @@ void MediaClient::EnableCustomMediaKeyHandler(
   UpdateForceMediaClientKeyHandling();
 }
 
-void MediaClient::DisableCustomMediaKeyHandler(
+void MediaClientImpl::DisableCustomMediaKeyHandler(
     content::BrowserContext* context,
     ui::MediaKeysListener::Delegate* delegate) {
   if (!base::ContainsKey(media_key_delegates_, context))
@@ -248,17 +248,7 @@ void MediaClient::DisableCustomMediaKeyHandler(
   UpdateForceMediaClientKeyHandling();
 }
 
-void MediaClient::FlushForTesting() {
-  media_controller_.FlushForTesting();
-}
-
-void MediaClient::BindAndSetClient() {
-  ash::mojom::MediaClientAssociatedPtrInfo ptr_info;
-  binding_.Bind(mojo::MakeRequest(&ptr_info));
-  media_controller_->SetClient(std::move(ptr_info));
-}
-
-void MediaClient::UpdateForceMediaClientKeyHandling() {
+void MediaClientImpl::UpdateForceMediaClientKeyHandling() {
   bool enabled = GetCurrentMediaKeyDelegate() != nullptr;
 
   if (enabled == is_forcing_media_client_key_handling_)
@@ -269,7 +259,7 @@ void MediaClient::UpdateForceMediaClientKeyHandling() {
   media_controller_->SetForceMediaClientKeyHandling(enabled);
 }
 
-ui::MediaKeysListener::Delegate* MediaClient::GetCurrentMediaKeyDelegate()
+ui::MediaKeysListener::Delegate* MediaClientImpl::GetCurrentMediaKeyDelegate()
     const {
   auto it = media_key_delegates_.find(active_context_);
   if (it != media_key_delegates_.end())
@@ -278,7 +268,7 @@ ui::MediaKeysListener::Delegate* MediaClient::GetCurrentMediaKeyDelegate()
   return nullptr;
 }
 
-void MediaClient::HandleMediaAction(ui::KeyboardCode keycode) {
+void MediaClientImpl::HandleMediaAction(ui::KeyboardCode keycode) {
   if (ui::MediaKeysListener::Delegate* custom = GetCurrentMediaKeyDelegate()) {
     custom->OnMediaKeysAccelerator(ui::Accelerator(keycode, ui::EF_NONE));
     return;

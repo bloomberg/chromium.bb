@@ -247,22 +247,22 @@ UserItemButton::UserItemButton(int user_index,
   SetFocusForPlatform();
 }
 
-void UserItemButton::SetCaptureState(mojom::MediaCaptureState capture_state) {
-  capture_icon_->SetVisible(capture_state != mojom::MediaCaptureState::NONE);
+void UserItemButton::SetCaptureState(MediaCaptureState capture_state) {
+  capture_icon_->SetVisible(capture_state != MediaCaptureState::kNone);
   Layout();
 
   int res_id = 0;
   switch (capture_state) {
-    case mojom::MediaCaptureState::AUDIO_VIDEO:
+    case MediaCaptureState::kAudioVideo:
       res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO_VIDEO;
       break;
-    case mojom::MediaCaptureState::AUDIO:
+    case MediaCaptureState::kAudio:
       res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO;
       break;
-    case mojom::MediaCaptureState::VIDEO:
+    case MediaCaptureState::kVideo:
       res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_VIDEO;
       break;
-    case mojom::MediaCaptureState::NONE:
+    case MediaCaptureState::kNone:
       break;
   }
   if (res_id)
@@ -326,7 +326,7 @@ UserChooserView::~UserChooserView() {
 }
 
 void UserChooserView::OnMediaCaptureChanged(
-    const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states) {
+    const base::flat_map<AccountId, MediaCaptureState>& capture_states) {
   if (user_item_buttons_.size() != capture_states.size())
     return;
 

@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/media_client.h"
+#include "chrome/browser/ui/ash/media_client_impl.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -289,7 +289,7 @@ void ScreenTimeController::OnScreenLockByPolicy(
     ash::LoginScreen::Get()->ShowParentAccessButton(true);
 
   // Prevent media from continuing to play after device is locked.
-  MediaClient::Get()->SuspendMediaSessions();
+  MediaClientImpl::Get()->SuspendMediaSessions();
 }
 
 void ScreenTimeController::OnScreenLockByPolicyEnd() {

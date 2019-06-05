@@ -5,7 +5,7 @@
 #include "ash/system/power/power_button_display_controller.h"
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/media/media_controller.h"
+#include "ash/media/media_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
