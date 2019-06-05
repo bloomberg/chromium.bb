@@ -399,6 +399,12 @@ void PaintLayer::UpdateLayerPositionsAfterOverflowScroll() {
     }
     return;
   }
+
+  // Scrolling affects the unclipped_absolute_bounding_box and
+  // clipped_absolute_bounding_box fields of AncestorDependentCompositingInputs
+  // for all descendants.
+  SetNeedsCompositingInputsUpdate();
+
   ClearClipRects();
   UpdateLayerPositionRecursive(AllLayers, /* dirty_compositing */ false);
 }
