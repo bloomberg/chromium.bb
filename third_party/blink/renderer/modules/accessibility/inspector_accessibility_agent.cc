@@ -134,16 +134,6 @@ void FillGlobalStates(AXObject& ax_object,
           CreateProperty(AXPropertyNameEnum::Invalid,
                          CreateValue("true", AXValueTypeEnum::Token)));
       break;
-    case ax::mojom::InvalidState::kSpelling:
-      properties.addItem(
-          CreateProperty(AXPropertyNameEnum::Invalid,
-                         CreateValue("spelling", AXValueTypeEnum::Token)));
-      break;
-    case ax::mojom::InvalidState::kGrammar:
-      properties.addItem(
-          CreateProperty(AXPropertyNameEnum::Invalid,
-                         CreateValue("grammar", AXValueTypeEnum::Token)));
-      break;
     default:
       // TODO(aboxhall): expose invalid: <nothing> and source: aria-invalid as
       // invalid value

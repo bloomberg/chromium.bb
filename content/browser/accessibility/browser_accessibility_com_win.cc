@@ -1838,10 +1838,6 @@ base::string16 BrowserAccessibilityComWin::GetInvalidValue() const {
       break;
     case ax::mojom::InvalidState::kTrue:
       return invalid_value = L"true";
-    case ax::mojom::InvalidState::kSpelling:
-      return invalid_value = L"spelling";
-    case ax::mojom::InvalidState::kGrammar:
-      return base::ASCIIToUTF16("grammar");
     case ax::mojom::InvalidState::kOther: {
       base::string16 aria_invalid_value;
       if (target->GetString16Attribute(
@@ -2004,13 +2000,25 @@ BrowserAccessibilityComWin::GetSpellingAttributes() {
     const std::vector<int>& marker_ends =
         owner()->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds);
     for (size_t i = 0; i < marker_types.size(); ++i) {
-      if (!(marker_types[i] &
-            static_cast<int32_t>(ax::mojom::MarkerType::kSpelling)))
+      bool isSpellingError =
+          (marker_types[i] &
+           static_cast<int32_t>(ax::mojom::MarkerType::kSpelling)) != 0;
+      bool isGrammarError =
+          (marker_types[i] &
+           static_cast<int32_t>(ax::mojom::MarkerType::kGrammar)) != 0;
+      base::string16 invalid_str;
+      if (isSpellingError && isGrammarError)
+        invalid_str = L"invalid:spelling,grammar";
+      else if (isSpellingError)
+        invalid_str = L"invalid:spelling";
+      else if (isGrammarError)
+        invalid_str = L"invalid:grammar";
+      else
         continue;
       int start_offset = marker_starts[i];
       int end_offset = marker_ends[i];
       std::vector<base::string16> start_attributes;
-      start_attributes.push_back(L"invalid:spelling");
+      start_attributes.push_back(invalid_str);
       spelling_attributes[start_offset] = start_attributes;
       spelling_attributes[end_offset] = std::vector<base::string16>();
     }

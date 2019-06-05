@@ -1347,10 +1347,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       return @"false";
     case ax::mojom::InvalidState::kTrue:
       return @"true";
-    case ax::mojom::InvalidState::kSpelling:
-      return @"spelling";
-    case ax::mojom::InvalidState::kGrammar:
-      return @"grammar";
     case ax::mojom::InvalidState::kOther: {
       std::string ariaInvalidValue;
       if (owner_->GetStringAttribute(

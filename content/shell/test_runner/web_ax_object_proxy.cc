@@ -1305,10 +1305,6 @@ std::string WebAXObjectProxy::Invalid() {
       return "false";
     case ax::mojom::InvalidState::kTrue:
       return "true";
-    case ax::mojom::InvalidState::kSpelling:
-      return "spelling";
-    case ax::mojom::InvalidState::kGrammar:
-      return "grammar";
     case ax::mojom::InvalidState::kOther:
       return "other";
     default:

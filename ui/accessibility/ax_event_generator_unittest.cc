@@ -455,7 +455,7 @@ TEST(AXEventGeneratorTest, InvalidStatusChanged) {
 
   AXEventGenerator event_generator(&tree);
   AXTreeUpdate update = initial_state;
-  update.nodes[0].SetInvalidState(ax::mojom::InvalidState::kSpelling);
+  update.nodes[0].SetInvalidState(ax::mojom::InvalidState::kTrue);
   ASSERT_TRUE(tree.Unserialize(update));
   EXPECT_EQ("INVALID_STATUS_CHANGED on 1", DumpEvents(&event_generator));
 }

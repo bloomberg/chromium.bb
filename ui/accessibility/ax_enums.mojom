@@ -852,8 +852,6 @@ enum InvalidState {
   kNone,
   kFalse,
   kTrue,
-  kSpelling,
-  kGrammar,
   kOther,
 };
 

@@ -1365,6 +1365,17 @@ bool MarkerTypeIsUsedForAccessibility(DocumentMarker::MarkerType type) {
       .Contains(type);
 }
 
+base::Optional<DocumentMarker::MarkerType> GetAriaSpellingOrGrammarMarker(
+    const AXObject& obj) {
+  const AtomicString& attribute_value =
+      obj.GetAOMPropertyOrARIAAttribute(AOMStringProperty::kInvalid);
+  if (EqualIgnoringASCIICase(attribute_value, "spelling"))
+    return DocumentMarker::kSpelling;
+  else if (EqualIgnoringASCIICase(attribute_value, "grammar"))
+    return DocumentMarker::kGrammar;
+  return base::nullopt;
+}
+
 }  // namespace
 
 void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
@@ -1376,11 +1387,35 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
   if (!text_node)
     return;
 
+  // First use ARIA markers for spelling/grammar if available.
+  // As an optimization, only checks until the nearest block-like ancestor.
+  AXObject* ax_ancestor = ParentObjectUnignored();
+  base::Optional<DocumentMarker::MarkerType> aria_marker;
+  while (ax_ancestor) {
+    aria_marker = GetAriaSpellingOrGrammarMarker(*ax_ancestor);
+    if (aria_marker)
+      break;  // Result obtained.
+    if (ax_ancestor->GetNode()) {
+      if (const ComputedStyle* style =
+              ax_ancestor->GetNode()->GetComputedStyle()) {
+        if (style->IsDisplayBlockContainer())
+          break;  // Do not go higher than block container.
+      }
+    }
+    ax_ancestor = ax_ancestor->ParentObjectUnignored();
+  }
+  if (aria_marker) {
+    marker_types.push_back(aria_marker.value());
+    marker_ranges.push_back(AXRange::RangeOfContents(*this));
+  }
+
   DocumentMarkerController& marker_controller = GetDocument()->Markers();
   DocumentMarkerVector markers = marker_controller.MarkersFor(*text_node);
   for (DocumentMarker* marker : markers) {
-    if (!MarkerTypeIsUsedForAccessibility(marker->GetType()))
+    if (!MarkerTypeIsUsedForAccessibility(marker->GetType()) ||
+        aria_marker == marker->GetType()) {
       continue;
+    }
 
     const Position start_position(*GetNode(), marker->StartOffset());
     const Position end_position(*GetNode(), marker->EndOffset());
@@ -1590,10 +1625,10 @@ ax::mojom::InvalidState AXNodeObject::GetInvalidState() const {
     return ax::mojom::InvalidState::kFalse;
   if (EqualIgnoringASCIICase(attribute_value, "true"))
     return ax::mojom::InvalidState::kTrue;
-  if (EqualIgnoringASCIICase(attribute_value, "spelling"))
-    return ax::mojom::InvalidState::kSpelling;
-  if (EqualIgnoringASCIICase(attribute_value, "grammar"))
-    return ax::mojom::InvalidState::kGrammar;
+  // "spelling" and "grammar" are also invalid values: they are exposed via
+  // Markers() as if they are native errors, but also use the invalid entry
+  // state on the node itself, therefore they are treated like "true".
+  // in terms of the node's invalid state
   // A yet unknown value.
   if (!attribute_value.IsEmpty())
     return ax::mojom::InvalidState::kOther;

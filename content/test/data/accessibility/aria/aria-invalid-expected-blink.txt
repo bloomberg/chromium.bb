@@ -5,16 +5,16 @@ rootWebArea
 ++textField value='An eror via invalid=spelling'
 ++++staticText name='An '
 ++++++inlineTextBox name='An '
-++++genericContainer invalidState=spelling
-++++++staticText name='eror'
+++++genericContainer ariaInvalidValue='spelling' invalidState=other
+++++++staticText name='eror' markerTypes=1 markerStarts=0 markerEnds=4
 ++++++++inlineTextBox name='eror'
 ++++staticText name=' via invalid=spelling'
 ++++++inlineTextBox name=' via invalid=spelling'
 ++textField value='An errors via invalid=grammar'
 ++++staticText name='An '
 ++++++inlineTextBox name='An '
-++++genericContainer invalidState=grammar
-++++++staticText name='errors'
+++++genericContainer ariaInvalidValue='grammar' invalidState=other
+++++++staticText name='errors' markerTypes=2 markerStarts=0 markerEnds=6
 ++++++++inlineTextBox name='errors'
 ++++staticText name=' via invalid=grammar'
 ++++++inlineTextBox name=' via invalid=grammar'

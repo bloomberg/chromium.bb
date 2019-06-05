@@ -2254,10 +2254,6 @@ const char* ToString(ax::mojom::InvalidState invalid_state) {
       return "false";
     case ax::mojom::InvalidState::kTrue:
       return "true";
-    case ax::mojom::InvalidState::kSpelling:
-      return "spelling";
-    case ax::mojom::InvalidState::kGrammar:
-      return "grammar";
     case ax::mojom::InvalidState::kOther:
       return "other";
   }
@@ -2272,10 +2268,6 @@ ax::mojom::InvalidState ParseInvalidState(const char* invalid_state) {
     return ax::mojom::InvalidState::kFalse;
   if (0 == strcmp(invalid_state, "true"))
     return ax::mojom::InvalidState::kTrue;
-  if (0 == strcmp(invalid_state, "spelling"))
-    return ax::mojom::InvalidState::kSpelling;
-  if (0 == strcmp(invalid_state, "grammar"))
-    return ax::mojom::InvalidState::kGrammar;
   if (0 == strcmp(invalid_state, "other"))
     return ax::mojom::InvalidState::kOther;
   return ax::mojom::InvalidState::kNone;

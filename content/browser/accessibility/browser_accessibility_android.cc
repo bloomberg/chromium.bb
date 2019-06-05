@@ -1731,16 +1731,17 @@ base::string16 BrowserAccessibilityAndroid::GetContentInvalidErrorMessage()
       break;
 
     case ax::mojom::InvalidState::kTrue:
-    case ax::mojom::InvalidState::kOther:
       message_id = CONTENT_INVALID_TRUE;
       break;
-
-    case ax::mojom::InvalidState::kSpelling:
-      message_id = CONTENT_INVALID_SPELLING;
-      break;
-
-    case ax::mojom::InvalidState::kGrammar:
-      message_id = CONTENT_INVALID_GRAMMAR;
+    case ax::mojom::InvalidState::kOther:
+      std::string ariaInvalid = GetData().GetStringAttribute(
+          ax::mojom::StringAttribute::kAriaInvalidValue);
+      if (ariaInvalid == "spelling")
+        message_id = CONTENT_INVALID_SPELLING;
+      else if (ariaInvalid == "grammar")
+        message_id = CONTENT_INVALID_GRAMMAR;
+      else
+        message_id = CONTENT_INVALID_TRUE;
       break;
   }
 
