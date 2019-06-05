@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/ui/address_contact_form_label_formatter.h"
 
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
 
 namespace autofill {
@@ -39,7 +40,8 @@ base::string16 AddressContactFormLabelFormatter::GetLabelForProfile(
       focused_group == ADDRESS_HOME &&
       !IsStreetAddressPart(focused_field_type());
 
-  if (focused_group != NAME && !non_street_address_is_focused) {
+  if (focused_group != NAME && !non_street_address_is_focused &&
+      data_util::ContainsName(groups())) {
     AddLabelPartIfNotEmpty(GetLabelFullName(profile, app_locale()),
                            &label_parts);
   }
@@ -57,6 +59,15 @@ base::string16 AddressContactFormLabelFormatter::GetLabelForProfile(
 
   if (focused_group != EMAIL && email_disambiguates_) {
     AddLabelPartIfNotEmpty(GetLabelEmail(profile, app_locale()), &label_parts);
+  }
+
+  // |label_parts| is empty if all of the following are true:
+  // (A) The form doesn't have a name field.
+  // (B) The user is focused on the street address.
+  // (C) The user either (i) has one profile or (ii) has multiple profiles and
+  // has the same phone number and email address in the profiles.
+  if (street_address_is_focused && label_parts.empty()) {
+    AddLabelPartIfNotEmpty(GetLabelPhone(profile, app_locale()), &label_parts);
   }
 
   return ConstructLabelLine(label_parts);

@@ -505,5 +505,53 @@ TEST(AddressContactFormLabelFormatterTest,
           {base::ASCIIToUTF16("Sarah Revere"), base::ASCIIToUTF16("02113")})));
 }
 
+TEST(AddressContactFormLabelFormatterTest,
+     GetLabelsForFormWithoutName_FocusedStreetAddress) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Sarah", "", "Revere", "sarah.revere@aol.com",
+                       "", "19 North Sq", "", "Boston", "MA", "02113", "US",
+                       "16175232338");
+
+  std::vector<AutofillProfile*> profiles{&profile1};
+  std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
+      profiles, "en-US", ADDRESS_BILLING_LINE1,
+      {ADDRESS_BILLING_ZIP, EMAIL_ADDRESS, PHONE_BILLING_WHOLE_NUMBER});
+
+  // Checks that the name is not in the label and that the phone number is for
+  // a unique profile.
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("(617) 523-2338")));
+
+  profiles = {&profile1, &profile1};
+  formatter =
+      LabelFormatter::Create(profiles, "en-US", ADDRESS_BILLING_LINE1,
+                             {ADDRESS_BILLING_LINE1, ADDRESS_BILLING_ZIP,
+                              EMAIL_ADDRESS, PHONE_BILLING_WHOLE_NUMBER});
+
+  // Checks that the name is not in the label and that the phone number is for
+  // multiple profiles with the same phone number and email address.
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("(617) 523-2338"),
+                          base::ASCIIToUTF16("(617) 523-2338")));
+
+  AutofillProfile profile2 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Sarah", "", "Revere", "sarah@gmail.com", "",
+                       "19 North Sq", "", "Boston", "MA", "02113", "US",
+                       "16175232338");
+
+  profiles = {&profile1, &profile2};
+  formatter =
+      LabelFormatter::Create(profiles, "en-US", ADDRESS_BILLING_LINE1,
+                             {ADDRESS_BILLING_LINE1, ADDRESS_BILLING_ZIP,
+                              EMAIL_ADDRESS, PHONE_BILLING_WHOLE_NUMBER});
+  // Checks that the name is not in the label and that the email address is
+  // shown because the profiles' email addresses are different.
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("sarah.revere@aol.com"),
+                          base::ASCIIToUTF16("sarah@gmail.com")));
+}
+
 }  // namespace
 }  // namespace autofill

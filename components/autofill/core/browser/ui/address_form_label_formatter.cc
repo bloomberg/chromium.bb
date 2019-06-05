@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/ui/address_form_label_formatter.h"
 
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
 
 namespace autofill {
@@ -31,8 +32,12 @@ base::string16 AddressFormLabelFormatter::GetLabelForProfile(
                                    app_locale());
   } else {
     std::vector<base::string16> label_parts;
-    AddLabelPartIfNotEmpty(GetLabelFullName(profile, app_locale()),
-                           &label_parts);
+
+    if (data_util::ContainsName(groups())) {
+      AddLabelPartIfNotEmpty(GetLabelFullName(profile, app_locale()),
+                             &label_parts);
+    }
+
     AddLabelPartIfNotEmpty(GetLabelForFocusedAddress(
                                focused_field_type(), form_has_street_address_,
                                profile, app_locale(), field_types_for_labels()),
