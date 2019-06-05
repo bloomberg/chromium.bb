@@ -56,6 +56,9 @@
 
 namespace net {
 
+const char HttpCache::kDoubleKeyPrefix[] = "_dk_";
+const char HttpCache::kDoubleKeySeparator[] = " ";
+
 HttpCache::DefaultBackend::DefaultBackend(CacheType type,
                                           BackendType backend_type,
                                           const base::FilePath& path,
@@ -527,6 +530,33 @@ void HttpCache::DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
 }
 
+std::string HttpCache::GetResourceURLFromHttpCacheKey(const std::string& key) {
+  // Search the key to see whether it begins with |kDoubleKeyPrefix|. If so,
+  // then the entry was double-keyed.
+  if (base::StartsWith(key, kDoubleKeyPrefix, base::CompareCase::SENSITIVE)) {
+    // Find the rightmost occurrence of |kDoubleKeySeparator|, as when both
+    // the top-frame origin and the initiator are added to the key, there will
+    // be two occurrences of |kDoubleKeySeparator|.  When the cache entry is
+    // originally written to disk, GenerateCacheKey method calls
+    // HttpUtil::SpecForRequest method, which has a DCHECK to ensure that
+    // the original resource url is valid, and hence will not contain the
+    // unescaped whitespace of |kDoubleKeySeparator|.
+    size_t separator_position = key.rfind(kDoubleKeySeparator);
+    DCHECK_NE(separator_position, std::string::npos);
+
+    size_t separator_size = strlen(kDoubleKeySeparator);
+    size_t start_position = separator_position + separator_size;
+    DCHECK_LE(start_position, key.size() - 1);
+
+    return key.substr(start_position);
+  }
+  return key;
+}
+
+std::string HttpCache::GenerateCacheKeyForTest(const HttpRequestInfo* request) {
+  return GenerateCacheKey(request);
+}
+
 //-----------------------------------------------------------------------------
 
 net::Error HttpCache::CreateAndSetWorkItem(ActiveEntry** entry,
@@ -604,11 +634,13 @@ std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
   std::string isolation_key;
 
   if (base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin)) {
-    // Prepend the key with "_dk_" to mark it as double keyed (and makes it an
-    // invalid url so that it doesn't get confused with a single-keyed
-    // entry). Separate the origin and url with invalid whitespace character.
-    isolation_key =
-        base::StrCat({"_dk_", request->network_isolation_key.ToString(), " "});
+    // Prepend the key with |kDoubleKeyPrefix| = "_dk_" to mark it as
+    // double-keyed (and makes it an invalid url so that it doesn't get
+    // confused with a single-keyed entry). Separate the origin and url
+    // with invalid whitespace character |kDoubleKeySeparator|.
+    isolation_key = base::StrCat({kDoubleKeyPrefix,
+                                  request->network_isolation_key.ToString(),
+                                  kDoubleKeySeparator});
   }
 
   // Strip out the reference, username, and password sections of the URL and

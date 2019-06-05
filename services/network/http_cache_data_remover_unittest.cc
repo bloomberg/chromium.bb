@@ -11,10 +11,12 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/cache_type.h"
+#include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
@@ -76,13 +78,13 @@ class HttpCacheDataRemoverTest : public testing::Test {
   void SetUp() override {
     InitNetworkContext();
 
-    net::HttpCache* cache = network_context_->url_request_context()
-                                ->http_transaction_factory()
-                                ->GetCache();
-    ASSERT_TRUE(cache);
+    cache_ = network_context_->url_request_context()
+                 ->http_transaction_factory()
+                 ->GetCache();
+    ASSERT_TRUE(cache_);
     {
       net::TestCompletionCallback callback;
-      int rv = cache->GetBackend(&backend_, callback.callback());
+      int rv = cache_->GetBackend(&backend_, callback.callback());
       ASSERT_EQ(net::OK, callback.GetResult(rv));
       ASSERT_TRUE(backend_);
     }
@@ -91,8 +93,9 @@ class HttpCacheDataRemoverTest : public testing::Test {
     for (const CacheTestEntry& test_entry : kCacheEntries) {
       disk_cache::Entry* entry = nullptr;
       net::TestCompletionCallback callback;
-      int rv = backend_->CreateEntry(test_entry.url, net::HIGHEST, &entry,
-                                     callback.callback());
+      std::string key = ComputeCacheKey(test_entry.url);
+      int rv =
+          backend_->CreateEntry(key, net::HIGHEST, &entry, callback.callback());
       ASSERT_EQ(net::OK, callback.GetResult(rv));
       ASSERT_TRUE(entry);
       base::Time time;
@@ -103,6 +106,16 @@ class HttpCacheDataRemoverTest : public testing::Test {
     }
     ASSERT_EQ(base::size(kCacheEntries),
               static_cast<size_t>(backend_->GetEntryCount()));
+  }
+
+  std::string ComputeCacheKey(const std::string& url_string) {
+    GURL url(url_string);
+    net::HttpRequestInfo request_info;
+    request_info.url = url;
+    request_info.method = "GET";
+    request_info.network_isolation_key =
+        net::NetworkIsolationKey(url::Origin::Create(url));
+    return cache_->GenerateCacheKeyForTest(&request_info);
   }
 
   void RemoveData(mojom::ClearDataFilterPtr filter,
@@ -117,7 +130,8 @@ class HttpCacheDataRemoverTest : public testing::Test {
     run_loop.Run();
   }
 
-  bool HasEntry(const std::string& key) {
+  bool HasEntry(const std::string& url_string) {
+    std::string key = ComputeCacheKey(url_string);
     disk_cache::Entry* entry = nullptr;
     base::RunLoop run_loop;
     net::TestCompletionCallback callback;
@@ -147,6 +161,21 @@ class HttpCacheDataRemoverTest : public testing::Test {
   // Stores the NetworkContextPtr of the most recently created NetworkContext.
   mojom::NetworkContextPtr network_context_ptr_;
   disk_cache::Backend* backend_ = nullptr;
+
+ private:
+  net::HttpCache* cache_;
+};
+
+class HttpCacheDataRemoverSplitCacheTest : public HttpCacheDataRemoverTest {
+ protected:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        net::features::kSplitCacheByTopFrameOrigin);
+    HttpCacheDataRemoverTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(HttpCacheDataRemoverTest, ClearAll) {
@@ -331,6 +360,54 @@ TEST_F(HttpCacheDataRemoverTest, TestDelayedBackend) {
   // Clear again the cache to test that it works when the backend is readily
   // available.
   RemoveData(/*filter=*/nullptr, base::Time(), base::Time());
+}
+
+TEST_F(HttpCacheDataRemoverSplitCacheTest, FilterDeleteByDomain) {
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::DELETE_MATCHES;
+  filter->domains.push_back("wikipedia.com");
+  filter->domains.push_back("google.com");
+  RemoveData(std::move(filter), base::Time(), base::Time());
+  EXPECT_FALSE(HasEntry(kCacheEntries[0].url));
+  EXPECT_FALSE(HasEntry(kCacheEntries[1].url));
+  EXPECT_FALSE(HasEntry(kCacheEntries[2].url));
+  EXPECT_FALSE(HasEntry(kCacheEntries[3].url));
+  EXPECT_EQ(4, backend_->GetEntryCount());
+}
+
+TEST_F(HttpCacheDataRemoverSplitCacheTest, FilterKeepByDomain) {
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
+  filter->domains.push_back("wikipedia.com");
+  filter->domains.push_back("google.com");
+  RemoveData(std::move(filter), base::Time(), base::Time());
+  EXPECT_TRUE(HasEntry(kCacheEntries[0].url));
+  EXPECT_TRUE(HasEntry(kCacheEntries[1].url));
+  EXPECT_TRUE(HasEntry(kCacheEntries[2].url));
+  EXPECT_TRUE(HasEntry(kCacheEntries[3].url));
+  EXPECT_EQ(4, backend_->GetEntryCount());
+}
+
+TEST_F(HttpCacheDataRemoverSplitCacheTest, FilterDeleteByOrigin) {
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::DELETE_MATCHES;
+  filter->origins.push_back(url::Origin::Create(GURL("http://www.google.com")));
+  filter->origins.push_back(url::Origin::Create(GURL("http://localhost:1234")));
+  RemoveData(std::move(filter), base::Time(), base::Time());
+  EXPECT_FALSE(HasEntry(kCacheEntries[0].url));
+  EXPECT_FALSE(HasEntry(kCacheEntries[4].url));
+  EXPECT_EQ(6, backend_->GetEntryCount());
+}
+
+TEST_F(HttpCacheDataRemoverSplitCacheTest, FilterKeepByOrigin) {
+  mojom::ClearDataFilterPtr filter = mojom::ClearDataFilter::New();
+  filter->type = mojom::ClearDataFilter_Type::KEEP_MATCHES;
+  filter->origins.push_back(url::Origin::Create(GURL("http://www.google.com")));
+  filter->origins.push_back(url::Origin::Create(GURL("http://localhost:1234")));
+  RemoveData(std::move(filter), base::Time(), base::Time());
+  EXPECT_TRUE(HasEntry(kCacheEntries[0].url));
+  EXPECT_TRUE(HasEntry(kCacheEntries[4].url));
+  EXPECT_EQ(2, backend_->GetEntryCount());
 }
 
 }  // namespace

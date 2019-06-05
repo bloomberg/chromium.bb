@@ -277,6 +277,13 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_absolute_name) const;
 
+  // Get the URL from the entry's cache key. If double-keying is not enabled,
+  // this will be the key itself.
+  static std::string GetResourceURLFromHttpCacheKey(const std::string& key);
+
+  // Function to generate cache key for testing.
+  std::string GenerateCacheKeyForTest(const HttpRequestInfo* request);
+
  private:
   // Types --------------------------------------------------------------------
 
@@ -624,6 +631,12 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   // Processes the backend creation notification.
   void OnBackendCreated(int result, PendingOp* pending_op);
+
+  // Constants ----------------------------------------------------------------
+
+  // Used when generating and accessing keys if cache is split.
+  static const char kDoubleKeyPrefix[];
+  static const char kDoubleKeySeparator[];
 
   // Variables ----------------------------------------------------------------
 

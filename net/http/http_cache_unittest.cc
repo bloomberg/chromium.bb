@@ -736,6 +736,23 @@ class HttpCacheIOCallbackTest : public HttpCacheTest {
   }
 };
 
+class HttpSplitCacheKeyTest : public HttpCacheTest {
+ public:
+  HttpSplitCacheKeyTest() {}
+  ~HttpSplitCacheKeyTest() override = default;
+
+  std::string ComputeCacheKey(const std::string& url_string) {
+    GURL url(url_string);
+    net::HttpRequestInfo request_info;
+    request_info.url = url;
+    request_info.method = "GET";
+    request_info.network_isolation_key =
+        net::NetworkIsolationKey(url::Origin::Create(url));
+    MockHttpCache cache;
+    return cache.http_cache()->GenerateCacheKeyForTest(&request_info);
+  }
+};
+
 //-----------------------------------------------------------------------------
 // Tests.
 
@@ -11341,6 +11358,20 @@ TEST_F(HttpCacheTest, CacheEntryStatusCantConditionalize) {
   EXPECT_TRUE(response_info.network_accessed);
   EXPECT_EQ(CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE,
             response_info.cache_entry_status);
+}
+
+TEST_F(HttpSplitCacheKeyTest, GetResourceURLFromKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(net::features::kSplitCacheByTopFrameOrigin);
+  MockHttpCache cache;
+  std::string urls[] = {"http://www.a.com/", "https://b.com/example.html",
+                        "http://example.com/Some Path/Some Leaf?some query"};
+
+  for (const std::string& url : urls) {
+    std::string key = ComputeCacheKey(url);
+    EXPECT_EQ(GURL(url).spec(),
+              cache.http_cache()->GetResourceURLFromHttpCacheKey(key));
+  }
 }
 
 class TestCompletionCallbackForHttpCache : public TestCompletionCallbackBase {

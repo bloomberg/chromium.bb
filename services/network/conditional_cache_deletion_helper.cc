@@ -9,6 +9,8 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/http/http_cache.h"
+#include "net/http/http_util.h"
 
 namespace {
 
@@ -17,9 +19,11 @@ bool EntryPredicateFromURLsAndTime(
     const base::Time& begin_time,
     const base::Time& end_time,
     const disk_cache::Entry* entry) {
+  std::string entry_key(entry->GetKey());
+  std::string url_string(
+      net::HttpCache::GetResourceURLFromHttpCacheKey(entry_key));
   return (entry->GetLastUsed() >= begin_time &&
-          entry->GetLastUsed() < end_time &&
-          url_matcher.Run(GURL(entry->GetKey())));
+          entry->GetLastUsed() < end_time && url_matcher.Run(GURL(url_string)));
 }
 
 }  // namespace
