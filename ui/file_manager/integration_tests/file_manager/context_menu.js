@@ -260,6 +260,9 @@ testcase.checkContextMenusForInputElements = async () => {
   // Open FilesApp on Downloads.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
+  // Click on the search button to display the search box.
+  await remoteCall.waitAndClickElement(appId, '#search-button');
+
   // Query all input elements.
   const elements = await remoteCall.callRemoteTestUtil(
       'queryAllElements', appId,

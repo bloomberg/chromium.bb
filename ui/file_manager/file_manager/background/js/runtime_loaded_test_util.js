@@ -421,11 +421,13 @@ test.util.sync.fakeKeyDown =
  *     the first element, and so on.
  * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
  *     Object containing common key modifiers : shift, alt, and ctrl.
+ * @param {number=} opt_button Mouse button number as per spec, e.g.: 2 for
+ *     right-click.
  * @return {boolean} True if the all events are sent to the target, false
  *     otherwise.
  */
 test.util.sync.fakeMouseClick =
-    (contentWindow, targetQuery, opt_keyModifiers) => {
+    (contentWindow, targetQuery, opt_keyModifiers, opt_button) => {
       const modifiers = opt_keyModifiers || {};
       const props = {
         bubbles: true,
@@ -435,6 +437,9 @@ test.util.sync.fakeMouseClick =
         shiftKey: modifiers.shift,
         altKey: modifiers.alt,
       };
+      if (opt_button !== undefined) {
+        props.button = opt_button;
+      }
       const mouseOverEvent = new MouseEvent('mouseover', props);
       const resultMouseOver =
           test.util.sync.sendEvent(contentWindow, targetQuery, mouseOverEvent);
@@ -507,28 +512,39 @@ test.util.sync.fakeMouseOut =
     };
 
 /**
- * Simulates a fake mouse click (right button, single click) on the element
- * specified by |targetQuery|.
+ * Simulates a fake full mouse right-click  on the element specified by
+ * |targetQuery|.
+ *
+ * It generates the sequence of the following MouseEvents:
+ * 1. mouseover
+ * 2. mousedown
+ * 3. mouseup
+ * 4. click
+ * 5. contextmenu
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
+ * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
+ *     Object containing common key modifiers : shift, alt, and ctrl.
  * @return {boolean} True if the event is sent to the target, false
  *     otherwise.
  */
-test.util.sync.fakeMouseRightClick = (contentWindow, targetQuery) => {
-  const mouseDownEvent =
-      new MouseEvent('mousedown', {bubbles: true, button: 2, composed: true});
-  if (!test.util.sync.sendEvent(contentWindow, targetQuery, mouseDownEvent)) {
-    return false;
-  }
+test.util.sync.fakeMouseRightClick =
+    (contentWindow, targetQuery, opt_keyModifiers) => {
+      const clickResult = test.util.sync.fakeMouseClick(
+          contentWindow, targetQuery, opt_keyModifiers, 2 /* right button */);
+      if (!clickResult) {
+        return false;
+      }
 
-  const contextMenuEvent =
-      new MouseEvent('contextmenu', {bubbles: true, composed: true});
-  return test.util.sync.sendEvent(contentWindow, targetQuery, contextMenuEvent);
-};
+      const contextMenuEvent =
+          new MouseEvent('contextmenu', {bubbles: true, composed: true});
+      return test.util.sync.sendEvent(
+          contentWindow, targetQuery, contextMenuEvent);
+    };
 
 /**
- * Simulates a fake touch event (touch start, touch end) on the element
+ * Simulates a fake touch event (touch start and touch end) on the element
  * specified by |targetQuery|.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -542,20 +558,12 @@ test.util.sync.fakeTouchClick = (contentWindow, targetQuery) => {
     return false;
   }
 
-  const mouseDownEvent =
-      new MouseEvent('mousedown', {bubbles: true, button: 2, composed: true});
-  if (!test.util.sync.sendEvent(contentWindow, targetQuery, mouseDownEvent)) {
-    return false;
-  }
-
   const touchEndEvent = new TouchEvent('touchend');
   if (!test.util.sync.sendEvent(contentWindow, targetQuery, touchEndEvent)) {
     return false;
   }
 
-  const contextMenuEvent =
-      new MouseEvent('contextmenu', {bubbles: true, composed: true});
-  return test.util.sync.sendEvent(contentWindow, targetQuery, contextMenuEvent);
+  return true;
 };
 
 /**
