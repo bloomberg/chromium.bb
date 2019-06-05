@@ -21,6 +21,7 @@
 #include "base/timer/timer.h"
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
+#include "ui/display/mac/display_link_mac.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
@@ -108,6 +109,9 @@ Display BuildDisplayForScreen(NSScreen* screen) {
   display.set_color_depth(NSBitsPerPixelFromDepth([screen depth]));
   display.set_depth_per_component(NSBitsPerSampleFromDepth([screen depth]));
   display.set_is_monochrome(CGDisplayUsesForceToGray());
+
+  if (auto display_link = ui::DisplayLinkMac::GetForDisplay(display_id))
+    display.set_display_frequency(display_link->GetRefreshRate());
 
   // CGDisplayRotation returns a double. Display::SetRotationAsDegree will
   // handle the unexpected situations were the angle is not a multiple of 90.

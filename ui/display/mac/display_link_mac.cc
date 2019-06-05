@@ -70,9 +70,6 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
   if (!display_id)
     return nullptr;
 
-  // Ensure the main thread is captured.
-  GetMainThreadTaskRunner();
-
   // Return the existing display link for this display, if it exists.
   DisplayLinkMap& all_display_links = GetAllDisplayLinks();
   auto found = all_display_links.find(display_id);
@@ -100,6 +97,36 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
   }
 
   return display_link_mac;
+}
+
+bool DisplayLinkMac::GetVSyncParameters(base::TimeTicks* timebase,
+                                        base::TimeDelta* interval) {
+  if (!timebase_and_interval_valid_) {
+    StartOrContinueDisplayLink();
+    return false;
+  }
+
+  // The vsync parameters skew over time (astonishingly quickly -- 0.1 msec per
+  // second). If too much time has elapsed since the last time the vsync
+  // parameters were calculated, re-calculate them (but still return the old
+  // parameters -- the update will be asynchronous).
+  if (base::TimeTicks::Now() >= recalculate_time_)
+    StartOrContinueDisplayLink();
+
+  *timebase = timebase_;
+  *interval = interval_;
+  return true;
+}
+
+double DisplayLinkMac::GetRefreshRate() {
+  double refresh_rate = 0;
+  CVTime cv_time =
+      CVDisplayLinkGetNominalOutputVideoRefreshPeriod(display_link_);
+  if (!(cv_time.flags & kCVTimeIsIndefinite))
+    refresh_rate = (static_cast<double>(cv_time.timeScale) /
+                    static_cast<double>(cv_time.timeValue));
+
+  return refresh_rate;
 }
 
 DisplayLinkMac::DisplayLinkMac(
@@ -131,25 +158,6 @@ DisplayLinkMac::~DisplayLinkMac() {
     DPLOG_IF(ERROR, remove_error != kCGErrorSuccess)
         << "CGDisplayRemoveReconfigurationCallback: " << remove_error;
   }
-}
-
-bool DisplayLinkMac::GetVSyncParameters(base::TimeTicks* timebase,
-                                        base::TimeDelta* interval) {
-  if (!timebase_and_interval_valid_) {
-    StartOrContinueDisplayLink();
-    return false;
-  }
-
-  // The vsync parameters skew over time (astonishingly quickly -- 0.1 msec per
-  // second). If too much time has elapsed since the last time the vsync
-  // parameters were calculated, re-calculate them (but still return the old
-  // parameters -- the update will be asynchronous).
-  if (base::TimeTicks::Now() >= recalculate_time_)
-    StartOrContinueDisplayLink();
-
-  *timebase = timebase_;
-  *interval = interval_;
-  return true;
 }
 
 // static
@@ -206,6 +214,10 @@ void DisplayLinkMac::UpdateVSyncParameters(const CVTimeStamp& cv_time) {
 void DisplayLinkMac::StartOrContinueDisplayLink() {
   if (CVDisplayLinkIsRunning(display_link_))
     return;
+
+  // Ensure the main thread is captured.
+  if (!task_runner_)
+    task_runner_ = GetMainThreadTaskRunner();
 
   CVReturn ret = CVDisplayLinkStart(display_link_);
   if (ret != kCVReturnSuccess)

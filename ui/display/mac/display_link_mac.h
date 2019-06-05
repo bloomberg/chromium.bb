@@ -11,6 +11,7 @@
 
 #include "base/mac/scoped_typeref.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "ui/display/display_export.h"
 
@@ -26,6 +27,9 @@ class DISPLAY_EXPORT DisplayLinkMac
   // Get vsync scheduling parameters. Returns false if the populated parameters
   // are invalid.
   bool GetVSyncParameters(base::TimeTicks* timebase, base::TimeDelta* interval);
+
+  // Get the panel/monitor refresh rate
+  double GetRefreshRate();
 
  private:
   friend class base::RefCountedThreadSafe<DisplayLinkMac>;
@@ -65,6 +69,9 @@ class DISPLAY_EXPORT DisplayLinkMac
 
   // CVDisplayLink for querying VSync timing info.
   base::ScopedTypeRef<CVDisplayLinkRef> display_link_;
+
+  // The task runner to post tasks to from the display link thread.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // VSync parameters computed during UpdateVSyncParameters().
   bool timebase_and_interval_valid_ = false;
