@@ -1227,7 +1227,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3487623755010328395">
         Si s'estableix aquesta política, <ph name="PRODUCT_NAME" /> provarà de registrar-se sense ajuda i d'aplicar en tots els perfils la política per al núvol associada.
 
-        El valor d'aquesta política és un testimoni d'inscripció que es pot recuperar de la Consola d'administració de Google.</translation>
+        El valor d'aquesta política és un testimoni d'inscripció que es pot recuperar de la consola d'administració de Google.</translation>
 <translation id="3496296378755072552">Gestor de contrasenyes</translation>
 <translation id="3500732098526756068">Et permet controlar l'activació d'un advertiment sobre la protecció de contrasenyes, que avisa els usuaris quan reutilitzen una contrasenya protegida en llocs web potencialment sospitosos.
 
@@ -1250,9 +1250,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3528000905991875314">Activa les pàgines d'error alternatives</translation>
 <translation id="3545457887306538845">Et permet controlar on es poden utilitzar les Eines per a desenvolupadors.
 
-      Si aquesta política s'estableix en "DeveloperToolsDisallowedForForceInstalledExtensions" (valor 0, que és el predeterminat), es podrà accedir en general a les Eines per a desenvolupadors i a la Consola de JavaScript, però no s'hi podrà accedir quan les extensions estiguin instal·lades per la política d'empresa.
-      Si aquesta política s'estableix en "DeveloperToolsAllowed" (valor 1), es podrà accedir en qualsevol context a les Eines per a desenvolupadors i a la Consola de JavaScript, i es podran utilitzar en tots els contextos, fins i tot en extensions instal·lades per la política d'empresa.
-      Si aquesta política s'estableix en "DeveloperToolsDisallowed" (valor 2), no es podrà accedir a les Eines per a desenvolupadors i ja no es podran inspeccionar els elements del lloc web. Es desactivaran totes les dreceres de teclat i les entrades de menú o de menú contextual que obrin les Eines per a desenvolupadors o la Consola de JavaScript.</translation>
+      Si aquesta política s'estableix en "DeveloperToolsDisallowedForForceInstalledExtensions" (valor 0, que és el predeterminat), es podrà accedir en general a les Eines per a desenvolupadors i a la consola de JavaScript, però no s'hi podrà accedir quan les extensions estiguin instal·lades per la política d'empresa.
+      Si aquesta política s'estableix en "DeveloperToolsAllowed" (valor 1), es podrà accedir en qualsevol context a les Eines per a desenvolupadors i a la consola de JavaScript, i es podran utilitzar en tots els contextos, fins i tot en extensions instal·lades per la política d'empresa.
+      Si aquesta política s'estableix en "DeveloperToolsDisallowed" (valor 2), no es podrà accedir a les Eines per a desenvolupadors i ja no es podran inspeccionar els elements del lloc web. Es desactivaran totes les dreceres de teclat i les entrades de menú o de menú contextual que obrin les Eines per a desenvolupadors o la consola de JavaScript.</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="3550875587920006460">Permet definir una programació personalitzada per comprovar si hi ha actualitzacions. S'aplica a tots els usuaris i a totes les interfícies del dispositiu. Un cop definida, el dispositiu comprovarà si hi ha actualitzacions segons la programació. Cal suprimir la política per cancel·lar les comprovacions d'actualitzacions programades.</translation>
 <translation id="355118380775352753">Llocs web que s'obriran al navegador alternatiu</translation>
@@ -1737,7 +1737,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si l'activeu o el desactiveu, els usuaris no podran canviar ni substituir aquesta configuració a <ph name="PRODUCT_NAME" />.
 
       Si no es defineix aquesta política, aquest paràmetre s'activarà, però l'usuari podrà canviar-lo.</translation>
-<translation id="4531706050939927436">Es pot utilitzar Google Play des de la Consola d'administració de Google per forçar la instal·lació de les aplicacions per a Android. No utilitzen aquesta política.</translation>
+<translation id="4531706050939927436">Es pot utilitzar Google Play des de la consola d'administració de Google per forçar la instal·lació de les aplicacions per a Android. No utilitzen aquesta política.</translation>
 <translation id="4534500438517478692">Nom de la restricció d'Android:</translation>
 <translation id="4541530620466526913">Comptes locals del dispositiu</translation>
 <translation id="4543502256674577024">Configuració de l'actualització del dispositiu</translation>
@@ -2453,10 +2453,10 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si la política <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> s'estableix en "<ph name="BLOCK_GEOLOCATION_SETTING" />", aquesta política s'ignora i els serveis d'ubicació de Google es mantenen desactivats permanentment.</translation>
 <translation id="6145799962557135888">Us permet definir una llista de patrons d'URL que especifiquen els llocs que no poden executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultJavaScriptSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="614662973812186053">Aquesta política també controla la recollida de dades d'ús i de diagnòstic d'Android.</translation>
-<translation id="6153048425064249648">Aquesta política controla els informes al núvol de <ph name="PRODUCT_NAME" />, que carreguen informació sobre el funcionament del navegador a la Consola d'administració de Google.
+<translation id="6153048425064249648">Aquesta política controla els informes al núvol de <ph name="PRODUCT_NAME" />, que carreguen informació sobre el funcionament del navegador a la consola d'administració de Google.
 
       Si aquesta política no es defineix o es defineix en "false", no es recopilaran ni es penjaran dades.
-      Si aquesta política es defineix en "true", les dades es recopilaran i es penjaran a la Consola d'administració de Google.
+      Si aquesta política es defineix en "true", les dades es recopilaran i es penjaran a la consola d'administració de Google.
       Per controlar les dades que es pengen, utilitza les polítiques del grup Chrome Reporting Extension.
 
       Aquesta política només funciona quan l'ordinador està inscrit amb <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
@@ -3016,11 +3016,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7261252191178797385">Imatge de fons de pantalla del dispositiu</translation>
 <translation id="7264704483008663819">Aquesta política es considera obsoleta a M68; en lloc seu, utilitza DeveloperToolsAvailability.
 
-      Desactiva les Eines per a desenvolupadors i la Consola de JavaScript.
+      Desactiva les Eines per a desenvolupadors i la consola de JavaScript.
 
-      Si actives aquesta opció de configuració, ja no es podrà accedir a les Eines per a desenvolupadors ni inspeccionar els elements del lloc web. Es desactivaran les tecles de drecera i les entrades als menús o als menús contextuals que obrin les Eines per a desenvolupadors o la Consola de JavaScript.
+      Si actives aquesta opció de configuració, ja no es podrà accedir a les Eines per a desenvolupadors ni inspeccionar els elements del lloc web. Es desactivaran les tecles de drecera i les entrades als menús o als menús contextuals que obrin les Eines per a desenvolupadors o la consola de JavaScript.
 
-      Si aquesta opció es desactiva o es deixa sense establir, l'usuari podrà utilitzar les Eines per a desenvolupadors i la Consola de JavaScript.
+      Si aquesta opció es desactiva o es deixa sense establir, l'usuari podrà utilitzar les Eines per a desenvolupadors i la consola de JavaScript.
 
       Si s'estableix la política DeveloperToolsAvailability, s'ignora el valor establert a DeveloperToolsDisabled.</translation>
 <translation id="7266471712301230894">Aquesta política no està disponible des de la versió 64 de <ph name="PRODUCT_NAME" />.
@@ -3752,7 +3752,7 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 
       Si aquesta política no es defineix, Google Sync estarà disponible perquè l'usuari pugui escollir si la vol utilitzar o no.
 
-      Per desactivar el servei Google Sync per complet, et recomanem que el desactivis a la Consola d'administració de Google.
+      Per desactivar el servei Google Sync per complet, et recomanem que el desactivis a la consola d'administració de Google.
 
       Aquesta política no s'ha d'activar si la política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> està activada, ja que aquesta funció comparteix la mateixa funcionalitat al costat del client. En aquest cas, la sincronització allotjada a Google es desactiva completament.</translation>
 <translation id="8955719471735800169">Torna a dalt</translation>
