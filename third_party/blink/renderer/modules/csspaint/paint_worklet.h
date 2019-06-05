@@ -60,6 +60,10 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
     return document_definition_map_;
   }
 
+  void RegisterCSSPaintDefinition(const String& name,
+                                  CSSPaintDefinition*,
+                                  ExceptionState&);
+
   // Used for off-thread CSS Paint. In this mode we are not responsible for
   // tracking whether a definition is valid - this method should only be called
   // once all global scopes have registered the same

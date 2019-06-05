@@ -226,33 +226,8 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
   } else {
     PaintWorklet* paint_worklet =
         PaintWorklet::From(*GetFrame()->GetDocument()->domWindow());
-    PaintWorklet::DocumentDefinitionMap& document_definition_map =
-        paint_worklet->GetDocumentDefinitionMap();
-    if (document_definition_map.Contains(name)) {
-      DocumentPaintDefinition* existing_document_definition =
-          document_definition_map.at(name);
-      if (existing_document_definition == kInvalidDocumentPaintDefinition)
-        return;
-      if (!existing_document_definition->RegisterAdditionalPaintDefinition(
-              *definition)) {
-        document_definition_map.Set(name, kInvalidDocumentPaintDefinition);
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kNotSupportedError,
-            "A class with name:'" + name +
-                "' was registered with a different definition.");
-        return;
-      }
-      // Notify the generator ready only when register paint is called the
-      // second time with the same |name| (i.e. there is already a document
-      // definition associated with |name|
-      if (existing_document_definition->GetRegisteredDefinitionCount() ==
-          PaintWorklet::kNumGlobalScopes)
-        pending_generator_registry_->NotifyGeneratorReady(name);
-    } else {
-      DocumentPaintDefinition* document_definition =
-          MakeGarbageCollected<DocumentPaintDefinition>(definition);
-      document_definition_map.Set(name, document_definition);
-    }
+    paint_worklet->RegisterCSSPaintDefinition(name, definition,
+                                              exception_state);
   }
 }
 

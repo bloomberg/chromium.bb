@@ -145,6 +145,36 @@ void PaintWorklet::Trace(blink::Visitor* visitor) {
   Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
+void PaintWorklet::RegisterCSSPaintDefinition(const String& name,
+                                              CSSPaintDefinition* definition,
+                                              ExceptionState& exception_state) {
+  if (document_definition_map_.Contains(name)) {
+    DocumentPaintDefinition* existing_document_definition =
+        document_definition_map_.at(name);
+    if (existing_document_definition == kInvalidDocumentPaintDefinition)
+      return;
+    if (!existing_document_definition->RegisterAdditionalPaintDefinition(
+            *definition)) {
+      document_definition_map_.Set(name, kInvalidDocumentPaintDefinition);
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotSupportedError,
+          "A class with name:'" + name +
+              "' was registered with a different definition.");
+      return;
+    }
+    // Notify the generator ready only when register paint is called the
+    // second time with the same |name| (i.e. there is already a document
+    // definition associated with |name|
+    if (existing_document_definition->GetRegisteredDefinitionCount() ==
+        PaintWorklet::kNumGlobalScopes)
+      pending_generator_registry_->NotifyGeneratorReady(name);
+  } else {
+    DocumentPaintDefinition* document_definition =
+        MakeGarbageCollected<DocumentPaintDefinition>(definition);
+    document_definition_map_.Set(name, document_definition);
+  }
+}
+
 void PaintWorklet::RegisterMainThreadDocumentPaintDefinition(
     const String& name,
     Vector<CSSPropertyID> native_properties,
