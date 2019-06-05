@@ -24,21 +24,7 @@
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyHeadersTest : public testing::Test {
- public:
-  void SetUp() override {
-    // TODO(crbug.com/968214): Modify these tests to work correctly with the
-    // network service (and DRP) enabled by default. This class can be deleted
-    // and TEST_F => TEST with that change.
-    scoped_feature_list_.InitWithFeatures(
-        {}, {features::kDataReductionProxyEnabledWithNetworkService});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
+TEST(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
   const struct {
     const char* headers;
     bool expected_result;
@@ -86,7 +72,7 @@ TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreviewValue) {
+TEST(DataReductionProxyHeadersTest, IsEmptyImagePreviewValue) {
   const struct {
     const char* chrome_proxy_content_transform_header;
     const char* chrome_proxy_header;
@@ -107,7 +93,7 @@ TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreviewValue) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, IsLitePagePreview) {
+TEST(DataReductionProxyHeadersTest, IsLitePagePreview) {
   const struct {
     const char* headers;
     bool expected_result;
@@ -155,7 +141,7 @@ TEST_F(DataReductionProxyHeadersTest, IsLitePagePreview) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
+TEST(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
   const struct {
      const char* headers;
      std::string action_key;
@@ -249,7 +235,7 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
+TEST(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
   const struct {
      const char* headers;
      bool expected_result;
@@ -501,7 +487,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
+TEST(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
   std::string headers =
       "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -518,7 +504,7 @@ TEST_F(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
   EXPECT_FALSE(data_reduction_proxy_info.bypass_all);
 }
 
-TEST_F(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
+TEST(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
   const struct {
     const char* headers;
     bool expected_result;
@@ -616,7 +602,7 @@ TEST_F(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
+TEST(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
   const struct {
      const char* headers;
      DataReductionProxyBypassType expected_result;
@@ -744,84 +730,6 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
 
     EXPECT_EQ(tests[i].expected_result,
               GetDataReductionProxyBypassType(std::vector<GURL>(), *parsed,
-                                              &chrome_proxy_info));
-  }
-}
-
-TEST_F(DataReductionProxyHeadersTest,
-       GetDataReductionProxyBypassEventTypeURLRedirectCycle) {
-  const struct {
-    const char* headers;
-    std::vector<GURL> url_chain;
-    DataReductionProxyBypassType expected_result;
-  } tests[] = {
-      {
-          "HTTP/1.1 200 OK\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          std::vector<GURL>{GURL("http://google.com/1"),
-                            GURL("http://google.com/2"),
-                            GURL("http://google.com/1")},
-          BYPASS_EVENT_TYPE_URL_REDIRECT_CYCLE,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          std::vector<GURL>{
-              GURL("http://google.com/1"), GURL("http://google.com/2"),
-              GURL("http://google.com/1"), GURL("http://google.com/2")},
-          BYPASS_EVENT_TYPE_URL_REDIRECT_CYCLE,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          std::vector<GURL>{GURL("http://google.com/1")}, BYPASS_EVENT_TYPE_MAX,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          std::vector<GURL>{GURL("http://google.com/1"),
-                            GURL("http://google.com/2")},
-          BYPASS_EVENT_TYPE_MAX,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          std::vector<GURL>{GURL("http://google.com/1"),
-                            GURL("http://google.com/2"),
-                            GURL("http://google.com/3")},
-          BYPASS_EVENT_TYPE_MAX,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          std::vector<GURL>{
-              GURL("http://google.com/1"), GURL("http://google.com/2"),
-              GURL("http://google.com/3"), GURL("http://google.com/1")},
-          BYPASS_EVENT_TYPE_URL_REDIRECT_CYCLE,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          std::vector<GURL>{
-              GURL("http://google.com/1"), GURL("http://google.com/2"),
-              GURL("http://google.com/1"), GURL("http://google.com/3")},
-          BYPASS_EVENT_TYPE_MAX,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          std::vector<GURL>(), BYPASS_EVENT_TYPE_MAX,
-      }};
-
-  for (const auto& test : tests) {
-    std::string headers(test.headers);
-    HeadersToRaw(&headers);
-    scoped_refptr<net::HttpResponseHeaders> parsed(
-        new net::HttpResponseHeaders(headers));
-    DataReductionProxyInfo chrome_proxy_info;
-
-    EXPECT_EQ(test.expected_result,
-              GetDataReductionProxyBypassType(test.url_chain, *parsed,
                                               &chrome_proxy_info));
   }
 }

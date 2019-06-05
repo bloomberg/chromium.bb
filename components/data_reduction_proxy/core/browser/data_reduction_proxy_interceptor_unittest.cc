@@ -420,66 +420,6 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectWithoutRetry) {
   EXPECT_EQ(1, delegate().received_redirect_count());
 }
 
-// Test that data reduction proxy is byppassed if there is a URL redirect cycle.
-// TODO(crbug.com/968214): Modify this test to work correctly with the
-// network service (and DRP) enabled by default.
-TEST_F(DataReductionProxyInterceptorEndToEndTest, DISABLED_URLRedirectCycle) {
-  base::HistogramTester histogram_tester;
-  MockRead redirect_mock_reads_1[] = {
-      MockRead("HTTP/1.1 302 Found\r\n"
-               "Via: 1.1 Chrome-Compression-Proxy\r\n"
-               "Location: http://bar.com/\r\n\r\n"),
-      MockRead(""), MockRead(net::SYNCHRONOUS, net::OK),
-  };
-  net::StaticSocketDataProvider redirect_socket_data_provider_1(
-      redirect_mock_reads_1, base::span<net::MockWrite>());
-  mock_socket_factory()->AddSocketDataProvider(
-      &redirect_socket_data_provider_1);
-
-  MockRead redirect_mock_reads_2[] = {
-      MockRead("HTTP/1.1 302 Found\r\n"
-               "Via: 1.1 Chrome-Compression-Proxy\r\n"
-               "Location: http://foo.com/\r\n\r\n"),
-      MockRead(""), MockRead(net::SYNCHRONOUS, net::OK),
-  };
-  net::StaticSocketDataProvider redirect_socket_data_provider_2(
-      redirect_mock_reads_2, base::span<net::MockWrite>());
-  mock_socket_factory()->AddSocketDataProvider(
-      &redirect_socket_data_provider_2);
-
-  // Redirect cycle.
-  MockRead redirect_mock_reads_3[] = {
-      MockRead("HTTP/1.1 302 Found\r\n"
-               "Via: 1.1 Chrome-Compression-Proxy\r\n"
-               "Location: http://bar.com/\r\n\r\n"),
-      MockRead(""), MockRead(net::SYNCHRONOUS, net::OK),
-  };
-  net::StaticSocketDataProvider redirect_socket_data_provider_3(
-      redirect_mock_reads_3, base::span<net::MockWrite>());
-  mock_socket_factory()->AddSocketDataProvider(
-      &redirect_socket_data_provider_3);
-
-  // Data reduction proxy should be bypassed.
-  MockRead redirect_mock_reads_4[] = {
-      MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead(kBody.c_str()),
-      MockRead(net::SYNCHRONOUS, net::OK),
-  };
-  net::StaticSocketDataProvider redirect_socket_data_provider_4(
-      redirect_mock_reads_4, base::span<net::MockWrite>());
-  mock_socket_factory()->AddSocketDataProvider(
-      &redirect_socket_data_provider_4);
-
-  std::unique_ptr<net::URLRequest> request =
-      CreateAndExecuteRequest(GURL("http://foo.com"));
-
-  EXPECT_EQ(net::OK, delegate().request_status());
-  EXPECT_EQ(200, request->GetResponseCode());
-  EXPECT_EQ(kBody, delegate().data_received());
-  EXPECT_TRUE(request->proxy_server().is_direct());
-  histogram_tester.ExpectTotalCount(
-      "DataReductionProxy.BypassedBytes.URLRedirectCycle", 1);
-}
-
 TEST_F(DataReductionProxyInterceptorEndToEndTest, ResponseWithBypassAndRetry) {
   // The first try gives a bypass.
   MockRead initial_mock_reads[] = {
