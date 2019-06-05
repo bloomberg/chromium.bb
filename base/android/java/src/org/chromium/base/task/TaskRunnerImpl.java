@@ -156,10 +156,11 @@ public class TaskRunnerImpl implements TaskRunner {
     @GuardedBy("mLock")
     protected void initNativeTaskRunnerInternal() {
         if (mNativeTaskRunnerAndroid == 0) {
-            mNativeTaskRunnerAndroid = nativeInit(mTaskRunnerType,
-                    mTaskTraits.mPrioritySetExplicitly, mTaskTraits.mPriority,
-                    mTaskTraits.mMayBlock, mTaskTraits.mUseThreadPool, mTaskTraits.mExtensionId,
-                    mTaskTraits.mExtensionData);
+            mNativeTaskRunnerAndroid =
+                    nativeInit(mTaskRunnerType, mTaskTraits.mPrioritySetExplicitly,
+                            mTaskTraits.mPriority, mTaskTraits.mMayBlock,
+                            mTaskTraits.mUseThreadPool, mTaskTraits.mUseCurrentThread,
+                            mTaskTraits.mExtensionId, mTaskTraits.mExtensionData);
         }
     }
 
@@ -185,7 +186,7 @@ public class TaskRunnerImpl implements TaskRunner {
     // NB due to Proguard obfuscation it's easiest to pass the traits via arguments.
     private native long nativeInit(@TaskRunnerType int taskRunnerType,
             boolean prioritySetExplicitly, int priority, boolean mayBlock, boolean useThreadPool,
-            byte extensionId, byte[] extensionData);
+            boolean useCurrentThread, byte extensionId, byte[] extensionData);
     private native void nativeDestroy(long nativeTaskRunnerAndroid);
     private native void nativePostDelayedTask(
             long nativeTaskRunnerAndroid, Runnable task, long delay);

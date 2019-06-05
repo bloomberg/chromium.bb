@@ -182,6 +182,10 @@ struct WithBaseSyncPrimitives {};
 // between tasks, see base::PostTask::CreateSequencedTaskRunner.
 struct ThreadPool {};
 
+// Tasks and task runners with this trait will run on the current virtual thread
+// (sequence).
+struct CurrentThread {};
+
 // Describes metadata for a single task or a group of tasks.
 class BASE_EXPORT TaskTraits {
  public:
@@ -193,6 +197,7 @@ class BASE_EXPORT TaskTraits {
     ValidTrait(MayBlock);
     ValidTrait(WithBaseSyncPrimitives);
     ValidTrait(ThreadPool);
+    ValidTrait(CurrentThread);
   };
 
   // Invoking this constructor without arguments produces TaskTraits that are
@@ -248,21 +253,23 @@ class BASE_EXPORT TaskTraits {
         may_block_(trait_helpers::HasTrait<MayBlock>(args...)),
         with_base_sync_primitives_(
             trait_helpers::HasTrait<WithBaseSyncPrimitives>(args...)),
-        use_thread_pool_(trait_helpers::HasTrait<ThreadPool>(args...)) {}
+        use_thread_pool_(trait_helpers::HasTrait<ThreadPool>(args...)),
+        use_current_thread_(trait_helpers::HasTrait<CurrentThread>(args...)) {}
 
   constexpr TaskTraits(const TaskTraits& other) = default;
   TaskTraits& operator=(const TaskTraits& other) = default;
 
   // TODO(eseckler): Default the comparison operator once C++20 arrives.
   bool operator==(const TaskTraits& other) const {
-    static_assert(sizeof(TaskTraits) == 15,
+    static_assert(sizeof(TaskTraits) == 16,
                   "Update comparison operator when TaskTraits change");
     return extension_ == other.extension_ && priority_ == other.priority_ &&
            shutdown_behavior_ == other.shutdown_behavior_ &&
            thread_policy_ == other.thread_policy_ &&
            may_block_ == other.may_block_ &&
            with_base_sync_primitives_ == other.with_base_sync_primitives_ &&
-           use_thread_pool_ == other.use_thread_pool_;
+           use_thread_pool_ == other.use_thread_pool_ &&
+           use_current_thread_ == other.use_current_thread_;
   }
 
   // Sets the priority of tasks with these traits to |priority|.
@@ -319,6 +326,9 @@ class BASE_EXPORT TaskTraits {
   // Returns true if tasks with these traits execute on the thread pool.
   constexpr bool use_thread_pool() const { return use_thread_pool_; }
 
+  // Returns true if tasks with these traits execute on the current thread.
+  constexpr bool use_current_thread() const { return use_current_thread_; }
+
   uint8_t extension_id() const { return extension_.extension_id; }
 
   // Access the extension data by parsing it into the provided extension type.
@@ -337,6 +347,7 @@ class BASE_EXPORT TaskTraits {
              TaskPriority priority,
              bool may_block,
              bool use_thread_pool,
+             bool use_current_thread,
              TaskTraitsExtensionStorage extension)
       : extension_(extension),
         priority_(static_cast<uint8_t>(priority) |
@@ -346,8 +357,9 @@ class BASE_EXPORT TaskTraits {
         thread_policy_(static_cast<uint8_t>(ThreadPolicy::PREFER_BACKGROUND)),
         may_block_(may_block),
         with_base_sync_primitives_(false),
-        use_thread_pool_(use_thread_pool) {
-    static_assert(sizeof(TaskTraits) == 15, "Keep this constructor up to date");
+        use_thread_pool_(use_thread_pool),
+        use_current_thread_(use_current_thread) {
+    static_assert(sizeof(TaskTraits) == 16, "Keep this constructor up to date");
   }
 
   // This bit is set in |priority_|, |shutdown_behavior_| and |thread_policy_|
@@ -362,6 +374,7 @@ class BASE_EXPORT TaskTraits {
   bool may_block_;
   bool with_base_sync_primitives_;
   bool use_thread_pool_;
+  bool use_current_thread_;
 };
 
 // Returns string literals for the enums defined in this file. These methods
