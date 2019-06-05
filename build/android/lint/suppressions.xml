@@ -357,6 +357,10 @@ Still reading?
     <ignore regexp="The resource `R.string..*lite_mode` appears to be unused"/>
     <!-- Module titles may only be used by the Play Store. -->
     <ignore regexp="The resource `R.string.*_module_title` appears to be unused"/>
+    <!-- Old-style and new-style WebAPKs use same resources for simplicity. Old-style WebAPKs do
+         not use R.style.SplashTheme but new-style WebAPKs do.
+         TODO(crbug.com/971254): Remove suppression once old-style WebAPKs are deprecated. -->
+    <ignore regexp="The resource `R.style.SplashTheme` appears to be unused"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <issue id="UseCompoundDrawables">
