@@ -107,68 +107,6 @@ class CreateTest(cros_test_lib.MockTempDirTestCase):
       self.assertIn((package.category, package.package_name), expected_packages)
 
 
-class CreateVmTest(cros_test_lib.MockTestCase):
-  """CreateVm tests."""
-
-  def _GetInput(self, board=None, image_type=None):
-    """Helper to create an input proto instance."""
-    # pylint: disable=protected-access
-
-    return image_pb2.CreateVmRequest(
-        image={'build_target': {'name': board}, 'type': image_type})
-
-  def _GetOutput(self):
-    """Helper to create an empty output proto instance."""
-    return image_pb2.CreateVmResponse()
-
-  def testNoArgsFails(self):
-    """Make sure it fails with no arguments."""
-    request = self._GetInput()
-    response = self._GetOutput()
-
-    with self.assertRaises(cros_build_lib.DieSystemExit):
-      image_controller.CreateVm(request, response)
-
-  def testNoBuildTargetFails(self):
-    """Make sure it fails with no build target."""
-    request = self._GetInput(image_type=common_pb2.TEST)
-    response = self._GetOutput()
-
-    with self.assertRaises(cros_build_lib.DieSystemExit):
-      image_controller.CreateVm(request, response)
-
-  def testNoTypeFails(self):
-    """Make sure it fails with no build target."""
-    request = self._GetInput(board='board')
-    response = self._GetOutput()
-
-    with self.assertRaises(cros_build_lib.DieSystemExit):
-      image_controller.CreateVm(request, response)
-
-  def testTestImage(self):
-    """Make sure the test image identification works properly."""
-    request = self._GetInput(board='board', image_type=common_pb2.TEST)
-    response = self._GetOutput()
-    create_patch = self.PatchObject(image_service, 'CreateVm',
-                                    return_value='/vm/path')
-
-    image_controller.CreateVm(request, response)
-
-    create_patch.assert_called_once_with('board', chroot=mock.ANY, is_test=True)
-
-  def testNonTestImage(self):
-    """Make sure the test image identification works properly."""
-    request = self._GetInput(board='board', image_type=common_pb2.BASE)
-    response = self._GetOutput()
-    create_patch = self.PatchObject(image_service, 'CreateVm',
-                                    return_value='/vm/path')
-
-    image_controller.CreateVm(request, response)
-
-    create_patch.assert_called_once_with('board', chroot=mock.ANY,
-                                         is_test=False)
-
-
 class ImageTest(cros_test_lib.MockTempDirTestCase):
   """Image service tests."""
 

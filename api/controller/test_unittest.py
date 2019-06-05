@@ -12,7 +12,6 @@ import mock
 from chromite.api import controller
 from chromite.api.controller import test as test_controller
 from chromite.api.gen.chromiumos import common_pb2
-from chromite.api.gen.chromite.api import image_pb2
 from chromite.api.gen.chromite.api import test_pb2
 from chromite.cbuildbot import commands
 from chromite.lib import constants
@@ -151,7 +150,8 @@ class VmTestTest(cros_test_lib.MockTestCase):
   def _GetInput(self, **kwargs):
     values = dict(
         build_target=common_pb2.BuildTarget(name='target'),
-        vm_image=image_pb2.VmImage(path='/path/to/image.bin'),
+        vm_path=common_pb2.Path(path='/path/to/image.bin',
+                                location=common_pb2.Path.INSIDE),
         test_harness=test_pb2.VmTestRequest.TAST,
         vm_tests=[test_pb2.VmTestRequest.VmTest(pattern='suite')],
         ssh_options=test_pb2.VmTestRequest.SshOptions(
@@ -200,7 +200,7 @@ class VmTestTest(cros_test_lib.MockTestCase):
 
   def testMissingVmImage(self):
     """Test VmTest dies when vm_image not set."""
-    input_proto = self._GetInput(vm_image=None)
+    input_proto = self._GetInput(vm_path=None)
     with self.assertRaises(cros_build_lib.DieSystemExit):
       test_controller.VmTest(input_proto, None)
 

@@ -14,7 +14,6 @@ import os
 
 from chromite.api import controller
 from chromite.api.gen.chromiumos import common_pb2
-from chromite.api.controller import controller_util
 from chromite.lib import cros_build_lib
 from chromite.lib import constants
 from chromite.lib import image_lib
@@ -157,35 +156,6 @@ def _PopulateBuiltImages(board, image_types, output_proto):
     new_image.path = path
     new_image.type = type_id
     new_image.build_target.name = board
-
-
-def CreateVm(input_proto, output_proto):
-  """Create a VM from an Image.
-
-  Args:
-    input_proto (image_pb2.CreateVmRequest): The input message.
-    output_proto (image_pb2.CreateVmResponse): The output message.
-  """
-  # TODO(saklein) This currently relies on the build target, but using the image
-  #   path directly would be better. Change this to do that when create image
-  #   returns an absolute image path rather than chroot relative path.
-  build_target_name = input_proto.image.build_target.name
-  proto_image_type = input_proto.image.type
-
-  if not build_target_name:
-    cros_build_lib.Die('image.build_target.name is required.')
-  if proto_image_type not in _IMAGE_MAPPING:
-    cros_build_lib.Die('Unknown image.type value: %s', proto_image_type)
-
-  chroot = controller_util.ParseChroot(input_proto.chroot)
-  is_test_image = proto_image_type == _TEST_ID
-
-  try:
-    output_proto.vm_image.path = image.CreateVm(build_target_name,
-                                                chroot=chroot,
-                                                is_test=is_test_image)
-  except image.Error as e:
-    cros_build_lib.Die(e.message)
 
 
 def Test(input_proto, output_proto):

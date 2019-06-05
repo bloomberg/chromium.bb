@@ -15,7 +15,6 @@ import os
 from chromite.api import controller
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import test_pb2
-from chromite.api.gen.chromiumos import common_pb2
 from chromite.cbuildbot import commands
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -157,16 +156,8 @@ def VmTest(input_proto, _output_proto):
   build_target = input_proto.build_target
 
   vm_path = input_proto.vm_path
-  vm_image = input_proto.vm_image
-  test_vm_image = input_proto.test_vm_image
-  if not vm_image.path and not test_vm_image.path and not vm_path.path:
-    cros_build_lib.Die('A VM path must be provided.')
-  if test_vm_image.path:
-    if test_vm_image.type != common_pb2.TEST_VM:
-      cros_build_lib.Die('Must provide a test VM image.')
-    vm_image = test_vm_image
-
-  vm_image_path = vm_path.path or vm_image.path
+  if not vm_path.path:
+    cros_build_lib.Die('vm_path.path is required.')
 
   test_harness = input_proto.test_harness
   if test_harness == test_pb2.VmTestRequest.UNSPECIFIED:
@@ -177,7 +168,7 @@ def VmTest(input_proto, _output_proto):
     cros_build_lib.Die('vm_tests must contain at least one element')
 
   cmd = ['cros_run_test', '--debug', '--no-display', '--copy-on-write',
-         '--board', build_target.name, '--image-path', vm_image_path,
+         '--board', build_target.name, '--image-path', vm_path.path,
          '--%s' % test_pb2.VmTestRequest.TestHarness.Name(test_harness).lower()]
   cmd.extend(vm_test.pattern for vm_test in vm_tests)
 
