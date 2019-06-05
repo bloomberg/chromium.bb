@@ -109,6 +109,8 @@ class PLATFORM_EXPORT CallbackInterfaceBase
   friend class V8PersistentCallbackInterfaceBase;
 };
 
+// CAUTION: THIS CLASS IS OBSOLETE AFTER THE UNIFIED HEAP AND WILL BE REMOVED.
+//
 // V8PersistentCallbackInterfaceBase retains the underlying v8::Object of a
 // CallbackInterfaceBase without wrapper-tracing. This class is necessary and
 // useful where wrapper-tracing is not suitable. Remember that, as a nature of
@@ -119,14 +121,16 @@ class PLATFORM_EXPORT CallbackInterfaceBase
 class PLATFORM_EXPORT V8PersistentCallbackInterfaceBase
     : public GarbageCollectedFinalized<V8PersistentCallbackInterfaceBase> {
  public:
-  virtual ~V8PersistentCallbackInterfaceBase() { v8_object_.Reset(); }
+  virtual ~V8PersistentCallbackInterfaceBase() = default;
 
   virtual void Trace(blink::Visitor*);
 
   v8::Isolate* GetIsolate() { return callback_interface_->GetIsolate(); }
 
  protected:
-  explicit V8PersistentCallbackInterfaceBase(CallbackInterfaceBase*);
+  explicit V8PersistentCallbackInterfaceBase(
+      CallbackInterfaceBase* callback_interface)
+      : callback_interface_(callback_interface) {}
 
   template <typename V8CallbackInterface>
   V8CallbackInterface* As() {
@@ -138,7 +142,6 @@ class PLATFORM_EXPORT V8PersistentCallbackInterfaceBase
 
  private:
   Member<CallbackInterfaceBase> callback_interface_;
-  v8::Persistent<v8::Object> v8_object_;
 };
 
 // V8PersistentCallbackInterface<V8CallbackInterface> is a counter-part of

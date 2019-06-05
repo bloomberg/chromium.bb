@@ -86,15 +86,6 @@ void CallbackFunctionBase::EvaluateAsPartOfCallback(
   std::move(closure).Run();
 }
 
-V8PersistentCallbackFunctionBase::V8PersistentCallbackFunctionBase(
-    CallbackFunctionBase* callback_function)
-    : callback_function_(callback_function) {
-  v8::Isolate* isolate = callback_function_->GetIsolate();
-  v8::HandleScope scope(isolate);
-  auto local = callback_function_->callback_function_.NewLocal(isolate);
-  v8_function_.Reset(isolate, local);
-}
-
 void V8PersistentCallbackFunctionBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(callback_function_);
 }

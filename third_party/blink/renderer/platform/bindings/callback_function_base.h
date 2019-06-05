@@ -112,6 +112,8 @@ class PLATFORM_EXPORT CallbackFunctionBase
   friend class V8PersistentCallbackFunctionBase;
 };
 
+// CAUTION: THIS CLASS IS OBSOLETE AFTER THE UNIFIED HEAP AND WILL BE REMOVED.
+//
 // V8PersistentCallbackFunctionBase retains the underlying v8::Function of a
 // CallbackFunctionBase without wrapper-tracing. This class is necessary and
 // useful where wrapper-tracing is not suitable. Remember that, as a nature of
@@ -122,12 +124,14 @@ class PLATFORM_EXPORT CallbackFunctionBase
 class PLATFORM_EXPORT V8PersistentCallbackFunctionBase
     : public GarbageCollectedFinalized<V8PersistentCallbackFunctionBase> {
  public:
-  virtual ~V8PersistentCallbackFunctionBase() { v8_function_.Reset(); }
+  virtual ~V8PersistentCallbackFunctionBase() = default;
 
   virtual void Trace(blink::Visitor*);
 
  protected:
-  explicit V8PersistentCallbackFunctionBase(CallbackFunctionBase*);
+  explicit V8PersistentCallbackFunctionBase(
+      CallbackFunctionBase* callback_function)
+      : callback_function_(callback_function) {}
 
   template <typename V8CallbackFunction>
   V8CallbackFunction* As() {
@@ -139,9 +143,6 @@ class PLATFORM_EXPORT V8PersistentCallbackFunctionBase
 
  private:
   Member<CallbackFunctionBase> callback_function_;
-  // Use v8::Object instead of v8::Function in order to handle
-  // [TreatNonObjectAsNull].
-  v8::Persistent<v8::Object> v8_function_;
 };
 
 // V8PersistentCallbackFunction<V8CallbackFunction> is a counter-part of
