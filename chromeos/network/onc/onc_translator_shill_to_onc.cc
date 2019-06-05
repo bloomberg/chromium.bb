@@ -536,14 +536,11 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
     }
   }
 
-  // 'ErrorState' reflects the most recent error maintained in NetworkState
-  // (which may not match Shill's Error or PreviousError properties). Non
-  // visible networks (with null network_state_) do not set ErrorState.
+  // Non-visible networks (with null network_state_) do not set ErrorState.
   if (network_state_) {
-    std::string error_state = network_state_->GetErrorState();
-    if (!error_state.empty()) {
+    if (!network_state_->error().empty()) {
       onc_object_->SetKey(::onc::network_config::kErrorState,
-                          base::Value(error_state));
+                          base::Value(network_state_->error()));
     }
   }
 

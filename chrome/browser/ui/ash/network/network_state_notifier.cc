@@ -496,7 +496,7 @@ void NetworkStateNotifier::ShowNetworkSettings(const std::string& network_id) {
   const NetworkState* network = GetNetworkStateForGuid(network_id);
   if (!network)
     return;
-  std::string error = network->GetErrorState();
+  std::string error = network->error();
   if (!error.empty()) {
     NET_LOG(ERROR) << "Notify ShowNetworkSettings: " << network_id
                    << ": Error: " << error;
