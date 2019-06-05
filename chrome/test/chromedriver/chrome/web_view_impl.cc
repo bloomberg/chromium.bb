@@ -996,8 +996,8 @@ Status WebViewImpl::CallAsyncFunctionInternal(
   async_args.AppendString("return (" + function + ").apply(null, arguments);");
   async_args.Append(args.CreateDeepCopy());
   async_args.AppendBoolean(is_user_supplied);
-  async_args.AppendInteger(timeout.InMilliseconds());
   std::unique_ptr<base::Value> tmp;
+  Timeout local_timeout(timeout);
   Status status = CallFunctionWithTimeout(frame, kExecuteAsyncScriptScript,
                                           async_args, timeout, &tmp);
   if (status.IsError())
@@ -1017,6 +1017,7 @@ Status WebViewImpl::CallAsyncFunctionInternal(
       "}",
       kJavaScriptError,
       kDocUnloadError);
+  const base::TimeDelta kOneHundredMs = base::TimeDelta::FromMilliseconds(100);
 
   while (true) {
     base::ListValue no_args;
@@ -1046,7 +1047,12 @@ Status WebViewImpl::CallAsyncFunctionInternal(
       return Status(kOk);
     }
 
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+    // Since async-scripts return immediately, need to time period here instead.
+    if (local_timeout.IsExpired())
+      return Status(kTimeout);
+
+    base::PlatformThread::Sleep(
+        std::min(kOneHundredMs, local_timeout.GetRemainingTime()));
   }
 }
 
