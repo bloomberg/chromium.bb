@@ -4981,7 +4981,7 @@ crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-r
 crbug.com/853360 [ Mac ] fast/forms/calendar-picker/month-picker-appearance-step.html [ Failure ]
 crbug.com/853360 [ Mac ] fast/forms/calendar-picker/week-picker-appearance.html [ Failure ]
 crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Pass Timeout Failure ]
-crbug.com/853360 [ Mac ] paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
+crbug.com/853360 [ Mac ] paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Timeout ]
 crbug.com/853360 [ Mac ] tables/mozilla/bugs/bug30692.html [ Failure ]
 crbug.com/853360 [ Mac ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure ]
 crbug.com/853360 [ Mac ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure ]
