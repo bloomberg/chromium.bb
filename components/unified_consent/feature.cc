@@ -11,7 +11,7 @@ namespace unified_consent {
 // base::Feature definition.
 const base::Feature kUnifiedConsent {
   "UnifiedConsent",
-#if defined(OS_CHROMEOS) || defined(OS_IOS)
+#if defined(OS_CHROMEOS)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT
