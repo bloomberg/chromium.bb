@@ -190,7 +190,7 @@ TEST_F(PaintWorkletTest, NativeAndCustomProperties) {
   TestPaintWorklet* paint_worklet_to_test = GetTestPaintWorklet();
   paint_worklet_to_test->RegisterMainThreadDocumentPaintDefinition(
       "foo", native_invalidation_properties, custom_invalidation_properties,
-      std::make_unique<Vector<CSSSyntaxDescriptor>>(), true);
+      Vector<CSSSyntaxDescriptor>(), true);
 
   CSSPaintImageGeneratorImpl* generator =
       MakeGarbageCollected<CSSPaintImageGeneratorImpl>(paint_worklet_to_test,

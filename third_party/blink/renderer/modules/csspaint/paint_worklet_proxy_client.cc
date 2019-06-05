@@ -112,17 +112,13 @@ void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
     for (const auto& property : custom_properties)
       passed_custom_properties.push_back(property.GetString());
 
-    Vector<CSSSyntaxDescriptor> passed_input_argument_types;
-    for (const auto& syntax_descriptor : definition->InputArgumentTypes())
-      passed_input_argument_types.push_back(syntax_descriptor.IsolatedCopy());
     PostCrossThreadTask(
         *main_thread_runner_, FROM_HERE,
         CrossThreadBindOnce(
             &PaintWorklet::RegisterMainThreadDocumentPaintDefinition,
             paint_worklet_, name, definition->NativeInvalidationProperties(),
             WTF::Passed(std::move(passed_custom_properties)),
-            std::make_unique<Vector<CSSSyntaxDescriptor>>(
-                passed_input_argument_types),
+            definition->InputArgumentTypes(),
             definition->GetPaintRenderingContext2DSettings()->alpha()));
   }
 }

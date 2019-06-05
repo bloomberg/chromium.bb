@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/css_syntax_component.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/platform/cross_thread_copier.h"
 
 namespace blink {
 
@@ -46,6 +47,19 @@ class CORE_EXPORT CSSSyntaxDescriptor {
   static CSSSyntaxDescriptor CreateUniversal();
 
   Vector<CSSSyntaxComponent> syntax_components_;
+};
+
+template <wtf_size_t inlineCapacity, typename Allocator>
+struct CrossThreadCopier<
+    Vector<CSSSyntaxDescriptor, inlineCapacity, Allocator>> {
+  using Type = Vector<CSSSyntaxDescriptor, inlineCapacity, Allocator>;
+  static Type Copy(const Type& value) {
+    Type result;
+    result.ReserveInitialCapacity(value.size());
+    for (const auto& element : value)
+      result.push_back(element.IsolatedCopy());
+    return result;
+  }
 };
 
 }  // namespace blink

@@ -68,7 +68,7 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
       const String& name,
       Vector<CSSPropertyID> native_properties,
       Vector<String> custom_properties,
-      std::unique_ptr<Vector<CSSSyntaxDescriptor>> input_argument_types,
+      Vector<CSSSyntaxDescriptor> input_argument_types,
       double alpha);
   typedef HashMap<String, std::unique_ptr<MainThreadDocumentPaintDefinition>>
       MainThreadDocumentDefinitionMap;
