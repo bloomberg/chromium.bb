@@ -23565,6 +23565,7 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Profile Error Dialog"/>
   <int value="6" label="SadTab Page"/>
   <int value="7" label="Supervised User Interstitial"/>
+  <int value="8" label="Assistant"/>
 </enum>
 
 <enum name="FeedHostMismatch">
