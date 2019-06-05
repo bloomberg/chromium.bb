@@ -1450,7 +1450,7 @@ it or fix the checkout.
     metrics.collector.add(
         'project_urls',
         [
-            dep.url if not dep.url.endswith('.git') else dep.url[:-len('.git')]
+            dep.FuzzyMatchUrl(metrics_utils.KNOWN_PROJECT_URLS)
             for dep in deps_to_add
             if dep.FuzzyMatchUrl(metrics_utils.KNOWN_PROJECT_URLS)
         ]
