@@ -14,7 +14,7 @@
 #if INSIDE_BLINK
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"  // nogncheck
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"  // nogncheck
 #include "third_party/blink/renderer/platform/wtf/functional.h"  // nogncheck
 #endif
 
@@ -59,7 +59,7 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
                     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     AddInterface(
         Interface::Name_,
-        ConvertToBaseCallback(blink::CrossThreadBind(
+        ConvertToBaseCallback(CrossThreadBind(
             &InterfaceRegistry::ForwardToCrossThreadInterfaceFactory<Interface>,
             std::move(factory))),
         std::move(task_runner));

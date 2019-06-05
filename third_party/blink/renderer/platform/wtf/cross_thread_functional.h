@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CROSS_THREAD_FUNCTIONAL_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CROSS_THREAD_FUNCTIONAL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CROSS_THREAD_FUNCTIONAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CROSS_THREAD_FUNCTIONAL_H_
 
 #include <type_traits>
 #include "base/bind.h"
-#include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
-namespace blink {
+namespace WTF {
 
 // CrossThreadBind() is Bind() for cross-thread task posting.
 // CrossThreadBind() applies CrossThreadCopier to the arguments.
@@ -31,31 +31,34 @@ namespace blink {
 //     Bind(&Func1, 42, str.IsolatedCopy());
 
 template <typename FunctionType, typename... Ps>
-WTF::CrossThreadFunction<base::MakeUnboundRunType<FunctionType, Ps...>>
+CrossThreadFunction<base::MakeUnboundRunType<FunctionType, Ps...>>
 CrossThreadBind(FunctionType&& function, Ps&&... parameters) {
   static_assert(
-      WTF::internal::CheckGCedTypeRestrictions<std::index_sequence_for<Ps...>,
-                                               std::decay_t<Ps>...>::ok,
+      internal::CheckGCedTypeRestrictions<std::index_sequence_for<Ps...>,
+                                          std::decay_t<Ps>...>::ok,
       "A bound argument uses a bad pattern.");
   using UnboundRunType = base::MakeUnboundRunType<FunctionType, Ps...>;
-  return WTF::CrossThreadFunction<UnboundRunType>(
+  return CrossThreadFunction<UnboundRunType>(
       base::Bind(function, CrossThreadCopier<std::decay_t<Ps>>::Copy(
                                std::forward<Ps>(parameters))...));
 }
 
 template <typename FunctionType, typename... Ps>
-WTF::CrossThreadOnceFunction<base::MakeUnboundRunType<FunctionType, Ps...>>
+CrossThreadOnceFunction<base::MakeUnboundRunType<FunctionType, Ps...>>
 CrossThreadBindOnce(FunctionType&& function, Ps&&... parameters) {
   static_assert(
-      WTF::internal::CheckGCedTypeRestrictions<std::index_sequence_for<Ps...>,
-                                               std::decay_t<Ps>...>::ok,
+      internal::CheckGCedTypeRestrictions<std::index_sequence_for<Ps...>,
+                                          std::decay_t<Ps>...>::ok,
       "A bound argument uses a bad pattern.");
   using UnboundRunType = base::MakeUnboundRunType<FunctionType, Ps...>;
-  return WTF::CrossThreadOnceFunction<UnboundRunType>(base::BindOnce(
+  return CrossThreadOnceFunction<UnboundRunType>(base::BindOnce(
       std::move(function), CrossThreadCopier<std::decay_t<Ps>>::Copy(
                                std::forward<Ps>(parameters))...));
 }
 
-}  // namespace blink
+}  // namespace WTF
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_CROSS_THREAD_FUNCTIONAL_H_
+using WTF::CrossThreadBind;
+using WTF::CrossThreadBindOnce;
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CROSS_THREAD_FUNCTIONAL_H_

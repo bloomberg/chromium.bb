@@ -530,6 +530,7 @@ source_set("blink_headers") {
     "//services/device/public/mojom:mojom_shared_cpp_sources",
     "//services/network/public/cpp:cpp",
     "//services/network/public/mojom",
+    "//third_party/blink/renderer/platform/wtf:wtf",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
     "//third_party/webrtc/api:rtc_stats_api",
     "//third_party/webrtc/media:rtc_media_base",

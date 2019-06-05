@@ -12,12 +12,30 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
+
+namespace WTF {
+// Template specialization of [1], needed to be able to pass callbacks
+// that have ScopedWebCallbacks paramaters across threads.
+//
+// [1] third_party/blink/renderer/platform/wtf/cross_thread_copier.h.
+template <typename T>
+struct CrossThreadCopier<blink::ScopedWebCallbacks<T>>
+    : public CrossThreadCopierPassThrough<blink::ScopedWebCallbacks<T>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = blink::ScopedWebCallbacks<T>;
+  static blink::ScopedWebCallbacks<T> Copy(
+      blink::ScopedWebCallbacks<T> pointer) {
+    return pointer;
+  }
+};
+
+}  // namespace WTF
 
 namespace blink {
 
@@ -28,20 +46,6 @@ void OnError(std::unique_ptr<ImageCaptureGrabFrameCallbacks> callbacks) {
 }
 
 }  // anonymous namespace
-
-// Template specialization of [1], needed to be able to pass callbacks
-// that have ScopedWebCallbacks paramaters across threads.
-//
-// [1] third_party/blink/renderer/platform/cross_thread_copier.h.
-template <typename T>
-struct CrossThreadCopier<ScopedWebCallbacks<T>>
-    : public CrossThreadCopierPassThrough<ScopedWebCallbacks<T>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = ScopedWebCallbacks<T>;
-  static ScopedWebCallbacks<T> Copy(ScopedWebCallbacks<T> pointer) {
-    return pointer;
-  }
-};
 
 // Ref-counted class to receive a single VideoFrame on IO thread, convert it and
 // send it to |main_task_runner_|, where this class is created and destroyed.

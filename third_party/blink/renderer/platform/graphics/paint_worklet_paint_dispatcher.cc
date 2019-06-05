@@ -8,11 +8,11 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -102,8 +102,8 @@ sk_sp<cc::PaintRecord> PaintWorkletPaintDispatcher::Paint(
              sk_sp<cc::PaintRecord>* output) {
             *output = painter->Paint(input);
           },
-          WrapCrossThreadPersistent(painter), CrossThreadUnretained(input),
-          WTF::Passed(std::move(done)), CrossThreadUnretained(&output)));
+          WrapCrossThreadPersistent(painter), WTF::CrossThreadUnretained(input),
+          WTF::Passed(std::move(done)), WTF::CrossThreadUnretained(&output)));
 
   done_event.Wait();
 

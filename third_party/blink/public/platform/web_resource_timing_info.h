@@ -12,10 +12,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_load_timing.h"
 #include "third_party/blink/public/platform/web_vector.h"
-
-#if INSIDE_BLINK
-#include "third_party/blink/renderer/platform/cross_thread_copier.h"  // nogncheck
-#endif
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 
 namespace blink {
 
@@ -92,15 +89,17 @@ struct WebResourceTimingInfo {
   WebVector<WebServerTimingInfo> server_timing;
 };
 
+}  // namespace blink
+
+namespace WTF {
 #if INSIDE_BLINK
 template <>
-struct CrossThreadCopier<WebResourceTimingInfo> {
+struct CrossThreadCopier<blink::WebResourceTimingInfo> {
   STATIC_ONLY(CrossThreadCopier);
-  typedef WebResourceTimingInfo Type;
-  PLATFORM_EXPORT static Type Copy(const WebResourceTimingInfo&);
+  typedef blink::WebResourceTimingInfo Type;
+  PLATFORM_EXPORT static Type Copy(const blink::WebResourceTimingInfo&);
 };
 #endif
-
-}  // namespace blink
+}  // namespace WTF
 
 #endif

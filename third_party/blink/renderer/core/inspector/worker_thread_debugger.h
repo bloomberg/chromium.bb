@@ -38,6 +38,7 @@
 namespace blink {
 
 class ErrorEvent;
+class KURL;
 class SourceLocation;
 class WorkerThread;
 

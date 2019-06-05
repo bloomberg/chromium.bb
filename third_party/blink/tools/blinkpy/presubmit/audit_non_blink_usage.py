@@ -610,11 +610,15 @@ _CONFIG = [
         'paths': [
             'third_party/blink/renderer/platform/',
         ],
-        # Suppress almost all checks on platform since code in this directory
-        # is meant to be a bridge between Blink and non-Blink code. However,
+        # Suppress almost all checks on platform since code in this directory is
+        # meant to be a bridge between Blink and non-Blink code. However,
         # base::RefCounted should still be explicitly blocked, since
-        # WTF::RefCounted should be used instead.
-        'allowed': ['(?!base::RefCounted).+'],
+        # WTF::RefCounted should be used instead. base::RefCountedThreadSafe is
+        # still needed for cross_thread_copier.h though.
+        'allowed': [
+            'base::RefCountedThreadSafe',
+            '(?!base::RefCounted).+'
+        ],
     },
     {
         'paths': [

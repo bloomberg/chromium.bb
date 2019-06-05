@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_values.h"
-#include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 
 namespace blink {
 
@@ -110,12 +110,16 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   MediaValuesCachedData data_;
 };
 
+}  // namespace blink
+
+namespace WTF {
+
 template <>
-struct CrossThreadCopier<MediaValuesCached::MediaValuesCachedData> {
-  typedef MediaValuesCached::MediaValuesCachedData Type;
+struct CrossThreadCopier<blink::MediaValuesCached::MediaValuesCachedData> {
+  typedef blink::MediaValuesCached::MediaValuesCachedData Type;
   static Type Copy(const Type& data) { return data.DeepCopy(); }
 };
 
-}  // namespace blink
+}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_CACHED_H_

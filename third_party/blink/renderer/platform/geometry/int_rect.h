@@ -240,6 +240,14 @@ PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&, const IntRect&);
 
 }  // namespace blink
 
+namespace WTF {
+template <>
+struct CrossThreadCopier<blink::IntRect>
+    : public CrossThreadCopierPassThrough<blink::IntRect> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+}
+
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::IntRect)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_RECT_H_

@@ -12,7 +12,6 @@ include_rules = [
     "+base/synchronization/lock.h",
 
     "+third_party/blink/renderer/platform/bindings",
-    "+third_party/blink/renderer/platform/cross_thread_functional.h",
     "+third_party/blink/renderer/platform/histogram.h",
     "+third_party/blink/renderer/platform/instrumentation",
     "+third_party/blink/renderer/platform/memory_pressure_listener.h",

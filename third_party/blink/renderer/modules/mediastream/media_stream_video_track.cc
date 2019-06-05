@@ -18,9 +18,9 @@
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -138,7 +138,7 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&FrameDeliverer::AddCallbackOnIO,
-                          WrapRefCounted(this), CrossThreadUnretained(id),
+                          WrapRefCounted(this), WTF::CrossThreadUnretained(id),
                           WTF::Passed(CrossThreadBind(std::move(callback)))));
 }
 
@@ -154,7 +154,7 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallback(VideoSinkId id) {
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&FrameDeliverer::RemoveCallbackOnIO,
-                          WrapRefCounted(this), CrossThreadUnretained(id),
+                          WrapRefCounted(this), WTF::CrossThreadUnretained(id),
                           Thread::Current()->GetTaskRunner()));
 }
 

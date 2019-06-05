@@ -103,7 +103,6 @@
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -112,6 +111,7 @@
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -1256,8 +1256,8 @@ void ServiceWorkerGlobalScope::OnIdleTimeout() {
   // RequestedTermination() returns true if ServiceWorkerTimeoutTimer agrees
   // we should request the host to terminate this worker now.
   DCHECK(RequestedTermination());
-  // We use CrossThreadBindOnce() here because the callback may be destroyed on
-  // the main thread if the worker thread has already terminated.
+  // We use CrossThreadBindOnce() here because the callback may be
+  // destroyed on the main thread if the worker thread has already terminated.
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
       ->RequestTermination(ConvertToBaseOnceCallback(
           CrossThreadBindOnce(&ServiceWorkerGlobalScope::OnRequestedTermination,

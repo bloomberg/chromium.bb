@@ -32,6 +32,7 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -166,5 +167,15 @@ inline bool operator!=(const IntSize& a, const IntSize& b) {
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntSize&);
 
 }  // namespace blink
+
+namespace WTF {
+
+template <>
+struct CrossThreadCopier<blink::IntSize>
+    : public CrossThreadCopierPassThrough<blink::IntSize> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+}
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_SIZE_H_

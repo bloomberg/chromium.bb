@@ -29,9 +29,9 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -62,12 +62,6 @@ const double kTypicalDownlinkMbpsEffectiveConnectionType
         0, 0, 0.040, 0.075, 0.400, 1.600};
 
 }  // namespace
-
-template <>
-struct CrossThreadCopier<NetworkStateNotifier::NetworkState>
-    : public CrossThreadCopierPassThrough<NetworkStateNotifier::NetworkState> {
-  STATIC_ONLY(CrossThreadCopier);
-};
 
 NetworkStateNotifier& GetNetworkStateNotifier() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(NetworkStateNotifier, network_state_notifier,

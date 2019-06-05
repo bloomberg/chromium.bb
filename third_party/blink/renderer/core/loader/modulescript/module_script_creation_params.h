@@ -8,10 +8,10 @@
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
-#include "third_party/blink/renderer/platform/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -88,16 +88,20 @@ class ModuleScriptCreationParams {
   const network::mojom::FetchCredentialsMode fetch_credentials_mode_;
 };
 
+}  // namespace blink
+
+namespace WTF {
+
 // Creates a deep copy because |response_url_| and |source_text_| are not
 // cross-thread-transfer-safe.
 template <>
-struct CrossThreadCopier<ModuleScriptCreationParams> {
-  static ModuleScriptCreationParams Copy(
-      const ModuleScriptCreationParams& params) {
+struct CrossThreadCopier<blink::ModuleScriptCreationParams> {
+  static blink::ModuleScriptCreationParams Copy(
+      const blink::ModuleScriptCreationParams& params) {
     return params.IsolatedCopy();
   }
 };
 
-}  // namespace blink
+}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_MODULE_SCRIPT_CREATION_PARAMS_H_

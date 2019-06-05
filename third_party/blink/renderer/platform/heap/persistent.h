@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/heap/persistent_node.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 
 namespace blink {
 
@@ -659,6 +660,18 @@ template <typename T>
 struct DefaultHash<blink::CrossThreadWeakPersistent<T>> {
   STATIC_ONLY(DefaultHash);
   using Hash = MemberHash<T>;
+};
+
+template <typename T>
+struct CrossThreadCopier<blink::CrossThreadPersistent<T>>
+    : public CrossThreadCopierPassThrough<blink::CrossThreadPersistent<T>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <typename T>
+struct CrossThreadCopier<blink::CrossThreadWeakPersistent<T>>
+    : public CrossThreadCopierPassThrough<blink::CrossThreadWeakPersistent<T>> {
+  STATIC_ONLY(CrossThreadCopier);
 };
 
 }  // namespace WTF

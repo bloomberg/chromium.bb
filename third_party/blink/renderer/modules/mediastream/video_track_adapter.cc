@@ -28,6 +28,26 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
+namespace WTF {
+
+// Template specializations of [1], needed to be able to pass WTF callbacks
+// that have VideoTrackAdapterSettings or gfx::Size parameters across threads.
+//
+// [1] third_party/blink/renderer/platform/wtf/cross_thread_copier.h.
+template <>
+struct CrossThreadCopier<blink::VideoTrackAdapterSettings>
+    : public CrossThreadCopierPassThrough<blink::VideoTrackAdapterSettings> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<gfx::Size>
+    : public CrossThreadCopierPassThrough<gfx::Size> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+}  // namespace WTF
+
 namespace blink {
 
 namespace {
@@ -116,22 +136,6 @@ bool MaybeUpdateFrameRate(ComputedSettings* settings) {
 }
 
 }  // anonymous namespace
-
-// Template specializations of [1], needed to be able to pass WTF callbacks
-// that have VideoTrackAdapterSettings or gfx::Size parameters across threads.
-//
-// [1] third_party/blink/renderer/platform/cross_thread_copier.h.
-template <>
-struct CrossThreadCopier<VideoTrackAdapterSettings>
-    : public CrossThreadCopierPassThrough<VideoTrackAdapterSettings> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
-template <>
-struct CrossThreadCopier<gfx::Size>
-    : public CrossThreadCopierPassThrough<gfx::Size> {
-  STATIC_ONLY(CrossThreadCopier);
-};
 
 // VideoFrameResolutionAdapter is created on and lives on the IO-thread. It does
 // the resolution adaptation and delivers frames to all registered tracks on the
@@ -518,8 +522,8 @@ void VideoTrackAdapter::AddTrack(const MediaStreamVideoTrack* track,
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
       CrossThreadBindOnce(
-          &VideoTrackAdapter::AddTrackOnIO, CrossThreadUnretained(this),
-          CrossThreadUnretained(track),
+          &VideoTrackAdapter::AddTrackOnIO, WTF::CrossThreadUnretained(this),
+          WTF::CrossThreadUnretained(track),
           WTF::Passed(CrossThreadBind(std::move(frame_callback))),
           WTF::Passed(CrossThreadBind(std::move(settings_callback))),
           WTF::Passed(CrossThreadBind(std::move(format_callback))), settings));

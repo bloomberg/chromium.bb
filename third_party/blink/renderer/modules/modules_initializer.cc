@@ -92,9 +92,9 @@
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -328,7 +328,7 @@ void ModulesInitializer::RegisterInterfaces(
     service_manager::BinderRegistry& registry) {
   DCHECK(Platform::Current());
   registry.AddInterface(
-      ConvertToBaseCallback(blink::CrossThreadBind(&WebDatabaseImpl::Create)),
+      ConvertToBaseCallback(CrossThreadBind(&WebDatabaseImpl::Create)),
       Platform::Current()->GetIOTaskRunner());
 }
 

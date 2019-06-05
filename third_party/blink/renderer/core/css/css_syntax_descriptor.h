@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/css_syntax_component.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
-#include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 
 namespace blink {
 
@@ -49,10 +49,14 @@ class CORE_EXPORT CSSSyntaxDescriptor {
   Vector<CSSSyntaxComponent> syntax_components_;
 };
 
+}  // namespace blink
+
+namespace WTF {
+
 template <wtf_size_t inlineCapacity, typename Allocator>
 struct CrossThreadCopier<
-    Vector<CSSSyntaxDescriptor, inlineCapacity, Allocator>> {
-  using Type = Vector<CSSSyntaxDescriptor, inlineCapacity, Allocator>;
+    Vector<blink::CSSSyntaxDescriptor, inlineCapacity, Allocator>> {
+  using Type = Vector<blink::CSSSyntaxDescriptor, inlineCapacity, Allocator>;
   static Type Copy(const Type& value) {
     Type result;
     result.ReserveInitialCapacity(value.size());
@@ -62,6 +66,6 @@ struct CrossThreadCopier<
   }
 };
 
-}  // namespace blink
+}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SYNTAX_DESCRIPTOR_H_

@@ -28,17 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 
 #include <memory>
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-namespace blink {
-
-CrossThreadCopier<KURL>::Type CrossThreadCopier<KURL>::Copy(const KURL& url) {
-  return url.Copy();
-}
+namespace WTF {
 
 CrossThreadCopier<String>::Type CrossThreadCopier<String>::Copy(
     const String& str) {
@@ -82,4 +77,4 @@ static_assert(
                   CrossThreadCopier<std::unique_ptr<float>>::Type>::value),
     "std::unique_ptr test");
 
-}  // namespace blink
+}  // namespace WTF
