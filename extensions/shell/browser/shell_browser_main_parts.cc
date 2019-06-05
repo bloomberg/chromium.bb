@@ -36,7 +36,6 @@
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_extensions_browser_client.h"
-#include "extensions/shell/browser/shell_oauth2_token_service.h"
 #include "extensions/shell/browser/shell_prefs.h"
 #include "extensions/shell/browser/shell_update_query_params_delegate.h"
 #include "extensions/shell/common/shell_extensions_client.h"
@@ -230,12 +229,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   InitExtensionSystem();
 
-  // Initialize OAuth2 support from command line.
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  oauth2_token_service_.reset(new ShellOAuth2TokenService(
-      cmd->GetSwitchValueASCII(switches::kAppShellUser),
-      cmd->GetSwitchValueASCII(switches::kAppShellRefreshToken)));
-
 #if BUILDFLAG(ENABLE_NACL)
   nacl::NaClBrowser::SetDelegate(
       std::make_unique<ShellNaClBrowserDelegate>(browser_context_.get()));
@@ -249,7 +242,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   content::ShellDevToolsManagerDelegate::StartHttpHandler(
       browser_context_.get());
 
-  if (cmd->HasSwitch(::switches::kBrowserCrashTest))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kBrowserCrashTest))
     CrashForTest();
 
   if (parameters_.ui_task) {
@@ -282,7 +276,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   task_tracker_.TryCancelAll();
 #endif
 
-  oauth2_token_service_.reset();
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context_.get());
   extension_system_ = NULL;

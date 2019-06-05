@@ -29,7 +29,6 @@ class ShellBrowserMainDelegate;
 class ShellExtensionsClient;
 class ShellExtensionsBrowserClient;
 class ShellExtensionSystem;
-class ShellOAuth2TokenService;
 class ShellUpdateQueryParamsDelegate;
 
 #if defined(OS_CHROMEOS)
@@ -80,7 +79,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<ShellExtensionsClient> extensions_client_;
   std::unique_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;
   std::unique_ptr<ShellUpdateQueryParamsDelegate> update_query_params_delegate_;
-  std::unique_ptr<ShellOAuth2TokenService> oauth2_token_service_;
 
   // Owned by the KeyedService system.
   ShellExtensionSystem* extension_system_;

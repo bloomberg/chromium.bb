@@ -24,8 +24,6 @@ include_rules = [
 
   "+gin",
 
-  "+google_apis/gaia",
-
   "+net",
 
   "+ppapi",
