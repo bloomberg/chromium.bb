@@ -12748,6 +12748,7 @@ Called by update_net_error_codes.py.-->
   <int value="93" label="Crostini App Uninstaller"/>
   <int value="94" label="Crostini Container Upgrade"/>
   <int value="95" label="Incognito Menu"/>
+  <int value="96" label="Phone Chooser"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -26861,6 +26862,13 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="Failure (invalid record size)"/>
   <int value="11" label="Failure (invalid public key length)"/>
   <int value="12" label="Failure (invalid public key format)"/>
+</enum>
+
+<enum name="GCMEncryptionResult">
+  <int value="0" label="Success (message decrypted per draft 08)"/>
+  <int value="1" label="Failure (no keying material available)"/>
+  <int value="2" label="Failure (unable to compute the shared secret)"/>
+  <int value="3" label="Failure (unable to encrypt using AES-GCM)"/>
 </enum>
 
 <enum name="GCMEndpoints">

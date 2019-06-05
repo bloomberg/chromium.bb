@@ -23,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
+#include "components/gcm_driver/crypto/gcm_encryption_result.h"
 #include "components/gcm_driver/crypto/gcm_key_store.h"
 #include "components/gcm_driver/crypto/gcm_message_cryptographer.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
@@ -106,6 +107,21 @@ class GCMEncryptionProviderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  // Encrypts the |message| and then synchronously waits until either the
+  // success or failure callbacks has been invoked.
+  void Encrypt(const std::string& authorized_entity,
+               const std::string& p256dh,
+               const std::string& auth_secret,
+               const std::string& message) {
+    encryption_provider_->EncryptMessage(
+        kExampleAppId, authorized_entity, p256dh, auth_secret, message,
+        base::Bind(&GCMEncryptionProviderTest::DidEncryptMessage,
+                   base::Unretained(this)));
+
+    // The encryption keys will be read asynchronously.
+    base::RunLoop().RunUntilIdle();
+  }
+
   // Checks that the underlying key store has a key for the |kExampleAppId| +
   // authorized entity key if and only if |should_have_key| is true. Must wrap
   // with ASSERT/EXPECT_NO_FATAL_FAILURE.
@@ -137,8 +153,14 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   // Returns the result of the previous decryption operation.
   GCMDecryptionResult decryption_result() { return decryption_result_; }
 
+  // Returns the result of the previous encryption operation.
+  GCMEncryptionResult encryption_result() { return encryption_result_; }
+
   // Returns the message resulting from the previous decryption operation.
   const IncomingMessage& decrypted_message() { return decrypted_message_; }
+
+  // Returns the message resulting from the previous encryption operation.
+  const std::string& encrypted_message() { return encrypted_message_; }
 
   GCMEncryptionProvider* encryption_provider() {
     return encryption_provider_.get();
@@ -150,11 +172,22 @@ class GCMEncryptionProviderTest : public ::testing::Test {
                                const std::string& authorized_entity,
                                GCMMessageCryptographer::Version version);
 
+  // Performs a test encryption feature without creating proper keys. Must wrap
+  // this in ASSERT_NO_FATAL_FAILURE.
+  void TestEncryptionNoKeys(const std::string& app_id,
+                            const std::string& authorized_entity);
+
  private:
   void DidDecryptMessage(GCMDecryptionResult result,
                          const IncomingMessage& message) {
     decryption_result_ = result;
     decrypted_message_ = message;
+  }
+
+  void DidEncryptMessage(GCMEncryptionResult result,
+                         const std::string& message) {
+    encryption_result_ = result;
+    encrypted_message_ = message;
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -164,8 +197,11 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   std::unique_ptr<GCMEncryptionProvider> encryption_provider_;
 
   GCMDecryptionResult decryption_result_ = GCMDecryptionResult::UNENCRYPTED;
+  GCMEncryptionResult encryption_result_ =
+      GCMEncryptionResult::ENCRYPTION_FAILED;
 
   IncomingMessage decrypted_message_;
+  std::string encrypted_message_;
 };
 
 TEST_F(GCMEncryptionProviderTest, IsEncryptedMessage) {
@@ -495,31 +531,32 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
   ASSERT_GT(private_key.size(), 0u);
   ASSERT_GT(server_private_key.size(), 0u);
 
-  std::string salt;
-
-  // Creates a cryptographically secure salt of |salt_size| octets in size, and
-  // calculate the shared secret for the message.
-  crypto::RandBytes(base::WriteInto(&salt, 16 + 1), 16);
-
-  std::string shared_secret;
-  ASSERT_TRUE(ComputeSharedP256Secret(*key, server_public_key, &shared_secret));
-
   IncomingMessage message;
-  size_t record_size;
-
-  message.sender_id = kExampleAuthorizedEntity;
-
-  // Encrypts the |kExampleMessage| using the generated shared key and the
-  // random |salt|, storing the result in |record_size| and the message.
-  GCMMessageCryptographer cryptographer(version);
-
-  std::string ciphertext;
-  ASSERT_TRUE(cryptographer.Encrypt(
-      public_key, server_public_key, shared_secret, auth_secret, salt,
-      kExampleMessage, &record_size, &ciphertext));
+  message.sender_id = authorized_entity;
 
   switch (version) {
     case GCMMessageCryptographer::Version::DRAFT_03: {
+      std::string salt;
+
+      // Creates a cryptographically secure salt of |salt_size| octets in size,
+      // and calculate the shared secret for the message.
+      crypto::RandBytes(base::WriteInto(&salt, 16 + 1), 16);
+
+      std::string shared_secret;
+      ASSERT_TRUE(
+          ComputeSharedP256Secret(*key, server_public_key, &shared_secret));
+
+      size_t record_size;
+
+      // Encrypts the |kExampleMessage| using the generated shared key and the
+      // random |salt|, storing the result in |record_size| and the message.
+      GCMMessageCryptographer cryptographer(version);
+
+      std::string ciphertext;
+      ASSERT_TRUE(cryptographer.Encrypt(
+          public_key, server_public_key, shared_secret, auth_secret, salt,
+          kExampleMessage, &record_size, &ciphertext));
+
       std::string encoded_salt, encoded_key;
 
       // Compile the incoming GCM message, including the required headers.
@@ -539,30 +576,12 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
       break;
     }
     case GCMMessageCryptographer::Version::DRAFT_08: {
-      uint32_t rs = record_size;
-      uint8_t key_length = server_public_key.size();
-
-      std::vector<char> payload(salt.size() + sizeof(rs) + sizeof(key_length) +
-                                server_public_key.size() + ciphertext.size());
-
-      char* current = &payload.front();
-
-      memcpy(current, salt.data(), salt.size());
-      current += salt.size();
-
-      base::WriteBigEndian(current, rs);
-      current += sizeof(rs);
-
-      base::WriteBigEndian(current, key_length);
-      current += sizeof(key_length);
-
-      memcpy(current, server_public_key.data(), server_public_key.size());
-      current += server_public_key.size();
-
-      memcpy(current, ciphertext.data(), ciphertext.size());
+      ASSERT_NO_FATAL_FAILURE(
+          Encrypt(authorized_entity, public_key, auth_secret, kExampleMessage));
+      ASSERT_EQ(GCMEncryptionResult::ENCRYPTED_DRAFT_08, encryption_result());
 
       message.data["content-encoding"] = "aes128gcm";
-      message.raw_data.assign(payload.begin(), payload.end());
+      message.raw_data = std::move(encrypted_message());
       break;
     }
   }
@@ -578,6 +597,29 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
 
   EXPECT_TRUE(decrypted_message().decrypted);
   EXPECT_EQ(kExampleMessage, decrypted_message().raw_data);
+}
+
+void GCMEncryptionProviderTest::TestEncryptionNoKeys(
+    const std::string& app_id,
+    const std::string& authorized_entity) {
+  // Only create proper keys for receipeint without creating keys for sender.
+  ECPrivateKeyUniquePtr key;
+  std::string auth_secret;
+  encryption_provider()->key_store_->CreateKeys(
+      "receiver" + app_id, authorized_entity,
+      base::BindOnce(&GCMEncryptionProviderTest::HandleKeysCallback,
+                     base::Unretained(this), &key, &auth_secret));
+
+  // Creating the public keys will be done asynchronously.
+  base::RunLoop().RunUntilIdle();
+
+  std::string public_key;
+  ASSERT_TRUE(GetRawPublicKey(*key, &public_key));
+  ASSERT_GT(public_key.size(), 0u);
+
+  ASSERT_NO_FATAL_FAILURE(
+      Encrypt(authorized_entity, public_key, auth_secret, "foo"));
+  EXPECT_EQ(GCMEncryptionResult::NO_KEYS, encryption_result());
 }
 
 TEST_F(GCMEncryptionProviderTest, EncryptionRoundTripGCMRegistration) {
@@ -602,6 +644,11 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTripDraft08) {
   ASSERT_NO_FATAL_FAILURE(
       TestEncryptionRoundTrip(kExampleAppId, kExampleAuthorizedEntity,
                               GCMMessageCryptographer::Version::DRAFT_08));
+}
+
+TEST_F(GCMEncryptionProviderTest, EncryptionNoKeys) {
+  ASSERT_NO_FATAL_FAILURE(
+      TestEncryptionNoKeys(kExampleAppId, kExampleAuthorizedEntity));
 }
 
 }  // namespace gcm

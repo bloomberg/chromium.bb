@@ -23,6 +23,10 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace crypto {
+class ECPrivateKey;
+}
+
 namespace gcm {
 
 class GCMAppHandler;
@@ -152,6 +156,20 @@ class GCMDriver {
             const std::string& receiver_id,
             const OutgoingMessage& message,
             const SendCallback& callback);
+
+  // Sends a message using FCM web-push with end-to-end encryption.
+  // The |message| is encrypted using private enryption key associated with
+  // |app_id| and |authorized_entity|, against public encryption key |p256dh|
+  // with authentcaition secret |auth_secret|. Encrypted message is sent to FCM
+  // with |fcm_token|, and and authenticate with VAPID using |vapid_key|.
+  void SendWebPushMessage(const std::string& app_id,
+                          const std::string& authorized_entity,
+                          const std::string& p256dh,
+                          const std::string& auth_secret,
+                          const std::string& fcm_token,
+                          crypto::ECPrivateKey* vapid_key,
+                          int time_to_live,
+                          const std::string& message);
 
   // Get the public encryption key and the authentication secret associated with
   // |app_id|. If none have been associated with |app_id| yet, they will be
@@ -333,6 +351,13 @@ class GCMDriver {
       const std::vector<std::string>& normalized_sender_ids,
       UnregisterCallback unregister_callback,
       GCMClient::Result result);
+
+  // Called after webpush message is encrypted.
+  void OnMessageEncrypted(const std::string& fcm_token,
+                          crypto::ECPrivateKey* vapid_key,
+                          int time_to_live,
+                          GCMEncryptionResult result,
+                          const std::string& payload);
 
   // Callback map (from app_id to callback) for Register.
   std::map<std::string, RegisterCallback> register_callbacks_;

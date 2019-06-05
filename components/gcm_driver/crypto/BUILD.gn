@@ -12,6 +12,7 @@ static_library("crypto") {
     "gcm_decryption_result.h",
     "gcm_encryption_provider.cc",
     "gcm_encryption_provider.h",
+    "gcm_encryption_result.h",
     "gcm_key_store.cc",
     "gcm_key_store.h",
     "gcm_message_cryptographer.cc",

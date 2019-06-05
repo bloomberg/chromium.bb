@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
+#include "components/gcm_driver/crypto/gcm_encryption_result.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 
 namespace gcm {
@@ -323,6 +324,45 @@ void GCMDriver::RegisterAfterUnregister(
   // Trigger the pending registration.
   DCHECK(register_callbacks_.find(app_id) != register_callbacks_.end());
   RegisterImpl(app_id, normalized_sender_ids);
+}
+
+void GCMDriver::SendWebPushMessage(const std::string& app_id,
+                                   const std::string& authorized_entity,
+                                   const std::string& p256dh,
+                                   const std::string& auth_secret,
+                                   const std::string& fcm_token,
+                                   crypto::ECPrivateKey* vapid_key,
+                                   int time_to_live,
+                                   const std::string& message) {
+  encryption_provider_.EncryptMessage(
+      app_id, authorized_entity, p256dh, auth_secret, message,
+      base::Bind(&GCMDriver::OnMessageEncrypted, weak_ptr_factory_.GetWeakPtr(),
+                 fcm_token, vapid_key, time_to_live));
+}
+
+void GCMDriver::OnMessageEncrypted(const std::string& fcm_token,
+                                   crypto::ECPrivateKey* vapid_key,
+                                   int time_to_live,
+                                   GCMEncryptionResult result,
+                                   const std::string& message) {
+  UMA_HISTOGRAM_ENUMERATION("GCM.Crypto.EncryptMessageResult", result,
+                            GCMEncryptionResult::ENUM_SIZE);
+
+  switch (result) {
+    case GCMEncryptionResult::ENCRYPTED_DRAFT_08:
+      // TODO: send the message.
+      return;
+    case GCMEncryptionResult::NO_KEYS:
+    case GCMEncryptionResult::INVALID_SHARED_SECRET:
+    case GCMEncryptionResult::ENCRYPTION_FAILED: {
+      LOG(ERROR) << "Webpush message encryption failed";
+      return;
+    }
+    case GCMEncryptionResult::ENUM_SIZE:
+      break;  // deliberate fall-through
+  }
+
+  NOTREACHED();
 }
 
 }  // namespace gcm
