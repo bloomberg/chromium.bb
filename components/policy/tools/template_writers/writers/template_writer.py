@@ -115,6 +115,17 @@ class TemplateWriter(object):
         return True
     return False
 
+  def IsPolicySupportedOnWindows(self, policy, product=None):
+    ''' Checks if |policy| is supported on any Windows platform.
+
+    Args:
+      policy: The dictionary of the policy.
+      product: Optional product to check; one of
+        'chrome', 'chrome_frame', 'chrome_os', 'webview'
+    '''
+    return (self.IsPolicySupportedOnPlatform(policy, 'win', product) or
+            self.IsPolicySupportedOnPlatform(policy, 'win7', product))
+
   def IsCrOSManagementSupported(self, policy, management):
     '''Checks whether |policy| supports the Chrome OS |management| type.
 

@@ -15,9 +15,13 @@ from writers import writer_unittest_common
 
 MESSAGES = '''
   {
-    'win_supported_win7': {
+    'win_supported_all': {
       'text': 'Microsoft Windows 7 or later', 'desc': 'blah'
     },
+    'win_supported_win7': {
+      'text': 'Microsoft Windows 7', 'desc': 'blah'
+    },
+
     'doc_recommended': {
       'text': 'Recommended', 'desc': 'bleh'
     },
@@ -87,6 +91,7 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"''')
     self.CompareOutputs(output, expected_output)
@@ -118,6 +123,7 @@ chromium_recommended="Chromium - Recommended"''')
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"''')
     self.CompareOutputs(output, expected_output)
@@ -178,6 +184,7 @@ chromium_recommended="Chromium - Recommended"''')
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
@@ -235,6 +242,7 @@ Reference: https://www.chromium.org/administrators/policy-list-3#MainPolicy"''')
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
@@ -300,6 +308,7 @@ With a newline.""",
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 StringPolicy_Policy="Caption of policy."
@@ -310,7 +319,7 @@ StringPolicy_Part="Caption of policy."
     self.CompareOutputs(output, expected_output)
 
   def testIntPolicy(self):
-    # Tests a policy group with a single policy of type 'string'.
+    # Tests a policy group with a single policy of type 'int'.
     policy_json = '''
       {
         'policy_definitions': [
@@ -365,6 +374,74 @@ StringPolicy_Part="Caption of policy."
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
+chromium="Chromium"
+chromium_recommended="Chromium - Recommended"
+IntPolicy_Policy="Caption of policy."
+IntPolicy_Explain="Description of policy.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#IntPolicy"
+IntPolicy_Part="Caption of policy."
+''')
+    self.CompareOutputs(output, expected_output)
+
+  def testIntPolicyWithWin7(self):
+    # Tests a policy group with a single policy of type 'int' that is supported
+    # on Windows 7 only.
+    policy_json = '''
+      {
+        'policy_definitions': [
+          {
+            'name': 'IntPolicy',
+            'type': 'int',
+            'caption': 'Caption of policy.',
+            'features': { 'can_be_recommended': True },
+            'desc': 'Description of policy.',
+            'supported_on': ['chrome.win7:8-'],
+          },
+        ],
+        'placeholders': [],
+        'messages': %s
+      }''' % MESSAGES
+    output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
+  CATEGORY !!chromium
+    KEYNAME "Software\\Policies\\Chromium"
+
+    POLICY !!IntPolicy_Policy
+      #if version >= 4
+        SUPPORTED !!SUPPORTED_WIN7_ONLY
+      #endif
+      EXPLAIN !!IntPolicy_Explain
+
+      PART !!IntPolicy_Part  NUMERIC
+        VALUENAME "IntPolicy"
+        MIN 0 MAX 2000000000
+      END PART
+    END POLICY
+
+  END CATEGORY
+
+  CATEGORY !!chromium_recommended
+    KEYNAME "Software\\Policies\\Chromium\\Recommended"
+
+    POLICY !!IntPolicy_Policy
+      #if version >= 4
+        SUPPORTED !!SUPPORTED_WIN7_ONLY
+      #endif
+      EXPLAIN !!IntPolicy_Explain
+
+      PART !!IntPolicy_Part  NUMERIC
+        VALUENAME "IntPolicy"
+        MIN 0 MAX 2000000000
+      END PART
+    END POLICY
+
+  END CATEGORY
+
+
+''', '''[Strings]
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 IntPolicy_Policy="Caption of policy."
@@ -452,6 +529,7 @@ IntPolicy_Part="Caption of policy."
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
@@ -536,6 +614,7 @@ ProxyServerAutoDetect_DropDown="Option2"
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
@@ -606,6 +685,7 @@ With a newline.""",
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ListPolicy_Policy="Caption of list policy."
@@ -679,6 +759,7 @@ With a newline.""",
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ListPolicy_Policy="Caption of list policy."
@@ -744,6 +825,7 @@ ListPolicy_Part="Label of list policy."
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 DictionaryPolicy_Policy="Caption of policy."
@@ -810,6 +892,7 @@ DictionaryPolicy_Part="Caption of policy."
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ExternalPolicy_Policy="Caption of policy."
@@ -858,6 +941,7 @@ ExternalPolicy_Part="Caption of policy."
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ''')
@@ -908,6 +992,7 @@ chromium_recommended="Chromium - Recommended"
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
@@ -1006,6 +1091,7 @@ With a newline."""
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 Group1_Category="Caption of group."
@@ -1097,6 +1183,7 @@ Policy2_Part="Caption of policy2."
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
@@ -1176,6 +1263,7 @@ EnumPolicy_B_Part="Caption of policy B."
 
 ''', '''[Strings]
 SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 DeprecatedPolicies_Category="Deprecated policies"

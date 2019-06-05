@@ -21,6 +21,7 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         'app_name': 'test',
         'build': 'test',
         'win_supported_os': 'SUPPORTED_TESTOS',
+        'win_supported_os_win7': 'SUPPORTED_TESTOS_2',
         'win_config': {
             'win': {
                 'mandatory_category_path': ['test_category'],
@@ -44,8 +45,12 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     }
     self.writer = self._GetWriter(config)
     self.writer.messages = {
-        'win_supported_win7': {
+        'win_supported_all': {
             'text': 'Supported on Test OS or higher',
+            'desc': 'blah'
+        },
+        'win_supported_win7': {
+            'text': 'Supported on Test OS',
             'desc': 'blah'
         },
         'doc_recommended': {
@@ -109,6 +114,7 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         ' revision="1.0" schemaVersion="1.0"><displayName/><description/>'
         '<resources><stringTable><string id="SUPPORTED_TESTOS">Supported on'
         ' Test OS or higher</string>'
+        '<string id="SUPPORTED_TESTOS_2">Supported on Test OS</string>'
         '<string id="' + self.GetCategory() + '">' + \
           self.GetCategoryString() + '</string>'
         '<string id="' + self.GetCategory() + '_recommended">' + \
@@ -128,6 +134,7 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '<displayName/><description/><resources><stringTable>'
         '<string id="SUPPORTED_TESTOS">Supported on'
         ' Test OS or higher</string>'
+        '<string id="SUPPORTED_TESTOS_2">Supported on Test OS</string>'
         '<string id="' + self.GetCategory() + '">' + \
           self.GetCategoryString() + '</string>'
         '<string id="' + self.GetCategory() + '_recommended">' + \
@@ -162,7 +169,8 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     output = self.GetXMLOfChildren(self.writer._string_table_elem)
     expected_output = (
         '<string id="SUPPORTED_TESTOS">'
-        'Supported on Test OS or higher</string>\n'
+        'Supported on Test OS or higher</string>\n' + \
+        '<string id="SUPPORTED_TESTOS_2">Supported on Test OS</string>\n' + \
         '<string id="' + self.GetCategory() + '">' + \
           self.GetCategoryString() + '</string>\n'
         '<string id="' + self.GetCategory() + '_recommended">' + \

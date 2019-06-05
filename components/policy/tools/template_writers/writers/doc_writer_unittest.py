@@ -1086,6 +1086,56 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '</div>'
         '</root>')
 
+  def testAddPolicySectionForWindows7Only(self):
+    policy = {
+        'name':
+            'PolicyName',
+        'caption':
+            'PolicyCaption',
+        'desc':
+            'PolicyDesc',
+        'type':
+            'int',
+        'supported_on': [{
+            'product': 'chrome',
+            'platforms': ['win7'],
+            'since_version': '33',
+            'until_version': '',
+        }],
+        'features': {
+            'dynamic_refresh': False
+        },
+        'example_value':
+            123
+    }
+    self.writer._AddPolicySection(self.doc_root, policy)
+    self.assertEquals(
+        self.doc_root.toxml(), '<root>'
+        '<div style="margin-left: 0px">'
+        '<h3><a name="PolicyName"/>PolicyName</h3>'
+        '<span>PolicyCaption</span>'
+        '<dl>'
+        '<dt style="style_dt;">_test_data_type</dt>'
+        '<dd>Integer [Windows:REG_DWORD]</dd>'
+        '<dt style="style_dt;">_test_win_reg_loc</dt>'
+        '<dd style="style_.monospace;">MockKey\\PolicyName</dd>'
+        '<dt style="style_dt;">_test_supported_on</dt>'
+        '<dd>'
+        '<ul style="style_ul;">'
+        '<li>Chrome (Windows 7) ..33..</li>'
+        '</ul>'
+        '</dd>'
+        '<dt style="style_dt;">_test_supported_features</dt>'
+        '<dd>_test_feature_dynamic_refresh: _test_not_supported</dd>'
+        '<dt style="style_dt;">_test_description</dt>'
+        '<dd><p>PolicyDesc</p></dd>'
+        '<dt style="style_dt;">_test_example_value</dt>'
+        '<dd>0x0000007b (Windows)</dd>'
+        '</dl>'
+        '<a href="#top">_test_back_to_top</a>'
+        '</div>'
+        '</root>')
+
   def testAddPolicySectionForMacOnly(self):
     policy = {
         'name':

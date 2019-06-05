@@ -432,6 +432,37 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
 
     self.do_test(policy_data_mock, LocalMockWriter())
 
+  def testWin7OnlyPolicy(self):
+    # Test that Win7 only policy is marked as windows policy with speicial flag.
+    policy_data_mock = {
+        'policy_definitions': [{
+            'name':
+                'Policy1',
+            'type':
+                'string-enum-list',
+            'caption':
+                '',
+            'desc':
+                '',
+            'supported_on': ['chrome.win7:2-'],
+            'items': [{
+                'name': 'item1',
+                'value': 'one',
+                'caption': 'string1',
+                'desc': ''
+            },]
+        }]
+    }
+
+    class LocalMockWriter(mock_writer.MockWriter):
+
+      def WritePolicy(self, policy):
+        self.tester.assertEquals(policy['supported_on'][0]['platforms'],
+                                 ['win7'])
+
+    self.do_test(policy_data_mock, LocalMockWriter())
+
+
   def testPolicyFiltering(self):
     # Test that policies are filtered correctly based on their annotations.
     policy_data_mock = {

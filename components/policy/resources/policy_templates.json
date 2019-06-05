@@ -107,7 +107,7 @@
 #
 #   Currently supported product names:
 #       'chrome_frame', 'chrome_os', 'android', 'webview_android',
-#       'chrome.win', 'chrome.linux', 'chrome.mac', 'chrome.*'
+#       'chrome.win', 'chrome.win7', 'chrome.linux', 'chrome.mac', 'chrome.*'
 #     For example if 'chrome.*:5-10' is specified for a policy, then it should
 #     be read as:
 #       'chrome.linux:5-10', 'chrome.mac:5-10', 'chrome.win:5-10'
@@ -1099,7 +1099,7 @@
       'name': 'DefaultBrowserSettingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:11-'],
+      'supported_on': ['chrome.win7:11-', 'chrome.mac:11-', 'chrome.linux:11-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -16116,9 +16116,13 @@
 
   'messages': {
     # Messages that are not associated to any policies.
-    'win_supported_win7': {
+    'win_supported_all': {
       'desc': '''A label specifying the oldest possible compatible version of Windows. This text will appear right next to a label containing the text 'Supported on:'.''',
       'text': '''Microsoft Windows 7 or later'''
+    },
+    'win_supported_win7': {
+      'desc': '''A label specifying the policy compatibles with Windows 7. This text will appear right next to a label containing the text 'Supported on:'.''',
+      'text': '''Microsoft Windows 7'''
     },
     'mac_chrome_preferences': {
       'desc': '''A text indicating in Mac OS X Workgroup Manager, that currently the preferences of Chromium are being edited''',
