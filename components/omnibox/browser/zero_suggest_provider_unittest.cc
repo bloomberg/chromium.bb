@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
@@ -151,7 +152,6 @@ class ZeroSuggestProviderTest : public testing::Test,
 
   void CreatePersonalizedFieldTrial();
   void CreateMostVisitedFieldTrial();
-  void CreateContextualSuggestFieldTrial();
   void SetZeroSuggestVariantForAllContexts(const std::string& variant);
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -203,6 +203,36 @@ void ZeroSuggestProviderTest::SetZeroSuggestVariantForAllContexts(
       omnibox::kOnFocusSuggestions,
       {{std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) + ":*:*",
         variant}});
+}
+
+TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
+  GURL current_url = GURL("https://example.com/");
+  GURL suggest_url = GURL("https://www.google.com/complete/?q={searchTerms}");
+
+  EXPECT_CALL(*client_, IsAuthenticated())
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, IsPersonalizedUrlDataCollectionActive())
+      .WillRepeatedly(testing::Return(true));
+
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
+            provider_->TypeOfResultToRun(current_url, suggest_url));
+#else
+  EXPECT_EQ(ZeroSuggestProvider::ResultType::NONE,
+            provider_->TypeOfResultToRun(current_url, suggest_url));
+#endif
+
+  SetZeroSuggestVariantForAllContexts("RemoteSendURL");
+  EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_SEND_URL,
+            provider_->TypeOfResultToRun(current_url, suggest_url));
+
+  CreatePersonalizedFieldTrial();
+  EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_NO_URL,
+            provider_->TypeOfResultToRun(current_url, suggest_url));
+
+  CreateMostVisitedFieldTrial();
+  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
+            provider_->TypeOfResultToRun(current_url, suggest_url));
 }
 
 TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {

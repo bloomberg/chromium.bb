@@ -64,6 +64,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   void ResetSession() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest, TypeOfResultToRun);
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,
                            TestStartWillStopForSomeInput);
   ZeroSuggestProvider(AutocompleteProviderClient* client,
@@ -76,12 +77,19 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // at any time.
   enum ResultType {
     NONE,
-    DEFAULT_SERP,          // The default search provider is queried for
-                           // zero-suggest suggestions.
-    DEFAULT_SERP_FOR_URL,  // The default search provider is queried for
-                           // zero-suggest suggestions that are specific
-                           // to the visited URL.
-    MOST_VISITED
+
+    // A remote endpoint (usually the default search provider) is queried for
+    // suggestions. The endpoint is sent the user's authentication state, but
+    // not sent the current URL.
+    REMOTE_NO_URL,
+
+    // A remote endpoint (usually the default search provider) is queried for
+    // suggestions. The endpoint is sent the user's authentication state and
+    // the current URL.
+    REMOTE_SEND_URL,
+
+    // Gets the most visited sites from local history.
+    MOST_VISITED,
   };
 
   // BaseSearchProvider:
@@ -177,7 +185,8 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // The type of page the user is viewing (a search results page doing search
   // term replacement, an arbitrary URL, etc.).
-  metrics::OmniboxEventProto::PageClassification current_page_classification_;
+  metrics::OmniboxEventProto::PageClassification current_page_classification_ =
+      metrics::OmniboxEventProto::INVALID_SPEC;
 
   // Copy of OmniboxEditModel::permanent_text_.
   base::string16 permanent_text_;
