@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
 #include "chrome/browser/notifications/scheduler/internal/distribution_policy.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_store.h"
@@ -187,9 +188,15 @@ class NotificationSchedulerImpl
   }
 
   void ScheduleBackgroundTask() {
-    // TODO(xingliu): Implements a class to determine the next background task
-    // based on scheduled notification data.
-    NOTIMPLEMENTED();
+    BackgroundTaskCoordinator::Notifications notifications;
+    context_->notification_manager()->GetAllNotifications(&notifications);
+    BackgroundTaskCoordinator::ClientStates client_states;
+    context_->impression_tracker()->GetClientStates(&client_states);
+
+    // TODO(xingliu): Pass SchedulerTaskTime from background task.
+    context_->background_task_coordinator()->ScheduleBackgroundTask(
+        std::move(notifications), std::move(client_states),
+        SchedulerTaskTime::kMorning);
   }
 
   void OnClick(const std::string& notification_id) override {

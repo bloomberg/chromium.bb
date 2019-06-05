@@ -13,6 +13,7 @@
 
 namespace notifications {
 
+class BackgroundTaskCoordinator;
 class DisplayDecider;
 class IconStore;
 class ImpressionHistoryTracker;
@@ -27,7 +28,7 @@ class NotificationSchedulerContext {
  public:
   NotificationSchedulerContext(
       std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar,
-      std::unique_ptr<NotificationBackgroundTaskScheduler> scheduler,
+      std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
       std::unique_ptr<IconStore> icon_store,
       std::unique_ptr<ImpressionHistoryTracker> impression_tracker,
       std::unique_ptr<ScheduledNotificationManager> notification_manager,
@@ -39,8 +40,8 @@ class NotificationSchedulerContext {
     return client_registrar_.get();
   }
 
-  NotificationBackgroundTaskScheduler* background_task_scheduler() {
-    return background_task_scheduler_.get();
+  BackgroundTaskCoordinator* background_task_coordinator() {
+    return background_task_coordinator_.get();
   }
 
   IconStore* icon_store() { return icon_store_.get(); }
@@ -61,10 +62,6 @@ class NotificationSchedulerContext {
   // Holds a list of clients using the notification scheduler system.
   std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar_;
 
-  // Used to schedule background task in OS level.
-  std::unique_ptr<NotificationBackgroundTaskScheduler>
-      background_task_scheduler_;
-
   // Stores notification icons.
   std::unique_ptr<IconStore> icon_store_;
 
@@ -79,6 +76,9 @@ class NotificationSchedulerContext {
 
   // System configuration.
   std::unique_ptr<SchedulerConfig> config_;
+
+  // Used to schedule background task in OS level.
+  std::unique_ptr<BackgroundTaskCoordinator> background_task_coordinator_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerContext);
 };
