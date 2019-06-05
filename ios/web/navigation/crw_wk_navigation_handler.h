@@ -41,11 +41,6 @@ class WKBackForwardListItemHolder;
 - (web::UserInteractionState*)userInteractionStateForNavigationHandler:
     (CRWWKNavigationHandler*)navigationHandler;
 
-// Returns associated certificate verification errors.
-- (web::CertVerificationErrorsCacheType*)
-    certVerificationErrorsForNavigationHandler:
-        (CRWWKNavigationHandler*)navigationHandler;
-
 // Returns associated certificate verificatio controller.
 - (CRWCertVerificationController*)
     certVerificationControllerForNavigationHandler:

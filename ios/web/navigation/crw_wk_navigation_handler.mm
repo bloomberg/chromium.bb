@@ -53,6 +53,13 @@ using web::wk_navigation_util::kReferrerHeaderName;
 using web::wk_navigation_util::IsRestoreSessionUrl;
 using web::wk_navigation_util::IsWKInternalUrl;
 
+namespace {
+// Maximum number of errors to store in cert verification errors cache.
+// Cache holds errors only for pending navigations, so the actual number of
+// stored errors is not expected to be high.
+const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
+}
+
 @interface CRWWKNavigationHandler () {
   // Used to poll for a SafeBrowsing warning being displayed. This is created in
   // |decidePolicyForNavigationAction| and destroyed once any of the following
@@ -67,6 +74,13 @@ using web::wk_navigation_util::IsWKInternalUrl;
   // WebController.EmptyNavigationManagerCausedByStopLoading UMA metric which
   // helps with diagnosing a navigation related crash (crbug.com/565457).
   __weak WKNavigation* _stoppedWKNavigation;
+
+  // CertVerification errors which happened inside
+  // |webView:didReceiveAuthenticationChallenge:completionHandler:|.
+  // Key is leaf-cert/host pair. This storage is used to carry calculated
+  // cert status from |didReceiveAuthenticationChallenge:| to
+  // |didFailProvisionalNavigation:| delegate method.
+  std::unique_ptr<web::CertVerificationErrorsCacheType> _certVerificationErrors;
 }
 
 // Returns the WebStateImpl from self.delegate.
@@ -77,9 +91,6 @@ using web::wk_navigation_util::IsWKInternalUrl;
 // Returns the UserInteractionState from self.delegate.
 @property(nonatomic, readonly, assign)
     web::UserInteractionState* userInteractionState;
-// Returns the CertVerificationErrorsCacheType from self.delegate.
-@property(nonatomic, readonly, assign)
-    web::CertVerificationErrorsCacheType* certVerificationErrors;
 // Returns the CRWCertVerificationController from self.delegate.
 @property(nonatomic, readonly, weak)
     CRWCertVerificationController* certVerificationController;
@@ -102,6 +113,10 @@ using web::wk_navigation_util::IsWKInternalUrl;
     // Load phase when no WebView present is 'loaded' because this represents
     // the idle state.
     _navigationState = web::WKNavigationState::FINISHED;
+
+    _certVerificationErrors =
+        std::make_unique<web::CertVerificationErrorsCacheType>(
+            kMaxCertErrorsCount);
   }
   return self;
 }
@@ -684,7 +699,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
   // This must be reset at the end, since code above may need information about
   // the pending load.
   self.pendingNavigationInfo = nil;
-  self.certVerificationErrors->Clear();
+  _certVerificationErrors->Clear();
   if (web::features::StorePendingItemInContext()) {
     // Remove the navigation to immediately get rid of pending item.
     if (web::WKNavigationState::NONE !=
@@ -716,7 +731,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
                       forNavigation:navigation];
   }
 
-  self.certVerificationErrors->Clear();
+  _certVerificationErrors->Clear();
 
   // Invariant: Every |navigation| should have a |context|. Note that violation
   // of this invariant is currently observed in production, but the cause is not
@@ -1075,7 +1090,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
                 webView:webView
         provisionalLoad:NO];
   [self.delegate navigationHandlerRemoveAllWebFrames:self];
-  self.certVerificationErrors->Clear();
+  _certVerificationErrors->Clear();
   [self forgetNullWKNavigation:navigation];
 }
 
@@ -1125,7 +1140,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
   [self didReceiveWKNavigationDelegateCallback];
 
-  self.certVerificationErrors->Clear();
+  _certVerificationErrors->Clear();
   self.webProcessCrashed = YES;
 
   [self.delegate navigationHandlerWebProcessDidCrash:self];
@@ -1143,10 +1158,6 @@ using web::wk_navigation_util::IsWKInternalUrl;
 
 - (web::UserInteractionState*)userInteractionState {
   return [self.delegate userInteractionStateForNavigationHandler:self];
-}
-
-- (web::CertVerificationErrorsCacheType*)certVerificationErrors {
-  return [self.delegate certVerificationErrorsForNavigationHandler:self];
 }
 
 - (CRWJSInjector*)JSInjector {
@@ -1489,7 +1500,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
           policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER;
       std::string host =
           base::SysNSStringToUTF8(challenge.protectionSpace.host);
-      self.certVerificationErrors->Put(
+      _certVerificationErrors->Put(
           web::CertHostPair(leafCert, host),
           web::CertVerificationError(is_recoverable, certStatus));
     }
@@ -1573,9 +1584,9 @@ using web::wk_navigation_util::IsWKInternalUrl;
     // cert decision.
     leafCert = web::CreateCertFromChain(@[ chain.firstObject ]);
     if (leafCert) {
-      auto error = self.certVerificationErrors->Get(
+      auto error = _certVerificationErrors->Get(
           {leafCert, base::SysNSStringToUTF8(host)});
-      bool cacheHit = error != self.certVerificationErrors->end();
+      bool cacheHit = error != _certVerificationErrors->end();
       if (cacheHit) {
         recoverable = error->second.is_recoverable;
         info.cert_status = error->second.status;
@@ -1962,6 +1973,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
   self.pendingNavigationInfo.cancelled = YES;
   _safeBrowsingWarningDetectionTimer.Stop();
   [self loadCancelled];
+  _certVerificationErrors->Clear();
 }
 
 - (void)loadCancelled {

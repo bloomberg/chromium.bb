@@ -171,11 +171,6 @@ enum class BackForwardNavigationType {
   BACK_FORWARD_NAVIGATION_TYPE_COUNT
 };
 
-// Maximum number of errors to store in cert verification errors cache.
-// Cache holds errors only for pending navigations, so the actual number of
-// stored errors is not expected to be high.
-const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
-
 // URLs that are fed into UIWebView as history push/replace get escaped,
 // potentially changing their format. Code that attempts to determine whether a
 // URL hasn't changed can be confused by those differences though, so method
@@ -245,13 +240,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   // bad SSL cert, presenting SSL interstitials and determining SSL status for
   // Navigation Items.
   CRWCertVerificationController* _certVerificationController;
-
-  // CertVerification errors which happened inside
-  // |webView:didReceiveAuthenticationChallenge:completionHandler:|.
-  // Key is leaf-cert/host pair. This storage is used to carry calculated
-  // cert status from |didReceiveAuthenticationChallenge:| to
-  // |didFailProvisionalNavigation:| delegate method.
-  std::unique_ptr<web::CertVerificationErrorsCacheType> _certVerificationErrors;
 
   // State of user interaction with web content.
   web::UserInteractionState _userInteractionState;
@@ -449,9 +437,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     web::BrowserState* browserState = _webStateImpl->GetBrowserState();
     _certVerificationController = [[CRWCertVerificationController alloc]
         initWithBrowserState:browserState];
-    _certVerificationErrors =
-        std::make_unique<web::CertVerificationErrorsCacheType>(
-            kMaxCertErrorsCount);
     web::BrowsingDataRemover::FromBrowserState(browserState)->AddObserver(self);
     web::WebFramesManagerImpl::CreateForWebState(_webStateImpl);
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
@@ -1746,7 +1731,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)abortLoad {
   [self.webView stopLoading];
   [self.navigationHandler stopLoading];
-  _certVerificationErrors->Clear();
 }
 
 - (void)didFinishNavigation:(web::NavigationContextImpl*)context {
@@ -3657,12 +3641,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     legacyNativeContentControllerForNavigationHandler:
         (CRWWKNavigationHandler*)navigationHandler {
   return self.legacyNativeController;
-}
-
-- (web::CertVerificationErrorsCacheType*)
-    certVerificationErrorsForNavigationHandler:
-        (CRWWKNavigationHandler*)navigationHandler {
-  return _certVerificationErrors.get();
 }
 
 - (CRWCertVerificationController*)
