@@ -788,19 +788,6 @@ int ElideRectangleText(const base::string16& input,
                               Typesetter::HARFBUZZ, lines);
 }
 
-#if defined(OS_MACOSX)
-int ElideRectangleTextForNativeUi(const base::string16& input,
-                                  const FontList& font_list,
-                                  float available_pixel_width,
-                                  int available_pixel_height,
-                                  WordWrapBehavior wrap_behavior,
-                                  std::vector<base::string16>* lines) {
-  return RectangleText::Elide(input, font_list, available_pixel_width,
-                              available_pixel_height, wrap_behavior,
-                              Typesetter::NATIVE, lines);
-}
-#endif
-
 base::string16 TruncateString(const base::string16& string,
                               size_t length,
                               BreakType break_type) {

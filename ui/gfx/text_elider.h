@@ -141,17 +141,6 @@ GFX_EXPORT int ElideRectangleText(const base::string16& text,
                                   WordWrapBehavior wrap_behavior,
                                   std::vector<base::string16>* lines);
 
-#if defined(OS_MACOSX)
-// As above, but uses the native platform typesetter (CoreText on Mac).
-GFX_EXPORT int ElideRectangleTextForNativeUi(
-    const base::string16& input,
-    const FontList& font_list,
-    float available_pixel_width,
-    int available_pixel_height,
-    WordWrapBehavior wrap_behavior,
-    std::vector<base::string16>* lines);
-#endif  // OS_MACOSX
-
 // Truncates |string| to |length| characters. This breaks the string according
 // to the specified |break_type|, which must be either WORD_BREAK or
 // CHARACTER_BREAK, and adds the horizontal ellipsis character (unicode
