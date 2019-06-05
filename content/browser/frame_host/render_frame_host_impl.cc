@@ -4666,11 +4666,35 @@ void RenderFrameHostImpl::CommitNavigation(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                common_params.url.possibly_invalid_spec());
   DCHECK(!IsRendererDebugURL(common_params.url));
+
+  bool is_mhtml_iframe =
+      navigation_request && navigation_request->IsForMhtmlSubframe();
+
+  // A |response| and a |url_loader_client_endpoints| must always be provided,
+  // except for edge cases, where another way to load the document exist.
   DCHECK(
       (response && url_loader_client_endpoints) ||
       common_params.url.SchemeIs(url::kDataScheme) ||
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type) ||
-      !IsURLHandledByNetworkStack(common_params.url));
+      !IsURLHandledByNetworkStack(common_params.url) || is_mhtml_iframe);
+
+  // All children of MHTML documents must be MHTML documents.
+  // As a defensive measure, crash the browser if something went wrong.
+  if (!frame_tree_node()->IsMainFrame()) {
+    RenderFrameHostImpl* root =
+        frame_tree_node()->frame_tree()->root()->current_frame_host();
+    if (root->is_mhtml_document_ &&
+        !common_params.url.SchemeIs(url::kDataScheme)) {
+      bool loaded_from_outside_the_archive =
+          response || url_loader_client_endpoints;
+      CHECK(!loaded_from_outside_the_archive);
+      CHECK(is_mhtml_iframe);
+      CHECK_EQ(GetSiteInstance(), root->GetSiteInstance());
+      CHECK_EQ(GetProcess(), root->GetProcess());
+    } else {
+      DCHECK(!is_mhtml_iframe);
+    }
+  }
 
   // If this is an attempt to commit a URL in an incompatible process, capture a
   // crash dump to diagnose why it is occurring.
@@ -4681,7 +4705,8 @@ void RenderFrameHostImpl::CommitNavigation(
   if (lock_url != GURL(kUnreachableWebDataURL) &&
       common_params.url.IsStandard() &&
       !policy->CanAccessDataForOrigin(GetProcess()->GetID(),
-                                      common_params.url)) {
+                                      common_params.url) &&
+      !is_mhtml_iframe) {
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("lock_url",
                                             base::debug::CrashKeySize::Size64),

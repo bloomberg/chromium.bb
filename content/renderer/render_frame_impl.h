@@ -1750,7 +1750,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Used by renderer initiated navigations not driven by the browser process:
   // - navigation to about:blank.
   // - navigation to about:srcdoc.
-  // - navigation using an MHTML archive.
   // TODO(arthursonzogni): Remove this. Everything should use the default code
   // path and be driven by the browser process.
   base::CancelableOnceCallback<void()> sync_navigation_callback_;

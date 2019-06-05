@@ -772,7 +772,8 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   if (lock_url != GURL(kUnreachableWebDataURL) &&
       request.common_params().url.IsStandard() &&
       !policy->CanAccessDataForOrigin(navigation_rfh->GetProcess()->GetID(),
-                                      request.common_params().url)) {
+                                      request.common_params().url) &&
+      !request.IsForMhtmlSubframe()) {
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("lock_url",
                                             base::debug::CrashKeySize::Size64),
@@ -2127,9 +2128,15 @@ bool RenderFrameHostManager::InitRenderView(
 scoped_refptr<SiteInstance>
 RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
     const NavigationRequest& request) {
+  SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
+
+  // All children of MHTML documents must be MHTML documents. They all live in
+  // the same process.
+  if (request.IsForMhtmlSubframe())
+    return base::WrapRefCounted(current_site_instance);
+
   // First, check if the navigation can switch SiteInstances. If not, the
   // navigation should use the current SiteInstance.
-  SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
   bool no_renderer_swap_allowed = false;
   bool should_swap_for_error_isolation = false;
   bool was_server_redirect = request.navigation_handle() &&

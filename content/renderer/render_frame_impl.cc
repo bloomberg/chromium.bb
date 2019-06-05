@@ -6493,14 +6493,14 @@ void RenderFrameImpl::BeginNavigation(
       return;
     }
 
-    // Navigation to about:blank, about:srcdoc or to an MHTML archive don't need
-    // to consult the browser. The document content is already available in the
-    // renderer process.
+    // Navigation to about:blank or to about:srcdoc don't need to consult the
+    // browser. The document content is already available in the renderer
+    // process.
     // TODO(arthursonzogni): Remove this. Everything should use the default code
     // path and be driven by the browser process.
-    if (use_archive || (((url == content::kAboutSrcDocURL) ||
-                         WebDocumentLoader::WillLoadUrlAsEmpty(url)) &&
-                        !is_history_navigation_in_new_child_frame)) {
+    if (((url == content::kAboutSrcDocURL) ||
+         WebDocumentLoader::WillLoadUrlAsEmpty(url)) &&
+        !is_history_navigation_in_new_child_frame) {
       if (!frame_->WillStartNavigation(
               *info, false /* is_history_navigation_in_new_child_frame */))
         return;

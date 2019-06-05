@@ -839,38 +839,37 @@ void NavigationRequest::BeginNavigation() {
 
   CreateNavigationHandle(false);
 
-  if (IsURLHandledByNetworkStack(common_params_.url) && !IsSameDocument()) {
-    // Update PreviewsState if we are going to use the NetworkStack.
-    common_params_.previews_state =
-        GetContentClient()->browser()->DetermineAllowedPreviews(
-            common_params_.previews_state, navigation_handle_.get(),
-            common_params_.url);
+  if (!NeedsUrlLoader()) {
+    // There is no need to make a network request for this navigation, so commit
+    // it immediately.
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                                 "ResponseStarted");
+    state_ = RESPONSE_STARTED;
 
-    // It's safe to use base::Unretained because this NavigationRequest owns
-    // the NavigationHandle where the callback will be stored.
-    // TODO(clamy): pass the method to the NavigationHandle instead of a
-    // boolean.
-    WillStartRequest(base::Bind(&NavigationRequest::OnStartChecksComplete,
-                                base::Unretained(this)));
+    // Select an appropriate RenderFrameHost.
+    render_frame_host_ =
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+    NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+        render_frame_host_, common_params_.url);
+
+    // Inform the NavigationHandle that the navigation will commit.
+    navigation_handle_->ReadyToCommitNavigation(false /* is_error */);
+
+    CommitNavigation();
     return;
   }
 
-  // There is no need to make a network request for this navigation, so commit
-  // it immediately.
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
-                               "ResponseStarted");
-  state_ = RESPONSE_STARTED;
+  common_params_.previews_state =
+      GetContentClient()->browser()->DetermineAllowedPreviews(
+          common_params_.previews_state, navigation_handle_.get(),
+          common_params_.url);
 
-  // Select an appropriate RenderFrameHost.
-  render_frame_host_ =
-      frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
-  NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host_,
-                                                           common_params_.url);
-
-  // Inform the NavigationHandle that the navigation will commit.
-  navigation_handle_->ReadyToCommitNavigation(false);
-
-  CommitNavigation();
+  // It's safe to use base::Unretained because this NavigationRequest owns
+  // the NavigationHandle where the callback will be stored.
+  // TODO(clamy): pass the method to the NavigationHandle instead of a
+  // boolean.
+  WillStartRequest(base::Bind(&NavigationRequest::OnStartChecksComplete,
+                              base::Unretained(this)));
 }
 
 void NavigationRequest::SetWaitingForRendererResponse() {
@@ -1981,10 +1980,11 @@ void NavigationRequest::CommitErrorPage(
 
 void NavigationRequest::CommitNavigation() {
   UpdateCommitNavigationParamsHistory();
-  DCHECK(response_ || !IsURLHandledByNetworkStack(common_params_.url) ||
-         IsSameDocument());
+  DCHECK(NeedsUrlLoader() == !!response_ ||
+         (navigation_handle_->WasServerRedirect() &&
+          common_params_.url.IsAboutBlank()));
   DCHECK(!common_params_.url.SchemeIs(url::kJavaScriptScheme));
-
+  DCHECK(!IsRendererDebugURL(common_params_.url));
   DCHECK(render_frame_host_ ==
              frame_tree_node_->render_manager()->current_frame_host() ||
          render_frame_host_ ==
@@ -2256,10 +2256,8 @@ NavigationRequest::CheckCredentialedSubresource() const {
       "details.";
   parent->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kWarning,
                               console_message);
-
   if (!base::FeatureList::IsEnabled(features::kBlockCredentialedSubresources))
     return CredentialedSubresourceCheckResult::ALLOW_REQUEST;
-
   return CredentialedSubresourceCheckResult::BLOCK_REQUEST;
 }
 
@@ -2511,6 +2509,17 @@ void NavigationRequest::RegisterThrottleForTesting(
 }
 bool NavigationRequest::IsDeferredForTesting() {
   return throttle_runner_->GetDeferringThrottle() != nullptr;
+}
+
+bool NavigationRequest::IsForMhtmlSubframe() const {
+  return frame_tree_node_->parent() &&
+         frame_tree_node_->frame_tree()
+             ->root()
+             ->current_frame_host()
+             ->is_mhtml_document() &&
+         // Unlike every other MHTML subframe URLs, data-url are loaded via the
+         // URL, not from the MHTML archive. See https://crbug.com/969696.
+         !common_params_.url.SchemeIs(url::kDataScheme);
 }
 
 void NavigationRequest::CancelDeferredNavigationInternal(
@@ -2769,6 +2778,11 @@ void NavigationRequest::SetNavigationClient(
       base::BindOnce(&NavigationRequest::OnRendererAbortedNavigation,
                      base::Unretained(this)));
   associated_site_instance_id_ = associated_site_instance_id;
+}
+
+bool NavigationRequest::NeedsUrlLoader() const {
+  return IsURLHandledByNetworkStack(common_params_.url) && !IsSameDocument() &&
+         !IsForMhtmlSubframe();
 }
 
 }  // namespace content
