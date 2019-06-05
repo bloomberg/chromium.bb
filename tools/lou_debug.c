@@ -32,7 +32,8 @@
 #include "version-etc.h"
 
 static const struct option longopts[] = {
-	{ "help", no_argument, NULL, 'h' }, { "version", no_argument, NULL, 'v' },
+	{ "help", no_argument, NULL, 'h' },
+	{ "version", no_argument, NULL, 'v' },
 	{ NULL, 0, NULL, 0 },
 };
 
@@ -122,11 +123,13 @@ printRule(TranslationTableRule *thisRule, int mode) {
 	default:
 		if (mode == 0) {
 			printf("chars=%s, ", print_chars(thisRule->charsdots, thisRule->charslen));
-			printf("dots=%s, ", _lou_showDots(&thisRule->charsdots[thisRule->charslen],
-										thisRule->dotslen));
+			printf("dots=%s, ",
+					_lou_showDots(
+							&thisRule->charsdots[thisRule->charslen], thisRule->dotslen));
 		} else {
-			printf("dots=%s, ", _lou_showDots(&thisRule->charsdots[thisRule->charslen],
-										thisRule->dotslen));
+			printf("dots=%s, ",
+					_lou_showDots(
+							&thisRule->charsdots[thisRule->charslen], thisRule->dotslen));
 			printf("chars=%s, ", print_chars(thisRule->charsdots, thisRule->charslen));
 		}
 		break;

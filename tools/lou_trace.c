@@ -287,8 +287,10 @@ main(int argc, char **argv) {
 	int partialTransMode = 0;
 
 	const struct option longopts[] = {
-		{ "help", no_argument, NULL, 'h' }, { "version", no_argument, NULL, 'v' },
-		{ "forward", no_argument, NULL, 'f' }, { "backward", no_argument, NULL, 'b' },
+		{ "help", no_argument, NULL, 'h' },
+		{ "version", no_argument, NULL, 'v' },
+		{ "forward", no_argument, NULL, 'f' },
+		{ "backward", no_argument, NULL, 'b' },
 		{ "noContractions", no_argument, &noContractionsMode, noContractions },
 		{ "dotsIO", no_argument, &dotsIOMode, dotsIO },
 		{ "ucBrl", no_argument, &ucBrlMode, ucBrl },

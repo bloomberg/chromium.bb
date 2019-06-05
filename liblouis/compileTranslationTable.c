@@ -102,8 +102,16 @@ typedef struct ChainEntry {
 static ChainEntry *tableChain = NULL;
 
 static const char *characterClassNames[] = {
-	"space", "letter", "digit", "punctuation", "uppercase", "lowercase", "math", "sign",
-	"litdigit", NULL,
+	"space",
+	"letter",
+	"digit",
+	"punctuation",
+	"uppercase",
+	"lowercase",
+	"math",
+	"sign",
+	"litdigit",
+	NULL,
 };
 
 typedef struct CharacterClass {
@@ -118,27 +126,121 @@ static CharacterClass *gCharacterClasses;
 static TranslationTableCharacterAttributes gCharacterClassAttribute;
 
 static const char *opcodeNames[CTO_None] = {
-	"include", "locale", "undefined", "capsletter", "begcapsword", "endcapsword",
-	"begcaps", "endcaps", "begcapsphrase", "endcapsphrase", "lencapsphrase", "letsign",
-	"noletsignbefore", "noletsign", "noletsignafter", "numsign", "numericmodechars",
-	"midendnumericmodechars", "numericnocontchars", "seqdelimiter", "seqbeforechars",
-	"seqafterchars", "seqafterpattern", "seqafterexpression", "emphclass", "emphletter",
-	"begemphword", "endemphword", "begemph", "endemph", "begemphphrase", "endemphphrase",
-	"lenemphphrase", "capsmodechars", "emphmodechars", "begcomp", "compbegemph1",
-	"compendemph1", "compbegemph2", "compendemph2", "compbegemph3", "compendemph3",
-	"compcapsign", "compbegcaps", "compendcaps", "endcomp", "nocontractsign", "multind",
-	"compdots", "comp6", "class", "after", "before", "noback", "nofor", "empmatchbefore",
-	"empmatchafter", "swapcc", "swapcd", "swapdd", "space", "digit", "punctuation",
-	"math", "sign", "letter", "uppercase", "lowercase", "grouping", "uplow", "litdigit",
-	"display", "replace", "context", "correct", "pass2", "pass3", "pass4", "repeated",
-	"repword", "capsnocont", "always", "exactdots", "nocross", "syllable", "nocont",
-	"compbrl", "literal", "largesign", "word", "partword", "joinnum", "joinword",
-	"lowword", "contraction", "sufword", "prfword", "begword", "begmidword", "midword",
-	"midendword", "endword", "prepunc", "postpunc", "begnum", "midnum", "endnum",
-	"decpoint", "hyphen",
+	"include",
+	"locale",
+	"undefined",
+	"capsletter",
+	"begcapsword",
+	"endcapsword",
+	"begcaps",
+	"endcaps",
+	"begcapsphrase",
+	"endcapsphrase",
+	"lencapsphrase",
+	"letsign",
+	"noletsignbefore",
+	"noletsign",
+	"noletsignafter",
+	"numsign",
+	"numericmodechars",
+	"midendnumericmodechars",
+	"numericnocontchars",
+	"seqdelimiter",
+	"seqbeforechars",
+	"seqafterchars",
+	"seqafterpattern",
+	"seqafterexpression",
+	"emphclass",
+	"emphletter",
+	"begemphword",
+	"endemphword",
+	"begemph",
+	"endemph",
+	"begemphphrase",
+	"endemphphrase",
+	"lenemphphrase",
+	"capsmodechars",
+	"emphmodechars",
+	"begcomp",
+	"compbegemph1",
+	"compendemph1",
+	"compbegemph2",
+	"compendemph2",
+	"compbegemph3",
+	"compendemph3",
+	"compcapsign",
+	"compbegcaps",
+	"compendcaps",
+	"endcomp",
+	"nocontractsign",
+	"multind",
+	"compdots",
+	"comp6",
+	"class",
+	"after",
+	"before",
+	"noback",
+	"nofor",
+	"empmatchbefore",
+	"empmatchafter",
+	"swapcc",
+	"swapcd",
+	"swapdd",
+	"space",
+	"digit",
+	"punctuation",
+	"math",
+	"sign",
+	"letter",
+	"uppercase",
+	"lowercase",
+	"grouping",
+	"uplow",
+	"litdigit",
+	"display",
+	"replace",
+	"context",
+	"correct",
+	"pass2",
+	"pass3",
+	"pass4",
+	"repeated",
+	"repword",
+	"capsnocont",
+	"always",
+	"exactdots",
+	"nocross",
+	"syllable",
+	"nocont",
+	"compbrl",
+	"literal",
+	"largesign",
+	"word",
+	"partword",
+	"joinnum",
+	"joinword",
+	"lowword",
+	"contraction",
+	"sufword",
+	"prfword",
+	"begword",
+	"begmidword",
+	"midword",
+	"midendword",
+	"endword",
+	"prepunc",
+	"postpunc",
+	"begnum",
+	"midnum",
+	"endnum",
+	"decpoint",
+	"hyphen",
 	// "apostrophe",
 	// "initial",
-	"nobreak", "match", "backmatch", "attribute",
+	"nobreak",
+	"match",
+	"backmatch",
+	"attribute",
 };
 
 static short gOpcodeLengths[CTO_None] = { 0 };
@@ -551,7 +653,7 @@ passFindCharacters(FileInfo *nested, widechar *instructions, int end,
 
 		case pass_swap:
 			IC += 2;
-		/* fall through */
+			/* fall through */
 
 		case pass_groupstart:
 		case pass_groupend:
@@ -1790,8 +1892,9 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 			ruleOffset = findRuleName(&passHoldString, ruleNames);
 			if (ruleOffset)
 				rule = (TranslationTableRule *)&(*table)->ruleArea[ruleOffset];
-			if (rule && (rule->opcode == CTO_SwapCc || rule->opcode == CTO_SwapCd ||
-								rule->opcode == CTO_SwapDd)) {
+			if (rule &&
+					(rule->opcode == CTO_SwapCc || rule->opcode == CTO_SwapCd ||
+							rule->opcode == CTO_SwapDd)) {
 				passInstructions[passIC++] = pass_swap;
 				passInstructions[passIC++] = ruleOffset >> 16;
 				passInstructions[passIC++] = ruleOffset & 0xffff;
@@ -1906,8 +2009,9 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 			ruleOffset = findRuleName(&passHoldString, ruleNames);
 			if (ruleOffset)
 				rule = (TranslationTableRule *)&(*table)->ruleArea[ruleOffset];
-			if (rule && (rule->opcode == CTO_SwapCc || rule->opcode == CTO_SwapCd ||
-								rule->opcode == CTO_SwapDd)) {
+			if (rule &&
+					(rule->opcode == CTO_SwapCc || rule->opcode == CTO_SwapCd ||
+							rule->opcode == CTO_SwapDd)) {
 				passInstructions[passIC++] = pass_swap;
 				passInstructions[passIC++] = ruleOffset >> 16;
 				passInstructions[passIC++] = ruleOffset & 0xffff;
@@ -2146,7 +2250,9 @@ typedef struct HyphenHashEntry {
 	int val;
 } HyphenHashEntry;
 
-typedef struct HyphenHashTab { HyphenHashEntry *entries[HYPHENHASHSIZE]; } HyphenHashTab;
+typedef struct HyphenHashTab {
+	HyphenHashEntry *entries[HYPHENHASHSIZE];
+} HyphenHashTab;
 
 /* a hash function from ASU - adapted from Gtk+ */
 static unsigned int
@@ -3376,8 +3482,8 @@ doOpcode:
 						character->attributes |= class->attribute;
 						// also add the attribute to the associated dots (if any)
 						if (character->definitionRule) {
-							defRule = (TranslationTableRule *)&(
-									*table)->ruleArea[character->definitionRule];
+							defRule = (TranslationTableRule *)&(*table)
+											  ->ruleArea[character->definitionRule];
 							if (defRule->dotslen == 1) {
 								character = compile_findCharOrDots(
 										defRule->charsdots[defRule->charslen], 1, *table);

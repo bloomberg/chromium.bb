@@ -134,8 +134,10 @@ main(int argc, char **argv) {
 	FILE *input;
 
 	const struct option longopts[] = {
-		{ "help", no_argument, NULL, 'h' }, { "version", no_argument, NULL, 'v' },
-		{ "forward", no_argument, NULL, 'f' }, { "backward", no_argument, NULL, 'b' },
+		{ "help", no_argument, NULL, 'h' },
+		{ "version", no_argument, NULL, 'v' },
+		{ "forward", no_argument, NULL, 'f' },
+		{ "backward", no_argument, NULL, 'b' },
 		{ NULL, 0, NULL, 0 },
 	};
 

@@ -269,10 +269,11 @@ makeCorrections(const TranslationTableHeader *table, const InString *input,
 					transRule = (TranslationTableRule *)&table->ruleArea[ruleOffset];
 					transOpcode = transRule->opcode;
 					transCharslen = transRule->charslen;
-					if (tryThis == 1 || (transCharslen <= length &&
-												compareChars(&transRule->charsdots[0],
-														&input->chars[pos], transCharslen,
-														0, table))) {
+					if (tryThis == 1 ||
+							(transCharslen <= length &&
+									compareChars(&transRule->charsdots[0],
+											&input->chars[pos], transCharslen, 0,
+											table))) {
 						if (*posIncremented && transOpcode == CTO_Correct &&
 								passDoTest(table, pos, input, transOpcode, transRule,
 										&passCharDots, &passInstructions, &passIC,
@@ -538,7 +539,7 @@ removeGrouping(const InString **input, OutString *output, int passCharDots,
 				chars[len++] = (*input)->chars[k];
 			}
 			static InString stringStore;
-			stringStore = (InString){.chars = chars, .length = len, .bufferIndex = idx };
+			stringStore = (InString){ .chars = chars, .length = len, .bufferIndex = idx };
 			*input = &stringStore;
 		}
 	} else {
@@ -612,8 +613,8 @@ doPassSearch(const TranslationTableHeader *table, const InString *input,
 						itsTrue = 0;
 					else {
 						itsTrue = ((findCharOrDots(input->chars[(*searchPos)++],
-											passCharDots,
-											table)->attributes &
+											passCharDots, table)
+												   ->attributes &
 										   attributes)
 										? 1
 										: 0);
@@ -628,8 +629,9 @@ doPassSearch(const TranslationTableHeader *table, const InString *input,
 							itsTrue = 0;
 							break;
 						}
-						if (!(findCharOrDots(input->chars[*searchPos], passCharDots,
-									  table)->attributes &
+						if (!(findCharOrDots(
+									  input->chars[*searchPos], passCharDots, table)
+											->attributes &
 									attributes)) {
 							if (!not) break;
 						} else if (not)
@@ -761,8 +763,8 @@ passDoTest(const TranslationTableHeader *table, int pos, const InString *input,
 					itsTrue = 0;
 					break;
 				}
-				if (!(findCharOrDots(input->chars[pos], *passCharDots,
-							  table)->attributes &
+				if (!(findCharOrDots(input->chars[pos], *passCharDots, table)
+									->attributes &
 							attributes)) {
 					if (!not) {
 						itsTrue = 0;
@@ -782,8 +784,8 @@ passDoTest(const TranslationTableHeader *table, int pos, const InString *input,
 						itsTrue = 0;
 						break;
 					}
-					if (!(findCharOrDots(input->chars[pos], *passCharDots,
-								  table)->attributes &
+					if (!(findCharOrDots(input->chars[pos], *passCharDots, table)
+										->attributes &
 								attributes)) {
 						if (!not) break;
 					} else if (not)
@@ -833,7 +835,7 @@ passDoTest(const TranslationTableHeader *table, int pos, const InString *input,
 				startReplace = startMatch;
 				endReplace = endMatch;
 			}
-			*match = (PassRuleMatch){.startMatch = startMatch,
+			*match = (PassRuleMatch){ .startMatch = startMatch,
 				.startReplace = startReplace,
 				.endReplace = endReplace,
 				.endMatch = endMatch };
@@ -1123,7 +1125,7 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 	if (table == NULL || *inlen < 0 || *outlen < 0) return 0;
 	k = 0;
 	while (k < *inlen && inbufx[k]) k++;
-	input = (InString){.chars = inbufx, .length = k, .bufferIndex = -1 };
+	input = (InString){ .chars = inbufx, .length = k, .bufferIndex = -1 };
 	haveEmphasis = 0;
 	if (!(typebuf = _lou_allocMem(alloc_typebuf, 0, input.length, *outlen))) return 0;
 	if (typeform != NULL) {
@@ -1200,7 +1202,7 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 		if (!stringBufferPool) initStringBufferPool();
 		for (idx = 0; idx < stringBufferPool->size; idx++) releaseStringBuffer(idx);
 		idx = getStringBuffer(*outlen);
-		output = (OutString){.chars = stringBufferPool->buffers[idx],
+		output = (OutString){ .chars = stringBufferPool->buffers[idx],
 			.maxlength = *outlen,
 			.length = 0,
 			.bufferIndex = idx };
@@ -1244,11 +1246,11 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 		if (currentPass <= table->numPasses && goodTrans) {
 			int idx;
 			releaseStringBuffer(input.bufferIndex);
-			input = (InString){.chars = output.chars,
+			input = (InString){ .chars = output.chars,
 				.length = output.length,
 				.bufferIndex = output.bufferIndex };
 			idx = getStringBuffer(*outlen);
-			output = (OutString){.chars = stringBufferPool->buffers[idx],
+			output = (OutString){ .chars = stringBufferPool->buffers[idx],
 				.maxlength = *outlen,
 				.length = 0,
 				.bufferIndex = idx };
@@ -1930,8 +1932,9 @@ for_selectRule(const TranslationTableHeader *table, int pos, OutString output, i
 			*transOpcode = (*transRule)->opcode;
 			*transCharslen = (*transRule)->charslen;
 			if (tryThis == 1 ||
-					((*transCharslen <= length) && validMatch(table, pos, input, typebuf,
-														   *transRule, *transCharslen))) {
+					((*transCharslen <= length) &&
+							validMatch(table, pos, input, typebuf, *transRule,
+									*transCharslen))) {
 				TranslationTableCharacterAttributes afterAttributes;
 				/* check before emphasis match */
 				if ((*transRule)->before & CTC_EmpMatch) {
@@ -2135,8 +2138,9 @@ for_selectRule(const TranslationTableHeader *table, int pos, OutString output, i
 						return;
 					case CTO_PrePunc:
 						if (!checkAttr(input->chars[pos], CTC_Punctuation, 0, table) ||
-								(pos > 0 && checkAttr(input->chars[pos - 1], CTC_Letter,
-													0, table)))
+								(pos > 0 &&
+										checkAttr(input->chars[pos - 1], CTC_Letter, 0,
+												table)))
 							break;
 						for (k = pos + *transCharslen; k < input->length; k++) {
 							if (checkAttr(input->chars[k], (CTC_Letter | CTC_Digit), 0,
@@ -3407,8 +3411,9 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 		case CTO_LargeSign:
 			if (prevTransOpcode == CTO_LargeSign) {
 				int hasEndSegment = 0;
-				while (output->length > 0 && checkAttr(output->chars[output->length - 1],
-													 CTC_Space, 1, table)) {
+				while (output->length > 0 &&
+						checkAttr(
+								output->chars[output->length - 1], CTC_Space, 1, table)) {
 					if (output->chars[output->length - 1] == LOU_ENDSEGMENT) {
 						hasEndSegment = 1;
 					}
@@ -3467,12 +3472,12 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 				pos++;
 				break;
 			}
-		//		case CTO_Contraction:
-		//
-		//			if(brailleIndicatorDefined(table->noContractSign))
-		//			if(!for_updatePositions(
-		//				&indicRule->charsdots[0], 0, indicRule->dotslen, 0))
-		//				goto failure;
+			//		case CTO_Contraction:
+			//
+			//			if(brailleIndicatorDefined(table->noContractSign))
+			//			if(!for_updatePositions(
+			//				&indicRule->charsdots[0], 0, indicRule->dotslen, 0))
+			//				goto failure;
 
 		default:
 			if (transRule->dotslen) {
@@ -3525,8 +3530,9 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 			if (mode & (compbrlAtCursor | compbrlLeftCursor) && compbrlStart < srclim)
 				/* Don't skip characters from compbrlStart onwards. */
 				srclim = compbrlStart - 1;
-			while ((pos <= srclim) && compareChars(repwordStart, &input->chars[pos],
-											  repwordLength, 0, table)) {
+			while ((pos <= srclim) &&
+					compareChars(
+							repwordStart, &input->chars[pos], repwordLength, 0, table)) {
 				/* Map skipped input positions to the previous output position. */
 				/* if (posMapping.outputPositions != NULL) { */
 				/* 	int tcc; */
