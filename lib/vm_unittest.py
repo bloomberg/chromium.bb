@@ -9,6 +9,8 @@ from __future__ import print_function
 
 import os
 
+from chromite.cli.cros import cros_chrome_sdk
+from chromite.lib import cache
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -24,7 +26,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     opts = vm.VM.GetParser().parse_args([])
     self._vm = vm.VM(opts)
     self._vm.board = 'amd64-generic'
-    self._vm.qemu_path = '/usr/bin/qemu-system-x86_64'
+    self._vm.cache_dir = self.tempdir
     self._vm.image_path = self.TempFilePath('chromiumos_qemu_image.bin')
     osutils.Touch(self._vm.image_path)
 
@@ -41,6 +43,41 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
   def TempVMPath(self, kvm_file):
     return self.TempFilePath(os.path.join('cros_vm_%d' % self.ssh_port,
                                           kvm_file))
+
+  def CreateFakeSDKCache(self, key):
+    """Creates a fake SDK Cache.
+
+    Args:
+      key: Key of item in the tarball cache.
+
+    Returns:
+      Path to the cache directory.
+    """
+    # Sets SDK Version.
+    sdk_version = '12225.0.0'
+    os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = sdk_version
+    # Defines the path for the fake SDK cache.
+    tarball_cache_path = os.path.join(self._vm.cache_dir,
+                                      cros_chrome_sdk.COMMAND_NAME,
+                                      cros_chrome_sdk.SDKFetcher.TARBALL_CACHE)
+    # Creates a SDK TarballCache instance.
+    tarball_cache = cache.TarballCache(tarball_cache_path)
+    # Creates the cache key required for accessing the fake SDK cache.
+    cache_key = (self._vm.board, sdk_version, key)
+    # Adds the cache path at the key.
+    cache.CacheReference(tarball_cache, cache_key).Assign(tarball_cache_path)
+    cache_path = tarball_cache.Lookup(cache_key).path
+    expected_cache_path = os.path.join(self._vm.cache_dir,
+                                       'chrome-sdk/tarballs',
+                                       '+'.join(cache_key))
+    self.assertEqual(cache_path, expected_cache_path)
+    return cache_path
+
+  def Touch(self, path):
+    """Creates the parent directories and the file for the path."""
+    assert path.startswith(path), 'All files must be in tempdir.'
+    osutils.SafeMakedirs(os.path.dirname(path))
+    osutils.Touch(path)
 
   def testStart(self):
     self._vm.Start()
