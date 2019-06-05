@@ -3293,6 +3293,7 @@ if (is_android) {
     deps = [
       ":base_java",
       ":base_java_test_support",
+      "//base/test:test_support_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit:junit",
@@ -3318,6 +3319,7 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/task/SequencedTaskRunnerImplTest.java",
       "android/javatests/src/org/chromium/base/task/SingleThreadTaskRunnerImplTest.java",
       "android/javatests/src/org/chromium/base/task/TaskRunnerImplTest.java",
+      "android/javatests/src/org/chromium/base/util/GarbageCollectionTestUtilsTest.java",
     ]
   }
 
@@ -3418,7 +3420,6 @@ if (is_android) {
     testonly = true
     java_files = [
       "android/junit/src/org/chromium/base/metrics/test/ShadowRecordHistogram.java",
-      "android/junit/src/org/chromium/base/util/GarbageCollectionTestUtil.java",
       "test/android/junit/src/org/chromium/base/task/test/BackgroundShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/task/test/CustomShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/task/test/ShadowPostTask.java",
@@ -3452,7 +3453,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/process_launcher/ChildConnectionAllocatorTest.java",
       "android/junit/src/org/chromium/base/process_launcher/ChildProcessConnectionTest.java",
       "android/junit/src/org/chromium/base/task/TaskTraitsTest.java",
-      "android/junit/src/org/chromium/base/util/GarbageCollectionTestUtilTest.java",
+      "android/junit/src/org/chromium/base/util/GarbageCollectionTestUtilsUnitTest.java",
       "test/android/junit/src/org/chromium/base/test/SetUpStatementTest.java",
       "test/android/junit/src/org/chromium/base/test/TestListInstrumentationRunListenerTest.java",
       "test/android/junit/src/org/chromium/base/test/util/AnnotationProcessingUtilsTest.java",
@@ -3472,6 +3473,7 @@ if (is_android) {
       ":base_java_test_support",
       ":base_junit_test_support",
       ":jni_java",
+      "//base/test:test_support_java",
       "//third_party/hamcrest:hamcrest_java",
     ]
   }

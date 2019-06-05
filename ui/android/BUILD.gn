@@ -398,6 +398,7 @@ junit_binary("ui_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//base/test:test_support_java",
   ]
 }
 

@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import static org.chromium.base.util.GarbageCollectionTestUtil.isGarbageCollected;
+import static org.chromium.base.GarbageCollectionTestUtils.canBeGarbageCollected;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -229,22 +229,22 @@ public class ViewResourceAdapterTest {
     public void testDropCachedBitmapGCed() {
         WeakReference<Bitmap> bitmapWeakReference = new WeakReference<>(mAdapter.getBitmap());
         assertNotNull(bitmapWeakReference.get());
-        assertFalse(isGarbageCollected(bitmapWeakReference));
+        assertFalse(canBeGarbageCollected(bitmapWeakReference));
 
         mAdapter.dropCachedBitmap();
-        assertTrue(isGarbageCollected(bitmapWeakReference));
+        assertTrue(canBeGarbageCollected(bitmapWeakReference));
     }
 
     @Test
     public void testResizeGCed() {
         WeakReference<Bitmap> bitmapWeakReference = new WeakReference<>(mAdapter.getBitmap());
         assertNotNull(bitmapWeakReference.get());
-        assertFalse(isGarbageCollected(bitmapWeakReference));
+        assertFalse(canBeGarbageCollected(bitmapWeakReference));
 
         mViewWidth += 10;
         mAdapter.invalidate(null);
         mAdapter.getBitmap();
-        assertTrue(isGarbageCollected(bitmapWeakReference));
+        assertTrue(canBeGarbageCollected(bitmapWeakReference));
     }
 
     @Test

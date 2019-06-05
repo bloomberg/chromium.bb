@@ -52,7 +52,8 @@
                 android:importantForAccessibility="no"
                 android:src="@color/thumbnail_placeholder_on_primary_bg"
                 app:cornerRadiusBottomStart="@dimen/default_rounded_corner_radius"
-                app:cornerRadiusBottomEnd="@dimen/default_rounded_corner_radius"/>
+                app:cornerRadiusBottomEnd="@dimen/default_rounded_corner_radius"
+                app:roundedfillColor="@color/default_bg_color_light"/>
             <View
                 style="@style/HorizontalDivider"
                 android:layout_below="@id/tab_title"/>
