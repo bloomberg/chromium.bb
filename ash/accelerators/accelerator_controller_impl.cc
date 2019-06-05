@@ -922,14 +922,19 @@ void SetFullscreenMagnifierEnabled(bool enabled) {
 }
 
 void SetHighContrastEnabled(bool enabled) {
-  if (enabled) {
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  accessibility_controller->SetHighContrastEnabled(enabled);
+  // Value could differ from one that were set because of higher-priority pref
+  // source, eg. policy. See crbug.com/953245.
+  const bool actual_enabled = accessibility_controller->high_contrast_enabled();
+  if (enabled && actual_enabled) {
     CreateAndShowStickyNotification(IDS_HIGH_CONTRAST_ACCEL_TITLE,
                                     IDS_HIGH_CONTRAST_ACCEL_MSG,
                                     kHighContrastToggleAccelNotificationId);
   } else {
     RemoveStickyNotitification(kHighContrastToggleAccelNotificationId);
   }
-  Shell::Get()->accessibility_controller()->SetHighContrastEnabled(enabled);
 }
 
 void HandleToggleHighContrast() {

@@ -527,8 +527,13 @@ void AccessibilityController::SetSpokenFeedbackEnabled(
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
 
+  // Value could be left unchanged because of higher-priority pref source, eg.
+  // policy. See crbug.com/953245.
+  const bool actual_enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilitySpokenFeedbackEnabled);
+
   A11yNotificationType type = A11yNotificationType::kNone;
-  if (enabled && notify == A11Y_NOTIFICATION_SHOW)
+  if (enabled && actual_enabled && notify == A11Y_NOTIFICATION_SHOW)
     type = A11yNotificationType::kSpokenFeedbackEnabled;
   ShowAccessibilityNotification(type);
 }
