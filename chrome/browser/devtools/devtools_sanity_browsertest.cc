@@ -2395,16 +2395,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest,
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
 }
 
-// Fail on chrome os. See https://crbug.com/971241
-#if defined(OS_CHROMEOS)
-#define MAYBE_ExtensionWebSocketUserAgentOverride \
-  DISABLED_ExtensionWebSocketUserAgentOverride
-#else
-#define MAYBE_ExtensionWebSocketUserAgentOverride \
-  ExtensionWebSocketUserAgentOverride
-#endif
+// See https://crbug.com/971241
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       ExtensionWebSocketUserAgentOverride) {
+                       DISABLED_ExtensionWebSocketUserAgentOverride) {
   net::SpawnedTestServer websocket_server(
       net::SpawnedTestServer::TYPE_WS,
       base::FilePath(FILE_PATH_LITERAL("net/data/websocket")));
