@@ -19,7 +19,6 @@
 #if defined(CHROME_EARL_GREY_1)
 #import <WebKit/WebKit.h>
 
-#include "components/strings/grit/components_strings.h"  // nogncheck
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"  // nogncheck
 #import "ios/chrome/test/app/chrome_test_util.h"                   // nogncheck
 #import "ios/chrome/test/app/history_test_util.h"                  // nogncheck
@@ -32,7 +31,6 @@
 #import "ios/web/public/test/web_view_content_test_util.h"         // nogncheck
 #import "ios/web/public/test/web_view_interaction_test_util.h"     // nogncheck
 #import "ios/web/public/web_state/web_state.h"                     // nogncheck
-#include "ui/base/l10n/l10n_util.h"                                // nogncheck
 #endif
 
 using base::test::ios::kWaitForJSCompletionTimeout;
@@ -601,12 +599,6 @@ id ExecuteJavaScript(NSString* javascript,
 @implementation ChromeEarlGreyImpl (EG1)
 
 #pragma mark - Navigation Utilities
-
-- (NSError*)waitForErrorPage {
-  NSString* const kErrorPageText =
-      l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  return [self waitForStaticHTMLViewContainingText:kErrorPageText];
-}
 
 - (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text {
   bool hasStaticView = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{

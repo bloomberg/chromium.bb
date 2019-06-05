@@ -387,11 +387,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text;
 
-// Waits for a Chrome error page.
-// If the condition is not met within a timeout returns an NSError indicating
-// why the operation failed, otherwise nil.
-- (NSError*)waitForErrorPage WARN_UNUSED_RESULT;
-
 #pragma mark - Sync Utilities
 
 // Injects a bookmark into the fake sync server with |URL| and |title|.
