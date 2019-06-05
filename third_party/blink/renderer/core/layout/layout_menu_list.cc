@@ -208,6 +208,9 @@ void LayoutMenuList::UpdateInnerBlockHeight() {
 }
 
 void LayoutMenuList::UpdateOptionsWidth() const {
+  if (ShouldApplySizeContainment())
+    return;
+
   float max_option_width = 0;
 
   for (auto* const option : SelectElement()->GetOptionList()) {
