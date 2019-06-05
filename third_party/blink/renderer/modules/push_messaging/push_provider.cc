@@ -91,8 +91,8 @@ void PushProvider::Subscribe(
       mojom::blink::PushSubscriptionOptions::From(&options);
 
   push_messaging_manager_->Subscribe(
-      -1 /* Invalid ID */, GetSupplementable()->RegistrationId(),
-      std::move(content_options_ptr), user_gesture,
+      GetSupplementable()->RegistrationId(), std::move(content_options_ptr),
+      user_gesture,
       WTF::Bind(&PushProvider::DidSubscribe, WrapPersistent(this),
                 WTF::Passed(std::move(callbacks))));
 }

@@ -121,12 +121,8 @@ void PushMessagingClient::DoSubscribe(
     return;
   }
 
-  // We use DocumentInterfaceBroker to communicate with the RenderFrame in the
-  // browser process now, so we don't need to pass a valid ID from here anymore.
-  // TODO: Remove the extra parameter |render_frame_id| from the mojo interface.
   GetService()->Subscribe(
-      -1 /* Invalid ID */, service_worker_registration_id, std::move(options),
-      user_gesture,
+      service_worker_registration_id, std::move(options), user_gesture,
       WTF::Bind(&PushMessagingClient::DidSubscribe, WrapPersistent(this),
                 std::move(callbacks)));
 }

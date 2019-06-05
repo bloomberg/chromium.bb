@@ -50,8 +50,7 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   }
 
   // blink::mojom::PushMessaging impl, run on IO thread.
-  void Subscribe(int32_t render_frame_id,
-                 int64_t service_worker_registration_id,
+  void Subscribe(int64_t service_worker_registration_id,
                  const blink::WebPushSubscriptionOptions& options,
                  bool user_gesture,
                  SubscribeCallback callback) override;

@@ -302,7 +302,6 @@ void PushMessagingManager::BindRequest(
 // -----------------------------------------------------------------------------
 
 void PushMessagingManager::Subscribe(
-    int32_t render_frame_id,
     int64_t service_worker_registration_id,
     const blink::WebPushSubscriptionOptions& options,
     bool user_gesture,

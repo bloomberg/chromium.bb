@@ -26,8 +26,7 @@ enum PushErrorType {
 };
 
 interface PushMessaging {
-  Subscribe(int32 render_frame_id,
-            int64 service_worker_registration_id,
+  Subscribe(int64 service_worker_registration_id,
             PushSubscriptionOptions options,
             bool user_gesture)
            => (PushRegistrationStatus status,
