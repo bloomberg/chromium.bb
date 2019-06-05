@@ -37,7 +37,9 @@ class TestWPTServe(LoggingTestCase):
                 '--config',
                 server._config_file,
                 '--doc_root',
-                '/test.checkout/wtests/external/wpt'
+                '/test.checkout/wtests/external/wpt',
+                '--ws_doc_root',
+                '/test.checkout/wtests/external/wpt/websockets/handlers'
             ])
 
     def test_init_gen_config(self):

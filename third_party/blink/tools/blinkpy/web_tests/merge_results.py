@@ -619,9 +619,12 @@ class WebTestDirMerger(DirMerger):
             FilenameRegexMatch(r'error_log\.txt$'),
             MergeFilesLinesSorted(self.filesystem))
 
-        # pywebsocket files aren't particularly useful, so just save them.
+        # wptserve and pywebsocket files don't need to be merged, so just save them.
         self.add_helper(
             FilenameRegexMatch(r'pywebsocket\.ws\.log-.*-err\.txt$'),
+            MergeFilesKeepFiles(self.filesystem))
+        self.add_helper(
+            FilenameRegexMatch(r'wptserve_stderr\.txt$'),
             MergeFilesKeepFiles(self.filesystem))
 
         # These JSON files have "result style" JSON in them.
