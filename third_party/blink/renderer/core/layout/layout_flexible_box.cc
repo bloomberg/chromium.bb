@@ -732,6 +732,8 @@ bool LayoutFlexibleBox::MainAxisLengthIsDefinite(const LayoutBox& child,
                                                  bool add_to_cb) const {
   if (flex_basis.IsAuto())
     return false;
+  if (IsColumnFlow() && flex_basis.IsIntrinsic())
+    return false;
   if (flex_basis.IsPercentOrCalc()) {
     if (!IsColumnFlow() || has_definite_height_ == SizeDefiniteness::kDefinite)
       return true;
