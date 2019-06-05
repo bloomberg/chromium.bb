@@ -8,7 +8,8 @@ declare_args() {
   # separate feature module which currently doesn't support incremental builds.
   #
   # TODO(http://crbug/864142): Remove once incremental bundle install is available.
-  disable_autofill_assistant_dfm = false
+  # TODO(http://crbug/971244): Set default back to false.
+  disable_autofill_assistant_dfm = true
 }
 
 template("autofill_assistant_module_tmpl") {
