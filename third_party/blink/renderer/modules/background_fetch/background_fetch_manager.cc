@@ -59,11 +59,12 @@ ScriptPromise RejectWithTypeError(ScriptState* script_state,
                             "' because " + reason + "."));
 }
 
+// Returns whether the |request_url| should be blocked by the CSP. Must be
+// called synchronously from the background fetch call.
 bool ShouldBlockDueToCSP(ExecutionContext* execution_context,
                          const KURL& request_url) {
-  return !ContentSecurityPolicy::ShouldBypassMainWorld(execution_context) &&
-         !execution_context->GetContentSecurityPolicy()->AllowConnectToSource(
-             request_url);
+  return !execution_context->GetContentSecurityPolicyForWorld()
+              ->AllowConnectToSource(request_url);
 }
 
 bool ShouldBlockPort(const KURL& request_url) {
