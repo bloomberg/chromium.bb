@@ -26,7 +26,6 @@ enum class ErrorRetryCommand;
 struct Referrer;
 class WebStateImpl;
 class NavigationContextImpl;
-class NavigationItemImpl;
 class UserInteractionState;
 class WKBackForwardListItemHolder;
 }
@@ -107,23 +106,6 @@ class WKBackForwardListItemHolder;
             rendererInitiated:(BOOL)renderedInitiated
         placeholderNavigation:(BOOL)placeholderNavigation;
 
-// Notifies the delegate that load has been cancelled.
-- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
-     handleCancelledError:(NSError*)error
-            forNavigation:(WKNavigation*)navigation
-          provisionalLoad:(BOOL)provisionalLoad;
-
-// Notifies the delegate that load ends in an SSL error and certificate chain.
-- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
-       handleSSLCertError:(NSError*)error
-            forNavigation:(WKNavigation*)navigation;
-
-// Notifies the delegate that load ends in error.
-- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
-          handleLoadError:(NSError*)error
-            forNavigation:(WKNavigation*)navigation
-          provisionalLoad:(BOOL)provisionalLoad;
-
 // Instructs the delegate to clear the web frames list.
 - (void)navigationHandlerRemoveAllWebFrames:
     (CRWWKNavigationHandler*)navigationHandler;
@@ -155,20 +137,25 @@ class WKBackForwardListItemHolder;
 - (void)navigationHandlerUpdateHTML5HistoryState:
     (CRWWKNavigationHandler*)navigationHandler;
 
-// Instructs the delegate to execute the command specified by the
-// ErrorRetryStateMachine.
-- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
-    handleErrorRetryCommand:(web::ErrorRetryCommand)command
-             navigationItem:(web::NavigationItemImpl*)item
-          navigationContext:(web::NavigationContextImpl*)context
-         originalNavigation:(WKNavigation*)originalNavigation;
-
 // Notifies the delegate that navigation has finished.
 - (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
       didFinishNavigation:(web::NavigationContextImpl*)context;
 
 // Notifies the delegate that web process has crashed.
 - (void)navigationHandlerWebProcessDidCrash:
+    (CRWWKNavigationHandler*)navigationHandler;
+
+// Instructs the delegate to load current URL.
+- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+    loadCurrentURLWithRendererInitiatedNavigation:(BOOL)rendererInitiated;
+
+// Notifies the delegate that load has completed.
+- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+    didCompleteLoadWithSuccess:(BOOL)loadSuccess
+                    forContext:(web::NavigationContextImpl*)context;
+
+// Instructs the delegate to create a web view if it's not yet created.
+- (WKWebView*)navigationHandlerEnsureWebViewCreated:
     (CRWWKNavigationHandler*)navigationHandler;
 
 @end
@@ -229,6 +216,16 @@ class WKBackForwardListItemHolder;
 // Maps WKNavigationType to ui::PageTransition.
 - (ui::PageTransition)pageTransitionFromNavigationType:
     (WKNavigationType)navigationType;
+
+// Loads a blank page directly into WKWebView as a placeholder to create a new
+// back forward item (f.e. for error page). This page has the URL
+// about:blank?for=<encoded original URL>. If |originalContext| is provided,
+// reuse it for the placeholder navigation instead of creating a new one.
+- (web::NavigationContextImpl*)
+    loadPlaceholderInWebViewForURL:(const GURL&)originalURL
+                 rendererInitiated:(BOOL)rendererInitiated
+                        forContext:(std::unique_ptr<web::NavigationContextImpl>)
+                                       originalContext;
 
 @end
 
