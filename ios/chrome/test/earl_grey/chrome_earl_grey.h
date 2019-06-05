@@ -387,12 +387,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text;
 
-#pragma mark - Sync Utilities
-
-// Injects a bookmark into the fake sync server with |URL| and |title|.
-- (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
-                                bookmarkTitle:(const std::string&)title;
-
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_

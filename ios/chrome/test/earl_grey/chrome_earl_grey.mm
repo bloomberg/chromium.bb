@@ -627,13 +627,6 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-#pragma mark - Sync Utilities
-
-- (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
-                                bookmarkTitle:(const std::string&)title {
-  chrome_test_util::InjectBookmarkOnFakeSyncServer(URL, title);
-}
-
 @end
 
 #endif  // defined(CHROME_EARL_GREY_1)
