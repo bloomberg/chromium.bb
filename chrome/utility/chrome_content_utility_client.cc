@@ -72,6 +72,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/services/ble_scan_parser/ble_scan_parser_service.h"
+#include "chrome/services/ble_scan_parser/public/mojom/constants.mojom.h"
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/ime/ime_service.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
@@ -324,6 +326,11 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 #if defined(OS_CHROMEOS)
   if (service_name == chromeos::ime::mojom::kServiceName)
     return std::make_unique<chromeos::ime::ImeService>(std::move(request));
+
+  if (service_name == ble_scan_parser::mojom::kServiceName) {
+    return std::make_unique<ble_scan_parser::BleScanParserService>(
+        std::move(request));
+  }
 
 #if BUILDFLAG(ENABLE_PRINTING)
   if (service_name == chrome::mojom::kCupsIppParserServiceName)

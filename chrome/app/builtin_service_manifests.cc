@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/constants.mojom.h"
+#include "chrome/services/ble_scan_parser/public/cpp/manifest.h"
 #include "chrome/services/file_util/public/cpp/manifest.h"
 #include "chrome/services/noop/public/cpp/manifest.h"
 #include "components/services/patch/public/cpp/manifest.h"
@@ -174,12 +175,13 @@ GetChromeBuiltinServiceManifests() {
 #endif
 #if defined(OS_CHROMEOS)
       ash::GetManifest(),
-      GetCupsIppParserManifest(),
+      ble_scan_parser::GetManifest(),
       chromeos::cellular_setup::GetManifest(),
-      chromeos::printing::GetCupsProxyManifest(),
       chromeos::ime::GetManifest(),
       chromeos::network_config::GetManifest(),
+      chromeos::printing::GetCupsProxyManifest(),
       chromeos::secure_channel::GetManifest(),
+      GetCupsIppParserManifest(),
 #endif
   }};
   return *manifests;

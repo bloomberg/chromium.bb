@@ -3360,7 +3360,11 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_UTILITY_PROCESS_NOOP_SERVICE_NAME" desc="The name of the utility process which does nothing, used for experimentation.">
         No-op Service
       </message>
-
+      <if expr="chromeos">
+        <message name="IDS_UTILITY_PROCESS_BLE_SCAN_PARSER_NAME" desc="The name of the utility process used for parsing BLE scans.">
+          BLE Scan Parser Service
+        </message>
+      </if>
       <!-- Theme preview infobar -->
       <message name="IDS_THEME_INSTALL_INFOBAR_LABEL" desc="Text displayed on an infobar when a theme has been installed.">
         Installed theme "<ph name="THEME_NAME">$1<ex>Snowflake Theme</ex></ph>"

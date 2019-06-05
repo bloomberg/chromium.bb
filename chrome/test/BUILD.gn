@@ -3931,6 +3931,7 @@ test("unit_tests") {
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/strings",
       "//chrome/browser/resources/chromeos/zip_archiver/cpp:ziparchiver_unittests",
+      "//chrome/services/ble_scan_parser:unit_tests",
     ]
     if (use_new_tcmalloc) {
       sources += [ "../browser/metrics/perf/heap_collector_unittest.cc" ]
