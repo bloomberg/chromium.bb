@@ -255,8 +255,15 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-controls-changed.html"));
 }
 
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityEventsAriaDisabledChanged \
+  DISABLED_AccessibilityEventsAriaDisabledChanged
+#else
+#define MAYBE_AccessibilityEventsAriaDisabledChanged \
+  AccessibilityEventsAriaDisabledChanged
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaDisabledChanged) {
+                       MAYBE_AccessibilityEventsAriaDisabledChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-disabled-changed.html"));
 }
 
