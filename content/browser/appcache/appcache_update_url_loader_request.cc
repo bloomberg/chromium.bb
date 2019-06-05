@@ -137,7 +137,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
   // Populate other fields in the HttpResponseInfo class. It would be good to
   // have a helper function which populates the HttpResponseInfo structure from
   // the ResourceResponseHead structure.
-  http_response_info_.reset(new net::HttpResponseInfo());
+  http_response_info_ = std::make_unique<net::HttpResponseInfo>();
   if (response_head.ssl_info.has_value())
     http_response_info_->ssl_info = *response_head.ssl_info;
   http_response_info_->headers = response_head.headers;
@@ -148,6 +148,8 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
       response_head.alpn_negotiated_protocol;
   http_response_info_->connection_info = response_head.connection_info;
   http_response_info_->remote_endpoint = response_head.remote_endpoint;
+  http_response_info_->request_time = response_head.request_time;
+  http_response_info_->response_time = response_head.response_time;
   fetcher_->OnResponseStarted(net::OK);
 }
 
