@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
@@ -343,7 +344,9 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
     return VideoCaptureSettingsForTesting();
   }
 
-  blink::MediaStreamRequestResult error_reason() const { return result_; }
+  blink::mojom::MediaStreamRequestResult error_reason() const {
+    return result_;
+  }
   blink::WebString constraint_name() const { return constraint_name_; }
 
   // UserMediaProcessor overrides.
@@ -403,7 +406,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   }
 
   void GetUserMediaRequestFailed(
-      blink::MediaStreamRequestResult result,
+      blink::mojom::MediaStreamRequestResult result,
       const blink::WebString& constraint_name) override {
     last_generated_stream_.Reset();
     *state_ = REQUEST_FAILED;
@@ -415,7 +418,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   static void SignalSourceReady(
       blink::WebPlatformMediaStreamSource::ConstraintsOnceCallback source_ready,
       blink::WebPlatformMediaStreamSource* source) {
-    std::move(source_ready).Run(source, blink::MEDIA_DEVICE_OK, "");
+    std::move(source_ready)
+        .Run(source, blink::mojom::MediaStreamRequestResult::OK, "");
   }
 
   PeerConnectionDependencyFactory* factory_;
@@ -424,7 +428,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   MockLocalMediaStreamAudioSource* local_audio_source_ = nullptr;
   bool create_source_that_fails_ = false;
   blink::WebMediaStream last_generated_stream_;
-  blink::MediaStreamRequestResult result_ = blink::NUM_MEDIA_REQUEST_RESULTS;
+  blink::mojom::MediaStreamRequestResult result_ =
+      blink::mojom::MediaStreamRequestResult::NUM_MEDIA_REQUEST_RESULTS;
   blink::WebString constraint_name_;
   RequestState* state_;
 };
@@ -804,7 +809,7 @@ TEST_F(UserMediaClientImplTest, MediaVideoSourceFailToStart) {
   FailToStartMockedVideoSource();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(REQUEST_FAILED, request_state());
-  EXPECT_EQ(blink::MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO,
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO,
             user_media_processor_->error_reason());
   blink::WebHeap::CollectAllGarbageForTesting();
   EXPECT_EQ(1, mock_dispatcher_host_.request_stream_counter());
@@ -819,7 +824,7 @@ TEST_F(UserMediaClientImplTest, MediaAudioSourceFailToInitialize) {
   StartMockedVideoSource();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(REQUEST_FAILED, request_state());
-  EXPECT_EQ(blink::MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO,
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::TRACK_START_FAILURE_AUDIO,
             user_media_processor_->error_reason());
   blink::WebHeap::CollectAllGarbageForTesting();
   EXPECT_EQ(1, mock_dispatcher_host_.request_stream_counter());

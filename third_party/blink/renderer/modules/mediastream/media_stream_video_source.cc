@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
@@ -337,7 +338,8 @@ void MediaStreamVideoSource::DoStopSource() {
   SetReadyState(WebMediaStreamSource::kReadyStateEnded);
 }
 
-void MediaStreamVideoSource::OnStartDone(MediaStreamRequestResult result) {
+void MediaStreamVideoSource::OnStartDone(
+    mojom::blink::MediaStreamRequestResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << "OnStartDone({result =" << result << "})";
   if (state_ == ENDED) {
@@ -347,7 +349,7 @@ void MediaStreamVideoSource::OnStartDone(MediaStreamRequestResult result) {
     return;
   }
 
-  if (result == MEDIA_DEVICE_OK) {
+  if (result == mojom::blink::MediaStreamRequestResult::OK) {
     DCHECK_EQ(STARTING, state_);
     OnLog("MediaStreamVideoSource changing state to STARTED");
     state_ = STARTED;
@@ -367,11 +369,13 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
   std::vector<PendingTrackInfo> pending_track_descriptors;
   pending_track_descriptors.swap(pending_tracks_);
   for (const auto& track_info : pending_track_descriptors) {
-    MediaStreamRequestResult result = MEDIA_DEVICE_OK;
-    if (state_ != STARTED)
-      result = MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO;
+    auto result = mojom::blink::MediaStreamRequestResult::OK;
+    if (state_ != STARTED) {
+      result =
+          mojom::blink::MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO;
+    }
 
-    if (result == MEDIA_DEVICE_OK) {
+    if (result == mojom::blink::MediaStreamRequestResult::OK) {
       track_adapter_->AddTrack(track_info.track, track_info.frame_callback,
                                track_info.settings_callback,
                                track_info.format_callback,

@@ -110,9 +110,10 @@ void MediaStreamDevicesController::RequestPermissions(
       request.render_process_id, request.render_frame_id);
   // The RFH may have been destroyed by the time the request is processed.
   if (!rfh) {
-    std::move(callback).Run(blink::MediaStreamDevices(),
-                            blink::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
-                            std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
+        std::unique_ptr<content::MediaStreamUI>());
     return;
   }
   content::WebContents* web_contents =
@@ -135,7 +136,8 @@ void MediaStreamDevicesController::RequestPermissions(
             CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, rfh,
             request.security_origin);
     if (permission_status.content_setting == CONTENT_SETTING_BLOCK) {
-      controller->denial_reason_ = blink::MEDIA_DEVICE_PERMISSION_DENIED;
+      controller->denial_reason_ =
+          blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
       controller->RunCallback(permission_status.source ==
                               PermissionStatusSource::FEATURE_POLICY);
       return;
@@ -151,7 +153,8 @@ void MediaStreamDevicesController::RequestPermissions(
             CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, rfh,
             request.security_origin);
     if (permission_status.content_setting == CONTENT_SETTING_BLOCK) {
-      controller->denial_reason_ = blink::MEDIA_DEVICE_PERMISSION_DENIED;
+      controller->denial_reason_ =
+          blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
       controller->RunCallback(permission_status.source ==
                               PermissionStatusSource::FEATURE_POLICY);
       return;
@@ -262,9 +265,10 @@ void MediaStreamDevicesController::RegisterProfilePrefs(
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {
   if (!callback_.is_null()) {
-    std::move(callback_).Run(blink::MediaStreamDevices(),
-                             blink::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
-                             std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback_).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
+        std::unique_ptr<content::MediaStreamUI>());
   }
 }
 
@@ -291,9 +295,11 @@ void MediaStreamDevicesController::PromptAnsweredGroupedRequest(
 
   for (ContentSetting response : responses) {
     if (response == CONTENT_SETTING_BLOCK)
-      denial_reason_ = blink::MEDIA_DEVICE_PERMISSION_DENIED;
+      denial_reason_ =
+          blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
     else if (response == CONTENT_SETTING_ASK)
-      denial_reason_ = blink::MEDIA_DEVICE_PERMISSION_DISMISSED;
+      denial_reason_ =
+          blink::mojom::MediaStreamRequestResult::PERMISSION_DISMISSED;
   }
 
   RunCallback(blocked_by_feature_policy);
@@ -312,7 +318,7 @@ MediaStreamDevicesController::MediaStreamDevicesController(
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   content_settings_ = TabSpecificContentSettings::FromWebContents(web_contents);
 
-  denial_reason_ = blink::MEDIA_DEVICE_OK;
+  denial_reason_ = blink::mojom::MediaStreamRequestResult::OK;
   audio_setting_ = GetContentSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
                                      request, &denial_reason_);
   video_setting_ = GetContentSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
@@ -425,7 +431,8 @@ void MediaStreamDevicesController::RunCallback(bool blocked_by_feature_policy) {
 
   // If the kill switch is, or the request was blocked because of feature
   // policy we don't update the tab context.
-  if (denial_reason_ != blink::MEDIA_DEVICE_KILL_SWITCH_ON &&
+  if (denial_reason_ !=
+          blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON &&
       !blocked_by_feature_policy) {
     UpdateTabSpecificContentSettings(audio_setting_, video_setting_);
   }
@@ -434,7 +441,8 @@ void MediaStreamDevicesController::RunCallback(bool blocked_by_feature_policy) {
 
   // If all requested permissions are allowed then the callback should report
   // success, otherwise we report |denial_reason_|.
-  blink::MediaStreamRequestResult request_result = blink::MEDIA_DEVICE_OK;
+  blink::mojom::MediaStreamRequestResult request_result =
+      blink::mojom::MediaStreamRequestResult::OK;
   if ((audio_setting_ == CONTENT_SETTING_ALLOW ||
        audio_setting_ == CONTENT_SETTING_DEFAULT) &&
       (video_setting_ == CONTENT_SETTING_ALLOW ||
@@ -443,10 +451,10 @@ void MediaStreamDevicesController::RunCallback(bool blocked_by_feature_policy) {
     if (devices.empty()) {
       // Even if all requested permissions are allowed, if there are no devices
       // at this point we still report a failure.
-      request_result = blink::MEDIA_DEVICE_NO_HARDWARE;
+      request_result = blink::mojom::MediaStreamRequestResult::NO_HARDWARE;
     }
   } else {
-    DCHECK_NE(blink::MEDIA_DEVICE_OK, denial_reason_);
+    DCHECK_NE(blink::mojom::MediaStreamRequestResult::OK, denial_reason_);
     request_result = denial_reason_;
   }
 
@@ -510,7 +518,7 @@ void MediaStreamDevicesController::UpdateTabSpecificContentSettings(
 ContentSetting MediaStreamDevicesController::GetContentSetting(
     ContentSettingsType content_type,
     const content::MediaStreamRequest& request,
-    blink::MediaStreamRequestResult* denial_reason) const {
+    blink::mojom::MediaStreamRequestResult* denial_reason) const {
   DCHECK(content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
          content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
   DCHECK(!request_.security_origin.is_empty());
@@ -527,19 +535,19 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
   else
     device_id = request.requested_video_device_id;
   if (!HasAvailableDevices(content_type, device_id)) {
-    *denial_reason = blink::MEDIA_DEVICE_NO_HARDWARE;
+    *denial_reason = blink::mojom::MediaStreamRequestResult::NO_HARDWARE;
     return CONTENT_SETTING_BLOCK;
   }
 
   if (!IsUserAcceptAllowed(content_type)) {
-    *denial_reason = blink::MEDIA_DEVICE_PERMISSION_DENIED;
+    *denial_reason = blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
     return CONTENT_SETTING_BLOCK;
   }
 
   // Don't request if the kill switch is on.
   if (PermissionIsBlockedForReason(content_type,
                                    PermissionStatusSource::KILL_SWITCH)) {
-    *denial_reason = blink::MEDIA_DEVICE_KILL_SWITCH_ON;
+    *denial_reason = blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON;
     return CONTENT_SETTING_BLOCK;
   }
 

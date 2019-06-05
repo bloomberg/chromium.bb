@@ -248,6 +248,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -4555,7 +4556,7 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   void Accept(const blink::MediaStreamDevices& devices,
-              blink::MediaStreamRequestResult result,
+              blink::mojom::MediaStreamRequestResult result,
               std::unique_ptr<content::MediaStreamUI> ui) {
     if (policy_value_ || request_url_allowed_via_whitelist_) {
       ASSERT_EQ(1U, devices.size());

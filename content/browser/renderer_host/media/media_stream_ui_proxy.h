@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_stream_request.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -27,7 +28,7 @@ class CONTENT_EXPORT MediaStreamUIProxy {
  public:
   using ResponseCallback =
       base::OnceCallback<void(const blink::MediaStreamDevices& devices,
-                              blink::MediaStreamRequestResult result)>;
+                              blink::mojom::MediaStreamRequestResult result)>;
 
   using WindowIdCallback =
       base::OnceCallback<void(gfx::NativeViewId window_id)>;
@@ -65,8 +66,9 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   friend class Core;
   friend class FakeMediaStreamUIProxy;
 
-  void ProcessAccessRequestResponse(const blink::MediaStreamDevices& devices,
-                                    blink::MediaStreamRequestResult result);
+  void ProcessAccessRequestResponse(
+      const blink::MediaStreamDevices& devices,
+      blink::mojom::MediaStreamRequestResult result);
   void ProcessStopRequestFromUI();
   void ProcessChangeSourceRequestFromUI(const DesktopMediaID& media_id);
   void OnWindowId(WindowIdCallback window_id_callback,

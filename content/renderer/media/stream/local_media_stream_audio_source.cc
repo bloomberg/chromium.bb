@@ -9,6 +9,7 @@
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 namespace content {
 
@@ -105,7 +106,7 @@ void LocalMediaStreamAudioSource::EnsureSourceIsStopped() {
 }
 
 void LocalMediaStreamAudioSource::OnCaptureStarted() {
-  started_callback_.Run(this, blink::MEDIA_DEVICE_OK, "");
+  started_callback_.Run(this, blink::mojom::MediaStreamRequestResult::OK, "");
 }
 
 void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,

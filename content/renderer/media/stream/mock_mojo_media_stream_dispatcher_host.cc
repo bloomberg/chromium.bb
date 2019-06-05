@@ -5,6 +5,7 @@
 #include "content/renderer/media/stream/mock_mojo_media_stream_dispatcher_host.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 namespace content {
 
@@ -56,7 +57,7 @@ void MockMojoMediaStreamDispatcherHost::GenerateStream(
   if (do_not_run_cb_) {
     generate_stream_cb_ = std::move(callback);
   } else {
-    std::move(callback).Run(blink::MEDIA_DEVICE_OK,
+    std::move(callback).Run(blink::mojom::MediaStreamRequestResult::OK,
                             "dummy" + base::NumberToString(request_id_),
                             audio_devices_, video_devices_);
   }

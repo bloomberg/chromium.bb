@@ -91,11 +91,11 @@ base::LazyInstance<base::ThreadLocalPointer<MediaStreamManager>>::Leaky
 
 using blink::MediaStreamDevice;
 using blink::MediaStreamDevices;
-using blink::MediaStreamRequestResult;
 using blink::MediaStreamRequestType;
 using blink::MediaStreamType;
 using blink::StreamControls;
 using blink::TrackControls;
+using blink::mojom::MediaStreamRequestResult;
 
 namespace {
 // Creates a random label used to identify requests.
@@ -410,7 +410,7 @@ class MediaStreamManager::DeviceRequest {
   void RunMojoCallbacks() {
     if (generate_stream_cb) {
       std::move(generate_stream_cb)
-          .Run(blink::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN, std::string(),
+          .Run(MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN, std::string(),
                MediaStreamDevices(), MediaStreamDevices());
     }
 
@@ -708,7 +708,8 @@ void MediaStreamManager::GenerateStream(
     if (std::move(generate_stream_test_callback_).Run(controls)) {
       FinalizeGenerateStream(label, request);
     } else {
-      FinalizeRequestFailed(label, request, blink::MEDIA_DEVICE_INVALID_STATE);
+      FinalizeRequestFailed(label, request,
+                            MediaStreamRequestResult::INVALID_STATE);
     }
     return;
   }
@@ -1222,7 +1223,7 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
       request->video_type() == blink::MEDIA_DISPLAY_VIDEO_CAPTURE;
   if (is_display_capture && !SetUpDisplayCaptureRequest(request)) {
     FinalizeRequestFailed(label, request,
-                          blink::MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE);
+                          MediaStreamRequestResult::SCREEN_CAPTURE_FAILURE);
     return;
   }
 
@@ -1232,7 +1233,7 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
   if (is_tab_capture) {
     if (!SetUpTabCaptureRequest(request, label)) {
       FinalizeRequestFailed(label, request,
-                            blink::MEDIA_DEVICE_TAB_CAPTURE_FAILURE);
+                            MediaStreamRequestResult::TAB_CAPTURE_FAILURE);
     }
     return;
   }
@@ -1241,7 +1242,7 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
       request->video_type() == blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
   if (is_screen_capture && !SetUpScreenCaptureRequest(request)) {
     FinalizeRequestFailed(label, request,
-                          blink::MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE);
+                          MediaStreamRequestResult::SCREEN_CAPTURE_FAILURE);
     return;
   }
 
@@ -1254,7 +1255,8 @@ void MediaStreamManager::SetUpRequest(const std::string& label) {
     // If no actual device capture is requested, set up the request with an
     // empty device list.
     if (!SetUpDeviceCaptureRequest(request, MediaDeviceEnumeration())) {
-      FinalizeRequestFailed(label, request, blink::MEDIA_DEVICE_NO_HARDWARE);
+      FinalizeRequestFailed(label, request,
+                            MediaStreamRequestResult::NO_HARDWARE);
       return;
     }
   }
@@ -1374,7 +1376,7 @@ void MediaStreamManager::FinishTabCaptureRequestSetupWithDeviceId(
   // Received invalid device id.
   if (device_id.type != content::DesktopMediaID::TYPE_WEB_CONTENTS) {
     FinalizeRequestFailed(label, request,
-                          blink::MEDIA_DEVICE_TAB_CAPTURE_FAILURE);
+                          MediaStreamRequestResult::TAB_CAPTURE_FAILURE);
     return;
   }
 
@@ -1508,7 +1510,7 @@ void MediaStreamManager::FinalizeGenerateStream(const std::string& label,
   }
 
   std::move(request->generate_stream_cb)
-      .Run(blink::MEDIA_DEVICE_OK, label, audio_devices, video_devices);
+      .Run(MediaStreamRequestResult::OK, label, audio_devices, video_devices);
 }
 
 void MediaStreamManager::FinalizeRequestFailed(
@@ -1757,7 +1759,8 @@ void MediaStreamManager::DevicesEnumerated(
   }
 
   if (!SetUpDeviceCaptureRequest(request, enumeration))
-    FinalizeRequestFailed(label, request, blink::MEDIA_DEVICE_NO_HARDWARE);
+    FinalizeRequestFailed(label, request,
+                          MediaStreamRequestResult::NO_HARDWARE);
   else
     ReadOutputParamsAndPostRequestToUI(label, request, enumeration);
 }
@@ -1838,7 +1841,7 @@ void MediaStreamManager::HandleAccessRequestResponse(
   }
 
   // Handle the case when the request was denied.
-  if (result != blink::MEDIA_DEVICE_OK) {
+  if (result != MediaStreamRequestResult::OK) {
     FinalizeRequestFailed(label, request, result);
     return;
   }

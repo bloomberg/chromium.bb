@@ -23,6 +23,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 // Holds pending request information so that we display one picker UI at a time
 // for each content::WebContents.
@@ -90,16 +91,18 @@ void DisplayMediaAccessHandler::HandleRequest(
   // TODO(emircan): Remove this once Mac UI doesn't use a window.
   if (web_contents->GetVisibility() != content::Visibility::VISIBLE) {
     LOG(ERROR) << "Do not allow getDisplayMedia() on a backgrounded page.";
-    std::move(callback).Run(blink::MediaStreamDevices(),
-                            blink::MEDIA_DEVICE_INVALID_STATE, nullptr);
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::INVALID_STATE, nullptr);
     return;
   }
 #endif  // defined(OS_MACOSX)
 
   std::unique_ptr<DesktopMediaPicker> picker = picker_factory_->CreatePicker();
   if (!picker) {
-    std::move(callback).Run(blink::MediaStreamDevices(),
-                            blink::MEDIA_DEVICE_INVALID_STATE, nullptr);
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::INVALID_STATE, nullptr);
     return;
   }
 
@@ -187,13 +190,13 @@ void DisplayMediaAccessHandler::OnPickerDialogResults(
 
   PendingAccessRequest& pending_request = *queue.front();
   blink::MediaStreamDevices devices;
-  blink::MediaStreamRequestResult request_result =
-      blink::MEDIA_DEVICE_PERMISSION_DENIED;
+  blink::mojom::MediaStreamRequestResult request_result =
+      blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
   std::unique_ptr<content::MediaStreamUI> ui;
   if (media_id.is_null()) {
-    request_result = blink::MEDIA_DEVICE_PERMISSION_DENIED;
+    request_result = blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
   } else {
-    request_result = blink::MEDIA_DEVICE_OK;
+    request_result = blink::mojom::MediaStreamRequestResult::OK;
     const auto& visible_url = url_formatter::FormatUrlForSecurityDisplay(
         web_contents->GetLastCommittedURL(),
         url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);

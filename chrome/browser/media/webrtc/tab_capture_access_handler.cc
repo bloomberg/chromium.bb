@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 TabCaptureAccessHandler::TabCaptureAccessHandler() {
 }
@@ -49,8 +50,9 @@ void TabCaptureAccessHandler::HandleRequest(
       extensions::TabCaptureRegistry::Get(profile);
   if (!tab_capture_registry) {
     NOTREACHED();
-    std::move(callback).Run(devices, blink::MEDIA_DEVICE_INVALID_STATE,
-                            std::move(ui));
+    std::move(callback).Run(
+        devices, blink::mojom::MediaStreamRequestResult::INVALID_STATE,
+        std::move(ui));
     return;
   }
   // |extension| may be null if the tabCapture starts with
@@ -78,8 +80,9 @@ void TabCaptureAccessHandler::HandleRequest(
              ->RegisterMediaStream(web_contents, devices);
   }
   UpdateExtensionTrusted(request, extension);
-  std::move(callback).Run(devices,
-                          devices.empty() ? blink::MEDIA_DEVICE_INVALID_STATE
-                                          : blink::MEDIA_DEVICE_OK,
-                          std::move(ui));
+  std::move(callback).Run(
+      devices,
+      devices.empty() ? blink::mojom::MediaStreamRequestResult::INVALID_STATE
+                      : blink::mojom::MediaStreamRequestResult::OK,
+      std::move(ui));
 }
