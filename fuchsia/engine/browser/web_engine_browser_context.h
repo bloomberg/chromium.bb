@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_context.h"
 
 class WebEngineNetLog;
+class WebEnginePermissionManager;
 class WebEngineURLRequestContextGetter;
 
 class WebEngineBrowserContext : public content::BrowserContext {
@@ -64,6 +65,7 @@ class WebEngineBrowserContext : public content::BrowserContext {
   scoped_refptr<WebEngineURLRequestContextGetter> url_request_getter_;
   std::unique_ptr<SimpleFactoryKey> simple_factory_key_;
   std::unique_ptr<ResourceContext> resource_context_;
+  std::unique_ptr<WebEnginePermissionManager> permission_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineBrowserContext);
 };

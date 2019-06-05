@@ -119,6 +119,8 @@ component("web_engine_core") {
     "browser/web_engine_devtools_socket_factory.h",
     "browser/web_engine_net_log.cc",
     "browser/web_engine_net_log.h",
+    "browser/web_engine_permission_manager.cc",
+    "browser/web_engine_permission_manager.h",
     "browser/web_engine_screen.cc",
     "browser/web_engine_screen.h",
     "browser/web_engine_url_request_context_getter.cc",

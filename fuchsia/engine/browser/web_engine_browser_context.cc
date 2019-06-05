@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "fuchsia/engine/browser/web_engine_net_log.h"
+#include "fuchsia/engine/browser/web_engine_permission_manager.h"
 #include "fuchsia/engine/browser/web_engine_url_request_context_getter.h"
 #include "fuchsia/engine/common.h"
 #include "net/url_request/url_request_context.h"
@@ -119,7 +120,9 @@ WebEngineBrowserContext::GetSSLHostStateDelegate() {
 
 content::PermissionControllerDelegate*
 WebEngineBrowserContext::GetPermissionControllerDelegate() {
-  return nullptr;
+  if (!permission_manager_)
+    permission_manager_ = std::make_unique<WebEnginePermissionManager>();
+  return permission_manager_.get();
 }
 
 content::ClientHintsControllerDelegate*
