@@ -6,8 +6,10 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_onboarding_screen_handler.h"
+#include "chrome/common/channel_info.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/version_info.h"
 
 namespace chromeos {
 namespace {
@@ -37,7 +39,8 @@ void SupervisionOnboardingScreen::Show() {
       user_manager::UserManager::Get();
   DCHECK(user_manager->IsUserLoggedIn());
 
-  if (view_ &&
+  version_info::Channel channel = chrome::GetChannel();
+  if (view_ && channel <= version_info::Channel::DEV &&
       base::FeatureList::IsEnabled(
           features::kSupervisionOnboardingEligibility) &&
       user_manager->IsLoggedInAsChildUser()) {

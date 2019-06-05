@@ -103,7 +103,7 @@ const base::Feature kSplitSettings{"SplitSettings",
 // supervised users. It will display a loading page while we fetch
 // eligibility data.
 const base::Feature kSupervisionOnboardingEligibility{
-    "SupervisionOnboardingEligibility", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SupervisionOnboardingEligibility", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, we will display the full onboarding flow for eligible supervised
 // users.
