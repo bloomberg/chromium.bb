@@ -88,7 +88,7 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
     client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
   }
 
-  std::string account_id =
+  std::string pref_account_id =
       client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
 
   // Handle backward compatibility: if kGoogleServicesAccountId is empty, but
@@ -96,7 +96,7 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
   // be updated.  kGoogleServicesUserAccountId should not be empty, and contains
   // the gaia_id.  Use both properties to prime the account tracker before
   // proceeding.
-  if (account_id.empty()) {
+  if (pref_account_id.empty()) {
     std::string pref_account_username =
         client_->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
     if (!pref_account_username.empty()) {
@@ -122,13 +122,15 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
       // is correct.  After the migration, the returned value will be empty,
       // which means the user is essentially signed out.
       // TODO(rogerta): may want to show a toast or something.
-      account_id = account_tracker_service_->SeedAccountInfo(
-          pref_gaia_id, pref_account_username);
+      pref_account_id =
+          account_tracker_service_
+              ->SeedAccountInfo(pref_gaia_id, pref_account_username)
+              .id;
 
       // Set account id before removing obsolete user name in case crash in the
       // middle.
       client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
-                                     account_id);
+                                     pref_account_id);
 
       // Now remove obsolete preferences.
       client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
@@ -139,19 +141,19 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
     // kGoogleServicesAccountId.
   }
 
-  if (!account_id.empty()) {
+  if (!pref_account_id.empty()) {
     if (account_tracker_service_->GetMigrationState() ==
         AccountTrackerService::MIGRATION_IN_PROGRESS) {
       AccountInfo account_info =
-          account_tracker_service_->FindAccountInfoByEmail(account_id);
+          account_tracker_service_->FindAccountInfoByEmail(pref_account_id);
       // |account_info.gaia| could be empty if |account_id| is already gaia id.
       if (!account_info.gaia.empty()) {
-        account_id = account_info.gaia;
+        pref_account_id = account_info.gaia;
         client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
-                                       account_id);
+                                       pref_account_id);
       }
     }
-    SetAuthenticatedAccountId(account_id);
+    SetAuthenticatedAccountId(CoreAccountId(pref_account_id));
   }
   FinalizeInitBeforeLoadingRefreshTokens(local_state);
   // It is important to only load credentials after starting to observe the
@@ -171,7 +173,7 @@ AccountInfo SigninManagerBase::GetAuthenticatedAccountInfo() const {
   return account_tracker_service_->GetAccountInfo(GetAuthenticatedAccountId());
 }
 
-const std::string& SigninManagerBase::GetAuthenticatedAccountId() const {
+const CoreAccountId& SigninManagerBase::GetAuthenticatedAccountId() const {
   return authenticated_account_id_;
 }
 
@@ -180,13 +182,13 @@ void SigninManagerBase::SetAuthenticatedAccountInfo(const std::string& gaia_id,
   DCHECK(!gaia_id.empty());
   DCHECK(!email.empty());
 
-  std::string account_id =
+  CoreAccountId account_id =
       account_tracker_service_->SeedAccountInfo(gaia_id, email);
   SetAuthenticatedAccountId(account_id);
 }
 
 void SigninManagerBase::SetAuthenticatedAccountId(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   DCHECK(!account_id.empty());
   if (!authenticated_account_id_.empty()) {
     DCHECK_EQ(account_id, authenticated_account_id_)
@@ -198,7 +200,7 @@ void SigninManagerBase::SetAuthenticatedAccountId(
   std::string pref_account_id =
       client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
 
-  DCHECK(pref_account_id.empty() || pref_account_id == account_id)
+  DCHECK(pref_account_id.empty() || pref_account_id == account_id.id)
       << "account_id=" << account_id << " pref_account_id=" << pref_account_id;
   authenticated_account_id_ = account_id;
   client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId, account_id);
@@ -232,7 +234,7 @@ void SigninManagerBase::SetAuthenticatedAccountId(
 }
 
 void SigninManagerBase::ClearAuthenticatedAccountId() {
-  authenticated_account_id_.clear();
+  authenticated_account_id_ = CoreAccountId();
   if (observer_) {
     observer_->AuthenticatedAccountCleared();
   }
@@ -328,7 +330,7 @@ void SigninManagerBase::OnSignoutDecisionReached(
   }
 
   AccountInfo account_info = GetAuthenticatedAccountInfo();
-  const std::string account_id = GetAuthenticatedAccountId();
+  const CoreAccountId account_id = GetAuthenticatedAccountId();
   const std::string username = account_info.email;
   const base::Time signin_time =
       base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromMicroseconds(

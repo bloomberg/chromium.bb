@@ -124,7 +124,7 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
   // normalized email address of the connected account, use
   // GetAuthenticatedAccountInfo().email.  Example: to show the string "Signed
   // in as XXX" in the hotdog menu.
-  const std::string& GetAuthenticatedAccountId() const;
+  const CoreAccountId& GetAuthenticatedAccountId() const;
 
   // Sets the authenticated user's Gaia ID and display email.  Internally,
   // this will seed the account information in AccountTrackerService and pick
@@ -199,7 +199,7 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
   // with a different account (this method will DCHECK in that case).
   // |account_id| must not be empty. To log the user out, use
   // ClearAuthenticatedAccountId() instead.
-  void SetAuthenticatedAccountId(const std::string& account_id);
+  void SetAuthenticatedAccountId(const CoreAccountId& account_id);
 
   // Clears the authenticated user's account id.
   // This method is not public because SigninManagerBase does not allow signing
@@ -242,7 +242,7 @@ class SigninManagerBase : public OAuth2TokenService::Observer {
   bool initialized_;
 
   // Account id after successful authentication.
-  std::string authenticated_account_id_;
+  CoreAccountId authenticated_account_id_;
 
   // The list of callbacks notified on shutdown.
   base::CallbackList<void()> on_shutdown_callback_list_;
