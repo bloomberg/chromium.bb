@@ -288,7 +288,7 @@ static int rockchip_bo_flush(struct bo *bo, struct mapping *mapping)
 	return 0;
 }
 
-static uint32_t rockchip_resolve_format(uint32_t format, uint64_t use_flags)
+static uint32_t rockchip_resolve_format(struct driver *drv, uint32_t format, uint64_t use_flags)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
