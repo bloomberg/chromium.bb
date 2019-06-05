@@ -895,3 +895,15 @@ test.util.async.getVolumesCount = callback => {
 test.util.sync.setPreferences = preferences => {
   chrome.fileManagerPrivate.setPreferences(preferences);
 };
+
+/**
+ * Reports an enum metric.
+ * @param {string} name The metric name.
+ * @param {string} value The metric enumerator to record.
+ * @param {Array<string>} validValues An array containing the valid enumerators
+ *     in order.
+ *
+ */
+test.util.sync.recordEnumMetric = (name, value, validValues) => {
+  metrics.recordEnum(name, value, validValues);
+};

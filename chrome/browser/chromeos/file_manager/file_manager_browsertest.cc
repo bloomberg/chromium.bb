@@ -7,6 +7,7 @@
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -1026,6 +1027,16 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("searchDownloadsWithResults"),
                       TestCase("searchDownloadsWithNoResults"),
                       TestCase("searchDownloadsClearSearch")));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    Metrics, /* metrics.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("metricsRecordEnum")));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    Breadcrumbs, /* breadcrumbs.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("breadcrumbsNavigate")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {

@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -171,6 +173,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   std::unique_ptr<arc::FakeFileSystemInstance> arc_file_system_instance_;
 
   std::unique_ptr<MockFileTasksObserver> file_tasks_observer_;
+
+  base::HistogramTester histograms_;
+  base::UserActionTester user_actions_;
 
   // Not owned.
   SelectFileDialogExtensionTestFactory* select_factory_;

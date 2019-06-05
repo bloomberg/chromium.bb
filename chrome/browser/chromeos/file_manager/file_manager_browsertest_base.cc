@@ -597,6 +597,40 @@ struct ExpectFileTasksMessage {
   file_tasks::FileTasksObserver::OpenType open_type;
 };
 
+struct GetHistogramCountMessage {
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               GetHistogramCountMessage* message) {
+    base::JSONValueConverter<GetHistogramCountMessage> converter;
+    return converter.Convert(value, message);
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<GetHistogramCountMessage>* converter) {
+    converter->RegisterStringField("histogramName",
+                                   &GetHistogramCountMessage::histogram_name);
+    converter->RegisterIntField("value", &GetHistogramCountMessage::value);
+  }
+
+  std::string histogram_name;
+  int value = 0;
+};
+
+struct GetUserActionCountMessage {
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               GetUserActionCountMessage* message) {
+    base::JSONValueConverter<GetUserActionCountMessage> converter;
+    return converter.Convert(value, message);
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<GetUserActionCountMessage>* converter) {
+    converter->RegisterStringField(
+        "userActionName", &GetUserActionCountMessage::user_action_name);
+  }
+
+  std::string user_action_name;
+};
+
 }  // anonymous namespace
 
 class FileManagerBrowserTestBase::MockFileTasksObserver
@@ -2244,6 +2278,26 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
           *file_tasks_observer_,
           OnFilesOpenedImpl(testing::HasSubstr(*file_name), message.open_type));
     }
+    return;
+  }
+
+  if (name == "getHistogramCount") {
+    GetHistogramCountMessage message;
+    ASSERT_TRUE(GetHistogramCountMessage::ConvertJSONValue(value, &message));
+    base::JSONWriter::Write(base::Value(histograms_.GetBucketCount(
+                                message.histogram_name, message.value)),
+                            output);
+
+    return;
+  }
+
+  if (name == "getUserActionCount") {
+    GetUserActionCountMessage message;
+    ASSERT_TRUE(GetUserActionCountMessage::ConvertJSONValue(value, &message));
+    base::JSONWriter::Write(
+        base::Value(user_actions_.GetActionCount(message.user_action_name)),
+        output);
+
     return;
   }
 

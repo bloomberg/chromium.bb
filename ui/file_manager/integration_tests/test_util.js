@@ -1230,3 +1230,29 @@ var ENTRIES = {
     typeText: 'CRDOWNLOAD file'
   }),
 };
+
+/**
+ * Returns the count for |value| for the histogram |name|.
+ * @param {string} name The histogram to be queried.
+ * @param {number} value The value within that histogram to query.
+ * @return {!Promise<number>} A promise fulfilled with the count.
+ */
+async function getHistogramCount(name, value) {
+  return JSON.parse(await sendTestMessage({
+    'name': 'getHistogramCount',
+    'histogramName': name,
+    'value': value,
+  }));
+}
+
+/**
+ * Returns the count for the user action |name|.
+ * @param {string} name The user action to be queried.
+ * @return {!Promise<number>} A promise fulfilled with the count.
+ */
+async function getUserActionCount(name) {
+  return JSON.parse(await sendTestMessage({
+    'name': 'getUserActionCount',
+    'userActionName': name,
+  }));
+}
