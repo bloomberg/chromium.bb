@@ -67,7 +67,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     switch (off_main_thread_fetch_option) {
       case OffMainThreadWorkerScriptFetchOption::kEnabled: {
         auto* resource_timing_notifier =
-            MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(
+            WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
                 *GetExecutionContext());
         GetWorkerThread()->FetchAndRunClassicScript(
             script_url, outside_settings_object, *resource_timing_notifier,
@@ -91,7 +91,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
                                                 &credentials_mode);
     DCHECK(result);
     auto* resource_timing_notifier =
-        MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(
+        WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
             *GetExecutionContext());
     GetWorkerThread()->FetchAndRunModuleScript(
         script_url, outside_settings_object, *resource_timing_notifier,

@@ -133,9 +133,9 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
               ->Fetcher()
               ->GetProperties()
               .GetFetchClientSettingsObject());
+  // Worklets don't support resource timing APIs yet.
   auto* outside_resource_timing_notifier =
-      MakeGarbageCollected<WorkerResourceTimingNotifierImpl>(
-          *GetExecutionContext());
+      MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
 
   // Specify TaskType::kInternalLoading because it's commonly used for module
   // loading.
