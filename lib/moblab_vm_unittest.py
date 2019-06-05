@@ -299,6 +299,28 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     self._InitializeWorkspaceAttributes(new_workspace)
     self._testSuccessfulStartAfterCreate(False)
 
+  def testRunVmsContextNoFailure(self):
+    """Calls .Start and .Stop in a basic use case."""
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
+    start = self.PatchObject(moblab_vm.MoblabVm, 'Start')
+    stop = self.PatchObject(moblab_vm.MoblabVm, 'Stop')
+    with vmsetup.RunVmsContext():
+      pass
+    self.assertEqual(start.call_count, 1)
+    self.assertEqual(stop.call_count, 1)
+
+  def testRunVmsContextWithFailure(self):
+    """Calls .Start and .Stop when exception is raised within context."""
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
+    start = self.PatchObject(moblab_vm.MoblabVm, 'Start')
+    stop = self.PatchObject(moblab_vm.MoblabVm, 'Stop')
+    try:
+      with vmsetup.RunVmsContext():
+        raise ValueError('uh oh!')
+    except ValueError:
+      self.assertEqual(start.call_count, 1)
+      self.assertEqual(stop.call_count, 1)
+
   def testMountMoblabDiskContextInUninitilizedWorkspaceRaises(self):
     """Cannot mount a disk if the workspace isn't even initialized."""
     vmsetup = moblab_vm.MoblabVm(self.workspace)

@@ -241,6 +241,15 @@ class MoblabVm(object):
     # Don't self._Persist since the workspace is now clean.
 
   @contextlib.contextmanager
+  def RunVmsContext(self):
+    """A context manager to start the VM and guarantee it is stopped."""
+    self.Start()
+    try:
+      yield
+    finally:
+      self.Stop()
+
+  @contextlib.contextmanager
   def MountedMoblabDiskContext(self):
     """A contextmanager to mount the already prepared moblab disk.
 
