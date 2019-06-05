@@ -619,6 +619,8 @@ void PageLoadMetricsUpdateDispatcher::UpdatePageRenderData(
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
     const mojom::FrameRenderDataUpdate& render_data) {
   main_frame_render_data_.layout_jank_score += render_data.layout_jank_delta;
+  main_frame_render_data_.layout_jank_score_before_input_or_scroll +=
+      render_data.layout_jank_delta_before_input_or_scroll;
 }
 
 void PageLoadMetricsUpdateDispatcher::OnSubFrameRenderDataChanged(

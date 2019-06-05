@@ -115,7 +115,8 @@ JankTracker::JankTracker(LocalFrameView* frame_view)
              this,
              &JankTracker::TimerFired),
       frame_max_distance_(0.0),
-      overall_max_distance_(0.0) {}
+      overall_max_distance_(0.0),
+      observed_input_or_scroll_(false) {}
 
 void JankTracker::AccumulateJank(const LayoutObject& source,
                                  const PaintLayer& painting_layer,
@@ -302,7 +303,8 @@ void JankTracker::NotifyPrePaintFinished() {
     weighted_score_ += weighted_jank_fraction;
     if (RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled())
       weighted_jank_fraction *= move_distance_factor;
-    frame.Client()->DidObserveLayoutJank(weighted_jank_fraction);
+    frame.Client()->DidObserveLayoutJank(weighted_jank_fraction,
+                                         observed_input_or_scroll_);
   }
 
   if (RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
@@ -348,8 +350,19 @@ void JankTracker::NotifyInput(const WebInputEvent& event) {
   if (!event_is_meaningful)
     return;
 
+  observed_input_or_scroll_ = true;
+
   // This cancels any previously scheduled task from the same timer.
   timer_.StartOneShot(kTimerDelay, FROM_HERE);
+}
+
+void JankTracker::NotifyScroll(ScrollType scroll_type) {
+  // Only include user-initiated scrolls. Ignore scrolls due to e.g. hash
+  // fragment navigations.
+  if (scroll_type != kUserScroll && scroll_type != kCompositorScroll)
+    return;
+
+  observed_input_or_scroll_ = true;
 }
 
 bool JankTracker::IsActive() {

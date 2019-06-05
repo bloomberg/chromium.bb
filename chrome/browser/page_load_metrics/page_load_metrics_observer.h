@@ -129,10 +129,15 @@ struct UserInitiatedInfo {
 // Information about how the page rendered during the browsing session.
 // Derived from the FrameRenderDataUpdate that is sent via UpdateTiming IPC.
 struct PageRenderData {
-  PageRenderData() : layout_jank_score(0) {}
+  PageRenderData()
+      : layout_jank_score(0), layout_jank_score_before_input_or_scroll(0) {}
 
   // How much visible elements on the page shifted (bit.ly/lsm-explainer).
   float layout_jank_score;
+
+  // How much visible elements on the page shifted (bit.ly/lsm-explainer),
+  // before user input or document scroll.
+  float layout_jank_score_before_input_or_scroll;
 };
 
 struct PageLoadExtraInfo {

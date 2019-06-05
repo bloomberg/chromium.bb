@@ -168,8 +168,11 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   // This is called once for each janking animation frame, with the jank
   // fraction for that frame.  The cumulative jank score can be inferred by
-  // summing the jank fractions.
-  virtual void DidObserveLayoutJank(double jank_fraction) {}
+  // summing the jank fractions. |after_input_or_scroll| indicates whether the
+  // given |jank_fraction| was observed after an input or scroll occurred in the
+  // associated document.
+  virtual void DidObserveLayoutJank(double jank_fraction,
+                                    bool after_input_or_scroll) {}
 
   // Reports lazy loaded behavior when the frame or image is fully deferred or
   // if the frame or image is loaded after being deferred by lazy load.

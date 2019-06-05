@@ -355,7 +355,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutStability) {
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
   SimulateMetadataUpdate(metadata, subframe);
 
-  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0);
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
   SimulateRenderDataUpdate(render_data, subframe);
 
   // Navigate the main frame to trigger metrics recording.

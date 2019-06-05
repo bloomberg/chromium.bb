@@ -761,9 +761,10 @@ void LocalFrameClientImpl::DidObserveNewCssPropertyUsage(int css_property,
   }
 }
 
-void LocalFrameClientImpl::DidObserveLayoutJank(double jank_fraction) {
+void LocalFrameClientImpl::DidObserveLayoutJank(double jank_fraction,
+                                                bool after_input_or_scroll) {
   if (WebLocalFrameClient* client = web_frame_->Client())
-    client->DidObserveLayoutJank(jank_fraction);
+    client->DidObserveLayoutJank(jank_fraction, after_input_or_scroll);
 }
 
 void LocalFrameClientImpl::DidObserveLazyLoadBehavior(

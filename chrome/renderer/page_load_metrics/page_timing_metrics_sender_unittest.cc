@@ -351,11 +351,11 @@ TEST_F(PageTimingMetricsSenderTest, SendPageRenderData) {
   metrics_sender_->Send(timing.Clone());
   validator_.ExpectPageLoadTiming(timing);
 
-  metrics_sender_->DidObserveLayoutJank(0.5);
-  metrics_sender_->DidObserveLayoutJank(0.5);
-  metrics_sender_->DidObserveLayoutJank(0.5);
+  metrics_sender_->DidObserveLayoutJank(0.5, false);
+  metrics_sender_->DidObserveLayoutJank(0.5, false);
+  metrics_sender_->DidObserveLayoutJank(0.5, true);
 
-  mojom::FrameRenderDataUpdate render_data(1.5);
+  mojom::FrameRenderDataUpdate render_data(1.5, 1.0);
   validator_.UpdateExpectFrameRenderDataUpdate(render_data);
 
   metrics_sender_->mock_timer()->Fire();

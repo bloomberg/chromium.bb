@@ -147,6 +147,7 @@ TEST_F(JankTrackerTest, IgnoreAfterInput) {
   SimulateInput();
   UpdateAllLifecyclePhases();
   EXPECT_EQ(0.0, GetJankTracker().Score());
+  EXPECT_TRUE(GetJankTracker().ObservedInputOrScroll());
 }
 
 TEST_F(JankTrackerTest, CompositedElementMovement) {
