@@ -106,7 +106,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_New) {
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
 
   EXPECT_CALL(store(), AddLogin(generated_with_date));
-  state().PresaveGeneratedPassword(generated);
+  state().PresaveGeneratedPassword(generated, {});
   EXPECT_TRUE(state().HasGeneratedPassword());
 }
 
@@ -117,7 +117,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_Replace) {
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
 
   EXPECT_CALL(store(), AddLogin(generated_with_date));
-  state().PresaveGeneratedPassword(generated);
+  state().PresaveGeneratedPassword(generated, {});
 
   PasswordForm generated_updated = generated;
   generated_updated.password_value = ASCIIToUTF16("newgenpwd");
@@ -125,7 +125,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_Replace) {
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
   EXPECT_CALL(store(), UpdateLoginWithPrimaryKey(generated_with_date,
                                                  FormHasUniqueKey(generated)));
-  state().PresaveGeneratedPassword(generated_updated);
+  state().PresaveGeneratedPassword(generated_updated, {});
   EXPECT_TRUE(state().HasGeneratedPassword());
 }
 
@@ -136,7 +136,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ReplaceTwice) {
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
 
   EXPECT_CALL(store(), AddLogin(generated_with_date));
-  state().PresaveGeneratedPassword(generated);
+  state().PresaveGeneratedPassword(generated, {});
 
   PasswordForm generated_updated = generated;
   generated_updated.password_value = ASCIIToUTF16("newgenpwd");
@@ -144,7 +144,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ReplaceTwice) {
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
   EXPECT_CALL(store(), UpdateLoginWithPrimaryKey(generated_with_date,
                                                  FormHasUniqueKey(generated)));
-  state().PresaveGeneratedPassword(generated_updated);
+  state().PresaveGeneratedPassword(generated_updated, {});
 
   generated = generated_updated;
   generated_updated.password_value = ASCIIToUTF16("newgenpwd2");
@@ -153,7 +153,36 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ReplaceTwice) {
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
   EXPECT_CALL(store(), UpdateLoginWithPrimaryKey(generated_with_date,
                                                  FormHasUniqueKey(generated)));
-  state().PresaveGeneratedPassword(generated_updated);
+  state().PresaveGeneratedPassword(generated_updated, {});
+  EXPECT_TRUE(state().HasGeneratedPassword());
+}
+
+// Check that presaving a password with a known username results in clearing the
+// username.
+TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_WithConflict) {
+  const PasswordForm generated = CreateGenerated();
+
+  PasswordForm saved = CreateSaved();
+  saved.username_value = generated.username_value;
+
+  PasswordForm generated_with_date = generated;
+  generated_with_date.date_created = base::Time::FromTimeT(kTime);
+  generated_with_date.username_value.clear();
+
+  EXPECT_CALL(store(), AddLogin(generated_with_date));
+  state().PresaveGeneratedPassword(generated, {&saved});
+  EXPECT_TRUE(state().HasGeneratedPassword());
+}
+
+// Check that presaving a password with an unknown username saves it as is.
+TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_WithoutConflict) {
+  const PasswordForm generated = CreateGenerated();
+  PasswordForm generated_with_date = generated;
+  generated_with_date.date_created = base::Time::FromTimeT(kTime);
+
+  const PasswordForm saved = CreateSaved();
+  EXPECT_CALL(store(), AddLogin(generated_with_date));
+  state().PresaveGeneratedPassword(generated, {&saved});
   EXPECT_TRUE(state().HasGeneratedPassword());
 }
 
@@ -164,7 +193,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenSaveAsNew) {
   const PasswordForm generated = CreateGenerated();
 
   EXPECT_CALL(store(), AddLogin(_));
-  state().PresaveGeneratedPassword(generated);
+  state().PresaveGeneratedPassword(generated, {});
 
   // User edits after submission.
   PasswordForm pending = generated;
@@ -185,9 +214,6 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenSaveAsNew) {
 TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenUpdate) {
   PasswordForm generated = CreateGenerated();
 
-  EXPECT_CALL(store(), AddLogin(_));
-  state().PresaveGeneratedPassword(generated);
-
   PasswordForm related_password = CreateSaved();
   related_password.username_value = ASCIIToUTF16("username");
   related_password.username_element = ASCIIToUTF16("username_field");
@@ -206,6 +232,12 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenUpdate) {
   unrelated_psl_password.preferred = true;
   unrelated_psl_password.username_value = ASCIIToUTF16("another username");
   unrelated_psl_password.password_value = ASCIIToUTF16("some password");
+
+  EXPECT_CALL(store(), AddLogin(_));
+  const std::vector<const autofill::PasswordForm*> matches = {
+      &related_password, &related_psl_password, &unrelated_password,
+      &unrelated_psl_password};
+  state().PresaveGeneratedPassword(generated, matches);
 
   generated.username_value = ASCIIToUTF16("username");
   PasswordForm generated_with_date = generated;
@@ -227,11 +259,8 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenUpdate) {
   unrelated_password_expected.preferred = false;
   EXPECT_CALL(store(), UpdateLogin(unrelated_password_expected));
 
-  state().CommitGeneratedPassword(
-      generated,
-      {&related_password, &related_psl_password, &unrelated_password,
-       &unrelated_psl_password} /* matches */,
-      ASCIIToUTF16("old password"));
+  state().CommitGeneratedPassword(generated, matches,
+                                  ASCIIToUTF16("old password"));
   EXPECT_TRUE(state().HasGeneratedPassword());
 }
 
@@ -240,7 +269,7 @@ TEST_F(PasswordGenerationStateTest, PasswordNoLongerGenerated) {
   PasswordForm generated = CreateGenerated();
 
   EXPECT_CALL(store(), AddLogin(_));
-  state().PresaveGeneratedPassword(generated);
+  state().PresaveGeneratedPassword(generated, {});
 
   generated.date_created = base::Time::FromTimeT(kTime);
   EXPECT_CALL(store(), RemoveLogin(generated));
@@ -256,7 +285,7 @@ TEST_F(PasswordGenerationStateTest, PasswordNoLongerGenerated_AndPresaveAgain) {
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
 
   EXPECT_CALL(store(), AddLogin(generated_with_date));
-  state().PresaveGeneratedPassword(generated);
+  state().PresaveGeneratedPassword(generated, {});
 
   EXPECT_CALL(store(), RemoveLogin(generated_with_date));
   state().PasswordNoLongerGenerated();
@@ -266,7 +295,7 @@ TEST_F(PasswordGenerationStateTest, PasswordNoLongerGenerated_AndPresaveAgain) {
   generated_with_date = generated;
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
   EXPECT_CALL(store(), AddLogin(generated_with_date));
-  state().PresaveGeneratedPassword(generated);
+  state().PresaveGeneratedPassword(generated, {});
   EXPECT_TRUE(state().HasGeneratedPassword());
 }
 
@@ -278,7 +307,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_CloneUpdates) {
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
 
   EXPECT_CALL(store(), AddLogin(generated_with_date));
-  state().PresaveGeneratedPassword(generated);
+  state().PresaveGeneratedPassword(generated, {});
 
   std::unique_ptr<FormSaver> cloned_saver = form_saver().Clone();
   std::unique_ptr<PasswordGenerationState> cloned_state =
@@ -294,7 +323,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_CloneUpdates) {
   generated_with_date.date_created = base::Time::FromTimeT(kAnotherTime);
   EXPECT_CALL(store(), UpdateLoginWithPrimaryKey(generated_with_date,
                                                  FormHasUniqueKey(generated)));
-  cloned_state->PresaveGeneratedPassword(generated_updated);
+  cloned_state->PresaveGeneratedPassword(generated_updated, {});
   EXPECT_TRUE(cloned_state->HasGeneratedPassword());
 }
 
@@ -305,14 +334,14 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_CloneSurvives) {
   const PasswordForm generated = CreateGenerated();
 
   EXPECT_CALL(store(), AddLogin(_));
-  original->PresaveGeneratedPassword(generated);
+  original->PresaveGeneratedPassword(generated, {});
 
   std::unique_ptr<FormSaver> cloned_saver = form_saver().Clone();
   std::unique_ptr<PasswordGenerationState> cloned_state =
       original->Clone(cloned_saver.get());
   original.reset();
   EXPECT_CALL(store(), UpdateLoginWithPrimaryKey(_, _));
-  cloned_state->PresaveGeneratedPassword(generated);
+  cloned_state->PresaveGeneratedPassword(generated, {});
 }
 
 }  // namespace

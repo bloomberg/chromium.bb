@@ -44,7 +44,9 @@ class PasswordGenerationState {
       base::WeakPtr<PasswordManagerDriver> driver);
 
   // Called when generated password is accepted or changed by user.
-  void PresaveGeneratedPassword(autofill::PasswordForm generated);
+  void PresaveGeneratedPassword(
+      autofill::PasswordForm generated,
+      const std::vector<const autofill::PasswordForm*>& matches);
 
   // Signals that the user cancels password generation.
   void PasswordNoLongerGenerated();

@@ -37,8 +37,17 @@ void PasswordGenerationState::GeneratedPasswordAccepted(
   driver->GeneratedPasswordAccepted(generated.password_value);
 }
 
-void PasswordGenerationState::PresaveGeneratedPassword(PasswordForm generated) {
+void PasswordGenerationState::PresaveGeneratedPassword(
+    PasswordForm generated,
+    const std::vector<const autofill::PasswordForm*>& matches) {
   DCHECK(!generated.password_value.empty());
+  // Clear the username value if there are already saved credentials with
+  // the same username in order to prevent overwriting.
+  if (std::any_of(matches.begin(), matches.end(),
+                  [&generated](const autofill::PasswordForm* form) {
+                    return form->username_value == generated.username_value;
+                  }))
+    generated.username_value.clear();
   generated.date_created = clock_->Now();
   if (presaved_) {
     form_saver_->UpdateReplace(generated, {} /* matches */,

@@ -1064,12 +1064,8 @@ void NewPasswordFormManager::PresaveGeneratedPasswordInternal(
   // generated password is saved.
   parsed_form->password_value = generated_password;
 
-  // Clear the username value if there are already saved credentials with
-  // the same username in order to prevent overwriting.
-  if (base::ContainsKey(best_matches_, parsed_form->username_value))
-    parsed_form->username_value.clear();
-
-  generation_state_->PresaveGeneratedPassword(std::move(*parsed_form));
+  generation_state_->PresaveGeneratedPassword(std::move(*parsed_form),
+                                              GetAllMatches());
 }
 
 void NewPasswordFormManager::CalculateFillingAssistanceMetric(

@@ -437,12 +437,12 @@ void PasswordFormManager::PresaveGeneratedPassword(
   }
   if (!base::ContainsKey(best_matches_, form.username_value) ||
       form.username_value.empty()) {
-    generation_state_->PresaveGeneratedPassword(form);
+    generation_state_->PresaveGeneratedPassword(form, {});
   } else {
     autofill::PasswordForm form_without_username(form);
     form_without_username.username_value.clear();
     generation_state_->PresaveGeneratedPassword(
-        std::move(form_without_username));
+        std::move(form_without_username), {});
   }
 
   votes_uploader_.set_has_generated_password(true);
