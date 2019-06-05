@@ -443,13 +443,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             return;
         }
 
-        if (!SigninManagerJni.get().shouldLoadPolicyForUser(mSignInState.mAccount.name)) {
-            // Proceed with the sign-in flow without checking for policy if it can be determined
-            // that this account can't have management enabled based on the username.
-            finishSignIn();
-            return;
-        }
-
         Log.d(TAG, "Checking if account has policy management enabled");
         // This will call back to onPolicyFetchedBeforeSignIn.
         SigninManagerJni.get().registerAndFetchPolicyBeforeSignIn(
@@ -458,9 +451,11 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
     @CalledByNative
     @VisibleForTesting
+    /**
+     * If the user is managed, its policy has been fetched and is being enforced; features like sync
+     * may now be disabled by policy, and the rest of the sign-in flow can be resumed.
+     */
     void onPolicyFetchedBeforeSignIn() {
-        // Policy has been fetched for the user and is being enforced; features like sync may now
-        // be disabled by policy, and the rest of the sign-in flow can be resumed.
         finishSignIn();
     }
 
@@ -727,7 +722,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      *         otherwise. May be called synchronously from this function.
      */
     public void isUserManaged(String email, final Callback<Boolean> callback) {
-        SigninManagerJni.get().isUserManaged(email, callback);
+        SigninManagerJni.get().isUserManaged(this, mNativeSigninManagerAndroid, email, callback);
     }
 
     public static String extractDomainName(String email) {
@@ -773,9 +768,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
         boolean isSignedInOnNative(@JCaller SigninManager self, long nativeSigninManagerAndroid);
 
-        boolean shouldLoadPolicyForUser(String username);
-
-        void isUserManaged(String username, Callback<Boolean> callback);
+        void isUserManaged(@JCaller SigninManager self, long nativeSigninManagerAndroid,
+                String username, Callback<Boolean> callback);
 
         String extractDomainName(String email);
     }

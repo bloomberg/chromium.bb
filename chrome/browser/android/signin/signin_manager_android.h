@@ -79,24 +79,44 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
   jboolean IsSignedInOnNative(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
 
+  void IsUserManaged(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     const base::android::JavaParamRef<jstring>& j_username,
+                     const base::android::JavaParamRef<jobject>& j_callback);
+
   // identity::IdentityManager::Observer implementation.
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
 
  private:
+  struct ManagementCredentials {
+    ManagementCredentials(const std::string& dm_token,
+                          const std::string& client_id)
+        : dm_token(dm_token), client_id(client_id) {}
+    const std::string dm_token;
+    const std::string client_id;
+  };
+
+  using RegisterPolicyWithAccountCallback = base::OnceCallback<void(
+      const base::Optional<ManagementCredentials>& credentials)>;
+
   friend class SigninManagerAndroidTest;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerAndroidTest,
                            DeleteGoogleServiceWorkerCaches);
 
   ~SigninManagerAndroid() override;
 
-  void OnPolicyRegisterDone(const CoreAccountInfo& account_id,
-                            const std::string& dm_token,
-                            const std::string& client_id);
+  // If required registers for policy with given account. callback will be
+  // called with credentials if the account is managed.
+  void RegisterPolicyWithAccount(const CoreAccountInfo& account,
+                                 RegisterPolicyWithAccountCallback callback);
+
+  void OnPolicyRegisterDone(
+      const CoreAccountInfo& account_id,
+      const base::Optional<ManagementCredentials>& credentials);
 
   void FetchPolicyBeforeSignIn(const CoreAccountInfo& account_id,
-                               const std::string& dm_token,
-                               const std::string& client_id);
+                               const ManagementCredentials& credentials);
 
   void OnPolicyFetchDone(bool success) const;
 

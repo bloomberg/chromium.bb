@@ -209,6 +209,31 @@ void SigninManagerAndroid::WipeGoogleServiceWorkerCaches(
                       weak_factory_.GetWeakPtr()));
 }
 
+void SigninManagerAndroid::RegisterPolicyWithAccount(
+    const CoreAccountInfo& account,
+    RegisterPolicyWithAccountCallback callback) {
+  if (!ShouldLoadPolicyForUser(account.email)) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  policy::UserPolicySigninService* service =
+      policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
+
+  service->RegisterForPolicyWithAccountId(
+      account.email, account.account_id,
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          [](RegisterPolicyWithAccountCallback callback,
+             const std::string& dm_token, const std::string& client_id) {
+            base::Optional<ManagementCredentials> credentials;
+            if (!dm_token.empty()) {
+              credentials.emplace(dm_token, client_id);
+            }
+            std::move(callback).Run(credentials);
+          },
+          std::move(callback))));
+}
+
 void SigninManagerAndroid::RegisterAndFetchPolicyBeforeSignIn(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -220,43 +245,39 @@ void SigninManagerAndroid::RegisterAndFetchPolicyBeforeSignIn(
   // ExtractDomainName Dchecks that username is a valid email, in practice
   // this checks that @ is present and is not the last character.
   gaia::ExtractDomainName(username);
-
-  policy::UserPolicySigninService* service =
-      policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   CoreAccountInfo account =
       IdentityManagerFactory::GetForProfile(profile_)
           ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(username)
           .value();
-  service->RegisterForPolicyWithAccountId(
-      username, account.account_id,
-      base::Bind(&SigninManagerAndroid::OnPolicyRegisterDone,
-                 weak_factory_.GetWeakPtr(), account));
+
+  RegisterPolicyWithAccount(
+      account, base::BindOnce(&SigninManagerAndroid::OnPolicyRegisterDone,
+                              weak_factory_.GetWeakPtr(), account));
 }
 
-void SigninManagerAndroid::OnPolicyRegisterDone(const CoreAccountInfo& account,
-                                                const std::string& dm_token,
-                                                const std::string& client_id) {
-  if (dm_token.empty()) {
+void SigninManagerAndroid::OnPolicyRegisterDone(
+    const CoreAccountInfo& account,
+    const base::Optional<ManagementCredentials>& credentials) {
+  if (credentials) {
+    FetchPolicyBeforeSignIn(account, credentials.value());
+  } else {
     // User's account does not have a policy to fetch.
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_SigninManager_onPolicyFetchedBeforeSignIn(env, java_signin_manager_);
-  } else {
-    FetchPolicyBeforeSignIn(account, dm_token, client_id);
   }
 }
 
 void SigninManagerAndroid::FetchPolicyBeforeSignIn(
     const CoreAccountInfo& account,
-    const std::string& dm_token,
-    const std::string& client_id) {
+    const ManagementCredentials& credentials) {
   policy::UserPolicySigninService* service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetURLLoaderFactoryForBrowserProcess();
   service->FetchPolicyForSignedInUser(
-      AccountIdFromAccountInfo(account), dm_token, client_id,
-      url_loader_factory,
+      AccountIdFromAccountInfo(account), credentials.dm_token,
+      credentials.client_id, url_loader_factory,
       base::Bind(&SigninManagerAndroid::OnPolicyFetchDone,
                  weak_factory_.GetWeakPtr()));
 }
@@ -335,43 +356,26 @@ static jlong JNI_SigninManager_Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(signin_manager_android);
 }
 
-static jboolean JNI_SigninManager_ShouldLoadPolicyForUser(
+void SigninManagerAndroid::IsUserManaged(
     JNIEnv* env,
-    const JavaParamRef<jstring>& j_username) {
-  std::string username =
-      base::android::ConvertJavaStringToUTF8(env, j_username);
-  return ShouldLoadPolicyForUser(username);
-}
-
-static void JNI_SigninManager_IsUserManaged(
-    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_username,
     const JavaParamRef<jobject>& j_callback) {
   base::android::ScopedJavaGlobalRef<jobject> callback(env, j_callback);
   std::string username =
       base::android::ConvertJavaStringToUTF8(env, j_username);
-  if (!ShouldLoadPolicyForUser(username)) {
-    base::android::RunBooleanCallbackAndroid(callback, false);
-    return;
-  }
 
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  policy::UserPolicySigninService* service =
-      policy::UserPolicySigninServiceFactory::GetForProfile(profile);
-  service->RegisterForPolicyWithAccountId(
-      username,
-      IdentityManagerFactory::GetForProfile(profile)
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(username)
-          .value_or(AccountInfo{})
-          .account_id,
-      // TODO: if UserPolicySigninService::PolicyRegistrationCallback is changed
-      // to base::OnceCallback, change this to base::BindOnce; otherwise remove
-      // this comment. See https://crbug.com/948098 for more details.
-      base::BindRepeating(
+  base::Optional<CoreAccountInfo> account =
+      IdentityManagerFactory::GetForProfile(profile_)
+          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(username);
+
+  RegisterPolicyWithAccount(
+      account.value_or(CoreAccountInfo{}),
+      base::BindOnce(
           [](base::android::ScopedJavaGlobalRef<jobject> callback,
-             const std::string& dm_token, const std::string& client_id) {
+             const base::Optional<ManagementCredentials>& credentials) {
             base::android::RunBooleanCallbackAndroid(callback,
-                                                     !dm_token.empty());
+                                                     credentials.has_value());
           },
           callback));
 }
