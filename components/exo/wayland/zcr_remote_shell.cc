@@ -9,8 +9,8 @@
 #include <wayland-server-protocol-core.h>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -313,13 +313,13 @@ void remote_surface_pin(wl_client* client,
                         wl_resource* resource,
                         int32_t trusted) {
   GetUserDataAs<ClientControlledShellSurface>(resource)->SetPinned(
-      trusted ? ash::mojom::WindowPinType::TRUSTED_PINNED
-              : ash::mojom::WindowPinType::PINNED);
+      trusted ? ash::WindowPinType::kTrustedPinned
+              : ash::WindowPinType::kPinned);
 }
 
 void remote_surface_unpin(wl_client* client, wl_resource* resource) {
   GetUserDataAs<ClientControlledShellSurface>(resource)->SetPinned(
-      ash::mojom::WindowPinType::NONE);
+      ash::WindowPinType::kNone);
 }
 
 void remote_surface_set_system_modal(wl_client* client, wl_resource* resource) {

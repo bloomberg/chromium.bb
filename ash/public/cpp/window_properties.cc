@@ -7,13 +7,12 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_properties.h"
 
-DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
-                                       ash::mojom::WindowPinType)
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT, ash::WindowPinType)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT, ash::WindowStateType)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::BackdropWindowMode)
@@ -62,9 +61,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(SkColor, kFrameActiveColorKey, kDefaultFrameColor)
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
                              kFrameInactiveColorKey,
                              kDefaultFrameColor)
-DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowPinType,
+DEFINE_UI_CLASS_PROPERTY_KEY(WindowPinType,
                              kWindowPinTypeKey,
-                             mojom::WindowPinType::NONE)
+                             WindowPinType::kNone)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPositionManagedTypeKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(WindowStateType,
                              kWindowStateTypeKey,

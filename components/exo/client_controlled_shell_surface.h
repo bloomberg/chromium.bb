@@ -125,7 +125,7 @@ class ClientControlledShellSurface
 
   // Pin/unpin the surface. Pinned surface cannot be switched to
   // other windows unless its explicitly unpinned.
-  void SetPinned(ash::mojom::WindowPinType type);
+  void SetPinned(ash::WindowPinType type);
 
   // Sets the surface to be on top of all other windows.
   void SetAlwaysOnTop(bool always_on_top);

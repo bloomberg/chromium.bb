@@ -16,9 +16,9 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/rounded_corner_decorator.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/client_controlled_state.h"
@@ -370,7 +370,7 @@ void ClientControlledShellSurface::SetPip() {
   pending_window_state_ = ash::WindowStateType::kPip;
 }
 
-void ClientControlledShellSurface::SetPinned(ash::mojom::WindowPinType type) {
+void ClientControlledShellSurface::SetPinned(ash::WindowPinType type) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetPinned", "type",
                static_cast<int>(type));
 

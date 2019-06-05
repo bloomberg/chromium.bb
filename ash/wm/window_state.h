@@ -27,11 +27,8 @@ class Rect;
 namespace ash {
 class LockWindowState;
 class TabletModeWindowState;
-enum class WindowStateType;
-
-namespace mojom {
 enum class WindowPinType;
-}
+enum class WindowStateType;
 
 namespace wm {
 class InitialStateTestState;
@@ -386,7 +383,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   ui::WindowShowState GetShowState() const;
 
   // Return the window's current pin type.
-  ash::mojom::WindowPinType GetPinType() const;
+  ash::WindowPinType GetPinType() const;
 
   // Sets the window's bounds in screen coordinates.
   void SetBoundsInScreen(const gfx::Rect& bounds_in_screen);

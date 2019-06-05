@@ -168,6 +168,8 @@ component("cpp") {
     "wallpaper_types.h",
     "wallpaper_user_info.h",
     "window_animation_types.h",
+    "window_pin_type.cc",
+    "window_pin_type.h",
     "window_properties.cc",
     "window_properties.h",
     "window_state_type.cc",

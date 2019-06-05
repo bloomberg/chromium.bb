@@ -83,8 +83,8 @@
 #include "ui/base/models/menu_model.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
   // Set locked fullscreen state.
   browser()->window()->GetNativeWindow()->SetProperty(
-      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
+      ash::kWindowPinTypeKey, ash::WindowPinType::kTrustedPinned);
 
   // All entries are disabled in locked fullscreen (testing only a subset here).
   for (auto entry : entries_to_test)

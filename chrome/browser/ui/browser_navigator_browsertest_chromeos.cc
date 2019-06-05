@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
   if (features::IsUsingWindowService())
     window = window->GetRootWindow();
   window->SetProperty(ash::kWindowPinTypeKey,
-                      ash::mojom::WindowPinType::TRUSTED_PINNED);
+                      ash::WindowPinType::kTrustedPinned);
 
   // Navigate to a page.
   auto url = GURL(chrome::kChromeUIVersionURL);
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
   // As a sanity check unset the locked fullscreen state and make sure that the
   // navigation happens (the following EXPECTs fail if the next line isn't
   // executed).
-  window->SetProperty(ash::kWindowPinTypeKey, ash::mojom::WindowPinType::NONE);
+  window->SetProperty(ash::kWindowPinTypeKey, ash::WindowPinType::kNone);
 
   Navigate(&params);
 

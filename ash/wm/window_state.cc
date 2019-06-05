@@ -12,9 +12,9 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
@@ -112,13 +112,13 @@ WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
   return WM_EVENT_NORMAL;
 }
 
-WMEventType WMEventTypeFromWindowPinType(ash::mojom::WindowPinType type) {
+WMEventType WMEventTypeFromWindowPinType(ash::WindowPinType type) {
   switch (type) {
-    case ash::mojom::WindowPinType::NONE:
+    case ash::WindowPinType::kNone:
       return WM_EVENT_NORMAL;
-    case ash::mojom::WindowPinType::PINNED:
+    case ash::WindowPinType::kPinned:
       return WM_EVENT_PIN;
-    case ash::mojom::WindowPinType::TRUSTED_PINNED:
+    case ash::WindowPinType::kTrustedPinned:
       return WM_EVENT_TRUSTED_PIN;
   }
   NOTREACHED() << "No WMEvent defined for the window pin type:" << type;
@@ -561,7 +561,7 @@ ui::WindowShowState WindowState::GetShowState() const {
   return window_->GetProperty(aura::client::kShowStateKey);
 }
 
-ash::mojom::WindowPinType WindowState::GetPinType() const {
+ash::WindowPinType WindowState::GetPinType() const {
   return window_->GetProperty(kWindowPinTypeKey);
 }
 
@@ -608,11 +608,11 @@ void WindowState::UpdateWindowPropertiesFromStateType() {
   }
 
   // sync up current window show state with PinType property.
-  ash::mojom::WindowPinType pin_type = ash::mojom::WindowPinType::NONE;
+  ash::WindowPinType pin_type = ash::WindowPinType::kNone;
   if (GetStateType() == WindowStateType::kPinned)
-    pin_type = ash::mojom::WindowPinType::PINNED;
+    pin_type = ash::WindowPinType::kPinned;
   else if (GetStateType() == WindowStateType::kTrustedPinned)
-    pin_type = ash::mojom::WindowPinType::TRUSTED_PINNED;
+    pin_type = ash::WindowPinType::kTrustedPinned;
   if (pin_type != GetPinType()) {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
     window_->SetProperty(kWindowPinTypeKey, pin_type);

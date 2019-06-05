@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "ui/aura/client/aura_constants.h"
@@ -60,15 +60,14 @@ TEST_F(FullscreenWindowFinderTest, RegularFullscreen) {
 
 // Test that a pinned fullscreen window is found by GetWindowForFullscreenMode.
 TEST_F(FullscreenWindowFinderTest, PinnedFullscreen) {
-  test_window_->SetProperty(kWindowPinTypeKey, mojom::WindowPinType::PINNED);
+  test_window_->SetProperty(kWindowPinTypeKey, WindowPinType::kPinned);
   EXPECT_TRUE(FullscreenWindowExists());
 }
 
 // Test that a trusted pinned fullscreen window is found by
 // GetWindowForFullscreenMode.
 TEST_F(FullscreenWindowFinderTest, TrustedPinnedFullscreen) {
-  test_window_->SetProperty(kWindowPinTypeKey,
-                            mojom::WindowPinType::TRUSTED_PINNED);
+  test_window_->SetProperty(kWindowPinTypeKey, WindowPinType::kTrustedPinned);
   EXPECT_TRUE(FullscreenWindowExists());
 }
 

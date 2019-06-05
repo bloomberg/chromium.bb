@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"

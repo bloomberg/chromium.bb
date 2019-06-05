@@ -11,8 +11,8 @@
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/drag_window_resizer.h"
@@ -70,10 +70,10 @@ bool HasBackdrop() {
 }
 
 bool IsWidgetPinned(views::Widget* widget) {
-  ash::mojom::WindowPinType type =
+  ash::WindowPinType type =
       widget->GetNativeWindow()->GetProperty(ash::kWindowPinTypeKey);
-  return type == ash::mojom::WindowPinType::PINNED ||
-         type == ash::mojom::WindowPinType::TRUSTED_PINNED;
+  return type == ash::WindowPinType::kPinned ||
+         type == ash::WindowPinType::kTrustedPinned;
 }
 
 int GetShadowElevation(aura::Window* window) {
@@ -120,16 +120,16 @@ TEST_F(ClientControlledShellSurfaceTest, SetPinned) {
   auto shell_surface(
       exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
 
-  shell_surface->SetPinned(ash::mojom::WindowPinType::TRUSTED_PINNED);
+  shell_surface->SetPinned(ash::WindowPinType::kTrustedPinned);
   EXPECT_TRUE(IsWidgetPinned(shell_surface->GetWidget()));
 
-  shell_surface->SetPinned(ash::mojom::WindowPinType::NONE);
+  shell_surface->SetPinned(ash::WindowPinType::kNone);
   EXPECT_FALSE(IsWidgetPinned(shell_surface->GetWidget()));
 
-  shell_surface->SetPinned(ash::mojom::WindowPinType::PINNED);
+  shell_surface->SetPinned(ash::WindowPinType::kPinned);
   EXPECT_TRUE(IsWidgetPinned(shell_surface->GetWidget()));
 
-  shell_surface->SetPinned(ash::mojom::WindowPinType::NONE);
+  shell_surface->SetPinned(ash::WindowPinType::kNone);
   EXPECT_FALSE(IsWidgetPinned(shell_surface->GetWidget()));
 }
 

@@ -13,9 +13,9 @@
 #include "ash/public/cpp/shelf_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"                                  // mash-ok
 #include "ash/wm/overview/overview_controller.h"        // mash-ok
 #include "ash/wm/splitview/split_view_controller.h"     // mash-ok
@@ -647,7 +647,7 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
 
   // Set locked fullscreen state.
   browser()->window()->GetNativeWindow()->SetProperty(
-      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
+      ash::kWindowPinTypeKey, ash::WindowPinType::kTrustedPinned);
 
   // We're fullscreen, immersive is disabled in locked fullscreen, and while
   // we're at it, also make sure that the shelf is hidden.
@@ -673,7 +673,7 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
 
   // Set locked fullscreen state.
   browser()->window()->GetNativeWindow()->SetProperty(
-      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
+      ash::kWindowPinTypeKey, ash::WindowPinType::kTrustedPinned);
 
   // We're fullscreen, immersive is disabled in locked fullscreen, and while
   // we're at it, also make sure that the shelf is hidden.

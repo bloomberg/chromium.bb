@@ -4,8 +4,8 @@
 
 #include "chrome/browser/platform_util.h"
 
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
@@ -132,7 +132,7 @@ bool IsBrowserLockedFullscreen(const Browser* browser) {
   if (features::IsUsingWindowService())
     window = window->GetRootWindow();
   return window->GetProperty(ash::kWindowPinTypeKey) ==
-         ash::mojom::WindowPinType::TRUSTED_PINNED;
+         ash::WindowPinType::kTrustedPinned;
 }
 
 }  // namespace platform_util

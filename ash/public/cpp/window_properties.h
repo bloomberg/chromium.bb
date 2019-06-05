@@ -24,11 +24,8 @@ class Rect;
 
 namespace ash {
 
-enum class WindowStateType;
-
-namespace mojom {
 enum class WindowPinType;
-}
+enum class WindowStateType;
 
 enum class BackdropWindowMode {
   kEnabled,   // The window needs a backdrop shown behind it.
@@ -165,7 +162,7 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
 // will try to fullscreen the window and pin it on the top of the screen. If the
 // window manager failed to do it, the property will be restored to NONE. When
 // setting this property to NONE, the window manager will restore the window.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<mojom::WindowPinType>* const
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowPinType>* const
     kWindowPinTypeKey;
 
 // A property key to indicate whether ash should perform auto management of
