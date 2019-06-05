@@ -93,23 +93,6 @@ class CORE_EXPORT NGOffsetMappingUnit {
   friend class NGOffsetMappingBuilder;
 };
 
-class NGMappingUnitRange {
-  STACK_ALLOCATED();
-
- public:
-  const NGOffsetMappingUnit* begin() const { return begin_; }
-  const NGOffsetMappingUnit* end() const { return end_; }
-
-  NGMappingUnitRange() : begin_(nullptr), end_(nullptr) {}
-  NGMappingUnitRange(const NGOffsetMappingUnit* begin,
-                     const NGOffsetMappingUnit* end)
-      : begin_(begin), end_(end) {}
-
- private:
-  const NGOffsetMappingUnit* begin_;
-  const NGOffsetMappingUnit* end_;
-};
-
 // Each inline formatting context laid out with LayoutNG has an NGOffsetMapping
 // object that stores the mapping information between DOM positions and offsets
 // in the text content string of the context.
@@ -175,7 +158,8 @@ class CORE_EXPORT NGOffsetMapping {
   // Returns all NGOffsetMappingUnits associated to |node|. When |node| is
   // laid out with ::first-letter, this function returns both first-letter part
   // and remaining part. Note: |node| should have associated mapping.
-  NGMappingUnitRange GetMappingUnitsForNode(const Node& node) const;
+  base::span<const NGOffsetMappingUnit> GetMappingUnitsForNode(
+      const Node& node) const;
 
   // Returns all NGOffsetMappingUnits associated to |layout_object|. This
   // function works even if |layout_object| is for CSS generated content
@@ -183,7 +167,7 @@ class CORE_EXPORT NGOffsetMapping {
   // Note: Unlike |GetMappingUnitsForNode()|, this function returns units
   // for first-letter or remaining part only instead of both parts.
   // Note: |layout_object| should have associated mapping.
-  NGMappingUnitRange GetMappingUnitsForLayoutObject(
+  base::span<const NGOffsetMappingUnit> GetMappingUnitsForLayoutObject(
       const LayoutObject& layout_object) const;
 
   // Returns the text content offset corresponding to the given position.
@@ -228,9 +212,8 @@ class CORE_EXPORT NGOffsetMapping {
   // (but possibly collapsed) intersection with (start, end). Note that units
   // that only "touch" |start| or |end| are excluded.
   // Note: Returned range may include units for generated content.
-  NGMappingUnitRange GetMappingUnitsForTextContentOffsetRange(
-      unsigned start,
-      unsigned end) const;
+  base::span<const NGOffsetMappingUnit>
+  GetMappingUnitsForTextContentOffsetRange(unsigned start, unsigned end) const;
 
   // Returns the last |NGOffsetMappingUnit| where |TextContentStart() >= offset|
   // including unit for generated content.

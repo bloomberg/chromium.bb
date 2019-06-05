@@ -101,13 +101,13 @@ bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
   // layout text of |fragment_|.
   const NGOffsetMapping& mapping =
       *NGOffsetMapping::GetFor(fragment_->GetLayoutObject());
-  const NGMappingUnitRange& mapping_units =
+  const base::span<const NGOffsetMappingUnit> mapping_units =
       mapping.GetMappingUnitsForTextContentOffsetRange(
           text_fragment.EndOffset(), text_fragment.EndOffset() + 1);
   if (mapping_units.begin() == mapping_units.end())
     return false;
-  const NGOffsetMappingUnit* const mapping_unit = mapping_units.begin();
-  return mapping_unit->GetLayoutObject() == fragment_->GetLayoutObject();
+  const NGOffsetMappingUnit& mapping_unit = mapping_units.front();
+  return mapping_unit.GetLayoutObject() == fragment_->GetLayoutObject();
 }
 
 const NGPaintFragment*

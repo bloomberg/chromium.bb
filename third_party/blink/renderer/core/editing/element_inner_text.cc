@@ -263,8 +263,8 @@ void ElementInnerTextCollector::ProcessLayoutText(const LayoutText& layout_text,
     return;
   }
 
-  const NGMappingUnitRange range = mapping->GetMappingUnitsForNode(text_node);
-  for (const NGOffsetMappingUnit& unit : range) {
+  for (const NGOffsetMappingUnit& unit :
+       mapping->GetMappingUnitsForNode(text_node)) {
     result_.EmitText(
         StringView(mapping->GetText(), unit.TextContentStart(),
                    unit.TextContentEnd() - unit.TextContentStart()));

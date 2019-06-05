@@ -22,9 +22,9 @@ namespace blink {
 // https://github.com/w3c/csswg-drafts/issues/337
 #define SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH 0
 
-// Helper functions to use |EXPECT_EQ()| for |NGOffsetMappingUnit| and
-// |NGMappingUnitRange|.
-Vector<NGOffsetMappingUnit> ToVector(const NGMappingUnitRange& range) {
+// Helper functions to use |EXPECT_EQ()| for |NGOffsetMappingUnit| and its span.
+Vector<NGOffsetMappingUnit> ToVector(
+    const base::span<const NGOffsetMappingUnit>& range) {
   Vector<NGOffsetMappingUnit> units;
   for (const auto& unit : range)
     units.push_back(unit);
@@ -68,7 +68,7 @@ bool operator==(const Vector<NGOffsetMappingUnit>& units1,
 }
 
 bool operator==(const Vector<NGOffsetMappingUnit>& units,
-                const NGMappingUnitRange& range) {
+                const base::span<const NGOffsetMappingUnit>& range) {
   return units == ToVector(range);
 }
 
@@ -83,7 +83,8 @@ void PrintTo(const Vector<NGOffsetMappingUnit>& units, std::ostream& ostream) {
   ostream << "]";
 }
 
-void PrintTo(const NGMappingUnitRange& range, std::ostream& ostream) {
+void PrintTo(const base::span<const NGOffsetMappingUnit>& range,
+             std::ostream& ostream) {
   PrintTo(ToVector(range), ostream);
 }
 
