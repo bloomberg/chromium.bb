@@ -615,14 +615,6 @@ bool IsWebDriverOverridingPolicy(PrefService* local_state) {
                 prefs::kWebDriverOverridesIncompatiblePolicies)));
 }
 
-// Sets up the ThreadProfiler for the browser process, runs it, and returns the
-// profiler.
-std::unique_ptr<ThreadProfiler> CreateAndStartBrowserMainThreadProfiler() {
-  ThreadProfiler::SetBrowserProcessReceiverCallback(base::BindRepeating(
-      &metrics::CallStackProfileMetricsProvider::ReceiveProfile));
-  return ThreadProfiler::CreateAndStartOnMainThread();
-}
-
 }  // namespace
 
 // BrowserMainParts ------------------------------------------------------------
@@ -633,7 +625,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(service_manager::RESULT_CODE_NORMAL_EXIT),
-      ui_thread_profiler_(CreateAndStartBrowserMainThreadProfiler()),
       heap_profiler_controller_(std::make_unique<HeapProfilerController>()),
       should_call_pre_main_loop_start_startup_on_variations_service_(
           !parameters.ui_task),
@@ -846,8 +837,7 @@ void ChromeBrowserMainParts::PreMainMessageLoopStart() {
 void ChromeBrowserMainParts::PostMainMessageLoopStart() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostMainMessageLoopStart");
 
-  ui_thread_profiler_->SetMainThreadTaskRunner(
-      base::ThreadTaskRunnerHandle::Get());
+  ThreadProfiler::SetMainThreadTaskRunner(base::ThreadTaskRunnerHandle::Get());
 
   heap_profiler_controller_->Start();
 

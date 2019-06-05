@@ -90,7 +90,7 @@ void ChromeContentGpuClient::GpuServiceInitialized(
           switches::kSingleProcess) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInProcessGPU)) {
-    main_thread_profiler_->SetMainThreadTaskRunner(
+    ThreadProfiler::SetMainThreadTaskRunner(
         base::ThreadTaskRunnerHandle::Get());
 
     mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;

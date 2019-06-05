@@ -278,6 +278,9 @@ if (!is_android && !is_mac) {
           ":browser_dependencies",
           ":child_dependencies",
 
+          # For the sampling profiler.
+          "//chrome/common/profiler",
+
           # Needed to use the master_preferences functions
           "//chrome/installer/util:with_no_strings",
           "//content/public/app:both",
@@ -418,6 +421,7 @@ if (is_win) {
       "//chrome/app/theme:chrome_unscaled_resources",
       "//chrome/chrome_elf",
       "//chrome/common:buildflags",
+      "//chrome/common/profiler",
       "//chrome/install_static:install_static_util",
       "//chrome/install_static:secondary_module",
       "//components/crash/content/app",
@@ -558,6 +562,7 @@ if (is_win) {
         "//chrome/browser/policy:path_parser",
         "//chrome/chrome_elf",
         "//chrome/common:buildflags",
+        "//chrome/common/profiler",
         "//chrome/install_static:install_static_util",
         "//chrome/install_static:secondary_module",
         "//components/browser_watcher:browser_watcher_client",
@@ -1213,6 +1218,7 @@ if (is_win) {
       ":child_dependencies",
       "//chrome/app:command_ids",
       "//chrome/common:buildflags",
+      "//chrome/common/profiler",
       "//components/crash/content/app",
       "//components/policy:generated",
       "//content/public/app:both",

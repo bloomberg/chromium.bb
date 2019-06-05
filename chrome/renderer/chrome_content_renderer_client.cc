@@ -433,7 +433,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // This doesn't work in single-process mode.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {
-    main_thread_profiler_->SetMainThreadTaskRunner(
+    ThreadProfiler::SetMainThreadTaskRunner(
         base::ThreadTaskRunnerHandle::Get());
     mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
     service_manager::Connector* connector = nullptr;

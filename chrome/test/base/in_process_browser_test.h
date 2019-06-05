@@ -49,6 +49,7 @@ class ViewsDelegate;
 #endif  // defined(TOOLKIT_VIEWS)
 
 class Browser;
+class MainThreadStackSamplingProfiler;
 class Profile;
 #if defined(OS_MACOSX)
 class ScopedBundleSwizzlerMac;
@@ -306,6 +307,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 #if defined(TOOLKIT_VIEWS)
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
 #endif
+
+  std::unique_ptr<MainThreadStackSamplingProfiler> sampling_profiler_;
+
+  DISALLOW_COPY_AND_ASSIGN(InProcessBrowserTest);
 };
 
 #endif  // CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_

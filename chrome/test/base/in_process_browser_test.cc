@@ -51,6 +51,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/profiler/main_thread_stack_sampling_profiler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/test/base/chrome_test_suite.h"
@@ -220,6 +221,11 @@ InProcessBrowserTest::~InProcessBrowserTest() = default;
 void InProcessBrowserTest::SetUp() {
   // Browser tests will create their own g_browser_process later.
   DCHECK(!g_browser_process);
+
+  // Initialize sampling profiler in browser tests. This mimics the behavior
+  // in standalone Chrome, where this is done in chrome/app/chrome_main.cc,
+  // which does not get called by browser tests.
+  sampling_profiler_ = std::make_unique<MainThreadStackSamplingProfiler>();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 

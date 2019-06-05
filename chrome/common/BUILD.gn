@@ -187,6 +187,8 @@ static_library("common") {
     "secure_origin_whitelist.h",
     "ssl_insecure_content.cc",
     "ssl_insecure_content.h",
+
+    # TODO(asvitkine): Move the next four entries to chrome/common/profiler/.
     "stack_sampling_configuration.cc",
     "stack_sampling_configuration.h",
     "thread_profiler.cc",

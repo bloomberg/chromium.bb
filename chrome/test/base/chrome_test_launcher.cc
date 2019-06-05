@@ -23,6 +23,7 @@
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/profiler/main_thread_stack_sampling_profiler.h"
 #include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/utility/chrome_content_utility_client.h"
@@ -197,6 +198,17 @@ int LaunchChromeTests(size_t parallel_jobs,
   install_static::ScopedInstallDetails install_details;
 #endif
 
+  const auto& command_line = *base::CommandLine::ForCurrentProcess();
+
+#if !defined(OS_ANDROID)
+  // Initialize sampling profiler for tests that relaunching a browser. This
+  // mimics the behavior in standalone Chrome, where this is done in
+  // chrome/app/chrome_main.cc, which does not get called by tests.
+  std::unique_ptr<MainThreadStackSamplingProfiler> sampling_profiler;
+  if (command_line.HasSwitch(content::kLaunchAsBrowser))
+    sampling_profiler = std::make_unique<MainThreadStackSamplingProfiler>();
+#endif
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   ChromeCrashReporterClient::Create();
 #elif defined(OS_WIN)
@@ -212,8 +224,8 @@ int LaunchChromeTests(size_t parallel_jobs,
   // interfere with other test objects in the browser process.
   std::unique_ptr<content::NetworkServiceTestHelper>
       network_service_test_helper;
-  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessType) == switches::kUtilityProcess) {
+  if (command_line.GetSwitchValueASCII(switches::kProcessType) ==
+      switches::kUtilityProcess) {
     network_service_test_helper =
         std::make_unique<content::NetworkServiceTestHelper>();
     ChromeContentUtilityClient::SetNetworkBinderCreationCallback(base::Bind(

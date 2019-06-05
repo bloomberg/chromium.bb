@@ -55,14 +55,22 @@ class ThreadProfiler {
   // Creates a profiler for a main thread and immediately starts it. This
   // function should only be used when profiling the main thread of a
   // process. The returned profiler must be destroyed prior to thread exit to
-  // stop the profiling. SetMainThreadTaskRunner() should be called after the
-  // message loop has been started on the thread.
+  // stop the profiling.
+  //
+  // SetMainThreadTaskRunner() should be called after the message loop has been
+  // started on the thread. It is the caller's responsibility to ensure that
+  // the instance returned by this function is still alive when the static API
+  // SetMainThreadTaskRunner() is used. The latter is static to support Chrome's
+  // set up where the ThreadProfiler is created in chrome/app which cannot be
+  // easily accessed from chrome_browser_main.cc which sets the task runner.
   static std::unique_ptr<ThreadProfiler> CreateAndStartOnMainThread();
 
   // Sets the task runner when profiling on the main thread. This occurs in a
   // separate call from CreateAndStartOnMainThread so that startup profiling can
-  // occur prior to message loop start.
-  void SetMainThreadTaskRunner(
+  // occur prior to message loop start. The task runner is associated with the
+  // instance returned by CreateAndStartOnMainThread(), which must be alive when
+  // this is called.
+  static void SetMainThreadTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Sets a callback to create auxiliary unwinders, for handling additional,
@@ -111,6 +119,12 @@ class ThreadProfiler {
   static void OnPeriodicCollectionCompleted(
       scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner,
       base::WeakPtr<ThreadProfiler> thread_profiler);
+
+  // Sets the task runner when profiling on the main thread. This occurs in a
+  // separate call from CreateAndStartOnMainThread so that startup profiling can
+  // occur prior to message loop start.
+  void SetMainThreadTaskRunnerImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Posts a delayed task to start the next periodic sampling collection.
   void ScheduleNextPeriodicCollection();

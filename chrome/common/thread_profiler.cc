@@ -16,6 +16,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/common/stack_sampling_configuration.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
@@ -28,6 +29,11 @@ using CallStackProfileParams = metrics::CallStackProfileParams;
 using StackSamplingProfiler = base::StackSamplingProfiler;
 
 namespace {
+
+// Pointer to the main thread instance, if any. Stored as a global because it's
+// created very early in chrome/app - and is thus otherwise inaccessible from
+// chrome_dll, by the time we need to register the main thread task runner.
+ThreadProfiler* g_main_thread_instance = nullptr;
 
 // Run continuous profiling 2% of the time.
 constexpr const double kFractionOfExecutionTimeToSample = 0.02;
@@ -130,26 +136,35 @@ class ThreadProfiler::WorkIdRecorder : public metrics::WorkIdRecorder {
   base::WorkIdProvider* const work_id_provider_;
 };
 
-ThreadProfiler::~ThreadProfiler() = default;
+ThreadProfiler::~ThreadProfiler() {
+  if (g_main_thread_instance == this)
+    g_main_thread_instance = nullptr;
+}
 
 // static
 std::unique_ptr<ThreadProfiler> ThreadProfiler::CreateAndStartOnMainThread() {
-  return std::unique_ptr<ThreadProfiler>(
+  // If running in single process mode, there may be multiple "main thread"
+  // profilers created. In this case, we assume the first created one is the
+  // browser one.
+  bool is_single_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSingleProcess);
+  DCHECK(!g_main_thread_instance || is_single_process);
+  auto instance = std::unique_ptr<ThreadProfiler>(
       new ThreadProfiler(CallStackProfileParams::MAIN_THREAD));
+  if (!g_main_thread_instance)
+    g_main_thread_instance = instance.get();
+  return instance;
 }
 
+// static
 void ThreadProfiler::SetMainThreadTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
-    return;
-
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // This should only be called if the task runner wasn't provided in the
-  // constructor.
-  DCHECK(!owning_thread_task_runner_);
-  owning_thread_task_runner_ = task_runner;
-  ScheduleNextPeriodicCollection();
+#if !defined(OS_ANDROID)
+  // TODO(asvitkine): The code path where we create the profiler instance in
+  // chrome_main.cc does not run on Android.
+  DCHECK(g_main_thread_instance);
+  g_main_thread_instance->SetMainThreadTaskRunnerImpl(task_runner);
+#endif
 }
 
 void ThreadProfiler::SetAuxUnwinderFactory(
@@ -257,6 +272,20 @@ void ThreadProfiler::OnPeriodicCollectionCompleted(
   owning_thread_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&ThreadProfiler::ScheduleNextPeriodicCollection,
                                 thread_profiler));
+}
+
+void ThreadProfiler::SetMainThreadTaskRunnerImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
+    return;
+
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // This should only be called if the task runner wasn't provided in the
+  // constructor.
+  DCHECK(!owning_thread_task_runner_);
+  owning_thread_task_runner_ = task_runner;
+  ScheduleNextPeriodicCollection();
 }
 
 void ThreadProfiler::ScheduleNextPeriodicCollection() {

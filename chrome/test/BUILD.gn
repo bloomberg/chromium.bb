@@ -5023,6 +5023,7 @@ if (!is_android) {
       "//content/public/browser",
     ]
     deps = [
+      "//chrome/common/profiler",
       "//components/metrics:test_support",
       "//components/nacl/common:buildflags",
       "//components/os_crypt:test_support",
