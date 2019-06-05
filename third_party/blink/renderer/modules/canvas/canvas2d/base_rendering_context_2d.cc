@@ -1215,8 +1215,6 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   DisableDeferralReason reason = kDisableDeferralReasonUnknown;
   if (ShouldDisableDeferral(image_source, &reason))
     DisableDeferral(reason);
-  else if (image->IsTextureBacked())
-    DisableDeferral(kDisableDeferralDrawImageWithTextureBackedSourceImage);
 
   ValidateStateStack();
 
