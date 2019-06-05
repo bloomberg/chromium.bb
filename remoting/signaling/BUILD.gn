@@ -134,6 +134,7 @@ source_set("unit_tests") {
   sources = [
     "ftl_message_reception_channel_unittest.cc",
     "ftl_messaging_client_unittest.cc",
+    "ftl_registration_manager_unittest.cc",
     "ftl_signal_strategy_unittest.cc",
     "iq_sender_unittest.cc",
     "jid_util_unittest.cc",
