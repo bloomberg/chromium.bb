@@ -445,7 +445,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   bool was_cached_ = false;
   bool connection_reused_ = false;
-  bool is_null_;
+  bool is_null_ = false;
   mutable bool have_parsed_age_header_ = false;
   mutable bool have_parsed_date_header_ = false;
   mutable bool have_parsed_expires_header_ = false;
