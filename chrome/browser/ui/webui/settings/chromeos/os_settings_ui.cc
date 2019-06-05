@@ -23,15 +23,12 @@
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
-#include "chrome/browser/ui/webui/settings/font_handler.h"
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/protocol_handlers_handler.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
-#include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_cookies_view_handler.h"
-#include "chrome/browser/ui/webui/settings/settings_import_data_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/settings_media_devices_selection_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
@@ -77,8 +74,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::DownloadsHandler>(profile));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::ExtensionControlHandler>());
-  AddSettingsPageUIHandler(std::make_unique<::settings::FontHandler>(web_ui));
-  AddSettingsPageUIHandler(std::make_unique<::settings::ImportDataHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<::settings::LanguagesHandler>(web_ui));
   AddSettingsPageUIHandler(
@@ -89,8 +84,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::ProfileInfoHandler>(profile));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::ProtocolHandlersHandler>());
-  AddSettingsPageUIHandler(
-      std::make_unique<::settings::SearchEnginesHandler>(profile));
 
   bool password_protection_available = false;
 #if defined(FULL_SAFE_BROWSING)
