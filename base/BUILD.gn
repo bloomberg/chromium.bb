@@ -2216,6 +2216,7 @@ test("base_perftests") {
     "strings/string_util_perftest.cc",
     "task/sequence_manager/sequence_manager_perftest.cc",
     "task/thread_pool/thread_pool_perftest.cc",
+    "threading/thread_local_storage_perftest.cc",
 
     # "test/run_all_unittests.cc",
     "json/json_perftest.cc",
