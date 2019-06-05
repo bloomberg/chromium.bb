@@ -233,12 +233,8 @@ bool StructTraits<network::mojom::DataElementDataView, network::DataElement>::
       !data.ReadExpectedModificationTime(&out->expected_modification_time_)) {
     return false;
   }
-  // TODO(Richard): Fix this workaround once |buf_| becomes vector<uint8_t>
   if (data.type() == network::mojom::DataElementType::kBytes) {
-    out->buf_.resize(data.length());
-    auto buf = base::make_span(reinterpret_cast<uint8_t*>(out->buf_.data()),
-                               out->buf_.size());
-    if (!data.ReadBuf(&buf))
+    if (!data.ReadBuf(&out->buf_))
       return false;
   }
   out->type_ = data.type();

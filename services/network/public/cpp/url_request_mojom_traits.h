@@ -266,14 +266,12 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::DataElement& element) {
     return element.type_;
   }
-  static base::span<const uint8_t> buf(const network::DataElement& element) {
+  static std::vector<uint8_t> buf(const network::DataElement& element) {
     if (element.bytes_) {
-      return base::make_span(reinterpret_cast<const uint8_t*>(element.bytes_),
-                             element.length_);
+      return std::vector<uint8_t>(element.bytes_,
+                                  element.bytes_ + element.length_);
     }
-    return base::make_span(
-        reinterpret_cast<const uint8_t*>(element.buf_.data()),
-        element.buf_.size());
+    return std::move(element.buf_);
   }
   static const base::FilePath& path(const network::DataElement& element) {
     return element.path_;

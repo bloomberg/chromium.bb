@@ -265,6 +265,19 @@ inline std::vector<char> SharedBuffer::CopyAs() const {
   return buffer;
 }
 
+template <>
+inline std::vector<uint8_t> SharedBuffer::CopyAs() const {
+  std::vector<uint8_t> buffer;
+  buffer.reserve(size_);
+
+  for (const auto& span : *this) {
+    buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(span.data()),
+                  reinterpret_cast<const uint8_t*>(span.data() + span.size()));
+  }
+  DCHECK_EQ(buffer.size(), size_);
+  return buffer;
+}
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SHARED_BUFFER_H_
