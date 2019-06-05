@@ -277,7 +277,7 @@ void ThrottlingNetworkInterceptor::RemoveRecord(
     const ThrottleCallback& callback) {
   records->erase(std::remove_if(records->begin(), records->end(),
                                 [&callback](const ThrottleRecord& record) {
-                                  return record.callback.Equals(callback);
+                                  return record.callback == callback;
                                 }),
                  records->end());
 }
