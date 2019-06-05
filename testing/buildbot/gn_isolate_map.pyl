@@ -2243,7 +2243,7 @@
       "--output-format=csv",
       "--browser=release",
     ],
-    "label": "//testing:rendering_representative_perf_tests",
+    "label": "//chrome/test:rendering_representative_perf_tests",
     "script": "//testing/scripts/run_rendering_benchmark_with_gated_performance.py",
     "type": "script",
   },

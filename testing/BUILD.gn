@@ -27,25 +27,6 @@ group("test_scripts_shared") {
   ]
 }
 
-if (is_mac || is_win) {
-  group("rendering_representative_perf_tests") {
-    testonly = true
-    deps = [
-      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-    ]
-    data = [
-      "//build/android/pylib",
-      "//chrome/test/data/perf",
-      "//components/variations/service/generate_ui_string_overrider.py",
-      "//testing/scripts",
-      "//testing/test_env.py",
-      "//testing/xvfb.py",
-      "//third_party/catapult",
-      "//tools",
-    ]
-  }
-}
-
 group("run_perf_test") {
   data = [
     "//testing/scripts/common.py",
