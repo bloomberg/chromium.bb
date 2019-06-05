@@ -28,6 +28,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/static_html_view_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -49,6 +50,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::test::ios::kWaitForUIElementTimeout;
 
 namespace {
 const char kContentToRemove[] = "Text that distillation should remove.";
@@ -396,6 +399,38 @@ void OpenPageSecurityInfoBubble() {
       tapToolsMenuButton:grey_accessibilityID(kToolsMenuSiteInformation)];
 }
 
+// Waits for a static html view containing |text|. If the condition is not met
+// within a timeout, a GREYAssert is induced.
+void WaitForStaticHtmlViewContainingText(NSString* text) {
+  bool has_static_view =
+      base::test::ios::WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+        return chrome_test_util::StaticHtmlViewContainingText(
+            chrome_test_util::GetCurrentWebState(),
+            base::SysNSStringToUTF8(text));
+      });
+
+  NSString* error_description = [NSString
+      stringWithFormat:@"Failed to find static html view containing %@", text];
+  GREYAssert(has_static_view, error_description);
+}
+
+// Waits for there to be no static html view, or a static html view that does
+// not contain |text|. If the condition is not met within a timeout, a
+// GREYAssert is induced.
+void WaitForStaticHtmlViewNotContainingText(NSString* text) {
+  bool no_static_view =
+      base::test::ios::WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+        return !chrome_test_util::StaticHtmlViewContainingText(
+            chrome_test_util::GetCurrentWebState(),
+            base::SysNSStringToUTF8(text));
+      });
+
+  NSString* error_description = [NSString
+      stringWithFormat:@"Failed, there was a static html view containing %@",
+                       text];
+  GREYAssert(no_static_view, error_description);
+}
+
 void AssertIsShowingDistillablePageNoNativeContent(
     bool online,
     const GURL& distillable_url) {
@@ -445,8 +480,7 @@ void AssertIsShowingDistillablePageNativeContent(bool online,
                    }),
                @"Waiting for online page.");
   } else {
-    CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForStaticHTMLViewContainingText:contentToKeep]);
+    WaitForStaticHtmlViewContainingText(contentToKeep);
   }
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
@@ -457,13 +491,11 @@ void AssertIsShowingDistillablePageNativeContent(bool online,
   if (online) {
     CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
         waitForWebStateContainingText:base::SysNSStringToUTF8(contentToKeep)]);
-    CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForStaticHTMLViewNotContainingText:contentToKeep]);
+    WaitForStaticHtmlViewNotContainingText(contentToKeep);
   } else {
     CHROME_EG_ASSERT_NO_ERROR(
         [ChromeEarlGrey waitForWebStateNotContainingText:kContentToKeep]);
-    CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForStaticHTMLViewContainingText:contentToKeep]);
+    WaitForStaticHtmlViewContainingText(contentToKeep);
   }
 
   // Test the presence of the omnibox offline chip.

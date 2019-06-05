@@ -372,21 +372,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // them into the main class declaration as they are converted.
 @interface ChromeEarlGreyImpl (EG1)
 
-#pragma mark - Navigation Utilities
-
-// Waits for a static html view containing |text|. If the condition is not met
-// within a timeout, a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text;
-
-// Waits for there to be no static html view, or a static html view that does
-// not contain |text|. If the condition is not met within a timeout, a
-// GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text;
-
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_

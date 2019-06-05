@@ -23,7 +23,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"                   // nogncheck
 #import "ios/chrome/test/app/history_test_util.h"                  // nogncheck
 #include "ios/chrome/test/app/navigation_test_util.h"              // nogncheck
-#import "ios/chrome/test/app/static_html_view_test_util.h"         // nogncheck
 #import "ios/chrome/test/app/sync_test_util.h"                     // nogncheck
 #import "ios/chrome/test/app/tab_test_util.h"                      // nogncheck
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"    // nogncheck
@@ -597,35 +596,6 @@ id ExecuteJavaScript(NSString* javascript,
 }  // namespace chrome_test_util
 
 @implementation ChromeEarlGreyImpl (EG1)
-
-#pragma mark - Navigation Utilities
-
-- (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text {
-  bool hasStaticView = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-    return chrome_test_util::StaticHtmlViewContainingText(
-        chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
-  });
-
-  NSString* errorDescription = [NSString
-      stringWithFormat:@"Failed to find static html view containing %@", text];
-  EG_TEST_HELPER_ASSERT_TRUE(hasStaticView, errorDescription);
-
-  return nil;
-}
-
-- (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text {
-  bool noStaticView = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-    return !chrome_test_util::StaticHtmlViewContainingText(
-        chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
-  });
-
-  NSString* errorDescription = [NSString
-      stringWithFormat:@"Failed, there was a static html view containing %@",
-                       text];
-  EG_TEST_HELPER_ASSERT_TRUE(noStaticView, errorDescription);
-
-  return nil;
-}
 
 @end
 
