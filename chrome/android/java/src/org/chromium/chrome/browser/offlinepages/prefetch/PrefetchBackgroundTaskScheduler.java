@@ -20,7 +20,7 @@ import org.chromium.components.background_task_scheduler.TaskInfo;
 @JNINamespace("offline_pages::prefetch")
 public class PrefetchBackgroundTaskScheduler {
     public static final long DEFAULT_START_DELAY_SECONDS = 15 * 60;
-    public static final long LIMITLESS_START_DELAY_SECONDS = 5;
+    public static final long LIMITLESS_START_DELAY_SECONDS = 20;
 
     /**
      * Schedules the default 'NWake' task for the prefetching service. This task will normally be
