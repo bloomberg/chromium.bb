@@ -86,6 +86,14 @@ ChromeDataUseMeasurement* ChromeDataUseMeasurement::GetInstance() {
   return g_chrome_data_use_measurement;
 }
 
+// static
+void ChromeDataUseMeasurement::DeleteInstance() {
+  if (g_chrome_data_use_measurement) {
+    delete g_chrome_data_use_measurement;
+    g_chrome_data_use_measurement = nullptr;
+  }
+}
+
 ChromeDataUseMeasurement::ChromeDataUseMeasurement(
     std::unique_ptr<URLRequestClassifier> url_request_classifier,
     DataUseAscriber* ascriber,

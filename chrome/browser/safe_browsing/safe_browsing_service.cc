@@ -136,14 +136,9 @@ void SafeBrowsingService::Initialize() {
   bool result = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(result);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    url_request_context_getter_ = new SafeBrowsingURLRequestContextGetter(
-        g_browser_process->system_request_context(), user_data_dir);
-  }
-
   network_context_ =
       std::make_unique<safe_browsing::SafeBrowsingNetworkContext>(
-          url_request_context_getter_, user_data_dir,
+          nullptr, user_data_dir,
           base::BindRepeating(&SafeBrowsingService::CreateNetworkContextParams,
                               base::Unretained(this)));
 
@@ -186,30 +181,8 @@ void SafeBrowsingService::ShutDown() {
 
   services_delegate_->ShutdownServices();
 
-  // Make sure to destruct SafeBrowsingNetworkContext first before
-  // |url_request_context_getter_|, as they both post tasks to the IO thread. We
-  // want the underlying NetworkContext C++ class to be torn down first so that
-  // it destroys any URLLoaders in flight.
   network_context_->ServiceShuttingDown();
   proxy_config_monitor_.reset();
-
-  if (!url_request_context_getter_)
-    return;
-
-  // Since URLRequestContextGetters are refcounted, can't count on clearing
-  // |url_request_context_getter_| to delete it, so need to shut it down first,
-  // which will cancel any requests that are currently using it, and prevent
-  // new requests from using it as well.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO, NonNestable()},
-      base::BindOnce(&SafeBrowsingURLRequestContextGetter::ServiceShuttingDown,
-                     url_request_context_getter_));
-
-  // Release the URLRequestContextGetter after passing it to the IOThread.  It
-  // has to be released now rather than in the destructor because it can only
-  // be deleted on the IOThread, and the SafeBrowsingService outlives the IO
-  // thread.
-  url_request_context_getter_ = nullptr;
 }
 
 scoped_refptr<net::URLRequestContextGetter>
@@ -515,7 +488,7 @@ void SafeBrowsingService::CreateTriggerManager() {
 
 network::mojom::NetworkContextParamsPtr
 SafeBrowsingService::CreateNetworkContextParams() {
-  auto params = g_browser_process->system_network_context_manager()
+  auto params = SystemNetworkContextManager::GetInstance()
                     ->CreateDefaultNetworkContextParams();
   if (!proxy_config_monitor_) {
     proxy_config_monitor_ =

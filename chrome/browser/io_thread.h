@@ -40,25 +40,12 @@ namespace data_use_measurement {
 class ChromeDataUseAscriber;
 }
 
-namespace extensions {
-class EventRouterForwarder;
-}
-
 namespace net {
-class CertNetFetcherImpl;
-class CertVerifier;
-class HostResolver;
 class NetworkQualityEstimator;
-class URLRequestContext;
-class URLRequestContextGetter;
 }  // namespace net
 
 namespace net_log {
 class ChromeNetLog;
-}
-
-namespace network {
-class URLRequestContextBuilderMojo;
 }
 
 namespace policy {
@@ -74,15 +61,6 @@ class PolicyService;
 class IOThread : public content::BrowserThreadDelegate {
  public:
   struct Globals {
-    class SystemRequestContextLeakChecker {
-     public:
-      explicit SystemRequestContextLeakChecker(Globals* globals);
-      ~SystemRequestContextLeakChecker();
-
-     private:
-      Globals* const globals_;
-    };
-
     Globals();
     ~Globals();
 
@@ -99,53 +77,28 @@ class IOThread : public content::BrowserThreadDelegate {
     // need to create an in-process one.
     std::unique_ptr<net::NetworkQualityEstimator>
         deprecated_network_quality_estimator;
-
-    // HostResolver only for use in dummy in-process
-    // URLRequestContext when network service is enabled.
-    std::unique_ptr<net::HostResolver> deprecated_host_resolver;
-
-    // When the network service is disabled, this holds on to a
-    // content::NetworkContext class that owns |system_request_context|.
-    std::unique_ptr<network::mojom::NetworkContext> system_network_context;
-    net::URLRequestContext* system_request_context;
-    // When the network service is disabled, this holds the CertNetFetcher used
-    // by the |system_request_context|'s CertVerifier. May be nullptr if
-    // CertNetFetcher is not used by the current platform.
-    scoped_refptr<net::CertNetFetcherImpl> cert_net_fetcher;
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    scoped_refptr<extensions::EventRouterForwarder>
-        extension_event_router_forwarder;
-#endif
   };
 
   // |net_log| must either outlive the IOThread or be NULL.
   IOThread(PrefService* local_state,
            policy::PolicyService* policy_service,
            net_log::ChromeNetLog* net_log,
-           extensions::EventRouterForwarder* extension_event_router_forwarder,
            SystemNetworkContextManager* system_network_context_manager);
 
   ~IOThread() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
 
   // Can only be called on the IO thread.
   Globals* globals();
 
   net_log::ChromeNetLog* net_log();
 
-  // Returns a getter for the URLRequestContext.  Only called on the UI thread.
-  net::URLRequestContextGetter* system_url_request_context_getter();
-
   // Dynamically disables QUIC for all NetworkContexts using the IOThread's
   // NetworkService. Re-enabling Quic dynamically is not supported for
   // simplicity and requires a browser restart. May only be called on the IO
   // thread.
   void DisableQuic();
-
-  // Configures |builder|'s ProxyResolutionService based on prefs and policies.
-  void SetUpProxyService(network::URLRequestContextBuilderMojo* builder) const;
 
  private:
   // BrowserThreadDelegate implementation, runs on the IO thread.
@@ -154,24 +107,11 @@ class IOThread : public content::BrowserThreadDelegate {
   void Init() override;
   void CleanUp() override;
 
-  extensions::EventRouterForwarder* extension_event_router_forwarder() {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    return extension_event_router_forwarder_;
-#else
-    return NULL;
-#endif
-  }
   void ConstructSystemRequestContext();
 
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.
   net_log::ChromeNetLog* net_log_;
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // The extensions::EventRouterForwarder allows for sending events to
-  // extensions from the IOThread.
-  extensions::EventRouterForwarder* extension_event_router_forwarder_;
-#endif
 
   // These member variables are basically global, but their lifetimes are tied
   // to the IOThread.  IOThread owns them all, despite not using scoped_ptr.
@@ -187,9 +127,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // the IO thread.
   network::mojom::NetworkContextRequest network_context_request_;
   network::mojom::NetworkContextParamsPtr network_context_params_;
-
-  scoped_refptr<net::URLRequestContextGetter>
-      system_url_request_context_getter_;
 
   bool stub_resolver_enabled_ = false;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>

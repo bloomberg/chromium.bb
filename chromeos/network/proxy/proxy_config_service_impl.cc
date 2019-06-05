@@ -73,11 +73,13 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(
   local_state_pref_registrar_.Add(::onc::prefs::kDeviceOpenNetworkConfiguration,
                                   proxy_change_callback);
 
-  // Register for changes to the default network.
-  NetworkStateHandler* state_handler =
-      NetworkHandler::Get()->network_state_handler();
-  state_handler->AddObserver(this, FROM_HERE);
-  DefaultNetworkChanged(state_handler->DefaultNetwork());
+  if (NetworkHandler::IsInitialized()) {  // null in unit tests.
+    // Register for changes to the default network.
+    NetworkStateHandler* state_handler =
+        NetworkHandler::Get()->network_state_handler();
+    state_handler->AddObserver(this, FROM_HERE);
+    DefaultNetworkChanged(state_handler->DefaultNetwork());
+  }
 }
 
 ProxyConfigServiceImpl::~ProxyConfigServiceImpl() {
