@@ -59,15 +59,6 @@
 #include "ui/base/ui_base_features.h"
 #endif
 
-// TODO(crbug.com/961075): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
-#define MAYBE_SetSelectionIndices_NestedButtons \
-  DISABLED_SetSelectionIndices_NestedButtons
-#else
-#define MAYBE_SetSelectionIndices_NestedButtons \
-  SetSelectionIndices_NestedButtons
-#endif
-
 namespace views {
 namespace test {
 
@@ -2265,13 +2256,7 @@ TEST_F(MenuControllerTest, SetSelectionIndices_Buttons_SkipHiddenAndDisabled) {
   EXPECT_EQ(5, data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
 }
 
-TEST_F(MenuControllerTest, MAYBE_SetSelectionIndices_NestedButtons) {
-  class DummyButtonListener : public ButtonListener {
-   public:
-    ~DummyButtonListener() override = default;
-    void ButtonPressed(Button* sender, const ui::Event& event) override {}
-  };
-
+TEST_F(MenuControllerTest, SetSelectionIndices_NestedButtons) {
   MenuItemView* const item1 = menu_item()->GetSubmenu()->GetMenuItemAt(0);
   MenuItemView* const item2 = menu_item()->GetSubmenu()->GetMenuItemAt(1);
   MenuItemView* const item3 = menu_item()->GetSubmenu()->GetMenuItemAt(2);
@@ -2286,13 +2271,11 @@ TEST_F(MenuControllerTest, MAYBE_SetSelectionIndices_NestedButtons) {
   container_view->AddChildView(new Label());
 
   // Add two focusable buttons (buttons in menus are always focusable).
-  Button* const button1 =
-      new LabelButton(new DummyButtonListener(), base::string16());
+  Button* const button1 = new LabelButton(nullptr, base::string16());
   button1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   button1->GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
   container_view->AddChildView(button1);
-  Button* const button2 =
-      new LabelButton(new DummyButtonListener(), base::string16());
+  Button* const button2 = new LabelButton(nullptr, base::string16());
   button2->GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
   button2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   container_view->AddChildView(button2);
