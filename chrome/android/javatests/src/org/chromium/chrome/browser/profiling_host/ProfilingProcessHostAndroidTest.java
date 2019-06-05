@@ -49,6 +49,7 @@ public class ProfilingProcessHostAndroidTest {
                 shim.runTestForMode("browser", false, "native-include-thread-names", false, false));
     }
 
+    @DisabledTest(message = "https://crbug.com/970205")
     @Test
     @MediumTest
     public void testModeBrowserDynamicNonStreaming() throws Exception {
@@ -56,6 +57,7 @@ public class ProfilingProcessHostAndroidTest {
         Assert.assertTrue(shim.runTestForMode("browser", true, "native", false, false));
     }
 
+    @DisabledTest(message = "https://crbug.com/970205")
     @Test
     @MediumTest
     public void testModeBrowserDynamicPseudoNonStreaming() throws Exception {
@@ -78,6 +80,7 @@ public class ProfilingProcessHostAndroidTest {
         Assert.assertTrue(shim.runTestForMode("all-renderers", false, "pseudo", false, false));
     }
 
+    @DisabledTest(message = "https://crbug.com/970205")
     @Test
     @MediumTest
     @CommandLineFlags.Add({"memlog=gpu", "memlog-stack-mode=pseudo", "memlog-sampling-rate=1"})
@@ -86,6 +89,7 @@ public class ProfilingProcessHostAndroidTest {
         Assert.assertTrue(shim.runTestForMode("gpu", false, "native", false, false));
     }
 
+    @DisabledTest(message = "https://crbug.com/970205")
     @Test
     @MediumTest
     public void testModeBrowserDynamicPseudoSamplePartial() throws Exception {
