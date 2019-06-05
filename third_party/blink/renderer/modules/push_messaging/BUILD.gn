@@ -6,8 +6,6 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("push_messaging") {
   sources = [
-    "push_controller.cc",
-    "push_controller.h",
     "push_error.cc",
     "push_error.h",
     "push_event.cc",
