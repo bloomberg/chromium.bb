@@ -1531,8 +1531,12 @@ RenderProcessHostImpl::RenderProcessHostImpl(
                        storage_partition_impl_->GetPath()));
   }
 
+  // This instance of PushMessagingManager is only used from clients bound to
+  // service workers (i.e. PushProvider), since frame-bound clients will rely on
+  // DocumentInterfaceBroker instead. Therefore, pass an invalid frame ID here.
   push_messaging_manager_.reset(new PushMessagingManager(
-      GetID(), storage_partition_impl_->GetServiceWorkerContext()));
+      GetID(), /* render_frame_id= */ ChildProcessHost::kInvalidUniqueID,
+      storage_partition_impl_->GetServiceWorkerContext()));
 
   AddObserver(indexed_db_factory_.get());
 #if defined(OS_MACOSX)

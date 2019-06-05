@@ -144,6 +144,7 @@ class NavigationRequest;
 class PermissionServiceContext;
 class PrefetchedSignedExchangeCache;
 class PresentationServiceImpl;
+class PushMessagingManager;
 class RenderFrameHostDelegate;
 class RenderFrameHostImpl;
 class RenderFrameProxyHost;
@@ -1390,6 +1391,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetCredentialManager(
       blink::mojom::CredentialManagerRequest request) override;
   void GetAuthenticator(blink::mojom::AuthenticatorRequest request) override;
+  void GetPushMessaging(blink::mojom::PushMessagingRequest request) override;
   void GetVirtualAuthenticatorManager(
       blink::test::mojom::VirtualAuthenticatorManagerRequest request) override;
   void RegisterAppCacheHost(blink::mojom::AppCacheHostRequest host_request,
@@ -1950,6 +1952,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Hosts blink::mojom::FileSystemManager for the RenderFrame.
   std::unique_ptr<FileSystemManagerImpl, BrowserThread::DeleteOnIOThread>
       file_system_manager_;
+
+  // Hosts blink::mojom::PushMessaging for the RenderFrame.
+  std::unique_ptr<PushMessagingManager, BrowserThread::DeleteOnIOThread>
+      push_messaging_manager_;
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;

@@ -84,6 +84,7 @@
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/portal/portal.h"
 #include "content/browser/presentation/presentation_service_impl.h"
+#include "content/browser/push_messaging/push_messaging_manager.h"
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/input_router.h"
@@ -6008,6 +6009,21 @@ void RenderFrameHostImpl::GetCredentialManager(
     blink::mojom::CredentialManagerRequest request) {
   GetContentClient()->browser()->BindCredentialManagerRequest(
       this, std::move(request));
+}
+
+void RenderFrameHostImpl::GetPushMessaging(
+    blink::mojom::PushMessagingRequest request) {
+  if (!push_messaging_manager_) {
+    push_messaging_manager_.reset(new PushMessagingManager(
+        GetProcess()->GetID(), routing_id_,
+        static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
+            ->GetServiceWorkerContext()));
+  }
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&PushMessagingManager::BindRequest,
+                     push_messaging_manager_->AsWeakPtr(), std::move(request)));
 }
 
 void RenderFrameHostImpl::GetVirtualAuthenticatorManager(

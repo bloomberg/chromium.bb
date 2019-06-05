@@ -130,22 +130,21 @@ std::string FixSenderInfo(const std::string& application_server_key,
   return std::string();
 }
 
+bool IsRequestFromDocument(int render_frame_id) {
+  return render_frame_id != ChildProcessHost::kInvalidUniqueID;
+}
+
 }  // namespace
 
 struct PushMessagingManager::RegisterData {
   RegisterData();
   RegisterData(RegisterData&& other) = default;
 
-  bool FromDocument() const;
-
   GURL requesting_origin;
   int64_t service_worker_registration_id;
   base::Optional<std::string> existing_subscription_id;
   blink::WebPushSubscriptionOptions options;
   SubscribeCallback callback;
-
-  // The following member should only be read if FromDocument() is true.
-  int render_frame_id;
 
   // True if the call to register was made with a user gesture.
   bool user_gesture;
@@ -155,7 +154,8 @@ struct PushMessagingManager::RegisterData {
 class PushMessagingManager::Core {
  public:
   Core(const base::WeakPtr<PushMessagingManager>& io_parent,
-       int render_process_id);
+       int render_process_id,
+       int render_frame_id);
 
   // Public Register methods on UI thread --------------------------------------
 
@@ -236,6 +236,7 @@ class PushMessagingManager::Core {
   base::WeakPtr<PushMessagingManager> io_parent_;
 
   int render_process_id_;
+  int render_frame_id_;
 
   bool is_incognito_;
 
@@ -245,18 +246,15 @@ class PushMessagingManager::Core {
 };
 
 PushMessagingManager::RegisterData::RegisterData()
-    : service_worker_registration_id(0),
-      render_frame_id(ChildProcessHost::kInvalidUniqueID) {}
-
-bool PushMessagingManager::RegisterData::FromDocument() const {
-  return render_frame_id != ChildProcessHost::kInvalidUniqueID;
-}
+    : service_worker_registration_id(0) {}
 
 PushMessagingManager::Core::Core(
     const base::WeakPtr<PushMessagingManager>& io_parent,
-    int render_process_id)
+    int render_process_id,
+    int render_frame_id)
     : io_parent_(io_parent),
       render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id),
       weak_factory_ui_to_ui_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* process_host =
@@ -268,16 +266,18 @@ PushMessagingManager::Core::~Core() {}
 
 PushMessagingManager::PushMessagingManager(
     int render_process_id,
+    int render_frame_id,
     ServiceWorkerContextWrapper* service_worker_context)
     : service_worker_context_(service_worker_context),
-      weak_factory_io_to_io_(this) {
+      render_frame_id_(render_frame_id),
+      weak_factory_(this) {
   // Although this class is used only on the IO thread, it is constructed on UI.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Normally, it would be unsafe to obtain a weak pointer from the UI thread,
   // but it's ok in the constructor since we can't be destroyed before our
   // constructor finishes.
-  ui_core_.reset(
-      new Core(weak_factory_io_to_io_.GetWeakPtr(), render_process_id));
+  ui_core_.reset(new Core(weak_factory_.GetWeakPtr(), render_process_id,
+                          render_frame_id_));
   ui_core_weak_ptr_ = ui_core_->GetWeakPtrFromIOParentConstructor();
 
   PushMessagingService* service = ui_core_->service();
@@ -311,9 +311,6 @@ void PushMessagingManager::Subscribe(
   // TODO(mvanouwerkerk): Validate arguments?
   RegisterData data;
 
-  // Will be ChildProcessHost::kInvalidUniqueID in requests from Service Worker.
-  data.render_frame_id = render_frame_id;
-
   data.service_worker_registration_id = service_worker_registration_id;
   data.callback = std::move(callback);
   data.options = options;
@@ -331,14 +328,15 @@ void PushMessagingManager::Subscribe(
   }
   data.requesting_origin = service_worker_registration->scope().GetOrigin();
 
-  DCHECK(!(data.options.application_server_key.empty() && data.FromDocument()));
+  DCHECK(!(data.options.application_server_key.empty() &&
+           IsRequestFromDocument(render_frame_id_)));
 
   int64_t registration_id = data.service_worker_registration_id;
   service_worker_context_->GetRegistrationUserData(
       registration_id,
       {kPushRegistrationIdServiceWorkerKey, kPushSenderIdServiceWorkerKey},
       base::BindOnce(&PushMessagingManager::DidCheckForExistingRegistration,
-                     weak_factory_io_to_io_.GetWeakPtr(), std::move(data)));
+                     weak_factory_.GetWeakPtr(), std::move(data)));
 }
 
 void PushMessagingManager::DidCheckForExistingRegistration(
@@ -389,7 +387,7 @@ void PushMessagingManager::DidCheckForExistingRegistration(
     service_worker_context_->GetRegistrationUserData(
         registration_id, {kPushSenderIdServiceWorkerKey},
         base::BindOnce(&PushMessagingManager::DidGetSenderIdFromStorage,
-                       weak_factory_io_to_io_.GetWeakPtr(), std::move(data)));
+                       weak_factory_.GetWeakPtr(), std::move(data)));
   }
 }
 
@@ -437,7 +435,8 @@ void PushMessagingManager::Core::RegisterOnUI(
     } else {
       // Prevent websites from detecting incognito mode, by emulating what would
       // have happened if we had a PushMessagingService available.
-      if (!data.FromDocument() || !data.options.user_visible_only) {
+      if (!IsRequestFromDocument(render_frame_id_) ||
+          !data.options.user_visible_only) {
         // Throw a permission denied error under the same circumstances.
         base::PostTaskWithTraits(
             FROM_HERE, {BrowserThread::IO},
@@ -447,7 +446,7 @@ void PushMessagingManager::Core::RegisterOnUI(
                                INCOGNITO_PERMISSION_DENIED));
       } else {
         RenderFrameHost* render_frame_host =
-            RenderFrameHost::FromID(render_process_id_, data.render_frame_id);
+            RenderFrameHost::FromID(render_process_id_, render_frame_id_);
         WebContents* web_contents =
             WebContents::FromRenderFrameHost(render_frame_host);
         if (web_contents) {
@@ -477,11 +476,10 @@ void PushMessagingManager::Core::RegisterOnUI(
   int64_t registration_id = data.service_worker_registration_id;
   GURL requesting_origin = data.requesting_origin;
   blink::WebPushSubscriptionOptions options = data.options;
-  int render_frame_id = data.render_frame_id;
-  if (data.FromDocument()) {
+  if (IsRequestFromDocument(render_frame_id_)) {
     push_service->SubscribeFromDocument(
-        requesting_origin, registration_id, render_process_id_, render_frame_id,
-        options, data.user_gesture,
+        requesting_origin, registration_id, render_process_id_,
+        render_frame_id_, options, data.user_gesture,
         base::Bind(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
                    base::Passed(&data)));
   } else {
@@ -557,7 +555,7 @@ void PushMessagingManager::PersistRegistrationOnIO(
       {{kPushRegistrationIdServiceWorkerKey, push_subscription_id},
        {kPushSenderIdServiceWorkerKey, application_server_key}},
       base::BindOnce(&PushMessagingManager::DidPersistRegistrationOnIO,
-                     weak_factory_io_to_io_.GetWeakPtr(), std::move(data),
+                     weak_factory_.GetWeakPtr(), std::move(data),
                      push_subscription_id, p256dh, auth, status));
 }
 
@@ -634,7 +632,7 @@ void PushMessagingManager::Unsubscribe(int64_t service_worker_registration_id,
   service_worker_context_->GetRegistrationUserData(
       service_worker_registration_id, {kPushSenderIdServiceWorkerKey},
       base::BindOnce(&PushMessagingManager::UnsubscribeHavingGottenSenderId,
-                     weak_factory_io_to_io_.GetWeakPtr(), std::move(callback),
+                     weak_factory_.GetWeakPtr(), std::move(callback),
                      service_worker_registration_id,
                      service_worker_registration->scope().GetOrigin()));
 }
@@ -745,7 +743,7 @@ void PushMessagingManager::GetSubscription(
       service_worker_registration_id,
       {kPushRegistrationIdServiceWorkerKey, kPushSenderIdServiceWorkerKey},
       base::BindOnce(&PushMessagingManager::DidGetSubscription,
-                     weak_factory_io_to_io_.GetWeakPtr(), std::move(callback),
+                     weak_factory_.GetWeakPtr(), std::move(callback),
                      service_worker_registration_id));
 }
 

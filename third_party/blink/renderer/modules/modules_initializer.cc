@@ -66,7 +66,7 @@
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_controller.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_messaging_client.h"
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
@@ -175,7 +175,8 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(&frame);
   WebLocalFrameClient* client = web_frame->Client();
   DCHECK(client);
-  ProvidePushControllerTo(frame, client->PushClient());
+  ProvidePushMessagingClientTo(
+      frame, MakeGarbageCollected<PushMessagingClient>(frame));
   ProvideUserMediaTo(
       frame, std::make_unique<UserMediaClient>(client->UserMediaClient()));
   ProvideIndexedDBClientTo(frame, MakeGarbageCollected<IndexedDBClient>(frame));

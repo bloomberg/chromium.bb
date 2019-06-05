@@ -40,9 +40,14 @@ extern const char kPushRegistrationIdServiceWorkerKey[];
 class PushMessagingManager : public blink::mojom::PushMessaging {
  public:
   PushMessagingManager(int render_process_id,
+                       int render_frame_id,
                        ServiceWorkerContextWrapper* service_worker_context);
 
   void BindRequest(blink::mojom::PushMessagingRequest request);
+
+  base::WeakPtr<PushMessagingManager> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
 
   // blink::mojom::PushMessaging impl, run on IO thread.
   void Subscribe(int32_t render_frame_id,
@@ -137,12 +142,15 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   // Whether the PushMessagingService was available when constructed.
   bool service_available_;
 
+  // Will be ChildProcessHost::kInvalidUniqueID in requests from Service Worker.
+  int render_frame_id_;
+
   GURL default_endpoint_;
   GURL web_push_protocol_endpoint_;
 
   mojo::BindingSet<blink::mojom::PushMessaging> bindings_;
 
-  base::WeakPtrFactory<PushMessagingManager> weak_factory_io_to_io_;
+  base::WeakPtrFactory<PushMessagingManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingManager);
 };

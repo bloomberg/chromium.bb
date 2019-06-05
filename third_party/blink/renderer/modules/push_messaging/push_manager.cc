@@ -8,7 +8,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -16,9 +15,9 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_controller.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_bridge.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_messaging_client.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_provider.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_callbacks.h"
@@ -82,7 +81,11 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
                             DOMExceptionCode::kInvalidStateError,
                             "Document is detached from window."));
     }
-    PushController::ClientFrom(frame).Subscribe(
+
+    PushMessagingClient* messaging_client = PushMessagingClient::From(frame);
+    DCHECK(messaging_client);
+
+    messaging_client->Subscribe(
         registration_->RegistrationId(), web_options,
         LocalFrame::HasTransientUserActivation(frame,
                                                true /* check_if_main_thread */),
