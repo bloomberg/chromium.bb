@@ -51,6 +51,8 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
@@ -1054,6 +1056,14 @@ void LaunchURL(
     prerender::ReportPrerenderExternalURL();
     return;
   }
+
+  // Do not launch external requests for schemes that have a handler registered.
+  ProtocolHandlerRegistry* protocol_handler_registry =
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+  if (protocol_handler_registry &&
+      protocol_handler_registry->IsHandledProtocol(url.scheme()))
+    return;
 
   bool is_whitelisted = false;
   PolicyBlacklistService* service =
