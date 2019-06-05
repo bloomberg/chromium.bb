@@ -589,6 +589,9 @@ class TestLauncher::TestInfo {
   // Returns test name with PRE_ prefix added, excluding DISABLE_ prefix.
   std::string GetPreName() const;
 
+  // Returns test name excluding DISABLED_ and PRE_ prefixes.
+  std::string GetPrefixStrippedName() const;
+
   const std::string& test_case_name() const { return test_case_name_; }
   const std::string& test_name() const { return test_name_; }
   const std::string& file() const { return file_; }
@@ -636,6 +639,12 @@ std::string TestLauncher::TestInfo::GetPreName() const {
   return FormatFullTestName(case_name, kPreTestPrefix + name);
 }
 
+std::string TestLauncher::TestInfo::GetPrefixStrippedName() const {
+  std::string test_name = GetDisabledStrippedName();
+  ReplaceSubstringsAfterOffset(&test_name, 0, kPreTestPrefix, std::string());
+  return test_name;
+}
+
 TestLauncherDelegate::~TestLauncherDelegate() = default;
 
 TestLauncher::LaunchOptions::LaunchOptions() = default;
@@ -656,8 +665,6 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       test_broken_count_(0),
       retry_limit_(0),
       force_run_broken_tests_(false),
-      shuffle_(false),
-      shuffle_seed_(0),
       watchdog_timer_(FROM_HERE,
                       kOutputTimeout,
                       this,
@@ -796,7 +803,12 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
   if (result.status == TestResult::TEST_SUCCESS) {
     ++test_success_count_;
   } else {
-    tests_to_retry_.insert(result.full_name);
+    // Records prefix stripped name to run all dependent tests.
+    std::string test_name(result.full_name);
+    ReplaceSubstringsAfterOffset(&test_name, 0, kPreTestPrefix, std::string());
+    ReplaceSubstringsAfterOffset(&test_name, 0, kDisabledTestPrefix,
+                                 std::string());
+    tests_to_retry_.insert(test_name);
   }
 
   // There are no results for this tests,
@@ -998,38 +1010,6 @@ bool TestLauncher::Init(CommandLine* command_line) {
   force_run_broken_tests_ =
       command_line->HasSwitch(switches::kTestLauncherForceRunBrokenTests);
 
-  // Some of the TestLauncherDelegate implementations don't call into gtest
-  // until they've already split into test-specific processes. This results
-  // in gtest's native shuffle implementation attempting to shuffle one test.
-  // Shuffling the list of tests in the test launcher (before the delegate
-  // gets involved) ensures that the entire shard is shuffled.
-  if (command_line->HasSwitch(kGTestShuffleFlag)) {
-    shuffle_ = true;
-
-    if (command_line->HasSwitch(kGTestRandomSeedFlag)) {
-      const std::string custom_seed_str =
-          command_line->GetSwitchValueASCII(kGTestRandomSeedFlag);
-      uint32_t custom_seed = 0;
-      if (!StringToUint(custom_seed_str, &custom_seed)) {
-        LOG(ERROR) << "Unable to parse seed \"" << custom_seed_str << "\".";
-        return false;
-      }
-      if (custom_seed >= kRandomSeedUpperBound) {
-        LOG(ERROR) << "Seed " << custom_seed << " outside of expected range "
-                   << "[0, " << kRandomSeedUpperBound << ")";
-        return false;
-      }
-      shuffle_seed_ = custom_seed;
-    } else {
-      std::uniform_int_distribution<uint32_t> dist(0, kRandomSeedUpperBound);
-      std::random_device random_dev;
-      shuffle_seed_ = dist(random_dev);
-    }
-  } else if (command_line->HasSwitch(kGTestRandomSeedFlag)) {
-    LOG(ERROR) << kGTestRandomSeedFlag << " requires " << kGTestShuffleFlag;
-    return false;
-  }
-
   fprintf(stdout, "Using %zu parallel jobs.\n", parallel_jobs_);
   fflush(stdout);
 
@@ -1077,7 +1057,10 @@ bool TestLauncher::Init(CommandLine* command_line) {
   if (!InitTests())
     return false;
 
-  if (!ValidateTests())
+  if (!ShuffleTests(command_line))
+    return false;
+
+  if (!ReorderAndValidateTests())
     return false;
 
   if (command_line->HasSwitch(switches::kTestLauncherPrintTestStdio)) {
@@ -1207,19 +1190,56 @@ bool TestLauncher::InitTests() {
   return true;
 }
 
-bool TestLauncher::ValidateTests() {
+bool TestLauncher::ShuffleTests(CommandLine* command_line) {
+  if (command_line->HasSwitch(kGTestShuffleFlag)) {
+    uint32_t shuffle_seed;
+    if (command_line->HasSwitch(kGTestRandomSeedFlag)) {
+      const std::string custom_seed_str =
+          command_line->GetSwitchValueASCII(kGTestRandomSeedFlag);
+      uint32_t custom_seed = 0;
+      if (!StringToUint(custom_seed_str, &custom_seed)) {
+        LOG(ERROR) << "Unable to parse seed \"" << custom_seed_str << "\".";
+        return false;
+      }
+      if (custom_seed >= kRandomSeedUpperBound) {
+        LOG(ERROR) << "Seed " << custom_seed << " outside of expected range "
+                   << "[0, " << kRandomSeedUpperBound << ")";
+        return false;
+      }
+      shuffle_seed = custom_seed;
+    } else {
+      std::uniform_int_distribution<uint32_t> dist(0, kRandomSeedUpperBound);
+      std::random_device random_dev;
+      shuffle_seed = dist(random_dev);
+    }
+
+    std::mt19937 randomizer;
+    randomizer.seed(shuffle_seed);
+    std::shuffle(tests_.begin(), tests_.end(), randomizer);
+
+    fprintf(stdout, "Randomizing with seed %u\n", shuffle_seed);
+    fflush(stdout);
+  } else if (command_line->HasSwitch(kGTestRandomSeedFlag)) {
+    LOG(ERROR) << kGTestRandomSeedFlag << " requires " << kGTestShuffleFlag;
+    return false;
+  }
+  return true;
+}
+
+bool TestLauncher::ReorderAndValidateTests() {
   bool result = true;
   std::unordered_set<std::string> disabled_tests;
-  std::unordered_set<std::string> pre_tests;
+  std::unordered_map<std::string, TestInfo> pre_tests;
 
   // Find disabled and pre tests
   for (const TestInfo& test_info : tests_) {
     if (test_info.disabled())
       disabled_tests.insert(test_info.GetDisabledStrippedName());
     if (test_info.pre_test())
-      pre_tests.insert(test_info.GetDisabledStrippedName());
+      pre_tests[test_info.GetDisabledStrippedName()] = test_info;
   }
 
+  std::vector<TestInfo> tests_to_run;
   for (const TestInfo& test_info : tests_) {
     // If any test has a matching disabled test, fail and log for audit.
     if (base::ContainsKey(disabled_tests, test_info.GetFullName())) {
@@ -1227,13 +1247,26 @@ bool TestLauncher::ValidateTests() {
                  << " duplicated by a DISABLED_ test";
       result = false;
     }
-    // Remove pre tests that have a matching subsequent test.
-    pre_tests.erase(test_info.GetPreName());
-  }
 
-  // If any tests remain in pre_tests set, fail and log for audit.
-  for (const std::string& pre_test : pre_tests) {
-    LOG(ERROR) << pre_test << " is an orphaned pre test";
+    // Passes on PRE tests, those will append when final test is found.
+    if (test_info.pre_test())
+      continue;
+
+    std::vector<TestInfo> test_sequence;
+    test_sequence.push_back(test_info);
+    // Move Pre Tests prior to final test in order.
+    while (base::ContainsKey(pre_tests, test_sequence.back().GetPreName())) {
+      test_sequence.push_back(pre_tests[test_sequence.back().GetPreName()]);
+      pre_tests.erase(test_sequence.back().GetDisabledStrippedName());
+    }
+    tests_to_run.insert(tests_to_run.end(), test_sequence.rbegin(),
+                        test_sequence.rend());
+  }
+  tests_ = std::move(tests_to_run);
+
+  // If any tests remain in |pre_tests| map, fail and log for audit.
+  for (const auto& i : pre_tests) {
+    LOG(ERROR) << i.first << " is an orphaned pre test";
     result = false;
   }
   return result;
@@ -1296,14 +1329,14 @@ void TestLauncher::RunTests() {
     // Count tests in the binary, before we apply filter and sharding.
     test_found_count++;
 
-    std::string test_name_no_disabled = test_info.GetDisabledStrippedName();
+    std::string prefix_stripped_name = test_info.GetPrefixStrippedName();
 
     // Skip the test that doesn't match the filter (if given).
     if (has_at_least_one_positive_filter_) {
       bool found = false;
       for (auto filter : positive_test_filter_) {
         if (MatchPattern(test_name, filter) ||
-            MatchPattern(test_name_no_disabled, filter)) {
+            MatchPattern(prefix_stripped_name, filter)) {
           found = true;
           break;
         }
@@ -1316,7 +1349,7 @@ void TestLauncher::RunTests() {
       bool excluded = false;
       for (auto filter : negative_test_filter_) {
         if (MatchPattern(test_name, filter) ||
-            MatchPattern(test_name_no_disabled, filter)) {
+            MatchPattern(prefix_stripped_name, filter)) {
           excluded = true;
           break;
         }
@@ -1328,14 +1361,7 @@ void TestLauncher::RunTests() {
 
     // Tests with the name XYZ will cause tests with the name PRE_XYZ to run. We
     // should bucket all of these tests together.
-    std::string test_name_to_bucket = test_name;
-    size_t index_of_first_period = test_name_to_bucket.find(".");
-    if (index_of_first_period == std::string::npos)
-      index_of_first_period = 0;
-    base::ReplaceSubstringsAfterOffset(
-        &test_name_to_bucket, index_of_first_period, "PRE_", std::string());
-
-    if (Hash(test_name_to_bucket) % total_shards_ !=
+    if (Hash(prefix_stripped_name) % total_shards_ !=
         static_cast<uint32_t>(shard_index_)) {
       continue;
     }
@@ -1344,25 +1370,13 @@ void TestLauncher::RunTests() {
     // locations only for those tests that were run as part of this shard.
     results_tracker_.AddTestLocation(test_name, test_info.file(),
                                      test_info.line());
-
-    bool should_run_test = launcher_delegate_->ShouldRunTest(
-        test_info.test_case_name(), test_info.test_name());
-    if (should_run_test) {
+    if (!test_info.pre_test()) {
       // Only a subset of tests that are run require placeholders -- namely,
       // those that will output results.
       results_tracker_.AddTestPlaceholder(test_name);
-
-      test_names.push_back(test_name);
     }
-  }
 
-  if (shuffle_) {
-    std::mt19937 randomizer;
-    randomizer.seed(shuffle_seed_);
-    std::shuffle(test_names.begin(), test_names.end(), randomizer);
-
-    fprintf(stdout, "Randomizing with seed %u\n", shuffle_seed_);
-    fflush(stdout);
+    test_names.push_back(test_name);
   }
 
   // Save an early test summary in case the launcher crashes or gets killed.
@@ -1381,8 +1395,12 @@ bool TestLauncher::RunRetryTests() {
   // Number of retries in this iteration.
   size_t retry_count = 0;
   while (!tests_to_retry_.empty() && retry_count < retry_limit_) {
-    std::vector<std::string> test_names(tests_to_retry_.begin(),
-                                        tests_to_retry_.end());
+    // Retry all tests that depend on a failing test.
+    std::vector<std::string> test_names;
+    for (const TestInfo& test_info : tests_) {
+      if (base::ContainsKey(tests_to_retry_, test_info.GetPrefixStrippedName()))
+        test_names.push_back(test_info.GetFullName());
+    }
     tests_to_retry_.clear();
 
     size_t retry_started_count =

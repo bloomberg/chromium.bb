@@ -34,9 +34,6 @@ class MockTestLauncherDelegate : public TestLauncherDelegate {
   MOCK_METHOD2(WillRunTest,
                bool(const std::string& test_case_name,
                     const std::string& test_name));
-  MOCK_METHOD2(ShouldRunTest,
-               bool(const std::string& test_case_name,
-                    const std::string& test_name));
   MOCK_METHOD2(RunTests,
                size_t(TestLauncher* test_launcher,
                       const std::vector<std::string>& test_names));
@@ -76,8 +73,6 @@ class TestLauncherTest : public testing::Test {
         .WillOnce(::testing::DoAll(testing::SetArgPointee<0>(tests_),
                                    testing::Return(true)));
     EXPECT_CALL(delegate, WillRunTest(_, _))
-        .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(delegate, ShouldRunTest(_, _))
         .WillRepeatedly(testing::Return(true));
   }
 
@@ -148,6 +143,20 @@ TEST_F(TestLauncherTest, FilterDisabledTestByDefault) {
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
+// Test TestLauncher should reorder PRE_ tests before delegate
+TEST_F(TestLauncherTest, ReorderPreTests) {
+  AddMockedTests("Test", {"firstTest", "PRE_PRE_firstTest", "PRE_firstTest"});
+  SetUpExpectCalls();
+  using ::testing::_;
+  std::vector<std::string> tests_names = {
+      "Test.PRE_PRE_firstTest", "Test.PRE_firstTest", "Test.firstTest"};
+  EXPECT_CALL(delegate,
+              RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                    tests_names.cend())))
+      .WillOnce(testing::Return(0));
+  EXPECT_TRUE(test_launcher.Run(command_line.get()));
+}
+
 // Test TestLauncher "gtest_filter" switch.
 TEST_F(TestLauncherTest, UsingCommandLineFilter) {
   AddMockedTests("Test",
@@ -162,6 +171,21 @@ TEST_F(TestLauncherTest, UsingCommandLineFilter) {
       .WillOnce(::testing::DoAll(
           OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
           testing::Return(1)));
+  EXPECT_TRUE(test_launcher.Run(command_line.get()));
+}
+
+// Test TestLauncher gtest filter will include pre tests
+TEST_F(TestLauncherTest, FilterIncludePreTest) {
+  AddMockedTests("Test", {"firstTest", "secondTest", "PRE_firstTest"});
+  SetUpExpectCalls();
+  command_line->AppendSwitchASCII("gtest_filter", "Test.firstTest");
+  using ::testing::_;
+  std::vector<std::string> tests_names = {"Test.PRE_firstTest",
+                                          "Test.firstTest"};
+  EXPECT_CALL(delegate,
+              RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                    tests_names.cend())))
+      .WillOnce(testing::Return(0));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -219,6 +243,30 @@ TEST_F(TestLauncherTest, FailOnRetryTests) {
           OnTestResult("Test.firstTest", TestResult::TEST_FAILURE),
           testing::Return(1)));
   EXPECT_FALSE(test_launcher.Run(command_line.get()));
+}
+
+// Test TestLauncher should retry all PRE_ chained tests
+TEST_F(TestLauncherTest, RetryPreTests) {
+  AddMockedTests("Test", {"firstTest", "PRE_PRE_firstTest", "PRE_firstTest"});
+  SetUpExpectCalls();
+  using ::testing::_;
+  EXPECT_CALL(delegate, RunTests(_, _))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.PRE_PRE_firstTest", TestResult::TEST_SUCCESS),
+          OnTestResult("Test.PRE_firstTest", TestResult::TEST_FAILURE),
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(3)));
+  std::vector<std::string> tests_names = {
+      "Test.PRE_PRE_firstTest", "Test.PRE_firstTest", "Test.firstTest"};
+  EXPECT_CALL(delegate,
+              RetryTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                      tests_names.cend())))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.PRE_PRE_firstTest", TestResult::TEST_SUCCESS),
+          OnTestResult("Test.PRE_firstTest", TestResult::TEST_SUCCESS),
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(3)));
+  EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
 // Test TestLauncher run disabled unit tests switch.

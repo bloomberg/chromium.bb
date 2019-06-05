@@ -676,14 +676,6 @@ bool UnitTestLauncherDelegate::WillRunTest(const std::string& test_case_name,
   return true;
 }
 
-bool UnitTestLauncherDelegate::ShouldRunTest(const std::string& test_case_name,
-                                             const std::string& test_name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // There is no additional logic to disable specific tests.
-  return true;
-}
-
 size_t UnitTestLauncherDelegate::RunTests(
     TestLauncher* test_launcher,
     const std::vector<std::string>& test_names) {

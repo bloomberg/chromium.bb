@@ -57,17 +57,13 @@ class TestLauncherDelegate {
   virtual bool WillRunTest(const std::string& test_case_name,
                            const std::string& test_name) = 0;
 
-  // Called before a test is considered for running. This method must return
-  // true if the TestLauncher is expected to run the test, provided it is part
-  // of the current shard.
-  virtual bool ShouldRunTest(const std::string& test_case_name,
-                             const std::string& test_name) = 0;
-
   // Called to make the delegate run the specified tests. The delegate must
   // return the number of actual tests it's going to run (can be smaller,
   // equal to, or larger than size of |test_names|). It must also call
   // |test_launcher|'s OnTestFinished method once per every run test,
   // regardless of its success.
+  // If test_names contains PRE_ chained tests, they must be properly ordered
+  // and consecutive.
   virtual size_t RunTests(TestLauncher* test_launcher,
                           const std::vector<std::string>& test_names) = 0;
 
@@ -178,10 +174,18 @@ class TestLauncher {
   // Returns false if delegate fails to return tests.
   bool InitTests();
 
+  // Some of the TestLauncherDelegate implementations don't call into gtest
+  // until they've already split into test-specific processes. This results
+  // in gtest's native shuffle implementation attempting to shuffle one test.
+  // Shuffling the list of tests in the test launcher (before the delegate
+  // gets involved) ensures that the entire shard is shuffled.
+  bool ShuffleTests(CommandLine* command_line);
+
+  // Move all PRE_ tests prior to the final test in order.
   // Validate tests names. This includes no name conflict between tests
   // without DISABLED_ prefix, and orphaned PRE_ tests.
   // Returns false if any violation is found.
-  bool ValidateTests();
+  bool ReorderAndValidateTests();
 
   // Runs all tests in current iteration.
   void RunTests();
@@ -263,11 +267,7 @@ class TestLauncher {
   bool force_run_broken_tests_;
 
   // Tests to retry in this iteration.
-  std::set<std::string> tests_to_retry_;
-
-  // Support for test shuffling, just like gtest does.
-  bool shuffle_;
-  uint32_t shuffle_seed_;
+  std::unordered_set<std::string> tests_to_retry_;
 
   TestResultsTracker results_tracker_;
 

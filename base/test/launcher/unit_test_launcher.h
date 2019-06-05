@@ -136,8 +136,6 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
   bool GetTests(std::vector<TestIdentifier>* output) override;
   bool WillRunTest(const std::string& test_case_name,
                    const std::string& test_name) override;
-  bool ShouldRunTest(const std::string& test_case_name,
-                     const std::string& test_name) override;
   size_t RunTests(TestLauncher* test_launcher,
                   const std::vector<std::string>& test_names) override;
   size_t RetryTests(TestLauncher* test_launcher,
