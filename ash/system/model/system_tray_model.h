@@ -43,12 +43,12 @@ class SystemTrayModel : public SystemTray {
   void SetPerformanceTracingIconVisible(bool visible) override;
   void SetLocaleList(std::vector<mojom::LocaleInfoPtr> locale_list,
                      const std::string& current_locale_iso_code) override;
-  void ShowUpdateIcon(mojom::UpdateSeverity severity,
+  void ShowUpdateIcon(UpdateSeverity severity,
                       bool factory_reset_required,
                       bool rollback,
-                      mojom::UpdateType update_type) override;
+                      UpdateType update_type) override;
   void SetUpdateNotificationState(
-      mojom::NotificationStyle style,
+      NotificationStyle style,
       const base::string16& notification_title,
       const base::string16& notification_body) override;
   void SetUpdateOverCellularAvailableIconVisible(bool visible) override;

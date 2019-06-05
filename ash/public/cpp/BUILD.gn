@@ -159,6 +159,7 @@ component("cpp") {
     "tablet_mode_toggle_observer.h",
     "touch_uma.cc",
     "touch_uma.h",
+    "update_types.h",
     "voice_interaction_controller.cc",
     "voice_interaction_controller.h",
     "wallpaper_controller.cc",

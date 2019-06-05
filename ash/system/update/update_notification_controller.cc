@@ -49,7 +49,7 @@ void UpdateNotificationController::OnUpdateAvailable() {
 
   message_center::SystemNotificationWarningLevel warning_level =
       (model_->rollback() ||
-       model_->notification_style() == mojom::NotificationStyle::ADMIN_REQUIRED)
+       model_->notification_style() == NotificationStyle::kAdminRequired)
           ? message_center::SystemNotificationWarningLevel::WARNING
           : message_center::SystemNotificationWarningLevel::NORMAL;
   std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
@@ -68,7 +68,7 @@ void UpdateNotificationController::OnUpdateAvailable() {
       warning_level);
   notification->set_pinned(true);
 
-  if (model_->notification_style() == mojom::NotificationStyle::ADMIN_REQUIRED)
+  if (model_->notification_style() == NotificationStyle::kAdminRequired)
     notification->SetSystemPriority();
 
   if (model_->update_required()) {
@@ -102,7 +102,7 @@ base::string16 UpdateNotificationController::GetNotificationMessage() const {
   }
 
   const base::string16 notification_body = model_->notification_body();
-  if (model_->update_type() == mojom::UpdateType::SYSTEM &&
+  if (model_->update_type() == UpdateType::kSystem &&
       !notification_body.empty()) {
     return notification_body;
   }
@@ -113,7 +113,7 @@ base::string16 UpdateNotificationController::GetNotificationMessage() const {
 
 base::string16 UpdateNotificationController::GetNotificationTitle() const {
 #if defined(GOOGLE_CHROME_BUILD)
-  if (model_->update_type() == mojom::UpdateType::FLASH) {
+  if (model_->update_type() == UpdateType::kFlash) {
     return l10n_util::GetStringUTF16(
         IDS_UPDATE_NOTIFICATION_TITLE_FLASH_PLAYER);
   }

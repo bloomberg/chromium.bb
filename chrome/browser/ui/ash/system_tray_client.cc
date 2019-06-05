@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
 #include "ash/public/cpp/system_tray.h"
+#include "ash/public/cpp/update_types.h"
 #include "ash/public/interfaces/locale.mojom.h"
-#include "ash/public/interfaces/update.mojom.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -71,24 +71,24 @@ void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
 }
 
 // Returns the severity of a pending Chrome / Chrome OS update.
-ash::mojom::UpdateSeverity GetUpdateSeverity(UpgradeDetector* detector) {
+ash::UpdateSeverity GetUpdateSeverity(UpgradeDetector* detector) {
   switch (detector->upgrade_notification_stage()) {
     case UpgradeDetector::UPGRADE_ANNOYANCE_NONE:
-      return ash::mojom::UpdateSeverity::NONE;
+      return ash::UpdateSeverity::kNone;
     case UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW:
-      return ash::mojom::UpdateSeverity::VERY_LOW;
+      return ash::UpdateSeverity::kVeryLow;
     case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
-      return ash::mojom::UpdateSeverity::LOW;
+      return ash::UpdateSeverity::kLow;
     case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
-      return ash::mojom::UpdateSeverity::ELEVATED;
+      return ash::UpdateSeverity::kElevated;
     case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
-      return ash::mojom::UpdateSeverity::HIGH;
+      return ash::UpdateSeverity::kHigh;
     case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
       break;
   }
   DCHECK_EQ(detector->upgrade_notification_stage(),
             UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL);
-  return ash::mojom::UpdateSeverity::CRITICAL;
+  return ash::UpdateSeverity::kCritical;
 }
 
 const chromeos::NetworkState* GetNetworkState(const std::string& network_id) {
@@ -109,7 +109,7 @@ bool IsArcVpn(const std::string& network_id) {
 
 SystemTrayClient::SystemTrayClient()
     : system_tray_(ash::SystemTray::Get()),
-      update_notification_style_(ash::mojom::NotificationStyle::DEFAULT) {
+      update_notification_style_(ash::NotificationStyle::kDefault) {
   // If this observes clock setting changes before ash comes up the IPCs will
   // be queued on |system_tray_|.
   g_browser_process->platform_part()->GetSystemClock()->AddObserver(this);
@@ -162,7 +162,7 @@ void SystemTrayClient::SetFlashUpdateAvailable() {
 }
 
 void SystemTrayClient::SetUpdateNotificationState(
-    ash::mojom::NotificationStyle style,
+    ash::NotificationStyle style,
     const base::string16& notification_title,
     const base::string16& notification_body) {
   update_notification_style_ = style;
@@ -428,23 +428,23 @@ void SystemTrayClient::HandleUpdateAvailable() {
     return;
 
   // Get the Chrome update severity.
-  ash::mojom::UpdateSeverity severity = GetUpdateSeverity(detector);
+  ash::UpdateSeverity severity = GetUpdateSeverity(detector);
 
   // Flash updates are low severity unless the Chrome severity is higher.
   if (flash_update_available_)
-    severity = std::max(severity, ash::mojom::UpdateSeverity::LOW);
+    severity = std::max(severity, ash::UpdateSeverity::kLow);
 
   // Show a string specific to updating flash player if there is no system
   // update.
-  ash::mojom::UpdateType update_type = detector->notify_upgrade()
-                                           ? ash::mojom::UpdateType::SYSTEM
-                                           : ash::mojom::UpdateType::FLASH;
+  ash::UpdateType update_type = detector->notify_upgrade()
+                                    ? ash::UpdateType::kSystem
+                                    : ash::UpdateType::kFlash;
 
   system_tray_->ShowUpdateIcon(severity, detector->is_factory_reset_required(),
                                detector->is_rollback(), update_type);
 
   // Only overwrite title and body for system updates, not for flash updates.
-  if (update_type == ash::mojom::UpdateType::SYSTEM) {
+  if (update_type == ash::UpdateType::kSystem) {
     system_tray_->SetUpdateNotificationState(update_notification_style_,
                                              update_notification_title_,
                                              update_notification_body_);

@@ -9,12 +9,14 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/interfaces/locale.mojom-forward.h"
-#include "ash/public/interfaces/update.mojom-forward.h"
 #include "base/strings/string16.h"
 
 namespace ash {
 
 class SystemTrayClient;
+enum class NotificationStyle;
+enum class UpdateSeverity;
+enum class UpdateType;
 
 // Public interface to control the system tray bubble in ash.
 class ASH_PUBLIC_EXPORT SystemTray {
@@ -63,10 +65,10 @@ class ASH_PUBLIC_EXPORT SystemTray {
   //
   // These values are used to control the icon, color and the text of the
   // tooltip or the notification.
-  virtual void ShowUpdateIcon(mojom::UpdateSeverity severity,
+  virtual void ShowUpdateIcon(UpdateSeverity severity,
                               bool factory_reset_required,
                               bool rollback,
-                              mojom::UpdateType update_type) = 0;
+                              UpdateType update_type) = 0;
 
   // Sets new strings for update notification in the unified system menu,
   // according to different policies, when there is an update available
@@ -80,7 +82,7 @@ class ASH_PUBLIC_EXPORT SystemTray {
   // the default.
   // |notification_body| the new notification body which overwrites the default.
   virtual void SetUpdateNotificationState(
-      mojom::NotificationStyle style,
+      NotificationStyle style,
       const base::string16& notification_title,
       const base::string16& notification_body) = 0;
 
