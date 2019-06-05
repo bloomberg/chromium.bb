@@ -16,7 +16,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/third_party/quiche/src/quic/core/quic_constants.h"
 
-namespace openscreen {
+namespace media_router {
 namespace {
 
 // Set a reasonable maximum number of packets in flight, for a total of
@@ -165,4 +165,4 @@ void NetworkServiceQuicPacketWriter::WritePacketHelper(
   UpdateIsWriteBlocked();
 }
 
-}  // namespace openscreen
+}  // namespace media_router

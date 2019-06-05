@@ -3832,10 +3832,6 @@ test("unit_tests") {
       "../renderer/media/chrome_webrtc_log_message_delegate_unittest.cc",
     ]
 
-    if (enable_openscreen) {
-      sources += [ "../browser/media/router/providers/openscreen/network_service_quic_packet_writer_unittest.cc" ]
-    }
-
     deps += [
       "//components/bubble:test_support",
       "//services/network:test_support",
@@ -4942,6 +4938,15 @@ test("unit_tests") {
   # Chrome desktop updater tests.
   if (is_win || is_mac) {
     deps += [ "//chrome/updater:updater_tests" ]
+  }
+
+  if (enable_openscreen) {
+    include_dirs = [ "//third_party/openscreen/src" ]
+
+    sources += [
+      "../browser/media/router/providers/openscreen/discovery/open_screen_listener_unittest.cc",
+      "../browser/media/router/providers/openscreen/network_service_quic_packet_writer_unittest.cc",
+    ]
   }
 }
 

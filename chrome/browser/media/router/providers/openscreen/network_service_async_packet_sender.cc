@@ -11,7 +11,7 @@
 
 #include "mojo/public/cpp/bindings/interface_request.h"
 
-namespace openscreen {
+namespace media_router {
 NetworkServiceAsyncPacketSender::NetworkServiceAsyncPacketSender(
     network::mojom::NetworkContext* network_context) {
   network::mojom::UDPSocketRequest socket_request(mojo::MakeRequest(&socket_));
@@ -39,4 +39,4 @@ net::Error NetworkServiceAsyncPacketSender::SendTo(
   return net::Error::OK;
 }
 
-}  // namespace openscreen
+}  // namespace media_router

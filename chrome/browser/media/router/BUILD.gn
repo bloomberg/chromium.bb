@@ -142,6 +142,8 @@ static_library("router") {
 
     if (enable_openscreen) {
       sources += [
+        "providers/openscreen/discovery/open_screen_listener.cc",
+        "providers/openscreen/discovery/open_screen_listener.h",
         "providers/openscreen/network_service_async_packet_sender.cc",
         "providers/openscreen/network_service_async_packet_sender.h",
         "providers/openscreen/network_service_quic_packet_writer.cc",
@@ -152,7 +154,11 @@ static_library("router") {
       configs +=
           [ "//third_party/openscreen/src/build:allow_build_from_embedder" ]
 
-      deps += [ "//third_party/openscreen/src/platform" ]
+      deps += [
+        "//third_party/openscreen/src/osp/public",
+        "//third_party/openscreen/src/osp_base",
+        "//third_party/openscreen/src/platform",
+      ]
     }
   }
 }
