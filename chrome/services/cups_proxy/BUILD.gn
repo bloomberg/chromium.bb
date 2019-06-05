@@ -14,6 +14,8 @@ source_set("cups_proxy") {
     "cups_proxy_service.h",
     "cups_proxy_service_delegate.cc",
     "cups_proxy_service_delegate.h",
+    "socket_manager.cc",
+    "socket_manager.h",
   ]
 
   deps = [
@@ -55,16 +57,23 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
 
-  if (use_cups) {
-    sources = [
-      "printer_installer_unittest.cc",
-    ]
+  sources = [
+    "socket_manager_unittest.cc",
+  ]
 
-    deps = [
-      ":cups_proxy",
-      ":test_support",
-      "//base",
-      "//testing/gtest",
-    ]
+  deps = [
+    ":cups_proxy",
+    ":test_support",
+    "//base",
+    "//chrome/services/cups_proxy/public/cpp",
+    "//testing/gtest",
+  ]
+
+  if (use_cups) {
+    sources += [ "printer_installer_unittest.cc" ]
   }
+
+  data = [
+    "//chrome/test/data/cups_proxy",
+  ]
 }
