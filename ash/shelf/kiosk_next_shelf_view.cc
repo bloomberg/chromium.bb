@@ -21,11 +21,11 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/insets_f.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
-#include "ui/views/controls/separator.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -121,9 +121,7 @@ void KioskNextShelfView::Init() {
   // TODO(agawronska): Separator and overflow button are not needed in Kiosk
   // Next shelf. They should be moved to DefaultShelfView subclass and the below
   // code should be removed.
-  DCHECK(separator());
   DCHECK(overflow_button());
-  separator()->SetVisible(false);
   overflow_button()->SetVisible(false);
 
   set_first_visible_index(0);

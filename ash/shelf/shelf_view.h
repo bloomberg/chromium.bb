@@ -44,7 +44,6 @@ class SimpleMenuModel;
 namespace views {
 class BoundsAnimator;
 class MenuRunner;
-class Separator;
 }  // namespace views
 
 namespace ash {
@@ -258,10 +257,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns whether |item| should belong in the pinned section of the shelf.
   bool IsItemPinned(const ShelfItem& item) const;
 
-  // Returns the index of the item after which the separator should be shown,
-  // or -1 if no separator is required.
-  int GetSeparatorIndex() const;
-
   // Update the layout when entering or exiting tablet mode. Have the owning
   // widget call this instead of observing changes ourselves to ensure this
   // happens after the tablet related changes in ShelfController.
@@ -337,37 +332,33 @@ class ASH_EXPORT ShelfView : public views::View,
   // Calculates the ideal bounds of shelf elements.
   // The bounds of each button corresponding to an item in the model is set in
   // |view_model_|.
-  virtual void CalculateIdealBounds();
+  virtual void CalculateIdealBounds() = 0;
 
   // Creates the view used to represent given shelf |item|.
   // Returns unowned pointer (view is owned by the view hierarchy).
-  // TODO(agawronska): This method could be pure virtual and implemented by
-  // succlasses, but creation of the overflow shelf has first be moved to
-  // DefaultShelfView.
-  virtual views::View* CreateViewForItem(const ShelfItem& item);
+  virtual views::View* CreateViewForItem(const ShelfItem& item) = 0;
 
   // Lays out control buttons background.
   // Child classes should implement this method if control buttons background
   // requires adjustment when shelf view layout changes.
   virtual void LayoutAppListAndBackButtonHighlight() {}
 
-  views::Separator* separator() { return separator_; }
+  // Updates the visible range of overflow items in |overflow_view|.
+  void UpdateOverflowRange(ShelfView* overflow_view) const;
 
   OverflowButton* overflow_button() { return overflow_button_; }
 
   void set_first_visible_index(int index) { first_visible_index_ = index; }
   void set_last_visible_index(int index) { last_visible_index_ = index; }
 
+  bool dragged_off_shelf() const { return dragged_off_shelf_; }
+  bool dragged_to_another_shelf() const { return dragged_to_another_shelf_; }
+
  private:
   friend class ShelfViewTestAPI;
 
   class FadeOutAnimationDelegate;
   class StartFadeAnimationDelegate;
-
-  struct AppCenteringStrategy {
-    bool center_on_screen = false;
-    bool overflow = false;
-  };
 
   enum RemovableState {
     REMOVABLE,      // Item can be removed when dragged away.
@@ -383,18 +374,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Sets the bounds of each view to its ideal bounds.
   void LayoutToIdealBounds();
 
-  // Update all button's visibility in overflow.
-  void UpdateAllButtonsVisibilityInOverflowMode();
-
-  // Returns the size that's actually available for app icons. Size occupied
-  // by the app list button and back button plus all appropriate margins is
-  // not available for app icons.
-  int GetAvailableSpaceForAppIcons() const;
-
-  // This method determines which centering strategy is adequate, returns that,
-  // and sets the |first_visible_index_| and |last_visible_index_| fields
-  // appropriately.
-  AppCenteringStrategy CalculateAppCenteringStrategy();
   void LayoutOverflowButton() const;
 
   // Returns the index of the last view whose max primary axis coordinate is
@@ -464,9 +443,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Fade in last visible item.
   void StartFadeInLastVisibleItem();
-
-  // Updates the visible range of overflow items in |overflow_view|.
-  void UpdateOverflowRange(ShelfView* overflow_view) const;
 
   // Gets the menu anchor rect for menus. |source| is the view that is
   // asking for a menu, |location| is the location of the event, |context_menu|
@@ -687,10 +663,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Tracks UMA metrics based on shelf button press actions.
   ShelfButtonPressedMetricTracker shelf_button_pressed_metric_tracker_;
-
-  // A reference to the view used as a separator between pinned and unpinned
-  // items.
-  views::Separator* separator_ = nullptr;
 
   // The union of all visible shelf item bounds. Used for showing tooltips in
   // a continuous manner.

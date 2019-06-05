@@ -11,11 +11,13 @@
 
 namespace views {
 class View;
+class Separator;
 }  // namespace views
 
 namespace ash {
 
 class Shelf;
+struct ShelfItem;
 class ShelfModel;
 class ShelfWidget;
 
@@ -30,9 +32,37 @@ class ASH_EXPORT DefaultShelfView : public ShelfView {
   // All ShelfView overrides are public to keep them together.
   // ShelfView:
   void Init() override;
+  void CalculateIdealBounds() override;
+  views::View* CreateViewForItem(const ShelfItem& item) override;
   void LayoutAppListAndBackButtonHighlight() override;
 
  private:
+  struct AppCenteringStrategy {
+    bool center_on_screen = false;
+    bool overflow = false;
+  };
+
+  // Returns the size that's actually available for app icons. Size occupied
+  // by the app list button and back button plus all appropriate margins is
+  // not available for app icons.
+  int GetAvailableSpaceForAppIcons() const;
+
+  // Returns the index of the item after which the separator should be shown,
+  // or -1 if no separator is required.
+  int GetSeparatorIndex() const;
+
+  // This method determines which centering strategy is adequate, returns that,
+  // and sets the |first_visible_index_| and |last_visible_index_| fields
+  // appropriately.
+  AppCenteringStrategy CalculateAppCenteringStrategy();
+
+  // Update all buttons' visibility in overflow.
+  void UpdateAllButtonsVisibilityInOverflowMode();
+
+  // A reference to the view used as a separator between pinned and unpinned
+  // items.
+  views::Separator* separator_ = nullptr;
+
   // A view to draw a background behind the app list and back buttons.
   // Owned by the view hierarchy.
   views::View* back_and_app_list_background_ = nullptr;
