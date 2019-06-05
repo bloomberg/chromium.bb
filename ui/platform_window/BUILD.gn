@@ -40,12 +40,7 @@ group("platform_impls") {
   public_deps = [
     "//ui/platform_window/stub",
   ]
-  if (is_android) {
-    public_deps += [
-      "//ui/platform_window/android",
-      "//ui/platform_window/android:jni_headers",
-    ]
-  } else if (use_x11) {
+  if (use_x11) {
     public_deps += [ "//ui/platform_window/x11" ]
   } else if (is_win) {
     public_deps += [ "//ui/platform_window/win" ]

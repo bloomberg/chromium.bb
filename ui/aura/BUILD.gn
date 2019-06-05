@@ -162,13 +162,6 @@ jumbo_component("aura") {
     public += [ "screen_ozone.h" ]
     sources += [ "screen_ozone.cc" ]
   }
-
-  if (is_android) {
-    deps += [
-      "//ui/platform_window/android",
-      "//ui/platform_window/android:platform_window_java",
-    ]
-  }
 }
 
 jumbo_static_library("test_support") {
