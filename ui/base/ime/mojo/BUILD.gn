@@ -11,9 +11,6 @@ mojom("mojo") {
 
   public_deps = [
     "//mojo/public/mojom/base",
-    "//ui/events/mojo:interfaces",
-    "//ui/gfx/geometry/mojo",
-    "//ui/gfx/range/mojo",
   ]
 }
 

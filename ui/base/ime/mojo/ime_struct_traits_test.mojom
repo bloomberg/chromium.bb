@@ -9,7 +9,5 @@ import "ui/base/ime/mojo/ime_types.mojom";
 interface IMEStructTraitsTest {
   [Sync]
   EchoTextInputType(TextInputType in) => (TextInputType out);
-  [Sync]
-  EchoTextInputMode(TextInputMode in) => (TextInputMode out);
 };
 

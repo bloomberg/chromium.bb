@@ -8,12 +8,9 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/mojo/ime_struct_traits_test.mojom.h"
-#include "ui/gfx/range/mojo/range_struct_traits.h"
 
 namespace ui {
 
@@ -33,10 +30,6 @@ class IMEStructTraitsTest : public testing::Test,
 
  private:
   // mojom::IMEStructTraitsTest:
-  void EchoTextInputMode(ui::TextInputMode in,
-                         EchoTextInputModeCallback callback) override {
-    std::move(callback).Run(in);
-  }
   void EchoTextInputType(ui::TextInputType in,
                          EchoTextInputTypeCallback callback) override {
     std::move(callback).Run(in);
@@ -49,23 +42,6 @@ class IMEStructTraitsTest : public testing::Test,
 };
 
 }  // namespace
-
-TEST_F(IMEStructTraitsTest, TextInputMode) {
-  const ui::TextInputMode kTextInputModes[] = {
-      ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_MODE_NONE,
-      ui::TEXT_INPUT_MODE_TEXT,    ui::TEXT_INPUT_MODE_TEL,
-      ui::TEXT_INPUT_MODE_URL,     ui::TEXT_INPUT_MODE_EMAIL,
-      ui::TEXT_INPUT_MODE_NUMERIC, ui::TEXT_INPUT_MODE_DECIMAL,
-      ui::TEXT_INPUT_MODE_SEARCH,
-  };
-
-  mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < base::size(kTextInputModes); i++) {
-    ui::TextInputMode mode_out;
-    ASSERT_TRUE(proxy->EchoTextInputMode(kTextInputModes[i], &mode_out));
-    EXPECT_EQ(kTextInputModes[i], mode_out);
-  }
-}
 
 TEST_F(IMEStructTraitsTest, TextInputType) {
   const ui::TextInputType kTextInputTypes[] = {
@@ -94,27 +70,6 @@ TEST_F(IMEStructTraitsTest, TextInputType) {
     ASSERT_TRUE(proxy->EchoTextInputType(kTextInputTypes[i], &type_out));
     EXPECT_EQ(kTextInputTypes[i], type_out);
   }
-}
-
-TEST_F(IMEStructTraitsTest, CompositionText) {
-  ui::CompositionText input;
-  input.text = base::UTF8ToUTF16("abcdefghij");
-  ui::ImeTextSpan ime_text_span_1(ui::ImeTextSpan::Type::kComposition, 0, 2,
-                                  ui::ImeTextSpan::Thickness::kThin);
-  ime_text_span_1.underline_color = SK_ColorGRAY;
-  input.ime_text_spans.push_back(ime_text_span_1);
-  ui::ImeTextSpan ime_text_span_2(ui::ImeTextSpan::Type::kComposition, 3, 6,
-                                  ui::ImeTextSpan::Thickness::kThick,
-                                  SK_ColorGREEN);
-  ime_text_span_2.underline_color = SK_ColorRED;
-  input.ime_text_spans.push_back(ime_text_span_2);
-  input.selection = gfx::Range(1, 7);
-
-  ui::CompositionText output;
-  EXPECT_TRUE(mojom::CompositionText::Deserialize(
-      mojom::CompositionText::Serialize(&input), &output));
-
-  EXPECT_EQ(input, output);
 }
 
 }  // namespace ui

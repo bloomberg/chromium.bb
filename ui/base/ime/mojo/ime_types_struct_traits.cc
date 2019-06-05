@@ -4,9 +4,6 @@
 
 #include "ui/base/ime/mojo/ime_types_struct_traits.h"
 
-#include "mojo/public/cpp/base/string16_mojom_traits.h"
-#include "ui/gfx/range/mojo/range_struct_traits.h"
-
 namespace mojo {
 
 #define UI_TO_MOJO_TYPE_CASE(name) \
@@ -75,70 +72,6 @@ bool EnumTraits<ui::mojom::TextInputType, ui::TextInputType>::FromMojom(
 }
 
 // static
-ui::mojom::TextInputMode
-EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::ToMojom(
-    ui::TextInputMode text_input_mode) {
-  switch (text_input_mode) {
-    case ui::TEXT_INPUT_MODE_DEFAULT:
-      return ui::mojom::TextInputMode::kDefault;
-    case ui::TEXT_INPUT_MODE_NONE:
-      return ui::mojom::TextInputMode::kNone;
-    case ui::TEXT_INPUT_MODE_TEXT:
-      return ui::mojom::TextInputMode::kText;
-    case ui::TEXT_INPUT_MODE_TEL:
-      return ui::mojom::TextInputMode::kTel;
-    case ui::TEXT_INPUT_MODE_URL:
-      return ui::mojom::TextInputMode::kUrl;
-    case ui::TEXT_INPUT_MODE_EMAIL:
-      return ui::mojom::TextInputMode::kEmail;
-    case ui::TEXT_INPUT_MODE_NUMERIC:
-      return ui::mojom::TextInputMode::kNumeric;
-    case ui::TEXT_INPUT_MODE_DECIMAL:
-      return ui::mojom::TextInputMode::kDecimal;
-    case ui::TEXT_INPUT_MODE_SEARCH:
-      return ui::mojom::TextInputMode::kSearch;
-  }
-  NOTREACHED();
-  return ui::mojom::TextInputMode::kDefault;
-}
-
-// static
-bool EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::FromMojom(
-    ui::mojom::TextInputMode input,
-    ui::TextInputMode* out) {
-  switch (input) {
-    case ui::mojom::TextInputMode::kDefault:
-      *out = ui::TEXT_INPUT_MODE_DEFAULT;
-      return true;
-    case ui::mojom::TextInputMode::kNone:
-      *out = ui::TEXT_INPUT_MODE_NONE;
-      return true;
-    case ui::mojom::TextInputMode::kText:
-      *out = ui::TEXT_INPUT_MODE_TEXT;
-      return true;
-    case ui::mojom::TextInputMode::kTel:
-      *out = ui::TEXT_INPUT_MODE_TEL;
-      return true;
-    case ui::mojom::TextInputMode::kUrl:
-      *out = ui::TEXT_INPUT_MODE_URL;
-      return true;
-    case ui::mojom::TextInputMode::kEmail:
-      *out = ui::TEXT_INPUT_MODE_EMAIL;
-      return true;
-    case ui::mojom::TextInputMode::kNumeric:
-      *out = ui::TEXT_INPUT_MODE_NUMERIC;
-      return true;
-    case ui::mojom::TextInputMode::kDecimal:
-      *out = ui::TEXT_INPUT_MODE_DECIMAL;
-      return true;
-    case ui::mojom::TextInputMode::kSearch:
-      *out = ui::TEXT_INPUT_MODE_SEARCH;
-      return true;
-  }
-  return false;
-}
-
-// static
 bool StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan>::Read(
     ui::mojom::ImeTextSpanDataView data,
     ui::ImeTextSpan* out) {
@@ -157,61 +90,6 @@ bool StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan>::Read(
   if (!data.ReadSuggestions(&out->suggestions))
     return false;
   return true;
-}
-
-// static
-bool StructTraits<ui::mojom::CompositionTextDataView, ui::CompositionText>::
-    Read(ui::mojom::CompositionTextDataView data, ui::CompositionText* out) {
-  return !data.is_null() && data.ReadText(&out->text) &&
-         data.ReadImeTextSpans(&out->ime_text_spans) &&
-         data.ReadSelection(&out->selection);
-}
-
-// static
-ui::mojom::FocusReason
-EnumTraits<ui::mojom::FocusReason, ui::TextInputClient::FocusReason>::ToMojom(
-    ui::TextInputClient::FocusReason input) {
-  switch (input) {
-    case ui::TextInputClient::FOCUS_REASON_NONE:
-      return ui::mojom::FocusReason::kNone;
-    case ui::TextInputClient::FOCUS_REASON_MOUSE:
-      return ui::mojom::FocusReason::kMouse;
-    case ui::TextInputClient::FOCUS_REASON_TOUCH:
-      return ui::mojom::FocusReason::kTouch;
-    case ui::TextInputClient::FOCUS_REASON_PEN:
-      return ui::mojom::FocusReason::kPen;
-    case ui::TextInputClient::FOCUS_REASON_OTHER:
-      return ui::mojom::FocusReason::kOther;
-  }
-
-  NOTREACHED();
-  return ui::mojom::FocusReason::kNone;
-}
-
-// static
-bool EnumTraits<ui::mojom::FocusReason, ui::TextInputClient::FocusReason>::
-    FromMojom(ui::mojom::FocusReason input,
-              ui::TextInputClient::FocusReason* out) {
-  switch (input) {
-    case ui::mojom::FocusReason::kNone:
-      *out = ui::TextInputClient::FOCUS_REASON_NONE;
-      return true;
-    case ui::mojom::FocusReason::kMouse:
-      *out = ui::TextInputClient::FOCUS_REASON_MOUSE;
-      return true;
-    case ui::mojom::FocusReason::kTouch:
-      *out = ui::TextInputClient::FOCUS_REASON_TOUCH;
-      return true;
-    case ui::mojom::FocusReason::kPen:
-      *out = ui::TextInputClient::FOCUS_REASON_PEN;
-      return true;
-    case ui::mojom::FocusReason::kOther:
-      *out = ui::TextInputClient::FOCUS_REASON_OTHER;
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 // static
