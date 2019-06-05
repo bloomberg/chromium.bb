@@ -43,6 +43,24 @@
 #include "device/bluetooth/test/bluetooth_test_fuchsia.h"
 #endif
 
+// TODO(crbug.com/969160): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_GetMergedDiscoveryFilterTransport \
+  DISABLED_GetMergedDiscoveryFilterTransport
+#define MAYBE_GetMergedDiscoveryFilterRegular \
+  DISABLED_GetMergedDiscoveryFilterRegular
+#define MAYBE_GetMergedDiscoveryFilterRssi DISABLED_GetMergedDiscoveryFilterRssi
+#define MAYBE_GetMergedDiscoveryFilterAllFields \
+  DISABLED_GetMergedDiscoveryFilterAllFields
+#else
+#define MAYBE_GetMergedDiscoveryFilterTransport \
+  GetMergedDiscoveryFilterTransport
+#define MAYBE_GetMergedDiscoveryFilterRegular GetMergedDiscoveryFilterRegular
+#define MAYBE_GetMergedDiscoveryFilterRssi GetMergedDiscoveryFilterRssi
+#define MAYBE_GetMergedDiscoveryFilterAllFields \
+  GetMergedDiscoveryFilterAllFields
+#endif
+
 using device::BluetoothDevice;
 
 namespace device {
@@ -262,7 +280,7 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterEmpty) {
   EXPECT_TRUE(discovery_filter.get() == nullptr);
 }
 
-TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterRegular) {
+TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRegular) {
   scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter;
 
@@ -281,7 +299,7 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterRegular) {
   adapter->CleanupSessions();
 }
 
-TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterRssi) {
+TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRssi) {
   scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
   int16_t resulting_rssi;
   uint16_t resulting_pathloss;
@@ -342,7 +360,7 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterRssi) {
   adapter->CleanupSessions();
 }
 
-TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterTransport) {
+TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterTransport) {
   scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
   std::unique_ptr<BluetoothDiscoveryFilter> resulting_filter;
 
@@ -387,7 +405,7 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterTransport) {
   adapter->CleanupSessions();
 }
 
-TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterAllFields) {
+TEST(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterAllFields) {
   scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
   int16_t resulting_rssi;
   std::set<device::BluetoothUUID> resulting_uuids;
