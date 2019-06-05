@@ -13,6 +13,13 @@ component("idle") {
 
   defines = [ "IS_UI_BASE_IDLE_IMPL" ]
 
+  # All targets in this file are allowed to access any of the headers.
+  friend = [ ":*" ]
+
+  public = [
+    "idle.h",
+  ]
+
   deps = [
     "//base",
     "//ui/base",
@@ -26,6 +33,8 @@ component("idle") {
     "idle.cc",
     "idle.h",
     "idle_chromeos.cc",
+    "idle_internal.cc",
+    "idle_internal.h",
     "idle_mac.mm",
     "idle_win.cc",
   ]
@@ -65,4 +74,18 @@ component("idle") {
       "Foundation.framework",
     ]
   }
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "scoped_set_idle_state.cc",
+    "scoped_set_idle_state.h",
+  ]
+
+  deps = [
+    ":idle",
+    "//base",
+  ]
 }
