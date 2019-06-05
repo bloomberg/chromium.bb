@@ -645,7 +645,7 @@ void GuestViewBase::ContentsZoomChange(bool zoom_in) {
 bool GuestViewBase::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  if (!attached())
+  if (!attached() || !embedder_web_contents()->GetDelegate())
     return false;
 
   // Send the keyboard events back to the embedder to reprocess them.
