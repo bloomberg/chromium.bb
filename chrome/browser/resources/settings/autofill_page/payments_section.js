@@ -63,12 +63,12 @@ PaymentsManager.CreditCardEntry;
 class PaymentsManagerImpl {
   /** @override */
   addCreditCardListChangedListener(listener) {
-    chrome.autofillPrivate.onPersonalDataChanged.addListener(listener);
+    chrome.autofillPrivate.onCreditCardListChanged.addListener(listener);
   }
 
   /** @override */
   removeCreditCardListChangedListener(listener) {
-    chrome.autofillPrivate.onPersonalDataChanged.removeListener(listener);
+    chrome.autofillPrivate.onCreditCardListChanged.removeListener(listener);
   }
 
   /** @override */
