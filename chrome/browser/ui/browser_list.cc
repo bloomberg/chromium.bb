@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -90,6 +91,16 @@ void BrowserList::AddBrowser(Browser* browser) {
 
   if (browser->window()->IsActive())
     SetLastActive(browser);
+
+  if (browser->profile()->IsGuestSession()) {
+    base::UmaHistogramCounts100(
+        "Browser.WindowCount.Guest",
+        GetIncognitoSessionsActiveForProfile(browser->profile()));
+  } else if (browser->profile()->IsIncognitoProfile()) {
+    base::UmaHistogramCounts100(
+        "Browser.WindowCount.Incognito",
+        GetIncognitoSessionsActiveForProfile(browser->profile()));
+  }
 }
 
 // static
