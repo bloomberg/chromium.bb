@@ -591,6 +591,12 @@ TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
   UpdateAllLifecyclePhases();
   EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
 
+  // Don't let dark color-scheme override a transparent background.
+  web_view->SetBaseBackgroundColor(SK_ColorTRANSPARENT);
+  EXPECT_EQ(Color::kTransparent, frame_view->BaseBackgroundColor());
+  web_view->SetBaseBackgroundColor(SK_ColorBLUE);
+  EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
+
   web_view->SettingsImpl()->SetPreferredColorScheme(
       PreferredColorScheme::kLight);
   UpdateAllLifecyclePhases();

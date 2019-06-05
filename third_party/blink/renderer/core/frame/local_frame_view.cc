@@ -1655,8 +1655,10 @@ bool LocalFrameView::HasOpaqueBackground() const {
 }
 
 Color LocalFrameView::BaseBackgroundColor() const {
-  if (use_dark_scheme_background_)
+  if (use_dark_scheme_background_ &&
+      base_background_color_ != Color::kTransparent) {
     return Color::kBlack;
+  }
   return base_background_color_;
 }
 
