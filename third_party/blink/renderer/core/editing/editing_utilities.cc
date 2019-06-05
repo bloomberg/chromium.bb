@@ -1313,28 +1313,30 @@ PositionWithAffinity PositionRespectingEditingBoundary(
     const Position& position,
     const LayoutPoint& local_point,
     Node* target_node) {
-  if (!target_node->GetLayoutObject())
+  const LayoutObject* target_object = target_node->GetLayoutObject();
+  if (!target_object)
     return PositionWithAffinity();
 
+  // Note that local_point is in flipped blocks direction.
   LayoutPoint selection_end_point = local_point;
   Element* editable_element = RootEditableElementOf(position);
 
   if (editable_element && !editable_element->contains(target_node)) {
-    if (!editable_element->GetLayoutObject())
+    const LayoutObject* editable_object = editable_element->GetLayoutObject();
+    if (!editable_object)
       return PositionWithAffinity();
 
     // TODO(yosin): This kIgnoreTransforms correct here?
-    PhysicalOffset absolute_point =
-        target_node->GetLayoutObject()->LocalToAbsolutePoint(
-            PhysicalOffsetToBeNoop(selection_end_point), kIgnoreTransforms);
-    selection_end_point =
-        editable_element->GetLayoutObject()
-            ->AbsoluteToLocalPoint(absolute_point, kIgnoreTransforms)
-            .ToLayoutPoint();
-    target_node = editable_element;
+    PhysicalOffset absolute_point = target_object->LocalToAbsolutePoint(
+        target_object->FlipForWritingMode(selection_end_point),
+        kIgnoreTransforms);
+    selection_end_point = editable_object->FlipForWritingMode(
+        editable_object->AbsoluteToLocalPoint(absolute_point,
+                                              kIgnoreTransforms));
+    target_object = editable_object;
   }
 
-  return target_node->GetLayoutObject()->PositionForPoint(selection_end_point);
+  return target_object->PositionForPoint(selection_end_point);
 }
 
 Position ComputePositionForNodeRemoval(const Position& position,

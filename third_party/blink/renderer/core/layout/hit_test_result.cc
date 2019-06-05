@@ -502,4 +502,10 @@ Node* HitTestResult::InnerNodeOrImageMapImage() const {
   return image_map_image_element;
 }
 
+void HitTestResult::SetNodeAndPosition(Node* node, const PhysicalOffset& p) {
+  SetNodeAndPosition(node, node && node->GetLayoutObject()
+                               ? node->GetLayoutObject()->FlipForWritingMode(p)
+                               : p.ToLayoutPoint());
+}
+
 }  // namespace blink

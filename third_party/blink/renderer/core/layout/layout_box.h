@@ -1320,10 +1320,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     DCHECK(!IsHorizontalWritingMode());
     return frame_rect_.Width() - (position + width);
   }
-  WARN_UNUSED_RESULT LayoutPoint
-  FlipForWritingMode(const PhysicalOffset& offset) const {
-    return LayoutPoint(FlipForWritingMode(offset.left), offset.top);
-  }
   // Inherit other flipping methods from LayoutObject.
   using LayoutObject::FlipForWritingMode;
 
