@@ -6,6 +6,13 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 
+// TODO(crbug.com/961029): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_TestStripSSML DISABLED_TestStripSSML
+#else
+#define MAYBE_TestStripSSML TestStripSSML
+#endif
+
 namespace content {
 
 namespace {
@@ -50,7 +57,7 @@ class TtsSsmlBrowserTest : public ContentBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(TtsSsmlBrowserTest, TestStripSSML) {
+IN_PROC_BROWSER_TEST_F(TtsSsmlBrowserTest, MAYBE_TestStripSSML) {
   // No SSML should be stripped.
   RunNoStripSSMLTest("");
   RunNoStripSSMLTest("What if I told you that 5 < 4?");

@@ -17,6 +17,17 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
+// TODO(crbug.com/961029): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_TestAtkTextListItem DISABLED_TestAtkTextListItem
+#define MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint \
+  DISABLED_TestSetCaretSetsSequentialFocusNavigationStartingPoint
+#else
+#define MAYBE_TestAtkTextListItem TestAtkTextListItem
+#define MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint \
+  TestSetCaretSetsSequentialFocusNavigationStartingPoint
+#endif
+
 namespace content {
 
 namespace {
@@ -719,7 +730,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestSetSelection) {
   g_object_unref(atk_text);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestAtkTextListItem) {
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       MAYBE_TestAtkTextListItem) {
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(<!DOCTYPE html>
       <html>
@@ -760,8 +772,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestAtkTextListItem) {
   g_object_unref(list_item_1);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
-                       TestSetCaretSetsSequentialFocusNavigationStartingPoint) {
+IN_PROC_BROWSER_TEST_F(
+    AccessibilityAuraLinuxBrowserTest,
+    MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint) {
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(<!DOCTYPE html>
       <html>
