@@ -583,10 +583,10 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
 
   XSetWindowAttributes swa = {
       .background_pixmap = 0,
-      .bit_gravity = NorthWestGravity,
-      .colormap = g_colormap,
       .background_pixel = 0,  // ARGB(0,0,0,0) for compositing WM
       .border_pixel = 0,
+      .bit_gravity = NorthWestGravity,
+      .colormap = g_colormap,
   };
   auto value_mask = CWBackPixmap | CWBitGravity | CWColormap | CWBorderPixel;
   if (ui::IsCompositingManagerPresent() &&
