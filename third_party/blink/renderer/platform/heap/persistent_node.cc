@@ -79,9 +79,6 @@ void PersistentRegion::ReleasePersistentNode(
 // list of PersistentNodes.
 void PersistentRegion::TracePersistentNodes(Visitor* visitor,
                                             ShouldTraceCallback should_trace) {
-  size_t debug_marked_object_size = ProcessHeap::TotalMarkedObjectSize();
-  base::debug::Alias(&debug_marked_object_size);
-
   free_list_head_ = nullptr;
   int persistent_count = 0;
   PersistentNodeSlots** prev_next = &slots_;
@@ -103,7 +100,6 @@ void PersistentRegion::TracePersistentNodes(Visitor* visitor,
         if (!should_trace(visitor, node))
           continue;
         node->TracePersistentNode(visitor);
-        debug_marked_object_size = ProcessHeap::TotalMarkedObjectSize();
       }
     }
     if (free_count == PersistentNodeSlots::kSlotCount) {

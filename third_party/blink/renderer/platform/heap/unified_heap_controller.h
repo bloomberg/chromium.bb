@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_UNIFIED_HEAP_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "v8/include/v8.h"
 
@@ -29,7 +30,8 @@ class ThreadState;
 // Oilpan does not consider references from DOM wrappers (JavaScript objects on
 // V8's heap) as roots for such garbage collections.
 class PLATFORM_EXPORT UnifiedHeapController final
-    : public v8::EmbedderHeapTracer {
+    : public v8::EmbedderHeapTracer,
+      public ThreadHeapStatsObserver {
   DISALLOW_IMPLICIT_CONSTRUCTORS(UnifiedHeapController);
 
  public:
@@ -47,8 +49,13 @@ class PLATFORM_EXPORT UnifiedHeapController final
 
   ThreadState* thread_state() const { return thread_state_; }
 
-  // Forwarded from ThreadHeapStatsCollector.
-  void UpdateAllocatedObjectSize(int64_t);
+  // ThreadHeapStatsObserver implementation.
+  void IncreaseAllocatedObjectSize(size_t) final;
+  void DecreaseAllocatedObjectSize(size_t) final;
+  // Not needed.
+  void ResetAllocatedObjectSize(size_t) final {}
+  void IncreaseAllocatedSpace(size_t) final {}
+  void DecreaseAllocatedSpace(size_t) final {}
 
  private:
   static bool IsRootForNonTracingGCInternal(
@@ -60,7 +67,6 @@ class PLATFORM_EXPORT UnifiedHeapController final
 
   // Buffered allocated size. Only positive values are forwarded to V8.
   int64_t buffered_allocated_size_ = 0;
-  int64_t old_allocated_bytes_since_prev_gc_ = 0;
 };
 
 }  // namespace blink

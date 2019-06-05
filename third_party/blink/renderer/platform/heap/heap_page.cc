@@ -615,7 +615,8 @@ void NormalPageArena::AllocatePage() {
       new (page_memory->WritableStart()) NormalPage(page_memory, this);
   swept_pages_.Push(page);
 
-  GetThreadState()->Heap().IncreaseAllocatedSpace(page->size());
+  GetThreadState()->Heap().stats_collector()->IncreaseAllocatedSpace(
+      page->size());
 #if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
   // Allow the following addToFreeList() to add the newly allocated memory
   // to the free list.
@@ -629,7 +630,8 @@ void NormalPageArena::AllocatePage() {
 }
 
 void NormalPageArena::FreePage(NormalPage* page) {
-  GetThreadState()->Heap().DecreaseAllocatedSpace(page->size());
+  GetThreadState()->Heap().stats_collector()->DecreaseAllocatedSpace(
+      page->size());
 
   PageMemory* memory = page->Storage();
   page->~NormalPage();
@@ -694,7 +696,7 @@ void NormalPageArena::PromptlyFreeObjectInFreeList(HeapObjectHeader* header,
     AddToFreeList(address, size);
     promptly_freed_size_ += size;
   }
-  GetThreadState()->Heap().DecreaseAllocatedObjectSize(size);
+  GetThreadState()->Heap().stats_collector()->DecreaseAllocatedObjectSize(size);
 }
 
 bool NormalPageArena::ExpandObject(HeapObjectHeader* header, size_t new_size) {
@@ -782,10 +784,10 @@ void NormalPageArena::SetRemainingAllocationSize(
   // - If checkpoint is larger, the allocated size has increased.
   // - The allocated size has decreased, otherwise.
   if (last_remaining_allocation_size_ > remaining_allocation_size_) {
-    GetThreadState()->Heap().IncreaseAllocatedObjectSize(
+    GetThreadState()->Heap().stats_collector()->IncreaseAllocatedObjectSize(
         last_remaining_allocation_size_ - remaining_allocation_size_);
   } else if (last_remaining_allocation_size_ != remaining_allocation_size_) {
-    GetThreadState()->Heap().DecreaseAllocatedObjectSize(
+    GetThreadState()->Heap().stats_collector()->DecreaseAllocatedObjectSize(
         remaining_allocation_size_ - last_remaining_allocation_size_);
   }
   last_remaining_allocation_size_ = remaining_allocation_size_;
@@ -803,7 +805,7 @@ void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
   // Free and clear the old linear allocation area.
   if (HasCurrentAllocationArea()) {
     AddToFreeList(CurrentAllocationPoint(), RemainingAllocationSize());
-    GetThreadState()->Heap().DecreaseAllocatedObjectSize(
+    GetThreadState()->Heap().stats_collector()->DecreaseAllocatedObjectSize(
         RemainingAllocationSize());
   }
   // Set up a new linear allocation area.
@@ -812,7 +814,8 @@ void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
   if (point) {
     // Only, update allocated size and object start bitmap if the area is
     // actually set up with a non-null address.
-    GetThreadState()->Heap().IncreaseAllocatedObjectSize(size);
+    GetThreadState()->Heap().stats_collector()->IncreaseAllocatedObjectSize(
+        size);
     // Current allocation point can never be part of the object bitmap start
     // because the area can grow or shrink. Will be added back before a GC when
     // clearing the allocation point.
@@ -959,8 +962,9 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
 
   swept_pages_.Push(large_object);
 
-  GetThreadState()->Heap().IncreaseAllocatedSpace(large_object->size());
-  GetThreadState()->Heap().IncreaseAllocatedObjectSize(
+  GetThreadState()->Heap().stats_collector()->IncreaseAllocatedSpace(
+      large_object->size());
+  GetThreadState()->Heap().stats_collector()->IncreaseAllocatedObjectSize(
       large_object->PayloadSize());
   return result;
 }
@@ -968,7 +972,8 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
 void LargeObjectArena::FreeLargeObjectPage(LargeObjectPage* object) {
   ASAN_UNPOISON_MEMORY_REGION(object->Payload(), object->PayloadSize());
   object->ObjectHeader()->Finalize(object->Payload(), object->PayloadSize());
-  GetThreadState()->Heap().DecreaseAllocatedSpace(object->size());
+  GetThreadState()->Heap().stats_collector()->DecreaseAllocatedSpace(
+      object->size());
 
   // Unpoison the object header and allocationGranularity bytes after the
   // object before freeing.

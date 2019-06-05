@@ -4,8 +4,9 @@
 
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 
+#include <cmath>
+
 #include "base/logging.h"
-#include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
@@ -23,27 +24,68 @@ void ThreadHeapStatsCollector::IncreaseCompactionFreedPages(size_t pages) {
 void ThreadHeapStatsCollector::IncreaseAllocatedObjectSize(size_t bytes) {
   // The current GC may not have been started. This is ok as recording considers
   // the whole time range between garbage collections.
-  allocated_bytes_since_prev_gc_ += static_cast<int64_t>(bytes);
+  pos_delta_allocated_bytes_since_prev_gc_ += bytes;
+}
+
+void ThreadHeapStatsCollector::IncreaseAllocatedObjectSizeForTesting(
+    size_t bytes) {
+  IncreaseAllocatedObjectSize(bytes);
+  AllocatedObjectSizeSafepointImpl();
 }
 
 void ThreadHeapStatsCollector::DecreaseAllocatedObjectSize(size_t bytes) {
   // See IncreaseAllocatedObjectSize.
-  allocated_bytes_since_prev_gc_ -= static_cast<int64_t>(bytes);
+  neg_delta_allocated_bytes_since_prev_gc_ += bytes;
+}
+
+void ThreadHeapStatsCollector::DecreaseAllocatedObjectSizeForTesting(
+    size_t bytes) {
+  DecreaseAllocatedObjectSize(bytes);
+  AllocatedObjectSizeSafepointImpl();
 }
 
 void ThreadHeapStatsCollector::AllocatedObjectSizeSafepoint() {
-  if (unified_heap_controller_) {
-    unified_heap_controller_->UpdateAllocatedObjectSize(
-        allocated_bytes_since_prev_gc_);
+  if (std::abs(pos_delta_allocated_bytes_since_prev_gc_ -
+               neg_delta_allocated_bytes_since_prev_gc_) > kUpdateThreshold) {
+    AllocatedObjectSizeSafepointImpl();
   }
+}
+
+void ThreadHeapStatsCollector::AllocatedObjectSizeSafepointImpl() {
+  allocated_bytes_since_prev_gc_ +=
+      static_cast<int64_t>(pos_delta_allocated_bytes_since_prev_gc_) -
+      static_cast<int64_t>(neg_delta_allocated_bytes_since_prev_gc_);
+
+  // These observer methods may start or finalize GC. In case they trigger a
+  // final GC pause, the delta counters are reset there and the following
+  // observer calls are called with '0' updates.
+  ForAllObservers([this](ThreadHeapStatsObserver* observer) {
+    // Recompute delta here so that a GC finalization is able to clear the
+    // delta for other observer calls.
+    int64_t delta = pos_delta_allocated_bytes_since_prev_gc_ -
+                    neg_delta_allocated_bytes_since_prev_gc_;
+    if (delta < 0) {
+      observer->DecreaseAllocatedObjectSize(static_cast<size_t>(-delta));
+    } else {
+      observer->IncreaseAllocatedObjectSize(static_cast<size_t>(delta));
+    }
+  });
+  pos_delta_allocated_bytes_since_prev_gc_ = 0;
+  neg_delta_allocated_bytes_since_prev_gc_ = 0;
 }
 
 void ThreadHeapStatsCollector::IncreaseAllocatedSpace(size_t bytes) {
   allocated_space_bytes_ += bytes;
+  ForAllObservers([bytes](ThreadHeapStatsObserver* observer) {
+    observer->IncreaseAllocatedSpace(bytes);
+  });
 }
 
 void ThreadHeapStatsCollector::DecreaseAllocatedSpace(size_t bytes) {
   allocated_space_bytes_ -= bytes;
+  ForAllObservers([bytes](ThreadHeapStatsObserver* observer) {
+    observer->DecreaseAllocatedSpace(bytes);
+  });
 }
 
 void ThreadHeapStatsCollector::IncreaseWrapperCount(size_t count) {
@@ -66,6 +108,9 @@ void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason) {
 }
 
 void ThreadHeapStatsCollector::NotifyMarkingCompleted(size_t marked_bytes) {
+  allocated_bytes_since_prev_gc_ +=
+      static_cast<int64_t>(pos_delta_allocated_bytes_since_prev_gc_) -
+      static_cast<int64_t>(neg_delta_allocated_bytes_since_prev_gc_);
   current_.marked_bytes = marked_bytes;
   current_.object_size_in_bytes_before_sweeping = object_size_in_bytes();
   current_.allocated_space_in_bytes_before_sweeping = allocated_space_bytes();
@@ -74,6 +119,12 @@ void ThreadHeapStatsCollector::NotifyMarkingCompleted(size_t marked_bytes) {
   current_.wrapper_count_before_sweeping = wrapper_count_;
   allocated_bytes_since_prev_gc_ = 0;
   collected_wrapper_count_ = 0;
+  pos_delta_allocated_bytes_since_prev_gc_ = 0;
+  neg_delta_allocated_bytes_since_prev_gc_ = 0;
+
+  ForAllObservers([marked_bytes](ThreadHeapStatsObserver* observer) {
+    observer->ResetAllocatedObjectSize(marked_bytes);
+  });
 }
 
 void ThreadHeapStatsCollector::NotifySweepingCompleted() {
@@ -155,6 +206,26 @@ size_t ThreadHeapStatsCollector::collected_wrapper_count() const {
 
 size_t ThreadHeapStatsCollector::wrapper_count() const {
   return wrapper_count_;
+}
+
+void ThreadHeapStatsCollector::RegisterObserver(
+    ThreadHeapStatsObserver* observer) {
+  DCHECK(!observers_.Contains(observer));
+  observers_.push_back(observer);
+}
+
+void ThreadHeapStatsCollector::UnregisterObserver(
+    ThreadHeapStatsObserver* observer) {
+  wtf_size_t index = observers_.Find(observer);
+  DCHECK_NE(WTF::kNotFound, index);
+  observers_.EraseAt(index);
+}
+
+template <typename Callback>
+void ThreadHeapStatsCollector::ForAllObservers(Callback callback) {
+  for (ThreadHeapStatsObserver* observer : observers_) {
+    callback(observer);
+  }
 }
 
 }  // namespace blink

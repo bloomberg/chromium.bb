@@ -43,15 +43,6 @@ class PLATFORM_EXPORT ProcessHeap {
   static size_t TotalAllocatedObjectSize() {
     return total_allocated_object_size_.load(std::memory_order_relaxed);
   }
-  static void IncreaseTotalMarkedObjectSize(size_t delta) {
-    total_marked_object_size_.fetch_add(delta, std::memory_order_relaxed);
-  }
-  static void DecreaseTotalMarkedObjectSize(size_t delta) {
-    total_marked_object_size_.fetch_sub(delta, std::memory_order_relaxed);
-  }
-  static size_t TotalMarkedObjectSize() {
-    return total_marked_object_size_.load(std::memory_order_relaxed);
-  }
   static void IncreaseTotalAllocatedSpace(size_t delta) {
     total_allocated_space_.fetch_add(delta, std::memory_order_relaxed);
   }
@@ -66,7 +57,6 @@ class PLATFORM_EXPORT ProcessHeap {
  private:
   static std::atomic_size_t total_allocated_space_;
   static std::atomic_size_t total_allocated_object_size_;
-  static std::atomic_size_t total_marked_object_size_;
 
   friend class ThreadState;
 };

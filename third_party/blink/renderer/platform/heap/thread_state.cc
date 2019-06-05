@@ -1637,16 +1637,6 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   if (ShouldVerifyMarking())
     VerifyMarking(marking_type);
 
-  if (Heap().stats_collector()->allocated_bytes_since_prev_gc() > 0) {
-    ProcessHeap::DecreaseTotalAllocatedObjectSize(static_cast<size_t>(
-        Heap().stats_collector()->allocated_bytes_since_prev_gc()));
-  } else {
-    ProcessHeap::IncreaseTotalAllocatedObjectSize(static_cast<size_t>(
-        -Heap().stats_collector()->allocated_bytes_since_prev_gc()));
-  }
-  ProcessHeap::DecreaseTotalMarkedObjectSize(
-      Heap().stats_collector()->previous().marked_bytes);
-  ProcessHeap::IncreaseTotalMarkedObjectSize(marked_bytes);
   Heap().stats_collector()->NotifyMarkingCompleted(marked_bytes);
 
   WTF::Partitions::ReportMemoryUsageHistogram();

@@ -46,8 +46,7 @@ static size_t GetMemoryUsage() {
   size_t usage =
       base::ProcessMetrics::CreateCurrentProcessMetrics()->GetMallocUsage() +
       WTF::Partitions::TotalActiveBytes() +
-      blink::ProcessHeap::TotalAllocatedObjectSize() +
-      blink::ProcessHeap::TotalMarkedObjectSize();
+      blink::ProcessHeap::TotalAllocatedObjectSize();
   v8::HeapStatistics v8_heap_statistics;
   blink::V8PerIsolateData::MainThreadIsolate()->GetHeapStatistics(
       &v8_heap_statistics);

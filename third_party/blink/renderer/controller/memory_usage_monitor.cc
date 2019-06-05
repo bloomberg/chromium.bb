@@ -61,8 +61,7 @@ void MemoryUsageMonitor::GetV8MemoryUsage(MemoryUsage& usage) {
 }
 
 void MemoryUsageMonitor::GetBlinkMemoryUsage(MemoryUsage& usage) {
-  usage.blink_gc_bytes = ProcessHeap::TotalAllocatedObjectSize() +
-                         ProcessHeap::TotalMarkedObjectSize();
+  usage.blink_gc_bytes = ProcessHeap::TotalAllocatedObjectSize();
   usage.partition_alloc_bytes = WTF::Partitions::TotalSizeOfCommittedPages();
 }
 

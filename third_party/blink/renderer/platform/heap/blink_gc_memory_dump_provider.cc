@@ -29,8 +29,7 @@ void DumpMemoryTotals(base::trace_event::ProcessMemoryDump* memory_dump) {
   // ThreadHeap::markedObjectSize() can be underestimated if we're still in the
   // process of lazy sweeping.
   objects_dump->AddScalar("size", "bytes",
-                          ProcessHeap::TotalAllocatedObjectSize() +
-                              ProcessHeap::TotalMarkedObjectSize());
+                          ProcessHeap::TotalAllocatedObjectSize());
 }
 
 }  // namespace

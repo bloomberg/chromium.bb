@@ -15,7 +15,30 @@
 
 namespace blink {
 
-class UnifiedHeapController;
+// Interface for observing changes to heap sizing.
+class PLATFORM_EXPORT ThreadHeapStatsObserver {
+ public:
+  // Called upon allocating/releasing chunks of memory that contain objects.
+  //
+  // Must not trigger GC or allocate.
+  virtual void IncreaseAllocatedSpace(size_t) = 0;
+  virtual void DecreaseAllocatedSpace(size_t) = 0;
+
+  // Called once per GC cycle with the accurate number of live |bytes|.
+  //
+  // Must not trigger GC or allocate.
+  virtual void ResetAllocatedObjectSize(size_t bytes) = 0;
+
+  // Called after observing at least
+  // |ThreadHeapStatsCollector::kUpdateThreshold| changed bytes through
+  // allocation or explicit free. Reports both, negative and positive
+  // increments, to allow observer to decide whether absolute values or only the
+  // deltas is interesting.
+  //
+  // May trigger GC but most not allocate.
+  virtual void IncreaseAllocatedObjectSize(size_t) = 0;
+  virtual void DecreaseAllocatedObjectSize(size_t) = 0;
+};
 
 // Manages counters and statistics across garbage collection cycles.
 //
@@ -274,11 +297,23 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     return TimeDelta::FromMilliseconds(current_.marking_time_in_ms());
   }
 
-  void SetUnifiedHeapController(UnifiedHeapController* controller) {
-    unified_heap_controller_ = controller;
-  }
+  void RegisterObserver(ThreadHeapStatsObserver* observer);
+  void UnregisterObserver(ThreadHeapStatsObserver* observer);
+
+  void IncreaseAllocatedObjectSizeForTesting(size_t);
+  void DecreaseAllocatedObjectSizeForTesting(size_t);
 
  private:
+  // Observers are implemented using virtual calls. Avoid notifications below
+  // reasonably interesting sizes.
+  static constexpr int64_t kUpdateThreshold = 1024;
+
+  // Invokes |callback| for all registered observers.
+  template <typename Callback>
+  void ForAllObservers(Callback callback);
+
+  void AllocatedObjectSizeSafepointImpl();
+
   // Statistics for the currently running garbage collection. Note that the
   // Event may not be fully populated yet as some phase may not have been run.
   const Event& current() const { return current_; }
@@ -289,6 +324,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // Allocated bytes since the last garbage collection. These bytes are reset
   // after marking as they are accounted in marked_bytes then.
   int64_t allocated_bytes_since_prev_gc_ = 0;
+  int64_t pos_delta_allocated_bytes_since_prev_gc_ = 0;
+  int64_t neg_delta_allocated_bytes_since_prev_gc_ = 0;
 
   // Allocated space in bytes for all arenas.
   size_t allocated_space_bytes_ = 0;
@@ -302,9 +339,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // collection cycle to make them easier to use.
   TimeDelta gc_nested_in_v8_;
 
-  // Unified heap observes interesting statistics and forwards them to V8 after
-  // some aggregation.
-  UnifiedHeapController* unified_heap_controller_ = nullptr;
+  Vector<ThreadHeapStatsObserver*> observers_;
 
   FRIEND_TEST_ALL_PREFIXES(ThreadHeapStatsCollectorTest, InitialEmpty);
   FRIEND_TEST_ALL_PREFIXES(ThreadHeapStatsCollectorTest, IncreaseScopeTime);

@@ -29,7 +29,6 @@ void BlinkGCFreeHook(uint8_t* address) {
 void ProcessHeap::Init() {
   total_allocated_space_ = 0;
   total_allocated_object_size_ = 0;
-  total_marked_object_size_ = 0;
 
   GCInfoTable::CreateGlobalTable();
 
@@ -41,7 +40,6 @@ void ProcessHeap::Init() {
 
 void ProcessHeap::ResetHeapCounters() {
   total_allocated_object_size_ = 0;
-  total_marked_object_size_ = 0;
 }
 
 CrossThreadPersistentRegion& ProcessHeap::GetCrossThreadPersistentRegion() {
@@ -63,6 +61,5 @@ Mutex& ProcessHeap::CrossThreadPersistentMutex() {
 
 std::atomic_size_t ProcessHeap::total_allocated_space_{0};
 std::atomic_size_t ProcessHeap::total_allocated_object_size_{0};
-std::atomic_size_t ProcessHeap::total_marked_object_size_{0};
 
 }  // namespace blink

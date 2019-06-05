@@ -59,12 +59,43 @@ namespace blink {
 HeapAllocHooks::AllocationHook* HeapAllocHooks::allocation_hook_ = nullptr;
 HeapAllocHooks::FreeHook* HeapAllocHooks::free_hook_ = nullptr;
 
+class ProcessHeapReporter final : public ThreadHeapStatsObserver {
+ public:
+  void IncreaseAllocatedSpace(size_t bytes) final {
+    ProcessHeap::IncreaseTotalAllocatedSpace(bytes);
+  }
+
+  void DecreaseAllocatedSpace(size_t bytes) final {
+    ProcessHeap::DecreaseTotalAllocatedSpace(bytes);
+  }
+
+  void ResetAllocatedObjectSize(size_t bytes) final {
+    ProcessHeap::DecreaseTotalAllocatedObjectSize(prev_incremented_);
+    ProcessHeap::IncreaseTotalAllocatedObjectSize(bytes);
+    prev_incremented_ = bytes;
+  }
+
+  void IncreaseAllocatedObjectSize(size_t bytes) final {
+    ProcessHeap::IncreaseTotalAllocatedObjectSize(bytes);
+    prev_incremented_ += bytes;
+  }
+
+  void DecreaseAllocatedObjectSize(size_t bytes) final {
+    ProcessHeap::DecreaseTotalAllocatedObjectSize(bytes);
+    prev_incremented_ -= bytes;
+  }
+
+ private:
+  size_t prev_incremented_ = 0;
+};
+
 ThreadHeap::ThreadHeap(ThreadState* thread_state)
     : thread_state_(thread_state),
       heap_stats_collector_(std::make_unique<ThreadHeapStatsCollector>()),
       region_tree_(std::make_unique<RegionTree>()),
       address_cache_(std::make_unique<AddressCache>()),
       free_page_pool_(std::make_unique<PagePool>()),
+      process_heap_reporter_(std::make_unique<ProcessHeapReporter>()),
       marking_worklist_(nullptr),
       not_fully_constructed_worklist_(nullptr),
       weak_callback_worklist_(nullptr),
@@ -82,31 +113,13 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
   likely_to_be_promptly_freed_ =
       std::make_unique<int[]>(kLikelyToBePromptlyFreedArraySize);
   ClearArenaAges();
+
+  stats_collector()->RegisterObserver(process_heap_reporter_.get());
 }
 
 ThreadHeap::~ThreadHeap() {
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
     delete arenas_[i];
-}
-
-void ThreadHeap::IncreaseAllocatedObjectSize(size_t bytes) {
-  stats_collector()->IncreaseAllocatedObjectSize(bytes);
-  ProcessHeap::IncreaseTotalAllocatedObjectSize(bytes);
-}
-
-void ThreadHeap::DecreaseAllocatedObjectSize(size_t bytes) {
-  stats_collector()->DecreaseAllocatedObjectSize(bytes);
-  ProcessHeap::DecreaseTotalAllocatedObjectSize(bytes);
-}
-
-void ThreadHeap::IncreaseAllocatedSpace(size_t bytes) {
-  stats_collector()->IncreaseAllocatedSpace(bytes);
-  ProcessHeap::IncreaseTotalAllocatedSpace(bytes);
-}
-
-void ThreadHeap::DecreaseAllocatedSpace(size_t bytes) {
-  stats_collector()->DecreaseAllocatedSpace(bytes);
-  ProcessHeap::DecreaseTotalAllocatedSpace(bytes);
 }
 
 Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,

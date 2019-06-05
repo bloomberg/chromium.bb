@@ -57,6 +57,7 @@ class IncrementalMarkingScopeBase;
 class AddressCache;
 class ThreadHeapStatsCollector;
 class PagePool;
+class ProcessHeapReporter;
 class RegionTree;
 
 struct MarkingItem {
@@ -372,11 +373,6 @@ class PLATFORM_EXPORT ThreadHeap {
     return heap_stats_collector_.get();
   }
 
-  void IncreaseAllocatedObjectSize(size_t);
-  void DecreaseAllocatedObjectSize(size_t);
-  void IncreaseAllocatedSpace(size_t);
-  void DecreaseAllocatedSpace(size_t);
-
 #if defined(ADDRESS_SANITIZER)
   void PoisonEagerArena();
   void PoisonAllHeaps();
@@ -406,6 +402,7 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<RegionTree> region_tree_;
   std::unique_ptr<AddressCache> address_cache_;
   std::unique_ptr<PagePool> free_page_pool_;
+  std::unique_ptr<ProcessHeapReporter> process_heap_reporter_;
 
   // All objects on this worklist have been fully initialized and assigned a
   // trace callback for iterating the body of the object. This worklist should

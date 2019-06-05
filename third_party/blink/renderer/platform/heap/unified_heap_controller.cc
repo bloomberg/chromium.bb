@@ -27,11 +27,11 @@ constexpr BlinkGC::StackState ToBlinkGCStackState(
 
 UnifiedHeapController::UnifiedHeapController(ThreadState* thread_state)
     : thread_state_(thread_state) {
-  thread_state->Heap().stats_collector()->SetUnifiedHeapController(this);
+  thread_state->Heap().stats_collector()->RegisterObserver(this);
 }
 
 UnifiedHeapController::~UnifiedHeapController() {
-  thread_state_->Heap().stats_collector()->SetUnifiedHeapController(nullptr);
+  thread_state_->Heap().stats_collector()->UnregisterObserver(this);
 }
 
 void UnifiedHeapController::TracePrologue(
@@ -98,7 +98,6 @@ void UnifiedHeapController::TraceEpilogue(
       static_cast<size_t>(stats_collector->marked_bytes());
   summary->time = stats_collector->marking_time_so_far().InMillisecondsF();
   buffered_allocated_size_ = 0;
-  old_allocated_bytes_since_prev_gc_ = 0;
 
   if (!thread_state_->IsSweepingInProgress()) {
     // Sweeping was finished during the atomic pause. Update statistics needs to
@@ -181,29 +180,24 @@ bool UnifiedHeapController::IsRootForNonTracingGC(
   return IsRootForNonTracingGCInternal(handle);
 }
 
-void UnifiedHeapController::UpdateAllocatedObjectSize(
-    int64_t allocated_bytes_since_prev_gc) {
-  int64_t delta =
-      allocated_bytes_since_prev_gc - old_allocated_bytes_since_prev_gc_;
-  old_allocated_bytes_since_prev_gc_ = allocated_bytes_since_prev_gc;
-  if (delta < 0) {
-    // TODO(mlippautz): Add support for negative deltas in V8.
-    buffered_allocated_size_ += delta;
-    return;
-  }
-
-  constexpr int64_t kMinimumReportingSize = 1024;
-  buffered_allocated_size_ += static_cast<int64_t>(delta);
+void UnifiedHeapController::IncreaseAllocatedObjectSize(size_t delta_bytes) {
+  buffered_allocated_size_ += delta_bytes;
 
   // Reported from a recursive sweeping call.
   if (thread_state()->IsSweepingInProgress() &&
-      thread_state()->SweepForbidden())
+      thread_state()->SweepForbidden()) {
     return;
+  }
 
-  if (buffered_allocated_size_ > kMinimumReportingSize) {
+  if (buffered_allocated_size_ > 0) {
     IncreaseAllocatedSize(static_cast<size_t>(buffered_allocated_size_));
     buffered_allocated_size_ = 0;
   }
+}
+
+void UnifiedHeapController::DecreaseAllocatedObjectSize(size_t delta_bytes) {
+  // TODO(mlippautz): Add support for negative deltas in V8.
+  buffered_allocated_size_ -= delta_bytes;
 }
 
 }  // namespace blink

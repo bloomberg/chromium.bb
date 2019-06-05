@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -104,7 +105,7 @@ TEST(ThreadHeapStatsCollectorTest, InitialEstimatedObjectSizeInBytes) {
 TEST(ThreadHeapStatsCollectorTest, EstimatedObjectSizeInBytesNoMarkedBytes) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
-  stats_collector.IncreaseAllocatedObjectSize(512);
+  stats_collector.IncreaseAllocatedObjectSizeForTesting(512);
   EXPECT_EQ(512u, stats_collector.object_size_in_bytes());
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
   stats_collector.NotifySweepingCompleted();
@@ -117,7 +118,7 @@ TEST(ThreadHeapStatsCollectorTest, EstimatedObjectSizeInBytesWithMarkedBytes) {
   stats_collector.NotifySweepingCompleted();
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
-  stats_collector.IncreaseAllocatedObjectSize(512);
+  stats_collector.IncreaseAllocatedObjectSizeForTesting(512);
   EXPECT_EQ(640u, stats_collector.object_size_in_bytes());
   stats_collector.NotifySweepingCompleted();
 }
@@ -131,7 +132,7 @@ TEST(ThreadHeapStatsCollectorTest,
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.NotifyMarkingCompleted(128);
   // Currently marked bytes should not account to the estimated object size.
-  stats_collector.IncreaseAllocatedObjectSize(512);
+  stats_collector.IncreaseAllocatedObjectSizeForTesting(512);
   EXPECT_EQ(640u, stats_collector.object_size_in_bytes());
   stats_collector.NotifySweepingCompleted();
 }
@@ -167,7 +168,7 @@ TEST(ThreadHeapStatsCollectorTest, EstimatedMarkingTime2) {
   stats_collector.NotifyMarkingCompleted(1024);
   stats_collector.NotifySweepingCompleted();
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
-  stats_collector.IncreaseAllocatedObjectSize(512);
+  stats_collector.IncreaseAllocatedObjectSizeForTesting(512);
   EXPECT_DOUBLE_EQ(1.5, stats_collector.estimated_marking_time_in_seconds());
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
   stats_collector.NotifySweepingCompleted();
@@ -401,6 +402,133 @@ TEST(ThreadHeapStatsCollectorTest, EventAllocatedSpaceBeforeSweeping2) {
   EXPECT_EQ(
       1024u,
       stats_collector.previous().allocated_space_in_bytes_before_sweeping);
+}
+
+namespace {
+
+class MockThreadHeapStatsObserver : public ThreadHeapStatsObserver {
+ public:
+  MOCK_METHOD1(IncreaseAllocatedSpace, void(size_t));
+  MOCK_METHOD1(DecreaseAllocatedSpace, void(size_t));
+  MOCK_METHOD1(ResetAllocatedObjectSize, void(size_t));
+  MOCK_METHOD1(IncreaseAllocatedObjectSize, void(size_t));
+  MOCK_METHOD1(DecreaseAllocatedObjectSize, void(size_t));
+};
+
+void FakeGC(ThreadHeapStatsCollector* stats_collector, size_t marked_bytes) {
+  stats_collector->NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
+  stats_collector->NotifyMarkingCompleted(marked_bytes);
+  stats_collector->NotifySweepingCompleted();
+}
+
+}  // namespace
+
+TEST(ThreadHeapStatsCollectorTest, RegisterUnregisterObserver) {
+  ThreadHeapStatsCollector stats_collector;
+  MockThreadHeapStatsObserver observer;
+  stats_collector.RegisterObserver(&observer);
+  stats_collector.UnregisterObserver(&observer);
+}
+
+TEST(ThreadHeapStatsCollectorTest, ObserveAllocatedSpace) {
+  ThreadHeapStatsCollector stats_collector;
+  MockThreadHeapStatsObserver observer;
+  stats_collector.RegisterObserver(&observer);
+  EXPECT_CALL(observer, IncreaseAllocatedSpace(1024));
+  stats_collector.IncreaseAllocatedSpace(1024);
+  EXPECT_CALL(observer, DecreaseAllocatedSpace(1024));
+  stats_collector.DecreaseAllocatedSpace(1024);
+  stats_collector.UnregisterObserver(&observer);
+}
+
+TEST(ThreadHeapStatsCollectorTest, ObserveResetAllocatedObjectSize) {
+  ThreadHeapStatsCollector stats_collector;
+  MockThreadHeapStatsObserver observer;
+  stats_collector.RegisterObserver(&observer);
+  EXPECT_CALL(observer, ResetAllocatedObjectSize(2048));
+  FakeGC(&stats_collector, 2048);
+  stats_collector.UnregisterObserver(&observer);
+}
+
+TEST(ThreadHeapStatsCollectorTest, ObserveAllocatedObjectSize) {
+  ThreadHeapStatsCollector stats_collector;
+  MockThreadHeapStatsObserver observer;
+  stats_collector.RegisterObserver(&observer);
+  EXPECT_CALL(observer, IncreaseAllocatedObjectSize(1024));
+  stats_collector.IncreaseAllocatedObjectSizeForTesting(1024);
+  EXPECT_CALL(observer, DecreaseAllocatedObjectSize(1024));
+  stats_collector.DecreaseAllocatedObjectSizeForTesting(1024);
+  stats_collector.UnregisterObserver(&observer);
+}
+
+namespace {
+
+class ObserverTriggeringGC final : public ThreadHeapStatsObserver {
+ public:
+  explicit ObserverTriggeringGC(ThreadHeapStatsCollector* stats_collector)
+      : stats_collector_(stats_collector) {}
+
+  void IncreaseAllocatedObjectSize(size_t bytes) final {
+    increase_call_count++;
+    increased_size_bytes_ += bytes;
+    if (increase_call_count == 1) {
+      FakeGC(stats_collector_, bytes);
+    }
+  }
+
+  void ResetAllocatedObjectSize(size_t marked) final {
+    reset_call_count++;
+    marked_bytes_ = marked;
+  }
+
+  // Mock out the rest to trigger warnings if used.
+  MOCK_METHOD1(IncreaseAllocatedSpace, void(size_t));
+  MOCK_METHOD1(DecreaseAllocatedSpace, void(size_t));
+  MOCK_METHOD1(DecreaseAllocatedObjectSize, void(size_t));
+
+  size_t marked_bytes() const { return marked_bytes_; }
+  size_t increased_size_bytes() const { return increased_size_bytes_; }
+
+  size_t increase_call_count = 0;
+  size_t reset_call_count = 0;
+
+ private:
+  ThreadHeapStatsCollector* const stats_collector_;
+  size_t marked_bytes_ = 0;
+  size_t increased_size_bytes_ = 0;
+};
+
+}  // namespace
+
+TEST(ThreadHeapStatsCollectorTest, ObserverTriggersGC) {
+  ThreadHeapStatsCollector stats_collector;
+  ObserverTriggeringGC gc_observer(&stats_collector);
+  MockThreadHeapStatsObserver mock_observer;
+  // Internal detail: First registered observer is also notified first.
+  stats_collector.RegisterObserver(&gc_observer);
+  stats_collector.RegisterObserver(&mock_observer);
+
+  // mock_observer is notified after triggering GC. This means that it should
+  // see the reset call with the fully marked size (as gc_observer fakes a GC
+  // with that size).
+  EXPECT_CALL(mock_observer, ResetAllocatedObjectSize(1024));
+  // Since the GC clears counters, it should see an increase call with a delta
+  // of zero bytes.
+  EXPECT_CALL(mock_observer, IncreaseAllocatedObjectSize(0));
+
+  // Trigger scenario.
+  stats_collector.IncreaseAllocatedObjectSizeForTesting(1024);
+
+  // gc_observer sees both calls exactly once.
+  EXPECT_EQ(1u, gc_observer.increase_call_count);
+  EXPECT_EQ(1u, gc_observer.reset_call_count);
+  // gc_observer sees the increased bytes and the reset call with the fully
+  // marked size.
+  EXPECT_EQ(1024u, gc_observer.increased_size_bytes());
+  EXPECT_EQ(1024u, gc_observer.marked_bytes());
+
+  stats_collector.UnregisterObserver(&gc_observer);
+  stats_collector.UnregisterObserver(&mock_observer);
 }
 
 }  // namespace blink
