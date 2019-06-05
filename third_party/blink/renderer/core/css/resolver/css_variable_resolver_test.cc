@@ -275,7 +275,8 @@ TEST_F(CSSVariableResolverTest, CopiedVariablesRetainNeedsResolution) {
 
 TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
-  StyleResolverState state(GetDocument(), nullptr, initial, initial);
+  StyleResolverState state(GetDocument(), nullptr /* element */,
+                           nullptr /* pseudo_element */, initial, initial);
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->InheritFrom(*initial);
@@ -462,7 +463,8 @@ TEST_F(CSSVariableResolverTest, CSSWideKeywords) {
   using CSSUnsetValue = cssvalue::CSSUnsetValue;
 
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
-  StyleResolverState state(GetDocument(), nullptr, initial, initial);
+  StyleResolverState state(GetDocument(), nullptr /* element */,
+                           nullptr /* pseudo_element */, initial, initial);
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->InheritFrom(*initial);

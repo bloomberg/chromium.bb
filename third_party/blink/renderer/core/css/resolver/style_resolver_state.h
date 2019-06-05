@@ -42,6 +42,7 @@ namespace blink {
 
 class ComputedStyle;
 class FontDescription;
+class PseudoElement;
 
 // A per-element object which wraps an ElementResolveContext. It collects state
 // throughout the process of computing the style. It also gives convenient
@@ -52,10 +53,12 @@ class CORE_EXPORT StyleResolverState {
  public:
   StyleResolverState(Document&,
                      const ElementResolveContext&,
+                     PseudoElement* pseudo_element,
                      const ComputedStyle* parent_style,
                      const ComputedStyle* layout_parent_style);
   StyleResolverState(Document&,
                      Element*,
+                     PseudoElement* pseudo_element,
                      const ComputedStyle* parent_style = nullptr,
                      const ComputedStyle* layout_parent_style = nullptr);
   ~StyleResolverState();
