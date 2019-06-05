@@ -35,17 +35,6 @@ class TestNavigationThrottle : public NavigationThrottle {
     ASYNCHRONOUS,
   };
 
-  struct Status {
-    Status(ThrottleMethod method,
-           ResultSynchrony synchrony,
-           NavigationThrottle::ThrottleCheckResult result)
-        : method(method), synchrony(synchrony), result(result) {}
-
-    ThrottleMethod method;
-    ResultSynchrony synchrony;
-    NavigationThrottle::ThrottleCheckResult result;
-  };
-
   TestNavigationThrottle(NavigationHandle* handle);
   ~TestNavigationThrottle() override;
 
