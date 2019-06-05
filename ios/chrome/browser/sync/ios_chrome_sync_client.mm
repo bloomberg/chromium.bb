@@ -14,7 +14,6 @@
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
@@ -221,13 +220,6 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return browser_state_->GetSyncablePrefs()
           ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
           ->AsWeakPtr();
-    case syncer::AUTOFILL_PROFILE: {
-      if (!profile_web_data_service_)
-        return base::WeakPtr<syncer::SyncableService>();
-      return autofill::AutofillProfileSyncableService::FromWebDataService(
-                 profile_web_data_service_.get())
-          ->AsWeakPtr();
-    }
     case syncer::AUTOFILL_WALLET_METADATA: {
       if (!profile_web_data_service_)
         return base::WeakPtr<syncer::SyncableService>();
