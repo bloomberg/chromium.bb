@@ -101,11 +101,15 @@ cca.metrics.launchType_ = function(ackMigrate) {
  * @private
  */
 cca.metrics.captureType_ = function(facingMode, length, [width, height]) {
-  var condState = (states, cond) => {
+  var condState = (states, cond, strict) => {
     // Return the first existing state among the given states only if there is
     // no gate condition or the condition is met.
     const prerequisite = !cond || cca.state.get(cond);
-    return prerequisite && states.find((state) => cca.state.get(state)) || '';
+    if (strict && !prerequisite) {
+      return '';
+    }
+    return prerequisite && states.find((state) => cca.state.get(state)) ||
+        'n/a';
   };
 
   return cca.metrics.base_.category('capture')
@@ -116,7 +120,7 @@ cca.metrics.captureType_ = function(facingMode, length, [width, height]) {
       .dimen(4, condState(['mirror']))
       .dimen(5, condState(['_3x3', '_4x4', 'golden'], 'grid'))
       .dimen(6, condState(['_3sec', '_10sec'], 'timer'))
-      .dimen(7, condState(['mic'], 'video-mode'))
+      .dimen(7, condState(['mic'], 'video-mode', true))
       .dimen(8, condState(['max-wnd']))
       .dimen(9, condState(['tall']))
       .dimen(10, `${width}x${height}`)
