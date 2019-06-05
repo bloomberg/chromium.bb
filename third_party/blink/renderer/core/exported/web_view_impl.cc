@@ -2160,7 +2160,7 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
               element->GetDocument()
                   .GetFrame()
                   ->Selection()
-                  .AbsoluteCaretBounds())),
+                  .ComputeRectToScroll(kDoNotRevealExtent))),
       ShouldZoomToLegibleScale(*element));
 
   return true;
