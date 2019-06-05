@@ -9,6 +9,7 @@
 ./tools/lint/commands.json
 ./tools/lint/fnmatch.py
 ./tools/lint/lint.py
+./tools/lint/rules.py
 ./tools/localpaths.py
 ./tools/manifest/XMLParser.py
 ./tools/manifest/__init__.py

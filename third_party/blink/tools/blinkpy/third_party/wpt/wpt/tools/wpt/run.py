@@ -121,9 +121,14 @@ def check_environ(product):
 
         missing_hosts = set(expected_hosts)
         if is_windows:
-            hosts_path = "%s\System32\drivers\etc\hosts" % os.environ.get("SystemRoot", "C:\Windows")
+            hosts_path = r"%s\System32\drivers\etc\hosts" % os.environ.get("SystemRoot", r"C:\Windows")
         else:
             hosts_path = "/etc/hosts"
+
+        if os.path.abspath(os.curdir) == wpt_root:
+            wpt_path = "wpt"
+        else:
+            wpt_path = os.path.join(wpt_root, "wpt")
 
         with open(hosts_path, "r") as f:
             for line in f:
@@ -136,13 +141,14 @@ def check_environ(product):
                 if is_windows:
                     message = """Missing hosts file configuration. Run
 
-python wpt make-hosts-file | Out-File %s -Encoding ascii -Append
+python %s make-hosts-file | Out-File %s -Encoding ascii -Append
 
-in PowerShell with Administrator privileges.""" % hosts_path
+in PowerShell with Administrator privileges.""" % (wpt_path, hosts_path)
                 else:
                     message = """Missing hosts file configuration. Run
 
-./wpt make-hosts-file | sudo tee -a %s""" % hosts_path
+%s make-hosts-file | sudo tee -a %s""" % ("./wpt" if wpt_path == "wpt" else wpt_path,
+                                          hosts_path)
                 raise WptrunError(message)
 
 
@@ -277,6 +283,8 @@ class Chrome(BrowserSetup):
         if kwargs["browser_channel"] == "dev":
             logger.info("Automatically turning on experimental features for Chrome Dev")
             kwargs["binary_args"].append("--enable-experimental-web-platform-features")
+            # HACK(Hexcles): work around https://github.com/web-platform-tests/wpt/issues/16448
+            kwargs["webdriver_args"].append("--disable-build-check")
 
 
 class ChromeAndroid(BrowserSetup):
@@ -323,6 +331,29 @@ class Opera(BrowserSetup):
                 kwargs["webdriver_binary"] = webdriver_binary
             else:
                 raise WptrunError("Unable to locate or install operadriver binary")
+
+
+class EdgeChromium(BrowserSetup):
+    name = "MicrosoftEdge"
+    browser_cls = browser.EdgeChromium
+
+    def setup_kwargs(self, kwargs):
+        if kwargs["webdriver_binary"] is None:
+            webdriver_binary = self.browser.find_webdriver()
+
+            if webdriver_binary is None:
+                install = self.prompt_install("msedgedriver")
+
+                if install:
+                    logger.info("Downloading msedgedriver")
+                    webdriver_binary = self.browser.install_webdriver(dest=self.venv.bin_path)
+            else:
+                logger.info("Using webdriver binary %s" % webdriver_binary)
+
+            if webdriver_binary:
+                kwargs["webdriver_binary"] = webdriver_binary
+            else:
+                raise WptrunError("Unable to locate or install msedgedriver binary")
 
 
 class Edge(BrowserSetup):
@@ -463,6 +494,7 @@ product_setup = {
     "firefox": Firefox,
     "chrome": Chrome,
     "chrome_android": ChromeAndroid,
+    "edgechromium": EdgeChromium,
     "edge": Edge,
     "edge_webdriver": EdgeWebDriver,
     "ie": InternetExplorer,

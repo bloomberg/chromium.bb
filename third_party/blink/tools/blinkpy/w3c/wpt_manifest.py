@@ -222,7 +222,7 @@ class WPTManifest(object):
         """Generates MANIFEST.json on the specified directory."""
         finder = PathFinder(host.filesystem)
         wpt_exec_path = finder.path_from_blink_tools('blinkpy', 'third_party', 'wpt', 'wpt', 'wpt')
-        cmd = ['python', wpt_exec_path, 'manifest', '--work', '--no-download', '--tests-root', dest_path]
+        cmd = ['python', wpt_exec_path, 'manifest', '--no-download', '--tests-root', dest_path]
 
         # ScriptError will be raised if the command fails.
         host.executive.run_command(
