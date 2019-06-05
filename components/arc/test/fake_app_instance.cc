@@ -485,6 +485,11 @@ void FakeAppInstance::RequestAssistStructure(
   std::move(callback).Run(nullptr, nullptr);
 }
 
+void FakeAppInstance::IsInstallable(const std::string& package_name,
+                                    IsInstallableCallback callback) {
+  std::move(callback).Run(false);
+}
+
 void FakeAppInstance::LaunchIntentDeprecated(
     const std::string& intent_uri,
     const base::Optional<gfx::Rect>& dimension_on_screen) {

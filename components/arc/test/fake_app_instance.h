@@ -159,6 +159,8 @@ class FakeAppInstance : public mojom::AppInstance {
   void StartFastAppReinstallFlow(
       const std::vector<std::string>& package_names) override;
   void RequestAssistStructure(RequestAssistStructureCallback callback) override;
+  void IsInstallable(const std::string& package_name,
+                     IsInstallableCallback callback) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<mojom::AppInfo>& apps);

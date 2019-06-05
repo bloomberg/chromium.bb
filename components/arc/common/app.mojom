@@ -354,7 +354,7 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 34
+// Next method ID: 35
 // Deprecated method IDs: 2, 3, 13
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
@@ -492,4 +492,10 @@ interface AppInstance {
   [MinVersion=37] RequestAssistStructure@29() =>
         (ax.mojom.AssistantExtra? assistant_extra,
          ax.mojom.AssistantTree? assistant_tree);
+
+  // Queries whether |package_name| is installable for the current user. This
+  // may return false if the user has already installed |package_name|, or if
+  // it isn't available in the user's store.
+  [MinVersion=43] IsInstallable@34(string package_name) =>
+      (bool is_installable);
 };
