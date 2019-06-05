@@ -2290,7 +2290,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4508051413094283164">Obre-ho tot en una finestra d'incògnit</translation>
 <translation id="4508265954913339219">S'ha produït un error en l'activació.</translation>
 <translation id="4508765956121923607">Visualitza l'&amp;origen</translation>
-<translation id="451407183922382411">Amb tecnologia de: <ph name="COMPANY_NAME" /></translation>
+<translation id="451407183922382411">Amb la tecnologia de: <ph name="COMPANY_NAME" /></translation>
 <translation id="4514542542275172126">Configura un usuari supervisat nou</translation>
 <translation id="4514610446763173167">Reprodueix o posa en pausa el vídeo</translation>
 <translation id="451515744433878153">Suprimeix</translation>
@@ -4078,7 +4078,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7270858098575133036">Pregunta'm quan un lloc vulgui utilitzar els missatges exclusius del sistema per accedir a dispositius MIDI</translation>
 <translation id="7272674038937250585">No s'ha proporcionat cap descripció</translation>
 <translation id="7273110280511444812">darrera connexió el <ph name="DATE" /></translation>
-<translation id="727441411541283857"><ph name="PERCENTAGE" />% - Temps restant fins que es completi la càrrega: <ph name="TIME" /></translation>
+<translation id="727441411541283857"><ph name="PERCENTAGE" />% - <ph name="TIME" /> per completar la càrrega</translation>
 <translation id="727952162645687754">Error de baixada</translation>
 <translation id="7279701417129455881">Gestiona el bloqueig de galetes...</translation>
 <translation id="7280041992884344566">S'ha produït un error mentre Chrome cercava programari nociu</translation>
