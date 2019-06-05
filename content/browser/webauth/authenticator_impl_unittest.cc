@@ -2495,29 +2495,38 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
 TEST_F(AuthenticatorImplTest, Transports) {
   TestServiceManagerContext smc;
   NavigateAndCommit(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  auto bluetooth_values = SetUpMockBluetooth();
+  SetTransports(device::GetAllTransportProtocols());
 
   for (auto protocol :
        {device::ProtocolVersion::kU2f, device::ProtocolVersion::kCtap2}) {
     SCOPED_TRACE(static_cast<int>(protocol));
-
     virtual_device_factory_->SetSupportedProtocol(protocol);
 
-    AuthenticatorPtr authenticator = ConnectToAuthenticator();
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
-    callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+    for (const auto transport : std::map<device::FidoTransportProtocol,
+                                         blink::mojom::AuthenticatorTransport>(
+             {{device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
+               blink::mojom::AuthenticatorTransport::USB},
+              {device::FidoTransportProtocol::kBluetoothLowEnergy,
+               blink::mojom::AuthenticatorTransport::BLE},
+              {device::FidoTransportProtocol::kNearFieldCommunication,
+               blink::mojom::AuthenticatorTransport::NFC}})) {
+      virtual_device_factory_->SetTransport(transport.first);
 
-    const std::vector<blink::mojom::AuthenticatorTransport>& transports(
-        callback_receiver.value()->transports);
-    ASSERT_EQ(2u, transports.size());
-    EXPECT_EQ(blink::mojom::AuthenticatorTransport::USB, transports[0]);
-    // VirtualFidoDevice generates an attestation certificate that asserts NFC
-    // support via an extension.
-    EXPECT_EQ(blink::mojom::AuthenticatorTransport::NFC, transports[1]);
+      PublicKeyCredentialCreationOptionsPtr options =
+          GetTestPublicKeyCredentialCreationOptions();
+      TestMakeCredentialCallback callback_receiver;
+      authenticator->MakeCredential(std::move(options),
+                                    callback_receiver.callback());
+      callback_receiver.WaitForCallback();
+      EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+
+      const std::vector<blink::mojom::AuthenticatorTransport>& transports(
+          callback_receiver.value()->transports);
+      ASSERT_EQ(1u, transports.size());
+      EXPECT_EQ(transport.second, transports[0]);
+    }
   }
 }
 

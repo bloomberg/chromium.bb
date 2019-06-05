@@ -1,0 +1,5 @@
+include_rules = [
+  # For parsing and validating fido enums in protocol/webauthn_handler.cc.
+  "+device/fido/fido_constants.h",
+  "+device/fido/fido_transport_protocol.h",
+]

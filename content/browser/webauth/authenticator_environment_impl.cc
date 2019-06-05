@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "content/browser/webauth/virtual_discovery.h"
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_switches.h"
 #include "device/fido/fido_discovery_factory.h"
 
@@ -39,8 +38,8 @@ AuthenticatorEnvironmentImpl::AuthenticatorEnvironmentImpl() {
 AuthenticatorEnvironmentImpl::~AuthenticatorEnvironmentImpl() = default;
 
 device::FidoDiscoveryFactory* AuthenticatorEnvironmentImpl::GetFactory(
-    RenderFrameHost* host) {
-  auto* factory = GetVirtualFactoryFor(host);
+    FrameTreeNode* node) {
+  auto* factory = GetVirtualFactoryFor(node);
   if (factory)
     return factory;
   return discovery_factory_.get();
@@ -51,32 +50,42 @@ device::FidoDiscoveryFactory* AuthenticatorEnvironmentImpl::GetFactory() {
 }
 
 void AuthenticatorEnvironmentImpl::EnableVirtualAuthenticatorFor(
-    RenderFrameHost* host) {
+    FrameTreeNode* node) {
   // Do not create a new virtual authenticator if there is one already defined
-  // for the |host|.
-  if (base::ContainsKey(virtual_discovery_factories_, host))
+  // for the |node|.
+  if (base::ContainsKey(virtual_discovery_factories_, node))
     return;
-  virtual_discovery_factories_[host] =
+
+  node->AddObserver(this);
+  virtual_discovery_factories_[node] =
       std::make_unique<VirtualFidoDiscoveryFactory>();
 }
 
 void AuthenticatorEnvironmentImpl::DisableVirtualAuthenticatorFor(
-    RenderFrameHost* host) {
-  if (base::ContainsKey(virtual_discovery_factories_, host))
-    virtual_discovery_factories_.erase(host);
+    FrameTreeNode* node) {
+  if (!base::ContainsKey(virtual_discovery_factories_, node))
+    return;
+
+  node->RemoveObserver(this);
+  virtual_discovery_factories_.erase(node);
+}
+
+VirtualFidoDiscoveryFactory* AuthenticatorEnvironmentImpl::GetVirtualFactoryFor(
+    FrameTreeNode* node) {
+  do {
+    if (base::ContainsKey(virtual_discovery_factories_, node)) {
+      return virtual_discovery_factories_[node].get();
+    }
+  } while ((node = node->parent()));
+  return nullptr;
 }
 
 void AuthenticatorEnvironmentImpl::AddVirtualAuthenticatorBinding(
-    RenderFrameHost* host,
+    FrameTreeNode* node,
     blink::test::mojom::VirtualAuthenticatorManagerRequest request) {
-  auto* factory = GetVirtualFactoryFor(host);
+  auto* factory = GetVirtualFactoryFor(node);
   DCHECK(factory);
   factory->AddBinding(std::move(request));
-}
-
-void AuthenticatorEnvironmentImpl::ReplaceDefaultDiscoveryFactoryForTesting(
-    std::unique_ptr<device::FidoDiscoveryFactory> factory) {
-  discovery_factory_ = std::move(factory);
 }
 
 void AuthenticatorEnvironmentImpl::OnDiscoveryDestroyed(
@@ -86,14 +95,14 @@ void AuthenticatorEnvironmentImpl::OnDiscoveryDestroyed(
   }
 }
 
-VirtualFidoDiscoveryFactory* AuthenticatorEnvironmentImpl::GetVirtualFactoryFor(
-    RenderFrameHost* host) {
-  do {
-    if (base::ContainsKey(virtual_discovery_factories_, host)) {
-      return virtual_discovery_factories_[host].get();
-    }
-  } while ((host = host->GetParent()));
-  return nullptr;
+void AuthenticatorEnvironmentImpl::ReplaceDefaultDiscoveryFactoryForTesting(
+    std::unique_ptr<device::FidoDiscoveryFactory> factory) {
+  discovery_factory_ = std::move(factory);
+}
+
+void AuthenticatorEnvironmentImpl::OnFrameTreeNodeDestroyed(
+    FrameTreeNode* node) {
+  DisableVirtualAuthenticatorFor(node);
 }
 
 }  // namespace content

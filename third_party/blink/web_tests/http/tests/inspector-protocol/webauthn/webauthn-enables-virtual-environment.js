@@ -1,15 +1,13 @@
 (async function(testRunner) {
   var {page, session, dp} =
-      await testRunner.startBlank(
+      await testRunner.startURL(
+          "https://devtools.test:8443/inspector-protocol/webauthn/resources/create-credential-test.https.html",
           "Check that calling WebAuthn.enable starts the WebAuthn virtual " +
           "authenticator environment.");
 
-  await page.navigate(
-      "https://devtools.test:8443/inspector-protocol/webauthn/resources/create-credential-test.https.html");
-
   await dp.WebAuthn.enable();
 
-  const result = await session.evaluateAsync("registerCredential()");
-  testRunner.log(result);
+  const result = JSON.parse(await session.evaluateAsync("registerCredential()"));
+  testRunner.log(result.status);
   testRunner.completeTest();
 })

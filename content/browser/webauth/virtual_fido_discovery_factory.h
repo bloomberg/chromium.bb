@@ -37,6 +37,19 @@ class CONTENT_EXPORT VirtualFidoDiscoveryFactory
   VirtualFidoDiscoveryFactory();
   ~VirtualFidoDiscoveryFactory() override;
 
+  // Create an authenticator that will generate virtual devices for the given
+  // parameters.
+  VirtualAuthenticator* CreateAuthenticator(
+      device::ProtocolVersion protocol,
+      device::FidoTransportProtocol transport,
+      device::AuthenticatorAttachment attachment,
+      bool has_resident_key,
+      bool has_user_verification);
+
+  // Removes the authenticator with the given |id|. Returns true if an
+  // authenticator matched the |id|, false otherwise.
+  bool RemoveAuthenticator(const std::string& id);
+
   void AddBinding(
       blink::test::mojom::VirtualAuthenticatorManagerRequest request);
 

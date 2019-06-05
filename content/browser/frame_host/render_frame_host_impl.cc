@@ -942,11 +942,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (delegate_ && was_created)
     delegate_->RenderFrameDeleted(this);
 
-#if !defined(OS_ANDROID)
-  AuthenticatorEnvironmentImpl::GetInstance()->DisableVirtualAuthenticatorFor(
-      this);
-#endif  // !defined(OS_ANDROID)
-
   // Ensure that the render process host has been notified that all audio
   // streams from this frame have terminated. This is required to ensure the
   // process host has the correct media stream count, which affects its
@@ -6022,8 +6017,8 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableWebAuthTestingAPI)) {
       auto* environment_singleton = AuthenticatorEnvironmentImpl::GetInstance();
-      environment_singleton->EnableVirtualAuthenticatorFor(this);
-      environment_singleton->AddVirtualAuthenticatorBinding(this,
+      environment_singleton->EnableVirtualAuthenticatorFor(frame_tree_node_);
+      environment_singleton->AddVirtualAuthenticatorBinding(frame_tree_node_,
                                                             std::move(request));
     }
   }

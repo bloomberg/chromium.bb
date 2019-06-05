@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_type_converters.h"
 #include "content/public/browser/browser_context.h"
@@ -565,7 +566,8 @@ void AuthenticatorCommon::StartMakeCredentialRequest() {
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
       connector_,
       AuthenticatorEnvironmentImpl::GetInstance()->GetFactory(
-          render_frame_host_),
+          static_cast<RenderFrameHostImpl*>(render_frame_host_)
+              ->frame_tree_node()),
       GetTransports(caller_origin_, transports_),
       *ctap_make_credential_request_, *authenticator_selection_criteria_,
       base::BindOnce(&AuthenticatorCommon::OnRegisterResponse,
@@ -601,7 +603,8 @@ void AuthenticatorCommon::StartGetAssertionRequest() {
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
       connector_,
       AuthenticatorEnvironmentImpl::GetInstance()->GetFactory(
-          render_frame_host_),
+          static_cast<RenderFrameHostImpl*>(render_frame_host_)
+              ->frame_tree_node()),
       GetTransports(caller_origin_, transports_), *ctap_get_assertion_request_,
       base::BindOnce(&AuthenticatorCommon::OnSignResponse,
                      weak_factory_.GetWeakPtr()));

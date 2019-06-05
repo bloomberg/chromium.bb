@@ -150,11 +150,27 @@ VirtualFidoDevice::GenerateAttestationCertificate(
   // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-authenticator-transports-extension-v1.2-ps-20170411.html#fido-u2f-certificate-transports-extension
   static constexpr uint8_t kTransportTypesOID[] = {
       0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0xe5, 0x1c, 0x02, 0x01, 0x01};
-  static constexpr uint8_t kTransportTypesContents[] = {
-      3,           // BIT STRING
-      2,           // two bytes long
-      4,           // four trailing bits unused
-      0b00110000,  // USB + NFC asserted
+  uint8_t transport_bit;
+  switch (DeviceTransport()) {
+    case FidoTransportProtocol::kBluetoothLowEnergy:
+    case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
+      transport_bit = 1;
+      break;
+    case FidoTransportProtocol::kUsbHumanInterfaceDevice:
+      transport_bit = 2;
+      break;
+    case FidoTransportProtocol::kNearFieldCommunication:
+      transport_bit = 3;
+      break;
+    case FidoTransportProtocol::kInternal:
+      transport_bit = 4;
+      break;
+  }
+  const uint8_t kTransportTypesContents[] = {
+      3,                            // BIT STRING
+      2,                            // two bytes long
+      8 - transport_bit - 1,        // trailing bits unused
+      0b10000000 >> transport_bit,  // transport
   };
   const std::vector<net::x509_util::Extension> extensions = {
       {kTransportTypesOID, false /* not critical */, kTransportTypesContents},
