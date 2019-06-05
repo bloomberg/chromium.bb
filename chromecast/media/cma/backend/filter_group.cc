@@ -36,24 +36,26 @@ void FilterGroup::AddStreamType(const std::string& stream_type) {
   stream_types_.push_back(stream_type);
 }
 
-void FilterGroup::Initialize(int output_samples_per_second,
-                             int output_frames_per_write) {
-  output_samples_per_second_ = output_samples_per_second;
-  output_frames_per_write_ = output_frames_per_write;
+void FilterGroup::Initialize(const AudioPostProcessor2::Config& output_config) {
+  output_config_ = output_config;
 
-  CHECK(post_processing_pipeline_->SetOutputSampleRate(
-      output_samples_per_second_));
+  CHECK(post_processing_pipeline_->SetOutputConfig(output_config_));
   input_samples_per_second_ = post_processing_pipeline_->GetInputSampleRate();
-  input_frames_per_write_ = output_frames_per_write *
+  input_frames_per_write_ = output_config_.output_frames_per_write *
                             input_samples_per_second_ /
-                            output_samples_per_second_;
-  DCHECK_EQ(input_frames_per_write_ * output_samples_per_second_,
-            output_frames_per_write_ * input_samples_per_second_)
+                            output_config_.output_sample_rate;
+  DCHECK_EQ(input_frames_per_write_ * output_config_.output_sample_rate,
+            output_config_.output_frames_per_write * input_samples_per_second_)
       << "Unable to produce stable buffer sizes for resampling rate "
-      << input_samples_per_second_ << " : " << output_samples_per_second_;
+      << input_samples_per_second_ << " : "
+      << output_config_.output_sample_rate;
+
+  AudioPostProcessor2::Config input_config = output_config;
+  input_config.output_sample_rate = input_samples_per_second_;
+  input_config.output_frames_per_write = input_frames_per_write_;
 
   for (FilterGroup* input : mixed_inputs_) {
-    input->Initialize(input_samples_per_second_, input_frames_per_write_);
+    input->Initialize(input_config);
   }
   post_processing_pipeline_->SetContentType(content_type_);
   active_inputs_.clear();
@@ -79,8 +81,8 @@ void FilterGroup::RemoveInput(MixerInput* input) {
 float FilterGroup::MixAndFilter(
     int num_output_frames,
     MediaPipelineBackend::AudioDecoder::RenderingDelay rendering_delay) {
-  DCHECK_NE(output_samples_per_second_, 0);
-  DCHECK_EQ(num_output_frames, output_frames_per_write_);
+  DCHECK_NE(output_config_.output_sample_rate, 0);
+  DCHECK_EQ(num_output_frames, output_config_.output_frames_per_write);
 
   float volume = 0.0f;
   AudioContentType content_type = static_cast<AudioContentType>(-1);
@@ -184,7 +186,7 @@ float* FilterGroup::GetOutputBuffer() {
 }
 
 int64_t FilterGroup::GetRenderingDelayMicroseconds() {
-  if (output_samples_per_second_ == 0) {
+  if (output_config_.output_sample_rate == 0) {
     return 0;
   }
   return delay_seconds_ * base::Time::kMicrosecondsPerSecond;
@@ -266,8 +268,8 @@ void FilterGroup::PrintTopology() const {
   }
   LOG(INFO) << all_inputs << ": " << num_channels_ << "ch@"
             << input_samples_per_second_ << "hz -> [GROUP]" << name_ << " -> "
-            << GetOutputChannelCount() << "ch@" << output_samples_per_second_
-            << "hz";
+            << GetOutputChannelCount() << "ch@"
+            << output_config_.output_sample_rate << "hz";
 }
 
 }  // namespace media

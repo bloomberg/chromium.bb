@@ -40,7 +40,7 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   float* GetOutputBuffer() override;
   int NumOutputChannels() const override;
 
-  bool SetOutputSampleRate(int sample_rate) override;
+  bool SetOutputConfig(const AudioPostProcessor2::Config& config) override;
   int GetInputSampleRate() const override;
   bool IsRinging() override;
 
@@ -55,7 +55,7 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   // structs.
   typedef struct {
     std::unique_ptr<AudioPostProcessor2> ptr;
-    double output_frames_per_input_frame;
+    int input_frames_per_write;
     std::string name;
   } PostProcessorInfo;
 

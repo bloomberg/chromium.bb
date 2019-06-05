@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chromecast/media/base/aligned_buffer.h"
+#include "chromecast/public/media/audio_post_processor2_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/volume_control.h"
 
@@ -53,13 +54,10 @@ class FilterGroup {
   // Recursively sets the sample rate of the post-processors and FilterGroups.
   // This should only be called externally on the output node of the FilterGroup
   // tree.
-  // The output rate of this group will be |output_samples_per_second|.
-  // The output block size, i.e. the number of frames written in each call to
-  // MixAndFilter() of this group will be |output_frames_per_write|.
   // Groups that feed this group may receive different values due to resampling.
   // After calling Initialize(), input_samples_per_second() and
   // input_frames_per_write() may be called to determine the input rate/size.
-  void Initialize(int output_samples_per_second, int output_frames_per_write);
+  void Initialize(const AudioPostProcessor2::Config& output_config);
 
   // Adds/removes |input| from |active_inputs_|.
   void AddInput(MixerInput* input);
@@ -130,9 +128,8 @@ class FilterGroup {
   base::flat_set<MixerInput*> active_inputs_;
 
   int playout_channel_selection_ = kChannelAll;
-  int output_samples_per_second_ = 0;
+  AudioPostProcessor2::Config output_config_;
   int input_samples_per_second_ = 0;
-  int output_frames_per_write_ = 0;
   int input_frames_per_write_ = 0;
   int frames_zeroed_ = 0;
   float last_volume_ = 0.0;

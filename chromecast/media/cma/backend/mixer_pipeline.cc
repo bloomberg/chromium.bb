@@ -12,6 +12,7 @@
 #include "chromecast/media/cma/backend/filter_group.h"
 #include "chromecast/media/cma/backend/post_processing_pipeline_impl.h"
 #include "chromecast/media/cma/backend/post_processing_pipeline_parser.h"
+#include "chromecast/public/media/audio_post_processor2_shlib.h"
 #include "media/audio/audio_device_description.h"
 
 namespace chromecast {
@@ -162,7 +163,11 @@ void MixerPipeline::Initialize(int output_samples_per_second,
                                int frames_per_write) {
   // The output group will recursively set the sample rate of all other
   // FilterGroups.
-  output_group_->Initialize(output_samples_per_second, frames_per_write);
+  AudioPostProcessor2::Config config;
+  config.output_sample_rate = output_samples_per_second;
+  config.system_output_sample_rate = output_samples_per_second;
+  config.output_frames_per_write = frames_per_write;
+  output_group_->Initialize(config);
   output_group_->PrintTopology();
 }
 

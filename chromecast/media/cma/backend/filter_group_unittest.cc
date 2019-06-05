@@ -10,6 +10,7 @@
 #include "chromecast/media/cma/backend/mock_mixer_source.h"
 #include "chromecast/media/cma/backend/post_processing_pipeline.h"
 #include "chromecast/media/cma/backend/stream_mixer.h"
+#include "chromecast/public/media/audio_post_processor2_shlib.h"
 #include "chromecast/public/volume_control.h"
 #include "media/base/audio_bus.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -57,11 +58,8 @@ class MockPostProcessingPipeline : public PostProcessingPipeline {
   MOCK_METHOD1(UpdatePlayoutChannel, void(int));
 
  protected:
-  float* output_buffer_;
-
- private:
-  bool SetOutputSampleRate(int sample_rate) override {
-    sample_rate_ = sample_rate;
+  bool SetOutputConfig(const AudioPostProcessor2::Config& config) override {
+    sample_rate_ = config.output_sample_rate;
     return true;
   }
   int GetInputSampleRate() const override { return sample_rate_; }
@@ -78,6 +76,7 @@ class MockPostProcessingPipeline : public PostProcessingPipeline {
     return 0;
   }
 
+  float* output_buffer_;
   const int num_output_channels_;
   int sample_rate_;
 
@@ -88,7 +87,8 @@ class MockPostProcessingPipeline : public PostProcessingPipeline {
 class InvertChannelPostProcessor : public MockPostProcessingPipeline {
  public:
   explicit InvertChannelPostProcessor(int channels, int channel_to_invert)
-      : channels_(channels), channel_to_invert_(channel_to_invert) {
+      : MockPostProcessingPipeline(channels),
+        channel_to_invert_(channel_to_invert) {
     ON_CALL(*this, ProcessFrames(_, _, _, _))
         .WillByDefault(testing::Invoke(
             this, &InvertChannelPostProcessor::DoInvertChannel));
@@ -111,28 +111,18 @@ class InvertChannelPostProcessor : public MockPostProcessingPipeline {
                       bool is_silence) {
     output_buffer_ = data;
     for (int fr = 0; fr < num_frames; ++fr) {
-      for (int ch = 0; ch < channels_; ++ch) {
+      for (int ch = 0; ch < num_output_channels_; ++ch) {
         if (ch == channel_to_invert_) {
-          data[fr * channels_ + ch] *= -1;
+          data[fr * num_output_channels_ + ch] *= -1;
         }
       }
     }
     return 0;
   }
 
-  bool SetOutputSampleRate(int sample_rate) override {
-    sample_rate_ = sample_rate;
-    return true;
-  }
-  int GetInputSampleRate() const override { return sample_rate_; }
-
-  bool IsRinging() override { return false; }
-  int delay() { return 0; }
   std::string name() const { return "invert"; }
 
-  int channels_;
   int channel_to_invert_;
-  int sample_rate_;
 
   DISALLOW_COPY_AND_ASSIGN(InvertChannelPostProcessor);
 };
@@ -184,7 +174,11 @@ class FilterGroupTest : public testing::Test {
     filter_group_ = std::make_unique<FilterGroup>(
         kNumInputChannels, "test_filter", std::move(post_processor));
     input_ = std::make_unique<MixerInput>(&source_, filter_group_.get());
-    filter_group_->Initialize(kInputSampleRate, kInputFrames);
+    AudioPostProcessor2::Config config;
+    config.output_sample_rate = kInputSampleRate;
+    config.system_output_sample_rate = kInputSampleRate;
+    config.output_frames_per_write = kInputFrames;
+    filter_group_->Initialize(config);
     filter_group_->AddInput(input_.get());
     filter_group_->UpdatePlayoutChannel(kChannelAll);
   }

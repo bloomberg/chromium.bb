@@ -121,6 +121,9 @@ double PostProcessingPipelineImpl::ProcessFrames(float* data,
                                                  bool is_silence) {
   DCHECK_GT(input_sample_rate_, 0);
   DCHECK(data);
+  if (processors_.size() > 0) {
+    DCHECK_EQ(processors_[0].input_frames_per_write, num_input_frames);
+  }
 
   output_buffer_ = data;
 
@@ -137,12 +140,9 @@ double PostProcessingPipelineImpl::ProcessFrames(float* data,
 
   delay_s_ = 0;
   for (auto& processor : processors_) {
-    processor.ptr->ProcessFrames(output_buffer_, num_input_frames, cast_volume_,
+    processor.ptr->ProcessFrames(output_buffer_,
+                                 processor.input_frames_per_write, cast_volume_,
                                  current_dbfs_);
-    DCHECK_EQ(
-        num_input_frames * processor.output_frames_per_input_frame,
-        std::floor(num_input_frames * processor.output_frames_per_input_frame));
-    num_input_frames *= processor.output_frames_per_input_frame;
     const auto& status = processor.ptr->GetStatus();
     delay_s_ += static_cast<double>(status.rendering_delay_frames) /
                 status.input_sample_rate;
@@ -161,26 +161,28 @@ float* PostProcessingPipelineImpl::GetOutputBuffer() {
   return output_buffer_;
 }
 
-bool PostProcessingPipelineImpl::SetOutputSampleRate(int sample_rate) {
-  output_sample_rate_ = sample_rate;
-  int processor_output_rate = sample_rate;
-  int processor_input_rate = sample_rate;
+bool PostProcessingPipelineImpl::SetOutputConfig(
+    const AudioPostProcessor2::Config& output_config) {
+  output_sample_rate_ = output_config.output_sample_rate;
+  AudioPostProcessor2::Config processor_config = output_config;
 
   // Each Processor's output rate must be the following processor's input rate.
   for (int i = static_cast<int>(processors_.size()) - 1; i >= 0; --i) {
-    AudioPostProcessor2::Config config;
-    config.output_sample_rate = processor_output_rate;
-    if (!processors_[i].ptr->SetConfig(config)) {
+    if (!processors_[i].ptr->SetConfig(processor_config)) {
       return false;
     }
-    processor_input_rate = processors_[i].ptr->GetStatus().input_sample_rate;
-    DCHECK_GT(processor_input_rate, 0) << processors_[i].name;
-    processors_[i].output_frames_per_input_frame =
-        static_cast<double>(processor_output_rate) / processor_input_rate;
-    processor_output_rate = processor_input_rate;
+    int input_sample_rate = processors_[i].ptr->GetStatus().input_sample_rate;
+    DCHECK_GT(input_sample_rate, 0)
+        << processors_[i].name << " did not set its sample rate";
+    processors_[i].input_frames_per_write =
+        processor_config.output_frames_per_write * input_sample_rate /
+        processor_config.output_sample_rate;
+    processor_config.output_sample_rate = input_sample_rate;
+    processor_config.output_frames_per_write =
+        processors_[i].input_frames_per_write;
   }
 
-  input_sample_rate_ = processor_input_rate;
+  input_sample_rate_ = processor_config.output_sample_rate;
   ringing_time_in_frames_ = GetRingingTimeInFrames();
   silence_frames_processed_ = 0;
   return true;

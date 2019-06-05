@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "chromecast/public/media/audio_post_processor2_shlib.h"
 #include "chromecast/public/volume_control.h"
 
 namespace base {
@@ -29,7 +30,8 @@ class PostProcessingPipeline {
   virtual float* GetOutputBuffer() = 0;
   virtual int NumOutputChannels() const = 0;
 
-  virtual bool SetOutputSampleRate(int sample_rate) = 0;
+  virtual bool SetOutputConfig(
+      const AudioPostProcessor2::Config& output_config) = 0;
   virtual int GetInputSampleRate() const = 0;
   virtual bool IsRinging() = 0;
   virtual void SetPostProcessorConfig(const std::string& name,
