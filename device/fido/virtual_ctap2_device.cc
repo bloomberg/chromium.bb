@@ -1334,7 +1334,14 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
   // Check for the get-modality command.
   auto it = request_map.find(
       cbor::Value(static_cast<int>(BioEnrollmentRequestKey::kGetModality)));
-  if (it != request_map.end() && it->second.GetBool()) {
+  if (it != request_map.end()) {
+    if (!it->second.is_bool()) {
+      return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+    }
+    if (!it->second.GetBool()) {
+      // This value is optional so sending |false| is prohibited by the spec.
+      return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+    }
     response_map.emplace(static_cast<int>(BioEnrollmentResponseKey::kModality),
                          static_cast<int>(BioEnrollmentModality::kFingerprint));
     *response =
@@ -1345,35 +1352,39 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
   // Check for the get-sensor-info command.
   it = request_map.find(
       cbor::Value(static_cast<int>(BioEnrollmentRequestKey::kSubCommand)));
-  if (it != request_map.end() &&
-      it->second.GetUnsigned() ==
+  if (it == request_map.end()) {
+    // Could not find a valid command, so return an error.
+    NOTREACHED();
+    return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+  }
+
+  if (!it->second.is_unsigned()) {
+    return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+  }
+
+  switch (static_cast<BioEnrollmentSubCommand>(it->second.GetUnsigned())) {
+    case BioEnrollmentSubCommand::kGetFingerprintSensorInfo:
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kModality),
+          static_cast<int>(BioEnrollmentModality::kFingerprint));
+
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kFingerprintKind),
+          static_cast<int>(BioEnrollmentFingerprintKind::kTouch));
+      response_map.emplace(
           static_cast<int>(
-              BioEnrollmentSubCommand::kGetFingerprintSensorInfo)) {
-    response_map.emplace(static_cast<int>(BioEnrollmentResponseKey::kModality),
-                         static_cast<int>(BioEnrollmentModality::kFingerprint));
+              BioEnrollmentResponseKey::kMaxCaptureSamplesRequiredForEnroll),
+          7);
 
-    response_map.emplace(
-        static_cast<int>(BioEnrollmentResponseKey::kFingerprintKind),
-        static_cast<int>(BioEnrollmentFingerprintKind::kTouch));
-    response_map.emplace(
-        static_cast<int>(
-            BioEnrollmentResponseKey::kMaxCaptureSamplesRequiredForEnroll),
-        7);
+      *response =
+          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      return CtapDeviceResponseCode::kSuccess;
 
-    *response =
-        cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
-    return CtapDeviceResponseCode::kSuccess;
+    default:
+      // Handle all other commands as if they were unsupported (will change
+      // when support is added).
+      return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
   }
-
-  // Handle all other commands as if they were unsupported (will change when
-  // support is added).
-  if (it != request_map.end()) {
-    return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
-  }
-
-  // Could not find a valid command, so return an error.
-  NOTREACHED();
-  return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
 }
 
 void VirtualCtap2Device::InitPendingRPs() {

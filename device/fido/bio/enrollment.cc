@@ -47,6 +47,9 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
   auto it = response_map.find(
       cbor::Value(static_cast<int>(BioEnrollmentResponseKey::kModality)));
   if (it != response_map.end()) {
+    if (!it->second.is_unsigned()) {
+      return base::nullopt;
+    }
     response.modality =
         static_cast<BioEnrollmentModality>(it->second.GetUnsigned());
   }
@@ -55,6 +58,9 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
   it = response_map.find(cbor::Value(
       static_cast<int>(BioEnrollmentResponseKey::kFingerprintKind)));
   if (it != response_map.end()) {
+    if (!it->second.is_unsigned()) {
+      return base::nullopt;
+    }
     response.fingerprint_kind =
         static_cast<BioEnrollmentFingerprintKind>(it->second.GetUnsigned());
   }
@@ -63,6 +69,9 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
   it = response_map.find(cbor::Value(static_cast<int>(
       BioEnrollmentResponseKey::kMaxCaptureSamplesRequiredForEnroll)));
   if (it != response_map.end()) {
+    if (!it->second.is_unsigned()) {
+      return base::nullopt;
+    }
     response.max_samples_for_enroll = it->second.GetUnsigned();
   }
 
