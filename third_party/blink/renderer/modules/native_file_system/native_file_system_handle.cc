@@ -32,56 +32,6 @@ NativeFileSystemHandle* NativeFileSystemHandle::CreateFromMojoEntry(
                    std::move(e->entry_handle->get_directory())));
 }
 
-ScriptPromise NativeFileSystemHandle::moveTo(
-    ScriptState* script_state,
-    NativeFileSystemDirectoryHandle* parent,
-    const String& new_name) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise result = resolver->Promise();
-
-  parent->MojoHandle()->MoveFrom(
-      Transfer(), new_name.IsEmpty() ? name() : new_name,
-      WTF::Bind(
-          [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result,
-             NativeFileSystemEntryPtr entry) {
-            if (result->error_code == base::File::FILE_OK) {
-              resolver->Resolve(NativeFileSystemHandle::CreateFromMojoEntry(
-                  std::move(entry)));
-            } else {
-              resolver->Reject(
-                  file_error::CreateDOMException(result->error_code));
-            }
-          },
-          WrapPersistent(resolver)));
-
-  return result;
-}
-
-ScriptPromise NativeFileSystemHandle::copyTo(
-    ScriptState* script_state,
-    NativeFileSystemDirectoryHandle* parent,
-    const String& new_name) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise result = resolver->Promise();
-
-  parent->MojoHandle()->CopyFrom(
-      Transfer(), new_name.IsEmpty() ? name() : new_name,
-      WTF::Bind(
-          [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result,
-             NativeFileSystemEntryPtr entry) {
-            if (result->error_code == base::File::FILE_OK) {
-              resolver->Resolve(NativeFileSystemHandle::CreateFromMojoEntry(
-                  std::move(entry)));
-            } else {
-              resolver->Reject(
-                  file_error::CreateDOMException(result->error_code));
-            }
-          },
-          WrapPersistent(resolver)));
-
-  return result;
-}
-
 ScriptPromise NativeFileSystemHandle::remove(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();

@@ -50,22 +50,6 @@ interface NativeFileSystemDirectoryHandle {
   // until all entries have been retrieved.
   GetEntries() => (NativeFileSystemError result, array<NativeFileSystemEntry> entries);
 
-  // Creates a new file or directory, or overwrites an existing one in this
-  // directory by moving the file or directory represented by |source|. The
-  // new file or directory will be named |name|.
-  // Returns an error if the operation fails, or a handle to the newly created
-  // file or directory if the operation succeeds.
-  MoveFrom(NativeFileSystemTransferToken source, string name) =>
-      (NativeFileSystemError result, NativeFileSystemEntry? entry);
-
-  // Creates a new file or directory, or overwrites an existing one in this
-  // directory by copying the file or directory represented by |source|. The
-  // new file or directory will be named |name|.
-  // Returns an error if the operation fails, or a handle to the newly created
-  // file or directory if the operation succeeds.
-  CopyFrom(NativeFileSystemTransferToken source, string name) =>
-      (NativeFileSystemError result, NativeFileSystemEntry? entry);
-
   // Deletes this directory. To delete recursively, set |recursive| to true.
   Remove(bool recurse) => (NativeFileSystemError result);
 

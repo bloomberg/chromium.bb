@@ -14,8 +14,6 @@
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom.h"
 
 namespace content {
-class NativeFileSystemTransferTokenImpl;
-
 // This is the browser side implementation of the
 // NativeFileSystemDirectoryHandle mojom interface. Instances of this class are
 // owned by the NativeFileSystemManagerImpl instance passed in to the
@@ -42,12 +40,6 @@ class NativeFileSystemDirectoryHandleImpl
                     bool create,
                     GetDirectoryCallback callback) override;
   void GetEntries(GetEntriesCallback callback) override;
-  void MoveFrom(blink::mojom::NativeFileSystemTransferTokenPtr source,
-                const std::string& name,
-                MoveFromCallback callback) override;
-  void CopyFrom(blink::mojom::NativeFileSystemTransferTokenPtr source,
-                const std::string& name,
-                CopyFromCallback callback) override;
   void Remove(bool recurse, RemoveCallback callback) override;
   void Transfer(
       blink::mojom::NativeFileSystemTransferTokenRequest token) override;
@@ -67,17 +59,6 @@ class NativeFileSystemDirectoryHandleImpl
       base::File::Error result,
       std::vector<filesystem::mojom::DirectoryEntry> file_list,
       bool has_more);
-
-  using CopyOrMoveCallback = MoveFromCallback;
-  void DoCopyOrMoveFrom(const std::string& new_name,
-                        bool is_copy,
-                        CopyOrMoveCallback callback,
-                        NativeFileSystemTransferTokenImpl* source);
-  void DidCopyOrMove(CopyOrMoveCallback callback,
-                     const std::string& new_name,
-                     const storage::FileSystemURL& new_url,
-                     bool is_directory,
-                     base::File::Error result);
 
   // Calculates a FileSystemURL for a (direct) child of this directory with the
   // given name.  Returns an error when |name| includes invalid input like "/".

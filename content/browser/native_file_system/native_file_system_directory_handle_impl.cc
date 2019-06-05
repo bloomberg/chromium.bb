@@ -131,32 +131,6 @@ void NativeFileSystemDirectoryHandleImpl::GetEntries(
                  base::Owned(new ReadDirectoryState{std::move(callback)})));
 }
 
-void NativeFileSystemDirectoryHandleImpl::MoveFrom(
-    NativeFileSystemTransferTokenPtr source,
-    const std::string& name,
-    MoveFromCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  manager()->ResolveTransferToken(
-      std::move(source),
-      base::BindOnce(&NativeFileSystemDirectoryHandleImpl::DoCopyOrMoveFrom,
-                     weak_factory_.GetWeakPtr(), name, /*is_copy=*/false,
-                     std::move(callback)));
-}
-
-void NativeFileSystemDirectoryHandleImpl::CopyFrom(
-    NativeFileSystemTransferTokenPtr source,
-    const std::string& name,
-    CopyFromCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  manager()->ResolveTransferToken(
-      std::move(source),
-      base::BindOnce(&NativeFileSystemDirectoryHandleImpl::DoCopyOrMoveFrom,
-                     weak_factory_.GetWeakPtr(), name, /*is_copy=*/true,
-                     std::move(callback)));
-}
-
 void NativeFileSystemDirectoryHandleImpl::Remove(bool recurse,
                                                  RemoveCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -243,67 +217,6 @@ void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
         .Run(NativeFileSystemError::New(base::File::FILE_OK),
              std::move(state->entries));
   }
-}
-
-void NativeFileSystemDirectoryHandleImpl::DoCopyOrMoveFrom(
-    const std::string& new_name,
-    bool is_copy,
-    CopyOrMoveCallback callback,
-    NativeFileSystemTransferTokenImpl* source) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!source) {
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_NOT_FOUND), nullptr);
-    return;
-  }
-
-  storage::FileSystemURL url;
-  const base::File::Error file_error = GetChildURL(new_name, &url);
-  if (file_error != base::File::FILE_OK) {
-    std::move(callback).Run(NativeFileSystemError::New(file_error), nullptr);
-    return;
-  }
-
-  if (url == source->url()) {
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_INVALID_OPERATION),
-        nullptr);
-    return;
-  }
-
-  auto result_callback = base::BindOnce(
-      &NativeFileSystemDirectoryHandleImpl::DidCopyOrMove,
-      weak_factory_.GetWeakPtr(), std::move(callback), new_name, url,
-      source->type() ==
-          NativeFileSystemTransferTokenImpl::HandleType::kDirectory);
-  if (is_copy) {
-    operation_runner()->Copy(
-        source->url(), url, storage::FileSystemOperation::OPTION_NONE,
-        storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
-        /*progress_callback=*/base::NullCallback(), std::move(result_callback));
-  } else {
-    operation_runner()->Move(source->url(), url,
-                             storage::FileSystemOperation::OPTION_NONE,
-                             std::move(result_callback));
-  }
-}
-
-void NativeFileSystemDirectoryHandleImpl::DidCopyOrMove(
-    CopyOrMoveCallback callback,
-    const std::string& new_name,
-    const storage::FileSystemURL& new_url,
-    bool is_directory,
-    base::File::Error result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (result != base::File::FILE_OK) {
-    std::move(callback).Run(NativeFileSystemError::New(result), nullptr);
-    return;
-  }
-
-  std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
-                          CreateEntry(new_name, new_url, is_directory));
 }
 
 base::File::Error NativeFileSystemDirectoryHandleImpl::GetChildURL(
