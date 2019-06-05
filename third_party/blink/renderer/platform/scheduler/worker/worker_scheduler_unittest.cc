@@ -16,6 +16,15 @@
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
+// TODO(crbug.com/960984): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_PausableTasks DISABLED_PausableTasks
+#define MAYBE_NestedPauseHandlesTasks DISABLED_NestedPauseHandlesTasks
+#else
+#define MAYBE_PausableTasks PausableTasks
+#define MAYBE_NestedPauseHandlesTasks NestedPauseHandlesTasks
+#endif
+
 using testing::ElementsAre;
 using testing::ElementsAreArray;
 
@@ -272,7 +281,7 @@ TEST_F(WorkerSchedulerTest,
                          base::TimeTicks() + base::TimeDelta::FromSeconds(41)));
 }
 
-TEST_F(WorkerSchedulerTest, PausableTasks) {
+TEST_F(WorkerSchedulerTest, MAYBE_PausableTasks) {
   std::vector<std::string> run_order;
   auto pause_handle = worker_scheduler_->Pause();
   // Tests interlacing pausable, throttable and unpausable tasks and
@@ -291,7 +300,7 @@ TEST_F(WorkerSchedulerTest, PausableTasks) {
   EXPECT_THAT(run_order, testing::ElementsAre("T3", "T1", "T2"));
 }
 
-TEST_F(WorkerSchedulerTest, NestedPauseHandlesTasks) {
+TEST_F(WorkerSchedulerTest, MAYBE_NestedPauseHandlesTasks) {
   std::vector<std::string> run_order;
   auto pause_handle = worker_scheduler_->Pause();
   {
