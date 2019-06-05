@@ -11373,17 +11373,10 @@ static void set_params_rd_pick_inter_mode(
     unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES],
     struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *const cm = &cpi->common;
-  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   unsigned char segment_id = mbmi->segment_id;
-  int dst_width1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
-  int dst_width2[MAX_MB_PLANE] = { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
-                                   MAX_SB_SIZE >> 1 };
-  int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
-                                    MAX_SB_SIZE >> 1 };
-  int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
 
   for (int i = 0; i < MB_MODE_COUNT; ++i)
     for (int k = 0; k < REF_FRAMES; ++k) args->single_filter[i][k] = SWITCHABLE;
@@ -11467,12 +11460,19 @@ static void set_params_rd_pick_inter_mode(
 
   if (check_num_overlappable_neighbors(mbmi) &&
       is_motion_variation_allowed_bsize(bsize)) {
+    int dst_width1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
+    int dst_width2[MAX_MB_PLANE] = { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
+                                     MAX_SB_SIZE >> 1 };
+    int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
+                                      MAX_SB_SIZE >> 1 };
+    int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
     av1_build_prediction_by_above_preds(cm, xd, mi_row, mi_col,
                                         args->above_pred_buf, dst_width1,
                                         dst_height1, args->above_pred_stride);
     av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col,
                                        args->left_pred_buf, dst_width2,
                                        dst_height2, args->left_pred_stride);
+    const int num_planes = av1_num_planes(cm);
     av1_setup_dst_planes(xd->plane, bsize, &cm->cur_frame->buf, mi_row, mi_col,
                          0, num_planes);
     calc_target_weighted_pred(
