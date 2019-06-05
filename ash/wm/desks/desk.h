@@ -92,6 +92,10 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
 
   void NotifyContentChanged();
 
+  // Updates the backdrop availability and visibility on the containers (on all
+  // roots) associated with this desk.
+  void UpdateDeskBackdrops();
+
  private:
   void MoveWindowToDeskInternal(aura::Window* window, Desk* target_desk);
 

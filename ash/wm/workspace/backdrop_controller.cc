@@ -68,6 +68,11 @@ class BackdropEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(BackdropEventHandler);
 };
 
+bool InOverviewSession() {
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  return overview_controller && overview_controller->InOverviewSession();
+}
+
 }  // namespace
 
 BackdropController::BackdropController(aura::Window* container)
@@ -114,6 +119,15 @@ void BackdropController::OnPostWindowStateTypeChange() {
   UpdateBackdrop();
 }
 
+void BackdropController::OnDeskContentChanged() {
+  // Desk content changes may result in the need to update the backdrop even
+  // when overview is active, since the mini_view should show updated content.
+  // Example: when the last window needing backdrop is moved to another desk,
+  // the backdrop should be destroyed from the source desk, while created for
+  // the target desk, and the mini_views of both desks should be updated.
+  UpdateBackdropInternal();
+}
+
 void BackdropController::SetBackdropDelegate(
     std::unique_ptr<BackdropDelegate> delegate) {
   delegate_ = std::move(delegate);
@@ -121,46 +135,11 @@ void BackdropController::SetBackdropDelegate(
 }
 
 void BackdropController::UpdateBackdrop() {
-  // No need to continue update for recursive calls or in overview mode.
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (pause_update_ ||
-      (overview_controller && overview_controller->InOverviewSession())) {
-    return;
-  }
-
-  aura::Window* window = GetTopmostWindowWithBackdrop();
-  if (!window) {
-    // Destroy the backdrop since no suitable window was found.
-    Hide(/*destroy=*/true);
-    return;
-  }
-  // We are changing the order of windows which will cause recursion.
-  base::AutoReset<bool> lock(&pause_update_, true);
-  EnsureBackdropWidget();
-  UpdateAccessibilityMode();
-
-  if (window == backdrop_window_ && backdrop_->IsVisible()) {
-    Layout();
-    return;
-  }
-  if (window->GetRootWindow() != backdrop_window_->GetRootWindow())
+  // Skip updating while overview mode is active, since the backdrop is hidden.
+  if (pause_update_ || InOverviewSession())
     return;
 
-  // Update the animation type of |backdrop_window_| based on current top most
-  // window with backdrop.
-  SetBackdropAnimationType(wm::GetWindowState(window)->CanMaximize()
-                               ? wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END
-                               : ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-
-  Show();
-
-  SetBackdropAnimationType(::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
-
-  // Since the backdrop needs to be immediately behind the window and the
-  // stacking functions only guarantee a "it's above or below", we need
-  // to re-arrange the two windows twice.
-  container_->StackChildAbove(backdrop_window_, window);
-  container_->StackChildAbove(window, backdrop_window_);
+  UpdateBackdropInternal();
 }
 
 aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
@@ -244,6 +223,45 @@ void BackdropController::OnWallpaperPreviewStarted() {
   UpdateBackdrop();
 }
 
+void BackdropController::UpdateBackdropInternal() {
+  // Skip the recursive updates.
+  if (pause_update_)
+    return;
+
+  // We are either destroying the backdrop widget or changing the order of
+  // windows which will cause recursion.
+  base::AutoReset<bool> lock(&pause_update_, true);
+  aura::Window* window = GetTopmostWindowWithBackdrop();
+  if (!window) {
+    // Destroy the backdrop since no suitable window was found.
+    Hide(/*destroy=*/true);
+    return;
+  }
+
+  EnsureBackdropWidget();
+  UpdateAccessibilityMode();
+
+  if (window == backdrop_window_ && backdrop_->IsVisible()) {
+    Layout();
+    return;
+  }
+  if (window->GetRootWindow() != backdrop_window_->GetRootWindow())
+    return;
+
+  // Update the animation type of |backdrop_window_| based on current top most
+  // window with backdrop.
+  SetBackdropAnimationType(wm::GetWindowState(window)->CanMaximize()
+                               ? wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END
+                               : ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+
+  Show();
+
+  SetBackdropAnimationType(::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+
+  // Backdrop needs to be immediately behind the window.
+  container_->StackChildBelow(backdrop_window_, window);
+}
+
 void BackdropController::EnsureBackdropWidget() {
   if (backdrop_)
     return;
@@ -311,7 +329,11 @@ bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {
 
 void BackdropController::Show() {
   Layout();
-  backdrop_->Show();
+
+  // When overview is active, the backdrop should never be shown. However, it
+  // must be laid out, since it should show up properly in the mini_views.
+  if (!InOverviewSession())
+    backdrop_->Show();
 }
 
 void BackdropController::Hide(bool destroy, bool animate) {

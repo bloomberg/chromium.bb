@@ -55,6 +55,10 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
   void OnPostWindowStateTypeChange();
   void OnDisplayMetricsChanged();
 
+  // Called when the desk content is changed in order to update the state of the
+  // backdrop even if overview mode is active.
+  void OnDeskContentChanged();
+
   void SetBackdropDelegate(std::unique_ptr<BackdropDelegate> delegate);
 
   // Update the visibility of, and restack the backdrop relative to
@@ -88,6 +92,8 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
 
  private:
   friend class WorkspaceControllerTestApi;
+
+  void UpdateBackdropInternal();
 
   void EnsureBackdropWidget();
 
