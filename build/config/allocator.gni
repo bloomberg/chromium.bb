@@ -34,7 +34,7 @@ declare_args() {
   use_partition_alloc = !is_ios
 
   # Use the new tcmalloc. It's relevant only when use_allocator == "tcmalloc".
-  use_new_tcmalloc = !is_chromecast
+  use_new_tcmalloc = true
 }
 
 if (is_nacl) {
