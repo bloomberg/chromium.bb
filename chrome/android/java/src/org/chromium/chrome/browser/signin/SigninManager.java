@@ -27,6 +27,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
@@ -301,7 +302,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      */
     public boolean isSigninSupported() {
         return !ApiCompatibilityUtils.isDemoUser(mContext)
-                && mDelegate.isGooglePlayServicesPresent(mContext);
+                && mDelegate.isGooglePlayServicesPresent(mContext)
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY);
     }
 
     /**
