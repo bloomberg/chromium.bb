@@ -95,7 +95,7 @@ void SensorProxyImpl::Resume() {
 
 void SensorProxyImpl::UpdateSensorReading() {
   DCHECK(ShouldProcessReadings());
-  DCHECK(shared_buffer_handle_->is_valid());
+  DCHECK(shared_buffer_reader_);
 
   // Try to read the latest value from shared memory. Failure should not be
   // fatal because we only retry a finite number of times.
@@ -137,8 +137,7 @@ void SensorProxyImpl::ReportError(DOMExceptionCode code,
   // The m_sensor.reset() will release all callbacks and its bound parameters,
   // therefore, handleSensorError accepts messages by value.
   sensor_.reset();
-  shared_buffer_.reset();
-  shared_buffer_handle_.reset();
+  shared_buffer_reader_.reset();
   default_frequency_ = 0.0;
   frequency_limits_ = {0.0, 0.0};
   client_binding_.Close();
@@ -165,9 +164,6 @@ void SensorProxyImpl::OnSensorCreated(SensorCreationResult result,
   }
 
   DCHECK_EQ(SensorCreationResult::SUCCESS, result);
-  const size_t kReadBufferSize = sizeof(ReadingBuffer);
-
-  DCHECK_EQ(0u, params->buffer_offset % kReadBufferSize);
 
   mode_ = params->mode;
   if (!params->default_configuration) {
@@ -181,20 +177,13 @@ void SensorProxyImpl::OnSensorCreated(SensorCreationResult result,
   sensor_.Bind(std::move(params->sensor));
   client_binding_.Bind(std::move(params->client_request));
 
-  shared_buffer_handle_ = std::move(params->memory);
-  DCHECK(!shared_buffer_);
-  shared_buffer_ = shared_buffer_handle_->MapAtOffset(kReadBufferSize,
-                                                      params->buffer_offset);
-
-  if (!shared_buffer_) {
+  shared_buffer_reader_ = device::SensorReadingSharedBufferReader::Create(
+      std::move(params->memory), params->buffer_offset);
+  if (!shared_buffer_reader_) {
     HandleSensorError();
     return;
   }
 
-  const auto* buffer = static_cast<const device::SensorReadingSharedBuffer*>(
-      shared_buffer_.get());
-  shared_buffer_reader_ =
-      std::make_unique<device::SensorReadingSharedBufferReader>(buffer);
   shared_buffer_reader_->GetReading(&reading_);
 
   frequency_limits_.first = params->minimum_frequency;

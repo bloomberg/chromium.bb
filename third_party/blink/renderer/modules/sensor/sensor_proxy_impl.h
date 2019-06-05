@@ -80,8 +80,6 @@ class SensorProxyImpl final : public SensorProxy,
   device::mojom::blink::SensorPtr sensor_;
   mojo::Binding<device::mojom::blink::SensorClient> client_binding_;
 
-  mojo::ScopedSharedBufferHandle shared_buffer_handle_;
-  mojo::ScopedSharedBufferMapping shared_buffer_;
   std::unique_ptr<device::SensorReadingSharedBufferReader>
       shared_buffer_reader_;
   double default_frequency_ = 0.0;

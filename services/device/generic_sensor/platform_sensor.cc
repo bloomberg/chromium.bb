@@ -102,12 +102,7 @@ void PlatformSensor::RemoveClient(Client* client) {
 }
 
 bool PlatformSensor::GetLatestReading(SensorReading* result) {
-  if (!shared_buffer_reader_) {
-    shared_buffer_reader_ =
-        std::make_unique<SensorReadingSharedBufferReader>(reading_buffer_);
-  }
-
-  return shared_buffer_reader_->GetReading(result);
+  return SensorReadingSharedBufferReader::GetReading(reading_buffer_, result);
 }
 
 void PlatformSensor::UpdateSharedBufferAndNotifyClients(

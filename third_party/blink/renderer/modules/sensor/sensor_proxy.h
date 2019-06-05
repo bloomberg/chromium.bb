@@ -94,8 +94,6 @@ class SensorProxy : public GarbageCollectedFinalized<SensorProxy>,
   device::SensorReading reading_;
   mutable device::SensorReading remapped_reading_;
 
-  using ReadingBuffer = device::SensorReadingSharedBuffer;
-
  private:
   // PageVisibilityObserver overrides.
   void PageVisibilityChanged() override;
@@ -110,7 +108,7 @@ class SensorProxy : public GarbageCollectedFinalized<SensorProxy>,
   bool detached_ = false;
 
   static_assert(
-      sizeof(ReadingBuffer) ==
+      sizeof(device::SensorReadingSharedBuffer) ==
           device::mojom::blink::SensorInitParams::kReadBufferSizeForTests,
       "Check reading buffer size for tests");
 

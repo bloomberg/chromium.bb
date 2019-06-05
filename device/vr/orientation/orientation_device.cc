@@ -9,6 +9,7 @@
 #include "base/numerics/math_constants.h"
 #include "base/time/time.h"
 #include "device/vr/orientation/orientation_device.h"
+#include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "ui/display/display.h"
@@ -87,23 +88,14 @@ void VROrientationDevice::SensorReady(
 
   binding_.Bind(std::move(params->client_request));
 
-  shared_buffer_handle_ = std::move(params->memory);
-  DCHECK(!shared_buffer_);
-  shared_buffer_ = shared_buffer_handle_->MapAtOffset(kReadBufferSize,
-                                                      params->buffer_offset);
-
-  if (!shared_buffer_) {
+  shared_buffer_reader_ = device::SensorReadingSharedBufferReader::Create(
+      std::move(params->memory), params->buffer_offset);
+  if (!shared_buffer_reader_) {
     // If we cannot read data, we cannot supply a device.
     HandleSensorError();
     std::move(ready_callback_).Run();
     return;
   }
-
-  const device::SensorReadingSharedBuffer* buffer =
-      static_cast<const device::SensorReadingSharedBuffer*>(
-          shared_buffer_.get());
-  shared_buffer_reader_.reset(
-      new device::SensorReadingSharedBufferReader(buffer));
 
   default_config.set_frequency(kDefaultPumpFrequencyHz);
   sensor_.set_connection_error_handler(base::BindOnce(
@@ -134,8 +126,7 @@ void VROrientationDevice::RaiseError() {
 
 void VROrientationDevice::HandleSensorError() {
   sensor_.reset();
-  shared_buffer_handle_.reset();
-  shared_buffer_.reset();
+  shared_buffer_reader_.reset();
   binding_.Close();
 }
 

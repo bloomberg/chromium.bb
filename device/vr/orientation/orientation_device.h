@@ -76,8 +76,6 @@ class DEVICE_VR_EXPORT VROrientationDevice : public VRDeviceBase,
   gfx::Quaternion latest_pose_;
 
   mojom::SensorPtr sensor_;
-  mojo::ScopedSharedBufferHandle shared_buffer_handle_;
-  mojo::ScopedSharedBufferMapping shared_buffer_;
   std::unique_ptr<SensorReadingSharedBufferReader> shared_buffer_reader_;
   mojo::Binding<mojom::SensorClient> binding_;
 };

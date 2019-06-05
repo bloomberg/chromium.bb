@@ -79,8 +79,6 @@ class DeviceSensorEntry : public GarbageCollectedFinalized<DeviceSensorEntry>,
 
   device::mojom::blink::SensorType type_;
 
-  mojo::ScopedSharedBufferHandle shared_buffer_handle_;
-  mojo::ScopedSharedBufferMapping shared_buffer_;
   std::unique_ptr<device::SensorReadingSharedBufferReader>
       shared_buffer_reader_;
 };
