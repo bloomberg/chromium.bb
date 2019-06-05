@@ -290,6 +290,15 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
     : delegate_(delegate), profile_(profile), weak_factory_(this) {
   DCHECK(delegate_);
   order_controller_.reset(new TabStripModelOrderController(this));
+
+  constexpr base::TimeDelta kTabScrubbingHistogramIntervalTime =
+      base::TimeDelta::FromSeconds(30);
+
+  last_tab_switch_timestamp_ = base::TimeTicks::Now();
+  tab_scrubbing_interval_timer_.Start(
+      FROM_HERE, kTabScrubbingHistogramIntervalTime,
+      base::BindRepeating(&TabStripModel::RecordTabScrubbingMetrics,
+                          base::Unretained(this)));
 }
 
 TabStripModel::~TabStripModel() {
@@ -509,6 +518,23 @@ void TabStripModel::ActivateTabAt(int index, UserGestureDetails user_gesture) {
   DCHECK(ContainsIndex(index));
   TRACE_EVENT0("ui", "TabStripModel::ActivateTabAt");
 
+  // Maybe increment count of tabs 'scrubbed' by mouse or key press for
+  // histogram data.
+  if (user_gesture.type == GestureType::kMouse ||
+      user_gesture.type == GestureType::kKeyboard) {
+    constexpr base::TimeDelta kMaxTimeConsideredScrubbing =
+        base::TimeDelta::FromMilliseconds(1500);
+    base::TimeDelta elapsed_time_since_tab_switch =
+        base::TimeTicks::Now() - last_tab_switch_timestamp_;
+    if (elapsed_time_since_tab_switch <= kMaxTimeConsideredScrubbing) {
+      if (user_gesture.type == GestureType::kMouse)
+        ++tabs_scrubbed_by_mouse_press_count_;
+      else if (user_gesture.type == GestureType::kKeyboard)
+        ++tabs_scrubbed_by_key_press_count_;
+    }
+  }
+  last_tab_switch_timestamp_ = base::TimeTicks::Now();
+
   TabSwitchEventLatencyRecorder::EventType event_type;
   switch (user_gesture.type) {
     case GestureType::kMouse:
@@ -536,6 +562,15 @@ void TabStripModel::ActivateTabAt(int index, UserGestureDetails user_gesture) {
                    ? TabStripModelObserver::CHANGE_REASON_USER_GESTURE
                    : TabStripModelObserver::CHANGE_REASON_NONE,
                /*triggered_by_other_operation=*/false);
+}
+
+void TabStripModel::RecordTabScrubbingMetrics() {
+  UMA_HISTOGRAM_COUNTS_10000("Tabs.ScrubbedInInterval.MousePress",
+                             tabs_scrubbed_by_mouse_press_count_);
+  UMA_HISTOGRAM_COUNTS_10000("Tabs.ScrubbedInInterval.KeyPress",
+                             tabs_scrubbed_by_key_press_count_);
+  tabs_scrubbed_by_mouse_press_count_ = 0;
+  tabs_scrubbed_by_key_press_count_ = 0;
 }
 
 int TabStripModel::MoveWebContentsAt(int index,
