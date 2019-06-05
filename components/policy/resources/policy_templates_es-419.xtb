@@ -3698,13 +3698,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8050080920415773384">Impresión nativa</translation>
 <translation id="8053580360728293758">Anula el modo predeterminado de impresión a color. Si el modo no está disponible, se ignorará esta política.</translation>
 <translation id="8059164285174960932">URL donde los clientes de acceso remoto deben obtener el token de autenticación</translation>
-<translation id="806280865577636339">Si esta política se configura como verdadera, las opciones de accesibilidad aparecerán siempre en el menú de la bandeja del sistema.
-
-          Si esta política se configura como falsa, las opciones de accesibilidad no aparecerán nunca en el menú de la bandeja del sistema.
-
-          Si configuras esta política, los usuarios no podrán modificarla ni anularla.
-
-          Si no configuras esta política, las opciones de accesibilidad no aparecerán en el menú de la bandeja del sistema, pero el usuario podrá modificar esto en la página de configuración.</translation>
 <translation id="806523868782250975">Configura una lista de favoritos administrados.
 
       La política consiste en una lista de favoritos, mientras que cada uno de ellos es un diccionario que contiene las claves "<ph name="NAME" />" y "<ph name="URL_LABEL" />" con el nombre y objetivo del favorito. Puede configurarse una subcarpeta al definir un favorito sin una clave "<ph name="URL_LABEL" />", pero con una clave "<ph name="CHILDREN" />" adicional que contenga una lista de favoritos, como se define anteriormente (algunos pueden ser carpetas). <ph name="PRODUCT_NAME" /> modifica las URL incompletas como si fueran enviadas a través del cuadro multifunción, p. ej., "<ph name="GOOGLE_COM" />" cambia a "<ph name="HTTPS_GOOGLE_COM" />".

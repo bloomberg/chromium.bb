@@ -3717,13 +3717,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8050080920415773384">Printare nativă</translation>
 <translation id="8053580360728293758">Modifică modul de culoare prestabilit pentru printare. Dacă modul nu este disponibil, această politică este ignorată.</translation>
 <translation id="8059164285174960932">Adresa URL de unde clienții cu acces la distanță își pot obține indicativul de autentificare</translation>
-<translation id="806280865577636339">Dacă această politică este activată, opțiunile de accesibilitate apar întotdeauna în meniul barei de sistem.
-
-          Dacă politica este dezactivată, opțiunile de accesibilitate nu apar niciodată în meniul barei de sistem.
-
-          Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
-
-          Dacă această politică nu este configurată, opțiunile de accesibilitate nu vor apărea în meniul barei de sistem, dar utilizatorul poate afișa opțiunile de accesibilitate prin intermediul paginii Setări.</translation>
 <translation id="806523868782250975">Configurează o listă de marcaje gestionate.
 
       Politica este o listă de marcaje, în care fiecare marcaj este un dicționar care conține cheile „<ph name="NAME" />” și „<ph name="URL_LABEL" />”, care includ numele și ținta marcajului. Un subdosar poate fi configurat definind un marcaj fără o cheie „<ph name="URL_LABEL" />”, dar cu o cheie „<ph name="CHILDREN" />” suplimentară care la rândul ei include o listă de marcaje așa cum au fost definite mai sus (este posibil ca unele dintre acestea să fie dosare din nou). <ph name="PRODUCT_NAME" /> modifică adresele URL incomplete ca și cum ar fi trimise prin caseta polivalentă, de exemplu, „<ph name="GOOGLE_COM" />” devine „<ph name="HTTPS_GOOGLE_COM" />”.

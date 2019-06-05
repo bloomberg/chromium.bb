@@ -345,7 +345,7 @@
 <translation id="151501797353681931">‏יובא מ-Safari</translation>
 <translation id="1515163294334130951">הפעל</translation>
 <translation id="1521442365706402292">נהל אישורים</translation>
-<translation id="1521774566618522728">שימוש אחרון היום</translation>
+<translation id="1521774566618522728">שימוש אחרון: היום</translation>
 <translation id="152234381334907219">פריטים שאף פעם לא נשמרו</translation>
 <translation id="1524430321211440688">מקלדת</translation>
 <translation id="1524563461097350801">לא, תודה</translation>
@@ -1612,7 +1612,7 @@
 <translation id="346431825526753">זהו חשבון לילדים, המנוהל על-ידי <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468275649641751422">העברת קובץ וידאו או אודיו בסטרימינג</translation>
 <translation id="3468999815377931311">‏טלפון Android</translation>
-<translation id="3470248707805984963">אירעה שגיאה. נסה שוב.</translation>
+<translation id="3470248707805984963">אירעה שגיאה. אפשר לנסות שוב.</translation>
 <translation id="3470442499439619530">הסר משתמש זה</translation>
 <translation id="3473479545200714844">מגדיל התצוגה</translation>
 <translation id="3475843873335999118">המערכת עדיין לא מזהה את טביעת האצבע. הזן את הסיסמה שלך.</translation>
@@ -2203,7 +2203,6 @@
 <translation id="4350019051035968019">לא ניתן לרשום את המכשיר הזה לדומיין שאליו שייך החשבון שלך מפני שהמכשיר מסומן לניהול על ידי דומיין אחר.</translation>
 <translation id="4354344420232759511">אתרים שבהם ביקרת יופיעו כאן</translation>
 <translation id="435527878592612277">בחירת התמונה שלך</translation>
-<translation id="4356334633973342967">או ציין מנהל התקן משלך:</translation>
 <translation id="4359408040881008151">הותקן מפני שיש תוספים התלויים בו.</translation>
 <translation id="4359717112757026264">נוף עירוני</translation>
 <translation id="4361142739114356624">המפתח הפרטי לאישור לקוח זה חסר או אינו חוקי</translation>
@@ -2267,7 +2266,7 @@
 <translation id="4450974146388585462">אבחן</translation>
 <translation id="4451757071857432900">חסומות באתרים שמוצגות בהם מודעות מפריעות או מטעות (מומלץ)</translation>
 <translation id="4453946976636652378">אפשר לחפש ב-<ph name="SEARCH_ENGINE_NAME" /> או להקליד כתובת אתר</translation>
-<translation id="4459169140545916303">שימוש אחרון לפני <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ימים</translation>
+<translation id="4459169140545916303">שימוש אחרון: לפני <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ימים</translation>
 <translation id="4462159676511157176">שרתי שמות מותאמים אישית</translation>
 <translation id="4469477701382819144">חסומות באתרים שמוצגות בהם מודעות מפריעות או מטעות</translation>
 <translation id="4470957202018033307">העדפות אחסון חיצוני</translation>
@@ -5210,7 +5209,7 @@
 <translation id="8978154919215542464">פועל - סנכרון הכול</translation>
 <translation id="897939795688207351">ב-<ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - קרס</translation>
-<translation id="8985264973231822211">שימוש אחרון לפני יום אחד (<ph name="DEVICE_LAST_ACTIVATED_TIME" />)</translation>
+<translation id="8985264973231822211">שימוש אחרון: לפני יום אחד (<ph name="DEVICE_LAST_ACTIVATED_TIME" />)</translation>
 <translation id="8986362086234534611">שכח</translation>
 <translation id="8986494364107987395">‏שליחה אוטומטית של דוחות קריסה וסטטיסטיקות שימוש ל-Google</translation>
 <translation id="8987927404178983737">חודש</translation>

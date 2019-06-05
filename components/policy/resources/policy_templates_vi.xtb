@@ -3805,13 +3805,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="8050080920415773384">In bản gốc</translation>
 <translation id="8053580360728293758">Ghi đè chế độ in màu mặc định. Nếu không có chế độ này thì chính sách này sẽ bị bỏ qua.</translation>
 <translation id="8059164285174960932">URL nơi ứng dụng truy cập từ xa sẽ lấy mã thông báo xác thực</translation>
-<translation id="806280865577636339">Nếu bạn đặt chính sách này thành true, tùy chọn Hỗ trợ tiếp cận sẽ luôn xuất hiện trong menu khay hệ thống.
-
-          Nếu bạn đặt chính sách này thành false, tùy chọn Hỗ trợ tiếp cận sẽ không bao giờ xuất hiện trong menu khay hệ thống.
-
-          Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.
-
-          Nếu bạn không đặt chính sách này, tùy chọn Hỗ trợ tiếp cận sẽ không xuất hiện trong menu khay hệ thống nhưng người dùng có thể đặt để tùy chọn Hỗ trợ tiếp cận hiển thị qua trang Cài đặt.</translation>
 <translation id="806523868782250975">Định cấu hình danh sách dấu trang được quản lý.
 
       Chính sách này bao gồm danh sách các dấu trang trong đó mỗi dấu trang là một từ điển chứa khóa "<ph name="NAME" />" và "<ph name="URL_LABEL" />". Các khóa này lưu giữ tên và URL đích của dấu trang. Có thể định cấu hình thư mục con bằng cách xác định một dấu trang không có khóa "<ph name="URL_LABEL" />" nhưng có khóa "<ph name="CHILDREN" />" bổ sung chứa danh sách dấu trang được xác định ở trên (một số dấu trang trong đó có thể lại là thư mục). <ph name="PRODUCT_NAME" /> sửa đổi các URL chưa hoàn chỉnh như thể các URL đó được gửi qua Thanh địa chỉ, ví dụ như "<ph name="GOOGLE_COM" />" trở thành "<ph name="HTTPS_GOOGLE_COM" />".

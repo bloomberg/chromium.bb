@@ -3821,13 +3821,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8050080920415773384">Native na Pag-print</translation>
 <translation id="8053580360728293758">Ino-override ang default na printing color mode. Kung hindi available ang mode, binabalewala ang patakarang ito.</translation>
 <translation id="8059164285174960932">URL kung saan dapat makuha ng mga client ng malayuang pag-access ang kanilang token sa pagpapatotoo</translation>
-<translation id="806280865577636339">Kung itatakda ang patakarang ito sa true, palaging lalabas ang mga opsyon sa Accessibility sa menu ng system tray.
-
-          Kung itatakda ang patakarang ito sa false, hindi kailanman lalabas ang mga opsyon sa Accessibility sa menu ng system tray.
-
-          Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
-
-          Kung hahayaang hindi nakatakda ang patakarang ito, hindi lalabas sa menu ng system tray ang mga opsyon sa Accessibility, ngunit mapapalabas ng user ang mga opsyon sa Accessibility gamit ang page ng Mga Setting.</translation>
 <translation id="806523868782250975">Nagko-configure ng listahan ng mga pinapamahalaang bookmark.
 
       Binubuo ang patakaran ng isang listahan ng mga bookmark kung saan ang bawat bookmark ay isang diksyunaryong naglalaman ng mga key na "<ph name="NAME" />" at "<ph name="URL_LABEL" />" na naglalaman ng pangalan ng bookmark at ng mga target nito. Maaaring i-configure ang isang subfolder sa pamamagitan ng pagtukoy ng bookmark na walang key na "<ph name="URL_LABEL" />" ngunit may karagdagang key na "<ph name="CHILDREN" />" na naglalaman mismo ng listahan ng mga bookmark tulad ng nakasaad sa itaas (ang ilan sa mga ito ay puwedeng mga folder muli). Inaamyendahan ng <ph name="PRODUCT_NAME" /> ang mga hindi kumpletong URL na para bang isinumite ang mga ito sa pamamagitan ng Omnibox, halimbawa ang "<ph name="GOOGLE_COM" />" ay magiging "<ph name="HTTPS_GOOGLE_COM" />".

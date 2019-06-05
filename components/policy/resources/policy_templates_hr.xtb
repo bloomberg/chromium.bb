@@ -3706,13 +3706,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="8050080920415773384">Nativni ispis</translation>
 <translation id="8053580360728293758">Nadjačava način boje zadanog ispisa. Pravilo se zanemaruje ako način nije dostupan.</translation>
 <translation id="8059164285174960932">URL na kojem bi klijenti za daljinski pristup trebali dobiti token za autentifikaciju</translation>
-<translation id="806280865577636339">Ako se to pravilo postavi na true, opcije pristupačnosti uvijek se prikazuju na izborniku trake sustava.
-
-          Ako se pravilo postavi na false, opcije pristupačnosti nikad se neće prikazivati na izborniku trake sustava.
-
-          Ako postavite to pravilo, korisnici ga neće moći promijeniti ni nadjačati.
-
-          Ako ne postavite to pravilo, opcije pristupačnosti neće se prikazivati na izborniku trake sustava, ali ih korisnik može prikazati putem stranice Postavke.</translation>
 <translation id="806523868782250975">Konfigurira popis upravljanih oznaka.
 
       Pravilo obuhvaća popis oznaka u kojem je svaka oznaka rječnik s ključevima "<ph name="NAME" />" i "<ph name="URL_LABEL" />" koji nose naziv i cilj oznake. Moguće je konfigurirati podmapu tako da se definira oznaka bez ključa "<ph name="URL_LABEL" />", ali s dodatnim ključem "<ph name="CHILDREN" />" koji i sam sadrži popis oznaka kako je gore definirano (od kojih neke opet mogu biti mape). <ph name="PRODUCT_NAME" /> dopunjuje nepotpune URL-ove kao da su poslani putem višenamjenskog okvira, npr. "<ph name="GOOGLE_COM" />" postaje "<ph name="HTTPS_GOOGLE_COM" />".

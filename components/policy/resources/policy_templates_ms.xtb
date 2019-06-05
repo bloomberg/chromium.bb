@@ -3821,13 +3821,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8050080920415773384">Pencetakan Natif</translation>
 <translation id="8053580360728293758">Mengatasi mod warna pencetakan lalai. Jika mod tidak tersedia, dasar ini akan diabaikan.</translation>
 <translation id="8059164285174960932">URL di mana pelanggan akses jauh harus mendapatkan token pengesahan mereka</translation>
-<translation id="806280865577636339">Jika dasar ini ditetapkan kepada benar, pilihan Kebolehcapaian sentiasa dipaparkan dalam menu dulang sistem.
-
-          Jika dasar ini ditetapkan kepada palsu, pilihan Kebolehcapaian tidak akan dipaparkan dalam menu dulang sistem.
-
-          Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, pilihan Kebolehcapaian tidak akan dipaparkan dalam menu dulang sistem, tetapi pengguna boleh menyebabkan pilihan Kebolehcapaian dipaparkan melalui halaman Tetapan.</translation>
 <translation id="806523868782250975">Mengkonfigurasi senarai penanda halaman terurus.
 
       Dasar ini mengandungi senarai penanda halaman, manakala setiap penanda halaman ialah kamus yang mengandungi kunci "<ph name="NAME" />" dan "<ph name="URL_LABEL" />" yang menyimpan nama penanda haaman tersebut dan sasarannya. Subfolder mungkin dikonfigurasi dengan mentakrifkan penanda halaman tanpa kunci "<ph name="URL_LABEL" />" tetapi dengan kunci "<ph name="CHILDREN" />" tambahan yang mengandungi senarai penanda halaman seperti yang ditakrifkan di atas (sesetengah daripadanya mungkin berubah menjadi folder semula). <ph name="PRODUCT_NAME" /> meminda URL tidak lengkap seolah-olah URL itu diserahkan melalui Kotak Omni, contohnya "<ph name="GOOGLE_COM" />" menjadi "<ph name="HTTPS_GOOGLE_COM" />".

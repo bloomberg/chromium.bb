@@ -3819,13 +3819,6 @@
 <translation id="8050080920415773384">Integrerad utskrift</translation>
 <translation id="8053580360728293758">Åsidosätter standardinställningen för färgutskrift. Om alternativet inte är tillgängligt ignoreras principen.</translation>
 <translation id="8059164285174960932">Webbadress där fjärråtkomstklienter erhåller sin autentiseringstoken</translation>
-<translation id="806280865577636339">Om principen är inställd på sant visas alltid tillgänglighetsalternativ i systemfältsmenyn.
-
-          Om principen är inställd på falskt visas aldrig tillgänglighetsalternativ i systemfältsmenyn.
-
-          Om du ställer in den här principen kan användare inte ändra eller åsidosätta den.
-
-          Om du inte ställer in principen visas inte tillgänglighetsalternativ i systemfältsmenyn, men användaren kan välja att tillgänglighetsalternativen ska visas via sidan för inställningar.</translation>
 <translation id="806523868782250975">Konfigurerar en lista över hanterade bokmärken.
 
       Principen är en lista över bokmärken och varje bokmärke är en ordlista som innehåller nycklarna <ph name="NAME" /> och <ph name="URL_LABEL" /> som har bokmärkets namn och mål som värden. Det går att konfigurera en undermapp genom att ange ett bokmärke utan nyckeln <ph name="URL_LABEL" /> men med en extra nyckel, <ph name="CHILDREN" />, som i sig innehåller en lista över bokmärken enligt definitionen ovan (varav några kan vara mappar, och så vidare). <ph name="PRODUCT_NAME" /> kompletterar ofullständiga webbadresser som om de skickats via adressfältet – <ph name="GOOGLE_COM" /> blir till exempel <ph name="HTTPS_GOOGLE_COM" />.

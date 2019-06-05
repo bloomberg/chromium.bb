@@ -3771,13 +3771,6 @@ Ak toto pravidlo ponecháte nenastavené, bude táto možnosť povolená, ale po
 <translation id="8050080920415773384">Natívna tlač</translation>
 <translation id="8053580360728293758">Prepíše predvolený režim farebnej tlače. Ak daný režim nie je k dispozícii, toto pravidlo je ignorované.</translation>
 <translation id="8059164285174960932">Webová adresa, kde by klienti vzdialeného prístupu mali získať token na overenie totožnosti</translation>
-<translation id="806280865577636339">Ak je toto pravidlo nastavené na hodnotu true, v ponuke oblasti oznámení sa vždy zobrazia možnosti dostupnosti.
-
-          Ak je toto pravidlo nastavené na hodnotu false, možnosti dostupnosti sa v ponuke oblasti oznámení nikdy nezobrazia.
-
-          Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať.
-
-          Ak toto pravidlo nie je nastavené, možnosti dostupnosti sa v ponuke oblasti oznámení nezobrazia, ale používatelia môžu ich zobrazenie aktivovať na stránke Nastavenia.</translation>
 <translation id="806523868782250975">Konfiguruje zoznam spravovaných záložiek.
 
       Toto pravidlo pozostáva zo zoznamu záložiek, zatiaľ čo každá záložka je slovník s kľúčmi „<ph name="NAME" />“ a „<ph name="URL_LABEL" />“, v ktorých je uložený názov a cieľ záložky. Podpriečinok je možné nakonfigurovať definovaním záložky bez kľúča „<ph name="URL_LABEL" />“, ale s ďalším kľúčom „<ph name="CHILDREN" />“, ktorý obsahuje zoznam záložiek podľa určenia vyššie (niektoré z nich môžu byť znova priečinky). <ph name="PRODUCT_NAME" /> opravuje neúplné webové adresy tak, ako by boli odoslané prostredníctvom omniboxu, napríklad <ph name="GOOGLE_COM" /> zmení na <ph name="HTTPS_GOOGLE_COM" />.

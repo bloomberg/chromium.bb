@@ -3719,13 +3719,6 @@ Pokud tuto zásadu ponecháte nenastavenou, bude tato možnost aktivována, ale 
 <translation id="8050080920415773384">Nativní tisk</translation>
 <translation id="8053580360728293758">Přepíše výchozí barevný režim tisku. Pokud režim není k dispozici, zásada bude ignorována.</translation>
 <translation id="8059164285174960932">Adresa URL, u které by klienti vzdáleného připojení měli obdržet ověřovací token</translation>
-<translation id="806280865577636339">Pokud je tato zásada nastavená na hodnotu true, v nabídce hlavního panelu systému se vždy zobrazí možnosti usnadnění přístupu.
-
-          Pokud je tato zásada nastavená na hodnotu false, možnosti usnadnění přístupu se v nabídce hlavního panelu systému nikdy nezobrazí.
-
-          Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
-
-          Pokud tato zásada není nastavená, možnosti usnadnění přístupu se v nabídce hlavního panelu systému nezobrazí, ale uživatelé jejich zobrazení mohou aktivovat na stránce Nastavení.</translation>
 <translation id="806523868782250975">Umožňuje nakonfigurovat seznam spravovaných záložek.
 
       Hodnotou této zásady je seznam záložek. Každá záložka je slovník, který obsahuje název záložky a cílovou adresu URL (klíče „<ph name="NAME" />“ a „<ph name="URL_LABEL" />“). Podsložku lze nakonfigurovat definováním záložky bez klíče „<ph name="URL_LABEL" />“, ale s dodatečným klíčem „<ph name="CHILDREN" />“, který sám obsahuje seznam záložek podle výše uvedeného popisu (z nichž některé mohou být opět složky). Neúplné adresy URL doplní <ph name="PRODUCT_NAME" /> stejně, jako kdybyste je odeslali pomocí omniboxu. Například adresa <ph name="GOOGLE_COM" /> bude doplněna na <ph name="HTTPS_GOOGLE_COM" />.

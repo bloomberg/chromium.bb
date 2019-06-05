@@ -3818,13 +3818,6 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 <translation id="8050080920415773384">Impression en mode natif</translation>
 <translation id="8053580360728293758">Remplace le mode d'impression couleur par défaut. Si le mode est indisponible, cette règle est ignorée.</translation>
 <translation id="8059164285174960932">URL où les clients d'accès à distance doivent obtenir leur jeton d'authentification</translation>
-<translation id="806280865577636339">Si cette règle est définie sur "True", les options d'accessibilité s'affichent en permanence dans le menu de la barre d'état système.
-
-          Si cette règle est définie sur "False", les options d'accessibilité ne s'affichent jamais dans le menu de la barre d'état système.
-
-          Si vous définissez cette règle, les utilisateurs n'ont pas la possibilité de la modifier ni de l'ignorer.
-
-          Si vous ne définissez pas cette règle, les options d'accessibilité ne s'affichent pas dans le menu de la barre d'état système, mais l'utilisateur peut activer leur affichage via la page "Paramètres".</translation>
 <translation id="806523868782250975">Configure une liste de favoris gérés.
 
       Cette règle se compose d'une liste de favoris, et chaque favori est un dictionnaire comprenant les clés "<ph name="NAME" />" et "<ph name="URL_LABEL" />" qui contiennent le nom du favori et son URL cible. Vous pouvez également configurer un sous-dossier en définissant un favori sans clé "<ph name="URL_LABEL" />", mais avec une clé "<ph name="CHILDREN" />" supplémentaire qui contient elle-même une liste de favoris, comme défini ci-dessus (certains peuvent de nouveau être des dossiers). <ph name="PRODUCT_NAME" /> modifie les URL incomplètes comme si elles avaient été envoyées via l'omnibox. Par exemple, "<ph name="GOOGLE_COM" />" devient "<ph name="HTTPS_GOOGLE_COM" />".

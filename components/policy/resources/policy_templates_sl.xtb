@@ -3828,13 +3828,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8050080920415773384">Izvorno tiskanje</translation>
 <translation id="8053580360728293758">Preglasi privzeti barvni način tiskanja. Če način ni na voljo, je ta pravilnik prezrt.</translation>
 <translation id="8059164285174960932">URL, na katerem morajo odjemalci za oddaljeni dostop pridobiti žeton za preverjanje pristnosti</translation>
-<translation id="806280865577636339">Če je pravilnik nastavljen na »true«, so možnosti funkcij za ljudi s posebnimi potrebami vedno prikazane v meniju sistemske vrstice.
-
-          Če je pravilnik nastavljen na »false«, možnosti funkcij za ljudi s posebnimi potrebami niso prikazane v meniju sistemske vrstice.
-
-          Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
-
-          Če ta pravilnik ni nastavljen, možnosti funkcij za ljudi s posebnimi potrebami niso prikazane v meniju sistemske vrstice, vendar lahko uporabniki nastavijo, da so možnosti funkcij za ljudi s posebnimi potrebami prikazane prek strani z nastavitvami.</translation>
 <translation id="806523868782250975">Konfigurira seznam upravljanih zaznamkov.
 
       Pravilnik sestavlja seznam zaznamkov, pri čemer je vsak zaznamek slovar s ključema »<ph name="NAME" />« in »<ph name="URL_LABEL" />«, v katerih sta shranjena ime in cilj zaznamka. Mogoče je konfigurirati podmapo tako, da definirate zaznamek brez ključa »<ph name="URL_LABEL" />«, vendar z dodatnim ključem »<ph name="CHILDREN" />«, ki vsebuje seznam zaznamkov, kot so opredeljeni zgoraj (nekateri so prav tako lahko mape). Brskalnik <ph name="PRODUCT_NAME" /> dopolni nepopolne URL-je, kot bi bili poslani prek iskalne vrstice. »<ph name="GOOGLE_COM" />« na primer postane »<ph name="HTTPS_GOOGLE_COM" />«.

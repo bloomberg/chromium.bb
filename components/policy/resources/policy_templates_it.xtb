@@ -3658,13 +3658,6 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
 <translation id="8050080920415773384">Stampa nativa</translation>
 <translation id="8053580360728293758">Consente di eseguire l'override della modalità di stampa a colori predefinita. Se la modalità non è disponibile, questa norma viene ignorata.</translation>
 <translation id="8059164285174960932">URL su cui i client di accesso remoto dovrebbero ottenere il token di autenticazione</translation>
-<translation id="806280865577636339">Se questa norma è impostata su true, le opzioni di accessibilità vengono visualizzate sempre nel menu della barra delle applicazioni.
-
-          Se questa norma è impostata su false, le opzioni di accessibilità non vengono mai visualizzate nel menu della barra delle applicazioni.
-
-          Se imposti questa norma, gli utenti non potranno modificarla o sostituirla.
-
-          Se questa norma non viene impostata, le opzioni di accessibilità non verranno visualizzate nel menu della barra delle applicazioni, ma l'utente potrà attivarne la visualizzazione tramite la pagina Impostazioni.</translation>
 <translation id="806523868782250975">Configura un elenco di preferiti gestiti.
 
       La norma è costituita da un elenco di preferiti, in cui ogni preferito è un dizionario che contiene le chiavi "<ph name="NAME" />" e "<ph name="URL_LABEL" />" indicanti il nome e la destinazione del preferito. È possibile configurare una sottocartella definendo un preferito senza una chiave "<ph name="URL_LABEL" />", ma con una chiave aggiuntiva "<ph name="CHILDREN" />" contenente un elenco di preferiti come definito sopra (alcuni dei quali possono essere a loro volta cartelle). <ph name="PRODUCT_NAME" /> corregge gli URL incompleti come se fossero stati inviati tramite la omnibox, ad esempio "<ph name="GOOGLE_COM" />" diventa "<ph name="HTTPS_GOOGLE_COM" />".

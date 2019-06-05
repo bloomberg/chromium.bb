@@ -3668,13 +3668,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 <translation id="8050080920415773384">Pencetakan Asli</translation>
 <translation id="8053580360728293758">Mengganti mode warna pencetakan default. Jika mode tersebut tidak tersedia, kebijakan ini akan diabaikan.</translation>
 <translation id="8059164285174960932">URL tempat klien akses jarak jauh seharusnya memperoleh token autentikasi mereka</translation>
-<translation id="806280865577636339">Jika kebijakan ini ditetapkan ke True, opsi Aksesibilitas akan selalu muncul di menu baki sistem.
-
-          Jika kebijakan ini ditetapkan ke False, opsi Aksesibilitas tidak akan muncul di menu baki sistem.
-
-          Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
-
-          Jika kebijakan ini tidak ditetapkan, opsi Aksesibilitas tidak akan muncul di menu baki sistem, tetapi pengguna dapat menyebabkan munculnya opsi Aksesibilitas melalui halaman Setelan.</translation>
 <translation id="806523868782250975">Mengonfigurasi daftar bookmark terkelola.
 
       Kebijakan ini terdiri dari daftar bookmark, di mana setiap bookmark merupakan kamus yang berisi kunci "<ph name="NAME" />" dan "<ph name="URL_LABEL" />" yang menampung nama bookmark beserta targetnya. Subfolder dapat dikonfigurasi dengan menentukan bookmark tanpa kunci "<ph name="URL_LABEL" />" tetapi dengan kunci "<ph name="CHILDREN" />" tambahan, di mana kunci itu sendiri berisi daftar bookmark seperti dijelaskan di atas (beberapa mungkin berupa folder lagi). <ph name="PRODUCT_NAME" /> mengubah URL tidak lengkap seolah-olah URL tersebut dikirim melalui Omnibox, misalnya "<ph name="GOOGLE_COM" />" menjadi "<ph name="HTTPS_GOOGLE_COM" />".

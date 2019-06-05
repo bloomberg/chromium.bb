@@ -3825,13 +3825,6 @@
 <translation id="8050080920415773384">Vietinis spausdinimas</translation>
 <translation id="8053580360728293758">Nepaisoma numatytojo spausdinimo spalvotu režimu. Jei režimas nepasiekiamas, šios politikos nepaisoma.</translation>
 <translation id="8059164285174960932">URL, kur nuotolinės prieigos klientai turėtų gauti autentifikavimo prieigos raktą</translation>
-<translation id="806280865577636339">Jei ši politika nustatyta kaip „Tiesa“, pasiekiamumo parinktys visada rodomos sistemos juostelės meniu.
-
-          Jei ši politika nustatyta kaip „Netiesa“, pasiekiamumo parinktys niekada nerodomos sistemos juostelės meniu.
-
-          Jei nustatysite šią politiką, naudotojai negalės jos pakeisti ar nepaisyti.
-
-          Jei ši politika nenustatyta, pasiekiamumo parinktys nebus rodomos sistemos juostelės meniu, bet „Nustatymų“ puslapyje naudotojas galės nustatyti, kad pasiekiamumo parinktys būtų rodomos.</translation>
 <translation id="806523868782250975">Konfigūruojamas tvarkomų žymių sąrašas.
 
       Politiką sudaro žymių sąrašas. Kiekviena žymė yra žodynas, kuriame yra raktai „<ph name="NAME" />“ ir „<ph name="URL_LABEL" />“, nurodantys žymės pavadinimą ir taikymą. Poaplankį galima konfigūruoti apibrėžiant žymę be rakto „<ph name="URL_LABEL" />“, bet naudojant papildomą raktą „<ph name="CHILDREN" />“, kuriame yra žymių sąrašas, kaip nurodyta anksčiau (kai kurie jų gali būti aplankai). „<ph name="PRODUCT_NAME" />“ pataiso neužbaigtus URL, lyg jie būtų pateikti per „Omnibox“, pvz., „<ph name="GOOGLE_COM" />“ bus „<ph name="HTTPS_GOOGLE_COM" />“.

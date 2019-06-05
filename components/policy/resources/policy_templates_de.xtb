@@ -3685,13 +3685,6 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
 <translation id="8050080920415773384">Natives Drucken</translation>
 <translation id="8053580360728293758">Dadurch wird der standardmäßige Farbdruckmodus überschrieben. Wenn der Modus nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
 <translation id="8059164285174960932">URL, unter der Remotezugriff-Clients ihr Authentifizierungs-Token abrufen sollten</translation>
-<translation id="806280865577636339">Ist diese Richtlinie auf "true" gesetzt, werden die Optionen für Bedienungshilfen immer im Taskleistenmenü angezeigt.
-
-          Wenn die Richtlinie auf "false" gesetzt ist, werden die Optionen für Bedienungshilfen nie im Taskleistenmenü angezeigt.
-
-          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
-
-          Ist diese Richtlinie nicht konfiguriert, erscheinen keine Optionen für Bedienungshilfen im Taskleistenmenü, der Nutzer kann deren Anzeige jedoch auf der Seite "Einstellungen" aktivieren.</translation>
 <translation id="806523868782250975">Konfiguriert eine Liste verwalteter Lesezeichen.
 
       Die Richtlinie besteht aus einer Lesezeichenliste, bei der jedes Lesezeichen ein Wörterbuch mit den Schlüsseln "<ph name="NAME" />" und "<ph name="URL_LABEL" />" ist, die den Namen und das Ziel des Lesezeichens enthalten. Ein Unterordner kann konfiguriert werden, indem ein Lesezeichen ohne den Schlüssel "<ph name="URL_LABEL" />", dafür aber mit einem zusätzlichen Schlüssel "<ph name="CHILDREN" />" festgelegt wird, der selbst eine Liste von Lesezeichen enthält, die wie oben beschrieben definiert sind. Einige davon können wiederum Ordner sein. <ph name="PRODUCT_NAME" /> ergänzt unvollständige URLs automatisch so wie in der Omnibox. Beispielsweise wird aus "<ph name="GOOGLE_COM" />" dann "<ph name="HTTPS_GOOGLE_COM" />".

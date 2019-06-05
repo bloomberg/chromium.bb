@@ -3754,13 +3754,6 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
 <translation id="8050080920415773384">Integrert utskrift</translation>
 <translation id="8053580360728293758">Overstyrer fargemodus som standard for utskrift. Hvis modusen ikke er tilgjengelig, ignoreres regelen.</translation>
 <translation id="8059164285174960932">Nettadressen der klienter for ekstern tilgang skal hente autentiseringstokenet sitt fra</translation>
-<translation id="806280865577636339">Hvis denne regelen er satt til «true» (sann), vises alltid tilgjengelighetsalternativer i systemfeltmenyen.
-
-          Hvis denne regelen er satt til «false» (usann), vises aldri tilgjengelighetsalternativer i systemfeltmenyen.
-
-          Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
-
-          Hvis denne regelen ikke er angitt, vises ikke tilgjengelighetsalternativer i systemfeltmenyen. Brukerne kan likevel få tilgjengelighetsalternativer til å vises via innstillingssiden.</translation>
 <translation id="806523868782250975">Angir en liste over administrerte bokmerker.
 
       Denne regelen består av en liste over bokmerker, der hvert bokmerke er en ordliste som inneholder nøklene «<ph name="NAME" />» og «<ph name="URL_LABEL" />». Disse nøklene inneholder de ulike bokmerkenes navn og mål. En undermappe kan konfigureres ved å angi et bokmerke uten «<ph name="URL_LABEL" />»-nøkkel, men med en ekstra «<ph name="CHILDREN" />»-nøkkel som selv inneholder en liste over bokmerker, som definert ovenfor (noen av disse kan igjen være mapper). <ph name="PRODUCT_NAME" /> retter ufullstendige nettadresser som om de er sendt inn via multifunksjonsfeltet. «<ph name="GOOGLE_COM" />» blir for eksempel «<ph name="HTTPS_GOOGLE_COM" />».

@@ -3822,13 +3822,6 @@ Lubab rakenduse <ph name="PRODUCT_NAME" /> automaatse täitmise funktsiooni ja v
 <translation id="8050080920415773384">Printimise omaprotsess</translation>
 <translation id="8053580360728293758">Alistab printimisel vaikimisi kasutatava värvirežiimi. Reeglit eiratakse, kui režiim ei ole saadaval.</translation>
 <translation id="8059164285174960932">URL, kust kaugjuurdepääsuga kliendid peaksid saama autentimismärgi</translation>
-<translation id="806280865577636339">Kui reegli väärtuseks määratakse Tõene, kuvatakse juurdepääsuvalikud alati süsteemisalve menüüs.
-
-          Kui reegli väärtuseks määratakse Väär, ei kuvata juurdepääsuvalikuid süsteemisalve menüüs kunagi.
-
-          Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
-
-          Kui jätate reegli määramata, ei kuvata juurdepääsuvalikuid süsteemisalve menüüs, kuid kasutaja saab juurdepääsuvalikud kuvada lehe Seaded kaudu.</translation>
 <translation id="806523868782250975">Seadistab hallatud järjehoidjate loendi.
 
       Reegel koosneb järjehoidjate loendist, kusjuures iga järjehoidja on sõnastik, mis sisaldab võtmeid „<ph name="NAME" />” ja „<ph name="URL_LABEL" />”, kus hoiustatakse järjehoidja nime ning selle sihtmärki. Alamkausta saab seadistada, määrates järjehoidja ilma võtmeta „<ph name="URL_LABEL" />”, kuid lisavõtmega „<ph name="CHILDREN" />”, mis sisaldab ise ülalmääratud järjehoidjate loendit (millest mõned võivad olla kaustad). <ph name="PRODUCT_NAME" /> täiendab poolikuid URL-e, nagu need oleksid edastatud omnikastikese kaudu, nt aadressist „<ph name="GOOGLE_COM" />” saab „<ph name="HTTPS_GOOGLE_COM" />”.

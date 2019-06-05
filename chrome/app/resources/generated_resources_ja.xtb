@@ -348,7 +348,7 @@
 <translation id="151501797353681931">Safari からのインポート</translation>
 <translation id="1515163294334130951">起動</translation>
 <translation id="1521442365706402292">証明書の管理</translation>
-<translation id="1521774566618522728">オンライン: 今日</translation>
+<translation id="1521774566618522728">最終同期: 今日</translation>
 <translation id="152234381334907219">常に保存しない</translation>
 <translation id="1524430321211440688">キーボード</translation>
 <translation id="1524563461097350801">自動チェックアウトしない</translation>
@@ -2206,7 +2206,6 @@
 <translation id="4350019051035968019">このデバイスは、別のドメインの管理対象として指定されているため、現在のアカウントの所属先ドメインに登録することはできません。</translation>
 <translation id="4354344420232759511">アクセスしたサイトがここに表示されます</translation>
 <translation id="435527878592612277">写真を選択</translation>
-<translation id="4356334633973342967">または独自のドライバを指定:</translation>
 <translation id="4359408040881008151">依存関係にある拡張機能によってインストールされました。</translation>
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">このクライアント証明書には秘密鍵がないか、秘密鍵が無効です</translation>
@@ -2270,7 +2269,7 @@
 <translation id="4450974146388585462">診断</translation>
 <translation id="4451757071857432900">煩わしい広告や誤解を招く広告が表示されるサイトでブロック（推奨）</translation>
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> で検索するか、URL を入力してください</translation>
-<translation id="4459169140545916303">オンライン: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> 日前</translation>
+<translation id="4459169140545916303">最終同期: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> 日前</translation>
 <translation id="4462159676511157176">カスタム ネーム サーバー</translation>
 <translation id="4469477701382819144">煩わしい広告や誤解を招く広告が表示されるサイトでブロックされています</translation>
 <translation id="4470957202018033307">外部ストレージの設定</translation>
@@ -5215,7 +5214,7 @@
 <translation id="8978154919215542464">オン - すべて同期</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - クラッシュしました</translation>
-<translation id="8985264973231822211">オンライン: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> 日前</translation>
+<translation id="8985264973231822211">最終同期: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> 日前</translation>
 <translation id="8986362086234534611">削除</translation>
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信します</translation>
 <translation id="8987927404178983737">月</translation>

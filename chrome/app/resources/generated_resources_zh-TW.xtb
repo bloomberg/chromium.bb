@@ -4,7 +4,7 @@
 <translation id="1003088604756913841">在新的「<ph name="APP" />」視窗中開啟連結</translation>
 <translation id="1004218526896219317">網站存取權</translation>
 <translation id="1005274289863221750">使用你的麥克風和相機</translation>
-<translation id="1005608198058526414">查看你的 Family Link 設定</translation>
+<translation id="1005608198058526414">查看您的 Family Link 設定</translation>
 <translation id="1006873397406093306">這項擴充功能可以讀取及變更你造訪的網站所使用的資料。你可以自行設定要給予這項擴充功能哪些網站的存取權限。</translation>
 <translation id="1007408791287232274">無法載入裝置。</translation>
 <translation id="1008186147501209563">匯出書籤</translation>
@@ -2204,7 +2204,6 @@
 <translation id="4350019051035968019">這台裝置已標示為由其他網域管理，因此無法註冊到你帳戶所屬的網域。</translation>
 <translation id="4354344420232759511">這裡會顯示你曾造訪的網站</translation>
 <translation id="435527878592612277">請選取你的相片</translation>
-<translation id="4356334633973342967">或指定你自己的硬碟：</translation>
 <translation id="4359408040881008151">你已安裝相依的擴充功能，因此必須一併安裝這個擴充功能。</translation>
 <translation id="4359717112757026264">城市景觀</translation>
 <translation id="4361142739114356624">這個用戶端憑證沒有私密金鑰或私密金鑰無效</translation>
@@ -4467,8 +4466,8 @@
 <translation id="7847212883280406910">按下 Ctrl + Alt + S 鍵切換至 <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="7849264908733290972">在新分頁中開啟圖片(&amp;I)</translation>
 <translation id="784934925303690534">時間範圍</translation>
-<translation id="7850222546481862746"><ph name="BEGIN_PARAGRAPH1" />你必須登出「<ph name="USER_NAME" />」的帳戶，才能在這部裝置上完成監督功能的設定程序。<ph name="END_PARAGRAPH1" />
-      <ph name="BEGIN_PARAGRAPH2" />如要管理子女裝置上的家長監護功能，請在你自己的裝置上安裝 Family Link 家長版。<ph name="END_PARAGRAPH2" /></translation>
+<translation id="7850222546481862746"><ph name="BEGIN_PARAGRAPH1" />您必須登出<ph name="USER_NAME" />的帳戶，才能在這部裝置上完成監督功能的設定程序。<ph name="END_PARAGRAPH1" />
+      <ph name="BEGIN_PARAGRAPH2" />如要管理子女裝置上的家長監護功能，請在您自己的裝置上安裝 Family Link 家長版。<ph name="END_PARAGRAPH2" /></translation>
 <translation id="7851457902707056880">只能使用擁有者帳戶才能登入。請重新開機並使用擁有者帳戶登入。電腦會在 30 秒後自動開機。</translation>
 <translation id="7851716364080026749">一律封鎖存取攝影機和麥克風</translation>
 <translation id="7853747251428735">更多工具(&amp;L)</translation>

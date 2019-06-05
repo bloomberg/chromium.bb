@@ -3797,13 +3797,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="8050080920415773384">Vietējā drukāšana</translation>
 <translation id="8053580360728293758">Tiek ignorēts noklusējuma krāsainās drukāšanas režīms. Ja režīms nav pieejams, šī politika tiek ignorēta.</translation>
 <translation id="8059164285174960932">URL, kurā attālās piekļuves klientiem ir jāiegūst autentifikācijas pilnvara</translation>
-<translation id="806280865577636339">Ja šai politikai ir iestatīta vērtība “True”, pieejamības opcijas vienmēr tiek rādītas sistēmas teknes izvēlnē.
-
-          Ja šai politikai ir iestatīta vērtība “False”, pieejamības opcijas nekad netiek rādītas sistēmas teknes izvēlnē.
-
-          Ja iestatīsiet šo politiku, lietotāji to nevarēs mainīt vai ignorēt.
-
-          Ja šī politika netiek iestatīta, pieejamības opcijas netiks rādītas sistēmas teknes izvēlnē, taču lietotājs varēs skatīt pieejamības opcijas, izmantojot lapu Iestatījumi.</translation>
 <translation id="806523868782250975">Konfigurē pārvaldīto grāmatzīmju sarakstu.
 
       Politika sastāv no grāmatzīmju saraksta, kurā katra grāmatzīme ir vārdnīca ar atslēgām “<ph name="NAME" />” un “<ph name="URL_LABEL" />”, kas ietver grāmatzīmes nosaukumu un tās mērķi. Lai konfigurētu apakšmapi, var definēt grāmatzīmi bez atslēgas “<ph name="URL_LABEL" />”, bet ar papildu atslēgu “<ph name="CHILDREN" />”, kas ietver grāmatzīmju sarakstu, kā definēts iepriekš (dažas no tām arī var būt mapes). <ph name="PRODUCT_NAME" /> papildina nepilnīgus vietrāžus URL, it kā tie būtu ierakstīti universālajā lodziņā, piemēram, “<ph name="GOOGLE_COM" />” tiek pārveidots par "<ph name="HTTPS_GOOGLE_COM" />".

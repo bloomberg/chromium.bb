@@ -3807,13 +3807,6 @@
 <translation id="8050080920415773384">Native Printing</translation>
 <translation id="8053580360728293758">Overrides default printing colour mode. If the mode is unavailable, this policy is ignored.</translation>
 <translation id="8059164285174960932">URL where remote access clients should obtain their authentication token</translation>
-<translation id="806280865577636339">If this policy is set to true, Accessibility options always appear in system tray menu.
-
-          If this policy is set to false, Accessibility options never appear in system tray menu.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.</translation>
 <translation id="806523868782250975">Configures a list of managed bookmarks.
 
       The policy consists of a list of bookmarks whereas each bookmark is a dictionary containing the keys '<ph name="NAME" />' and '<ph name="URL_LABEL" />' which hold the bookmark's name and its target. A subfolder may be configured by defining a bookmark without an '<ph name="URL_LABEL" />' key but with an additional '<ph name="CHILDREN" />' key, which itself contains a list of bookmarks as defined above (some of which may be folders again). <ph name="PRODUCT_NAME" /> amends incomplete URLs as if they were submitted via the Omnibox, for example '<ph name="GOOGLE_COM" />' becomes '<ph name="HTTPS_GOOGLE_COM" />'.

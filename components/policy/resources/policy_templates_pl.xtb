@@ -3691,13 +3691,6 @@ Jeśli pozostanie ona nieskonfigurowana, przewidywanie działań sieciowych będ
 <translation id="8050080920415773384">Drukowanie natywne</translation>
 <translation id="8053580360728293758">Zastępuje domyślny tryb drukowania kolorów. Jeśli tryb jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="8059164285174960932">Adres URL, dla którego klienty dostępu zdalnego powinny uzyskać token uwierzytelniania</translation>
-<translation id="806280865577636339">Jeśli ta zasada ma wartość Prawda, opcje ułatwień dostępu są zawsze wyświetlane w menu w obszarze powiadomień.
-
-          Jeśli ma wartość Fałsz, opcje ułatwień dostępu nie są wyświetlane w menu w obszarze powiadomień.
-
-          Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
-
-          Jeśli pozostanie ona nieskonfigurowana, opcje ułatwień dostępu nie będą wyświetlane w menu w obszarze powiadomień, ale użytkownik będzie mógł włączyć ich wyświetlanie na stronie Ustawienia.</translation>
 <translation id="806523868782250975">Służy do konfigurowania listy zarządzanych zakładek.
 
       Zasada składa się z listy zakładek, a każda zakładka to słownik zawierający klucze „<ph name="NAME" />” i „<ph name="URL_LABEL" />”, które określają jej nazwę i adres docelowy. Można utworzyć podfolder, definiując zakładkę bez klucza „<ph name="URL_LABEL" />”, ale z dodatkowym kluczem „<ph name="CHILDREN" />”, który zawiera listę zakładek, taką jak opisano powyżej (niektóre z nich same mogą być folderami). <ph name="PRODUCT_NAME" /> uzupełnia niekompletne adresy URL tak samo jak po wpisaniu ich w omniboksie. Na przykład zamienia „<ph name="GOOGLE_COM" />” na „<ph name="HTTPS_GOOGLE_COM" />”.

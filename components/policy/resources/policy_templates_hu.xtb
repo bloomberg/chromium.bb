@@ -3720,13 +3720,6 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="8050080920415773384">Natív nyomtatás</translation>
 <translation id="8053580360728293758">Felülbírálja az alapértelmezett színes nyomtatási módot. Ha nem áll rendelkezésre a színes nyomtatási mód, akkor a rendszer figyelmen kívül hagyja ezt a házirendet.</translation>
 <translation id="8059164285174960932">Az URL, ahol a távoli hozzáférésű kliensnek be kell szereznie a hitelesítési tokent</translation>
-<translation id="806280865577636339">Ha a házirend igaz értékre van állítva, a Kisegítő lehetőségek mindig megjelennek a tálca menüjében.
-
-          Ha a házirend hamis értékre van állítva, a Kisegítő lehetőségek sosem jelennek meg a tálca menüjében.
-
-          Ha beállítja ezt a házirendet, a felhasználók nem módosíthatják, vagy bírálhatják felül.
-
-          Ha a házirend nincs beállítva, a Kisegítő lehetőségek nem jelennek meg a tálca menüjében, ám a felhasználók a Beállítások oldal segítségével megjeleníthetik őket.</translation>
 <translation id="806523868782250975">A kezelt könyvjelzők listáját konfigurálja.
 
       A házirend könyvjelzők listájából áll, és mindegyik könyvjelző „<ph name="NAME" />” és „<ph name="URL_LABEL" />” kulcsot tartalmazó szótár; a kulcsok a könyvjelző nevét és URL-jét tárolják. Almappát úgy konfigurálhat, hogy „<ph name="URL_LABEL" />” kulcs nélküli könyvjelzőt határoz meg, amely azonban rendelkezik egy további „<ph name="CHILDREN" />” kulccsal. Ez a kulcs maga tartalmazza a könyvjelzők (amelyek közül néhány mappa is lehet) fentiekben meghatározottak szerinti listáját. A <ph name="PRODUCT_NAME" /> úgy egészíti ki a nem teljes URL-eket, mintha azok a cím- és keresősávon keresztül lettek volna elküldve. Így például a „<ph name="GOOGLE_COM" />” URL-t kiegészíti a következőre: „<ph name="HTTPS_GOOGLE_COM" />”.

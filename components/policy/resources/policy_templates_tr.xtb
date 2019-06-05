@@ -3790,13 +3790,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8050080920415773384">Yerel Yazdırma</translation>
 <translation id="8053580360728293758">Varsayılan renkli yazdırma modunu geçersiz kılar. Mod mevcut değilse bu politika yoksayılır.</translation>
 <translation id="8059164285174960932">Uzaktan erişim istemcilerinin kimlik doğrulama jetonunu edinmesi gerektiği URL</translation>
-<translation id="806280865577636339">Bu politika true (doğru) değerine ayarlanırsa, Erişilebilirlik seçenekleri her zaman sistem tepsisi menüsünde görüntülenir.
-
-          Bu politika false (yanlış) değerine ayarlanırsa, Erişilebilirlik seçenekleri hiçbir zaman sistem tepsisi menüsünde görüntülenmez.
-
-          Bu politikayı ayarlarsanız kullanıcılar bunu değiştiremez veya geçersiz kılamazlar.
-
-          Bu politika ayarlanmadan bırakılırsa, Erişilebilirlik seçenekleri sistem tepsisi menüsünde görüntülenmez, ancak kullanıcı, Ayarlar sayfasını kullanarak Erişilebilirlik seçeneklerinin görüntülenmesini sağlayabilir.</translation>
 <translation id="806523868782250975">Yönetilen yer işaretleri listesini yapılandırır.
 
       Politika, yer işaretleri listesinden oluşur; bu yer işaretlerinden her biri "<ph name="NAME" />" ve "<ph name="URL_LABEL" />" anahtarlarını içeren ve yer işaretinin adı ile hedefini barındıran bir sözlüktür. Bir "<ph name="URL_LABEL" />" anahtarı içermeyen, ancak yukarıda tanımlandığı gibi yer işareti listesini (bunlardan bazıları yine klasör olabilir) barındıran ek bir "<ph name="CHILDREN" />" anahtarına sahip yer işareti tanımlanarak bir alt klasör yapılandırılabilir. <ph name="PRODUCT_NAME" />, eksik URL'leri, Çok Amaçlı Adres Çubuğu kullanılarak gönderilmiş gibi düzeltir; örneğin, "<ph name="GOOGLE_COM" />" URL'si "<ph name="HTTPS_GOOGLE_COM" />" olur.

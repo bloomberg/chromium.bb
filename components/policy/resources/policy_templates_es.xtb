@@ -3817,13 +3817,6 @@ NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</tr
 <translation id="8050080920415773384">Impresión nativa</translation>
 <translation id="8053580360728293758">Anula el modo predeterminado de impresión en color. Si el modo no está disponible, se ignora la política.</translation>
 <translation id="8059164285174960932">URL en la que los clientes de acceso remoto deben obtener su token de autenticación</translation>
-<translation id="806280865577636339">Si se asigna el valor "True" a esta política, las opciones de accesibilidad siempre aparecerán en el menú de la bandeja del sistema.
-
-          Si se le asigna el valor "False", las opciones de accesibilidad nunca aparecerán en el menú de la bandeja del sistema.
-
-          Si asignas un valor a esta política, los usuarios no podrán cambiarla ni anularla.
-
-          Si no asignas ningún valor a esta política, no aparecerán opciones de accesibilidad en el menú de la bandeja del sistema, pero los usuarios podrán hacer que aparezcan opciones de accesibilidad a través de la página de configuración.</translation>
 <translation id="806523868782250975">Permite configurar una lista de marcadores administrados.
 
       La política consta de una lista de marcadores, mientras que cada marcador es un diccionario que contiene las claves "<ph name="NAME" />" y "<ph name="URL_LABEL" />", que definen el nombre y la URL de destino del marcador. Para configurar una subcarpeta, puedes definir un marcador sin la clave "<ph name="URL_LABEL" />" y utilizar una clave "<ph name="CHILDREN" />" adicional que contenga una lista de marcadores en sí misma como se ha definido más arriba (algunos de los cuales pueden ser carpetas de nuevo). <ph name="PRODUCT_NAME" /> modifica las URL incompletas como si se hubieran enviado a través del omnibox. Por ejemplo, "<ph name="GOOGLE_COM" />" se convertirá en "<ph name="HTTPS_GOOGLE_COM" />".

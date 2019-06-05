@@ -3696,13 +3696,6 @@ Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver
 <translation id="8050080920415773384">Indbygget udskrivning</translation>
 <translation id="8053580360728293758">Tilsidesætter farvetilstanden for standardudskrivning. Hvis tilstanden ikke er tilgængelig, ignoreres denne politik.</translation>
 <translation id="8059164285174960932">Den webadresse, hvor klienten til fjernadgang skal hente deres godkendelsestoken</translation>
-<translation id="806280865577636339">Hvis denne politik er angivet som sand, vises indstillingerne for Tilgængelighed altid i systembakkemenuen.
-
-          Hvis denne politik er angivet som falsk, vises indstillingerne for Tilgængelighed aldrig i systembakkemenuen.
-
-          Hvis du konfigurerer denne politik, kan brugerne ikke ændre eller tilsidesætte den.
-
-          Hvis denne politik ikke angives, vises indstillingerne for Tilgængelighed ikke i systembakkemenuen, men brugeren kan få vist indstillingerne for Tilgængelighed via siden Indstillinger.</translation>
 <translation id="806523868782250975">Konfigurerer en liste over administrerede bogmærker.
 
       Politikken består af en liste over bogmærker, hvor hvert bogmærke er en ordbog med nøglerne "<ph name="NAME" />" og "<ph name="URL_LABEL" />", som indeholder bogmærkets navn og mål. En undermappe kan konfigureres ved at definere et bogmærke uden en "<ph name="URL_LABEL" />"-nøgle, men med en ekstra "<ph name="CHILDREN" />"-nøgle, der selv indeholder en liste over bogmærker som defineret ovenfor (nogle af disse kan også være mapper). <ph name="PRODUCT_NAME" /> ændrer ufuldstændige webadresser på samme måde, som hvis de blev indsendt via omnifeltet. "<ph name="GOOGLE_COM" />" bliver f.eks. til "<ph name="HTTPS_GOOGLE_COM" />".

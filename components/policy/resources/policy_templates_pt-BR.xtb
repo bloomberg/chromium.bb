@@ -3680,13 +3680,6 @@ Se a política não for definida, a configuração ficará ativada, mas o usuár
 <translation id="8050080920415773384">Impressão nativa</translation>
 <translation id="8053580360728293758">Modifica o modo de cor de impressão padrão. Se o modo não estiver disponível, esta política será ignorada.</translation>
 <translation id="8059164285174960932">URL no qual clientes de acesso remoto devem receber seu token de autenticação</translation>
-<translation id="806280865577636339">Se esta política for definida como verdadeira, as opções de acessibilidade sempre aparecerão no menu da bandeja do sistema.
-
-          Se esta política for definida como falsa, as opções de acessibilidade nunca aparecerão no menu da bandeja do sistema.
-
-          Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
-
-          Se esta política não for definida, as opções de acessibilidade não aparecerão no menu da bandeja do sistema, mas o usuário poderá fazer com que elas apareçam usando a página "Configurações".</translation>
 <translation id="806523868782250975">Configura uma lista de favoritos gerenciados.
 
       Esta política consiste em uma lista de favoritos em que cada um deles é um dicionário contendo as chaves "<ph name="NAME" />" e "<ph name="URL_LABEL" />", que definem o nome e o alvo do favorito. Uma subpasta pode ser configurada ao definir um favorito sem uma chave "<ph name="URL_LABEL" />", mas com uma chave "<ph name="CHILDREN" />" adicional, que contém uma lista de favoritos conforme definido acima (alguns deles podem ser pastas). O <ph name="PRODUCT_NAME" /> altera URLs incompletos como se eles tivessem sido enviados pela omnibox. Por exemplo, "<ph name="GOOGLE_COM" />" se torna "<ph name="HTTPS_GOOGLE_COM" />".

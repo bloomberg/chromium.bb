@@ -3718,13 +3718,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8050080920415773384">Impressão nativa</translation>
 <translation id="8053580360728293758">Substitui o modo de impressão a cores padrão. Se o modo não estiver disponível, esta política é ignorada.</translation>
 <translation id="8059164285174960932">URL onde os clientes de acesso remoto devem obter o respetivo símbolo de autenticação</translation>
-<translation id="806280865577636339">Se esta política for definida como Verdadeira, as opções de Acessibilidade aparecem sempre no menu do tabuleiro do sistema.
-
-          Se esta política for definida como Falsa, as opções de Acessibilidade nunca aparecem no menu do tabuleiro do sistema.
-
-          Se definir esta política, os utilizadores não a podem alterar nem substituir.
-
-          Se esta política não for definida, as opções de Acessibilidade não aparecem no menu do tabuleiro do sistema, mas o utilizador pode fazer com que as opções de Acessibilidade apareçam através da página Definições.</translation>
 <translation id="806523868782250975">Configura uma lista de marcadores geridos.
 
       A política consiste numa lista de marcadores, em que cada marcador é um dicionário que contém as chaves "<ph name="NAME" />" e "<ph name="URL_LABEL" />" que, por sua vez, contêm o nome e o destino do marcador. É possível configurar uma subpasta ao definir um marcador sem uma chave "<ph name="URL_LABEL" />", mas com uma chave "<ph name="CHILDREN" />" adicional que contém uma lista de marcadores conforme definido acima (alguns deles também podem ser pastas). O <ph name="PRODUCT_NAME" /> corrige os URLs incompletos como se tivessem sido enviados através da caixa geral, por exemplo, "<ph name="GOOGLE_COM" />" fica "<ph name="HTTPS_GOOGLE_COM" />".

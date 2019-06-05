@@ -3721,13 +3721,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="8050080920415773384">Natiivitulostus</translation>
 <translation id="8053580360728293758">Ohittaa tulostuksen oletusväritilan. Jos tila ei ole käytettävissä, tämä käytäntö ohitetaan.</translation>
 <translation id="8059164285174960932">URL-osoite, josta etäkäytön asiakkaiden tulisi saada todennustunnus</translation>
-<translation id="806280865577636339">Jos tämän käytännön arvo on tosi, esteettömyysasetukset näkyvät aina ilmaisinalueen valikossa.
-
-          Jos tämän käytännön arvo on epätosi, esteettömyysasetuksia ei koskaan lisätä ilmaisinalueen valikkoon.
-
-          Jos tämä käytäntö on määritetty, käyttäjät eivät voi muuttaa tai ohittaa sitä.
-
-          Jos tätä käytäntöä ei ole määritetty, esteettömyysasetuksia ei lisätä ilmaisinalueen valikkoon, mutta käyttäjä voi asettaa ne näkyviin Asetukset-sivulta.</translation>
 <translation id="806523868782250975">Määrittää hallinnoitujen kirjanmerkkien luettelon.
 
       Tämä käytäntö sisältää kirjanmerkkiluettelon, jonka jokainen kirjanmerkki on tietohakemisto ja sisältää avaimet <ph name="NAME" /> ja <ph name="URL_LABEL" />. Nämä avaimet sisältävät kirjanmerkin nimen ja kohteen. Voit määrittää alikansion määrittelemällä kirjanmerkin, jolla on avaimen <ph name="URL_LABEL" /> sijaan lisäavain <ph name="CHILDREN" />. Tämä lisäavain sisältää erillisen, yllä kuvatun kaltaisen kirjanmerkkiluettelon (jonka kirjanmerkeistä osa voi olla kansioita). Jos URL-osoitteissa on puutteita, <ph name="PRODUCT_NAME" /> muokkaa niitä samaan tapaan kuin omniboxin kautta lähetettyjä osoitteita. Esimerkiksi <ph name="GOOGLE_COM" /> muutetaan muotoon <ph name="HTTPS_GOOGLE_COM" />.
