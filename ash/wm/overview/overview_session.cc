@@ -819,6 +819,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
   // we let the app list to handle the key event.
   // TODO(crbug.com/952315): Explore better ways to handle this splitview +
   // overview + applist case.
+  // TODO(crbug.com/969899): Fix for tablet mode.
   Shell* shell = Shell::Get();
   if (shell->app_list_controller() &&
       shell->app_list_controller()->IsVisible() &&

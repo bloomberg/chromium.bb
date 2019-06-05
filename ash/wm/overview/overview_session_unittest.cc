@@ -1614,8 +1614,7 @@ TEST_F(OverviewSessionTest, BasicArrowKeyNavigation) {
   }
 }
 
-// Tests hitting the escape and back keys exit overview mode, unless we're in
-// single splitview mode with no windows in overview.
+// Tests hitting the escape and back keys exits overview mode.
 TEST_F(OverviewSessionTest, ExitOverviewWithKey) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 
@@ -1629,17 +1628,8 @@ TEST_F(OverviewSessionTest, ExitOverviewWithKey) {
   SendKey(ui::VKEY_BROWSER_BACK);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
 
-  // Tests that if we snap the only overview window, we cannot exit overview
-  // mode.
-  ToggleOverview();
-  ASSERT_TRUE(overview_controller()->InOverviewSession());
-  Shell::Get()->split_view_controller()->SnapWindow(window.get(),
-                                                    SplitViewController::LEFT);
-  ASSERT_TRUE(overview_controller()->InOverviewSession());
-  SendKey(ui::VKEY_ESCAPE);
-  EXPECT_TRUE(overview_controller()->InOverviewSession());
-  SendKey(ui::VKEY_BROWSER_BACK);
-  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  // TODO(crbug.com/969899): Test in tablet mode, and ensure escape/back does
+  // not exit single spitview mode with no other windows in overview.
 }
 
 // Regression test for clusterfuzz crash. https://crbug.com/920568
@@ -1877,6 +1867,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPosition) {
 
 TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
   UpdateDisplay("400x300");
+  EnterTabletMode();
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 
   ToggleOverview();
@@ -1918,6 +1909,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
 
 // Tests that the no windows indicator shows properly after adding an item.
 TEST_F(OverviewSessionTest, NoWindowsIndicatorAddItem) {
+  EnterTabletMode();
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 
   ToggleOverview();

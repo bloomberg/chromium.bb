@@ -315,6 +315,10 @@ gfx::Point TabletModeWindowDragDelegate::GetEventLocationInScreen(
 
 IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
     const gfx::Point& location_in_screen) const {
+  // Do not show the drag indicators if split view is disabled globally.
+  if (!ShouldAllowSplitView())
+    return IndicatorState::kNone;
+
   // Do not show the drag indicators if the window hasn't been considered as
   // moved.
   if (!is_window_considered_moved_)
