@@ -391,7 +391,7 @@ TEST_F('UsbInternalsTest', 'WebUICorrectValueRenderTest', function() {
       // The tab panel of the first device is opened in previous test as the
       // third tab panel. This device has correct device descriptor.
       const deviceTab = document.querySelectorAll('tabpanel')[2];
-      deviceTab.querySelector('#device-descriptor-button').click();
+      deviceTab.querySelector('.device-descriptor-button').click();
 
       await deviceDescriptorRenderPromise;
       const panel = deviceTab.querySelector('.device-descriptor-panel');
@@ -418,11 +418,11 @@ TEST_F('UsbInternalsTest', 'WebUICorrectValueRenderTest', function() {
       expectEquals('Product String Index: 2GET', treeItems[11].textContent);
       expectEquals('Serial Number Index: 0', treeItems[12].textContent);
       expectEquals('Number of Configurations: 1', treeItems[13].textContent);
-      const byteElements = panel.querySelectorAll('#raw-data-byte-view span');
+      const byteElements = panel.querySelectorAll('.raw-data-byte-view span');
       expectEquals(18, byteElements.length);
       expectEquals(
           '12010002000000405010EF17210301020001',
-          panel.querySelector('#raw-data-byte-view').textContent);
+          panel.querySelector('.raw-data-byte-view').textContent);
 
       // Click a single byte tree item (Length) and check that both the item
       // and the related byte are highlighted.
@@ -493,7 +493,7 @@ TEST_F('UsbInternalsTest', 'WebUIIncorrectValueRenderTest', function() {
       const deviceTab = document.querySelectorAll('tabpanel')[2];
 
       await deviceTabInitializedPromise;
-      deviceTab.querySelector('#device-descriptor-button').click();
+      deviceTab.querySelector('.device-descriptor-button').click();
 
       await deviceDescriptorRenderPromise;
       const panel = deviceTab.querySelector('.device-descriptor-panel');
@@ -516,11 +516,11 @@ TEST_F('UsbInternalsTest', 'WebUIIncorrectValueRenderTest', function() {
       expectEquals(
           'Control Pipe Maximum Packet Size: 64', treeItems[6].textContent);
 
-      const byteElements = panel.querySelectorAll('#raw-data-byte-view span');
+      const byteElements = panel.querySelectorAll('.raw-data-byte-view span');
       expectEquals(9, byteElements.length);
       expectEquals(
           '120100020000004050',
-          panel.querySelector('#raw-data-byte-view').textContent);
+          panel.querySelector('.raw-data-byte-view').textContent);
 
 
       // Click a single byte tree item (Length) and check that both the item

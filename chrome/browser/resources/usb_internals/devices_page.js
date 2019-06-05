@@ -124,14 +124,15 @@ cr.define('devices_page', function() {
       cr.ui.decorate('tab', cr.ui.Tab);
 
       const tabPanels = document.querySelector('tabpanels');
-      const tabPanelTemplate = document.querySelector('#tabpanel-template');
+      const tabPanelTemplate =
+          document.querySelector('#device-tabpanel-template');
       const tabPanelClone = document.importNode(tabPanelTemplate.content, true);
 
       /**
        * Root of the WebContents tree of current device.
        * @type {?cr.ui.Tree}
        */
-      const treeViewRoot = tabPanelClone.querySelector('#tree-view');
+      const treeViewRoot = tabPanelClone.querySelector('.tree-view');
       cr.ui.decorate(treeViewRoot, cr.ui.Tree);
       treeViewRoot.detail = {payload: {}, children: {}};
       // Clear the tree first before populating it with the new content.
@@ -148,95 +149,28 @@ cr.define('devices_page', function() {
     /**
      * Initializes all the descriptor panels.
      * @param {!HTMLElement} tabPanel
-     * @param {number} guid
+     * @param {string} guid
      * @private
      */
     async initializeDescriptorPanels_(tabPanel, guid) {
       const usbDeviceProxy = new UsbDeviceProxy;
       await this.usbManager_.getDevice(guid, usbDeviceProxy.$.createRequest());
 
-      const getStringDescriptorButton =
-          tabPanel.querySelector('#string-descriptor-button');
-      const stringDescriptorElement =
-          tabPanel.querySelector('.string-descriptor-panel');
-      const stringDescriptorPanel = new descriptor_panel.DescriptorPanel(
-          usbDeviceProxy, stringDescriptorElement);
-      stringDescriptorPanel.initialStringDescriptorPanel(guid);
-      getStringDescriptorButton.addEventListener('click', () => {
-        stringDescriptorElement.hidden = !stringDescriptorElement.hidden;
+      const deviceDescriptorPanel = initialInspectorPanel(
+          tabPanel, 'device-descriptor', usbDeviceProxy, guid);
 
-        // Clear the panel before rendering new data.
-        stringDescriptorPanel.clearView();
+      const configurationDescriptorPanel = initialInspectorPanel(
+          tabPanel, 'configuration-descriptor', usbDeviceProxy, guid);
 
-        if (!stringDescriptorElement.hidden) {
-          stringDescriptorPanel.getAllLanguageCodes();
-        }
-      });
-
-      const getDeviceDescriptorButton =
-          tabPanel.querySelector('#device-descriptor-button');
-      const deviceDescriptorElement =
-          tabPanel.querySelector('.device-descriptor-panel');
-      const deviceDescriptorPanel = new descriptor_panel.DescriptorPanel(
-          usbDeviceProxy, deviceDescriptorElement, stringDescriptorPanel);
-      getDeviceDescriptorButton.addEventListener('click', () => {
-        deviceDescriptorElement.hidden = !deviceDescriptorElement.hidden;
-
-        // Clear the panel before rendering new data.
-        deviceDescriptorPanel.clearView();
-
-        if (!deviceDescriptorElement.hidden) {
-          deviceDescriptorPanel.renderDeviceDescriptor();
-        }
-      });
-
-      const getConfigurationDescriptorButton =
-          tabPanel.querySelector('#configuration-descriptor-button');
-      const configurationDescriptorElement =
-          tabPanel.querySelector('.configuration-descriptor-panel');
-      const configurationDescriptorPanel = new descriptor_panel.DescriptorPanel(
-          usbDeviceProxy, configurationDescriptorElement,
+      const stringDescriptorPanel = initialInspectorPanel(
+          tabPanel, 'string-descriptor', usbDeviceProxy, guid);
+      deviceDescriptorPanel.setStringDescriptorPanel(stringDescriptorPanel);
+      configurationDescriptorPanel.setStringDescriptorPanel(
           stringDescriptorPanel);
-      getConfigurationDescriptorButton.addEventListener('click', () => {
-        configurationDescriptorElement.hidden =
-            !configurationDescriptorElement.hidden;
 
-        // Clear the panel before rendering new data.
-        configurationDescriptorPanel.clearView();
+      initialInspectorPanel(tabPanel, 'bos-descriptor', usbDeviceProxy, guid);
 
-        if (!configurationDescriptorElement.hidden) {
-          configurationDescriptorPanel.renderConfigurationDescriptor();
-        }
-      });
-
-      const getBosDescriptorButton =
-          tabPanel.querySelector('#bos-descriptor-button');
-      const bosDescriptorElement =
-          tabPanel.querySelector('.bos-descriptor-panel');
-      const bosDescriptorPanel = new descriptor_panel.DescriptorPanel(
-          usbDeviceProxy, bosDescriptorElement);
-      getBosDescriptorButton.addEventListener('click', () => {
-        bosDescriptorElement.hidden = !bosDescriptorElement.hidden;
-
-        // Clear the panel before rendering new data.
-        bosDescriptorPanel.clearView();
-
-        if (!bosDescriptorElement.hidden) {
-          bosDescriptorPanel.renderBosDescriptor();
-        }
-      });
-
-      const testingToolPanelButton =
-          tabPanel.querySelector('#testing-tool-button');
-      const testingToolElement = tabPanel.querySelector('.testing-tool-panel');
-      const testingToolPanel = new descriptor_panel.DescriptorPanel(
-          usbDeviceProxy, testingToolElement);
-      testingToolPanel.initialTestingToolPanel();
-      testingToolPanelButton.addEventListener('click', () => {
-        testingToolElement.hidden = !testingToolElement.hidden;
-        // Clear the panel before rendering new data.
-        testingToolPanel.clearView();
-      });
+      initialInspectorPanel(tabPanel, 'testing-tool', usbDeviceProxy, guid);
 
       // window.deviceTabInitializedFn() provides a hook for the test suite to
       // perform test actions after the device tab query descriptors actions are
@@ -416,6 +350,53 @@ cr.define('devices_page', function() {
 
       root.add(endpointItem);
     }
+  }
+
+  /**
+   * Initialize a descriptor panel.
+   * @param {!HTMLElement} tabPanel
+   * @param {string} panelType
+   * @param {!device.mojom.UsbDeviceInterface} usbDeviceProxy
+   * @param {string} guid
+   * @return {!descriptor_panel.DescriptorPanel}
+   */
+  function initialInspectorPanel(tabPanel, panelType, usbDeviceProxy, guid) {
+    const button = tabPanel.querySelector(`.${panelType}-button`);
+    const displayElement = tabPanel.querySelector(`.${panelType}-panel`);
+    const descriptorPanel =
+        new descriptor_panel.DescriptorPanel(usbDeviceProxy, displayElement);
+    switch (panelType) {
+      case 'string-descriptor':
+        descriptorPanel.initialStringDescriptorPanel(guid);
+        break;
+      case 'testing-tool':
+        descriptorPanel.initialTestingToolPanel();
+        break;
+    }
+
+    button.addEventListener('click', () => {
+      displayElement.hidden = !displayElement.hidden;
+      // Clear the panel before rendering new data.
+      descriptorPanel.clearView();
+
+      if (!displayElement.hidden) {
+        switch (panelType) {
+          case 'device-descriptor':
+            descriptorPanel.renderDeviceDescriptor();
+            break;
+          case 'configuration-descriptor':
+            descriptorPanel.renderConfigurationDescriptor();
+            break;
+          case 'string-descriptor':
+            descriptorPanel.getAllLanguageCodes();
+            break;
+          case 'bos-descriptor':
+            descriptorPanel.renderBosDescriptor();
+            break;
+        }
+      }
+    });
+    return descriptorPanel;
   }
 
   /**

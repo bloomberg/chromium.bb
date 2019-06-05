@@ -135,21 +135,21 @@
     <tab></tab>
   </template>
 
-  <template id="tabpanel-template">
+  <template id="device-tabpanel-template">
     <tabpanel>
-      <tree id="tree-view"></tree>
+      <tree class="tree-view"></tree>
       <div class="descriptor-button">
-        <button id="device-descriptor-button">Get Device Descriptor</button>
+        <button class="device-descriptor-button">Get Device Descriptor</button>
       </div>
       <div class="device-descriptor-panel" hidden></div>
       <div class="descriptor-button">
-        <button id="configuration-descriptor-button">
+        <button class="configuration-descriptor-button">
           Get Configuration Descriptor
         </button>
       </div>
       <div class="configuration-descriptor-panel" hidden></div>
       <div class="descriptor-button">
-        <button id="string-descriptor-button">Get String Descriptor</button>
+        <button class="string-descriptor-button">Get String Descriptor</button>
       </div>
       <div class="string-descriptor-panel" hidden>
         String Descriptor Index:
@@ -161,13 +161,13 @@
         <button>GET</button>
       </div>
       <div class="descriptor-button">
-        <button id="bos-descriptor-button">
+        <button class="bos-descriptor-button">
           Get WebUSB & Microsoft OS 2.0 Descriptors
         </button>
       </div>
       <div class="bos-descriptor-panel" hidden></div>
       <div class="descriptor-button">
-        <button id="testing-tool-button">Testing Tool Panel</button>
+        <button class="testing-tool-button">Testing Tool Panel</button>
       </div>
       <div class="testing-tool-panel" hidden>
         <select id="input-type">
@@ -205,33 +205,23 @@
                   <option label="Other" value="OTHER"></option>
                 </select>
               </td>
-              <td><input id="query-request" type="number" value="0"></td>
-              <td><input id="query-value" type="number" value="0"></td>
-              <td><input id="query-index" type="number" value="0"></td>
-              <td><input id="query-length" type="number" value="0"></td>
+              <td><input id="query-request" type="number" placeholder="0"></td>
+              <td><input id="query-value" type="number" placeholder="0"></td>
+              <td><input id="query-index" type="number" placeholder="0"></td>
+              <td><input id="query-length" type="number" placeholder="0"></td>
               <td><button>Send</button></td>
             </tr>
             <tr hidden>
-              <td>
-                0x<input id="query-request-type" type="number" placeholder="00">
-              </td>
-              <td>
-                0x<input id="query-request" type="number" placeholder="00">
-              </td>
-              <td>
-                0x<input id="query-value" type="number" placeholder="0000">
-              </td>
-              <td>
-                0x<input id="query-index" type="number" placeholder="0000">
-              </td>
-              <td>
-                0x<input id="query-length" type="number" placeholder="0000">
-              </td>
+              <td>0x<input id="query-request-type" placeholder="00"></td>
+              <td>0x<input id="query-request" placeholder="00"></td>
+              <td>0x<input id="query-value" placeholder="0000"></td>
+              <td>0x<input id="query-index" placeholder="0000"></td>
+              <td>0x<input id="query-length" placeholder="0000"></td>
               <td><button>Send</button></td>
             </tr>
           </tbody>
         </table>
-        <div id='data-input-area'>
+        <div id="data-input-area">
           Data (in Hex):
           <textarea cols="31"></textarea>
         </div>
@@ -241,8 +231,8 @@
 
   <template id="descriptor-panel-template">
     <descriptorpanel>
-      <tree id="raw-data-tree-view"></tree>
-      <div id="raw-data-byte-view"></div>
+      <tree class="raw-data-tree-view"></tree>
+      <div class="raw-data-byte-view"></div>
     </descriptorpanel>
   </template>
 

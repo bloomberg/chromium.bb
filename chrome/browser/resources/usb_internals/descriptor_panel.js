@@ -112,22 +112,23 @@ cr.define('descriptor_panel', function() {
     /**
      * @param {!device.mojom.UsbDeviceInterface} usbDeviceProxy
      * @param {!HTMLElement} rootElement
-     * @param {DescriptorPanel=} stringDescriptorPanel
      */
-    constructor(
-        usbDeviceProxy, rootElement, stringDescriptorPanel = undefined) {
+    constructor(usbDeviceProxy, rootElement) {
       /** @private {!device.mojom.UsbDeviceInterface} */
       this.usbDeviceProxy_ = usbDeviceProxy;
 
       /** @private {!HTMLElement} */
       this.rootElement_ = rootElement;
+    }
 
-      this.clearView();
-
-      if (stringDescriptorPanel) {
-        /** @private {!DescriptorPanel} */
-        this.stringDescriptorPanel_ = stringDescriptorPanel;
-      }
+    /**
+     * Adds the reference of the string descriptor panel of the device for
+     * string descriptor functionality.
+     * @param {!DescriptorPanel} stringDescriptorPanel
+     */
+    setStringDescriptorPanel(stringDescriptorPanel) {
+      /** @private {!DescriptorPanel} */
+      this.stringDescriptorPanel_ = stringDescriptorPanel;
     }
 
     /**
@@ -144,10 +145,10 @@ cr.define('descriptor_panel', function() {
 
       /** @private {!HTMLElement} */
       const rawDataTreeRoot =
-          descriptorPanelClone.querySelector('#raw-data-tree-view');
+          descriptorPanelClone.querySelector('.raw-data-tree-view');
       /** @private {!HTMLElement} */
       const rawDataByteElement =
-          descriptorPanelClone.querySelector('#raw-data-byte-view');
+          descriptorPanelClone.querySelector('.raw-data-byte-view');
 
       cr.ui.decorate(rawDataTreeRoot, cr.ui.Tree);
       rawDataTreeRoot.detail = {payload: {}, children: {}};
@@ -2929,7 +2930,7 @@ cr.define('descriptor_panel', function() {
       el.addEventListener('click', (event) => {
         if (event.target.className != 'expand-icon') {
           // Clears all the selected elements before select another.
-          rawDataByteElement.querySelectorAll('#raw-data-byte-view span')
+          rawDataByteElement.querySelectorAll('.raw-data-byte-view span')
               .forEach((el) => el.classList.remove('selected-field'));
 
           rawDataByteElement
