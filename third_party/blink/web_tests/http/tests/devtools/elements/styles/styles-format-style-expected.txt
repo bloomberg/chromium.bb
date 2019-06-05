@@ -39,3 +39,15 @@ New CSS:
  color: blue;
 
 
+Raw CSS: grid: "a a" 10px "b b" 20px / 100px
+New CSS: 
+ grid:
+  "a a" 10px
+  "b b" 20px / 100px;
+
+
+Raw CSS: grid: [first-row-start] "a a" 10px [first-row-end] [second-row-start] "b b" 20px / 100px
+New CSS: 
+ grid: [first-row-start] "a a" 10px [first-row-end] [second-row-start] "b b" 20px / 100px;
+
+
