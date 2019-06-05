@@ -189,7 +189,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': 'e13c1f46dc1afb1b2287849be5fa74ef70e0607b',
+  'freetype_revision': 'c949ab0757a2514cd3a37b3e1e8390fd662a025b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
