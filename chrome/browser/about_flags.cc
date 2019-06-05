@@ -2141,6 +2141,10 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(
          ::switches::
              kEnableExperimentalAccessibilityChromeVoxRichTextIndication)},
+    {"enable-experimental-kernel-vm-support",
+     flag_descriptions::kKernelnextVMsName,
+     flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kKernelnextVMs)},
 #endif  // OS_CHROMEOS
 #if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",

@@ -33303,6 +33303,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1811394154" label="disable-webrtc-hw-vp8-encoding"/>
   <int value="-1810294310" label="AndroidPaymentApps:enabled"/>
   <int value="-1809891158" label="WebAuthenticationCable:enabled"/>
+  <int value="-1809865209" label="KernelnextVMs:enabled"/>
   <int value="-1809835803" label="LayoutNG:disabled"/>
   <int value="-1808576075" label="SystemTrayUnified:enabled"/>
   <int value="-1808477331" label="MidiManagerCros:disabled"/>
@@ -34519,6 +34520,7 @@ from previous Chrome versions.
   <int value="-11260186" label="enable-offline-pages-as-saved-pages"/>
   <int value="-10709540"
       label="OmniboxUIExperimentHideSuggestionUrlScheme:enabled"/>
+  <int value="-9599490" label="KernelnextVMs:disabled"/>
   <int value="-5052940" label="enable-simplified-fullscreen"/>
   <int value="-3093629" label="DcheckIsFatal:disabled"/>
   <int value="-2953333" label="AndroidHistoryManager:disabled"/>

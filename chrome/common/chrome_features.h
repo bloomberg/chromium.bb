@@ -240,6 +240,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIntentPicker;
 #endif
 
+#if defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kKernelnextVMs;
+#endif
+
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kKidsManagementUrlClassification;
 

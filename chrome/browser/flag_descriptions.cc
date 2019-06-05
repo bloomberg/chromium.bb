@@ -2586,6 +2586,10 @@ const char kIntentPickerDescription[] =
     "When going to a site that has URL managable by a PWA, show the intent"
     "picker to allow user to open the URL in the app.";
 
+const char kKernelnextVMsName[] = "Enable VMs on experimental kernels.";
+const char kKernelnextVMsDescription[] =
+    "Enables VM support on devices running experimental kernel versions.";
+
 const char kOmniboxDriveSuggestionsName[] =
     "Omnibox Google Drive Document suggestions";
 const char kOmniboxDriveSuggestionsDescriptions[] =

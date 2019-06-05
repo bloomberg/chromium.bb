@@ -376,6 +376,11 @@ const base::Feature kIntentPicker {
 };
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+const base::Feature kKernelnextVMs{"KernelnextVMs",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Uses KidsManagement UrlClassification instead of SafeSearch for supervised
 // accounts.
 const base::Feature kKidsManagementUrlClassification{

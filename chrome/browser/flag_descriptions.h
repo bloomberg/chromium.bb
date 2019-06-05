@@ -1527,6 +1527,9 @@ extern const char kHappinessTrackingSurveysForDesktopDescription[];
 extern const char kIntentPickerName[];
 extern const char kIntentPickerDescription[];
 
+extern const char kKernelnextVMsName[];
+extern const char kKernelnextVMsDescription[];
+
 extern const char kOmniboxDriveSuggestionsName[];
 extern const char kOmniboxDriveSuggestionsDescriptions[];
 

@@ -35,6 +35,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -210,6 +211,17 @@ bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
   }
   if (!crostini::CrostiniManager::IsDevKvmPresent()) {
     // Hardware is physically incapable, no matter what the user wants.
+    return false;
+  }
+
+  bool kernelnext = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kKernelnextRestrictVMs);
+  bool kernelnext_override =
+      base::FeatureList::IsEnabled(features::kKernelnextVMs);
+  if (kernelnext && !kernelnext_override) {
+    // The host kernel is on an experimental version. In future updates this
+    // device may not have VM support, so we allow enabling VMs, but guard them
+    // on a chrome://flags switch (enable-experimental-kernel-vm-support).
     return false;
   }
 

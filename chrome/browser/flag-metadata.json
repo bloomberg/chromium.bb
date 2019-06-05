@@ -1066,6 +1066,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-experimental-kernel-vm-support",
+    "owners": [ "jflat", "zwisler" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-experimental-productivity-features",
     "owners": [ "feature-control@chromium.org" ],
     "expiry_milestone": 76

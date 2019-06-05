@@ -407,6 +407,11 @@ const char kHomedir[] = "homedir";
 const char kIgnoreUserProfileMappingForTests[] =
     "ignore-user-profile-mapping-for-tests";
 
+// If set, the Chrome settings will not expose the option to enable crostini
+// unless the enable-experimental-kernel-vm-support flag is set in
+// chrome://flags
+const char kKernelnextRestrictVMs[] = "kernelnext-restrict-vms";
+
 // Enables Chrome-as-a-login-manager behavior.
 const char kLoginManager[] = "login-manager";
 
