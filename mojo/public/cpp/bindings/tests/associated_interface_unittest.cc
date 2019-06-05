@@ -27,23 +27,10 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/shared_associated_remote.h"
-#include "mojo/public/cpp/bindings/unique_receiver_set.h"
+#include "mojo/public/cpp/bindings/unique_associated_receiver_set.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_associated_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-// TODO(crbug.com/969789): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
-#define MAYBE_ReceiverWaitAndPauseWhenNoAssociatedInterfaces \
-  DISABLED_ReceiverWaitAndPauseWhenNoAssociatedInterfaces
-#define MAYBE_PassAssociatedInterfaces DISABLED_PassAssociatedInterfaces
-#define MAYBE_SharedAssociatedRemote DISABLED_SharedAssociatedRemote
-#else
-#define MAYBE_ReceiverWaitAndPauseWhenNoAssociatedInterfaces \
-  ReceiverWaitAndPauseWhenNoAssociatedInterfaces
-#define MAYBE_PassAssociatedInterfaces PassAssociatedInterfaces
-#define MAYBE_SharedAssociatedRemote SharedAssociatedRemote
-#endif
 
 namespace mojo {
 namespace test {
@@ -53,6 +40,7 @@ using mojo::internal::MultiplexRouter;
 
 class IntegerSenderImpl : public IntegerSender {
  public:
+  IntegerSenderImpl() = default;
   explicit IntegerSenderImpl(PendingAssociatedReceiver<IntegerSender> receiver)
       : receiver_(this, std::move(receiver)) {}
 
@@ -71,7 +59,7 @@ class IntegerSenderImpl : public IntegerSender {
   AssociatedReceiver<IntegerSender>* receiver() { return &receiver_; }
 
  private:
-  AssociatedReceiver<IntegerSender> receiver_;
+  AssociatedReceiver<IntegerSender> receiver_{this};
   base::RepeatingCallback<void(int32_t)> notify_send_method_called_;
 };
 
@@ -84,9 +72,8 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
   ~IntegerSenderConnectionImpl() override = default;
 
   void GetSender(PendingAssociatedReceiver<IntegerSender> receiver) override {
-    IntegerSenderImpl* sender_impl = new IntegerSenderImpl(std::move(receiver));
-    sender_impl->receiver()->set_disconnect_handler(
-        base::BindOnce(&DeleteSender, sender_impl));
+    DCHECK(receiver.is_valid());
+    senders_.Add(std::make_unique<IntegerSenderImpl>(), std::move(receiver));
   }
 
   void AsyncGetSender(AsyncGetSenderCallback callback) override {
@@ -98,9 +85,8 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
   Receiver<IntegerSenderConnection>* receiver() { return &receiver_; }
 
  private:
-  static void DeleteSender(IntegerSenderImpl* sender) { delete sender; }
-
   Receiver<IntegerSenderConnection> receiver_;
+  UniqueAssociatedReceiverSet<IntegerSender> senders_;
 };
 
 class AssociatedInterfaceTest : public testing::Test {
@@ -509,7 +495,7 @@ TEST_F(AssociatedInterfaceTest, FIFO) {
   }
 }
 
-TEST_F(AssociatedInterfaceTest, MAYBE_PassAssociatedInterfaces) {
+TEST_F(AssociatedInterfaceTest, PassAssociatedInterfaces) {
   Remote<IntegerSenderConnection> connection_remote;
   IntegerSenderConnectionImpl connection(
       connection_remote.BindNewPipeAndPassReceiver());
@@ -543,7 +529,7 @@ TEST_F(AssociatedInterfaceTest, MAYBE_PassAssociatedInterfaces) {
 }
 
 TEST_F(AssociatedInterfaceTest,
-       MAYBE_ReceiverWaitAndPauseWhenNoAssociatedInterfaces) {
+       ReceiverWaitAndPauseWhenNoAssociatedInterfaces) {
   Remote<IntegerSenderConnection> connection_remote;
   IntegerSenderConnectionImpl connection(
       connection_remote.BindNewPipeAndPassReceiver());
@@ -970,7 +956,7 @@ TEST_F(AssociatedInterfaceTest, AssociatedRequestResetWithReason) {
   run_loop.Run();
 }
 
-TEST_F(AssociatedInterfaceTest, MAYBE_SharedAssociatedRemote) {
+TEST_F(AssociatedInterfaceTest, SharedAssociatedRemote) {
   Remote<IntegerSenderConnection> connection_remote;
   IntegerSenderConnectionImpl connection(
       connection_remote.BindNewPipeAndPassReceiver());
