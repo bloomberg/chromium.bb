@@ -67,6 +67,9 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
   bool TakeReadOnlySharedMemoryRegionAtIndex(
       size_t index,
       base::ReadOnlySharedMemoryRegion* region) const;
+  bool TakeUnsafeSharedMemoryRegionAtIndex(
+      size_t index,
+      base::UnsafeSharedMemoryRegion* region) const;
   bool TakeSocketHandleAtIndex(size_t index,
                                IPC::PlatformFileForTransit* handle) const;
   bool TakeFileHandleAtIndex(size_t index,

@@ -13,8 +13,10 @@
 #include "base/atomicops.h"
 #include "base/logging.h"
 #include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "build/build_config.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_resource.h"
@@ -66,6 +68,8 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   SerializedHandle(const base::SharedMemoryHandle& handle, uint32_t size);
 
   // Create a shared memory region handle.
+  explicit SerializedHandle(base::ReadOnlySharedMemoryRegion region);
+  explicit SerializedHandle(base::UnsafeSharedMemoryRegion region);
   explicit SerializedHandle(base::subtle::PlatformSharedMemoryRegion region);
 
   // Create a socket or file handle.
