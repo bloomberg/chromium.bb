@@ -550,6 +550,11 @@ size_t V4L2WritableBufferRef::GetPlaneBytesUsed(const size_t plane) const {
   return buffer_data_->v4l2_buffer_.m.planes[plane].bytesused;
 }
 
+void V4L2WritableBufferRef::PrepareQueueBuffer(
+    scoped_refptr<V4L2DecodeSurface> surface) {
+  surface->PrepareQueueBuffer(&(buffer_data_->v4l2_buffer_));
+}
+
 size_t V4L2WritableBufferRef::BufferId() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsValid());
@@ -1018,6 +1023,30 @@ VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
     default:
       DVLOGF(1) << "Add more cases as needed";
       return PIXEL_FORMAT_UNKNOWN;
+  }
+}
+
+// static
+size_t V4L2Device::V4L2PixFmtToNumPlanes(uint32_t pix_fmt) {
+  switch (pix_fmt) {
+    case V4L2_PIX_FMT_NV12:
+    case V4L2_PIX_FMT_YUV420:
+    case V4L2_PIX_FMT_YVU420:
+    case V4L2_PIX_FMT_RGB32:
+      return 1;
+
+    case V4L2_PIX_FMT_NV12M:
+    case V4L2_PIX_FMT_MT21C:
+      return 2;
+
+    case V4L2_PIX_FMT_YUV420M:
+    case V4L2_PIX_FMT_YVU420M:
+    case V4L2_PIX_FMT_YUV422M:
+      return 3;
+
+    default:
+      LOG(FATAL) << "Add more cases as needed";
+      return 0;
   }
 }
 

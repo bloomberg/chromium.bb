@@ -24,6 +24,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/v4l2/v4l2_decode_surface.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
@@ -113,6 +114,11 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // Note: at the moment, this method is valid for MMAP buffers only. It will
   // return nullptr for any other buffer type.
   scoped_refptr<VideoFrame> GetVideoFrame() WARN_UNUSED_RESULT;
+
+  // Add the request or config store information to |surface|.
+  // TODO(acourbot): This method is a temporary hack. Implement proper config
+  // store/request API support.
+  void PrepareQueueBuffer(scoped_refptr<V4L2DecodeSurface> surface);
 
   // Return the V4L2 buffer ID of the underlying buffer.
   // TODO(acourbot) This is used for legacy clients but should be ultimately
@@ -321,6 +327,7 @@ class MEDIA_GPU_EXPORT V4L2Device
  public:
   // Utility format conversion functions
   static VideoPixelFormat V4L2PixFmtToVideoPixelFormat(uint32_t format);
+  static size_t V4L2PixFmtToNumPlanes(uint32_t pix_fmt);
   static uint32_t VideoPixelFormatToV4L2PixFmt(VideoPixelFormat format,
                                                bool single_planar);
   // Returns v4l2 pixel format from |layout|. If there is no corresponding
@@ -469,6 +476,8 @@ class MEDIA_GPU_EXPORT V4L2Device
                               gfx::Size* min_resolution,
                               gfx::Size* max_resolution);
 
+  std::vector<uint32_t> EnumerateSupportedPixelformats(v4l2_buf_type buf_type);
+
   // Return V4L2 pixelformats supported by the available image processor
   // devices for |buf_type|.
   virtual std::vector<uint32_t> GetSupportedImageProcessorPixelformats(
@@ -501,8 +510,6 @@ class MEDIA_GPU_EXPORT V4L2Device
       const uint32_t pixelformats[]);
 
   VideoEncodeAccelerator::SupportedProfiles EnumerateSupportedEncodeProfiles();
-
-  std::vector<uint32_t> EnumerateSupportedPixelformats(v4l2_buf_type buf_type);
 
  private:
   // Perform platform-specific initialization of the device instance.
