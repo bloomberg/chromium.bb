@@ -25,7 +25,11 @@ import java.util.ArrayList;
  */
 class ManualFillingState {
     private final static int[] TAB_ORDER = {
-            AccessoryTabType.PASSWORDS, AccessoryTabType.CREDIT_CARDS, AccessoryTabType.ADDRESSES};
+            AccessoryTabType.PASSWORDS,
+            AccessoryTabType.CREDIT_CARDS,
+            AccessoryTabType.ADDRESSES,
+            AccessoryTabType.TOUCH_TO_FILL,
+    };
     private final WebContents mWebContents;
     private final SparseArray<SheetState> mSheetStates = new SparseArray<>();
     private @Nullable CachedProviderAdapter<KeyboardAccessoryData.Action[]> mActionsProvider;

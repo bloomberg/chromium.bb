@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.keyboard_accessory;
 import static org.chromium.chrome.browser.ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY;
 import static org.chromium.chrome.browser.ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID;
 import static org.chromium.chrome.browser.ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY;
+import static org.chromium.chrome.browser.ChromeFeatureList.TOUCH_TO_FILL_ANDROID;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KEYBOARD_EXTENSION_STATE;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState.EXTENDING_KEYBOARD;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState.FLOATING_BAR;
@@ -48,6 +49,7 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetT
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.TouchToFillSheetCoordinator;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
@@ -615,7 +617,9 @@ class ManualFillingMediator extends EmptyTabObserver
                 if (!ChromeFeatureList.isEnabled(AUTOFILL_MANUAL_FALLBACK_ANDROID)) return false;
                 // Intentional fallthrough. The restrictions for passwords apply to other tabs.
             case AccessoryTabType.PASSWORDS:
-                if (!ChromeFeatureList.isEnabled(PASSWORDS_KEYBOARD_ACCESSORY)) return false;
+                return ChromeFeatureList.isEnabled(PASSWORDS_KEYBOARD_ACCESSORY);
+            case AccessoryTabType.TOUCH_TO_FILL:
+                return ChromeFeatureList.isEnabled(TOUCH_TO_FILL_ANDROID);
         }
         return true;
     }
@@ -630,6 +634,9 @@ class ManualFillingMediator extends EmptyTabObserver
                         mActivity, mAccessorySheet.getScrollListener());
             case AccessoryTabType.PASSWORDS:
                 return new PasswordAccessorySheetCoordinator(
+                        mActivity, mAccessorySheet.getScrollListener());
+            case AccessoryTabType.TOUCH_TO_FILL:
+                return new TouchToFillSheetCoordinator(
                         mActivity, mAccessorySheet.getScrollListener());
             case AccessoryTabType.ALL: // Intentional fallthrough.
             case AccessoryTabType.COUNT: // Intentional fallthrough.
