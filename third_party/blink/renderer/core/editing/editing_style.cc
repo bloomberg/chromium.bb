@@ -397,8 +397,6 @@ const CSSValue* HTMLFontSizeEquivalent::AttributeValueAsCSSValue(
   return CSSIdentifierValue::Create(size);
 }
 
-float EditingStyle::no_font_delta_ = 0.0f;
-
 EditingStyle::EditingStyle(ContainerNode* node,
                            PropertiesToInclude properties_to_include) {
   Init(node, properties_to_include);
@@ -622,7 +620,7 @@ void EditingStyle::ExtractFontSizeDelta() {
 
 bool EditingStyle::IsEmpty() const {
   return (!mutable_style_ || mutable_style_->IsEmpty()) &&
-         font_size_delta_ == no_font_delta_;
+         font_size_delta_ == kNoFontDelta;
 }
 
 bool EditingStyle::GetTextDirection(WritingDirection& writing_direction) const {
@@ -674,7 +672,7 @@ void EditingStyle::OverrideWithStyle(const CSSPropertyValueSet* style) {
 void EditingStyle::Clear() {
   mutable_style_.Clear();
   is_monospace_font_ = false;
-  font_size_delta_ = no_font_delta_;
+  font_size_delta_ = kNoFontDelta;
 }
 
 EditingStyle* EditingStyle::Copy() const {
