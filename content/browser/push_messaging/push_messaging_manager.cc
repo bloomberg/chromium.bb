@@ -706,19 +706,19 @@ void PushMessagingManager::DidUnregister(
     case blink::mojom::PushUnregistrationStatus::SUCCESS_UNREGISTERED:
     case blink::mojom::PushUnregistrationStatus::PENDING_NETWORK_ERROR:
     case blink::mojom::PushUnregistrationStatus::PENDING_SERVICE_ERROR:
-      std::move(callback).Run(blink::WebPushError::kErrorTypeNone,
+      std::move(callback).Run(blink::mojom::PushErrorType::NONE,
                               true /* did_unsubscribe */,
                               base::nullopt /* error_message */);
       break;
     case blink::mojom::PushUnregistrationStatus::SUCCESS_WAS_NOT_REGISTERED:
-      std::move(callback).Run(blink::WebPushError::kErrorTypeNone,
+      std::move(callback).Run(blink::mojom::PushErrorType::NONE,
                               false /* did_unsubscribe */,
                               base::nullopt /* error_message */);
       break;
     case blink::mojom::PushUnregistrationStatus::NO_SERVICE_WORKER:
     case blink::mojom::PushUnregistrationStatus::SERVICE_NOT_AVAILABLE:
     case blink::mojom::PushUnregistrationStatus::STORAGE_ERROR:
-      std::move(callback).Run(blink::WebPushError::kErrorTypeAbort, false,
+      std::move(callback).Run(blink::mojom::PushErrorType::ABORT, false,
                               std::string(PushUnregistrationStatusToString(
                                   unregistration_status)) /* error_message */);
       break;

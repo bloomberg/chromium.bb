@@ -30,15 +30,6 @@ struct BLINK_COMMON_EXPORT
                    blink::WebPushSubscriptionOptions* out);
 };
 
-template <>
-struct BLINK_COMMON_EXPORT
-    EnumTraits<blink::mojom::PushErrorType, blink::WebPushError::ErrorType> {
-  static blink::mojom::PushErrorType ToMojom(
-      blink::WebPushError::ErrorType input);
-  static bool FromMojom(blink::mojom::PushErrorType input,
-                        blink::WebPushError::ErrorType* output);
-};
-
 }  // namespace mojo
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_PUSH_MESSAGING_PUSH_MESSAGING_MOJOM_TRAITS_H_
