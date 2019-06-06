@@ -20,7 +20,6 @@ import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
@@ -88,10 +87,9 @@ public final class ServicificationBackgroundServiceTest {
 
                 MappedByteBuffer mappedByteBuffer = mMappedSpareFile.getChannel().map(
                         FileChannel.MapMode.READ_WRITE, 0, ALLOC_SIZE);
-                mappedByteBuffer.load();
-                Assert.assertTrue(mappedByteBuffer.isLoaded());
 
                 mappedByteBuffer.put(0, (byte) 0);
+                mappedByteBuffer.force();
                 Assert.assertTrue(Byte.compare(mappedByteBuffer.get(0), (byte) 0) == 0);
             } catch (Exception e) {
                 Log.d(TAG, "Fail to create memory-mapped file: %s", SPARE_FILE_NAME);
@@ -123,7 +121,6 @@ public final class ServicificationBackgroundServiceTest {
     @Feature({"ServicificationStartup"})
     @CommandLineFlags.Add({"enable-features=NetworkService,AllowStartingServiceManagerOnly,"
             + "WriteBasicSystemProfileToPersistentHistogramsFile"})
-    @DisabledTest(message = "https://crbug.com/970190")
     public void
     testHistogramsPersistedWithServiceManagerOnlyStart() {
         createBrowserMetricsSpareFile();
