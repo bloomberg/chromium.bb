@@ -668,6 +668,9 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_LOGIN_SCREEN_UI,
        {APIPermission::kLoginScreenUi},
        {}},
+      {IDS_EXTENSION_PROMPT_WARNING_TRANSIENT_BACKGROUND,
+       {APIPermission::kTransientBackground},
+       {}},
   };
 
   return std::vector<ChromePermissionMessageRule>(

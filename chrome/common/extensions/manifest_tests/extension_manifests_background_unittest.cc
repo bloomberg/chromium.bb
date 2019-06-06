@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "components/version_info/version_info.h"
@@ -92,6 +93,40 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
   manifest.SetKey(keys::kPermissions, std::move(permissions));
   LoadAndExpectError(ManifestData(&manifest, ""),
                      errors::kWebRequestConflictsWithLazyBackground);
+}
+
+TEST_F(ExtensionManifestBackgroundTest, BackgroundPageTransientBackground) {
+  ScopedCurrentChannel current_channel(version_info::Channel::DEV);
+
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess(ManifestData(base::test::ParseJson(R"(
+          {
+            "name": "test",
+            "manifest_version": 2,
+            "version": "1",
+            "background": {
+              "page": "foo.html"
+            }
+          })"),
+                                        "")));
+  ASSERT_TRUE(extension.get());
+  EXPECT_TRUE(BackgroundInfo::HasPersistentBackgroundPage(extension.get()));
+
+  LoadAndExpectError(
+      ManifestData(base::test::ParseJson(R"(
+          {
+            "name": "test",
+            "manifest_version": 2,
+            "version": "1",
+            "permissions": [
+              "transientBackground"
+            ],
+            "background": {
+              "page": "foo.html"
+            }
+          })"),
+                   ""),
+      errors::kTransientBackgroundConflictsWithPersistentBackground);
 }
 
 TEST_F(ExtensionManifestBackgroundTest, BackgroundPagePersistentPlatformApp) {

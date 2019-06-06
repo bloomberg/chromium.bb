@@ -296,6 +296,14 @@ bool BackgroundManifestHandler::Parse(Extension* extension,
     return false;
   }
 
+  if (!info->has_lazy_background_page() &&
+      PermissionsParser::HasAPIPermission(
+          extension, APIPermission::kTransientBackground)) {
+    *error = ASCIIToUTF16(
+        errors::kTransientBackgroundConflictsWithPersistentBackground);
+    return false;
+  }
+
   extension->SetManifestData(kBackground, std::move(info));
   return true;
 }

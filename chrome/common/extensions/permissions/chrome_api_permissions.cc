@@ -87,6 +87,8 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kSignedInDevices, "signedInDevices"},
     {APIPermission::kTab, "tabs"},
     {APIPermission::kTopSites, "topSites"},
+    {APIPermission::kTransientBackground, "transientBackground",
+     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kTts, "tts", APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kTtsEngine, "ttsEngine",
      APIPermissionInfo::kFlagCannotBeOptional},

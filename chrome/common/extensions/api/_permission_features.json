@@ -727,6 +727,12 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "transientBackground": {
+    "channel": "dev",
+    "extension_types": [
+      "extension"
+    ]
+  },
   "tts": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]

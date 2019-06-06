@@ -752,6 +752,9 @@ const char kSandboxPagesCSPKeyNotAllowed[] =
     "'content_security_policy.sandbox'.";
 const char kRulesFileIsInvalid[] =
     "Invalid value for key '*.*': The provided path is invalid.";
+const char kTransientBackgroundConflictsWithPersistentBackground[] =
+    "The 'transientBackground' permission cannot be used with a persistent "
+    "background page.";
 const char kTtsGenderIsDeprecated[] =
     "Voice gender is deprecated and values will be ignored starting in Chrome "
     "71";
