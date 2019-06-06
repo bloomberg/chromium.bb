@@ -55,6 +55,8 @@
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
 #import "ios/web/navigation/crw_pending_navigation_info.h"
+#import "ios/web/navigation/crw_web_view_navigation_observer.h"
+#import "ios/web/navigation/crw_web_view_navigation_observer_delegate.h"
 #import "ios/web/navigation/crw_wk_navigation_handler.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
 #include "ios/web/navigation/error_retry_state_machine.h"
@@ -192,10 +194,11 @@ GURL URLEscapedForHistory(const GURL& url) {
                                 CRWSSLStatusUpdaterDataSource,
                                 CRWSSLStatusUpdaterDelegate,
                                 CRWWebControllerContainerViewDelegate,
+                                CRWWebViewNavigationObserverDelegate,
                                 CRWWebViewScrollViewProxyObserver,
-                                WKNavigationDelegate,
                                 CRWWKNavigationHandlerDelegate,
-                                CRWWKUIHandlerDelegate> {
+                                CRWWKUIHandlerDelegate,
+                                WKNavigationDelegate> {
   // The view used to display content.  Must outlive |_webViewProxy|. The
   // container view should be accessed through this property rather than
   // |self.view| from within this class, as |self.view| triggers creation while
@@ -263,6 +266,10 @@ GURL URLEscapedForHistory(const GURL& url) {
 @property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
 @property(nonatomic, strong)
     CRWLegacyNativeContentController* legacyNativeController;
+
+@property(nonatomic, strong, readonly)
+    CRWWebViewNavigationObserver* webViewNavigationObserver;
+
 // Dictionary where keys are the names of WKWebView properties and values are
 // selector names which should be called when a corresponding property has
 // changed. e.g. @{ @"URL" : @"webViewURLDidChange" } means that
@@ -449,6 +456,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
     _UIHandler = [[CRWWKUIHandler alloc] init];
     _UIHandler.delegate = self;
+
+    _webViewNavigationObserver = [[CRWWebViewNavigationObserver alloc] init];
+    _webViewNavigationObserver.delegate = self;
   }
   return self;
 }
@@ -575,6 +585,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   for (NSString* keyPath in self.WKWebViewObservers) {
     [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
   }
+  self.webViewNavigationObserver.webView = _webView;
   _webView.allowsBackForwardNavigationGestures =
       _allowsBackForwardNavigationGestures;
   [self setDocumentURL:_defaultURL context:nullptr];
@@ -625,13 +636,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (NSDictionary*)WKWebViewObservers {
   return @{
     @"serverTrust" : @"webViewSecurityFeaturesDidChange",
-    @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
     @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
     @"title" : @"webViewTitleDidChange",
-    @"loading" : @"webViewLoadingStateDidChange",
     @"URL" : @"webViewURLDidChange",
-    @"canGoForward" : @"webViewBackForwardStateDidChange",
-    @"canGoBack" : @"webViewBackForwardStateDidChange"
   };
 }
 
@@ -3135,13 +3142,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 }
 
-// Called when WKWebView estimatedProgress has been changed.
-- (void)webViewEstimatedProgressDidChange {
-  if (!_isBeingDestroyed) {
-    self.webStateImpl->SendChangeLoadProgress(self.webView.estimatedProgress);
-  }
-}
-
 // Called when WKWebView certificateChain or hasOnlySecureContent property has
 // changed.
 - (void)webViewSecurityFeaturesDidChange {
@@ -3152,102 +3152,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return;
   }
   [self updateSSLStatusForCurrentNavigationItem];
-}
-
-// Called when WKWebView loading state has been changed.
-- (void)webViewLoadingStateDidChange {
-  if (self.webView.loading)
-    return;
-
-  GURL webViewURL = net::GURLWithNSURL(self.webView.URL);
-
-  if (![self.navigationHandler isCurrentNavigationBackForward])
-    return;
-
-  web::NavigationContextImpl* existingContext = [self.navigationHandler
-      contextForPendingMainFrameNavigationWithURL:webViewURL];
-
-  // When traversing history restored from a previous session, WKWebView does
-  // not fire 'pageshow', 'onload', 'popstate' or any of the
-  // WKNavigationDelegate callbacks for back/forward navigation from an about:
-  // scheme placeholder URL to another entry or if either of the redirect fails
-  // to load (e.g. in airplane mode). Loading state KVO is the only observable
-  // event in this scenario, so force a reload to trigger redirect from
-  // restore_session.html to the restored URL.
-  bool previousURLHasAboutScheme =
-      _documentURL.SchemeIs(url::kAboutScheme) ||
-      IsPlaceholderUrl(_documentURL) ||
-      web::GetWebClient()->IsAppSpecificURL(_documentURL);
-  bool is_back_forward_navigation =
-      existingContext &&
-      (existingContext->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK);
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      IsRestoreSessionUrl(webViewURL)) {
-    if (previousURLHasAboutScheme || is_back_forward_navigation) {
-      [self.webView reload];
-      self.navigationHandler.navigationState =
-          web::WKNavigationState::REQUESTED;
-      return;
-    }
-  }
-
-  // For failed navigations, WKWebView will sometimes revert to the previous URL
-  // before committing the current navigation or resetting the web view's
-  // |isLoading| property to NO.  If this is the first navigation for the web
-  // view, this will result in an empty URL.
-  BOOL navigationWasCommitted = self.navigationHandler.navigationState !=
-                                web::WKNavigationState::REQUESTED;
-  if (!navigationWasCommitted &&
-      (webViewURL.is_empty() || webViewURL == _documentURL)) {
-    return;
-  }
-
-  if (!navigationWasCommitted &&
-      !self.navigationHandler.pendingNavigationInfo.cancelled) {
-    // A fast back-forward navigation does not call |didCommitNavigation:|, so
-    // signal page change explicitly.
-    DCHECK_EQ(_documentURL.GetOrigin(), webViewURL.GetOrigin());
-    BOOL isSameDocumentNavigation =
-        [self isKVOChangePotentialSameDocumentNavigationToURL:webViewURL];
-
-    [self setDocumentURL:webViewURL context:existingContext];
-    if (!existingContext) {
-      // This URL was not seen before, so register new load request.
-      std::unique_ptr<web::NavigationContextImpl> newContext =
-          [self registerLoadRequestForURL:webViewURL
-                   sameDocumentNavigation:isSameDocumentNavigation
-                           hasUserGesture:NO
-                        rendererInitiated:YES
-                    placeholderNavigation:IsPlaceholderUrl(webViewURL)];
-      [self.navigationHandler webPageChangedWithContext:newContext.get()
-                                                webView:self.webView];
-      newContext->SetHasCommitted(!isSameDocumentNavigation);
-      self.webStateImpl->OnNavigationFinished(newContext.get());
-      // TODO(crbug.com/792515): It is OK, but very brittle, to call
-      // |didFinishNavigation:| here because the gating condition is mutually
-      // exclusive with the condition below. Refactor this method after
-      // deprecating self.navigationHandler.pendingNavigationInfo.
-      if (newContext->GetWKNavigationType() == WKNavigationTypeBackForward) {
-        [self didFinishNavigation:newContext.get()];
-      }
-    } else {
-      // Same document navigation does not contain response headers.
-      net::HttpResponseHeaders* headers =
-          isSameDocumentNavigation
-              ? nullptr
-              : self.webStateImpl->GetHttpResponseHeaders();
-      existingContext->SetResponseHeaders(headers);
-      existingContext->SetIsSameDocument(isSameDocumentNavigation);
-      existingContext->SetHasCommitted(!isSameDocumentNavigation);
-      self.webStateImpl->OnNavigationStarted(existingContext);
-      [self.navigationHandler webPageChangedWithContext:existingContext
-                                                webView:self.webView];
-      self.webStateImpl->OnNavigationFinished(existingContext);
-    }
-  }
-
-  [self updateSSLStatusForCurrentNavigationItem];
-  [self didFinishNavigation:existingContext];
 }
 
 // Called when WKWebView title has been changed.
@@ -3273,14 +3177,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     [self.navigationHandler
         setLastCommittedNavigationItemTitle:self.webView.title];
   }
-}
-
-// Called when WKWebView canGoForward/canGoBack state has been changed.
-- (void)webViewBackForwardStateDidChange {
-  // Don't trigger for LegacyNavigationManager because its back/foward state
-  // doesn't always match that of WKWebView.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
-    self.webStateImpl->OnBackForwardStateChanged();
 }
 
 // Called when WKWebView URL has been changed.
@@ -3555,6 +3451,77 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     [self updateSSLStatusForCurrentNavigationItem];
     [self didFinishNavigation:navigationContext];
   }
+}
+
+#pragma mark - CRWWebViewNavigationObserverDelegate
+
+- (BOOL)webViewIsBeingDestroyed:
+    (CRWWebViewNavigationObserver*)navigationObserver {
+  return _isBeingDestroyed;
+}
+
+- (web::WebStateImpl*)webStateImplForNavigationObserver:
+    (CRWWebViewNavigationObserver*)navigationObserver {
+  return self.webStateImpl;
+}
+
+- (CRWWKNavigationHandler*)navigationHandlerForNavigationObserver:
+    (CRWWebViewNavigationObserver*)navigationObserver {
+  return self.navigationHandler;
+}
+
+- (const GURL&)documentURLForNavigationObserver:
+    (CRWWebViewNavigationObserver*)navigationObserver {
+  return _documentURL;
+}
+
+- (void)navigationObserverDidChangeSSLStatus:
+    (CRWWebViewNavigationObserver*)navigationObserver {
+  [self updateSSLStatusForCurrentNavigationItem];
+}
+
+- (void)navigationObserver:(CRWWebViewNavigationObserver*)navigationObserver
+       didFinishNavigation:(web::NavigationContextImpl*)context {
+  [self didFinishNavigation:context];
+}
+
+- (void)navigationObserver:(CRWWebViewNavigationObserver*)navigationObserver
+      didChangeDocumentURL:(const GURL&)documentURL
+                forContext:(web::NavigationContextImpl*)context {
+  [self setDocumentURL:documentURL context:context];
+}
+
+- (void)navigationObserver:(CRWWebViewNavigationObserver*)navigationObserver
+    didChangePageWithContext:(web::NavigationContextImpl*)context {
+  [self.navigationHandler webPageChangedWithContext:context
+                                            webView:self.webView];
+}
+
+- (void)navigationObserver:(CRWWebViewNavigationObserver*)navigationObserver
+                didLoadNewURL:(const GURL&)webViewURL
+    forSameDocumentNavigation:(BOOL)isSameDocumentNavigation {
+  std::unique_ptr<web::NavigationContextImpl> newContext =
+      [self registerLoadRequestForURL:webViewURL
+               sameDocumentNavigation:isSameDocumentNavigation
+                       hasUserGesture:NO
+                    rendererInitiated:YES
+                placeholderNavigation:IsPlaceholderUrl(webViewURL)];
+  [self.navigationHandler webPageChangedWithContext:newContext.get()
+                                            webView:self.webView];
+  newContext->SetHasCommitted(!isSameDocumentNavigation);
+  self.webStateImpl->OnNavigationFinished(newContext.get());
+  // TODO(crbug.com/792515): It is OK, but very brittle, to call
+  // |didFinishNavigation:| here because the gating condition is mutually
+  // exclusive with the condition below. Refactor this method after
+  // deprecating self.navigationHandler.pendingNavigationInfo.
+  if (newContext->GetWKNavigationType() == WKNavigationTypeBackForward) {
+    [self didFinishNavigation:newContext.get()];
+  }
+}
+
+- (BOOL)navigationObserver:(CRWWebViewNavigationObserver*)navigationObserver
+    isURLChangeSameDocumentNavigation:(const GURL&)URL {
+  return [self isKVOChangePotentialSameDocumentNavigationToURL:URL];
 }
 
 #pragma mark - CRWWKNavigationHandlerDelegate

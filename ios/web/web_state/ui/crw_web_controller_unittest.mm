@@ -220,11 +220,11 @@ class CRWWebControllerTest : public WebTestWithWebController,
     OCMStub([result customUserAgent]);
     OCMStub([static_cast<WKWebView*>(result) loadRequest:OCMOCK_ANY]);
     OCMStub([result setFrame:GetExpectedWebViewFrame()]);
-    OCMStub([result addObserver:web_controller()
+    OCMStub([result addObserver:OCMOCK_ANY
                      forKeyPath:OCMOCK_ANY
                         options:0
                         context:nullptr]);
-    OCMStub([result removeObserver:web_controller() forKeyPath:OCMOCK_ANY]);
+    OCMStub([result removeObserver:OCMOCK_ANY forKeyPath:OCMOCK_ANY]);
     OCMStub([result evaluateJavaScript:OCMOCK_ANY
                      completionHandler:OCMOCK_ANY]);
     OCMStub([result allowsBackForwardNavigationGestures]);
