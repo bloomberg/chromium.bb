@@ -372,6 +372,7 @@ SystemNetworkContextManager* SystemNetworkContextManager::GetInstance() {
 void SystemNetworkContextManager::DeleteInstance() {
   DCHECK(g_system_network_context_manager);
   delete g_system_network_context_manager;
+  g_system_network_context_manager = nullptr;
 }
 
 SystemNetworkContextManager::SystemNetworkContextManager(

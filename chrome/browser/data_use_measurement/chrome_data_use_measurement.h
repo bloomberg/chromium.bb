@@ -21,6 +21,7 @@ class ChromeDataUseMeasurement : public DataUseMeasurement {
  public:
   static void CreateInstance(PrefService* local_state);
   static ChromeDataUseMeasurement* GetInstance();
+  static void DeleteInstance();
 
   ChromeDataUseMeasurement(
       std::unique_ptr<URLRequestClassifier> url_request_classifier,

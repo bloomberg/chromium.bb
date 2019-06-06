@@ -602,11 +602,13 @@ NetworkContext::~NetworkContext() {
   if (network_service_)
     network_service_->DeregisterNetworkContext(this);
 
-  if (IsPrimaryNetworkContext()) {
 #if defined(USE_NSS_CERTS)
+  if (IsPrimaryNetworkContext() &&
+      base::MessageLoopCurrentForIO::IsSet()) {  // null in some unit tests.
     net::SetURLRequestContextForNSSHttpIO(nullptr);
-#endif
   }
+#endif
+
   if (cert_net_fetcher_)
     cert_net_fetcher_->Shutdown();
 
@@ -2030,13 +2032,14 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         result.url_request_context->proxy_resolution_service());
   }
 
+#if defined(USE_NSS_CERTS)
   // These must be matched by cleanup code just before the URLRequestContext is
   // destroyed.
-  if (params_->primary_network_context) {
-#if defined(USE_NSS_CERTS)
+  if (params_->primary_network_context &&
+      base::MessageLoopCurrentForIO::IsSet()) {  // null in some unit tests.
     net::SetURLRequestContextForNSSHttpIO(result.url_request_context.get());
-#endif
   }
+#endif
 
   cookie_manager_ = std::make_unique<CookieManager>(
       result.url_request_context->cookie_store(),

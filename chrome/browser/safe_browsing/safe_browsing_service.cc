@@ -515,7 +515,7 @@ void SafeBrowsingService::CreateTriggerManager() {
 
 network::mojom::NetworkContextParamsPtr
 SafeBrowsingService::CreateNetworkContextParams() {
-  auto params = g_browser_process->system_network_context_manager()
+  auto params = SystemNetworkContextManager::GetInstance()
                     ->CreateDefaultNetworkContextParams();
   if (!proxy_config_monitor_) {
     proxy_config_monitor_ =
