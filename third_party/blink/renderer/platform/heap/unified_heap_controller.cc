@@ -180,24 +180,29 @@ bool UnifiedHeapController::IsRootForNonTracingGC(
   return IsRootForNonTracingGCInternal(handle);
 }
 
-void UnifiedHeapController::IncreaseAllocatedObjectSize(size_t delta_bytes) {
-  buffered_allocated_size_ += delta_bytes;
-
+void UnifiedHeapController::ReportBufferedAllocatedSizeIfPossible() {
   // Reported from a recursive sweeping call.
   if (thread_state()->IsSweepingInProgress() &&
       thread_state()->SweepForbidden()) {
     return;
   }
 
-  if (buffered_allocated_size_ > 0) {
+  if (buffered_allocated_size_ < 0) {
+    DecreaseAllocatedSize(static_cast<size_t>(-buffered_allocated_size_));
+  } else {
     IncreaseAllocatedSize(static_cast<size_t>(buffered_allocated_size_));
-    buffered_allocated_size_ = 0;
   }
+  buffered_allocated_size_ = 0;
+}
+
+void UnifiedHeapController::IncreaseAllocatedObjectSize(size_t delta_bytes) {
+  buffered_allocated_size_ += static_cast<int64_t>(delta_bytes);
+  ReportBufferedAllocatedSizeIfPossible();
 }
 
 void UnifiedHeapController::DecreaseAllocatedObjectSize(size_t delta_bytes) {
-  // TODO(mlippautz): Add support for negative deltas in V8.
-  buffered_allocated_size_ -= delta_bytes;
+  buffered_allocated_size_ -= static_cast<int64_t>(delta_bytes);
+  ReportBufferedAllocatedSizeIfPossible();
 }
 
 }  // namespace blink

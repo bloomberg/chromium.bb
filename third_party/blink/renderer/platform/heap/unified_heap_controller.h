@@ -61,6 +61,8 @@ class PLATFORM_EXPORT UnifiedHeapController final
   static bool IsRootForNonTracingGCInternal(
       const v8::TracedGlobal<v8::Value>& handle);
 
+  void ReportBufferedAllocatedSizeIfPossible();
+
   ThreadState* const thread_state_;
   // Returns whether the Blink heap has been fully processed.
   bool is_tracing_done_ = false;
