@@ -64,31 +64,6 @@ class PrivetHTTPClient {
       PrivetURLLoader::TokenCallback token_callback) = 0;
 };
 
-class PrivetDataReadOperation {
- public:
-  enum ResponseType {
-    RESPONSE_TYPE_ERROR,
-    RESPONSE_TYPE_STRING,
-    RESPONSE_TYPE_FILE
-  };
-
-  // If value is null, the operation failed.
-  typedef base::Callback<void(
-      ResponseType /*response_type*/,
-      const std::string& /*response_str*/,
-      const base::FilePath& /*response_file_path*/)> ResultCallback;
-
-  virtual ~PrivetDataReadOperation() {}
-
-  virtual void Start() = 0;
-
-  virtual void SetDataRange(int range_start, int range_end) = 0;
-
-  virtual void SaveDataToFile() = 0;
-
-  virtual PrivetHTTPClient* GetHTTPClient() = 0;
-};
-
 // Represents a full registration flow (/privet/register), normally consisting
 // of calling the start action, the getClaimToken action, and calling the
 // complete action. Some intervention from the caller is required to display the
