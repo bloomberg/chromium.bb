@@ -23,6 +23,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -421,6 +423,50 @@ class DetachToBrowserTabDragControllerTest
 #endif  // OS_MACOSX
   }
 
+  // Set up the test environment with 4 tabs. Two pinned and two unpinned.
+  void SetUpDragToChangePinnednessTest() {
+    AddTabAndResetBrowser(browser());
+    AddTabAndResetBrowser(browser());
+    AddTabAndResetBrowser(browser());
+
+    TabStrip* tab_strip = GetTabStripForBrowser(browser());
+    TabStripModel* model = browser()->tab_strip_model();
+
+    model->SetTabPinned(0, true);
+    model->SetTabPinned(1, true);
+    StopAnimating(tab_strip);
+    ASSERT_TRUE(model->IsTabPinned(0));
+    ASSERT_TRUE(model->IsTabPinned(1));
+    ASSERT_FALSE(model->IsTabPinned(2));
+    ASSERT_FALSE(model->IsTabPinned(3));
+    EXPECT_EQ("0 1 2 3", IDString(model));
+  }
+
+  // Set up the test environment another browser with two unpinned tabs.
+  Browser* SetUpSecondBrowserWithTwoUnpinnedTabs() {
+    Browser* browser2 = CreateAnotherBrowserAndResize();
+    AddTabAndResetBrowser(browser2);
+    ResetIDs(browser2->tab_strip_model(), 100);
+    return browser2;
+  }
+
+  void SelectIndicies(TabStrip* tabstrip,
+                      TabStripModel* model,
+                      std::vector<int> indicies) {
+    DCHECK(!indicies.empty());
+    // The last tab opened will automatically be selected. Simulating a click to
+    // select the first index will ensure others are no longer selected.
+    ASSERT_TRUE(PressInput(
+        GetCenterInScreenCoordinates(tabstrip->tab_at(indicies.at(0)))));
+    ASSERT_TRUE(ReleaseInput());
+
+    if (indicies.size() > 1) {
+      for (auto it = std::next(indicies.begin()); it != indicies.end(); ++it) {
+        model->ToggleSelectionAt(*it);
+      }
+    }
+  }
+
   InputSource input_source() const {
     return strstr(GetParam(), "mouse") ?
         INPUT_SOURCE_MOUSE : INPUT_SOURCE_TOUCH;
@@ -595,6 +641,23 @@ class DetachToBrowserTabDragControllerTest
 
   Browser* browser() const { return InProcessBrowserTest::browser(); }
 
+  void DragToSeparateWindowBeforeFirstTab(TabStrip* tabstrip_to) {
+    gfx::Point tab_left_center =
+        tabstrip_to->tab_at(0)->GetLocalBounds().left_center();
+    views::View::ConvertPointToScreen(tabstrip_to->tab_at(0), &tab_left_center);
+    ASSERT_TRUE(DragInputToAsync(tab_left_center));
+  }
+
+  void DragToSeparateWindowAfterFirstTab(TabStrip* tabstrip_to) {
+    gfx::Point tab_right_center =
+        tabstrip_to->tab_at(0)->GetLocalBounds().right_center();
+    views::View::ConvertPointToScreen(tabstrip_to->tab_at(0),
+                                      &tab_right_center);
+    ASSERT_TRUE(DragInputToAsync(tab_right_center));
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+
  private:
 #if defined(OS_CHROMEOS)
   // The root window for the event generator.
@@ -606,12 +669,6 @@ class DetachToBrowserTabDragControllerTest
 
 // Creates a browser with two tabs, drags the second to the first.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
-  // TODO(sky): this won't work with touch as it requires a long press.
-  if (input_source() == INPUT_SOURCE_TOUCH) {
-    VLOG(1) << "Test is DISABLED for touch input.";
-    return;
-  }
-
   AddTabAndResetBrowser(browser());
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -631,6 +688,160 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
   // The tab strip should no longer have capture because the drag was ended and
   // mouse/touch was released.
   EXPECT_FALSE(tab_strip->GetWidget()->HasCapture());
+}
+
+// Creates a browser with four tabs two pinned two unpinned. With the
+// kDragToPinTabs flag off, dragging tabs between pinned and unpinned will have
+// no effect
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragInSameWindow_CannotDragBetweenPinnedness) {
+  scoped_feature_list_.InitAndDisableFeature(features::kDragToPinTabs);
+  SetUpDragToChangePinnednessTest();
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+
+  // Dragging an unpinned tab before a pinned tab will have no effect.
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+  ASSERT_TRUE(ReleaseInput());
+  EXPECT_EQ("0 1 2 3", IDString(model));
+  EXPECT_TRUE(model->IsTabPinned(0));
+  EXPECT_TRUE(model->IsTabPinned(1));
+  EXPECT_FALSE(model->IsTabPinned(2));
+  EXPECT_FALSE(model->IsTabPinned(3));
+
+  // Dragging a pinned tab after an unpinned tab will have no effect.
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
+  ASSERT_TRUE(ReleaseInput());
+  EXPECT_EQ("0 1 2 3", IDString(model));
+  EXPECT_TRUE(model->IsTabPinned(0));
+  EXPECT_TRUE(model->IsTabPinned(1));
+  EXPECT_FALSE(model->IsTabPinned(2));
+  EXPECT_FALSE(model->IsTabPinned(3));
+}
+
+// Creates a browser with four tabs two pinned two unpinned. With the
+// kDragToPinTabs flag on, dragging unpinned tabs before a pinned tab will
+// pin the unpinned tab.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragInSameWindow_DragUnpinnedBeforePinned) {
+  scoped_feature_list_.InitAndEnableFeature(features::kDragToPinTabs);
+  SetUpDragToChangePinnednessTest();
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+
+  SelectIndicies(tab_strip, model, std::vector<int>{2, 3});
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
+  ASSERT_TRUE(ReleaseInput());
+  StopAnimating(tab_strip);
+  EXPECT_EQ("2 3 0 1", IDString(model));
+  EXPECT_TRUE(model->IsTabPinned(0));
+  EXPECT_TRUE(model->IsTabPinned(1));
+  EXPECT_TRUE(model->IsTabPinned(2));
+  EXPECT_TRUE(model->IsTabPinned(3));
+}
+
+// Creates a browser with four tabs two pinned two unpinned. With the
+// kDragToPinTabs flag on, dragging pinned tabs after the unpinned tab will
+// unpin the pinned tab.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragInSameWindow_DragPinnedAfterUnpinned) {
+  scoped_feature_list_.InitAndEnableFeature(features::kDragToPinTabs);
+  SetUpDragToChangePinnednessTest();
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+
+  SelectIndicies(tab_strip, model, std::vector<int>{0, 1});
+
+  // TODO (crbug.com/965681): Investigate and fix the dragging case for dragging
+  // pinned tabs to after unpinned tabs.
+  gfx::Point tab_2 = GetCenterInScreenCoordinates(tab_strip->tab_at(2));
+  gfx::Point tab_2_left_center =
+      tab_strip->tab_at(2)->GetLocalBounds().left_center();
+  views::View::ConvertPointToScreen(tab_strip->tab_at(2), &tab_2_left_center);
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
+  ASSERT_TRUE(DragInputTo(tab_2_left_center));
+  ASSERT_TRUE(DragInputTo(tab_2));
+  ASSERT_TRUE(ReleaseInput());
+  StopAnimating(tab_strip);
+  EXPECT_FALSE(model->IsTabPinned(0));
+  EXPECT_FALSE(model->IsTabPinned(1));
+  EXPECT_FALSE(model->IsTabPinned(2));
+  EXPECT_FALSE(model->IsTabPinned(3));
+}
+
+// Creates one browser with a single pinned tab as well as another browser
+// (browser2) with one pinned tab and one unpinned tab. With the kDragToPinTabs
+// flag on, dragging a both tabs from browser2 to the other browser to the left
+// of the first pinned tab will pin both tabs dragged.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragToPinInNewWindow) {
+  scoped_feature_list_.InitAndEnableFeature(features::kDragToPinTabs);
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+  model->SetTabPinned(0, true);
+  StopAnimating(tab_strip);
+
+  // Create another browser.
+  Browser* browser2 = SetUpSecondBrowserWithTwoUnpinnedTabs();
+  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+  browser2->tab_strip_model()->SetTabPinned(0, true);
+  StopAnimating(tab_strip2);
+
+  SelectIndicies(tab_strip2, browser2->tab_strip_model(),
+                 std::vector<int>{0, 1});
+
+  // This should be moving the entire window.
+  DragTabAndNotify(tab_strip2,
+                   base::BindOnce(&DetachToBrowserTabDragControllerTest::
+                                      DragToSeparateWindowBeforeFirstTab,
+                                  base::Unretained(this), tab_strip));
+  ASSERT_TRUE(ReleaseInput());
+
+  EXPECT_EQ(3, model->count());
+  EXPECT_TRUE(model->IsTabPinned(0));
+  EXPECT_TRUE(model->IsTabPinned(1));
+  EXPECT_TRUE(model->IsTabPinned(2));
+}
+
+// Creates one browser with a single unpinned tab as well as another browser
+// (browser2) with one pinned tab and one unpinned tab. With the kDragToPinTabs
+// flag on, dragging a both tabs from browser2 to the other browser to the right
+// of the unpinned tab will unpin both tabs dragged.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragToPinEnabled_DragToUnpinInNewWindow) {
+  scoped_feature_list_.InitAndEnableFeature(features::kDragToPinTabs);
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+
+  // Create another browser.
+  Browser* browser2 = SetUpSecondBrowserWithTwoUnpinnedTabs();
+  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+  browser2->tab_strip_model()->SetTabPinned(0, true);
+  StopAnimating(tab_strip2);
+
+  SelectIndicies(tab_strip2, browser2->tab_strip_model(),
+                 std::vector<int>{0, 1});
+
+  // This should be moving the entire window.
+  DragTabAndNotify(tab_strip2,
+                   base::BindOnce(&DetachToBrowserTabDragControllerTest::
+                                      DragToSeparateWindowAfterFirstTab,
+                                  base::Unretained(this), tab_strip));
+
+  ASSERT_TRUE(ReleaseInput());
+
+  EXPECT_EQ(3, model->count());
+  EXPECT_FALSE(model->IsTabPinned(0));
+  EXPECT_FALSE(model->IsTabPinned(1));
+  EXPECT_FALSE(model->IsTabPinned(2));
 }
 
 #if defined(USE_AURA)
