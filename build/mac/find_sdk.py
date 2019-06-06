@@ -50,19 +50,26 @@ def main():
     parser.error('Please specify a minimum SDK version')
   min_sdk_version = args[0]
 
-  if options.developer_dir:
-    os.environ['DEVELOPER_DIR'] = options.developer_dir
 
-  job = subprocess.Popen(['xcode-select', '-print-path'],
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.STDOUT)
-  out, err = job.communicate()
-  if job.returncode != 0:
-    print(out, file=sys.stderr)
-    print(err, file=sys.stderr)
-    raise Exception('Error %d running xcode-select' % job.returncode)
-  sdk_dir = os.path.join(
-      out.rstrip(), 'Platforms/MacOSX.platform/Developer/SDKs')
+  # If we are passed the developer dir, then we don't need to call xcode-select.
+  # This is important to avoid since we want to minimize dependencies on the
+  # xcode toolchain.
+  if options.developer_dir:
+    sdk_dir = os.path.join(
+        options.developer_dir,
+        'Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs')
+  else:
+    job = subprocess.Popen(['xcode-select', '-print-path'],
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT)
+    out, err = job.communicate()
+    if job.returncode != 0:
+      print(out, file=sys.stderr)
+      print(err, file=sys.stderr)
+      raise Exception('Error %d running xcode-select' % job.returncode)
+    sdk_dir = os.path.join(
+        out.rstrip(), 'Platforms/MacOSX.platform/Developer/SDKs')
+
   # Xcode must be installed, its license agreement must be accepted, and its
   # command-line tools must be installed. Stand-alone installations (in
   # /Library/Developer/CommandLineTools) are not supported.
@@ -94,8 +101,8 @@ def main():
     sys.exit(1)
 
   if options.print_sdk_path:
-    print(subprocess.check_output(
-        ['xcrun', '-sdk', 'macosx' + best_sdk, '--show-sdk-path']).strip())
+    sdk_name = 'MacOSX' + best_sdk + '.sdk'
+    print(os.path.join(sdk_dir, sdk_name))
 
   return best_sdk
 
