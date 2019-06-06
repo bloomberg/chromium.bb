@@ -24,7 +24,7 @@ def _IsPlatformSupported(benchmark, platform):
 
 class PerfPlatform(object):
   def __init__(self, name, description, benchmark_names,
-               is_fyi=False, num_shards=None):
+               num_shards=None, platform_os=None, is_fyi=False):
     self._name = name
     self._description = description
     # For sorting ignore case and "segments" in the bot name.
@@ -36,10 +36,14 @@ class PerfPlatform(object):
     for benchmark_name in benchmark_names:
       benchmarks.append(_ALL_BENCHMARKS_BY_NAMES[benchmark_name])
     benchmarks_to_run = frozenset(benchmarks)
-    platform = self._sort_key.split(' ', 1)[0]
+    if platform_os:
+      self._platform_os = platform_os
+    else:
+      self._platform_os = self._sort_key.split(' ', 1)[0]
     # pylint: disable=redefined-outer-name
     self._benchmarks_to_run = frozenset([
-        b for b in benchmarks_to_run if _IsPlatformSupported(b, platform)])
+        b for b in benchmarks_to_run if
+          _IsPlatformSupported(b, self._platform_os)])
     # pylint: enable=redefined-outer-name
 
     base_file_name = name.replace(' ', '_').lower()
@@ -76,8 +80,7 @@ class PerfPlatform(object):
 
   @property
   def platform(self):
-    value = self._sort_key.split(' ', 1)[0]
-    return 'windows' if value == 'win' else value
+    return self._platform_os
 
   @property
   def benchmarks_to_run(self):
@@ -104,6 +107,8 @@ _MAC_LOW_END_BENCHMARK_NAMES = OFFICIAL_BENCHMARK_NAMES
 _WIN_10_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _WIN_7_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _WIN_7_GPU_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_WIN_LOW_END_HP_CANDIDATE_BENCHMARK_NAMES = frozenset([
+    'rendering.desktop'])
 _ANDROID_GO_BENCHMARK_NAMES = frozenset([
     'memory.top_10_mobile',
     'system_health.memory_mobile',
@@ -182,6 +187,10 @@ ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
     _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_NAMES, num_shards=28)
 
 # FYI bots
+WIN_LOW_END_HP_CANDIDATE = PerfPlatform(
+    'win_laptop_low_end-perf_HP-Candidate', 'HP 15-BS121NR Laptop Candidate',
+    _WIN_LOW_END_HP_CANDIDATE_BENCHMARK_NAMES,
+    num_shards=1, platform_os='win', is_fyi=True)
 ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
     'android-nexus5x-perf-fyi', 'Android MMB29Q',
     _ANDROID_NEXUS5X_FYI_BENCHMARK_NAMES,

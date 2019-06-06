@@ -129,6 +129,25 @@ FYI_BUILDERS = {
       'pool': 'chrome.tests.perf-fyi',
     },
   },
+  'win_laptop_low_end-perf_HP-Candidate': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'num_shards': 1,
+        'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename='
+            'win_laptop_low_end-perf_HP-Candidate_map.json',
+        ],
+      },
+    ],
+    'platform': 'win',
+    'target_bits': 64,
+    'dimension': {
+      'pool': 'chrome.tests.perf-fyi',
+      'id': 'build370-a7',
+    },
+  },
 }
 
 # These configurations are taken from chromium_perf.py in

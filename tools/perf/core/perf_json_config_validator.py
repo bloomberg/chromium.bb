@@ -98,7 +98,8 @@ def _ValidateBrowserType(builder_name, test_config):
       raise ValueError(
           "%s must use 'android-chromium', 'android-chrome' or 'exact' "
           "browser" % builder_name)
-  elif builder_name in ('win-10-perf', 'Win 7 Nvidia GPU Perf'):
+  elif builder_name in ('win-10-perf', 'Win 7 Nvidia GPU Perf',
+                        'win_laptop_low_end-perf_HP-Candidate'):
     if browser_options.browser != 'release_x64':
       raise ValueError("%s must use 'release_x64' browser type" %
                        builder_name)

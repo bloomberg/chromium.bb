@@ -24,7 +24,7 @@
  * [mac-10_12_laptop_low_end-perf](https://ci.chromium.org/p/chrome/builders/luci.chrome.ci/mac-10_12_laptop_low_end-perf): MacBook Air, Core i5 1.8 GHz, 8GB RAM, 128GB SSD, HD Graphics.
  * [mac-10_13_laptop_high_end-perf](https://ci.chromium.org/p/chrome/builders/luci.chrome.ci/mac-10_13_laptop_high_end-perf): MacBook Pro, Core i7 2.8 GHz, 16GB RAM, 256GB SSD, Radeon 55.
 
-## Windows
+## Win
 
  * [win-10-perf](https://ci.chromium.org/p/chrome/builders/luci.chrome.ci/win-10-perf): Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM, Intel Kaby Lake HD Graphics 630.
  * [Win 7 Nvidia GPU Perf](https://ci.chromium.org/p/chrome/builders/luci.chrome.ci/Win%207%20Nvidia%20GPU%20Perf): N/A.
