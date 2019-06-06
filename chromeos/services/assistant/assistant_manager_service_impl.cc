@@ -62,6 +62,8 @@ namespace chromeos {
 namespace assistant {
 namespace {
 
+static bool is_first_init = true;
+
 constexpr char kWiFiDeviceSettingId[] = "WIFI";
 constexpr char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 constexpr char kVolumeLevelDeviceSettingId[] = "VOLUME_LEVEL";
@@ -995,9 +997,15 @@ void AssistantManagerServiceImpl::PostInitAssistant(
   std::move(post_init_callback).Run();
   assistant_settings_manager_->UpdateServerDeviceSettings();
 
-  if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch) &&
-      service_->assistant_state()->hotword_enabled().value()) {
-    assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
+  if (is_first_init) {
+    is_first_init = false;
+    // Only sync status at the first init to prevent unexpected corner cases.
+    // This still does not handle browser restart.
+    if (base::FeatureList::IsEnabled(
+            assistant::features::kAssistantVoiceMatch) &&
+        service_->assistant_state()->hotword_enabled().value()) {
+      assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
+    }
   }
 
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport)) {
