@@ -4309,6 +4309,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [_bookmarkInteractionController presentBookmarks];
 }
 
+- (void)showSendTabToSelfUI {
+  NOTIMPLEMENTED();
+}
+
 - (void)requestDesktopSite {
   [self reloadWithUserAgentType:web::UserAgentType::DESKTOP];
 }

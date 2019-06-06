@@ -85,25 +85,33 @@ NSString* const kSendTabToSelfActivityType =
 }
 
 - (void)performActivity {
-  NSMutableArray<ContextMenuItem*>* targetActions =
-      [NSMutableArray arrayWithCapacity:[_sendTabToSelfTargets count]];
+  // TODO(crbug.com/970284) once the modal dialog is created this will be
+  // removed.
+  BOOL useContextMenu = YES;
+  if (useContextMenu) {
+    NSMutableArray<ContextMenuItem*>* targetActions =
+        [NSMutableArray arrayWithCapacity:[_sendTabToSelfTargets count]];
 
-  for (NSString* key in _sendTabToSelfTargets) {
-    NSString* deviceId = _sendTabToSelfTargets[key];
-    // Retain |self| here since a |weakSelf| would be deallocated when
-    // displaying the target device sheet, as the ActivitySheet will be gone.
-    ProceduralBlock action = ^{
-      SendTabToSelfCommand* command =
-          [[SendTabToSelfCommand alloc] initWithTargetDeviceId:deviceId];
-      [self.dispatcher sendTabToSelf:command];
-    };
-    [targetActions addObject:[[ContextMenuItem alloc] initWithTitle:key
-                                                             action:action]];
+    for (NSString* key in _sendTabToSelfTargets) {
+      NSString* deviceId = _sendTabToSelfTargets[key];
+      // Retain |self| here since a |weakSelf| would be deallocated when
+      // displaying the target device sheet, as the ActivitySheet will be gone.
+      ProceduralBlock action = ^{
+        SendTabToSelfCommand* command =
+            [[SendTabToSelfCommand alloc] initWithTargetDeviceId:deviceId];
+        [self.dispatcher sendTabToSelf:command];
+      };
+      [targetActions addObject:[[ContextMenuItem alloc] initWithTitle:key
+                                                               action:action]];
+    }
+
+    NSString* title = l10n_util::GetNSStringF(
+        IDS_IOS_SHARE_MENU_SEND_TAB_TO_SELF_DEVICE_ACTION,
+        base::SysNSStringToUTF16(_title));
+    [_presenter showActivityServiceContextMenu:title items:targetActions];
+  } else {
+    [self.dispatcher showSendTabToSelfUI];
   }
-  NSString* title =
-      l10n_util::GetNSStringF(IDS_IOS_SHARE_MENU_SEND_TAB_TO_SELF_DEVICE_ACTION,
-                              base::SysNSStringToUTF16(_title));
-  [_presenter showActivityServiceContextMenu:title items:targetActions];
   [self activityDidFinish:YES];
 }
 
