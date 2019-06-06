@@ -144,6 +144,17 @@ HTTPS proxies using HTTP/2 can offer better performance in Chrome than a
 regular HTTP proxy due to higher connection limits (HTTP/1.1 proxies in Chrome
 are limited to 32 simultaneous connections across all domains).
 
+Chrome, Firefox, and Opera support HTTPS proxies; however, most older HTTP
+stacks do not.
+
+Specifying an HTTPS proxy is generally not possible through system proxy
+settings. Instead, one must use either a PAC script or a Chrome proxy setting
+(command line, extension, or policy).
+
+See the dev.chromium.org document on [secure web
+proxies](http://dev.chromium.org/developers/design-documents/secure-web-proxy)
+for tips on how to run and test against an HTTPS proxy.
+
 ### SOCKSv4 proxy scheme
 
 * Default port: 1080
