@@ -315,7 +315,7 @@ sk_sp<PaintRecord> GraphicsContext::EndRecording() {
   if (ContextDisabled()) {
     // Clients expect endRecording() to always return a non-null paint record.
     // Cache an empty one to minimize overhead when disabled.
-    DEFINE_STATIC_LOCAL(sk_sp<PaintRecord>, empty_paint_record,
+    DEFINE_STATIC_LOCAL(const sk_sp<PaintRecord>, empty_paint_record,
                         (CreateEmptyPaintRecord()));
     return empty_paint_record;
   }
