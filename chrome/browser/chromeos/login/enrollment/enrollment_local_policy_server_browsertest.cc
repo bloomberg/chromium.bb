@@ -483,15 +483,8 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, AutoEnrollmentCheck) {
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
-// https://crbug.com/965367
-#if defined(OS_CHROMEOS)
-#define MAYBE_ReenrollmentNone DISABLED_ReenrollmentNone
-#else
-#define MAYBE_ReenrollmentNone ReenrollmentNone
-#endif
 // State keys are present but restore mode is not requested.
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer,
-                       MAYBE_ReenrollmentNone) {
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentNone) {
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
