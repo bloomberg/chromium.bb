@@ -20,7 +20,6 @@ from telemetry.timeline import model as model_module
 from telemetry.timeline import tracing_config
 
 from telemetry.value import list_of_scalar_values
-from telemetry.value import trace
 
 
 BLINK_PERF_BASE_DIR = os.path.join(path_util.GetChromiumSrcDir(),
@@ -314,16 +313,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     trace_cpu_time_metrics = {}
     if tab.EvaluateJavaScript('testRunner.tracingCategories'):
       trace_data = tab.browser.platform.tracing_controller.StopTracing()
-      # TODO(#763375): Rely on results.telemetry_info.trace_local_path/etc.
-      kwargs = {}
-      if hasattr(results.telemetry_info, 'trace_local_path'):
-        kwargs['file_path'] = results.telemetry_info.trace_local_path
-        kwargs['remote_path'] = results.telemetry_info.trace_remote_path
-        kwargs['upload_bucket'] = results.telemetry_info.upload_bucket
-        kwargs['cloud_url'] = results.telemetry_info.trace_remote_url
-      trace_value = trace.TraceValue(page, trace_data, **kwargs)
-      trace_value.SerializeTraceData()
-      results.AddValue(trace_value)
+      results.AddTraces(trace_data)
 
       trace_events_to_measure = tab.EvaluateJavaScript(
           'window.testRunner.traceEventsToMeasure')
@@ -570,4 +560,3 @@ class BlinkPerfDisplayLocking(_BlinkPerfBenchmark):
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-blink-features=DisplayLocking'])
-
