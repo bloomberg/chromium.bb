@@ -20,20 +20,6 @@ namespace {
 const char kUserVisibleOnlyRequired[] =
     "Push subscriptions that don't enable userVisibleOnly are not supported.";
 
-String PermissionStatusToString(mojom::blink::PermissionStatus status) {
-  switch (status) {
-    case mojom::blink::PermissionStatus::GRANTED:
-      return "granted";
-    case mojom::blink::PermissionStatus::DENIED:
-      return "denied";
-    case mojom::blink::PermissionStatus::ASK:
-      return "prompt";
-  }
-
-  NOTREACHED();
-  return "denied";
-}
-
 }  // namespace
 
 // static
