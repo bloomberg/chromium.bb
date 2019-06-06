@@ -43,8 +43,8 @@ namespace double_conversion {
 
 const DoubleToStringConverter& DoubleToStringConverter::EcmaScriptConverter() {
   int flags = UNIQUE_ZERO | EMIT_POSITIVE_EXPONENT_SIGN;
-  static DoubleToStringConverter converter(flags, "Infinity", "NaN", 'e', -6,
-                                           21, 6, 0);
+  static const DoubleToStringConverter converter(flags, "Infinity", "NaN", 'e',
+                                                 -6, 21, 6, 0);
   return converter;
 }
 
