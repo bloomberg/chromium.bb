@@ -233,14 +233,6 @@ class CookieSettingsTest
     return secure_scheme_ ? embedded_test_server() : &https_server_;
   }
 
-  bool SkipReportingTest() {
-    // The way the test does fetches doesn't work with how ChromeNetworkDelegate
-    // reports cookie activity in the non-network service path.
-    return (ReadMode() == CookieMode::kHttp ||
-            WriteMode() == CookieMode::kHttp) &&
-           !base::FeatureList::IsEnabled(network::features::kNetworkService);
-  }
-
  private:
   net::EmbeddedTestServer* GetServer() {
     return secure_scheme_ ? &https_server_ : embedded_test_server();
@@ -391,34 +383,28 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, AllowCookiesUsingExceptions) {
   WriteCookie(browser());
   ASSERT_TRUE(ReadCookie(browser()).empty());
 
-  if (!SkipReportingTest()) {
-    CannedBrowsingDataCookieHelper* accepted =
-        GetSiteSettingsCookieContainer(browser());
-    CannedBrowsingDataCookieHelper* blocked =
-        GetSiteSettingsBlockedCookieContainer(browser());
-    EXPECT_TRUE(accepted->empty());
-    ASSERT_EQ(1u, blocked->GetCookieCount());
-    net::CookieList blocked_cookies = ExtractCookies(blocked);
-    EXPECT_THAT(blocked_cookies, net::MatchesCookieLine("name=Good"));
-  }
+  CannedBrowsingDataCookieHelper* accepted =
+      GetSiteSettingsCookieContainer(browser());
+  CannedBrowsingDataCookieHelper* blocked =
+      GetSiteSettingsBlockedCookieContainer(browser());
+  EXPECT_TRUE(accepted->empty());
+  ASSERT_EQ(1u, blocked->GetCookieCount());
+  net::CookieList blocked_cookies = ExtractCookies(blocked);
+  EXPECT_THAT(blocked_cookies, net::MatchesCookieLine("name=Good"));
 
   settings->SetCookieSetting(GetPageURL(), CONTENT_SETTING_ALLOW);
 
   WriteCookie(browser());
   ASSERT_FALSE(ReadCookie(browser()).empty());
-  if (!SkipReportingTest()) {
-    CannedBrowsingDataCookieHelper* accepted =
-        GetSiteSettingsCookieContainer(browser());
-    CannedBrowsingDataCookieHelper* blocked =
-        GetSiteSettingsBlockedCookieContainer(browser());
+  accepted = GetSiteSettingsCookieContainer(browser());
+  blocked = GetSiteSettingsBlockedCookieContainer(browser());
 
-    ASSERT_EQ(1u, accepted->GetCookieCount());
-    net::CookieList accepted_cookies = ExtractCookies(accepted);
-    EXPECT_THAT(accepted_cookies, net::MatchesCookieLine("name=Good"));
+  ASSERT_EQ(1u, accepted->GetCookieCount());
+  net::CookieList accepted_cookies = ExtractCookies(accepted);
+  EXPECT_THAT(accepted_cookies, net::MatchesCookieLine("name=Good"));
 
-    // No navigation, so there should still be one blocked cookie.
-    EXPECT_EQ(1u, blocked->GetCookieCount());
-  }
+  // No navigation, so there should still be one blocked cookie.
+  EXPECT_EQ(1u, blocked->GetCookieCount());
 }
 
 // Verify that cookies can be blocked for a specific website using exceptions.
@@ -430,32 +416,26 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesUsingExceptions) {
 
   WriteCookie(browser());
   ASSERT_TRUE(ReadCookie(browser()).empty());
-  if (!SkipReportingTest()) {
-    CannedBrowsingDataCookieHelper* accepted =
-        GetSiteSettingsCookieContainer(browser());
-    CannedBrowsingDataCookieHelper* blocked =
-        GetSiteSettingsBlockedCookieContainer(browser());
-    EXPECT_TRUE(accepted->empty());
-    ASSERT_EQ(1u, blocked->GetCookieCount());
-    net::CookieList blocked_cookies = ExtractCookies(blocked);
-    EXPECT_THAT(blocked_cookies, net::MatchesCookieLine("name=Good"));
-  }
+  CannedBrowsingDataCookieHelper* accepted =
+      GetSiteSettingsCookieContainer(browser());
+  CannedBrowsingDataCookieHelper* blocked =
+      GetSiteSettingsBlockedCookieContainer(browser());
+  EXPECT_TRUE(accepted->empty());
+  ASSERT_EQ(1u, blocked->GetCookieCount());
+  net::CookieList blocked_cookies = ExtractCookies(blocked);
+  EXPECT_THAT(blocked_cookies, net::MatchesCookieLine("name=Good"));
 
   GURL unblocked_url = GetOtherServer()->GetURL("/cookie1.html");
 
   ui_test_utils::NavigateToURL(browser(), unblocked_url);
   ASSERT_FALSE(GetCookies(browser()->profile(), unblocked_url).empty());
-  if (!SkipReportingTest()) {
-    CannedBrowsingDataCookieHelper* accepted =
-        GetSiteSettingsCookieContainer(browser());
-    CannedBrowsingDataCookieHelper* blocked =
-        GetSiteSettingsBlockedCookieContainer(browser());
+  accepted = GetSiteSettingsCookieContainer(browser());
+  blocked = GetSiteSettingsBlockedCookieContainer(browser());
 
-    ASSERT_EQ(1u, accepted->GetCookieCount());
-    net::CookieList accepted_cookies = ExtractCookies(accepted);
-    EXPECT_THAT(accepted_cookies, net::MatchesCookieLine("foo=baz"));
-    EXPECT_TRUE(blocked->empty());
-  }
+  ASSERT_EQ(1u, accepted->GetCookieCount());
+  net::CookieList accepted_cookies = ExtractCookies(accepted);
+  EXPECT_THAT(accepted_cookies, net::MatchesCookieLine("foo=baz"));
+  EXPECT_TRUE(blocked->empty());
 }
 
 IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksCacheStorage) {

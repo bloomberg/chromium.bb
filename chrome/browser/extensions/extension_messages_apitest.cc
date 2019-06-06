@@ -1075,65 +1075,6 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromPopup) {
   EXPECT_FALSE(AreAnyNonWebApisDefinedForFrame(popup_frame));
 }
 
-// Tests a web connectable extension that receives TLS channel id on a site
-// that can connect to it, with a TLS channel ID having been generated.
-IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
-                       WebConnectableWithNonEmptyTlsChannelId) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;  // Channel ID doesn't work with network service.
-
-  std::string expected_tls_channel_id_value;
-  bool expect_empty_id = true;
-
-  scoped_refptr<const Extension> chromium_connectable =
-      LoadChromiumConnectableExtensionWithTlsChannelId();
-  ASSERT_TRUE(chromium_connectable.get());
-
-  ui_test_utils::NavigateToURL(browser(), chromium_org_url());
-
-  // Since the extension requests the TLS channel ID, it gets it for a site that
-  // can connect to it, but only if the page also asks to send it.
-  EXPECT_EQ(std::string(),
-            GetTlsChannelIdFromPortConnect(chromium_connectable.get(), false));
-  EXPECT_EQ(std::string(),
-            GetTlsChannelIdFromSendMessage(chromium_connectable.get(), false));
-
-  // If the page does ask to send the TLS channel ID, it's sent and non-empty.
-  std::string tls_channel_id_from_port_connect =
-      GetTlsChannelIdFromPortConnect(chromium_connectable.get(), true);
-  EXPECT_EQ(tls_channel_id_from_port_connect.empty(), expect_empty_id);
-
-  // The same value is received by both connect and sendMessage.
-  std::string tls_channel_id_from_send_message =
-      GetTlsChannelIdFromSendMessage(chromium_connectable.get(), true);
-  EXPECT_EQ(tls_channel_id_from_port_connect, tls_channel_id_from_send_message);
-
-  // And since a TLS channel ID exists for the domain, the value received is
-  // parseable as a JWK. (In particular, it has the same value we created by
-  // converting the public key to JWK with net::ConvertSpkiFromDerToJwk.)
-  std::string tls_channel_id(tls_channel_id_from_port_connect);
-  EXPECT_EQ(expected_tls_channel_id_value, tls_channel_id);
-
-  // The TLS channel ID shouldn't change from one connection to the next...
-  std::string tls_channel_id2 =
-      GetTlsChannelIdFromPortConnect(chromium_connectable.get(), true);
-  EXPECT_EQ(tls_channel_id, tls_channel_id2);
-  tls_channel_id2 =
-      GetTlsChannelIdFromSendMessage(chromium_connectable.get(), true);
-  EXPECT_EQ(tls_channel_id, tls_channel_id2);
-
-  // nor should it change when navigating away, revisiting the page and
-  // requesting it again.
-  ui_test_utils::NavigateToURL(browser(), google_com_url());
-  ui_test_utils::NavigateToURL(browser(), chromium_org_url());
-  tls_channel_id2 =
-      GetTlsChannelIdFromPortConnect(chromium_connectable.get(), true);
-  EXPECT_EQ(tls_channel_id, tls_channel_id2);
-  tls_channel_id2 =
-      GetTlsChannelIdFromSendMessage(chromium_connectable.get(), true);
-  EXPECT_EQ(tls_channel_id, tls_channel_id2);
-}
-
 // TODO(devlin): Remove this subclass - it doesn't seem to do anything.
 class ExternallyConnectableMessagingTestNoChannelID
     : public ExternallyConnectableMessagingTest {

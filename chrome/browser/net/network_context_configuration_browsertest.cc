@@ -732,42 +732,6 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, BasicRequest) {
   EXPECT_EQ("Echo", *simple_loader_helper.response_body());
 }
 
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, FileURL) {
-  if (IsRestartStateWithInProcessNetworkService())
-    return;
-  // File URLs require a FileURLFactory that is not present in the default
-  // URLLoaderFactories.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir temp_dir_;
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::FilePath file_path;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &file_path));
-  const char kFileContents[] = "This file intentionally left empty.";
-  ASSERT_EQ(static_cast<int>(strlen(kFileContents)),
-            base::WriteFile(file_path, kFileContents, strlen(kFileContents)));
-
-  std::unique_ptr<network::ResourceRequest> request =
-      std::make_unique<network::ResourceRequest>();
-  request->url = net::FilePathToFileURL(file_path);
-  content::SimpleURLLoaderTestHelper simple_loader_helper;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory(), simple_loader_helper.GetCallback());
-  simple_loader_helper.WaitForCallback();
-
-  ASSERT_TRUE(simple_loader->ResponseInfo());
-  // File URLs don't have headers.
-  EXPECT_FALSE(simple_loader->ResponseInfo()->headers);
-  ASSERT_TRUE(simple_loader_helper.response_body());
-  EXPECT_EQ(kFileContents, *simple_loader_helper.response_body());
-}
-
 // Make sure a cache is used when expected.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
   if (IsRestartStateWithInProcessNetworkService())
@@ -1233,11 +1197,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   request->referrer = kReferrer;
   ASSERT_TRUE(FetchHeaderEcho("referer", &referrer, std::move(request)));
 
-  // SafeBrowsing never sends the referrer when then network service is enabled,
-  // since it doesn't need to. When the network service is disabled, it matches
-  // the behavior of the system NetworkContext, since it shares internals.
-  if (GetParam().network_context_type == NetworkContextType::kSafeBrowsing &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  // SafeBrowsing never sends the referrer since it doesn't need to.
+  if (GetParam().network_context_type == NetworkContextType::kSafeBrowsing) {
     EXPECT_EQ("None", referrer);
   } else {
     EXPECT_EQ(kReferrer.spec(), referrer);
@@ -1303,10 +1264,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory(), simple_loader_helper.GetCallback());
   simple_loader_helper.WaitForCallback();
-  if (GetParam().network_context_type == NetworkContextType::kSafeBrowsing &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Safebrowsing ignores referrers, when the network service is enabled, so
-    // the requests succeed.
+  if (GetParam().network_context_type == NetworkContextType::kSafeBrowsing) {
+    // Safebrowsing ignores referrers so the requests succeed.
     EXPECT_EQ(net::OK, simple_loader->NetError());
     ASSERT_TRUE(simple_loader_helper.response_body());
     EXPECT_EQ("None", *simple_loader_helper.response_body());
@@ -1659,10 +1618,7 @@ class NetworkContextConfigurationFilePacBrowserTest
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFilePacBrowserTest, FilePac) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
-  bool network_service_disabled =
-      !base::FeatureList::IsEnabled(network::features::kNetworkService);
-  // PAC file URLs are not supported with the network service
-  TestProxyConfigured(/*expect_success=*/network_service_disabled);
+  TestProxyConfigured(false);
 }
 
 // Make sure the system URLRequestContext can handle fetching PAC scripts from

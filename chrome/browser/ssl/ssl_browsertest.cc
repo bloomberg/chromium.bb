@@ -365,40 +365,19 @@ bool ComparePreAndPostInterstitialSSLStatuses(const content::SSLStatus& one,
          one.pkp_bypassed == two.pkp_bypassed;
 }
 
-void SetHSTSForHostNameOnIO(
-    scoped_refptr<net::URLRequestContextGetter> context_getter,
-    const std::string& hostname,
-    base::Time expiry,
-    bool include_subdomains) {
-  net::TransportSecurityState* state =
-      context_getter->GetURLRequestContext()->transport_security_state();
-  EXPECT_FALSE(state->ShouldUpgradeToSSL(kHstsTestHostName));
-  state->AddHSTS(hostname, expiry, false);
-  EXPECT_TRUE(state->ShouldUpgradeToSSL(kHstsTestHostName));
-}
-
 // Set HSTS for the test host name, so that all errors thrown on this domain
 // will be nonoverridable.
 void SetHSTSForHostName(Profile* profile) {
   std::string hostname = kHstsTestHostName;
   const base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
   bool include_subdomains = false;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    content::StoragePartition* partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile);
-    base::RunLoop run_loop;
-    partition->GetNetworkContext()->AddHSTS(
-        hostname, expiry, include_subdomains, run_loop.QuitClosure());
-    run_loop.Run();
-    return;
-  }
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(SetHSTSForHostNameOnIO,
-                     base::RetainedRef(profile->GetRequestContext()), hostname,
-                     expiry, include_subdomains));
+  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+  content::StoragePartition* partition =
+      content::BrowserContext::GetDefaultStoragePartition(profile);
+  base::RunLoop run_loop;
+  partition->GetNetworkContext()->AddHSTS(hostname, expiry, include_subdomains,
+                                          run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 bool IsShowingInterstitial(content::WebContents* tab) {
@@ -961,8 +940,7 @@ class SSLUITestBase : public InProcessBrowserTest,
 
     base::RunLoop().RunUntilIdle();
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-      content::FlushNetworkServiceInstanceForTesting();
+    content::FlushNetworkServiceInstanceForTesting();
   }
 
   void RunOnIOThreadBlocking(base::OnceClosure task) {
@@ -2065,8 +2043,7 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
 
     base::RunLoop().RunUntilIdle();
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-      content::FlushNetworkServiceInstanceForTesting();
+    content::FlushNetworkServiceInstanceForTesting();
   }
 
   net::EmbeddedTestServer https_server_;
@@ -7778,18 +7755,11 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
   }
 
   void EnableStaticPins(int reporting_port) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-      content::StoragePartition* partition =
-          content::BrowserContext::GetDefaultStoragePartition(
-              browser()->profile());
-      partition->GetNetworkContext()->EnableStaticKeyPinningForTesting();
-    } else {
-      RunOnIOThreadBlocking(base::BindOnce(
-          &SSLPKPBrowserTest::EnableStaticPinsOnIOThread,
-          base::Unretained(this),
-          base::RetainedRef(browser()->profile()->GetRequestContext())));
-    }
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    content::StoragePartition* partition =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+    partition->GetNetworkContext()->EnableStaticKeyPinningForTesting();
 
     if (content::IsOutOfProcessNetworkService()) {
       mojo::ScopedAllowSyncCallForTesting allow_sync_call;
@@ -7819,13 +7789,6 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
     transport_security_state_source_ =
         std::make_unique<net::ScopedTransportSecurityStateSource>(
             reporting_port);
-  }
-
-  void EnableStaticPinsOnIOThread(
-      scoped_refptr<net::URLRequestContextGetter> context_getter) {
-    net::TransportSecurityState* state =
-        context_getter->GetURLRequestContext()->transport_security_state();
-    state->EnableStaticPinsForTesting();
   }
 
   void CleanUpOnIOThread() { transport_security_state_source_.reset(); }

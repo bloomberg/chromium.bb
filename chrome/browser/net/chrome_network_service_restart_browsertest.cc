@@ -24,8 +24,6 @@ namespace content {
 class ChromeNetworkServiceRestartBrowserTest : public InProcessBrowserTest {
  public:
   ChromeNetworkServiceRestartBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kNetworkService);
     EXPECT_TRUE(embedded_test_server()->Start());
   }
 
@@ -36,8 +34,6 @@ class ChromeNetworkServiceRestartBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkServiceRestartBrowserTest);
 };
 

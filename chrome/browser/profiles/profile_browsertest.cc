@@ -670,40 +670,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, LastSelectedDirectory) {
   ASSERT_EQ(profile_impl->last_selected_directory(), home);
 }
 
-// Verifies that, by default, there's a separate disk cache for media files.
-// TODO(crbug.com/789657): remove once there is no separate on-disk media cache.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SeparateMediaCache) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;  // Network service doesn't use a separate media cache.
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Do a normal load using the media URLRequestContext, populating the cache.
-  TestURLFetcherDelegate url_fetcher_delegate(
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetMediaURLRequestContext(),
-      embedded_test_server()->GetURL("/cachetime"), net::URLRequestStatus());
-  url_fetcher_delegate.WaitForCompletion();
-
-  // Cache-only load from the main request context should fail, since the media
-  // request context has its own cache.
-  TestURLFetcherDelegate url_fetcher_delegate2(
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetURLRequestContext(),
-      embedded_test_server()->GetURL("/cachetime"),
-      net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_CACHE_MISS),
-      net::LOAD_ONLY_FROM_CACHE);
-  url_fetcher_delegate2.WaitForCompletion();
-
-  // Cache-only load from the media request context should succeed.
-  TestURLFetcherDelegate url_fetcher_delegate3(
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetMediaURLRequestContext(),
-      embedded_test_server()->GetURL("/cachetime"), net::URLRequestStatus(),
-      net::LOAD_ONLY_FROM_CACHE);
-  url_fetcher_delegate3.WaitForCompletion();
-}
-
 class ProfileWithoutMediaCacheBrowserTest : public ProfileBrowserTest {
  public:
   ProfileWithoutMediaCacheBrowserTest() {

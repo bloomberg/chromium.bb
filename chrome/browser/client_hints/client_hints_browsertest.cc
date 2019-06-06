@@ -633,8 +633,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     // are not set to the correct value on subresources.
     bool is_main_frame_navigation =
         request.GetURL().spec().find(".html") != std::string::npos;
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-        is_main_frame_navigation) {
+    if (is_main_frame_navigation) {
       // Effective connection type is forced to 2G using command line in these
       // tests. RTT is expected to be 1800 msec but leave some gap to account
       // for added noise and randomization.

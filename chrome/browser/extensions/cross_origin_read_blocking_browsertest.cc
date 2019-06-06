@@ -206,19 +206,6 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
                  base::Unretained(this), base::Unretained(parent_frame)));
   }
 
-  void VerifyContentScriptHistogramIsPresent(
-      const base::HistogramTester& histograms,
-      content::ResourceType resource_type) {
-    VerifyContentScriptHistogram(
-        histograms,
-        testing::ElementsAre(base::Bucket(static_cast<int>(resource_type), 1)));
-  }
-
-  void VerifyContentScriptHistogramIsMissing(
-      const base::HistogramTester& histograms) {
-    VerifyContentScriptHistogram(histograms, testing::IsEmpty());
-  }
-
   std::string PopString(content::DOMMessageQueue* message_queue) {
     std::string json;
     EXPECT_TRUE(message_queue->WaitForMessage(&json));
@@ -254,10 +241,6 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
         .catch(err => domAutomationController.send('error: ' + err));
     )";
     return content::JsReplace(kXhrScriptTemplate, resource);
-  }
-
-  bool IsNetworkServiceEnabled() {
-    return base::FeatureList::IsEnabled(network::features::kNetworkService);
   }
 
   // Asks the test |extension_| to inject |content_script| into |web_contents|.
@@ -346,26 +329,6 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
     return PopString(&message_queue);
   }
 
-  void VerifyContentScriptHistogram(
-      const base::HistogramTester& histograms,
-      testing::Matcher<std::vector<base::Bucket>> matcher) {
-    // LogInitiatorSchemeBypassingDocumentBlocking is only implemented in the
-    // pre-NetworkService CrossSiteDocumentResourceHandler, because we hope to
-    // gather enough data before NetworkService ships.  Logging in
-    // NetworkService world should be possible but would require an extra IPC
-    // from NetworkService to the Browser process which seems like unnecessary
-    // complexity, given that the metrics gathered won't be needed in the
-    // long-term.
-    if (IsNetworkServiceEnabled())
-      return;
-
-    // Verify that LogInitiatorSchemeBypassingDocumentBlocking returned early
-    // for a request that wasn't from a content script.
-    EXPECT_THAT(histograms.GetAllSamples(
-                    "SiteIsolation.XSD.Browser.Allowed.ContentScript"),
-                matcher);
-  }
-
   TestExtensionDir dir_;
   const Extension* extension_ = nullptr;
 
@@ -418,13 +381,11 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
   }
 
   bool AreContentScriptFetchesExpectedToBeBlocked() {
-    return IsNetworkServiceEnabled() && IsAllowlistFeatureEnabled() &&
-           !IsExtensionAllowlisted();
+    return IsAllowlistFeatureEnabled() && !IsExtensionAllowlisted();
   }
 
   bool IsCorbExpectedToBeTurnedOffAltogether() {
-    return IsNetworkServiceEnabled() &&
-           (IsExtensionAllowlisted() || !IsAllowlistFeatureEnabled());
+    return (IsExtensionAllowlisted() || !IsAllowlistFeatureEnabled());
   }
 
   void VerifyFetchFromContentScriptWasBlocked(
@@ -437,11 +398,6 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
                                  CORBAction::kResponseStarted, 1);
     histograms.ExpectBucketCount("SiteIsolation.XSD.Browser.Action",
                                  CORBAction::kBlockedWithoutSniffing, 1);
-
-    if (!IsNetworkServiceEnabled()) {
-      EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
-                  testing::Not(testing::IsEmpty()));
-    }
   }
 
   void VerifyFetchFromContentScriptWasAllowed(
@@ -465,11 +421,6 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
                                      ? CORBAction::kAllowedAfterSniffing
                                      : CORBAction::kAllowedWithoutSniffing,
                                  1);
-
-    if (!IsNetworkServiceEnabled()) {
-      EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
-                  testing::IsEmpty());
-    }
   }
 
   // Verifies results of fetching a CORB-eligible resource from a content
@@ -490,16 +441,6 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
       // Verify the fetch was allowed.
       EXPECT_EQ(expected_fetch_result, actual_fetch_result);
       VerifyFetchFromContentScriptWasAllowed(histograms);
-
-      // Verify that "SiteIsolation.XSD.Browser.Allowed.ContentScript" UMA
-      // metric was recorded.  This indirectly verifies that
-      // Extensions.CrossOriginFetchFromContentScript2 Rappor metric got
-      // properly recorded (because both the UMA and the Rappor metrics are
-      // logged next to each other by the
-      // LogInitiatorSchemeBypassingDocumentBlocking method in
-      // ChromeContentBrowserClientExtensionsPart).
-      VerifyContentScriptHistogramIsPresent(histograms,
-                                            content::ResourceType::kXhr);
     }
   }
 
@@ -656,10 +597,6 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
                   "text-object.txt: ae52dd09-9746-4b7e-86a6-6ada5e2680c2"));
   VerifyFetchFromContentScriptWasAllowed(histograms,
                                          true /* expecting_sniffing */);
-
-  // Verify that we didn't call LogInitiatorSchemeBypassingDocumentBlocking
-  // for a response that would have been allowed by CORB anyway.
-  VerifyContentScriptHistogramIsMissing(histograms);
 }
 
 // Test that responses are blocked by CORB, but have empty response body are not
@@ -689,10 +626,6 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
     VerifyFetchFromContentScriptWasBlocked(histograms);
   else
     VerifyFetchFromContentScriptWasAllowed(histograms);
-
-  // Verify that we didn't call LogInitiatorSchemeBypassingDocumentBlocking
-  // for a response that would have been blocked by CORB, but was empty.
-  VerifyContentScriptHistogramIsMissing(histograms);
 }
 
 // Test that LogInitiatorSchemeBypassingDocumentBlocking exits early for
@@ -712,10 +645,6 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   EXPECT_EQ("nosniff.xml - body\n", fetch_result);
   EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
               testing::IsEmpty());
-
-  // Verify that LogInitiatorSchemeBypassingDocumentBlocking returned early
-  // for a request that wasn't from a content script.
-  VerifyContentScriptHistogramIsMissing(histograms);
 }
 
 // Test that requests from a extension page hosted in a foreground tab use
@@ -743,10 +672,6 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
     EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
                 testing::IsEmpty());
-
-    // Verify that LogInitiatorSchemeBypassingDocumentBlocking returned early
-    // for a request that wasn't from a content script.
-    VerifyContentScriptHistogramIsMissing(histograms);
   }
 
   // Test case #2: Fetch from an about:srcdoc subframe of a
@@ -763,10 +688,6 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
     EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
                 testing::IsEmpty());
-
-    // Verify that LogInitiatorSchemeBypassingDocumentBlocking returned early
-    // for a request that wasn't from a content script.
-    VerifyContentScriptHistogramIsMissing(histograms);
   }
 }
 
@@ -844,10 +765,6 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
               fetch_result);
     EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
                 testing::IsEmpty());
-
-    // Verify that LogInitiatorSchemeBypassingDocumentBlocking returned early
-    // for a request that wasn't from a content script.
-    VerifyContentScriptHistogramIsMissing(histograms);
   }
 
   // Test case #2: Network fetch used as a fallback when service worker ignores
@@ -869,10 +786,6 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
     EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
                 testing::IsEmpty());
-
-    // Verify that LogInitiatorSchemeBypassingDocumentBlocking returned early
-    // for a request that wasn't from a content script.
-    VerifyContentScriptHistogramIsMissing(histograms);
   }
 }
 

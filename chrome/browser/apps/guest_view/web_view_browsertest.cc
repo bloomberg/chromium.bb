@@ -3325,16 +3325,6 @@ IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginInternalResource) {
-#if defined(OS_CHROMEOS)
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame() &&
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // The test times out when using the legacy loading code. This could be due
-    // to creating a MimeHandlerViewEmbedder after loading has started so the
-    // MHVE cannot lock onto the navigation process and create a MHVG in time.
-    // (https://crbug.com/949656).
-    return;
-  }
-#endif
   const char kTestMimeType[] = "application/pdf";
   const char kTestFileType[] = "pdf";
   content::WebPluginInfo plugin_info;

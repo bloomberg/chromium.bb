@@ -39,22 +39,12 @@ namespace {
 
 // Simulates a network quality change. This is only called when network service
 // is running in the browser process, in which case, the network quality
-// estimator lives on the network thread (which will be the IO thread if network
-// service is disabled).
+// estimator lives on the network thread.
 void SimulateNetworkQualityChangeOnNetworkThread(
     net::EffectiveConnectionType type) {
-  if (content::IsInProcessNetworkService()) {
-    network::NetworkService::GetNetworkServiceForTesting()
-        ->network_quality_estimator()
-        ->SimulateNetworkQualityChangeForTesting(type);
-  } else {
-    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-    DCHECK(content::GetNetworkServiceImpl());
-    DCHECK(content::GetNetworkServiceImpl()->network_quality_estimator());
-    content::GetNetworkServiceImpl()
-        ->network_quality_estimator()
-        ->SimulateNetworkQualityChangeForTesting(type);
-  }
+  network::NetworkService::GetNetworkServiceForTesting()
+      ->network_quality_estimator()
+      ->SimulateNetworkQualityChangeForTesting(type);
   base::RunLoop().RunUntilIdle();
 }
 

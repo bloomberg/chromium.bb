@@ -143,15 +143,12 @@ class TestNetworkQualityObserver
 
 class NetworkQualityEstimatorPrefsBrowserTest : public InProcessBrowserTest {
  public:
-  NetworkQualityEstimatorPrefsBrowserTest()
-      : network_service_enabled_(
-            base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  NetworkQualityEstimatorPrefsBrowserTest() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
   // Simulates a network quality change.
   void SimulateNetworkQualityChange(net::EffectiveConnectionType type) {
-    DCHECK(network_service_enabled_);
     if (!content::IsOutOfProcessNetworkService()) {
       content::GetNetworkTaskRunner()->PostTask(
           FROM_HERE,
@@ -178,15 +175,11 @@ class NetworkQualityEstimatorPrefsBrowserTest : public InProcessBrowserTest {
     run_loop.Run();
   }
 
-  bool network_service_enabled() const { return network_service_enabled_; }
-
   base::FilePath GetTempDirectory() { return temp_dir_.GetPath(); }
 
   base::HistogramTester histogram_tester;
 
  private:
-  const bool network_service_enabled_;
-
   base::ScopedTempDir temp_dir_;
 };
 
@@ -249,9 +242,6 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityEstimatorPrefsBrowserTest, PrefsWritten) {
   // sample. This implies that NQE was notified of the read prefs.
   RetryForHistogramUntilCountReached(&histogram_tester, "NQE.Prefs.ReadSize",
                                      1);
-
-  if (!network_service_enabled())
-    return;
 
   // Change in network quality is guaranteed to trigger a pref write.
   SimulateNetworkQualityChange(net::EFFECTIVE_CONNECTION_TYPE_2G);

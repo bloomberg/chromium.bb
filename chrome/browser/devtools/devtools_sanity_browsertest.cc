@@ -2185,15 +2185,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
   content::WebUIControllerFactory::UnregisterFactoryForTesting(&test_factory);
 }
 
-void AddHSTSHost(scoped_refptr<net::URLRequestContextGetter> context,
-                 std::string host) {
-  net::TransportSecurityState* transport_security_state =
-      context->GetURLRequestContext()->transport_security_state();
-  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
-  bool include_subdomains = false;
-  transport_security_state->AddHSTS(host, expiry, include_subdomains);
-}
-
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestRawHeadersWithRedirectAndHSTS) {
   net::EmbeddedTestServer https_test_server(
       net::EmbeddedTestServer::TYPE_HTTPS);
@@ -2202,25 +2193,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestRawHeadersWithRedirectAndHSTS) {
   https_test_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_test_server.Start());
   GURL https_url = https_test_server.GetURL("localhost", "/devtools/image.png");
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            AddHSTSHost,
-            base::RetainedRef(browser()->profile()->GetRequestContext()),
-            https_url.host()));
-  } else {
-    base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
-    bool include_subdomains = false;
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    content::StoragePartition* partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
-    base::RunLoop run_loop;
-    partition->GetNetworkContext()->AddHSTS(
-        https_url.host(), expiry, include_subdomains, run_loop.QuitClosure());
-    run_loop.Run();
-  }
+  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  bool include_subdomains = false;
+  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+  content::StoragePartition* partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+  base::RunLoop run_loop;
+  partition->GetNetworkContext()->AddHSTS(
+      https_url.host(), expiry, include_subdomains, run_loop.QuitClosure());
+  run_loop.Run();
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   OpenDevToolsWindow(std::string(), false);

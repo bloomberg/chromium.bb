@@ -59,10 +59,7 @@ void SetCookie(const network::mojom::CookieManagerPtr& cookie_manager) {
 // See |NetworkServiceBrowserTest| for content's version of tests.
 class ChromeNetworkServiceBrowserTest : public InProcessBrowserTest {
  public:
-  ChromeNetworkServiceBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kNetworkService);
-  }
+  ChromeNetworkServiceBrowserTest() {}
 
  protected:
   network::mojom::NetworkContextPtr CreateNetworkContext(
@@ -79,8 +76,6 @@ class ChromeNetworkServiceBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkServiceBrowserTest);
 };
 

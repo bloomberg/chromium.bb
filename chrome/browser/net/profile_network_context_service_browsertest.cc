@@ -37,26 +37,14 @@
 
 namespace {
 
-enum class NetworkServiceState {
-  kDisabled,
-  kEnabled,
-};
-
 // Most tests for this class are in NetworkContextConfigurationBrowserTest.
-class ProfileNetworkContextServiceBrowsertest
-    : public InProcessBrowserTest,
-      public testing::WithParamInterface<NetworkServiceState> {
+class ProfileNetworkContextServiceBrowsertest : public InProcessBrowserTest {
  public:
   ProfileNetworkContextServiceBrowsertest() {
     EXPECT_TRUE(embedded_test_server()->Start());
   }
 
   ~ProfileNetworkContextServiceBrowsertest() override {}
-
-  void SetUpInProcessBrowserTestFixture() override {
-    if (GetParam() == NetworkServiceState::kEnabled)
-      feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-  }
 
   void SetUpOnMainThread() override {
     loader_factory_ = content::BrowserContext::GetDefaultStoragePartition(
@@ -70,11 +58,10 @@ class ProfileNetworkContextServiceBrowsertest
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   network::mojom::URLLoaderFactory* loader_factory_ = nullptr;
 };
 
-IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceBrowsertest,
+IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceBrowsertest,
                        DiskCacheLocation) {
   // Run a request that caches the response, to give the network service time to
   // create a cache directory.
@@ -99,7 +86,7 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceBrowsertest,
   EXPECT_TRUE(base::PathExists(expected_cache_path));
 }
 
-IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceBrowsertest, BrotliEnabled) {
+IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceBrowsertest, BrotliEnabled) {
   // Brotli is only used over encrypted connections.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.AddDefaultHandlers(
@@ -147,7 +134,7 @@ class ProfileNetworkContextServiceDiskCacheDirBrowsertest
 };
 
 // Makes sure switches::kDiskCacheDir is hooked up correctly.
-IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceDiskCacheDirBrowsertest,
+IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceDiskCacheDirBrowsertest,
                        DiskCacheLocation) {
   // Make sure command line switch is hooked up to the pref.
   ASSERT_EQ(TempPath(), browser()->profile()->GetPrefs()->GetFilePath(
@@ -176,17 +163,5 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceDiskCacheDirBrowsertest,
   base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(base::PathExists(expected_cache_path));
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    /* No test prefix */,
-    ProfileNetworkContextServiceBrowsertest,
-    ::testing::Values(NetworkServiceState::kDisabled,
-                      NetworkServiceState::kEnabled));
-
-INSTANTIATE_TEST_SUITE_P(
-    /* No test prefix */,
-    ProfileNetworkContextServiceDiskCacheDirBrowsertest,
-    ::testing::Values(NetworkServiceState::kDisabled,
-                      NetworkServiceState::kEnabled));
 
 }  // namespace

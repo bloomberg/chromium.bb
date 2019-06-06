@@ -115,8 +115,7 @@ std::string GetDestinationHost(const net::test_server::HttpRequest& request) {
 }
 
 void SimulateNetworkChange(network::mojom::ConnectionType type) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      !content::IsInProcessNetworkService()) {
+  if (!content::IsInProcessNetworkService()) {
     network::mojom::NetworkServiceTestPtr network_service_test;
     content::ServiceManagerConnection::GetForProcess()
         ->GetConnector()
@@ -192,18 +191,12 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
 
     EnableDataSaver(true);
     // Make sure initial config has been loaded. Config is fetched only if
-    // network service is not enabled, or if both network service and
     // kDataReductionProxyEnabledWithNetworkService are enabled.
-    if (!IsNetworkServiceEnabled() ||
-        base::FeatureList::IsEnabled(
+    if (base::FeatureList::IsEnabled(
             data_reduction_proxy::features::
                 kDataReductionProxyEnabledWithNetworkService)) {
       WaitForConfig();
     }
-  }
-
-  bool IsNetworkServiceEnabled() const {
-    return base::FeatureList::IsEnabled(network::features::kNetworkService);
   }
 
   // Verifies that the |request| has the Chrome-Proxy headers, and caches the
@@ -772,19 +765,7 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyExpFeatureBrowsertest,
   EXPECT_LE(1u, count_proxy_server_requests_received_);
 }
 
-class DataReductionProxyBrowsertestWithNetworkService
-    : public DataReductionProxyBrowsertest {
- public:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kNetworkService);
-    DataReductionProxyBrowsertest::SetUp();
-  }
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertestWithNetworkService,
-                       DataUsePrefsRecorded) {
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, DataUsePrefsRecorded) {
   PrefService* prefs = browser()->profile()->GetPrefs();
 
   // Make sure we wait for timing information.
@@ -871,9 +852,7 @@ class DataReductionProxyFallbackBrowsertest
   }
 
   void TearDown() override {
-    if (IsNetworkServiceEnabled()) {
-      EXPECT_LE(1u, count_proxy_server_requests_received_);
-    }
+    EXPECT_LE(1u, count_proxy_server_requests_received_);
   }
 
  private:
@@ -1175,8 +1154,6 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ProxyBlockedOnAuthError)) {
-  if (!IsNetworkServiceEnabled())
-    return;
   base::HistogramTester histogram_tester;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
@@ -1196,8 +1173,6 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 // the proxy is bypassed, and the request is fetched directly.
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(RedirectCycle)) {
-  if (!IsNetworkServiceEnabled())
-    return;
   base::HistogramTester histogram_tester;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
@@ -1432,8 +1407,6 @@ class DataReductionProxyWarmupURLBrowsertest
 IN_PROC_BROWSER_TEST_P(
     DataReductionProxyWarmupURLBrowsertest,
     DISABLE_ON_WIN_MAC_CHROMEOS(WarmupURLsFetchedForEachProxy)) {
-  if (!IsNetworkServiceEnabled())
-    return;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
       base::BindRepeating(&BasicResponse, kDummyBody));
@@ -1538,9 +1511,6 @@ std::unique_ptr<net::test_server::HttpResponse> RespondWithRequestPathHandler(
 // Verify that requests initiated by SimpleURLLoader use the proxy only if
 // render frame ID is set.
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, SimpleURLLoader) {
-  if (!IsNetworkServiceEnabled())
-    return;
-
   net::EmbeddedTestServer origin_server;
   origin_server.RegisterRequestHandler(
       base::BindRepeating(&BasicResponse, kDummyBody));
@@ -1794,18 +1764,14 @@ class DataReductionProxyEnabledWithNetworkServiceHoldbackBrowserTest
  public:
   void SetUp() override {
     if (GetParam()) {
-      // Enable NetworkService, and disable
-      // kDataReductionProxyEnabledWithNetworkService.
+      // Disable kDataReductionProxyEnabledWithNetworkService.
       scoped_feature_list_.InitWithFeatures(
-          {network::features::kNetworkService},
-          {data_reduction_proxy::features::
-               kDataReductionProxyEnabledWithNetworkService});
+          {}, {data_reduction_proxy::features::
+                   kDataReductionProxyEnabledWithNetworkService});
     } else {
-      // Enable both NetworkService and
-      // kDataReductionProxyEnabledWithNetworkService.
+      // Enable kDataReductionProxyEnabledWithNetworkService.
       scoped_feature_list_.InitWithFeatures(
-          {network::features::kNetworkService,
-           data_reduction_proxy::features::
+          {data_reduction_proxy::features::
                kDataReductionProxyEnabledWithNetworkService},
           {});
     }

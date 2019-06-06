@@ -272,11 +272,8 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
       if (static_cast<int>(base::Hash(filename) % kNumberLoadTestParts) == k) {
         LOG(INFO) << "Loading: " << pdf_file;
         bool success = LoadPdf(embedded_test_server()->GetURL("/" + pdf_file));
-        if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-          // This file has races in loading correctly or not.
-          if (pdf_file == "pdf_private/cfuzz5.pdf")
-            continue;
-        }
+        if (pdf_file == "pdf_private/cfuzz5.pdf")
+          continue;
         EXPECT_EQ(PdfIsExpectedToLoad(pdf_file), success) << pdf_file;
       }
       ++count;

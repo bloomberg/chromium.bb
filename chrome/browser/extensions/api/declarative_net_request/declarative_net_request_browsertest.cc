@@ -1478,10 +1478,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
   EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
 
-  // NOTE: When the Network Service is enabled, the RulesetMatcher will not see
-  // network requests if no rulesets are active.
+  // NOTE: RulesetMatcher will not see network requests if no rulesets are
+  // active.
   bool expect_request_seen =
-      !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
       base::FeatureList::IsEnabled(
           extensions_features::kForceWebRequestProxyForTest);
   EXPECT_EQ(expect_request_seen, script_monitor.GetAndResetRequestSeen(false));

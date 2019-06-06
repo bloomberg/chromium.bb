@@ -142,9 +142,6 @@ IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
 // TODO(crbug.com/934583): Fix the flakiness.
 IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
                        DISABLED_ReconnectToNetworkService) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   {
     // Make sure everyone thinks we have an ethernet connection.
     NetObserver net_observer;

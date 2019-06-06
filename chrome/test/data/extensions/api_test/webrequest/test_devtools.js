@@ -193,8 +193,7 @@ function expectMockedTabNavigationEvents(url) {
           details: {
             type: 'main_frame',
             url,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED),
-            requiredNetworkServiceState: "enabled"
+            initiator: getServerDomain(initiators.BROWSER_INITIATED)
           }
         },
         {
@@ -203,8 +202,7 @@ function expectMockedTabNavigationEvents(url) {
           details: {
             type: 'main_frame',
             url,
-            initiator: getServerDomain(initiators.BROWSER_INITIATED),
-            requiredNetworkServiceState: "enabled"
+            initiator: getServerDomain(initiators.BROWSER_INITIATED)
           }
         },
         {
@@ -215,8 +213,7 @@ function expectMockedTabNavigationEvents(url) {
             url,
             statusCode: 200,
             statusLine: 'HTTP/1.0 200 OK',
-            initiator: getServerDomain(initiators.BROWSER_INITIATED),
-            requiredNetworkServiceState: "enabled"
+            initiator: getServerDomain(initiators.BROWSER_INITIATED)
           }
         },
         {
@@ -261,8 +258,7 @@ function expectMockedTabNavigationEvents(url) {
           details: {
             type: 'script',
             url: scriptUrl,
-            initiator: frontendOrigin,
-            requiredNetworkServiceState: "enabled"
+            initiator: frontendOrigin
           }
         },
         {
@@ -271,8 +267,7 @@ function expectMockedTabNavigationEvents(url) {
           details: {
             type: 'script',
             url: scriptUrl,
-            initiator: frontendOrigin,
-            requiredNetworkServiceState: "enabled"
+            initiator: frontendOrigin
           }
         },
         {
@@ -283,8 +278,7 @@ function expectMockedTabNavigationEvents(url) {
             url: scriptUrl,
             statusCode: 200,
             statusLine: 'HTTP/1.0 200 OK',
-            initiator: frontendOrigin,
-            requiredNetworkServiceState: "enabled"
+            initiator: frontendOrigin
           }
         },
         {

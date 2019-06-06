@@ -1615,23 +1615,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, LoadingMetrics) {
   waiter->Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, LoadingMetricsFailed) {
-  // https://crbug.com/842445: page load metrics don't work for non-committed
-  // navigations with network service.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-  ASSERT_TRUE(embedded_test_server()->Start());
-  auto waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kLoadTimingInfo);
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/page_load_metrics/404.html"));
-  // Waits until nonzero loading metrics are seen about the failed request. The
-  // load timing metrics come before the commit, but because the
-  // PageLoadMetricsTestWaiter is registered on tracker creation, it is able to
-  // catch the events.
-  waiter->Wait();
-}
-
 class SessionRestorePageLoadMetricsBrowserTest
     : public PageLoadMetricsBrowserTest {
  public:

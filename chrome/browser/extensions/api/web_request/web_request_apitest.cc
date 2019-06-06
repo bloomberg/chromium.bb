@@ -221,46 +221,6 @@ bool HasSeenWebRequestInBackgroundPage(const Extension* extension,
   return seen;
 }
 
-// The DevTool's remote front-end is hardcoded to a URL with a fixed port.
-// Redirect all responses to a URL with port.
-class DevToolsFrontendInterceptor : public net::URLRequestInterceptor {
- public:
-  DevToolsFrontendInterceptor(int port, const base::FilePath& root_dir)
-      : port_(port), test_root_dir_(root_dir) {}
-
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    // The DevTools front-end has a hard-coded scheme (and implicit port 443).
-    // We simulate a response for it.
-    // net::URLRequestRedirectJob cannot be used because DevToolsUIBindings
-    // rejects URLs whose base URL is not the hard-coded URL.
-    if (request->url().EffectiveIntPort() != port_) {
-      return new net::URLRequestMockHTTPJob(
-          request, network_delegate,
-          test_root_dir_.AppendASCII(request->url().path().substr(1)));
-    }
-    return nullptr;
-  }
-
- private:
-  int port_;
-  base::FilePath test_root_dir_;
-};
-
-void SetUpDevToolsFrontendInterceptorOnIO(int port,
-                                          const base::FilePath& root_dir) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-      "https", kRemoteFrontendDomain,
-      std::make_unique<DevToolsFrontendInterceptor>(port, root_dir));
-}
-
-void TearDownDevToolsFrontendInterceptorOnIO() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::URLRequestFilter::GetInstance()->ClearHandlers();
-}
-
 }  // namespace
 
 class ExtensionWebRequestApiTest : public ExtensionApiTest {
@@ -361,32 +321,13 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
 
     int port = embedded_test_server()->port();
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
-          base::BindRepeating(&DevToolsFrontendInWebRequestApiTest::OnIntercept,
-                              base::Unretained(this), port));
-    } else {
-      base::RunLoop run_loop;
-      base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&SetUpDevToolsFrontendInterceptorOnIO, port,
-                         test_root_dir_),
-          run_loop.QuitClosure());
-      run_loop.Run();
-    }
+    url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+        base::BindRepeating(&DevToolsFrontendInWebRequestApiTest::OnIntercept,
+                            base::Unretained(this), port));
   }
 
   void TearDownOnMainThread() override {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      url_loader_interceptor_.reset();
-    } else {
-      base::RunLoop run_loop;
-      base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&TearDownDevToolsFrontendInterceptorOnIO),
-          run_loop.QuitClosure());
-      run_loop.Run();
-    }
+    url_loader_interceptor_.reset();
     ExtensionApiTest::TearDownOnMainThread();
   }
 
@@ -407,9 +348,9 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
  private:
   bool OnIntercept(int test_server_port,
                    content::URLLoaderInterceptor::RequestParams* params) {
-    // See comments in DevToolsFrontendInterceptor above. The devtools remote
-    // frontend URLs are hardcoded into Chrome and are requested by some of the
-    // tests here to exercise their behavior with respect to WebRequest.
+    // The devtools remote frontend URLs are hardcoded into Chrome and are
+    // requested by some of the tests here to exercise their behavior with
+    // respect to WebRequest.
     //
     // We treat any URL request not targeting the test server as targeting the
     // remote frontend, and we intercept them to fulfill from test data rather
@@ -743,12 +684,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        MAYBE_WebRequestDeclarative2) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  const char* network_service_arg =
-      base::FeatureList::IsEnabled(network::features::kNetworkService)
-          ? "NetworkServiceEnabled"
-          : "NetworkServiceDisabled";
-  ASSERT_TRUE(RunExtensionSubtestWithArg("webrequest", "test_declarative2.html",
-                                         network_service_arg))
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_declarative2.html"))
       << message_;
 }
 

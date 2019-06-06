@@ -1169,19 +1169,14 @@ class PKPModelClientTest : public SecurityStateTabHelperTest {
   }
 
   void TearDownOnMainThread() override {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
-      network::mojom::NetworkServiceTestPtr network_service_test;
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->BindInterface(content::mojom::kNetworkServiceName,
-                          &network_service_test);
-      network_service_test->SetTransportSecurityStateSource(0);
-      return;
-    }
-    RunOnIOThreadBlocking(base::BindOnce(&PKPModelClientTest::CleanUpOnIOThread,
-                                         base::Unretained(this)));
+    network::mojom::NetworkServiceTestPtr network_service_test;
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(content::mojom::kNetworkServiceName,
+                        &network_service_test);
+    network_service_test->SetTransportSecurityStateSource(0);
 
     // This test class intentionally does not call the parent
     // TearDownOnMainThread.
@@ -1189,51 +1184,21 @@ class PKPModelClientTest : public SecurityStateTabHelperTest {
 
  private:
   void EnableStaticPins() {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
-      network::mojom::NetworkServiceTestPtr network_service_test;
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->BindInterface(content::mojom::kNetworkServiceName,
-                          &network_service_test);
-      // The tests don't depend on reporting, so the port doesn't matter.
-      network_service_test->SetTransportSecurityStateSource(80);
-
-      content::StoragePartition* partition =
-          content::BrowserContext::GetDefaultStoragePartition(
-              browser()->profile());
-      partition->GetNetworkContext()->EnableStaticKeyPinningForTesting();
-      return;
-    }
-    RunOnIOThreadBlocking(base::BindOnce(
-        &PKPModelClientTest::EnableStaticPinsOnIOThread, base::Unretained(this),
-        base::RetainedRef(browser()->profile()->GetRequestContext())));
-  }
-
-  void RunOnIOThreadBlocking(base::OnceClosure task) {
-    base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(FROM_HERE, {content::BrowserThread::IO},
-                                     std::move(task), run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
-  void EnableStaticPinsOnIOThread(
-      scoped_refptr<net::URLRequestContextGetter> context_getter) {
+    network::mojom::NetworkServiceTestPtr network_service_test;
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(content::mojom::kNetworkServiceName,
+                        &network_service_test);
     // The tests don't depend on reporting, so the port doesn't matter.
-    transport_security_state_source_ =
-        std::make_unique<net::ScopedTransportSecurityStateSource>();
+    network_service_test->SetTransportSecurityStateSource(80);
 
-    net::TransportSecurityState* state =
-        context_getter->GetURLRequestContext()->transport_security_state();
-    state->EnableStaticPinsForTesting();
+    content::StoragePartition* partition =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+    partition->GetNetworkContext()->EnableStaticKeyPinningForTesting();
   }
-
-  void CleanUpOnIOThread() { transport_security_state_source_.reset(); }
-
-  // Only used when NetworkService is disabled. Accessed on IO thread.
-  std::unique_ptr<net::ScopedTransportSecurityStateSource>
-      transport_security_state_source_;
 };
 
 INSTANTIATE_TEST_SUITE_P(, PKPModelClientTest, ::testing::Values(false, true));

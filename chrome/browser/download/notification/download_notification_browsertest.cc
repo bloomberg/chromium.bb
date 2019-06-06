@@ -277,8 +277,7 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
         browser()->profile());
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-        !content::IsInProcessNetworkService()) {
+    if (!content::IsInProcessNetworkService()) {
       interceptor_ = std::make_unique<SlowDownloadInterceptor>();
     } else {
       base::PostTaskWithTraits(

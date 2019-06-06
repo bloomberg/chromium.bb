@@ -87,14 +87,12 @@ class TestNetworkConnectionObserver
 
 class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
  public:
-  NetworkConnectionTrackerBrowserTest()
-      : network_service_enabled_(
-            base::FeatureList::IsEnabled(network::features::kNetworkService)) {}
+  NetworkConnectionTrackerBrowserTest() {}
   ~NetworkConnectionTrackerBrowserTest() override {}
 
   // Simulates a network connection change.
   void SimulateNetworkChange(network::mojom::ConnectionType type) {
-    if (network_service_enabled_ && !content::IsInProcessNetworkService()) {
+    if (!content::IsInProcessNetworkService()) {
       network::mojom::NetworkServiceTestPtr network_service_test;
       content::ServiceManagerConnection::GetForProcess()
           ->GetConnector()
@@ -111,10 +109,7 @@ class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
         net::NetworkChangeNotifier::ConnectionType(type));
   }
 
-  bool network_service_enabled() const { return network_service_enabled_; }
-
  private:
-  const bool network_service_enabled_;
 };
 
 // Basic test to make sure NetworkConnectionTracker is set up.
@@ -124,8 +119,7 @@ IN_PROC_BROWSER_TEST_F(NetworkConnectionTrackerBrowserTest,
   // NetworkService on ChromeOS doesn't yet have a NetworkChangeManager
   // implementation. OSX uses a separate binary for service processes and
   // browser test fixture doesn't have NetworkServiceTest mojo code.
-  if (network_service_enabled())
-    return;
+  return;
 #endif
   network::NetworkConnectionTracker* tracker =
       content::GetNetworkConnectionTracker();

@@ -6775,9 +6775,6 @@ class ForceNetworkInProcessTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ForceNetworkInProcessTest, Enabled) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   ASSERT_TRUE(content::IsInProcessNetworkService());
 }
 
