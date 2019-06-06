@@ -110,7 +110,7 @@ base::Optional<CryptAuthKeyBundle> CryptAuthKeyBundle::FromDictionary(
     }
 
     // Return nullopt if duplicate handles exist.
-    if (base::ContainsKey(bundle.handle_to_key_map(), key->handle()))
+    if (base::Contains(bundle.handle_to_key_map(), key->handle()))
       return base::nullopt;
 
     bundle.AddKey(*key);
@@ -168,7 +168,7 @@ void CryptAuthKeyBundle::SetActiveKey(const std::string& handle) {
 }
 
 void CryptAuthKeyBundle::DeleteKey(const std::string& handle) {
-  DCHECK(base::ContainsKey(handle_to_key_map_, handle));
+  DCHECK(base::Contains(handle_to_key_map_, handle));
   handle_to_key_map_.erase(handle);
 }
 

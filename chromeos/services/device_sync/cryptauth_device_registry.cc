@@ -35,7 +35,7 @@ void CryptAuthDeviceRegistry::AddDevice(const CryptAuthDevice& device) {
 }
 
 void CryptAuthDeviceRegistry::DeleteDevice(const std::string& instance_id) {
-  DCHECK(base::ContainsKey(instance_id_to_device_map_, instance_id));
+  DCHECK(base::Contains(instance_id_to_device_map_, instance_id));
   instance_id_to_device_map_.erase(instance_id);
 
   OnDeviceRegistryUpdated();

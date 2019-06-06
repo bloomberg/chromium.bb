@@ -384,28 +384,25 @@ void AddSoftwareFeaturesToExternalDevice(
   // these deprecated fields, instead of software features. To work around this,
   // these pref values are migrated to software features locally.
   if (old_unlock_key_value_from_prefs) {
-    if (!base::ContainsValue(
-            external_device->supported_software_features(),
-            SoftwareFeatureEnumToString(
-                cryptauth::SoftwareFeature::EASY_UNLOCK_HOST))) {
+    if (!base::Contains(external_device->supported_software_features(),
+                        SoftwareFeatureEnumToString(
+                            cryptauth::SoftwareFeature::EASY_UNLOCK_HOST))) {
       external_device->add_supported_software_features(
           SoftwareFeatureEnumToString(
               cryptauth::SoftwareFeature::EASY_UNLOCK_HOST));
     }
-    if (!base::ContainsValue(
-            external_device->enabled_software_features(),
-            SoftwareFeatureEnumToString(
-                cryptauth::SoftwareFeature::EASY_UNLOCK_HOST))) {
+    if (!base::Contains(external_device->enabled_software_features(),
+                        SoftwareFeatureEnumToString(
+                            cryptauth::SoftwareFeature::EASY_UNLOCK_HOST))) {
       external_device->add_enabled_software_features(
           SoftwareFeatureEnumToString(
               cryptauth::SoftwareFeature::EASY_UNLOCK_HOST));
     }
   }
   if (old_mobile_hotspot_supported_from_prefs) {
-    if (!base::ContainsValue(
-            external_device->supported_software_features(),
-            SoftwareFeatureEnumToString(
-                cryptauth::SoftwareFeature::MAGIC_TETHER_HOST))) {
+    if (!base::Contains(external_device->supported_software_features(),
+                        SoftwareFeatureEnumToString(
+                            cryptauth::SoftwareFeature::MAGIC_TETHER_HOST))) {
       external_device->add_supported_software_features(
           SoftwareFeatureEnumToString(
               cryptauth::SoftwareFeature::MAGIC_TETHER_HOST));
@@ -645,10 +642,9 @@ std::vector<cryptauth::ExternalDeviceInfo>
 CryptAuthDeviceManagerImpl::GetUnlockKeys() const {
   std::vector<cryptauth::ExternalDeviceInfo> unlock_keys;
   for (const auto& device : synced_devices_) {
-    if (base::ContainsValue(
-            device.enabled_software_features(),
-            SoftwareFeatureEnumToString(
-                cryptauth::SoftwareFeature::EASY_UNLOCK_HOST))) {
+    if (base::Contains(device.enabled_software_features(),
+                       SoftwareFeatureEnumToString(
+                           cryptauth::SoftwareFeature::EASY_UNLOCK_HOST))) {
       unlock_keys.push_back(device);
     }
   }
@@ -659,10 +655,9 @@ std::vector<cryptauth::ExternalDeviceInfo>
 CryptAuthDeviceManagerImpl::GetPixelUnlockKeys() const {
   std::vector<cryptauth::ExternalDeviceInfo> unlock_keys;
   for (const auto& device : synced_devices_) {
-    if (base::ContainsValue(
-            device.enabled_software_features(),
-            SoftwareFeatureEnumToString(
-                cryptauth::SoftwareFeature::EASY_UNLOCK_HOST)) &&
+    if (base::Contains(device.enabled_software_features(),
+                       SoftwareFeatureEnumToString(
+                           cryptauth::SoftwareFeature::EASY_UNLOCK_HOST)) &&
         device.pixel_phone()) {
       unlock_keys.push_back(device);
     }
@@ -674,10 +669,9 @@ std::vector<cryptauth::ExternalDeviceInfo>
 CryptAuthDeviceManagerImpl::GetTetherHosts() const {
   std::vector<cryptauth::ExternalDeviceInfo> tether_hosts;
   for (const auto& device : synced_devices_) {
-    if (base::ContainsValue(
-            device.supported_software_features(),
-            SoftwareFeatureEnumToString(
-                cryptauth::SoftwareFeature::MAGIC_TETHER_HOST))) {
+    if (base::Contains(device.supported_software_features(),
+                       SoftwareFeatureEnumToString(
+                           cryptauth::SoftwareFeature::MAGIC_TETHER_HOST))) {
       tether_hosts.push_back(device);
     }
   }
@@ -688,10 +682,9 @@ std::vector<cryptauth::ExternalDeviceInfo>
 CryptAuthDeviceManagerImpl::GetPixelTetherHosts() const {
   std::vector<cryptauth::ExternalDeviceInfo> tether_hosts;
   for (const auto& device : synced_devices_) {
-    if (base::ContainsValue(
-            device.supported_software_features(),
-            SoftwareFeatureEnumToString(
-                cryptauth::SoftwareFeature::MAGIC_TETHER_HOST)) &&
+    if (base::Contains(device.supported_software_features(),
+                       SoftwareFeatureEnumToString(
+                           cryptauth::SoftwareFeature::MAGIC_TETHER_HOST)) &&
         device.pixel_phone())
       tether_hosts.push_back(device);
   }
