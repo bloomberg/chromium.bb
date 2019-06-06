@@ -196,6 +196,10 @@ public class TabListCoordinator implements Destroyable {
         mRecyclerView.prepareOverview();
     }
 
+    void postHiding() {
+        mRecyclerView.postHiding();
+    }
+
     /**
      * Destroy any members that needs clean up.
      */

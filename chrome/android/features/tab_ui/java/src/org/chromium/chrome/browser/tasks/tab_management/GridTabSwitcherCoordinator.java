@@ -113,6 +113,7 @@ public class GridTabSwitcherCoordinator
 
     @Override
     public void postHiding() {
+        mTabGridCoordinator.postHiding();
         mMediator.postHiding();
     }
 
