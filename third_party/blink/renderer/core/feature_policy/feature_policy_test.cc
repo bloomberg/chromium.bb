@@ -755,15 +755,16 @@ TEST_F(FeaturePolicyParserTest, ParseParameterizedFeatures) {
   EXPECT_LE(max_double_value, parsed_policy[0].values.begin()->second);
 }
 
-// These declarations should each trigger the origin trial use counter.
-const char* const kOriginTrialPolicyDeclarations[] = {
+// These declarations should each trigger the Unoptimized Images origin trial
+// use counter.
+const char* const kUnoptimizedImagesOriginTrialPolicyDeclarations[] = {
     "unoptimized-lossy-images",           "unoptimized-lossless-images",
     "unoptimized-lossless-images-strict", "oversized-images",
     "oversized-images; fullscreen",       "fullscreen; oversized-images",
     "oversized-images 'self'(2.0)",       "oversized-images 'none'",
     "unoptimized-lossy-images *(0.125)"};
 
-TEST_F(FeaturePolicyParserTest, OriginTrialFeatureUseCounter) {
+TEST_F(FeaturePolicyParserTest, UnoptimizedImagesOriginTrialFeatureUseCounter) {
   Vector<String> messages;
 
   // Validate that features which are not in the origin trial do not trigger
@@ -777,12 +778,44 @@ TEST_F(FeaturePolicyParserTest, OriginTrialFeatureUseCounter) {
   }
 
   // Validate that declarations which should trigger the use counter do.
-  for (const char* declaration : kOriginTrialPolicyDeclarations) {
+  for (const char* declaration :
+       kUnoptimizedImagesOriginTrialPolicyDeclarations) {
     auto dummy = std::make_unique<DummyPageHolder>();
     FeaturePolicyParser::ParseHeader(declaration, origin_a_.get(), &messages,
                                      &dummy->GetDocument());
     EXPECT_TRUE(dummy->GetDocument().IsUseCounted(
         WebFeature::kUnoptimizedImagePolicies))
+        << declaration
+        << " should trigger the Unoptimized Images origin trial use counter.";
+  }
+}
+
+// These declarations should each trigger the Unsized Media origin trial use
+// counter.
+const char* const kUnsizedMediaOriginTrialPolicyDeclarations[] = {
+    "unsized-media", "unsized-media; fullscreen", "fullscreen; unsized-media",
+    "unsized-media 'self'", "unsized-media 'none'"};
+
+TEST_F(FeaturePolicyParserTest, UnsizedMediaOriginTrialFeatureUseCounter) {
+  Vector<String> messages;
+
+  // Validate that features which are not in the origin trial do not trigger
+  // the use counter.
+  {
+    auto dummy = std::make_unique<DummyPageHolder>();
+    FeaturePolicyParser::ParseHeader("payment; fullscreen", origin_a_.get(),
+                                     &messages, &dummy->GetDocument());
+    EXPECT_FALSE(
+        dummy->GetDocument().IsUseCounted(WebFeature::kUnsizedMediaPolicy));
+  }
+
+  // Validate that declarations which should trigger the use counter do.
+  for (const char* declaration : kUnsizedMediaOriginTrialPolicyDeclarations) {
+    auto dummy = std::make_unique<DummyPageHolder>();
+    FeaturePolicyParser::ParseHeader(declaration, origin_a_.get(), &messages,
+                                     &dummy->GetDocument());
+    EXPECT_TRUE(
+        dummy->GetDocument().IsUseCounted(WebFeature::kUnsizedMediaPolicy))
         << declaration << " should trigger the origin trial use counter.";
   }
 }

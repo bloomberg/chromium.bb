@@ -1515,6 +1515,12 @@
       implied_by: ["ExperimentalProductivityFeatures"]
     },
     {
+      name: "UnsizedMediaPolicy",
+      status: "experimental",
+      origin_trial_feature_name: "UnsizedMediaPolicy",
+      implied_by: ["ExperimentalProductivityFeatures"]
+    },
+    {
       name: "UpdateHoverFromLayoutChangeAtBeginFrame",
       settable_from_internals: true,
     },

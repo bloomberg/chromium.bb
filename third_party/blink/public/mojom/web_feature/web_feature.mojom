@@ -2307,6 +2307,7 @@ enum WebFeature {
   kV8RTCRtpSender_SetStreams_Method = 2915,
   kCookieNoSameSite = 2916,
   kCookieInsecureAndSameSiteNone = 2917,
+  kUnsizedMediaPolicy = 2918,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
