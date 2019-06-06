@@ -259,4 +259,24 @@ function MetadataItem() {
    * @public {boolean|undefined}
    */
   this.canShare;
+
+  /**
+   * @public {string|undefined}
+   */
+  this.alternateUrl;
+
+  /**
+   * @public {boolean|undefined}
+   */
+  this.isMachineRoot;
+
+  /**
+   * @public {boolean|undefined}
+   */
+  this.isArbitrarySyncFolder;
+
+  /**
+   * @public {boolean|undefined}
+   */
+  this.isExternalMedia;
 }
