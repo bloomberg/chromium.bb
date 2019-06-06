@@ -85,6 +85,13 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::HandleOpenTag(
   // https://drafts.csswg.org/css2/visudet.html#line-height
   if (!quirks_mode_ || !item.IsEmptyItem())
     box->ComputeTextMetrics(*item.Style(), baseline_type_);
+
+  if (item.Style()->HasMask()) {
+    // Layout may change the bounding box, which affects MaskClip.
+    if (LayoutObject* object = item.GetLayoutObject())
+      object->SetNeedsPaintPropertyUpdate();
+  }
+
   return box;
 }
 
