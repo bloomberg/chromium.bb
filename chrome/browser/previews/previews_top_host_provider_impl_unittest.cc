@@ -50,6 +50,40 @@ class PreviewsTopHostProviderImplTest : public ChromeRenderViewHostTestHarness {
                       *top_host_filter);
   }
 
+  void RemoveHostsFromBlacklist(size_t num_hosts_navigated) {
+    PrefService* pref_service = profile()->GetPrefs();
+
+    std::unique_ptr<base::DictionaryValue> top_host_filter =
+        pref_service
+            ->GetDictionary(
+                optimization_guide::prefs::kHintsFetcherTopHostBlacklist)
+            ->CreateDeepCopy();
+
+    for (size_t i = 1; i <= num_hosts_navigated; i++) {
+      top_host_filter->RemoveKey(
+          HashHostForDictionary(base::StringPrintf("domain%zu.com", i)));
+    }
+    pref_service->Set(optimization_guide::prefs::kHintsFetcherTopHostBlacklist,
+                      *top_host_filter);
+  }
+
+  void SetTopHostBlacklistState(
+      optimization_guide::prefs::HintsFetcherTopHostBlacklistState
+          blacklist_state) {
+    profile()->GetPrefs()->SetInteger(
+        optimization_guide::prefs::kHintsFetcherTopHostBlacklistState,
+        static_cast<int>(blacklist_state));
+  }
+
+  optimization_guide::prefs::HintsFetcherTopHostBlacklistState
+  GetCurrentTopHostBlacklistState() {
+    PrefService* pref_service = profile()->GetPrefs();
+    return static_cast<
+        optimization_guide::prefs::HintsFetcherTopHostBlacklistState>(
+        pref_service->GetInteger(
+            optimization_guide::prefs::kHintsFetcherTopHostBlacklistState));
+  }
+
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
 
   PreviewsTopHostProviderImpl* top_host_provider() {
@@ -61,6 +95,8 @@ class PreviewsTopHostProviderImplTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(PreviewsTopHostProviderImplTest, GetTopHostsMaxSites) {
+  SetTopHostBlacklistState(optimization_guide::prefs::
+                               HintsFetcherTopHostBlacklistState::kInitialized);
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 3;
   AddEngagedHosts(engaged_hosts);
@@ -73,6 +109,8 @@ TEST_F(PreviewsTopHostProviderImplTest, GetTopHostsMaxSites) {
 
 TEST_F(PreviewsTopHostProviderImplTest,
        GetTopHostsFiltersPrivacyBlackedlistedHosts) {
+  SetTopHostBlacklistState(optimization_guide::prefs::
+                               HintsFetcherTopHostBlacklistState::kInitialized);
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
   size_t num_hosts_blacklisted = 2;
@@ -84,6 +122,77 @@ TEST_F(PreviewsTopHostProviderImplTest,
       top_host_provider()->GetTopHosts(max_top_hosts);
 
   EXPECT_EQ(hosts.size(), engaged_hosts - num_hosts_blacklisted);
+}
+
+TEST_F(PreviewsTopHostProviderImplTest, GetTopHostsInitializeBlacklistState) {
+  EXPECT_EQ(GetCurrentTopHostBlacklistState(),
+            optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
+                kNotInitialized);
+  size_t engaged_hosts = 5;
+  size_t max_top_hosts = 5;
+  AddEngagedHosts(engaged_hosts);
+
+  std::vector<std::string> hosts =
+      top_host_provider()->GetTopHosts(max_top_hosts);
+  // On initialization, GetTopHosts should always return zero hosts.
+  EXPECT_EQ(hosts.size(), 0u);
+  EXPECT_EQ(GetCurrentTopHostBlacklistState(),
+            optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
+                kInitialized);
+}
+
+TEST_F(PreviewsTopHostProviderImplTest,
+       GetTopHostsBlacklistStateNotInitializedToInitialized) {
+  size_t engaged_hosts = 5;
+  size_t max_top_hosts = 5;
+  size_t num_hosts_blacklisted = 5;
+  AddEngagedHosts(engaged_hosts);
+  // TODO(mcrouse): Remove once the blacklist is populated on initialization.
+  // The expected behavior will be that all hosts in the engagement service will
+  // be blacklisted on initialization.
+  PopulateTopHostBlacklist(num_hosts_blacklisted);
+
+  std::vector<std::string> hosts =
+      top_host_provider()->GetTopHosts(max_top_hosts);
+  EXPECT_EQ(hosts.size(), 0u);
+
+  // Blacklist should now have items removed.
+  size_t num_navigations = 2;
+  RemoveHostsFromBlacklist(num_navigations);
+
+  hosts = top_host_provider()->GetTopHosts(max_top_hosts);
+  EXPECT_EQ(hosts.size(),
+            engaged_hosts - (num_hosts_blacklisted - num_navigations));
+  EXPECT_EQ(GetCurrentTopHostBlacklistState(),
+            optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
+                kInitialized);
+}
+
+TEST_F(PreviewsTopHostProviderImplTest,
+       GetTopHostsBlacklistStateNotInitializedToEmpty) {
+  size_t engaged_hosts = 5;
+  size_t max_top_hosts = 5;
+  size_t num_hosts_blacklisted = 5;
+  AddEngagedHosts(engaged_hosts);
+  // TODO(mcrouse): Remove once the blacklist is populated on initialization.
+  // The expected behavior will be that all hosts in the engagement service will
+  // be blacklisted on initialization.
+  PopulateTopHostBlacklist(num_hosts_blacklisted);
+
+  std::vector<std::string> hosts =
+      top_host_provider()->GetTopHosts(max_top_hosts);
+  EXPECT_EQ(hosts.size(), 0u);
+
+  // Blacklist should now have items removed.
+  size_t num_navigations = 5;
+  RemoveHostsFromBlacklist(num_navigations);
+
+  hosts = top_host_provider()->GetTopHosts(max_top_hosts);
+  EXPECT_EQ(hosts.size(),
+            engaged_hosts - (num_hosts_blacklisted - num_navigations));
+  EXPECT_EQ(
+      GetCurrentTopHostBlacklistState(),
+      optimization_guide::prefs::HintsFetcherTopHostBlacklistState::kEmpty);
 }
 
 }  // namespace previews

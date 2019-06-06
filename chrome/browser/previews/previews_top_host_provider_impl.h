@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/values.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/previews/content/previews_top_host_provider.h"
 
 class PrefService;
@@ -17,7 +19,6 @@ class PrefService;
 namespace content {
 class BrowserContext;
 }
-
 namespace previews {
 
 // An implementation of the PreviewTopHostProvider for getting the top sites
@@ -27,9 +28,25 @@ class PreviewsTopHostProviderImpl : public PreviewsTopHostProvider {
   explicit PreviewsTopHostProviderImpl(content::BrowserContext* BrowserContext);
   ~PreviewsTopHostProviderImpl() override;
 
-  std::vector<std::string> GetTopHosts(size_t max_sites) const override;
+  std::vector<std::string> GetTopHosts(size_t max_sites) override;
 
  private:
+  // Initializes the HintsFetcherTopHostBlacklist with all the hosts in the site
+  // engagement service and transitions the blacklist state from kNotInitialized
+  // to kInitialized.
+  void InitializeHintsFetcherTopHostBlacklist();
+
+  // Return the current state of the HintsFetcherTopHostBlacklist held in the
+  // |kHintsFetcherTopHostBlacklistState| pref.
+  optimization_guide::prefs::HintsFetcherTopHostBlacklistState
+  GetCurrentBlacklistState() const;
+
+  // Transition the current HintsFetcherTopHostBlacklist state to |state| and
+  // validate the transition. The updated state is persisted in the
+  // |kHintsFetcherTopHostBlacklistState| pref.
+  void UpdateCurrentBlacklistState(
+      optimization_guide::prefs::HintsFetcherTopHostBlacklistState state);
+
   // |browser_context_| is used for interaction with the SiteEngagementService
   // and the embedder should guarantee that it is non-null during the lifetime
   // of |this|.

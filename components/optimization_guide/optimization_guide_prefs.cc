@@ -21,10 +21,20 @@ const char kHintLoadedCounts[] = "optimization_guide.hint_loaded_counts";
 const char kHintsFetcherTopHostBlacklist[] =
     "optimization_guide.hintsfetcher.top_host_blacklist";
 
+// An integer pref that stores the state of the blacklist for the top host
+// provider for blacklisting hosts after DataSaver is enabled. The state maps to
+// the HintsFetcherTopHostBlacklistState enum.
+const char kHintsFetcherTopHostBlacklistState[] =
+    "optimization_guide.hintsfetcher.top_host_blacklist_state";
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kHintLoadedCounts, PrefRegistry::LOSSY_PREF);
   registry->RegisterDictionaryPref(kHintsFetcherTopHostBlacklist,
                                    PrefRegistry::LOSSY_PREF);
+  registry->RegisterIntegerPref(
+      kHintsFetcherTopHostBlacklistState,
+      static_cast<int>(HintsFetcherTopHostBlacklistState::kNotInitialized),
+      PrefRegistry::LOSSY_PREF);
 }
 
 }  // namespace prefs

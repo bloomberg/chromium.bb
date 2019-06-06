@@ -159,7 +159,7 @@ class TestPreviewsTopHostProvider : public PreviewsTopHostProvider {
   TestPreviewsTopHostProvider() {}
   ~TestPreviewsTopHostProvider() override {}
 
-  std::vector<std::string> GetTopHosts(size_t max_sites) const override {
+  std::vector<std::string> GetTopHosts(size_t max_sites) override {
     return std::vector<std::string>();
   }
 };

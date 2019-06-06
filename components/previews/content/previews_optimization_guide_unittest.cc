@@ -97,7 +97,7 @@ class TestOptimizationGuideService
 // A mock class implementation for unittesting previews_optimization_guide.
 class MockPreviewsTopHostProvider : public PreviewsTopHostProvider {
  public:
-  MOCK_CONST_METHOD1(GetTopHosts, std::vector<std::string>(size_t max_sites));
+  MOCK_METHOD1(GetTopHosts, std::vector<std::string>(size_t max_sites));
 };
 
 std::unique_ptr<optimization_guide::proto::GetHintsResponse> BuildHintsResponse(
