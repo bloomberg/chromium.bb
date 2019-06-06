@@ -751,15 +751,10 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
 static GURL g_handoff_url;
 
 @interface AppController (BrowserTest)
-- (BOOL)new_shouldUseHandoff;
 - (void)new_passURLToHandoffManager:(const GURL&)handoffURL;
 @end
 
 @implementation AppController (BrowserTest)
-- (BOOL)new_shouldUseHandoff {
-  return YES;
-}
-
 - (void)new_passURLToHandoffManager:(const GURL&)handoffURL {
   g_handoff_url = handoffURL;
 }
@@ -790,16 +785,10 @@ class AppControllerHandoffBrowserTest : public InProcessBrowserTest {
 
   // Swizzle Handoff related implementations.
   void SetUpInProcessBrowserTestFixture() override {
-    // Handoff is only available on OSX 10.10+. This swizzle makes the logic
-    // run on all OSX versions.
-    SEL originalMethod = @selector(shouldUseHandoff);
-    SEL newMethod = @selector(new_shouldUseHandoff);
-    ExchangeSelectors(originalMethod, newMethod);
-
     // This swizzle intercepts the URL that would be sent to the Handoff
     // Manager, and instead puts it into a variable accessible to this test.
-    originalMethod = @selector(passURLToHandoffManager:);
-    newMethod = @selector(new_passURLToHandoffManager:);
+    SEL originalMethod = @selector(passURLToHandoffManager:);
+    SEL newMethod = @selector(new_passURLToHandoffManager:);
     ExchangeSelectors(originalMethod, newMethod);
   }
 

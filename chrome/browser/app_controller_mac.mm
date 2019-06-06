@@ -232,9 +232,6 @@ bool IsProfileSignedOut(Profile* profile) {
 // NTP after all the |urls| have been opened.
 - (void)openUrlsReplacingNTP:(const std::vector<GURL>&)urls;
 
-// Whether instances of this class should use the Handoff feature.
-- (BOOL)shouldUseHandoff;
-
 // This method passes |handoffURL| to |handoffManager_|.
 - (void)passURLToHandoffManager:(const GURL&)handoffURL;
 
@@ -1678,18 +1675,11 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 #pragma mark - Handoff Manager
 
-- (BOOL)shouldUseHandoff {
-  return base::mac::IsAtLeastOS10_10();
-}
-
 - (void)passURLToHandoffManager:(const GURL&)handoffURL {
   [handoffManager_ updateActiveURL:handoffURL];
 }
 
 - (void)updateHandoffManager:(content::WebContents*)webContents {
-  if (![self shouldUseHandoff])
-    return;
-
   if (!handoffManager_)
     handoffManager_.reset([[HandoffManager alloc] init]);
 

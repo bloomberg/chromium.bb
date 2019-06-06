@@ -139,12 +139,6 @@ bool InitializeCoreAudioDispatchOverride() {
 
   DCHECK_EQ(g_pause_resume_queue, nullptr);
 
-  if (!base::mac::IsAtLeastOS10_10()) {
-    LogInitResult(RESULT_NOT_SUPPORTED);
-    return false;
-  }
-
-  // This function should be available in macOS > 10.10.
   if (dyld_dynamic_interpose == nullptr) {
     LOG(ERROR) << "Unable to resolve dyld_dynamic_interpose()";
     LogInitResult(RESULT_DYNAMIC_INTERPOSE_NOT_FOUND);

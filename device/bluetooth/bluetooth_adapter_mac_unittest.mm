@@ -159,10 +159,6 @@ class BluetoothAdapterMacTest : public testing::Test {
   }
 
   CBPeripheral* CreateMockPeripheral(const char* identifier) {
-    if (!BluetoothAdapterMac::IsLowEnergyAvailable()) {
-      LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-      return nil;
-    }
     base::scoped_nsobject<MockCBPeripheral> mock_peripheral(
         [[MockCBPeripheral alloc] initWithUTF8StringIdentifier:identifier]);
     return [[mock_peripheral peripheral] retain];
@@ -189,10 +185,6 @@ class BluetoothAdapterMacTest : public testing::Test {
   }
 
   bool SetMockCentralManager(CBCentralManagerState desired_state) {
-    if (!BluetoothAdapterMac::IsLowEnergyAvailable()) {
-      LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-      return false;
-    }
     mock_central_manager_.reset([[MockCentralManager alloc] init]);
     [mock_central_manager_ setState:desired_state];
     CBCentralManager* centralManager =

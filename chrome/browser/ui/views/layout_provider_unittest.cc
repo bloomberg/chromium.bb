@@ -151,11 +151,7 @@ TEST_F(LayoutProviderTest, MAYBE_LegacyFontSizeConstants) {
   EXPECT_EQ(14, title_font.GetFontSize());
   EXPECT_EQ(17, title_font.GetHeight());
   EXPECT_EQ(14, title_font.GetBaseline());
-  if (base::mac::IsOS10_9()) {
-    EXPECT_EQ(11, title_font.GetCapHeight());
-  } else {
-    EXPECT_EQ(10, title_font.GetCapHeight());
-  }
+  EXPECT_EQ(10, title_font.GetCapHeight());
 #else
   EXPECT_EQ(15, title_font.GetFontSize());
   EXPECT_EQ(18, title_font.GetHeight());
@@ -163,15 +159,7 @@ TEST_F(LayoutProviderTest, MAYBE_LegacyFontSizeConstants) {
   EXPECT_EQ(11, title_font.GetCapHeight());
 #endif
 
-#if defined(OS_MACOSX)
-  if (base::mac::IsOS10_9()) {
-    EXPECT_EQ(7, title_font.GetExpectedTextWidth(1));
-  } else {
-    EXPECT_EQ(8, title_font.GetExpectedTextWidth(1));
-  }
-#else
   EXPECT_EQ(8, title_font.GetExpectedTextWidth(1));
-#endif
 
   gfx::FontList small_font = rb.GetFontList(ui::ResourceBundle::SmallFont);
   gfx::FontList base_font = rb.GetFontList(ui::ResourceBundle::BaseFont);
