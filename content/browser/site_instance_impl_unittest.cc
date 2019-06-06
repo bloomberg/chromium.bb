@@ -261,20 +261,28 @@ TEST_F(SiteInstanceTest, DefaultSiteInstanceDestruction) {
 
   // Ensure that default SiteInstances are deleted when all references to them
   // are gone.
-  auto site_instance1 =
+  auto site_instance =
       SiteInstanceImpl::CreateForURL(&browser_context, GURL("http://foo.com"));
-  // TODO(958060): Remove the creation of this second instance and update
-  // the deletion count below once CreateForURL() starts returning a default
-  // SiteInstance for sites that don't require a dedicated process.
-  auto site_instance2 =
-      site_instance1->GetRelatedSiteInstance(GURL("http://bar.com"));
-  EXPECT_FALSE(site_instance1->IsDefaultSiteInstance());
-  EXPECT_TRUE(static_cast<SiteInstanceImpl*>(site_instance2.get())
-                  ->IsDefaultSiteInstance());
-  site_instance1.reset();
-  site_instance2.reset();
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(site_instance->IsDefaultSiteInstance());
+  } else {
+    // TODO(958060): Remove the creation of this second instance once
+    // CreateForURL() starts returning a default SiteInstance without
+    // the need to specify a command-line flag.
+    EXPECT_FALSE(site_instance->IsDefaultSiteInstance());
+    auto related_instance =
+        site_instance->GetRelatedSiteInstance(GURL("http://bar.com"));
+    EXPECT_TRUE(static_cast<SiteInstanceImpl*>(related_instance.get())
+                    ->IsDefaultSiteInstance());
 
-  EXPECT_EQ(2, browser_client()->GetAndClearSiteInstanceDeleteCount());
+    related_instance.reset();
+
+    EXPECT_EQ(1, browser_client()->GetAndClearSiteInstanceDeleteCount());
+    EXPECT_EQ(0, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
+  }
+  site_instance.reset();
+
+  EXPECT_EQ(1, browser_client()->GetAndClearSiteInstanceDeleteCount());
   EXPECT_EQ(1, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
 }
 
@@ -466,7 +474,8 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
   GURL test_url("https://some.app.foo.com/");
   GURL nonapp_site_url("https://foo.com/");
   GURL app_url("https://app.com/");
-  EffectiveURLContentBrowserClient modified_client(test_url, app_url);
+  EffectiveURLContentBrowserClient modified_client(
+      test_url, app_url, /* requires_dedicated_process */ true);
   ContentBrowserClient* regular_client =
       SetBrowserClientForTesting(&modified_client);
   std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
@@ -506,12 +515,8 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
         bar_site_instance->GetRelatedSiteInstance(test_url);
     auto* site_instance_impl =
         static_cast<SiteInstanceImpl*>(site_instance.get());
-    if (AreAllSitesIsolatedForTesting()) {
-      EXPECT_EQ(expected_app_site_url, site_instance->GetSiteURL());
-      EXPECT_EQ(nonapp_site_url, site_instance_impl->lock_url());
-    } else {
-      EXPECT_TRUE(site_instance_impl->IsDefaultSiteInstance());
-    }
+    EXPECT_EQ(expected_app_site_url, site_instance->GetSiteURL());
+    EXPECT_EQ(nonapp_site_url, site_instance_impl->lock_url());
   }
 
   // New SiteInstance with a lazily assigned site URL.
@@ -992,8 +997,9 @@ TEST_F(SiteInstanceTest, StrictOriginIsolationWithEffectiveURLs) {
 
   const GURL kOriginalUrl("https://original.com");
   const GURL kTranslatedUrl(GetWebUIURL("translated"));
-  EffectiveURLContentBrowserClient modified_client(kOriginalUrl,
-                                                   kTranslatedUrl);
+  EffectiveURLContentBrowserClient modified_client(
+      kOriginalUrl, kTranslatedUrl,
+      /* requires_dedicated_process */ true);
   ContentBrowserClient* regular_client =
       SetBrowserClientForTesting(&modified_client);
 
@@ -1302,7 +1308,8 @@ TEST_F(SiteInstanceTest, MultipleIsolatedOriginsWithCommonSite) {
 TEST_F(SiteInstanceTest, OriginalURL) {
   GURL original_url("https://foo.com/");
   GURL app_url("https://app.com/");
-  EffectiveURLContentBrowserClient modified_client(original_url, app_url);
+  EffectiveURLContentBrowserClient modified_client(
+      original_url, app_url, /* requires_dedicated_process */ true);
   ContentBrowserClient* regular_client =
       SetBrowserClientForTesting(&modified_client);
   std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
@@ -1329,12 +1336,8 @@ TEST_F(SiteInstanceTest, OriginalURL) {
         bar_site_instance->GetRelatedSiteInstance(original_url);
     auto* site_instance_impl =
         static_cast<SiteInstanceImpl*>(site_instance.get());
-    if (AreAllSitesIsolatedForTesting()) {
-      EXPECT_EQ(expected_site_url, site_instance->GetSiteURL());
-      EXPECT_EQ(original_url, site_instance_impl->original_url());
-    } else {
-      EXPECT_TRUE(site_instance_impl->IsDefaultSiteInstance());
-    }
+    EXPECT_EQ(expected_site_url, site_instance->GetSiteURL());
+    EXPECT_EQ(original_url, site_instance_impl->original_url());
   }
 
   // New SiteInstance with a lazily assigned site URL.

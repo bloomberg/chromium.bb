@@ -111,7 +111,7 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
   // instance when kProcessSharingWithStrictSiteInstances is enabled because in
   // that case we want each site to have their own SiteInstance object and logic
   // elsewhere ensures that those SiteInstances share a process.
-  if (allow_default_instance &&
+  if (allow_default_instance && !url.SchemeIs(kGuestScheme) &&
       !base::FeatureList::IsEnabled(
           features::kProcessSharingWithStrictSiteInstances) &&
       !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(isolation_context_,

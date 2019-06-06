@@ -309,6 +309,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Returns true if this object was constructed as a default site instance.
   bool IsDefaultSiteInstance();
 
+  // Returns true if the the site URL for |url| matches the site URL
+  // for this instance (i.e. GetSiteURL()). Otherwise returns false.
+  bool DoesSiteForURLMatch(const GURL& url);
+
  private:
   friend class BrowsingInstance;
   friend class SiteInstanceTestBrowserClient;

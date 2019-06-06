@@ -1941,9 +1941,14 @@ IN_PROC_BROWSER_TEST_F(
                         ->render_manager()
                         ->speculative_frame_host();
   CHECK(speculative_rfh);
-  EXPECT_EQ(kRedirectSiteURL, speculative_rfh->GetSiteInstance()->GetSiteURL());
-  if (AreAllSitesIsolatedForTesting())
-    EXPECT_EQ(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(speculative_rfh->GetSiteInstance()->IsDefaultSiteInstance());
+  } else {
+    EXPECT_EQ(kRedirectSiteURL,
+              speculative_rfh->GetSiteInstance()->GetSiteURL());
+    if (AreAllSitesIsolatedForTesting())
+      EXPECT_EQ(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
+  }
 
   // The user requests to go back again while the previous back hasn't committed
   // yet. This should delete the speculative RenderFrameHost trying to commit
@@ -4823,11 +4828,27 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_NE(
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
-  EXPECT_EQ(
-      success_site_instance->GetSiteURL(),
-      shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
-  EXPECT_NE(success_site_instance,
-            shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Verify that we get the default SiteInstance because the original URL does
+    // not require a dedicated process.
+    EXPECT_TRUE(static_cast<SiteInstanceImpl*>(
+                    shell()->web_contents()->GetMainFrame()->GetSiteInstance())
+                    ->IsDefaultSiteInstance());
+    // TODO(acolwell): This should be changed to EXPECT_EQ() once the initial
+    // navigation is able to use the default SiteInstance . Right now they
+    // are not equal because the initial navigation converts an empty
+    // SiteInstance into one specifically for the initial URL.
+    EXPECT_NE(success_site_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  } else {
+    EXPECT_EQ(success_site_instance->GetSiteURL(), shell()
+                                                       ->web_contents()
+                                                       ->GetMainFrame()
+                                                       ->GetSiteInstance()
+                                                       ->GetSiteURL());
+    EXPECT_NE(success_site_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  }
   EXPECT_EQ(3, nav_controller.GetEntryCount());
 
   // Repeat again using a renderer-initiated navigation for the successful one.

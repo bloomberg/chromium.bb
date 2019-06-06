@@ -94,6 +94,10 @@ base::Value ExecuteScriptAndGetValue(RenderFrameHost* render_frame_host,
 // that is incompatible with --site-per-process.
 bool AreAllSitesIsolatedForTesting();
 
+// Returns true if default SiteInstances are enabled. Typically used in a test
+// to mark expectations specific to default SiteInstances.
+bool AreDefaultSiteInstancesEnabled();
+
 // Appends --site-per-process to the command line, enabling tests to exercise
 // site isolation and cross-process iframes. This must be called early in
 // the test; the flag will be read on the first real navigation.
@@ -371,16 +375,20 @@ class TestPageScaleObserver : public WebContentsObserver {
 class EffectiveURLContentBrowserClient : public ContentBrowserClient {
  public:
   EffectiveURLContentBrowserClient(const GURL& url_to_modify,
-                                   const GURL& url_to_return)
-      : url_to_modify_(url_to_modify), url_to_return_(url_to_return) {}
-  ~EffectiveURLContentBrowserClient() override {}
+                                   const GURL& url_to_return,
+                                   bool requires_dedicated_process);
+  ~EffectiveURLContentBrowserClient() override;
 
  private:
   GURL GetEffectiveURL(BrowserContext* browser_context,
                        const GURL& url) override;
+  bool DoesSiteRequireDedicatedProcess(
+      BrowserOrResourceContext browser_or_resource_context,
+      const GURL& effective_site_url) override;
 
   GURL url_to_modify_;
   GURL url_to_return_;
+  bool requires_dedicated_process_;
 
   DISALLOW_COPY_AND_ASSIGN(EffectiveURLContentBrowserClient);
 };

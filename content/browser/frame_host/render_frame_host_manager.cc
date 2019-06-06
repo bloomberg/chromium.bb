@@ -1140,9 +1140,9 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
 scoped_refptr<SiteInstance>
 RenderFrameHostManager::GetSiteInstanceForNavigation(
     const GURL& dest_url,
-    SiteInstance* source_instance,
-    SiteInstance* dest_instance,
-    SiteInstance* candidate_instance,
+    SiteInstanceImpl* source_instance,
+    SiteInstanceImpl* dest_instance,
+    SiteInstanceImpl* candidate_instance,
     ui::PageTransition transition,
     bool is_failure,
     bool dest_is_restore,
@@ -1689,7 +1689,7 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
 
 scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
     const SiteInstanceDescriptor& descriptor,
-    SiteInstance* candidate_instance) {
+    SiteInstanceImpl* candidate_instance) {
   SiteInstanceImpl* current_instance = render_frame_host_->GetSiteInstance();
 
   // Note: If the |candidate_instance| matches the descriptor, it will already
@@ -1706,11 +1706,7 @@ scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
   // check if the candidate matches.
   if (candidate_instance &&
       !current_instance->IsRelatedSiteInstance(candidate_instance) &&
-      candidate_instance->GetSiteURL() ==
-          SiteInstanceImpl::GetSiteForURL(
-              static_cast<SiteInstanceImpl*>(candidate_instance)
-                  ->GetIsolationContext(),
-              descriptor.dest_url)) {
+      candidate_instance->DoesSiteForURLMatch(descriptor.dest_url)) {
     return candidate_instance;
   }
 
@@ -2180,7 +2176,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
   // should use.
   // TODO(clamy): We should also consider as a candidate SiteInstance the
   // speculative SiteInstance that was computed on redirects.
-  SiteInstance* candidate_site_instance =
+  SiteInstanceImpl* candidate_site_instance =
       speculative_render_frame_host_
           ? speculative_render_frame_host_->GetSiteInstance()
           : nullptr;

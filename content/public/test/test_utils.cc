@@ -189,6 +189,12 @@ bool AreAllSitesIsolatedForTesting() {
   return SiteIsolationPolicy::UseDedicatedProcessesForAllSites();
 }
 
+bool AreDefaultSiteInstancesEnabled() {
+  return !AreAllSitesIsolatedForTesting() &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableDefaultSiteInstance);
+}
+
 void IsolateAllSitesForTesting(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kSitePerProcess);
 }
@@ -450,12 +456,32 @@ float TestPageScaleObserver::WaitForPageScaleUpdate() {
   return last_scale_;
 }
 
+EffectiveURLContentBrowserClient::EffectiveURLContentBrowserClient(
+    const GURL& url_to_modify,
+    const GURL& url_to_return,
+    bool requires_dedicated_process)
+    : url_to_modify_(url_to_modify),
+      url_to_return_(url_to_return),
+      requires_dedicated_process_(requires_dedicated_process) {}
+
+EffectiveURLContentBrowserClient::~EffectiveURLContentBrowserClient() {}
+
 GURL EffectiveURLContentBrowserClient::GetEffectiveURL(
     BrowserContext* browser_context,
     const GURL& url) {
   if (url == url_to_modify_)
     return url_to_return_;
   return url;
+}
+
+bool EffectiveURLContentBrowserClient::DoesSiteRequireDedicatedProcess(
+    BrowserOrResourceContext browser_or_resource_context,
+    const GURL& effective_site_url) {
+  GURL expected_effective_site_url = SiteInstance::GetSiteForURL(
+      browser_or_resource_context.ToBrowserContext(), url_to_modify_);
+
+  return requires_dedicated_process_ &&
+         expected_effective_site_url == effective_site_url;
 }
 
 }  // namespace content

@@ -31,6 +31,17 @@
 
 namespace content {
 
+namespace {
+
+// Returns true if CreateForURL() and related functions should be allowed to
+// return a default SiteInstance.
+bool ShouldAllowDefaultSiteInstance() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableDefaultSiteInstance);
+}
+
+}  // namespace
+
 int32_t SiteInstanceImpl::next_site_instance_id_ = 1;
 
 // static
@@ -90,8 +101,7 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
   // This will create a new SiteInstance and BrowsingInstance.
   scoped_refptr<BrowsingInstance> instance(
       new BrowsingInstance(browser_context));
-  return instance->GetSiteInstanceForURL(url,
-                                         /* allow_default_instance */ false);
+  return instance->GetSiteInstanceForURL(url, ShouldAllowDefaultSiteInstance());
 }
 
 // static
@@ -591,6 +601,14 @@ bool SiteInstanceImpl::IsSameWebSite(const IsolationContext& isolation_context,
   }
 
   return true;
+}
+
+bool SiteInstanceImpl::DoesSiteForURLMatch(const GURL& url) {
+  // Note: The |allow_default_site_url| value used here MUST match the value
+  // used in CreateForURL().
+  return site_ == GetSiteForURLInternal(GetIsolationContext(), url,
+                                        true /* should_use_effective_urls */,
+                                        ShouldAllowDefaultSiteInstance());
 }
 
 // static

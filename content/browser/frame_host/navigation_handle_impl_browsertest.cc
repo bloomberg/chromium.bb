@@ -12,6 +12,7 @@
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1445,7 +1446,12 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
             starting_site_instance);
   // Because of the sad tab, this is actually the b.com SiteInstance, which
   // commits immediately after starting the navigation and has a process.
-  EXPECT_EQ(GURL("http://b.com"), starting_site_instance->GetSiteURL());
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(static_cast<SiteInstanceImpl*>(starting_site_instance.get())
+                    ->IsDefaultSiteInstance());
+  } else {
+    EXPECT_EQ(GURL("http://b.com"), starting_site_instance->GetSiteURL());
+  }
   EXPECT_TRUE(starting_site_instance->HasProcess());
 
   // In https://crbug.com/949977, we used the a.com SiteInstance here and didn't

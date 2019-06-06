@@ -608,9 +608,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Returns the SiteInstance to use for the navigation.
   scoped_refptr<SiteInstance> GetSiteInstanceForNavigation(
       const GURL& dest_url,
-      SiteInstance* source_instance,
-      SiteInstance* dest_instance,
-      SiteInstance* candidate_instance,
+      SiteInstanceImpl* source_instance,
+      SiteInstanceImpl* dest_instance,
+      SiteInstanceImpl* candidate_instance,
       ui::PageTransition transition,
       bool is_failure,
       bool dest_is_restore,
@@ -669,7 +669,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // description, it is returned as is.
   scoped_refptr<SiteInstance> ConvertToSiteInstance(
       const SiteInstanceDescriptor& descriptor,
-      SiteInstance* candidate_instance);
+      SiteInstanceImpl* candidate_instance);
 
   // Returns true if |candidate| is currently on the same web site as dest_url.
   bool IsCurrentlySameSite(RenderFrameHostImpl* candidate,

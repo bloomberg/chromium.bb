@@ -1209,9 +1209,13 @@ TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin) {
   EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, http_url));
   EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, http2_url));
 
+  // Isolate |http_url| so we can't get a default SiteInstance.
+  p->AddIsolatedOrigins({url::Origin::Create(http_url)}, &browser_context);
+
   // Lock process to |http_url| origin.
   scoped_refptr<SiteInstanceImpl> foo_instance =
       SiteInstanceImpl::CreateForURL(&browser_context, http_url);
+  EXPECT_FALSE(foo_instance->IsDefaultSiteInstance());
   p->LockToOrigin(foo_instance->GetIsolationContext(), kRendererID,
                   foo_instance->GetSiteURL());
 

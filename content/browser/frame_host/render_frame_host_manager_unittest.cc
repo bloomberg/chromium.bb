@@ -3220,8 +3220,8 @@ TEST_F(RenderFrameHostManagerTest,
   const GURL kFooUrl("https://foo.com");
   const GURL kOriginalUrl("https://original.com");
   const GURL kTranslatedUrl("https://translated.com");
-  EffectiveURLContentBrowserClient modified_client(kOriginalUrl,
-                                                   kTranslatedUrl);
+  EffectiveURLContentBrowserClient modified_client(
+      kOriginalUrl, kTranslatedUrl, /* requires_dedicated_process */ true);
   ContentBrowserClient* regular_client =
       SetBrowserClientForTesting(&modified_client);
 
