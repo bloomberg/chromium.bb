@@ -2209,6 +2209,10 @@ message AppInstallReportLogEvent {
     INSTALLATION_FINISHED = 11;
     // Package installation failed
     INSTALLATION_FAILED = 12;
+    // Direct install scheduled
+    DIRECT_INSTALL = 13;
+    // No more regular attempts to install
+    CLOUDDPC_MAIN_LOOP_FAILED = 14;
   }
 
   // Enumerates the possible changes in session state.

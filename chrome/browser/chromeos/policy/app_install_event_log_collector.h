@@ -87,6 +87,12 @@ class AppInstallEventLogCollector
   void OnCloudDpsFailed(base::Time time,
                         const std::string& package_name,
                         arc::mojom::InstallErrorReason reason) override;
+  void OnReportDirectInstall(
+      base::Time time,
+      const std::set<std::string>& package_names) override;
+  void OnReportForceInstallMainLoopFailed(
+      base::Time time,
+      const std::set<std::string>& package_names) override;
 
   // ArcAppListPrefs::Observer:
   void OnInstallationStarted(const std::string& package_name) override;

@@ -418,8 +418,16 @@ TEST_F(AppInstallEventLogCollectorTest, InstallPackages) {
   collector->OnPendingPackagesChanged({kPackageName, kPackageName2});
 
   // Now kPackageName2 is in the pending set.
-  app_host->OnInstallationStarted(kPackageName2);
+  base::Time time = base::Time::Now();
+  collector->OnReportDirectInstall(time, {kPackageName2});
   EXPECT_EQ(3, delegate()->add_count());
+  EXPECT_EQ(em::AppInstallReportLogEvent::DIRECT_INSTALL,
+            delegate()->last_event().event_type());
+  EXPECT_EQ(kPackageName2, delegate()->last_request().package_name);
+  EXPECT_TRUE(delegate()->last_request().add_disk_space_info);
+
+  app_host->OnInstallationStarted(kPackageName2);
+  EXPECT_EQ(4, delegate()->add_count());
   EXPECT_EQ(em::AppInstallReportLogEvent::INSTALLATION_STARTED,
             delegate()->last_event().event_type());
   EXPECT_EQ(kPackageName2, delegate()->last_request().package_name);
@@ -429,8 +437,16 @@ TEST_F(AppInstallEventLogCollectorTest, InstallPackages) {
   result.success = false;
   app_host->OnInstallationFinished(
       arc::mojom::InstallationResultPtr(result.Clone()));
-  EXPECT_EQ(4, delegate()->add_count());
+  EXPECT_EQ(5, delegate()->add_count());
   EXPECT_EQ(em::AppInstallReportLogEvent::INSTALLATION_FAILED,
+            delegate()->last_event().event_type());
+  EXPECT_EQ(kPackageName2, delegate()->last_request().package_name);
+  EXPECT_TRUE(delegate()->last_request().add_disk_space_info);
+
+  time += base::TimeDelta::FromSeconds(1);
+  collector->OnReportForceInstallMainLoopFailed(time, {kPackageName2});
+  EXPECT_EQ(6, delegate()->add_count());
+  EXPECT_EQ(em::AppInstallReportLogEvent::CLOUDDPC_MAIN_LOOP_FAILED,
             delegate()->last_event().event_type());
   EXPECT_EQ(kPackageName2, delegate()->last_request().package_name);
   EXPECT_TRUE(delegate()->last_request().add_disk_space_info);
