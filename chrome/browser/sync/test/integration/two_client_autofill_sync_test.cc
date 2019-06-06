@@ -300,8 +300,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
 
 // Tests that adding the same profile on the two clients before sync is started
 // results in each client only having one profile after sync is started
+// Flaky on all platform, crbug.com/971644.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
-                       ClientsAddSameProfile) {
+                       DISABLED_ClientsAddSameProfile) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed";
   base::HistogramTester histograms;
 
