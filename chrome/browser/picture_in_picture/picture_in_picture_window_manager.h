@@ -8,7 +8,6 @@
 #include "base/memory/singleton.h"
 
 namespace content {
-enum class PictureInPictureResult;
 class PictureInPictureWindowController;
 class WebContents;
 }  // namespace content
@@ -35,9 +34,9 @@ class PictureInPictureWindowManager {
   // controller directly.
   void EnterPictureInPictureWithController(
       content::PictureInPictureWindowController* pip_window_controller);
-  content::PictureInPictureResult EnterPictureInPicture(content::WebContents*,
-                                                        const viz::SurfaceId&,
-                                                        const gfx::Size&);
+  gfx::Size EnterPictureInPicture(content::WebContents*,
+                                  const viz::SurfaceId&,
+                                  const gfx::Size&);
   void ExitPictureInPicture();
 
   content::WebContents* GetWebContents();

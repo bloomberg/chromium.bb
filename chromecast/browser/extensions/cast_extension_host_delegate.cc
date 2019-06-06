@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "chromecast/browser/extensions/cast_extension_web_contents_observer.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "extensions/browser/media_capture_util.h"
 #include "extensions/browser/serial_extension_host_queue.h"
 
@@ -63,13 +62,12 @@ ExtensionHostQueue* CastExtensionHostDelegate::GetExtensionHostQueue() const {
   return queue.get();
 }
 
-content::PictureInPictureResult
-CastExtensionHostDelegate::EnterPictureInPicture(
+gfx::Size CastExtensionHostDelegate::EnterPictureInPicture(
     content::WebContents* web_contents,
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size) {
   NOTREACHED();
-  return content::PictureInPictureResult::kNotSupported;
+  return gfx::Size();
 }
 
 void CastExtensionHostDelegate::ExitPictureInPicture() {

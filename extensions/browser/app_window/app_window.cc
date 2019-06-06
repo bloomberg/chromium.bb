@@ -444,10 +444,9 @@ bool AppWindow::TakeFocus(WebContents* source, bool reverse) {
   return app_delegate_->TakeFocus(source, reverse);
 }
 
-content::PictureInPictureResult AppWindow::EnterPictureInPicture(
-    content::WebContents* web_contents,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size) {
+gfx::Size AppWindow::EnterPictureInPicture(content::WebContents* web_contents,
+                                           const viz::SurfaceId& surface_id,
+                                           const gfx::Size& natural_size) {
   return app_delegate_->EnterPictureInPicture(web_contents, surface_id,
                                               natural_size);
 }

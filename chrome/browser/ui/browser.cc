@@ -1277,10 +1277,9 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
   }
 }
 
-content::PictureInPictureResult Browser::EnterPictureInPicture(
-    content::WebContents* web_contents,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size) {
+gfx::Size Browser::EnterPictureInPicture(content::WebContents* web_contents,
+                                         const viz::SurfaceId& surface_id,
+                                         const gfx::Size& natural_size) {
   return PictureInPictureWindowManager::GetInstance()->EnterPictureInPicture(
       web_contents, surface_id, natural_size);
 }

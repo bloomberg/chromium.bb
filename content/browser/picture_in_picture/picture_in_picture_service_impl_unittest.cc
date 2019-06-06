@@ -39,9 +39,9 @@ class PictureInPictureDelegate : public WebContentsDelegate {
   PictureInPictureDelegate() = default;
 
   MOCK_METHOD3(EnterPictureInPicture,
-               PictureInPictureResult(WebContents*,
-                                      const viz::SurfaceId&,
-                                      const gfx::Size&));
+               gfx::Size(WebContents*,
+                         const viz::SurfaceId&,
+                         const gfx::Size&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureDelegate);

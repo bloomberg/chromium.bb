@@ -91,15 +91,6 @@ struct OpenURLParams;
 
 enum class KeyboardEventProcessingResult;
 
-// Result of an EnterPictureInPicture request.
-enum class PictureInPictureResult {
-  // The request was successful.
-  kSuccess,
-
-  // Picture-in-Picture is not supported by the embedder.
-  kNotSupported,
-};
-
 // Objects implement this interface to get notified about changes in the
 // WebContents and to provide necessary functionality.
 class CONTENT_EXPORT WebContentsDelegate {
@@ -627,11 +618,10 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Notifies the Picture-in-Picture controller that there is a new player
   // entering Picture-in-Picture.
-  // Returns the result of the enter request.
-  virtual PictureInPictureResult EnterPictureInPicture(
-      WebContents* web_contents,
-      const viz::SurfaceId&,
-      const gfx::Size& natural_size);
+  // Returns the size of the Picture-in-Picture window.
+  virtual gfx::Size EnterPictureInPicture(WebContents* web_contents,
+                                          const viz::SurfaceId&,
+                                          const gfx::Size& natural_size);
 
   // Updates the Picture-in-Picture controller with a signal that
   // Picture-in-Picture mode has ended.

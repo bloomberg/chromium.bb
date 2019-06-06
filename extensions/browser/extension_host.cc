@@ -463,7 +463,7 @@ bool ExtensionHost::IsNeverVisible(content::WebContents* web_contents) {
   return view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
 }
 
-content::PictureInPictureResult ExtensionHost::EnterPictureInPicture(
+gfx::Size ExtensionHost::EnterPictureInPicture(
     content::WebContents* web_contents,
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size) {
