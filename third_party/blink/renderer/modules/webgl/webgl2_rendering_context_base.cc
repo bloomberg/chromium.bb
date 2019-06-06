@@ -4446,7 +4446,11 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(
 
   Vector<std::string> keep_alive;  // Must keep these instances alive while
                                    // looking at their data
+  // keep_alive MUST be pre-reserved, so that the std::strings do not move.
+  // TODO(kainino): Use a data structure that makes this more fool-proof.
+  keep_alive.ReserveInitialCapacity(varyings.size());
   Vector<const char*> varying_strings;
+  varying_strings.ReserveInitialCapacity(varyings.size());
   for (const String& varying : varyings) {
     keep_alive.push_back(varying.Ascii());
     varying_strings.push_back(keep_alive.back().c_str());
@@ -4673,6 +4677,8 @@ Vector<GLuint> WebGL2RenderingContextBase::getUniformIndices(
 
   Vector<std::string> keep_alive;  // Must keep these instances alive while
                                    // looking at their data
+  // keep_alive MUST be pre-reserved, so that the std::strings do not move.
+  // TODO(kainino): Use a data structure that makes this more fool-proof.
   keep_alive.ReserveInitialCapacity(uniform_names.size());
   Vector<const char*> uniform_strings;
   uniform_strings.ReserveInitialCapacity(uniform_names.size());
