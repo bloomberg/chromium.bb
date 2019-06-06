@@ -1512,6 +1512,8 @@ message CrostiniApp {
   optional string package_name = 4;
   // If available, the version of the Debian package belonging to this App.
   optional string package_version = 5;
+  // If available, a hash of the package belonging to this App.
+  optional string package_hash = 6;
 }
 
 message CrostiniStatus {
