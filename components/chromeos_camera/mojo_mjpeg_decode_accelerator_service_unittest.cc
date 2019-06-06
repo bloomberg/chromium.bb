@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/platform_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -68,16 +69,16 @@ TEST_F(MojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
   subsamples.push_back(media::SubsampleEntry(15, 7));
 
   base::RunLoop run_loop2;
-  base::SharedMemory shm;
-  ASSERT_TRUE(shm.CreateAndMapAnonymous(kInputBufferSizeInBytes));
+  base::subtle::PlatformSharedMemoryRegion shm_region =
+      base::subtle::PlatformSharedMemoryRegion::CreateUnsafe(
+          kInputBufferSizeInBytes);
 
   mojo::ScopedSharedBufferHandle output_frame_handle =
       mojo::SharedBufferHandle::Create(kOutputFrameSizeInBytes);
 
-  media::BitstreamBuffer bitstream_buffer(
-      kArbitraryBitstreamBufferId,
-      base::SharedMemory::DuplicateHandle(shm.handle()), false /* read_only */,
-      kInputBufferSizeInBytes);
+  media::BitstreamBuffer bitstream_buffer(kArbitraryBitstreamBufferId,
+                                          std::move(shm_region),
+                                          kInputBufferSizeInBytes);
   bitstream_buffer.SetDecryptionSettings(kKeyId, kIv, subsamples);
 
   jpeg_decoder->Decode(

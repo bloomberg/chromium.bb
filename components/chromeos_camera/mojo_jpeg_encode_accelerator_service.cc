@@ -199,21 +199,28 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
   }
 
   base::UnguessableToken input_guid = base::UnguessableToken::Create();
-  base::UnguessableToken exif_guid = base::UnguessableToken::Create();
-  base::UnguessableToken output_guid = base::UnguessableToken::Create();
   base::SharedMemoryHandle input_shm_handle(
       base::FileDescriptor(input_fd, true), input_buffer_size, input_guid);
-  base::SharedMemoryHandle exif_shm_handle(base::FileDescriptor(exif_fd, true),
-                                           exif_buffer_size, exif_guid);
-  base::SharedMemoryHandle output_shm_handle(
-      base::FileDescriptor(output_fd, true), output_buffer_size, output_guid);
 
-  media::BitstreamBuffer output_buffer(
-      task_id, output_shm_handle, false /* read_only */, output_buffer_size);
+  base::subtle::PlatformSharedMemoryRegion output_shm_region =
+      base::subtle::PlatformSharedMemoryRegion::Take(
+          base::subtle::ScopedFDPair(base::ScopedFD(output_fd),
+                                     base::ScopedFD()),
+          base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+          output_buffer_size, base::UnguessableToken::Create());
+
+  media::BitstreamBuffer output_buffer(task_id, std::move(output_shm_region),
+                                       output_buffer_size);
   std::unique_ptr<media::BitstreamBuffer> exif_buffer;
   if (exif_buffer_size > 0) {
+    base::subtle::PlatformSharedMemoryRegion exif_shm_region =
+        base::subtle::PlatformSharedMemoryRegion::Take(
+            base::subtle::ScopedFDPair(base::ScopedFD(exif_fd),
+                                       base::ScopedFD()),
+            base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+            exif_buffer_size, base::UnguessableToken::Create());
     exif_buffer = std::make_unique<media::BitstreamBuffer>(
-        task_id, exif_shm_handle, false /* read_only */, exif_buffer_size);
+        task_id, std::move(exif_shm_region), exif_buffer_size);
   }
   gfx::Size coded_size(coded_size_width, coded_size_height);
 
@@ -314,15 +321,18 @@ void MojoJpegEncodeAcceleratorService::EncodeWithDmaBuf(
         0, ::chromeos_camera::JpegEncodeAccelerator::Status::PLATFORM_FAILURE);
     return;
   }
-  base::UnguessableToken exif_guid = base::UnguessableToken::Create();
-  base::SharedMemoryHandle exif_shm_handle(base::FileDescriptor(exif_fd, true),
-                                           exif_buffer_size, exif_guid);
   std::unique_ptr<media::BitstreamBuffer> exif_buffer;
   if (exif_buffer_size > 0) {
     // Currently we use our zero-based |task_id| as id of |exif_buffer| to track
     // the encode task process from both Chrome OS and Chrome side.
+    base::subtle::PlatformSharedMemoryRegion exif_shm_region =
+        base::subtle::PlatformSharedMemoryRegion::Take(
+            base::subtle::ScopedFDPair(base::ScopedFD(exif_fd),
+                                       base::ScopedFD()),
+            base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+            exif_buffer_size, base::UnguessableToken::Create());
     exif_buffer = std::make_unique<media::BitstreamBuffer>(
-        task_id, exif_shm_handle, false /* read_only */, exif_buffer_size);
+        task_id, std::move(exif_shm_region), exif_buffer_size);
   }
   encode_cb_map_.emplace(task_id, std::move(callback));
 
