@@ -15,12 +15,9 @@ namespace ui {
 WaylandInputMethodContextFactory::WaylandInputMethodContextFactory(
     WaylandConnection* connection)
     : connection_(connection) {
-  LinuxInputMethodContextFactory::SetInstance(this);
 }
 
-WaylandInputMethodContextFactory::~WaylandInputMethodContextFactory() {
-  LinuxInputMethodContextFactory::SetInstance(nullptr);
-}
+WaylandInputMethodContextFactory::~WaylandInputMethodContextFactory() = default;
 
 std::unique_ptr<LinuxInputMethodContext>
 WaylandInputMethodContextFactory::CreateInputMethodContext(
@@ -31,7 +28,7 @@ WaylandInputMethodContextFactory::CreateInputMethodContext(
 
 std::unique_ptr<WaylandInputMethodContext>
 WaylandInputMethodContextFactory::CreateWaylandInputMethodContext(
-    ui::LinuxInputMethodContextDelegate* delegate,
+    LinuxInputMethodContextDelegate* delegate,
     bool is_simple) const {
   return std::make_unique<WaylandInputMethodContext>(
       connection_, delegate, is_simple,

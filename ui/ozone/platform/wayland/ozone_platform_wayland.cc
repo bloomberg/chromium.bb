@@ -101,9 +101,10 @@ class OzonePlatformWayland : public OzonePlatform {
     // after InitializeUI. Thus instead of creating factory in InitializeUI
     // it is set at this point if none exists
     if (!LinuxInputMethodContextFactory::instance() &&
-        !wayland_input_method_context_factory_) {
-      wayland_input_method_context_factory_.reset(
-          new WaylandInputMethodContextFactory(connection_.get()));
+        !input_method_context_factory_) {
+      auto* factory = new WaylandInputMethodContextFactory(connection_.get());
+      input_method_context_factory_.reset(factory);
+      LinuxInputMethodContextFactory::SetInstance(factory);
     }
 
     auto window = std::make_unique<WaylandWindow>(delegate, connection_.get());
@@ -214,7 +215,7 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<WaylandInputMethodContextFactory>
-      wayland_input_method_context_factory_;
+      input_method_context_factory_;
   std::unique_ptr<WaylandBufferManagerConnector> buffer_manager_connector_;
 
 #if BUILDFLAG(USE_XKBCOMMON)
