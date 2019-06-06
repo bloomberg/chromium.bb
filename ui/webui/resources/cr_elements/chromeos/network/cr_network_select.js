@@ -36,6 +36,12 @@ Polymer({
     showTechnologyBadge: {type: Boolean, value: true},
 
     /**
+     * Whether to show a progress indicator at the top of the network list while
+     * a scan (e.g., for nearby Wi-Fi networks) is in progress.
+     */
+    showScanProgress: {type: Boolean, value: false},
+
+    /**
      * List of all network state data for all visible networks.
      * @private {!Array<!CrOnc.NetworkStateProperties>}
      */
@@ -45,6 +51,12 @@ Polymer({
         return [];
       },
     },
+
+    /**
+     * Whether a network scan is currently in progress.
+     * @private
+     */
+    isScanOngoing_: {type: Boolean, value: false},
 
     /**
      * Cached Cellular Device state or undefined if there is no Cellular device.
@@ -164,6 +176,9 @@ Polymer({
    * @private
    */
   getDeviceStatesCallback_: function(deviceStates) {
+    this.isScanOngoing_ =
+        deviceStates.some((deviceState) => !!deviceState.Scanning);
+
     const filter = {
       networkType: chrome.networkingPrivate.NetworkType.ALL,
       visible: true,

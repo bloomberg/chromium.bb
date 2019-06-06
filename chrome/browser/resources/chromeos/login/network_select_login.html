@@ -15,6 +15,7 @@
   </style>
   <template>
     <cr-network-select id="networkSelect" class="focus-on-show"
+        show-scan-progress
         custom-items="[[getNetworkCustomItems_(isConnected)]]"
         on-default-network-changed="onDefaultNetworkChanged_"
         on-network-connect-changed="onNetworkConnectChanged_"

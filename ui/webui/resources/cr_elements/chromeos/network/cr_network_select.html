@@ -2,18 +2,32 @@
 
 <link rel="import" href="../../chromeos/network/cr_network_list.html">
 <link rel="import" href="../../chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 
 <dom-module id="cr-network-select">
   <template>
     <style>
       :host {
         display: inline-flex;
+        position: relative;
+      }
+
+      paper-progress {
+        --paper-progress-active-color: var(--google-blue-500);
+        height: 1px;
+        position: absolute;
+        width: 100%;
       }
 
       #networkList {
         flex: 1;
       }
     </style>
+    <template is="dom-if" if="[[showScanProgress]]" restamp>
+      <paper-progress indeterminate hidden$="[[!isScanOngoing_]]">
+      </paper-progress>
+    </template>
     <cr-network-list id="networkList"
         on-selected="onNetworkListItemSelected_"
         networks="[[networkStateList_]]" custom-items="[[customItems]]"
