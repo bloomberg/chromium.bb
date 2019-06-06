@@ -521,8 +521,6 @@ PageInfoBubbleView::PageInfoBubbleView(
   const int side_margin = margins().left();
   DCHECK_EQ(margins().left(), margins().right());
 
-  EnableUpDownKeyboardAccelerators();
-
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 
   // In Harmony, the last view is a HoverButton, which overrides the bottom
