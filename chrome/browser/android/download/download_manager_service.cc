@@ -32,6 +32,7 @@
 #include "components/download/public/common/auto_resumption_handler.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_item_impl.h"
+#include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_url_loader_factory_getter_impl.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/download/public/common/url_download_handler_factory.h"
@@ -717,6 +718,19 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
           ProfileKeyStartupAccessor::GetInstance()->profile_key());
   coordinator->SetSimpleDownloadManager(in_progress_manager_.get(), false);
   UpdateCoordinator(coordinator, false);
+}
+
+void DownloadManagerService::RecordFirstBackgroundInterruptReason(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jdownload_guid,
+    jboolean download_started) {
+  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
+  download::DownloadItem* download = GetDownload(download_guid, false);
+  if (download) {
+    download::RecordFirstBackgroundDownloadInterruptReason(
+        download->GetLastReason(), download_started);
+  }
 }
 
 void DownloadManagerService::OnPendingDownloadsLoaded() {

@@ -145,6 +145,7 @@ public class DownloadManagerService
 
     // The first download that is triggered in background mode.
     private String mFirstBackgroundDownloadId;
+    private int mFirstBackgroundDownloadInterruptionCount;
 
     /** Generic interface for notifying external UI components about downloads and their states. */
     public interface DownloadObserver extends DownloadSharedPreferenceHelper.Observer {
@@ -1982,7 +1983,9 @@ public class DownloadManagerService
         if (mFirstBackgroundDownloadId == null) {
             mFirstBackgroundDownloadId = downloadGuid;
             DownloadNotificationUmaHelper.recordFirstBackgroundDownloadHistogram(
-                    UmaBackgroundDownload.STARTED);
+                    UmaBackgroundDownload.STARTED, 0);
+            nativeRecordFirstBackgroundInterruptReason(getNativeDownloadManagerService(),
+                    mFirstBackgroundDownloadId, true /* downloadStarted */);
         }
     }
 
@@ -2000,7 +2003,13 @@ public class DownloadManagerService
             DownloadNotificationUmaHelper.recordBackgroundDownloadHistogram(event);
         }
         if (downloadGuid.equals(mFirstBackgroundDownloadId)) {
-            DownloadNotificationUmaHelper.recordFirstBackgroundDownloadHistogram(event);
+            DownloadNotificationUmaHelper.recordFirstBackgroundDownloadHistogram(
+                    event, mFirstBackgroundDownloadInterruptionCount);
+            if (event == UmaBackgroundDownload.INTERRUPTED) {
+                mFirstBackgroundDownloadInterruptionCount++;
+                nativeRecordFirstBackgroundInterruptReason(getNativeDownloadManagerService(),
+                        mFirstBackgroundDownloadId, false /* downloadStarted */);
+            }
         }
     }
 
@@ -2069,4 +2078,6 @@ public class DownloadManagerService
     private native void nativeOnFullBrowserStarted(long nativeDownloadManagerService);
     private native void nativeCreateInterruptedDownloadForTest(
             long nativeDownloadManagerService, String url, String guid, String targetPath);
+    private native void nativeRecordFirstBackgroundInterruptReason(
+            long nativeDownloadManagerService, String guid, boolean downloadStarted);
 }
