@@ -228,16 +228,6 @@ if (use_system_harfbuzz) {
       # that is part of HarfBuzz.
       "HB_NO_UCD",
 
-      # Disables support for MATH and name table parsing. MATH table support
-      # will be put back in when we start to integrate MathML support.
-      "HB_NO_MATH",
-      "HB_NO_NAME",
-
-      # Disables serialization of hb_buffer_t for purposes of tools like
-      # hb-shape, not needed when used as a library.
-
-      "HB_NO_BUFFER_SERIALIZE",
-
       # TODO(https://crbug.com/949962): Remove once this is fixed upstream.
       "U_DISABLE_VERSION_SUFFIX=0",
     ]
