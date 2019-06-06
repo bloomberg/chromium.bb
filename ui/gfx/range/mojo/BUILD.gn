@@ -32,6 +32,7 @@ source_set("unit_test") {
   deps = [
     ":test_interfaces",
     "//base",
+    "//base/test:test_support",
     "//mojo/public/cpp/bindings",
     "//testing/gtest",
     "//ui/gfx/range",
