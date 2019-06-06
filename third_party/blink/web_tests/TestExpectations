@@ -5796,3 +5796,4 @@ crbug.com/971319 [ Mac ] media/audio-garbage-collect.html [ Pass Timeout ]
 
 # Sheriff 2019-06-06
 crbug.com/971590 fast/dom/timer-throttling-out-of-view-cross-origin-page.html [ Pass Failure ]
+crbug.com/971590 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
