@@ -526,6 +526,61 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestGamepadCompleteData) {
   t->EndTest();
 }
 
+// Tests that axes data is still reported on the secondary axes even if
+// the button is not supported (we see this case with WMR through OpenVR where
+// the secondary axes button is reserved by the system, but we still get valid
+// data for the axes, there may be other controllers where this is the case).
+// Because this is specifically a bug in the OpenVR runtime/with configurable
+// controllers, not testing WMR.
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestInputAxesWithNoButton) {
+  WebXrControllerInputMock my_mock;
+
+  // Create a controller that supports all reserved buttons, except the
+  // secondary axis. (Though it is a valid axis)
+  uint64_t supported_buttons =
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisTrigger) |
+      device::XrButtonMaskFromId(device::XrButtonId::kAxisPrimary) |
+      device::XrButtonMaskFromId(device::XrButtonId::kGrip);
+
+  std::map<device::XrButtonId, unsigned int> axis_types = {
+      {device::XrButtonId::kAxisPrimary, GetPrimaryAxisType()},
+      {device::XrButtonId::kAxisTrigger, device::XrAxisType::kTrigger},
+      {device::XrButtonId::kAxisSecondary, GetSecondaryAxisType()},
+  };
+
+  unsigned int controller_index = my_mock.CreateAndConnectController(
+      device::ControllerRole::kControllerRoleRight, axis_types,
+      supported_buttons);
+
+  LoadUrlAndAwaitInitialization(
+      GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
+  EnterSessionWithUserGestureOrFail();
+
+  // Setup some state on the optional buttons (as TestGamepadMinimumData should
+  // ensure proper state on the required buttons).
+  // Set a value on the secondary set of axes.
+  my_mock.SetAxes(controller_index, device::XrButtonId::kAxisSecondary, 0.25,
+                  -0.25);
+  // Controller should meet the requirements for the 'xr-standard' mapping.
+  PollJavaScriptBooleanOrFail("isMappingEqualTo('xr-standard')",
+                              WebVrBrowserTestBase::kPollTimeoutShort);
+
+  // Controller should have all required and optional xr-standard buttons
+  PollJavaScriptBooleanOrFail("isButtonCountEqualTo(4)",
+                              WebXrVrBrowserTestBase::kPollTimeoutShort);
+
+  // The secondary set of axes should be set appropriately.
+  PollJavaScriptBooleanOrFail("areAxesValuesEqualTo(1, 0.25, -0.25)",
+                              WebVrBrowserTestBase::kPollTimeoutShort);
+
+  // If we have a non-zero axis value, the button should be touched.
+  PollJavaScriptBooleanOrFail("isButtonTouchedEqualTo(3, true)",
+                              WebVrBrowserTestBase::kPollTimeoutShort);
+
+  RunJavaScriptOrFail("done()");
+  EndTest();
+}
+
 // Ensure that if a Gamepad has all required buttons, an extra button not
 // mapped in the xr-standard specification, and is missing reserved buttons
 // from the XR Standard specification, that the extra button does not appear
