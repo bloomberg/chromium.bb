@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WINDOW_FINDER_H_
-#define ASH_WM_WINDOW_FINDER_H_
+#ifndef ASH_PUBLIC_CPP_WINDOW_FINDER_H_
+#define ASH_PUBLIC_CPP_WINDOW_FINDER_H_
 
 #include <set>
 
@@ -18,7 +18,6 @@ class Point;
 }
 
 namespace ash {
-namespace wm {
 
 // Finds the topmost window at |screen_point| with ignoring |ignore|. If
 // |real_topmost| is not nullptr, it will be updated to the topmost visible
@@ -31,7 +30,6 @@ ASH_EXPORT aura::Window* GetTopmostWindowAtPoint(
     const std::set<aura::Window*>& ignore,
     aura::Window** real_topmost);
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_WINDOW_FINDER_H_
+#endif  // ASH_PUBLIC_CPP_WINDOW_FINDER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_finder.h"
+#include "ash/public/cpp/window_finder.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -113,14 +113,13 @@ aura::Window* GetToplevelWindowInOverviewAtPoint(
 }  // namespace
 
 namespace ash {
-namespace wm {
 
 aura::Window* GetTopmostWindowAtPoint(const gfx::Point& screen_point,
                                       const std::set<aura::Window*>& ignore,
                                       aura::Window** real_topmost) {
   if (real_topmost)
     *real_topmost = nullptr;
-  aura::Window* root = GetRootWindowAt(screen_point);
+  aura::Window* root = wm::GetRootWindowAt(screen_point);
   // GetTopmostWindowAtPointWithinWindow() always needs to be called to update
   // |real_topmost| correctly.
   aura::Window* topmost_window = GetTopmostWindowAtPointWithinWindow(
@@ -130,5 +129,4 @@ aura::Window* GetTopmostWindowAtPoint(const gfx::Point& screen_point,
   return overview_window ? overview_window : topmost_window;
 }
 
-}  // namespace wm
 }  // namespace ash

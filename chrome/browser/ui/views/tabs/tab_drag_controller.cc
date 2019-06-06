@@ -485,8 +485,7 @@ void TabDragController::Init(TabDragContext* source_context,
   if (event_source == EVENT_SOURCE_TOUCH)
     SetCapture(source_context_);
 
-  window_finder_ = WindowFinder::Create(
-      event_source, source_context->AsView()->GetWidget()->GetNativeWindow());
+  window_finder_ = std::make_unique<WindowFinder>();
 }
 
 // static

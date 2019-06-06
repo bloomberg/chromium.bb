@@ -3184,7 +3184,6 @@ jumbo_split_static_library("ui") {
         "views/sync/dice_signin_button_view.h",
         "views/sync/one_click_signin_dialog_view.cc",
         "views/sync/one_click_signin_dialog_view.h",
-        "views/tabs/window_finder.cc",
       ]
       deps += [ "//ui/views/window/vector_icons" ]
     }

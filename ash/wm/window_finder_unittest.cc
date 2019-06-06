@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_finder.h"
+#include "ash/public/cpp/window_finder.h"
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -15,7 +15,6 @@
 #include "ui/gfx/geometry/insets.h"
 
 namespace ash {
-namespace wm {
 
 using WindowFinderTest = AshTestBase;
 
@@ -106,5 +105,4 @@ TEST_F(WindowFinderTest, TopmostWindowWithOverviewActive) {
                                                    ignore, &real_topmost));
 }
 
-}  // namespace wm
 }  // namespace ash
