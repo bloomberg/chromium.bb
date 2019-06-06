@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -37,7 +38,10 @@ class MouseEventCapturer : public ui::EventHandler {
   MouseEventCapturer() { Reset(); }
   ~MouseEventCapturer() override = default;
 
-  void Reset() { events_.clear(); }
+  void Reset() {
+    events_.clear();
+    wheel_events_.clear();
+  }
 
   void OnMouseEvent(ui::MouseEvent* event) override {
     bool save_event = false;
@@ -58,6 +62,12 @@ class MouseEventCapturer : public ui::EventHandler {
     } else if (type == ui::ET_MOUSE_DRAGGED) {
       save_event = true;
       stop_event = false;
+    } else if (type == ui::ET_MOUSEWHEEL) {
+      // Save it immediately as a MouseWheelEvent.
+      wheel_events_.push_back(ui::MouseWheelEvent(
+          event->AsMouseWheelEvent()->offset(), event->location(),
+          event->root_location(), ui::EventTimeForNow(), event->flags(),
+          event->changed_button_flags()));
     }
     if (save_event) {
       events_.push_back(ui::MouseEvent(event->type(), event->location(),
@@ -74,9 +84,13 @@ class MouseEventCapturer : public ui::EventHandler {
   }
 
   const std::vector<ui::MouseEvent>& captured_events() const { return events_; }
+  const std::vector<ui::MouseWheelEvent>& captured_mouse_wheel_events() const {
+    return wheel_events_;
+  }
 
  private:
   std::vector<ui::MouseEvent> events_;
+  std::vector<ui::MouseWheelEvent> wheel_events_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseEventCapturer);
 };
@@ -110,6 +124,16 @@ class AutoclickTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
+  void EnableExperimentalAutoclickFlag(bool enable) {
+    if (enable) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableExperimentalAccessibilityAutoclick);
+    } else {
+      base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+          switches::kEnableExperimentalAccessibilityAutoclick);
+    }
+  }
+
   void MoveMouseWithFlagsTo(int x, int y, ui::EventFlags flags) {
     GetEventGenerator()->set_flags(flags);
     GetEventGenerator()->MoveMouseTo(x, y);
@@ -118,6 +142,7 @@ class AutoclickTest : public AshTestBase {
 
   const std::vector<ui::MouseEvent>& WaitForMouseEvents() {
     ClearMouseEvents();
+    // TODO(katie): Consider using quit closure instead of RunUntilIdle.
     base::RunLoop().RunUntilIdle();
     return GetMouseEvents();
   }
@@ -165,6 +190,10 @@ class AutoclickTest : public AshTestBase {
 
   const std::vector<ui::MouseEvent>& GetMouseEvents() {
     return mouse_event_capturer_.captured_events();
+  }
+
+  const std::vector<ui::MouseWheelEvent>& GetMouseWheelEvents() {
+    return mouse_event_capturer_.captured_mouse_wheel_events();
   }
 
  private:
@@ -580,6 +609,67 @@ TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
   events = WaitForMouseEvents();
   ASSERT_EQ(1u, events.size());
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[0].type());
+}
+
+TEST_F(AutoclickTest, AutoclickScrollEvents) {
+  EnableExperimentalAutoclickFlag(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
+  GetAutoclickController()->SetAutoclickEventType(
+      mojom::AutoclickEventType::kScroll);
+  std::vector<ui::MouseEvent> events;
+  std::vector<ui::MouseWheelEvent> wheel_events;
+
+  // Expect that a dwell will set the scroll location.
+  GetEventGenerator()->MoveMouseTo(90, 90);
+  base::RunLoop().RunUntilIdle();
+  GetAutoclickController()->DoScrollAction(
+      AutoclickController::ScrollPadAction::kScrollUp);
+  events = GetMouseEvents();
+  wheel_events = GetMouseWheelEvents();
+  EXPECT_EQ(0u, events.size());
+  ASSERT_EQ(1u, wheel_events.size());
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, wheel_events[0].type());
+  EXPECT_EQ(gfx::Point(90, 90), wheel_events[0].location());
+  EXPECT_GT(wheel_events[0].y_offset(), 0);
+  ClearMouseEvents();
+
+  GetAutoclickController()->DoScrollAction(
+      AutoclickController::ScrollPadAction::kScrollLeft);
+  events = GetMouseEvents();
+  wheel_events = GetMouseWheelEvents();
+  EXPECT_EQ(0u, events.size());
+  ASSERT_EQ(1u, wheel_events.size());
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, wheel_events[0].type());
+  EXPECT_EQ(gfx::Point(90, 90), wheel_events[0].location());
+  EXPECT_GT(wheel_events[0].x_offset(), 0);
+  ClearMouseEvents();
+
+  // Try another position
+  GetEventGenerator()->MoveMouseTo(200, 200);
+  base::RunLoop().RunUntilIdle();
+  GetAutoclickController()->DoScrollAction(
+      AutoclickController::ScrollPadAction::kScrollDown);
+  events = GetMouseEvents();
+  wheel_events = GetMouseWheelEvents();
+  EXPECT_EQ(0u, events.size());
+  ASSERT_EQ(1u, wheel_events.size());
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, wheel_events[0].type());
+  EXPECT_EQ(gfx::Point(200, 200), wheel_events[0].location());
+  EXPECT_LT(wheel_events[0].y_offset(), 0);
+  ClearMouseEvents();
+
+  GetAutoclickController()->DoScrollAction(
+      AutoclickController::ScrollPadAction::kScrollRight);
+  events = GetMouseEvents();
+  wheel_events = GetMouseWheelEvents();
+  EXPECT_EQ(0u, events.size());
+  ASSERT_EQ(1u, wheel_events.size());
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, wheel_events[0].type());
+  EXPECT_EQ(gfx::Point(200, 200), wheel_events[0].location());
+  EXPECT_LT(wheel_events[0].x_offset(), 0);
+  ClearMouseEvents();
+
+  EnableExperimentalAutoclickFlag(false);
 }
 
 TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {

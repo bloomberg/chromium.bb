@@ -159,6 +159,10 @@ void AutoclickController::SetAutoclickEventType(
     mojom::AutoclickEventType type) {
   if (menu_bubble_controller_)
     menu_bubble_controller_->SetEventType(type);
+
+  // TODO (katie): If this is a scroll, need to set the first scroll location to
+  // the active window using the automation API.
+
   if (event_type_ == type)
     return;
   CancelAutoclickAction();
@@ -174,6 +178,53 @@ void AutoclickController::SetMenuPosition(
     mojom::AutoclickMenuPosition menu_position) {
   menu_position_ = menu_position;
   UpdateAutoclickMenuBoundsIfNeeded();
+}
+
+void AutoclickController::DoScrollAction(ScrollPadAction action) {
+  if (action == ScrollPadAction::kScrollClose) {
+    // Set the scroll_location_ back to the default.
+    scroll_location_ = gfx::Point(-kDefaultAutoclickMovementThreshold,
+                                  -kDefaultAutoclickMovementThreshold);
+
+    // Return to left click.
+    event_type_ = mojom::AutoclickEventType::kLeftClick;
+    Shell::Get()->accessibility_controller()->SetAutoclickEventType(
+        event_type_);
+    return;
+  }
+  // Otherwise, do a scroll action at the current scroll target point.
+  float scroll_x = 0.0f;
+  float scroll_y = 0.0f;
+  switch (action) {
+    case ScrollPadAction::kScrollUp:
+      scroll_y = ui::MouseWheelEvent::kWheelDelta;
+      break;
+    case ScrollPadAction::kScrollDown:
+      scroll_y = -ui::MouseWheelEvent::kWheelDelta;
+      break;
+    case ScrollPadAction::kScrollLeft:
+      scroll_x = ui::MouseWheelEvent::kWheelDelta;
+      break;
+    case ScrollPadAction::kScrollRight:
+      scroll_x = -ui::MouseWheelEvent::kWheelDelta;
+      break;
+    case ScrollPadAction::kScrollClose:
+      NOTREACHED();
+  }
+
+  // Generate a scroll event at the current scroll location.
+  aura::Window* root_window = wm::GetRootWindowAt(scroll_location_);
+  gfx::Point location_in_pixels(scroll_location_);
+  ::wm::ConvertPointFromScreen(root_window, &location_in_pixels);
+  aura::WindowTreeHost* host = root_window->GetHost();
+  host->ConvertDIPToPixels(&location_in_pixels);
+  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::PointF(location_in_pixels),
+                         gfx::PointF(location_in_pixels), ui::EventTimeForNow(),
+                         mouse_event_flags_, scroll_x, scroll_y,
+                         0 /* x_offset_ordinal */, 0 /* y_offset_ordinal */,
+                         2 /* finger_count */);
+  ui::MouseWheelEvent wheel(scroll);
+  ignore_result(host->event_sink()->OnEventFromSource(&wheel));
 }
 
 void AutoclickController::UpdateAutoclickMenuBoundsIfNeeded() {
@@ -236,6 +287,17 @@ void AutoclickController::DoAutoclickAction() {
   // in the middle of this event being executed it doesn't change execution.
   mojom::AutoclickEventType in_progress_event_type = event_type_;
   RecordUserAction(in_progress_event_type);
+
+  if (in_progress_event_type == mojom::AutoclickEventType::kScroll) {
+    // A dwell during a scroll.
+    // TODO(katie): Check if the event is over the scroll bubble controller,
+    // and if it is, click on the scroll bubble.
+    // TODO(katie): Move the scroll bubble closer to the new scroll location.
+    // TODO(katie): Label the new scroll location with the icon per UX.
+    scroll_location_ = gesture_anchor_location_;
+
+    return;
+  }
 
   gfx::Point location_in_pixels(gesture_anchor_location_);
   ::wm::ConvertPointFromScreen(root_window, &location_in_pixels);

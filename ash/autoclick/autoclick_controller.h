@@ -39,6 +39,15 @@ class ASH_EXPORT AutoclickController
       public aura::WindowObserver,
       public aura::client::CursorClientObserver {
  public:
+  // Autoclick's scroll event types.
+  enum ScrollPadAction {
+    kScrollUp = 1,
+    kScrollDown = 2,
+    kScrollLeft = 3,
+    kScrollRight = 4,
+    kScrollClose = 5,
+  };
+
   AutoclickController();
   ~AutoclickController() override;
 
@@ -66,6 +75,9 @@ class ASH_EXPORT AutoclickController
 
   // Sets the menu position and updates the UI.
   void SetMenuPosition(mojom::AutoclickMenuPosition menu_position);
+
+  // Performs the given ScrollPadAction at the current scrolling point.
+  void DoScrollAction(ScrollPadAction action);
 
   // Update the bubble menu bounds if necessary to avoid system UI.
   void UpdateAutoclickMenuBoundsIfNeeded();
@@ -159,6 +171,9 @@ class ASH_EXPORT AutoclickController
   // the most recent mose point.
   gfx::Point gesture_anchor_location_{-kDefaultAutoclickMovementThreshold,
                                       -kDefaultAutoclickMovementThreshold};
+  // The point at which the next scroll event will occur.
+  gfx::Point scroll_location_{-kDefaultAutoclickMovementThreshold,
+                              -kDefaultAutoclickMovementThreshold};
 
   // The widget containing the autoclick ring.
   std::unique_ptr<views::Widget> widget_;
