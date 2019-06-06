@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import contextlib
 import mock
 
 from chromite.api import controller
@@ -18,8 +19,11 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
+from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.scripts import cros_set_lsb_release
+from chromite.service import test as test_service
 
 
 class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
@@ -216,3 +220,79 @@ class VmTestTest(cros_test_lib.MockTestCase):
     input_proto = self._GetInput(vm_tests=[])
     with self.assertRaises(cros_build_lib.DieSystemExit):
       test_controller.VmTest(input_proto, None)
+
+
+class MoblabVmTestTest(cros_test_lib.MockTestCase):
+  """Test the MoblabVmTest endpoint."""
+
+  @staticmethod
+  def _Payload(path):
+    return test_pb2.MoblabVmTestRequest.Payload(
+        path=common_pb2.Path(path=path))
+
+  @staticmethod
+  def _Output():
+    return test_pb2.MoblabVmTestResponse()
+
+  def _Input(self):
+    return test_pb2.MoblabVmTestRequest(
+        image_payload=self._Payload(self.image_payload_dir),
+        cache_payloads=[self._Payload(self.autotest_payload_dir)])
+
+  def setUp(self):
+    self.image_payload_dir = '/payloads/image'
+    self.autotest_payload_dir = '/payloads/autotest'
+    self.builder = 'moblab-generic-vm/R12-3.4.5-67.890'
+    self.image_cache_dir = '/mnt/moblab/cache'
+    self.image_mount_dir = '/mnt/image'
+
+    self.mock_create_moblab_vms = self.PatchObject(
+        test_service, 'CreateMoblabVm')
+    self.mock_prepare_moblab_vm_image_cache = self.PatchObject(
+        test_service, 'PrepareMoblabVmImageCache',
+        return_value=self.image_cache_dir)
+    self.mock_run_moblab_vm_tests = self.PatchObject(
+        test_service, 'RunMoblabVmTest')
+    self.mock_validate_moblab_vm_tests = self.PatchObject(
+        test_service, 'ValidateMoblabVmTest')
+
+    @contextlib.contextmanager
+    def MockLoopbackPartitions(*args, **kwargs):
+      mount = mock.MagicMock()
+      mount.destination = self.image_mount_dir
+      yield mount
+    self.PatchObject(image_lib, 'LoopbackPartitions', MockLoopbackPartitions)
+
+  def testImageContainsBuilder(self):
+    """MoblabVmTest calls service with correct args."""
+    request = self._Input()
+    response = self._Output()
+
+    self.PatchObject(
+        cros_build_lib, 'LoadKeyValueFile',
+        return_value={cros_set_lsb_release.LSB_KEY_BUILDER_PATH: self.builder})
+
+    test_controller.MoblabVmTest(request, response)
+
+    self.assertEqual(
+        self.mock_create_moblab_vms.call_args_list,
+        [mock.call(mock.ANY, self.image_payload_dir)])
+    self.assertEqual(
+        self.mock_prepare_moblab_vm_image_cache.call_args_list,
+        [mock.call(mock.ANY, self.builder, [self.autotest_payload_dir])])
+    self.assertEqual(
+        self.mock_run_moblab_vm_tests.call_args_list,
+        [mock.call(mock.ANY, self.builder, self.image_cache_dir, mock.ANY)])
+    self.assertEqual(
+        self.mock_validate_moblab_vm_tests.call_args_list,
+        [mock.call(mock.ANY)])
+
+  def testImageMissingBuilder(self):
+    """MoblabVmTest dies when builder path not found in lsb-release."""
+    request = self._Input()
+    response = self._Output()
+
+    self.PatchObject(cros_build_lib, 'LoadKeyValueFile', return_value={})
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      test_controller.MoblabVmTest(request, response)

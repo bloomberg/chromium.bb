@@ -19,9 +19,11 @@ from chromite.cbuildbot import commands
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import failures_lib
+from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
+from chromite.scripts import cros_set_lsb_release
 from chromite.service import test
 
 
@@ -186,3 +188,30 @@ def VmTest(input_proto, _output_proto):
   with osutils.TempDir(prefix='vm-test-results.') as results_dir:
     cmd.extend(['--results-dir', results_dir])
     cros_build_lib.RunCommand(cmd, kill_timeout=10 * 60)
+
+
+def MoblabVmTest(input_proto, _output_proto):
+  """Run Moblab VM tests."""
+  image_payload_dir = input_proto.image_payload.path.path
+  cache_payload_dirs = [cp.path.path for cp in input_proto.cache_payloads]
+
+  # Autotest and Moblab depend on the builder path, so we must read it from
+  # the image.
+  image_file = os.path.join(image_payload_dir, constants.TEST_IMAGE_BIN)
+  with image_lib.LoopbackPartitions(image_file) as image_mount:
+    lsb_release_file = os.path.join(image_mount.destination,
+                                    constants.LSB_RELEASE_PATH.strip('/'))
+    lsb_release_kvs = cros_build_lib.LoadKeyValueFile(lsb_release_file)
+    builder = lsb_release_kvs.get(cros_set_lsb_release.LSB_KEY_BUILDER_PATH)
+
+  if not builder:
+    cros_build_lib.Die('Image did not contain key %s in %s',
+                       cros_set_lsb_release.LSB_KEY_BUILDER_PATH,
+                       constants.LSB_RELEASE_PATH)
+
+  # Now we can run the tests.
+  with osutils.TempDir() as workspace_dir, osutils.TempDir() as results_dir:
+    vms = test.CreateMoblabVm(workspace_dir, image_payload_dir)
+    cache_dir = test.PrepareMoblabVmImageCache(vms, builder, cache_payload_dirs)
+    test.RunMoblabVmTest(vms, builder, cache_dir, results_dir)
+    test.ValidateMoblabVmTest(results_dir)
