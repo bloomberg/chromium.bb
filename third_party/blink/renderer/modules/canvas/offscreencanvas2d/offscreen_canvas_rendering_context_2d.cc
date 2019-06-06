@@ -385,14 +385,6 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
   if (max_width && (!std::isfinite(*max_width) || *max_width <= 0))
     return;
 
-  // Currently, SkPictureImageFilter does not support subpixel text
-  // anti-aliasing, which is expected when !creationAttributes().alpha(), so we
-  // need to fall out of display list mode when drawing text to an opaque
-  // canvas. crbug.com/583809
-  if (!IsComposited()) {
-    DisableDeferral(kDisableDeferralReasonSubPixelTextAntiAliasingSupport);
-  }
-
   const Font& font = AccessFont();
   font.GetFontDescription().SetSubpixelAscentDescent(true);
 
