@@ -225,8 +225,10 @@ void MimeHandlerViewEmbedder::CheckSandboxFlags() {
       !render_frame_host_->IsSandboxed(blink::WebSandboxFlags::kPlugins)) {
     return;
   }
-  // Notify the renderer to load an empty page instead.
-  GetContainerManager()->LoadEmptyPage(resource_url_);
+  if (render_frame_host_) {
+    // Notify the renderer to load an empty page instead.
+    GetContainerManager()->LoadEmptyPage(resource_url_);
+  }
   GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
 }
 
