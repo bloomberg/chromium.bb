@@ -70,6 +70,24 @@ class CookieSettings : public CookieSettingsBase,
   // This should only be called on the UI thread.
   void ResetCookieSetting(const GURL& primary_url);
 
+  // Returns true if cookies are allowed for *most* third parties on |url|.
+  // There might be rules allowing or blocking specific third parties from
+  // accessing cookies.
+  //
+  // This should only be called on the UI thread.
+  bool IsThirdPartyAccessAllowed(const GURL& first_party_url);
+
+  // Sets the cookie setting for the site and third parties embedded in it.
+  //
+  // This should only be called on the UI thread.
+  void SetThirdPartyCookieSetting(const GURL& first_party_url,
+                                  ContentSetting setting);
+
+  // Resets the third party cookie setting for the given url.
+  //
+  // This should only be called on the UI thread.
+  void ResetThirdPartyCookieSetting(const GURL& first_party_url);
+
   bool IsStorageDurable(const GURL& origin) const;
 
   // Detaches the |CookieSettings| from |PrefService|. This methods needs to be

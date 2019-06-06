@@ -335,6 +335,32 @@ TEST_F(CookieSettingsTest, ExtensionsThirdParty) {
       cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kExtensionURL));
 }
 
+TEST_F(CookieSettingsTest, ThirdPartyException) {
+  EXPECT_TRUE(cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite));
+  EXPECT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
+
+  prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  EXPECT_FALSE(cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite));
+  EXPECT_FALSE(
+      cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
+
+  cookie_settings_->SetThirdPartyCookieSetting(kFirstPartySite,
+                                               CONTENT_SETTING_ALLOW);
+  EXPECT_TRUE(cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite));
+  EXPECT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
+
+  cookie_settings_->ResetThirdPartyCookieSetting(kFirstPartySite);
+  EXPECT_FALSE(cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite));
+  EXPECT_FALSE(
+      cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
+
+  cookie_settings_->SetCookieSetting(kHttpsSite, CONTENT_SETTING_ALLOW);
+  EXPECT_FALSE(cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite));
+  EXPECT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
+}
 }  // namespace
 
 }  // namespace content_settings

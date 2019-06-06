@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -71,6 +72,30 @@ void CookieSettings::SetCookieSetting(const GURL& primary_url,
 void CookieSettings::ResetCookieSetting(const GURL& primary_url) {
   host_content_settings_map_->SetNarrowestContentSetting(
       primary_url, GURL(), CONTENT_SETTINGS_TYPE_COOKIES,
+      CONTENT_SETTING_DEFAULT);
+}
+
+bool CookieSettings::IsThirdPartyAccessAllowed(const GURL& first_party_url) {
+  // Use GURL() as an opaque primary url to check if any site
+  // could access cookies in a 3p context on |first_party_url|.
+  return IsCookieAccessAllowed(GURL(), first_party_url);
+}
+
+void CookieSettings::SetThirdPartyCookieSetting(const GURL& first_party_url,
+                                                ContentSetting setting) {
+  DCHECK(IsValidSetting(setting));
+  host_content_settings_map_->SetContentSettingCustomScope(
+      ContentSettingsPattern::Wildcard(),
+      ContentSettingsPattern::FromURLNoWildcard(first_party_url),
+      ContentSettingsType::CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+      setting);
+}
+
+void CookieSettings::ResetThirdPartyCookieSetting(const GURL& first_party_url) {
+  host_content_settings_map_->SetContentSettingCustomScope(
+      ContentSettingsPattern::Wildcard(),
+      ContentSettingsPattern::FromURLNoWildcard(first_party_url),
+      ContentSettingsType::CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
       CONTENT_SETTING_DEFAULT);
 }
 
