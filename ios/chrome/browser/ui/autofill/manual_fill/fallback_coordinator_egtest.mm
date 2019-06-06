@@ -311,6 +311,25 @@ void DockKeyboard() {
   }
 }
 
++ (void)setUp {
+  [super setUp];
+  // If the previous run was manually stopped then the profile will be in the
+  // store and the test will fail. We clean it here for those cases.
+  ios::ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  autofill::PersonalDataManager* personalDataManager =
+      autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
+  for (const auto* profile : personalDataManager->GetProfiles()) {
+    personalDataManager->RemoveByGUID(profile->guid());
+  }
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForActionTimeout,
+                 ^bool() {
+                   return 0 == personalDataManager->GetProfiles().size();
+                 }),
+             @"Failed to clean profiles.");
+}
+
 - (void)setUp {
   [super setUp];
   ios::ChromeBrowserState* browserState =
@@ -435,6 +454,8 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Tap on the profiles icon.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       performAction:grey_tap()];
 
@@ -464,13 +485,15 @@ void DockKeyboard() {
 
   // Bring up the regular keyboard again.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Wait for the accessory icon to appear.
   [GREYKeyboard waitForKeyboardToAppear];
 
   // Verify the profiles icon is visible, and therefore also the input accessory
   // bar.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
@@ -615,6 +638,8 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -628,6 +653,8 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -643,6 +670,8 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
@@ -669,6 +698,8 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // This will fail if there is more than one profiles icon in the hierarchy.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
