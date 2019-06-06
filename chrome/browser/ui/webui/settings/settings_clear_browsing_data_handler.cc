@@ -38,7 +38,7 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/text/bytes_formatting.h"
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker.h"
 #include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
 #endif
@@ -278,7 +278,7 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
           content::BrowsingDataFilterBuilder::BLACKLIST),
       remover, std::move(callback));
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::IncognitoWindowTrackerFactory::GetInstance()
       ->GetForProfile(profile_)
       ->OnBrowsingDataCleared();

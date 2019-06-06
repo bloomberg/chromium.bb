@@ -19,9 +19,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
+#include "chrome/browser/ui/in_product_help/in_product_help.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "ui/base/base_window.h"
@@ -31,10 +31,6 @@
 #if defined(OS_ANDROID)
 #error This file should only be included on desktop.
 #endif
-
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/ui/in_product_help/in_product_help.h"
-#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
 class Browser;
 class DownloadShelf;
@@ -465,10 +461,8 @@ class BrowserWindow : public ui::BaseWindow {
       const base::Callback<void(ImeWarningBubblePermissionStatus status)>&
           callback) = 0;
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   // Shows in-product help for the given feature.
   virtual void ShowInProductHelpPromo(InProductHelpFeature iph_feature) = 0;
-#endif
 
   // Returns the platform-specific ID of the workspace the browser window
   // currently resides in.

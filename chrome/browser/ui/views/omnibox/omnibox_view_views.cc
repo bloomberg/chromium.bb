@@ -82,7 +82,7 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
@@ -1258,7 +1258,7 @@ void OmniboxViewViews::OnFocus() {
   if (location_bar_view_ && model()->is_keyword_hint())
     location_bar_view_->Layout();
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   // The user must be starting a session in the same tab as a previous one in
   // order to display the new tab in-product help promo.  While focusing the
   // omnibox is not always a precursor to starting a new session, we don't

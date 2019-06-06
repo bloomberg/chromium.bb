@@ -132,7 +132,7 @@
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/bookmark/bookmark_tracker_factory.h"
 #include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
@@ -275,7 +275,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   extensions::VerifyTrustAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::BookmarkTrackerFactory::GetInstance();
   feature_engagement::IncognitoWindowTrackerFactory::GetInstance();
   feature_engagement::NewTabTrackerFactory::GetInstance();

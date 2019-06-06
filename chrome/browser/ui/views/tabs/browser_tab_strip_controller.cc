@@ -54,7 +54,7 @@
 #include "ui/views/widget/widget.h"
 #include "url/origin.h"
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
@@ -317,7 +317,6 @@ void BrowserTabStripController::OnDropIndexUpdate(int index,
 }
 
 void BrowserTabStripController::CreateNewTab() {
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   // This must be called before AddTabAt() so that OmniboxFocused is called
   // after NewTabOpened. TODO(collinbaker): remove omnibox focusing from
   // triggering conditions (since it is always focused for new tabs) and move
@@ -325,11 +324,10 @@ void BrowserTabStripController::CreateNewTab() {
   auto* reopen_tab_iph = ReopenTabInProductHelpFactory::GetForProfile(
       browser_view_->browser()->profile());
   reopen_tab_iph->NewTabOpened();
-#endif
 
   model_->delegate()->AddTabAt(GURL(), -1, true);
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   auto* new_tab_tracker =
       feature_engagement::NewTabTrackerFactory::GetInstance()->GetForProfile(
           browser_view_->browser()->profile());

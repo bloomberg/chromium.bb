@@ -12,7 +12,34 @@ namespace feature_engagement {
 
 namespace events {
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+// Desktop and IOS.
+#if defined(OS_IOS) || defined(OS_WIN) || defined(OS_MACOSX) || \
+    defined(OS_LINUX) || defined(OS_CHROMEOS)
+// The user has explicitly opened a new tab via an entry point from inside of
+// Chrome.
+extern const char kNewTabOpened[];
+#endif  // defined(OS_IOS) || defined(OS_WIN) || defined(OS_MACOSX) ||
+        // defined(OS_LINUX) || defined(OS_CHROMEOS)
+
+// Desktop
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+// All conditions for reopen closed tab IPH were met. Since this IPH needs to
+// track user events (opening/closing tabs, focusing the omnibox, etc) on the
+// second level, it must be done manually.
+extern const char kReopenTabConditionsMet[];
+// The user reopened a previously closed tab.
+extern const char kTabReopened[];
+
+// All the events declared below are the string names of deferred onboarding
+// events for the Focus Mode feature.
+
+// The user has opened a Focus Mode window.
+extern const char kFocusModeOpened[];
+// All conditions for show Focus Mode IPH were met.
+extern const char kFocusModeConditionsMet[];
+
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 // All the events declared below are the string names of deferred onboarding
 // events for the Bookmark feature.
 
@@ -40,32 +67,10 @@ extern const char kIncognitoWindowOpened[];
 // IncognitoWindowPromo by accumulating 2 hours of active session time (one-off
 // event).
 extern const char kIncognitoWindowSessionTimeMet[];
+#endif  // BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 
-// All conditions for reopen closed tab IPH were met. Since this IPH needs to
-// track user events (opening/closing tabs, focusing the omnibox, etc) on the
-// second level, it must be done manually.
-extern const char kReopenTabConditionsMet[];
-// The user reopened a previously closed tab.
-extern const char kTabReopened[];
-
-// All the events declared below are the string names of deferred onboarding
-// events for the Focus Mode feature.
-
-// The user has opened a Focus Mode window.
-extern const char kFocusModeOpened[];
-// All conditions for show Focus Mode IPH were met.
-extern const char kFocusModeConditionsMet[];
-#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_IOS)
-// This event is included in the deferred onboarding events for the New Tab
-// described above, but it is also used on iOS, so it must be compiled
-// separately.
-
-// The user has explicitly opened a new tab via an entry point from inside of
-// Chrome.
-extern const char kNewTabOpened[];
-#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_IOS)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
 
 #if defined(OS_IOS)
 // The user has opened Chrome (cold start or from background).

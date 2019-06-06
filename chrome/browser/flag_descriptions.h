@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/common/buildflags.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/nacl/common/buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
@@ -1958,6 +1957,9 @@ extern const char kEnableMDRoundedCornersOnDialogsDescription[];
 extern const char kInstallableInkDropName[];
 extern const char kInstallableInkDropDescription[];
 
+extern const char kReopenTabInProductHelpName[];
+extern const char kReopenTabInProductHelpDescription[];
+
 #endif  // defined(TOOLKIT_VIEWS)
 
 // Random platform combinations -----------------------------------------------
@@ -2053,12 +2055,6 @@ extern const char kAutofillCreditCardUploadDescription[];
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-
-extern const char kReopenTabInProductHelpName[];
-extern const char kReopenTabInProductHelpDescription[];
-
-#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 extern const char kAvoidFlashBetweenNavigationName[];
 extern const char kAvoidFlahsBetweenNavigationDescription[];
 

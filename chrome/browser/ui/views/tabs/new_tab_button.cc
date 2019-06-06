@@ -36,7 +36,7 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
@@ -207,7 +207,7 @@ bool NewTabButton::GetHitTestMask(SkPath* mask) const {
 }
 
 void NewTabButton::OnWidgetDestroying(views::Widget* widget) {
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::NewTabTrackerFactory::GetInstance()
       ->GetForProfile(tab_strip_->controller()->GetProfile())
       ->OnPromoClosed();

@@ -185,9 +185,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsVisibleOnAllWorkspaces() const override;
   void ShowEmojiPanel() override {}
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   void ShowInProductHelpPromo(InProductHelpFeature iph_feature) override {}
-#endif
 
  protected:
   void DestroyBrowser() override {}

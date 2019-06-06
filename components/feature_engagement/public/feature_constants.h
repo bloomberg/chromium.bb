@@ -17,6 +17,19 @@ extern const base::Feature kIPHDemoMode;
 // A feature to ensure all arrays can contain at least one feature.
 extern const base::Feature kIPHDummyFeature;
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+extern const base::Feature kIPHReopenTabFeature;
+extern const base::Feature kIPHFocusModeFeature;
+
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
+extern const base::Feature kIPHBookmarkFeature;
+extern const base::Feature kIPHIncognitoWindowFeature;
+extern const base::Feature kIPHNewTabFeature;
+#endif  // BUILDFLAG(ENABLE_LEGACY_DESKTOP_IPH)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
+
 // All the features declared for Android below that are also used in Java,
 // should also be declared in:
 // org.chromium.components.feature_engagement.FeatureConstants.
@@ -52,14 +65,6 @@ extern const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature;
 extern const base::Feature kIPHTranslateMenuButtonFeature;
 extern const base::Feature kIPHExploreSitesTileFeature;
 #endif  // defined(OS_ANDROID)
-
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-extern const base::Feature kIPHBookmarkFeature;
-extern const base::Feature kIPHIncognitoWindowFeature;
-extern const base::Feature kIPHNewTabFeature;
-extern const base::Feature kIPHReopenTabFeature;
-extern const base::Feature kIPHFocusModeFeature;
-#endif  // BUILDFLAG(ENABLE_DESKTOP_IPH)
 
 #if defined(OS_IOS)
 extern const base::Feature kIPHBottomToolbarTipFeature;

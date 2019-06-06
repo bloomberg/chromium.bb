@@ -56,6 +56,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
@@ -203,11 +205,6 @@
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 #endif
-
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
-#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
-#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 #include "chrome/browser/ui/sync/one_click_signin_links_delegate_impl.h"
@@ -930,9 +927,7 @@ void BrowserView::OnTabDetached(content::WebContents* contents,
 }
 
 void BrowserView::OnTabRestored(int command_id) {
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   reopen_tab_promo_controller_.OnTabReopened(command_id);
-#endif
 }
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
@@ -3053,12 +3048,10 @@ void BrowserView::ShowEmojiPanel() {
   GetWidget()->ShowEmojiPanel();
 }
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 void BrowserView::ShowInProductHelpPromo(InProductHelpFeature iph_feature) {
   if (iph_feature == InProductHelpFeature::kReopenTab)
     reopen_tab_promo_controller_.ShowPromo();
 }
-#endif
 
 bool BrowserView::DoCutCopyPasteForWebContents(
     WebContents* contents,

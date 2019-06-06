@@ -11,7 +11,21 @@ namespace feature_engagement {
 
 namespace events {
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if defined(OS_IOS) || defined(OS_WIN) || defined(OS_MACOSX) || \
+    defined(OS_LINUX) || defined(OS_CHROMEOS)
+const char kNewTabOpened[] = "new_tab_opened";
+#endif  // defined(OS_IOS) || defined(OS_WIN) || defined(OS_MACOSX) ||
+        // defined(OS_LINUX) || defined(OS_CHROMEOS)
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+const char kReopenTabConditionsMet[] = "reopen_tab_conditions_met";
+const char kTabReopened[] = "tab_reopened";
+
+const char kFocusModeOpened[] = "focus_mode_opened";
+const char kFocusModeConditionsMet[] = "focus_mode_conditions_met";
+
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 const char kBookmarkAdded[] = "bookmark_added";
 const char kBookmarkSessionTimeMet[] = "bookmark_session_time_met";
 
@@ -21,17 +35,9 @@ const char kNewTabSessionTimeMet[] = "new_tab_session_time_met";
 const char kIncognitoWindowOpened[] = "incognito_window_opened";
 const char kIncognitoWindowSessionTimeMet[] =
     "incognito_window_session_time_met";
-
-const char kReopenTabConditionsMet[] = "reopen_tab_conditions_met";
-const char kTabReopened[] = "tab_reopened";
-
-const char kFocusModeOpened[] = "focus_mode_opened";
-const char kFocusModeConditionsMet[] = "focus_mode_conditions_met";
-#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_IOS)
-const char kNewTabOpened[] = "new_tab_opened";
-#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_IOS)
+#endif  // BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
 
 #if defined(OS_IOS)
 const char kChromeOpened[] = "chrome_opened";

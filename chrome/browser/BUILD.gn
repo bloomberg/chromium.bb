@@ -4132,7 +4132,7 @@ jumbo_split_static_library("browser") {
     ]
   }
 
-  if (enable_desktop_in_product_help) {
+  if (enable_legacy_desktop_in_product_help) {
     sources += [
       "feature_engagement/bookmark/bookmark_tracker.cc",
       "feature_engagement/bookmark/bookmark_tracker.h",

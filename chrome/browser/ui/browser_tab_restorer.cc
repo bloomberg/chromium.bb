@@ -103,11 +103,9 @@ void BrowserTabRestorer::OnBrowserRemoved(Browser* browser) {
 
 void RestoreTab(Browser* browser) {
   base::RecordAction(base::UserMetricsAction("RestoreTab"));
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   auto* reopen_tab_iph =
       ReopenTabInProductHelpFactory::GetForProfile(browser->profile());
   reopen_tab_iph->TabReopened();
-#endif
 
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser->profile());
