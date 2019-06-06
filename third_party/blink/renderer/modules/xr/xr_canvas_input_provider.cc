@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_canvas_input_provider.h"
 
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -96,8 +97,8 @@ void XRCanvasInputProvider::UpdateInputSource(PointerEvent* event) {
     // XRSession doesn't like source ID's of 0.  We should only be processing
     // Canvas Input events in non-immersive sessions anyway, where we don't
     // expect other controllers, so this number is somewhat arbitrary anyway.
-    input_source_ = MakeGarbageCollected<XRInputSource>(session_, 1,
-                                                        XRInputSource::kScreen);
+    input_source_ = MakeGarbageCollected<XRInputSource>(
+        session_, 1, device::mojom::XRTargetRayMode::TAPPING);
     session_->AddTransientInputSource(input_source_);
   }
 

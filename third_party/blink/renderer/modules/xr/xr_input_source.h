@@ -29,21 +29,12 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   USING_GARBAGE_COLLECTED_MIXIN(XRInputSource);
 
  public:
-  enum Handedness {
-    kHandUninitialized = -1,
-    kHandNone = 0,
-    kHandLeft = 1,
-    kHandRight = 2
-  };
-
-  enum TargetRayMode { kGaze = 1, kTrackedPointer = 2, kScreen = 3 };
-
   static XRInputSource* CreateOrUpdateFrom(
       XRInputSource* other /* may be null, input */,
       XRSession* session,
       const device::mojom::blink::XRInputSourceStatePtr& state);
 
-  XRInputSource(XRSession*, uint32_t source_id, TargetRayMode);
+  XRInputSource(XRSession*, uint32_t source_id, device::mojom::XRTargetRayMode);
   XRInputSource(XRSession*,
                 const device::mojom::blink::XRInputSourceStatePtr& state);
   XRInputSource(const XRInputSource& other);
@@ -87,8 +78,8 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   friend class XRGripSpace;
   friend class XRTargetRaySpace;
 
-  void SetHandedness(Handedness);
-  void SetTargetRayMode(TargetRayMode);
+  void SetHandedness(device::mojom::XRHandedness);
+  void SetTargetRayMode(device::mojom::XRTargetRayMode);
   void SetEmulatedPosition(bool emulated_position);
   void SetBasePoseMatrix(const TransformationMatrix*);
 
@@ -108,10 +99,10 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   Member<XRGripSpace> grip_space_;
   Member<Gamepad> gamepad_;
 
-  Handedness handedness_ = kHandUninitialized;
+  device::mojom::XRHandedness handedness_;
   String handedness_string_;
 
-  TargetRayMode target_ray_mode_;
+  device::mojom::XRTargetRayMode target_ray_mode_;
   String target_ray_mode_string_;
 
   bool emulated_position_ = false;

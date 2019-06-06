@@ -17,7 +17,8 @@ XRGripSpace::XRGripSpace(XRSession* session, XRInputSource* source)
 XRPose* XRGripSpace::getPose(XRSpace* other_space,
                              const TransformationMatrix* base_pose_matrix) {
   // Grip is only available when using tracked pointer for input.
-  if (input_source_->target_ray_mode_ != XRInputSource::kTrackedPointer) {
+  if (input_source_->target_ray_mode_ !=
+      device::mojom::XRTargetRayMode::POINTING) {
     return nullptr;
   }
 

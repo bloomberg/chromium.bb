@@ -68,18 +68,18 @@ XRPose* XRTargetRaySpace::getPose(
 
   std::unique_ptr<TransformationMatrix> pointer_pose = nullptr;
   switch (input_source_->target_ray_mode_) {
-    case XRInputSource::kScreen: {
+    case device::mojom::XRTargetRayMode::TAPPING: {
       pointer_pose = GetPointerPoseForScreen(other_space, *base_pose_matrix);
       break;
     }
-    case XRInputSource::kGaze: {
+    case device::mojom::XRTargetRayMode::GAZING: {
       // If the pointer origin is the users head, this is a gaze cursor and the
       // returned pointer is based on the device pose. Just return the head pose
       // as the pointer pose.
       pointer_pose = other_space->TransformBasePose(*base_pose_matrix);
       break;
     }
-    case XRInputSource::kTrackedPointer: {
+    case device::mojom::XRTargetRayMode::POINTING: {
       pointer_pose = GetTrackedPointerPose(other_space, *base_pose_matrix);
       break;
     }
