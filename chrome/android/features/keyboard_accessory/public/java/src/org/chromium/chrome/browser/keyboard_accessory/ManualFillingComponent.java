@@ -56,7 +56,7 @@ public interface ManualFillingComponent {
      * By registering a provider, an empty tab of the given tab type is created. Call
      * {@link PropertyProvider#notifyObservers(Object)} to fill or update the sheet.
      * @param sheetType The type of sheet to instantiate and to provide data for.
-     * @param sheetDataProvider The {@link PropertyProvider} the tab will get it's data from.
+     * @param sheetDataProvider The {@link PropertyProvider} the tab will get its data from.
      */
     void registerSheetDataProvider(@AccessoryTabType int sheetType,
             PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider);

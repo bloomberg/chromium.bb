@@ -37,7 +37,7 @@ class AccessorySheetTabModel extends ListModel<AccessorySheetTabModel.AccessoryS
              */
             int PASSWORD_INFO = 2;
             /**
-             * A section containing a users name, address, etc.
+             * A section containing a user's name, address, etc.
              */
             int ADDRESS_INFO = 3;
             /**

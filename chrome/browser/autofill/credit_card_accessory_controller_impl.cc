@@ -43,13 +43,17 @@ UserInfo TranslateCard(const CreditCard* data) {
   AddField(data->ObfuscatedLastFourDigits(), &user_info);
 
   if (data->HasValidExpirationDate()) {
-    // TOOD(crbug.com/902425): Pass expiration date as grouped values
     AddField(data->ExpirationMonthAsString(), &user_info);
     AddField(data->Expiration4DigitYearAsString(), &user_info);
+  } else {
+    AddField(base::string16(), &user_info);
+    AddField(base::string16(), &user_info);
   }
 
   if (data->HasNameOnCard()) {
     AddField(data->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL), &user_info);
+  } else {
+    AddField(base::string16(), &user_info);
   }
 
   return user_info;

@@ -139,6 +139,12 @@
       <message name="IDS_ADDRESS_ACCESSORY_SHEET_OPENED" desc="Accessibility announcement when opening an address bottom sheet containing saved addresses.">
           Showing saved addresses
       </message>
+      <message name="IDS_CREDIT_CARD_ACCESSORY_SHEET_TOGGLE" desc="Description for the icon button used to open and close the payment method accessory sheet, where users' saved payment methods (e.g., credit cards) are shown for use when filling web forms.">
+        Show payment methods
+      </message>
+      <message name="IDS_CREDIT_CARD_ACCESSORY_SHEET_OPENED" desc="Accessibility announcement when opening a sheet containing users' saved payment methods (e.g., credit cards) for use when filling web forms.">
+        Showing saved payment methods
+      </message>
     </messages>
   </release>
 </grit>
