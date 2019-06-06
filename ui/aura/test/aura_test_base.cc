@@ -38,7 +38,6 @@ void AuraTestBase::SetUp() {
   setup_called_ = true;
   testing::Test::SetUp();
   ui::MaterialDesignController::Initialize();
-  ui::InitializeInputMethodForTesting();
   ui::GestureConfiguration* gesture_config =
       ui::GestureConfiguration::GetInstance();
   // Changing the parameters for gesture recognition shouldn't cause
@@ -93,7 +92,6 @@ void AuraTestBase::TearDown() {
 
   helper_->TearDown();
   context_factories_.reset();
-  ui::ShutdownInputMethodForTesting();
   testing::Test::TearDown();
 }
 
