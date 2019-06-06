@@ -93,7 +93,7 @@ else
 fi
 
 # Run the config-upgrade tool.
-"$HOST_EXE" --upgrade-token --host-config="$CONFIG_FILE"
+"$HOST_EXE" --upgrade-token --host-config="$CONFIG_FILE" || true
 
 # Load the service for each user for whom the service was unloaded in the
 # preflight script (this includes the root user, in case only the login screen
