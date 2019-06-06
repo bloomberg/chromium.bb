@@ -393,10 +393,6 @@ const int kLocationAuthorizationStatusCount = 4;
                             metricsRecorder:metricsRecorder];
 }
 
-- (void)selectInfobarBadge:(BOOL)select {
-  [self.viewController setInfobarButtonStyleSelected:select];
-}
-
 - (void)activeInfobarBadge:(BOOL)active {
   [self.viewController setInfobarButtonStyleActive:active];
 }

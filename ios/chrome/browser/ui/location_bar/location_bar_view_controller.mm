@@ -482,10 +482,6 @@ typedef NS_ENUM(int, TrailingButtonState) {
   [self.dispatcher displayModalInfobar];
 }
 
-- (void)setInfobarButtonStyleSelected:(BOOL)selected {
-  [self.locationBarSteadyView.leadingButton setSelected:selected animated:YES];
-}
-
 - (void)setInfobarButtonStyleActive:(BOOL)active {
   self.activeBadge = active;
   [self.locationBarSteadyView.leadingButton setActive:active animated:YES];
