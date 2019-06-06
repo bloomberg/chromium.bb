@@ -673,6 +673,17 @@ var ENTRIES = {
     typeText: 'Plain text',
   }),
 
+  // Note, no MIME type here, this is used for testing file content sniffing.
+  plainText: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'plaintext',
+    targetPath: 'plaintext',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'plaintext',
+    sizeText: '32 bytes',
+    typeText: 'Plain text',
+  }),
+
   tallHtml: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'tall.html',
