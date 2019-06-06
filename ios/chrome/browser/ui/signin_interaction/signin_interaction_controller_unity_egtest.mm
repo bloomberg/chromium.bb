@@ -132,10 +132,7 @@ void SignOutFromSettings() {
 
 // Tests signing in with one account, switching sync account to a second and
 // choosing to keep the browsing data separate during the switch.
-//
-// TODO(crbug.com/962843): This test is crashing due to a recent change in
-// |page_placeholder_tab_helper.mm|.
-- (void)DISABLED_testSignInSwitchAccountsAndKeepDataSeparate {
+- (void)testSignInSwitchAccountsAndKeepDataSeparate {
   // The ChromeSigninView's activity indicator must be hidden as the import
   // data UI is presented on top of the activity indicator and Earl Grey cannot
   // interact with any UI while an animation is active.
