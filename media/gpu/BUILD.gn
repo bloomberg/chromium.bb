@@ -118,6 +118,8 @@ component("gpu") {
       "android/promotion_hint_aggregator_impl.h",
       "android/shared_image_video.cc",
       "android/shared_image_video.h",
+      "android/shared_image_video_provider.cc",
+      "android/shared_image_video_provider.h",
       "android/surface_chooser_helper.cc",
       "android/surface_chooser_helper.h",
       "android/surface_texture_gl_owner.cc",

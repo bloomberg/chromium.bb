@@ -41,18 +41,22 @@ std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
 
 }  // namespace
 
-CodecImage::CodecImage(
-    std::unique_ptr<CodecOutputBuffer> output_buffer,
-    scoped_refptr<TextureOwner> texture_owner,
-    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb)
-    : phase_(Phase::kInCodec),
-      output_buffer_(std::move(output_buffer)),
-      texture_owner_(std::move(texture_owner)),
-      promotion_hint_cb_(std::move(promotion_hint_cb)) {}
+CodecImage::CodecImage() = default;
 
 CodecImage::~CodecImage() {
   if (destruction_cb_)
     std::move(destruction_cb_).Run(this);
+}
+
+void CodecImage::Initialize(
+    std::unique_ptr<CodecOutputBuffer> output_buffer,
+    scoped_refptr<TextureOwner> texture_owner,
+    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb) {
+  DCHECK(output_buffer);
+  phase_ = Phase::kInCodec;
+  output_buffer_ = std::move(output_buffer);
+  texture_owner_ = std::move(texture_owner);
+  promotion_hint_cb_ = std::move(promotion_hint_cb);
 }
 
 void CodecImage::SetDestructionCb(DestructionCb destruction_cb) {
