@@ -574,12 +574,23 @@ input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-co
   transition: none;
 }
 
-.state-playing input[pseudo="-webkit-media-controls-play-button" i],
-.state-playing input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
+audio::-webkit-media-controls.state-playing input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.state-playing input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.state-playing input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal,
+audio::-webkit-media-controls.state-loading-metadata-playing input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.state-loading-metadata-playing input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.state-loading-metadata-playing input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal,
+audio::-webkit-media-controls.state-buffering input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.state-buffering input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.state-buffering input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
   background-image: -webkit-image-set(url(ic_pause.svg) 1x);
 }
 
-video::-webkit-media-controls.state-playing:not(.audio-only) [pseudo="-webkit-media-controls-panel"] input[pseudo="-webkit-media-controls-play-button" i] {
+/* For the play button inside the button panel, we want to use a white icon
+ * instead. */
+video::-webkit-media-controls.state-buffering [pseudo="-internal-media-controls-button-panel"] input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.state-loading-metadata-playing [pseudo="-internal-media-controls-button-panel"] input[pseudo="-webkit-media-controls-play-button" i],
+video::-webkit-media-controls.state-playing [pseudo="-internal-media-controls-button-panel"] input[pseudo="-webkit-media-controls-play-button" i] {
   background-image: -webkit-image-set(url(ic_pause_white.svg) 1x);
 }
 

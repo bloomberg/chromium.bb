@@ -120,14 +120,15 @@ constexpr int kModernMinWidthForOverlayPlayButton = 72;
 
 constexpr int kMinScrubbingMessageWidth = 300;
 
-const char* kStateCSSClasses[7] = {
-    "state-no-source",         // kNoSource
-    "state-no-metadata",       // kNotLoaded
-    "state-loading-metadata",  // kLoadingMetadata
-    "state-stopped",           // kStopped
-    "state-playing",           // kPlaying
-    "state-buffering",         // kBuffering
-    "state-scrubbing",         // kScrubbing
+const char* kStateCSSClasses[8] = {
+    "state-no-source",                 // kNoSource
+    "state-no-metadata",               // kNotLoaded
+    "state-loading-metadata-paused",   // kLoadingMetadataPaused
+    "state-loading-metadata-playing",  // kLoadingMetadataPlaying
+    "state-stopped",                   // kStopped
+    "state-playing",                   // kPlaying
+    "state-buffering",                 // kBuffering
+    "state-scrubbing",                 // kScrubbing
 };
 
 // The padding in pixels inside the button panel.
@@ -746,17 +747,17 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
   Vector<String> toAdd;
   Vector<String> toRemove;
 
-  if (state < kLoadingMetadata)
+  if (state < kLoadingMetadataPaused)
     toAdd.push_back("phase-pre-ready");
   else
     toRemove.push_back("phase-pre-ready");
 
-  if (state > kLoadingMetadata)
+  if (state > kLoadingMetadataPlaying)
     toAdd.push_back("phase-ready");
   else
     toRemove.push_back("phase-ready");
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 8; i++) {
     if (i == state)
       toAdd.push_back(kStateCSSClasses[i]);
     else
@@ -766,7 +767,7 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
   if (MediaElement().ShouldShowControls() && ShouldShowVideoControls() &&
       !VideoElement().HasAvailableVideoFrame() &&
       VideoElement().PosterImageURL().IsEmpty() &&
-      state <= ControlsState::kLoadingMetadata) {
+      state <= ControlsState::kLoadingMetadataPlaying) {
     toAdd.push_back(kShowDefaultPosterCSSClass);
   } else {
     toRemove.push_back(kShowDefaultPosterCSSClass);
@@ -855,8 +856,10 @@ MediaControlsImpl::ControlsState MediaControlsImpl::State() const {
     case HTMLMediaElement::kNetworkNoSource:
       return ControlsState::kNoSource;
     case HTMLMediaElement::kNetworkLoading:
-      if (ready_state == HTMLMediaElement::kHaveNothing)
-        return ControlsState::kLoadingMetadata;
+      if (ready_state == HTMLMediaElement::kHaveNothing) {
+        return MediaElement().paused() ? ControlsState::kLoadingMetadataPaused
+                                       : ControlsState::kLoadingMetadataPlaying;
+      }
       if (!MediaElement().paused() &&
           ready_state != HTMLMediaElement::kHaveEnoughData) {
         return ControlsState::kBuffering;

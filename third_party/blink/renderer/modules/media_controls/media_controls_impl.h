@@ -172,8 +172,11 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
     // Metadata has not been loaded.
     kNotLoaded,
 
-    // Metadata is being loaded.
-    kLoadingMetadata,
+    // Metadata is being loaded and the media will not play once it's loaded.
+    kLoadingMetadataPaused,
+
+    // Metadata is being loaded and the media will play once it's loaded.
+    kLoadingMetadataPlaying,
 
     // Metadata is loaded and the media is ready to play. This can be when the
     // media is paused, when it has ended or before the media has started

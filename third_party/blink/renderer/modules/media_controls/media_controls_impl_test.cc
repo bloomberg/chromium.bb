@@ -1443,7 +1443,7 @@ TEST_F(MediaControlsImplTest, MediaControlsDisabledWithNoSource) {
   MediaControls().MediaElement().removeAttribute(html_names::kPreloadAttr);
   SimulateLoadedMetadata();
 
-  EXPECT_EQ(MediaControls().State(), MediaControlsImpl::kLoadingMetadata);
+  EXPECT_EQ(MediaControls().State(), MediaControlsImpl::kLoadingMetadataPaused);
 
   EXPECT_FALSE(PlayButtonElement()->hasAttribute(html_names::kDisabledAttr));
   EXPECT_FALSE(
