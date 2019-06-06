@@ -148,6 +148,13 @@ template("mac_toolchain") {
         "TOOL_VERSION=${tool_versions.linker_driver} " +
         rebase_path("//build/toolchain/mac/linker_driver.py", root_build_dir)
 
+    if (!use_system_xcode) {
+      _dsymutilpath = "$hermetic_xcode_path/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/dsymutil"
+      linker_driver += " -Wcrl,dsymutilpath," + _dsymutilpath
+      _strippath = "$hermetic_xcode_path/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip"
+      linker_driver += " -Wcrl,strippath," + _strippath
+    }
+
     # On iOS, the final applications are assembled using lipo (to support fat
     # builds). The correct flags are passed to the linker_driver.py script
     # directly during the lipo call.

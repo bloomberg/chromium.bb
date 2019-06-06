@@ -11,6 +11,7 @@ import subprocess
 import sys
 
 DSYMUTIL_INVOKE = ['xcrun', 'dsymutil']
+STRIP_INVOKE = ['xcrun', 'strip']
 
 # The linker_driver.py is responsible for forwarding a linker invocation to
 # the compiler driver, while processing special arguments itself.
@@ -45,6 +46,10 @@ DSYMUTIL_INVOKE = ['xcrun', 'dsymutil']
 #       After invoking the linker, and optionally dsymutil, this will run
 #       the strip command on the linker's output. strip_arguments are
 #       comma-separated arguments to be passed to the strip command.
+#
+#   -Wcrl,strippath,<strip_path>
+#       Sets the path to the strip to run with -Wcrl,strip, in which case
+#       `xcrun` is not used to invoke it.
 
 def Main(args):
   """Main function for the linker driver. Separates out the arguments for
@@ -204,11 +209,30 @@ def RunStrip(strip_args_string, full_args):
   Returns:
       list of string, Build step outputs.
   """
-  strip_command = ['xcrun', 'strip']
+  strip_command = list(STRIP_INVOKE)
   if len(strip_args_string) > 0:
     strip_command += strip_args_string.split(',')
   strip_command.append(_FindLinkerOutput(full_args))
   subprocess.check_call(strip_command)
+  return []
+
+
+def SetStripPath(strip_path, full_args):
+  """Linker driver action for -Wcrl,strippath,<strip_path>.
+
+  Sets the invocation command for strip, which allows the caller to specify
+  an alternate strip. This action is always processed before the RunStrip
+  action.
+
+  Args:
+    strip_path: string, The path to the strip binary to run
+    full_args: list of string, Full argument list for the linker driver.
+
+  Returns:
+    No output - this step is run purely for its side-effect.
+  """
+  global STRIP_INVOKE
+  STRIP_INVOKE = [strip_path]
   return []
 
 
@@ -248,6 +272,7 @@ _LINKER_DRIVER_ACTIONS = [
     ('dsym,', RunDsymUtil),
     ('unstripped,', RunSaveUnstripped),
     ('strip,', RunStrip),
+    ('strippath,', SetStripPath),
 ]
 
 
