@@ -44157,6 +44157,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Timeout"/>
 </enum>
 
+<enum name="PaintHoldingInputTiming">
+  <int value="0" label="Before Lifecycle"/>
+  <int value="1" label="Before Commit"/>
+  <int value="2" label="After Commit"/>
+</enum>
+
 <enum name="PaletteModeCancelType">
   <int value="0" label="Palette laser pointer mode is cancelled."/>
   <int value="1" label="Palette laser pointer mode is switched out of"/>

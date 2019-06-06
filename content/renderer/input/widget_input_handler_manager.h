@@ -37,6 +37,16 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
     : public base::RefCountedThreadSafe<WidgetInputHandlerManager>,
       public ui::InputHandlerProxyClient,
       public base::SupportsWeakPtr<WidgetInputHandlerManager> {
+  enum class InitialInputTiming {
+    // Input comes before lifecycle update
+    kBeforeLifecycle = 0,
+    // Input is before commit
+    kBeforeCommit = 1,
+    // Input comes only after commit
+    kAfterCommit = 2,
+    kMaxValue = kAfterCommit
+  };
+
  public:
   static scoped_refptr<WidgetInputHandlerManager> Create(
       base::WeakPtr<RenderWidget> render_widget,
@@ -97,6 +107,12 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
 
   void FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
   void FallbackCursorModeSetCursorVisibility(bool visible);
+
+  // Called to inform us of a lifecycle update
+  void MarkBeginMainFrame();
+
+  // Called to inform us of a lifecycle update
+  void MarkCompositorCommit();
 
  protected:
   friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
@@ -174,6 +190,15 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // Whether this widget uses an InputHandler or forwards all input to the
   // WebWidget (Popups, Plugins).
   bool uses_input_handler_ = false;
+
+  // State tracking which lifecycle and commit events we have seen
+  InitialInputTiming current_lifecycle_state_ =
+      InitialInputTiming::kBeforeLifecycle;
+
+  // Control of UMA. We emit one UMA metric per instantiation telling us
+  // whether any non-move input arrived before we starting updating the page or
+  // displaying content to the user.
+  bool have_emitted_uma_ = false;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<SynchronousCompositorProxyRegistry>

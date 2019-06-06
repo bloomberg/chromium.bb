@@ -1094,10 +1094,15 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
       !!compositor_deps_->GetCompositorImplThreadTaskRunner();
   if (input_event_queue_) {
     base::Optional<ScopedUkmRafAlignedInputTimer> ukm_timer;
-    if (record_main_frame_metrics)
+    if (record_main_frame_metrics) {
       ukm_timer.emplace(GetWebWidget());
+    }
     input_event_queue_->DispatchRafAlignedInput(frame_time);
   }
+
+  // The input handler wants to know about the main frame for metric purposes
+  DCHECK(widget_input_handler_manager_);
+  widget_input_handler_manager_->MarkBeginMainFrame();
 
   GetWebWidget()->BeginFrame(frame_time, record_main_frame_metrics);
 }
@@ -1172,6 +1177,10 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
   // NOTE: Tests may break if this event is renamed or moved. See
   // tab_capture_performancetest.cc.
   TRACE_EVENT0("gpu", "RenderWidget::DidCommitAndDrawCompositorFrame");
+
+  // The input handler wants to know about the commit for metric purposes
+  DCHECK(widget_input_handler_manager_);
+  widget_input_handler_manager_->MarkCompositorCommit();
 
   for (auto& observer : render_frames_)
     observer.DidCommitAndDrawCompositorFrame();
