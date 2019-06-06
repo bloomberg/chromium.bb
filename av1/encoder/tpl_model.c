@@ -130,7 +130,7 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
 
   const int q_cur = gf_group->q_val[frame_idx];
   const int16_t qstep_cur =
-      ROUND_POWER_OF_TWO(av1_ac_quant_Q3(q_cur, 0, xd->bd), xd->bd - 8);
+      ROUND_POWER_OF_TWO(av1_ac_quant_QTX(q_cur, 0, xd->bd), xd->bd - 8);
   const int qstep_cur_noise =
       use_satd ? ((int)qstep_cur * pix_num + 16) / (4 * 8)
                : ((int)qstep_cur * (int)qstep_cur * pix_num + 384) / (12 * 64);
@@ -196,7 +196,7 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
     int q_ref = gf_group->q_val[gf_group->ref_frame_gop_idx[frame_idx][rf_idx]];
 
     const int16_t qstep_ref =
-        ROUND_POWER_OF_TWO(av1_ac_quant_Q3(q_ref, 0, xd->bd), xd->bd - 8);
+        ROUND_POWER_OF_TWO(av1_ac_quant_QTX(q_ref, 0, xd->bd), xd->bd - 8);
     const int qstep_ref_noise =
         use_satd
             ? ((int)qstep_ref * pix_num + 16) / (4 * 8)

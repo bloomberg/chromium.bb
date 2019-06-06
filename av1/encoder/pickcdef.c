@@ -304,7 +304,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   CdefInfo *const cdef_info = &cm->cdef_info;
   if (pick_method == CDEF_PICK_FROM_Q) {
     const int bd = cm->seq_params.bit_depth;
-    const int q = av1_ac_quant_Q3(cm->base_qindex, 0, bd) >> (bd - 8);
+    const int q = av1_ac_quant_QTX(cm->base_qindex, 0, bd) >> (bd - 8);
     cdef_info->cdef_bits = 0;
     cdef_info->nb_cdef_strengths = 1;
     cdef_info->cdef_pri_damping = 3 + (cm->base_qindex >> 6);
@@ -524,7 +524,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int nb_strength_bits = 0;
   uint64_t best_tot_mse = (uint64_t)1 << 63;
   const int quantizer =
-      av1_ac_quant_Q3(cm->base_qindex, 0, cm->seq_params.bit_depth) >>
+      av1_ac_quant_QTX(cm->base_qindex, 0, cm->seq_params.bit_depth) >>
       (cm->seq_params.bit_depth - 8);
   aom_clear_system_state();
   const double lambda = .12 * quantizer * quantizer / 256.;

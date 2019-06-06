@@ -38,8 +38,6 @@ extern "C" {
 
 struct AV1Common;
 
-int16_t av1_dc_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth);
-int16_t av1_ac_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth);
 int16_t av1_dc_quant_QTX(int qindex, int delta, aom_bit_depth_t bit_depth);
 int16_t av1_ac_quant_QTX(int qindex, int delta, aom_bit_depth_t bit_depth);
 

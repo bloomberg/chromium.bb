@@ -212,7 +212,8 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   } else if (method >= LPF_PICK_FROM_Q) {
     const int min_filter_level = 0;
     const int max_filter_level = av1_get_max_filter_level(cpi);
-    const int q = av1_ac_quant_Q3(cm->base_qindex, 0, cm->seq_params.bit_depth);
+    const int q =
+        av1_ac_quant_QTX(cm->base_qindex, 0, cm->seq_params.bit_depth);
     // based on tests result for rtc test set
     // 0.04590 boosted or 0.02295 non-booseted in 18-bit fixed point
     const int strength_boost_q_treshold = 700;

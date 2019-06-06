@@ -1737,13 +1737,13 @@ static void model_rd_from_sse(const AV1_COMP *const cpi,
                               int *rate, int64_t *dist) {
   (void)num_samples;
   const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const struct macroblock_plane *const p = &x->plane[plane];
   const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
 
   // Fast approximate the modelling function.
   if (cpi->sf.simple_model_rd_from_var) {
     const int64_t square_error = sse;
-    int quantizer = pd->dequant_Q3[1] >> dequant_shift;
+    int quantizer = p->dequant_QTX[1] >> dequant_shift;
     if (quantizer < 120)
       *rate = (int)AOMMIN(
           (square_error * (280 - quantizer)) >> (16 - AV1_PROB_COST_SHIFT),
@@ -1754,7 +1754,7 @@ static void model_rd_from_sse(const AV1_COMP *const cpi,
     *dist = (square_error * quantizer) >> 8;
   } else {
     av1_model_rd_from_var_lapndz(sse, num_pels_log2_lookup[plane_bsize],
-                                 pd->dequant_Q3[1] >> dequant_shift, rate,
+                                 p->dequant_QTX[1] >> dequant_shift, rate,
                                  dist);
   }
   *dist <<= 4;
@@ -2392,7 +2392,7 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int txw = tx_size_wide[tx_size];
   const int txh = tx_size_high[tx_size];
   const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
-  const int q_step = pd->dequant_Q3[1] >> dequant_shift;
+  const int q_step = p->dequant_QTX[1] >> dequant_shift;
   const int num_samples = txw * txh;
 
   const double rate_norm = (double)rd_stats->rate / num_samples;
@@ -2499,7 +2499,7 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi,
                      &bh);
   const int num_samples = bw * bh;
   const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
-  const int q_step = pd->dequant_Q3[1] >> dequant_shift;
+  const int q_step = p->dequant_QTX[1] >> dequant_shift;
 
   const double rate_norm = (double)rd_stats->rate / num_samples;
   const double dist_norm = (double)rd_stats->dist / num_samples;
@@ -2608,12 +2608,12 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
                               int *rate, int64_t *dist) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const struct macroblock_plane *const p = &x->plane[plane];
   const int log_numpels = num_pels_log2_lookup[plane_bsize];
 
   const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
-  const int q_step = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
+  const int q_step = AOMMAX(p->dequant_QTX[1] >> dequant_shift, 1);
 
-  const struct macroblock_plane *const p = &x->plane[plane];
   int bw, bh;
   get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL, &bw,
                      &bh);
@@ -2769,9 +2769,9 @@ static void model_rd_with_surffit(const AV1_COMP *const cpi,
   (void)cpi;
   (void)plane_bsize;
   const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const struct macroblock_plane *const p = &x->plane[plane];
   const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
-  const int qstep = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
+  const int qstep = AOMMAX(p->dequant_QTX[1] >> dequant_shift, 1);
   if (sse == 0) {
     if (rate) *rate = 0;
     if (dist) *dist = 0;
@@ -2874,9 +2874,9 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
   (void)cpi;
   (void)plane_bsize;
   const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const struct macroblock_plane *const p = &x->plane[plane];
   const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
-  const int qstep = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
+  const int qstep = AOMMAX(p->dequant_QTX[1] >> dequant_shift, 1);
 
   if (sse == 0) {
     if (rate) *rate = 0;

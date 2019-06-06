@@ -410,12 +410,6 @@ typedef struct macroblockd_plane {
 
   qm_val_t *seg_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
   qm_val_t *seg_qmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
-
-  // the 'dequantizers' below are not literal dequantizer values.
-  // They're used by encoder RDO to generate ad-hoc lambda values.
-  // They use a hardwired Q3 coeff shift and do not necessarily match
-  // the TX scale in use.
-  const int16_t *dequant_Q3;
 } MACROBLOCKD_PLANE;
 
 #define BLOCK_OFFSET(x, i) \

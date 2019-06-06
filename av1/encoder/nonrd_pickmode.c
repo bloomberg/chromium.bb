@@ -456,9 +456,9 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
   (void)cpi;
   (void)plane_bsize;
   const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const struct macroblock_plane *const p = &x->plane[plane];
   const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
-  const int qstep = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
+  const int qstep = AOMMAX(p->dequant_QTX[1] >> dequant_shift, 1);
 
   if (sse == 0) {
     if (rate) *rate = 0;
@@ -591,8 +591,8 @@ static void model_skip_for_sb_y_large(AV1_COMP *cpi, BLOCK_SIZE bsize,
   unsigned int sse;
   struct macroblock_plane *const p = &x->plane[0];
   struct macroblockd_plane *const pd = &xd->plane[0];
-  const uint32_t dc_quant = pd->dequant_Q3[0];
-  const uint32_t ac_quant = pd->dequant_Q3[1];
+  const uint32_t dc_quant = p->dequant_QTX[0];
+  const uint32_t ac_quant = p->dequant_QTX[1];
   const int64_t dc_thr = dc_quant * dc_quant >> 6;
   int64_t ac_thr = ac_quant * ac_quant >> 6;
   unsigned int var;

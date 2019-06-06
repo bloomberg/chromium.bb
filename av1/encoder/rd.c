@@ -348,7 +348,7 @@ static const int rd_frame_type_factor[FRAME_UPDATE_TYPES] = { 128, 144, 128,
                                                               128 };
 
 int av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
-  const int q = av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
+  const int q = av1_dc_quant_QTX(qindex, 0, cpi->common.seq_params.bit_depth);
   int rdmult = q * q;
   rdmult = rdmult * 3 + (rdmult * 2 / 3);
   switch (cpi->common.seq_params.bit_depth) {
@@ -378,18 +378,18 @@ int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
 
 int av1_get_deltaq_offset(const AV1_COMP *cpi, int qindex, double beta) {
   assert(beta > 0.0);
-  int q = av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
+  int q = av1_dc_quant_QTX(qindex, 0, cpi->common.seq_params.bit_depth);
   int newq = (int)rint(q / sqrt(beta));
   int orig_qindex = qindex;
   if (newq < q) {
     do {
       qindex--;
-      q = av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
+      q = av1_dc_quant_QTX(qindex, 0, cpi->common.seq_params.bit_depth);
     } while (newq < q && qindex > 0);
   } else {
     do {
       qindex++;
-      q = av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
+      q = av1_dc_quant_QTX(qindex, 0, cpi->common.seq_params.bit_depth);
     } while (newq > q && qindex < MAXQ);
   }
   return qindex - orig_qindex;
@@ -399,7 +399,7 @@ int av1_get_adaptive_rdmult(const AV1_COMP *cpi, double beta) {
   assert(beta > 0.0);
   const AV1_COMMON *cm = &cpi->common;
   int64_t q =
-      av1_dc_quant_Q3(cm->base_qindex, 0, cpi->common.seq_params.bit_depth);
+      av1_dc_quant_QTX(cm->base_qindex, 0, cpi->common.seq_params.bit_depth);
   int64_t rdmult = 0;
 
   switch (cpi->common.seq_params.bit_depth) {
@@ -429,9 +429,13 @@ int av1_get_adaptive_rdmult(const AV1_COMP *cpi, double beta) {
 static int compute_rd_thresh_factor(int qindex, aom_bit_depth_t bit_depth) {
   double q;
   switch (bit_depth) {
-    case AOM_BITS_8: q = av1_dc_quant_Q3(qindex, 0, AOM_BITS_8) / 4.0; break;
-    case AOM_BITS_10: q = av1_dc_quant_Q3(qindex, 0, AOM_BITS_10) / 16.0; break;
-    case AOM_BITS_12: q = av1_dc_quant_Q3(qindex, 0, AOM_BITS_12) / 64.0; break;
+    case AOM_BITS_8: q = av1_dc_quant_QTX(qindex, 0, AOM_BITS_8) / 4.0; break;
+    case AOM_BITS_10:
+      q = av1_dc_quant_QTX(qindex, 0, AOM_BITS_10) / 16.0;
+      break;
+    case AOM_BITS_12:
+      q = av1_dc_quant_QTX(qindex, 0, AOM_BITS_12) / 64.0;
+      break;
     default:
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
@@ -1340,7 +1344,7 @@ void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
 
 int av1_get_intra_cost_penalty(int qindex, int qdelta,
                                aom_bit_depth_t bit_depth) {
-  const int q = av1_dc_quant_Q3(qindex, qdelta, bit_depth);
+  const int q = av1_dc_quant_QTX(qindex, qdelta, bit_depth);
   switch (bit_depth) {
     case AOM_BITS_8: return 20 * q;
     case AOM_BITS_10: return 5 * q;
