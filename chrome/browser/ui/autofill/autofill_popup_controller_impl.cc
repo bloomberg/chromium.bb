@@ -28,6 +28,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
+#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 
 using FillingSource = ManualFillingController::FillingSource;
 #endif
@@ -118,9 +119,9 @@ void AutofillPopupControllerImpl::Show(
 
   if (just_created) {
 #if defined(OS_ANDROID)
-    if (popup_type == PopupType::kPasswords) {
-      ManualFillingController::GetOrCreate(web_contents_)
-          ->ShowTouchToFillSheet();
+    if (popup_type == PopupType::kPasswords &&
+        TouchToFillController::AllowedForWebContents(web_contents_)) {
+      TouchToFillController::GetOrCreate(web_contents_)->Show(suggestions);
     }
 
     ManualFillingController::GetOrCreate(web_contents_)

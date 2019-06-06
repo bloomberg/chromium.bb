@@ -22,7 +22,7 @@ class MockManualFillingController
                     const autofill::AccessorySheetData&));
   MOCK_METHOD1(ShowWhenKeyboardIsVisible,
                void(ManualFillingController::FillingSource));
-  MOCK_METHOD0(ShowTouchToFillSheet, void());
+  MOCK_METHOD1(ShowTouchToFillSheet, void(const autofill::AccessorySheetData&));
   MOCK_METHOD1(Hide, void(ManualFillingController::FillingSource));
   MOCK_METHOD2(GetFavicon,
                void(int, base::OnceCallback<void(const gfx::Image&)>));

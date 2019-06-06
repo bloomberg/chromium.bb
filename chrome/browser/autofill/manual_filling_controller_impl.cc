@@ -12,14 +12,15 @@
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/password_generation_controller.h"
+#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/web_contents.h"
 
 using autofill::AccessoryAction;
 using autofill::AccessorySheetData;
+using autofill::AccessoryTabType;
 using autofill::AddressAccessoryController;
 using autofill::mojom::FocusedFieldType;
 
@@ -81,8 +82,7 @@ void ManualFillingControllerImpl::RefreshSuggestionsForField(
   view_->OnItemsAvailable(accessory_sheet_data);
 
   // TODO(crbug.com/965478): Refresh visibility for non-PWDs in V2.
-  if (accessory_sheet_data.get_sheet_type() !=
-      autofill::AccessoryTabType::PASSWORDS)
+  if (accessory_sheet_data.get_sheet_type() != AccessoryTabType::PASSWORDS)
     return;
 
   // TODO(crbug.com/905669): The decision for showing the sheet or not will need
@@ -105,12 +105,9 @@ void ManualFillingControllerImpl::ShowWhenKeyboardIsVisible(
   view_->ShowWhenKeyboardIsVisible();
 }
 
-void ManualFillingControllerImpl::ShowTouchToFillSheet() {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kTouchToFillAndroid)) {
-    return;
-  }
-
+void ManualFillingControllerImpl::ShowTouchToFillSheet(
+    const AccessorySheetData& data) {
+  view_->OnItemsAvailable(data);
   view_->ShowTouchToFillSheet();
 }
 
@@ -127,7 +124,7 @@ void ManualFillingControllerImpl::Hide(FillingSource source) {
 }
 
 void ManualFillingControllerImpl::OnFillingTriggered(
-    autofill::AccessoryTabType type,
+    AccessoryTabType type,
     const autofill::UserInfo::Field& selection) {
   GetControllerForTab(type)->OnFillingTriggered(selection);
 }
@@ -174,9 +171,7 @@ void ManualFillingControllerImpl::Initialize() {
 
 ManualFillingControllerImpl::ManualFillingControllerImpl(
     content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      view_(ManualFillingViewInterface::Create(this)),
-      weak_factory_(this) {
+    : web_contents_(web_contents) {
   if (PasswordAccessoryController::AllowedForWebContents(web_contents)) {
     pwd_controller_ =
         PasswordAccessoryController::GetOrCreate(web_contents)->AsWeakPtr();
@@ -186,6 +181,11 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
     address_controller_ =
         AddressAccessoryController::GetOrCreate(web_contents)->AsWeakPtr();
     DCHECK(address_controller_);
+  }
+  if (TouchToFillController::AllowedForWebContents(web_contents)) {
+    touch_to_fill_controller_ =
+        TouchToFillController::GetOrCreate(web_contents)->AsWeakPtr();
+    DCHECK(touch_to_fill_controller_);
   }
 }
 
@@ -200,20 +200,21 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
       address_controller_(std::move(address_controller)),
       pwd_generation_controller_for_testing_(
           pwd_generation_controller_for_testing),
-      view_(std::move(view)),
-      weak_factory_(this) {}
+      view_(std::move(view)) {}
 
 AccessoryController* ManualFillingControllerImpl::GetControllerForTab(
-    autofill::AccessoryTabType type) {
+    AccessoryTabType type) {
   switch (type) {
-    case autofill::AccessoryTabType::ADDRESSES:
+    case AccessoryTabType::ADDRESSES:
       return address_controller_.get();
-    case autofill::AccessoryTabType::PASSWORDS:
+    case AccessoryTabType::PASSWORDS:
       return pwd_controller_.get();
-    case autofill::AccessoryTabType::CREDIT_CARDS:
+    case AccessoryTabType::CREDIT_CARDS:
       // TODO(crbug.com/902425): return credit card controller.
-    case autofill::AccessoryTabType::ALL:
-    case autofill::AccessoryTabType::COUNT:
+    case AccessoryTabType::TOUCH_TO_FILL:
+      return touch_to_fill_controller_.get();
+    case AccessoryTabType::ALL:
+    case AccessoryTabType::COUNT:
       break;  // Intentional failure.
   }
   NOTREACHED() << "Controller not defined for tab: " << static_cast<int>(type);

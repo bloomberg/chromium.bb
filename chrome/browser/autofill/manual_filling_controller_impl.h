@@ -20,6 +20,7 @@ class AddressAccessoryController;
 class AccessoryController;
 class PasswordAccessoryController;
 class PasswordGenerationController;
+class TouchToFillController;
 
 // Use ManualFillingController::GetOrCreate to obtain instances of this class.
 class ManualFillingControllerImpl
@@ -34,7 +35,7 @@ class ManualFillingControllerImpl
       const autofill::AccessorySheetData& accessory_sheet_data) override;
   void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
   void ShowWhenKeyboardIsVisible(FillingSource source) override;
-  void ShowTouchToFillSheet() override;
+  void ShowTouchToFillSheet(const autofill::AccessorySheetData& data) override;
   void Hide(FillingSource source) override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void OnFillingTriggered(autofill::AccessoryTabType type,
@@ -111,6 +112,9 @@ class ManualFillingControllerImpl
   // The address accessory controller object to forward view requests to.
   base::WeakPtr<autofill::AddressAccessoryController> address_controller_;
 
+  // The touch to fill controller object to forward view requests to.
+  base::WeakPtr<TouchToFillController> touch_to_fill_controller_;
+
   // A password generation controller used in tests which receives requests
   // from the view.
   PasswordGenerationController* pwd_generation_controller_for_testing_ =
@@ -119,9 +123,10 @@ class ManualFillingControllerImpl
   // Hold the native instance of the view. Must be last declared and initialized
   // member so the view can be created in the constructor with a fully set up
   // controller instance.
-  std::unique_ptr<ManualFillingViewInterface> view_;
+  std::unique_ptr<ManualFillingViewInterface> view_ =
+      ManualFillingViewInterface::Create(this);
 
-  base::WeakPtrFactory<ManualFillingControllerImpl> weak_factory_;
+  base::WeakPtrFactory<ManualFillingControllerImpl> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

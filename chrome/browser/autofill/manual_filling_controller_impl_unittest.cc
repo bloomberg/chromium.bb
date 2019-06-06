@@ -189,18 +189,10 @@ TEST_F(ManualFillingControllerTest, RelaysShowAndHideKeyboardAccessory) {
   controller()->Hide(FillingSource::PASSWORD_FALLBACKS);
 }
 
-TEST_F(ManualFillingControllerTest, RelaysTouchToFillSheetDependingOnFlag) {
-  for (bool is_touch_to_fill_enabled : {false, true}) {
-    SCOPED_TRACE(is_touch_to_fill_enabled);
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatureState(
-        password_manager::features::kTouchToFillAndroid,
-        is_touch_to_fill_enabled);
-
-    EXPECT_CALL(*view(), ShowTouchToFillSheet())
-        .Times(is_touch_to_fill_enabled ? 1 : 0);
-    controller()->ShowTouchToFillSheet();
-  }
+TEST_F(ManualFillingControllerTest, RelaysShowTouchToFillSheet) {
+  EXPECT_CALL(*view(), OnItemsAvailable(dummy_accessory_sheet_data()));
+  EXPECT_CALL(*view(), ShowTouchToFillSheet);
+  controller()->ShowTouchToFillSheet(dummy_accessory_sheet_data());
 }
 
 TEST_F(ManualFillingControllerTest, HidesAccessoryWhenAllSourcesRequestedIt) {
