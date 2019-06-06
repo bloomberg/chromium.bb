@@ -23,10 +23,6 @@ struct CTLogInfo {
   // The user-friendly log name.
   // Note: This will not be translated.
   const char* const log_name;
-  // The DNS API endpoint for the log.
-  // This is used as the parent domain for all queries about the log.
-  // https://github.com/google/certificate-transparency-rfcs/blob/master/dns/draft-ct-over-dns.md.
-  const char* const log_dns_domain;
 };
 
 // Returns information about all known logs, which includes those that are
