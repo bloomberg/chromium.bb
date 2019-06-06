@@ -31,8 +31,6 @@ int NextId() {
 
 const wtf_size_t PaintWorklet::kNumGlobalScopes = 2u;
 const size_t kMaxPaintCountToSwitch = 30u;
-// TODO(xidachen): remove this and put comments in the usages.
-DocumentPaintDefinition* const kInvalidDocumentPaintDefinition = nullptr;
 
 // static
 PaintWorklet* PaintWorklet::From(LocalDOMWindow& window) {
@@ -110,7 +108,7 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   // Check if the existing document definition is valid or not.
   DocumentPaintDefinition* document_definition =
       document_definition_map_.at(name);
-  if (document_definition == kInvalidDocumentPaintDefinition)
+  if (!document_definition)
     return nullptr;
 
   PaintWorkletGlobalScopeProxy* proxy =
@@ -151,7 +149,7 @@ void PaintWorklet::RegisterCSSPaintDefinition(const String& name,
   if (document_definition_map_.Contains(name)) {
     DocumentPaintDefinition* existing_document_definition =
         document_definition_map_.at(name);
-    if (existing_document_definition == kInvalidDocumentPaintDefinition)
+    if (!existing_document_definition)
       return;
     if (!existing_document_definition->RegisterAdditionalPaintDefinition(
             *definition)) {
@@ -184,11 +182,17 @@ void PaintWorklet::RegisterMainThreadDocumentPaintDefinition(
     Vector<String> custom_properties,
     Vector<CSSSyntaxDescriptor> input_argument_types,
     double alpha) {
-  DCHECK(!main_thread_document_definition_map_.Contains(name));
-  auto definition = std::make_unique<MainThreadDocumentPaintDefinition>(
-      std::move(native_properties), std::move(custom_properties),
+  // Because this method is called cross-thread, |custom_properties| cannot be
+  // an AtomicString. Instead, convert to AtomicString now that we are on the
+  // main thread.
+  Vector<AtomicString> new_custom_properties;
+  new_custom_properties.ReserveInitialCapacity(custom_properties.size());
+  for (const String& property : custom_properties)
+    new_custom_properties.push_back(AtomicString(property));
+  auto definition = std::make_unique<DocumentPaintDefinition>(
+      std::move(native_properties), std::move(new_custom_properties),
       std::move(input_argument_types), alpha);
-  main_thread_document_definition_map_.insert(name, std::move(definition));
+  document_definition_map_.insert(name, std::move(definition));
   pending_generator_registry_->NotifyGeneratorReady(name);
 }
 

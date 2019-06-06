@@ -25,7 +25,7 @@ class WorkletGlobalScope;
 // as choosing the global scope to use for any given paint request.
 //
 // This class is constructed on the main thread but it is used in the worklet
-// backing thread.
+// backing thread. The entire class is used for off-thread CSS Paint.
 class MODULES_EXPORT PaintWorkletProxyClient
     : public GarbageCollectedFinalized<PaintWorkletProxyClient>,
       public Supplement<WorkerClients>,
@@ -119,6 +119,8 @@ class MODULES_EXPORT PaintWorkletProxyClient
   // DocumentPaintDefinition or the definition is invalid. Additionally we
   // cannot tell the main thread about a paint definition until all global
   // scopes have registered it.
+  //
+  // The value of an entry being nullptr means that it is an invalid definition.
   HashMap<String, std::unique_ptr<DocumentPaintDefinition>>
       document_definition_map_;
 

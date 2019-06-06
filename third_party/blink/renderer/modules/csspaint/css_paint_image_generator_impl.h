@@ -19,7 +19,6 @@ class CSSSyntaxDescriptor;
 class Document;
 class DocumentPaintDefinition;
 class Image;
-class MainThreadDocumentPaintDefinition;
 class PaintWorklet;
 
 class MODULES_EXPORT CSSPaintImageGeneratorImpl final
@@ -66,10 +65,6 @@ class MODULES_EXPORT CSSPaintImageGeneratorImpl final
   // definition and checks if it is valid. The function returns true when the
   // document definition exists and is valid.
   bool GetValidDocumentDefinition(DocumentPaintDefinition*&) const;
-
-  // Used for off-thread CSS Paint.
-  bool GetValidMainThreadDocumentDefinition(
-      MainThreadDocumentPaintDefinition*&) const;
 
   Member<Observer> observer_;
   Member<PaintWorklet> paint_worklet_;

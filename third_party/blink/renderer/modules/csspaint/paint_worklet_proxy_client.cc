@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
-#include "third_party/blink/renderer/modules/csspaint/main_thread_document_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
@@ -84,7 +83,7 @@ void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
   if (document_definition_map_.Contains(name)) {
     DocumentPaintDefinition* document_definition =
         document_definition_map_.at(name);
-    if (document_definition == kInvalidDocumentPaintDefinition)
+    if (!document_definition)
       return;
     if (!document_definition->RegisterAdditionalPaintDefinition(*definition)) {
       document_definition_map_.Set(name, nullptr);

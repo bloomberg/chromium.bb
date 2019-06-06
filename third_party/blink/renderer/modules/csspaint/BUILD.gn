@@ -14,8 +14,6 @@ blink_modules_sources("csspaint") {
     "css_paint_worklet.h",
     "document_paint_definition.cc",
     "document_paint_definition.h",
-    "main_thread_document_paint_definition.cc",
-    "main_thread_document_paint_definition.h",
     "paint_rendering_context_2d.cc",
     "paint_rendering_context_2d.h",
     "paint_size.h",
