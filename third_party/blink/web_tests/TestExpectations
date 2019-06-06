@@ -3131,6 +3131,7 @@ crbug.com/626703 [ Mac10.11 ] external/wpt/mimesniff/mime-types/parsing.any.work
 crbug.com/626703 [ Win ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/fetch/content-type/response.window.html [ Timeout ]
 crbug.com/626703 virtual/blink-cors/external/wpt/fetch/content-type/response.window.html [ Timeout ]
+crbug.com/626703 virtual/omt-worker-fetch/external/wpt/fetch/content-type/response.window.html [ Timeout ]
 crbug.com/626703 virtual/streams-native/external/wpt/fetch/content-type/response.window.html [ Timeout ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-module.html [ Timeout ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-classic.html [ Timeout ]
@@ -3453,6 +3454,7 @@ crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-enco
 crbug.com/626703 external/wpt/css/css-transforms/transform-box/view-box-mutation.html [ Failure ]
 crbug.com/626703 external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 virtual/blink-cors/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
+crbug.com/626703 virtual/omt-worker-fetch/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 virtual/streams-native/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-024.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-048.html [ Failure ]
@@ -3541,6 +3543,7 @@ crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-009.html [ Failure ]
 crbug.com/626703 external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 virtual/blink-cors/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
+crbug.com/626703 virtual/omt-worker-fetch/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 virtual/streams-native/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/font-feature-settings-descriptor-01.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
@@ -4212,6 +4215,10 @@ crbug.com/971173 virtual/omt-worker-fetch/external/wpt/referrer-policy/unset-ref
 crbug.com/971173 virtual/omt-worker-fetch/external/wpt/referrer-policy/unset-referrer-policy/meta-referrer/same-origin/http-http/module-worker/no-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/971173 virtual/omt-worker-fetch/external/wpt/referrer-policy/unset-referrer-policy/meta-referrer/same-origin/http-http/worker-request/keep-origin-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/971173 virtual/omt-worker-fetch/external/wpt/referrer-policy/unset-referrer-policy/meta-referrer/same-origin/http-http/worker-request/no-redirect/insecure-protocol.http.html [ Failure ]
+
+crbug.com/971581 virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-no-load-event.https.html [ Timeout ]
+crbug.com/971581 virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Failure ]
+crbug.com/971581 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/worker.tentative.https.sub.html [ Failure ]
 
 # This fails because AllowedByNoSniff::MimeTypeAsScript() blocks the nested worker's
 # worker script, because the script url has a .html file extension.

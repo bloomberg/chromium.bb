@@ -568,6 +568,11 @@
   },
   {
     "prefix": "omt-worker-fetch",
+    "base": "external/wpt/fetch/",
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
+  },
+  {
+    "prefix": "omt-worker-fetch",
     "base": "external/wpt/html/browsers/offline/appcache/workers/",
     "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
