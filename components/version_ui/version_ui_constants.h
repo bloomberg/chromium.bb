@@ -72,6 +72,7 @@ extern const char kProfilePath[];
 extern const char kProfilePathName[];
 #endif
 extern const char kRevision[];
+extern const char kSanitizer[];
 extern const char kTitle[];
 extern const char kUserAgent[];
 extern const char kUserAgentName[];

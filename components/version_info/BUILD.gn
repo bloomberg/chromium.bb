@@ -20,6 +20,7 @@ static_library("version_info") {
   deps = [
     ":generate_version_info",
     "//base",
+    "//base:sanitizer_buildflags",
   ]
 
   public_deps = [

@@ -149,6 +149,8 @@ WebUIDataSource* CreateVersionUIDataSource() {
   }
 #endif  // defined(OS_WIN)
 
+  html_source->AddString(version_ui::kSanitizer, version_info::GetSanitizerList());
+
   html_source->SetJsonPath("strings.js");
   html_source->AddResourcePath(version_ui::kVersionJS, IDR_VERSION_UI_JS);
   html_source->AddResourcePath(version_ui::kAboutVersionCSS,

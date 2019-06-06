@@ -66,6 +66,7 @@ const char kProfilePath[] = "profile_path";
 const char kProfilePathName[] = "profile_path_name";
 #endif
 const char kRevision[] = "revision";
+const char kSanitizer[] = "sanitizer";
 const char kTitle[] = "title";
 const char kUserAgent[] = "useragent";
 const char kUserAgentName[] = "user_agent_name";
