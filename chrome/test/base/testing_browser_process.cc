@@ -36,8 +36,8 @@
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/test/test_network_connection_tracker.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
@@ -162,11 +162,11 @@ TestingBrowserProcess::shared_url_loader_factory() {
 
 network::NetworkQualityTracker*
 TestingBrowserProcess::network_quality_tracker() {
-  if (!network_quality_tracker_) {
-    network_quality_tracker_ = std::make_unique<network::NetworkQualityTracker>(
-        base::BindRepeating(&content::GetNetworkService));
+  if (!test_network_quality_tracker_) {
+    test_network_quality_tracker_ =
+        std::make_unique<network::TestNetworkQualityTracker>();
   }
-  return network_quality_tracker_.get();
+  return test_network_quality_tracker_.get();
 }
 
 WatchDogThread* TestingBrowserProcess::watchdog_thread() {
