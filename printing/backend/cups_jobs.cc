@@ -325,8 +325,7 @@ bool ParsePrinterInfo(ipp_t* response, PrinterInfo* printer_info) {
     } else if (name == base::StringPiece(kIppFeaturesSupported)) {
       std::vector<std::string> features;
       ParseCollection(attr, &features);
-      printer_info->ipp_everywhere =
-          base::ContainsValue(features, kIppEverywhere);
+      printer_info->ipp_everywhere = base::Contains(features, kIppEverywhere);
     } else if (name == base::StringPiece(kDocumentFormatSupported)) {
       ParseCollection(attr, &printer_info->document_formats);
     }

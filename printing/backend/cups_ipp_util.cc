@@ -313,7 +313,7 @@ void CopiesRange(const CupsOptionProvider& printer,
 bool CollateCapable(const CupsOptionProvider& printer) {
   std::vector<base::StringPiece> values =
       printer.GetSupportedOptionValueStrings(kIppCollate);
-  return base::ContainsValue(values, kCollated);
+  return base::Contains(values, kCollated);
 }
 
 bool CollateDefault(const CupsOptionProvider& printer) {
@@ -335,7 +335,7 @@ bool PinSupported(const CupsOptionProvider& printer) {
 
   std::vector<base::StringPiece> values =
       printer.GetSupportedOptionValueStrings(kIppPinEncryption);
-  return base::ContainsValue(values, kPinEncryptionNone);
+  return base::Contains(values, kPinEncryptionNone);
 }
 
 void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,

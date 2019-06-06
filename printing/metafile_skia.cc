@@ -343,7 +343,7 @@ uint32_t MetafileSkia::CreateContentForRemoteFrame(const gfx::Rect& rect,
 
   // Store the map between content id and the proxy id.
   uint32_t content_id = pic->uniqueID();
-  DCHECK(!base::ContainsKey(data_->subframe_content_info, content_id));
+  DCHECK(!base::Contains(data_->subframe_content_info, content_id));
   data_->subframe_content_info[content_id] = render_proxy_id;
 
   // Store the picture content.
@@ -378,7 +378,7 @@ SkStreamAsset* MetafileSkia::GetPdfData() const {
 void MetafileSkia::CustomDataToSkPictureCallback(SkCanvas* canvas,
                                                  uint32_t content_id) {
   // Check whether this is the one we need to handle.
-  if (!base::ContainsKey(data_->subframe_content_info, content_id))
+  if (!base::Contains(data_->subframe_content_info, content_id))
     return;
 
   auto it = data_->subframe_pics.find(content_id);
