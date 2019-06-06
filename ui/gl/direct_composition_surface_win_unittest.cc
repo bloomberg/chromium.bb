@@ -23,6 +23,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_dxgi.h"
 #include "ui/gl/gl_image_ref_counted_memory.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/win/win_window.h"
@@ -65,18 +66,6 @@ void DestroySurface(scoped_refptr<DirectCompositionSurfaceWin> surface) {
   RunPendingTasks(task_runner);
 
   base::RunLoop().RunUntilIdle();
-}
-
-bool CheckFormatSupport(DXGI_FORMAT format) {
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
-  if (!d3d11_device)
-    return false;
-  UINT support_flags = 0;
-  if (FAILED(d3d11_device->CheckFormatSupport(format, &support_flags)))
-    return false;
-  LOG(ERROR) << "support_flag = 0x" << std::hex << support_flags;
-  return true;
 }
 
 Microsoft::WRL::ComPtr<ID3D11Texture2D> CreateNV12Texture(
@@ -126,7 +115,8 @@ class DirectCompositionSurfaceTest : public testing::Test {
     }
     surface_ = CreateDirectCompositionSurfaceWin();
     context_ = CreateGLContext(surface_);
-    surface_->SetEnableDCLayers(true);
+    if (surface_)
+      surface_->SetEnableDCLayers(true);
     DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(false);
     DirectCompositionSurfaceWin::SetOverlayFormatUsedForTesting(
         DXGI_FORMAT_NV12);
@@ -928,11 +918,6 @@ TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
   // are supported.
   DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
 
-  // TODO(zmo): These are to collect format supports on Win10/AMD bot,
-  // and should be removed after the info is obtained.
-  EXPECT_TRUE(CheckFormatSupport(DXGI_FORMAT_NV12));
-  EXPECT_TRUE(CheckFormatSupport(DXGI_FORMAT_YUY2));
-
   gfx::Size window_size(100, 100);
   gfx::Size texture_size(50, 50);
   // Pass content rect with odd with and height.  Surface should round up
@@ -948,6 +933,47 @@ TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
   DXGI_SWAP_CHAIN_DESC1 desc;
   EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc1(&desc)));
   EXPECT_EQ(desc.Format, DXGI_FORMAT_NV12);
+  EXPECT_EQ(desc.Width, 50u);
+  EXPECT_EQ(desc.Height, 50u);
+
+  SkColor expected_color = SkColorSetRGB(0xe1, 0x90, 0xeb);
+  SkColor actual_color =
+      ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
+  EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
+      << std::hex << "Expected " << expected_color << " Actual "
+      << actual_color;
+}
+
+TEST_F(DirectCompositionPixelTest, YUY2SwapChain) {
+  if (!surface_)
+    return;
+  // CreateSwapChainForCompositionSurfaceHandle fails with YUY2 format on
+  // Win10/AMD bot (Radeon RX550). See https://crbug.com/967860.
+  if (context_ && context_->GetVersionInfo() &&
+      context_->GetVersionInfo()->driver_vendor == "ANGLE (AMD)")
+    return;
+
+  // Swap chain size is overridden to content rect size only if scaled overlays
+  // are supported.
+  DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
+  // By default NV12 is used, so set it to YUY2 explicitly.
+  DirectCompositionSurfaceWin::SetOverlayFormatUsedForTesting(DXGI_FORMAT_YUY2);
+
+  gfx::Size window_size(100, 100);
+  gfx::Size texture_size(50, 50);
+  // Pass content rect with odd with and height.  Surface should round up
+  // width and height when creating swap chain.
+  gfx::Rect content_rect(0, 0, 49, 49);
+  gfx::Rect quad_rect(window_size);
+  InitializeForPixelTest(window_size, texture_size, content_rect, quad_rect);
+
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
+      surface_->GetLayerSwapChainForTesting(0);
+  ASSERT_TRUE(swap_chain);
+
+  DXGI_SWAP_CHAIN_DESC1 desc;
+  EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc1(&desc)));
+  EXPECT_EQ(desc.Format, DXGI_FORMAT_YUY2);
   EXPECT_EQ(desc.Width, 50u);
   EXPECT_EQ(desc.Height, 50u);
 
