@@ -1788,6 +1788,8 @@ void LayoutObject::DumpLayoutObject(StringBuilder& string_builder,
     string_builder.Append('\t');
     string_builder.Append(GetNode()->ToString());
   }
+  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+    string_builder.Append(" (display-locked)");
 }
 
 void LayoutObject::DumpLayoutTreeAndMark(StringBuilder& string_builder,
@@ -1807,11 +1809,14 @@ void LayoutObject::DumpLayoutTreeAndMark(StringBuilder& string_builder,
   DumpLayoutObject(object_info, true, kShowTreeCharacterOffset);
   string_builder.Append(object_info);
 
-  for (const LayoutObject* child = SlowFirstChild(); child;
-       child = child->NextSibling()) {
-    string_builder.Append('\n');
-    child->DumpLayoutTreeAndMark(string_builder, marked_object1, marked_label1,
-                                 marked_object2, marked_label2, depth + 1);
+  if (!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+    for (const LayoutObject* child = SlowFirstChild(); child;
+         child = child->NextSibling()) {
+      string_builder.Append('\n');
+      child->DumpLayoutTreeAndMark(string_builder, marked_object1,
+                                   marked_label1, marked_object2, marked_label2,
+                                   depth + 1);
+    }
   }
 }
 

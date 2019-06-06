@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
 
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -357,6 +358,9 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
     if (needs_layout)
       ts << ")";
   }
+
+  if (o.LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+    ts << " (display-locked)";
 }
 
 static void WriteInlineBox(WTF::TextStream& ts,
@@ -569,11 +573,13 @@ void Write(WTF::TextStream& ts,
     }
   }
 
-  for (LayoutObject* child = o.SlowFirstChild(); child;
-       child = child->NextSibling()) {
-    if (child->HasLayer())
-      continue;
-    Write(ts, *child, indent + 1, behavior);
+  if (!o.LayoutBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+    for (LayoutObject* child = o.SlowFirstChild(); child;
+         child = child->NextSibling()) {
+      if (child->HasLayer())
+        continue;
+      Write(ts, *child, indent + 1, behavior);
+    }
   }
 
   if (o.IsLayoutEmbeddedContent()) {

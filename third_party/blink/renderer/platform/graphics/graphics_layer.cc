@@ -1043,6 +1043,9 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
   if (client_.ShouldThrottleRendering())
     return sk_sp<PaintRecord>(new PaintRecord);
 
+  if (client_.PaintBlockedByDisplayLock())
+    return sk_sp<PaintRecord>(new PaintRecord);
+
   FloatRect bounds((IntRect(IntPoint(), IntSize(Size()))));
   GraphicsContext graphics_context(GetPaintController());
   graphics_context.BeginRecording(bounds);
