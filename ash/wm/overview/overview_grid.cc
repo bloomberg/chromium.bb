@@ -636,6 +636,8 @@ void OverviewGrid::AddDropTargetForDraggingFromOverview(
   overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
                              /*reposition=*/true, /*animate=*/false,
                              /*ignored_items=*/{dragged_item}, position);
+  if (selection_widget_ && selected_index_ >= position)
+    ++selected_index_;
   // This part is necessary because |OverviewItem::OnSelectorItemDragStarted| is
   // called on all overview items before the drop target exists among them. That
   // is because |AddDropTargetForDraggingFromOverview| is only called for drag
@@ -646,7 +648,10 @@ void OverviewGrid::AddDropTargetForDraggingFromOverview(
 
 void OverviewGrid::RemoveDropTarget() {
   DCHECK(drop_target_widget_);
-  overview_session_->RemoveItem(GetDropTarget());
+  OverviewItem* drop_target = GetDropTarget();
+  if (selection_widget_ && selected_index_ >= GetOverviewItemIndex(drop_target))
+    --selected_index_;
+  overview_session_->RemoveItem(drop_target);
   drop_target_widget_.reset();
 }
 
@@ -734,6 +739,8 @@ void OverviewGrid::OnWindowDragStarted(aura::Window* dragged_window,
   drop_target_widget_ = CreateDropTargetWidget(dragged_window, animate);
   overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
                              /*reposition=*/true, animate);
+  if (selection_widget_)
+    ++selected_index_;
 
   // Stack the |dragged_window| at top during drag.
   dragged_window->parent()->StackChildAtTop(dragged_window);

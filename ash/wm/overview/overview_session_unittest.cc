@@ -29,6 +29,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/overview/caption_container_view.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -42,6 +43,7 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -1419,6 +1421,52 @@ TEST_F(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
   overview_session()->CompleteDrag(secondary_screen_item, drag_point);
   EXPECT_FALSE(GetDropTarget(0));
   EXPECT_FALSE(GetDropTarget(1));
+}
+
+// Test that |OverviewGrid::selected_index_| is updated with the drop target for
+// dragging from overview.
+TEST_F(OverviewSessionTest,
+       SelectionUpdatedWithDropTargetForDraggingFromOverview) {
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window4(CreateTestWindow());
+  std::unique_ptr<aura::Window> window3(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  ToggleOverview();
+  OverviewItem* item2 = GetWindowItemForWindow(0, window2.get());
+  const gfx::PointF drag_start_point = item2->target_bounds().CenterPoint();
+  const gfx::PointF drag_end_point =
+      drag_start_point + gfx::Vector2dF(5.f, 0.f);
+  const auto drag_item_and_check_selection =
+      [this, &drag_start_point, &drag_end_point](aura::Window* selected_window,
+                                                 OverviewItem* dragged_item) {
+        EXPECT_TRUE(SelectWindow(selected_window));
+        overview_session()->InitiateDrag(dragged_item, drag_start_point);
+        overview_session()->Drag(dragged_item, drag_end_point);
+        EXPECT_EQ(selected_window, GetSelectedWindow());
+        overview_session()->CompleteDrag(dragged_item, drag_end_point);
+        EXPECT_EQ(selected_window, GetSelectedWindow());
+      };
+  // Test the case where |OverviewGrid::selected_index_| is strictly less than
+  // the index of the dragged item.
+  drag_item_and_check_selection(window1.get(), item2);
+  // Test the case where |OverviewGrid::selected_index_| is equal to the index
+  // of the dragged item.
+  drag_item_and_check_selection(window2.get(), item2);
+  // Test the case where |OverviewGrid::selected_index_| is equal to the index
+  // where the drop target is to be inserted.
+  drag_item_and_check_selection(window3.get(), item2);
+  // Test the case where |OverviewGrid::selected_index_| is strictly greater
+  // than the index where the drop target is to be inserted.
+  drag_item_and_check_selection(window4.get(), item2);
+
+  // Test the case where the drop target becomes selected during the drag.
+  EXPECT_TRUE(SelectWindow(window4.get()));
+  overview_session()->InitiateDrag(item2, drag_start_point);
+  overview_session()->Drag(item2, drag_end_point);
+  EXPECT_TRUE(SelectWindow(GetDropTarget(0)->GetWindow()));
+  overview_session()->CompleteDrag(item2, drag_end_point);
+  EXPECT_EQ(window2.get(), GetSelectedWindow());
 }
 
 namespace {
@@ -4423,6 +4471,40 @@ TEST_F(SplitViewOverviewSessionTest, NoCrashWhenPressTabKey) {
 
   SendKey(ui::VKEY_TAB);
   EXPECT_TRUE(InOverviewSession());
+}
+
+// Test that |OverviewGrid::selected_index_| is updated with the drop target for
+// dragging a snapped window from the top.
+TEST_F(SplitViewOverviewSessionTest,
+       SelectionUpdatedWithDropTargetForDraggingSnappedWindowFromTop) {
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  window2->SetProperty(aura::client::kAppType,
+                       static_cast<int>(AppType::BROWSER));
+  ASSERT_TRUE(CanSnapInSplitview(window2.get()));
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window2.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(SelectWindow(window1.get()));
+  std::unique_ptr<WindowResizer> resizer =
+      CreateWindowResizer(window2.get(), gfx::Point(300, 0), HTCAPTION,
+                          ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+  ASSERT_TRUE(resizer);
+  TabletModeWindowDragDelegate* drag_delegate =
+      static_cast<TabletModeWindowDragController*>(
+          static_cast<DragWindowResizer*>(resizer.get())
+              ->next_window_resizer_for_testing())
+          ->drag_delegate_for_testing();
+  drag_delegate->set_drag_start_deadline_for_testing(base::Time::Now());
+  SplitViewDragIndicators* drag_indicators =
+      drag_delegate->split_view_drag_indicators_for_testing();
+  EXPECT_EQ(IndicatorState::kNone, drag_indicators->current_indicator_state());
+  EXPECT_EQ(window1.get(), GetSelectedWindow());
+  resizer->Drag(gfx::Point(300, 400), ui::EF_NONE);
+  EXPECT_EQ(IndicatorState::kDragArea,
+            drag_indicators->current_indicator_state());
+  EXPECT_TRUE(InOverviewSession());
+  EXPECT_EQ(nullptr, GetSelectedWindow());
+  resizer->CompleteDrag();
 }
 
 // Test the split view and overview functionalities in clamshell mode. Split
