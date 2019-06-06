@@ -2965,7 +2965,11 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_host_impl=3
   if (VLOG_IS_ON(3)) {
-    VLOG(3) << "After activating sync tree, the active tree:"
+    const char* client_name = GetClientNameForMetrics();
+    if (!client_name)
+      client_name = "<unknown client>";
+    VLOG(3) << "After activating (" << client_name
+            << ") sync tree, the active tree:"
             << "\nproperty_trees:\n"
             << active_tree_->property_trees()->ToString() << "\n"
             << "cc::LayerImpls:\n"

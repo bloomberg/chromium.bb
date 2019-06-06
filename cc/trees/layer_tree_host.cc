@@ -392,7 +392,11 @@ void LayerTreeHost::FinishCommitOnImplThread(
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_host=3
   if (VLOG_IS_ON(3)) {
-    VLOG(3) << "After finishing commit on impl, the sync tree:"
+    const char* client_name = GetClientNameForMetrics();
+    if (!client_name)
+      client_name = "<unknown client>";
+    VLOG(3) << "After finishing (" << client_name
+            << ") commit on impl, the sync tree:"
             << "\nproperty_trees:\n"
             << sync_tree->property_trees()->ToString() << "\n"
             << "cc::LayerImpls:\n"
