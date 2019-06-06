@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/test/scoped_key_window.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,6 +38,8 @@ class PagePlaceholderTabHelperTest : public PlatformTest {
     web_state_view_.backgroundColor = [UIColor blueColor];
     web_state_->SetView(web_state_view_);
 
+    [scoped_key_window_.Get() addSubview:web_state_view_];
+
     // The Content Area named guide should be available.
     NamedGuide* guide = [[NamedGuide alloc] initWithName:kContentAreaGuide];
     [web_state_view_ addLayoutGuide:guide];
@@ -53,6 +56,7 @@ class PagePlaceholderTabHelperTest : public PlatformTest {
   }
 
   web::TestWebThreadBundle thread_bundle_;
+  ScopedKeyWindow scoped_key_window_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   std::unique_ptr<web::TestWebState> web_state_;
   UIView* web_state_view_ = nil;

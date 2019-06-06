@@ -2472,7 +2472,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
   [self updateToolbar];
 
-  // Notify the WebState that it was displayed.
+  // TODO(crbug.com/971364): The webState is not necessarily added to the view
+  // hierarchy, even though the bookkeeping says that the WebState is visible.
+  // Do not DCHECK([webState->GetView() window]) here since this is a known
+  // issue.
   webState->WasShown();
 }
 

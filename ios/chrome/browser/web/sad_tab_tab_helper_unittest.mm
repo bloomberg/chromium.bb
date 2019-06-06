@@ -11,8 +11,10 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
+#import "ios/chrome/test/scoped_key_window.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -66,6 +68,16 @@ class SadTabTabHelperTest : public PlatformTest {
         sad_tab_delegate_([[SadTabTabHelperTestDelegate alloc] init]) {
     browser_state_ = TestChromeBrowserState::Builder().Build();
 
+    // Create view that is added to the window.
+    CGRect frame = {CGPointZero, CGSizeMake(400, 300)};
+    web_state_view_ = [[UIView alloc] initWithFrame:frame];
+    web_state_.SetView(web_state_view_);
+    [scoped_key_window_.Get() addSubview:web_state_view_];
+
+    // The Content Area named guide should be available.
+    NamedGuide* guide = [[NamedGuide alloc] initWithName:kContentAreaGuide];
+    [web_state_view_ addLayoutGuide:guide];
+
     SadTabTabHelper::CreateForWebState(&web_state_);
     tab_helper()->SetDelegate(sad_tab_delegate_);
     PagePlaceholderTabHelper::CreateForWebState(&web_state_);
@@ -87,6 +99,8 @@ class SadTabTabHelperTest : public PlatformTest {
   ~SadTabTabHelperTest() override { [application_ stopMocking]; }
 
   base::test::ScopedTaskEnvironment environment_;
+  ScopedKeyWindow scoped_key_window_;
+  UIView* web_state_view_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   web::TestWebState web_state_;
   web::TestNavigationManager* navigation_manager_;
