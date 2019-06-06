@@ -420,11 +420,10 @@ int MacOSXMinorVersionInternal() {
   // version for Darwin versions beginning with 6, corresponding to Mac OS X
   // 10.2. Since this correspondence may change in the future, warn when
   // encountering a version higher than anything seen before. Older Darwin
-  // versions, or versions that can't be determined, result in
-  // immediate death.
+  // versions, or versions that can't be determined, result in immediate death.
   CHECK(darwin_major_version >= 6);
   int mac_os_x_minor_version = darwin_major_version - 4;
-  DLOG_IF(WARNING, darwin_major_version > 18)
+  DLOG_IF(WARNING, darwin_major_version > 19)
       << "Assuming Darwin " << base::NumberToString(darwin_major_version)
       << " is macOS 10." << base::NumberToString(mac_os_x_minor_version);
 
