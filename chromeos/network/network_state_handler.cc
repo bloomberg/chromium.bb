@@ -1171,14 +1171,14 @@ const NetworkState* NetworkStateHandler::GetEAPForEthernet(
   return list.front();
 }
 
-void NetworkStateHandler::SetLastErrorForTest(const std::string& service_path,
-                                              const std::string& error) {
+void NetworkStateHandler::SetErrorForTest(const std::string& service_path,
+                                          const std::string& error) {
   NetworkState* network_state = GetModifiableNetworkState(service_path);
   if (!network_state) {
     NET_LOG(ERROR) << "No matching NetworkState for: " << service_path;
     return;
   }
-  network_state->last_error_ = error;
+  network_state->error_ = error;
 }
 
 //------------------------------------------------------------------------------

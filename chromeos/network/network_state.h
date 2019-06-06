@@ -215,9 +215,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // Set the GUID. Called exclusively by NetworkStateHandler.
   void SetGuid(const std::string& guid);
 
-  // Returns |error_| if valid, otherwise returns |last_error_|.
-  std::string GetErrorState() const;
-
   // Helpers for returning mojo types.
   network_config::mojom::ActivationStateType GetMojoActivationState() const;
   network_config::mojom::SecurityType GetMojoSecurity() const;

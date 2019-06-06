@@ -24,8 +24,6 @@
 
 namespace {
 
-const char kErrorUnknown[] = "Unknown";
-
 const char kDefaultCellularNetworkPath[] = "/cellular";
 
 // TODO(tbarzic): Add payment portal method values to shill/dbus-constants.
@@ -538,12 +536,6 @@ void NetworkState::SetGuid(const std::string& guid) {
   guid_ = guid;
 }
 
-std::string NetworkState::GetErrorState() const {
-  if (ErrorIsValid(error()))
-    return error();
-  return last_error();
-}
-
 network_config::mojom::ActivationStateType
 NetworkState::GetMojoActivationState() const {
   using network_config::mojom::ActivationStateType;
@@ -609,10 +601,7 @@ bool NetworkState::NetworkStateIsCaptivePortal(
 
 // static
 bool NetworkState::ErrorIsValid(const std::string& error) {
-  // Pre M-74 Shill uses "Unknown" to indicate an unset or cleared error state.
-  // TODO(stevenjb): Remove kErrorUnknown once 74 has shipped.
-  return !error.empty() && error != kErrorUnknown &&
-         error != shill::kErrorNoFailure;
+  return !error.empty() && error != shill::kErrorNoFailure;
 }
 
 // static
