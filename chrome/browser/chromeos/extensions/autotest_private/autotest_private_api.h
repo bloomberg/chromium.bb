@@ -11,9 +11,7 @@
 
 #include "ash/public/cpp/assistant/assistant_state_proxy.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
-#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
-#include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -631,11 +629,8 @@ class AutotestPrivateGetShelfAutoHideBehaviorFunction
                              AUTOTESTPRIVATE_GETSHELFAUTOHIDEBEHAVIOR)
 
  private:
-  void OnGetShelfAutoHideBehaviorCompleted(ash::ShelfAutoHideBehavior behavior);
   ~AutotestPrivateGetShelfAutoHideBehaviorFunction() override;
   ResponseAction Run() override;
-
-  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
 };
 
 // Sets shelf autohide behavior.
@@ -647,11 +642,8 @@ class AutotestPrivateSetShelfAutoHideBehaviorFunction
                              AUTOTESTPRIVATE_SETSHELFAUTOHIDEBEHAVIOR)
 
  private:
-  void OnSetShelfAutoHideBehaviorCompleted();
   ~AutotestPrivateSetShelfAutoHideBehaviorFunction() override;
   ResponseAction Run() override;
-
-  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
 };
 
 // Returns the shelf alignment.
@@ -663,11 +655,8 @@ class AutotestPrivateGetShelfAlignmentFunction
                              AUTOTESTPRIVATE_GETSHELFALIGNMENT)
 
  private:
-  void OnGetShelfAlignmentCompleted(ash::ShelfAlignment alignment);
   ~AutotestPrivateGetShelfAlignmentFunction() override;
   ResponseAction Run() override;
-
-  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
 };
 
 // Sets shelf alignment.
@@ -679,11 +668,8 @@ class AutotestPrivateSetShelfAlignmentFunction
                              AUTOTESTPRIVATE_SETSHELFALIGNMENT)
 
  private:
-  void OnSetShelfAlignmentCompleted();
   ~AutotestPrivateSetShelfAlignmentFunction() override;
   ResponseAction Run() override;
-
-  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
 };
 
 class AutotestPrivateShowVirtualKeyboardIfEnabledFunction

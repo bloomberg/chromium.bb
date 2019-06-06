@@ -11,6 +11,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/shelf_item.h"
+#include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -1605,10 +1606,6 @@ AutotestPrivateGetShelfAutoHideBehaviorFunction::Run() {
           *args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
-
   int64_t display_id;
   if (!base::StringToInt64(params->display_id, &display_id)) {
     return RespondNow(Error(base::StrCat(
@@ -1616,16 +1613,9 @@ AutotestPrivateGetShelfAutoHideBehaviorFunction::Run() {
          params->display_id})));
   }
 
-  shelf_test_api_->GetAutoHideBehavior(
-      display_id,
-      base::BindOnce(&AutotestPrivateGetShelfAutoHideBehaviorFunction::
-                         OnGetShelfAutoHideBehaviorCompleted,
-                     this));
-  return RespondLater();
-}
-
-void AutotestPrivateGetShelfAutoHideBehaviorFunction::
-    OnGetShelfAutoHideBehaviorCompleted(ash::ShelfAutoHideBehavior behavior) {
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  ash::ShelfAutoHideBehavior behavior =
+      ash::GetShelfAutoHideBehaviorPref(profile->GetPrefs(), display_id);
   std::string str_behavior;
   switch (behavior) {
     case ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
@@ -1635,10 +1625,10 @@ void AutotestPrivateGetShelfAutoHideBehaviorFunction::
       str_behavior = "never";
       break;
     case ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
-      str_behavior = "hidden";
-      break;
+      // SHELF_AUTO_HIDE_ALWAYS_HIDDEN not supported by shelf_prefs.cc
+      return RespondNow(Error("SHELF_AUTO_HIDE_ALWAYS_HIDDEN not supported"));
   }
-  Respond(OneArgument(std::make_unique<base::Value>(str_behavior)));
+  return RespondNow(OneArgument(std::make_unique<base::Value>(str_behavior)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1660,21 +1650,15 @@ AutotestPrivateSetShelfAutoHideBehaviorFunction::Run() {
           *args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
-
   ash::ShelfAutoHideBehavior behavior;
   if (params->behavior == "always") {
     behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
   } else if (params->behavior == "never") {
     behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
-  } else if (params->behavior == "hidden") {
-    behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
   } else {
-    return RespondNow(Error(base::StrCat(
-        {"Invalid behavior; expected 'always', 'never' or 'hidden', got ",
-         params->behavior})));
+    return RespondNow(Error(
+        base::StrCat({"Invalid behavior; expected 'always', 'never', got ",
+                      params->behavior})));
   }
   int64_t display_id;
   if (!base::StringToInt64(params->display_id, &display_id)) {
@@ -1683,17 +1667,9 @@ AutotestPrivateSetShelfAutoHideBehaviorFunction::Run() {
          params->display_id})));
   }
 
-  shelf_test_api_->SetAutoHideBehavior(
-      display_id, behavior,
-      base::BindOnce(&AutotestPrivateSetShelfAutoHideBehaviorFunction::
-                         OnSetShelfAutoHideBehaviorCompleted,
-                     this));
-  return RespondLater();
-}
-
-void AutotestPrivateSetShelfAutoHideBehaviorFunction::
-    OnSetShelfAutoHideBehaviorCompleted() {
-  Respond(NoArguments());
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  ash::SetShelfAutoHideBehaviorPref(profile->GetPrefs(), display_id, behavior);
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1714,10 +1690,6 @@ AutotestPrivateGetShelfAlignmentFunction::Run() {
       api::autotest_private::GetShelfAlignment::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
-
   int64_t display_id;
   if (!base::StringToInt64(params->display_id, &display_id)) {
     return RespondNow(Error(base::StrCat(
@@ -1725,15 +1697,9 @@ AutotestPrivateGetShelfAlignmentFunction::Run() {
          params->display_id})));
   }
 
-  shelf_test_api_->GetAlignment(
-      display_id, base::BindOnce(&AutotestPrivateGetShelfAlignmentFunction::
-                                     OnGetShelfAlignmentCompleted,
-                                 this));
-  return RespondLater();
-}
-
-void AutotestPrivateGetShelfAlignmentFunction::OnGetShelfAlignmentCompleted(
-    ash::ShelfAlignment alignment) {
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  ash::ShelfAlignment alignment =
+      ash::GetShelfAlignmentPref(profile->GetPrefs(), display_id);
   api::autotest_private::ShelfAlignmentType alignment_type;
   switch (alignment) {
     case ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM:
@@ -1749,11 +1715,10 @@ void AutotestPrivateGetShelfAlignmentFunction::OnGetShelfAlignmentCompleted(
           api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_RIGHT;
       break;
     case ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED:
-      alignment_type = api::autotest_private::ShelfAlignmentType::
-          SHELF_ALIGNMENT_TYPE_BOTTOMLOCKED;
-      break;
+      // SHELF_ALIGNMENT_BOTTOM_LOCKED not supported by shelf_prefs.cc
+      return RespondNow(Error("SHELF_ALIGNMENT_BOTTOM_LOCKED not supported"));
   }
-  Respond(OneArgument(std::make_unique<base::Value>(
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       api::autotest_private::ToString(alignment_type))));
 }
 
@@ -1775,10 +1740,6 @@ AutotestPrivateSetShelfAlignmentFunction::Run() {
       api::autotest_private::SetShelfAlignment::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
-
   ash::ShelfAlignment alignment;
   switch (params->alignment) {
     case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_BOTTOM:
@@ -1790,14 +1751,10 @@ AutotestPrivateSetShelfAlignmentFunction::Run() {
     case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_RIGHT:
       alignment = ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT;
       break;
-    case api::autotest_private::ShelfAlignmentType::
-        SHELF_ALIGNMENT_TYPE_BOTTOMLOCKED:
-      alignment = ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED;
-      break;
     case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_NONE:
       return RespondNow(
-          Error("Unsupported None alignment; expected 'Bottom', 'Left', "
-                "'Right' or 'BottomLocked'"));
+          Error("Invalid None alignment; expected 'Bottom', 'Left', or "
+                "'Right'"));
   }
   int64_t display_id;
   if (!base::StringToInt64(params->display_id, &display_id)) {
@@ -1806,16 +1763,9 @@ AutotestPrivateSetShelfAlignmentFunction::Run() {
          params->display_id})));
   }
 
-  shelf_test_api_->SetAlignment(
-      display_id, alignment,
-      base::BindOnce(&AutotestPrivateSetShelfAlignmentFunction::
-                         OnSetShelfAlignmentCompleted,
-                     this));
-  return RespondLater();
-}
-
-void AutotestPrivateSetShelfAlignmentFunction::OnSetShelfAlignmentCompleted() {
-  Respond(NoArguments());
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  ash::SetShelfAlignmentPref(profile->GetPrefs(), display_id, alignment);
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

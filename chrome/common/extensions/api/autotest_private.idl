@@ -9,7 +9,8 @@
 namespace autotestPrivate {
 
   enum ShelfAlignmentType {
-    Bottom, Left, Right, BottomLocked
+    // BottomLocked not supported by shelf_prefs.
+    Bottom, Left, Right
   };
 
   dictionary LoginStatusDict {
