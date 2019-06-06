@@ -72,9 +72,9 @@ template("vr_module_tmpl") {
         }
       }
       if (_is_monochrome_or_trichrome) {
-        _base_target_name = "monochrome${_arch}_base"
+        _base_target_name = "libmonochrome${_arch}"
       } else {
-        _base_target_name = "libchrome${_arch}_base"
+        _base_target_name = "libchrome${_arch}"
       }
       _module = "vr"
       deps +=
