@@ -35,6 +35,9 @@ message ProbeRequest {
   }
   // repeated string categories = 1;
   repeated SupportCategory categories = 1;
+  // This option allows clients to retrieve data with privacy implication from
+  // D-Bus call to runtime_probe. Default to false and please use with caution.
+  bool include_privacy_fields = 2;
 }
 
 // Things about audio_codec
