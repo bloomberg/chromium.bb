@@ -318,7 +318,7 @@ TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, Handle) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
@@ -404,7 +404,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, StreamRequest) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
@@ -429,7 +429,7 @@ TEST_P(QuicChromiumClientSessionTest, StreamRequest) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConfirmationRequiredStreamRequest) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
@@ -454,7 +454,7 @@ TEST_P(QuicChromiumClientSessionTest, ConfirmationRequiredStreamRequest) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, StreamRequestBeforeConfirmation) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
@@ -484,7 +484,7 @@ TEST_P(QuicChromiumClientSessionTest, StreamRequestBeforeConfirmation) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, CancelStreamRequestBeforeRelease) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   quic_data.AddWrite(SYNCHRONOUS,
@@ -513,7 +513,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelStreamRequestBeforeRelease) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   if (version_.transport_version == quic::QUIC_VERSION_99) {
@@ -590,7 +590,7 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, ClosedWithAsyncStreamRequest) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   if (version_.transport_version == quic::QUIC_VERSION_99) {
@@ -653,7 +653,7 @@ TEST_P(QuicChromiumClientSessionTest, ClosedWithAsyncStreamRequest) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   if (version_.transport_version == quic::QUIC_VERSION_99) {
@@ -725,7 +725,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeStreamRequest) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   quic_data.AddRead(
@@ -763,7 +763,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeHandshakeConfirmed) {
   // Force the connection close packet to use long headers with connection ID.
   server_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
 
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(
       ASYNC,
@@ -794,7 +794,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeHandshakeConfirmed) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionCloseWithPendingStreamRequest) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   if (version_.transport_version == quic::QUIC_VERSION_99) {
@@ -841,7 +841,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseWithPendingStreamRequest) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   if (version_.transport_version == quic::QUIC_VERSION_99) {
@@ -1216,7 +1216,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   if (version_.transport_version == quic::QUIC_VERSION_99) {
@@ -1678,7 +1678,7 @@ TEST_P(QuicChromiumClientSessionTest, DetectPathDegradingDuringHandshake) {
   }
   migrate_session_early_v2_ = true;
 
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDummyCHLOPacket(1));
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDummyCHLOPacket(2));
@@ -1737,7 +1737,7 @@ TEST_P(QuicChromiumClientSessionTest, DetectPathDegradingDuringHandshake) {
 TEST_P(QuicChromiumClientSessionTest, RetransmittableOnWireTimeout) {
   migrate_session_early_v2_ = true;
 
-  MockQuicData quic_data;
+  MockQuicData quic_data(version_);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacket(1, nullptr));
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakePingPacket(2, true));

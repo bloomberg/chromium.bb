@@ -355,6 +355,15 @@ class AsyncSocket {
   virtual void OnDataProviderDestroyed() = 0;
 };
 
+class SocketDataPrinter {
+ public:
+  ~SocketDataPrinter() = default;
+
+  // Prints the write in |data| using some sort of protocol-specific
+  // format.
+  virtual std::string PrintWrite(const std::string& data) = 0;
+};
+
 // StaticSocketDataHelper manages a list of reads and writes.
 class StaticSocketDataHelper {
  public:
@@ -377,7 +386,7 @@ class StaticSocketDataHelper {
   // Returns true if |data| is valid data for the next write. In order
   // to support short writes, the next write may be longer than |data|
   // in which case this method will still return true.
-  bool VerifyWriteData(const std::string& data);
+  bool VerifyWriteData(const std::string& data, SocketDataPrinter* printer);
 
   size_t read_index() const { return read_index_; }
   size_t write_index() const { return write_index_; }
@@ -424,11 +433,14 @@ class StaticSocketDataProvider : public SocketDataProvider {
   size_t read_count() const { return helper_.read_count(); }
   size_t write_count() const { return helper_.write_count(); }
 
+  void set_printer(SocketDataPrinter* printer) { printer_ = printer; }
+
  private:
   // From SocketDataProvider:
   void Reset() override;
 
   StaticSocketDataHelper helper_;
+  SocketDataPrinter* printer_ = nullptr;
   bool paused_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StaticSocketDataProvider);
@@ -542,6 +554,8 @@ class SequencedSocketData : public SocketDataProvider {
     busy_before_sync_reads_ = busy_before_sync_reads;
   }
 
+  void set_printer(SocketDataPrinter* printer) { printer_ = printer; }
+
  private:
   // Defines the state for the read or write path.
   enum IoState {
@@ -562,6 +576,7 @@ class SequencedSocketData : public SocketDataProvider {
   void MaybePostWriteCompleteTask();
 
   StaticSocketDataHelper helper_;
+  SocketDataPrinter* printer_ = nullptr;
   int sequence_number_;
   IoState read_state_;
   IoState write_state_;

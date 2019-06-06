@@ -220,7 +220,8 @@ void StaticSocketDataHelper::Reset() {
   write_index_ = 0;
 }
 
-bool StaticSocketDataHelper::VerifyWriteData(const std::string& data) {
+bool StaticSocketDataHelper::VerifyWriteData(const std::string& data,
+                                             SocketDataPrinter* printer) {
   CHECK(!AllWriteDataConsumed());
   // Check that the actual data matches the expectations, skipping over any
   // pause events.
@@ -240,6 +241,12 @@ bool StaticSocketDataHelper::VerifyWriteData(const std::string& data) {
   EXPECT_TRUE(actual_data == expected_data)
       << "Actual write data:\n" << HexDump(data)
       << "Expected write data:\n" << HexDump(expected_data);
+  if (printer) {
+    EXPECT_TRUE(actual_data == expected_data)
+        << "Actual write data:\n"
+        << printer->PrintWrite(data) << "Expected write data:\n"
+        << printer->PrintWrite(expected_data);
+  }
   return expected_data == actual_data;
 }
 
@@ -295,7 +302,7 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
 
   // Check that what we are writing matches the expectation.
   // Then give the mocked return value.
-  if (!helper_.VerifyWriteData(data))
+  if (!helper_.VerifyWriteData(data, printer_))
     return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
 
   const MockWrite& next_write = helper_.AdvanceWrite();
@@ -487,7 +494,7 @@ MockWriteResult SequencedSocketData::OnWrite(const std::string& data) {
   NET_TRACE(1, " *** ") << "next_write: " << next_write.sequence_number;
   CHECK_GE(next_write.sequence_number, sequence_number_);
 
-  if (!helper_.VerifyWriteData(data))
+  if (!helper_.VerifyWriteData(data, printer_))
     return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
 
   if (next_write.sequence_number <= sequence_number_) {

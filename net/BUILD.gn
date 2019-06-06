@@ -2751,6 +2751,8 @@ static_library("test_support") {
     "proxy_resolution/mock_proxy_resolver.h",
     "proxy_resolution/proxy_config_service_common_unittest.cc",
     "proxy_resolution/proxy_config_service_common_unittest.h",
+    "quic/quic_test_packet_printer.cc",
+    "quic/quic_test_packet_printer.h",
     "socket/socket_test_util.cc",
     "socket/socket_test_util.h",
     "spdy/spdy_test_util_common.cc",

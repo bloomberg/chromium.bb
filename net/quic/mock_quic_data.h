@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_MOCK_QUIC_DATA_H_
 #define NET_QUIC_MOCK_QUIC_DATA_H_
 
+#include "net/quic/quic_test_packet_printer.h"
 #include "net/socket/socket_test_util.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 
@@ -15,7 +16,7 @@ namespace test {
 // Simplify ownership issues and the interaction with the MockSocketFactory.
 class MockQuicData {
  public:
-  MockQuicData();
+  explicit MockQuicData(quic::ParsedQuicVersion version);
   ~MockQuicData();
 
   // Makes the Connect() call return |rv| either
@@ -63,6 +64,7 @@ class MockQuicData {
   std::vector<MockRead> reads_;
   size_t sequence_number_;
   std::unique_ptr<SequencedSocketData> socket_data_;
+  QuicPacketPrinter printer_;
 };
 
 }  // namespace test

@@ -7,7 +7,8 @@
 namespace net {
 namespace test {
 
-MockQuicData::MockQuicData() : sequence_number_(0) {}
+MockQuicData::MockQuicData(quic::ParsedQuicVersion version)
+    : sequence_number_(0), printer_(version) {}
 
 MockQuicData::~MockQuicData() {}
 
@@ -54,6 +55,7 @@ void MockQuicData::Resume() {
 
 SequencedSocketData* MockQuicData::InitializeAndGetSequencedSocketData() {
   socket_data_.reset(new SequencedSocketData(reads_, writes_));
+  socket_data_->set_printer(&printer_);
   if (connect_ != nullptr)
     socket_data_->set_connect_data(*connect_);
 
