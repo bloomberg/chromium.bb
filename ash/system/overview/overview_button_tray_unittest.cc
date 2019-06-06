@@ -400,12 +400,7 @@ class KioskNextOverviewTest : public OverviewButtonTrayTest {
   void SetUp() override {
     set_start_session(false);
     OverviewButtonTrayTest::SetUp();
-    client_ = std::make_unique<MockKioskNextShellClient>();
-  }
-
-  void TearDown() override {
-    client_.reset();
-    OverviewButtonTrayTest::TearDown();
+    client_ = BindMockKioskNextShellClient();
   }
 
  private:

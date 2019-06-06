@@ -15,7 +15,7 @@
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_test_util.h"
 #include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
 #include "ash/public/cpp/ash_features.h"
@@ -3944,12 +3944,7 @@ class KioskNextShelfViewTest : public ShelfViewTest {
   void SetUp() override {
     set_start_session(false);
     ShelfViewTest::SetUp();
-    client_ = std::make_unique<MockKioskNextShellClient>();
-  }
-
-  void TearDown() override {
-    client_.reset();
-    ShelfViewTest::TearDown();
+    client_ = BindMockKioskNextShellClient();
   }
 
  protected:

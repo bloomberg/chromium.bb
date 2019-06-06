@@ -775,12 +775,7 @@ class KioskNextPaletteTrayTest : public PaletteTrayTest {
   void SetUp() override {
     set_start_session(false);
     PaletteTrayTest::SetUp();
-    client_ = std::make_unique<MockKioskNextShellClient>();
-  }
-
-  void TearDown() override {
-    client_.reset();
-    PaletteTrayTest::TearDown();
+    client_ = BindMockKioskNextShellClient();
   }
 
  private:

@@ -150,12 +150,7 @@ class KioskNextLogoutButtonTrayTest : public LogoutButtonTrayTest {
 
   void SetUp() override {
     LogoutButtonTrayTest::SetUp();
-    client_ = std::make_unique<MockKioskNextShellClient>();
-  }
-
-  void TearDown() override {
-    client_.reset();
-    LogoutButtonTrayTest::TearDown();
+    client_ = BindMockKioskNextShellClient();
   }
 
  private:

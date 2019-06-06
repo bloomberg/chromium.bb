@@ -4,14 +4,27 @@
 
 #include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
 
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
+#include "ash/shell.h"
+
 namespace ash {
 
-MockKioskNextShellClient::MockKioskNextShellClient() {
-  KioskNextShellController::Get()->SetClientAndLaunchSession(this);
+MockKioskNextShellClient::MockKioskNextShellClient() = default;
+
+MockKioskNextShellClient::~MockKioskNextShellClient() = default;
+
+mojom::KioskNextShellClientPtr
+MockKioskNextShellClient::CreateInterfacePtrAndBind() {
+  mojom::KioskNextShellClientPtr ptr;
+  binding_.Bind(mojo::MakeRequest(&ptr));
+  return ptr;
 }
 
-MockKioskNextShellClient::~MockKioskNextShellClient() {
-  KioskNextShellController::Get()->SetClientAndLaunchSession(nullptr);
+std::unique_ptr<MockKioskNextShellClient> BindMockKioskNextShellClient() {
+  auto client = std::make_unique<MockKioskNextShellClient>();
+  Shell::Get()->kiosk_next_shell_controller()->SetClient(
+      client->CreateInterfacePtrAndBind());
+  return client;
 }
 
 }  // namespace ash

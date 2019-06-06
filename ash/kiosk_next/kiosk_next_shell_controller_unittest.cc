@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 
 #include <memory>
 
@@ -18,7 +18,7 @@
 namespace ash {
 namespace {
 
-KioskNextShellControllerImpl* GetKioskNextShellController() {
+KioskNextShellController* GetKioskNextShellController() {
   return Shell::Get()->kiosk_next_shell_controller();
 }
 
@@ -42,13 +42,13 @@ class KioskNextShellControllerTest : public AshTestBase {
   void SetUp() override {
     set_start_session(false);
     AshTestBase::SetUp();
-    client_ = std::make_unique<MockKioskNextShellClient>();
+    client_ = BindMockKioskNextShellClient();
     scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
   }
 
   void TearDown() override {
-    client_.reset();
     AshTestBase::TearDown();
+    client_.reset();
   }
 
  protected:

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/resources/vector_icons/vector_icons.h"

@@ -8,7 +8,7 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shell.h"
 #include "base/logging.h"

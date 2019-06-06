@@ -745,11 +745,10 @@ class ScreenOrientationControllerKioskNextTest
     set_start_session(false);
     AshTestBase::SetUp();
 
-    client_ = std::make_unique<MockKioskNextShellClient>();
+    client_ = BindMockKioskNextShellClient();
   }
 
   void TearDown() override {
-    client_.reset();
     home_screen_window_.reset();
     AshTestBase::TearDown();
   }

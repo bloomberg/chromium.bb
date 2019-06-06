@@ -19,6 +19,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
@@ -104,6 +105,11 @@ void BindKeyboardControllerRequestOnMainThread(
   Shell::Get()->ash_keyboard_controller()->BindRequest(std::move(request));
 }
 
+void BindKioskNextShellControllerRequestOnMainThread(
+    mojom::KioskNextShellControllerRequest request) {
+  Shell::Get()->kiosk_next_shell_controller()->BindRequest(std::move(request));
+}
+
 void BindLocaleUpdateControllerOnMainThread(
     mojom::LocaleUpdateControllerRequest request) {
   Shell::Get()->locale_update_controller()->BindRequest(std::move(request));
@@ -174,6 +180,11 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::BindRepeating(&BindAshMessageCenterControllerRequestOnMainThread),
       main_thread_task_runner);
+  if (base::FeatureList::IsEnabled(features::kKioskNextShell)) {
+    registry->AddInterface(
+        base::BindRepeating(&BindKioskNextShellControllerRequestOnMainThread),
+        main_thread_task_runner);
+  }
   registry->AddInterface(
       base::BindRepeating(&BindImeControllerRequestOnMainThread),
       main_thread_task_runner);

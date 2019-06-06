@@ -60,6 +60,7 @@ const service_manager::Manifest& GetManifest() {
                   mojom::AssistantNotificationController,
                   mojom::AssistantScreenContextController,
                   mojom::AssistantVolumeControl,
+                  mojom::KioskNextShellController,
                   mojom::CrosDisplayConfigController, mojom::ImeController,
                   mojom::KeyboardController, mojom::LocaleUpdateController,
                   mojom::LoginScreen, mojom::NightLightController,
