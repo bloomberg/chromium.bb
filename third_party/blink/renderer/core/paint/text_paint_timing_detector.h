@@ -21,7 +21,6 @@
 
 namespace blink {
 class LayoutBoxModelObject;
-class LayoutObject;
 class LocalFrameView;
 class PropertyTreeState;
 class TextElementTiming;
@@ -56,8 +55,10 @@ class TextRecordsManager {
 
   void SetNodeDetachedIfNeeded(const DOMNodeId&);
   void MarkNodeReattachedIfNeeded(const DOMNodeId&);
-
-  void RecordInvisibleNode(const DOMNodeId&);
+  inline void RecordInvisibleNode(const DOMNodeId& node_id) {
+    DCHECK(!HasTooManyNodes());
+    invisible_node_ids_.insert(node_id);
+  }
   void RecordVisibleNode(const DOMNodeId&,
                          const uint64_t& visual_size,
                          const LayoutObject&);
@@ -67,7 +68,10 @@ class TextRecordsManager {
   void AssignPaintTimeToQueuedNodes(const base::TimeTicks&);
 
   bool HasTooManyNodes() const;
-  bool HasRecorded(const DOMNodeId&) const;
+  inline bool HasRecorded(const DOMNodeId& node_id) const {
+    return visible_node_map_.Contains(node_id) ||
+           invisible_node_ids_.Contains(node_id);
+  }
 
   size_t CountVisibleNodes() const { return visible_node_map_.size(); }
   size_t CountInvisibleNodes() const { return invisible_node_ids_.size(); }
@@ -87,7 +91,9 @@ class TextRecordsManager {
   void Trace(blink::Visitor*);
 
  private:
-  void QueueToMeasurePaintTime(base::WeakPtr<TextRecord>);
+  inline void QueueToMeasurePaintTime(base::WeakPtr<TextRecord> record) {
+    texts_queued_for_paint_time_.push_back(std::move(record));
+  }
   // This is used to cache the largest text paint result for better efficiency.
   // The result will be invalidated whenever any change is done to the variables
   // used in |FindLargestPaintCandidate|.

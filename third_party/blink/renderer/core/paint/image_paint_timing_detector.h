@@ -55,14 +55,28 @@ class CORE_EXPORT ImageRecordsManager {
       std::set<base::WeakPtr<ImageRecord>, NodesQueueComparator>;
 
  public:
+  // Set a big enough limit for the number of nodes to ensure memory usage is
+  // capped. Exceeding such limit will make the detactor stops recording
+  // entries.
+  static constexpr size_t kImageNodeNumberLimit = 5000;
+
   ImageRecordsManager();
   ImageRecord* FindLargestPaintCandidate() const;
 
   bool AreAllVisibleNodesDetached() const;
-  void SetNodeDetached(const DOMNodeId& visible_node_id);
-  void SetNodeReattachedIfNeeded(const DOMNodeId& visible_node_id);
+  inline void SetNodeDetached(const DOMNodeId& visible_node_id) {
+    detached_ids_.insert(visible_node_id);
+  }
+  inline void SetNodeReattachedIfNeeded(const DOMNodeId& visible_node_id) {
+    if (!detached_ids_.Contains(visible_node_id))
+      return;
+    detached_ids_.erase(visible_node_id);
+  }
 
-  void RecordInvisibleNode(const DOMNodeId&);
+  inline void RecordInvisibleNode(const DOMNodeId& node_id) {
+    DCHECK(!RecordedTooManyNodes());
+    invisible_node_ids_.insert(node_id);
+  }
   void RecordVisibleNode(const DOMNodeId&, const uint64_t& visual_size);
   void RecordVisibleNode(const BackgroundImageId& background_image_id,
                          const uint64_t& visual_size);
@@ -79,40 +93,68 @@ class CORE_EXPORT ImageRecordsManager {
     return invisible_node_ids_.Contains(node_id);
   }
 
-  bool RecordedTooManyNodes() const;
+  inline bool RecordedTooManyNodes() const {
+    return visible_node_map_.size() + visible_background_image_map_.size() +
+               invisible_node_ids_.size() >
+           kImageNodeNumberLimit;
+  }
 
-  bool WasVisibleNodeLoaded(const DOMNodeId&) const;
-  bool WasVisibleNodeLoaded(const BackgroundImageId& background_image_id) const;
+  inline bool WasVisibleNodeLoaded(const DOMNodeId& node_id) const {
+    DCHECK(visible_node_map_.Contains(node_id));
+    return visible_node_map_.at(node_id)->loaded;
+  }
+  inline bool WasVisibleNodeLoaded(
+      const BackgroundImageId& background_image_id) const {
+    DCHECK(visible_background_image_map_.Contains(background_image_id));
+    return visible_background_image_map_.at(background_image_id)->loaded;
+  }
   void OnImageLoaded(const DOMNodeId&, unsigned current_frame_index);
   void OnImageLoaded(const BackgroundImageId&, unsigned current_frame_index);
   void OnImageLoadedInternal(base::WeakPtr<ImageRecord>&,
                              unsigned current_frame_index);
 
-  bool NeedMeausuringPaintTime() const {
+  inline bool NeedMeausuringPaintTime() const {
     return !images_queued_for_paint_time_.empty();
   }
 
   // Compare the last frame index in queue with the last frame index that has
   // registered for assigning paint time.
-  bool HasUnregisteredRecordsInQueued(unsigned last_registered_frame_index);
+  inline bool HasUnregisteredRecordsInQueued(
+      unsigned last_registered_frame_index) {
+    DCHECK(last_registered_frame_index <= LastQueuedFrameIndex());
+    return last_registered_frame_index < LastQueuedFrameIndex();
+  }
   void AssignPaintTimeToRegisteredQueuedNodes(const base::TimeTicks&,
                                               unsigned last_queued_frame_index);
-  unsigned LastQueuedFrameIndex() const {
+  inline unsigned LastQueuedFrameIndex() const {
     return images_queued_for_paint_time_.back()->frame_index;
   }
 
  private:
   // Find the image record of an visible image.
-  base::WeakPtr<ImageRecord> FindVisibleRecord(const DOMNodeId&) const;
-  base::WeakPtr<ImageRecord> FindVisibleRecord(
-      const BackgroundImageId& background_image_id) const;
+  inline base::WeakPtr<ImageRecord> FindVisibleRecord(
+      const DOMNodeId& node_id) const {
+    DCHECK(visible_node_map_.Contains(node_id));
+    return visible_node_map_.find(node_id)->value->AsWeakPtr();
+  }
+  inline base::WeakPtr<ImageRecord> FindVisibleRecord(
+      const BackgroundImageId& background_image_id) const {
+    DCHECK(visible_background_image_map_.Contains(background_image_id));
+    return visible_background_image_map_.find(background_image_id)
+        ->value->AsWeakPtr();
+  }
   std::unique_ptr<ImageRecord> CreateImageRecord(
       const DOMNodeId&,
       const ImageResourceContent* cached_image,
       const uint64_t& visual_size);
-  void QueueToMeasurePaintTime(base::WeakPtr<ImageRecord>&,
-                               unsigned current_frame_index);
-  void SetLoaded(base::WeakPtr<ImageRecord>&);
+  inline void QueueToMeasurePaintTime(base::WeakPtr<ImageRecord>& record,
+                                      unsigned current_frame_index) {
+    images_queued_for_paint_time_.push(record);
+    record->frame_index = current_frame_index;
+  }
+  inline void SetLoaded(base::WeakPtr<ImageRecord>& record) {
+    record->loaded = true;
+  }
 
   unsigned max_record_id_ = 0;
   // We will never destroy the pointers within |visible_node_map_|. Once created
@@ -176,9 +218,12 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // an image is recorded before stopping recording, and finish loading after
   // stopping recording, the detector can still observe the loading being
   // finished.
-  void StopRecordEntries();
-  bool IsRecording() const { return is_recording_; }
-  bool FinishedReportingImages() const;
+  inline void StopRecordEntries() { is_recording_ = false; }
+  inline bool IsRecording() const { return is_recording_; }
+  inline bool FinishedReportingImages() const {
+    return !is_recording_ && num_pending_swap_callbacks_ == 0;
+  }
+
   void Trace(blink::Visitor*);
 
  private:

@@ -56,10 +56,6 @@ uint64_t DownScaleIfIntrinsicSizeIsSmaller(
 
 }  // namespace
 
-// Set a big enough limit for the number of nodes to ensure memory usage is
-// capped. Exceeding such limit will make the detactor stops recording entries.
-constexpr size_t kImageNodeNumberLimit = 5000;
-
 static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
                             const base::WeakPtr<ImageRecord>& b) {
   DCHECK(a);
@@ -347,26 +343,6 @@ void ImagePaintTimingDetector::HandleTooManyNodes() {
 ImageRecordsManager::ImageRecordsManager()
     : size_ordered_set_(&LargeImageFirst) {}
 
-void ImageRecordsManager::SetNodeReattachedIfNeeded(
-    const DOMNodeId& visible_node_id) {
-  if (!detached_ids_.Contains(visible_node_id))
-    return;
-  detached_ids_.erase(visible_node_id);
-}
-
-base::WeakPtr<ImageRecord> ImageRecordsManager::FindVisibleRecord(
-    const BackgroundImageId& background_image_id) const {
-  DCHECK(visible_background_image_map_.Contains(background_image_id));
-  return visible_background_image_map_.find(background_image_id)
-      ->value->AsWeakPtr();
-}
-
-base::WeakPtr<ImageRecord> ImageRecordsManager::FindVisibleRecord(
-    const DOMNodeId& node_id) const {
-  DCHECK(visible_node_map_.Contains(node_id));
-  return visible_node_map_.find(node_id)->value->AsWeakPtr();
-}
-
 void ImageRecordsManager::OnImageLoaded(const DOMNodeId& node_id,
                                         unsigned current_frame_index) {
   base::WeakPtr<ImageRecord> record = FindVisibleRecord(node_id);
@@ -385,49 +361,6 @@ void ImageRecordsManager::OnImageLoadedInternal(
     unsigned current_frame_index) {
   SetLoaded(record);
   QueueToMeasurePaintTime(record, current_frame_index);
-}
-
-void ImageRecordsManager::SetLoaded(base::WeakPtr<ImageRecord>& record) {
-  record->loaded = true;
-}
-
-bool ImageRecordsManager::RecordedTooManyNodes() const {
-  return visible_node_map_.size() + visible_background_image_map_.size() +
-             invisible_node_ids_.size() >
-         kImageNodeNumberLimit;
-}
-
-void ImageRecordsManager::SetNodeDetached(const DOMNodeId& visible_node_id) {
-  detached_ids_.insert(visible_node_id);
-}
-
-bool ImageRecordsManager::HasUnregisteredRecordsInQueued(
-    unsigned last_registered_frame_index) {
-  DCHECK(last_registered_frame_index <= LastQueuedFrameIndex());
-  return last_registered_frame_index < LastQueuedFrameIndex();
-}
-
-bool ImageRecordsManager::WasVisibleNodeLoaded(const DOMNodeId& node_id) const {
-  DCHECK(visible_node_map_.Contains(node_id));
-  return visible_node_map_.at(node_id)->loaded;
-}
-
-bool ImageRecordsManager::WasVisibleNodeLoaded(
-    const BackgroundImageId& background_image_id) const {
-  DCHECK(visible_background_image_map_.Contains(background_image_id));
-  return visible_background_image_map_.at(background_image_id)->loaded;
-}
-
-void ImageRecordsManager::QueueToMeasurePaintTime(
-    base::WeakPtr<ImageRecord>& record,
-    unsigned current_frame_index) {
-  images_queued_for_paint_time_.push(record);
-  record->frame_index = current_frame_index;
-}
-
-void ImageRecordsManager::RecordInvisibleNode(const DOMNodeId& node_id) {
-  DCHECK(!RecordedTooManyNodes());
-  invisible_node_ids_.insert(node_id);
 }
 
 void ImageRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
@@ -459,14 +392,6 @@ std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
   record->first_size = visual_size;
   record->cached_image = cached_image;
   return record;
-}
-
-void ImagePaintTimingDetector::StopRecordEntries() {
-  is_recording_ = false;
-}
-
-bool ImagePaintTimingDetector::FinishedReportingImages() const {
-  return !is_recording_ && num_pending_swap_callbacks_ == 0;
 }
 
 ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() const {

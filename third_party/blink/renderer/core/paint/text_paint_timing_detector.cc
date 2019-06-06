@@ -284,16 +284,6 @@ void TextRecordsManager::MarkNodeReattachedIfNeeded(const DOMNodeId& node_id) {
   is_result_invalidated_ = true;
 }
 
-bool TextRecordsManager::HasRecorded(const DOMNodeId& node_id) const {
-  return visible_node_map_.Contains(node_id) ||
-         invisible_node_ids_.Contains(node_id);
-}
-
-void TextRecordsManager::RecordInvisibleNode(const DOMNodeId& node_id) {
-  DCHECK(!HasTooManyNodes());
-  invisible_node_ids_.insert(node_id);
-}
-
 void TextRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
                                            const uint64_t& visual_size,
                                            const LayoutObject& text_object) {
@@ -317,11 +307,6 @@ void TextRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
   QueueToMeasurePaintTime(record->AsWeakPtr());
   visible_node_map_.insert(node_id, std::move(record));
   is_result_invalidated_ = true;
-}
-
-void TextRecordsManager::QueueToMeasurePaintTime(
-    base::WeakPtr<TextRecord> record) {
-  texts_queued_for_paint_time_.push_back(std::move(record));
 }
 
 bool TextRecordsManager::HasTooManyNodes() const {
