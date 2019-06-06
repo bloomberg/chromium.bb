@@ -177,7 +177,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
                                    const viz::SurfaceId& child_id,
                                    float device_scale_factor,
                                    const gfx::ColorSpace& color_space) {
-  DCHECK(base::ContainsValue(child_ids_, child_id));
+  DCHECK(base::Contains(child_ids_, child_id));
 
   gfx::ColorSpace display_color_space =
       color_space.IsValid() ? color_space : gfx::ColorSpace::CreateSRGB();
@@ -240,7 +240,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
 }
 
 void SurfacesInstance::AddChildId(const viz::SurfaceId& child_id) {
-  DCHECK(!base::ContainsValue(child_ids_, child_id));
+  DCHECK(!base::Contains(child_ids_, child_id));
   child_ids_.push_back(child_id);
   if (root_id_allocation_.IsValid())
     SetSolidColorRootFrame();

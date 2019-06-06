@@ -40,8 +40,8 @@ void ScopedAddFeatureFlags::DisableIfNotSet(const base::Feature& feature) {
 void ScopedAddFeatureFlags::AddFeatureIfNotSet(const base::Feature& feature,
                                                bool enable) {
   const char* feature_name = feature.name;
-  if (base::ContainsValue(enabled_features_, feature_name) ||
-      base::ContainsValue(disabled_features_, feature_name)) {
+  if (base::Contains(enabled_features_, feature_name) ||
+      base::Contains(disabled_features_, feature_name)) {
     return;
   }
   if (enable) {
