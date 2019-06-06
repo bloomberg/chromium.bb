@@ -172,8 +172,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   const gles2::FeatureInfo* GetFeatureInfo() const override;
   const GpuPreferences& GetGpuPreferences() const override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
-  void AddFilter(IPC::MessageFilter* message_filter) override;
-  int32_t GetRouteID() const override;
   viz::GpuVSyncCallback GetGpuVSyncCallback() override;
 
   // Upstream this function to GpuControl if needs arise. Can be called on any

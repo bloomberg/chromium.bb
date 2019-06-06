@@ -420,14 +420,6 @@ void GLES2CommandBufferStub::BufferPresented(
                                                feedback));
 }
 
-void GLES2CommandBufferStub::AddFilter(IPC::MessageFilter* message_filter) {
-  return channel_->AddFilter(message_filter);
-}
-
-int32_t GLES2CommandBufferStub::GetRouteID() const {
-  return route_id_;
-}
-
 viz::GpuVSyncCallback GLES2CommandBufferStub::GetGpuVSyncCallback() {
   return viz::GpuVSyncCallback();
 }

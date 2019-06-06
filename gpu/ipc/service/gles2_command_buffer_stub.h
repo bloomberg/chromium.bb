@@ -49,9 +49,6 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
   const gles2::FeatureInfo* GetFeatureInfo() const override;
   const GpuPreferences& GetGpuPreferences() const override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
-
-  void AddFilter(IPC::MessageFilter* message_filter) override;
-  int32_t GetRouteID() const override;
   viz::GpuVSyncCallback GetGpuVSyncCallback() override;
 
  private:

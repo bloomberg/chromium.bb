@@ -1650,15 +1650,6 @@ void InProcessCommandBuffer::BufferPresented(
       client_thread_weak_ptr_, params.swap_id, params.flags, feedback));
 }
 
-void InProcessCommandBuffer::AddFilter(IPC::MessageFilter* message_filter) {
-  NOTREACHED();
-}
-
-int32_t InProcessCommandBuffer::GetRouteID() const {
-  NOTREACHED();
-  return 0;
-}
-
 void InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread(
     SwapBuffersCompleteParams params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
