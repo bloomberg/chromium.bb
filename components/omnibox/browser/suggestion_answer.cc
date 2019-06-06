@@ -55,6 +55,12 @@ void AppendWithSpace(const SuggestionAnswer::TextField* text,
 
 SuggestionAnswer::TextField::TextField() = default;
 SuggestionAnswer::TextField::~TextField() = default;
+SuggestionAnswer::TextField::TextField(const TextField&) = default;
+SuggestionAnswer::TextField::TextField(TextField&&) noexcept = default;
+SuggestionAnswer::TextField& SuggestionAnswer::TextField::operator=(
+    const TextField&) = default;
+SuggestionAnswer::TextField& SuggestionAnswer::TextField::operator=(
+    TextField&&) noexcept = default;
 
 // static
 bool SuggestionAnswer::TextField::ParseTextField(const base::Value& field_json,
@@ -93,9 +99,12 @@ size_t SuggestionAnswer::TextField::EstimateMemoryUsage() const {
 SuggestionAnswer::ImageLine::ImageLine()
     : num_text_lines_(1) {}
 SuggestionAnswer::ImageLine::ImageLine(const ImageLine& line) = default;
+SuggestionAnswer::ImageLine::ImageLine(ImageLine&&) noexcept = default;
 
 SuggestionAnswer::ImageLine& SuggestionAnswer::ImageLine::operator=(
     const ImageLine& line) = default;
+SuggestionAnswer::ImageLine& SuggestionAnswer::ImageLine::operator=(
+    ImageLine&&) noexcept = default;
 
 SuggestionAnswer::ImageLine::~ImageLine() {}
 
@@ -251,7 +260,12 @@ SuggestionAnswer::SuggestionAnswer() = default;
 
 SuggestionAnswer::SuggestionAnswer(const SuggestionAnswer& answer) = default;
 
+SuggestionAnswer::SuggestionAnswer(SuggestionAnswer&&) noexcept = default;
+
 SuggestionAnswer& SuggestionAnswer::operator=(const SuggestionAnswer& answer) =
+    default;
+
+SuggestionAnswer& SuggestionAnswer::operator=(SuggestionAnswer&&) noexcept =
     default;
 
 SuggestionAnswer::~SuggestionAnswer() = default;
