@@ -54,7 +54,7 @@ const StylePropertyShorthand& offsetShorthandWithoutPositionAnchor() {
     &GetCSSPropertyOffsetDistance(),
     &GetCSSPropertyOffsetRotate(),
   };
-  DEFINE_STATIC_LOCAL(StylePropertyShorthand, offsetLonghands, (CSSPropertyID::kOffset, offsetProperties, base::size(offsetProperties)));
+  DEFINE_STATIC_LOCAL(const StylePropertyShorthand, offsetLonghands, (CSSPropertyID::kOffset, offsetProperties, base::size(offsetProperties)));
   return offsetLonghands;
 }
 
