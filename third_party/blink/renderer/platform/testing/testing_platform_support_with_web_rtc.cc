@@ -61,7 +61,7 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
     return nullptr;
   }
   webrtc::DtlsTransportInformation DtlsTransportInformation() override {
-    static webrtc::DtlsTransportInformation dummy(
+    static const webrtc::DtlsTransportInformation dummy(
         webrtc::DtlsTransportState::kNew);
     return dummy;
   }
@@ -124,7 +124,7 @@ class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
     return nullptr;
   }
   webrtc::DtlsTransportInformation DtlsTransportInformation() override {
-    static webrtc::DtlsTransportInformation dummy(
+    static const webrtc::DtlsTransportInformation dummy(
         webrtc::DtlsTransportState::kNew);
     return dummy;
   }
@@ -307,7 +307,7 @@ MockWebRTCPeerConnectionHandler::PendingRemoteDescription() {
 
 const webrtc::PeerConnectionInterface::RTCConfiguration&
 MockWebRTCPeerConnectionHandler::GetConfiguration() const {
-  static webrtc::PeerConnectionInterface::RTCConfiguration configuration;
+  static const webrtc::PeerConnectionInterface::RTCConfiguration configuration;
   return configuration;
 }
 
