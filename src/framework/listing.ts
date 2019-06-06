@@ -6,16 +6,21 @@ interface ITestDesc {
 }
 type Listing = Iterable<ITestDesc>;
 
-interface ITestModule {
-    group: TestGroup;
+interface ITestNode {
+    // undefined for README.txt, defined for a test module.
+    group?: TestGroup;
     description: string;
 }
 
 export async function loadListing(suite: string, listing: Listing):
-        Promise<Map<string, ITestModule>> {
-    const promises: Array<Promise<[string, ITestModule]>> = [];
+        Promise<Map<string, ITestNode>> {
+    const promises: Array<Promise<[string, ITestNode]>> = [];
     for (const { path } of listing) {
-        if (!path.endsWith('/')) {
+        if (path.endsWith('/')) {
+            promises.push(fetch(`../${suite}${path}/README.txt`)
+                .then((resp) => resp.text())
+                .then((description) => [path, { description }]));
+        } else {
             promises.push(import(`../${suite}${path}.spec.js`)
                 .then((mod) => [path, mod]));
         }

@@ -196,16 +196,16 @@ function basepath(path) {
 
   const log = new Logger();
   const runCaseList = [];
-  for (const [path, mod] of listing) {
+  for (const [path, entry] of listing) {
     console.log("");
-    console.log(path, mod.description);
-    const testcasesVis = mkTest(path, mod.description);
+    console.log(path, entry.description);
+    const testcasesVis = mkTest(path, entry.description);
 
-    if (!mod) {
+    if (!entry.group) {
       continue;
     }
     const [tResult, tRec] = log.record(path);
-    for (const t of mod.group.iterate(tRec)) {
+    for (const t of entry.group.iterate(tRec)) {
       const runCase = mkCase(testcasesVis, t);
       runCaseList.push(runCase);
     }

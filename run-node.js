@@ -98,7 +98,7 @@ if (shouldRun) {
   console.error("** Tests **");
   console.error(JSON.stringify(listing, undefined, 2));
 
-  const { Logger } = require("./src/framework");
+  const { Logger } = require("./src/framework/logger");
   const failed = [];
   const warned = [];
   (async () => {
