@@ -99,8 +99,21 @@ public class FeedNewTabPage extends NewTabPage {
 
         @Override
         public void show(String message, String action, SnackbarCallbackApi callback) {
-            // TODO(https://crbug.com/924742): Set action text and correctly invoke callback.
-            show(message);
+            mManager.showSnackbar(
+                    Snackbar.make(message,
+                                    new SnackbarManager.SnackbarController() {
+                                        @Override
+                                        public void onAction(Object actionData) {
+                                            callback.onDismissedWithAction();
+                                        }
+
+                                        @Override
+                                        public void onDismissNoAction(Object actionData) {
+                                            callback.onDismissNoAction();
+                                        }
+                                    },
+                                    Snackbar.TYPE_ACTION, Snackbar.UMA_FEED_NTP_STREAM)
+                            .setAction(action, null));
         }
     }
 
