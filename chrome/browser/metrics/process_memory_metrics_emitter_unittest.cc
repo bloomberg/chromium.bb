@@ -326,6 +326,8 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
 constexpr int kTestRendererPrivateMemoryFootprint = 130;
 constexpr int kTestRendererSharedMemoryFootprint = 135;
 constexpr int kNativeLibraryResidentMemoryFootprint = 27560;
+constexpr int kNativeLibraryResidentNotOrderedCodeFootprint = 12345;
+constexpr int kNativeLibraryNotResidentOrderedCodeFootprint = 23456;
 
 #if !defined(OS_MACOSX)
 constexpr int kTestRendererResidentSet = 110;
@@ -833,6 +835,10 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   PopulateRendererMetrics(global_dump, expected_metrics, kTestRendererPid202);
   global_dump->aggregated_metrics->native_library_resident_kb =
       kNativeLibraryResidentMemoryFootprint;
+  global_dump->aggregated_metrics->native_library_not_resident_ordered_kb =
+      kNativeLibraryNotResidentOrderedCodeFootprint;
+  global_dump->aggregated_metrics->native_library_resident_not_ordered_kb =
+      kNativeLibraryResidentNotOrderedCodeFootprint;
 
   // No histograms should have been recorded yet.
   histograms.ExpectTotalCount("Memory.Renderer.PrivateMemoryFootprint", 0);
@@ -845,6 +851,10 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   histograms.ExpectTotalCount("Memory.Total.ResidentSet", 0);
   histograms.ExpectTotalCount(
       "Memory.NativeLibrary.MappedAndResidentMemoryFootprint2", 0);
+  histograms.ExpectTotalCount(
+      "Memory.NativeLibrary.NotResidentOrderedCodeMemoryFootprint", 0);
+  histograms.ExpectTotalCount(
+      "Memory.NativeLibrary.ResidentNotOrdereredCodeMemoryFootprint", 0);
 
   // Simulate some metrics emission.
   scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter =
@@ -880,6 +890,12 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   histograms.ExpectUniqueSample(
       "Memory.NativeLibrary.MappedAndResidentMemoryFootprint2",
       kNativeLibraryResidentMemoryFootprint, 1);
+  histograms.ExpectUniqueSample(
+      "Memory.NativeLibrary.NotResidentOrderedCodeMemoryFootprint",
+      kNativeLibraryNotResidentOrderedCodeFootprint, 1);
+  histograms.ExpectUniqueSample(
+      "Memory.NativeLibrary.ResidentNotOrdereredCodeMemoryFootprint",
+      kNativeLibraryResidentNotOrderedCodeFootprint, 1);
 }
 
 TEST_F(ProcessMemoryMetricsEmitterTest, MainFramePMFEmitted) {

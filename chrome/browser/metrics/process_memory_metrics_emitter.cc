@@ -772,17 +772,31 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
   }
 
   if (emit_metrics_for_all_processes) {
-    size_t native_resident_kb =
-        global_dump_->aggregated_metrics().native_library_resident_kb();
+    const auto& metrics = global_dump_->aggregated_metrics();
+    int32_t native_resident_kb = metrics.native_library_resident_kb();
+    int32_t native_library_resident_not_ordered_kb =
+        metrics.native_library_resident_not_ordered_kb();
+    int32_t native_library_not_resident_ordered_kb =
+        metrics.native_library_not_resident_ordered_kb();
 
     // |native_resident_kb| is only calculated for android devices that support
-    // code ordering. Otherwise it is equal to zero and should not be reported.
-    if (native_resident_kb != 0) {
+    // code ordering.
+    if (native_resident_kb != metrics.kInvalid) {
       // Size of the native library on android is ~40MB.
       // More precision is needed in the middle buckets, hence the range.
       base::UmaHistogramCustomCounts(
           "Memory.NativeLibrary.MappedAndResidentMemoryFootprint2",
           native_resident_kb, 1000, 100000, 100);
+      if (native_library_not_resident_ordered_kb != metrics.kInvalid) {
+        base::UmaHistogramCustomCounts(
+            "Memory.NativeLibrary.NotResidentOrderedCodeMemoryFootprint",
+            native_library_not_resident_ordered_kb, 1000, 100000, 100);
+      }
+      if (native_library_resident_not_ordered_kb != metrics.kInvalid) {
+        base::UmaHistogramCustomCounts(
+            "Memory.NativeLibrary.ResidentNotOrdereredCodeMemoryFootprint",
+            native_library_resident_not_ordered_kb, 1000, 100000, 100);
+      }
     }
 
     UMA_HISTOGRAM_MEMORY_LARGE_MB(
