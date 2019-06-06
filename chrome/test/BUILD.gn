@@ -4993,8 +4993,6 @@ if (!is_android) {
       "../browser/permissions/permission_request_manager_test_api.h",
       "../browser/ssl/cert_verifier_browser_test.cc",
       "../browser/ssl/cert_verifier_browser_test.h",
-      "../browser/ssl/chrome_mock_cert_verifier.cc",
-      "../browser/ssl/chrome_mock_cert_verifier.h",
       "../browser/ui/search/instant_test_utils.cc",
       "../browser/ui/search/instant_test_utils.h",
       "../browser/ui/search/local_ntp_test_utils.cc",

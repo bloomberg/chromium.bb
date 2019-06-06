@@ -158,7 +158,6 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
-  void TearDownInProcessBrowserTestFixture() override;
 
   // Bring up a new Chrome tab set up with password manager test hooks.
   // @param[in] browser the browser running the password manager test, upon

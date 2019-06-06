@@ -58,15 +58,10 @@ class InfoMap;
 }
 
 namespace net {
-class CertVerifier;
 class ClientCertStore;
 class CookieStore;
 class HttpTransactionFactory;
 }  // namespace net
-
-namespace network {
-class CertVerifierWithTrustAnchors;
-}  // namespace network
 
 // Conceptually speaking, the ProfileIOData represents data that lives on the IO
 // thread that is owned by a Profile, such as, but not limited to, network
@@ -86,9 +81,6 @@ class ProfileIOData {
   // Returns true if |url| is handled in Chrome, or by default handlers in
   // net::URLRequest.
   static bool IsHandledURL(const GURL& url);
-
-  // Sets a global CertVerifier to use when initializing all profiles.
-  static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
 
   // Called by Profile.
   content::ResourceContext* GetResourceContext() const;
@@ -247,7 +239,6 @@ class ProfileIOData {
     std::unique_ptr<net::URLRequestInterceptor> new_tab_page_interceptor;
 
 #if defined(OS_CHROMEOS)
-    std::unique_ptr<network::CertVerifierWithTrustAnchors> policy_cert_verifier;
     std::string username_hash;
     SystemKeySlotUseType system_key_slot_use_type = SystemKeySlotUseType::kNone;
     std::unique_ptr<chromeos::CertificateProvider> certificate_provider;

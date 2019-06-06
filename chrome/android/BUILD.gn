@@ -1539,8 +1539,6 @@ static_library("browser_test_support") {
     "../browser/android/ssl/mock_cert_verifier_rule_android.h",
     "../browser/offline_pages/android/offline_test_util_jni.cc",
     "../browser/offline_pages/android/prefetch_test_bridge.cc",
-    "../browser/ssl/chrome_mock_cert_verifier.cc",
-    "../browser/ssl/chrome_mock_cert_verifier.h",
   ]
   deps = [
     ":test_support_jni_headers",

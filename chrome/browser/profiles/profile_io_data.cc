@@ -165,35 +165,6 @@ using content::ResourceContext;
 
 namespace {
 
-net::CertVerifier* g_cert_verifier_for_profile_io_data_testing = nullptr;
-
-// A CertVerifier that forwards all requests to
-// |g_cert_verifier_for_profile_io_data_testing|. This is used to allow Profiles
-// to have their own std::unique_ptr<net::CertVerifier> while forwarding calls
-// to the shared verifier.
-class WrappedCertVerifierForProfileIODataTesting : public net::CertVerifier {
- public:
-  ~WrappedCertVerifierForProfileIODataTesting() override = default;
-
-  // CertVerifier implementation
-  int Verify(const RequestParams& params,
-             net::CertVerifyResult* verify_result,
-             net::CompletionOnceCallback callback,
-             std::unique_ptr<Request>* out_req,
-             const net::NetLogWithSource& net_log) override {
-    verify_result->Reset();
-    if (!g_cert_verifier_for_profile_io_data_testing)
-      return net::ERR_FAILED;
-    return g_cert_verifier_for_profile_io_data_testing->Verify(
-        params, verify_result, std::move(callback), out_req, net_log);
-  }
-  void SetConfig(const Config& config) override {
-    if (!g_cert_verifier_for_profile_io_data_testing)
-      return;
-    return g_cert_verifier_for_profile_io_data_testing->SetConfig(config);
-  }
-};
-
 #if defined(OS_CHROMEOS)
 // The following four functions are responsible for initializing NSS for each
 // profile on ChromeOS, which has a separate NSS database and TPM slot
@@ -444,14 +415,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   network_prediction_options_.MoveToThread(io_task_runner);
 
-#if defined(OS_CHROMEOS)
-  if (!g_cert_verifier_for_profile_io_data_testing &&
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    profile_params_->policy_cert_verifier =
-        policy::PolicyCertServiceFactory::CreateForProfile(profile);
-  }
-#endif
-
   incognito_availibility_pref_.Init(prefs::kIncognitoModeAvailability,
                                     pref_service);
   incognito_availibility_pref_.MoveToThread(io_task_runner);
@@ -541,12 +504,6 @@ bool ProfileIOData::IsHandledURL(const GURL& url) {
   }
 
   return IsHandledProtocol(url.scheme());
-}
-
-// static
-void ProfileIOData::SetCertVerifierForTesting(
-    net::CertVerifier* cert_verifier) {
-  g_cert_verifier_for_profile_io_data_testing = cert_verifier;
 }
 
 content::ResourceContext* ProfileIOData::GetResourceContext() const {

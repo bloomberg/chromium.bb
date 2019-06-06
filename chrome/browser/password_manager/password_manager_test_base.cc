@@ -19,7 +19,6 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
@@ -448,10 +447,6 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
 
 void PasswordManagerBrowserTestBase::TearDownOnMainThread() {
   ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-}
-
-void PasswordManagerBrowserTestBase::TearDownInProcessBrowserTestFixture() {
-  ProfileIOData::SetCertVerifierForTesting(nullptr);
 }
 
 void PasswordManagerBrowserTestBase::SetUpOnMainThreadAndGetNewTab(

@@ -7,7 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 
 // Enables tests to force certificate verification results.
 class MockCertVerifierRuleAndroid {
@@ -19,7 +19,7 @@ class MockCertVerifierRuleAndroid {
   void TearDown(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
  private:
-  ChromeMockCertVerifier mock_cert_verifier_;
+  content::ContentMockCertVerifier mock_cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCertVerifierRuleAndroid);
 };
