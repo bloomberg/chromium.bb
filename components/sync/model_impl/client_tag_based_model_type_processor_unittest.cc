@@ -2272,7 +2272,11 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   type_processor()->ModelReadyToSync(std::move(metadata_batch));
   ASSERT_TRUE(type_processor()->IsModelReadyToSyncForTest());
 
+  base::HistogramTester histogram_tester;
   OnSyncStarting();
+  histogram_tester.ExpectBucketCount(
+      "Sync.PersistedModelTypeIdMismatch",
+      /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/1);
 
   // Model should still be ready to sync.
   ASSERT_TRUE(type_processor()->IsModelReadyToSyncForTest());

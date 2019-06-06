@@ -184,6 +184,15 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     // |model_type_state_| and the one received from sync. This indicates that
     // the stored metadata are invalid (e.g. has been manipulated) and don't
     // belong to the current syncing client.
+    if (model_type_state_.progress_marker().data_type_id() !=
+        GetSpecificsFieldNumberFromModelType(type_)) {
+      // This is not strongly typed because historically,
+      // ModelTypeToHistogramInt() defines quite a different order from the
+      // type_ enum.
+      UMA_HISTOGRAM_ENUMERATION("Sync.PersistedModelTypeIdMismatch",
+                                ModelTypeToHistogramInt(type_),
+                                static_cast<int>(ModelType::NUM_ENTRIES));
+    }
     ClearMetadataAndResetState();
 
     // The model is still ready to sync (with the same |bridge_|) - replay
