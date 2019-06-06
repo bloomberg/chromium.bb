@@ -52,7 +52,6 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   void WaitForGaiaPageBackButtonUpdate();
   void WaitForGaiaPageEvent(const std::string& event);
   void WaitForSigninScreen();
-  void WaitForEnrollmentSuccess();
   test::JSChecker SigninFrameJS();
 
   // Whether to use background networking. Note this is only effective when it
