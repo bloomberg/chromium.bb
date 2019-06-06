@@ -4,7 +4,6 @@
 
 html {
   /* Material Design constants */
-  --md-add-size: 24px;
   --md-edit-menu-size: 20px;
   --md-fallback-letter-size: 16px;
   --md-favicon-size: 32px;
@@ -14,12 +13,9 @@ html {
   --md-menu-margin-side: 2px;
   --md-menu-margin-top: 4px;
   --md-menu-size: 12px;
-  --md-tile-height: 112px;
   --md-tile-margin: 16px;
-  --md-tile-padding-bottom: 10px;
-  --md-tile-padding-horizontal: 4px;
   --md-tile-padding-top: 16px;
-  --md-tile-width: 112px;
+  --md-tile-size: 112px;
   --md-title-font-size: 12px;
   --md-title-height: 24px;
   --md-title-max-height: 28px;
@@ -51,6 +47,7 @@ a:visited {
 }
 
 #most-visited {
+  margin-top: 10px;
   text-align: -webkit-center;
   user-select: none;
   width: 100%;
@@ -64,9 +61,8 @@ a:visited {
   justify-content: center;
   /* 5 112px tiles per row. If you change this, also change the corresponding
    * values in local_ntp.css. */
-  max-width: calc(var(--md-tile-width) * var(--md-max-tiles-row));
+  max-width: calc(var(--md-tile-size) * var(--md-max-tiles-row));
   opacity: 0;
-  padding: 10px 6px 0;
   position: static;
   /* This align correctly for both LTR and RTL */
   text-align: -webkit-auto;
@@ -118,23 +114,25 @@ body.reordering .grid-tile {
   transition-duration: 0s;
 }
 
-.grid-tile-container.grid-reorder {
+.grid-reorder {
   z-index: 10;  /* Ensure the held tile is visible. */
 }
 
-.md-tile-container {
+.md-tile {
   border-radius: 4px;
   box-sizing: border-box;
-  height: var(--md-tile-height);
+  cursor: pointer;
+  height: var(--md-tile-size);
   margin-bottom: var(--md-tile-margin);
   opacity: 1;
+  padding-top: var(--md-tile-padding-top);
   position: relative;
   transition-property:
       background, background-color, border-color, box-shadow, opacity, filter;
-  width: var(--md-tile-width);
+  width: var(--md-tile-size);
 }
 
-.md-tile-container.reorder .md-tile {
+.reorder {
   background-color: white;
   border-radius: 4px;
   box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
@@ -142,52 +140,46 @@ body.reordering .grid-tile {
   transition-duration: 200ms;
 }
 
-html[darkmode=true] .md-tile-container.reorder .md-tile {
+html[darkmode=true] .reorder {
   background-color: rgb(var(--dark-mode-bg-rgb));
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4),
       0 4px 8px 3px rgba(0, 0, 0, 0.25);
 }
 
-.md-tile-container.reorder .md-tile .md-tile-inner {
+.reorder .md-tile-inner {
   z-index: unset;
-}
-
-.md-tile {
-  cursor: pointer;
-  padding: var(--md-tile-padding-top) var(--md-tile-padding-horizontal)
-    var(--md-tile-padding-bottom);
 }
 
 .md-empty-tile {
   display: none;
 }
 
-body:not(.reordering) .md-tile-container:hover,
-.grid-tile-container.grid-reorder .md-tile-container {
+body:not(.reordering) .md-tile:hover,
+.grid-reorder .md-tile {
   background-color: rgba(var(--GG900-rgb), 0.06);
 }
 
-html[darkmode=true] body:not(.reordering) .md-tile-container:hover,
-html[darkmode=true] .grid-tile-container.grid-reorder .md-tile-container {
+html[darkmode=true] body:not(.reordering) .md-tile:hover,
+html[darkmode=true] .grid-reorder .md-tile {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-body.dark-theme:not(.reordering) .md-tile-container:hover,
-body.dark-theme .grid-tile-container.grid-reorder .md-tile-container {
+body.dark-theme:not(.reordering) .md-tile:hover,
+body.dark-theme .grid-reorder .md-tile {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-body:not(.reordering) .md-tile-container:hover .md-menu {
+body:not(.reordering) .md-tile:hover .md-menu {
   opacity: 1;
   transition-delay: 500ms;
 }
 
-body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
+body.dark-theme:not(.reordering) .md-tile:active + .md-menu::after {
   background-color: rgb(var(--GG400-rgb));
   transition-delay: 0ms;
 }
 
-.md-tile-container.blacklisted {
+.blacklisted {
   margin: 0;
   padding: 0;
   transform: scale(0, 0);
@@ -207,34 +199,24 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
 }
 
 .md-icon {
-  margin-bottom: var(--md-icon-margin-bottom);
-  pointer-events: none;
-}
-
-.md-icon img {
-  /* Icons returned by the NTP Icon Source are always of this size. */
-  height: var(--md-icon-size);
-  width: var(--md-icon-size);
-}
-
-.md-icon-background {
   align-items: center;
   background-color: var(--icon-background-color);
   border-radius: 50%;
   display: flex;
   height: var(--md-icon-size);
   justify-content: center;
+  margin-bottom: var(--md-icon-margin-bottom);
   width: var(--md-icon-size);
 }
 
 .md-add-icon {
-  background: url(chrome-search://most-visited/add_link.svg) no-repeat center;
-  height: var(--md-add-size);
-  width: var(--md-add-size);
+  background-image: url(chrome-search://most-visited/add_link.svg);
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .use-white-add-icon .md-add-icon {
-  background: url(chrome-search://most-visited/add_link_white.svg) no-repeat center;
+  background-image: url(chrome-search://most-visited/add_link_white.svg);
 }
 
 .md-fallback-letter {
@@ -287,19 +269,19 @@ body.mac-chromeos .md-title {
 }
 
 /* Apply when a custom background is set. */
-body.custom-background .md-tile-container:not(.reorder) .md-title {
+body.custom-background .md-tile:not(.reorder) .md-title {
   filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
 }
 
 /* Apply only when a theme with image is installed. */
-body.use-title-container .md-title-container {
+body.use-title-container .md-title {
   background-color: white;
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 500px;
   padding: 0 8px;
 }
 
-body.use-title-container .md-tile-container:not(.reorder) .md-title {
+body.use-title-container .md-tile:not(.reorder) .md-title {
   color: rgb(var(--GG800-rgb));
   filter: unset;
 }
@@ -371,12 +353,12 @@ html[darkmode=true] body:not(.reordering) .md-menu:focus::after {
   background-color: rgb(var(--GG400-rgb));
 }
 
-body.dark-theme .md-tile-container:not(.reorder) .md-menu::after,
+body.dark-theme .md-tile:not(.reorder) .md-menu::after,
 body.dark-theme:not(.reordering) .md-menu:focus:not(.mouse-navigation)::after {
   background-color: white;
 }
 
-html[darkmode=true] body.dark-theme .md-tile-container:not(.reorder) .md-menu::after,
+html[darkmode=true] body.dark-theme .md-tile:not(.reorder) .md-menu::after,
 html[darkmode=true] body.dark-theme:not(.reordering) .md-menu:focus:not(.mouse-navigation)::after {
   background-color: rgb(var(--GG200-rgb));
 }

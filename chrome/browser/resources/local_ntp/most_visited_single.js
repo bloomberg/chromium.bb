@@ -59,18 +59,14 @@ const CLASSES = {
   MAC_CHROMEOS: 'mac-chromeos',  // Reduces font weight for MacOS and ChromeOS.
   // Material Design classes.
   MD_EMPTY_TILE: 'md-empty-tile',
-  MD_ICON_BACKGROUND: 'md-icon-background',
   MD_FALLBACK_LETTER: 'md-fallback-letter',
-  MD_FAVICON: 'md-favicon',
   MD_ICON: 'md-icon',
   MD_ADD_ICON: 'md-add-icon',
   MD_MENU: 'md-menu',
   MD_EDIT_MENU: 'md-edit-menu',
   MD_TILE: 'md-tile',
-  MD_TILE_CONTAINER: 'md-tile-container',
   MD_TILE_INNER: 'md-tile-inner',
   MD_TITLE: 'md-title',
-  MD_TITLE_CONTAINER: 'md-title-container',
   NO_INITIAL_FADE: 'no-initial-fade',
 };
 
@@ -975,7 +971,7 @@ function swapInNewTiles() {
     // Re-balance the tiles if there are more than |MD_MAX_TILES_PER_ROW| in
     // order to make even rows.
     if (cur.childNodes.length > MD_MAX_TILES_PER_ROW) {
-      cur.style.maxWidth = 'calc(var(--md-tile-width) * ' +
+      cur.style.maxWidth = 'calc(var(--md-tile-size) * ' +
           Math.ceil(cur.childNodes.length / 2) + ')';
     }
   }
@@ -1003,8 +999,8 @@ function swapInNewTiles() {
  * navigation.
  */
 function updateTileVisibility() {
-  const allTiles = document.querySelectorAll(
-      '#' + IDS.MV_TILES + ' .' + CLASSES.MD_TILE_CONTAINER);
+  const allTiles =
+      document.querySelectorAll('#' + IDS.MV_TILES + ' .' + CLASSES.MD_TILE);
   if (allTiles.length === 0) {
     return;
   }
@@ -1051,7 +1047,7 @@ function addTile(args) {
  * @param {Element} tile DOM node of the tile we want to remove.
  */
 function blacklistTile(tile) {
-  const rid = Number(tile.firstChild.getAttribute('data-rid'));
+  const rid = Number(tile.getAttribute('data-rid'));
 
   if (isCustomLinksEnabled) {
     chrome.embeddedSearch.newTabPage.deleteMostVisitedItem(rid);
@@ -1116,8 +1112,8 @@ function stopReorder(tile) {
     allTiles[i].setAttribute('data-pos', i);
   }
   chrome.embeddedSearch.newTabPage.reorderCustomLink(
-      Number(tile.firstChild.getAttribute('data-rid')),
-      Number(tile.firstChild.getAttribute('data-pos')));
+      Number(tile.getAttribute('data-rid')),
+      Number(tile.getAttribute('data-pos')));
 }
 
 
@@ -1207,23 +1203,18 @@ function renderTile(data) {
  * @return {Element}
  */
 function renderMaterialDesignTile(data) {
-  const mdTileContainer = document.createElement('div');
-  mdTileContainer.role = 'none';
-
+  const mdTile = document.createElement('a');
   if (data == null) {
-    mdTileContainer.className = CLASSES.MD_EMPTY_TILE;
-    return mdTileContainer;
+    mdTile.className = CLASSES.MD_EMPTY_TILE;
+    return mdTile;
   }
-  mdTileContainer.className = CLASSES.MD_TILE_CONTAINER;
+  mdTile.className = CLASSES.MD_TILE;
 
-  // The tile will be appended to tiles.
+  // The tile will be appended to |tiles|.
   const position = tiles.children.length;
   // This is set in the load/error event for the favicon image.
   let tileType = TileVisualType.NONE;
 
-  const mdTile = document.createElement('a');
-  mdTile.className = CLASSES.MD_TILE;
-  mdTile.tabIndex = 0;
   mdTile.setAttribute('data-rid', data.rid);
   mdTile.setAttribute('data-pos', position);
   if (utils.isSchemeAllowed(data.url)) {
@@ -1248,7 +1239,7 @@ function renderMaterialDesignTile(data) {
         !data.isAddButton) {
       event.preventDefault();
       event.stopPropagation();
-      blacklistTile(mdTileContainer);
+      blacklistTile(mdTile);
     } else if (
         event.keyCode === KEYCODES.ENTER || event.keyCode === KEYCODES.SPACE) {
       event.preventDefault();
@@ -1270,29 +1261,26 @@ function renderMaterialDesignTile(data) {
   const mdTileInner = document.createElement('div');
   mdTileInner.className = CLASSES.MD_TILE_INNER;
 
-  const mdIcon = document.createElement('div');
-  mdIcon.classList.add(CLASSES.MD_ICON);
-  mdIcon.classList.add(CLASSES.MD_ICON_BACKGROUND);
-
   if (data.isAddButton) {
-    const mdAdd = document.createElement('div');
-    mdAdd.className = CLASSES.MD_ADD_ICON;
-    const addBackground = document.createElement('div');
-    addBackground.className = CLASSES.MD_ICON_BACKGROUND;
+    mdTile.tabIndex = 0;
 
-    addBackground.appendChild(mdAdd);
-    mdIcon.appendChild(addBackground);
+    const mdIconAdd = document.createElement('div');
+    mdIconAdd.classList.add(CLASSES.MD_ICON);
+    mdIconAdd.classList.add(CLASSES.MD_ADD_ICON);
+
+    mdTileInner.appendChild(mdIconAdd);
   } else {
-    const fi = document.createElement('img');
+    const mdIcon = document.createElement('img');
+    mdIcon.classList.add(CLASSES.MD_ICON);
     // Set title and alt to empty so screen readers won't say the image name.
-    fi.title = '';
-    fi.alt = '';
+    mdIcon.title = '';
+    mdIcon.alt = '';
     const url = new URL('chrome-search://ntpicon/');
     url.searchParams.set('size', '24@' + window.devicePixelRatio + 'x');
     url.searchParams.set('url', data.url);
-    fi.src = url.toString();
+    mdIcon.src = url.toString();
     loadedCounter += 1;
-    fi.addEventListener('load', function(ev) {
+    mdIcon.addEventListener('load', function(ev) {
       // Store the type for a potential later navigation.
       tileType = TileVisualType.ICON_REAL;
       logMostVisitedImpression(
@@ -1303,17 +1291,16 @@ function renderMaterialDesignTile(data) {
       // log.
       countLoad();
     });
-    fi.addEventListener('error', function(ev) {
+    mdIcon.addEventListener('error', function(ev) {
       const fallbackBackground = document.createElement('div');
-      fallbackBackground.className = CLASSES.MD_ICON_BACKGROUND;
+      fallbackBackground.className = CLASSES.MD_ICON;
       const fallbackLetter = document.createElement('div');
       fallbackLetter.className = CLASSES.MD_FALLBACK_LETTER;
       fallbackLetter.textContent = data.title.charAt(0).toUpperCase();
-      mdIcon.classList.add(CLASSES.FAILED_FAVICON);
+      fallbackBackground.classList.add(CLASSES.FAILED_FAVICON);
 
       fallbackBackground.appendChild(fallbackLetter);
-      mdIcon.removeChild(fi);
-      mdIcon.appendChild(fallbackBackground);
+      mdTileInner.replaceChild(fallbackBackground, mdIcon);
 
       // Store the type for a potential later navigation.
       tileType = TileVisualType.ICON_DEFAULT;
@@ -1326,23 +1313,18 @@ function renderMaterialDesignTile(data) {
       countLoad();
     });
 
-    mdIcon.appendChild(fi);
+    mdTileInner.appendChild(mdIcon);
   }
 
-  mdTileInner.appendChild(mdIcon);
 
-  const mdTitleContainer = document.createElement('div');
-  mdTitleContainer.className = CLASSES.MD_TITLE_CONTAINER;
   const mdTitle = document.createElement('div');
   mdTitle.className = CLASSES.MD_TITLE;
+  mdTitle.style.direction = data.direction || 'ltr';
   const mdTitleTextwrap = document.createElement('span');
   mdTitleTextwrap.innerText = data.title;
-  mdTitle.style.direction = data.direction || 'ltr';
-  mdTitleContainer.appendChild(mdTitle);
-  mdTileInner.appendChild(mdTitleContainer);
-  mdTile.appendChild(mdTileInner);
-  mdTileContainer.appendChild(mdTile);
   mdTitle.appendChild(mdTitleTextwrap);
+  mdTileInner.appendChild(mdTitle);
+  mdTile.appendChild(mdTileInner);
 
   if (!data.isAddButton) {
     const mdMenu = document.createElement('button');
@@ -1365,7 +1347,7 @@ function renderMaterialDesignTile(data) {
           'aria-label', (queryArgs['removeTooltip'] || '') + ' ' + data.title);
       mdMenu.addEventListener('click', function(ev) {
         removeAllOldTiles();
-        blacklistTile(mdTileContainer);
+        blacklistTile(mdTile);
         ev.preventDefault();
         ev.stopPropagation();
       });
@@ -1377,19 +1359,18 @@ function renderMaterialDesignTile(data) {
     });
     utils.disableOutlineOnMouseClick(mdMenu);
 
-    mdTileContainer.appendChild(mdMenu);
+    mdTile.appendChild(mdMenu);
   }
 
   if (isGridEnabled) {
-    return currGrid.createGridTile(
-        mdTileContainer, data.rid, !!data.isAddButton);
+    return currGrid.createGridTile(mdTile, data.rid, !!data.isAddButton);
   } else {
     // Enable reordering.
     if (isCustomLinksEnabled && !data.isAddButton) {
-      mdTileContainer.draggable = 'true';
-      setupReorder(mdTileContainer);
+      mdTile.draggable = 'true';
+      setupReorder(mdTile);
     }
-    return mdTileContainer;
+    return mdTile;
   }
 }
 

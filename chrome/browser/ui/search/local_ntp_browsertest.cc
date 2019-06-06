@@ -513,14 +513,14 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsMDIframe) {
   // favicon images.
   int succeeded_favicons = 0;
   ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      iframe, "document.querySelectorAll('.md-icon img').length",
+      iframe,
+      "document.querySelectorAll('.md-icon:not(.failed-favicon)').length",
       &succeeded_favicons));
   int failed_favicons = 0;
   ASSERT_TRUE(instant_test_utils::GetIntFromJS(
       iframe, "document.querySelectorAll('.md-icon.failed-favicon').length",
       &failed_favicons));
-  // Check if only one add button exists in the frame. This will be included in
-  // the total favicon count.
+  // And check if only one add button exists in the frame.
   int add_button_favicon = 0;
   ASSERT_TRUE(instant_test_utils::GetIntFromJS(
       iframe, "document.querySelectorAll('.md-add-icon').length",
@@ -529,14 +529,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsMDIframe) {
 
   // First, sanity check that the numbers line up (none of the css classes was
   // renamed, etc).
-  EXPECT_EQ(total_favicons,
-            succeeded_favicons + add_button_favicon + failed_favicons);
+  EXPECT_EQ(total_favicons, succeeded_favicons + failed_favicons);
 
   // Since we're in a non-signed-in, fresh profile with no history, there should
   // be the default TopSites tiles (see history::PrepopulatedPage).
   // Check that there is at least one tile, and that all of them loaded their
   // images successfully.
-  EXPECT_EQ(total_favicons, succeeded_favicons + add_button_favicon);
+  EXPECT_EQ(total_favicons, succeeded_favicons);
   EXPECT_EQ(0, failed_favicons);
 }
 
