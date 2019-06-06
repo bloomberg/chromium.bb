@@ -56,17 +56,17 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
   /** @param {MojoHandle=} opt_handle */
   constructor(opt_handle) {
     /**
-     * @private {!mojo.internal.interfaceSupport.InterfaceProxyBase<!{{module.namespace}}.{{interface.name}}Request>}
+     * @private {!mojo.internal.interfaceSupport.InterfaceRemoteBase<!{{module.namespace}}.{{interface.name}}Request>}
      */
     this.proxy =
-        new mojo.internal.interfaceSupport.InterfaceProxyBase(
+        new mojo.internal.interfaceSupport.InterfaceRemoteBase(
           {{module.namespace}}.{{interface.name}}Request,
           opt_handle);
 
     /**
-     * @public {!mojo.internal.interfaceSupport.InterfaceProxyBaseWrapper<!{{module.namespace}}.{{interface.name}}Request>}
+     * @public {!mojo.internal.interfaceSupport.InterfaceRemoteBaseWrapper<!{{module.namespace}}.{{interface.name}}Request>}
      */
-    this.$ = new mojo.internal.interfaceSupport.InterfaceProxyBaseWrapper(this.proxy);
+    this.$ = new mojo.internal.interfaceSupport.InterfaceRemoteBaseWrapper(this.proxy);
 
     /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
     this.onConnectionError = this.proxy.getConnectionErrorEventRouter();
@@ -114,11 +114,11 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
    * @param {!{{module.namespace}}.{{interface.name}}Interface } impl
    */
   constructor(impl) {
-    this.target_ = new mojo.internal.interfaceSupport.InterfaceTarget;
+    this.receiver_ = new mojo.internal.interfaceSupport.InterfaceReceiver;
 {%  for method in interface.methods %}
 {%-   set interface_message_id =
           interface.mojom_name ~ "_" ~ method.mojom_name %}
-    this.target_.registerHandler(
+    this.receiver_.registerHandler(
         {{method.ordinal}},
         {{module.namespace}}.{{interface_message_id}}_ParamsSpec.$,
 {%-   if method.response_parameters != None %}
@@ -129,7 +129,7 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
         impl.{{method.name}}.bind(impl));
 {%- endfor %}
     /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
-    this.onConnectionError = this.target_.getConnectionErrorEventRouter();
+    this.onConnectionError = this.receiver_.getConnectionErrorEventRouter();
   }
 
   /**
@@ -140,7 +140,7 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
    * @export
    */
   bindHandle(handle) {
-    this.target_.bindHandle(handle);
+    this.receiver_.bindHandle(handle);
   }
 
   /**
@@ -149,7 +149,7 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
    * @export
    */
   closeBindings() {
-    this.target_.closeBindings();
+    this.receiver_.closeBindings();
   }
 
   /**
@@ -163,7 +163,7 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
   static getProxy() {
     let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
     Mojo.bindInterface('{{mojom_namespace}}.{{interface.name}}',
-                       proxy.$.createRequest().handle);
+                       proxy.$.bindNewPipeAndPassReceiver().handle);
     return proxy;
   }
 
@@ -176,7 +176,7 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
    */
   createProxy() {
     let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
-    this.target_.bindHandle(proxy.$.createRequest().handle);
+    this.receiver_.bindHandle(proxy.$.bindNewPipeAndPassReceiver().handle);
     return proxy;
   }
 };
@@ -198,39 +198,39 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
 
 /**
  * An object which receives request messages for the {{interface.name}}
- * mojom interface and dispatches them as callbacks. One callback target exists
+ * mojom interface and dispatches them as callbacks. One callback receiver exists
  * on this object for each message defined in the mojom interface, and each
- * target can have any number of listeners added to it.
+ * receiver can have any number of listeners added to it.
  *
  * @export
  */
 {{module.namespace}}.{{interface.name}}CallbackRouter = class {
   constructor() {
-    this.target_ = new mojo.internal.interfaceSupport.InterfaceTarget;
+    this.receiver_ = new mojo.internal.interfaceSupport.InterfaceReceiver;
     this.router_ = new mojo.internal.interfaceSupport.CallbackRouter;
 {%  for method in interface.methods %}
 {%-   set interface_message_id =
           interface.mojom_name ~ "_" ~ method.mojom_name %}
     /**
-     * @public {!mojo.internal.interfaceSupport.InterfaceCallbackTarget}
+     * @public {!mojo.internal.interfaceSupport.InterfaceCallbackReceiver}
      */
     this.{{method.name}} =
-        new mojo.internal.interfaceSupport.InterfaceCallbackTarget(
+        new mojo.internal.interfaceSupport.InterfaceCallbackReceiver(
             this.router_);
 
-    this.target_.registerHandler(
+    this.receiver_.registerHandler(
         {{method.ordinal}},
         {{module.namespace}}.{{interface_message_id}}_ParamsSpec.$,
 {%-   if method.response_parameters != None %}
         {{module.namespace}}.{{interface_message_id}}_ResponseParamsSpec.$,
-        this.{{method.name}}.createTargetHandler(true /* expectsResponse */));
+        this.{{method.name}}.createReceiverHandler(true /* expectsResponse */));
 {%-   else %}
         null,
-        this.{{method.name}}.createTargetHandler(false /* expectsResponse */));
+        this.{{method.name}}.createReceiverHandler(false /* expectsResponse */));
 {%-   endif %}
 {%- endfor %}
     /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
-    this.onConnectionError = this.target_.getConnectionErrorEventRouter();
+    this.onConnectionError = this.receiver_.getConnectionErrorEventRouter();
   }
 
   /**
@@ -241,15 +241,15 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
    * @export
    */
   bindHandle(handle) {
-    this.target_.bindHandle(handle);
+    this.receiver_.bindHandle(handle);
   }
 
   /**
-   * Closes all bindings bound to this target. The target will not receive any
+   * Closes all bindings bound to this receiver. The receiver will not receive any
    * further message message events unless rebound to one or more handles.
    */
   closeBindings() {
-    this.target_.closeBindings();
+    this.receiver_.closeBindings();
   }
 
   /**
@@ -261,7 +261,7 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
    */
   createProxy() {
     let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
-    this.target_.bindHandle(proxy.$.createRequest().handle);
+    this.receiver_.bindHandle(proxy.$.bindNewPipeAndPassReceiver().handle);
     return proxy;
   }
 

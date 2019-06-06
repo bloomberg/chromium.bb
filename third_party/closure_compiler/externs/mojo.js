@@ -109,7 +109,7 @@ mojo.makeRequest = function(interfacePtr) {};
 /** @const */
 mojo.internal = {};
 
-mojo.internal.InterfaceProxyBase = class {
+mojo.internal.InterfaceRemoteBase = class {
   /**
    * @param {MojoHandle=} opt_handle
    */
