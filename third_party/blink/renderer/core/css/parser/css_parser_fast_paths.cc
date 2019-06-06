@@ -41,14 +41,6 @@ static inline bool IsSimpleLengthPropertyID(CSSPropertyID property_id,
     case CSSPropertyID::kPaddingLeft:
     case CSSPropertyID::kPaddingRight:
     case CSSPropertyID::kPaddingTop:
-    case CSSPropertyID::kScrollMarginBlockEnd:
-    case CSSPropertyID::kScrollMarginBlockStart:
-    case CSSPropertyID::kScrollMarginBottom:
-    case CSSPropertyID::kScrollMarginInlineEnd:
-    case CSSPropertyID::kScrollMarginInlineStart:
-    case CSSPropertyID::kScrollMarginLeft:
-    case CSSPropertyID::kScrollMarginRight:
-    case CSSPropertyID::kScrollMarginTop:
     case CSSPropertyID::kScrollPaddingBlockEnd:
     case CSSPropertyID::kScrollPaddingBlockStart:
     case CSSPropertyID::kScrollPaddingBottom:
