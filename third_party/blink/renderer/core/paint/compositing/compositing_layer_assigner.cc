@@ -38,8 +38,8 @@
 namespace blink {
 
 // We will only allow squashing if the bbox-area:squashed-area doesn't exceed
-// the ratio |gSquashingSparsityTolerance|:1.
-static uint64_t g_squashing_sparsity_tolerance = 6;
+// the ratio |kSquashingSparsityTolerance|:1.
+constexpr uint64_t kSquashingSparsityTolerance = 6;
 
 CompositingLayerAssigner::CompositingLayerAssigner(
     PaintLayerCompositor* compositor)
@@ -90,7 +90,7 @@ bool CompositingLayerAssigner::SquashingWouldExceedSparsityTolerance(
   const uint64_t new_squashed_area =
       squashing_state.total_area_of_squashed_rects + bounds.Size().Area();
   return new_bounding_rect_area >
-         g_squashing_sparsity_tolerance * new_squashed_area;
+         kSquashingSparsityTolerance * new_squashed_area;
 }
 
 bool CompositingLayerAssigner::NeedsOwnBacking(const PaintLayer* layer) const {
