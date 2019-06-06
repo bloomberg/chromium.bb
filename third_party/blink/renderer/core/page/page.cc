@@ -308,8 +308,6 @@ void Page::DocumentDetached(Document* document) {
   if (validation_message_client_)
     validation_message_client_->DocumentDetached(*document);
   hosts_using_features_.DocumentDetached(*document);
-  if (spatial_navigation_controller_ && document->GetFrame()->IsMainFrame())
-    spatial_navigation_controller_->ResetMojoBindings();
 }
 
 bool Page::OpenedByDOM() const {
