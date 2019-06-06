@@ -21,6 +21,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/metrics/address_form_event_logger.h"
@@ -6954,7 +6955,8 @@ TEST_F(AutofillMetricsTest, LogUserHappinessMetric_PasswordForm) {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::USER_DID_AUTOFILL, PASSWORD_FIELD,
-        security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
+        security_state::SecurityLevel::SECURITY_LEVEL_COUNT,
+        /*profile_form_bitmask=*/0);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Password",
@@ -6968,7 +6970,8 @@ TEST_F(AutofillMetricsTest, LogUserHappinessMetric_PasswordForm) {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::USER_DID_AUTOFILL, USERNAME_FIELD,
-        security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
+        security_state::SecurityLevel::SECURITY_LEVEL_COUNT,
+        /*profile_form_bitmask=*/0);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Password",
@@ -6984,7 +6987,8 @@ TEST_F(AutofillMetricsTest, LogUserHappinessMetric_UnknownForm) {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::USER_DID_AUTOFILL, NO_GROUP,
-        security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
+        security_state::SecurityLevel::SECURITY_LEVEL_COUNT,
+        /*profile_form_bitmask=*/0);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Unknown",
@@ -6998,7 +7002,8 @@ TEST_F(AutofillMetricsTest, LogUserHappinessMetric_UnknownForm) {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::USER_DID_AUTOFILL, TRANSACTION,
-        security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
+        security_state::SecurityLevel::SECURITY_LEVEL_COUNT,
+        /*profile_form_bitmask=*/0);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Unknown",
@@ -8497,6 +8502,222 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel_FromFormEvents) {
         "Autofill.UserHappiness.Address.HTTP_SHOW_WARNING",
         AutofillMetrics::SUGGESTIONS_SHOWN_ONCE, 1);
   }
+}
+
+TEST_F(AutofillMetricsTest, LogUserHappinessByProfileFormType_AddressOnly) {
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogUserHappinessMetric(
+      AutofillMetrics::USER_DID_TYPE, {FormType::ADDRESS_FORM},
+      security_state::SecurityLevel::NONE,
+      data_util::DetermineGroups({ADDRESS_HOME_CITY, ADDRESS_HOME_STATE,
+                                  ADDRESS_HOME_DEPENDENT_LOCALITY}));
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UserHappiness.Address.AddressOnly",
+      AutofillMetrics::USER_DID_TYPE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.UserHappiness.CreditCard"),
+          HasSubstr("Autofill.UserHappiness.Password"),
+          HasSubstr("Autofill.UserHappiness.Unknown"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusContact"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.Other"))));
+}
+
+TEST_F(AutofillMetricsTest, LogUserHappinessByProfileFormType_ContactOnly) {
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogUserHappinessMetric(
+      AutofillMetrics::USER_DID_TYPE, {FormType::ADDRESS_FORM},
+      security_state::SecurityLevel::NONE,
+      data_util::DetermineGroups({NAME_FIRST, NAME_LAST, EMAIL_ADDRESS}));
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UserHappiness.Address.ContactOnly",
+      AutofillMetrics::USER_DID_TYPE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.UserHappiness.CreditCard"),
+          HasSubstr("Autofill.UserHappiness.Password"),
+          HasSubstr("Autofill.UserHappiness.Unknown"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusContact"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.Other"))));
+}
+
+TEST_F(AutofillMetricsTest,
+       LogUserHappinessByProfileFormType_AddressPlusPhone) {
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogUserHappinessMetric(
+      AutofillMetrics::USER_DID_TYPE, {FormType::ADDRESS_FORM},
+      security_state::SecurityLevel::NONE,
+      data_util::DetermineGroups(
+          {NAME_FULL, ADDRESS_HOME_ZIP, PHONE_HOME_CITY_AND_NUMBER}));
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UserHappiness.Address.AddressPlusPhone",
+      AutofillMetrics::USER_DID_TYPE, 1);
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UserHappiness.Address.AddressPlusContact",
+      AutofillMetrics::USER_DID_TYPE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.UserHappiness.CreditCard"),
+          HasSubstr("Autofill.UserHappiness.Password"),
+          HasSubstr("Autofill.UserHappiness.Unknown"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.Other"))));
+}
+
+TEST_F(AutofillMetricsTest,
+       LogUserHappinessByProfileFormType_AddressPlusEmail) {
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogUserHappinessMetric(
+      AutofillMetrics::USER_DID_TYPE, {FormType::ADDRESS_FORM},
+      security_state::SecurityLevel::NONE,
+      data_util::DetermineGroups({NAME_FULL, ADDRESS_HOME_ZIP, EMAIL_ADDRESS}));
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UserHappiness.Address.AddressPlusEmail",
+      AutofillMetrics::USER_DID_TYPE, 1);
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UserHappiness.Address.AddressPlusContact",
+      AutofillMetrics::USER_DID_TYPE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.UserHappiness.CreditCard"),
+          HasSubstr("Autofill.UserHappiness.Password"),
+          HasSubstr("Autofill.UserHappiness.Unknown"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.Other"))));
+}
+
+TEST_F(AutofillMetricsTest,
+       LogUserHappinessByProfileFormType_AddressPlusEmailPlusPhone) {
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogUserHappinessMetric(
+      AutofillMetrics::USER_DID_TYPE, {FormType::ADDRESS_FORM},
+      security_state::SecurityLevel::NONE,
+      data_util::DetermineGroups({NAME_FULL, ADDRESS_HOME_ZIP, EMAIL_ADDRESS,
+                                  PHONE_HOME_WHOLE_NUMBER}));
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone",
+      AutofillMetrics::USER_DID_TYPE, 1);
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UserHappiness.Address.AddressPlusContact",
+      AutofillMetrics::USER_DID_TYPE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(HasSubstr("Autofill.UserHappiness.CreditCard"),
+                HasSubstr("Autofill.UserHappiness.Password"),
+                HasSubstr("Autofill.UserHappiness.Unknown"),
+                HasSubstr("Autofill.UserHappiness.Address.AddressPlusPhone"),
+                HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmail "),
+                HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
+                HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+                HasSubstr("Autofill.UserHappiness.Address.Other"))));
+}
+
+TEST_F(AutofillMetricsTest, LogUserHappinessByProfileFormType_Other) {
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogUserHappinessMetric(
+      AutofillMetrics::USER_DID_TYPE, {FormType::ADDRESS_FORM},
+      security_state::SecurityLevel::NONE,
+      data_util::DetermineGroups({NAME_FIRST, NAME_MIDDLE, NAME_LAST}));
+
+  histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address.Other",
+                                     AutofillMetrics::USER_DID_TYPE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.UserHappiness.CreditCard"),
+          HasSubstr("Autofill.UserHappiness.Password"),
+          HasSubstr("Autofill.UserHappiness.Unknown"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusContact"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+          HasSubstr(
+              "Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"))));
+}
+
+TEST_F(AutofillMetricsTest,
+       LogUserHappinessByProfileFormType_FormsLoadedNotLogged) {
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogUserHappinessMetric(
+      AutofillMetrics::FORMS_LOADED, {FormType::ADDRESS_FORM},
+      security_state::SecurityLevel::NONE,
+      data_util::DetermineGroups({NAME_FIRST, NAME_MIDDLE, NAME_LAST}));
+
+  // Logging is not done in the profile form histograms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.UserHappiness.CreditCard"),
+          HasSubstr("Autofill.UserHappiness.Password"),
+          HasSubstr("Autofill.UserHappiness.Unknown"),
+          HasSubstr("Autofill.UserHappiness.Address.Other"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusContact"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmail "),
+          HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+          HasSubstr(
+              "Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"))));
+}
+
+TEST_F(AutofillMetricsTest,
+       LogUserHappinessByProfileFormType_NoAddressFormType) {
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED,
+                                          {FormType::CREDIT_CARD_FORM},
+                                          security_state::SecurityLevel::NONE,
+                                          /*profile_form_bitmask=*/0);
+
+  // Logging is not done in the profile form histograms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(histograms,
+              Not(AnyOf(HasSubstr("Autofill.UserHappiness.Address"))));
 }
 
 // Tests that the LogSaveCardPromptMetricBySecurityLevel are recorded correctly.

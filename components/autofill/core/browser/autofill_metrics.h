@@ -1024,17 +1024,22 @@ class AutofillMetrics {
   static void LogUserHappinessMetric(
       UserHappinessMetric metric,
       FieldTypeGroup field_type_group,
-      security_state::SecurityLevel security_level);
+      security_state::SecurityLevel security_level,
+      uint32_t profile_form_bitmask);
 
   static void LogUserHappinessMetric(
       UserHappinessMetric metric,
       const std::set<FormType>& form_types,
-      security_state::SecurityLevel security_level);
+      security_state::SecurityLevel security_level,
+      uint32_t profile_form_bitmask);
 
   static void LogUserHappinessBySecurityLevel(
       UserHappinessMetric metric,
       FormType form_type,
       security_state::SecurityLevel security_level);
+
+  static void LogUserHappinessByProfileFormType(UserHappinessMetric metric,
+                                                uint32_t profile_form_bitmask);
 
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);

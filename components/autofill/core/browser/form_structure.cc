@@ -1065,7 +1065,8 @@ void FormStructure::LogQualityMetrics(
       has_upi_vpa_field = true;
       AutofillMetrics::LogUserHappinessMetric(
           AutofillMetrics::USER_DID_ENTER_UPI_VPA, field->Type().group(),
-          security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
+          security_state::SecurityLevel::SECURITY_LEVEL_COUNT,
+          data_util::DetermineGroups(GetServerFieldTypes()));
     }
 
     form_interactions_ukm_logger->LogFieldFillStatus(*this, *field,
@@ -2095,6 +2096,14 @@ std::set<FormType> FormStructure::GetFormTypes() const {
         FormTypes::FieldTypeGroupToFormType(field->Type().group()));
   }
   return form_types;
+}
+
+std::vector<ServerFieldType> FormStructure::GetServerFieldTypes() const {
+  std::vector<ServerFieldType> types(field_count());
+  std::transform(begin(), end(), types.begin(), [&](const auto& field) {
+    return field->Type().GetStorableType();
+  });
+  return types;
 }
 
 base::string16 FormStructure::GetIdentifierForRefill() const {

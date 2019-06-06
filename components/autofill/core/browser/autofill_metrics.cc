@@ -15,6 +15,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -1137,17 +1138,19 @@ void AutofillMetrics::LogServerQueryMetric(ServerQueryMetric metric) {
 void AutofillMetrics::LogUserHappinessMetric(
     UserHappinessMetric metric,
     FieldTypeGroup field_type_group,
-    security_state::SecurityLevel security_level) {
+    security_state::SecurityLevel security_level,
+    uint32_t profile_form_bitmask) {
   LogUserHappinessMetric(
       metric, {FormTypes::FieldTypeGroupToFormType(field_type_group)},
-      security_level);
+      security_level, profile_form_bitmask);
 }
 
 // static
 void AutofillMetrics::LogUserHappinessMetric(
     UserHappinessMetric metric,
     const std::set<FormType>& form_types,
-    security_state::SecurityLevel security_level) {
+    security_state::SecurityLevel security_level,
+    uint32_t profile_form_bitmask) {
   DCHECK_LT(metric, NUM_USER_HAPPINESS_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness", metric,
                             NUM_USER_HAPPINESS_METRICS);
@@ -1159,6 +1162,9 @@ void AutofillMetrics::LogUserHappinessMetric(
   if (base::ContainsKey(form_types, ADDRESS_FORM)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.Address", metric,
                               NUM_USER_HAPPINESS_METRICS);
+    if (metric != AutofillMetrics::FORMS_LOADED) {
+      LogUserHappinessByProfileFormType(metric, profile_form_bitmask);
+    }
     LogUserHappinessBySecurityLevel(metric, ADDRESS_FORM, security_level);
   }
   if (base::ContainsKey(form_types, PASSWORD_FORM)) {
@@ -1209,6 +1215,23 @@ void AutofillMetrics::LogUserHappinessBySecurityLevel(
       security_state::GetSecurityLevelHistogramName(
           histogram_name, security_level),
       metric, NUM_USER_HAPPINESS_METRICS);
+}
+
+// static
+void AutofillMetrics::LogUserHappinessByProfileFormType(
+    UserHappinessMetric metric,
+    uint32_t profile_form_bitmask) {
+  base::UmaHistogramEnumeration(
+      "Autofill.UserHappiness.Address" +
+          data_util::GetSuffixForProfileFormType(profile_form_bitmask),
+      metric, NUM_USER_HAPPINESS_METRICS);
+
+  if (data_util::ContainsAddress(profile_form_bitmask) &&
+      (data_util::ContainsPhone(profile_form_bitmask) ||
+       data_util::ContainsEmail(profile_form_bitmask)))
+    base::UmaHistogramEnumeration(
+        "Autofill.UserHappiness.Address.AddressPlusContact", metric,
+        NUM_USER_HAPPINESS_METRICS);
 }
 
 // static
