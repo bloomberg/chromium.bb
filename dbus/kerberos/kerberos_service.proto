@@ -49,8 +49,10 @@ enum ErrorType {
   ERROR_IN_PROGRESS = 17;
   // Badly formatted principal name.
   ERROR_PARSE_PRINCIPAL_FAILED = 18;
+  // Badly formatted Kerberos configuration.
+  ERROR_BAD_CONFIG = 19;
   // Should be the last. Increase when adding new enum values.
-  ERROR_COUNT = 19;
+  ERROR_COUNT = 20;
 }
 
 // Message sent to Chrome by authpolicyd as a response to a successful
