@@ -214,12 +214,6 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    system_request_context_getter_ =
-        base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {content::BrowserThread::IO}));
-    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
-        system_request_context_getter_.get());
     in_process_utility_thread_helper_ =
         std::make_unique<content::InProcessUtilityThreadHelper>();
     // Start real threads for the IO and File threads so that the DCHECKs
@@ -278,9 +272,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     // tasks currently running.
     FlushThreadMessageLoops();
     sb_service_ = NULL;
-    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
-    system_request_context_getter_ = nullptr;
     in_process_utility_thread_helper_ = nullptr;
 
     ChromeRenderViewHostTestHarness::TearDown();
@@ -533,7 +525,6 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   FileTypePoliciesTestOverlay policies_;
 
   scoped_refptr<FakeSafeBrowsingService> sb_service_;
-  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
   scoped_refptr<MockBinaryFeatureExtractor> binary_feature_extractor_;
   DownloadProtectionService* download_service_;
   DownloadCheckResult result_;

@@ -10,7 +10,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/leak_tracker.h"
 #include "base/files/file_path.h"
@@ -35,7 +34,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/certificate_transparency/ct_known_logs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/metrics/metrics_service.h"
@@ -54,40 +52,13 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/cert/caching_cert_verifier.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cert/cert_verify_proc.h"
-#include "net/cert/ct_log_verifier.h"
-#include "net/cert/multi_threaded_cert_verifier.h"
-#include "net/cert_net/cert_net_fetcher_impl.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
-#include "net/http/http_transaction_factory.h"
-#include "net/net_buildflags.h"
+#include "net/cert/cert_database.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_params.h"
-#include "net/proxy_resolution/pac_file_fetcher_impl.h"
-#include "net/proxy_resolution/proxy_config_service.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/quic/quic_utils_chromium.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_builder.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "services/network/ignore_errors_cert_verifier.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/network/url_request_context_builder_mojo.h"
 #include "url/url_constants.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/event_router_forwarder.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "net/cert/cert_verify_proc_android.h"
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -104,36 +75,6 @@ class SafeBrowsingURLRequestContext;
 
 namespace {
 
-net::CertVerifier* g_cert_verifier_for_io_thread_testing = nullptr;
-
-// A CertVerifier that forwards all requests to
-// |g_cert_verifier_for_io_thread_testing|. This is used to allow IOThread to
-// have its own std::unique_ptr<net::CertVerifier> while forwarding calls to the
-// static verifier.
-class WrappedCertVerifierForIOThreadTesting : public net::CertVerifier {
- public:
-  ~WrappedCertVerifierForIOThreadTesting() override = default;
-
-  // CertVerifier implementation
-  int Verify(const RequestParams& params,
-             net::CertVerifyResult* verify_result,
-             net::CompletionOnceCallback callback,
-             std::unique_ptr<Request>* out_req,
-             const net::NetLogWithSource& net_log) override {
-    verify_result->Reset();
-    if (!g_cert_verifier_for_io_thread_testing)
-      return net::ERR_FAILED;
-    return g_cert_verifier_for_io_thread_testing->Verify(
-        params, verify_result, std::move(callback), out_req, net_log);
-  }
-
-  void SetConfig(const Config& config) override {
-    if (!g_cert_verifier_for_io_thread_testing)
-      return;
-    return g_cert_verifier_for_io_thread_testing->SetConfig(config);
-  }
-};
-
 #if defined(OS_MACOSX)
 void ObserveKeychainEvents() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -143,46 +84,7 @@ void ObserveKeychainEvents() {
 
 }  // namespace
 
-class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  explicit SystemURLRequestContextGetter(IOThread* io_thread);
-
-  // Implementation for net::UrlRequestContextGetter.
-  net::URLRequestContext* GetURLRequestContext() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override;
-
- protected:
-  ~SystemURLRequestContextGetter() override;
-
- private:
-  IOThread* const io_thread_;  // Weak pointer, owned by BrowserProcess.
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-
-  base::debug::LeakTracker<SystemURLRequestContextGetter> leak_tracker_;
-};
-
-SystemURLRequestContextGetter::SystemURLRequestContextGetter(
-    IOThread* io_thread)
-    : io_thread_(io_thread),
-      network_task_runner_(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})) {}
-
-SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
-
-net::URLRequestContext* SystemURLRequestContextGetter::GetURLRequestContext() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(io_thread_->globals()->system_request_context);
-
-  return io_thread_->globals()->system_request_context;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-SystemURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return network_task_runner_;
-}
-
-IOThread::Globals::Globals() : system_request_context(nullptr) {}
+IOThread::Globals::Globals() {}
 
 IOThread::Globals::~Globals() {}
 
@@ -192,12 +94,8 @@ IOThread::IOThread(
     PrefService* local_state,
     policy::PolicyService* policy_service,
     net_log::ChromeNetLog* net_log,
-    extensions::EventRouterForwarder* extension_event_router_forwarder,
     SystemNetworkContextManager* system_network_context_manager)
     : net_log_(net_log),
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-      extension_event_router_forwarder_(extension_event_router_forwarder),
-#endif
       globals_(nullptr),
       is_quic_allowed_on_init_(true),
       weak_factory_(this) {
@@ -230,38 +128,15 @@ net_log::ChromeNetLog* IOThread::net_log() {
   return net_log_;
 }
 
-net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      !system_url_request_context_getter_.get()) {
-    system_url_request_context_getter_ =
-        base::MakeRefCounted<SystemURLRequestContextGetter>(this);
-  } else {
-    NOTREACHED();
-  }
-  return system_url_request_context_getter_.get();
-}
-
 void IOThread::Init() {
   TRACE_EVENT0("startup", "IOThread::InitAsync");
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
   DCHECK(!globals_);
   globals_ = new Globals;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  globals_->extension_event_router_forwarder =
-      extension_event_router_forwarder_;
-#endif
-
   globals_->data_use_ascriber =
       std::make_unique<data_use_measurement::ChromeDataUseAscriber>();
-
-  if (command_line.HasSwitch(network::switches::kIgnoreUrlFetcherCertRequests))
-    net::URLFetcher::SetIgnoreCertificateRequests(true);
 
 #if defined(OS_MACOSX)
   // Start observing Keychain events. This needs to be done on the UI thread,
@@ -271,31 +146,16 @@ void IOThread::Init() {
 #endif
 
   ConstructSystemRequestContext();
-
-  // Prevent DCHECK failures when a NetworkContext is created with an encrypted
-  // cookie store.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    content::GetNetworkServiceImpl()->set_os_crypt_is_configured();
 }
 
 void IOThread::CleanUp() {
   base::debug::LeakTracker<SafeBrowsingURLRequestContext>::CheckForLeaks();
-
-  system_url_request_context_getter_ = nullptr;
-
-  if (globals_->cert_net_fetcher)
-    globals_->cert_net_fetcher->Shutdown();
-
-  if (globals_->system_request_context)
-    globals_->system_request_context->proxy_resolution_service()->OnShutdown();
 
   // Release objects that the net::URLRequestContext could have been pointing
   // to.
 
   delete globals_;
   globals_ = nullptr;
-
-  base::debug::LeakTracker<SystemURLRequestContextGetter>::CheckForLeaks();
 
   if (net_log_)
     net_log_->ShutDownBeforeThreadPool();
@@ -306,96 +166,15 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   data_reduction_proxy::RegisterPrefs(registry);
 }
 
-// static
-void IOThread::SetCertVerifierForTesting(net::CertVerifier* cert_verifier) {
-  g_cert_verifier_for_io_thread_testing = cert_verifier;
-}
-
 void IOThread::DisableQuic() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   globals_->quic_disabled = true;
 }
 
-void IOThread::SetUpProxyService(
-    network::URLRequestContextBuilderMojo* builder) const {
-#if defined(OS_CHROMEOS)
-  builder->SetDhcpFetcherFactory(
-      std::make_unique<chromeos::DhcpPacFileFetcherFactoryChromeos>());
-#endif
-}
-
 void IOThread::ConstructSystemRequestContext() {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    globals_->deprecated_network_quality_estimator =
-        std::make_unique<net::NetworkQualityEstimator>(
-            std::make_unique<net::NetworkQualityEstimatorParams>(
-                std::map<std::string, std::string>()),
-            net_log_);
-  } else {
-    std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
-        std::make_unique<network::URLRequestContextBuilderMojo>();
-
-    auto chrome_network_delegate = std::make_unique<ChromeNetworkDelegate>(
-        extension_event_router_forwarder());
-    builder->set_network_delegate(
-        globals_->data_use_ascriber->CreateNetworkDelegate(
-            std::move(chrome_network_delegate)));
-
-    std::unique_ptr<net::CertVerifier> cert_verifier;
-    if (g_cert_verifier_for_io_thread_testing) {
-      cert_verifier = std::make_unique<WrappedCertVerifierForIOThreadTesting>();
-    } else {
-#if defined(OS_CHROMEOS)
-      // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<net::MultiThreadedCertVerifier>(
-              base::MakeRefCounted<network::CertVerifyProcChromeOS>()));
-#else
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
-    BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-      globals_->cert_net_fetcher =
-          base::MakeRefCounted<net::CertNetFetcherImpl>();
-#endif
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<net::MultiThreadedCertVerifier>(
-              net::CertVerifyProc::CreateDefault(globals_->cert_net_fetcher)));
-#endif
-    }
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    builder->SetCertVerifier(
-        network::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
-            command_line, switches::kUserDataDir, std::move(cert_verifier)));
-
-    SetUpProxyService(builder.get());
-
-    if (!is_quic_allowed_on_init_)
-      globals_->quic_disabled = true;
-
-    // File support is needed for PAC scripts that use file URLs.
-    // TODO(crbug.com/839566): remove file support for all cases.
-    // TODO(mmenke): once this code is deleted there won't be any more consumers
-    // of net::URLRequestFileJo and that class can be deleted.
-    builder->set_file_enabled(true);
-
-    network::NetworkService* network_service = content::GetNetworkServiceImpl();
-    network_service->SetUpHttpAuth(std::move(http_auth_static_params_));
-    network_service->ConfigureHttpAuthPrefs(
-        std::move(http_auth_dynamic_params_));
-
-    globals_->system_network_context =
-        network_service->CreateNetworkContextWithBuilder(
-            std::move(network_context_request_),
-            std::move(network_context_params_), std::move(builder),
-            &globals_->system_request_context);
-
-    if (globals_->cert_net_fetcher) {
-      globals_->cert_net_fetcher->SetURLRequestContext(
-          globals_->system_request_context);
-    }
-
-    // This must be done after the system NetworkContext is created.
-    network_service->ConfigureStubHostResolver(
-        stub_resolver_enabled_, std::move(dns_over_https_servers_));
-  }
+  globals_->deprecated_network_quality_estimator =
+      std::make_unique<net::NetworkQualityEstimator>(
+          std::make_unique<net::NetworkQualityEstimatorParams>(
+              std::map<std::string, std::string>()),
+          net_log_);
 }

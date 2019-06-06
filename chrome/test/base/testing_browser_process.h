@@ -99,7 +99,6 @@ class TestingBrowserProcess : public BrowserProcess {
       override;
   optimization_guide::OptimizationGuideService* optimization_guide_service()
       override;
-  net::URLRequestContextGetter* system_request_context() override;
   BrowserProcessPlatformPart* platform_part() override;
 
   extensions::EventRouterForwarder* extension_event_router_forwarder() override;
@@ -152,7 +151,6 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetOptimizationGuideService(
       std::unique_ptr<optimization_guide::OptimizationGuideService>
           optimization_guide_service);
-  void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
   void SetSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
   void SetNotificationUIManager(
@@ -206,7 +204,6 @@ class TestingBrowserProcess : public BrowserProcess {
   // The following objects are not owned by TestingBrowserProcess:
   PrefService* local_state_;
   IOThread* io_thread_;
-  net::URLRequestContextGetter* system_request_context_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   rappor::RapporServiceImpl* rappor_service_;
 

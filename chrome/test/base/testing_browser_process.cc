@@ -35,7 +35,6 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -88,7 +87,6 @@ TestingBrowserProcess::TestingBrowserProcess()
       is_shutting_down_(false),
       local_state_(nullptr),
       io_thread_(nullptr),
-      system_request_context_(nullptr),
       rappor_service_(nullptr),
       platform_part_(new TestingBrowserProcessPlatformPart()),
       test_network_connection_tracker_(
@@ -277,10 +275,6 @@ TestingBrowserProcess::optimization_guide_service() {
   return optimization_guide_service_.get();
 }
 
-net::URLRequestContextGetter* TestingBrowserProcess::system_request_context() {
-  return system_request_context_;
-}
-
 BrowserProcessPlatformPart* TestingBrowserProcess::platform_part() {
   return platform_part_.get();
 }
@@ -442,11 +436,6 @@ TestingBrowserProcess::CachedDefaultWebClientState() {
 prefs::InProcessPrefServiceFactory*
 TestingBrowserProcess::pref_service_factory() const {
   return nullptr;
-}
-
-void TestingBrowserProcess::SetSystemRequestContext(
-    net::URLRequestContextGetter* context_getter) {
-  system_request_context_ = context_getter;
 }
 
 void TestingBrowserProcess::SetSharedURLLoaderFactory(
