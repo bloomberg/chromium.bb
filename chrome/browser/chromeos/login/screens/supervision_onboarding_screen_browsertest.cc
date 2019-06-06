@@ -11,7 +11,9 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
@@ -76,6 +78,8 @@ class FakeSupervisionServer {
     custom_http_header_value_ = base::nullopt;
   }
 
+  const std::string& last_request_url() { return last_request_url_; }
+
   size_t GetReceivedRequestsCount() const {
     // It's safe to use the size of the access token list as a proxy to the
     // number of requests. This server asserts that all requests contain an
@@ -88,8 +92,10 @@ class FakeSupervisionServer {
     // We are not interested in other URLs hitting the server at this point.
     // This will filter bogus requests like favicon fetches and stop us from
     // handling requests that are targeting gaia.
-    if (request.relative_url != supervision::kOnboardingStartPageRelativeUrl)
+    if (!base::StartsWith(request.relative_url, "/kids/deviceonboarding",
+                          base::CompareCase::INSENSITIVE_ASCII)) {
       return nullptr;
+    }
 
     UpdateVerificationData(request);
     auto response = std::make_unique<BasicHttpResponse>();
@@ -113,10 +119,12 @@ class FakeSupervisionServer {
                                  FakeGaiaMixin::kFakeAllScopeAccessToken));
 
     received_auth_header_values_.push_back(auth_header->second);
+    last_request_url_ = request.relative_url;
   }
 
   net::EmbeddedTestServer* test_server_;
   std::vector<std::string> received_auth_header_values_;
+  std::string last_request_url_;
 
   base::Optional<std::string> custom_http_header_value_ = base::nullopt;
 };
@@ -192,11 +200,19 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
 
   void ShowScreen() { supervision_onboarding_screen_->Show(); }
 
-  void WaitForScreen() {
-    OobeScreenWaiter screen_waiter(SupervisionOnboardingScreenView::kScreenId);
-    screen_waiter.set_assert_next_screen();
-    screen_waiter.Wait();
+  void WaitForPageWithUrl(const std::string& requested_url) {
+    // Wait for the request...
+    while (supervision_server()->last_request_url() != requested_url) {
+      base::RunLoop run_loop;
+      // Avoid RunLoop::RunUntilIdle() because this is in a loop and
+      // could end up being a busy loop when there are no pending tasks.
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(),
+          base::TimeDelta::FromMilliseconds(100));
+      run_loop.Run();
+    }
 
+    // Now wait for the UI to be updated with the response.
     test::OobeJS()
         .CreateVisibilityWaiter(
             true, {"supervision-onboarding", "supervision-onboarding-content"})
@@ -206,7 +222,7 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
   void ClickButton(const std::string& button_id) {
     std::initializer_list<base::StringPiece> button_path = {
         "supervision-onboarding", button_id};
-    test::OobeJS().CreateEnabledWaiter(true, button_path)->Wait();
+    test::OobeJS().CreateVisibilityWaiter(true, button_path)->Wait();
     test::OobeJS().TapOnPath(button_path);
   }
 
@@ -217,6 +233,40 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
     base::RunLoop run_loop;
     screen_exit_callback_ = run_loop.QuitClosure();
     run_loop.Run();
+  }
+
+  // Shows the screen and navigates to the start page.
+  // This will also expect that we will make the correct requests to load the
+  // start page.
+  void NavigateToStartPage() {
+    ShowScreen();
+    OobeScreenWaiter screen_waiter(SupervisionOnboardingScreenView::kScreenId);
+    screen_waiter.set_assert_next_screen();
+    screen_waiter.Wait();
+    WaitForPageWithUrl(supervision::kOnboardingStartPageRelativeUrl);
+
+    EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
+  }
+
+  // Navigates to the details page by first going through the start page.
+  void NavigateToDetailsPage() {
+    NavigateToStartPage();
+
+    ClickButton("supervision-onboarding-next-button");
+    WaitForPageWithUrl(supervision::kOnboardingDetailsPageRelativeUrl);
+
+    EXPECT_EQ(2u, supervision_server()->GetReceivedRequestsCount());
+  }
+
+  // Navigates to the "All Set!" page by going through the Start and Details
+  // pages.
+  void NavigateToAllSetPage() {
+    NavigateToDetailsPage();
+
+    ClickButton("supervision-onboarding-next-button");
+    WaitForPageWithUrl(supervision::kOnboardingAllSetPageRelativeUrl);
+
+    EXPECT_EQ(3u, supervision_server()->GetReceivedRequestsCount());
   }
 
   FakeSupervisionServer* supervision_server() { return &supervision_server_; }
@@ -322,21 +372,50 @@ IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
   EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, NextButtonExitsScreen) {
-  ShowScreen();
-  WaitForScreen();
-  EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
+IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
+                       NavigateToStartPageAndSkipFlow) {
+  NavigateToStartPage();
 
-  ClickButton("supervision-onboarding-next-button");
+  ClickButton("supervision-onboarding-skip-button");
   WaitForScreenExit();
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, SkipButtonExitsScreen) {
-  ShowScreen();
-  WaitForScreen();
-  EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
+// TODO(crbug.com/971696) Re-enable this test when the setup time is within
+// acceptable ranges.
+IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
+                       DISABLED_NavigateToDetailsPageAndBack) {
+  NavigateToDetailsPage();
+
+  ClickButton("supervision-onboarding-back-button");
+  WaitForPageWithUrl(supervision::kOnboardingStartPageRelativeUrl);
 
   ClickButton("supervision-onboarding-skip-button");
+  WaitForScreenExit();
+}
+
+// TODO(crbug.com/971696) Re-enable this test when the setup time is within
+// acceptable ranges.
+IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
+                       DISABLED_NavigateToAllSetPageAndBack) {
+  NavigateToAllSetPage();
+
+  ClickButton("supervision-onboarding-back-button");
+  WaitForPageWithUrl(supervision::kOnboardingDetailsPageRelativeUrl);
+
+  ClickButton("supervision-onboarding-back-button");
+  WaitForPageWithUrl(supervision::kOnboardingStartPageRelativeUrl);
+
+  ClickButton("supervision-onboarding-skip-button");
+  WaitForScreenExit();
+}
+
+// TODO(crbug.com/971696) Re-enable this test when the setup time is within
+// acceptable ranges.
+IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
+                       DISABLED_NavigateToAllSetPageAndFinishFlow) {
+  NavigateToAllSetPage();
+
+  ClickButton("supervision-onboarding-next-button");
   WaitForScreenExit();
 }
 

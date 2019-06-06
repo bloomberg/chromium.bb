@@ -56,6 +56,14 @@ class FakeOnboardingWebviewHost : mojom::OnboardingWebviewHost {
     }
   }
 
+  // Flushes the internal mojo message pipe.
+  void Flush() { binding_.FlushForTesting(); }
+
+  void Reset() {
+    page_loaded_ = base::nullopt;
+    presentations_.clear();
+  }
+
   bool exited_flow() const { return exited_flow_; }
 
   const base::Optional<mojom::OnboardingPage>& page_loaded() {
@@ -115,6 +123,24 @@ class OnboardingControllerBaseTest : public testing::Test {
     controller_impl_->BindRequest(mojo::MakeRequest(&controller_));
   }
 
+  void BindWebviewHost() {
+    mojom::OnboardingWebviewHostPtr webview_host_proxy;
+    webview_host_ = std::make_unique<FakeOnboardingWebviewHost>(
+        mojo::MakeRequest(&webview_host_proxy));
+
+    controller_->BindWebviewHost(std::move(webview_host_proxy));
+  }
+
+  void SetUpPageLoad(const mojom::OnboardingLoadPageResult& result) {
+    webview_host()->set_load_page_result(result);
+    identity_test_env()
+        ->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+            kFakeAccessToken,
+            base::Time::Now() + base::TimeDelta::FromHours(1));
+
+    Flush();
+  }
+
   void BindHostAndSetupFailedAuth() {
     BindWebviewHost();
 
@@ -122,7 +148,7 @@ class OnboardingControllerBaseTest : public testing::Test {
         ->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
             GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
 
-    base::RunLoop().RunUntilIdle();
+    Flush();
   }
 
   void BindHostAndReturnLoadPageSuccess() {
@@ -130,7 +156,8 @@ class OnboardingControllerBaseTest : public testing::Test {
     result.net_error = net::Error::OK;
     result.custom_header_value = kDeviceOnboardingExperimentName;
 
-    BindWebviewHostAndReturnResult(result);
+    BindWebviewHost();
+    SetUpPageLoad(result);
   }
 
   void BindHostAndReturnLoadPageError() {
@@ -138,7 +165,8 @@ class OnboardingControllerBaseTest : public testing::Test {
     result.net_error = net::Error::ERR_FAILED;
     result.custom_header_value = kDeviceOnboardingExperimentName;
 
-    BindWebviewHostAndReturnResult(result);
+    BindWebviewHost();
+    SetUpPageLoad(result);
   }
 
   void BindHostAndReturnMissingCustomHeader() {
@@ -146,7 +174,8 @@ class OnboardingControllerBaseTest : public testing::Test {
     result.net_error = net::Error::OK;
     result.custom_header_value = base::nullopt;
 
-    BindWebviewHostAndReturnResult(result);
+    BindWebviewHost();
+    SetUpPageLoad(result);
   }
 
   void BindHostAndReturnWrongCustomHeader() {
@@ -154,7 +183,18 @@ class OnboardingControllerBaseTest : public testing::Test {
     result.net_error = net::Error::OK;
     result.custom_header_value = "clearly-wrong-header-value";
 
-    BindWebviewHostAndReturnResult(result);
+    BindWebviewHost();
+    SetUpPageLoad(result);
+  }
+
+  void HandleAction(mojom::OnboardingAction action) {
+    controller_->HandleAction(action);
+    Flush();
+  }
+
+  void Flush() {
+    controller_.FlushForTesting();
+    webview_host()->Flush();
   }
 
   Profile* profile() { return profile_.get(); }
@@ -166,26 +206,6 @@ class OnboardingControllerBaseTest : public testing::Test {
   FakeOnboardingWebviewHost* webview_host() { return webview_host_.get(); }
 
  private:
-  void BindWebviewHost() {
-    mojom::OnboardingWebviewHostPtr webview_host_proxy;
-    webview_host_ = std::make_unique<FakeOnboardingWebviewHost>(
-        mojo::MakeRequest(&webview_host_proxy));
-
-    controller_->BindWebviewHost(std::move(webview_host_proxy));
-  }
-
-  void BindWebviewHostAndReturnResult(
-      const mojom::OnboardingLoadPageResult& result) {
-    BindWebviewHost();
-    webview_host()->set_load_page_result(result);
-    identity_test_env()
-        ->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-            kFakeAccessToken,
-            base::Time::Now() + base::TimeDelta::FromHours(1));
-
-    base::RunLoop().RunUntilIdle();
-  }
-
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
@@ -242,6 +262,41 @@ class OnboardingControllerTest : public OnboardingControllerBaseTest {
     OnboardingControllerBaseTest::SetUp();
   }
 
+  // Navigates to the details page by first loading the Start page, then faking
+  // a user pressing the "Next" button. It can optionally fake a failed page
+  // load for the Details page.
+  // Note: To make tests simpler we also reset the data from the
+  // FakeWebviewHost, this way we can write tests that only focus on the page
+  // being handled.
+  void NavigateToDetailsPage(bool return_error = false) {
+    BindHostAndReturnLoadPageSuccess();
+    webview_host()->Reset();
+
+    HandleAction(mojom::OnboardingAction::kShowNextPage);
+
+    mojom::OnboardingLoadPageResult result;
+    result.net_error = return_error ? net::Error::ERR_FAILED : net::Error::OK;
+    result.custom_header_value = kDeviceOnboardingExperimentName;
+    SetUpPageLoad(result);
+  }
+
+  // Navigates to the "All Set!" page by first navigating to the Details page,
+  // then faking a user pressing the "Next" button. It can optionally fake a
+  // failed page load for the "All Set!" page.
+  // Note: To make tests simpler we also reset the data from the
+  // FakeWebviewHost, this way we can write tests that only focus on the page
+  // being handled.
+  void NavigateToAllSetPage(bool return_error = false) {
+    NavigateToDetailsPage();
+    webview_host()->Reset();
+
+    HandleAction(mojom::OnboardingAction::kShowNextPage);
+    mojom::OnboardingLoadPageResult result;
+    result.net_error = return_error ? net::Error::ERR_FAILED : net::Error::OK;
+    result.custom_header_value = kDeviceOnboardingExperimentName;
+    SetUpPageLoad(result);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -255,8 +310,8 @@ TEST_F(OnboardingControllerTest, RequestWebviewHostToLoadStartPageCorrectly) {
   EXPECT_EQ(webview_host()->page_loaded()->access_token, kFakeAccessToken);
   EXPECT_EQ(webview_host()->page_loaded()->custom_header_name,
             kExperimentHeaderName);
-  EXPECT_EQ(webview_host()->page_loaded()->url_filter_pattern,
-            "https://families.google.com/*");
+  EXPECT_EQ(webview_host()->page_loaded()->allowed_urls_prefix,
+            "https://families.google.com/");
 }
 
 TEST_F(OnboardingControllerTest, OverridePageUrlsByCommandLine) {
@@ -272,8 +327,8 @@ TEST_F(OnboardingControllerTest, OverridePageUrlsByCommandLine) {
   EXPECT_EQ(webview_host()->page_loaded()->access_token, kFakeAccessToken);
   EXPECT_EQ(webview_host()->page_loaded()->custom_header_name,
             kExperimentHeaderName);
-  EXPECT_EQ(webview_host()->page_loaded()->url_filter_pattern,
-            "https://example.com/*");
+  EXPECT_EQ(webview_host()->page_loaded()->allowed_urls_prefix,
+            "https://example.com/");
 }
 
 TEST_F(OnboardingControllerTest, StayInFlowWhenLoadSucceeds) {
@@ -392,6 +447,101 @@ TEST_F(OnboardingControllerTest,
 
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
+}
+
+TEST_F(OnboardingControllerTest, StayInFlowWhenNavigatingToDetailsPage) {
+  NavigateToDetailsPage();
+
+  EXPECT_FALSE(webview_host()->exited_flow());
+}
+
+TEST_F(OnboardingControllerTest, DetailsPageExitsFlowOnFailedPageLoad) {
+  NavigateToDetailsPage(/*return_error=*/true);
+
+  EXPECT_TRUE(webview_host()->exited_flow());
+}
+
+TEST_F(OnboardingControllerTest, DetailsPageIsPresentedCorrectly) {
+  NavigateToDetailsPage();
+
+  mojom::OnboardingPresentation loading;
+  loading.state = mojom::OnboardingPresentationState::kLoading;
+
+  mojom::OnboardingPresentation ready;
+  ready.state = mojom::OnboardingPresentationState::kReady;
+  ready.can_show_next_page = true;
+  ready.can_show_previous_page = true;
+
+  webview_host()->ExpectPresentations({loading, ready});
+}
+
+TEST_F(OnboardingControllerTest, DetailsPageIsLoadedCorrectly) {
+  NavigateToDetailsPage();
+
+  ASSERT_TRUE(webview_host()->page_loaded().has_value());
+  EXPECT_EQ(webview_host()->page_loaded()->url,
+            GURL("https://families.google.com/kids/deviceonboarding/details"));
+  EXPECT_EQ(webview_host()->page_loaded()->access_token, kFakeAccessToken);
+  EXPECT_EQ(webview_host()->page_loaded()->custom_header_name, base::nullopt);
+  EXPECT_EQ(webview_host()->page_loaded()->allowed_urls_prefix,
+            "https://families.google.com/");
+}
+
+TEST_F(OnboardingControllerTest, StayInFlowWhenNavigatingToAllSetPage) {
+  NavigateToAllSetPage();
+
+  EXPECT_FALSE(webview_host()->exited_flow());
+}
+
+TEST_F(OnboardingControllerTest, AllSetPageExitsFlowOnFailedPageLoad) {
+  NavigateToAllSetPage(/*return_error=*/true);
+
+  EXPECT_TRUE(webview_host()->exited_flow());
+}
+
+TEST_F(OnboardingControllerTest, AllSetPageIsPresentedCorrectly) {
+  NavigateToAllSetPage();
+
+  mojom::OnboardingPresentation loading;
+  loading.state = mojom::OnboardingPresentationState::kLoading;
+
+  mojom::OnboardingPresentation ready;
+  ready.state = mojom::OnboardingPresentationState::kReady;
+  ready.can_show_next_page = true;
+  ready.can_show_previous_page = true;
+
+  webview_host()->ExpectPresentations({loading, ready});
+}
+
+TEST_F(OnboardingControllerTest, AllSetPageIsLoadedCorrectly) {
+  NavigateToAllSetPage();
+
+  ASSERT_TRUE(webview_host()->page_loaded().has_value());
+  EXPECT_EQ(webview_host()->page_loaded()->url,
+            GURL("https://families.google.com/kids/deviceonboarding/allset"));
+  EXPECT_EQ(webview_host()->page_loaded()->access_token, kFakeAccessToken);
+  EXPECT_EQ(webview_host()->page_loaded()->custom_header_name, base::nullopt);
+  EXPECT_EQ(webview_host()->page_loaded()->allowed_urls_prefix,
+            "https://families.google.com/");
+}
+
+TEST_F(OnboardingControllerTest, AllSetPageCanFinishFlow) {
+  NavigateToAllSetPage();
+
+  EXPECT_FALSE(webview_host()->exited_flow());
+  HandleAction(mojom::OnboardingAction::kShowNextPage);
+  EXPECT_TRUE(webview_host()->exited_flow());
+}
+
+TEST_F(OnboardingControllerTest, AllSetPageEnablesKioskNext) {
+  NavigateToAllSetPage();
+
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEnabled));
+  HandleAction(mojom::OnboardingAction::kShowNextPage);
+
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEnabled));
 }
 
 }  // namespace supervision

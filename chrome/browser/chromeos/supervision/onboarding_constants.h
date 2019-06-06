@@ -11,6 +11,8 @@ namespace supervision {
 extern const char kSupervisionServerUrlPrefix[];
 
 extern const char kOnboardingStartPageRelativeUrl[];
+extern const char kOnboardingDetailsPageRelativeUrl[];
+extern const char kOnboardingAllSetPageRelativeUrl[];
 
 extern const char kExperimentHeaderName[];
 extern const char kDeviceOnboardingExperimentName[];
