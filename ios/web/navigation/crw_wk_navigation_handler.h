@@ -97,18 +97,9 @@ class WKBackForwardListItemHolder;
 - (void)navigationHandlerDisplayWebView:
     (CRWWKNavigationHandler*)navigationHandler;
 
-// Resets any state that is associated with a specific document object (e.g.,
-// page interaction tracking).
-- (void)navigationHandlerResetDocumentSpecificState:
-    (CRWWKNavigationHandler*)navigationHandler;
-
 // Notifies the delegate that the page has actually started loading.
 - (void)navigationHandlerDidStartLoading:
     (CRWWKNavigationHandler*)navigationHandler;
-
-// Notifies the delegate that the web page has changed document and/or URL.
-- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
-    didChangePageWithContext:(web::NavigationContextImpl*)context;
 
 // Instructs the delegate to update the SSL status for the current navigation
 // item.
@@ -209,6 +200,13 @@ class WKBackForwardListItemHolder;
                  rendererInitiated:(BOOL)rendererInitiated
                         forContext:(std::unique_ptr<web::NavigationContextImpl>)
                                        originalContext;
+
+// Called when the web page has changed document and/or URL, and so the page
+// navigation should be reported to the delegate, and internal state updated to
+// reflect the fact that the navigation has occurred. |context| contains
+// information about the navigation that triggered the document/URL change.
+- (void)webPageChangedWithContext:(web::NavigationContextImpl*)context
+                          webView:(WKWebView*)webView;
 
 @end
 

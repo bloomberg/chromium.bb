@@ -874,7 +874,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
       }
       DCHECK(found_correct_navigation_item);
     }
-    [self.delegate navigationHandlerResetDocumentSpecificState:self];
+    [self resetDocumentSpecificState];
     [self.delegate navigationHandlerDidStartLoading:self];
   } else if (context) {
     // If |navigation| is nil (which happens for windows open by DOM), then it
@@ -885,7 +885,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     if (isLastNavigation ||
         (web::features::StorePendingItemInContext() &&
          self.navigationManagerImpl->GetPendingItemIndex() == -1)) {
-      [self.delegate navigationHandler:self didChangePageWithContext:context];
+      [self webPageChangedWithContext:context webView:webView];
     } else if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
       // WKWebView has more than one in progress navigation, and committed
       // navigation was not the latest. Change last committed item to one that
@@ -1979,6 +1979,13 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   framesManager->RemoveAllWebFrames();
 }
 
+// Resets any state that is associated with a specific document object (e.g.,
+// page interaction tracking).
+- (void)resetDocumentSpecificState {
+  self.userInteractionState->SetLastUserInteraction(nullptr);
+  self.userInteractionState->SetTapInProgress(false);
+}
+
 #pragma mark - Public methods
 
 - (void)stopLoading {
@@ -2205,6 +2212,43 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   [self.navigationStates setContext:std::move(navigationContext)
                       forNavigation:navigation];
   return [self.navigationStates contextForNavigation:navigation];
+}
+
+- (void)webPageChangedWithContext:(web::NavigationContextImpl*)context
+                          webView:(WKWebView*)webView {
+  web::Referrer referrer = self.currentReferrer;
+  // If no referrer was known in advance, record it now. (If there was one,
+  // keep it since it will have a more accurate URL and policy than what can
+  // be extracted from the landing page.)
+  web::NavigationItem* currentItem = self.currentNavItem;
+
+  // TODO(crbug.com/925304): Pending item (which should be used here) should be
+  // owned by NavigationContext object. Pending item should never be null.
+  if (currentItem && !currentItem->GetReferrer().url.is_valid()) {
+    currentItem->SetReferrer(referrer);
+  }
+
+  // TODO(crbug.com/956511): This shouldn't be called for hash state or
+  // push/replaceState.
+  [self resetDocumentSpecificState];
+
+  [self.delegate navigationHandlerDidStartLoading:self];
+  // Do not commit pending item in the middle of loading a placeholder URL. The
+  // item will be committed when the native content or webUI is displayed.
+  if (!context->IsPlaceholderNavigation()) {
+    self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
+    if (web::features::StorePendingItemInContext() &&
+        context->IsLoadingHtmlString()) {
+      self.navigationManagerImpl->GetLastCommittedItem()->SetURL(
+          context->GetUrl());
+    }
+    // If a SafeBrowsing warning is currently displayed, the user has tapped
+    // the button on the warning page to proceed to the site, the site has
+    // started loading, and the warning is about to be removed. In this case,
+    // the transient item for the warning needs to be removed too.
+    if (web::IsSafeBrowsingWarningDisplayedInWebView(webView))
+      self.navigationManagerImpl->DiscardNonCommittedItems();
+  }
 }
 
 @end

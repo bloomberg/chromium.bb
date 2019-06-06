@@ -3049,56 +3049,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 #pragma mark - WKNavigationDelegate Helpers
 
-// Called when the web page has changed document and/or URL, and so the page
-// navigation should be reported to the delegate, and internal state updated to
-// reflect the fact that the navigation has occurred. |context| contains
-// information about the navigation that triggered the document/URL change.
-// TODO(stuartmorgan): This method conflates document changes and URL changes;
-// we should be distinguishing better, and be clear about the expected
-// WebDelegate and WCO callbacks in each case.
-- (void)webPageChangedWithContext:(web::NavigationContextImpl*)context {
-  web::Referrer referrer = self.navigationHandler.currentReferrer;
-  // If no referrer was known in advance, record it now. (If there was one,
-  // keep it since it will have a more accurate URL and policy than what can
-  // be extracted from the landing page.)
-  web::NavigationItem* currentItem = self.currentNavItem;
-
-  // TODO(crbug.com/925304): Pending item (which should be used here) should be
-  // owned by NavigationContext object. Pending item should never be null.
-  if (currentItem && !currentItem->GetReferrer().url.is_valid()) {
-    currentItem->SetReferrer(referrer);
-  }
-
-  // TODO(stuartmorgan): This shouldn't be called for hash state or
-  // push/replaceState.
-  [self resetDocumentSpecificState];
-
-  [self didStartLoading];
-  // Do not commit pending item in the middle of loading a placeholder URL. The
-  // item will be committed when the native content or webUI is displayed.
-  if (!context->IsPlaceholderNavigation()) {
-    self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
-    if (web::features::StorePendingItemInContext() &&
-        context->IsLoadingHtmlString()) {
-      self.navigationManagerImpl->GetLastCommittedItem()->SetURL(
-          context->GetUrl());
-    }
-    // If a SafeBrowsing warning is currently displayed, the user has tapped
-    // the button on the warning page to proceed to the site, the site has
-    // started loading, and the warning is about to be removed. In this case,
-    // the transient item for the warning needs to be removed too.
-    if (web::IsSafeBrowsingWarningDisplayedInWebView(self.webView))
-      self.navigationManagerImpl->DiscardNonCommittedItems();
-  }
-}
-
-// Resets any state that is associated with a specific document object (e.g.,
-// page interaction tracking).
-- (void)resetDocumentSpecificState {
-  _userInteractionState.SetLastUserInteraction(nullptr);
-  _userInteractionState.SetTapInProgress(false);
-}
-
 // Called when a page (native or web) has actually started loading (i.e., for
 // a web page the document has actually changed), or after the load request has
 // been registered for a non-document-changing URL change. Updates internal
@@ -3269,7 +3219,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                            hasUserGesture:NO
                         rendererInitiated:YES
                     placeholderNavigation:IsPlaceholderUrl(webViewURL)];
-      [self webPageChangedWithContext:newContext.get()];
+      [self.navigationHandler webPageChangedWithContext:newContext.get()
+                                                webView:self.webView];
       newContext->SetHasCommitted(!isSameDocumentNavigation);
       self.webStateImpl->OnNavigationFinished(newContext.get());
       // TODO(crbug.com/792515): It is OK, but very brittle, to call
@@ -3289,7 +3240,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       existingContext->SetIsSameDocument(isSameDocumentNavigation);
       existingContext->SetHasCommitted(!isSameDocumentNavigation);
       self.webStateImpl->OnNavigationStarted(existingContext);
-      [self webPageChangedWithContext:existingContext];
+      [self.navigationHandler webPageChangedWithContext:existingContext
+                                                webView:self.webView];
       self.webStateImpl->OnNavigationFinished(existingContext);
     }
   }
@@ -3689,19 +3641,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self displayWebView];
 }
 
-- (void)navigationHandlerResetDocumentSpecificState:
-    (CRWWKNavigationHandler*)navigationHandler {
-  [self resetDocumentSpecificState];
-}
-
 - (void)navigationHandlerDidStartLoading:
     (CRWWKNavigationHandler*)navigationHandler {
   [self didStartLoading];
-}
-
-- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
-    didChangePageWithContext:(web::NavigationContextImpl*)context {
-  [self webPageChangedWithContext:context];
 }
 
 - (void)navigationHandlerUpdateSSLStatusForCurrentNavigationItem:
