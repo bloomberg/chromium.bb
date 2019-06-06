@@ -82,7 +82,7 @@ String EmailInputType::ConvertEmailAddressToASCII(const ScriptRegexp& regexp,
 
   // Leak |idna| at the end.
   UErrorCode error_code = U_ZERO_ERROR;
-  static icu::IDNA* idna =
+  static const icu::IDNA* const idna =
       icu::IDNA::createUTS46Instance(kIdnaConversionOption, error_code);
   DCHECK(idna);
   icu::IDNAInfo idna_info;
