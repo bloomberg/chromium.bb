@@ -345,8 +345,7 @@ bool CaptionContainerView::CanAcceptEvent(const ui::Event& event) {
   // Do not process or accept press down events that are on the border.
   static ui::EventType press_types[] = {ui::ET_GESTURE_TAP_DOWN,
                                         ui::ET_MOUSE_PRESSED};
-  if (event.IsLocatedEvent() &&
-      base::ContainsValue(press_types, event.type())) {
+  if (event.IsLocatedEvent() && base::Contains(press_types, event.type())) {
     gfx::Rect inset_bounds = GetLocalBounds();
     inset_bounds.Inset(gfx::Insets(kMarginDp));
     if (!inset_bounds.Contains(event.AsLocatedEvent()->location()))

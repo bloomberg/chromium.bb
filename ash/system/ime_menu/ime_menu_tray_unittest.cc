@@ -96,7 +96,7 @@ class ImeMenuTrayTest : public AshTestBase {
     }
     for (const auto& ime : ime_map) {
       // Tests that all the IMEs on the view is in the list of selected IMEs.
-      EXPECT_TRUE(base::ContainsValue(expected_ime_ids, ime.second));
+      EXPECT_TRUE(base::Contains(expected_ime_ids, ime.second));
 
       // Tests that the checked IME is the current IME.
       ui::AXNodeData node_data;

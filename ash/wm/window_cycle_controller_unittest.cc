@@ -711,10 +711,10 @@ TEST_F(DesksWindowCyclingTest, CycleShowsAllDesksWindows) {
   // All desks' windows are included in the cycle list.
   auto cycle_windows = GetWindows(cycle_controller);
   EXPECT_EQ(4u, cycle_windows.size());
-  EXPECT_TRUE(base::ContainsValue(cycle_windows, win0.get()));
-  EXPECT_TRUE(base::ContainsValue(cycle_windows, win1.get()));
-  EXPECT_TRUE(base::ContainsValue(cycle_windows, win2.get()));
-  EXPECT_TRUE(base::ContainsValue(cycle_windows, win3.get()));
+  EXPECT_TRUE(base::Contains(cycle_windows, win0.get()));
+  EXPECT_TRUE(base::Contains(cycle_windows, win1.get()));
+  EXPECT_TRUE(base::Contains(cycle_windows, win2.get()));
+  EXPECT_TRUE(base::Contains(cycle_windows, win3.get()));
 
   // The MRU order is {win3, win2, win1, win0}. We're now at win2. Cycling one
   // more time and completing the cycle, will activate win1 which exists on a

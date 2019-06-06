@@ -133,10 +133,10 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
             // Parent layer is excluded meaning that it's pointless to clone
             // current child and all its descendants. This reduces the number
             // of layers to create.
-            if (base::ContainsKey(blocked_layers, owner->layer()->parent()))
+            if (base::Contains(blocked_layers, owner->layer()->parent()))
               return nullptr;
 
-            if (base::ContainsKey(blocked_layers, owner->layer())) {
+            if (base::Contains(blocked_layers, owner->layer())) {
               // Blocked layers are replaced with solid black layers so that
               // they won't be included in the screenshot but still preserve
               // the window stacking.

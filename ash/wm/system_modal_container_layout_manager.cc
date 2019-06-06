@@ -63,7 +63,7 @@ void SystemModalContainerLayoutManager::OnChildWindowVisibilityChanged(
     return;
 
   if (window->IsVisible()) {
-    DCHECK(!base::ContainsValue(modal_windows_, window));
+    DCHECK(!base::Contains(modal_windows_, window));
     AddModalWindow(window);
   } else {
     if (RemoveModalWindow(window))
@@ -121,7 +121,7 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
     return;
 
   if (window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM) {
-    if (base::ContainsValue(modal_windows_, window))
+    if (base::Contains(modal_windows_, window))
       return;
     AddModalWindow(window);
   } else {
@@ -201,7 +201,7 @@ void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
       capture_window->ReleaseCapture();
   }
   DCHECK(window->IsVisible());
-  DCHECK(!base::ContainsValue(modal_windows_, window));
+  DCHECK(!base::Contains(modal_windows_, window));
 
   modal_windows_.push_back(window);
   // Create the modal background on all displays for |window|.

@@ -364,7 +364,7 @@ bool IsWebDeepLinkType(DeepLinkType type,
       DeepLinkType::kLists, DeepLinkType::kNotes, DeepLinkType::kReminders,
       DeepLinkType::kSettings};
 
-  return base::ContainsKey(kWebDeepLinks, type);
+  return base::Contains(kWebDeepLinks, type);
 }
 
 }  // namespace util

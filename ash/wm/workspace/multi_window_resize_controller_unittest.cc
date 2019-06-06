@@ -83,8 +83,7 @@ class MultiWindowResizeControllerTest : public AshTestBase {
         resize_controller_->windows_.window2 == window) {
       return true;
     }
-    return base::ContainsValue(resize_controller_->windows_.other_windows,
-                               window);
+    return base::Contains(resize_controller_->windows_.other_windows, window);
   }
 
   bool IsOverWindows(const gfx::Point& loc) {

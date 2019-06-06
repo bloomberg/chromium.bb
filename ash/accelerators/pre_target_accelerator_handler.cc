@@ -113,7 +113,7 @@ bool PreTargetAcceleratorHandler::ShouldProcessAcceleratorNow(
   if (accelerator.IsCmdDown())
     return true;
 
-  if (base::ContainsValue(Shell::GetAllRootWindows(), target))
+  if (base::Contains(Shell::GetAllRootWindows(), target))
     return true;
 
   AcceleratorControllerImpl* accelerator_controller =

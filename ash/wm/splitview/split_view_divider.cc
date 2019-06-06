@@ -336,7 +336,7 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
 }
 
 void SplitViewDivider::AddObservedWindow(aura::Window* window) {
-  if (!base::ContainsValue(observed_windows_, window)) {
+  if (!base::Contains(observed_windows_, window)) {
     window->AddObserver(this);
     ::wm::TransientWindowManager::GetOrCreate(window)->AddObserver(this);
     observed_windows_.push_back(window);
@@ -401,8 +401,7 @@ void SplitViewDivider::OnWindowActivated(ActivationReason reason,
                                          aura::Window* gained_active,
                                          aura::Window* lost_active) {
   if (!is_dragging_window_ &&
-      (!gained_active ||
-       base::ContainsValue(observed_windows_, gained_active))) {
+      (!gained_active || base::Contains(observed_windows_, gained_active))) {
     SetAlwaysOnTop(true);
   } else {
     // If |gained_active| is not one of the observed windows, or there is one

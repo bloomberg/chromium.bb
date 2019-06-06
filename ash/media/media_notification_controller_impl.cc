@@ -138,7 +138,7 @@ void MediaNotificationControllerImpl::OnFocusGained(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   const std::string id = session->request_id->ToString();
 
-  if (base::ContainsKey(notifications_, id))
+  if (base::Contains(notifications_, id))
     return;
 
   media_session::mojom::MediaControllerPtr controller;

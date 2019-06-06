@@ -304,7 +304,7 @@ bool PagedViewStructure::IsFullPage(int page_index) const {
 
 int PagedViewStructure::CalculateTargetSlot(const Page& page) const {
   size_t target_slot = page.size();
-  if (base::ContainsValue(page, apps_grid_view_->drag_view()))
+  if (base::Contains(page, apps_grid_view_->drag_view()))
     --target_slot;
   return static_cast<int>(target_slot);
 }

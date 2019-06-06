@@ -557,7 +557,7 @@ mojom::DisplayConfigResult SetDisplayLayouts(
     if (root_id == display::kInvalidDisplayId) {
       // Look for a display with no layout info to use as the root.
       for (int64_t id : display_ids) {
-        if (!base::ContainsKey(layout_ids, id)) {
+        if (!base::Contains(layout_ids, id)) {
           root_id = id;
           break;
         }

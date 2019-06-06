@@ -76,7 +76,7 @@ bool IsSwitchableContainer(const aura::Window* window) {
     return false;
   const int shell_window_id = window->id();
 
-  return base::ContainsValue(GetSwitchableContainersIds(), shell_window_id);
+  return base::Contains(GetSwitchableContainersIds(), shell_window_id);
 }
 
 }  // namespace wm

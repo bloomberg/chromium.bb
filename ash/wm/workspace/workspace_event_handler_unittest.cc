@@ -79,7 +79,7 @@ class WindowPropertyObserver : public aura::WindowObserver {
   ~WindowPropertyObserver() override { window_->RemoveObserver(this); }
 
   bool DidPropertyChange(const void* property) const {
-    return base::ContainsValue(properties_changed_, property);
+    return base::Contains(properties_changed_, property);
   }
 
  private:

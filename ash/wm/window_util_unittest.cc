@@ -188,8 +188,8 @@ TEST_F(WindowUtilTest, RemoveTransientDescendants) {
   window_list.push_back(descendant2.get());
   RemoveTransientDescendants(&window_list);
   ASSERT_EQ(2u, window_list.size());
-  ASSERT_TRUE(base::ContainsValue(window_list, window1.get()));
-  ASSERT_TRUE(base::ContainsValue(window_list, window2.get()));
+  ASSERT_TRUE(base::Contains(window_list, window1.get()));
+  ASSERT_TRUE(base::Contains(window_list, window2.get()));
 
   // Create a window which has a transient parent that is not in |window_list|.
   // Test that the window is not removed when calling

@@ -274,7 +274,7 @@ std::vector<std::string> ImeController::GetCandidateImesForAccelerator(
 
   // Obtain the intersection of input_method_ids_to_switch and available_imes_.
   for (const mojom::ImeInfo& ime : available_imes_) {
-    if (base::ContainsValue(input_method_ids_to_switch, ime.id))
+    if (base::Contains(input_method_ids_to_switch, ime.id))
       candidate_ids.push_back(ime.id);
   }
   return candidate_ids;

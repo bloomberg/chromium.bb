@@ -1865,7 +1865,7 @@ AcceleratorControllerImpl::GetAcceleratorProcessingRestriction(
     return RESTRICTION_PREVENT_PROCESSING;
   }
   if (Shell::Get()->power_button_controller()->IsMenuOpened() &&
-      !base::ContainsKey(actions_allowed_at_power_menu_, action)) {
+      !base::Contains(actions_allowed_at_power_menu_, action)) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
   if (Shell::Get()->session_controller()->IsRunningInAppMode() &&
@@ -1882,7 +1882,7 @@ AcceleratorControllerImpl::GetAcceleratorProcessingRestriction(
     // cycling through its window elements.
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
-  if (base::ContainsKey(actions_needing_window_, action) &&
+  if (base::Contains(actions_needing_window_, action) &&
       Shell::Get()
           ->mru_window_tracker()
           ->BuildMruWindowList(kActiveDesk)

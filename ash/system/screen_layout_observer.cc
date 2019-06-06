@@ -57,8 +57,8 @@ base::string16 GetDisplaySize(int64_t display_id) {
   // to empty string if this happens on release build.
   const display::DisplayIdList id_list =
       display_manager->GetMirroringDestinationDisplayIdList();
-  const bool mirroring = display_manager->IsInMirrorMode() &&
-                         base::ContainsValue(id_list, display_id);
+  const bool mirroring =
+      display_manager->IsInMirrorMode() && base::Contains(id_list, display_id);
   DCHECK(!mirroring);
   if (mirroring)
     return base::string16();

@@ -416,7 +416,7 @@ bool KeyboardController::UpdateKeyboardConfig(
 }
 
 void KeyboardController::SetEnableFlag(mojom::KeyboardEnableFlag flag) {
-  if (!base::ContainsKey(keyboard_enable_flags_, flag))
+  if (!base::Contains(keyboard_enable_flags_, flag))
     keyboard_enable_flags_.insert(flag);
 
   // If there is a flag that is mutually exclusive with |flag|, clear it.
@@ -455,7 +455,7 @@ void KeyboardController::ClearEnableFlag(mojom::KeyboardEnableFlag flag) {
 }
 
 bool KeyboardController::IsEnableFlagSet(mojom::KeyboardEnableFlag flag) const {
-  return base::ContainsKey(keyboard_enable_flags_, flag);
+  return base::Contains(keyboard_enable_flags_, flag);
 }
 
 bool KeyboardController::IsKeyboardEnableRequested() const {

@@ -91,7 +91,7 @@ AssistantNotificationModel::GetNotificationsByType(
 
 bool AssistantNotificationModel::HasNotificationForId(
     const std::string& id) const {
-  return base::ContainsKey(notifications_, id);
+  return base::Contains(notifications_, id);
 }
 
 void AssistantNotificationModel::NotifyNotificationAdded(

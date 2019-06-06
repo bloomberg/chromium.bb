@@ -472,7 +472,7 @@ void HomeLauncherGestureHandler::OnWindowDestroying(aura::Window* window) {
     return;
   }
 
-  DCHECK(base::ContainsValue(hidden_windows_, window));
+  DCHECK(base::Contains(hidden_windows_, window));
   window->RemoveObserver(this);
   hidden_windows_.erase(
       std::find(hidden_windows_.begin(), hidden_windows_.end(), window));
@@ -809,7 +809,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
     return false;
   }
 
-  DCHECK(base::ContainsValue(windows, first_window));
+  DCHECK(base::Contains(windows, first_window));
   DCHECK_NE(Mode::kNone, mode);
   base::RecordAction(base::UserMetricsAction(
       mode == Mode::kSlideDownToHide
@@ -831,7 +831,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
                 SplitViewController::LEFT
             ? split_view_controller->right_window()
             : split_view_controller->left_window();
-    DCHECK(base::ContainsValue(windows, second_window));
+    DCHECK(base::Contains(windows, second_window));
     secondary_window_ = std::make_unique<ScopedWindowModifier>(second_window);
     GetSecondaryWindow()->AddObserver(this);
     base::EraseIf(windows, [this](aura::Window* elem) {

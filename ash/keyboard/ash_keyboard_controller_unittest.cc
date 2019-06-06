@@ -318,7 +318,7 @@ TEST_F(AshKeyboardControllerTest, EnableFlags) {
   std::vector<keyboard::mojom::KeyboardEnableFlag> enable_flags =
       test_client()->GetEnableFlags();
   EXPECT_TRUE(
-      base::ContainsValue(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
+      base::Contains(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
   EXPECT_EQ(enable_flags, test_observer()->enable_flags());
   EXPECT_TRUE(test_client()->IsKeyboardEnabled());
 
@@ -326,9 +326,9 @@ TEST_F(AshKeyboardControllerTest, EnableFlags) {
   test_client()->SetEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
   enable_flags = test_client()->GetEnableFlags();
   EXPECT_TRUE(
-      base::ContainsValue(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
+      base::Contains(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
   EXPECT_TRUE(
-      base::ContainsValue(enable_flags, KeyboardEnableFlag::kPolicyDisabled));
+      base::Contains(enable_flags, KeyboardEnableFlag::kPolicyDisabled));
   EXPECT_EQ(enable_flags, test_observer()->enable_flags());
   EXPECT_FALSE(test_client()->IsKeyboardEnabled());
 
@@ -336,9 +336,9 @@ TEST_F(AshKeyboardControllerTest, EnableFlags) {
   test_client()->ClearEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
   enable_flags = test_client()->GetEnableFlags();
   EXPECT_TRUE(
-      base::ContainsValue(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
+      base::Contains(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
   EXPECT_FALSE(
-      base::ContainsValue(enable_flags, KeyboardEnableFlag::kPolicyDisabled));
+      base::Contains(enable_flags, KeyboardEnableFlag::kPolicyDisabled));
   EXPECT_EQ(enable_flags, test_observer()->enable_flags());
   EXPECT_TRUE(test_client()->IsKeyboardEnabled());
 }

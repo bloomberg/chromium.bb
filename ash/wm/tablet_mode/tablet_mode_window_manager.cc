@@ -161,7 +161,7 @@ int TabletModeWindowManager::GetNumberOfManagedWindows() {
 }
 
 bool TabletModeWindowManager::IsTrackingWindow(aura::Window* window) {
-  return base::ContainsKey(window_state_map_, window);
+  return base::Contains(window_state_map_, window);
 }
 
 void TabletModeWindowManager::AddWindow(aura::Window* window) {
@@ -246,7 +246,7 @@ void TabletModeWindowManager::OnWindowDestroying(aura::Window* window) {
     // container window can be removed on display destruction.
     window->RemoveObserver(this);
     observed_container_windows_.erase(window);
-  } else if (base::ContainsKey(added_windows_, window)) {
+  } else if (base::Contains(added_windows_, window)) {
     // Added window was destroyed before being shown.
     added_windows_.erase(window);
     window->RemoveObserver(this);
@@ -261,12 +261,12 @@ void TabletModeWindowManager::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   // A window can get removed and then re-added by a drag and drop operation.
   if (params.new_parent && IsContainerWindow(params.new_parent) &&
-      !base::ContainsKey(window_state_map_, params.target)) {
+      !base::Contains(window_state_map_, params.target)) {
     // Don't register the window if the window is invisible. Instead,
     // wait until it becomes visible because the client may update the
     // flag to control if the window should be added.
     if (!params.target->IsVisible()) {
-      if (!base::ContainsKey(added_windows_, params.target)) {
+      if (!base::Contains(added_windows_, params.target)) {
         added_windows_.insert(params.target);
         params.target->AddObserver(this);
       }
@@ -275,7 +275,7 @@ void TabletModeWindowManager::OnWindowHierarchyChanged(
     TrackWindow(params.target);
     // When the state got added, the "WM_EVENT_ADDED_TO_WORKSPACE" event got
     // already sent and we have to notify our state again.
-    if (base::ContainsKey(window_state_map_, params.target)) {
+    if (base::Contains(window_state_map_, params.target)) {
       wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
       wm::GetWindowState(params.target)->OnWMEvent(&event);
     }
@@ -320,7 +320,7 @@ void TabletModeWindowManager::OnWindowVisibilityChanged(aura::Window* window,
     return;
 
   if (IsContainerWindow(window->parent()) &&
-      base::ContainsKey(added_windows_, window) && visible) {
+      base::Contains(added_windows_, window) && visible) {
     added_windows_.erase(window);
     window->RemoveObserver(this);
     TrackWindow(window);
@@ -582,7 +582,7 @@ void TabletModeWindowManager::AddWindowCreationObservers() {
   // windows.
   for (aura::Window* root : Shell::GetAllRootWindows()) {
     for (auto* desk_container : desks_util::GetDesksContainers(root)) {
-      DCHECK(!base::ContainsKey(observed_container_windows_, desk_container));
+      DCHECK(!base::Contains(observed_container_windows_, desk_container));
       desk_container->AddObserver(this);
       observed_container_windows_.insert(desk_container);
     }
@@ -603,7 +603,7 @@ void TabletModeWindowManager::DisplayConfigurationChanged() {
 }
 
 bool TabletModeWindowManager::IsContainerWindow(aura::Window* window) {
-  return base::ContainsKey(observed_container_windows_, window);
+  return base::Contains(observed_container_windows_, window);
 }
 
 void TabletModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(

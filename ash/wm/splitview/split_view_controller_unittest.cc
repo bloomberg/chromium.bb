@@ -222,7 +222,7 @@ class SplitViewControllerTest : public AshTestBase {
   void CheckOverviewEnterExitHistogram(const char* trace,
                                        std::vector<int>&& enter_counts,
                                        std::vector<int>&& exit_counts) {
-    DCHECK(!base::ContainsValue(trace_names_, trace)) << trace;
+    DCHECK(!base::Contains(trace_names_, trace)) << trace;
     trace_names_.push_back(trace);
     {
       SCOPED_TRACE(trace + std::string(".Enter"));
@@ -580,8 +580,8 @@ TEST_F(SplitViewControllerTest, EnterOverviewModeTest) {
   CheckOverviewEnterExitHistogram("EnterInSplitView", {0, 1}, {0, 0});
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kLeftSnapped);
   EXPECT_FALSE(
-      base::ContainsValue(GetWindowsInOverviewGrids(),
-                          split_view_controller()->GetDefaultSnappedWindow()));
+      base::Contains(GetWindowsInOverviewGrids(),
+                     split_view_controller()->GetDefaultSnappedWindow()));
 
   ToggleOverview();
   CheckOverviewEnterExitHistogram("ExitInSplitView", {0, 1}, {0, 1});

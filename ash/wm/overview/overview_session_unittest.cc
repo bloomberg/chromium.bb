@@ -349,7 +349,7 @@ class OverviewSessionTest : public AshTestBase {
   void CheckOverviewEnterExitHistogram(const char* trace,
                                        std::vector<int>&& enter_counts,
                                        std::vector<int>&& exit_counts) {
-    DCHECK(!base::ContainsValue(trace_names_, trace)) << trace;
+    DCHECK(!base::Contains(trace_names_, trace)) << trace;
     trace_names_.push_back(trace);
     {
       SCOPED_TRACE(trace + std::string(".Enter"));
@@ -4195,7 +4195,7 @@ TEST_F(SplitViewOverviewSessionTest,
   std::vector<aura::Window*> window_list =
       overview_controller()->GetWindowsListInOverviewGridsForTest();
   EXPECT_EQ(2u, window_list.size());
-  EXPECT_FALSE(base::ContainsValue(window_list, window1.get()));
+  EXPECT_FALSE(base::Contains(window_list, window1.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
 
   // Drag the divider to the left edge.
@@ -4212,7 +4212,7 @@ TEST_F(SplitViewOverviewSessionTest,
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   window_list = overview_controller()->GetWindowsListInOverviewGridsForTest();
   EXPECT_EQ(3u, window_list.size());
-  EXPECT_TRUE(base::ContainsValue(window_list, window1.get()));
+  EXPECT_TRUE(base::Contains(window_list, window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
 }
 

@@ -36,7 +36,7 @@ void PolicyRecommendationRestorer::ObservePref(const std::string& pref_name) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetSigninScreenPrefService();
   DCHECK(prefs);
-  DCHECK(!base::ContainsKey(pref_names_, pref_name));
+  DCHECK(!base::Contains(pref_names_, pref_name));
 
   if (!pref_change_registrar_) {
     pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();

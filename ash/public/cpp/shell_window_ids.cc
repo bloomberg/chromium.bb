@@ -65,7 +65,7 @@ std::vector<int> GetActivatableShellWindowIds() {
 }
 
 bool IsActivatableShellWindowId(int id) {
-  return base::ContainsValue(GetActivatableShellWindowIds(), id);
+  return base::Contains(GetActivatableShellWindowIds(), id);
 }
 
 }  // namespace ash

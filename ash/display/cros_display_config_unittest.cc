@@ -315,8 +315,8 @@ TEST_F(CrosDisplayConfigTest, SetLayoutMirroredMixed) {
   display::DisplayIdList id_list =
       display_manager()->GetMirroringDestinationDisplayIdList();
   ASSERT_EQ(2u, id_list.size());
-  EXPECT_TRUE(base::ContainsValue(id_list, displays[1].id()));
-  EXPECT_TRUE(base::ContainsValue(id_list, displays[3].id()));
+  EXPECT_TRUE(base::Contains(id_list, displays[1].id()));
+  EXPECT_TRUE(base::Contains(id_list, displays[3].id()));
 }
 
 TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListBasic) {

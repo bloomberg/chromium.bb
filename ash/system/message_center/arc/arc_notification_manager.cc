@@ -422,7 +422,7 @@ void ArcNotificationManager::OpenNotificationSettings(const std::string& key) {
 
 void ArcNotificationManager::OpenNotificationSnoozeSettings(
     const std::string& key) {
-  if (!base::ContainsKey(items_, key)) {
+  if (!base::Contains(items_, key)) {
     DVLOG(3) << "Chrome requests to show a snooze setting gut on the"
              << "notification (key: " << key << "), but it is gone.";
     return;

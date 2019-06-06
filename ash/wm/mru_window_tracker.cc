@@ -156,7 +156,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 
         // Only add windows that have not been added previously from
         // |mru_windows| (if available).
-        if (mru_windows && base::ContainsValue(*mru_windows, child))
+        if (mru_windows && base::Contains(*mru_windows, child))
           continue;
 
         windows.emplace_back(child);

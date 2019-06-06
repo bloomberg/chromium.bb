@@ -902,7 +902,7 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(
   for (auto i = children.rbegin();
        i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
     // Ignore already attached windows.
-    if (base::ContainsValue(attached_windows_, *i))
+    if (base::Contains(attached_windows_, *i))
       continue;
 
     wm::WindowState* other_state = wm::GetWindowState(*i);

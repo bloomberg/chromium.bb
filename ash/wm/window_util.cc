@@ -296,7 +296,7 @@ void RemoveTransientDescendants(std::vector<aura::Window*>* out_window_list) {
   for (auto it = out_window_list->begin(); it != out_window_list->end();) {
     aura::Window* transient_root = ::wm::GetTransientRoot(*it);
     if (*it != transient_root &&
-        base::ContainsValue(*out_window_list, transient_root)) {
+        base::Contains(*out_window_list, transient_root)) {
       it = out_window_list->erase(it);
     } else {
       ++it;

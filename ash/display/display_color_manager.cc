@@ -232,8 +232,7 @@ bool DisplayColorManager::SetDisplayColorMatrix(
     const display::DisplaySnapshot* display_snapshot,
     const SkMatrix44& color_matrix) {
   DCHECK(display_snapshot);
-  DCHECK(
-      base::ContainsValue(configurator_->cached_displays(), display_snapshot));
+  DCHECK(base::Contains(configurator_->cached_displays(), display_snapshot));
 
   if (!display_snapshot->has_color_correction_matrix()) {
     // This display doesn't support setting a CRTC matrix.

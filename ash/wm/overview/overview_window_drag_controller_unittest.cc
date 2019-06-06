@@ -150,7 +150,7 @@ TEST_F(NoDesksNoSplitViewTest, CanDoDragToClose) {
   event_generator->ReleaseLeftButton();
   waiter.Wait();
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_FALSE(base::ContainsValue(
+  EXPECT_FALSE(base::Contains(
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kAllDesks),
       window_ptr));
 }

@@ -87,7 +87,7 @@ void AshWindowTreeHostUnified::RegisterMirroringHost(
   aura::Window* src_root = mirroring_ash_host->AsWindowTreeHost()->window();
   src_root->SetEventTargeter(
       std::make_unique<UnifiedEventTargeter>(src_root, window(), delegate_));
-  DCHECK(!base::ContainsValue(mirroring_hosts_, mirroring_ash_host));
+  DCHECK(!base::Contains(mirroring_hosts_, mirroring_ash_host));
   mirroring_hosts_.push_back(mirroring_ash_host);
   mirroring_ash_host->AsWindowTreeHost()->window()->AddObserver(this);
 }

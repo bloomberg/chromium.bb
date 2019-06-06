@@ -342,7 +342,7 @@ void ScreenOrientationController::OnWindowDestroying(aura::Window* window) {
 void ScreenOrientationController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
-  if (base::ContainsKey(lock_info_map_, window))
+  if (base::Contains(lock_info_map_, window))
     ApplyLockForActiveWindow();
 }
 

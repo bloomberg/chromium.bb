@@ -134,7 +134,7 @@ void TrayNetworkStateModel::OnGetDeviceStateList(
   devices_.clear();
   for (auto& device : devices) {
     NetworkType type = device->type;
-    if (base::ContainsKey(devices_, type))
+    if (base::Contains(devices_, type))
       continue;  // Ignore multiple entries with the same type.
     devices_.emplace(std::make_pair(type, std::move(device)));
   }

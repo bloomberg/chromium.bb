@@ -64,12 +64,11 @@ bool AshFocusRules::IsToplevelWindow(const aura::Window* window) const {
 
   // The window must exist within a container that supports activation.
   // The window cannot be blocked by a modal transient.
-  return base::ContainsValue(activatable_container_ids_,
-                             window->parent()->id());
+  return base::Contains(activatable_container_ids_, window->parent()->id());
 }
 
 bool AshFocusRules::SupportsChildActivation(const aura::Window* window) const {
-  return base::ContainsValue(activatable_container_ids_, window->id());
+  return base::Contains(activatable_container_ids_, window->id());
 }
 
 bool AshFocusRules::IsWindowConsideredVisibleForActivation(

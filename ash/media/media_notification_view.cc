@@ -359,9 +359,9 @@ void MediaNotificationView::UpdateActionButtonsVisibility() {
 
   for (auto* view : button_row_->children()) {
     views::Button* action_button = views::Button::AsButton(view);
-    action_button->SetVisible(base::ContainsKey(
-        visible_actions,
-        static_cast<MediaSessionAction>(action_button->tag())));
+    action_button->SetVisible(
+        base::Contains(visible_actions,
+                       static_cast<MediaSessionAction>(action_button->tag())));
   }
 }
 
@@ -452,7 +452,7 @@ std::set<MediaSessionAction> MediaNotificationView::CalculateVisibleActions(
       continue;
     }
 
-    if (!base::ContainsKey(enabled_actions_, action))
+    if (!base::Contains(enabled_actions_, action))
       continue;
 
     visible_actions.insert(action);
