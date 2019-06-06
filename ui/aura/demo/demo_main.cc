@@ -9,10 +9,10 @@
 #include "base/i18n/icu_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -143,8 +143,9 @@ int DemoMain() {
   display::win::SetDefaultDeviceScaleFactor(1.0f);
 #endif
 
-  // Create the message-loop here before creating the root window.
-  base::MessageLoopForUI message_loop;
+  // Create the task executor here before creating the root window.
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("demo");
   ui::InitializeInputMethodForTesting();
 

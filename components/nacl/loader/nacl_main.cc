@@ -5,9 +5,9 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "build/build_config.h"
 #include "components/nacl/loader/nacl_listener.h"
@@ -24,7 +24,8 @@ int NaClMain(const content::MainFunctionParams& parameters) {
   mojo::core::Init();
 
   // The main thread of the plugin services IO.
-  base::MessageLoopForIO main_message_loop;
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::IO);
   base::PlatformThread::SetName("CrNaClMain");
 
   std::unique_ptr<base::PowerMonitorSource> power_monitor_source(

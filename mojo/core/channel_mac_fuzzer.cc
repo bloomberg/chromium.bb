@@ -30,12 +30,12 @@ class ChannelMacFuzzer {
   }
 
   scoped_refptr<base::TaskRunner> io_task_runner() {
-    return message_loop_.task_runner();
+    return io_task_executor_.task_runner();
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  base::MessageLoopForIO message_loop_;
+  base::SingleThreadTaskExecutor io_task_executor_{base::MessagePump::Type::IO};
 };
 
 class FakeChannelDelegate : public mojo::core::Channel::Delegate {

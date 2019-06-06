@@ -71,10 +71,12 @@ int AwBrowserMainParts::PreEarlyInitialization() {
         new AwNetworkChangeNotifierFactory());
   }
 
-  // Creates a MessageLoop for Android WebView if doesn't yet exist.
-  DCHECK(!main_message_loop_.get());
-  if (!base::MessageLoopCurrent::IsSet())
-    main_message_loop_.reset(new base::MessageLoopForUI);
+  // Creates a SingleThreadTaskExecutor for Android WebView if doesn't exist.
+  DCHECK(!main_task_executor_.get());
+  if (!base::MessageLoopCurrent::IsSet()) {
+    main_task_executor_ = std::make_unique<base::SingleThreadTaskExecutor>(
+        base::MessagePump::Type::UI);
+  }
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
 

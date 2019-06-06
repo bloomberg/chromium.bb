@@ -475,7 +475,7 @@ entry point for your service:
 #include "services/storage/storage_service.h"
 
 void ServiceMain(service_manager::ServiceRequest request) {
-  base::MessageLoop message_loop;
+  base::SingleThreadTaskExecutor main_task_executor;
   storage::StorageService(std::move(request)).RunUntilTermination();
 }
 ```

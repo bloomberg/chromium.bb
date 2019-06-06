@@ -10,9 +10,9 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -50,7 +50,7 @@ std::unique_ptr<quic::ProofSource> CreateProofSource(
 int main(int argc, char* argv[]) {
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("quic_server");
   base::AtExitManager exit_manager;
-  base::MessageLoopForIO message_loop;
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
 
   base::CommandLine::Init(argc, argv);
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();

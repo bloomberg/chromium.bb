@@ -14,7 +14,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "mojo/public/cpp/base/shared_memory_mojom_traits.h"
@@ -248,7 +248,7 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
 }
 
 TYPED_TEST_P(GpuMemoryBufferImplTest, SerializeAndDeserialize) {
-  base::MessageLoop message_loop;
+  base::SingleThreadTaskExecutor main_task_executor;
   const gfx::Size kBufferSize(8, 8);
   const gfx::GpuMemoryBufferType kBufferType = TypeParam::kBufferType;
 

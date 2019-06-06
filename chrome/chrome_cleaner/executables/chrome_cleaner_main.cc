@@ -18,10 +18,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -97,7 +97,7 @@ void LogsUploadCallback(bool* succeeded,
   if (succeeded)
     *succeeded = success;
   // Use a task instead of a direct call to QuitWhenIdle, in case we are called
-  // synchronously because of an upload error, and the message loop is not
+  // synchronously because of an upload error, and the task executor is not
   // running yet.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 std::move(quit_closure));
@@ -517,9 +517,10 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
     LOG(ERROR) << "Failed to remove zone identifier.";
   }
 
-  // Many pieces of code below need a message loop to have been instantiated
+  // Many pieces of code below need a task executor to have been instantiated
   // before them.
-  base::MessageLoopForUI ui_message_loop;
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
 
   // The rebooter must be at the outermost scope so it can be called to reboot
   // before exiting, when appropriate.

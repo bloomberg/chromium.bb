@@ -11,13 +11,13 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "crypto/rsa_private_key.h"
@@ -175,7 +175,7 @@ void EmbeddedTestServer::StartAcceptingConnections() {
   DCHECK(!io_thread_.get())
       << "Server must not be started while server is running";
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread_options.message_loop_type = base::MessagePump::Type::IO;
   io_thread_ = std::make_unique<base::Thread>("EmbeddedTestServer IO Thread");
   CHECK(io_thread_->StartWithOptions(thread_options));
   CHECK(io_thread_->WaitUntilThreadStarted());
@@ -502,14 +502,14 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWait(
   // base::ThreadTaskRunnerHandle::Get() to return a task runner for posting
   // the reply task. However, in order to make EmbeddedTestServer universally
   // usable, it needs to cope with the situation where it's running on a thread
-  // on which a message loop is not (yet) available or as has been destroyed
+  // on which a task executor is not (yet) available or as has been destroyed
   // already.
   //
-  // To handle this situation, create temporary message loop to support the
-  // PostTaskAndReply operation if the current thread has no message loop.
-  std::unique_ptr<base::MessageLoop> temporary_loop;
+  // To handle this situation, create temporary task executor to support the
+  // PostTaskAndReply operation if the current thread has no task executor.
+  std::unique_ptr<base::SingleThreadTaskExecutor> temporary_loop;
   if (!base::MessageLoopCurrent::Get())
-    temporary_loop = std::make_unique<base::MessageLoop>();
+    temporary_loop = std::make_unique<base::SingleThreadTaskExecutor>();
 
   base::RunLoop run_loop;
   if (!io_thread_->task_runner()->PostTaskAndReply(FROM_HERE, closure,

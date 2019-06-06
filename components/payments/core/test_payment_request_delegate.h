@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_executor.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
@@ -54,7 +54,7 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
   void CompleteFullCardRequest();
 
  private:
-  base::MessageLoop loop_;
+  base::SingleThreadTaskExecutor main_task_executor_;
   autofill::PersonalDataManager* personal_data_manager_;
   std::string locale_;
   const GURL last_committed_url_;

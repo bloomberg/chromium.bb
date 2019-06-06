@@ -63,7 +63,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
       });
 #endif
 
-  // The main message loop of the utility process.
+  // The main task executor of the utility process.
   base::SingleThreadTaskExecutor main_thread_task_executor(message_pump_type);
   base::PlatformThread::SetName("CrUtilityMain");
 

@@ -18,11 +18,11 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -150,7 +150,8 @@ int UpdaterMain(int argc, const char* const* argv) {
   installer->FindInstallOfApp();
   const auto component = installer->MakeCrxComponent();
 
-  base::MessageLoopForUI message_loop;
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   base::RunLoop runloop;
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 

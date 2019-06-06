@@ -7,8 +7,8 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/initialization_util.h"
 #include "net/base/network_change_notifier.h"
 
@@ -19,7 +19,7 @@
 namespace {
 
 base::AtExitManager* g_exit_manager = nullptr;
-base::MessageLoopForUI* g_message_loop = nullptr;
+base::SingleThreadTaskExecutor* g_task_executor = nullptr;
 net::NetworkChangeNotifier* g_network_change_notifer = nullptr;
 
 }  // namespace
@@ -38,21 +38,21 @@ void Create(const CreateParams& create_params) {
   });
 }
 
-void BuildMessageLoop() {
+void BuildSingleThreadTaskExecutor() {
   static dispatch_once_t once_token;
   dispatch_once(&once_token, ^{
-    // Create a MessageLoop if one does not already exist for the current
-    // thread.
+    // Create a SingleThreadTaskExecutor if one does not already exist for the
+    // current thread.
     if (!base::MessageLoopCurrent::Get()) {
-      g_message_loop = new base::MessageLoopForUI();
+      g_task_executor =
+          new base::SingleThreadTaskExecutor(base::MessagePump::Type::UI);
     }
-    base::MessageLoopCurrentForUI::Get()->Attach();
   });
 }
 
-void DestroyMessageLoop() {
-  delete g_message_loop;
-  g_message_loop = nullptr;
+void DestroySingleThreadTaskExecutor() {
+  delete g_task_executor;
+  g_task_executor = nullptr;
 }
 
 void CreateNetworkChangeNotifier() {
@@ -86,8 +86,8 @@ void DestroyAtExitManager() {
   g_exit_manager = nullptr;
 }
 
-base::MessageLoop* GetMainThreadMessageLoop() {
-  return g_message_loop;
+base::SingleThreadTaskExecutor* GetMainThreadTaskExecutor() {
+  return g_task_executor;
 }
 
 }  // namespace ios_global_state

@@ -33,7 +33,7 @@ TestHttpServer::~TestHttpServer() {
 }
 
 bool TestHttpServer::Start() {
-  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessagePump::Type::IO, 0);
   bool thread_started = thread_.StartWithOptions(options);
   EXPECT_TRUE(thread_started);
   if (!thread_started)

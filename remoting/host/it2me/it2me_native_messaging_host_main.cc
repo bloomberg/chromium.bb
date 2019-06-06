@@ -9,8 +9,8 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
@@ -67,9 +67,10 @@ bool CurrentProcessHasUiAccess() {
 }  // namespace
 
 // Creates a It2MeNativeMessagingHost instance, attaches it to stdin/stdout and
-// runs the message loop until It2MeNativeMessagingHost signals shutdown.
+// runs the task executor until It2MeNativeMessagingHost signals shutdown.
 int It2MeNativeMessagingHostMain(int argc, char** argv) {
-  // This object instance is required by Chrome code (such as MessageLoop).
+  // This object instance is required by Chrome code (such as
+  // SingleThreadTaskExecutor).
   base::AtExitManager exit_manager;
 
   base::CommandLine::Init(argc, argv);
@@ -199,10 +200,11 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
 #error Not implemented.
 #endif
 
-  base::MessageLoopForUI message_loop;
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   base::RunLoop run_loop;
 
-  // NetworkChangeNotifier must be initialized after MessageLoop.
+  // NetworkChangeNotifier must be initialized after SingleThreadTaskExecutor.
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
       net::NetworkChangeNotifier::Create());
 
@@ -217,7 +219,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
 
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(
-          message_loop.task_runner(), run_loop.QuitClosure()));
+          main_task_executor.task_runner(), run_loop.QuitClosure()));
   std::unique_ptr<PolicyWatcher> policy_watcher =
       PolicyWatcher::CreateWithTaskRunner(context->file_task_runner());
   std::unique_ptr<extensions::NativeMessageHost> host(

@@ -68,7 +68,7 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
 
   // MessageLoopShared implementation.
   //
-  // Handles posting to the message loop if there is one, or the pending queue
+  // Handles posting to the task executor if there is one, or the pending queue
   // if there isn't.
   // NOTE: The given closure will be run *WITHOUT* acquiring the Proxy lock.
   //       This only makes sense for user code and completely thread-safe
@@ -97,11 +97,11 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   // Number of invocations of Run currently on the stack.
   int nested_invocations_;
 
-  // Set to true when the message loop is destroyed to prevent forther
+  // Set to true when the task executor is destroyed to prevent forther
   // posting of work.
   bool destroyed_;
 
-  // Set to true if all message loop invocations should exit and that the
+  // Set to true if all task executor invocations should exit and that the
   // loop should be destroyed once it reaches the outermost Run invocation.
   bool should_destroy_;
 
@@ -109,7 +109,7 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
 
   bool currently_handling_blocking_message_;
 
-  // Since we allow tasks to be posted before the message loop is actually
+  // Since we allow tasks to be posted before the task executor is actually
   // created (when it's associated with a thread), we keep tasks posted here
   // until that happens. Once the loop_ is created, this is unused.
   std::vector<TaskInfo> pending_tasks_;

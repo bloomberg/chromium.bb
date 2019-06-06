@@ -275,7 +275,7 @@ std::unique_ptr<BrowserProcessSubThread> BrowserTaskExecutor::CreateIOThread() {
   }
 
   base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessagePump::Type::IO;
   options.task_environment =
       g_browser_task_executor->browser_io_task_environment_.release();
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)

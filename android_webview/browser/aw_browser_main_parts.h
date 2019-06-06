@@ -9,11 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/task/single_thread_task_executor.h"
 #include "content/public/browser/browser_main_parts.h"
-
-namespace base {
-class MessageLoop;
-}
 
 namespace android_webview {
 
@@ -33,8 +30,8 @@ class AwBrowserMainParts : public content::BrowserMainParts {
       content::ServiceManagerConnection* connection) override;
 
  private:
-  // Android specific UI MessageLoop.
-  std::unique_ptr<base::MessageLoop> main_message_loop_;
+  // Android specific UI SingleThreadTaskExecutor.
+  std::unique_ptr<base::SingleThreadTaskExecutor> main_task_executor_;
 
   AwContentBrowserClient* browser_client_;
 

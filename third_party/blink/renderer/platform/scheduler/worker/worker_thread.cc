@@ -91,7 +91,7 @@ WorkerThread::SimpleThreadImpl::SimpleThreadImpl(
   // thread?
   sequence_manager_ = base::sequence_manager::CreateUnboundSequenceManager(
       base::sequence_manager::SequenceManager::Settings::Builder()
-          .SetMessagePumpType(base::MessageLoop::TYPE_DEFAULT)
+          .SetMessagePumpType(base::MessagePump::Type::DEFAULT)
           .SetRandomisedSamplingEnabled(true)
           .Build());
   internal_task_queue_ = sequence_manager_->CreateTaskQueue(

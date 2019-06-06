@@ -235,8 +235,8 @@ int GpuMain(const MainFunctionParams& parameters) {
   logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
   // We are experiencing what appear to be memory-stomp issues in the GPU
-  // process. These issues seem to be impacting the message loop and listeners
-  // registered to it. Create the message loop on the heap to guard against
+  // process. These issues seem to be impacting the task executor and listeners
+  // registered to it. Create the task executor on the heap to guard against
   // this.
   // TODO(ericrk): Revisit this once we assess its impact on crbug.com/662802
   // and crbug.com/609252.

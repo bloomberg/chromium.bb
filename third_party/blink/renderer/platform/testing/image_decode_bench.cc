@@ -16,7 +16,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "mojo/core/embedder/embedder.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
@@ -135,7 +135,7 @@ void ImageDecodeBenchMain(int argc, char* argv[]) {
 }  // namespace blink
 
 int main(int argc, char* argv[]) {
-  base::MessageLoop message_loop;
+  base::SingleThreadTaskExecutor main_task_executor;
   mojo::core::Init();
   base::CommandLine::Init(argc, argv);
   blink::ImageDecodeBenchMain(argc, argv);

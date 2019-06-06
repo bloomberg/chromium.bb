@@ -6,9 +6,9 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
@@ -59,6 +59,7 @@ void ServiceMain(service_manager::mojom::ServiceRequest request) {
 
   ui::MaterialDesignController::Initialize();
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   ash::AshService(std::move(request)).RunUntilTermination();
 }

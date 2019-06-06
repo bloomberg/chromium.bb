@@ -8,8 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
@@ -33,22 +33,19 @@ ChromotingClientRuntime::ChromotingClientRuntime() {
   DCHECK(!base::MessageLoopCurrent::Get());
 
   VLOG(1) << "Starting main message loop";
-  ui_loop_.reset(new base::MessageLoopForUI());
-#if defined(OS_IOS)
-  // TODO(ranj): Attach on BindToCurrentThread().
-  ui_loop_->Attach();
-#endif
+  ui_task_executor_.reset(
+      new base::SingleThreadTaskExecutor(base::MessagePump::Type::UI));
 
 #if defined(DEBUG)
   net::URLFetcher::SetIgnoreCertificateRequests(true);
 #endif  // DEBUG
 
-  // |ui_loop_| runs on the main thread, so |ui_task_runner_| will run on the
-  // main thread.  We can not kill the main thread when the message loop becomes
-  // idle so the callback function does nothing (as opposed to the typical
-  // base::MessageLoop::QuitClosure())
-  ui_task_runner_ =
-      new AutoThreadTaskRunner(ui_loop_->task_runner(), base::DoNothing());
+  // |ui_task_executor_| runs on the main thread, so |ui_task_runner_| will run
+  // on the main thread.  We can not kill the main thread when the message loop
+  // becomes idle so the callback function does nothing (as opposed to the
+  // typical base::MessageLoop::QuitClosure())
+  ui_task_runner_ = new AutoThreadTaskRunner(ui_task_executor_->task_runner(),
+                                             base::DoNothing());
   audio_task_runner_ = AutoThread::Create("native_audio", ui_task_runner_);
   display_task_runner_ = AutoThread::Create("native_disp", ui_task_runner_);
   network_task_runner_ = AutoThread::CreateWithType(

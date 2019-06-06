@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/strings/string_split.h"
+#include "base/task/single_thread_task_executor.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -45,7 +46,8 @@ struct Env {
     command_line->AppendSwitchASCII(switches::kUseANGLE,
                                     gl::kANGLEImplementationNullName);
     base::FeatureList::InitializeInstance(std::string(), std::string());
-    base::MessageLoopForIO message_loop;
+    base::SingleThreadTaskExecutor io_task_executor(
+        base::MessagePump::Type::IO);
     gpu::GLTestHelper::InitializeGLDefault();
     ::gles2::Initialize();
   }

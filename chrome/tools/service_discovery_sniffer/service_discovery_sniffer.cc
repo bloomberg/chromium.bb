@@ -9,8 +9,8 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "chrome/browser/local_discovery/service_discovery_client_impl.h"
 #include "net/dns/mdns_client.h"
 
@@ -98,7 +98,7 @@ void ServiceTypePrinter::OnServiceUpdated(ServiceWatcher::UpdateType update,
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit_manager;
-  base::MessageLoopForIO message_loop;
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
 
   if (argc != 2) {
     printf("Please provide exactly 1 argument.\n");

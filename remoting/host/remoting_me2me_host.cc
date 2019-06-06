@@ -19,13 +19,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "components/policy/policy_constants.h"
@@ -1842,16 +1842,17 @@ int HostProcessMain() {
 
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Me2Me");
 
-  // Create the main message loop and start helper threads.
-  base::MessageLoopForUI message_loop;
+  // Create the main task executor and start helper threads.
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   base::RunLoop run_loop;
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new AutoThreadTaskRunner(
-          message_loop.task_runner(), run_loop.QuitClosure()));
+          main_task_executor.task_runner(), run_loop.QuitClosure()));
   if (!context)
     return kInitializationFailed;
 
-  // NetworkChangeNotifier must be initialized after MessageLoop.
+  // NetworkChangeNotifier must be initialized after SingleThreadTaskExecutor.
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
       net::NetworkChangeNotifier::Create());
 
@@ -1863,7 +1864,7 @@ int HostProcessMain() {
       base::TimeDelta::FromSeconds(kShutdownTimeoutSeconds));
   new HostProcess(std::move(context), &exit_code, &shutdown_watchdog);
 
-  // Run the main (also UI) message loop until the host no longer needs it.
+  // Run the main (also UI) task executor until the host no longer needs it.
   run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.

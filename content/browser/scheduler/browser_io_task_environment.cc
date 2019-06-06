@@ -17,7 +17,7 @@ using ::base::sequence_manager::TaskQueue;
 BrowserIOTaskEnvironment::BrowserIOTaskEnvironment()
     : sequence_manager_(CreateUnboundSequenceManager(
           SequenceManager::Settings::Builder()
-              .SetMessagePumpType(base::MessageLoop::TYPE_IO)
+              .SetMessagePumpType(base::MessagePump::Type::IO)
               .Build())) {
   Init(sequence_manager_.get());
 }

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/task/single_thread_task_executor.h"
 #include "chrome/chrome_cleaner/engines/common/engine_result_codes.h"
 #include "chrome/chrome_cleaner/os/early_exit.h"
 #include "chrome/chrome_cleaner/os/initializer.h"
@@ -138,7 +139,7 @@ SandboxChildProcess::GetCleanerEngineRequestsProxy() {
 }
 
 void SandboxChildProcess::UnbindRequestsPtrs() {
-  base::MessageLoop message_loop;
+  base::SingleThreadTaskExecutor main_task_executor;
   base::RunLoop run_loop;
   if (GetCleanerEngineRequestsProxy() != nullptr) {
     mojo_task_runner_->PostTask(

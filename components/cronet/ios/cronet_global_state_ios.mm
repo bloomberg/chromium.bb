@@ -33,7 +33,7 @@ void InitializeOnMainThread() {
 
   url::Initialize();
 
-  ios_global_state::BuildMessageLoop();
+  ios_global_state::BuildSingleThreadTaskExecutor();
   ios_global_state::CreateNetworkChangeNotifier();
 }
 
