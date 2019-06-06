@@ -106,7 +106,13 @@ void ActiveDirectoryLoginMixin::TestLoginVisible() {
   test::OobeJS().ExpectHiddenPath({kGaiaSigninId, kGaiaSigninDialogId});
 
   // Checks if Active Directory signin is visible.
-  test::OobeJS().ExpectVisiblePath({kGaiaSigninId, kAdOfflineAuthId});
+  std::initializer_list<base::StringPiece> ad_screen{kGaiaSigninId,
+                                                     kAdOfflineAuthId};
+  test::OobeJS().ExpectVisiblePath(ad_screen);
+  test::OobeJS().ExpectNE(test::GetOobeElementPath(ad_screen) + ".clientWidth",
+                          0);
+  test::OobeJS().ExpectNE(test::GetOobeElementPath(ad_screen) + ".clientHeight",
+                          0);
   test::OobeJS().ExpectHiddenPath(
       {kGaiaSigninId, kAdOfflineAuthId, kAdMachineInput});
   test::OobeJS().ExpectHiddenPath(

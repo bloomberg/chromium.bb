@@ -58,6 +58,7 @@ constexpr char kNextButton[] = "nextButton";
 
 constexpr char kAdEncryptionTypesSelect[] = "encryptionList";
 constexpr char kAdMachineOrgUnitInput[] = "orgUnitInput";
+constexpr char kAdMoreOptionsButton[] = "moreOptionsBtn";
 constexpr char kAdMoreOptionsSaveButton[] = "moreOptionsSave";
 
 constexpr char kAdUserDomain[] = "user.domain.com";
@@ -220,7 +221,14 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   void CheckActiveDirectoryCredentialsShown() {
     EXPECT_TRUE(
         enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
-    test::OobeJS().ExpectVisiblePath({kAdDialog, kAdCredentialsStep});
+
+    std::initializer_list<base::StringPiece> ad_credentials{kAdDialog,
+                                                            kAdCredentialsStep};
+    test::OobeJS().ExpectVisiblePath(ad_credentials);
+    test::OobeJS().ExpectNE(
+        test::GetOobeElementPath(ad_credentials) + ".clientWidth", 0);
+    test::OobeJS().ExpectNE(
+        test::GetOobeElementPath(ad_credentials) + ".clientHeight", 0);
     test::OobeJS().ExpectHiddenPath({kAdDialog, kAdUnlockConfigurationStep});
   }
 
@@ -326,6 +334,8 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
     test::OobeJS().TypeIntoPath(machine_name, {kAdDialog, kAdMachineNameInput});
     test::OobeJS().TypeIntoPath(username, {kAdDialog, kAdUsernameInput});
     test::OobeJS().TypeIntoPath(password, {kAdDialog, kAdPasswordInput});
+
+    test::OobeJS().TapOnPath({kAdDialog, kAdMoreOptionsButton});
     test::OobeJS().TypeIntoPath(machine_dn,
                                 {kAdDialog, kAdMachineOrgUnitInput});
 
@@ -334,6 +344,9 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
                                          {kAdDialog, kAdEncryptionTypesSelect});
     }
     test::OobeJS().TapOnPath({kAdDialog, kAdMoreOptionsSaveButton});
+    test::OobeJS()
+        .CreateEnabledWaiter(true /* enabled */, {kAdDialog, kNextButton})
+        ->Wait();
     test::OobeJS().TapOnPath({kAdDialog, kNextButton});
   }
 
