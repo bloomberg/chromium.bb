@@ -224,7 +224,7 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
       base::BindOnce([](std::vector<mojom::DeviceStatePropertiesPtr> devices) {
         ASSERT_EQ(3u, devices.size());
         EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
-        EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->state);
+        EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->device_state);
 
         // IP address match those set up in FakeShillManagerClient::
         // SetupDefaultEnvironment(). TODO(stevenjb): Support setting
@@ -237,11 +237,11 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
         EXPECT_EQ(ipv6_expected, devices[0]->ipv6_address);
 
         EXPECT_EQ(mojom::NetworkType::kEthernet, devices[1]->type);
-        EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[1]->state);
+        EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[1]->device_state);
 
         mojom::DeviceStateProperties* cellular = devices[2].get();
         EXPECT_EQ(mojom::NetworkType::kCellular, cellular->type);
-        EXPECT_EQ(mojom::DeviceStateType::kEnabled, cellular->state);
+        EXPECT_EQ(mojom::DeviceStateType::kEnabled, cellular->device_state);
         EXPECT_FALSE(cellular->sim_absent);
         ASSERT_TRUE(cellular->sim_lock_status);
         EXPECT_TRUE(cellular->sim_lock_status->lock_enabled);
@@ -257,7 +257,7 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
       base::BindOnce([](std::vector<mojom::DeviceStatePropertiesPtr> devices) {
         ASSERT_EQ(3u, devices.size());
         EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
-        EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->state);
+        EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->device_state);
       }));
 }
 
@@ -266,7 +266,7 @@ TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {
       base::BindOnce([](std::vector<mojom::DeviceStatePropertiesPtr> devices) {
         ASSERT_EQ(3u, devices.size());
         EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
-        EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->state);
+        EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->device_state);
       }));
   // Disable WiFi
   bool succeeded = false;
@@ -282,7 +282,7 @@ TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {
       base::BindOnce([](std::vector<mojom::DeviceStatePropertiesPtr> devices) {
         ASSERT_EQ(3u, devices.size());
         EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
-        EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->state);
+        EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->device_state);
       }));
 }
 

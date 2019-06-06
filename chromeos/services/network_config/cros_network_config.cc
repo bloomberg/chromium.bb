@@ -259,7 +259,7 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
   result->mac_address =
       network_util::FormattedMacAddress(device->mac_address());
   result->scanning = device->scanning();
-  result->state = technology_state;
+  result->device_state = technology_state;
   result->managed_network_available =
       !device->available_managed_network_path().empty();
   result->sim_absent = device->IsSimAbsent();

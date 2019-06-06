@@ -232,7 +232,7 @@ struct DeviceStateProperties {
   SIMLockStatus? sim_lock_status;
   // True when a SIM is required and not present.
   bool sim_absent = false;
-  DeviceStateType state;
+  DeviceStateType device_state;
   NetworkType type;
   // Whether or not any managed networks are available.
   bool managed_network_available = false;
@@ -252,8 +252,9 @@ struct NetworkFilter {
 interface CrosNetworkConfig {
   AddObserver(CrosNetworkConfigObserver observer);
 
-  // Gets the state properties of the network matching |guid|.
-  GetNetworkState(string guid) => (NetworkStateProperties result);
+  // Returns the state properties of the network matching |guid|. If the network
+  // is not available returns null.
+  GetNetworkState(string guid) => (NetworkStateProperties? result);
 
   // Returns a list of Network properties matching |filter|. Networks are
   // ordered by the system based on their priority, with active networks listed

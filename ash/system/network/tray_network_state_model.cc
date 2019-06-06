@@ -78,7 +78,7 @@ const DeviceStateProperties* TrayNetworkStateModel::GetDevice(
 
 DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) {
   const DeviceStateProperties* device = GetDevice(type);
-  return device ? device->state : DeviceStateType::kUnavailable;
+  return device ? device->device_state : DeviceStateType::kUnavailable;
 }
 
 void TrayNetworkStateModel::SetNetworkTypeEnabledState(NetworkType type,
