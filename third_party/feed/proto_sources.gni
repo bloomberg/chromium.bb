@@ -30,7 +30,6 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/ui/stream/stream_structure.proto",
   "src/src/main/proto/search/now/ui/stream/stream_swipe_extension.proto",
   "src/src/main/proto/search/now/wire/feed/action_payload.proto",
-  "src/src/main/proto/search/now/wire/feed/action_properties.proto",
   "src/src/main/proto/search/now/wire/feed/action_request.proto",
   "src/src/main/proto/search/now/wire/feed/action_type.proto",
   "src/src/main/proto/search/now/wire/feed/capability.proto",
@@ -50,7 +49,6 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/wire/feed/feed_response.proto",
   "src/src/main/proto/search/now/wire/feed/feed_stream.proto",
   "src/src/main/proto/search/now/wire/feed/mockserver/mock_server.proto",
-  "src/src/main/proto/search/now/wire/feed/opaque_action_data.proto",
   "src/src/main/proto/search/now/wire/feed/payload_metadata.proto",
   "src/src/main/proto/search/now/wire/feed/piet_shared_state_item.proto",
   "src/src/main/proto/search/now/wire/feed/request.proto",
@@ -59,5 +57,4 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/wire/feed/token.proto",
   "src/src/main/proto/search/now/wire/feed/version.proto",
   "src/src/test/proto/search/now/wire/feed/action_payload_for_test.proto",
-  "src/src/test/proto/search/now/wire/feed/opaque_action_data_for_test.proto",
 ]
