@@ -1813,13 +1813,17 @@ bool AXNodeObject::StepValueForRange(float* out_value) const {
 
 KURL AXNodeObject::Url() const {
   if (IsAnchor()) {
+    const Element* anchor = AnchorElement();
+
+    if (const HTMLAnchorElement* html_anchor =
+            ToHTMLAnchorElementOrNull(anchor)) {
+      return html_anchor->Href();
+    }
+
     // Some non-HTML elements, most notably SVG <a> elements, can act as
     // links/anchors.
-    if (!IsHTMLAnchorElement(GetNode()))
-      return AnchorElement()->HrefURL();
-
-    if (HTMLAnchorElement* anchor = ToHTMLAnchorElementOrNull(AnchorElement()))
-      return anchor->Href();
+    if (anchor)
+      return anchor->HrefURL();
   }
 
   if (IsWebArea() && GetDocument())
