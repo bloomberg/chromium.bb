@@ -331,7 +331,15 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
     ascent_pixels_ = SkScalarCeilToInt(-metrics.fAscent);
     height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);
     cap_height_pixels_ = SkScalarCeilToInt(metrics.fCapHeight);
-    average_width_pixels_ = SkScalarToDouble(metrics.fAvgCharWidth);
+
+    if (metrics.fAvgCharWidth) {
+      average_width_pixels_ = SkScalarToDouble(metrics.fAvgCharWidth);
+    } else {
+      // Some Skia fonts manager do not compute the average character size
+      // (e.g. Direct Write). The default behavior when the metric is not
+      // available is to use the max char width.
+      average_width_pixels_ = SkScalarToDouble(metrics.fMaxCharWidth);
+    }
   }
 }
 
