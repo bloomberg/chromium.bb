@@ -1125,7 +1125,9 @@ void Shell::Init(
           user_activity_detector_.get(), connector_);
   video_activity_notifier_.reset(
       new VideoActivityNotifier(video_detector_.get()));
-  bluetooth_notification_controller_.reset(new BluetoothNotificationController);
+  bluetooth_notification_controller_ =
+      std::make_unique<BluetoothNotificationController>(
+          message_center::MessageCenter::Get());
   screen_orientation_controller_ =
       std::make_unique<ScreenOrientationController>();
   screen_layout_observer_.reset(new ScreenLayoutObserver());
