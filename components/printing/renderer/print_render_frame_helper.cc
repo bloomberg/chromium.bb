@@ -759,7 +759,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   // Optional. Replaces |frame_| with selection if needed. Will call |on_ready|
   // when completed.
   void CopySelectionIfNeeded(const WebPreferences& preferences,
-                             const base::Closure& on_ready);
+                             base::OnceClosure on_ready);
 
   // Prepares frame for printing.
   void StartPrinting();
@@ -808,7 +808,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   gfx::Size prev_view_size_;
   gfx::Size prev_scroll_offset_;
   int expected_pages_count_ = 0;
-  base::Closure on_ready_;
+  base::OnceClosure on_ready_;
   const bool should_print_backgrounds_;
   const bool should_print_selection_only_;
   bool is_printing_started_ = false;
@@ -896,8 +896,8 @@ void PrepareFrameAndViewForPrint::StartPrinting() {
 
 void PrepareFrameAndViewForPrint::CopySelectionIfNeeded(
     const WebPreferences& preferences,
-    const base::Closure& on_ready) {
-  on_ready_ = on_ready;
+    base::OnceClosure on_ready) {
+  on_ready_ = std::move(on_ready);
   if (should_print_selection_only_) {
     CopySelection(preferences);
   } else {
@@ -994,7 +994,8 @@ PrepareFrameAndViewForPrint::CreateURLLoaderFactory() {
 }
 
 void PrepareFrameAndViewForPrint::CallOnReady() {
-  return on_ready_.Run();  // Can delete |this|.
+  if (on_ready_)
+    std::move(on_ready_).Run();  // Can delete |this|.
 }
 
 void PrepareFrameAndViewForPrint::RestoreSize() {
@@ -1087,10 +1088,8 @@ void PrintRenderFrameHelper::DidFailProvisionalLoad(
 
 void PrintRenderFrameHelper::DidFinishLoad() {
   is_loading_ = false;
-  if (!on_stop_loading_closure_.is_null()) {
-    on_stop_loading_closure_.Run();
-    on_stop_loading_closure_.Reset();
-  }
+  if (!on_stop_loading_closure_.is_null())
+    std::move(on_stop_loading_closure_).Run();
 }
 
 void PrintRenderFrameHelper::ScriptedPrint(bool user_initiated) {
@@ -1299,8 +1298,8 @@ void PrintRenderFrameHelper::PrepareFrameForPreviewDocument() {
       print_preview_context_.source_node(), ignore_css_margins_);
   prep_frame_view_->CopySelectionIfNeeded(
       render_frame()->GetWebkitPreferences(),
-      base::Bind(&PrintRenderFrameHelper::OnFramePreparedForPreviewDocument,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PrintRenderFrameHelper::OnFramePreparedForPreviewDocument,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PrintRenderFrameHelper::OnFramePreparedForPreviewDocument() {
@@ -2033,8 +2032,8 @@ bool PrintRenderFrameHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
          print_pages_params_->pages.empty());
   prep_frame_view_->CopySelectionIfNeeded(
       render_frame()->GetWebkitPreferences(),
-      base::Bind(&PrintRenderFrameHelper::OnFramePreparedForPrintPages,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PrintRenderFrameHelper::OnFramePreparedForPrintPages,
+                     weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 
@@ -2170,8 +2169,8 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
         // |is_modifiable| value until they are fully loaded, which occurs when
         // DidStopLoading() is called. Defer showing the preview until then.
         on_stop_loading_closure_ =
-            base::Bind(&PrintRenderFrameHelper::ShowScriptedPrintPreview,
-                       weak_ptr_factory_.GetWeakPtr());
+            base::BindOnce(&PrintRenderFrameHelper::ShowScriptedPrintPreview,
+                           weak_ptr_factory_.GetWeakPtr());
       } else {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
@@ -2194,8 +2193,8 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
       // print a PDF document.
       if (is_loading_ && GetPlugin(print_preview_context_.source_frame())) {
         on_stop_loading_closure_ =
-            base::Bind(&PrintRenderFrameHelper::RequestPrintPreview,
-                       weak_ptr_factory_.GetWeakPtr(), type);
+            base::BindOnce(&PrintRenderFrameHelper::RequestPrintPreview,
+                           weak_ptr_factory_.GetWeakPtr(), type);
         return;
       }
 
@@ -2210,8 +2209,8 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
     case PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE: {
       if (is_loading_ && GetPlugin(print_preview_context_.source_frame())) {
         on_stop_loading_closure_ =
-            base::Bind(&PrintRenderFrameHelper::RequestPrintPreview,
-                       weak_ptr_factory_.GetWeakPtr(), type);
+            base::BindOnce(&PrintRenderFrameHelper::RequestPrintPreview,
+                           weak_ptr_factory_.GetWeakPtr(), type);
         return;
       }
 

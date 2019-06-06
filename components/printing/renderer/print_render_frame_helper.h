@@ -536,7 +536,7 @@ class PrintRenderFrameHelper
   // hangs because RequestPrintPreview is called before DidStopLoading() is
   // called. This is a store for the RequestPrintPreview() call and its
   // parameters so that it can be invoked after DidStopLoading.
-  base::Closure on_stop_loading_closure_;
+  base::OnceClosure on_stop_loading_closure_;
 
   base::WeakPtrFactory<PrintRenderFrameHelper> weak_ptr_factory_;
 
