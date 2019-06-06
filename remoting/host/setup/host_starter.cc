@@ -68,6 +68,8 @@ void HostStarter::StartHost(
       google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING);
   oauth_client_info_.redirect_uri = redirect_url;
   // Map the authorization code to refresh and access tokens.
+  DCHECK_EQ(pending_get_tokens_, GET_TOKENS_NONE);
+  pending_get_tokens_ = GET_TOKENS_DIRECTORY;
   oauth_client_->GetTokensFromAuthCode(oauth_client_info_, auth_code,
                                        kMaxGetTokensRetries, this);
 }
@@ -83,10 +85,20 @@ void HostStarter::OnGetTokensResponse(
                        refresh_token, access_token, expires_in_seconds));
     return;
   }
-  refresh_token_ = refresh_token;
-  access_token_ = access_token;
+
+  if (pending_get_tokens_ == GET_TOKENS_DIRECTORY) {
+    directory_access_token_ = access_token;
+  } else if (pending_get_tokens_ == GET_TOKENS_HOST) {
+    host_refresh_token_ = refresh_token;
+    host_access_token_ = access_token;
+  } else {
+    NOTREACHED();
+  }
+
+  pending_get_tokens_ = GET_TOKENS_NONE;
+
   // Get the email corresponding to the access token.
-  oauth_client_->GetUserEmail(access_token_, 1, this);
+  oauth_client_->GetUserEmail(access_token, 1, this);
 }
 
 void HostStarter::OnRefreshTokenResponse(
@@ -117,9 +129,9 @@ void HostStarter::OnGetUserEmailResponse(const std::string& user_email) {
     host_client_id = google_apis::GetOAuth2ClientID(
         google_apis::CLIENT_REMOTING_HOST);
 
-    service_client_->RegisterHost(
-        host_id_, host_name_, key_pair_->GetPublicKey(), host_client_id,
-        access_token_, this);
+    service_client_->RegisterHost(host_id_, host_name_,
+                                  key_pair_->GetPublicKey(), host_client_id,
+                                  directory_access_token_, this);
   } else {
     // This is the second callback, with the service account credentials.
     // This email is the service account's email, used to login to XMPP.
@@ -145,6 +157,9 @@ void HostStarter::OnHostRegistered(const std::string& authorization_code) {
 
   // Received a service account authorization code, update oauth_client_info_
   // to use the service account client keys, and get service account tokens.
+  DCHECK_EQ(pending_get_tokens_, GET_TOKENS_NONE);
+  pending_get_tokens_ = GET_TOKENS_HOST;
+
   oauth_client_info_.client_id =
       google_apis::GetOAuth2ClientID(
           google_apis::CLIENT_REMOTING_HOST);
@@ -164,7 +179,7 @@ void HostStarter::StartHostProcess() {
     config->SetString("host_owner", host_owner_);
   }
   config->SetString("xmpp_login", xmpp_login_);
-  config->SetString("oauth_refresh_token", refresh_token_);
+  config->SetString("oauth_refresh_token", host_refresh_token_);
   config->SetString("host_id", host_id_);
   config->SetString("host_name", host_name_);
   config->SetString("private_key", key_pair_->ToString());
@@ -183,7 +198,7 @@ void HostStarter::OnHostStarted(DaemonController::AsyncResult result) {
   }
   if (result != DaemonController::RESULT_OK) {
     unregistering_host_ = true;
-    service_client_->UnregisterHost(host_id_, access_token_, this);
+    service_client_->UnregisterHost(host_id_, directory_access_token_, this);
     return;
   }
   std::move(on_done_).Run(START_COMPLETE);
@@ -195,6 +210,8 @@ void HostStarter::OnOAuthError() {
         FROM_HERE, base::BindOnce(&HostStarter::OnOAuthError, weak_ptr_));
     return;
   }
+
+  pending_get_tokens_ = GET_TOKENS_NONE;
   if (unregistering_host_) {
     LOG(ERROR) << "OAuth error occurred when unregistering host.";
   }
@@ -209,6 +226,8 @@ void HostStarter::OnNetworkError(int response_code) {
         base::BindOnce(&HostStarter::OnNetworkError, weak_ptr_, response_code));
     return;
   }
+
+  pending_get_tokens_ = GET_TOKENS_NONE;
   if (unregistering_host_) {
     LOG(ERROR) << "Network error occurred when unregistering host.";
   }
