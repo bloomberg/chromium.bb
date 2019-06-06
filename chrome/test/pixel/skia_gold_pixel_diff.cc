@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -40,21 +41,31 @@ std::string kSkiaGoldCtl = "tools/skia_goldctl/goldctl";
 
 std::string kBuildRevisionKey = "build-revision";
 
+std::string kNoLuciAuth = "no-luci-auth";
+
 SkiaGoldPixelDiff::SkiaGoldPixelDiff() = default;
 
 SkiaGoldPixelDiff::~SkiaGoldPixelDiff() = default;
 
-void SkiaGoldPixelDiff::Init(BrowserWindow* browser,
-    const std::string& screenshot_prefix) {
-  auto* cmd_line = base::CommandLine::ForCurrentProcess();
-  ASSERT_TRUE(cmd_line->HasSwitch(kBuildRevisionKey))
-      << "Missing switch " << kBuildRevisionKey;
-  build_revision_ = cmd_line->GetSwitchValueASCII(kBuildRevisionKey);
-  initialized_ = true;
-  prefix_ = screenshot_prefix;
-  browser_ = browser;
-  base::CreateNewTempDirectory(
-      FILE_PATH_LITERAL("SkiaGoldTemp"), &working_dir_);
+base::FilePath GetAbsoluteSrcRelativePath(base::FilePath::StringType path) {
+  base::FilePath root_path;
+  base::PathService::Get(base::BasePathKey::DIR_SOURCE_ROOT, &root_path);
+  return base::MakeAbsoluteFilePath(root_path.Append(path));
+}
+
+// Append args after program.
+// The base::Commandline.AppendArg append the arg at
+// the end which doesn't work for us.
+void AppendArgsJustAfterProgram(base::CommandLine& cmd,
+    base::CommandLine::StringVector args) {
+  base::CommandLine::StringVector& argv =
+      const_cast<base::CommandLine::StringVector&>(cmd.argv());
+  int args_size = args.size();
+  argv.resize(argv.size() + args_size);
+  for (int i = argv.size() - args_size; i > 1; --i) {
+    argv[i + args_size - 1] = argv[i - 1];
+  }
+  argv.insert(argv.begin() + 1, args.begin(), args.end());
 }
 
 // Fill in test environment to the keys_file. The format is json.
@@ -107,38 +118,77 @@ bool FillInTestEnvironment(const base::FilePath& keys_file) {
   return true;
 }
 
+int SkiaGoldPixelDiff::LaunchProcess(base::CommandLine::StringType& cmdline) {
+  base::Process sub_process = base::LaunchProcess(
+      cmdline, base::LaunchOptionsForTest());
+  int exit_code;
+  sub_process.WaitForExit(&exit_code);
+  return exit_code;
+}
+
+void SkiaGoldPixelDiff::InitSkiaGold() {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::CommandLine cmd(GetAbsoluteSrcRelativePath(kSkiaGoldCtl));
+  cmd.AppendSwitchPath("work-dir", working_dir_);
+  if (luci_auth_) {
+    cmd.AppendArg("--luci");
+  }
+  AppendArgsJustAfterProgram(cmd, {FILE_PATH_LITERAL("auth")});
+  base::CommandLine::StringType cmd_str = cmd.GetCommandLineString();
+  LOG(INFO) << "Skia Gold Auth Commandline: " << cmd_str;
+  int exit_code = LaunchProcess(cmd_str);
+  ASSERT_EQ(exit_code, 0);
+
+  base::FilePath json_temp_file = working_dir_.Append(
+      FILE_PATH_LITERAL("keys_file.txt"));
+  FillInTestEnvironment(json_temp_file);
+  base::FilePath failure_temp_file = working_dir_.Append(
+      FILE_PATH_LITERAL("failure.log"));
+  cmd = base::CommandLine(GetAbsoluteSrcRelativePath(kSkiaGoldCtl));
+  cmd.AppendSwitchASCII("instance", kSkiaGoldInstance);
+  cmd.AppendSwitchPath("work-dir", working_dir_);
+  cmd.AppendSwitchPath("keys-file", json_temp_file);
+  cmd.AppendSwitchPath("failure-file", failure_temp_file);
+  cmd.AppendSwitch("passfail");
+  cmd.AppendSwitchASCII("commit", build_revision_);
+  AppendArgsJustAfterProgram(cmd, {FILE_PATH_LITERAL("imgtest"), FILE_PATH_LITERAL("init")});
+  cmd_str = cmd.GetCommandLineString();
+  LOG(INFO) << "Skia Gold imgtest init Commandline: " << cmd_str;
+  exit_code = LaunchProcess(cmd_str);
+  ASSERT_EQ(exit_code, 0);
+}
+
+void SkiaGoldPixelDiff::Init(BrowserWindow* browser,
+    const std::string& screenshot_prefix) {
+  auto* cmd_line = base::CommandLine::ForCurrentProcess();
+  ASSERT_TRUE(cmd_line->HasSwitch(kBuildRevisionKey))
+      << "Missing switch " << kBuildRevisionKey;
+  build_revision_ = cmd_line->GetSwitchValueASCII(kBuildRevisionKey);
+  if (cmd_line->HasSwitch(kNoLuciAuth)) {
+    luci_auth_ = false;
+  }
+  initialized_ = true;
+  prefix_ = screenshot_prefix;
+  browser_ = browser;
+  base::CreateNewTempDirectory(
+      FILE_PATH_LITERAL("SkiaGoldTemp"), &working_dir_);
+
+  InitSkiaGold();
+}
+
 bool SkiaGoldPixelDiff::UploadToSkiaGoldServer(
     const base::FilePath& local_file_path,
     const std::string& remote_golden_image_name) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath json_temp_file = working_dir_.Append(
-      FILE_PATH_LITERAL("keys_file.txt"));
-  FillInTestEnvironment(json_temp_file);
-  base::FilePath root_path;
-  base::PathService::Get(base::BasePathKey::DIR_SOURCE_ROOT, &root_path);
-  base::FilePath goldctl = base::MakeAbsoluteFilePath(
-      root_path.Append(kSkiaGoldCtl));
-  base::CommandLine cmd(goldctl);
-  cmd.AppendArg("imgtest");
-  cmd.AppendArg("add");
+  base::CommandLine cmd(GetAbsoluteSrcRelativePath(kSkiaGoldCtl));
   cmd.AppendSwitchASCII("test-name", remote_golden_image_name);
-  cmd.AppendSwitchASCII("instance", kSkiaGoldInstance);
-  cmd.AppendSwitchASCII("keys-file", json_temp_file.AsUTF8Unsafe());
   cmd.AppendSwitchPath("png-file", local_file_path);
-  cmd.AppendSwitchASCII("work-dir", working_dir_.AsUTF8Unsafe());
-  cmd.AppendSwitchASCII("failure-file", "failure.log");
-  cmd.AppendSwitch("passfail");
-  cmd.AppendSwitchASCII("commit", build_revision_);
-
-  LOG(INFO) << "Skia Gold Commandline: " << cmd.GetCommandLineString();
-  base::Process sub_process = base::LaunchProcess(
-      cmd, base::LaunchOptionsForTest());
-  int exit_code;
-  sub_process.WaitForExit(&exit_code);
-  LOG(INFO) << "exit code" <<exit_code;
-  // TODO(svenzheng): return correct value when this function can
-  // correctly compare images.
-  return true;
+  cmd.AppendSwitchPath("work-dir", working_dir_);
+  AppendArgsJustAfterProgram(cmd, {FILE_PATH_LITERAL("imgtest"), FILE_PATH_LITERAL("add")});
+  base::CommandLine::StringType cmd_str = cmd.GetCommandLineString();
+  LOG(INFO) << "Skia Gold Commandline: " << cmd_str;
+  int exit_code = LaunchProcess(cmd_str);
+  return exit_code == 0;
 }
 
 bool SkiaGoldPixelDiff::GrabWindowSnapshotInternal(gfx::NativeWindow window,
@@ -201,6 +251,5 @@ bool SkiaGoldPixelDiff::CompareScreenshot(
       << ". Return code: " << ret_code;
     return false;
   }
-  UploadToSkiaGoldServer(temporary_path, name);
-  return true;
+  return UploadToSkiaGoldServer(temporary_path, name);
 }

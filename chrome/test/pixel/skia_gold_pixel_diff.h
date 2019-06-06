@@ -6,6 +6,7 @@
 #define CHROME_TEST_PIXEL_SKIA_GOLD_PIXEL_DIFF_H_
 
 #include <string>
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -65,11 +66,15 @@ class SkiaGoldPixelDiff {
   virtual bool GrabWindowSnapshotInternal(gfx::NativeWindow window,
                                   const gfx::Rect& snapshot_bounds,
                                   gfx::Image* image);
+  void InitSkiaGold();
+  virtual int LaunchProcess(base::CommandLine::StringType& cmdline);
 
  private:
   std::string prefix_;
   BrowserWindow* browser_;
   bool initialized_ = false;
+  // Use luci auth on bots. Don't use luci auth for local development.
+  bool luci_auth_ = true;
   std::string build_revision_;
   // The working dir for goldctl. It's the dir for storing temporary files.
   base::FilePath working_dir_;
