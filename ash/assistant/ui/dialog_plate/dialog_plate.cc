@@ -409,7 +409,10 @@ bool DialogPlate::OnAnimationEnded(
       break;
   }
 
-  SetFocus(input_modality);
+  // Only set focus if Assistant UI is visible. Otherwise we may accidentally
+  // steal focus from another window. (See crbug/969983).
+  if (delegate_->GetUiModel()->visibility() == AssistantVisibility::kVisible)
+    SetFocus(input_modality);
 
   // We return false so that the animation observer will not destroy itself.
   return false;
