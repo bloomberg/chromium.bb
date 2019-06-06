@@ -15,25 +15,17 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data_use_observer.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
-#include "components/data_reduction_proxy/core/common/lofi_decider.h"
-#include "components/data_reduction_proxy/core/common/resource_type_provider.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
-namespace net {
-class URLRequestContextGetter;
-class URLRequestInterceptor;
-}
+class PrefService;
 
 namespace network {
 class NetworkConnectionTracker;
@@ -42,7 +34,6 @@ class SharedURLLoaderFactoryInfo;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
 class DataReductionProxyConfigurator;
@@ -71,28 +62,11 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   // Performs UI thread specific shutdown logic.
   void ShutdownOnUIThread();
 
-  void SetDataUseAscriber(
-      data_use_measurement::DataUseAscriber* data_use_ascriber);
-
   // Sets the Data Reduction Proxy service after it has been created.
   // Virtual for testing.
   virtual void SetDataReductionProxyService(
       base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service,
       const std::string& user_agent);
-
-  // Creates an interceptor suitable for following the Data Reduction Proxy
-  // bypass protocol.
-  std::unique_ptr<net::URLRequestInterceptor> CreateInterceptor();
-
-  // Creates a NetworkDelegate suitable for carrying out the Data Reduction
-  // Proxy protocol, including authenticating, establishing a handler to
-  // override the current proxy configuration, and
-  // gathering statistics for UMA.
-  std::unique_ptr<DataReductionProxyNetworkDelegate> CreateNetworkDelegate(
-      std::unique_ptr<net::NetworkDelegate> wrapped_network_delegate,
-      bool track_proxy_bypass_statistics);
-
-  std::unique_ptr<DataReductionProxyDelegate> CreateProxyDelegate();
 
   // Sets user defined preferences for how the Data Reduction Proxy
   // configuration should be set. |at_startup| is true only
@@ -171,35 +145,10 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
     return config_client_.get();
   }
 
-  net::ProxyDelegate* proxy_delegate() const {
-    return proxy_delegate_.get();
-  }
-
   mojom::DataReductionProxyThrottleConfigPtr CreateThrottleConfig() const;
 
   const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner() const {
     return io_task_runner_;
-  }
-
-  // Used for testing.
-  DataReductionProxyBypassStats* bypass_stats() const {
-    return bypass_stats_.get();
-  }
-
-  LoFiDecider* lofi_decider() const { return lofi_decider_.get(); }
-
-  void set_lofi_decider(std::unique_ptr<LoFiDecider> lofi_decider) {
-    lofi_decider_ = std::move(lofi_decider);
-  }
-
-  ResourceTypeProvider* resource_type_provider() const {
-    DCHECK(io_task_runner_->BelongsToCurrentThread());
-    return resource_type_provider_.get();
-  }
-
-  void set_resource_type_provider(
-      std::unique_ptr<ResourceTypeProvider> resource_type_provider) {
-    resource_type_provider_ = std::move(resource_type_provider);
   }
 
   // The production channel of this build.
@@ -269,24 +218,11 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   // Parameters including DNS names and allowable configurations.
   std::unique_ptr<DataReductionProxyConfig> config_;
 
-  // Handles getting if a request is in Lo-Fi mode.
-  std::unique_ptr<LoFiDecider> lofi_decider_;
-
-  // Handles getting the content type of a request.
-  std::unique_ptr<ResourceTypeProvider> resource_type_provider_;
-
   // Setter of the Data Reduction Proxy-specific proxy configuration.
   std::unique_ptr<DataReductionProxyConfigurator> configurator_;
 
-  // A proxy delegate. Used, for example, for Data Reduction Proxy resolution.
-  // request.
-  std::unique_ptr<DataReductionProxyDelegate> proxy_delegate_;
-
   // Data Reduction Proxy objects with a UI based lifetime.
   base::WeakPtr<DataReductionProxyService> service_;
-
-  // Tracker of various metrics to be reported in UMA.
-  std::unique_ptr<DataReductionProxyBypassStats> bypass_stats_;
 
   // Constructs credentials suitable for authenticating the client.
   std::unique_ptr<DataReductionProxyRequestOptions> request_options_;
@@ -301,15 +237,9 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  // Observes pageload events and records per host data use.
-  std::unique_ptr<DataReductionProxyDataUseObserver> data_use_observer_;
-
   // Whether the Data Reduction Proxy has been enabled or not by the user. In
   // practice, this can be overridden by the command line.
   bool enabled_;
-
-  // The net::URLRequestContextGetter used for making URL requests.
-  net::URLRequestContextGetter* url_request_context_getter_;
 
   // The network::SharedURLLoaderFactoryInfo used for making URL requests.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;

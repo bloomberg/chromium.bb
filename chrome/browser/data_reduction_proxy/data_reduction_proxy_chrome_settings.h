@@ -31,10 +31,6 @@ class DataReductionProxyIOData;
 class DataStore;
 }  // namespace data_reduction_proxy
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -77,7 +73,6 @@ class DataReductionProxyChromeSettings
   void InitDataReductionProxySettings(
       data_reduction_proxy::DataReductionProxyIOData* io_data,
       PrefService* profile_prefs,
-      net::URLRequestContextGetter* request_context_getter,
       Profile* profile,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<data_reduction_proxy::DataStore> store,

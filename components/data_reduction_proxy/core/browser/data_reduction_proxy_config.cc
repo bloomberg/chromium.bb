@@ -43,10 +43,6 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
@@ -270,38 +266,6 @@ DataReductionProxyConfig::FindConfiguredDataReductionProxy(
 net::ProxyList DataReductionProxyConfig::GetAllConfiguredProxies() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return config_values_->GetAllConfiguredProxies();
-}
-
-bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
-    const net::URLRequest& request,
-    const net::ProxyConfig& data_reduction_proxy_config) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(request.context());
-  DCHECK(request.context()->proxy_resolution_service());
-  net::ProxyInfo result;
-  data_reduction_proxy_config.proxy_rules().Apply(
-      request.url(), &result);
-  if (!result.proxy_server().is_valid())
-    return true;
-  if (result.proxy_server().is_direct())
-    return true;
-  return !FindConfiguredDataReductionProxy(result.proxy_server());
-}
-
-bool DataReductionProxyConfig::AreDataReductionProxiesBypassed(
-    const net::URLRequest& request,
-    const net::ProxyConfig& data_reduction_proxy_config,
-    base::TimeDelta* min_retry_delay) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (request.context() != nullptr &&
-      request.context()->proxy_resolution_service() != nullptr) {
-    return AreProxiesBypassed(
-        request.context()->proxy_resolution_service()->proxy_retry_info(),
-        data_reduction_proxy_config.proxy_rules(),
-        request.url().SchemeIsCryptographic(), min_retry_delay);
-  }
-
-  return false;
 }
 
 bool DataReductionProxyConfig::AreProxiesBypassed(

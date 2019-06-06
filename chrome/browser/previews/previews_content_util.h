@@ -12,6 +12,10 @@ namespace content {
 class NavigationHandle;
 }
 
+namespace data_reduction_proxy {
+class DataReductionProxyData;
+}
+
 namespace previews {
 
 // This bit mask is all the preview types that are fully decided
@@ -55,6 +59,14 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     content::PreviewsState previews_state,
     const previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle);
+
+// Returns an updated PreviewsState with respect to server previews
+// given the main frame's committed |request| and the |initial_state|
+// of enabled previews. |data| must have already been updated with
+// respect to the main frame response headers.
+content::PreviewsState DetermineCommittedServerPreviewsState(
+    data_reduction_proxy::DataReductionProxyData* data,
+    content::PreviewsState initial_state);
 
 // If this Chrome session is in a coin flip holdback, possibly modify the
 // previews state of the navigation according to a random coin flip. This method

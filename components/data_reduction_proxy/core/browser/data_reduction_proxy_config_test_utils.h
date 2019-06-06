@@ -140,9 +140,6 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
       DataReductionProxyConfigurator* configurator);
   ~MockDataReductionProxyConfig() override;
 
-  MOCK_CONST_METHOD2(WasDataReductionProxyUsed,
-                     bool(const net::URLRequest*,
-                          DataReductionProxyTypeInfo* proxy_info));
   MOCK_CONST_METHOD1(ContainsDataReductionProxy,
                      bool(const net::ProxyConfig::ProxyRules& proxy_rules));
   MOCK_METHOD1(SecureProxyCheck,

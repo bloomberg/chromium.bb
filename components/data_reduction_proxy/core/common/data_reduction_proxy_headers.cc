@@ -22,7 +22,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_response.h"
 
 namespace {

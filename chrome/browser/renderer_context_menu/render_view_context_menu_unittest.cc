@@ -438,8 +438,7 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
         enable_data_reduction_proxy);
     settings->InitDataReductionProxySettings(
         drp_test_context_->io_data(), drp_test_context_->pref_service(),
-        drp_test_context_->request_context_getter(), profile(),
-        base::MakeRefCounted<network::TestSharedURLLoaderFactory>(),
+        profile(), base::MakeRefCounted<network::TestSharedURLLoaderFactory>(),
         std::make_unique<data_reduction_proxy::DataStore>(),
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get());

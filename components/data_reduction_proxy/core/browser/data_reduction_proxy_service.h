@@ -37,7 +37,6 @@ class TimeDelta;
 
 namespace net {
 class HttpRequestHeaders;
-class URLRequestContextGetter;
 class ProxyList;
 }
 
@@ -65,7 +64,6 @@ class DataReductionProxyService
   DataReductionProxyService(
       DataReductionProxySettings* settings,
       PrefService* prefs,
-      net::URLRequestContextGetter* request_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<DataStore> store,
       std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
@@ -170,10 +168,6 @@ class DataReductionProxyService
     return compression_stats_.get();
   }
 
-  net::URLRequestContextGetter* url_request_context_getter() const {
-    return url_request_context_getter_;
-  }
-
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info()
       const {
     return url_loader_factory_->Clone();
@@ -207,7 +201,6 @@ class DataReductionProxyService
   // NetworkConnectionTracker::NetworkConnectionObserver
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
-  net::URLRequestContextGetter* url_request_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Tracks compression statistics to be displayed to the user.

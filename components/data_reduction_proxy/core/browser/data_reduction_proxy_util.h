@@ -24,12 +24,9 @@ class TimeDelta;
 namespace net {
 class ProxyConfig;
 class ProxyInfo;
-class URLRequest;
 }  // namespace net
 
 namespace data_reduction_proxy {
-
-class LoFiDecider;
 
 enum class Client {
   UNKNOWN,
@@ -88,25 +85,6 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
                                  const net::ProxyRetryInfoMap& proxy_retry_info,
                                  const GURL& url,
                                  net::ProxyInfo* data_reduction_proxy_info);
-
-// Calculates the original content length (OCL) of the |request|, from the OFCL
-// value in the Chrome-Proxy header. |request| must not be cached. This does not
-// account for partial failed responses.
-int64_t CalculateOCLFromOFCL(const net::URLRequest& request);
-
-// Calculates the effective original content length of the |request|. For
-// successful requests OCL will be obtained from OFCL if available or from
-// received response length. For partial failed responses an estimate is
-// provided by scaling received response length based on OFCL and Content-Length
-// header.
-int64_t EstimateOriginalBodySize(const net::URLRequest& request,
-                                 const LoFiDecider* lofi_decider);
-
-// Given a |request| that went through the Data Reduction Proxy; this function
-// estimates how many bytes would have been received if the response had been
-// received directly from the origin without any data saver optimizations.
-int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
-                                      const LoFiDecider* lofi_decider);
 
 // Returns the hostname used for the other bucket to record datause not scoped
 // to a page load such as chrome-services traffic, service worker, Downloads.

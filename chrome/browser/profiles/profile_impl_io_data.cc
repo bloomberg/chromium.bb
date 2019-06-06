@@ -161,9 +161,7 @@ void ProfileImplIOData::Handle::InitializeDataReductionProxy() const {
   DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_)
       ->InitDataReductionProxySettings(
           io_data_->data_reduction_proxy_io_data(), profile_->GetPrefs(),
-          // TODO(crbug.com/721403) Switch DRP to mojo. For now it is disabled
-          // with network service.
-          nullptr, profile_,
+          profile_,
           content::BrowserContext::GetDefaultStoragePartition(profile_)
               ->GetURLLoaderFactoryForBrowserProcess(),
           std::move(store),

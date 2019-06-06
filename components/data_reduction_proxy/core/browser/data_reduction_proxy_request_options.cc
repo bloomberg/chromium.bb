@@ -26,7 +26,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/proxy_server.h"
-#include "net/url_request/url_request.h"
 
 #if defined(USE_GOOGLE_API_KEYS_FOR_AUTH_KEY)
 #include "google_apis/google_api_keys.h"

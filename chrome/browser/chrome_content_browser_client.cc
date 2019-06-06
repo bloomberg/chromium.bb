@@ -201,7 +201,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/data_reduction_proxy/content/browser/content_lofi_decider.h"
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
@@ -5520,8 +5519,7 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsForURL(
 
   // Check if the server sent a preview directive.
   content::PreviewsState previews_state =
-      data_reduction_proxy::ContentLoFiDecider::
-          DetermineCommittedServerPreviewsState(drp_data, initial_state);
+      previews::DetermineCommittedServerPreviewsState(drp_data, initial_state);
 
   // Check the various other client previews types.
   return previews::DetermineCommittedClientPreviewsState(

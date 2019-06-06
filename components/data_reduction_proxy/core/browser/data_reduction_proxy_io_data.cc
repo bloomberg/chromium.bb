@@ -12,15 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
@@ -32,9 +28,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_builder.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
@@ -53,9 +46,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       network_connection_tracker_(network_connection_tracker),
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
-      data_use_observer_(nullptr),
       enabled_(enabled),
-      url_request_context_getter_(nullptr),
       channel_(channel),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       weak_factory_(this) {
@@ -71,15 +62,6 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     config_.reset(new DataReductionProxyConfig(
         io_task_runner, ui_task_runner, network_connection_tracker_,
         std::move(mutable_config), configurator_.get()));
-
-    // It is safe to use base::Unretained here, since it gets executed
-    // synchronously on the IO thread, and |this| outlives the caller (since the
-    // caller is owned by |this|.
-    bypass_stats_.reset(new DataReductionProxyBypassStats(
-        config_.get(),
-        base::BindRepeating(&DataReductionProxyIOData::SetUnreachable,
-                            base::Unretained(this)),
-        network_connection_tracker_));
     request_options_.reset(
         new DataReductionProxyRequestOptions(client_, config_.get()));
     request_options_->Init();
@@ -99,8 +81,6 @@ DataReductionProxyIOData::DataReductionProxyIOData(
         base::BindRepeating(&DataReductionProxyIOData::StoreSerializedConfig,
                             base::Unretained(this))));
 
-    proxy_delegate_.reset(new DataReductionProxyDelegate(
-        config_.get(), configurator_.get(), bypass_stats_.get()));
     network_properties_manager_.reset(new NetworkPropertiesManager(
         base::DefaultClock::GetInstance(), prefs, ui_task_runner_));
 }
@@ -113,7 +93,6 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       network_connection_tracker_(nullptr),
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
-      url_request_context_getter_(nullptr),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       weak_factory_(this) {
   DCHECK(ui_task_runner_);
@@ -138,7 +117,6 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
     const std::string& user_agent) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   service_ = data_reduction_proxy_service;
-  url_request_context_getter_ = service_->url_request_context_getter();
   url_loader_factory_info_ = service_->url_loader_factory_info();
   // Using base::Unretained is safe here, unless the browser is being shut down
   // before the Initialize task can be executed. The task is only created as
@@ -166,8 +144,6 @@ void DataReductionProxyIOData::InitializeOnIOThread(
       base::BindRepeating(&DataReductionProxyIOData::CreateCustomProxyConfig,
                           base::Unretained(this), true),
       network_properties_manager_.get(), user_agent);
-  bypass_stats_->InitializeOnIOThread();
-  proxy_delegate_->InitializeOnIOThread(this);
   if (config_client_)
     config_client_->InitializeOnIOThread(url_loader_factory);
   if (ui_task_runner_->BelongsToCurrentThread()) {
@@ -205,47 +181,10 @@ void DataReductionProxyIOData::OnCacheCleared(const base::Time start,
   network_properties_manager_->DeleteHistory();
 }
 
-std::unique_ptr<net::URLRequestInterceptor>
-DataReductionProxyIOData::CreateInterceptor() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  return std::make_unique<DataReductionProxyInterceptor>(
-      config_.get(), config_client_.get(), bypass_stats_.get());
-}
-
-std::unique_ptr<DataReductionProxyNetworkDelegate>
-DataReductionProxyIOData::CreateNetworkDelegate(
-    std::unique_ptr<net::NetworkDelegate> wrapped_network_delegate,
-    bool track_proxy_bypass_statistics) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  std::unique_ptr<DataReductionProxyNetworkDelegate> network_delegate(
-      new DataReductionProxyNetworkDelegate(
-          std::move(wrapped_network_delegate), config_.get(),
-          request_options_.get(), configurator_.get()));
-  if (track_proxy_bypass_statistics)
-    network_delegate->InitIODataAndUMA(this, bypass_stats_.get());
-
-  return network_delegate;
-}
-
-std::unique_ptr<DataReductionProxyDelegate>
-DataReductionProxyIOData::CreateProxyDelegate() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  auto proxy_delegate = std::make_unique<DataReductionProxyDelegate>(
-      config_.get(), configurator_.get(), bypass_stats_.get());
-  proxy_delegate->InitializeOnIOThread(this);
-  return proxy_delegate;
-}
-
 // TODO(kundaji): Rename this method to something more descriptive.
 // Bug http://crbug/488190.
 void DataReductionProxyIOData::SetProxyPrefs(bool enabled, bool at_startup) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  // TODO(crbug.com/721403): DRP is disabled with network service enabled. When
-  // DRP is switched to mojo, we won't need URLRequestContext.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    DCHECK(url_request_context_getter_->GetURLRequestContext()
-               ->proxy_resolution_service());
-  }
   enabled_ = enabled;
   config_->SetProxyConfig(enabled, at_startup);
   if (config_client_) {
@@ -256,18 +195,8 @@ void DataReductionProxyIOData::SetProxyPrefs(bool enabled, bool at_startup) {
 
   // If Data Saver is disabled, reset data reduction proxy state.
   if (!enabled) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      if (proxy_config_client_)
-        proxy_config_client_->ClearBadProxiesCache();
-    } else {
-      net::ProxyResolutionService* proxy_resolution_service =
-          url_request_context_getter_->GetURLRequestContext()
-              ->proxy_resolution_service();
-      proxy_resolution_service->ClearBadProxiesCache();
-    }
-
-    bypass_stats_->ClearRequestCounts();
-    bypass_stats_->NotifyUnavailabilityIfChanged();
+    if (proxy_config_client_)
+      proxy_config_client_->ClearBadProxiesCache();
   }
 }
 
@@ -346,19 +275,6 @@ void DataReductionProxyIOData::StoreSerializedConfig(
   SetStringPref(prefs::kDataReductionProxyConfig, serialized_config);
   SetInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,
                (base::Time::Now() - base::Time()).InMicroseconds());
-}
-
-void DataReductionProxyIOData::SetDataUseAscriber(
-    data_use_measurement::DataUseAscriber* data_use_ascriber) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(data_use_ascriber);
-  data_use_observer_.reset(
-      new DataReductionProxyDataUseObserver(this, data_use_ascriber));
-
-  // Disable data use ascriber when data saver is not enabled.
-  if (!IsEnabled()) {
-    data_use_ascriber->DisableAscriber();
-  }
 }
 
 void DataReductionProxyIOData::UpdateProxyRequestHeaders(

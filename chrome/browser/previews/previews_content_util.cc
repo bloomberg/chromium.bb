@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
@@ -300,6 +301,30 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   }
 
   return previews_state;
+}
+
+content::PreviewsState DetermineCommittedServerPreviewsState(
+    data_reduction_proxy::DataReductionProxyData* data,
+    content::PreviewsState initial_state) {
+  if (!data) {
+    return initial_state &=
+           ~(content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON);
+  }
+  content::PreviewsState updated_state = initial_state;
+  if (!data->lite_page_received()) {
+    // Turn off LitePage bit.
+    updated_state &= ~(content::SERVER_LITE_PAGE_ON);
+  }
+  if (!data->lofi_policy_received()) {
+    // Turn off LoFi bit(s).
+    updated_state &= ~(content::SERVER_LOFI_ON);
+    if (data->used_data_reduction_proxy()) {
+      // Turn off Client LoFi bit also if using proxy but proxy did not
+      // request LoFi.
+      updated_state &= ~(content::CLIENT_LOFI_ON);
+    }
+  }
+  return updated_state;
 }
 
 void LogCommittedPreview(previews::PreviewsUserData* previews_data,

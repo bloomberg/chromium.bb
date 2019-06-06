@@ -14,8 +14,6 @@
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -86,23 +84,6 @@ TEST_F(DataReductionProxyDataTest, BasicSettersAndGetters) {
   EXPECT_EQ(page_id, data->page_id().value());
 }
 
-TEST_F(DataReductionProxyDataTest, AddToURLRequest) {
-  std::unique_ptr<net::URLRequestContext> context(new net::URLRequestContext());
-  std::unique_ptr<net::URLRequest> fake_request(context->CreateRequest(
-      GURL("http://www.google.com"), net::RequestPriority::IDLE, nullptr,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  DataReductionProxyData* data = DataReductionProxyData::GetData(*fake_request);
-  EXPECT_FALSE(data);
-  data =
-      DataReductionProxyData::GetDataAndCreateIfNecessary(fake_request.get());
-  EXPECT_TRUE(data);
-  data = DataReductionProxyData::GetData(*fake_request);
-  EXPECT_TRUE(data);
-  DataReductionProxyData* data2 =
-      DataReductionProxyData::GetDataAndCreateIfNecessary(fake_request.get());
-  EXPECT_EQ(data, data2);
-}
-
 TEST_F(DataReductionProxyDataTest, DeepCopy) {
   const struct {
     bool data_reduction_used;
@@ -148,20 +129,6 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
               copy->connection_type());
     EXPECT_EQ(2u, data->page_id().value());
   }
-}
-
-TEST_F(DataReductionProxyDataTest, ClearData) {
-  std::unique_ptr<net::URLRequestContext> context(new net::URLRequestContext());
-  std::unique_ptr<net::URLRequest> fake_request(context->CreateRequest(
-      GURL("http://www.google.com"), net::RequestPriority::IDLE, nullptr,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-
-  DataReductionProxyData* data =
-      DataReductionProxyData::GetDataAndCreateIfNecessary(fake_request.get());
-  EXPECT_TRUE(data);
-  DataReductionProxyData::ClearData(fake_request.get());
-  data = DataReductionProxyData::GetData(*fake_request);
-  EXPECT_FALSE(data);
 }
 
 }  // namespace

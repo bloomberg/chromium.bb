@@ -52,7 +52,6 @@
 #include "net/base/proxy_server.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_list.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -204,7 +203,6 @@ void DataReductionProxyChromeSettings::Shutdown() {
 void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
     data_reduction_proxy::DataReductionProxyIOData* io_data,
     PrefService* profile_prefs,
-    net::URLRequestContextGetter* request_context_getter,
     Profile* profile,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<data_reduction_proxy::DataStore> store,
@@ -229,8 +227,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   }
   std::unique_ptr<data_reduction_proxy::DataReductionProxyService> service =
       std::make_unique<data_reduction_proxy::DataReductionProxyService>(
-          this, profile_prefs, request_context_getter, url_loader_factory,
-          std::move(store),
+          this, profile_prefs, url_loader_factory, std::move(store),
           std::make_unique<
               data_reduction_proxy::DataReductionProxyPingbackClientImpl>(
               url_loader_factory, ui_task_runner,

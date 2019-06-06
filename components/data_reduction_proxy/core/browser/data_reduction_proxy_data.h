@@ -17,10 +17,6 @@
 #include "net/nqe/effective_connection_type.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequest;
-}
-
 namespace data_reduction_proxy {
 
 // DataReductionProxy-related data that can be put into UserData or other
@@ -116,17 +112,6 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // Whether the blacklist prevented a preview.
   bool black_listed() const { return black_listed_; }
   void set_black_listed(bool black_listed) { black_listed_ = black_listed; }
-
-  // Removes |this| from |request|.
-  static void ClearData(net::URLRequest* request);
-
-  // Returns the Data from the URLRequest's UserData.
-  static DataReductionProxyData* GetData(const net::URLRequest& request);
-  // Returns the Data for a given URLRequest. If there is currently no
-  // DataReductionProxyData on URLRequest, it creates one, and adds it to the
-  // URLRequest's UserData, and returns a raw pointer to the new instance.
-  static DataReductionProxyData* GetDataAndCreateIfNecessary(
-      net::URLRequest* request);
 
   // Create a brand new instance of DataReductionProxyData that could be used in
   // a different thread. Several of deep copies may occur per navigation, so

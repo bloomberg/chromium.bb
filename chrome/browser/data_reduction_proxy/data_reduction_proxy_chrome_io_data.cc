@@ -17,8 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
-#include "components/data_reduction_proxy/content/browser/content_lofi_decider.h"
-#include "components/data_reduction_proxy/content/browser/content_resource_type_provider.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/prefs/pref_service.h"
@@ -56,11 +54,6 @@ CreateDataReductionProxyChromeIOData(
               profile->GetPrefs(), content::GetNetworkConnectionTracker(),
               io_task_runner, ui_task_runner, enabled, GetUserAgent(),
               version_info::GetChannelString(chrome::GetChannel())));
-
-  data_reduction_proxy_io_data->set_lofi_decider(
-      std::make_unique<data_reduction_proxy::ContentLoFiDecider>());
-  data_reduction_proxy_io_data->set_resource_type_provider(
-      std::make_unique<data_reduction_proxy::ContentResourceTypeProvider>());
 
   return data_reduction_proxy_io_data;
 }

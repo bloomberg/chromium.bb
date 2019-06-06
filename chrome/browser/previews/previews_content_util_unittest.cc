@@ -13,6 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
@@ -492,6 +493,51 @@ TEST_F(PreviewsContentUtilTest,
                 &user_data, GURL("https://www.google.com"),
                 content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
                 enabled_previews_decider(), nullptr));
+}
+
+TEST_F(PreviewsContentUtilTest, DetermineCommittedServerPreviewsStateLitePage) {
+  content::PreviewsState enabled_previews =
+      content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
+      content::CLIENT_LOFI_ON | content::NOSCRIPT_ON;
+
+  // Add DataReductionProxyData for LitePage to URLRequest.
+  data_reduction_proxy::DataReductionProxyData data_reduction_proxy_data;
+  data_reduction_proxy_data.set_used_data_reduction_proxy(true);
+  data_reduction_proxy_data.set_lite_page_received(true);
+  data_reduction_proxy_data.set_lofi_policy_received(false);
+
+  // Verify selects LitePage bit but doesn't touch client-only NoScript bit.
+  EXPECT_EQ(content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON,
+            DetermineCommittedServerPreviewsState(&data_reduction_proxy_data,
+                                                  enabled_previews));
+}
+
+TEST_F(PreviewsContentUtilTest, DetermineCommittedServerPreviewsStateLoFi) {
+  content::PreviewsState enabled_previews =
+      content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
+      content::CLIENT_LOFI_ON | content::NOSCRIPT_ON;
+
+  // Add DataReductionProxyData for LitePage to URLRequest.
+  data_reduction_proxy::DataReductionProxyData data_reduction_proxy_data;
+  data_reduction_proxy_data.set_used_data_reduction_proxy(true);
+  data_reduction_proxy_data.set_lite_page_received(false);
+  data_reduction_proxy_data.set_lofi_policy_received(true);
+
+  // Verify keeps LoFi bits and also doesn't touch client-only NoScript bit.
+  EXPECT_EQ(
+      content::SERVER_LOFI_ON | content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
+      DetermineCommittedServerPreviewsState(&data_reduction_proxy_data,
+                                            enabled_previews));
+}
+
+TEST_F(PreviewsContentUtilTest, DetermineCommittedServerPreviewsStateNoProxy) {
+  content::PreviewsState enabled_previews =
+      content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
+      content::CLIENT_LOFI_ON | content::NOSCRIPT_ON;
+
+  // Verify keeps LoFi bits and also doesn't touch client-only NoScript bit.
+  EXPECT_EQ(content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
+            DetermineCommittedServerPreviewsState(nullptr, enabled_previews));
 }
 
 TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
