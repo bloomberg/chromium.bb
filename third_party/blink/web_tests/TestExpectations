@@ -1648,7 +1648,6 @@ crbug.com/891427 [ Mac Win7 ] virtual/mouseevent_fractional/fast/events/touch/ge
 
 
 ### sheriff 2018-05-28
-crbug.com/840238 http/tests/devtools/elements/shadow/shadow-distribution.js [ Failure ]
 
 crbug.com/767269 [ Win ] inspector-protocol/layout-fonts/cjk-ideograph-fallback-by-lang.js [ Pass Failure ]
 
