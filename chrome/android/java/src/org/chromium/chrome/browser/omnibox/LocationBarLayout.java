@@ -813,7 +813,7 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public boolean shouldForceLTR() {
-        return !mToolbarDataProvider.shouldDisplaySearchTerms();
+        return mToolbarDataProvider.getDisplaySearchTerms() == null;
     }
 
     @Override
@@ -821,7 +821,7 @@ public class LocationBarLayout extends FrameLayout
         // When cutting/copying text in the URL bar, it will try to copy some version of the actual
         // URL to the clipboard, not the currently displayed URL bar contents. We want to avoid this
         // when displaying search terms.
-        return mToolbarDataProvider.shouldDisplaySearchTerms();
+        return mToolbarDataProvider.getDisplaySearchTerms() != null;
     }
 
     /**
@@ -857,7 +857,7 @@ public class LocationBarLayout extends FrameLayout
 
         mOriginalUrl = currentUrl;
         @ScrollType
-        int scrollType = mToolbarDataProvider.shouldDisplaySearchTerms()
+        int scrollType = mToolbarDataProvider.getDisplaySearchTerms() != null
                 ? UrlBar.ScrollType.SCROLL_TO_BEGINNING
                 : UrlBar.ScrollType.SCROLL_TO_TLD;
         setUrlBarText(mToolbarDataProvider.getUrlBarData(), scrollType, SelectionState.SELECT_ALL);

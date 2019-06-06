@@ -575,7 +575,7 @@ void OmniboxViewIOS::OnAccept() {
 
   WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB;
   if (model()) {
-    model()->AcceptInput(disposition, false);
+    model()->AcceptInput(disposition);
   }
   RevertAll();
 }

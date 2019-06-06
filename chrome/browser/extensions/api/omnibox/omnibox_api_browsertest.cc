@@ -178,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
                             ChromeAutocompleteSchemeClassifier(profile));
     autocomplete_controller->Start(input);
   }
-  omnibox_view->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false);
+  omnibox_view->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB);
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -195,8 +195,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
                             ChromeAutocompleteSchemeClassifier(profile));
     autocomplete_controller->Start(input);
   }
-  omnibox_view->model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                                     false);
+  omnibox_view->model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB);
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

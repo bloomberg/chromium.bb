@@ -575,7 +575,6 @@ bool OmniboxEditModel::ClassifiesAsSearch(const base::string16& text) const {
 }
 
 void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
-                                   bool for_drop,
                                    base::TimeTicks match_selection_timestamp) {
   // Get the URL and transition type for the selected entry.
   GURL alternate_nav_url;
@@ -634,9 +633,23 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     // (e.g. manually retyping the same search query), and it seems wrong to
     // treat this as a reload.
     match.transition = ui::PAGE_TRANSITION_RELOAD;
-  } else if (for_drop ||
-             ((paste_state_ != NONE) &&
-              (match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED))) {
+  } else if (ui::PageTransitionCoreTypeIs(match.transition,
+                                          ui::PAGE_TRANSITION_GENERATED)) {
+    // When the omnibox is displaying the default search provider search terms,
+    // the user focuses the omnibox, and hits Enter without refining the search
+    // terms, we should classify this transition as a RELOAD.
+    base::string16 search_terms;
+    if (controller()->GetLocationBarModel()->GetDisplaySearchTerms(
+            &search_terms) &&
+        match.fill_into_edit == search_terms &&
+        match
+            .GetSubstitutingExplicitlyInvokedKeyword(
+                client_->GetTemplateURLService())
+            .empty()) {
+      match.transition = ui::PAGE_TRANSITION_RELOAD;
+    }
+  } else if (paste_state_ != NONE &&
+             match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED) {
     // When the user pasted in a URL and hit enter, score it like a link click
     // rather than a normal typed URL, so it doesn't get inline autocompleted
     // as aggressively later.
@@ -803,7 +816,9 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       client_->GetTemplateURLService()->IncrementUsageCount(template_url);
     } else {
       DCHECK(ui::PageTransitionTypeIncludingQualifiersIs(
-          match.transition, ui::PAGE_TRANSITION_GENERATED));
+                 match.transition, ui::PAGE_TRANSITION_GENERATED) ||
+             ui::PageTransitionTypeIncludingQualifiersIs(
+                 match.transition, ui::PAGE_TRANSITION_RELOAD));
       // NOTE: We purposefully don't increment the usage count of the default
       // search engine here like we do for explicit keywords above; see comments
       // in template_url.h.

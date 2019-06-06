@@ -313,11 +313,6 @@ public abstract class ToolbarLayout
             public @ColorRes int getSecurityIconColorStateList() {
                 return 0;
             }
-
-            @Override
-            public boolean shouldDisplaySearchTerms() {
-                return false;
-            }
         };
 
         // Set menu button background in case it was previously called before inflation

@@ -257,11 +257,6 @@ public class LocationBarVoiceRecognitionHandlerTest {
         public @ColorRes int getSecurityIconColorStateList() {
             return 0;
         }
-
-        @Override
-        public boolean shouldDisplaySearchTerms() {
-            return false;
-        }
     }
 
     /**

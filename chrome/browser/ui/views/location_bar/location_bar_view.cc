@@ -974,7 +974,7 @@ void LocationBarView::AcceptInput() {
 }
 
 void LocationBarView::AcceptInput(base::TimeTicks match_selection_timestamp) {
-  omnibox_view_->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false,
+  omnibox_view_->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB,
                                       match_selection_timestamp);
 }
 

@@ -309,7 +309,7 @@ void ExtensionMessageBubbleBrowserTest::TestControlledSearchBubbleShown() {
   omnibox->OnBeforePossibleChange();
   omnibox->SetUserText(base::ASCIIToUTF16("search for this"));
   omnibox->OnAfterPossibleChange(true);
-  omnibox->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false);
+  omnibox->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB);
   base::RunLoop().RunUntilIdle();
 
   CheckBubble(browser(), ANCHOR_BROWSER_ACTION, false);

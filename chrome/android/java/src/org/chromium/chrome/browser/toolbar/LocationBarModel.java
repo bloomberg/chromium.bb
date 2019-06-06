@@ -242,7 +242,7 @@ public class LocationBarModel implements ToolbarDataProvider {
         // If the toolbar shows the publisher URL, it applies its own formatting for emphasis.
         if (mTab == null) return true;
 
-        return !shouldDisplaySearchTerms() && TrustedCdn.getPublisherUrl(mTab) == null;
+        return getDisplaySearchTerms() == null && TrustedCdn.getPublisherUrl(mTab) == null;
     }
 
     /**
@@ -361,7 +361,7 @@ public class LocationBarModel implements ToolbarDataProvider {
     public int getSecurityIconResource(boolean isTablet) {
         // If we're showing a query in the omnibox, and the security level is high enough to show
         // the search icon, return that instead of the security icon.
-        if (shouldDisplaySearchTerms()) {
+        if (getDisplaySearchTerms() != null) {
             return R.drawable.omnibox_search;
         }
         return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage(), isPreview());
@@ -444,11 +444,11 @@ public class LocationBarModel implements ToolbarDataProvider {
         // TODO(https://crbug.com/940134): Change the color here and also #needLightIcon logic.
         if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
             // For the default toolbar color, use a green or red icon.
-            assert !shouldDisplaySearchTerms();
+            assert getDisplaySearchTerms() == null;
             return R.color.google_red_600;
         }
 
-        if (!shouldDisplaySearchTerms()
+        if (getDisplaySearchTerms() == null
                 && (securityLevel == ConnectionSecurityLevel.SECURE
                         || securityLevel == ConnectionSecurityLevel.EV_SECURE)) {
             return R.color.google_green_600;
@@ -458,20 +458,10 @@ public class LocationBarModel implements ToolbarDataProvider {
     }
 
     @Override
-    public boolean shouldDisplaySearchTerms() {
-        return getDisplaySearchTerms() != null && !isPreview();
-    }
-
-    /**
-     * If the current tab state is eligible for displaying the search query terms instead of the
-     * URL, this extracts the query terms from the current URL.
-     *
-     * @return The search terms. Returns null if the tab is ineligible to display the search terms
-     *         instead of the URL.
-     */
     public String getDisplaySearchTerms() {
         if (mNativeLocationBarModelAndroid == 0) return null;
         if (mTab != null && !(mTab.getActivity() instanceof ChromeTabbedActivity)) return null;
+        if (isPreview()) return null;
         return nativeGetDisplaySearchTerms(mNativeLocationBarModelAndroid);
     }
 

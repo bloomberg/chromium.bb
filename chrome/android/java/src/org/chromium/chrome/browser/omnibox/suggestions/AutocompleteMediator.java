@@ -928,6 +928,13 @@ class AutocompleteMediator
             // (e.g. manually retyping the same search query), and it seems wrong to
             // treat this as a reload.
             transition = PageTransition.RELOAD;
+        } else if (((transition & PageTransition.CORE_MASK) == PageTransition.GENERATED)
+                && TextUtils.equals(
+                        suggestion.getFillIntoEdit(), mDataProvider.getDisplaySearchTerms())) {
+            // When the omnibox is displaying the default search provider search terms,
+            // the user focuses the omnibox, and hits Enter without refining the search
+            // terms, we should classify this transition as a RELOAD.
+            transition = PageTransition.RELOAD;
         } else if (type == OmniboxSuggestionType.URL_WHAT_YOU_TYPED
                 && mUrlBarEditingTextProvider.wasLastEditPaste()) {
             // It's important to use the page transition from the suggestion or we might end

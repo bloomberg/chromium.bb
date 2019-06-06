@@ -193,13 +193,9 @@ class OmniboxEditModel {
   bool ClassifiesAsSearch(const base::string16& text) const;
 
   // Asks the browser to load the popup's currently selected item, using the
-  // supplied disposition.  This may close the popup. If |for_drop| is true,
-  // it indicates the input is being accepted as part of a drop operation and
-  // the transition should be treated as LINK (so that it won't trigger the
-  // URL to be autocompleted).
+  // supplied disposition.  This may close the popup.
   void AcceptInput(
       WindowOpenDisposition disposition,
-      bool for_drop,
       base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
   // Asks the browser to load the item at |index|, with the given properties.
