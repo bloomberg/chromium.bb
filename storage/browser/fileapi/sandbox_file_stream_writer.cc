@@ -136,10 +136,9 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
   }
   file_size_ = file_info.size;
   if (initial_offset_ > file_size_) {
-    LOG(ERROR) << initial_offset_ << ", " << file_size_;
-    // This shouldn't happen as long as we check offset in the renderer.
-    NOTREACHED();
-    initial_offset_ = file_size_;
+    // We should not be writing pass the end of the file.
+    std::move(callback).Run(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
+    return;
   }
   DCHECK(!file_writer_.get());
 
