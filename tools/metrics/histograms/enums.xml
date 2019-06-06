@@ -15007,6 +15007,12 @@ Called by update_net_error_codes.py.-->
   <int value="11" label="Exceeded its maximum estimated device life time"/>
 </enum>
 
+<enum name="EmptyStaleResultLocation">
+  <int value="0" label="Before connection is started"/>
+  <int value="1" label="During stale and fresh host comparison"/>
+  <int value="2" label="The stale DNS request has valid results"/>
+</enum>
+
 <enum name="EncodingMethod">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="Big5"/>

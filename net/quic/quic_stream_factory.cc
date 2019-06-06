@@ -92,6 +92,13 @@ enum InitialRttEstimateSource {
   INITIAL_RTT_SOURCE_MAX,
 };
 
+enum class EmptyStaleResultLocation {
+  kResolveHost = 0,
+  kMatchFreshResult = 1,
+  kNotEmpty = 2,
+  kMaxValue = kNotEmpty,
+};
+
 // The maximum receive window sizes for QUIC sessions and streams.
 const int32_t kQuicSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
 const int32_t kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
@@ -155,6 +162,15 @@ void LogPlatformNotificationInHistogram(
 
 void LogConnectionIpPooling(bool pooled) {
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ConnectionIpPooled", pooled);
+}
+
+void LogEmptyStaleResult(EmptyStaleResultLocation location) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.StaleHostResolveFailed", location);
+}
+
+void LogSessionAvailabilityWhenValidatingHost(bool available) {
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.SessionAvailableWhenValidatingDNS",
+                        available);
 }
 
 void SetInitialRttEstimate(base::TimeDelta estimate,
@@ -404,16 +420,31 @@ class QuicStreamFactory::Job {
     if (session_) {
       QuicChromiumClientSession* session = session_;
       session_ = nullptr;
-      session->CloseSessionOnErrorLater(
-          ERR_ABORTED, quic::QUIC_STALE_CONNECTION_CANCELLED,
-          quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+      if (session) {
+        session->CloseSessionOnErrorLater(
+            ERR_ABORTED, quic::QUIC_STALE_CONNECTION_CANCELLED,
+            quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+      }
     }
   }
 
   bool DoesPeerAddressMatchWithFreshAddressList() {
+    LogSessionAvailabilityWhenValidatingHost(session_ != nullptr);
+
+    if (!session_)
+      return false;
+
     std::vector<net::IPEndPoint> endpoints =
         fresh_resolve_host_request_->GetAddressResults().value().endpoints();
-    IPEndPoint stale_address = ToIPEndPoint(session_->peer_address());
+
+    if (!resolve_host_request_->GetAddressResults()) {
+      LogEmptyStaleResult(EmptyStaleResultLocation::kMatchFreshResult);
+      return false;
+    }
+
+    LogEmptyStaleResult(EmptyStaleResultLocation::kNotEmpty);
+    IPEndPoint stale_address =
+        resolve_host_request_->GetAddressResults().value().front();
 
     if (std::find(endpoints.begin(), endpoints.end(), stale_address) !=
         endpoints.end()) {
@@ -696,7 +727,15 @@ int QuicStreamFactory::Job::DoResolveHost() {
     // Fresh request returned immediate results.
     LogStaleHostRacing(false);
     resolve_host_request_ = std::move(fresh_resolve_host_request_);
-    return rv;
+    return fresh_rv;
+  }
+
+  // Check to make sure stale host request does produce valid results.
+  if (!resolve_host_request_->GetAddressResults()) {
+    LogStaleHostRacing(false);
+    LogEmptyStaleResult(EmptyStaleResultLocation::kResolveHost);
+    resolve_host_request_ = std::move(fresh_resolve_host_request_);
+    return fresh_rv;
   }
 
   // No fresh host resolution is available at this time, but there is available
