@@ -134,10 +134,13 @@ void TextPaintTimingDetector::OnPaintFinished() {
 void TextPaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
   if (!is_recording_)
     return;
-  if (!records_manager_.IsKnownVisibleNode(node_id))
-    return;
-  records_manager_.SetNodeDetachedIfNeeded(node_id);
-  need_update_timing_at_frame_end_ = true;
+  if (records_manager_.IsKnownVisibleNode(node_id)) {
+    records_manager_.RemoveVisibleRecord(node_id);
+    need_update_timing_at_frame_end_ = true;
+  } else if (records_manager_.IsKnownInvisibleNode(node_id)) {
+    records_manager_.RemoveInvisibleRecord(node_id);
+    need_update_timing_at_frame_end_ = true;
+  }
 }
 
 void TextPaintTimingDetector::RegisterNotifySwapTime(
@@ -196,8 +199,6 @@ void TextPaintTimingDetector::RecordAggregatedText(
   DOMNodeId node_id = DOMNodeIds::IdForNode(node);
   DCHECK_NE(node_id, kInvalidDOMNodeId);
 
-  records_manager_.MarkNodeReattachedIfNeeded(node_id);
-
   // The caller should check this.
   DCHECK(!aggregated_visual_rect.IsEmpty());
 
@@ -249,12 +250,16 @@ void TextPaintTimingDetector::Trace(blink::Visitor* visitor) {
 
 TextRecordsManager::TextRecordsManager() : size_ordered_set_(&LargeTextFirst) {}
 
-void TextRecordsManager::SetNodeDetachedIfNeeded(const DOMNodeId& node_id) {
-  if (!visible_node_map_.Contains(node_id))
-    return;
-  if (detached_ids_.Contains(node_id))
-    return;
-  detached_ids_.insert(node_id);
+void TextRecordsManager::RemoveVisibleRecord(const DOMNodeId& node_id) {
+  DCHECK(visible_node_map_.Contains(node_id));
+  size_ordered_set_.erase(visible_node_map_.at(node_id)->AsWeakPtr());
+  visible_node_map_.erase(node_id);
+  is_result_invalidated_ = true;
+}
+
+void TextRecordsManager::RemoveInvisibleRecord(const DOMNodeId& node_id) {
+  DCHECK(invisible_node_ids_.Contains(node_id));
+  invisible_node_ids_.erase(node_id);
   is_result_invalidated_ = true;
 }
 
@@ -264,7 +269,15 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
   // consumed in a callback earlier than this one. That violates the assumption
   // that only one or zero callback will be called after one OnPaintFinished.
   DCHECK_GT(texts_queued_for_paint_time_.size(), 0UL);
-  for (auto& record : texts_queued_for_paint_time_) {
+  for (auto iterator = texts_queued_for_paint_time_.begin();
+       iterator != texts_queued_for_paint_time_.end(); ++iterator) {
+    // The record may have been removed between the callback registration and
+    // invoking.
+    base::WeakPtr<TextRecord>& record = *iterator;
+    if (!record) {
+      texts_queued_for_paint_time_.erase(iterator);
+      continue;
+    }
     DCHECK(visible_node_map_.Contains(record->node_id));
     DCHECK_EQ(record->paint_time, base::TimeTicks());
     record->paint_time = timestamp;
@@ -272,15 +285,6 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
   if (text_element_timing_)
     text_element_timing_->OnTextNodesPainted(texts_queued_for_paint_time_);
   texts_queued_for_paint_time_.clear();
-  is_result_invalidated_ = true;
-}
-
-void TextRecordsManager::MarkNodeReattachedIfNeeded(const DOMNodeId& node_id) {
-  if (!detached_ids_.Contains(node_id))
-    return;
-  DCHECK(visible_node_map_.Contains(node_id) ||
-         invisible_node_ids_.Contains(node_id));
-  detached_ids_.erase(node_id);
   is_result_invalidated_ = true;
 }
 
@@ -325,8 +329,7 @@ TextRecord* TextRecordsManager::FindLargestPaintCandidate() {
     // WeakPtr::IsValid() is expensive. We use raw pointer to reduce the checks.
     TextRecord* text_record = (*it).get();
     DCHECK(text_record);
-    if (detached_ids_.Contains(text_record->node_id) ||
-        text_record->paint_time.is_null())
+    if (text_record->paint_time.is_null())
       continue;
     DCHECK(visible_node_map_.Contains(text_record->node_id));
     new_largest_paint_candidate = text_record;

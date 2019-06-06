@@ -53,8 +53,8 @@ class TextRecordsManager {
   TextRecordsManager();
   TextRecord* FindLargestPaintCandidate();
 
-  void SetNodeDetachedIfNeeded(const DOMNodeId&);
-  void MarkNodeReattachedIfNeeded(const DOMNodeId&);
+  void RemoveVisibleRecord(const DOMNodeId&);
+  void RemoveInvisibleRecord(const DOMNodeId&);
   inline void RecordInvisibleNode(const DOMNodeId& node_id) {
     DCHECK(!HasTooManyNodes());
     invisible_node_ids_.insert(node_id);
@@ -76,8 +76,12 @@ class TextRecordsManager {
   size_t CountVisibleNodes() const { return visible_node_map_.size(); }
   size_t CountInvisibleNodes() const { return invisible_node_ids_.size(); }
 
-  bool IsKnownVisibleNode(const DOMNodeId& node_id) const {
+  inline bool IsKnownVisibleNode(const DOMNodeId& node_id) const {
     return visible_node_map_.Contains(node_id);
+  }
+
+  inline bool IsKnownInvisibleNode(const DOMNodeId& node_id) const {
+    return invisible_node_ids_.Contains(node_id);
   }
 
   void StopRecordingLargestTextPaint();
@@ -105,7 +109,6 @@ class TextRecordsManager {
       RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled();
   HashMap<DOMNodeId, std::unique_ptr<TextRecord>> visible_node_map_;
   HashSet<DOMNodeId> invisible_node_ids_;
-  HashSet<DOMNodeId> detached_ids_;
   // This is used to order the nodes in |visible_node_map_| so that we can find
   // the largest node efficiently. Note that the entries in |size_ordered_set_|
   // and |visible_node_map_| should always be added/deleted together.

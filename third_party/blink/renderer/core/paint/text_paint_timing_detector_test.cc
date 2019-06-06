@@ -47,23 +47,14 @@ class TextPaintTimingDetectorTest
       return 0u;
 
     return GetPaintTimingDetector()
-               .GetTextPaintTimingDetector()
-               ->records_manager_.visible_node_map_.size() -
-           GetPaintTimingDetector()
-               .GetTextPaintTimingDetector()
-               ->records_manager_.detached_ids_.size();
+        .GetTextPaintTimingDetector()
+        ->records_manager_.visible_node_map_.size();
   }
 
   unsigned CountRankingSetSize() {
     return GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
         ->records_manager_.size_ordered_set_.size();
-  }
-
-  unsigned CountDetachedTexts() {
-    return GetPaintTimingDetector()
-        .GetTextPaintTimingDetector()
-        ->records_manager_.detached_ids_.size();
   }
 
   void InvokeCallback() {
@@ -220,7 +211,6 @@ TEST_F(TextPaintTimingDetectorTest, NodeRemovedBeforeAssigningSwapTime) {
       GetDocument().getElementById("remove"));
   InvokeCallback();
   EXPECT_EQ(CountVisibleTexts(), 0u);
-  EXPECT_EQ(CountDetachedTexts(), 1u);
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_LargestText) {
