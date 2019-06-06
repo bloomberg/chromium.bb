@@ -158,12 +158,13 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
 
   std::map<gfx::AcceleratedWidget, WaylandSurfaceGpu*> widget_to_surface_map_;
 
-  // This task runner can be used to pass messages back to the GpuMainThread.
-  // For example, swap requests come from the GpuMainThread, but rerouted to the
-  // IOChildThread and then mojo calls happen. However, when the manager
-  // receives mojo calls, it has to reroute calls back to the same thread
-  // where the calls came from to ensure correct sequence.
-  scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_runner_;
+  // This task runner can be used to pass messages back to the same thread,
+  // where the commit buffer request came from. For example, swap requests come
+  // from the GpuMainThread, but rerouted to the IOChildThread and then mojo
+  // calls happen. However, when the manager receives mojo calls, it has to
+  // reroute calls back to the same thread where the calls came from to ensure
+  // correct sequence.
+  scoped_refptr<base::SingleThreadTaskRunner> commit_thread_runner_;
 
   // A task runner, which is initialized in a multi-process mode. It is used to
   // ensure all the methods of this class are run on IOChildThread. This is

@@ -17,8 +17,7 @@
 namespace ui {
 
 WaylandBufferManagerGpu::WaylandBufferManagerGpu()
-    : associated_binding_(this),
-      gpu_thread_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+    : associated_binding_(this) {}
 
 WaylandBufferManagerGpu::~WaylandBufferManagerGpu() = default;
 
@@ -50,9 +49,9 @@ void WaylandBufferManagerGpu::OnSubmission(gfx::AcceleratedWidget widget,
   // a buffer, and is able to call the OnSubmission for that specific buffer.
   if (surface) {
     // As long as mojo calls rerouted to the IO child thread, we have to reroute
-    // them back to the gpu main thread, where the original commit buffer call
-    // came from.
-    gpu_thread_runner_->PostTask(
+    // them back to the same thread, where the original commit buffer call came
+    // from.
+    commit_thread_runner_->PostTask(
         FROM_HERE,
         base::Bind(&WaylandSurfaceGpu::OnSubmission, base::Unretained(surface),
                    buffer_id, swap_result));
@@ -71,9 +70,9 @@ void WaylandBufferManagerGpu::OnPresentation(
   // a buffer, and is able to call the OnPresentation for that specific buffer.
   if (surface) {
     // As long as mojo calls rerouted to the IO child thread, we have to reroute
-    // them back to the gpu main thread, where the original commit buffer call
-    // came from.
-    gpu_thread_runner_->PostTask(
+    // them back to the same thread, where the original commit buffer call came
+    // from.
+    commit_thread_runner_->PostTask(
         FROM_HERE, base::Bind(&WaylandSurfaceGpu::OnPresentation,
                               base::Unretained(surface), buffer_id, feedback));
   }
@@ -138,8 +137,10 @@ void WaylandBufferManagerGpu::CreateShmBasedBuffer(
 void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
                                            uint32_t buffer_id,
                                            const gfx::Rect& damage_region) {
-  DCHECK(gpu_thread_runner_ && gpu_thread_runner_->BelongsToCurrentThread());
   DCHECK(io_thread_runner_);
+
+  if (!commit_thread_runner_)
+    commit_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   // Do the mojo call on the IO child thread.
   io_thread_runner_->PostTask(
