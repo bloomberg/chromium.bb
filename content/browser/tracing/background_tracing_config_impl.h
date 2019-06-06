@@ -30,6 +30,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
 
   enum CategoryPreset {
     CATEGORY_PRESET_UNSET,
+    CUSTOM_CATEGORY_PRESET,
     BENCHMARK,
     BENCHMARK_DEEP,
     BENCHMARK_GPU,
@@ -61,6 +62,8 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
       const base::DictionaryValue* dict,
       BackgroundTracingConfigImpl::CategoryPreset category_preset);
 
+  base::trace_event::TraceConfig GetTraceConfig(bool requires_anonymized_data);
+
   static std::unique_ptr<BackgroundTracingConfigImpl> PreemptiveFromDict(
       const base::DictionaryValue* dict);
   static std::unique_ptr<BackgroundTracingConfigImpl> ReactiveFromDict(
@@ -75,17 +78,18 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
       const std::string& category_preset_string,
       BackgroundTracingConfigImpl::CategoryPreset* category_preset);
 
-  static base::trace_event::TraceConfig GetConfigForCategoryPreset(
-      BackgroundTracingConfigImpl::CategoryPreset,
-      base::trace_event::TraceRecordMode);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(BackgroundTracingConfigTest,
                            ValidPreemptiveConfigToString);
 
+  static base::trace_event::TraceConfig GetConfigForCategoryPreset(
+      BackgroundTracingConfigImpl::CategoryPreset,
+      base::trace_event::TraceRecordMode);
+
   CategoryPreset category_preset_;
   std::vector<std::unique_ptr<BackgroundTracingRule>> rules_;
   std::string scenario_name_;
+  std::string custom_categories_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingConfigImpl);
 };

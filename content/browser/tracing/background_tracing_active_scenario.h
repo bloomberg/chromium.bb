@@ -68,8 +68,7 @@ class BackgroundTracingActiveScenario {
       const base::RepeatingClosure& callback);
 
  private:
-  bool StartTracing(BackgroundTracingConfigImpl::CategoryPreset,
-                    base::trace_event::TraceRecordMode);
+  bool StartTracing();
   void BeginFinalizing(
       BackgroundTracingManager::StartedFinalizingCallback callback);
 

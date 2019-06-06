@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 
@@ -27,6 +28,7 @@ const char kConfigModeReactive[] = "REACTIVE_TRACING_MODE";
 const char kConfigScenarioName[] = "scenario_name";
 
 const char kConfigCategoryKey[] = "category";
+const char kConfigCustomCategoriesKey[] = "custom_categories";
 const char kConfigCategoryBenchmark[] = "BENCHMARK";
 const char kConfigCategoryBenchmarkDeep[] = "BENCHMARK_DEEP";
 const char kConfigCategoryBenchmarkGPU[] = "BENCHMARK_GPU";
@@ -42,6 +44,9 @@ const char kConfigCategoryBenchmarkRenderers[] = "BENCHMARK_RENDERERS";
 const char kConfigCategoryBenchmarkServiceworker[] = "BENCHMARK_SERVICEWORKER";
 const char kConfigCategoryBenchmarkPower[] = "BENCHMARK_POWER";
 const char kConfigCategoryBlinkStyle[] = "BLINK_STYLE";
+const char kConfigCategoryCustom[] = "CUSTOM";
+
+const size_t kDefaultTraceBufferSizeInKb = 10 * 1024;
 
 }  // namespace
 
@@ -84,6 +89,8 @@ std::string BackgroundTracingConfigImpl::CategoryPresetToString(
       return kConfigCategoryBenchmarkPower;
     case BackgroundTracingConfigImpl::BLINK_STYLE:
       return kConfigCategoryBlinkStyle;
+    case BackgroundTracingConfigImpl::CUSTOM_CATEGORY_PRESET:
+      return kConfigCategoryCustom;
     case BackgroundTracingConfigImpl::CATEGORY_PRESET_UNSET:
       NOTREACHED();
   }
@@ -169,6 +176,10 @@ bool BackgroundTracingConfigImpl::StringToCategoryPreset(
 }
 
 void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) {
+  if (category_preset_ == CUSTOM_CATEGORY_PRESET) {
+    dict->SetString(kConfigCustomCategoriesKey, custom_categories_);
+  }
+
   switch (tracing_mode()) {
     case BackgroundTracingConfigImpl::PREEMPTIVE:
       dict->SetString(kConfigModeKey, kConfigModePreemptive);
@@ -214,6 +225,35 @@ void BackgroundTracingConfigImpl::AddReactiveRule(
   }
 }
 
+base::trace_event::TraceConfig BackgroundTracingConfigImpl::GetTraceConfig(
+    bool requires_anonymized_data) {
+  base::trace_event::TraceRecordMode record_mode =
+      (tracing_mode() == BackgroundTracingConfigImpl::REACTIVE)
+          ? base::trace_event::RECORD_UNTIL_FULL
+          : base::trace_event::RECORD_CONTINUOUSLY;
+
+  base::trace_event::TraceConfig chrome_config =
+      (category_preset() == CUSTOM_CATEGORY_PRESET
+           ? base::trace_event::TraceConfig(custom_categories_, record_mode)
+           : GetConfigForCategoryPreset(category_preset(), record_mode));
+
+  if (requires_anonymized_data) {
+    chrome_config.EnableArgumentFilter();
+  }
+
+  chrome_config.SetTraceBufferSizeInKb(kDefaultTraceBufferSizeInKb);
+
+#if defined(OS_ANDROID)
+  // Set low trace buffer size on Android in order to upload small trace files.
+  if (tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE) {
+    chrome_config.SetTraceBufferSizeInEvents(20000);
+    chrome_config.SetTraceBufferSizeInKb(500);
+  }
+#endif
+
+  return chrome_config;
+}
+
 // static
 std::unique_ptr<BackgroundTracingConfigImpl>
 BackgroundTracingConfigImpl::FromDict(const base::DictionaryValue* dict) {
@@ -249,13 +289,19 @@ BackgroundTracingConfigImpl::PreemptiveFromDict(
   std::unique_ptr<BackgroundTracingConfigImpl> config(
       new BackgroundTracingConfigImpl(BackgroundTracingConfigImpl::PREEMPTIVE));
 
-  std::string category_preset_string;
-  if (!dict->GetString(kConfigCategoryKey, &category_preset_string))
-    return nullptr;
+  if (dict->GetString(kConfigCustomCategoriesKey,
+                      &config->custom_categories_)) {
+    config->category_preset_ = CUSTOM_CATEGORY_PRESET;
+  } else {
+    std::string category_preset_string;
+    if (!dict->GetString(kConfigCategoryKey, &category_preset_string))
+      return nullptr;
 
-  if (!StringToCategoryPreset(category_preset_string,
-                              &config->category_preset_))
-    return nullptr;
+    if (!StringToCategoryPreset(category_preset_string,
+                                &config->category_preset_)) {
+      return nullptr;
+    }
+  }
 
   const base::ListValue* configs_list = nullptr;
   if (!dict->GetList(kConfigsKey, &configs_list))
@@ -284,6 +330,20 @@ BackgroundTracingConfigImpl::ReactiveFromDict(
   std::unique_ptr<BackgroundTracingConfigImpl> config(
       new BackgroundTracingConfigImpl(BackgroundTracingConfigImpl::REACTIVE));
 
+  std::string category_preset_string;
+  bool has_global_categories = false;
+  if (dict->GetString(kConfigCustomCategoriesKey,
+                      &config->custom_categories_)) {
+    config->category_preset_ = CUSTOM_CATEGORY_PRESET;
+    has_global_categories = true;
+  } else if (dict->GetString(kConfigCategoryKey, &category_preset_string)) {
+    if (!StringToCategoryPreset(category_preset_string,
+                                &config->category_preset_)) {
+      return nullptr;
+    }
+    has_global_categories = true;
+  }
+
   const base::ListValue* configs_list = nullptr;
   if (!dict->GetList(kConfigsKey, &configs_list))
     return nullptr;
@@ -293,15 +353,17 @@ BackgroundTracingConfigImpl::ReactiveFromDict(
     if (!it.GetAsDictionary(&config_dict))
       return nullptr;
 
-    std::string category_preset_string;
-    if (!config_dict->GetString(kConfigCategoryKey, &category_preset_string))
-      return nullptr;
+    // TODO(oysteine): Remove the per-rule category preset when configs have
+    // been updated to just specify the per-config category preset.
+    if (!has_global_categories &&
+        config_dict->GetString(kConfigCategoryKey, &category_preset_string)) {
+      if (!StringToCategoryPreset(category_preset_string,
+                                  &config->category_preset_)) {
+        return nullptr;
+      }
+    }
 
-    BackgroundTracingConfigImpl::CategoryPreset new_category_preset;
-    if (!StringToCategoryPreset(category_preset_string, &new_category_preset))
-      return nullptr;
-
-    config->AddReactiveRule(config_dict, new_category_preset);
+    config->AddReactiveRule(config_dict, config->category_preset_);
   }
 
   if (config->rules().empty())
@@ -391,6 +453,7 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
       return config;
     }
     case BackgroundTracingConfigImpl::CategoryPreset::CATEGORY_PRESET_UNSET:
+    case BackgroundTracingConfigImpl::CategoryPreset::CUSTOM_CATEGORY_PRESET:
       NOTREACHED();
   }
   NOTREACHED();

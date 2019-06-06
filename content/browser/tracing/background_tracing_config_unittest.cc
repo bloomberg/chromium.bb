@@ -256,6 +256,21 @@ TEST_F(BackgroundTracingConfigTest, PreemptiveConfigFromValidString) {
   EXPECT_EQ(RuleToString(config->rules()[1]),
             "{\"rule\":\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\","
             "\"trigger_name\":\"foo2\"}");
+
+  config = ReadFromJSONString(
+      "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"custom_categories\": "
+      "\"toplevel,benchmark\",\"configs\": [{\"rule\": "
+      "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\", \"trigger_name\":\"foo1\"}]}");
+  EXPECT_TRUE(config);
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::PREEMPTIVE);
+  EXPECT_EQ(config->category_preset(),
+            BackgroundTracingConfigImpl::CUSTOM_CATEGORY_PRESET);
+  EXPECT_EQ(config->rules().size(), 1u);
+  EXPECT_EQ(
+      ConfigToString(config.get()),
+      "{\"category\":\"CUSTOM\",\"configs\":[{\"rule\":\"MONITOR_AND_DUMP_WHEN_"
+      "TRIGGER_NAMED\",\"trigger_name\":\"foo1\"}],\"custom_categories\":"
+      "\"toplevel,benchmark\",\"mode\":\"PREEMPTIVE_TRACING_MODE\"}");
 }
 
 TEST_F(BackgroundTracingConfigTest, ValidPreemptiveCategoryToString) {
@@ -375,6 +390,7 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
             "{\"category\":\"BENCHMARK_DEEP\","
             "\"rule\":\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\","
             "\"trigger_delay\":30,\"trigger_name\":\"foo2\"}");
+
   config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
       "\"TRACE_AT_RANDOM_INTERVALS\","
@@ -388,6 +404,22 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
             "{\"category\":\"BENCHMARK_DEEP\",\"rule\":\"TRACE_AT_RANDOM_"
             "INTERVALS\",\"stop_tracing_on_repeated_reactive\":true,"
             "\"timeout_max\":20,\"timeout_min\":10}");
+
+  config = ReadFromJSONString(
+      "{\"mode\":\"REACTIVE_TRACING_MODE\","
+      "\"custom_categories\": \"benchmark,toplevel\","
+      "\"configs\": [{\"rule\": "
+      "\"TRACE_AT_RANDOM_INTERVALS\","
+      "\"stop_tracing_on_repeated_reactive\": true, "
+      "\"timeout_max\":20,\"timeout_min\":10}]}");
+  EXPECT_TRUE(config);
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::REACTIVE);
+  EXPECT_EQ(config->rules().size(), 1u);
+  EXPECT_EQ(ConfigToString(config.get()),
+            "{\"configs\":[{\"category\":\"CUSTOM\",\"rule\":\"TRACE_AT_RANDOM_"
+            "INTERVALS\",\"stop_tracing_on_repeated_reactive\":true,\"timeout_"
+            "max\":20,\"timeout_min\":10}],\"custom_categories\":\"benchmark,"
+            "toplevel\",\"mode\":\"REACTIVE_TRACING_MODE\"}");
 }
 
 TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
@@ -479,6 +511,28 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
               "\"histogram_upper_value\":2,\"rule\":\"MONITOR_AND_DUMP_WHEN_"
               "SPECIFIC_HISTOGRAM_AND_VALUE\"}],\"mode\":\"PREEMPTIVE_TRACING_"
               "MODE\"}");
+  }
+
+  {
+    config.reset(
+        new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
+
+    std::unique_ptr<base::DictionaryValue> second_dict(
+        new base::DictionaryValue());
+    second_dict->SetString(
+        "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+    second_dict->SetString("histogram_name", "foo");
+    second_dict->SetInteger("histogram_lower_value", 1);
+    second_dict->SetInteger("histogram_upper_value", 2);
+    second_dict->SetInteger("trigger_delay", 10);
+    config->AddPreemptiveRule(second_dict.get());
+
+    EXPECT_EQ(ConfigToString(config.get()),
+              "{\"category\":\"BENCHMARK\",\"configs\":[{\"histogram_lower_"
+              "value\":1,\"histogram_name\":\"foo\",\"histogram_repeat\":true,"
+              "\"histogram_upper_value\":2,\"rule\":\"MONITOR_AND_DUMP_WHEN_"
+              "SPECIFIC_HISTOGRAM_AND_VALUE\",\"trigger_delay\":10}],\"mode\":"
+              "\"PREEMPTIVE_TRACING_MODE\"}");
   }
 
   {
