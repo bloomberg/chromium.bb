@@ -20,6 +20,10 @@ div {
 <!-- 40 Xs, 4 lines -->
 <div id="div">XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</div>
 <script>
+// The expectations are based on windows editing behavior.
+if (window.internals)
+  internals.settings.setEditingBehavior('win');
+
 var node = div.firstChild;
 testMouseSelection(210, 310, 270, 310, node, 5, node, 35,
                    'Middle of the first line -> Middle of the last line');
