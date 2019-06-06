@@ -138,7 +138,10 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
 
     @Override
     public void reschedule(Context context) {
-        // TODO(dewittj): Set the backoff time appropriately.
+        // BackgroundTask::reschedule() docs explain this will only be called in situations like
+        // "Google Play Services update or OS upgrade". Given that these do not happen often and
+        // that backoff states are rare, we decided not to start native here just to get an unlikely
+        // set value of backoff time for the schedule calls.
         if (mLimitlessPrefetchingEnabled) {
             PrefetchBackgroundTaskScheduler.scheduleTaskLimitless(0, mGcmToken);
         } else {
