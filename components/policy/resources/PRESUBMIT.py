@@ -109,6 +109,48 @@ def _CheckPolicyHistograms(input_api, output_api, policies):
   return results
 
 
+def _CheckPolicyAtomicGroupsHistograms(input_api, output_api, atomic_groups):
+  root = input_api.change.RepositoryRoot()
+  histograms = input_api.os_path.join(
+      root, 'tools', 'metrics', 'histograms', 'enums.xml')
+  with open(histograms) as f:
+    tree = xml.dom.minidom.parseString(f.read())
+  enums = (tree.getElementsByTagName('histogram-configuration')[0]
+               .getElementsByTagName('enums')[0]
+               .getElementsByTagName('enum'))
+  atomic_group_enum = [e for e in enums
+                 if e.getAttribute('name') == 'PolicyAtomicGroups'][0]
+  atomic_group_enum_ids = frozenset(int(e.getAttribute('value'))
+                              for e in atomic_group_enum
+                                .getElementsByTagName('int'))
+  atomic_group_id_to_name = {policy['id']: policy['name']
+                                    for policy in atomic_groups}
+  atomic_group_ids = frozenset(atomic_group_id_to_name.keys())
+
+  missing_ids = atomic_group_ids - atomic_group_enum_ids
+  extra_ids = atomic_group_enum_ids - atomic_group_ids
+
+  error_missing = ('Policy atomic group \'%s\' (id %d) was added to '
+                   'policy_templates.json but not to '
+                   'src/tools/metrics/histograms/enums.xml. Please update '
+                   'both files. To regenerate the policy part of enums.xml, '
+                   'run:\n'
+                   'python tools/metrics/histograms/update_policies.py')
+  error_extra = ('Policy atomic group id %d was found in '
+                 'src/tools/metrics/histograms/enums.xml, but no policy with '
+                 'this id exists in policy_templates.json. To regenerate the '
+                 'policy part of enums.xml, run:\n'
+                 'python tools/metrics/histograms/update_policies.py')
+  results = []
+  for atomic_group_id in missing_ids:
+    results.append(output_api.PresubmitError(error_missing %
+                              (atomic_group_id_to_name[atomic_group_id],
+                              atomic_group_id)))
+  for atomic_group_id in extra_ids:
+    results.append(output_api.PresubmitError(error_extra % atomic_group_id))
+  return results
+
+
 def _CommonChecks(input_api, output_api):
   results = []
   results.extend(_CheckPolicyTemplatesSyntax(input_api, output_api))

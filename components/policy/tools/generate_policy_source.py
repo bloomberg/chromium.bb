@@ -173,6 +173,7 @@ class PolicyAtomicGroup:
 
   def __init__(self, policy_group, available_policies,
                policies_already_in_group):
+    self.id = policy_group['id']
     self.name = policy_group['name']
     self.policies = policy_group.get('policies', None)
     self._CheckPoliciesValidity(available_policies, policies_already_in_group)
@@ -448,6 +449,7 @@ def _WritePolicyConstantHeader(policies, policy_atomic_groups, os, f,
   f.write('\n}  // namespace group\n\n')
 
   f.write('struct AtomicGroup {\n'
+          '  const short id;\n'
           '  const char* policy_group;\n'
           '  const char* const* policies;\n'
           '};\n\n')
@@ -1132,7 +1134,8 @@ def _WritePolicyConstantSource(policies, policy_atomic_groups, os, f,
   for group in policy_atomic_groups:
     atomic_groups_length += 1
     f.write('  {')
-    f.write('  group::k{name}, group::{name}'.format(name=group.name))
+    f.write('  {id}, group::k{name}, group::{name}'.format(
+        id=group.id, name=group.name))
     f.write('  },\n')
   f.write('};\n\n')
   f.write('const size_t kPolicyAtomicGroupMappingsLength = %s;\n\n' %

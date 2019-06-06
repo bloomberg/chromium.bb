@@ -713,6 +713,26 @@ class PolicyTemplateChecker(object):
       with open(filename, 'w') as f:
         f.writelines(fixed_lines)
 
+  def _ValidatePolicyAtomicGroups(self, atomic_groups, max_id):
+    ids = [x['id'] for x in atomic_groups]
+    actual_highest_id = max(ids)
+    if actual_highest_id != max_id:
+      self._Error(
+          ("\'highest_atomic_group_id_currently_used\' must be set to the "
+           "highest atomic group id in use, which is currently %s (vs %s).") %
+          (actual_highest_id, max_id))
+      return
+
+    ids_set = set()
+    for i in range(len(ids)):
+      if (ids[i] in ids_set):
+        self._Error('Duplicate atomic group id %s' % (ids[i]))
+        return
+      ids_set.add(ids[i])
+      if i + 1 != ids[i]:
+        self._Error('Missing atomic group id %s' % (i + 1))
+        return
+
   def Main(self, filename, options):
     try:
       with open(filename, "rb") as f:
@@ -765,6 +785,13 @@ class PolicyTemplateChecker(object):
         parent_element=None,
         container_name='The root element',
         offending=None)
+    highest_atomic_group_id = self._CheckContains(
+        data,
+        'highest_atomic_group_id_currently_used',
+        int,
+        parent_element=None,
+        container_name='The root element',
+        offending=None)
     device_policy_proto_map = self._CheckContains(
         data,
         'device_policy_proto_map',
@@ -787,6 +814,8 @@ class PolicyTemplateChecker(object):
         container_name='The root element',
         offending=None)
 
+    self._ValidatePolicyAtomicGroups(policy_atomic_group_definitions,
+                                     highest_atomic_group_id)
     self._CheckDevicePolicyProtoMappingUniqueness(
         device_policy_proto_map, legacy_device_policy_proto_map)
 

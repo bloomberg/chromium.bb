@@ -18,6 +18,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_test_utils.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,23 +33,27 @@ using testing::ReturnRef;
 // Arbitrary policy names used for testing.
 const char kTestPolicy1[] = "Test Policy 1";
 const char kTestPolicy2[] = "Test Policy 2";
+const char* kTestPolicy3 = key::kExtensionInstallBlacklist;
 
 const int kTestPolicy1Id = 42;
 const int kTestPolicy2Id = 123;
+const int kTestPolicy3Id = 32;
 
 const char kTestChromeSchema[] =
     "{"
     "  \"type\": \"object\","
     "  \"properties\": {"
     "    \"Test Policy 1\": { \"type\": \"string\" },"
-    "    \"Test Policy 2\": { \"type\": \"string\" }"
+    "    \"Test Policy 2\": { \"type\": \"string\" },"
+    "    \"ExtensionInstallBlacklist\": { \"type\": \"string\" },"
     "  }"
     "}";
 
 const PolicyDetails kTestPolicyDetails[] = {
-  // is_deprecated  is_device_policy              id  max_external_data_size
-  {          false,            false, kTestPolicy1Id,                      0 },
-  {          false,            false, kTestPolicy2Id,                      0 },
+    // is_deprecated  is_device_policy              id  max_external_data_size
+    {false, false, kTestPolicy1Id, 0},
+    {false, false, kTestPolicy2Id, 0},
+    {false, false, kTestPolicy3Id, 0},
 };
 
 class TestPolicyStatisticsCollector : public PolicyStatisticsCollector {
@@ -67,6 +72,7 @@ class TestPolicyStatisticsCollector : public PolicyStatisticsCollector {
 
   MOCK_METHOD1(RecordPolicyUse, void(int));
   MOCK_METHOD1(RecordPolicyIgnoredByAtomicGroup, void(int));
+  MOCK_METHOD1(RecordPolicyGroupWithConflicts, void(int));
 };
 
 }  // namespace
@@ -86,6 +92,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
 
     policy_details_.SetDetails(kTestPolicy1, &kTestPolicyDetails[0]);
     policy_details_.SetDetails(kTestPolicy2, &kTestPolicyDetails[1]);
+    policy_details_.SetDetails(kTestPolicy3, &kTestPolicyDetails[2]);
 
     prefs_.registry()->RegisterInt64Pref(
         policy_prefs::kLastPolicyStatisticsUpdate, 0);
@@ -194,13 +201,25 @@ TEST_F(PolicyStatisticsCollectorTest, MultiplePolicies) {
 }
 
 TEST_F(PolicyStatisticsCollectorTest, PolicyIgnoredByAtomicGroup) {
-  SetPolicyIgnoredByAtomicGroup(kTestPolicy1);
+  SetPolicyIgnoredByAtomicGroup(kTestPolicy3);
+  const AtomicGroup* extensions = nullptr;
+
+  for (size_t i = 0; i < kPolicyAtomicGroupMappingsLength; ++i) {
+    if (kPolicyAtomicGroupMappings[i].policy_group == group::kExtensions) {
+      extensions = &kPolicyAtomicGroupMappings[i];
+      break;
+    }
+  }
+
+  DCHECK(extensions);
 
   prefs_.SetInt64(policy_prefs::kLastPolicyStatisticsUpdate,
                   (base::Time::Now() - update_delay_).ToInternalValue());
 
   EXPECT_CALL(*policy_statistics_collector_,
-              RecordPolicyIgnoredByAtomicGroup(kTestPolicy1Id));
+              RecordPolicyIgnoredByAtomicGroup(kTestPolicy3Id));
+  EXPECT_CALL(*policy_statistics_collector_,
+              RecordPolicyGroupWithConflicts(extensions->id));
 
   policy_statistics_collector_->Initialize();
   EXPECT_EQ(1u, task_runner_->NumPendingTasks());

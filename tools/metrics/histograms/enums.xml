@@ -46294,6 +46294,48 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="5"/>
 </enum>
 
+<enum name="PolicyAtomicGroups">
+<!-- Generated from components/policy/resources/policy_templates.json -->
+
+  <int value="1" label="Homepage"/>
+  <int value="2" label="RemoteAccess"/>
+  <int value="3" label="PasswordManager"/>
+  <int value="4" label="Proxy"/>
+  <int value="5" label="Extensions"/>
+  <int value="6" label="RestoreOnStartupGroup"/>
+  <int value="7" label="DefaultSearchProvider"/>
+  <int value="8" label="ImageSettings"/>
+  <int value="9" label="CookiesSettings"/>
+  <int value="10" label="JavascriptSettings"/>
+  <int value="11" label="PluginsSettings"/>
+  <int value="12" label="PopupsSettings"/>
+  <int value="13" label="KeygenSettings"/>
+  <int value="14" label="NotificationsSettings"/>
+  <int value="15" label="WebUsbSettings"/>
+  <int value="16" label="NativeMessaging"/>
+  <int value="17" label="Drive"/>
+  <int value="18" label="Attestation"/>
+  <int value="19" label="ContentPack"/>
+  <int value="20" label="SupervisedUsers"/>
+  <int value="21" label="GoogleCast"/>
+  <int value="22" label="QuickUnlock"/>
+  <int value="23" label="PinUnlock"/>
+  <int value="24" label="SafeBrowsing"/>
+  <int value="25" label="PasswordProtection"/>
+  <int value="26" label="NetworkFileShares"/>
+  <int value="27" label="ChromeReportingExtension"/>
+  <int value="28" label="BrowserSwitcher"/>
+  <int value="29" label="PluginVm"/>
+  <int value="30" label="DeviceSAML"/>
+  <int value="31" label="DeviceLoginScreenOrigins"/>
+  <int value="32" label="UserAndDeviceReporting"/>
+  <int value="33" label="DeviceWiFi"/>
+  <int value="34" label="Kiosk"/>
+  <int value="35" label="DateAndTime"/>
+  <int value="36" label="Display"/>
+  <int value="37" label="ActiveDirectoryManagement"/>
+</enum>
+
 <enum name="PolicyLoadStatus">
   <int value="0" label="Success"/>
   <int value="1" label="No Policy File"/>
