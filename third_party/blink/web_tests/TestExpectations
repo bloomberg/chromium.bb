@@ -5747,7 +5747,7 @@ crbug.com/963141 [ Mac ] media/video-aspect-ratio.html [ Pass Failure ]
 
 # Sheriff 2019-05-16
 crbug.com/963141 [ Linux ] media/video-object-fit.html [ Pass Failure ]
-crbug.com/963740 [ Win ] compositing/video-frame-size-change.html [ Pass Failure ]
+crbug.com/963740 compositing/video-frame-size-change.html [ Pass Failure ]
 
 # Sheriff 2019-05-17
 crbug.com/964239 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
