@@ -410,7 +410,7 @@ TEST_F(FileUtilTest, NormalizeFilePathBasic) {
   ASSERT_TRUE(PathExists(file_b_path));
   ASSERT_TRUE(NormalizeFilePath(file_b_path, &normalized_file_b_path));
 
-  // Beacuse this test created |dir_path|, we know it is not a link
+  // Because this test created |dir_path|, we know it is not a link
   // or junction.  So, the real path of the directory holding file a
   // must be the parent of the path holding file b.
   ASSERT_TRUE(normalized_file_a_path.DirName()
@@ -418,6 +418,36 @@ TEST_F(FileUtilTest, NormalizeFilePathBasic) {
 }
 
 #if defined(OS_WIN)
+
+TEST_F(FileUtilTest, NormalizeFileEmptyFile) {
+  // Create a directory under the test dir.  Because we create it,
+  // we know it is not a link.
+  const wchar_t empty_content[] = L"";
+
+  FilePath file_a_path = temp_dir_.GetPath().Append(FPL("file_empty_a"));
+  FilePath dir_path = temp_dir_.GetPath().Append(FPL("dir"));
+  FilePath file_b_path = dir_path.Append(FPL("file_empty_b"));
+  ASSERT_TRUE(CreateDirectory(dir_path));
+
+  FilePath normalized_file_a_path, normalized_file_b_path;
+  ASSERT_FALSE(PathExists(file_a_path));
+  EXPECT_FALSE(NormalizeFilePath(file_a_path, &normalized_file_a_path))
+      << "NormalizeFilePath() should fail on nonexistent paths.";
+
+  CreateTextFile(file_a_path, empty_content);
+  ASSERT_TRUE(PathExists(file_a_path));
+  EXPECT_TRUE(NormalizeFilePath(file_a_path, &normalized_file_a_path));
+
+  CreateTextFile(file_b_path, empty_content);
+  ASSERT_TRUE(PathExists(file_b_path));
+  EXPECT_TRUE(NormalizeFilePath(file_b_path, &normalized_file_b_path));
+
+  // Because this test created |dir_path|, we know it is not a link
+  // or junction.  So, the real path of the directory holding file a
+  // must be the parent of the path holding file b.
+  EXPECT_TRUE(normalized_file_a_path.DirName().IsParent(
+      normalized_file_b_path.DirName()));
+}
 
 TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
   // Build the following directory structure:
