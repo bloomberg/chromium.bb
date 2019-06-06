@@ -1135,7 +1135,7 @@
     },
     {
       name: "PaymentRetry",
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "PerformanceManagerInstrumentation",
