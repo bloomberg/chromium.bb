@@ -22,7 +22,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
@@ -37,6 +39,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDeleg
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.components.omnibox.AnswerType;
 import org.chromium.content_public.browser.WebContents;
@@ -142,6 +145,7 @@ class AutocompleteMediator
 
     private WindowAndroid mWindowAndroid;
     private ActivityLifecycleDispatcher mLifecycleDispatcher;
+    private ActivityTabTabObserver mTabObserver;
 
     public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
             UrlBarEditingTextStateProvider textProvider, PropertyModel listPropertyModel) {
@@ -162,6 +166,9 @@ class AutocompleteMediator
     public void destroy() {
         mAnswerSuggestionProcessor.destroy();
         mAnswerSuggestionProcessor = null;
+        if (mTabObserver != null) {
+            mTabObserver.destroy();
+        }
     }
 
     @Override
@@ -342,6 +349,37 @@ class AutocompleteMediator
      */
     void setActivityTabProvider(ActivityTabProvider provider) {
         if (mEditUrlProcessor != null) mEditUrlProcessor.setActivityTabProvider(provider);
+
+        if (mTabObserver != null) {
+            mTabObserver.destroy();
+            mTabObserver = null;
+        }
+
+        if (provider != null) {
+            mTabObserver = new ActivityTabTabObserver(provider) {
+                @Override
+                public void onPageLoadFinished(Tab tab, String url) {
+                    maybeTriggerCacheRefresh(url);
+                }
+
+                @Override
+                protected void onObservingDifferentTab(Tab tab) {
+                    if (tab == null) return;
+                    maybeTriggerCacheRefresh(tab.getUrl());
+                }
+
+                /**
+                 * Trigger ZeroSuggest cache refresh in case user is accessing a new tab page.
+                 * Avoid issuing multiple concurrent server requests for the same event to reduce
+                 * server pressure.
+                 */
+                private void maybeTriggerCacheRefresh(String url) {
+                    if (url == null) return;
+                    if (!UrlConstants.NTP_URL.equals(url)) return;
+                    AutocompleteController.nativePrefetchZeroSuggestResults();
+                }
+            };
+        }
     }
 
     /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */

@@ -643,7 +643,8 @@ static void JNI_AutocompleteController_PrefetchZeroSuggestResults(JNIEnv* env) {
 
   // ZeroSuggestPrefetcher uses a fake AutocompleteInput classified as OTHER.
   // See its constructor.
-  if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
+  if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP) &&
+      !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
           OmniboxEventProto::OTHER)) {
     return;
   }
