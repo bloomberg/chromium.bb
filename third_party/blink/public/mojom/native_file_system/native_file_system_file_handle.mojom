@@ -8,10 +8,18 @@ import "third_party/blink/public/mojom/blob/blob.mojom";
 import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom";
 import "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom";
+import "third_party/blink/public/mojom/permissions/permission_status.mojom";
 
 // This interface represents a handle to a directory in the Native File System
 // API.
 interface NativeFileSystemFileHandle {
+  // Queries the current permission status for this handle.
+  GetPermissionStatus(bool writable) => (PermissionStatus status);
+
+  // Requests read and/or write permission for this handle. Returns the new
+  // permission status for this handle.
+  RequestPermission(bool writable) => (PermissionStatus status);
+
   // Returns a blob representing the current state of this file.
   AsBlob() => (NativeFileSystemError result, SerializedBlob? blob);
 

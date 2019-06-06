@@ -33,6 +33,12 @@ class NativeFileSystemFileHandle final : public NativeFileSystemHandle {
   void RemoveImpl(
       base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr)>)
       override;
+  void QueryPermissionImpl(
+      bool writable,
+      base::OnceCallback<void(mojom::blink::PermissionStatus)>) override;
+  void RequestPermissionImpl(
+      bool writable,
+      base::OnceCallback<void(mojom::blink::PermissionStatus)>) override;
 
   mojom::blink::NativeFileSystemFileHandlePtr mojo_ptr_;
 };

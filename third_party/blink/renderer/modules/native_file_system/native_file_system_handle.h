@@ -8,6 +8,7 @@
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -16,6 +17,7 @@
 
 namespace blink {
 class NativeFileSystemDirectoryHandle;
+class FileSystemHandlePermissionDescriptor;
 
 class NativeFileSystemHandle : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -37,11 +39,22 @@ class NativeFileSystemHandle : public ScriptWrappable {
                        const String& new_name = String());
   ScriptPromise remove(ScriptState*);
 
+  ScriptPromise queryPermission(ScriptState*,
+                                const FileSystemHandlePermissionDescriptor*);
+  ScriptPromise requestPermission(ScriptState*,
+                                  const FileSystemHandlePermissionDescriptor*);
+
   virtual mojom::blink::NativeFileSystemTransferTokenPtr Transfer() = 0;
 
  private:
   virtual void RemoveImpl(
       base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr)>) = 0;
+  virtual void QueryPermissionImpl(
+      bool writable,
+      base::OnceCallback<void(mojom::blink::PermissionStatus)>) = 0;
+  virtual void RequestPermissionImpl(
+      bool writable,
+      base::OnceCallback<void(mojom::blink::PermissionStatus)>) = 0;
 
   String name_;
 };

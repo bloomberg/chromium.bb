@@ -33,6 +33,10 @@ class NativeFileSystemDirectoryHandleImpl
   ~NativeFileSystemDirectoryHandleImpl() override;
 
   // blink::mojom::NativeFileSystemDirectoryHandle:
+  void GetPermissionStatus(bool writable,
+                           GetPermissionStatusCallback callback) override;
+  void RequestPermission(bool writable,
+                         RequestPermissionCallback callback) override;
   void GetFile(const std::string& name,
                bool create,
                GetFileCallback callback) override;

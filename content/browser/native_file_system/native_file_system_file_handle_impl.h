@@ -43,6 +43,10 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
   ~NativeFileSystemFileHandleImpl() override;
 
   // blink::mojom::NativeFileSystemFileHandle:
+  void GetPermissionStatus(bool writable,
+                           GetPermissionStatusCallback callback) override;
+  void RequestPermission(bool writable,
+                         RequestPermissionCallback callback) override;
   void AsBlob(AsBlobCallback callback) override;
   void Remove(RemoveCallback callback) override;
   void Write(uint64_t offset,

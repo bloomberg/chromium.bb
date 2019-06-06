@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "content/common/content_export.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
@@ -29,9 +30,10 @@ namespace content {
 // thread. This is because code interacts directly with the file system backends
 // (via storage::FileSystemContext and store::FileSystemOperationRunner, which
 // both expect some of their methods to only be called on the IO thread).
-class NativeFileSystemHandleBase {
+class CONTENT_EXPORT NativeFileSystemHandleBase {
  public:
   using BindingContext = NativeFileSystemManagerImpl::BindingContext;
+  using PermissionStatus = blink::mojom::PermissionStatus;
 
   NativeFileSystemHandleBase(
       NativeFileSystemManagerImpl* manager,
@@ -44,6 +46,21 @@ class NativeFileSystemHandleBase {
   const storage::IsolatedContext::ScopedFSHandle& file_system() const {
     return file_system_;
   }
+
+  PermissionStatus GetReadPermissionStatus() const {
+    return read_permission_status_;
+  }
+  PermissionStatus GetWritePermissionStatus() const;
+
+  // Implementation for the GetPermissionStatus method in the
+  // blink::mojom::NativeFileSystemFileHandle and DirectoryHandle interfaces.
+  void DoGetPermissionStatus(
+      bool writable,
+      base::OnceCallback<void(PermissionStatus)> callback);
+  // Implementation for the RequestPermission method in the
+  // blink::mojom::NativeFileSystemFileHandle and DirectoryHandle interfaces.
+  void DoRequestPermission(bool writable,
+                           base::OnceCallback<void(PermissionStatus)> callback);
 
  protected:
   NativeFileSystemManagerImpl* manager() { return manager_; }
@@ -64,6 +81,11 @@ class NativeFileSystemHandleBase {
   const BindingContext context_;
   const storage::FileSystemURL url_;
   const storage::IsolatedContext::ScopedFSHandle file_system_;
+
+  // TODO(mek): We'll likely end up with something more complicated than simple
+  // fields like this, but this will do for now.
+  PermissionStatus read_permission_status_ = PermissionStatus::GRANTED;
+  PermissionStatus write_permission_status_ = PermissionStatus::ASK;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemHandleBase);
 };

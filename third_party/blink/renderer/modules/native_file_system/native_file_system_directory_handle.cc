@@ -182,4 +182,16 @@ void NativeFileSystemDirectoryHandle::RemoveImpl(
   mojo_ptr_->Remove(/*recursive=*/false, std::move(callback));
 }
 
+void NativeFileSystemDirectoryHandle::QueryPermissionImpl(
+    bool writable,
+    base::OnceCallback<void(mojom::blink::PermissionStatus)> callback) {
+  mojo_ptr_->GetPermissionStatus(writable, std::move(callback));
+}
+
+void NativeFileSystemDirectoryHandle::RequestPermissionImpl(
+    bool writable,
+    base::OnceCallback<void(mojom::blink::PermissionStatus)> callback) {
+  mojo_ptr_->RequestPermission(writable, std::move(callback));
+}
+
 }  // namespace blink

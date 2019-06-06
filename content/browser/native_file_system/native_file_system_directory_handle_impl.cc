@@ -65,6 +65,18 @@ NativeFileSystemDirectoryHandleImpl::NativeFileSystemDirectoryHandleImpl(
 NativeFileSystemDirectoryHandleImpl::~NativeFileSystemDirectoryHandleImpl() =
     default;
 
+void NativeFileSystemDirectoryHandleImpl::GetPermissionStatus(
+    bool writable,
+    GetPermissionStatusCallback callback) {
+  DoGetPermissionStatus(writable, std::move(callback));
+}
+
+void NativeFileSystemDirectoryHandleImpl::RequestPermission(
+    bool writable,
+    RequestPermissionCallback callback) {
+  DoRequestPermission(writable, std::move(callback));
+}
+
 void NativeFileSystemDirectoryHandleImpl::GetFile(const std::string& name,
                                                   bool create,
                                                   GetFileCallback callback) {

@@ -69,9 +69,22 @@ NativeFileSystemFileHandle::Transfer() {
   mojo_ptr_->Transfer(mojo::MakeRequest(&result));
   return result;
 }
+
 void NativeFileSystemFileHandle::RemoveImpl(
     base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr)> callback) {
   mojo_ptr_->Remove(std::move(callback));
+}
+
+void NativeFileSystemFileHandle::QueryPermissionImpl(
+    bool writable,
+    base::OnceCallback<void(mojom::blink::PermissionStatus)> callback) {
+  mojo_ptr_->GetPermissionStatus(writable, std::move(callback));
+}
+
+void NativeFileSystemFileHandle::RequestPermissionImpl(
+    bool writable,
+    base::OnceCallback<void(mojom::blink::PermissionStatus)> callback) {
+  mojo_ptr_->RequestPermission(writable, std::move(callback));
 }
 
 }  // namespace blink

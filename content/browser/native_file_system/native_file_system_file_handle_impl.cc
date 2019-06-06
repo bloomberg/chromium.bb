@@ -38,6 +38,18 @@ NativeFileSystemFileHandleImpl::NativeFileSystemFileHandleImpl(
 
 NativeFileSystemFileHandleImpl::~NativeFileSystemFileHandleImpl() = default;
 
+void NativeFileSystemFileHandleImpl::GetPermissionStatus(
+    bool writable,
+    GetPermissionStatusCallback callback) {
+  DoGetPermissionStatus(writable, std::move(callback));
+}
+
+void NativeFileSystemFileHandleImpl::RequestPermission(
+    bool writable,
+    RequestPermissionCallback callback) {
+  DoRequestPermission(writable, std::move(callback));
+}
+
 void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mek): Check backend::SupportsStreaming and create snapshot file if
