@@ -33610,6 +33610,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1416184931" label="TranslateRankerEnforcement:enabled"/>
   <int value="-1411733990" label="OmniboxDedupeGoogleDriveURLs:disabled"/>
   <int value="-1411003295" label="disable-encrypted-media"/>
+  <int value="-1410394131" label="EvDetailsInPageInfo:enabled"/>
   <int value="-1409643943" label="enable-child-account-detection"/>
   <int value="-1408869905"
       label="AutofillEnforceMinRequiredFieldsForQuery:disabled"/>
@@ -34487,6 +34488,7 @@ from previous Chrome versions.
   <int value="-108881882" label="NTPCondensedTileLayout:enabled"/>
   <int value="-102537270" label="extension-content-verification"/>
   <int value="-102227288" label="PasswordExport:disabled"/>
+  <int value="-100148609" label="EvDetailsInPageInfo:disabled"/>
   <int value="-99781021" label="disable-roboto-font-ui"/>
   <int value="-97145978" label="DesktopPWAsStayInWindow:enabled"/>
   <int value="-92116820" label="InlineUpdateFlow:enabled"/>

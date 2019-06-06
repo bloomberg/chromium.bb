@@ -11,6 +11,10 @@ namespace features {
 const base::Feature kDragToPinTabs{"DragToPinTabs",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables showing the EV certificate details in the Page Info bubble.
+const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables an extension menu in the toolbar. See https://crbug.com/943702
 const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

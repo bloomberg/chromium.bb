@@ -549,6 +549,9 @@ extern const char kEnableWasmSimdDescription[];
 extern const char kEnableWasmThreadsName[];
 extern const char kEnableWasmThreadsDescription[];
 
+extern const char kEvDetailsInPageInfoName[];
+extern const char kEvDetailsInPageInfoDescription[];
+
 extern const char kExpensiveBackgroundTimerThrottlingName[];
 extern const char kExpensiveBackgroundTimerThrottlingDescription[];
 

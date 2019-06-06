@@ -39,6 +39,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -133,6 +134,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     constexpr char kInternalViewSource[] = "InternalViewSource";
     constexpr char kFile[] = "File";
     constexpr char kSecure[] = "Secure";
+    constexpr char kEvSecure[] = "EvSecure";
     constexpr char kMalware[] = "Malware";
     constexpr char kDeceptive[] = "Deceptive";
     constexpr char kUnwantedSoftware[] = "UnwantedSoftware";
@@ -153,8 +155,9 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     const GURL http_url("http://example.com");
 
     GURL url = http_url;
-    if (name == kSecure || name == kMixedContentForm || name == kMixedContent ||
-        name == kAllowAllPermissions || name == kBlockAllPermissions) {
+    if (name == kSecure || name == kEvSecure || name == kMixedContentForm ||
+        name == kMixedContent || name == kAllowAllPermissions ||
+        name == kBlockAllPermissions) {
       url = https_url;
     }
     if (name == kInternal) {
@@ -184,6 +187,21 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
       constexpr char kGoodCertificateFile[] = "ok_cert.pem";
       identity.certificate = net::ImportCertFromFile(
           net::GetTestCertsDirectory(), kGoodCertificateFile);
+    } else if (name == kEvSecure) {
+      // Generate a valid mock EV HTTPS identity, with an EV certificate. Must
+      // match conditions in PageInfoBubbleView::SetIdentityInfo() for calling
+      // AddEvCertificateDetailsLabel().
+      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_EV_CERT;
+      identity.connection_status = PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED;
+      identity.identity_status_description =
+          "This page has been identified as being owned by Thawte Inc [US].";
+      scoped_refptr<net::X509Certificate> ev_cert =
+          net::X509Certificate::CreateFromBytes(
+              reinterpret_cast<const char*>(thawte_der), sizeof(thawte_der));
+      ASSERT_TRUE(ev_cert);
+      identity.certificate = ev_cert;
+      expected_identifiers_.push_back(
+          PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_EV_CERTIFICATE_DETAILS);
     } else if (name == kMalware) {
       identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_MALWARE;
     } else if (name == kDeceptive) {
@@ -253,6 +271,25 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     }
   }
 
+  bool VerifyUi() override {
+    if (!DialogBrowserTest::VerifyUi())
+      return false;
+#if defined(TOOLKIT_VIEWS)
+    // Check that each expected View is present in the Page Info bubble.
+    views::View* page_info_bubble_view =
+        PageInfoBubbleView::GetPageInfoBubble()->GetContentsView();
+    for (auto id : expected_identifiers_) {
+      views::View* view = GetView(browser(), id);
+      if (!page_info_bubble_view->Contains(view))
+        return false;
+    }
+    return true;
+#else
+    NOTIMPLEMENTED();
+    return false;
+#endif
+  }
+
  protected:
   GURL GetSimplePageUrl() const {
     return ui_test_utils::GetTestUrl(
@@ -297,7 +334,14 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     page_info_bubble_view->OnPermissionChanged(permission);
   }
 
+  void SetPageInfoBubbleIdentityInfo(
+      const PageInfoUI::IdentityInfo& identity_info) {
+    static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
+        ->SetIdentityInfo(identity_info);
+  }
+
  private:
+  std::vector<PageInfoBubbleView::PageInfoBubbleViewID> expected_identifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewBrowserTest);
 };
@@ -524,6 +568,10 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_Insecure) {
 
 // Shows the Page Info bubble for a HTTPS page.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_Secure) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_EvSecure) {
   ShowAndVerifyUi();
 }
 

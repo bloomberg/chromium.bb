@@ -3920,6 +3920,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCookieDeprecationMessagesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kCookieDeprecationMessages)},
 
+    {"ev-details-in-page-info", flag_descriptions::kEvDetailsInPageInfoName,
+     flag_descriptions::kEvDetailsInPageInfoDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kEvDetailsInPageInfo)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

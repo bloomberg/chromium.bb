@@ -182,17 +182,21 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
       content::WebContents* web_contents);
 
   // Accessors.
-  SiteConnectionStatus site_connection_status() const {
+  const SiteConnectionStatus& site_connection_status() const {
     return site_connection_status_;
   }
 
   const GURL& site_url() const { return site_url_; }
 
-  SiteIdentityStatus site_identity_status() const {
+  const SiteIdentityStatus& site_identity_status() const {
     return site_identity_status_;
   }
 
-  base::string16 organization_name() const { return organization_name_; }
+  const base::string16& site_identity_details() const {
+    return site_identity_details_;
+  }
+
+  const base::string16& organization_name() const { return organization_name_; }
 
   // SiteDataObserver implementation.
   void OnSiteDataAccessed() override;

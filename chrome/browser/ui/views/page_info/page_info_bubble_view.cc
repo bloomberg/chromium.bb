@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/page_info/page_info.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
@@ -174,6 +175,9 @@ class BubbleHeaderView : public views::View {
   // Sets the security details for the current page.
   void SetDetails(const base::string16& details_text);
 
+  void AddEvCertificateDetailsLabel(
+      const PageInfoBubbleView::IdentityInfo& identity_info);
+
   void AddResetDecisionsLabel();
 
   void AddPasswordReuseButtons();
@@ -189,6 +193,12 @@ class BubbleHeaderView : public views::View {
   // Includes a link to open the Chrome Help Center article about connection
   // security.
   views::StyledLabel* security_details_label_ = nullptr;
+
+  // A container for the styled label containing organization name and
+  // jurisdiction details, if the site has an EV certificate.
+  // This is only shown sometimes, so we use a container to keep track of where
+  // to place it (if needed).
+  views::View* ev_certificate_label_container_ = nullptr;
 
   // A container for the styled label with a link for resetting cert decisions.
   // This is only shown sometimes, so we use a container to keep track of
@@ -245,6 +255,13 @@ BubbleHeaderView::BubbleHeaderView(
                   views::GridLayout::LEADING);
 
   layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
+  ev_certificate_label_container_ = new views::View();
+  ev_certificate_label_container_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  layout->AddView(ev_certificate_label_container_, 1.0, 1.0,
+                  views::GridLayout::FILL, views::GridLayout::LEADING);
+
+  layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
   reset_decisions_label_container_ = new views::View();
   reset_decisions_label_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
@@ -276,6 +293,32 @@ void BubbleHeaderView::SetDetails(const base::string16& details_text) {
   link_style.disable_line_wrapping = false;
 
   security_details_label_->AddStyleRange(details_range, link_style);
+}
+
+void BubbleHeaderView::AddEvCertificateDetailsLabel(
+    const PageInfoBubbleView::IdentityInfo& identity_info) {
+  DCHECK(identity_info.certificate);
+  DCHECK(ev_certificate_label_container_);
+  if (!ev_certificate_label_container_->children().empty()) {
+    // Ensure all old content is removed from the container before re-adding it.
+    ev_certificate_label_container_->RemoveAllChildViews(true);
+  }
+
+  auto ev_certificate_label = std::make_unique<views::Label>(
+      base::UTF8ToUTF16(identity_info.identity_status_description));
+  ev_certificate_label->SetID(
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_EV_CERTIFICATE_DETAILS);
+  ev_certificate_label->SetMultiLine(true);
+  ev_certificate_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+  ev_certificate_label->SizeToFit(0);  // Fit to occupy available width.
+  ev_certificate_label_container_->AddChildView(
+      std::move(ev_certificate_label));
+
+  // Now that it contains a label, the container needs padding at the top.
+  ev_certificate_label_container_->SetBorder(views::CreateEmptyBorder(
+      8, views::GridLayout::kFixedSize, views::GridLayout::kFixedSize, 0));
+
+  InvalidateLayout();
 }
 
 void BubbleHeaderView::AddResetDecisionsLabel() {
@@ -781,6 +824,17 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
 
     if (identity_info.show_ssl_decision_revoke_button) {
       header_->AddResetDecisionsLabel();
+    }
+
+    if (base::FeatureList::IsEnabled(features::kEvDetailsInPageInfo)) {
+      // Only show the EV certificate details if there are no errors or mixed
+      // content.
+      if (identity_info.identity_status ==
+              PageInfo::SITE_IDENTITY_STATUS_EV_CERT &&
+          identity_info.connection_status ==
+              PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED) {
+        header_->AddEvCertificateDetailsLabel(identity_info);
+      }
     }
 
     // Show information about the page's certificate.

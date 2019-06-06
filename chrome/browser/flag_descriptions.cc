@@ -914,6 +914,10 @@ const char kEnableWasmThreadsDescription[] =
     "Enables support for the WebAssembly Threads proposal. Implies "
     "#shared-array-buffer and #enable-webassembly.";
 
+const char kEvDetailsInPageInfoName[] = "EV certificate details in Page Info.";
+const char kEvDetailsInPageInfoDescription[] =
+    "Shows the EV certificate details in the Page Info bubble.";
+
 const char kExpensiveBackgroundTimerThrottlingName[] =
     "Throttle expensive background timers";
 const char kExpensiveBackgroundTimerThrottlingDescription[] =

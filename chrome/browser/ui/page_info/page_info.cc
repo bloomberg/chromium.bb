@@ -700,24 +700,10 @@ void PageInfo::ComputeUIInputs(
         // state is "if any".
         DCHECK(!certificate_->subject().locality_name.empty());
         DCHECK(!certificate_->subject().country_name.empty());
-        base::string16 locality;
-        if (!certificate_->subject().state_or_province_name.empty()) {
-          locality = l10n_util::GetStringFUTF16(
-              IDS_PAGE_INFO_ADDRESS,
-              UTF8ToUTF16(certificate_->subject().locality_name),
-              UTF8ToUTF16(certificate_->subject().state_or_province_name),
-              UTF8ToUTF16(certificate_->subject().country_name));
-        } else {
-          locality = l10n_util::GetStringFUTF16(
-              IDS_PAGE_INFO_PARTIAL_ADDRESS,
-              UTF8ToUTF16(certificate_->subject().locality_name),
-              UTF8ToUTF16(certificate_->subject().country_name));
-        }
-        DCHECK(!certificate_->subject().organization_names.empty());
         site_identity_details_.assign(l10n_util::GetStringFUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED,
-            UTF8ToUTF16(certificate_->subject().organization_names[0]),
-            locality, UTF8ToUTF16(certificate_->issuer().GetDisplayName())));
+            organization_name_,
+            UTF8ToUTF16(certificate_->subject().country_name)));
       } else {
         // Non-EV OK HTTPS page.
         site_identity_status_ = SITE_IDENTITY_STATUS_CERT;
