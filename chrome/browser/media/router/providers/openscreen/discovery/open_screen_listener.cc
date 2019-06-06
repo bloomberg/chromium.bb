@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/providers/openscreen/discovery/open_screen_listener.h"
 
+#include <algorithm>
 #include <utility>
 
 namespace media_router {
