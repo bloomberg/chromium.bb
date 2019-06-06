@@ -330,12 +330,6 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
                     MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out."))) {
   CHECK(now_source == NowSource::REAL_TIME || mock_time_domain_)
       << "NowSource must be REAL_TIME unless we're using mock time";
-  CHECK(!ThreadPoolInstance::Get())
-      << "Someone has already installed a ThreadPoolInstance. If nothing in "
-         "your test does so, then a test that ran earlier may have installed "
-         "one and leaked it. base::TestSuite will trap leaked globals, unless "
-         "someone has explicitly disabled it with "
-         "DisableCheckForLeakedGlobals().";
 
   CHECK(!base::ThreadTaskRunnerHandle::IsSet());
   // If |subclass_creates_default_taskrunner| is true then initialization is
@@ -361,6 +355,13 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
 }
 
 void ScopedTaskEnvironment::InitializeThreadPool() {
+  CHECK(!ThreadPoolInstance::Get())
+      << "Someone has already installed a ThreadPoolInstance. If nothing in "
+         "your test does so, then a test that ran earlier may have installed "
+         "one and leaked it. base::TestSuite will trap leaked globals, unless "
+         "someone has explicitly disabled it with "
+         "DisableCheckForLeakedGlobals().";
+
   // Instantiate a ThreadPoolInstance with 4 workers per thread group. Having
   // multiple threads prevents deadlocks should some blocking APIs not use
   // ScopedBlockingCall. It also allows enough concurrency to allow TSAN to spot
