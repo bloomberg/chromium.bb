@@ -55,8 +55,9 @@ void ImageButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
   if (old_preferred_size != GetPreferredSize())
     PreferredSizeChanged();
 
-  if (state() == for_state)
-    SchedulePaint();
+  // Even if |for_state| isn't the current state this image could be painted;
+  // see |GetImageToPaint()|. So, always repaint.
+  SchedulePaint();
 }
 
 void ImageButton::SetBackgroundImage(SkColor color,
