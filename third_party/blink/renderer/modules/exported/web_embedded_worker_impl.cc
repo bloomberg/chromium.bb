@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_proxy.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
@@ -381,9 +380,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
   ProvideContentSettingsClientToWorker(worker_clients,
                                        std::move(content_settings_client_));
-  ProvideServiceWorkerGlobalScopeClientToWorker(
-      worker_clients, MakeGarbageCollected<ServiceWorkerGlobalScopeClient>(
-                          *worker_context_client_));
 
   // |web_worker_fetch_context| is null in some unit tests.
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =

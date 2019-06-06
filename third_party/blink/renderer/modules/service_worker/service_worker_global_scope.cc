@@ -94,7 +94,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_clients.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_proxy.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_module_tree_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_script_cached_metadata_handler.h"
@@ -1256,10 +1256,10 @@ void ServiceWorkerGlobalScope::OnIdleTimeout() {
   // RequestedTermination() returns true if ServiceWorkerTimeoutTimer agrees
   // we should request the host to terminate this worker now.
   DCHECK(RequestedTermination());
-  // We use CrossThreadBindOnce() here because the callback may be
-  // destroyed on the main thread if the worker thread has already terminated.
-  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RequestTermination(ConvertToBaseOnceCallback(
+  // We use CrossThreadBindOnce() here because the callback may be destroyed on
+  // the main thread if the worker thread has already terminated.
+  To<ServiceWorkerGlobalScopeProxy>(ReportingProxy())
+      .RequestTermination(ConvertToBaseOnceCallback(
           CrossThreadBindOnce(&ServiceWorkerGlobalScope::OnRequestedTermination,
                               WrapCrossThreadWeakPersistent(this))));
 }
@@ -1339,9 +1339,9 @@ void ServiceWorkerGlobalScope::DispatchFetchEventInternal(
   // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
   const bool navigation_preload_sent = !!params->preload_handle;
   if (navigation_preload_sent) {
-    ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-        ->SetupNavigationPreload(event_id, params->request->url,
-                                 std::move(params->preload_handle));
+    To<ServiceWorkerGlobalScopeProxy>(ReportingProxy())
+        .SetupNavigationPreload(event_id, params->request->url,
+                                std::move(params->preload_handle));
   }
 
   mojom::blink::FetchAPIRequest& fetch_request = *params->request;

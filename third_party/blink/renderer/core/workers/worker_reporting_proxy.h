@@ -128,6 +128,11 @@ class CORE_EXPORT WorkerReportingProxy {
   // Invoked when the thread is stopped and WorkerGlobalScope is being
   // destructed. This is the last method that is called on this interface.
   virtual void DidTerminateWorkerThread() {}
+
+  // This is a quick fix for service worker onion-soup. Don't add a similar
+  // function like IsDedicatedWorkerGlobalScopeProxy().
+  // TODO(leonhsl): Remove this after this becomes unnecessary.
+  virtual bool IsServiceWorkerGlobalScopeProxy() const { return false; }
 };
 
 }  // namespace blink

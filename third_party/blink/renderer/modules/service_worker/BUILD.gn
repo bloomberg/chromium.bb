@@ -38,8 +38,6 @@ blink_modules_sources("service_worker") {
     "service_worker_error.h",
     "service_worker_global_scope.cc",
     "service_worker_global_scope.h",
-    "service_worker_global_scope_client.cc",
-    "service_worker_global_scope_client.h",
     "service_worker_global_scope_proxy.cc",
     "service_worker_global_scope_proxy.h",
     "service_worker_installed_scripts_manager.cc",

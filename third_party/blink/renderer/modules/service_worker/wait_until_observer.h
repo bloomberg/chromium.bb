@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -57,11 +56,11 @@ class MODULES_EXPORT WaitUntilObserver final
   void WillDispatchEvent();
   // Must be called after dispatching the event. If |event_dispatch_failed| is
   // true, then DidDispatchEvent() immediately reports to
-  // ServiceWorkerGlobalScopeClient that the event finished, without waiting for
+  // ServiceWorkerGlobalScope that the event finished, without waiting for
   // all waitUntil promises to settle.
   void DidDispatchEvent(bool event_dispatch_failed);
 
-  // Observes the promise and delays reporting to ServiceWorkerGlobalScopeClient
+  // Observes the promise and delays reporting to ServiceWorkerGlobalScope
   // that the event completed until the promise is resolved or rejected.
   //
   // WaitUntil may be called multiple times. The event is extended until all
@@ -103,7 +102,7 @@ class MODULES_EXPORT WaitUntilObserver final
     // Event dispatch has started but not yet finished.
     kDispatching,
     // Event dispatch completed. There may still be outstanding waitUntil
-    // promises that must settle before notifying ServiceWorkerGlobalScopeClient
+    // promises that must settle before notifying ServiceWorkerGlobalScope
     // that the event finished.
     kDispatched,
     // Event dispatch failed. Any outstanding waitUntil promises are ignored.
