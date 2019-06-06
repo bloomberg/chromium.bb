@@ -282,7 +282,7 @@ class Router(object):
     chroot = field_handler.handle_chroot(input_msg)
 
     base_dir = os.path.join(chroot.path, 'tmp')
-    with field_handler.handle_paths(input_msg, base_dir):
+    with field_handler.handle_paths(input_msg, base_dir, prefix=chroot.path):
       with osutils.TempDir(base_dir=base_dir) as tempdir:
         new_input = os.path.join(tempdir, 'input.json')
         chroot_input = '/%s' % os.path.relpath(new_input, chroot.path)
