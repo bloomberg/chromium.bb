@@ -55,11 +55,6 @@ struct CORE_EXPORT Timing {
   static FillMode StringToFillMode(const String&);
   static String PlaybackDirectionString(PlaybackDirection);
 
-  static const Timing& Defaults() {
-    DEFINE_STATIC_LOCAL(Timing, timing, ());
-    return timing;
-  }
-
   Timing()
       : start_delay(0),
         end_delay(0),

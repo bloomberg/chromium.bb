@@ -95,7 +95,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
                                 GetDocument().ElementSheet().Contents());
   keyframes.clear();
   keyframes.push_back(std::move(keyframe));
-  timing = Timing::Defaults();
+  timing = Timing();
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
   ElementAnimation::animateInternal(
       *target, MakeGarbageCollected<StringKeyframeEffectModel>(keyframes),

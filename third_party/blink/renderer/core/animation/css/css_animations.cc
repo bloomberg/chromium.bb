@@ -376,7 +376,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
       Timing specified_timing = timing;
       scoped_refptr<TimingFunction> keyframe_timing_function =
           timing.timing_function;
-      timing.timing_function = Timing::Defaults().timing_function;
+      timing.timing_function = Timing().timing_function;
 
       StyleRuleKeyframes* keyframes_rule =
           resolver->FindKeyframesRule(element_for_scoping, name);
