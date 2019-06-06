@@ -23,14 +23,6 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
         }
     }
 
-    @Override
-    public void enterSessionWithUserGesture() {
-        super.enterSessionWithUserGesture();
-
-        PermissionUtils.waitForConsentPrompt(getRule().getActivity());
-        PermissionUtils.acceptConsentPrompt(getRule().getActivity());
-    }
-
     /**
      * VR-specific implementation of enterSessionWithUserGesture that includes a workaround for
      * receiving broadcasts late.
