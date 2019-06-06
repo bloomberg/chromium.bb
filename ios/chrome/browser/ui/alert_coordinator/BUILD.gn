@@ -20,6 +20,7 @@ source_set("alert_coordinator") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/dialogs:completion_block_util",
     "//ios/web",
     "//ui/base",
     "//ui/strings",
