@@ -102,7 +102,9 @@ PositionInFlatTree NextWordPositionInternal(
              text[runner - 1] == kLowLineCharacter))
           return Position::After(runner - 1);
       }
-      return Position::After(text.length() - 1);
+      if (text[text.length() - 1] != kNewlineCharacter)
+        return Position::After(text.length() - 1);
+      return Position();
     }
   } finder;
   return TextSegments::FindBoundaryForward(position, &finder);
