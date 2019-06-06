@@ -165,21 +165,16 @@ bool LoadTableCellMethods() {
   return cell_get_type;
 }
 
-AXPlatformNodeAuraLinux* ToAXPlatformNodeAuraLinux(
-    AXPlatformNodeAuraLinuxObject* atk_object) {
-  if (!atk_object)
-    return nullptr;
-
-  return atk_object->m_object;
-}
-
 AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
     AtkObject* atk_object) {
   if (!atk_object)
     return nullptr;
 
-  if (IS_AX_PLATFORM_NODE_AURALINUX(atk_object))
-    return ToAXPlatformNodeAuraLinux(AX_PLATFORM_NODE_AURALINUX(atk_object));
+  if (IS_AX_PLATFORM_NODE_AURALINUX(atk_object)) {
+    AXPlatformNodeAuraLinuxObject* platform_object =
+        AX_PLATFORM_NODE_AURALINUX(atk_object);
+    return platform_object->m_object;
+  }
 
   return nullptr;
 }
@@ -934,6 +929,8 @@ int GetLinkIndex(AtkHypertext* hypertext, int char_index) {
   g_return_val_if_fail(ATK_HYPERTEXT(hypertext), 0);
   AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(hypertext));
+  if (!obj)
+    return -1;
 
   auto it = obj->GetAXHypertext().hyperlink_offset_to_index.find(char_index);
   if (it == obj->GetAXHypertext().hyperlink_offset_to_index.end())
@@ -1258,21 +1255,21 @@ gfx::Rect GetUnclippedParentHypertextRangeBoundsRect(
   const AXPlatformNode* parent_platform_node =
       AXPlatformNode::FromNativeViewAccessible(
           ax_platform_node_delegate->GetParent());
-  if (parent_platform_node) {
-    const AXPlatformNodeDelegate* parent_ax_platform_node_delegate =
-        parent_platform_node->GetDelegate();
-    if (parent_ax_platform_node_delegate) {
-      return ax_platform_node_delegate->GetHypertextRangeBoundsRect(
-                 start_offset, end_offset, AXCoordinateSystem::kRootFrame,
-                 AXClippingBehavior::kUnclipped) -
-             parent_ax_platform_node_delegate
-                 ->GetBoundsRect(AXCoordinateSystem::kRootFrame,
-                                 AXClippingBehavior::kClipped)
-                 .OffsetFromOrigin();
-    }
-  }
+  if (!parent_platform_node)
+    return gfx::Rect();
 
-  return gfx::Rect();
+  const AXPlatformNodeDelegate* parent_ax_platform_node_delegate =
+      parent_platform_node->GetDelegate();
+  if (!parent_ax_platform_node_delegate)
+    return gfx::Rect();
+
+  return ax_platform_node_delegate->GetHypertextRangeBoundsRect(
+             start_offset, end_offset, AXCoordinateSystem::kRootFrame,
+             AXClippingBehavior::kUnclipped) -
+         parent_ax_platform_node_delegate
+             ->GetBoundsRect(AXCoordinateSystem::kRootFrame,
+                             AXClippingBehavior::kClipped)
+             .OffsetFromOrigin();
 }
 
 void GetCharacterExtents(AtkText* atk_text,
@@ -1394,7 +1391,8 @@ gboolean AddSelection(AtkSelection* selection, gint index) {
 
   AXPlatformNodeAuraLinux* child =
       AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(index));
-  DCHECK(child);
+  if (!child)
+    return FALSE;
 
   if (!child->SupportsSelectionWithAtkSelection())
     return FALSE;
@@ -1419,7 +1417,8 @@ gboolean ClearSelection(AtkSelection* selection) {
   for (int i = 0; i < child_count; ++i) {
     AXPlatformNodeAuraLinux* child =
         AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(i));
-    DCHECK(child);
+    if (!child)
+      continue;
 
     if (!child->SupportsSelectionWithAtkSelection())
       continue;
@@ -1449,7 +1448,8 @@ AtkObject* RefSelection(AtkSelection* selection, gint requested_child_index) {
     AtkObject* child = obj->ChildAtIndex(i);
     AXPlatformNodeAuraLinux* child_ax_node =
         AtkObjectToAXPlatformNodeAuraLinux(child);
-    DCHECK(child_ax_node);
+    if (!child_ax_node)
+      continue;
 
     if (child_ax_node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
       if (selected_count == requested_child_index)
@@ -1472,7 +1472,8 @@ gint GetSelectionCount(AtkSelection* selection) {
   for (int i = 0; i < child_count; ++i) {
     AXPlatformNodeAuraLinux* child =
         AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(i));
-    DCHECK(child);
+    if (!child)
+      continue;
 
     if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
       ++selected_count;
@@ -1491,20 +1492,22 @@ gboolean IsChildSelected(AtkSelection* selection, gint index) {
 
   AXPlatformNodeAuraLinux* child =
       AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(index));
-  DCHECK(child);
-  return child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+  return child && child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
 }
 
 gboolean RemoveSelection(AtkSelection* selection,
                          gint index_into_selected_children) {
   AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(selection));
+  if (!obj)
+    return FALSE;
 
   int child_count = obj->GetChildCount();
   for (int i = 0; i < child_count; ++i) {
     AXPlatformNodeAuraLinux* child =
         AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(i));
-    DCHECK(child);
+    if (!child)
+      continue;
 
     bool selected =
         child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
@@ -1534,7 +1537,8 @@ gboolean SelectAllSelection(AtkSelection* selection) {
   for (int i = 0; i < child_count; ++i) {
     AXPlatformNodeAuraLinux* child =
         AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(i));
-    DCHECK(child);
+    if (!child)
+      continue;
 
     if (!child->SupportsSelectionWithAtkSelection())
       continue;
@@ -2571,6 +2575,9 @@ static AtkObject* GetActiveDescendantOfCurrentFocused() {
     return nullptr;
 
   auto* node = AtkObjectToAXPlatformNodeAuraLinux(g_current_focused);
+  if (!node)
+    return nullptr;
+
   int32_t id =
       node->GetIntAttribute(ax::mojom::IntAttribute::kActivedescendantId);
   if (auto* descendant = node->GetDelegate()->GetFromNodeID(id))
@@ -2994,6 +3001,8 @@ void AXPlatformNodeAuraLinux::AddAccessibilityTreeProperties(
       get_row_column_span(cell, &row, &col, &row_span, &col_span);
     } else {
       auto* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object_);
+      if (!obj)
+        return;
       row = obj->GetTableRow();
       col = obj->GetTableColumn();
       row_span = obj->GetTableRowSpan();
@@ -3039,9 +3048,11 @@ void AXPlatformNodeAuraLinux::OnActiveDescendantChanged() {
   // If selection and focus are the same, when the active descendant changes
   // as a result of selection, a focus event will be emitted. We don't want to
   // emit duplicate notifications.
-  auto* node = AtkObjectToAXPlatformNodeAuraLinux(descendant);
-  if (node->SelectionAndFocusAreTheSame())
-    return;
+  {
+    auto* node = AtkObjectToAXPlatformNodeAuraLinux(descendant);
+    if (node && node->SelectionAndFocusAreTheSame())
+      return;
+  }
 
   // While there is an ATK active-descendant-changed event, it is meant for
   // objects which manage their descendants (and claim to do so). The Core-AAM
@@ -3279,7 +3290,8 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
   //
   // If the selection is changing on a collapsed select element, focus remains
   // on the select element and not the newly-selected descendant.
-  if (AXPlatformNodeBase* parent = FromNativeViewAccessible(GetParent())) {
+  if (AXPlatformNodeBase* parent =
+          AtkObjectToAXPlatformNodeAuraLinux(GetParent())) {
     if (parent->GetData().role == ax::mojom::Role::kMenuListPopup)
       return !parent->GetData().HasState(ax::mojom::State::kInvisible);
   }
@@ -3362,7 +3374,8 @@ void AXPlatformNodeAuraLinux::OnDocumentTitleChanged() {
   // We always want to notify on the top frame.
   AXPlatformNodeAuraLinux* window =
       AtkObjectToAXPlatformNodeAuraLinux(g_active_top_level_frame);
-  window->OnNameChanged();
+  if (window)
+    window->OnNameChanged();
 }
 
 void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
@@ -3578,6 +3591,9 @@ gfx::Vector2d AXPlatformNodeAuraLinux::GetParentOriginInScreenCoordinates()
 
   const AXPlatformNode* parent_node =
       AXPlatformNode::FromNativeViewAccessible(parent);
+  if (!parent)
+    return gfx::Vector2d();
+
   return parent_node->GetDelegate()
       ->GetBoundsRect(AXCoordinateSystem::kScreen,
                       AXClippingBehavior::kUnclipped)
@@ -3592,6 +3608,9 @@ gfx::Vector2d AXPlatformNodeAuraLinux::GetParentFrameOriginInScreenCoordinates()
 
   const AXPlatformNode* frame_node =
       AXPlatformNode::FromNativeViewAccessible(frame);
+  if (!frame_node)
+    return gfx::Vector2d();
+
   return frame_node->GetDelegate()
       ->GetBoundsRect(AXCoordinateSystem::kScreen,
                       AXClippingBehavior::kUnclipped)
@@ -3675,6 +3694,8 @@ bool AXPlatformNodeAuraLinux::
   for (int i = 0; i < child_count; ++i) {
     auto* child =
         AtkObjectToAXPlatformNodeAuraLinux(delegate_->ChildAtIndex(i));
+    if (!child)
+      continue;
 
     if (child->IsTextOnlyObject()) {
       current_offset +=
