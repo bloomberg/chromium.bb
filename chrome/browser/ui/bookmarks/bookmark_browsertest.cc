@@ -333,17 +333,17 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_EmitUmaForDuplicates) {
   const BookmarkNode* parent = bookmarks::GetParentForNewNodes(bookmark_model);
   // Add one bookmark with a unique URL, two other bookmarks with a shared URL,
   // and three more with another shared URL.
-  bookmark_model->AddURL(parent, parent->child_count(),
+  bookmark_model->AddURL(parent, parent->children().size(),
                          base::ASCIIToUTF16("title1"), GURL("http://a.com"));
-  bookmark_model->AddURL(parent, parent->child_count(),
+  bookmark_model->AddURL(parent, parent->children().size(),
                          base::ASCIIToUTF16("title2"), GURL("http://b.com"));
-  bookmark_model->AddURL(parent, parent->child_count(),
+  bookmark_model->AddURL(parent, parent->children().size(),
                          base::ASCIIToUTF16("title3"), GURL("http://b.com"));
-  bookmark_model->AddURL(parent, parent->child_count(),
+  bookmark_model->AddURL(parent, parent->children().size(),
                          base::ASCIIToUTF16("title4"), GURL("http://c.com"));
-  bookmark_model->AddURL(parent, parent->child_count(),
+  bookmark_model->AddURL(parent, parent->children().size(),
                          base::ASCIIToUTF16("title5"), GURL("http://c.com"));
-  bookmark_model->AddURL(parent, parent->child_count(),
+  bookmark_model->AddURL(parent, parent->children().size(),
                          base::ASCIIToUTF16("title6"), GURL("http://c.com"));
 }
 
@@ -362,15 +362,15 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_EmitUmaForEmptyTitles) {
   BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
   const BookmarkNode* parent = bookmarks::GetParentForNewNodes(bookmark_model);
   // Add two bookmarks with a non-empty title and three with an empty one.
-  bookmark_model->AddURL(parent, parent->child_count(),
+  bookmark_model->AddURL(parent, parent->children().size(),
                          base::ASCIIToUTF16("title1"), GURL("http://a.com"));
-  bookmark_model->AddURL(parent, parent->child_count(),
+  bookmark_model->AddURL(parent, parent->children().size(),
                          base::ASCIIToUTF16("title2"), GURL("http://b.com"));
-  bookmark_model->AddURL(parent, parent->child_count(), base::string16(),
+  bookmark_model->AddURL(parent, parent->children().size(), base::string16(),
                          GURL("http://c.com"));
-  bookmark_model->AddURL(parent, parent->child_count(), base::string16(),
+  bookmark_model->AddURL(parent, parent->children().size(), base::string16(),
                          GURL("http://d.com"));
-  bookmark_model->AddURL(parent, parent->child_count(), base::string16(),
+  bookmark_model->AddURL(parent, parent->children().size(), base::string16(),
                          GURL("http://e.com"));
 }
 

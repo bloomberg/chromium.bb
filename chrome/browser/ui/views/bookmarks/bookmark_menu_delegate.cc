@@ -254,7 +254,7 @@ int BookmarkMenuDelegate::GetDropOperation(
 
   const BookmarkNode* node = menu_id_to_node_map_[item->GetCommand()];
   const BookmarkNode* drop_parent = node->parent();
-  int index_to_drop_at = drop_parent->GetIndexOf(node);
+  size_t index_to_drop_at = size_t{drop_parent->GetIndexOf(node)};
   BookmarkModel* model = GetBookmarkModel();
   switch (*position) {
     case views::MenuDelegate::DROP_AFTER:
@@ -274,7 +274,7 @@ int BookmarkMenuDelegate::GetDropOperation(
 
     case views::MenuDelegate::DROP_ON:
       drop_parent = node;
-      index_to_drop_at = node->child_count();
+      index_to_drop_at = node->children().size();
       break;
 
     default:
@@ -295,7 +295,7 @@ int BookmarkMenuDelegate::OnPerformDrop(
   DCHECK(model);
   const BookmarkNode* drop_parent = drop_node->parent();
   DCHECK(drop_parent);
-  int index_to_drop_at = drop_parent->GetIndexOf(drop_node);
+  size_t index_to_drop_at = size_t{drop_parent->GetIndexOf(drop_node)};
   switch (position) {
     case views::MenuDelegate::DROP_AFTER:
       index_to_drop_at++;

@@ -72,8 +72,7 @@ class BookmarkIndexTest : public testing::Test {
 
   void AddBookmarks(const std::vector<TitleAndURL>& bookmarks) {
     for (size_t i = 0; i < bookmarks.size(); ++i) {
-      model_->AddURL(model_->other_node(), static_cast<int>(i),
-                     ASCIIToUTF16(bookmarks[i].first),
+      model_->AddURL(model_->other_node(), i, ASCIIToUTF16(bookmarks[i].first),
                      GURL(bookmarks[i].second));
     }
   }

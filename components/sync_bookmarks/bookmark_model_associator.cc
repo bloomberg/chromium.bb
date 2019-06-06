@@ -669,7 +669,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
     Context* context) {
   BookmarkNodeFinder node_finder(parent_node);
 
-  int index = 0;
+  size_t index = 0;
   for (auto it = sync_ids.begin(); it != sync_ids.end(); ++it) {
     int64_t sync_child_id = *it;
     syncer::ReadNode sync_child_node(trans);
@@ -689,8 +689,8 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
       // the node is already associated and in the right position.
       bool is_in_sync = (context->native_model_sync_state() == IN_SYNC) &&
                         (child_node->id() == external_id) &&
-                        (index < parent_node->child_count()) &&
-                        (parent_node->GetChild(index) == child_node);
+                        (index < parent_node->children().size()) &&
+                        (parent_node->children()[index].get() == child_node);
       if (!is_in_sync) {
         BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
             sync_child_node, bookmark_model_, child_node, favicon_service_);
@@ -726,7 +726,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
   // the right positions: from 0 to index - 1.
   // So the children starting from index in the parent bookmark node are the
   // ones that are not present in the parent sync node. So create them.
-  for (int i = index; i < parent_node->child_count(); ++i) {
+  for (size_t i = index; i < parent_node->children().size(); ++i) {
     int64_t sync_child_id = BookmarkChangeProcessor::CreateSyncNode(
         parent_node, bookmark_model_, i, trans, this,
         unrecoverable_error_handler_.get());
@@ -747,12 +747,12 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
 
 const BookmarkNode* BookmarkModelAssociator::CreateBookmarkNode(
     const BookmarkNode* parent_node,
-    int bookmark_index,
+    size_t bookmark_index,
     const syncer::BaseNode* sync_child_node,
     const GURL& url,
     Context* context,
     syncer::SyncError* error) {
-  DCHECK_LE(bookmark_index, parent_node->child_count());
+  DCHECK_LE(bookmark_index, parent_node->children().size());
 
   const std::string& sync_title = sync_child_node->GetTitle();
 

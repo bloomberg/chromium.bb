@@ -38,7 +38,7 @@ BookmarkDragParams::~BookmarkDragParams() = default;
 int DropBookmarks(Profile* profile,
                   const BookmarkNodeData& data,
                   const BookmarkNode* parent_node,
-                  int index,
+                  size_t index,
                   bool copy) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
 #if !defined(OS_ANDROID)
@@ -58,7 +58,7 @@ int DropBookmarks(Profile* profile,
         } else {
           model->Move(dragged_nodes[i], parent_node, index);
         }
-        index = parent_node->GetIndexOf(dragged_nodes[i]) + 1;
+        index = size_t{parent_node->GetIndexOf(dragged_nodes[i]) + 1};
       }
       return copy ? ui::DragDropTypes::DRAG_COPY : ui::DragDropTypes::DRAG_MOVE;
     }

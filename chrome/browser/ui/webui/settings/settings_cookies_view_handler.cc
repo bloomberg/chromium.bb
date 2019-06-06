@@ -171,8 +171,8 @@ void CookiesViewHandler::RegisterMessages() {
 
 void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
                                         ui::TreeModelNode* parent,
-                                        int start,
-                                        int count) {
+                                        size_t start,
+                                        size_t count) {
   // Skip if there is a batch update in progress.
   if (batch_update_)
     return;
@@ -192,15 +192,15 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
     args.Set(kId, std::make_unique<base::Value>());
   else
     args.SetString(kId, model_util_->GetTreeNodeId(parent_node));
-  args.SetInteger(kStart, start);
+  args.SetInteger(kStart, int{start});
   args.Set(kChildren, std::move(children));
   FireWebUIListener("on-tree-item-added", args);
 }
 
 void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
                                           ui::TreeModelNode* parent,
-                                          int start,
-                                          int count) {
+                                          size_t start,
+                                          size_t count) {
   // Skip if there is a batch update in progress.
   if (batch_update_)
     return;
@@ -212,8 +212,8 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
     args.Set(kId, std::make_unique<base::Value>());
   else
     args.SetString(kId, model_util_->GetTreeNodeId(tree_model->AsNode(parent)));
-  args.SetInteger(kStart, start);
-  args.SetInteger(kCount, count);
+  args.SetInteger(kStart, int{start});
+  args.SetInteger(kCount, int{count});
   FireWebUIListener("on-tree-item-removed", args);
 }
 
@@ -439,8 +439,8 @@ void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
   // Passing false for |include_quota_nodes| since they don't reflect reality
   // until bug http://crbug.com/642955 is fixed and local/session storage is
   // counted against the total.
-  model_util_->GetChildNodeList(parent, /*start=*/0, parent->child_count(),
-      /*include_quota_nodes=*/false, children.get());
+  model_util_->GetChildNodeList(parent, /*start=*/0, parent->children().size(),
+                                /*include_quota_nodes=*/false, children.get());
 
   base::DictionaryValue args;
   if (parent == cookies_tree_model_->GetRoot())

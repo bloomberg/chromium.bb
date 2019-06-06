@@ -446,16 +446,16 @@ const char* TreeView::GetClassName() const {
 
 void TreeView::TreeNodesAdded(TreeModel* model,
                               TreeModelNode* parent,
-                              int start,
-                              int count) {
+                              size_t start,
+                              size_t count) {
   InternalNode* parent_node =
       GetInternalNodeForModelNode(parent, DONT_CREATE_IF_NOT_LOADED);
   if (!parent_node || !parent_node->loaded_children())
     return;
   const auto& children = model_->GetChildren(parent);
-  for (int i = start; i < start + count; ++i) {
+  for (size_t i = start; i < start + count; ++i) {
     auto child = std::make_unique<InternalNode>();
-    ConfigureInternalNode(children[size_t{i}], child.get());
+    ConfigureInternalNode(children[i], child.get());
     parent_node->Add(std::move(child), i);
   }
   if (IsExpanded(parent))
@@ -464,14 +464,14 @@ void TreeView::TreeNodesAdded(TreeModel* model,
 
 void TreeView::TreeNodesRemoved(TreeModel* model,
                                 TreeModelNode* parent,
-                                int start,
-                                int count) {
+                                size_t start,
+                                size_t count) {
   InternalNode* parent_node =
       GetInternalNodeForModelNode(parent, DONT_CREATE_IF_NOT_LOADED);
   if (!parent_node || !parent_node->loaded_children())
     return;
   bool reset_selection = false;
-  for (int i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     InternalNode* child_removing = parent_node->GetChild(start);
     if (selected_node_ && selected_node_->HasAncestor(child_removing))
       reset_selection = true;

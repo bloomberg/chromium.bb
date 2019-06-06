@@ -38,8 +38,8 @@ class CookiesTreeModelUtil {
 
   // Append the children nodes of |parent| in specified range to |nodes| list.
   void GetChildNodeList(const CookieTreeNode* parent,
-                        int start,
-                        int count,
+                        size_t start,
+                        size_t count,
                         bool include_quota_nodes,
                         base::ListValue* nodes);
 

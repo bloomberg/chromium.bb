@@ -186,8 +186,8 @@ void PopulateNodeFromString(const std::string& description, TestNode* parent) {
 void PopulateBookmarkNode(TestNode* parent,
                           BookmarkModel* model,
                           const BookmarkNode* bb_node) {
-  for (int i = 0; i < parent->child_count(); ++i) {
-    TestNode* child = parent->GetChild(i);
+  for (size_t i = 0; i < parent->children().size(); ++i) {
+    TestNode* child = parent->children()[i].get();
     if (child->value == BookmarkNode::FOLDER) {
       const BookmarkNode* new_bb_node =
           model->AddFolder(bb_node, i, child->GetTitle());
@@ -230,12 +230,12 @@ class BookmarkModelTest : public testing::Test,
                           public BookmarkUndoDelegate {
  public:
   struct ObserverDetails {
-    ObserverDetails() { Set(nullptr, nullptr, -1, -1); }
+    ObserverDetails() { Set(nullptr, nullptr, size_t{-1}, size_t{-1}); }
 
     void Set(const BookmarkNode* node1,
              const BookmarkNode* node2,
-             int index1,
-             int index2) {
+             size_t index1,
+             size_t index2) {
       node1_ = node1;
       node2_ = node2;
       index1_ = index1;
@@ -244,8 +244,8 @@ class BookmarkModelTest : public testing::Test,
 
     void ExpectEquals(const BookmarkNode* node1,
                       const BookmarkNode* node2,
-                      int index1,
-                      int index2) {
+                      size_t index1,
+                      size_t index2) {
       EXPECT_EQ(node1_, node1);
       EXPECT_EQ(node2_, node2);
       EXPECT_EQ(index1_, index1);
@@ -255,13 +255,13 @@ class BookmarkModelTest : public testing::Test,
    private:
     const BookmarkNode* node1_;
     const BookmarkNode* node2_;
-    int index1_;
-    int index2_;
+    size_t index1_;
+    size_t index2_;
   };
 
   struct NodeRemovalDetail {
     NodeRemovalDetail(const BookmarkNode* parent,
-                      int index,
+                      size_t index,
                       const BookmarkNode* node)
         : parent_node_id(parent->id()), index(index), node_id(node->id()) {}
 
@@ -272,7 +272,7 @@ class BookmarkModelTest : public testing::Test,
     }
 
     int64_t parent_node_id;
-    int index;
+    size_t index;
     int64_t node_id;
   };
 
@@ -288,23 +288,23 @@ class BookmarkModelTest : public testing::Test,
 
   void BookmarkNodeMoved(BookmarkModel* model,
                          const BookmarkNode* old_parent,
-                         int old_index,
+                         size_t old_index,
                          const BookmarkNode* new_parent,
-                         int new_index) override {
+                         size_t new_index) override {
     ++moved_count_;
     observer_details_.Set(old_parent, new_parent, old_index, new_index);
   }
 
   void BookmarkNodeAdded(BookmarkModel* model,
                          const BookmarkNode* parent,
-                         int index) override {
+                         size_t index) override {
     ++added_count_;
-    observer_details_.Set(parent, nullptr, index, -1);
+    observer_details_.Set(parent, nullptr, index, size_t{-1});
   }
 
   void OnWillRemoveBookmarks(BookmarkModel* model,
                              const BookmarkNode* parent,
-                             int old_index,
+                             size_t old_index,
                              const BookmarkNode* node) override {
     ++before_remove_count_;
   }
@@ -313,17 +313,17 @@ class BookmarkModelTest : public testing::Test,
 
   void BookmarkNodeRemoved(BookmarkModel* model,
                            const BookmarkNode* parent,
-                           int old_index,
+                           size_t old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override {
     ++removed_count_;
-    observer_details_.Set(parent, nullptr, old_index, -1);
+    observer_details_.Set(parent, nullptr, old_index, size_t{-1});
   }
 
   void BookmarkNodeChanged(BookmarkModel* model,
                            const BookmarkNode* node) override {
     ++changed_count_;
-    observer_details_.Set(node, nullptr, -1, -1);
+    observer_details_.Set(node, nullptr, size_t{-1}, size_t{-1});
   }
 
   void OnWillChangeBookmarkNode(BookmarkModel* model,
@@ -375,7 +375,7 @@ class BookmarkModelTest : public testing::Test,
 
   void OnBookmarkNodeRemoved(BookmarkModel* model,
                              const BookmarkNode* parent,
-                             int index,
+                             size_t index,
                              std::unique_ptr<BookmarkNode> node) override {
     node_removal_details_.push_back(
         NodeRemovalDetail(parent, index, node.get()));
@@ -500,7 +500,7 @@ TEST_F(BookmarkModelTest, AddURL) {
 
   const BookmarkNode* new_node = model_->AddURL(root, 0, title, url);
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
-  observer_details_.ExpectEquals(root, nullptr, 0, -1);
+  observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
   ASSERT_EQ(1, root->child_count());
   ASSERT_EQ(title, new_node->GetTitle());
@@ -521,7 +521,7 @@ TEST_F(BookmarkModelTest, AddURLWithUnicodeTitle) {
 
   const BookmarkNode* new_node = model_->AddURL(root, 0, title, url);
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
-  observer_details_.ExpectEquals(root, nullptr, 0, -1);
+  observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
   ASSERT_EQ(1, root->child_count());
   ASSERT_EQ(title, new_node->GetTitle());
@@ -562,7 +562,7 @@ TEST_F(BookmarkModelTest, AddURLWithCreationTimeAndMetaInfo) {
   const BookmarkNode* new_node = model_->AddURLWithCreationTimeAndMetaInfo(
       root, 0, title, url, time, &meta_info);
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
-  observer_details_.ExpectEquals(root, nullptr, 0, -1);
+  observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
   ASSERT_EQ(1, root->child_count());
   ASSERT_EQ(title, new_node->GetTitle());
@@ -585,7 +585,7 @@ TEST_F(BookmarkModelTest, AddURLToMobileBookmarks) {
 
   const BookmarkNode* new_node = model_->AddURL(root, 0, title, url);
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
-  observer_details_.ExpectEquals(root, nullptr, 0, -1);
+  observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
   ASSERT_EQ(1, root->child_count());
   ASSERT_EQ(title, new_node->GetTitle());
@@ -604,7 +604,7 @@ TEST_F(BookmarkModelTest, AddFolder) {
 
   const BookmarkNode* new_node = model_->AddFolder(root, 0, title);
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
-  observer_details_.ExpectEquals(root, nullptr, 0, -1);
+  observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
   ASSERT_EQ(1, root->child_count());
   ASSERT_EQ(title, new_node->GetTitle());
@@ -618,7 +618,7 @@ TEST_F(BookmarkModelTest, AddFolder) {
   ClearCounts();
   model_->AddFolder(root, 0, title);
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
-  observer_details_.ExpectEquals(root, nullptr, 0, -1);
+  observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 }
 
 TEST_F(BookmarkModelTest, AddFolderWithWhitespaceTitle) {
@@ -647,7 +647,7 @@ TEST_F(BookmarkModelTest, RemoveURL) {
   model_->Remove(root->GetChild(0));
   ASSERT_EQ(0, root->child_count());
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
-  observer_details_.ExpectEquals(root, nullptr, 0, -1);
+  observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
   // Make sure there is no mapping for the URL.
   ASSERT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == nullptr);
@@ -670,7 +670,7 @@ TEST_F(BookmarkModelTest, RemoveFolder) {
   model_->Remove(root->GetChild(0));
   ASSERT_EQ(0, root->child_count());
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
-  observer_details_.ExpectEquals(root, nullptr, 0, -1);
+  observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
   // Make sure there is no mapping for the URL.
   ASSERT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == nullptr);
@@ -730,7 +730,7 @@ TEST_F(BookmarkModelTest, SetTitle) {
   title = ASCIIToUTF16("foo2");
   model_->SetTitle(node, title);
   AssertObserverCount(0, 0, 0, 1, 0, 0, 1, 0, 0);
-  observer_details_.ExpectEquals(node, nullptr, -1, -1);
+  observer_details_.ExpectEquals(node, nullptr, size_t{-1}, size_t{-1});
   EXPECT_EQ(title, node->GetTitle());
 }
 
@@ -759,7 +759,7 @@ TEST_F(BookmarkModelTest, SetURL) {
   url = GURL("http://foo2.com");
   model_->SetURL(node, url);
   AssertObserverCount(0, 0, 0, 1, 0, 0, 1, 0, 0);
-  observer_details_.ExpectEquals(node, nullptr, -1, -1);
+  observer_details_.ExpectEquals(node, nullptr, size_t{-1}, size_t{-1});
   EXPECT_EQ(url, node->url());
 }
 
@@ -800,7 +800,7 @@ TEST_F(BookmarkModelTest, Move) {
   ClearCounts();
   model_->Remove(root->GetChild(0));
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
-  observer_details_.ExpectEquals(root, nullptr, 0, -1);
+  observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
   EXPECT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == nullptr);
   EXPECT_EQ(0, root->child_count());
 }
@@ -1369,17 +1369,17 @@ class BookmarkModelFaviconTest : public testing::Test,
 
   void BookmarkNodeMoved(BookmarkModel* model,
                          const BookmarkNode* old_parent,
-                         int old_index,
+                         size_t old_index,
                          const BookmarkNode* new_parent,
-                         int new_index) override {}
+                         size_t new_index) override {}
 
   void BookmarkNodeAdded(BookmarkModel* model,
                          const BookmarkNode* parent,
-                         int index) override {}
+                         size_t index) override {}
 
   void BookmarkNodeRemoved(BookmarkModel* model,
                            const BookmarkNode* parent,
-                           int old_index,
+                           size_t old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override {}
 

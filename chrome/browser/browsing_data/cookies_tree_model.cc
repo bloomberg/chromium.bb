@@ -330,7 +330,8 @@ void CookieTreeNode::AddChildSortedByTitle(
   DCHECK(new_child);
   auto iter = std::lower_bound(children().begin(), children().end(), new_child,
                                NodeTitleComparator());
-  GetModel()->Add(this, std::move(new_child), iter - children().begin());
+  GetModel()->Add(this, std::move(new_child),
+                  size_t{iter - children().begin()});
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -847,8 +848,9 @@ CookieTreeHostNode* CookieTreeRootNode::GetOrCreateHostNode(const GURL& url) {
   }
   // Node doesn't exist, insert the new one into the (ordered) children.
   DCHECK(model_);
-  return static_cast<CookieTreeHostNode*>(model_->Add(
-      this, std::move(host_node), (host_node_iterator - children().begin())));
+  return static_cast<CookieTreeHostNode*>(
+      model_->Add(this, std::move(host_node),
+                  size_t{host_node_iterator - children().begin()}));
 }
 
 CookiesTreeModel* CookieTreeRootNode::GetModel() const {

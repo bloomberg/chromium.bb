@@ -154,15 +154,16 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
   if (!CanBeModified(parent))
     return nullptr;
 
-  int index;
+  size_t index;
   if (!details.index.get()) {  // Optional (defaults to end).
-    index = parent->child_count();
+    index = parent->children().size();
   } else {
-    index = *details.index;
-    if (index > parent->child_count() || index < 0) {
+    if (*details.index < 0 ||
+        size_t{*details.index} > parent->children().size()) {
       error_ = bookmark_api_constants::kInvalidIndexError;
       return nullptr;
     }
+    index = size_t{*details.index};
   }
 
   base::string16 title;  // Optional.
@@ -275,15 +276,15 @@ void BookmarkEventRouter::BookmarkModelBeingDeleted(BookmarkModel* model) {
 
 void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
                                             const BookmarkNode* old_parent,
-                                            int old_index,
+                                            size_t old_index,
                                             const BookmarkNode* new_parent,
-                                            int new_index) {
-  const BookmarkNode* node = new_parent->GetChild(new_index);
+                                            size_t new_index) {
+  const BookmarkNode* node = new_parent->children()[new_index].get();
   api::bookmarks::OnMoved::MoveInfo move_info;
   move_info.parent_id = base::NumberToString(new_parent->id());
-  move_info.index = new_index;
+  move_info.index = int{new_index};
   move_info.old_parent_id = base::NumberToString(old_parent->id());
-  move_info.old_index = old_index;
+  move_info.old_index = int{old_index};
 
   DispatchEvent(events::BOOKMARKS_ON_MOVED, api::bookmarks::OnMoved::kEventName,
                 api::bookmarks::OnMoved::Create(
@@ -292,8 +293,8 @@ void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
 
 void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
                                             const BookmarkNode* parent,
-                                            int index) {
-  const BookmarkNode* node = parent->GetChild(index);
+                                            size_t index) {
+  const BookmarkNode* node = parent->children()[index].get();
   BookmarkTreeNode tree_node =
       bookmark_api_helpers::GetBookmarkTreeNode(managed_, node, false, false);
   DispatchEvent(events::BOOKMARKS_ON_CREATED,
@@ -305,12 +306,12 @@ void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
 void BookmarkEventRouter::BookmarkNodeRemoved(
     BookmarkModel* model,
     const BookmarkNode* parent,
-    int index,
+    size_t index,
     const BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
   api::bookmarks::OnRemoved::RemoveInfo remove_info;
   remove_info.parent_id = base::NumberToString(parent->id());
-  remove_info.index = index;
+  remove_info.index = int{index};
   bookmark_api_helpers::PopulateBookmarkTreeNode(managed_, node, true, false,
                                                  &remove_info.node);
 
@@ -640,15 +641,16 @@ bool BookmarksMoveFunction::RunOnReady() {
   if (!CanBeModified(parent) || !CanBeModified(node))
     return false;
 
-  int index;
+  size_t index;
   if (params->destination.index.get()) {  // Optional (defaults to end).
-    index = *params->destination.index;
-    if (index > parent->child_count() || index < 0) {
+    if (*params->destination.index < 0 ||
+        size_t{*params->destination.index} > parent->children().size()) {
       error_ = bookmark_api_constants::kInvalidIndexError;
       return false;
     }
+    index = size_t{*params->destination.index};
   } else {
-    index = parent->child_count();
+    index = parent->children().size();
   }
 
   model->Move(node, parent, index);

@@ -251,7 +251,7 @@ void BookmarkChangeProcessor::CreateOrUpdateSyncNode(const BookmarkNode* node) {
       const BookmarkNode* parent = node->parent();
       int index = parent->GetIndexOf(node);
       DCHECK_NE(-1, index);
-      sync_id = CreateSyncNode(parent, bookmark_model_, index, &trans,
+      sync_id = CreateSyncNode(parent, bookmark_model_, size_t{index}, &trans,
                                model_associator_, error_handler());
     }
   }
@@ -278,9 +278,9 @@ void BookmarkChangeProcessor::BookmarkModelBeingDeleted(BookmarkModel* model) {
 
 void BookmarkChangeProcessor::BookmarkNodeAdded(BookmarkModel* model,
                                                 const BookmarkNode* parent,
-                                                int index) {
+                                                size_t index) {
   DCHECK(share_handle());
-  const BookmarkNode* node = parent->GetChild(index);
+  const BookmarkNode* node = parent->children()[index].get();
   if (CanSyncNode(node))
     CreateOrUpdateSyncNode(node);
 }
@@ -289,11 +289,11 @@ void BookmarkChangeProcessor::BookmarkNodeAdded(BookmarkModel* model,
 int64_t BookmarkChangeProcessor::CreateSyncNode(
     const BookmarkNode* parent,
     BookmarkModel* model,
-    int index,
+    size_t index,
     syncer::WriteTransaction* trans,
     BookmarkModelAssociator* associator,
     syncer::DataTypeErrorHandler* error_handler) {
-  const BookmarkNode* child = parent->GetChild(index);
+  const BookmarkNode* child = parent->children()[index].get();
   DCHECK(child);
 
   // Create a WriteNode container to hold the new node.
@@ -318,7 +318,7 @@ int64_t BookmarkChangeProcessor::CreateSyncNode(
 
 void BookmarkChangeProcessor::OnWillRemoveBookmarks(BookmarkModel* model,
                                                     const BookmarkNode* parent,
-                                                    int old_index,
+                                                    size_t old_index,
                                                     const BookmarkNode* node) {
   if (CanSyncNode(node))
     RemoveSyncNodeHierarchy(node);
@@ -327,7 +327,7 @@ void BookmarkChangeProcessor::OnWillRemoveBookmarks(BookmarkModel* model,
 void BookmarkChangeProcessor::BookmarkNodeRemoved(
     BookmarkModel* model,
     const BookmarkNode* parent,
-    int old_index,
+    size_t old_index,
     const BookmarkNode* node,
     const std::set<GURL>& no_longer_bookmarked) {
   // All the work should have already been done in OnWillRemoveBookmarks.
@@ -385,10 +385,10 @@ void BookmarkChangeProcessor::BookmarkMetaInfoChanged(
 
 void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
                                                 const BookmarkNode* old_parent,
-                                                int old_index,
+                                                size_t old_index,
                                                 const BookmarkNode* new_parent,
-                                                int new_index) {
-  const BookmarkNode* child = new_parent->GetChild(new_index);
+                                                size_t new_index) {
+  const BookmarkNode* child = new_parent->children()[new_index].get();
 
   if (!CanSyncNode(child))
     return;
@@ -472,8 +472,8 @@ void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
 
     // The given node's children got reordered. We need to reorder all the
     // children of the corresponding sync node.
-    for (int i = 0; i < node->child_count(); ++i) {
-      const BookmarkNode* child = node->GetChild(i);
+    for (size_t i = 0; i < node->children().size(); ++i) {
+      const BookmarkNode* child = node->children()[i].get();
       children.push_back(child);
 
       syncer::WriteNode sync_child(&trans);
@@ -509,7 +509,7 @@ void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
 bool BookmarkChangeProcessor::PlaceSyncNode(
     MoveOrCreate operation,
     const BookmarkNode* parent,
-    int index,
+    size_t index,
     syncer::WriteTransaction* trans,
     syncer::WriteNode* dst,
     BookmarkModelAssociator* associator) {
@@ -532,7 +532,7 @@ bool BookmarkChangeProcessor::PlaceSyncNode(
     }
   } else {
     // Find the bookmark model predecessor, and insert after it.
-    const BookmarkNode* prev = parent->GetChild(index - 1);
+    const BookmarkNode* prev = parent->children()[index - 1].get();
     syncer::ReadNode sync_prev(trans);
     if (!associator->InitSyncNodeFromChromeId(prev->id(), &sync_prev)) {
       LOG(WARNING) << "Predecessor lookup failed";
@@ -617,7 +617,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     if (!dst->children().empty()) {
       if (!foster_parent) {
         foster_parent = model->AddFolder(model->other_node(),
-                                         model->other_node()->child_count(),
+                                         model->other_node()->children().size(),
                                          base::string16());
         if (!foster_parent) {
           syncer::SyncError error(FROM_HERE,
@@ -630,7 +630,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       }
       for (int i = dst->child_count() - 1; i >= 0; --i) {
         model->Move(dst->GetChild(i), foster_parent,
-                    foster_parent->child_count());
+                    foster_parent->children().size());
       }
     }
     DCHECK_EQ(dst->child_count(), 0) << "Node being deleted has children";
@@ -705,14 +705,14 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
                                  model_associator_->GetFaviconService());
 
       // Move all modified entries to the right.  We'll fix it later.
-      model->Move(dst, parent, parent->child_count());
+      model->Move(dst, parent, parent->children().size());
     } else {
       DCHECK(it->action == ChangeRecord::ACTION_ADD)
           << "ACTION_ADD should be seen if and only if the node is unknown.";
 
       dst = CreateBookmarkNode(&src, parent, model,
                                model_associator_->GetFaviconService(),
-                               parent->child_count());
+                               parent->children().size());
       if (!dst) {
         // We ignore bookmarks we can't add. Chances are this is caused by
         // a bookmark that was not fully associated.
@@ -733,7 +733,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   // sync order, left to right, moving them into their proper positions.
   for (auto it = to_reposition.begin(); it != to_reposition.end(); ++it) {
     const BookmarkNode* parent = it->second->parent();
-    model->Move(it->second, parent, it->first);
+    model->Move(it->second, parent, size_t{it->first});
   }
 
   // Clean up the temporary node.
@@ -801,7 +801,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const BookmarkNode* parent,
     BookmarkModel* model,
     favicon::FaviconService* favicon_service,
-    int index) {
+    size_t index) {
   return CreateBookmarkNode(base::UTF8ToUTF16(sync_node->GetTitle()),
                             GURL(sync_node->GetBookmarkSpecifics().url()),
                             sync_node, parent, model, favicon_service, index);
@@ -817,7 +817,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const BookmarkNode* parent,
     BookmarkModel* model,
     favicon::FaviconService* favicon_service,
-    int index) {
+    size_t index) {
   DCHECK(parent);
 
   const BookmarkNode* node;

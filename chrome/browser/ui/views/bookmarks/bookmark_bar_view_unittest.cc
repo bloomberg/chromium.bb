@@ -72,7 +72,7 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
   void SizeUntilButtonsVisible(size_t count) {
     const int start_width = bookmark_bar_view_->width();
     const int height = bookmark_bar_view_->GetPreferredSize().height();
-    for (int i = 0;
+    for (size_t i = 0;
          i < 100 && (test_helper_->GetBookmarkButtonCount() < count ||
                      !test_helper_->GetBookmarkButton(count - 1)->GetVisible());
          ++i) {

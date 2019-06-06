@@ -34,12 +34,12 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   // CookiesTreeModel::Observer:
   void TreeNodesAdded(ui::TreeModel* model,
                       ui::TreeModelNode* parent,
-                      int start,
-                      int count) override;
+                      size_t start,
+                      size_t count) override;
   void TreeNodesRemoved(ui::TreeModel* model,
                         ui::TreeModelNode* parent,
-                        int start,
-                        int count) override;
+                        size_t start,
+                        size_t count) override;
   void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) override {
   }
   void TreeModelBeginBatch(CookiesTreeModel* model) override;

@@ -409,8 +409,8 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, ShouldTrackDeletionsInSyncPausedState) {
   // Create a bookmark...
   const bookmarks::BookmarkNode* bar = bookmarks_helper::GetBookmarkBarNode(0);
   ASSERT_FALSE(bookmarks_helper::HasNodeWithURL(0, kTestURL));
-  const bookmarks::BookmarkNode* bookmark =
-      bookmarks_helper::AddURL(0, bar, bar->child_count(), "Title", kTestURL);
+  const bookmarks::BookmarkNode* bookmark = bookmarks_helper::AddURL(
+      0, bar, bar->children().size(), "Title", kTestURL);
 
   // ...set a pref...
   ASSERT_FALSE(HasUserPrefValue(pref_service, prefs::kHomePageIsNewTabPage));
@@ -444,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, ShouldTrackDeletionsInSyncPausedState) {
   // Note that AttemptToTriggerAuthError() also creates bookmarks, so the index
   // of our test bookmark might have changed.
   ASSERT_EQ(bar->GetChild(bar->child_count() - 1), bookmark);
-  bookmarks_helper::Remove(0, bar, bar->child_count() - 1);
+  bookmarks_helper::Remove(0, bar, bar->children().size() - 1);
   ASSERT_FALSE(bookmarks_helper::HasNodeWithURL(0, kTestURL));
   pref_service->ClearPref(prefs::kHomePageIsNewTabPage);
 

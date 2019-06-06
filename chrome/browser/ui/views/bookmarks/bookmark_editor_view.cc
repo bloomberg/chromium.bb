@@ -258,22 +258,22 @@ const char* BookmarkEditorView::GetClassName() const {
 
 void BookmarkEditorView::BookmarkNodeMoved(BookmarkModel* model,
                                            const BookmarkNode* old_parent,
-                                           int old_index,
+                                           size_t old_index,
                                            const BookmarkNode* new_parent,
-                                           int new_index) {
+                                           size_t new_index) {
   Reset();
 }
 
 void BookmarkEditorView::BookmarkNodeAdded(BookmarkModel* model,
                                            const BookmarkNode* parent,
-                                           int index) {
+                                           size_t index) {
   Reset();
 }
 
 void BookmarkEditorView::BookmarkNodeRemoved(
     BookmarkModel* model,
     const BookmarkNode* parent,
-    int index,
+    size_t index,
     const BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
   if ((details_.type == EditDetails::EXISTING_NODE &&
@@ -594,7 +594,7 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewFolders(
     const BookmarkNode* child_bb_node = nullptr;
     if (child_b_node->value == 0) {
       // New folder.
-      child_bb_node = bb_model_->AddFolder(bb_node, bb_node->child_count(),
+      child_bb_node = bb_model_->AddFolder(bb_node, bb_node->children().size(),
                                            child_b_node->GetTitle());
       child_b_node->value = child_bb_node->id();
     } else {

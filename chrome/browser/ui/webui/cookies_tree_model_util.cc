@@ -324,13 +324,13 @@ void CookiesTreeModelUtil::GetChildNodeDetails(const CookieTreeNode* parent,
 }
 
 void CookiesTreeModelUtil::GetChildNodeList(const CookieTreeNode* parent,
-                                            int start,
-                                            int count,
+                                            size_t start,
+                                            size_t count,
                                             bool include_quota_nodes,
                                             base::ListValue* nodes) {
-  for (int i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-    const CookieTreeNode* child = parent->GetChild(start + i);
+    const CookieTreeNode* child = parent->children()[start + i].get();
     if (GetCookieTreeNodeDictionary(*child, include_quota_nodes, dict.get()))
       nodes->Append(std::move(dict));
   }

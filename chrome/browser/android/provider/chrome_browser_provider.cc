@@ -189,7 +189,7 @@ class AddBookmarkTask : public BookmarkModelTask {
         parent_node = model->bookmark_bar_node();
 
       node = is_folder ? model->AddFolder(parent_node,
-                                          parent_node->child_count(), title)
+                                          parent_node->children().size(), title)
                        : model->AddURL(parent_node, 0, title, gurl);
     }
 

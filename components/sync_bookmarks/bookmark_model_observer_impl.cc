@@ -45,10 +45,10 @@ void BookmarkModelObserverImpl::BookmarkModelBeingDeleted(
 void BookmarkModelObserverImpl::BookmarkNodeMoved(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* old_parent,
-    int old_index,
+    size_t old_index,
     const bookmarks::BookmarkNode* new_parent,
-    int new_index) {
-  const bookmarks::BookmarkNode* node = new_parent->GetChild(new_index);
+    size_t new_index) {
+  const bookmarks::BookmarkNode* node = new_parent->children()[new_index].get();
 
   // We shouldn't see changes to the top-level nodes.
   DCHECK(!model->is_permanent_node(node));
@@ -78,8 +78,8 @@ void BookmarkModelObserverImpl::BookmarkNodeMoved(
 void BookmarkModelObserverImpl::BookmarkNodeAdded(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* parent,
-    int index) {
-  const bookmarks::BookmarkNode* node = parent->GetChild(index);
+    size_t index) {
+  const bookmarks::BookmarkNode* node = parent->children()[index].get();
   if (!model->client()->CanSyncNode(node)) {
     return;
   }
@@ -113,7 +113,7 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
 void BookmarkModelObserverImpl::OnWillRemoveBookmarks(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* parent,
-    int old_index,
+    size_t old_index,
     const bookmarks::BookmarkNode* node) {
   if (!model->client()->CanSyncNode(node)) {
     return;
@@ -126,7 +126,7 @@ void BookmarkModelObserverImpl::OnWillRemoveBookmarks(
 void BookmarkModelObserverImpl::BookmarkNodeRemoved(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* parent,
-    int old_index,
+    size_t old_index,
     const bookmarks::BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
   // All the work should have already been done in OnWillRemoveBookmarks.
@@ -283,7 +283,7 @@ void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
 
 syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
     const bookmarks::BookmarkNode& parent,
-    int index,
+    size_t index,
     const std::string& sync_id) {
   const std::string& suffix = syncer::GenerateSyncableBookmarkHash(
       bookmark_tracker_->model_type_state().cache_guid(), sync_id);

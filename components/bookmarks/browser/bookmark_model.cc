@@ -108,7 +108,7 @@ class EmptyUndoDelegate : public BookmarkUndoDelegate {
   void SetUndoProvider(BookmarkUndoProvider* provider) override {}
   void OnBookmarkNodeRemoved(BookmarkModel* model,
                              const BookmarkNode* parent,
-                             int index,
+                             size_t index,
                              std::unique_ptr<BookmarkNode> node) override {}
 
   DISALLOW_COPY_AND_ASSIGN(EmptyUndoDelegate);
@@ -200,8 +200,8 @@ void BookmarkModel::Remove(const BookmarkNode* node) {
   DCHECK(!is_root_node(node));
   const BookmarkNode* parent = node->parent();
   DCHECK(parent);
-  int index = parent->GetIndexOf(node);
-  DCHECK_NE(-1, index);
+  size_t index = size_t{parent->GetIndexOf(node)};
+  DCHECK_NE(size_t{-1}, index);
 
   for (BookmarkModelObserver& observer : observers_)
     observer.OnWillRemoveBookmarks(this, parent, index, node);
@@ -270,7 +270,7 @@ void BookmarkModel::RemoveAllUserBookmarks() {
 
 void BookmarkModel::Move(const BookmarkNode* node,
                          const BookmarkNode* new_parent,
-                         int index) {
+                         size_t index) {
   DCHECK(loaded_);
   DCHECK(node);
   DCHECK(IsValidIndex(new_parent, index, true));
@@ -279,7 +279,7 @@ void BookmarkModel::Move(const BookmarkNode* node,
   DCHECK(!new_parent->HasAncestor(node));
 
   const BookmarkNode* old_parent = node->parent();
-  int old_index = old_parent->GetIndexOf(node);
+  size_t old_index = old_parent->GetIndexOf(node);
 
   if (old_parent == new_parent &&
       (index == old_index || index == old_index + 1)) {
@@ -307,7 +307,7 @@ void BookmarkModel::Move(const BookmarkNode* node,
 
 void BookmarkModel::Copy(const BookmarkNode* node,
                          const BookmarkNode* new_parent,
-                         int index) {
+                         size_t index) {
   DCHECK(loaded_);
   DCHECK(node);
   DCHECK(IsValidIndex(new_parent, index, true));
@@ -554,13 +554,13 @@ void BookmarkModel::GetBookmarks(std::vector<UrlAndTitle>* bookmarks) {
 }
 
 const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
-                                             int index,
+                                             size_t index,
                                              const base::string16& title) {
   return AddFolderWithMetaInfo(parent, index, title, nullptr);
 }
 const BookmarkNode* BookmarkModel::AddFolderWithMetaInfo(
     const BookmarkNode* parent,
-    int index,
+    size_t index,
     const base::string16& title,
     const BookmarkNode::MetaInfoMap* meta_info) {
   DCHECK(loaded_);
@@ -580,7 +580,7 @@ const BookmarkNode* BookmarkModel::AddFolderWithMetaInfo(
 }
 
 const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
-                                          int index,
+                                          size_t index,
                                           const base::string16& title,
                                           const GURL& url) {
   return AddURLWithCreationTimeAndMetaInfo(parent, index, title, url,
@@ -589,7 +589,7 @@ const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
 
 const BookmarkNode* BookmarkModel::AddURLWithCreationTimeAndMetaInfo(
     const BookmarkNode* parent,
-    int index,
+    size_t index,
     const base::string16& title,
     const GURL& url,
     const Time& creation_time,
@@ -733,7 +733,7 @@ const BookmarkPermanentNode* BookmarkModel::PermanentNode(
 }
 
 void BookmarkModel::RestoreRemovedNode(const BookmarkNode* parent,
-                                       int index,
+                                       size_t index,
                                        std::unique_ptr<BookmarkNode> node) {
   BookmarkNode* node_ptr = node.get();
   AddNode(AsMutable(parent), index, std::move(node));
@@ -744,7 +744,7 @@ void BookmarkModel::RestoreRemovedNode(const BookmarkNode* parent,
 }
 
 void BookmarkModel::NotifyNodeAddedForAllDescendents(const BookmarkNode* node) {
-  for (int i = 0; i < node->child_count(); ++i) {
+  for (size_t i = 0; i < node->children().size(); ++i) {
     for (BookmarkModelObserver& observer : observers_)
       observer.BookmarkNodeAdded(this, node, i);
     NotifyNodeAddedForAllDescendents(node->GetChild(i));
@@ -812,7 +812,7 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
 }
 
 BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
-                                     int index,
+                                     size_t index,
                                      std::unique_ptr<BookmarkNode> node) {
   BookmarkNode* node_ptr = node.get();
   url_index_->Add(parent, index, std::move(node));
@@ -836,11 +836,11 @@ void BookmarkModel::AddNodeToIndexRecursive(BookmarkNode* node) {
 }
 
 bool BookmarkModel::IsValidIndex(const BookmarkNode* parent,
-                                 int index,
+                                 size_t index,
                                  bool allow_end) {
-  return (parent && parent->is_folder() &&
-          (index >= 0 && (index < parent->child_count() ||
-                          (allow_end && index == parent->child_count()))));
+  return parent && parent->is_folder() &&
+         (index < parent->children().size() ||
+          (allow_end && index == parent->children().size()));
 }
 
 void BookmarkModel::OnFaviconDataAvailable(

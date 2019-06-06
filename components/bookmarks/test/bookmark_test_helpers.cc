@@ -57,7 +57,7 @@ std::string::size_type AddNodesFromString(BookmarkModel* model,
                                           const std::string& model_string,
                                           std::string::size_type start_pos) {
   DCHECK(node);
-  int index = node->child_count();
+  size_t index = node->children().size();
   static const std::string folder_tell(":[");
   std::string::size_type end_pos = model_string.find(' ', start_pos);
   while (end_pos != std::string::npos) {

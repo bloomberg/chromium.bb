@@ -66,7 +66,7 @@ void DragBookmarksForTest(Profile* profile,
 int DropBookmarks(Profile* profile,
                   const bookmarks::BookmarkNodeData& data,
                   const bookmarks::BookmarkNode* parent_node,
-                  int index,
+                  size_t index,
                   bool copy);
 
 }  // namespace chrome

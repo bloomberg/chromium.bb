@@ -170,9 +170,8 @@ void ProfileWriter::AddBookmarks(
       if (!top_level_folder) {
         base::string16 name =
             GenerateUniqueFolderName(model,top_level_folder_name);
-        top_level_folder = model->AddFolder(bookmark_bar,
-                                            bookmark_bar->child_count(),
-                                            name);
+        top_level_folder = model->AddFolder(
+            bookmark_bar, bookmark_bar->children().size(), name);
       }
       parent = top_level_folder;
     }
@@ -197,21 +196,20 @@ void ProfileWriter::AddBookmarks(
           break;
         }
       }
-      if (!child)
-        child = model->AddFolder(parent, parent->child_count(), *folder_name);
+      if (!child) {
+        child =
+            model->AddFolder(parent, parent->children().size(), *folder_name);
+      }
       parent = child;
     }
 
     folders_added_to.insert(parent);
     if (bookmark->is_folder) {
-      model->AddFolder(parent, parent->child_count(), bookmark->title);
+      model->AddFolder(parent, parent->children().size(), bookmark->title);
     } else {
-      model->AddURLWithCreationTimeAndMetaInfo(parent,
-                                               parent->child_count(),
-                                               bookmark->title,
-                                               bookmark->url,
-                                               bookmark->creation_time,
-                                               NULL);
+      model->AddURLWithCreationTimeAndMetaInfo(
+          parent, parent->children().size(), bookmark->title, bookmark->url,
+          bookmark->creation_time, NULL);
     }
   }
 

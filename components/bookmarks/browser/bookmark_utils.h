@@ -48,7 +48,7 @@ struct QueryFields {
 void CloneBookmarkNode(BookmarkModel* model,
                        const std::vector<BookmarkNodeData::Element>& elements,
                        const BookmarkNode* parent,
-                       int index_to_add_at,
+                       size_t index_to_add_at,
                        bool reset_node_times);
 
 // Copies nodes onto the clipboard. If |remove_nodes| is true the nodes are
@@ -60,10 +60,10 @@ void CopyToClipboard(BookmarkModel* model,
 
 // Pastes from the clipboard. The new nodes are added to |parent|, unless
 // |parent| is null in which case this does nothing. The nodes are inserted
-// at |index|. If |index| is -1 the nodes are added to the end.
+// at |index|.
 void PasteFromClipboard(BookmarkModel* model,
                         const BookmarkNode* parent,
-                        int index);
+                        size_t index);
 
 // Returns true if the user can copy from the pasteboard.
 bool CanPasteFromClipboard(BookmarkModel* model, const BookmarkNode* node);
@@ -103,7 +103,7 @@ void RegisterManagedBookmarksPrefs(PrefRegistrySimple* registry);
 const BookmarkNode* GetParentForNewNodes(
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& selection,
-    int* index);
+    size_t* index);
 
 // Deletes the bookmark folders for the given list of |ids|.
 void DeleteBookmarkFolders(BookmarkModel* model,

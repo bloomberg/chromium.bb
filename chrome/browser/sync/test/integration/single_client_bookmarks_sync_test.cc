@@ -168,15 +168,15 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
   ASSERT_EQ(1, tier1_a_url0->parent()->GetIndexOf(tier1_a_url0));
-  Move(kSingleProfileIndex, tier1_a_url0, bar, bar->child_count());
-  const BookmarkNode* boa = AddURL(
-      kSingleProfileIndex, bar, bar->child_count(),
-      "Bank of America", GURL("https://www.bankofamerica.com"));
+  Move(kSingleProfileIndex, tier1_a_url0, bar, bar->children().size());
+  const BookmarkNode* boa =
+      AddURL(kSingleProfileIndex, bar, bar->children().size(),
+             "Bank of America", GURL("https://www.bankofamerica.com"));
   ASSERT_NE(nullptr, boa);
-  Move(kSingleProfileIndex, tier1_a_url0, top, top->child_count());
-  const BookmarkNode* bubble = AddURL(
-      kSingleProfileIndex, bar, bar->child_count(), "Seattle Bubble",
-          GURL("http://seattlebubble.com"));
+  Move(kSingleProfileIndex, tier1_a_url0, top, top->children().size());
+  const BookmarkNode* bubble =
+      AddURL(kSingleProfileIndex, bar, bar->children().size(), "Seattle Bubble",
+             GURL("http://seattlebubble.com"));
   ASSERT_NE(nullptr, bubble);
   const BookmarkNode* wired = AddURL(
       kSingleProfileIndex, bar, 2, "Wired News", GURL("http://www.wired.com"));
@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
   ASSERT_EQ(tier1_a_url0->id(), top->GetChild(top->child_count() - 1)->id());
-  Remove(kSingleProfileIndex, top, top->child_count() - 1);
+  Remove(kSingleProfileIndex, top, top->children().size() - 1);
   Move(kSingleProfileIndex, wired, tier1_b, 0);
   Move(kSingleProfileIndex, porsche, bar, 3);
   const BookmarkNode* tier3_b = AddFolder(
@@ -272,7 +272,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, InjectedBookmark) {
   ASSERT_TRUE(SetupClients());
   ASSERT_TRUE(SetupSync());
 
-  EXPECT_EQ(1, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
+  EXPECT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
 }
 
 // Test that a client doesn't mutate the favicon data in the process
@@ -421,7 +421,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, DownloadDeletedBookmark) {
   DisableVerifier();
   ASSERT_TRUE(SetupSync());
 
-  ASSERT_EQ(1, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
+  ASSERT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
 
   std::vector<sync_pb::SyncEntity> server_bookmarks =
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
@@ -454,11 +454,11 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   DisableVerifier();
   ASSERT_TRUE(SetupSync());
 
-  ASSERT_EQ(1, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
-  ASSERT_EQ(1, CountBookmarksWithUrlsMatching(kSingleProfileIndex,
-                                              original_url));
-  ASSERT_EQ(0, CountBookmarksWithUrlsMatching(kSingleProfileIndex,
-                                              updated_url));
+  ASSERT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
+  ASSERT_EQ(1u,
+            CountBookmarksWithUrlsMatching(kSingleProfileIndex, original_url));
+  ASSERT_EQ(0u,
+            CountBookmarksWithUrlsMatching(kSingleProfileIndex, updated_url));
 
   std::vector<sync_pb::SyncEntity> server_bookmarks =
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
@@ -474,9 +474,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   TriggerSyncForModelTypes(kSingleProfileIndex, kBookmarksType);
 
   ASSERT_TRUE(BookmarksUrlChecker(kSingleProfileIndex, updated_url, 1).Wait());
-  ASSERT_EQ(0, CountBookmarksWithUrlsMatching(kSingleProfileIndex,
-                                              original_url));
-  ASSERT_EQ(1, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
+  ASSERT_EQ(0u,
+            CountBookmarksWithUrlsMatching(kSingleProfileIndex, original_url));
+  ASSERT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, DownloadBookmarkFolder) {
@@ -488,11 +488,11 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, DownloadBookmarkFolder) {
 
   DisableVerifier();
   ASSERT_TRUE(SetupClients());
-  ASSERT_EQ(0, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
+  ASSERT_EQ(0u, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
 
   ASSERT_TRUE(SetupSync());
 
-  ASSERT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
+  ASSERT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
@@ -505,11 +505,11 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 
   DisableVerifier();
   ASSERT_TRUE(SetupClients());
-  ASSERT_EQ(0, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
+  ASSERT_EQ(0u, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
 
   ASSERT_TRUE(SetupSync());
 
-  ASSERT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
+  ASSERT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
 }
 
 // Legacy bookmark clients append a blank space to empty titles, ".", ".." tiles
@@ -572,8 +572,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 
   // There should be bookmark with illegal title (without the appended space).
   for (const std::string& illegal_title : illegal_titles) {
-    EXPECT_EQ(1, CountBookmarksWithTitlesMatching(kSingleProfileIndex,
-                                                  illegal_title));
+    EXPECT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex,
+                                                   illegal_title));
   }
 }
 
@@ -599,17 +599,17 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
       AddFolder(kSingleProfileIndex, GetBookmarkBarNode(kSingleProfileIndex), 0,
                 local_empty_title);
   ASSERT_TRUE(node);
-  ASSERT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex,
-                                              local_empty_title));
+  ASSERT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex,
+                                               local_empty_title));
 
   ASSERT_TRUE(SetupSync());
   // There should be only one bookmark on the client. The remote node should
   // have been merged with the local node and either the local or remote titles
   // is picked.
-  EXPECT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex,
-                                              local_empty_title) +
-                   CountFoldersWithTitlesMatching(kSingleProfileIndex,
-                                                  remote_blank_title));
+  EXPECT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex,
+                                               local_empty_title) +
+                    CountFoldersWithTitlesMatching(kSingleProfileIndex,
+                                                   remote_blank_title));
 }
 
 // Legacy bookmark clients truncate long titles up to 255 bytes. This tests that
@@ -641,17 +641,17 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
       AddFolder(kSingleProfileIndex, GetBookmarkBarNode(kSingleProfileIndex), 0,
                 local_full_title);
   ASSERT_TRUE(node);
-  ASSERT_EQ(
-      1, CountFoldersWithTitlesMatching(kSingleProfileIndex, local_full_title));
+  ASSERT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex,
+                                               local_full_title));
 
   ASSERT_TRUE(SetupSync());
   // There should be only one bookmark on the client. The remote node should
   // have been merged with the local node and either the local or remote title
   // is picked.
-  EXPECT_EQ(
-      1, CountFoldersWithTitlesMatching(kSingleProfileIndex, local_full_title) +
-             CountFoldersWithTitlesMatching(kSingleProfileIndex,
-                                            remote_truncated_title));
+  EXPECT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex,
+                                               local_full_title) +
+                    CountFoldersWithTitlesMatching(kSingleProfileIndex,
+                                                   remote_truncated_title));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
@@ -683,9 +683,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 
   ASSERT_TRUE(SetupSync());
 
-  EXPECT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title0));
-  EXPECT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title1));
-  EXPECT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title2));
+  EXPECT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex, title0));
+  EXPECT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex, title1));
+  EXPECT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex, title2));
 
   const BookmarkNode* bar = GetBookmarkBarNode(kSingleProfileIndex);
   ASSERT_EQ(3, bar->child_count());

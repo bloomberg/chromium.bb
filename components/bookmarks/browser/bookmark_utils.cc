@@ -46,7 +46,7 @@ const size_t kCleanedUpTitleMaxLength = 1024u;
 void CloneBookmarkNodeImpl(BookmarkModel* model,
                            const BookmarkNodeData::Element& element,
                            const BookmarkNode* parent,
-                           int index_to_add_at,
+                           size_t index_to_add_at,
                            bool reset_node_times) {
   // Make sure to not copy non clonable keys.
   BookmarkNode::MetaInfoMap meta_info_map = element.meta_info_map;
@@ -231,15 +231,14 @@ QueryFields::~QueryFields() {}
 void CloneBookmarkNode(BookmarkModel* model,
                        const std::vector<BookmarkNodeData::Element>& elements,
                        const BookmarkNode* parent,
-                       int index_to_add_at,
+                       size_t index_to_add_at,
                        bool reset_node_times) {
   if (!parent->is_folder() || !model) {
     NOTREACHED();
     return;
   }
   for (size_t i = 0; i < elements.size(); ++i) {
-    CloneBookmarkNodeImpl(model, elements[i], parent,
-                          index_to_add_at + static_cast<int>(i),
+    CloneBookmarkNodeImpl(model, elements[i], parent, index_to_add_at + i,
                           reset_node_times);
   }
 }
@@ -303,7 +302,7 @@ void MakeTitleUnique(const BookmarkModel* model,
 
 void PasteFromClipboard(BookmarkModel* model,
                         const BookmarkNode* parent,
-                        int index) {
+                        size_t index) {
   if (!parent)
     return;
 
@@ -316,8 +315,7 @@ void PasteFromClipboard(BookmarkModel* model,
     node.SetTitle(base::ASCIIToUTF16(url.spec()));
     bookmark_data = BookmarkNodeData(&node);
   }
-  if (index == -1)
-    index = parent->child_count();
+  DCHECK_LE(index, parent->children().size());
   ScopedGroupBookmarkActions group_paste(model);
 
   if (bookmark_data.size() == 1 &&
@@ -468,7 +466,7 @@ void RegisterManagedBookmarksPrefs(PrefRegistrySimple* registry) {
 const BookmarkNode* GetParentForNewNodes(
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& selection,
-    int* index) {
+    size_t* index) {
   const BookmarkNode* real_parent = parent;
 
   if (selection.size() == 1 && selection[0]->is_folder())
@@ -476,10 +474,10 @@ const BookmarkNode* GetParentForNewNodes(
 
   if (index) {
     if (selection.size() == 1 && selection[0]->is_url()) {
-      *index = real_parent->GetIndexOf(selection[0]) + 1;
-      DCHECK_NE(0, *index);
+      *index = size_t{real_parent->GetIndexOf(selection[0]) + 1};
+      DCHECK_NE(0u, *index);
     } else {
-      *index = real_parent->child_count();
+      *index = real_parent->children().size();
     }
   }
 
@@ -505,7 +503,7 @@ void AddIfNotBookmarked(BookmarkModel* model,
     return;  // Nothing to do, a user bookmark with that url already exists.
   model->client()->RecordAction(base::UserMetricsAction("BookmarkAdded"));
   const BookmarkNode* parent = GetParentForNewNodes(model);
-  model->AddURL(parent, parent->child_count(), title, url);
+  model->AddURL(parent, parent->children().size(), title, url);
 }
 
 void RemoveAllBookmarks(BookmarkModel* model, const GURL& url) {

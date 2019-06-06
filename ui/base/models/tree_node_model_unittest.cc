@@ -34,14 +34,14 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
   // Overridden from TreeModelObserver:
   void TreeNodesAdded(TreeModel* model,
                       TreeModelNode* parent,
-                      int start,
-                      int count) override {
+                      size_t start,
+                      size_t count) override {
     added_count_++;
   }
   void TreeNodesRemoved(TreeModel* model,
                         TreeModelNode* parent,
-                        int start,
-                        int count) override {
+                        size_t start,
+                        size_t count) override {
     removed_count_++;
   }
   void TreeNodeChanged(TreeModel* model, TreeModelNode* node) override {
@@ -74,7 +74,7 @@ TEST_F(TreeNodeModelTest, AddNode) {
 
   EXPECT_EQ("added=1 removed=0 changed=0", GetObserverCountStateAndClear());
 
-  for (int i = 0; i < 2; ++i)
+  for (size_t i = 0; i < 2; ++i)
     child1->Add(std::make_unique<TestNode>(), i);
 
   TestNode* child2 = model.Add(root, std::make_unique<TestNode>(), 1);
@@ -126,7 +126,7 @@ TEST_F(TreeNodeModelTest, DeleteAllNodes) {
   TestNode* foo = child1->Add(std::make_unique<TestNode>(), 0);
 
   // Add some nodes to |foo|.
-  for (int i = 0; i < 3; ++i)
+  for (size_t i = 0; i < 3; ++i)
     foo->Add(std::make_unique<TestNode>(), i);  // bar[n]
 
   EXPECT_EQ(3, root.child_count());

@@ -1385,13 +1385,13 @@ void SiteSettingsHandler::StopObservingSourcesForProfile(Profile* profile) {
 
 void SiteSettingsHandler::TreeNodesAdded(ui::TreeModel* model,
                                          ui::TreeModelNode* parent,
-                                         int start,
-                                         int count) {}
+                                         size_t start,
+                                         size_t count) {}
 
 void SiteSettingsHandler::TreeNodesRemoved(ui::TreeModel* model,
                                            ui::TreeModelNode* parent,
-                                           int start,
-                                           int count) {}
+                                           size_t start,
+                                           size_t count) {}
 
 void SiteSettingsHandler::TreeNodeChanged(ui::TreeModel* model,
                                           ui::TreeModelNode* node) {}

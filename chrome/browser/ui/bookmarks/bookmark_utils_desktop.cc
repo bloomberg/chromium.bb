@@ -186,7 +186,7 @@ void ShowBookmarkAllTabsDialog(Browser* browser) {
 
   const BookmarkNode* parent = GetParentForNewNodes(model);
   BookmarkEditor::EditDetails details =
-      BookmarkEditor::EditDetails::AddFolder(parent, parent->child_count());
+      BookmarkEditor::EditDetails::AddFolder(parent, parent->children().size());
   GetURLsForOpenTabs(browser, &(details.urls));
   DCHECK(!details.urls.empty());
 

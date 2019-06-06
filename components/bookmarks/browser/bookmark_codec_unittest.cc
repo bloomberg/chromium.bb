@@ -357,12 +357,11 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
   // Add a couple of more items to the decoded bookmark model and make sure
   // ID persistence is working properly.
   const BookmarkNode* bookmark_bar = decoded_model->bookmark_bar_node();
-  decoded_model->AddURL(bookmark_bar,
-                        bookmark_bar->child_count(),
-                        ASCIIToUTF16(kUrl3Title),
-                        GURL(kUrl3Url));
-  const BookmarkNode* folder2_node = decoded_model->AddFolder(
-      bookmark_bar, bookmark_bar->child_count(), ASCIIToUTF16(kFolder2Title));
+  decoded_model->AddURL(bookmark_bar, bookmark_bar->children().size(),
+                        ASCIIToUTF16(kUrl3Title), GURL(kUrl3Url));
+  const BookmarkNode* folder2_node =
+      decoded_model->AddFolder(bookmark_bar, bookmark_bar->children().size(),
+                               ASCIIToUTF16(kFolder2Title));
   decoded_model->AddURL(
       folder2_node, 0, ASCIIToUTF16(kUrl4Title), GURL(kUrl4Url));
 

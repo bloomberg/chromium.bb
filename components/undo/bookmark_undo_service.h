@@ -49,12 +49,12 @@ class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
   void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* old_parent,
-                         int old_index,
+                         size_t old_index,
                          const bookmarks::BookmarkNode* new_parent,
-                         int new_index) override;
+                         size_t new_index) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* parent,
-                         int index) override;
+                         size_t index) override;
   void OnWillChangeBookmarkNode(bookmarks::BookmarkModel* model,
                                 const bookmarks::BookmarkNode* node) override;
   void OnWillReorderBookmarkNode(bookmarks::BookmarkModel* model,
@@ -68,7 +68,7 @@ class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
   void OnBookmarkNodeRemoved(
       bookmarks::BookmarkModel* model,
       const bookmarks::BookmarkNode* parent,
-      int index,
+      size_t index,
       std::unique_ptr<bookmarks::BookmarkNode> node) override;
 
   bookmarks::BookmarkModel* model_;

@@ -354,15 +354,18 @@ bool BookmarkManagerPrivatePasteFunction::RunOnReady() {
   // No need to test return value, if we got an empty list, we insert at end.
   if (params->selected_id_list)
     GetNodesFromVector(model, *params->selected_id_list, &nodes);
-  int highest_index = -1;  // -1 means insert at end of list.
+  int highest_index = -1;
   for (size_t i = 0; i < nodes.size(); ++i) {
     // + 1 so that we insert after the selection.
     int index = parent_node->GetIndexOf(nodes[i]) + 1;
     if (index > highest_index)
       highest_index = index;
   }
+  size_t insertion_index = (highest_index == -1)
+                               ? parent_node->children().size()
+                               : size_t{highest_index};
 
-  bookmarks::PasteFromClipboard(model, parent_node, highest_index);
+  bookmarks::PasteFromClipboard(model, parent_node, insertion_index);
   return true;
 }
 
@@ -435,11 +438,11 @@ bool BookmarkManagerPrivateDropFunction::RunOnReady() {
   content::WebContents* web_contents = GetSenderWebContents();
   DCHECK_EQ(VIEW_TYPE_TAB_CONTENTS, GetViewType(web_contents));
 
-  int drop_index;
+  size_t drop_index;
   if (params->index)
-    drop_index = *params->index;
+    drop_index = size_t{*params->index};
   else
-    drop_index = drop_parent->child_count();
+    drop_index = drop_parent->children().size();
 
   BookmarkManagerPrivateDragEventRouter* router =
       BookmarkManagerPrivateDragEventRouter::FromWebContents(web_contents);

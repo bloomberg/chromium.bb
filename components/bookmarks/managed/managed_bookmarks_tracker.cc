@@ -116,7 +116,7 @@ void ManagedBookmarksTracker::ReloadManagedBookmarks() {
 
 void ManagedBookmarksTracker::UpdateBookmarks(const BookmarkNode* folder,
                                               const base::ListValue* list) {
-  int folder_index = 0;
+  size_t folder_index = 0;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     // Extract the data for the next bookmark from the |list|.
     base::string16 title;
@@ -153,8 +153,8 @@ void ManagedBookmarksTracker::UpdateBookmarks(const BookmarkNode* folder,
   }
 
   // Remove any extra children of |folder| that haven't been reused.
-  while (folder->child_count() != folder_index)
-    model_->Remove(folder->GetChild(folder_index));
+  while (folder->children().size() != folder_index)
+    model_->Remove(folder->children()[folder_index].get());
 }
 
 // static

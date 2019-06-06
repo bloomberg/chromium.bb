@@ -221,11 +221,11 @@ void DeclarativeContentIsBookmarkedConditionTracker::BookmarkModelChanged() {}
 void DeclarativeContentIsBookmarkedConditionTracker::BookmarkNodeAdded(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* parent,
-    int index) {
+    size_t index) {
   if (!extensive_bookmark_changes_in_progress_) {
     for (const auto& web_contents_tracker_pair : per_web_contents_tracker_) {
       web_contents_tracker_pair.second->BookmarkAddedForUrl(
-          parent->GetChild(index)->url());
+          parent->children()[index]->url());
     }
   }
 }
@@ -233,7 +233,7 @@ void DeclarativeContentIsBookmarkedConditionTracker::BookmarkNodeAdded(
 void DeclarativeContentIsBookmarkedConditionTracker::BookmarkNodeRemoved(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* parent,
-    int old_index,
+    size_t old_index,
     const bookmarks::BookmarkNode* node,
     const std::set<GURL>& no_longer_bookmarked) {
   if (!extensive_bookmark_changes_in_progress_) {

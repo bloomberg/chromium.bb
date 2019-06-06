@@ -153,7 +153,7 @@ class BookmarkEditorViewTest : public testing::Test {
 TEST_F(BookmarkEditorViewTest, ModelsMatch) {
   CreateEditor(profile_.get(), NULL,
                BookmarkEditor::EditDetails::AddNodeInFolder(
-                   NULL, -1, GURL(), base::string16()),
+                   NULL, size_t{-1}, GURL(), base::string16()),
                BookmarkEditorView::SHOW_TREE);
   BookmarkEditorView::EditorNode* editor_root = editor_tree_model()->GetRoot();
   // The root should have two or three children: bookmark bar, other bookmarks
@@ -401,7 +401,7 @@ TEST_F(BookmarkEditorViewTest, NewFolder) {
 // in then the editor is initially created showing.
 TEST_F(BookmarkEditorViewTest, MoveFolder) {
   BookmarkEditor::EditDetails details = BookmarkEditor::EditDetails::AddFolder(
-      model_->bookmark_bar_node(), -1);
+      model_->bookmark_bar_node(), size_t{-1});
   details.urls.push_back(std::make_pair(GURL(base_path() + "x"),
                                         ASCIIToUTF16("z")));
   CreateEditor(profile_.get(), model_->bookmark_bar_node(),

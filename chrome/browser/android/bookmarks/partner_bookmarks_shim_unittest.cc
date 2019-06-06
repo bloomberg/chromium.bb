@@ -49,14 +49,14 @@ class PartnerBookmarksShimTest : public testing::Test {
                                   const base::string16& title) {
     if (!parent)
       parent = model_->bookmark_bar_node();
-    return model_->AddURL(parent, parent->child_count(), title, url);
+    return model_->AddURL(parent, parent->children().size(), title, url);
   }
 
   const BookmarkNode* AddFolder(const BookmarkNode* parent,
                                 const base::string16& title) {
     if (!parent)
       parent = model_->bookmark_bar_node();
-    return model_->AddFolder(parent, parent->child_count(), title);
+    return model_->AddFolder(parent, parent->children().size(), title);
   }
 
  protected:

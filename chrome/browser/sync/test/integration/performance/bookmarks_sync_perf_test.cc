@@ -44,8 +44,8 @@ class BookmarksSyncPerfTest : public SyncTest {
   // Returns a new unique bookmark title.
   std::string NextIndexedURLTitle();
 
-  int url_number_ = 0;
-  int url_title_number_ = 0;
+  size_t url_number_ = 0;
+  size_t url_title_number_ = 0;
   DISALLOW_COPY_AND_ASSIGN(BookmarksSyncPerfTest);
 };
 

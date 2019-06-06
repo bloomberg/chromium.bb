@@ -270,7 +270,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
     case IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK: {
       base::RecordAction(UserMetricsAction("BookmarkBar_ContextMenu_Add"));
 
-      int index;
+      size_t index;
       const BookmarkNode* parent =
           bookmarks::GetParentForNewNodes(parent_, selection_, &index);
       GURL url;
@@ -290,7 +290,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
       base::RecordAction(
           UserMetricsAction("BookmarkBar_ContextMenu_NewFolder"));
 
-      int index;
+      size_t index;
       const BookmarkNode* parent =
           bookmarks::GetParentForNewNodes(parent_, selection_, &index);
       BookmarkEditor::Show(
@@ -343,7 +343,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_PASTE: {
-      int index;
+      size_t index;
       const BookmarkNode* paste_target =
           bookmarks::GetParentForNewNodes(parent_, selection_, &index);
       if (!paste_target)

@@ -279,7 +279,7 @@ class BookmarkModelAssociator : public syncer::AssociatorInterface {
   // Helper method for creating a new native bookmark node.
   const bookmarks::BookmarkNode* CreateBookmarkNode(
       const bookmarks::BookmarkNode* parent_node,
-      int bookmark_index,
+      size_t bookmark_index,
       const syncer::BaseNode* sync_child_node,
       const GURL& url,
       Context* context,

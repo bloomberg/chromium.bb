@@ -47,9 +47,7 @@ class TreeViewTest : public ViewsTestBase {
   }
 
  protected:
-  TestNode* Add(TestNode* parent,
-                int index,
-                const std::string& title);
+  TestNode* Add(TestNode* parent, size_t index, const std::string& title);
 
   std::string TreeViewContentsAsString();
 
@@ -77,7 +75,7 @@ class TreeViewTest : public ViewsTestBase {
 };
 
 TestNode* TreeViewTest::Add(TestNode* parent,
-                            int index,
+                            size_t index,
                             const std::string& title) {
   std::unique_ptr<TestNode> new_node = std::make_unique<TestNode>();
   new_node->SetTitle(ASCIIToUTF16(title));

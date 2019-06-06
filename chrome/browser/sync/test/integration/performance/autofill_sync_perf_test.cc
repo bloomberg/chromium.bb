@@ -44,7 +44,7 @@ std::string IntToName(int n) {
 }
 
 void ForceSync(int profile) {
-  static int id = 0;
+  static size_t id = 0;
   ++id;
   EXPECT_TRUE(bookmarks_helper::AddURL(
                   profile, 0, bookmarks_helper::IndexedURLTitle(id),

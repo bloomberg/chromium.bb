@@ -277,11 +277,12 @@ void BookmarkModelMerger::MergeSubtree(
   // the children starting from index updates_tree_.at(remote_update).size() in
   // the parent bookmark node are the ones that are not present in the parent
   // sync node and tracked yet. So create all of the remaining local nodes.
-  const int index_of_new_local_nodes =
+  const size_t index_of_new_local_nodes =
       updates_tree_.count(remote_update) > 0
           ? updates_tree_.at(remote_update).size()
           : 0;
-  for (int i = index_of_new_local_nodes; i < local_node->child_count(); ++i) {
+  for (size_t i = index_of_new_local_nodes; i < local_node->children().size();
+       ++i) {
     ProcessLocalCreation(local_node, i);
   }
 }
@@ -289,7 +290,7 @@ void BookmarkModelMerger::MergeSubtree(
 void BookmarkModelMerger::ProcessRemoteCreation(
     const UpdateResponseData* remote_update,
     const bookmarks::BookmarkNode* local_parent,
-    int index) {
+    size_t index) {
   const EntityData& remote_update_entity = *remote_update->entity;
   const bookmarks::BookmarkNode* bookmark_node =
       CreateBookmarkNodeFromSpecifics(
@@ -321,8 +322,7 @@ void BookmarkModelMerger::ProcessRemoteCreation(
 
 void BookmarkModelMerger::ProcessLocalCreation(
     const bookmarks::BookmarkNode* parent,
-    int index) {
-  DCHECK_GT(index, -1);
+    size_t index) {
   const SyncedBookmarkTracker::Entity* parent_entity =
       bookmark_tracker_->GetEntityForBookmarkNode(parent);
   // Since we are merging top down, parent entity must be tracked.
@@ -345,21 +345,21 @@ void BookmarkModelMerger::ProcessLocalCreation(
   } else {
     const SyncedBookmarkTracker::Entity* predecessor_entity =
         bookmark_tracker_->GetEntityForBookmarkNode(
-            parent->GetChild(index - 1));
+            parent->children()[index - 1].get());
     pos = syncer::UniquePosition::After(
         syncer::UniquePosition::FromProto(
             predecessor_entity->metadata()->unique_position()),
         suffix);
   }
 
-  const bookmarks::BookmarkNode* node = parent->GetChild(index);
+  const bookmarks::BookmarkNode* node = parent->children()[index].get();
   const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, bookmark_model_, /*force_favicon_load=*/true);
   bookmark_tracker_->Add(sync_id, node, server_version, creation_time,
                          pos.ToProto(), specifics);
   // Mark the entity that it needs to be committed.
   bookmark_tracker_->IncrementSequenceNumber(sync_id);
-  for (int i = 0; i < node->child_count(); ++i) {
+  for (size_t i = 0; i < node->children().size(); ++i) {
     // If a local node hasn't matched with any remote entity, its descendants
     // will neither.
     ProcessLocalCreation(node, i);

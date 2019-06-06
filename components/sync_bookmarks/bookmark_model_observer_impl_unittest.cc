@@ -252,7 +252,7 @@ TEST_F(BookmarkModelObserverImplTest,
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
   std::vector<const bookmarks::BookmarkNode*> nodes;
-  for (int i = 0; i < 4; ++i) {
+  for (size_t i = 0; i < 4; ++i) {
     nodes.push_back(bookmark_model()->AddURL(
         /*parent=*/bookmark_bar_node, /*index=*/i, base::UTF8ToUTF16(kTitle),
         GURL(kUrl)));
@@ -600,7 +600,7 @@ TEST_F(BookmarkModelObserverImplTest, ShouldAddChildrenInArbitraryOrder) {
   //  |- folder4
 
   const bookmarks::BookmarkNode* nodes[5];
-  for (int i = 0; i < 5; i++) {
+  for (size_t i = 0; i < 5; i++) {
     nodes[i] = bookmark_model()->AddFolder(
         /*parent=*/bookmark_bar_node, /*index=*/i,
         base::UTF8ToUTF16("folder" + std::to_string(i)));

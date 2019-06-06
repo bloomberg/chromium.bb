@@ -54,19 +54,19 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* old_parent,
-                         int old_index,
+                         size_t old_index,
                          const bookmarks::BookmarkNode* new_parent,
-                         int new_index) override;
+                         size_t new_index) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* parent,
-                         int index) override;
+                         size_t index) override;
   void OnWillRemoveBookmarks(bookmarks::BookmarkModel* model,
                              const bookmarks::BookmarkNode* parent,
-                             int old_index,
+                             size_t old_index,
                              const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const bookmarks::BookmarkNode* parent,
-                           int old_index,
+                           size_t old_index,
                            const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& no_longer_bookmarked) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
@@ -108,7 +108,7 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
       const bookmarks::BookmarkNode* parent,
       bookmarks::BookmarkModel* model,
       favicon::FaviconService* favicon_service,
-      int index);
+      size_t index);
 
   // Overload of CreateBookmarkNode function above that helps to avoid
   // converting / parsing the bookmark title and URL multiple times.
@@ -119,7 +119,7 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
       const bookmarks::BookmarkNode* parent,
       bookmarks::BookmarkModel* model,
       favicon::FaviconService* favicon_service,
-      int index);
+      size_t index);
 
   // Sets the favicon of the given bookmark node from the given sync node.
   static void SetBookmarkFavicon(const syncer::BaseNode* sync_node,
@@ -147,7 +147,7 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   // the ID of the just-created node, or if creation fails, kInvalidID.
   static int64_t CreateSyncNode(const bookmarks::BookmarkNode* parent,
                                 bookmarks::BookmarkModel* model,
-                                int index,
+                                size_t index,
                                 syncer::WriteTransaction* trans,
                                 BookmarkModelAssociator* associator,
                                 syncer::DataTypeErrorHandler* error_handler);
@@ -199,7 +199,7 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   // false on failure.
   static bool PlaceSyncNode(MoveOrCreate operation,
                             const bookmarks::BookmarkNode* parent,
-                            int index,
+                            size_t index,
                             syncer::WriteTransaction* trans,
                             syncer::WriteNode* dst,
                             BookmarkModelAssociator* associator);

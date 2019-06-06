@@ -94,15 +94,15 @@ class FaviconChangeObserver : public bookmarks::BookmarkModelObserver {
   }
   void BookmarkNodeMoved(BookmarkModel* model,
                          const BookmarkNode* old_parent,
-                         int old_index,
+                         size_t old_index,
                          const BookmarkNode* new_parent,
-                         int new_index) override {}
+                         size_t new_index) override {}
   void BookmarkNodeAdded(BookmarkModel* model,
                          const BookmarkNode* parent,
-                         int index) override {}
+                         size_t index) override {}
   void BookmarkNodeRemoved(BookmarkModel* model,
                            const BookmarkNode* parent,
-                           int old_index,
+                           size_t old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override {}
   void BookmarkAllUserNodesRemoved(
@@ -137,13 +137,13 @@ std::set<GURL>* urls_with_favicons_ = nullptr;
 
 // Returns the number of nodes of node type |node_type| in |model| whose
 // titles match the string |title|.
-int CountNodesWithTitlesMatching(BookmarkModel* model,
-                                 BookmarkNode::Type node_type,
-                                 const base::string16& title) {
+size_t CountNodesWithTitlesMatching(BookmarkModel* model,
+                                    BookmarkNode::Type node_type,
+                                    const base::string16& title) {
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   // Walk through the model tree looking for bookmark nodes of node type
   // |node_type| whose titles match |title|.
-  int count = 0;
+  size_t count = 0;
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
     if ((node->type() == node_type) && (node->GetTitle() == title))
@@ -153,11 +153,11 @@ int CountNodesWithTitlesMatching(BookmarkModel* model,
 }
 
 // Returns the number of nodes of node type |node_type| in |model|.
-int CountNodes(BookmarkModel* model, BookmarkNode::Type node_type) {
+size_t CountNodes(BookmarkModel* model, BookmarkNode::Type node_type) {
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   // Walk through the model tree looking for bookmark nodes of node type
   // |node_type|.
-  int count = 0;
+  size_t count = 0;
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
     if (node->type() == node_type)
@@ -498,7 +498,7 @@ const BookmarkNode* AddURL(int profile,
 }
 
 const BookmarkNode* AddURL(int profile,
-                           int index,
+                           size_t index,
                            const std::string& title,
                            const GURL& url) {
   return AddURL(profile, GetBookmarkBarNode(profile), index, title, url);
@@ -506,7 +506,7 @@ const BookmarkNode* AddURL(int profile,
 
 const BookmarkNode* AddURL(int profile,
                            const BookmarkNode* parent,
-                           int index,
+                           size_t index,
                            const std::string& title,
                            const GURL& url) {
   BookmarkModel* model = GetBookmarkModel(profile);
@@ -542,14 +542,14 @@ const BookmarkNode* AddFolder(int profile,
 }
 
 const BookmarkNode* AddFolder(int profile,
-                              int index,
+                              size_t index,
                               const std::string& title) {
   return AddFolder(profile, GetBookmarkBarNode(profile), index, title);
 }
 
 const BookmarkNode* AddFolder(int profile,
                               const BookmarkNode* parent,
-                              int index,
+                              size_t index,
                               const std::string& title) {
   BookmarkModel* model = GetBookmarkModel(profile);
   if (bookmarks::GetBookmarkNodeByID(model, parent->id()) != parent) {
@@ -726,7 +726,7 @@ const BookmarkNode* SetURL(int profile,
 void Move(int profile,
           const BookmarkNode* node,
           const BookmarkNode* new_parent,
-          int index) {
+          size_t index) {
   BookmarkModel* model = GetBookmarkModel(profile);
   ASSERT_EQ(bookmarks::GetBookmarkNodeByID(model, node->id()), node)
       << "Node " << node->GetTitle() << " does not belong to "
@@ -741,7 +741,7 @@ void Move(int profile,
   model->Move(node, new_parent, index);
 }
 
-void Remove(int profile, const BookmarkNode* parent, int index) {
+void Remove(int profile, const BookmarkNode* parent, size_t index) {
   BookmarkModel* model = GetBookmarkModel(profile);
   ASSERT_EQ(bookmarks::GetBookmarkNodeByID(model, parent->id()), parent)
       << "Node " << parent->GetTitle() << " does not belong to "
@@ -749,10 +749,11 @@ void Remove(int profile, const BookmarkNode* parent, int index) {
   if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* v_parent = nullptr;
     FindNodeInVerifier(model, parent, &v_parent);
-    ASSERT_TRUE(NodesMatch(parent->GetChild(index), v_parent->GetChild(index)));
-    GetVerifierBookmarkModel()->Remove(v_parent->GetChild(index));
+    ASSERT_TRUE(NodesMatch(parent->children()[index].get(),
+                           v_parent->children()[index].get()));
+    GetVerifierBookmarkModel()->Remove(v_parent->children()[index].get());
   }
-  model->Remove(parent->GetChild(index));
+  model->Remove(parent->children()[index].get());
 }
 
 void RemoveAll(int profile) {
@@ -789,8 +790,10 @@ void ReverseChildOrder(int profile, const BookmarkNode* parent) {
       << "Profile " << profile;
   if (parent->children().empty())
     return;
-  for (int i = 0; i < parent->child_count(); ++i)
-    Move(profile, parent->GetChild(i), parent, parent->child_count() - i);
+  for (size_t i = 0; i < parent->children().size(); ++i) {
+    Move(profile, parent->children()[i].get(), parent,
+         parent->children().size() - i);
+  }
 }
 
 bool ModelMatchesVerifier(int profile) {
@@ -875,23 +878,23 @@ const BookmarkNode* GetUniqueNodeByURL(int profile, const GURL& url) {
   return nodes[0];
 }
 
-int CountAllBookmarks(int profile) {
+size_t CountAllBookmarks(int profile) {
   return CountNodes(GetBookmarkModel(profile), BookmarkNode::URL);
 }
 
-int CountBookmarksWithTitlesMatching(int profile, const std::string& title) {
+size_t CountBookmarksWithTitlesMatching(int profile, const std::string& title) {
   return CountNodesWithTitlesMatching(GetBookmarkModel(profile),
                                       BookmarkNode::URL,
                                       base::UTF8ToUTF16(title));
 }
 
-int CountBookmarksWithUrlsMatching(int profile, const GURL& url) {
+size_t CountBookmarksWithUrlsMatching(int profile, const GURL& url) {
   std::vector<const BookmarkNode*> nodes;
   GetBookmarkModel(profile)->GetNodesByURL(url, &nodes);
   return nodes.size();
 }
 
-int CountFoldersWithTitlesMatching(int profile, const std::string& title) {
+size_t CountFoldersWithTitlesMatching(int profile, const std::string& title) {
   return CountNodesWithTitlesMatching(GetBookmarkModel(profile),
                                       BookmarkNode::FOLDER,
                                       base::UTF8ToUTF16(title));
@@ -932,23 +935,23 @@ gfx::Image Create1xFaviconFromPNGFile(const std::string& path) {
       base::RefCountedString::TakeString(&contents));
 }
 
-std::string IndexedURL(int i) {
+std::string IndexedURL(size_t i) {
   return "http://www.host.ext:1234/path/filename/" + base::NumberToString(i);
 }
 
-std::string IndexedURLTitle(int i) {
+std::string IndexedURLTitle(size_t i) {
   return "URL Title " + base::NumberToString(i);
 }
 
-std::string IndexedFolderName(int i) {
+std::string IndexedFolderName(size_t i) {
   return "Folder Name " + base::NumberToString(i);
 }
 
-std::string IndexedSubfolderName(int i) {
+std::string IndexedSubfolderName(size_t i) {
   return "Subfolder Name " + base::NumberToString(i);
 }
 
-std::string IndexedSubsubfolderName(int i) {
+std::string IndexedSubsubfolderName(size_t i) {
   return "Subsubfolder Name " + base::NumberToString(i);
 }
 

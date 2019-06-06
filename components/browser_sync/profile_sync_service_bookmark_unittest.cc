@@ -935,10 +935,10 @@ TEST_F(ProfileSyncServiceBookmarkTest, InitialModelAssociateWithDeleteJournal) {
 TEST_F(ProfileSyncServiceBookmarkTest,
        InitialModelAssociateVerifyExternalIdMatch) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
-  const int kNumFolders = 10;
-  const int kNumBookmarks = 10;
-  const int kFolderToIncludeBookmarks = 7;
-  const int kBookmarkToDelete = 4;
+  constexpr size_t kNumFolders = 10;
+  constexpr size_t kNumBookmarks = 10;
+  constexpr size_t kFolderToIncludeBookmarks = 7;
+  constexpr size_t kBookmarkToDelete = 4;
 
   int64_t folder_ids[kNumFolders];
   int64_t bookmark_ids[kNumBookmarks];
@@ -961,7 +961,7 @@ TEST_F(ProfileSyncServiceBookmarkTest,
   // +- folder (#9)
 
   const BookmarkNode* parent_folder = nullptr;
-  for (int i = 0; i < kNumFolders; i++) {
+  for (size_t i = 0; i < kNumFolders; i++) {
     const BookmarkNode* folder = model()->AddFolder(
         model()->bookmark_bar_node(), i, base::ASCIIToUTF16("folder"));
     folder_ids[i] = folder->id();
@@ -969,7 +969,7 @@ TEST_F(ProfileSyncServiceBookmarkTest,
       parent_folder = folder;
   }
 
-  for (int i = 0; i < kNumBookmarks; i++) {
+  for (size_t i = 0; i < kNumBookmarks; i++) {
     const BookmarkNode* bookmark =
         model()->AddURL(parent_folder, i, base::ASCIIToUTF16("bookmark"),
                         GURL("http://www.google.com/"));
@@ -1040,16 +1040,16 @@ TEST_F(ProfileSyncServiceBookmarkTest,
 
   // Only one native node should have been deleted and no nodes cloned due to
   // matching folder names.
-  EXPECT_EQ(kNumFolders, model()->bookmark_bar_node()->child_count());
-  EXPECT_EQ(kNumBookmarks - 1, parent_folder->child_count());
+  EXPECT_EQ(kNumFolders, model()->bookmark_bar_node()->children().size());
+  EXPECT_EQ(kNumBookmarks - 1, parent_folder->children().size());
   EXPECT_EQ(total_node_count - 1,
             model()->bookmark_bar_node()->GetTotalNodeCount());
 
   // Verify that the right bookmark got deleted and no bookmarks reordered.
-  for (int i = 0; i < parent_folder->child_count(); i++) {
-    int index_in_bookmark_ids = (i < kBookmarkToDelete) ? i : i + 1;
+  for (size_t i = 0; i < parent_folder->children().size(); i++) {
+    size_t index_in_bookmark_ids = (i < kBookmarkToDelete) ? i : i + 1;
     EXPECT_EQ(bookmark_ids[index_in_bookmark_ids],
-              parent_folder->GetChild(i)->id());
+              parent_folder->children()[i]->id());
   }
 }
 
@@ -1424,7 +1424,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, RepeatedMiddleInsertion) {
   // Create two book-end nodes to insert between.
   model()->AddFolder(model()->other_node(), 0, base::ASCIIToUTF16("Alpha"));
   model()->AddFolder(model()->other_node(), 1, base::ASCIIToUTF16("Omega"));
-  int count = 2;
+  size_t count = 2;
 
   // Test insertion in first half of range by repeatedly inserting in second
   // position.
@@ -1445,7 +1445,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, RepeatedMiddleInsertion) {
   }
 
   // Verify that the browser model matches the sync model.
-  EXPECT_EQ(model()->other_node()->child_count(), count);
+  EXPECT_EQ(model()->other_node()->children().size(), count);
   ExpectModelMatch();
 }
 
@@ -1611,7 +1611,7 @@ class ProfileSyncServiceBookmarkTestWithData
   // date for CompareWithTestData()).
   void PopulateFromTestData(const BookmarkNode* node,
                             const TestData* data,
-                            int size,
+                            size_t size,
                             int* running_count);
   void CompareWithTestData(const BookmarkNode* node,
                            const TestData* data,
@@ -1749,12 +1749,12 @@ ProfileSyncServiceBookmarkTestWithData::ProfileSyncServiceBookmarkTestWithData()
 void ProfileSyncServiceBookmarkTestWithData::PopulateFromTestData(
     const BookmarkNode* node,
     const TestData* data,
-    int size,
+    size_t size,
     int* running_count) {
   ASSERT_TRUE(node);
   ASSERT_TRUE(data);
   ASSERT_TRUE(node->is_folder());
-  for (int i = 0; i < size; ++i) {
+  for (size_t i = 0; i < size; ++i) {
     const TestData& item = data[i];
     if (item.url) {
       const base::Time add_time =

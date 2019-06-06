@@ -455,11 +455,11 @@ TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
   // folder.
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(model->bookmark_bar_node());
-  int index = -1;
+  size_t index = size_t{-1};
   const BookmarkNode* real_parent =
       GetParentForNewNodes(model->bookmark_bar_node(), nodes, &index);
   EXPECT_EQ(real_parent, model->bookmark_bar_node());
-  EXPECT_EQ(0, index);
+  EXPECT_EQ(0u, index);
 
   nodes.clear();
 
@@ -472,7 +472,7 @@ TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
   nodes.push_back(page1);
   real_parent = GetParentForNewNodes(model->bookmark_bar_node(), nodes, &index);
   EXPECT_EQ(real_parent, model->bookmark_bar_node());
-  EXPECT_EQ(1, index);
+  EXPECT_EQ(1u, index);
 
   // This tests the case where selection has more than one item.
   const BookmarkNode* folder1 =
@@ -480,13 +480,13 @@ TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
   nodes.push_back(folder1);
   real_parent = GetParentForNewNodes(model->bookmark_bar_node(), nodes, &index);
   EXPECT_EQ(real_parent, model->bookmark_bar_node());
-  EXPECT_EQ(2, index);
+  EXPECT_EQ(2u, index);
 
   // This tests the case where selection doesn't contain any items.
   nodes.clear();
   real_parent = GetParentForNewNodes(model->bookmark_bar_node(), nodes, &index);
   EXPECT_EQ(real_parent, model->bookmark_bar_node());
-  EXPECT_EQ(2, index);
+  EXPECT_EQ(2u, index);
 }
 
 // Verifies that meta info is copied when nodes are cloned.

@@ -640,7 +640,8 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::AddFolder(
   const BookmarkNode* parent = GetNodeByID(bookmark_id, type);
 
   const BookmarkNode* new_node = bookmark_model_->AddFolder(
-      parent, index, base::android::ConvertJavaStringToUTF16(env, j_title));
+      parent, size_t{index},
+      base::android::ConvertJavaStringToUTF16(env, j_title));
   DCHECK(new_node);
   ScopedJavaLocalRef<jobject> new_java_obj =
       JavaBookmarkIdCreateBookmarkId(
@@ -690,7 +691,7 @@ void BookmarkBridge::MoveBookmark(
   bookmark_id = JavaBookmarkIdGetId(env, j_parent_id_obj);
   type = JavaBookmarkIdGetType(env, j_parent_id_obj);
   const BookmarkNode* new_parent_node = GetNodeByID(bookmark_id, type);
-  bookmark_model_->Move(node, new_parent_node, index);
+  bookmark_model_->Move(node, new_parent_node, size_t{index});
 }
 
 ScopedJavaLocalRef<jobject> BookmarkBridge::AddBookmark(
@@ -706,8 +707,7 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::AddBookmark(
   const BookmarkNode* parent = GetNodeByID(bookmark_id, type);
 
   const BookmarkNode* new_node = bookmark_model_->AddURL(
-      parent,
-      index,
+      parent, size_t{index},
       base::android::ConvertJavaStringToUTF16(env, j_title),
       GURL(base::android::ConvertJavaStringToUTF16(env, j_url)));
   DCHECK(new_node);
@@ -914,10 +914,10 @@ void BookmarkBridge::BookmarkModelBeingDeleted(BookmarkModel* model) {
 }
 
 void BookmarkBridge::BookmarkNodeMoved(BookmarkModel* model,
-                                        const BookmarkNode* old_parent,
-                                        int old_index,
-                                        const BookmarkNode* new_parent,
-                                        int new_index) {
+                                       const BookmarkNode* old_parent,
+                                       size_t old_index,
+                                       const BookmarkNode* new_parent,
+                                       size_t new_index) {
   if (!IsLoaded())
     return;
 
@@ -926,13 +926,13 @@ void BookmarkBridge::BookmarkNodeMoved(BookmarkModel* model,
   if (obj.is_null())
     return;
   Java_BookmarkBridge_bookmarkNodeMoved(
-      env, obj, CreateJavaBookmark(old_parent), old_index,
-      CreateJavaBookmark(new_parent), new_index);
+      env, obj, CreateJavaBookmark(old_parent), int{old_index},
+      CreateJavaBookmark(new_parent), int{new_index});
 }
 
 void BookmarkBridge::BookmarkNodeAdded(BookmarkModel* model,
-                                        const BookmarkNode* parent,
-                                        int index) {
+                                       const BookmarkNode* parent,
+                                       size_t index) {
   if (!IsLoaded())
     return;
 
@@ -941,14 +941,14 @@ void BookmarkBridge::BookmarkNodeAdded(BookmarkModel* model,
   if (obj.is_null())
     return;
   Java_BookmarkBridge_bookmarkNodeAdded(env, obj, CreateJavaBookmark(parent),
-                                        index);
+                                        int{index});
 }
 
 void BookmarkBridge::BookmarkNodeRemoved(BookmarkModel* model,
-                                          const BookmarkNode* parent,
-                                          int old_index,
-                                          const BookmarkNode* node,
-                                          const std::set<GURL>& removed_urls) {
+                                         const BookmarkNode* parent,
+                                         size_t old_index,
+                                         const BookmarkNode* node,
+                                         const std::set<GURL>& removed_urls) {
   if (!IsLoaded())
     return;
 
@@ -957,7 +957,8 @@ void BookmarkBridge::BookmarkNodeRemoved(BookmarkModel* model,
   if (obj.is_null())
     return;
   Java_BookmarkBridge_bookmarkNodeRemoved(env, obj, CreateJavaBookmark(parent),
-                                          old_index, CreateJavaBookmark(node));
+                                          int{old_index},
+                                          CreateJavaBookmark(node));
 }
 
 void BookmarkBridge::BookmarkAllUserNodesRemoved(

@@ -222,7 +222,7 @@ int GetBookmarkDropOperation(Profile* profile,
                              const ui::DropTargetEvent& event,
                              const bookmarks::BookmarkNodeData& data,
                              const BookmarkNode* parent,
-                             int index) {
+                             size_t index) {
   const base::FilePath& profile_path = profile->GetPath();
 
   if (data.IsFromProfilePath(profile_path) && data.size() > 1)
@@ -256,7 +256,7 @@ int GetBookmarkDropOperation(Profile* profile,
 bool IsValidBookmarkDropLocation(Profile* profile,
                                  const bookmarks::BookmarkNodeData& data,
                                  const BookmarkNode* drop_parent,
-                                 int index) {
+                                 size_t index) {
   if (!drop_parent->is_folder()) {
     NOTREACHED();
     return false;
@@ -278,7 +278,8 @@ bool IsValidBookmarkDropLocation(Profile* profile,
       const BookmarkNode* node = nodes[i];
       int node_index = (drop_parent == node->parent()) ?
           drop_parent->GetIndexOf(nodes[i]) : -1;
-      if (node_index != -1 && (index == node_index || index == node_index + 1))
+      if (node_index != -1 &&
+          (index == size_t{node_index} || index == size_t{node_index} + 1))
         return false;
 
       // drop_parent can't accept a child that is an ancestor.

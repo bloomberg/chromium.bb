@@ -39,14 +39,14 @@ class UI_BASE_EXPORT TreeModelObserver {
   // Notification that nodes were added to the specified parent.
   virtual void TreeNodesAdded(TreeModel* model,
                               TreeModelNode* parent,
-                              int start,
-                              int count) = 0;
+                              size_t start,
+                              size_t count) = 0;
 
   // Notification that nodes were removed from the specified parent.
   virtual void TreeNodesRemoved(TreeModel* model,
                                 TreeModelNode* parent,
-                                int start,
-                                int count) = 0;
+                                size_t start,
+                                size_t count) = 0;
 
   // Notification that the contents of a node has changed.
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) = 0;

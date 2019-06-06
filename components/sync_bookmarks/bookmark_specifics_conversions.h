@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_SPECIFICS_CONVERSIONS_H_
 #define COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_SPECIFICS_CONVERSIONS_H_
 
+#include <stddef.h>
+
 namespace bookmarks {
 class BookmarkModel;
 class BookmarkNode;
@@ -32,7 +34,7 @@ sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
 const bookmarks::BookmarkNode* CreateBookmarkNodeFromSpecifics(
     const sync_pb::BookmarkSpecifics& specifics,
     const bookmarks::BookmarkNode* parent,
-    int index,
+    size_t index,
     bool is_folder,
     bookmarks::BookmarkModel* model,
     favicon::FaviconService* favicon_service);

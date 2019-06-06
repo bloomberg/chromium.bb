@@ -34,7 +34,7 @@ TEST(BookmarkEditorTest, ApplyEditsWithNoFolderChange) {
   }
   {
     BookmarkEditor::EditDetails detail(
-        BookmarkEditor::EditDetails::AddFolder(bookmarkbar, -1));
+        BookmarkEditor::EditDetails::AddFolder(bookmarkbar, size_t{-1}));
     BookmarkEditor::ApplyEditsWithNoFolderChange(model.get(),
                                                  bookmarkbar,
                                                  detail,

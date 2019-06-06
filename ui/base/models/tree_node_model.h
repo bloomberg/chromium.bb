@@ -87,10 +87,9 @@ class TreeNode : public TreeModelNode {
 
   // Adds |node| as a child of this node, at |index|. Returns a raw pointer to
   // the node.
-  NodeType* Add(std::unique_ptr<NodeType> node, int index) {
+  NodeType* Add(std::unique_ptr<NodeType> node, size_t index) {
     DCHECK(node);
-    DCHECK_GE(index, 0);
-    DCHECK_LE(size_t{index}, children_.size());
+    DCHECK_LE(index, children_.size());
     DCHECK(!node->parent_);
     node->parent_ = static_cast<NodeType*>(this);
     NodeType* node_ptr = node.get();
@@ -100,13 +99,12 @@ class TreeNode : public TreeModelNode {
 
   // Shorthand for "add at end".
   NodeType* Add(std::unique_ptr<NodeType> node) {
-    return Add(std::move(node), child_count());
+    return Add(std::move(node), children_.size());
   }
 
   // Removes the node at the given index. Returns the removed node.
-  std::unique_ptr<NodeType> Remove(int index) {
-    DCHECK_GE(index, 0);
-    DCHECK_LT(size_t{index}, children_.size());
+  std::unique_ptr<NodeType> Remove(size_t index) {
+    DCHECK_LT(index, children_.size());
     children_[index]->parent_ = nullptr;
     std::unique_ptr<NodeType> ptr = std::move(children_[index]);
     children_.erase(children_.begin() + index);
@@ -235,7 +233,9 @@ class TreeNodeModel : public TreeModel {
     return static_cast<const NodeType*>(model_node);
   }
 
-  NodeType* Add(NodeType* parent, std::unique_ptr<NodeType> node, int index) {
+  NodeType* Add(NodeType* parent,
+                std::unique_ptr<NodeType> node,
+                size_t index) {
     DCHECK(parent);
     DCHECK(node);
     NodeType* node_ptr = parent->Add(std::move(node), index);
@@ -245,10 +245,10 @@ class TreeNodeModel : public TreeModel {
 
   // Shorthand for "add at end".
   NodeType* Add(NodeType* parent, std::unique_ptr<NodeType> node) {
-    return Add(parent, std::move(node), parent->child_count());
+    return Add(parent, std::move(node), parent->children().size());
   }
 
-  std::unique_ptr<NodeType> Remove(NodeType* parent, int index) {
+  std::unique_ptr<NodeType> Remove(NodeType* parent, size_t index) {
     DCHECK(parent);
     std::unique_ptr<NodeType> owned_node = parent->Remove(index);
     NotifyObserverTreeNodesRemoved(parent, index, 1);
@@ -257,15 +257,19 @@ class TreeNodeModel : public TreeModel {
 
   std::unique_ptr<NodeType> Remove(NodeType* parent, NodeType* node) {
     DCHECK(parent);
-    return Remove(parent, parent->GetIndexOf(node));
+    return Remove(parent, size_t{parent->GetIndexOf(node)});
   }
 
-  void NotifyObserverTreeNodesAdded(NodeType* parent, int start, int count) {
+  void NotifyObserverTreeNodesAdded(NodeType* parent,
+                                    size_t start,
+                                    size_t count) {
     for (TreeModelObserver& observer : observer_list_)
       observer.TreeNodesAdded(this, parent, start, count);
   }
 
-  void NotifyObserverTreeNodesRemoved(NodeType* parent, int start, int count) {
+  void NotifyObserverTreeNodesRemoved(NodeType* parent,
+                                      size_t start,
+                                      size_t count) {
     for (TreeModelObserver& observer : observer_list_)
       observer.TreeNodesRemoved(this, parent, start, count);
   }

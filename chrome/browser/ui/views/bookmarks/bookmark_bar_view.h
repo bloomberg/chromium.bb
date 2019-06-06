@@ -106,7 +106,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // contained in the overflow menu.
   const bookmarks::BookmarkNode* GetNodeForButtonAtModelIndex(
       const gfx::Point& loc,
-      int* model_start_index);
+      size_t* model_start_index);
 
   // Returns the MenuButton for node.
   views::MenuButton* GetMenuButtonForNode(const bookmarks::BookmarkNode* node);
@@ -194,15 +194,15 @@ class BookmarkBarView : public views::AccessiblePaneView,
   void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* old_parent,
-                         int old_index,
+                         size_t old_index,
                          const bookmarks::BookmarkNode* new_parent,
-                         int new_index) override;
+                         size_t new_index) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* parent,
-                         int index) override;
+                         size_t index) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const bookmarks::BookmarkNode* parent,
-                           int old_index,
+                           size_t old_index,
                            const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
@@ -266,7 +266,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // Returns the index of the first hidden bookmark button. If all buttons are
   // visible, this returns GetBookmarkButtonCount().
-  int GetFirstHiddenNodeIndex();
+  size_t GetFirstHiddenNodeIndex();
 
   // Creates the button showing the "Other Bookmarks" folder.
   views::MenuButton* CreateOtherBookmarksButton();
@@ -292,13 +292,13 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // is required.
   bool BookmarkNodeAddedImpl(bookmarks::BookmarkModel* model,
                              const bookmarks::BookmarkNode* parent,
-                             int index);
+                             size_t index);
 
   // Implementation for BookmarkNodeRemoved. Returns true if LayoutAndPaint() is
   // required.
   bool BookmarkNodeRemovedImpl(bookmarks::BookmarkModel* model,
                                const bookmarks::BookmarkNode* parent,
-                               int index);
+                               size_t index);
 
   // If the node is a child of the root node, the button is updated
   // appropriately.
@@ -338,7 +338,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // removed.
   views::Button* DetermineViewToThrobFromRemove(
       const bookmarks::BookmarkNode* parent,
-      int old_index);
+      size_t old_index);
 
   // Sets/updates the colors and icons for all the child objects in the
   // bookmarks bar.
@@ -364,11 +364,11 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // Inserts |button| in logical position |index| in the bar, maintaining
   // correct focus traversal order.
-  void InsertBookmarkButtonAtIndex(views::View* button, int index);
+  void InsertBookmarkButtonAtIndex(views::View* button, size_t index);
 
   // Returns the model index for the bookmark associated with |button|,
-  // or -1 if |button| is not a bookmark button from this bar.
-  int GetIndexForButton(views::View* button);
+  // or size_t{-1} if |button| is not a bookmark button from this bar.
+  size_t GetIndexForButton(views::View* button);
 
   // Returns the color that should be used to draw text on the bookmark bar.
   SkColor GetBookmarkBarTextColor();

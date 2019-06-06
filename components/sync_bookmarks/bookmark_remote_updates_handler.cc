@@ -49,13 +49,13 @@ void TraverseAndAppendChildren(
   }
 }
 
-int ComputeChildNodeIndex(const bookmarks::BookmarkNode* parent,
-                          const sync_pb::UniquePosition& unique_position,
-                          const SyncedBookmarkTracker* bookmark_tracker) {
+size_t ComputeChildNodeIndex(const bookmarks::BookmarkNode* parent,
+                             const sync_pb::UniquePosition& unique_position,
+                             const SyncedBookmarkTracker* bookmark_tracker) {
   const syncer::UniquePosition position =
       syncer::UniquePosition::FromProto(unique_position);
-  for (int i = 0; i < parent->child_count(); ++i) {
-    const bookmarks::BookmarkNode* child = parent->GetChild(i);
+  for (size_t i = 0; i < parent->children().size(); ++i) {
+    const bookmarks::BookmarkNode* child = parent->children()[i].get();
     const SyncedBookmarkTracker::Entity* child_entity =
         bookmark_tracker->GetEntityForBookmarkNode(child);
     DCHECK(child_entity);
@@ -66,7 +66,7 @@ int ComputeChildNodeIndex(const bookmarks::BookmarkNode* parent,
       return i;
     }
   }
-  return parent->child_count();
+  return parent->children().size();
 }
 
 void ApplyRemoteUpdate(
@@ -98,8 +98,8 @@ void ApplyRemoteUpdate(
   UpdateBookmarkNodeFromSpecifics(update_entity.specifics.bookmark(), node,
                                   model, favicon_service);
   // Compute index information before updating the |tracker|.
-  const int old_index = old_parent->GetIndexOf(node);
-  const int new_index =
+  const size_t old_index = size_t{old_parent->GetIndexOf(node)};
+  const size_t new_index =
       ComputeChildNodeIndex(new_parent, update_entity.unique_position, tracker);
   tracker->Update(update_entity.id, update.response_version,
                   update_entity.modification_time,

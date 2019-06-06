@@ -151,22 +151,22 @@ void BookmarkMenuBridge::BookmarkModelBeingDeleted(BookmarkModel* model) {
 
 void BookmarkMenuBridge::BookmarkNodeMoved(BookmarkModel* model,
                                            const BookmarkNode* old_parent,
-                                           int old_index,
+                                           size_t old_index,
                                            const BookmarkNode* new_parent,
-                                           int new_index) {
+                                           size_t new_index) {
   InvalidateMenu();
 }
 
 void BookmarkMenuBridge::BookmarkNodeAdded(BookmarkModel* model,
                                            const BookmarkNode* parent,
-                                           int index) {
+                                           size_t index) {
   InvalidateMenu();
 }
 
 void BookmarkMenuBridge::BookmarkNodeRemoved(
     BookmarkModel* model,
     const BookmarkNode* parent,
-    int old_index,
+    size_t old_index,
     const BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
   InvalidateMenu();
