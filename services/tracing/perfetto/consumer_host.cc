@@ -25,9 +25,9 @@
 #include "services/tracing/perfetto/track_event_json_exporter.h"
 #include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/observable_events.h"
-#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_config.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_stats.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/protos/perfetto/config/trace_config.pb.h"
 
 namespace tracing {

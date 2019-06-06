@@ -6,7 +6,7 @@
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_PERFETTO_CONFIG_H_
 
 #include "base/component_export.h"
-#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_config.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 
 namespace base {
 namespace trace_event {

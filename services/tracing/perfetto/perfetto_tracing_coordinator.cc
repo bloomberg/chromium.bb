@@ -25,9 +25,9 @@
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/consumer.h"
-#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_config.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_stats.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/tracing_service.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 
 namespace tracing {
 
