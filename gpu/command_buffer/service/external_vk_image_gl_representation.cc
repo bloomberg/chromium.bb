@@ -12,10 +12,51 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 
+#define GL_LAYOUT_GENERAL_EXT 0x958D
 #define GL_LAYOUT_COLOR_ATTACHMENT_EXT 0x958E
+#define GL_LAYOUT_DEPTH_STENCIL_ATTACHMENT_EXT 0x958F
+#define GL_LAYOUT_DEPTH_STENCIL_READ_ONLY_EXT 0x9590
+#define GL_LAYOUT_SHADER_READ_ONLY_EXT 0x9591
+#define GL_LAYOUT_TRANSFER_SRC_EXT 0x9592
+#define GL_LAYOUT_TRANSFER_DST_EXT 0x9593
+#define GL_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_EXT 0x9530
+#define GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT 0x9531
+
 #define GL_HANDLE_TYPE_OPAQUE_FD_EXT 0x9586
 
 namespace gpu {
+
+namespace {
+
+GLenum ToGLImageLayout(VkImageLayout layout) {
+  switch (layout) {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+      return GL_NONE;
+    case VK_IMAGE_LAYOUT_GENERAL:
+      return GL_LAYOUT_GENERAL_EXT;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+      return GL_LAYOUT_COLOR_ATTACHMENT_EXT;
+    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+      return GL_LAYOUT_DEPTH_STENCIL_ATTACHMENT_EXT;
+    case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+      return GL_LAYOUT_DEPTH_STENCIL_READ_ONLY_EXT;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+      return GL_LAYOUT_SHADER_READ_ONLY_EXT;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+      return GL_LAYOUT_TRANSFER_SRC_EXT;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+      return GL_LAYOUT_TRANSFER_DST_EXT;
+    case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR:
+      return GL_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_EXT;
+    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR:
+      return GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT;
+    default:
+      NOTREACHED() << "Invalid image layout " << layout;
+      return GL_NONE;
+  }
+}
+
+}  // namespace
 
 ExternalVkImageGlRepresentation::ExternalVkImageGlRepresentation(
     SharedImageManager* manager,
@@ -54,7 +95,10 @@ bool ExternalVkImageGlRepresentation::BeginAccess(GLenum mode) {
   for (auto& handle : handles) {
     GLuint gl_semaphore = ImportVkSemaphoreIntoGL(std::move(handle));
     if (gl_semaphore) {
-      GLenum src_layout = GL_LAYOUT_COLOR_ATTACHMENT_EXT;
+      GrVkImageInfo info;
+      auto result = backing_impl()->backend_texture().getVkImageInfo(&info);
+      DCHECK(result);
+      GLenum src_layout = ToGLImageLayout(info.fImageLayout);
       api()->glWaitSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1,
                                   &texture_service_id_, &src_layout);
       api()->glDeleteSemaphoresEXTFn(1, &gl_semaphore);
@@ -114,7 +158,10 @@ void ExternalVkImageGlRepresentation::EndAccess() {
     return;
   }
 
-  GLenum dst_layout = GL_LAYOUT_COLOR_ATTACHMENT_EXT;
+  GrVkImageInfo info;
+  auto result = backing_impl()->backend_texture().getVkImageInfo(&info);
+  DCHECK(result);
+  GLenum dst_layout = ToGLImageLayout(info.fImageLayout);
   api()->glSignalSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1,
                                 &texture_service_id_, &dst_layout);
   api()->glDeleteSemaphoresEXTFn(1, &gl_semaphore);
