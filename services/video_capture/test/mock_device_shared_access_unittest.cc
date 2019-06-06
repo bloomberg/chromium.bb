@@ -383,6 +383,11 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest,
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
   subscription_2_.reset();
   wait_loop.Run();
+
+  // DeviceMediaToMojoAdapter::Stop() issues a DeleteSoon for its |receiver_|
+  // on the current sequence. Wait for this before exiting the test in order to
+  // avoid leaked object failing ASAN tests. See also  https://crbug.com/961066.
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MockVideoCaptureDeviceSharedAccessTest,
@@ -396,6 +401,11 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest,
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
   source_.reset();
   wait_loop.Run();
+
+  // DeviceMediaToMojoAdapter::Stop() issues a DeleteSoon for its |receiver_|
+  // on the current sequence. Wait for this before exiting the test in order to
+  // avoid leaked object failing ASAN tests. See also  https://crbug.com/961066.
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MockVideoCaptureDeviceSharedAccessTest,
