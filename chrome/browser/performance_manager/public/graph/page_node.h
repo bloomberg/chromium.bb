@@ -7,6 +7,10 @@
 
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/public/graph/node.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/resource_coordinator/public/mojom/lifecycle.mojom-shared.h"
+
+class GURL;
 
 namespace performance_manager {
 
@@ -17,11 +21,43 @@ class PageNodeObserver;
 // Extensions.
 class PageNode : public Node {
  public:
+  using LifecycleState = resource_coordinator::mojom::LifecycleState;
   using Observer = PageNodeObserver;
   class ObserverDefaultImpl;
 
   PageNode();
   ~PageNode() override;
+
+  // Returns the page almost idle state of this page.
+  // See PageNodeObserver::OnPageAlmostIdleChanged.
+  virtual bool IsPageAlmostIdle() const = 0;
+
+  // Returns true if this page is currently visible, false otherwise.
+  // See PageNodeObserver::OnIsVisibleChanged.
+  virtual bool IsVisible() const = 0;
+
+  // Returns true if this page is currently loading, false otherwise.
+  // See PageNodeObserver::OnIsLoadingChanged.
+  virtual bool IsLoading() const = 0;
+
+  // Returns the UKM source ID associated with the URL of the main frame of
+  // this page.
+  // See PageNodeObserver::OnUkmSourceIdChanged.
+  virtual ukm::SourceId GetUkmSourceID() const = 0;
+
+  // Returns the lifecycle state of this page. This is aggregated from the
+  // lifecycle state of each frame in the frame tree. See
+  // PageNodeObserver::OnLifecycleStateChanged.
+  virtual LifecycleState GetLifecycleState() const = 0;
+
+  // Returns the navigation ID associated with the last committed navigation
+  // event for the main frame of this page.
+  // See PageNodeObserver::OnMainFrameNavigationCommitted.
+  virtual int64_t GetNavigationID() const = 0;
+
+  // Returns the URL the main frame last committed a navigation to.
+  // See PageNodeObserver::OnMainFrameNavigationCommitted.
+  virtual const GURL& GetMainFrameUrl() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageNode);

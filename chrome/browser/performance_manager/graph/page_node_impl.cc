@@ -341,6 +341,41 @@ void PageNodeImpl::LeaveGraph() {
   NodeBase::LeaveGraph();
 }
 
+bool PageNodeImpl::IsPageAlmostIdle() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return page_almost_idle();
+}
+
+bool PageNodeImpl::IsVisible() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_visible();
+}
+
+bool PageNodeImpl::IsLoading() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_loading();
+}
+
+ukm::SourceId PageNodeImpl::GetUkmSourceID() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return ukm_source_id();
+}
+
+PageNodeImpl::LifecycleState PageNodeImpl::GetLifecycleState() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return lifecycle_state();
+}
+
+int64_t PageNodeImpl::GetNavigationID() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return navigation_id();
+}
+
+const GURL& PageNodeImpl::GetMainFrameUrl() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return main_frame_url();
+}
+
 bool PageNodeImpl::HasFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

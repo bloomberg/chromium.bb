@@ -12,6 +12,7 @@
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -494,6 +495,24 @@ TEST_F(PageNodeImplTest, ObserverWorks) {
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
   graph()->RemovePageNodeObserver(&obs);
+}
+
+TEST_F(PageNodeImplTest, PublicInterface) {
+  auto page_node = CreateNode<PageNodeImpl>();
+  const PageNode* public_page_node = page_node.get();
+
+  // Simply test that the public interface impls yield the same result as their
+  // private counterpart.
+
+  EXPECT_EQ(page_node->page_almost_idle(),
+            public_page_node->IsPageAlmostIdle());
+  EXPECT_EQ(page_node->is_visible(), public_page_node->IsVisible());
+  EXPECT_EQ(page_node->is_loading(), public_page_node->IsLoading());
+  EXPECT_EQ(page_node->ukm_source_id(), public_page_node->GetUkmSourceID());
+  EXPECT_EQ(page_node->lifecycle_state(),
+            public_page_node->GetLifecycleState());
+  EXPECT_EQ(page_node->navigation_id(), public_page_node->GetNavigationID());
+  EXPECT_EQ(page_node->main_frame_url(), public_page_node->GetMainFrameUrl());
 }
 
 }  // namespace performance_manager

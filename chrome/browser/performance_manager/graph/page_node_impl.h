@@ -16,7 +16,6 @@
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
 namespace performance_manager {
@@ -31,13 +30,11 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
                                           PageNode,
                                           PageNodeObserver> {
  public:
-  using LifecycleState = resource_coordinator::mojom::LifecycleState;
-
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kPage; }
 
-  explicit PageNodeImpl(GraphImpl* graph,
-                        const WebContentsProxy& contents_proxy,
-                        bool is_visible);
+  PageNodeImpl(GraphImpl* graph,
+               const WebContentsProxy& contents_proxy,
+               bool is_visible);
   ~PageNodeImpl() override;
 
   // Returns the web contents associated with this page node. It is valid to
@@ -141,6 +138,15 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   friend class FrameNodeImpl;
   friend class FrozenFrameAggregatorAccess;
   friend class PageAlmostIdleAccess;
+
+  // PageNode implementation:
+  bool IsPageAlmostIdle() const override;
+  bool IsVisible() const override;
+  bool IsLoading() const override;
+  ukm::SourceId GetUkmSourceID() const override;
+  LifecycleState GetLifecycleState() const override;
+  int64_t GetNavigationID() const override;
+  const GURL& GetMainFrameUrl() const override;
 
   void AddFrame(FrameNodeImpl* frame_node);
   void RemoveFrame(FrameNodeImpl* frame_node);
