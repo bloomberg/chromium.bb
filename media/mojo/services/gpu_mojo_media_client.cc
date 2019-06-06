@@ -30,6 +30,7 @@
 #include "media/filters/android/media_codec_audio_decoder.h"
 #include "media/gpu/android/android_video_surface_chooser_impl.h"
 #include "media/gpu/android/codec_allocator.h"
+#include "media/gpu/android/maybe_render_early_manager.h"
 #include "media/gpu/android/media_codec_video_decoder.h"
 #include "media/gpu/android/video_frame_factory_impl.h"
 #include "media/mojo/interfaces/media_drm_storage.mojom.h"
@@ -197,7 +198,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
       android_overlay_factory_cb_, std::move(request_overlay_info_cb),
       std::make_unique<VideoFrameFactoryImpl>(
-          gpu_task_runner_, std::move(get_stub_cb), gpu_preferences_));
+          gpu_task_runner_, std::move(get_stub_cb), gpu_preferences_,
+          MaybeRenderEarlyManager::Create(gpu_task_runner_)));
 #elif defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN) || \
     defined(OS_LINUX)
       video_decoder = VdaVideoDecoder::Create(

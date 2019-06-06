@@ -285,4 +285,13 @@ CodecImage::GetAHardwareBuffer() {
   return texture_owner_->GetAHardwareBuffer();
 }
 
+CodecImageHolder::CodecImageHolder(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<CodecImage> codec_image)
+    : base::RefCountedDeleteOnSequence<CodecImageHolder>(
+          std::move(task_runner)),
+      codec_image_(std::move(codec_image)) {}
+
+CodecImageHolder::~CodecImageHolder() = default;
+
 }  // namespace media

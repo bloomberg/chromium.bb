@@ -33,6 +33,7 @@
 #include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/codec_image_group.h"
 #include "media/gpu/android/codec_wrapper.h"
+#include "media/gpu/android/maybe_render_early_manager.h"
 #include "media/gpu/android/shared_image_video.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -123,25 +124,18 @@ class DirectSharedImageVideoProvider : public SharedImageVideoProvider {
                        std::move(cb), std::move(output_buffer), texture_owner,
                        std::move(promotion_hint_cb), gpu_task_runner_));
 
-    // TODO(liberato): If the image group is different, then tell |gpu_factory_|
-    // about it, so that it can register a destruction callback on it.  This is
-    // a complete hack for MaybeRenderEarly.  We shouldn't care about that at
-    // all.  Instead, VideoFrameFactoryImpl should register a callback on the
-    // image group, and it should MaybeRenderEarly instead.  The only reason we
-    // don't do that now is that VideoFrameFactoryImpl can't really maintain
-    // |images_|, since it never sees the CodecImage.  The output buffer should
-    // be wrapped up in something that knows how to RenderToFrontBuffer, etc.,
-    // rather than all of that state logic that's in CodecImage.  CodecImage
-    // should just be a GL implementation detail that might own one of these new
-    // things.  The image group would be a "new thing" group (the codec image
-    // would drop it on destruction, so same effect.  if we're recycling buffers
-    // then we'd ask it to clear its "new thing" ptr.).
+    // It's unclear that we should handle the image group, but since CodecImages
+    // have to be registered on it, we do.  If the CodecImage is ever re-used,
+    // then part of that re-use would be to call the (then mis-named)
+    // destruction cb to remove it from the group.
     //
-    // In any case, VideoFrameFactoryImpl would track these owners like we track
-    // CodecImage*'s now in |images_|, and it could handle MaybeRenderEarly.
+    // Also note that CodecImage shouldn't be the thing that's added to the
+    // group anyway.  The thing that owns buffer management is all we really
+    // care about, and that doesn't have anything to do with GLImage.
 
     gpu_factory_.Post(FROM_HERE, &GpuSharedImageVideoFactory::CreateImage,
-                      std::move(image_ready_cb), spec, texture_owner);
+                      std::move(image_ready_cb), spec,
+                      std::move(texture_owner));
   }
 
   static void OnImageReady(
@@ -150,15 +144,13 @@ class DirectSharedImageVideoProvider : public SharedImageVideoProvider {
       scoped_refptr<TextureOwner> texture_owner,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-      ImageRecord record,
-      scoped_refptr<CodecImage> codec_image) {
-    codec_image->Initialize(std::move(output_buffer), texture_owner,
-                            std::move(promotion_hint_cb));
-    // Note that we could probably drop |codec_image| before calling |cb|, since
-    // the codec image is also held on the gpu side, and will be until the
-    // |record.release_cb| is run.  However, just to avoid potential weirness
-    // during shutdown, we still post our reference.
-    gpu_task_runner->ReleaseSoon(FROM_HERE, std::move(codec_image));
+      ImageRecord record) {
+    // It's okay to access |codec_image| here, since it's not used anywhere.
+    // We could let |cb| do this, but, in the long term, we want our caller to
+    // provide the output buffer / etc. to us, so we can hide how we use it.
+    record.codec_image_holder->codec_image_raw()->Initialize(
+        std::move(output_buffer), std::move(texture_owner),
+        std::move(promotion_hint_cb));
 
     std::move(cb).Run(std::move(record));
   }
@@ -170,15 +162,17 @@ class DirectSharedImageVideoProvider : public SharedImageVideoProvider {
 VideoFrameFactoryImpl::VideoFrameFactoryImpl(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     GetStubCb get_stub_cb,
-    const gpu::GpuPreferences& gpu_preferences)
+    const gpu::GpuPreferences& gpu_preferences,
+    std::unique_ptr<MaybeRenderEarlyManager> mre_manager)
     : gpu_task_runner_(std::move(gpu_task_runner)),
       get_stub_cb_(std::move(get_stub_cb)),
       enable_threaded_texture_mailboxes_(
-          gpu_preferences.enable_threaded_texture_mailboxes) {}
+          gpu_preferences.enable_threaded_texture_mailboxes),
+      mre_manager_(std::move(mre_manager)),
+      weak_factory_(this) {}
 
 VideoFrameFactoryImpl::~VideoFrameFactoryImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  gpu_task_runner_->ReleaseSoon(FROM_HERE, std::move(image_group_));
 }
 
 void VideoFrameFactoryImpl::Initialize(OverlayMode overlay_mode,
@@ -197,21 +191,20 @@ void VideoFrameFactoryImpl::SetSurfaceBundle(
     // Clear everything, just so we're not holding a reference.
     texture_owner_ = nullptr;
   } else {
-    // If |surface_bundle| is using a TextureOwner, then get it.
+    // If |surface_bundle| is using a TextureOwner, then get it.  Note that the
+    // only reason we need this is for legacy mailbox support; we send it to
+    // the SharedImageVideoProvider so that (eventually) it can get the service
+    // id from the owner for the legacy mailbox texture.  Otherwise, this would
+    // be a lot simpler.
     texture_owner_ =
         surface_bundle->overlay() ? nullptr : surface_bundle->texture_owner();
 
-    // Start a new image group.  Note that there's no reason that we can't have
-    // more than one group per surface bundle; it's okay if we're called
-    // mulitiple times with the same surface bundle.  It just helps to combine
-    // the callbacks if we don't, especially since AndroidOverlay doesn't know
-    // how to remove destruction callbacks.  That's one reason why we don't just
-    // make the CodecImage register itself.  The other is that the threading is
-    // easier if we do it this way, since the image group is constructed on the
-    // proper thread to talk to the overlay.
-    gpu_task_runner_->ReleaseSoon(FROM_HERE, std::move(image_group_));
-    image_group_ =
-        base::MakeRefCounted<CodecImageGroup>(gpu_task_runner_, surface_bundle);
+    // TODO(liberato): When we enable pooling, do we need to clear the pool
+    // here because the CodecImageGroup has changed?  It's unclear, since the
+    // CodecImage shouldn't be in any group once we re-use it, so maybe it's
+    // fine to take no action.
+
+    mre_manager_->SetSurfaceBundle(std::move(surface_bundle));
   }
 }
 
@@ -237,12 +230,13 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
     return;
   }
 
-  SharedImageVideoProvider::ImageSpec spec(coded_size, image_group_);
+  SharedImageVideoProvider::ImageSpec spec(coded_size);
 
   auto image_ready_cb = base::BindOnce(
-      &VideoFrameFactoryImpl::OnImageReady, std::move(output_cb), timestamp,
-      coded_size, natural_size, texture_owner_, pixel_format, overlay_mode_,
-      enable_threaded_texture_mailboxes_);
+      &VideoFrameFactoryImpl::OnImageReady, weak_factory_.GetWeakPtr(),
+      std::move(output_cb), timestamp, coded_size, natural_size, texture_owner_,
+      pixel_format, overlay_mode_, enable_threaded_texture_mailboxes_,
+      gpu_task_runner_);
 
   image_provider_->RequestImage(std::move(image_ready_cb), spec,
                                 std::move(output_buffer), texture_owner_,
@@ -251,6 +245,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
 
 // static
 void VideoFrameFactoryImpl::OnImageReady(
+    base::WeakPtr<VideoFrameFactoryImpl> thiz,
     OnceOutputCb output_cb,
     base::TimeDelta timestamp,
     gfx::Size coded_size,
@@ -259,8 +254,16 @@ void VideoFrameFactoryImpl::OnImageReady(
     VideoPixelFormat pixel_format,
     OverlayMode overlay_mode,
     bool enable_threaded_texture_mailboxes,
+    scoped_refptr<base::SequencedTaskRunner> gpu_task_runner,
     SharedImageVideoProvider::ImageRecord record) {
   TRACE_EVENT0("media", "VideoVideoFrameFactoryImpl::OnVideoFrameImageReady");
+
+  if (!thiz)
+    return;
+
+  // Send the CodecImage (via holder, since we can't touch the refcount here) to
+  // the MaybeRenderEarlyManager.
+  thiz->mre_manager()->AddCodecImage(std::move(record.codec_image_holder));
 
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
   mailbox_holders[0] = gpu::MailboxHolder(record.mailbox, gpu::SyncToken(),
@@ -397,11 +400,6 @@ void GpuSharedImageVideoFactory::CreateImage(
     scoped_refptr<TextureOwner> texture_owner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Very, very hackily register to MaybeRenderEarly on this group, if needed.
-  // We should not be responsible for this.  See elsewhere.
-  if (spec.image_group != image_group_)
-    SetImageGroup(spec.image_group);
-
   // Generate a shared image mailbox.
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
   auto codec_image = base::MakeRefCounted<CodecImage>();
@@ -411,10 +409,6 @@ void GpuSharedImageVideoFactory::CreateImage(
   TRACE_EVENT0("media", "GpuSharedImageVideoFactory::CreateVideoFrame");
   if (!success)
     return;
-
-  // Try to render this frame if possible.
-  // TODO(liberato): This should not be here.
-  internal::MaybeRenderEarly(&images_);
 
   // This callback destroys the shared image when video frame is
   // released/destroyed. This callback has a weak pointer to the shared image
@@ -434,8 +428,15 @@ void GpuSharedImageVideoFactory::CreateImage(
   record.mailbox = mailbox;
   record.release_cb = std::move(release_cb);
   record.ycbcr_info = ycbcr_info_;
+  // Since |codec_image|'s ref holders can be destroyed by stub destruction, we
+  // create a ref to it for the MaybeRenderEarlyManager.  This is a hack; we
+  // should not be sending the CodecImage at all.  The MaybeRenderEarlyManager
+  // should work with some other object that happens to be used by CodecImage,
+  // and non-GL things, to hold the output buffer, etc.
+  record.codec_image_holder = base::MakeRefCounted<CodecImageHolder>(
+      base::SequencedTaskRunnerHandle::Get(), std::move(codec_image));
 
-  std::move(image_ready_cb).Run(std::move(record), std::move(codec_image));
+  std::move(image_ready_cb).Run(std::move(record));
 }
 
 bool GpuSharedImageVideoFactory::CreateImageInternal(
@@ -462,11 +463,6 @@ bool GpuSharedImageVideoFactory::CreateImageInternal(
   std::unique_ptr<AbstractTexture> texture = decoder_helper_->CreateTexture(
       GL_TEXTURE_EXTERNAL_OES, GL_RGBA, size.width(), size.height(), GL_RGBA,
       GL_UNSIGNED_BYTE);
-  images_.push_back(image.get());
-
-  // Add |image| to our current image group.  This makes sure that any overlay
-  // lasts as long as the images.  For TextureOwner, it doesn't do much.
-  spec.image_group->AddCodecImage(image.get());
 
   // Attach the image to the texture.
   // Either way, we expect this to be UNBOUND (i.e., decoder-managed).  For
@@ -520,24 +516,6 @@ void GpuSharedImageVideoFactory::OnWillDestroyStub(bool have_context) {
   DCHECK(stub_);
   stub_ = nullptr;
   decoder_helper_ = nullptr;
-}
-
-void GpuSharedImageVideoFactory::OnImageDestructed(CodecImage* image) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::Erase(images_, image);
-  internal::MaybeRenderEarly(&images_);
-}
-
-void GpuSharedImageVideoFactory::SetImageGroup(
-    scoped_refptr<CodecImageGroup> image_group) {
-  image_group_ = std::move(image_group);
-
-  if (!image_group_)
-    return;
-
-  image_group_->SetDestructionCb(
-      base::BindRepeating(&GpuSharedImageVideoFactory::OnImageDestructed,
-                          weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace media

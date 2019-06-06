@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "media/gpu/android/codec_wrapper.h"
 #include "media/gpu/android/promotion_hint_aggregator.h"
@@ -158,6 +159,30 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   bool was_tex_image_bound_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CodecImage);
+};
+
+// Temporary helper class to prevent touching a non-threadsafe-ref-counted
+// CodecImage off the gpu main thread, while still holding a reference to it.
+// Passing a raw pointer around isn't safe, since stub destruction could still
+// destroy the consumers of the codec image.
+class MEDIA_GPU_EXPORT CodecImageHolder
+    : public base::RefCountedDeleteOnSequence<CodecImageHolder> {
+ public:
+  CodecImageHolder(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                   scoped_refptr<CodecImage> codec_image);
+
+  // Safe from any thread.
+  CodecImage* codec_image_raw() const { return codec_image_.get(); }
+
+ private:
+  virtual ~CodecImageHolder();
+
+  friend class base::RefCountedDeleteOnSequence<CodecImageHolder>;
+  friend class base::DeleteHelper<CodecImageHolder>;
+
+  scoped_refptr<CodecImage> codec_image_;
+
+  DISALLOW_COPY_AND_ASSIGN(CodecImageHolder);
 };
 
 }  // namespace media

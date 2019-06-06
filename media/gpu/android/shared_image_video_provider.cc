@@ -6,10 +6,8 @@
 
 namespace media {
 
-SharedImageVideoProvider::ImageSpec::ImageSpec(
-    gfx::Size our_size,
-    scoped_refptr<CodecImageGroup> group)
-    : size(our_size), image_group(std::move(group)) {}
+SharedImageVideoProvider::ImageSpec::ImageSpec(const gfx::Size& our_size)
+    : size(our_size) {}
 SharedImageVideoProvider::ImageSpec::ImageSpec(const ImageSpec&) = default;
 SharedImageVideoProvider::ImageSpec::~ImageSpec() = default;
 

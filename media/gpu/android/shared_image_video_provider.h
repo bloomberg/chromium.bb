@@ -24,16 +24,12 @@ class MEDIA_GPU_EXPORT SharedImageVideoProvider {
  public:
   // Description of the underlying properties of the shared image.
   struct ImageSpec {
-    ImageSpec(gfx::Size size, scoped_refptr<CodecImageGroup> group);
+    ImageSpec(const gfx::Size& size);
     ImageSpec(const ImageSpec&);
     ~ImageSpec();
 
     // Size of the underlying texture.
     gfx::Size size;
-
-    // Image group to which the CodecImage should belong.  In other words, this
-    // indicates that the image will share the same underlying TextureOwner.
-    scoped_refptr<CodecImageGroup> image_group;
 
     // TODO: Include other properties, if they matter, like texture format.
 
@@ -55,8 +51,11 @@ class MEDIA_GPU_EXPORT SharedImageVideoProvider {
     base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
 
     // Release callback.  When this is called (or dropped), the image will be
-    // considered unused.
+    // considered to be unused.
     ReleaseCB release_cb;
+
+    // CodecImage that one can use for MaybeRenderEarly.
+    scoped_refptr<CodecImageHolder> codec_image_holder;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ImageRecord);
