@@ -18,6 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/extension_l10n_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -65,6 +66,11 @@ void FinishSwitchLanguage(std::unique_ptr<SwitchLanguageData> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (data->result.success) {
     g_browser_process->SetApplicationLocale(data->result.loaded_locale);
+
+    // Ensure chrome app names are localized. Note that the user might prefer
+    // a different locale than was actually loaded (e.g. "en-CA" vs. "en-US").
+    extension_l10n_util::SetProcessLocale(data->result.loaded_locale);
+    extension_l10n_util::SetPreferredLocale(data->result.requested_locale);
 
     if (data->enable_locale_keyboard_layouts) {
       input_method::InputMethodManager* manager =

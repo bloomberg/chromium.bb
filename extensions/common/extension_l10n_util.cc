@@ -500,4 +500,8 @@ ScopedLocaleForTest::~ScopedLocaleForTest() {
   SetPreferredLocale(preferred_locale_.as_string());
 }
 
+const std::string& GetPreferredLocaleForTest() {
+  return GetPreferredLocale();
+}
+
 }  // namespace extension_l10n_util

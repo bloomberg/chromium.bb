@@ -1887,6 +1887,7 @@ if (!is_android) {
         "../browser/chromeos/arc/intent_helper/arc_settings_service_browsertest.cc",
         "../browser/chromeos/arc/user_session/arc_user_session_service_browsertest.cc",
         "../browser/chromeos/attestation/attestation_policy_browsertest.cc",
+        "../browser/chromeos/base/locale_util_browsertest.cc",
         "../browser/chromeos/child_accounts/child_account_test_utils.cc",
         "../browser/chromeos/child_accounts/child_account_test_utils.h",
         "../browser/chromeos/child_accounts/parent_access_code/parent_access_service_browsertest.cc",

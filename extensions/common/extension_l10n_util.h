@@ -134,6 +134,9 @@ class ScopedLocaleForTest {
   base::StringPiece preferred_locale_;  // The preferred locale at ctor time.
 };
 
+// Returns a locale like "en-CA".
+const std::string& GetPreferredLocaleForTest();
+
 }  // namespace extension_l10n_util
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_L10N_UTIL_H_
