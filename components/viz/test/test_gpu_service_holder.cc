@@ -51,11 +51,7 @@ class InstanceResetter : public testing::EmptyTestEventListener {
   ~InstanceResetter() override = default;
 
   void OnTestEnd(const testing::TestInfo& test_info) override {
-    base::AutoLock locked(GetLock());
-    if (g_holder) {
-      delete g_holder;
-      g_holder = nullptr;
-    }
+    TestGpuServiceHolder::ResetInstance();
   }
 
  private:
@@ -85,6 +81,15 @@ TestGpuServiceHolder* TestGpuServiceHolder::GetInstance() {
             switches::kUseGpuInTests));
   }
   return g_holder;
+}
+
+// static
+void TestGpuServiceHolder::ResetInstance() {
+  base::AutoLock locked(GetLock());
+  if (g_holder) {
+    delete g_holder;
+    g_holder = nullptr;
+  }
 }
 
 // static

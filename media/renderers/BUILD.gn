@@ -89,5 +89,7 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/libyuv",
     "//ui/gfx",
+    "//ui/gl",
+    "//ui/gl:test_support",
   ]
 }

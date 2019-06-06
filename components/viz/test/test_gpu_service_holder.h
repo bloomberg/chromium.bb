@@ -44,6 +44,10 @@ class TestGpuServiceHolder {
   // a separate instance of this class can be created.
   static TestGpuServiceHolder* GetInstance();
 
+  // Resets the singleton instance, joining the GL thread. This is useful for
+  // tests that individually initialize and tear down GL.
+  static void ResetInstance();
+
   // Calling this method ensures that GetInstance() is destroyed after each
   // gtest completes -- it only applies to gtest because it uses gtest hooks. A
   // subsequent call to GetInstance() will create a new instance. Safe to call

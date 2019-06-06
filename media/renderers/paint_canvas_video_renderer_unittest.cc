@@ -13,6 +13,8 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_gpu_service_holder.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -28,6 +30,8 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 using media::VideoFrame;
 
@@ -73,6 +77,13 @@ class PaintCanvasVideoRendererTest : public testing::Test {
 
   PaintCanvasVideoRendererTest();
   ~PaintCanvasVideoRendererTest() override;
+
+  void SetUp() override { gl::GLSurfaceTestSupport::InitializeOneOff(); }
+
+  void TearDown() override {
+    viz::TestGpuServiceHolder::ResetInstance();
+    gl::GLSurfaceTestSupport::ShutdownGL();
+  }
 
   // Paints to |canvas| using |renderer_| without any frame data.
   void PaintWithoutFrame(cc::PaintCanvas* canvas);
@@ -781,6 +792,122 @@ TEST_F(PaintCanvasVideoRendererTest, TexSubImage2D_Y16_R32F) {
   PaintCanvasVideoRenderer::TexSubImage2D(
       GL_TEXTURE_2D, &gles2, video_frame.get(), 0, GL_RED, GL_FLOAT,
       2 /*xoffset*/, 1 /*yoffset*/, false /*flip_y*/, true);
+}
+
+TEST_F(PaintCanvasVideoRendererTest, CopyVideoFrameYUVDataToGLTexture) {
+  gl::DisableNullDrawGLBindings enable_pixels;
+
+  auto media_context = base::MakeRefCounted<viz::TestInProcessContextProvider>(
+      false /* enable_oop_rasterization */, false /* support_locking */);
+  gpu::ContextResult result = media_context->BindToCurrentThread();
+  ASSERT_EQ(result, gpu::ContextResult::kSuccess);
+
+  auto destination_context =
+      base::MakeRefCounted<viz::TestInProcessContextProvider>(
+          false /* enable_oop_rasterization */, false /* support_locking */);
+  result = destination_context->BindToCurrentThread();
+  ASSERT_EQ(result, gpu::ContextResult::kSuccess);
+
+  gpu::gles2::GLES2Interface* destination_gl = destination_context->ContextGL();
+  DCHECK(destination_gl);
+  GLenum target = GL_TEXTURE_2D;
+  GLuint texture = 0;
+  destination_gl->GenTextures(1, &texture);
+  destination_gl->BindTexture(target, texture);
+
+  renderer_.CopyVideoFrameYUVDataToGLTexture(
+      media_context.get(), destination_gl, *cropped_frame(), target, texture,
+      GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 0, false /* premultiply_alpha */,
+      false /* flip_y */);
+
+  gfx::Size expected_size = cropped_frame()->visible_rect().size();
+  size_t pixel_count = expected_size.width() * expected_size.height();
+
+  GLuint fbo = 0;
+  destination_gl->GenFramebuffers(1, &fbo);
+  destination_gl->BindFramebuffer(GL_FRAMEBUFFER, fbo);
+  destination_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                       GL_TEXTURE_2D, texture, 0);
+  auto pixels = std::make_unique<uint8_t[]>(pixel_count * 4);
+  uint8_t* raw_pixels = pixels.get();
+  destination_gl->ReadPixels(0, 0, expected_size.width(),
+                             expected_size.height(), GL_RGBA, GL_UNSIGNED_BYTE,
+                             raw_pixels);
+  destination_gl->DeleteFramebuffers(1, &fbo);
+
+  auto get_color = [raw_pixels, expected_size](size_t x, size_t y) {
+    uint8_t* p = raw_pixels + (expected_size.width() * y + x) * 4;
+    return SkColorSetARGB(p[3], p[0], p[1], p[2]);
+  };
+
+  // Avoid checking around the seams.
+  EXPECT_EQ(SK_ColorBLACK, get_color(0, 0));
+  EXPECT_EQ(SK_ColorRED, get_color(3, 0));
+  EXPECT_EQ(SK_ColorRED, get_color(7, 0));
+  EXPECT_EQ(SK_ColorGREEN, get_color(0, 3));
+  EXPECT_EQ(SK_ColorGREEN, get_color(0, 5));
+  EXPECT_EQ(SK_ColorBLUE, get_color(3, 3));
+  EXPECT_EQ(SK_ColorBLUE, get_color(7, 5));
+
+  destination_gl->DeleteTextures(1, &texture);
+}
+
+TEST_F(PaintCanvasVideoRendererTest, CopyVideoFrameYUVDataToGLTexture_FlipY) {
+  gl::DisableNullDrawGLBindings enable_pixels;
+
+  auto media_context = base::MakeRefCounted<viz::TestInProcessContextProvider>(
+      false /* enable_oop_rasterization */, false /* support_locking */);
+  gpu::ContextResult result = media_context->BindToCurrentThread();
+  ASSERT_EQ(result, gpu::ContextResult::kSuccess);
+
+  auto destination_context =
+      base::MakeRefCounted<viz::TestInProcessContextProvider>(
+          false /* enable_oop_rasterization */, false /* support_locking */);
+  result = destination_context->BindToCurrentThread();
+  ASSERT_EQ(result, gpu::ContextResult::kSuccess);
+
+  gpu::gles2::GLES2Interface* destination_gl = destination_context->ContextGL();
+  DCHECK(destination_gl);
+  GLenum target = GL_TEXTURE_2D;
+  GLuint texture = 0;
+  destination_gl->GenTextures(1, &texture);
+  destination_gl->BindTexture(target, texture);
+
+  renderer_.CopyVideoFrameYUVDataToGLTexture(
+      media_context.get(), destination_gl, *cropped_frame(), target, texture,
+      GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 0, false /* premultiply_alpha */,
+      true /* flip_y */);
+
+  gfx::Size expected_size = cropped_frame()->visible_rect().size();
+  size_t pixel_count = expected_size.width() * expected_size.height();
+
+  GLuint fbo = 0;
+  destination_gl->GenFramebuffers(1, &fbo);
+  destination_gl->BindFramebuffer(GL_FRAMEBUFFER, fbo);
+  destination_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                       GL_TEXTURE_2D, texture, 0);
+  auto pixels = std::make_unique<uint8_t[]>(pixel_count * 4);
+  uint8_t* raw_pixels = pixels.get();
+  destination_gl->ReadPixels(0, 0, expected_size.width(),
+                             expected_size.height(), GL_RGBA, GL_UNSIGNED_BYTE,
+                             raw_pixels);
+  destination_gl->DeleteFramebuffers(1, &fbo);
+
+  auto get_color = [raw_pixels, expected_size](size_t x, size_t y) {
+    uint8_t* p = raw_pixels + (expected_size.width() * y + x) * 4;
+    return SkColorSetARGB(p[3], p[0], p[1], p[2]);
+  };
+
+  // Avoid checking around the seams.
+  EXPECT_EQ(SK_ColorBLACK, get_color(0, 5));
+  EXPECT_EQ(SK_ColorRED, get_color(3, 5));
+  EXPECT_EQ(SK_ColorRED, get_color(7, 5));
+  EXPECT_EQ(SK_ColorGREEN, get_color(0, 2));
+  EXPECT_EQ(SK_ColorGREEN, get_color(0, 0));
+  EXPECT_EQ(SK_ColorBLUE, get_color(3, 2));
+  EXPECT_EQ(SK_ColorBLUE, get_color(7, 0));
+
+  destination_gl->DeleteTextures(1, &texture);
 }
 
 }  // namespace media
