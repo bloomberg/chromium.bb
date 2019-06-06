@@ -126,33 +126,44 @@ emitted one or more values for the enumeration.  The proportions will sum to 1.0
 for an enumeration that emits only one result per page-load if it emits anything
 at all. An enumeration emitted more than once per source will result in
 proportions that total greater than 1.0 but are still relative to the total
-number of loads.
+number of loads. If an individual value is emitted more than once per source,
+that value's proportion will be greater than 1.0.
 
 For example, `Security.SiteEngagement` emits one value (either 4 or 2) per source:
 
-*   https://www.google.com/ : 4
-*   https://www.facebook.com/ : 2
-*   https://www.wikipedia.com/ : 4
+*   Source ID: 1, URL: https://www.google.com/, enum value: 4
+*   Source ID: 2, URL: https://www.facebook.com/, enum value: 2
+*   Source ID: 3, URL: https://www.wikipedia.com/, enum value: 4
+*   Source ID: 4, URL: https://www.google.com/, enum value: 4
 
 A proportion calculated over all sources would sum to 1.0:
 
-*   2 (0.3333)
-*   4 (0.6667)
+*   2 (0.25)
+*   4 (0.75)
 
-In contrast, `Blink.UseCounter.Feature` emits multiple values per source:
+In contrast, `VirtualKeyboard.Open:TextInputType` emits multiple values per
+source, and can emit the same value multiple times per source. The sum of the
+proportions for `VirtualKeyboard.Open:TextInputType` will be greater that 1.0,
+and some proportions will be greater than 1.0. In the following example,
+`TextInputType` is emitted multiple times per source, and `TextInputType=4` is
+emitted more than once per source:
 
-*   https://www.google.com/ : 1, 2, 4, 6
-*   https://www.facebook.com/ : 2, 4, 5
-*   https://www.wikipedia.com/ : 1, 2, 4
+*   Source ID: 1, URL:https://www.google.com/, enum values: [1, 2, 4, 6]
+*   Source ID: 2, URL:https://www.facebook.com/, enum values: [2, 4, 5, 4]
+*   Source ID: 3, URL:https://www.wikipedia.com/, enum values: [1, 2, 4]
 
 A proportion calculated over all sources would be:
 
-*   1 (0.6667)
-*   2 (1.0000)
+*   1 (0.6667 = 2/3)
+*   2 (1.0000 = 3/3)
 *   3 (absent)
-*   4 (1.0000)
-*   5 (0.3333)
-*   6 (0.3333)
+*   4 (1.3333 = 4/3)
+*   5 (0.3333 = 1/3)
+*   6 (0.3333 = 1/3)
+
+The denominator for each is 3 because there were 3 sources reporting the metric.
+The numerator for each enum value is the count of how many times the value was
+emitted.
 
 ## Get UkmRecorder instance
 
