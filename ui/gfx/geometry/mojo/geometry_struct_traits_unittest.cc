@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/mojo/geometry_traits_test_service.mojom.h"
@@ -78,7 +78,7 @@ class GeometryStructTraitsTest : public testing::Test,
     std::move(callback).Run(v);
   }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   mojo::BindingSet<GeometryTraitsTestService> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GeometryStructTraitsTest);
