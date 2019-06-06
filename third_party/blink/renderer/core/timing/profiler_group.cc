@@ -6,9 +6,11 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "third_party/blink/renderer/bindings/core/v8/profiler_trace_builder.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/timing/profiler.h"
 #include "third_party/blink/renderer/core/timing/profiler_init_options.h"
+#include "third_party/blink/renderer/core/timing/profiler_trace.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -123,8 +125,10 @@ void ProfilerGroup::StopProfiler(ScriptState* script_state,
   v8::Local<v8::String> profiler_id =
       V8String(isolate_, profiler->ProfilerId());
   auto* profile = cpu_profiler_->StopProfiling(profiler_id);
-  // TODO(acomminos): Process v8::CpuProfile into JS Self-Profiling trace format
-  resolver->Resolve();
+  auto* trace = ProfilerTraceBuilder::FromProfile(
+      script_state, profile, profiler->SourceOrigin(), profiler->TimeOrigin());
+  resolver->Resolve(trace);
+
   profile->Delete();
 }
 

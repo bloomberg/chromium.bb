@@ -4,8 +4,6 @@
 
 // https://wicg.github.io/js-self-profiling/
 
-typedef any ProfilerTrace;
-
 [Exposed=(Window,Worker), RuntimeEnabled=ExperimentalJSProfiler]
 interface Profiler {
   readonly attribute DOMHighResTimeStamp sampleInterval;
