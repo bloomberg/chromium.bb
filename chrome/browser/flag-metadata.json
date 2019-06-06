@@ -1757,7 +1757,7 @@
   },
   {
     "name": "enable-virtual-keyboard",
-    "owners": [ "//ash/keyboard/ui/OWNERS" ],
+    "owners": [ "//ash/keyboard/OWNERS" ],
     // Useful for debugging the virtual keyboard on non-tablet devices.
     "expiry_milestone": -1
   },
