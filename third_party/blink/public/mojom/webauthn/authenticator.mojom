@@ -168,8 +168,8 @@ struct PublicKeyCredentialParameters {
 
 // See https://w3c.github.io/webauthn/#enumdef-userverificationrequirement.
 enum UserVerificationRequirement {
-  PREFERRED,
   REQUIRED,
+  PREFERRED,
   DISCOURAGED,
 };
 
