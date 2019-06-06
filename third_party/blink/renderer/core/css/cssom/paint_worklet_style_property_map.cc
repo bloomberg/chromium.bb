@@ -99,6 +99,7 @@ void BuildCustomValues(const Document& document,
 
 }  // namespace
 
+// static
 PaintWorkletStylePropertyMap::CrossThreadData
 PaintWorkletStylePropertyMap::BuildCrossThreadData(
     const Document& document,
@@ -115,6 +116,7 @@ PaintWorkletStylePropertyMap::BuildCrossThreadData(
   return data;
 }
 
+// static
 PaintWorkletStylePropertyMap::CrossThreadData
 PaintWorkletStylePropertyMap::CopyCrossThreadData(const CrossThreadData& data) {
   PaintWorkletStylePropertyMap::CrossThreadData copied_data;

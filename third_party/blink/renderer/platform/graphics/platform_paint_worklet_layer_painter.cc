@@ -27,8 +27,15 @@ PlatformPaintWorkletLayerPainter::~PlatformPaintWorkletLayerPainter() {
 }
 
 sk_sp<PaintRecord> PlatformPaintWorkletLayerPainter::Paint(
-    cc::PaintWorkletInput* input) {
+    const cc::PaintWorkletInput* input) {
   return dispatcher_->Paint(input);
+}
+
+void PlatformPaintWorkletLayerPainter::DispatchWorklets(
+    cc::PaintWorkletJobMap worklet_data_map,
+    DoneCallback done_callback) {
+  dispatcher_->DispatchWorklets(std::move(worklet_data_map),
+                                std::move(done_callback));
 }
 
 }  // namespace blink

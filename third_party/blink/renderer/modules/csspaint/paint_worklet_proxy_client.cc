@@ -143,7 +143,7 @@ void PaintWorkletProxyClient::Trace(blink::Visitor* visitor) {
 }
 
 sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
-    CompositorPaintWorkletInput* compositor_input) {
+    const CompositorPaintWorkletInput* compositor_input) {
   // TODO: Can this happen? We don't register till all are here.
   if (global_scopes_.IsEmpty())
     return sk_make_sp<PaintRecord>();
@@ -161,7 +161,8 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
   PaintWorkletGlobalScope* global_scope =
       global_scopes_[base::RandInt(0, PaintWorklet::kNumGlobalScopes - 1)];
 
-  PaintWorkletInput* input = static_cast<PaintWorkletInput*>(compositor_input);
+  const PaintWorkletInput* input =
+      static_cast<const PaintWorkletInput*>(compositor_input);
   CSSPaintDefinition* definition =
       global_scope->FindDefinition(input->NameCopy());
   PaintWorkletStylePropertyMap* style_map =

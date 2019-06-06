@@ -2095,6 +2095,7 @@ jumbo_source_set("unit_tests") {
     "graphics/image_decoding_store_test.cc",
     "graphics/image_frame_generator_test.cc",
     "graphics/image_layer_chromium_test.cc",
+    "graphics/paint_worklet_paint_dispatcher_test.cc",
     "graphics/test/fake_canvas_resource_host.h",
     "graphics/test/fake_gles2_interface.h",
     "graphics/test/fake_web_graphics_context_3d_provider.h",

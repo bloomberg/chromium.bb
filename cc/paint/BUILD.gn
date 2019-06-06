@@ -60,6 +60,8 @@ cc_component("paint") {
     "paint_shader.cc",
     "paint_shader.h",
     "paint_worklet_input.h",
+    "paint_worklet_job.cc",
+    "paint_worklet_job.h",
     "paint_worklet_layer_painter.h",
     "raw_memory_transfer_cache_entry.cc",
     "raw_memory_transfer_cache_entry.h",

@@ -6,12 +6,12 @@
 #define CC_PAINT_PAINT_WORKLET_INPUT_H_
 
 #include "base/memory/ref_counted.h"
-#include "cc/cc_export.h"
+#include "cc/paint/paint_export.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace cc {
 
-class CC_EXPORT PaintWorkletInput
+class CC_PAINT_EXPORT PaintWorkletInput
     : public base::RefCountedThreadSafe<PaintWorkletInput> {
  public:
   virtual gfx::SizeF GetSize() const = 0;

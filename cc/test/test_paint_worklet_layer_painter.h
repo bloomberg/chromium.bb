@@ -17,7 +17,8 @@ class TestPaintWorkletLayerPainter : public PaintWorkletLayerPainter {
   TestPaintWorkletLayerPainter();
   ~TestPaintWorkletLayerPainter() override;
 
-  sk_sp<PaintRecord> Paint(PaintWorkletInput*) override;
+  sk_sp<PaintRecord> Paint(const PaintWorkletInput*) override;
+  void DispatchWorklets(PaintWorkletJobMap, DoneCallback) override;
 };
 
 }  // namespace cc

@@ -56,7 +56,7 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
 
   // These should only be accessed on the PaintWorklet thread.
   String NameCopy() const { return name_.IsolatedCopy(); }
-  PaintWorkletStylePropertyMap::CrossThreadData StyleMapData() {
+  PaintWorkletStylePropertyMap::CrossThreadData StyleMapData() const {
     return PaintWorkletStylePropertyMap::CopyCrossThreadData(style_map_data_);
   }
 

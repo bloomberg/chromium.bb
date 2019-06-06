@@ -31,7 +31,7 @@ class PLATFORM_EXPORT PaintWorkletPainter : public GarbageCollectedMixin {
   virtual ~PaintWorkletPainter() = default;
 
   virtual int GetWorkletId() const = 0;
-  virtual sk_sp<PaintRecord> Paint(cc::PaintWorkletInput*) = 0;
+  virtual sk_sp<PaintRecord> Paint(const cc::PaintWorkletInput*) = 0;
 };
 
 }  // namespace blink
