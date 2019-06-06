@@ -163,9 +163,8 @@ class MockInputHandler : public cc::InputHandler {
     return cc::InputHandlerPointerResult();
   }
 
-  MOCK_CONST_METHOD2(IsCurrentlyScrollingLayerAt,
-                     bool(const gfx::Point& point,
-                          cc::InputHandler::ScrollInputType type));
+  MOCK_CONST_METHOD1(IsCurrentlyScrollingLayerAt,
+                     bool(const gfx::Point& point));
 
   MOCK_CONST_METHOD1(
       GetEventListenerProperties,

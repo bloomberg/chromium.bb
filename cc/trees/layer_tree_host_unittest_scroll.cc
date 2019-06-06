@@ -1155,8 +1155,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     ScrollNode* scroll_node =
         scroll_tree.Node(scroll_layer->scroll_tree_index());
     InputHandler::ScrollStatus status =
-        impl->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::TOUCHSCREEN,
-                        scroll_tree, scroll_node);
+        impl->TryScroll(gfx::PointF(0.0f, 1.0f), scroll_tree, scroll_node);
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
         EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
@@ -1218,14 +1217,12 @@ class LayerTreeHostScrollTestScrollNonDrawnLayer
     // scrollable region.
 
     InputHandler::ScrollStatus status =
-        impl->TryScroll(gfx::PointF(1.f, 1.f), InputHandler::TOUCHSCREEN,
-                        scroll_tree, scroll_node);
+        impl->TryScroll(gfx::PointF(1.f, 1.f), scroll_tree, scroll_node);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
               status.main_thread_scrolling_reasons);
 
-    status = impl->TryScroll(gfx::PointF(21.f, 21.f), InputHandler::TOUCHSCREEN,
-                             scroll_tree, scroll_node);
+    status = impl->TryScroll(gfx::PointF(21.f, 21.f), scroll_tree, scroll_node);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
               status.main_thread_scrolling_reasons);
@@ -1265,14 +1262,13 @@ class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
         scroll_tree.Node(outer_scroll_layer->scroll_tree_index());
 
     InputHandler::ScrollStatus status =
-        impl->TryScroll(gfx::PointF(1.f, 1.f), InputHandler::TOUCHSCREEN,
-                        scroll_tree, inner_scroll_node);
+        impl->TryScroll(gfx::PointF(1.f, 1.f), scroll_tree, inner_scroll_node);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kScrollbarScrolling,
               status.main_thread_scrolling_reasons);
 
-    status = impl->TryScroll(gfx::PointF(1.f, 1.f), InputHandler::TOUCHSCREEN,
-                             scroll_tree, outer_scroll_node);
+    status =
+        impl->TryScroll(gfx::PointF(1.f, 1.f), scroll_tree, outer_scroll_node);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
               status.main_thread_scrolling_reasons);

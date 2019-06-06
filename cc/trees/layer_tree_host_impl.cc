@@ -713,8 +713,7 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingViewport() const {
 }
 
 bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
-    const gfx::Point& viewport_point,
-    InputHandler::ScrollInputType type) const {
+    const gfx::Point& viewport_point) const {
   auto* scrolling_node = CurrentlyScrollingNode();
   if (!scrolling_node)
     return false;
@@ -728,7 +727,7 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
   bool scroll_on_main_thread = false;
   uint32_t main_thread_scrolling_reasons;
   auto* test_scroll_node = FindScrollNodeForDeviceViewportPoint(
-      device_viewport_point, type, layer_impl, &scroll_on_main_thread,
+      device_viewport_point, layer_impl, &scroll_on_main_thread,
       &main_thread_scrolling_reasons);
 
   if (scroll_on_main_thread)
@@ -3471,7 +3470,6 @@ void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
 
 InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     const gfx::PointF& screen_space_point,
-    InputHandler::ScrollInputType type,
     const ScrollTree& scroll_tree,
     ScrollNode* scroll_node) const {
   InputHandler::ScrollStatus scroll_status;
@@ -3579,7 +3577,6 @@ static bool IsMainThreadScrolling(const InputHandler::ScrollStatus& status,
 
 ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
     const gfx::PointF& device_viewport_point,
-    InputHandler::ScrollInputType type,
     LayerImpl* layer_impl,
     bool* scroll_on_main_thread,
     uint32_t* main_thread_scrolling_reasons) const {
@@ -3610,7 +3607,7 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
       // The content layer can also block attempts to scroll outside the main
       // thread.
       ScrollStatus status =
-          TryScroll(device_viewport_point, type, scroll_tree, scroll_node);
+          TryScroll(device_viewport_point, scroll_tree, scroll_node);
       if (IsMainThreadScrolling(status, scroll_node)) {
         *scroll_on_main_thread = true;
         *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
@@ -3637,7 +3634,7 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
   if (impl_scroll_node) {
     // Ensure that final layer scrolls on impl thread (crbug.com/625100)
     ScrollStatus status =
-        TryScroll(device_viewport_point, type, scroll_tree, impl_scroll_node);
+        TryScroll(device_viewport_point, scroll_tree, impl_scroll_node);
     if (IsMainThreadScrolling(status, impl_scroll_node)) {
       *scroll_on_main_thread = true;
       *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
@@ -3795,7 +3792,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     }
 
     scrolling_node = FindScrollNodeForDeviceViewportPoint(
-        device_viewport_point, type, layer_impl, &scroll_on_main_thread,
+        device_viewport_point, layer_impl, &scroll_on_main_thread,
         &scroll_status.main_thread_scrolling_reasons);
   }
 
@@ -4832,8 +4829,8 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseMoveAt(
     bool scroll_on_main_thread = false;
     uint32_t main_thread_scrolling_reasons;
     auto* scroll_node = FindScrollNodeForDeviceViewportPoint(
-        device_viewport_point, InputHandler::TOUCHSCREEN, layer_impl,
-        &scroll_on_main_thread, &main_thread_scrolling_reasons);
+        device_viewport_point, layer_impl, &scroll_on_main_thread,
+        &main_thread_scrolling_reasons);
     if (scroll_node)
       scroll_element_id = scroll_node->element_id;
 

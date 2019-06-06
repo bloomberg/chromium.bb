@@ -1095,14 +1095,11 @@ TEST_F(LayerTreeHostImplTest, ScrollRootCallsCommitAndRedraw) {
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             status.main_thread_scrolling_reasons);
 
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
-                                                      InputHandler::WHEEL));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, 10),
-                                                      InputHandler::WHEEL));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, 10)));
   host_impl_->ScrollEnd(EndState().get());
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
-                                                       InputHandler::WHEEL));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_TRUE(did_request_commit_);
 }
@@ -1374,16 +1371,14 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
   EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
             status.main_thread_scrolling_reasons);
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(25, 25),
-                                                       InputHandler::WHEEL));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(25, 25)));
 
   status = host_impl_->ScrollBegin(BeginState(gfx::Point(25, 25)).get(),
                                    InputHandler::TOUCHSCREEN);
   EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
             status.main_thread_scrolling_reasons);
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(25, 25), InputHandler::TOUCHSCREEN));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(25, 25)));
 
   // All scroll types outside this region should succeed.
   status = host_impl_->ScrollBegin(BeginState(gfx::Point(75, 75)).get(),
@@ -1392,26 +1387,21 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             status.main_thread_scrolling_reasons);
 
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(75, 75), InputHandler::TOUCHSCREEN));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75)));
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(25, 25), InputHandler::TOUCHSCREEN));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(25, 25)));
   host_impl_->ScrollEnd(EndState().get());
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(75, 75), InputHandler::TOUCHSCREEN));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75)));
 
   status = host_impl_->ScrollBegin(BeginState(gfx::Point(75, 75)).get(),
                                    InputHandler::TOUCHSCREEN);
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             status.main_thread_scrolling_reasons);
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(75, 75), InputHandler::TOUCHSCREEN));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75)));
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
   host_impl_->ScrollEnd(EndState().get());
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(75, 75), InputHandler::TOUCHSCREEN));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75)));
 }
 
 TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
@@ -1434,8 +1424,7 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             status.main_thread_scrolling_reasons);
 
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(40, 10),
-                                                      InputHandler::WHEEL));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(40, 10)));
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 1)).get());
   host_impl_->ScrollEnd(EndState().get());
 
@@ -11609,16 +11598,14 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
                   ->ScrollBegin(BeginState(gfx::Point()).get(),
                                 InputHandler::TOUCHSCREEN)
                   .thread);
-    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(
-        gfx::Point(), InputHandler::TOUCHSCREEN));
+    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
 
     // Scroll near the edge of the outer viewport.
     gfx::Vector2d scroll_delta(inner_viewport.width() / 2.f,
                                inner_viewport.height() / 2.f);
     host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
     inner_expected += scroll_delta;
-    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(
-        gfx::Point(), InputHandler::TOUCHSCREEN));
+    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
 
     EXPECT_VECTOR_EQ(inner_expected, inner_scroll->CurrentScrollOffset());
     EXPECT_VECTOR_EQ(outer_expected, outer_scroll->CurrentScrollOffset());
@@ -11628,13 +11615,11 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
     // and outer viewport layers is perfect.
     host_impl_->ScrollBy(
         UpdateState(gfx::Point(), gfx::ScaleVector2d(scroll_delta, 2)).get());
-    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(
-        gfx::Point(), InputHandler::TOUCHSCREEN));
+    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
     outer_expected += scroll_delta;
     inner_expected += scroll_delta;
     host_impl_->ScrollEnd(EndState().get());
-    EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
-        gfx::Point(), InputHandler::TOUCHSCREEN));
+    EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
 
     EXPECT_VECTOR_EQ(inner_expected, inner_scroll->CurrentScrollOffset());
     EXPECT_VECTOR_EQ(outer_expected, outer_scroll->CurrentScrollOffset());
@@ -12450,16 +12435,13 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
       host_impl_
           ->ScrollBegin(BeginState(gfx::Point(0, y)).get(), InputHandler::WHEEL)
           .thread);
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y),
-                                                      InputHandler::WHEEL));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y)));
   host_impl_->ScrollBy(
       UpdateState(gfx::Point(0, y), gfx::Vector2d(0, 50)).get());
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y + 50),
-                                                      InputHandler::WHEEL));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y + 50)));
   std::unique_ptr<ScrollState> scroll_state_end = EndState();
   host_impl_->ScrollEnd(scroll_state_end.get());
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
-                                                       InputHandler::WHEEL));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
 
   // The instant scroll should have marked the smooth scroll animation as
   // aborted.

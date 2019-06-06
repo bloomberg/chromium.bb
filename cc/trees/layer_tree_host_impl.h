@@ -277,8 +277,7 @@ class CC_EXPORT LayerTreeHostImpl
   void SetNeedsAnimateInput() override;
   bool IsCurrentlyScrollingViewport() const override;
   bool IsCurrentlyScrollingLayerAt(
-      const gfx::Point& viewport_point,
-      InputHandler::ScrollInputType type) const override;
+      const gfx::Point& viewport_point) const override;
   EventListenerProperties GetEventListenerProperties(
       EventListenerClass event_class) const override;
   InputHandler::TouchStartOrMoveEventListenerType
@@ -710,7 +709,6 @@ class CC_EXPORT LayerTreeHostImpl
   }
 
   InputHandler::ScrollStatus TryScroll(const gfx::PointF& screen_space_point,
-                                       InputHandler::ScrollInputType type,
                                        const ScrollTree& scroll_tree,
                                        ScrollNode* scroll_node) const;
 
@@ -862,7 +860,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   ScrollNode* FindScrollNodeForDeviceViewportPoint(
       const gfx::PointF& device_viewport_point,
-      InputHandler::ScrollInputType type,
       LayerImpl* layer_hit_by_point,
       bool* scroll_on_main_thread,
       uint32_t* main_thread_scrolling_reason) const;
