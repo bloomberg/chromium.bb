@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace notifications {
@@ -23,6 +24,9 @@ class NotificationScheduleService : public KeyedService {
   // Schedules a notification to display.
   virtual void Schedule(
       std::unique_ptr<NotificationParams> notification_params) = 0;
+  // Returns NotificationBackgroundTaskScheduler Handler.
+  virtual NotificationBackgroundTaskScheduler::Handler*
+  GetBackgroundTaskSchedulerHandler() = 0;
 
  protected:
   NotificationScheduleService() = default;

@@ -15,7 +15,9 @@ namespace notifications {
 class NotificationScheduler;
 struct NotificationParams;
 
-class NotificationScheduleServiceImpl : public NotificationScheduleService {
+class NotificationScheduleServiceImpl
+    : public NotificationScheduleService,
+      public NotificationBackgroundTaskScheduler::Handler {
  public:
   explicit NotificationScheduleServiceImpl(
       std::unique_ptr<NotificationScheduler> scheduler);
@@ -25,6 +27,12 @@ class NotificationScheduleServiceImpl : public NotificationScheduleService {
   // NotificationScheduleService implementation.
   void Schedule(
       std::unique_ptr<NotificationParams> notification_params) override;
+  NotificationBackgroundTaskScheduler::Handler*
+  GetBackgroundTaskSchedulerHandler() override;
+
+  // NotificationBackgroundTaskScheduler::Handler implementation.
+  void OnStartTask() override;
+  void OnStopTask() override;
 
   // Provides the actual notification scheduling functionalities.
   std::unique_ptr<NotificationScheduler> scheduler_;

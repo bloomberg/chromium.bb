@@ -23,4 +23,17 @@ void NotificationScheduleServiceImpl::Schedule(
   scheduler_->Schedule(std::move(notification_params));
 }
 
+NotificationBackgroundTaskScheduler::Handler*
+NotificationScheduleServiceImpl::GetBackgroundTaskSchedulerHandler() {
+  return this;
+}
+
+void NotificationScheduleServiceImpl::OnStartTask() {
+  scheduler_->OnStartTask();
+}
+
+void NotificationScheduleServiceImpl::OnStopTask() {
+  scheduler_->OnStopTask();
+}
+
 }  // namespace notifications

@@ -21,6 +21,7 @@ void InitAwareNotificationScheduler::Init(InitCallback init_callback) {
                              weak_ptr_factory_.GetWeakPtr(),
                              std::move(init_callback)));
 }
+
 void InitAwareNotificationScheduler::Schedule(
     std::unique_ptr<NotificationParams> params) {
   if (init_success_.has_value() && *init_success_) {
@@ -34,6 +35,14 @@ void InitAwareNotificationScheduler::Schedule(
   cached_closures_.emplace_back(
       base::BindOnce(&InitAwareNotificationScheduler::Schedule,
                      weak_ptr_factory_.GetWeakPtr(), std::move(params)));
+}
+
+void InitAwareNotificationScheduler::OnStartTask() {
+  impl_->OnStartTask();
+}
+
+void InitAwareNotificationScheduler::OnStopTask() {
+  impl_->OnStopTask();
 }
 
 void InitAwareNotificationScheduler::OnInitialized(InitCallback init_callback,

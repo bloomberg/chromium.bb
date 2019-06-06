@@ -6,25 +6,39 @@
 
 #include "base/android/jni_android.h"
 #include "base/logging.h"
+#include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"
+#include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
+#include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "jni/NotificationSchedulerTask_jni.h"
 
 // static
 void JNI_NotificationSchedulerTask_OnStartTask(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& profile,
-    const base::android::JavaParamRef<jobject>& callback) {
-  Java_org_chromium_chrome_browser_notifications_scheduler_NotificationSchedulerTask_nativeOnStartTask(
-      env, jcaller, profile, callback);
+    const base::android::JavaParamRef<jobject>& j_caller,
+    const base::android::JavaParamRef<jobject>& j_profile,
+    const base::android::JavaParamRef<jobject>& j_callback) {
+  // TODO(Hesen): Pass task finish callback to the scheduler.
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  auto* service =
+      NotificationScheduleServiceFactory::GetForBrowserContext(profile);
+  auto* handler = service->GetBackgroundTaskSchedulerHandler();
+  handler->OnStartTask();
 }
 
 // static
 jboolean JNI_NotificationSchedulerTask_OnStopTask(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& profile) {
-  return Java_org_chromium_chrome_browser_notifications_scheduler_NotificationSchedulerTask_nativeOnStopTask(
-      env, jcaller, profile);
+    const base::android::JavaParamRef<jobject>& j_caller,
+    const base::android::JavaParamRef<jobject>& j_profile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  auto* service =
+      NotificationScheduleServiceFactory::GetForBrowserContext(profile);
+  auto* handler = service->GetBackgroundTaskSchedulerHandler();
+  handler->OnStopTask();
+  // TODO(Hesen): Handle the return value and stoptask.
+  return true;
 }
 
 NotificationBackgroundTaskSchedulerAndroid::

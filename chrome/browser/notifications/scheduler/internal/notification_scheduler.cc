@@ -101,12 +101,10 @@ class InitHelper {
 };
 
 // Implementation of NotificationScheduler.
-class NotificationSchedulerImpl
-    : public NotificationScheduler,
-      public NotificationBackgroundTaskScheduler::Handler,
-      public ScheduledNotificationManager::Delegate,
-      public ImpressionHistoryTracker::Delegate,
-      public UserActionHandler {
+class NotificationSchedulerImpl : public NotificationScheduler,
+                                  public ScheduledNotificationManager::Delegate,
+                                  public ImpressionHistoryTracker::Delegate,
+                                  public UserActionHandler {
  public:
   NotificationSchedulerImpl(
       std::unique_ptr<NotificationSchedulerContext> context)
