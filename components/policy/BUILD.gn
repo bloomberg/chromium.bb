@@ -4,6 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
+import("//build/config/mac/base_rules.gni")
 import("//build/toolchain/toolchain.gni")
 import("//components/policy/resources/policy_templates.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -373,32 +374,10 @@ if (gen_policy_templates_android && is_android) {
     ]
   }
 } else if (gen_policy_templates_mac && is_mac) {
-  action("convert_mcx_plist") {
-    script = "//build/config/mac/xcrun.py"
-    sources = [
-      "$policy_templates_base_dir/mac/app-Manifest.plist",
-    ]
-    inputs = [
-      script,
-    ]
-    outputs = [
-      "$target_gen_dir/$chrome_mac_bundle_id.manifest",
-    ]
-
-    if (use_system_xcode) {
-      args = []
-    } else {
-      args = [
-        "--developer_dir",
-        hermetic_xcode_path,
-      ]
-    }
-    args += [
-              "plutil",
-              "-convert",
-              "xml1",
-            ] + rebase_path(sources, root_out_dir) + [ "-o" ] +
-            rebase_path(outputs, root_out_dir)
+  convert_plist("convert_mcx_plist") {
+    source = "$policy_templates_base_dir/mac/app-Manifest.plist"
+    output = "$target_gen_dir/$chrome_mac_bundle_id.manifest"
+    format = "xml1"
 
     deps = [
       ":policy_templates",
