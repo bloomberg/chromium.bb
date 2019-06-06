@@ -190,6 +190,10 @@ class WebViewUnitTest : public views::test::WidgetTest {
         content::WebContents::CreateParams(browser_context_.get()));
   }
 
+  void SetFullscreenNativeView(WebView* web_view, gfx::NativeView native_view) {
+    web_view->fullscreen_native_view_for_testing_ = native_view;
+  }
+
  private:
   std::unique_ptr<content::RenderViewHostTestEnabler> rvh_enabler_;
   std::unique_ptr<content::TestBrowserContext> browser_context_;
@@ -560,5 +564,45 @@ TEST_F(WebViewUnitTest, CrashedOverlayViewOwnedbyClient) {
   // This shouldn't crash, we still own this.
   delete crashed_overlay_view;
 }
+
+#if defined(USE_AURA)
+namespace {
+
+// TODO(sky): factor this for mac.
+gfx::Rect GetNativeViewBounds(gfx::NativeView native_view) {
+  return native_view->bounds();
+}
+
+}  // namespace
+
+TEST_F(WebViewUnitTest, LayoutFullscreenNativeView) {
+  web_view()->SetEmbedFullscreenWidgetMode(true);
+  // WebView lazily creates WebContents. Force creation.
+  web_view()->GetWebContents();
+  // Layout is async, force a layout now to ensure bounds are set.
+  web_view()->Layout();
+  const gfx::Rect initial_bounds =
+      GetNativeViewBounds(web_view()->GetWebContents()->GetNativeView());
+  EXPECT_NE(gfx::Rect(), initial_bounds);
+
+  // Create another WebContents for a separate gfx::NativeView. The WebContent's
+  // gfx::NativeView is used as the fullscreen widget for web_view().
+  const std::unique_ptr<content::WebContents> fullscreen_web_contents(
+      CreateWebContents());
+  EXPECT_NE(initial_bounds,
+            GetNativeViewBounds(fullscreen_web_contents->GetNativeView()));
+  SetFullscreenNativeView(web_view(), fullscreen_web_contents->GetNativeView());
+
+  // Trigger going fullscreen. Once fullscreen, the fullscreen gfx::NativeView
+  // should be immediately resized.
+  static_cast<content::WebContentsObserver*>(web_view())
+      ->DidShowFullscreenWidget();
+  EXPECT_EQ(initial_bounds,
+            GetNativeViewBounds(fullscreen_web_contents->GetNativeView()));
+
+  static_cast<content::WebContentsObserver*>(web_view())
+      ->DidDestroyFullscreenWidget();
+}
+#endif
 
 }  // namespace views
