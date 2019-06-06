@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -14,7 +16,7 @@
 #include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
-#include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_service.h"
 
 using RebootOnSignOutPolicy =
     enterprise_management::DeviceRebootOnUserSignoutProto;
@@ -49,15 +51,22 @@ void RecordDBusResult(LockToSingleUserResult result) {
 }  // namespace
 
 LockToSingleUserManager::LockToSingleUserManager() {
-  CHECK(chromeos::LoginState::IsInitialized());
-  login_state_observer_.Add(chromeos::LoginState::Get());
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                              content::NotificationService::AllSources());
 }
 
-LockToSingleUserManager::~LockToSingleUserManager() {}
+LockToSingleUserManager::~LockToSingleUserManager() = default;
 
-void LockToSingleUserManager::LoggedInStateChanged() {
-  if (!chromeos::LoginState::Get()->IsUserLoggedIn() ||
-      !user_manager::UserManager::Get()->GetPrimaryUser()) {
+void LockToSingleUserManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(
+          content::Source<Profile>(source).ptr());
+  if (!user || user->IsAffiliated()) {
     return;
   }
   int policy_value = -1;
@@ -65,7 +74,7 @@ void LockToSingleUserManager::LoggedInStateChanged() {
           chromeos::kDeviceRebootOnUserSignout, &policy_value)) {
     return;
   }
-  login_state_observer_.RemoveAll();
+  notification_registrar_.RemoveAll();
   switch (policy_value) {
     case RebootOnSignOutPolicy::ALWAYS:
       LockToSingleUser();
