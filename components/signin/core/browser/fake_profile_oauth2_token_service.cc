@@ -161,7 +161,7 @@ void FakeProfileOAuth2TokenService::CancelAllRequests() {
 }
 
 void FakeProfileOAuth2TokenService::CancelRequestsForAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   CompleteRequests(
       account_id, true, ScopeSet(),
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
@@ -170,7 +170,7 @@ void FakeProfileOAuth2TokenService::CancelRequestsForAccount(
 
 void FakeProfileOAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
@@ -197,7 +197,7 @@ void FakeProfileOAuth2TokenService::FetchOAuth2Token(
 }
 
 void FakeProfileOAuth2TokenService::InvalidateAccessTokenImpl(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& client_id,
     const ScopeSet& scopes,
     const std::string& access_token) {

@@ -89,7 +89,7 @@ class CustomFakeProfileOAuth2TokenService
 
  private:
   // OAuth2TokenService:
-  void InvalidateAccessTokenImpl(const std::string& account_id,
+  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
                                  const std::string& client_id,
                                  const ScopeSet& scopes,
                                  const std::string& access_token) override {

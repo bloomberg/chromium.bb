@@ -32,7 +32,7 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
       const std::string& account_id,
       const GoogleServiceAuthError& auth_error);
 
-  void InvalidateTokenForMultilogin(const std::string& account_id,
+  void InvalidateTokenForMultilogin(const CoreAccountId& account_id,
                                     const std::string& token) override {}
 
   FakeOAuth2TokenServiceDelegate* GetFakeOAuth2TokenServiceDelegate();
@@ -41,16 +41,16 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
   // OAuth2TokenService overrides.
   void FetchOAuth2Token(
       RequestImpl* request,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
       const ScopeSet& scopes) override;
 
-  void InvalidateAccessTokenImpl(const std::string& account_id,
+  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
                                  const std::string& client_id,
                                  const ScopeSet& scopes,
-                                 const std::string& access_token) override;
+                                 const std::string& access_token) override {}
 
  private:
   struct PendingRequest {

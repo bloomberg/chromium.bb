@@ -179,7 +179,7 @@ class OAuth2TokenService {
   // |scopes| is the set of scopes to get an access token for, |consumer| is
   // the object that will be called back with results if the returned request
   // is not deleted. Virtual for mocking.
-  virtual std::unique_ptr<Request> StartRequest(const std::string& account_id,
+  virtual std::unique_ptr<Request> StartRequest(const CoreAccountId& account_id,
                                                 const ScopeSet& scopes,
                                                 Consumer* consumer);
 
@@ -187,14 +187,14 @@ class OAuth2TokenService {
   // empty), return it directly, otherwise start request to get access token.
   // Used for getting tokens to send to Gaia Multilogin endpoint.
   std::unique_ptr<OAuth2TokenService::Request> StartRequestForMultilogin(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       OAuth2TokenService::Consumer* consumer);
 
   // This method does the same as |StartRequest| except it uses |client_id| and
   // |client_secret| to identify OAuth client app instead of using
   // Chrome's default values.
   std::unique_ptr<Request> StartRequestForClient(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string& client_id,
       const std::string& client_secret,
       const ScopeSet& scopes,
@@ -204,7 +204,7 @@ class OAuth2TokenService {
   // URLLoaderfactory given by |url_loader_factory| instead of using the one
   // returned by |GetURLLoaderFactory| implemented by derived classes.
   std::unique_ptr<Request> StartRequestWithContext(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const ScopeSet& scopes,
       Consumer* consumer);
@@ -220,28 +220,28 @@ class OAuth2TokenService {
   // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
   // Note: This will return |true| if and only if |account_id| is contained in
   // the list returned by |GetAccounts|.
-  bool RefreshTokenIsAvailable(const std::string& account_id) const;
+  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const;
 
   // Returns true if a refresh token exists for |account_id| and it is in a
   // persistent error state.
-  bool RefreshTokenHasError(const std::string& account_id) const;
+  bool RefreshTokenHasError(const CoreAccountId& account_id) const;
 
   // Returns the auth error associated with |account_id|. Only persistent errors
   // will be returned.
-  GoogleServiceAuthError GetAuthError(const std::string& account_id) const;
+  GoogleServiceAuthError GetAuthError(const CoreAccountId& account_id) const;
 
   // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
   // invalid. This should be done if the token was received from this class,
   // but was not accepted by the server (e.g., the server returned
   // 401 Unauthorized). The token will be removed from the cache for the given
   // scopes.
-  void InvalidateAccessToken(const std::string& account_id,
+  void InvalidateAccessToken(const CoreAccountId& account_id,
                              const ScopeSet& scopes,
                              const std::string& access_token);
 
   // Like |InvalidateToken| except is uses |client_id| to identity OAuth2 client
   // app that issued the request instead of Chrome's default values.
-  void InvalidateAccessTokenForClient(const std::string& account_id,
+  void InvalidateAccessTokenForClient(const CoreAccountId& account_id,
                                       const std::string& client_id,
                                       const ScopeSet& scopes,
                                       const std::string& access_token);
@@ -250,15 +250,14 @@ class OAuth2TokenService {
   // InvalidateTokenForMultilogin method of the delegate. This should be done if
   // the token was received from this class, but was not accepted by the server
   // (e.g., the server returned 401 Unauthorized).
-  virtual void InvalidateTokenForMultilogin(const std::string& failed_account,
+  virtual void InvalidateTokenForMultilogin(const CoreAccountId& failed_account,
                                             const std::string& token);
 
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
   // Returns the current number of pending fetchers matching given params.
-  size_t GetNumPendingRequestsForTesting(
-      const std::string& client_id,
-      const std::string& account_id,
-      const ScopeSet& scopes) const;
+  size_t GetNumPendingRequestsForTesting(const std::string& client_id,
+                                         const CoreAccountId& account_id,
+                                         const ScopeSet& scopes) const;
 
   OAuth2TokenServiceDelegate* GetDelegate();
   const OAuth2TokenServiceDelegate* GetDelegate() const;
@@ -293,7 +292,7 @@ class OAuth2TokenService {
   };
 
   // Implement it in delegates if they want to report errors to the user.
-  void UpdateAuthError(const std::string& account_id,
+  void UpdateAuthError(const CoreAccountId& account_id,
                        const GoogleServiceAuthError& error);
 
   // Add a new entry to the cache.
@@ -301,7 +300,7 @@ class OAuth2TokenService {
   // that an access token should ever not be cached.
   virtual void RegisterTokenResponse(
       const std::string& client_id,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const ScopeSet& scopes,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response);
 
@@ -311,7 +310,7 @@ class OAuth2TokenService {
   // Clears all of the tokens belonging to |account_id| from the internal token
   // cache. It does not matter what other parameters, like |client_id| were
   // used to request the tokens.
-  void ClearCacheForAccount(const std::string& account_id);
+  void ClearCacheForAccount(const CoreAccountId& account_id);
 
   // Cancels all requests that are currently in progress. Virtual so it can be
   // overridden for tests.
@@ -319,13 +318,13 @@ class OAuth2TokenService {
 
   // Cancels all requests related to a given |account_id|. Virtual so it can be
   // overridden for tests.
-  virtual void CancelRequestsForAccount(const std::string& account_id);
+  virtual void CancelRequestsForAccount(const CoreAccountId& account_id);
 
   // Fetches an OAuth token for the specified client/scopes. Virtual so it can
   // be overridden for tests and for platform-specific behavior.
   virtual void FetchOAuth2Token(
       RequestImpl* request,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
@@ -333,14 +332,14 @@ class OAuth2TokenService {
 
   // Create an access token fetcher for the given account id.
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer);
 
   // Invalidates the |access_token| issued for |account_id|, |client_id| and
   // |scopes|. Virtual so it can be overriden for tests and for platform-
   // specifc behavior.
-  virtual void InvalidateAccessTokenImpl(const std::string& account_id,
+  virtual void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
                                          const std::string& client_id,
                                          const ScopeSet& scopes,
                                          const std::string& access_token);
@@ -380,7 +379,7 @@ class OAuth2TokenService {
   // uses |client_id| and |client_secret| to identify OAuth
   // client app instead of using Chrome's default values.
   std::unique_ptr<Request> StartRequestForClientWithContext(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,

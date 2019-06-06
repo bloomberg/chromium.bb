@@ -21,8 +21,8 @@ namespace signin {
 
 namespace {
 
-const char kAccountId[] = "account_id_1";
-const char kAccountId2[] = "account_id_2";
+const CoreAccountId kAccountId("account_id_1");
+const CoreAccountId kAccountId2("account_id_2");
 const char kAccessToken[] = "access_token_1";
 const char kAccessToken2[] = "access_token_2";
 
@@ -121,7 +121,7 @@ class MockCookieManager
 class MockTokenService : public FakeOAuth2TokenService {
  public:
   MOCK_METHOD2(InvalidateTokenForMultilogin,
-               void(const std::string& account_id, const std::string& token));
+               void(const CoreAccountId& account_id, const std::string& token));
 };
 
 }  // namespace

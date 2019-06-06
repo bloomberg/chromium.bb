@@ -48,7 +48,7 @@ class DeviceOAuth2TokenService
   // Implementation of OAuth2TokenService.
   void FetchOAuth2Token(
       RequestImpl* request,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,

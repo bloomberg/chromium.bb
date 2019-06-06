@@ -427,7 +427,7 @@ void OAuth2TokenService::RemoveDiagnosticsObserver(
 
 std::unique_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestForMultilogin(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     OAuth2TokenService::Consumer* consumer) {
   const std::string refresh_token =
       delegate_->GetTokenForMultilogin(account_id);
@@ -453,7 +453,7 @@ OAuth2TokenService::StartRequestForMultilogin(
 }
 
 std::unique_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
   return StartRequestForClientWithContext(
@@ -464,7 +464,7 @@ std::unique_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
 
 std::unique_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestForClient(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& client_id,
     const std::string& client_secret,
     const OAuth2TokenService::ScopeSet& scopes,
@@ -481,7 +481,7 @@ OAuth2TokenService::GetURLLoaderFactory() const {
 
 std::unique_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestWithContext(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const ScopeSet& scopes,
     Consumer* consumer) {
@@ -493,7 +493,7 @@ OAuth2TokenService::StartRequestWithContext(
 
 std::unique_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestForClientWithContext(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
@@ -537,7 +537,7 @@ OAuth2TokenService::StartRequestForClientWithContext(
 
 void OAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
@@ -560,7 +560,7 @@ void OAuth2TokenService::FetchOAuth2Token(
 }
 
 OAuth2AccessTokenFetcher* OAuth2TokenService::CreateAccessTokenFetcher(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   return delegate_->CreateAccessTokenFetcher(account_id, url_loader_factory,
@@ -590,24 +590,24 @@ std::vector<std::string> OAuth2TokenService::GetAccounts() const {
 }
 
 bool OAuth2TokenService::RefreshTokenIsAvailable(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   return delegate_->RefreshTokenIsAvailable(account_id);
 }
 
 bool OAuth2TokenService::RefreshTokenHasError(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   return GetAuthError(account_id) != GoogleServiceAuthError::AuthErrorNone();
 }
 
 GoogleServiceAuthError OAuth2TokenService::GetAuthError(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   GoogleServiceAuthError error = delegate_->GetAuthError(account_id);
   DCHECK(!error.IsTransientError());
   return error;
 }
 
 void OAuth2TokenService::InvalidateAccessToken(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const ScopeSet& scopes,
     const std::string& access_token) {
   InvalidateAccessTokenImpl(account_id,
@@ -616,7 +616,7 @@ void OAuth2TokenService::InvalidateAccessToken(
 }
 
 void OAuth2TokenService::InvalidateTokenForMultilogin(
-    const std::string& failed_account,
+    const CoreAccountId& failed_account,
     const std::string& token) {
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
@@ -629,7 +629,7 @@ void OAuth2TokenService::InvalidateTokenForMultilogin(
 }
 
 void OAuth2TokenService::InvalidateAccessTokenForClient(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& client_id,
     const ScopeSet& scopes,
     const std::string& access_token) {
@@ -637,7 +637,7 @@ void OAuth2TokenService::InvalidateAccessTokenForClient(
 }
 
 void OAuth2TokenService::InvalidateAccessTokenImpl(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& client_id,
     const ScopeSet& scopes,
     const std::string& access_token) {
@@ -735,14 +735,14 @@ bool OAuth2TokenService::RemoveCachedTokenResponse(
   }
   return false;
 }
-void OAuth2TokenService::UpdateAuthError(const std::string& account_id,
+void OAuth2TokenService::UpdateAuthError(const CoreAccountId& account_id,
                                          const GoogleServiceAuthError& error) {
   delegate_->UpdateAuthError(account_id, error);
 }
 
 void OAuth2TokenService::RegisterTokenResponse(
     const std::string& client_id,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const ScopeSet& scopes,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -761,7 +761,7 @@ void OAuth2TokenService::ClearCache() {
   token_cache_.clear();
 }
 
-void OAuth2TokenService::ClearCacheForAccount(const std::string& account_id) {
+void OAuth2TokenService::ClearCacheForAccount(const CoreAccountId& account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (TokenCache::iterator iter = token_cache_.begin();
        iter != token_cache_.end();
@@ -784,7 +784,7 @@ void OAuth2TokenService::CancelAllRequests() {
 }
 
 void OAuth2TokenService::CancelRequestsForAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   std::vector<Fetcher*> fetchers_to_cancel;
   for (const auto& pending_fetcher : pending_fetchers_) {
     if (pending_fetcher.first.account_id == account_id)
@@ -807,7 +807,7 @@ void OAuth2TokenService::set_max_authorization_token_fetch_retries_for_testing(
 
 size_t OAuth2TokenService::GetNumPendingRequestsForTesting(
     const std::string& client_id,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const ScopeSet& scopes) const {
   auto iter = pending_fetchers_.find(
       OAuth2TokenService::RequestParameters(client_id, account_id, scopes));

@@ -23,7 +23,7 @@ FakeOAuth2TokenService::~FakeOAuth2TokenService() {
 
 void FakeOAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
@@ -35,13 +35,6 @@ void FakeOAuth2TokenService::FetchOAuth2Token(
   pending_request.scopes = scopes;
   pending_request.request = request->AsWeakPtr();
   pending_requests_.push_back(pending_request);
-}
-
-void FakeOAuth2TokenService::InvalidateAccessTokenImpl(
-    const std::string& account_id,
-    const std::string& client_id,
-    const ScopeSet& scopes,
-    const std::string& access_token) {
 }
 
 void FakeOAuth2TokenService::AddAccount(const std::string& account_id) {

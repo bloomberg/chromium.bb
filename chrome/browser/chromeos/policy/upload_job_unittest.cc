@@ -71,14 +71,14 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
   // OAuth2TokenService:
   void FetchOAuth2Token(
       RequestImpl* request,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
       const ScopeSet& scopes) override;
 
   // OAuth2TokenService:
-  void InvalidateAccessTokenImpl(const std::string& account_id,
+  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
                                  const std::string& client_id,
                                  const ScopeSet& scopes,
                                  const std::string& access_token) override;
@@ -103,7 +103,7 @@ MockOAuth2TokenService::~MockOAuth2TokenService() {
 
 void MockOAuth2TokenService::FetchOAuth2Token(
     OAuth2TokenService::RequestImpl* request,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
@@ -142,7 +142,7 @@ void MockOAuth2TokenService::SetTokenInvalid(const std::string& token) {
 }
 
 void MockOAuth2TokenService::InvalidateAccessTokenImpl(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& client_id,
     const ScopeSet& scopes,
     const std::string& access_token) {

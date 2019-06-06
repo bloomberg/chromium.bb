@@ -103,17 +103,17 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   // OAuth2TokenService overrides.
   void CancelAllRequests() override;
 
-  void CancelRequestsForAccount(const std::string& account_id) override;
+  void CancelRequestsForAccount(const CoreAccountId& account_id) override;
 
   void FetchOAuth2Token(
       RequestImpl* request,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
       const ScopeSet& scopes) override;
 
-  void InvalidateAccessTokenImpl(const std::string& account_id,
+  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
                                  const std::string& client_id,
                                  const ScopeSet& scopes,
                                  const std::string& access_token) override;
