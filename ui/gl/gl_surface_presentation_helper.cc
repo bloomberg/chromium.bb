@@ -70,8 +70,24 @@ bool GLSurfacePresentationHelper::GetFrameTimestampInfoIfAvailable(
   DCHECK(frame.timer || frame.fence || egl_timestamp_client_);
 
   if (egl_timestamp_client_) {
-    return egl_timestamp_client_->GetFrameTimestampInfoIfAvailable(
+    bool result = egl_timestamp_client_->GetFrameTimestampInfoIfAvailable(
         timestamp, interval, flags, frame.frame_id);
+
+    // Workaround null timestamp by setting it to TimeTicks::Now() snapped to
+    // the next vsync interval. See
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=966638 for more
+    // details.
+    if (result && timestamp->is_null()) {
+      *timestamp = base::TimeTicks::Now();
+      *interval = vsync_interval_;
+      *flags = 0;
+      if (!vsync_interval_.is_zero()) {
+        *timestamp =
+            timestamp->SnappedToNextTick(vsync_timebase_, vsync_interval_);
+        *flags = gfx::PresentationFeedback::kVSync;
+      }
+    }
+    return result;
   } else if (frame.timer) {
     if (!frame.timer->IsAvailable())
       return false;

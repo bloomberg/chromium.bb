@@ -1475,6 +1475,15 @@ bool NativeViewGLSurfaceEGL::GetFrameTimestampInfoIfAvailable(
   // reporting purpose.
   std::vector<EGLnsecsANDROID> egl_timestamps(supported_egl_timestamps_.size(),
                                               EGL_TIMESTAMP_INVALID_ANDROID);
+
+  // TODO(vikassoni): File a driver bug for eglGetFrameTimestampsANDROID().
+  // See https://bugs.chromium.org/p/chromium/issues/detail?id=966638.
+  // As per the spec, the driver is expected to return a valid timestamp from
+  // the call eglGetFrameTimestampsANDROID() when its not
+  // EGL_TIMESTAMP_PENDING_ANDROID or EGL_TIMESTAMP_INVALID_ANDROID. But
+  // currently some buggy drivers an invalid timestamp 0.
+  // This is currentlt handled in chrome for by setting the presentation time to
+  // TimeTicks::Now() (snapped to the next vsync) instead of 0.
   if ((frame_id < 0) ||
       !eglGetFrameTimestampsANDROID(
           GetDisplay(), surface_, frame_id,
@@ -1502,7 +1511,6 @@ bool NativeViewGLSurfaceEGL::GetFrameTimestampInfoIfAvailable(
                          base::TimeDelta::FromNanoseconds(presentation_time_ns);
     *presentation_flags = presentation_flags_;
   }
-  DCHECK(!presentation_time->is_null());
   return true;
 }
 
