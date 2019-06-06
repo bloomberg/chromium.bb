@@ -145,6 +145,12 @@ cr.define('policy', function() {
         // Populate the user gaia id.
         this.setLabelAndShow_('.gaia-id', status.gaiaId || notSpecifiedString);
         this.setLabelAndShow_('.client-id', status.clientId);
+        if (status.isAffiliated != null) {
+          this.setLabelAndShow_(
+              '.is-affiliated',
+              loadTimeData.getString(
+                  status.isAffiliated ? 'isAffiliatedYes' : 'isAffiliatedNo'));
+        }
       }
       this.setLabelAndShow_(
           '.time-since-last-refresh', status.timeSinceLastRefresh, false);

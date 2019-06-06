@@ -483,4 +483,13 @@ Additional details:
     List entry "<ph name="LANGUAGE_ID">$1<ex>en-GB</ex></ph>": Entry ignored because it is also included in the SpellcheckLanguage policy.
     </message>
   </if>
+  <message name="IDS_POLICY_LABEL_IS_AFFILIATED" desc="Label to indicate if the user is affiliated or not.">
+    Is affiliated:
+  </message>
+  <message name="IDS_POLICY_IS_AFFILIATED_YES" desc="Indicates the user is affiliated.">
+    Yes
+  </message>
+  <message name="IDS_POLICY_IS_AFFILIATED_NO" desc="Indicates the user is not affiliated.">
+    No
+  </message>
 </grit-part>

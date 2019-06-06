@@ -68,6 +68,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
 #else
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
@@ -171,6 +172,22 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
                                  last_refresh_time));
 }
 
+#if defined(OS_CHROMEOS)
+// Adds a new entry to |dict| with the affiliation status of the user associated
+// with |profile|. Device scope policy status providers call this method with
+// nullptr |profile|. In this case no entry is added as affiliation status only
+// makes sense for user scope policy status providers.
+void GetUserAffiliationStatus(base::DictionaryValue* dict, Profile* profile) {
+  if (!profile)
+    return;
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user)
+    return;
+  dict->SetBoolean("isAffiliated", user->IsAffiliated());
+}
+#endif  // defined(OS_CHROMEOS)
+
 void ExtractDomainFromUsername(base::DictionaryValue* dict) {
   std::string username;
   dict->GetString("username", &username);
@@ -239,6 +256,24 @@ class UserCloudPolicyStatusProvider : public CloudPolicyCoreStatusProvider {
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStatusProvider);
 };
 
+#if defined(OS_CHROMEOS)
+// A cloud policy status provider for user policy on Chrome OS.
+class UserCloudPolicyStatusProviderChromeOS
+    : public UserCloudPolicyStatusProvider {
+ public:
+  explicit UserCloudPolicyStatusProviderChromeOS(policy::CloudPolicyCore* core,
+                                                 Profile* profile);
+  ~UserCloudPolicyStatusProviderChromeOS() override;
+
+  // CloudPolicyCoreStatusProvider implementation.
+  void GetStatus(base::DictionaryValue* dict) override;
+
+ private:
+  Profile* profile_;
+  DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStatusProviderChromeOS);
+};
+#endif  // defined(OS_CHROMEOS)
+
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 class MachineLevelUserCloudPolicyStatusProvider
     : public PolicyStatusProvider,
@@ -263,11 +298,12 @@ class MachineLevelUserCloudPolicyStatusProvider
 
 #if defined(OS_CHROMEOS)
 // A cloud policy status provider for device policy.
-class DeviceCloudPolicyStatusProvider : public CloudPolicyCoreStatusProvider {
+class DeviceCloudPolicyStatusProviderChromeOS
+    : public CloudPolicyCoreStatusProvider {
  public:
-  explicit DeviceCloudPolicyStatusProvider(
+  explicit DeviceCloudPolicyStatusProviderChromeOS(
       policy::BrowserPolicyConnectorChromeOS* connector);
-  ~DeviceCloudPolicyStatusProvider() override;
+  ~DeviceCloudPolicyStatusProviderChromeOS() override;
 
   // CloudPolicyCoreStatusProvider implementation.
   void GetStatus(base::DictionaryValue* dict) override;
@@ -276,7 +312,7 @@ class DeviceCloudPolicyStatusProvider : public CloudPolicyCoreStatusProvider {
   std::string enterprise_enrollment_domain_;
   std::string enterprise_display_domain_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyStatusProvider);
+  DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyStatusProviderChromeOS);
 };
 
 // A cloud policy status provider that reads policy status from the policy core
@@ -314,7 +350,8 @@ class UserActiveDirectoryPolicyStatusProvider
       public policy::CloudPolicyStore::Observer {
  public:
   explicit UserActiveDirectoryPolicyStatusProvider(
-      policy::ActiveDirectoryPolicyManager* policy_manager);
+      policy::ActiveDirectoryPolicyManager* policy_manager,
+      Profile* profile);
 
   ~UserActiveDirectoryPolicyStatusProvider() override;
 
@@ -327,7 +364,7 @@ class UserActiveDirectoryPolicyStatusProvider
 
  private:
   policy::ActiveDirectoryPolicyManager* const policy_manager_;  // not owned.
-
+  Profile* profile_;
   DISALLOW_COPY_AND_ASSIGN(UserActiveDirectoryPolicyStatusProvider);
 };
 
@@ -404,6 +441,26 @@ void UserCloudPolicyStatusProvider::GetStatus(base::DictionaryValue* dict) {
   ExtractDomainFromUsername(dict);
 }
 
+#if defined(OS_CHROMEOS)
+UserCloudPolicyStatusProviderChromeOS::UserCloudPolicyStatusProviderChromeOS(
+    policy::CloudPolicyCore* core,
+    Profile* profile)
+    : UserCloudPolicyStatusProvider(core) {
+  profile_ = profile;
+}
+
+UserCloudPolicyStatusProviderChromeOS::
+    ~UserCloudPolicyStatusProviderChromeOS() {}
+
+void UserCloudPolicyStatusProviderChromeOS::GetStatus(
+    base::DictionaryValue* dict) {
+  if (!core_->store()->is_managed())
+    return;
+  UserCloudPolicyStatusProvider::GetStatus(dict);
+  GetUserAffiliationStatus(dict, profile_);
+}
+#endif  // defined(OS_CHROMEOS)
+
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 MachineLevelUserCloudPolicyStatusProvider::
@@ -472,17 +529,20 @@ void MachineLevelUserCloudPolicyStatusProvider::OnStoreError(
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
-DeviceCloudPolicyStatusProvider::DeviceCloudPolicyStatusProvider(
-    policy::BrowserPolicyConnectorChromeOS* connector)
+DeviceCloudPolicyStatusProviderChromeOS::
+    DeviceCloudPolicyStatusProviderChromeOS(
+        policy::BrowserPolicyConnectorChromeOS* connector)
     : CloudPolicyCoreStatusProvider(
           connector->GetDeviceCloudPolicyManager()->core()) {
   enterprise_enrollment_domain_ = connector->GetEnterpriseEnrollmentDomain();
   enterprise_display_domain_ = connector->GetEnterpriseDisplayDomain();
 }
 
-DeviceCloudPolicyStatusProvider::~DeviceCloudPolicyStatusProvider() = default;
+DeviceCloudPolicyStatusProviderChromeOS::
+    ~DeviceCloudPolicyStatusProviderChromeOS() = default;
 
-void DeviceCloudPolicyStatusProvider::GetStatus(base::DictionaryValue* dict) {
+void DeviceCloudPolicyStatusProviderChromeOS::GetStatus(
+    base::DictionaryValue* dict) {
   GetStatusFromCore(core_, dict);
   dict->SetString("enterpriseEnrollmentDomain", enterprise_enrollment_domain_);
   dict->SetString("enterpriseDisplayDomain", enterprise_display_domain_);
@@ -531,9 +591,11 @@ void DeviceLocalAccountPolicyStatusProvider::OnDeviceLocalAccountsChanged() {
 
 UserActiveDirectoryPolicyStatusProvider::
     UserActiveDirectoryPolicyStatusProvider(
-        policy::ActiveDirectoryPolicyManager* policy_manager)
+        policy::ActiveDirectoryPolicyManager* policy_manager,
+        Profile* profile)
     : policy_manager_(policy_manager) {
   policy_manager_->store()->AddObserver(this);
+  profile_ = profile;
 }
 
 UserActiveDirectoryPolicyStatusProvider::
@@ -571,6 +633,7 @@ void UserActiveDirectoryPolicyStatusProvider::GetStatus(
           : ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
                                    ui::TimeFormat::LENGTH_SHORT,
                                    base::Time::Now() - last_refresh_time));
+  GetUserAffiliationStatus(dict, profile_);
 }
 
 void UserActiveDirectoryPolicyStatusProvider::OnStoreLoaded(
@@ -588,7 +651,7 @@ DeviceActiveDirectoryPolicyStatusProvider::
         policy::ActiveDirectoryPolicyManager* policy_manager,
         const std::string& enterprise_realm,
         const std::string& enterprise_display_domain)
-    : UserActiveDirectoryPolicyStatusProvider(policy_manager),
+    : UserActiveDirectoryPolicyStatusProvider(policy_manager, nullptr),
       enterprise_realm_(enterprise_realm),
       enterprise_display_domain_(enterprise_display_domain) {}
 
@@ -665,7 +728,7 @@ void PolicyUIHandler::RegisterMessages() {
               connector->GetRealm(), connector->GetEnterpriseDisplayDomain());
     } else {
       device_status_provider_ =
-          std::make_unique<DeviceCloudPolicyStatusProvider>(connector);
+          std::make_unique<DeviceCloudPolicyStatusProviderChromeOS>(connector);
     }
   }
 
@@ -685,12 +748,13 @@ void PolicyUIHandler::RegisterMessages() {
             user_manager->GetActiveUser()->GetAccountId().GetUserEmail(),
             local_account_service);
   } else if (user_cloud_policy) {
-    user_status_provider_ = std::make_unique<UserCloudPolicyStatusProvider>(
-        user_cloud_policy->core());
+    user_status_provider_ =
+        std::make_unique<UserCloudPolicyStatusProviderChromeOS>(
+            user_cloud_policy->core(), profile);
   } else if (active_directory_policy) {
     user_status_provider_ =
         std::make_unique<UserActiveDirectoryPolicyStatusProvider>(
-            active_directory_policy);
+            active_directory_policy, profile);
   }
 #else
   policy::UserCloudPolicyManager* user_cloud_policy_manager =
