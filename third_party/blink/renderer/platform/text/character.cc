@@ -56,9 +56,7 @@ static UCPTrie* CreateTrie() {
 }
 
 static bool HasProperty(UChar32 c, CharacterProperty property) {
-  static UCPTrie* trie = nullptr;
-  if (!trie)
-    trie = CreateTrie();
+  static const UCPTrie* trie = CreateTrie();
   return UCPTRIE_FAST_GET(trie, UCPTRIE_16, c) &
          static_cast<CharacterPropertyType>(property);
 }
