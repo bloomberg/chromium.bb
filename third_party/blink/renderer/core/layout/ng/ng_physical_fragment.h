@@ -301,6 +301,7 @@ class CORE_EXPORT NGPhysicalFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned has_propagated_descendants_ : 1;
   unsigned base_direction_ : 1;  // TextDirection
+  unsigned has_hanging_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).

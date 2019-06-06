@@ -477,6 +477,8 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
   line_info->SetWidth(available_width, position_);
   line_info->SetBfcOffset(
       {line_opportunity_.line_left_offset, line_opportunity_.bfc_block_offset});
+  if (mode_ == NGLineBreakerMode::kContent)
+    line_info->UpdateTextAlign();
 }
 
 void NGLineBreaker::HandleText(const NGInlineItem& item,

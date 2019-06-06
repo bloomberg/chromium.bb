@@ -592,6 +592,7 @@ crbug.com/882385 virtual/layout_ng_experimental/external/wpt/css/css-contain/quo
 crbug.com/882385 virtual/layout_ng_experimental/external/wpt/css/css-contain/quote-scoping-002.html [ Failure ]
 crbug.com/882385 virtual/layout_ng_experimental/external/wpt/css/css-contain/quote-scoping-003.html [ Failure ]
 crbug.com/882385 virtual/layout_ng_experimental/external/wpt/css/css-contain/quote-scoping-004.html [ Failure ]
+crbug.com/881057 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-layout-overflow-002.html [ Failure ]
 crbug.com/881057 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-003.html [ Failure ]
 crbug.com/881057 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-004.html [ Failure ]
 crbug.com/881057 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-005.html [ Failure ]

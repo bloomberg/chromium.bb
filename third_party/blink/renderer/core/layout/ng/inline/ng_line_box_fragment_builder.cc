@@ -56,6 +56,12 @@ NGLineBoxFragmentBuilder::ChildList::LastInFlowChild() {
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(
+    LayoutUnit delta) {
+  for (auto& child : children_)
+    child.offset.inline_offset += delta;
+}
+
+void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(
     LayoutUnit delta,
     unsigned start,
     unsigned end) {
