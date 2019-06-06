@@ -2974,7 +2974,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   tran_low_t *best_dqcoeff = this_dqcoeff;
   const int txk_type_idx =
       av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
-  int perform_block_coeff_opt;
+  int perform_block_coeff_opt = 0;
   av1_invalid_rd_stats(best_rd_stats);
 
   TXB_RD_INFO *intra_txb_rd_info = NULL;
@@ -3016,6 +3016,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         best_rd = RDCOST(x->rdmult, best_rd_stats->rate, best_rd_stats->dist);
         best_eob = intra_txb_rd_info->eob;
         best_tx_type = intra_txb_rd_info->tx_type;
+        perform_block_coeff_opt = intra_txb_rd_info->perform_block_coeff_opt;
         update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
                          best_tx_type);
         goto RECON_INTRA;
@@ -3302,6 +3303,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     intra_txb_rd_info->sse = best_rd_stats->sse;
     intra_txb_rd_info->eob = best_eob;
     intra_txb_rd_info->txb_entropy_ctx = best_txb_ctx;
+    intra_txb_rd_info->perform_block_coeff_opt = perform_block_coeff_opt;
     if (plane == 0) intra_txb_rd_info->tx_type = best_tx_type;
   }
 
@@ -3314,7 +3316,7 @@ RECON_INTRA:
     // if the last search tx_type is the best tx_type, we don't need to
     // do this again
     if (best_tx_type != last_tx_type) {
-      if (skip_trellis) {
+      if (skip_trellis || (!perform_block_coeff_opt)) {
         av1_xform_quant(
             cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
             best_tx_type,
