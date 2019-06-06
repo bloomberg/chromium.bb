@@ -2289,10 +2289,11 @@ bool LayoutBlockFlow::MatchedEndLine(LineLayoutState& layout_state,
 
   // The first clean line doesn't match, but we can check a handful of following
   // lines to try to match back up.
-  static int num_lines = 8;  // The # of lines we're willing to match against.
+  // The # of lines we're willing to match against.
+  constexpr int kNumLines = 8;
   RootInlineBox* original_end_line = layout_state.EndLine();
   RootInlineBox* line = original_end_line;
-  for (int i = 0; i < num_lines && line; i++, line = line->NextRootBox()) {
+  for (int i = 0; i < kNumLines && line; i++, line = line->NextRootBox()) {
     if (line->LineBreakObj() == resolver.GetPosition().GetLineLayoutItem() &&
         line->LineBreakPos() == resolver.GetPosition().Offset()) {
       // We have a match.
