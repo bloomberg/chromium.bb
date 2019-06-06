@@ -1470,6 +1470,8 @@ float PictureLayerImpl::MinimumContentsScale() const {
 }
 
 float PictureLayerImpl::MaximumContentsScale() const {
+  if (bounds().IsEmpty())
+    return 0;
   // When mask tiling is disabled or the mask is single textured, masks can not
   // have tilings that would become larger than the max_texture_size since they
   // use a single tile for the entire tiling. Other layers can have tilings such
@@ -1478,9 +1480,8 @@ float PictureLayerImpl::MaximumContentsScale() const {
       static_cast<float>(mask_type_ == Layer::LayerMaskType::SINGLE_TEXTURE_MASK
                              ? layer_tree_impl()->max_texture_size()
                              : std::numeric_limits<int>::max());
-  float max_scale_width = max_dimension / bounds().width();
-  float max_scale_height = max_dimension / bounds().height();
-  float max_scale = std::min(max_scale_width, max_scale_height);
+  int higher_dimension = std::max(bounds().width(), bounds().height());
+  float max_scale = max_dimension / higher_dimension;
 
   // We require that multiplying the layer size by the contents scale and
   // ceiling produces a value <= |max_dimension|. Because for large layer
