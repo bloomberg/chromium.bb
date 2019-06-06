@@ -341,7 +341,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenSniffedFiles, /* open_sniffed_files.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("pdfOpenDownloads"),
-                      TestCase("pdfOpenDrive").EnableDriveFs()));
+                      TestCase("pdfOpenDrive").EnableDriveFs(),
+                      TestCase("textOpenDownloads"),
+                      TestCase("textOpenDrive").EnableDriveFs()));
 
 // NaCl fails to compile zip plugin.pexe too often on ASAN, crbug.com/867738
 // The tests are flaky on the debug bot and always time out first and then pass
