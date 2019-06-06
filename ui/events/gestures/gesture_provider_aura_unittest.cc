@@ -9,6 +9,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 
 namespace ui {
 
@@ -79,6 +80,7 @@ TEST_F(GestureProviderAuraTest, IgnoresExtraMoveOrReleaseEvents) {
 }
 
 TEST_F(GestureProviderAuraTest, DoesntStallOnCancelAndRelease) {
+  GestureConfiguration::GetInstance()->set_single_pointer_cancel_enabled(false);
   base::TimeTicks time = ui::EventTimeForNow();
 
   TouchEvent touch_press(
@@ -115,6 +117,130 @@ TEST_F(GestureProviderAuraTest, DoesntStallOnCancelAndRelease) {
       ET_TOUCH_RELEASED, gfx::Point(10, 10), time,
       PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN, 0));
   EXPECT_TRUE(provider()->OnTouchEvent(&pen_release2));
+}
+
+TEST_F(GestureProviderAuraTest, ContinueGestureDetectionAfterCancel) {
+  GestureConfiguration::GetInstance()->set_single_pointer_cancel_enabled(true);
+  base::TimeTicks time = ui::EventTimeForNow();
+
+  TouchEvent touch_press1(
+      ET_TOUCH_PRESSED, gfx::Point(10, 10), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_press1));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_press2(
+      ET_TOUCH_PRESSED, gfx::Point(20, 20), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_press2));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_move1(
+      ET_TOUCH_MOVED, gfx::Point(30, 30), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_move1));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_move2(
+      ET_TOUCH_MOVED, gfx::Point(40, 40), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_move2));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_cancel(
+      ET_TOUCH_CANCELLED, gfx::Point(50, 50), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_cancel));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_move3(
+      ET_TOUCH_MOVED, gfx::Point(60, 60), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_move3));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_release(
+      ET_TOUCH_RELEASED, gfx::Point(70, 70), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_release));
+  time += base::TimeDelta::FromMilliseconds(10);
+}
+
+TEST_F(GestureProviderAuraTest, ContinueGestureDetectionAfterMultipleCancel) {
+  GestureConfiguration::GetInstance()->set_single_pointer_cancel_enabled(true);
+  base::TimeTicks time = ui::EventTimeForNow();
+
+  TouchEvent touch_press1(
+      ET_TOUCH_PRESSED, gfx::Point(10, 10), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_press1));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_press2(
+      ET_TOUCH_PRESSED, gfx::Point(20, 20), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_press2));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_press3(
+      ET_TOUCH_PRESSED, gfx::Point(30, 30), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_press3));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_move1(
+      ET_TOUCH_MOVED, gfx::Point(40, 40), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_move1));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_move2(
+      ET_TOUCH_MOVED, gfx::Point(50, 50), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_move2));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_move3(
+      ET_TOUCH_MOVED, gfx::Point(60, 60), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_move3));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_cancel1(
+      ET_TOUCH_CANCELLED, gfx::Point(70, 70), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_cancel1));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_move4(
+      ET_TOUCH_MOVED, gfx::Point(80, 80), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_move4));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_move5(
+      ET_TOUCH_MOVED, gfx::Point(90, 90), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_move5));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_cancel2(
+      ET_TOUCH_CANCELLED, gfx::Point(100, 100), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_cancel2));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_move6(
+      ET_TOUCH_MOVED, gfx::Point(110, 110), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_move6));
+  time += base::TimeDelta::FromMilliseconds(10);
+
+  TouchEvent touch_release(
+      ET_TOUCH_RELEASED, gfx::Point(120, 120), time,
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  EXPECT_TRUE(provider()->OnTouchEvent(&touch_release));
+  time += base::TimeDelta::FromMilliseconds(10);
 }
 
 TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {

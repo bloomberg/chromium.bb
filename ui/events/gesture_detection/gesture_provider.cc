@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/gesture_listeners.h"
 #include "ui/events/gesture_detection/motion_event.h"
@@ -147,8 +148,13 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
       if (scroll_event_sent_)
         Send(CreateGesture(ET_GESTURE_SCROLL_END, event));
 
-      // Reset this to indicate no sequence is going on.
-      current_down_action_event_time_ = base::TimeTicks();
+      // If this was the last pointer that was canceled or lifted reset the
+      // |current_down_action_event_time_| to indicate no sequence is going on.
+      if (action != MotionEvent::Action::CANCEL ||
+          !GestureConfiguration::GetInstance()
+               ->single_pointer_cancel_enabled() ||
+          event.GetPointerCount() == 1)
+        current_down_action_event_time_ = base::TimeTicks();
     } else if (action == MotionEvent::Action::MOVE) {
       if (!show_press_event_sent_ && !scroll_event_sent_) {
         max_diameter_before_show_press_ =
@@ -923,7 +929,11 @@ void GestureProvider::OnTouchEventHandlingEnd(const MotionEvent& event) {
         gesture_listener_->Send(
             gesture_listener_->CreateGesture(ET_GESTURE_END, event));
 
-      current_down_event_.reset();
+      if (event.GetAction() != MotionEvent::Action::CANCEL ||
+          !GestureConfiguration::GetInstance()
+               ->single_pointer_cancel_enabled() ||
+          event.GetPointerCount() == 1)
+        current_down_event_.reset();
 
       UpdateDoubleTapDetectionSupport();
       break;

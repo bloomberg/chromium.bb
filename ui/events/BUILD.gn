@@ -577,6 +577,7 @@ if (!is_ios) {
 
     if (is_android) {
       sources += [ "android/motion_event_android_unittest.cc" ]
+      deps += [ "//ui/android:ui_full_java" ]
     } else {
       data_deps = [
         "//third_party/mesa_headers",
