@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/sequence_checker.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -57,6 +59,27 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
   }
 
  private:
+  friend class SystemMediaControlsNotifierTest;
+
+  // Polls the current idle state of the system.
+  void CheckLockState();
+
+  // Called when the idle state changes from unlocked to locked.
+  void OnScreenLocked();
+
+  // Called when the idle state changes from locked to unlocked.
+  void OnScreenUnlocked();
+
+  // Helper functions for dealing with the timer that hides the System Media
+  // Transport Controls on the lock screen 5 seconds after the user pauses.
+  void StartHideSmtcTimer();
+  void StopHideSmtcTimer();
+  void HideSmtcTimerFired();
+
+  bool screen_locked_ = false;
+  base::RepeatingTimer lock_polling_timer_;
+  base::OneShotTimer hide_smtc_timer_;
+
   // Our connection to Window's System Media Transport Controls.
   system_media_controls::SystemMediaControlsService* service_ = nullptr;
 
@@ -72,6 +95,8 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
       media_controller_observer_binding_{this};
   mojo::Binding<media_session::mojom::MediaControllerImageObserver>
       media_controller_image_observer_binding_{this};
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SystemMediaControlsNotifier);
 };

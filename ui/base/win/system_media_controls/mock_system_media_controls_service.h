@@ -25,6 +25,7 @@ class MockSystemMediaControlsService : public SystemMediaControlsService {
   MOCK_METHOD1(AddObserver, void(SystemMediaControlsServiceObserver* observer));
   MOCK_METHOD1(RemoveObserver,
                void(SystemMediaControlsServiceObserver* observer));
+  MOCK_METHOD1(SetEnabled, void(bool enabled));
   MOCK_METHOD1(SetIsNextEnabled, void(bool value));
   MOCK_METHOD1(SetIsPreviousEnabled, void(bool value));
   MOCK_METHOD1(SetIsPlayEnabled, void(bool value));

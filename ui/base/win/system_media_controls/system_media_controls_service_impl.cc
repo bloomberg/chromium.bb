@@ -118,6 +118,12 @@ void SystemMediaControlsServiceImpl::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void SystemMediaControlsServiceImpl::SetEnabled(bool enabled) {
+  DCHECK(initialized_);
+  HRESULT hr = system_media_controls_->put_IsEnabled(enabled);
+  DCHECK(SUCCEEDED(hr));
+}
+
 void SystemMediaControlsServiceImpl::SetIsNextEnabled(bool value) {
   DCHECK(initialized_);
   HRESULT hr = system_media_controls_->put_IsNextEnabled(value);

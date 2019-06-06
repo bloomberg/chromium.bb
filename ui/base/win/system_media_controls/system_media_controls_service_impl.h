@@ -37,6 +37,7 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControlsServiceImpl
   // SystemMediaControlsService implementation.
   void AddObserver(SystemMediaControlsServiceObserver* observer) override;
   void RemoveObserver(SystemMediaControlsServiceObserver* observer) override;
+  void SetEnabled(bool enabled) override;
   void SetIsNextEnabled(bool value) override;
   void SetIsPreviousEnabled(bool value) override;
   void SetIsPlayEnabled(bool value) override;
