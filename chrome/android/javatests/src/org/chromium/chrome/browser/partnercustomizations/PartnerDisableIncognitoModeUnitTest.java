@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -140,13 +141,12 @@ public class PartnerDisableIncognitoModeUnitTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PartnerBrowserCustomizations.initializeAsync(mTestRule.getContextWrapper(), 2000);
         });
-        PartnerBrowserCustomizations.setOnInitializeAsyncFinished(mTestRule.getCallback(), 300);
-
-        mTestRule.getCallbackLock().acquire();
+        PartnerBrowserCustomizations.setOnInitializeAsyncFinished(mTestRule.getCallback());
 
         Assert.assertFalse(PartnerBrowserCustomizations.isInitialized());
         Assert.assertFalse(PartnerBrowserCustomizations.isIncognitoDisabled());
 
+        TestPartnerBrowserCustomizationsDelayedProvider.unblockQuery();
         PartnerBrowserCustomizations.setOnInitializeAsyncFinished(mTestRule.getCallback(), 3000);
 
         mTestRule.getCallbackLock().acquire();

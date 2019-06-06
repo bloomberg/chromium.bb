@@ -11,6 +11,7 @@ import static org.junit.Assert.assertThat;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
@@ -116,7 +117,11 @@ public class MainIntentBehaviorMetricsIntegrationTest {
     @MediumTest
     @Test
     public void testCreateNtp() {
-        startActivity(true);
+        // startActivity(true) creates a NTP which is problematical for this test if
+        // ChromeTabbedActivity.setupCompositorContent runs before that NTP is created because
+        // that creates a SimpleAnimationLayout which tries to hide the page resulting in a
+        // MainIntentActionType.SWITCH_TABS. Starting from about:blank avoids this confusion.
+        startActivityWithAboutBlank(true);
         assertMainIntentBehavior(null);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getTabCreator(false).launchNTP());
@@ -308,6 +313,18 @@ public class MainIntentBehaviorMetricsIntegrationTest {
             assertThat(mActionTester.toString(), mActionTester.getActions(),
                     Matchers.hasItem(expectedMetric));
         }
+    }
+
+    private void startActivityWithAboutBlank(boolean addLauncherCategory) {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setData(Uri.parse("about:blank"));
+        if (addLauncherCategory) intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.setComponent(new ComponentName(
+                InstrumentationRegistry.getTargetContext(), ChromeTabbedActivity.class));
+
+        mActivityTestRule.startActivityCompletely(intent);
+        mActivityTestRule.waitForActivityNativeInitializationComplete();
     }
 
     private void startActivity(boolean addLauncherCategory) {

@@ -50,7 +50,9 @@ public class ChainedTasksTest {
                 Arrays.asList(new String[] {"First", "Second", "Third"});
         final List<String> messages = new ArrayList<>();
         final ChainedTasks tasks = new ChainedTasks();
-        for (String message : expectedMessages) tasks.add(new TestRunnable(messages, message));
+        for (String message : expectedMessages) {
+            tasks.add(UiThreadTaskTraits.DEFAULT, new TestRunnable(messages, message));
+        }
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             tasks.start(true);
@@ -65,7 +67,7 @@ public class ChainedTasksTest {
         final Semaphore finished = new Semaphore(0);
         final ChainedTasks tasks = new ChainedTasks();
 
-        tasks.add(new Runnable() {
+        tasks.add(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -78,8 +80,10 @@ public class ChainedTasksTest {
 
         List<String> expectedMessages = Arrays.asList(new String[] {"First", "Second", "Third"});
         final List<String> messages = new ArrayList<>();
-        for (String message : expectedMessages) tasks.add(new TestRunnable(messages, message));
-        tasks.add(new Runnable() {
+        for (String message : expectedMessages) {
+            tasks.add(UiThreadTaskTraits.DEFAULT, new TestRunnable(messages, message));
+        }
+        tasks.add(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 finished.release();
@@ -102,8 +106,10 @@ public class ChainedTasksTest {
         final ChainedTasks tasks = new ChainedTasks();
         final Semaphore finished = new Semaphore(0);
 
-        for (String message : expectedMessages) tasks.add(new TestRunnable(messages, message));
-        tasks.add(new Runnable() {
+        for (String message : expectedMessages) {
+            tasks.add(UiThreadTaskTraits.DEFAULT, new TestRunnable(messages, message));
+        }
+        tasks.add(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 finished.release();
@@ -131,9 +137,9 @@ public class ChainedTasksTest {
 
         // Posts 2 tasks, waits for a high priority task to be posted from another thread, and
         // carries on.
-        tasks.add(new TestRunnable(messages, "First"));
-        tasks.add(new TestRunnable(messages, "Second"));
-        tasks.add(new Runnable() {
+        tasks.add(UiThreadTaskTraits.DEFAULT, new TestRunnable(messages, "First"));
+        tasks.add(UiThreadTaskTraits.DEFAULT, new TestRunnable(messages, "Second"));
+        tasks.add(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -144,8 +150,8 @@ public class ChainedTasksTest {
                 }
             }
         });
-        tasks.add(new TestRunnable(messages, "Third"));
-        tasks.add(new Runnable() {
+        tasks.add(UiThreadTaskTraits.DEFAULT, new TestRunnable(messages, "Third"));
+        tasks.add(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 finished.release();
@@ -169,16 +175,16 @@ public class ChainedTasksTest {
         final ChainedTasks tasks = new ChainedTasks();
         final Semaphore finished = new Semaphore(0);
 
-        tasks.add(new TestRunnable(messages, "First"));
-        tasks.add(new TestRunnable(messages, "Second"));
-        tasks.add(new Runnable() {
+        tasks.add(UiThreadTaskTraits.DEFAULT, new TestRunnable(messages, "First"));
+        tasks.add(UiThreadTaskTraits.DEFAULT, new TestRunnable(messages, "Second"));
+        tasks.add(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 tasks.cancel();
             }
         });
-        tasks.add(new TestRunnable(messages, "Third"));
-        tasks.add(new Runnable() {
+        tasks.add(UiThreadTaskTraits.DEFAULT, new TestRunnable(messages, "Third"));
+        tasks.add(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 finished.release();
