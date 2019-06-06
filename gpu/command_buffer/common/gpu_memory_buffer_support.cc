@@ -104,8 +104,8 @@ uint32_t GetPlatformSpecificTextureTarget() {
 GPU_EXPORT uint32_t GetBufferTextureTarget(gfx::BufferUsage usage,
                                            gfx::BufferFormat format,
                                            const Capabilities& capabilities) {
-  bool found = base::ContainsValue(capabilities.texture_target_exception_list,
-                                   gfx::BufferUsageAndFormat(usage, format));
+  bool found = base::Contains(capabilities.texture_target_exception_list,
+                              gfx::BufferUsageAndFormat(usage, format));
   return found ? gpu::GetPlatformSpecificTextureTarget() : GL_TEXTURE_2D;
 }
 

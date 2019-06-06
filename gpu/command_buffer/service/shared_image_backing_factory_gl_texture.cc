@@ -763,9 +763,9 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     info.buffer_format = buffer_format;
     DCHECK_EQ(info.gl_format,
               gpu::InternalFormatForGpuMemoryBufferFormat(buffer_format));
-    if (base::ContainsValue(gpu_preferences.texture_target_exception_list,
-                            gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
-                                                      buffer_format)))
+    if (base::Contains(gpu_preferences.texture_target_exception_list,
+                       gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
+                                                 buffer_format)))
       info.target_for_scanout = gpu::GetPlatformSpecificTextureTarget();
   }
 }
