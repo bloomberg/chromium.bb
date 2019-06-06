@@ -65,18 +65,34 @@ function writeDirectory_(bytes, tag) {
 }
 
 /**
+ * @implements {MetadataParserLogger}
+ * @final
+ */
+class ConsoleLogger {
+  constructor() {
+    this.verbose = true;
+  }
+
+  error(arg) {
+    console.error(arg);
+  }
+
+  log(arg) {
+    console.log(arg);
+  }
+
+  vlog(arg) {
+    console.log(arg);
+  }
+}
+
+/**
  * Parses exif data bytes (with logging) and returns the parsed tags.
  * @param {!TypedArray} bytes Bytes to be read.
  * @return {!Object<!Exif.Tag, !ExifEntry>} Tags.
  */
 function parseExifData_(bytes) {
-  let exifParser = new ExifParser(this);
-  exifParser.log = arg => {
-    console.log(arg);
-  };
-  exifParser.vlog = arg => {
-    console.log(arg);
-  };
+  const exifParser = new ExifParser(new ConsoleLogger());
 
   let tags = {};
   let byteReader = new ByteReader(bytes.buffer);
