@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "chrome/browser/net/reporting_permissions_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl_io_data.h"
 #include "chrome/common/buildflags.h"
