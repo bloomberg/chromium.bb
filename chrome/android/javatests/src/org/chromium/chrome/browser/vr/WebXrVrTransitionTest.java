@@ -38,7 +38,6 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -207,7 +206,6 @@ public class WebXrVrTransitionTest {
     @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    @DisabledTest(message = "https://crbug.com/969024")
     public void testNfcFiresVrdisplayactivate() throws InterruptedException {
         mWebVrTestFramework.loadUrlAndAwaitInitialization(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
@@ -288,7 +286,6 @@ public class WebXrVrTransitionTest {
     @MediumTest
     @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_SETTINGS_SERVICE})
     @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
-    @DisabledTest(message = "https://crbug.com/969024")
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
