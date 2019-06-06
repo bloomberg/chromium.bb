@@ -51,7 +51,9 @@ class FakeHidManager : public mojom::HidManager {
                mojom::HidConnectionClientPtr connection_client,
                ConnectCallback callback) override;
 
-  mojom::HidDeviceInfoPtr CreateAndAddDevice(const std::string& product_name,
+  mojom::HidDeviceInfoPtr CreateAndAddDevice(uint16_t vendor_id,
+                                             uint16_t product_id,
+                                             const std::string& product_name,
                                              const std::string& serial_number,
                                              mojom::HidBusType bus_type);
   void AddDevice(mojom::HidDeviceInfoPtr device);

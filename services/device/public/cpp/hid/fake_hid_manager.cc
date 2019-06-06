@@ -133,11 +133,15 @@ void FakeHidManager::Connect(const std::string& device_guid,
 }
 
 mojom::HidDeviceInfoPtr FakeHidManager::CreateAndAddDevice(
+    uint16_t vendor_id,
+    uint16_t product_id,
     const std::string& product_name,
     const std::string& serial_number,
     mojom::HidBusType bus_type) {
   mojom::HidDeviceInfoPtr device = device::mojom::HidDeviceInfo::New();
   device->guid = base::GenerateGUID();
+  device->vendor_id = vendor_id;
+  device->product_id = product_id;
   device->product_name = product_name;
   device->serial_number = serial_number;
   device->bus_type = bus_type;

@@ -74,13 +74,13 @@ class DevicePermissionsManagerTest : public testing::Test {
         ->SetFakeHidManagerForTesting(std::move(hid_manager_ptr));
     base::RunLoop().RunUntilIdle();
 
-    device4_ = fake_hid_manager_.CreateAndAddDevice("Test HID Device", "abcde",
+    device4_ = fake_hid_manager_.CreateAndAddDevice(
+        0, 0, "Test HID Device", "abcde", HidBusType::kHIDBusTypeUSB);
+    device5_ = fake_hid_manager_.CreateAndAddDevice(0, 0, "Test HID Device", "",
                                                     HidBusType::kHIDBusTypeUSB);
-    device5_ = fake_hid_manager_.CreateAndAddDevice("Test HID Device", "",
-                                                    HidBusType::kHIDBusTypeUSB);
-    device6_ = fake_hid_manager_.CreateAndAddDevice("Test HID Device", "67890",
-                                                    HidBusType::kHIDBusTypeUSB);
-    device7_ = fake_hid_manager_.CreateAndAddDevice("Test HID Device", "",
+    device6_ = fake_hid_manager_.CreateAndAddDevice(
+        0, 0, "Test HID Device", "67890", HidBusType::kHIDBusTypeUSB);
+    device7_ = fake_hid_manager_.CreateAndAddDevice(0, 0, "Test HID Device", "",
                                                     HidBusType::kHIDBusTypeUSB);
   }
 
