@@ -38,6 +38,7 @@ const char kCharSetUTF8[] = ";charset=UTF-8";
 // Mojo type converters
 namespace mojo {
 
+using device::mojom::blink::NDEFCompatibility;
 using device::mojom::blink::NDEFMessage;
 using device::mojom::blink::NDEFMessagePtr;
 using device::mojom::blink::NDEFRecord;
@@ -47,11 +48,10 @@ using device::mojom::blink::NDEFRecordTypeFilter;
 using device::mojom::blink::NFCPushOptions;
 using device::mojom::blink::NFCPushOptionsPtr;
 using device::mojom::blink::NFCPushTarget;
-using device::mojom::blink::NFCWatchMode;
 using device::mojom::blink::NFCWatchOptions;
 using device::mojom::blink::NFCWatchOptionsPtr;
 
-NFCPushTarget toNFCPushTarget(const String& target) {
+NFCPushTarget ToNFCPushTarget(const String& target) {
   if (target == "tag")
     return NFCPushTarget::TAG;
 
@@ -61,7 +61,7 @@ NFCPushTarget toNFCPushTarget(const String& target) {
   return NFCPushTarget::ANY;
 }
 
-NDEFRecordType toNDEFRecordType(const String& recordType) {
+NDEFRecordType ToNDEFRecordType(const String& recordType) {
   if (recordType == "empty")
     return NDEFRecordType::EMPTY;
 
@@ -81,15 +81,18 @@ NDEFRecordType toNDEFRecordType(const String& recordType) {
   return NDEFRecordType::EMPTY;
 }
 
-NFCWatchMode toNFCWatchMode(const String& watchMode) {
-  if (watchMode == "web-nfc-only")
-    return NFCWatchMode::WEBNFC_ONLY;
+NDEFCompatibility ToNDEFCompatibility(const String& compatibility) {
+  if (compatibility == "nfc-forum")
+    return NDEFCompatibility::NFC_FORUM;
 
-  if (watchMode == "any")
-    return NFCWatchMode::ANY;
+  if (compatibility == "vendor")
+    return NDEFCompatibility::VENDOR;
+
+  if (compatibility == "any")
+    return NDEFCompatibility::ANY;
 
   NOTREACHED();
-  return NFCWatchMode::WEBNFC_ONLY;
+  return NDEFCompatibility::NFC_FORUM;
 }
 
 // https://w3c.github.io/web-nfc/#creating-web-nfc-message Step 2.1
@@ -221,7 +224,7 @@ struct TypeConverter<NDEFRecordPtr, blink::NDEFRecord*> {
     NDEFRecordPtr recordPtr = NDEFRecord::New();
 
     if (record->hasRecordType())
-      recordPtr->record_type = toNDEFRecordType(record->recordType());
+      recordPtr->record_type = ToNDEFRecordType(record->recordType());
     else
       recordPtr->record_type = deduceRecordTypeFromDataType(record);
 
@@ -312,7 +315,7 @@ struct TypeConverter<NFCPushOptionsPtr, const blink::NFCPushOptions*> {
     NFCPushOptionsPtr pushOptionsPtr = NFCPushOptions::New();
 
     if (pushOptions->hasTarget())
-      pushOptionsPtr->target = toNFCPushTarget(pushOptions->target());
+      pushOptionsPtr->target = ToNFCPushTarget(pushOptions->target());
     else
       pushOptionsPtr->target = NFCPushTarget::ANY;
 
@@ -336,20 +339,17 @@ struct TypeConverter<NFCWatchOptionsPtr, const blink::NFCWatchOptions*> {
       const blink::NFCWatchOptions* watchOptions) {
     // https://w3c.github.io/web-nfc/#the-nfcwatchoptions-dictionary
     // Default values for NFCWatchOptions dictionary are:
-    // url = "", recordType = null, mediaType = "", mode = "web-nfc-only"
+    // url = "", recordType = null, mediaType = "", compatibility = "nfc-forum"
     NFCWatchOptionsPtr watchOptionsPtr = NFCWatchOptions::New();
     watchOptionsPtr->url = watchOptions->url();
     watchOptionsPtr->media_type = watchOptions->mediaType();
-
-    if (watchOptions->hasMode())
-      watchOptionsPtr->mode = toNFCWatchMode(watchOptions->mode());
-    else
-      watchOptionsPtr->mode = NFCWatchMode::WEBNFC_ONLY;
+    watchOptionsPtr->compatibility =
+        ToNDEFCompatibility(watchOptions->compatibility());
 
     if (watchOptions->hasRecordType()) {
       watchOptionsPtr->record_filter = NDEFRecordTypeFilter::New();
       watchOptionsPtr->record_filter->record_type =
-          toNDEFRecordType(watchOptions->recordType());
+          ToNDEFRecordType(watchOptions->recordType());
     }
 
     return watchOptionsPtr;
@@ -446,7 +446,7 @@ ScriptPromise RejectIfInvalidNDEFRecord(ScriptState* script_state,
                                         const NDEFRecord* record) {
   device::mojom::blink::NDEFRecordType type;
   if (record->hasRecordType()) {
-    type = mojo::toNDEFRecordType(record->recordType());
+    type = mojo::ToNDEFRecordType(record->recordType());
   } else {
     type = mojo::deduceRecordTypeFromDataType(record);
 
@@ -751,7 +751,7 @@ ScriptPromise NFC::cancelPush(ScriptState* script_state, const String& target) {
   requests_.insert(resolver);
   auto callback = WTF::Bind(&NFC::OnRequestCompleted, WrapPersistent(this),
                             WrapPersistent(resolver));
-  nfc_->CancelPush(mojo::toNFCPushTarget(target), std::move(callback));
+  nfc_->CancelPush(mojo::ToNFCPushTarget(target), std::move(callback));
 
   return resolver->Promise();
 }

@@ -23,6 +23,7 @@ import android.util.SparseArray;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.device.mojom.NdefCompatibility;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.Nfc;
 import org.chromium.device.mojom.NfcClient;
@@ -30,7 +31,6 @@ import org.chromium.device.mojom.NfcError;
 import org.chromium.device.mojom.NfcErrorType;
 import org.chromium.device.mojom.NfcPushOptions;
 import org.chromium.device.mojom.NfcPushTarget;
-import org.chromium.device.mojom.NfcWatchMode;
 import org.chromium.device.mojom.NfcWatchOptions;
 import org.chromium.mojo.bindings.Callbacks;
 import org.chromium.mojo.system.MojoException;
@@ -544,20 +544,21 @@ public class NfcImpl implements Nfc {
             Log.w(TAG, "Cannot read data from NFC tag. IO_ERROR.");
         }
 
-        if (message != null) notifyMatchingWatchers(message);
+        if (message != null) notifyMatchingWatchers(message, mTagHandler.compatibility());
     }
 
     /**
      * Iterates through active watchers and if any of those match NfcWatchOptions criteria,
      * delivers NdefMessage to the client.
      */
-    private void notifyMatchingWatchers(android.nfc.NdefMessage message) {
+    private void notifyMatchingWatchers(android.nfc.NdefMessage message, int compatibility) {
         try {
             NdefMessage ndefMessage = NfcTypeConverter.toNdefMessage(message);
             List<Integer> watchIds = new ArrayList<Integer>();
             for (int i = 0; i < mWatchers.size(); i++) {
                 NfcWatchOptions options = mWatchers.valueAt(i);
-                if (matchesWatchOptions(ndefMessage, options)) watchIds.add(mWatchers.keyAt(i));
+                if (matchesWatchOptions(ndefMessage, compatibility, options))
+                    watchIds.add(mWatchers.keyAt(i));
             }
 
             if (watchIds.size() != 0) {
@@ -575,10 +576,12 @@ public class NfcImpl implements Nfc {
     /**
      * Implements matching algorithm.
      */
-    private boolean matchesWatchOptions(NdefMessage message, NfcWatchOptions options) {
-        // Valid WebNFC message must have non-empty url.
-        if (options.mode == NfcWatchMode.WEBNFC_ONLY
-                && (message.url == null || message.url.isEmpty())) {
+    private boolean matchesWatchOptions(
+            NdefMessage message, int compatibility, NfcWatchOptions options) {
+        // 'nfc-forum' option can only read messages from NFC standard devices and 'vendor' option
+        // can only read from vendor specific ones.
+        if (options.compatibility != NdefCompatibility.ANY
+                && options.compatibility != compatibility) {
             return false;
         }
 

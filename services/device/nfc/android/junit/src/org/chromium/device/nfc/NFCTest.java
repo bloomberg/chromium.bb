@@ -42,6 +42,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.device.mojom.NdefCompatibility;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefRecord;
 import org.chromium.device.mojom.NdefRecordType;
@@ -56,7 +57,6 @@ import org.chromium.device.mojom.NfcError;
 import org.chromium.device.mojom.NfcErrorType;
 import org.chromium.device.mojom.NfcPushOptions;
 import org.chromium.device.mojom.NfcPushTarget;
-import org.chromium.device.mojom.NfcWatchMode;
 import org.chromium.device.mojom.NfcWatchOptions;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -489,7 +489,7 @@ public class NFCTest {
 
         // Should match by WebNFC Id (exact match).
         NfcWatchOptions options1 = createNfcWatchOptions();
-        options1.mode = NfcWatchMode.WEBNFC_ONLY;
+        options1.compatibility = NdefCompatibility.NFC_FORUM;
         options1.url = TEST_URL;
         WatchResponse mockWatchCallback1 = mock(WatchResponse.class);
         nfc.watch(options1, mockWatchCallback1);
@@ -499,7 +499,7 @@ public class NFCTest {
 
         // Should match by media type.
         NfcWatchOptions options2 = createNfcWatchOptions();
-        options2.mode = NfcWatchMode.ANY;
+        options2.compatibility = NdefCompatibility.ANY;
         options2.mediaType = TEXT_MIME;
         WatchResponse mockWatchCallback2 = mock(WatchResponse.class);
         nfc.watch(options2, mockWatchCallback2);
@@ -509,7 +509,7 @@ public class NFCTest {
 
         // Should match by record type.
         NfcWatchOptions options3 = createNfcWatchOptions();
-        options3.mode = NfcWatchMode.ANY;
+        options3.compatibility = NdefCompatibility.ANY;
         NdefRecordTypeFilter typeFilter = new NdefRecordTypeFilter();
         typeFilter.recordType = NdefRecordType.URL;
         options3.recordFilter = typeFilter;
@@ -521,7 +521,7 @@ public class NFCTest {
 
         // Should not match
         NfcWatchOptions options4 = createNfcWatchOptions();
-        options4.mode = NfcWatchMode.WEBNFC_ONLY;
+        options4.compatibility = NdefCompatibility.NFC_FORUM;
         options4.url = DOMAIN;
         WatchResponse mockWatchCallback4 = mock(WatchResponse.class);
         nfc.watch(options4, mockWatchCallback4);
@@ -907,6 +907,124 @@ public class NFCTest {
     }
 
     /**
+     * Test that 'nfc-forum' tag messages can only be read by Nfc.watch() with 'nfc-forum' or 'any'
+     * option.
+     */
+    @Test
+    @Feature({"NFCTest"})
+    public void testWatchCompatibilityMatchingNfcForumTag() {
+        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
+        mDelegate.invokeCallback();
+        nfc.setClient(mNfcClient);
+
+        // Should match.
+        {
+            NfcWatchOptions options = createNfcWatchOptions();
+            options.compatibility = NdefCompatibility.NFC_FORUM;
+            options.url = TEST_URL;
+            WatchResponse mockWatchCallback = mock(WatchResponse.class);
+            nfc.watch(options, mockWatchCallback);
+            verify(mockWatchCallback).call(mWatchCaptor.capture(), mErrorCaptor.capture());
+            assertNull(mErrorCaptor.getValue());
+        }
+        int watchId1 = mWatchCaptor.getValue().intValue();
+
+        // Should not match.
+        {
+            NfcWatchOptions options = createNfcWatchOptions();
+            options.compatibility = NdefCompatibility.VENDOR;
+            options.url = TEST_URL;
+            WatchResponse mockWatchCallback = mock(WatchResponse.class);
+            nfc.watch(options, mockWatchCallback);
+            verify(mockWatchCallback).call(mWatchCaptor.capture(), mErrorCaptor.capture());
+            assertNull(mErrorCaptor.getValue());
+        }
+        int watchId2 = mWatchCaptor.getValue().intValue();
+
+        // Should match.
+        {
+            NfcWatchOptions options = createNfcWatchOptions();
+            options.compatibility = NdefCompatibility.ANY;
+            options.url = TEST_URL;
+            WatchResponse mockWatchCallback = mock(WatchResponse.class);
+            nfc.watch(options, mockWatchCallback);
+            verify(mockWatchCallback).call(mWatchCaptor.capture(), mErrorCaptor.capture());
+            assertNull(mErrorCaptor.getValue());
+        }
+        int watchId3 = mWatchCaptor.getValue().intValue();
+
+        doReturn(NdefCompatibility.NFC_FORUM).when(mNfcTagHandler).compatibility();
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+
+        // Check that client was notified and watch with 'nfc-forum' or 'any' compatibility was
+        // triggered.
+        verify(mNfcClient, times(1))
+                .onWatch(mOnWatchCallbackCaptor.capture(), any(NdefMessage.class));
+        assertEquals(2, mOnWatchCallbackCaptor.getValue().length);
+        assertEquals(watchId1, mOnWatchCallbackCaptor.getValue()[0]);
+        assertEquals(watchId3, mOnWatchCallbackCaptor.getValue()[1]);
+    }
+
+    /**
+     * Test that 'vendor' tag messages can only be read by Nfc.watch() with 'vendor' or 'any'
+     * option.
+     */
+    @Test
+    @Feature({"NFCTest"})
+    public void testWatchCompatibilityMatchingVendorTag() {
+        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
+        mDelegate.invokeCallback();
+        nfc.setClient(mNfcClient);
+
+        // Should not match.
+        {
+            NfcWatchOptions options = createNfcWatchOptions();
+            options.compatibility = NdefCompatibility.NFC_FORUM;
+            options.url = TEST_URL;
+            WatchResponse mockWatchCallback = mock(WatchResponse.class);
+            nfc.watch(options, mockWatchCallback);
+            verify(mockWatchCallback).call(mWatchCaptor.capture(), mErrorCaptor.capture());
+            assertNull(mErrorCaptor.getValue());
+        }
+        int watchId1 = mWatchCaptor.getValue().intValue();
+
+        // Should match.
+        {
+            NfcWatchOptions options = createNfcWatchOptions();
+            options.compatibility = NdefCompatibility.VENDOR;
+            options.url = TEST_URL;
+            WatchResponse mockWatchCallback = mock(WatchResponse.class);
+            nfc.watch(options, mockWatchCallback);
+            verify(mockWatchCallback).call(mWatchCaptor.capture(), mErrorCaptor.capture());
+            assertNull(mErrorCaptor.getValue());
+        }
+        int watchId2 = mWatchCaptor.getValue().intValue();
+
+        // Should match.
+        {
+            NfcWatchOptions options = createNfcWatchOptions();
+            options.compatibility = NdefCompatibility.ANY;
+            options.url = TEST_URL;
+            WatchResponse mockWatchCallback = mock(WatchResponse.class);
+            nfc.watch(options, mockWatchCallback);
+            verify(mockWatchCallback).call(mWatchCaptor.capture(), mErrorCaptor.capture());
+            assertNull(mErrorCaptor.getValue());
+        }
+        int watchId3 = mWatchCaptor.getValue().intValue();
+
+        doReturn(NdefCompatibility.VENDOR).when(mNfcTagHandler).compatibility();
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+
+        // Check that client was notified and watch with 'vendor' or 'any' compatibility was
+        // triggered.
+        verify(mNfcClient, times(1))
+                .onWatch(mOnWatchCallbackCaptor.capture(), any(NdefMessage.class));
+        assertEquals(2, mOnWatchCallbackCaptor.getValue().length);
+        assertEquals(watchId2, mOnWatchCallbackCaptor.getValue()[0]);
+        assertEquals(watchId3, mOnWatchCallbackCaptor.getValue()[1]);
+    }
+
+    /**
      * Test that Nfc.watch() WebNFC Id pattern matching works correctly.
      */
     @Test
@@ -919,7 +1037,7 @@ public class NFCTest {
         // Should match.
         {
             NfcWatchOptions options = createNfcWatchOptions();
-            options.mode = NfcWatchMode.WEBNFC_ONLY;
+            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "https://test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mockWatchCallback);
@@ -931,7 +1049,7 @@ public class NFCTest {
         // Should match.
         {
             NfcWatchOptions options = createNfcWatchOptions();
-            options.mode = NfcWatchMode.WEBNFC_ONLY;
+            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "https://test.com/contact/42";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mockWatchCallback);
@@ -943,7 +1061,7 @@ public class NFCTest {
         // Should match.
         {
             NfcWatchOptions options = createNfcWatchOptions();
-            options.mode = NfcWatchMode.WEBNFC_ONLY;
+            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "https://subdomain.test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mockWatchCallback);
@@ -955,7 +1073,7 @@ public class NFCTest {
         // Should match.
         {
             NfcWatchOptions options = createNfcWatchOptions();
-            options.mode = NfcWatchMode.WEBNFC_ONLY;
+            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "https://subdomain.test.com/contact";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mockWatchCallback);
@@ -967,7 +1085,7 @@ public class NFCTest {
         // Should not match.
         {
             NfcWatchOptions options = createNfcWatchOptions();
-            options.mode = NfcWatchMode.WEBNFC_ONLY;
+            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "https://www.test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mockWatchCallback);
@@ -978,7 +1096,7 @@ public class NFCTest {
         // Should not match.
         {
             NfcWatchOptions options = createNfcWatchOptions();
-            options.mode = NfcWatchMode.WEBNFC_ONLY;
+            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "http://test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mockWatchCallback);
@@ -989,7 +1107,7 @@ public class NFCTest {
         // Should not match.
         {
             NfcWatchOptions options = createNfcWatchOptions();
-            options.mode = NfcWatchMode.WEBNFC_ONLY;
+            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "invalid pattern url";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mockWatchCallback);
@@ -1028,7 +1146,7 @@ public class NFCTest {
 
         // Should not match when invalid WebNFC Id is received.
         NfcWatchOptions options = createNfcWatchOptions();
-        options.mode = NfcWatchMode.WEBNFC_ONLY;
+        options.compatibility = NdefCompatibility.NFC_FORUM;
         options.url = "https://test.com/*";
         WatchResponse mockWatchCallback = mock(WatchResponse.class);
         nfc.watch(options, mockWatchCallback);
@@ -1099,7 +1217,7 @@ public class NFCTest {
         NfcWatchOptions options = new NfcWatchOptions();
         options.url = "";
         options.mediaType = "";
-        options.mode = NfcWatchMode.ANY;
+        options.compatibility = NdefCompatibility.ANY;
         options.recordFilter = null;
         return options;
     }

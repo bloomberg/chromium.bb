@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+// http://w3c.github.io/web-nfc/#dom-ndefcompatibility
+enum NDEFCompatibility { "nfc-forum", "vendor", "any" };
+
 // https://w3c.github.io/web-nfc/#the-nfcwatchoptions-dictionary
-
-enum NFCWatchMode { "web-nfc-only", "any" };
-
 dictionary NFCWatchOptions {
     USVString url = "";
     NDEFRecordType? recordType;
     USVString mediaType = "";
-    NFCWatchMode mode = "web-nfc-only";
+    NDEFCompatibility compatibility = "nfc-forum";
 };

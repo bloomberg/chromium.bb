@@ -47,8 +47,8 @@ function createNFCPushOptions(target, timeout, ignoreRead) {
   return { target, timeout, ignoreRead };
 }
 
-function createNFCWatchOptions(url, recordType, mediaType, mode) {
-  return { url, recordType, mediaType, mode};
+function createNFCWatchOptions(url, recordType, mediaType, compatibility) {
+  return { url, recordType, mediaType, compatibility };
 }
 
 function createTextRecord(text) {
@@ -95,10 +95,12 @@ function toMojoNFCPushTarget(target) {
   return device.mojom.NFCPushTarget.ANY;
 }
 
-function toMojoNFCWatchMode(mode) {
-  if (mode === 'web-nfc-only')
-    return device.mojom.NFCWatchMode.WEBNFC_ONLY;
-  return device.mojom.NFCWatchMode.ANY;
+function toMojoNDEFCompatibility(compatibility) {
+  if (compatibility === 'nfc-forum')
+    return device.mojom.NDEFCompatibility.NFC_FORUM;
+  if (compatibility === 'vendor')
+    return device.mojom.NDEFCompatibility.VENDOR;
+  return device.mojom.NDEFCompatibility.ANY;
 }
 
 // Converts between NDEFMessage https://w3c.github.io/web-nfc/#dom-ndefmessage
@@ -233,10 +235,10 @@ function assertNFCWatchOptionsEqual(provided, received) {
   else
     assert_equals(received.mediaType, '');
 
-  if (provided.mode !== undefined)
-    assert_equals(toMojoNFCWatchMode(provided.mode), received.mode);
+  if (provided.compatibility !== undefined)
+    assert_equals(toMojoNDEFCompatibility(provided.compatibility), received.compatibility);
   else
-    assert_equals(received.mode, device.mojom.NFCWatchMode.WEBNFC_ONLY);
+    assert_equals(received.compatibility, device.mojom.NDEFCompatibility.NFC_FORUM);
 
   if (provided.recordType !== undefined) {
     assert_equals(!+received.record_filter, true);
