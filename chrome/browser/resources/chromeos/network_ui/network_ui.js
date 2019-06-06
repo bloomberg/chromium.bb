@@ -455,6 +455,44 @@ var NetworkUI = (function() {
   };
 
   /**
+   * Handles clicks on network items in the <cr-network-select> element by
+   * attempting a connection to the selected network or requesting a password
+   * if the network requires a password.
+   * @param {!Event<!CrOnc.NetworkStateProperties>} event
+   */
+  var onNetworkItemSelected = function(event) {
+    const state = event.detail;
+
+    // If the network is already connected, show network details.
+    if (state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+      chrome.send('showNetworkDetails', [state.GUID]);
+      return;
+    }
+
+    // If the network is not connectable, show a configuration dialog.
+    if (state.Connectable === false || state.ErrorState) {
+      chrome.send('showNetworkConfig', [state.GUID]);
+      return;
+    }
+
+    // Otherwise, connect.
+    chrome.networkingPrivate.startConnect(state.GUID, () => {
+      const lastError = chrome.runtime.lastError;
+      if (!lastError)
+        return;
+      const message = lastError.message;
+      if (message == 'connecting' || message == 'connect-canceled' ||
+          message == 'connected' || message == 'Error.InvalidNetworkGuid') {
+        return;
+      }
+      console.error(
+          'networkingPrivate.startConnect error: ' + message +
+          ' For: ' + state.GUID);
+      chrome.send('showNetworkConfig', [state.GUID]);
+    });
+  };
+
+  /**
    * Gets network information from WebUI and sets custom items.
    */
   document.addEventListener('DOMContentLoaded', function() {
@@ -463,6 +501,7 @@ var NetworkUI = (function() {
       {customItemName: 'Add WiFi', polymerIcon: 'cr:add', customData: 'WiFi'},
       {customItemName: 'Add VPN', polymerIcon: 'cr:add', customData: 'VPN'}
     ];
+    select.addEventListener('network-item-selected', onNetworkItemSelected);
     $('cellular-activation-button').onclick = openCellularActivationUi;
     $('refresh').onclick = requestNetworks;
     setRefresh();

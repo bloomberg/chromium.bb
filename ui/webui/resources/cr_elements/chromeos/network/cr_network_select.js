@@ -32,18 +32,6 @@ Polymer({
       },
     },
 
-    /**
-     * Whether to handle "item-selected" for network items.
-     * If this property is false, "network-item-selected" event is fired
-     * carrying CrOnc.NetworkStateProperties as event detail.
-     * @type {Function}
-     */
-    handleNetworkItemSelected: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-    },
-
     /** Whether to show technology badges on mobile network icons. */
     showTechnologyBadge: {type: Boolean, value: true},
 
@@ -267,32 +255,6 @@ Polymer({
     const state = e.detail;
     e.target.blur();
 
-    if (!this.handleNetworkItemSelected) {
-      this.fire('network-item-selected', state);
-      return;
-    }
-
-    // NOTE: This isn't used by OOBE (no handle-network-item-selected).
-    // TODO(stevenjb): Remove custom OOBE handling.
-    if (state.Type == CrOnc.Type.CELLULAR && this.cellularDeviceState_) {
-      const cellularDevice = this.cellularDeviceState_;
-      // If Cellular is not enabled and not SIM locked, enable Cellular.
-      if (cellularDevice.State != CrOnc.DeviceState.ENABLED &&
-          (!cellularDevice.SIMLockStatus ||
-           !cellularDevice.SIMLockStatus.LockType)) {
-        chrome.networkingPrivate.enableNetworkType(CrOnc.Type.CELLULAR);
-      }
-    }
-
-    if (state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED) {
-      return;
-    }
-
-    chrome.networkingPrivate.startConnect(state.GUID, function() {
-      const lastError = chrome.runtime.lastError;
-      if (lastError && lastError != 'connecting') {
-        console.error('networkingPrivate.startConnect error: ' + lastError);
-      }
-    });
+    this.fire('network-item-selected', state);
   },
 });
