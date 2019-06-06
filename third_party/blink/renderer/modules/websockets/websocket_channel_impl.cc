@@ -719,9 +719,9 @@ void WebSocketChannelImpl::DidClose(WebSocketHandle* handle,
   HandleDidClose(was_clean, code, reason);
 }
 
-void WebSocketChannelImpl::DidReceiveFlowControl(WebSocketHandle* handle,
-                                                 int64_t quota) {
-  NETWORK_DVLOG(1) << this << " DidReceiveFlowControl(" << handle << ", "
+void WebSocketChannelImpl::AddSendFlowControlQuota(WebSocketHandle* handle,
+                                                   int64_t quota) {
+  NETWORK_DVLOG(1) << this << " AddSendFlowControlQuota(" << handle << ", "
                    << quota << ")";
 
   DCHECK(handle_);

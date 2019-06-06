@@ -174,7 +174,7 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
                 bool was_clean,
                 uint16_t code,
                 const String& reason) override;
-  void DidReceiveFlowControl(WebSocketHandle*, int64_t quota) override;
+  void AddSendFlowControlQuota(WebSocketHandle*, int64_t quota) override;
   void DidStartClosingHandshake(WebSocketHandle*) override;
 
   // Completion callback. It is called with the results of throttling.

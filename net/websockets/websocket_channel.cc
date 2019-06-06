@@ -571,7 +571,7 @@ void WebSocketChannel::OnConnectSuccess(
   // TODO(ricea): Get flow control information from the WebSocketStream once we
   // have a multiplexing WebSocketStream.
   current_send_quota_ = send_quota_high_water_mark_;
-  event_interface_->OnFlowControl(send_quota_high_water_mark_);
+  event_interface_->OnSendFlowControlQuotaAdded(send_quota_high_water_mark_);
 
   // |stream_request_| is not used once the connection has succeeded.
   stream_request_.reset();
@@ -669,7 +669,7 @@ ChannelState WebSocketChannel::OnWriteDone(bool synchronous, int result) {
           // server, if the protocol in use supports quota.
           int fresh_quota = send_quota_high_water_mark_ - current_send_quota_;
           current_send_quota_ += fresh_quota;
-          event_interface_->OnFlowControl(fresh_quota);
+          event_interface_->OnSendFlowControlQuotaAdded(fresh_quota);
           return CHANNEL_ALIVE;
         }
       }

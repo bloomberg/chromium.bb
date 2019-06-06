@@ -88,7 +88,7 @@ class WebSocket::WebSocketEventHandler final
                    scoped_refptr<net::IOBuffer> buffer,
                    size_t buffer_size) override;
   void OnClosingHandshake() override;
-  void OnFlowControl(int64_t quota) override;
+  void OnSendFlowControlQuotaAdded(int64_t quota) override;
   void OnDropChannel(bool was_clean,
                      uint16_t code,
                      const std::string& reason) override;
@@ -176,11 +176,12 @@ void WebSocket::WebSocketEventHandler::OnClosingHandshake() {
   impl_->client_->OnClosingHandshake();
 }
 
-void WebSocket::WebSocketEventHandler::OnFlowControl(int64_t quota) {
-  DVLOG(3) << "WebSocketEventHandler::OnFlowControl @"
+void WebSocket::WebSocketEventHandler::OnSendFlowControlQuotaAdded(
+    int64_t quota) {
+  DVLOG(3) << "WebSocketEventHandler::OnSendFlowControlQuotaAdded @"
            << reinterpret_cast<void*>(this) << " quota=" << quota;
 
-  impl_->client_->OnFlowControl(quota);
+  impl_->client_->AddSendFlowControlQuota(quota);
 }
 
 void WebSocket::WebSocketEventHandler::OnDropChannel(

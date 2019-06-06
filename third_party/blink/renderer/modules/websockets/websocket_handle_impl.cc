@@ -204,12 +204,12 @@ void WebSocketHandleImpl::OnDataFrame(
   // |this| can be deleted here.
 }
 
-void WebSocketHandleImpl::OnFlowControl(int64_t quota) {
-  NETWORK_DVLOG(1) << this << " OnFlowControl(" << quota << ")";
+void WebSocketHandleImpl::AddSendFlowControlQuota(int64_t quota) {
+  NETWORK_DVLOG(1) << this << " AddSendFlowControlQuota(" << quota << ")";
   if (!client_)
     return;
 
-  client_->DidReceiveFlowControl(this, quota);
+  client_->AddSendFlowControlQuota(this, quota);
   // |this| can be deleted here.
 }
 

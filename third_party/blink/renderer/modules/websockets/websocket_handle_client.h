@@ -80,7 +80,7 @@ class WebSocketHandleClient {
                         uint16_t code,
                         const String& reason) = 0;
 
-  virtual void DidReceiveFlowControl(WebSocketHandle*, int64_t quota) = 0;
+  virtual void AddSendFlowControlQuota(WebSocketHandle*, int64_t quota) = 0;
 
   // Called when the browser receives a Close frame from the remote
   // server. Not called when the renderer initiates the closing handshake.

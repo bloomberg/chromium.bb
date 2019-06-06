@@ -104,7 +104,7 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
                    scoped_refptr<IOBuffer> data,
                    size_t data_size) override;
 
-  void OnFlowControl(int64_t quota) override;
+  void OnSendFlowControlQuotaAdded(int64_t quota) override;
 
   void OnClosingHandshake() override;
 
@@ -178,7 +178,7 @@ void ConnectTestingEventInterface::OnDataFrame(bool fin,
                                                scoped_refptr<IOBuffer> data,
                                                size_t data_size) {}
 
-void ConnectTestingEventInterface::OnFlowControl(int64_t quota) {}
+void ConnectTestingEventInterface::OnSendFlowControlQuotaAdded(int64_t quota) {}
 
 void ConnectTestingEventInterface::OnClosingHandshake() {}
 

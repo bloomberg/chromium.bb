@@ -239,7 +239,7 @@ TEST_F(WebSocketChannelImplTest, sendText) {
                                 MemEq("baz", 3), 3));
   }
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   Channel()->Send("foo");
@@ -272,18 +272,18 @@ TEST_F(WebSocketChannelImplTest, sendTextContinuation) {
                                 MemEq("MNOPQRSTUVWXYZ", 14), 14));
   }
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   Channel()->Send("0123456789abcdefg");
   Channel()->Send("hijk");
   Channel()->Send("lmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
   checkpoint.Call(1);
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   checkpoint.Call(2);
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   checkpoint.Call(3);
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
 
   EXPECT_EQ(62ul, sum_of_consumed_buffered_amount_);
 }
@@ -296,7 +296,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInVector) {
                                 MemEq("foo", 3), 3));
   }
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   Vector<char> foo_vector;
@@ -320,7 +320,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInVectorWithNullBytes) {
                                 MemEq("\0\0\0", 3), 3));
   }
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   {
@@ -352,7 +352,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInVectorNonLatin1UTF8) {
   EXPECT_CALL(*Handle(), Send(true, WebSocketHandle::kMessageTypeBinary,
                               MemEq("\xe7\x8b\x90", 3), 3));
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   Vector<char> v;
@@ -367,7 +367,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInVectorNonUTF8) {
   EXPECT_CALL(*Handle(), Send(true, WebSocketHandle::kMessageTypeBinary,
                               MemEq("\x80\xff\xe7", 3), 3));
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   Vector<char> v;
@@ -392,7 +392,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInVectorNonLatin1UTF8Continuation) {
                                 MemEq("\x8b\x90", 2), 2));
   }
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   Vector<char> v;
@@ -403,7 +403,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInVectorNonLatin1UTF8Continuation) {
   Channel()->SendBinaryAsCharVector(std::make_unique<Vector<char>>(v));
   checkpoint.Call(1);
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
 
   EXPECT_EQ(18ul, sum_of_consumed_buffered_amount_);
 }
@@ -416,7 +416,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBuffer) {
                                 MemEq("foo", 3), 3));
   }
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   DOMArrayBuffer* foo_buffer = DOMArrayBuffer::Create("foo", 3);
@@ -439,7 +439,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferPartial) {
                                 MemEq("a", 1), 1));
   }
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   DOMArrayBuffer* foobar_buffer = DOMArrayBuffer::Create("foobar", 6);
@@ -466,7 +466,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferWithNullBytes) {
                                 MemEq("\0\0\0", 3), 3));
   }
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   {
@@ -494,7 +494,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferNonLatin1UTF8) {
   EXPECT_CALL(*Handle(), Send(true, WebSocketHandle::kMessageTypeBinary,
                               MemEq("\xe7\x8b\x90", 3), 3));
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   DOMArrayBuffer* b = DOMArrayBuffer::Create("\xe7\x8b\x90", 3);
@@ -508,7 +508,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferNonUTF8) {
   EXPECT_CALL(*Handle(), Send(true, WebSocketHandle::kMessageTypeBinary,
                               MemEq("\x80\xff\xe7", 3), 3));
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   DOMArrayBuffer* b = DOMArrayBuffer::Create("\x80\xff\xe7", 3);
@@ -533,7 +533,7 @@ TEST_F(WebSocketChannelImplTest,
                                 MemEq("\x8b\x90", 2), 2));
   }
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   DOMArrayBuffer* b = DOMArrayBuffer::Create(
@@ -543,7 +543,7 @@ TEST_F(WebSocketChannelImplTest,
   Channel()->Send(*b, 0, 18);
   checkpoint.Call(1);
 
-  HandleClient()->DidReceiveFlowControl(Handle(), 16);
+  HandleClient()->AddSendFlowControlQuota(Handle(), 16);
 
   EXPECT_EQ(18ul, sum_of_consumed_buffered_amount_);
 }
