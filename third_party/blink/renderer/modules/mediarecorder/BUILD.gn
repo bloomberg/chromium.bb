@@ -6,9 +6,21 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("mediarecorder") {
   sources = [
+    "audio_track_encoder.cc",
+    "audio_track_encoder.h",
+    "audio_track_opus_encoder.cc",
+    "audio_track_opus_encoder.h",
+    "audio_track_pcm_encoder.cc",
+    "audio_track_pcm_encoder.h",
+    "audio_track_recorder.cc",
+    "audio_track_recorder.h",
     "blob_event.cc",
     "blob_event.h",
     "media_recorder.cc",
     "media_recorder.h",
+  ]
+
+  deps = [
+    "//third_party/opus",
   ]
 }

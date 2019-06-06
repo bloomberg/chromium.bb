@@ -582,6 +582,16 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/mediarecorder/',
+        ],
+        'allowed': [
+            'base::data',
+            'media::.+',
+            'libopus::.+',
+        ]
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/mediastream/',
         ],
         'allowed': [

@@ -2,19 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_recorder/audio_track_recorder.h"
+#include "third_party/blink/public/web/modules/mediarecorder/audio_track_recorder.h"
 
 #include <stdint.h>
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
-#include "base/time/time.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_sample_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,8 +18,11 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/opus/src/include/opus.h"
 
+using base::TimeTicks;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
@@ -33,7 +31,6 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::TestWithParam;
 using ::testing::ValuesIn;
-using base::TimeTicks;
 
 namespace {
 
@@ -52,9 +49,11 @@ const int kFramesPerBuffer = kOpusBufferDurationMs * kDefaultSampleRate / 1000;
 
 }  // namespace
 
-namespace content {
+namespace blink {
 
-ACTION_P(RunClosure, closure) {
+// Using RunClosure3 instead of RunClosure to avoid symbol collisions in jumbo
+// builds.
+ACTION_P(RunClosure3, closure) {
   closure.Run();
 }
 
@@ -119,8 +118,8 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
     PrepareBlinkTrack();
     audio_track_recorder_.reset(new AudioTrackRecorder(
         codec_, blink_track_,
-        base::Bind(&AudioTrackRecorderTest::OnEncodedAudio,
-                   base::Unretained(this)),
+        WTF::BindRepeating(&AudioTrackRecorderTest::OnEncodedAudio,
+                           WTF::Unretained(this)),
         0 /* bits_per_second */));
   }
 
@@ -128,7 +127,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
     opus_decoder_destroy(opus_decoder_);
     opus_decoder_ = nullptr;
     blink_track_.Reset();
-    blink::WebHeap::CollectAllGarbageForTesting();
+    WebHeap::CollectAllGarbageForTesting();
     audio_track_recorder_.reset();
     // Let the message loop run to finish destroying the recorder properly.
     base::RunLoop().RunUntilIdle();
@@ -153,8 +152,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
         first_params_.channels(), first_params_.sample_rate() *
                                       kMediaStreamAudioTrackBufferDurationMs /
                                       base::Time::kMillisecondsPerSecond));
-    first_source_.OnMoreData(base::TimeDelta(), base::TimeTicks::Now(), 0,
-                             bus.get());
+    first_source_.OnMoreData(base::TimeDelta(), TimeTicks::Now(), 0, bus.get());
 
     // Save the samples that we read into the first_source_cache_.
     std::unique_ptr<media::AudioBus> cache_bus(
@@ -174,7 +172,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
         second_params_.channels(), second_params_.sample_rate() *
                                        kMediaStreamAudioTrackBufferDurationMs /
                                        base::Time::kMillisecondsPerSecond));
-    second_source_.OnMoreData(base::TimeDelta(), base::TimeTicks::Now(), 0,
+    second_source_.OnMoreData(base::TimeDelta(), TimeTicks::Now(), 0,
                               bus.get());
     return bus;
   }
@@ -214,11 +212,9 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
     DoOnEncodedAudio(params, *encoded_data, timestamp);
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
-
   // ATR and WebMediaStreamTrack for fooling it.
   std::unique_ptr<AudioTrackRecorder> audio_track_recorder_;
-  blink::WebMediaStreamTrack blink_track_;
+  WebMediaStreamTrack blink_track_;
 
   // The codec we'll use for compression the audio.
   const AudioTrackRecorder::CodecId codec_;
@@ -237,7 +233,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
 
   // Save the data we generate from the first source so that we might compare it
   // later if we happen to be using the PCM encoder.
-  std::vector<float> first_source_cache_;
+  Vector<float> first_source_cache_;
   size_t first_source_cache_pos_;
 
  private:
@@ -245,17 +241,15 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
   // track, which can be used to capture audio data and pass it to the producer.
   // Adapted from media::WebRTCLocalAudioSourceProviderTest.
   void PrepareBlinkTrack() {
-    blink::WebMediaStreamSource audio_source;
-    audio_source.Initialize(blink::WebString::FromUTF8("dummy_source_id"),
-                            blink::WebMediaStreamSource::kTypeAudio,
-                            blink::WebString::FromUTF8("dummy_source_name"),
+    WebMediaStreamSource audio_source;
+    audio_source.Initialize(WebString::FromUTF8("dummy_source_id"),
+                            WebMediaStreamSource::kTypeAudio,
+                            WebString::FromUTF8("dummy_source_name"),
                             false /* remote */);
-    audio_source.SetPlatformSource(
-        std::make_unique<blink::MediaStreamAudioSource>(
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true));
-    blink_track_.Initialize(blink::WebString::FromUTF8("audio_track"),
-                            audio_source);
-    CHECK(blink::MediaStreamAudioSource::From(audio_source)
+    audio_source.SetPlatformSource(std::make_unique<MediaStreamAudioSource>(
+        scheduler::GetSingleThreadTaskRunnerForTesting(), true));
+    blink_track_.Initialize(WebString::FromUTF8("audio_track"), audio_source);
+    CHECK(MediaStreamAudioSource::From(audio_source)
               ->ConnectToTrack(blink_track_));
   }
 
@@ -283,8 +277,9 @@ TEST_P(AudioTrackRecorderTest, OnDataOpus) {
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
       .Times(1)
       // Only reset the decoder once we've heard back:
-      .WillOnce(RunClosure(base::Bind(&AudioTrackRecorderTest::ResetDecoder,
-                                      base::Unretained(this), second_params_)));
+      .WillOnce(RunClosure3(
+          WTF::BindRepeating(&AudioTrackRecorderTest::ResetDecoder,
+                             WTF::Unretained(this), second_params_)));
   audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
   for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i)
     audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
@@ -300,7 +295,7 @@ TEST_P(AudioTrackRecorderTest, OnDataOpus) {
   // Send audio with different params.
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
       .Times(1)
-      .WillOnce(RunClosure(std::move(quit_closure)));
+      .WillOnce(RunClosure3(std::move(quit_closure)));
   audio_track_recorder_->OnData(*GetSecondSourceAudioBus(), TimeTicks::Now());
   for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i)
     audio_track_recorder_->OnData(*GetSecondSourceAudioBus(), TimeTicks::Now());
@@ -321,7 +316,7 @@ TEST_P(AudioTrackRecorderTest, OnDataPcm) {
 
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _)).Times(5);
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
-      .WillOnce(RunClosure(std::move(quit_closure)));
+      .WillOnce(RunClosure3(std::move(quit_closure)));
 
   audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
   for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i)
@@ -351,7 +346,7 @@ TEST_P(AudioTrackRecorderTest, PauseResume) {
   audio_track_recorder_->Resume();
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
       .Times(1)
-      .WillOnce(RunClosure(std::move(quit_closure)));
+      .WillOnce(RunClosure3(std::move(quit_closure)));
   audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
   for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i)
     audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
@@ -364,4 +359,4 @@ TEST_P(AudioTrackRecorderTest, PauseResume) {
 }
 
 INSTANTIATE_TEST_SUITE_P(, AudioTrackRecorderTest, ValuesIn(kATRTestParams));
-}  // namespace content
+}  // namespace blink

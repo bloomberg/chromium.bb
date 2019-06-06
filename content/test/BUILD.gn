@@ -1885,7 +1885,6 @@ test("content_unittests") {
     "../renderer/media/webrtc/webrtc_set_description_observer_unittest.cc",
     "../renderer/media/webrtc/webrtc_video_track_source_unittest.cc",
     "../renderer/media/webrtc_local_audio_source_provider_unittest.cc",
-    "../renderer/media_recorder/audio_track_recorder_unittest.cc",
     "../renderer/media_recorder/media_recorder_handler_unittest.cc",
     "../renderer/media_recorder/video_track_recorder_unittest.cc",
     "../renderer/p2p/filtering_network_manager_unittest.cc",
@@ -2039,7 +2038,6 @@ test("content_unittests") {
     "//third_party/leveldatabase",
     "//third_party/libyuv",
     "//third_party/metrics_proto",
-    "//third_party/opus",
     "//third_party/re2",
     "//third_party/sqlite",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
@@ -2126,7 +2124,6 @@ test("content_unittests") {
 
   if (is_chromecast) {
     sources -= [
-      "../renderer/media_recorder/audio_track_recorder_unittest.cc",
       "../renderer/media_recorder/media_recorder_handler_unittest.cc",
       "../renderer/media_recorder/video_track_recorder_unittest.cc",
     ]

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_RECORDER_AUDIO_TRACK_ENCODER_H_
-#define CONTENT_RENDERER_MEDIA_RECORDER_AUDIO_TRACK_ENCODER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_AUDIO_TRACK_ENCODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_AUDIO_TRACK_ENCODER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
-namespace content {
+namespace blink {
 
 // Base interface for an AudioTrackEncoder. This class and its subclasses are
 // used by AudioTrackRecorder to encode audio before output. These are private
@@ -25,12 +25,12 @@ namespace content {
 // main render thread) but otherwise should operate entirely on
 // |encoder_thread_|, which is owned by AudioTrackRecorder. Be sure to delete
 // |encoder_thread_| before deleting the AudioTrackEncoder using it.
-class AudioTrackEncoder : public base::RefCountedThreadSafe<AudioTrackEncoder> {
+class AudioTrackEncoder : public WTF::ThreadSafeRefCounted<AudioTrackEncoder> {
  public:
   using OnEncodedAudioCB =
-      base::Callback<void(const media::AudioParameters& params,
-                          std::unique_ptr<std::string> encoded_data,
-                          base::TimeTicks capture_time)>;
+      base::RepeatingCallback<void(const media::AudioParameters& params,
+                                   std::unique_ptr<std::string> encoded_data,
+                                   base::TimeTicks capture_time)>;
 
   explicit AudioTrackEncoder(OnEncodedAudioCB on_encoded_audio_cb);
 
@@ -41,7 +41,7 @@ class AudioTrackEncoder : public base::RefCountedThreadSafe<AudioTrackEncoder> {
   void set_paused(bool paused) { paused_ = paused; }
 
  protected:
-  friend class base::RefCountedThreadSafe<AudioTrackEncoder>;
+  friend class WTF::ThreadSafeRefCounted<AudioTrackEncoder>;
 
   virtual ~AudioTrackEncoder();
 
@@ -57,6 +57,6 @@ class AudioTrackEncoder : public base::RefCountedThreadSafe<AudioTrackEncoder> {
   DISALLOW_COPY_AND_ASSIGN(AudioTrackEncoder);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_RECORDER_AUDIO_TRACK_ENCODER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_AUDIO_TRACK_ENCODER_H_

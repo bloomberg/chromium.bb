@@ -13,7 +13,6 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
-#include "content/renderer/media_recorder/audio_track_recorder.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/audio_parameters.h"
@@ -30,6 +29,7 @@
 #include "third_party/blink/public/platform/web_media_recorder_handler_client.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediarecorder/audio_track_recorder.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -67,13 +67,14 @@ media::VideoCodec CodecIdToMediaVideoCodec(VideoTrackRecorder::CodecId id) {
   return media::kUnknownVideoCodec;
 }
 
-media::AudioCodec CodecIdToMediaAudioCodec(AudioTrackRecorder::CodecId id) {
+media::AudioCodec CodecIdToMediaAudioCodec(
+    blink::AudioTrackRecorder::CodecId id) {
   switch (id) {
-    case AudioTrackRecorder::CodecId::PCM:
+    case blink::AudioTrackRecorder::CodecId::PCM:
       return media::kCodecPCM;
-    case AudioTrackRecorder::CodecId::OPUS:
+    case blink::AudioTrackRecorder::CodecId::OPUS:
       return media::kCodecOpus;
-    case AudioTrackRecorder::CodecId::LAST:
+    case blink::AudioTrackRecorder::CodecId::LAST:
       return media::kUnknownAudioCodec;
   }
   NOTREACHED() << "Unsupported audio codec";
@@ -98,16 +99,16 @@ VideoTrackRecorder::CodecId VideoStringToCodecId(
   return VideoTrackRecorder::CodecId::LAST;
 }
 
-AudioTrackRecorder::CodecId AudioStringToCodecId(
+blink::AudioTrackRecorder::CodecId AudioStringToCodecId(
     const blink::WebString& codecs) {
   const std::string& codecs_str = ToLowerASCII(codecs.Utf8());
 
   if (codecs_str.find("opus") != std::string::npos)
-    return AudioTrackRecorder::CodecId::OPUS;
+    return blink::AudioTrackRecorder::CodecId::OPUS;
   if (codecs_str.find("pcm") != std::string::npos)
-    return AudioTrackRecorder::CodecId::PCM;
+    return blink::AudioTrackRecorder::CodecId::PCM;
 
-  return AudioTrackRecorder::CodecId::LAST;
+  return blink::AudioTrackRecorder::CodecId::LAST;
 }
 
 }  // anonymous namespace
@@ -117,7 +118,7 @@ MediaRecorderHandler::MediaRecorderHandler(
     : video_bits_per_second_(0),
       audio_bits_per_second_(0),
       video_codec_id_(VideoTrackRecorder::CodecId::LAST),
-      audio_codec_id_(AudioTrackRecorder::CodecId::LAST),
+      audio_codec_id_(blink::AudioTrackRecorder::CodecId::LAST),
       recording_(false),
       client_(nullptr),
       task_runner_(std::move(task_runner)),
@@ -211,12 +212,12 @@ bool MediaRecorderHandler::Initialize(
       << static_cast<int>(video_codec_id_);
 
   // Do the same for the audio codec(s).
-  const AudioTrackRecorder::CodecId audio_codec_id =
+  const blink::AudioTrackRecorder::CodecId audio_codec_id =
       AudioStringToCodecId(codecs);
-  audio_codec_id_ = (audio_codec_id != AudioTrackRecorder::CodecId::LAST)
+  audio_codec_id_ = (audio_codec_id != blink::AudioTrackRecorder::CodecId::LAST)
                         ? audio_codec_id
-                        : AudioTrackRecorder::GetPreferredCodecId();
-  DVLOG_IF(1, audio_codec_id == AudioTrackRecorder::CodecId::LAST)
+                        : blink::AudioTrackRecorder::GetPreferredCodecId();
+  DVLOG_IF(1, audio_codec_id == blink::AudioTrackRecorder::CodecId::LAST)
       << "Falling back to preferred audio codec id "
       << static_cast<int>(audio_codec_id_);
 
@@ -298,11 +299,11 @@ bool MediaRecorderHandler::Start(int timeslice) {
     if (audio_track.IsNull())
       return false;
 
-    const AudioTrackRecorder::OnEncodedAudioCB on_encoded_audio_cb =
+    const blink::AudioTrackRecorder::OnEncodedAudioCB on_encoded_audio_cb =
         media::BindToCurrentLoop(base::Bind(
             &MediaRecorderHandler::OnEncodedAudio, weak_factory_.GetWeakPtr()));
 
-    audio_recorders_.emplace_back(new AudioTrackRecorder(
+    audio_recorders_.emplace_back(new blink::AudioTrackRecorder(
         audio_codec_id_, audio_track, std::move(on_encoded_audio_cb),
         audio_bits_per_second_));
   }
@@ -443,24 +444,24 @@ blink::WebString MediaRecorderHandler::ActualMimeType() {
         break;
 #endif
       case VideoTrackRecorder::CodecId::LAST:
-        DCHECK_NE(audio_codec_id_, AudioTrackRecorder::CodecId::LAST);
+        DCHECK_NE(audio_codec_id_, blink::AudioTrackRecorder::CodecId::LAST);
     }
   }
   if (has_video_tracks && has_audio_tracks) {
     if (video_codec_id_ != VideoTrackRecorder::CodecId::LAST &&
-        audio_codec_id_ != AudioTrackRecorder::CodecId::LAST) {
+        audio_codec_id_ != blink::AudioTrackRecorder::CodecId::LAST) {
       mime_type.append(",");
     }
   }
   if (has_audio_tracks) {
     switch (audio_codec_id_) {
-      case AudioTrackRecorder::CodecId::OPUS:
+      case blink::AudioTrackRecorder::CodecId::OPUS:
         mime_type.append("opus");
         break;
-      case AudioTrackRecorder::CodecId::PCM:
+      case blink::AudioTrackRecorder::CodecId::PCM:
         mime_type.append("pcm");
         break;
-      case AudioTrackRecorder::CodecId::LAST:
+      case blink::AudioTrackRecorder::CodecId::LAST:
         DCHECK_NE(video_codec_id_, VideoTrackRecorder::CodecId::LAST);
     }
   }

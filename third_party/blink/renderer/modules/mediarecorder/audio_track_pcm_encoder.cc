@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_recorder/audio_track_pcm_encoder.h"
-
-#include <string.h>
-#include <string>
+#include "third_party/blink/renderer/modules/mediarecorder/audio_track_pcm_encoder.h"
 
 #include "media/base/audio_sample_types.h"
 #include "media/base/audio_timestamp_helper.h"
 
-namespace content {
+namespace blink {
 
 AudioTrackPcmEncoder::AudioTrackPcmEncoder(OnEncodedAudioCB on_encoded_audio_cb)
     : AudioTrackEncoder(std::move(on_encoded_audio_cb)) {}
@@ -53,4 +50,4 @@ void AudioTrackPcmEncoder::EncodeAudio(
                            capture_time_of_first_sample);
 }
 
-}  // namespace content
+}  // namespace blink

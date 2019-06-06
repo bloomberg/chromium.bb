@@ -1,8 +1,16 @@
 include_rules = [
+    "+media",
     "-third_party/blink/renderer/modules",
     "+third_party/blink/renderer/modules/event_modules.h",
     "+third_party/blink/renderer/modules/event_target_modules.h",
     "+third_party/blink/renderer/modules/modules_export.h",
     "+third_party/blink/renderer/modules/mediarecorder",
     "+third_party/blink/renderer/modules/mediastream",
+    '+third_party/opus',
 ]
+
+specific_include_rules = {
+    ".*_unittest.cc": [
+        "+base/run_loop.h",
+    ],
+}

@@ -8,6 +8,7 @@ include_rules = [
     "+base/memory/scoped_refptr.h",
     "+base/strings",
     "+base/time/time.h",
+    "+base/threading/thread_checker.h",
     "+cc/input/browser_controls_state.h",
     "+cc/input/overscroll_behavior.h",
     "+cc/input/layer_selection_bound.h",

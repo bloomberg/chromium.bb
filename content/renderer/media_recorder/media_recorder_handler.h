@@ -14,10 +14,10 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media_recorder/audio_track_recorder.h"
 #include "content/renderer/media_recorder/video_track_recorder.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/web/modules/mediarecorder/audio_track_recorder.h"
 
 namespace blink {
 class WebMediaRecorderHandlerClient;
@@ -32,8 +32,6 @@ class WebmMuxer;
 }  // namespace media
 
 namespace content {
-
-class AudioTrackRecorder;
 
 // MediaRecorderHandler orchestrates the creation, lifetime management and
 // mapping between:
@@ -104,7 +102,7 @@ class CONTENT_EXPORT MediaRecorderHandler final
   VideoTrackRecorder::CodecId video_codec_id_;
 
   // Audio Codec, OPUS is used by default.
-  AudioTrackRecorder::CodecId audio_codec_id_;
+  blink::AudioTrackRecorder::CodecId audio_codec_id_;
 
   // |client_| has no notion of time, thus may configure us via start(timeslice)
   // to notify it after a certain |timeslice_| has passed. We use a moving
@@ -121,7 +119,7 @@ class CONTENT_EXPORT MediaRecorderHandler final
   blink::WebMediaRecorderHandlerClient* client_;
 
   std::vector<std::unique_ptr<VideoTrackRecorder>> video_recorders_;
-  std::vector<std::unique_ptr<AudioTrackRecorder>> audio_recorders_;
+  std::vector<std::unique_ptr<blink::AudioTrackRecorder>> audio_recorders_;
 
   // Worker class doing the actual Webm Muxing work.
   std::unique_ptr<media::WebmMuxer> webm_muxer_;

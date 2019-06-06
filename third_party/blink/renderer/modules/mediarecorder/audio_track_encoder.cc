@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_recorder/audio_track_encoder.h"
+#include "third_party/blink/renderer/modules/mediarecorder/audio_track_encoder.h"
 
-namespace content {
+namespace blink {
 
 AudioTrackEncoder::AudioTrackEncoder(OnEncodedAudioCB on_encoded_audio_cb)
     : paused_(false), on_encoded_audio_cb_(std::move(on_encoded_audio_cb)) {
@@ -17,4 +17,4 @@ AudioTrackEncoder::AudioTrackEncoder(OnEncodedAudioCB on_encoded_audio_cb)
 
 AudioTrackEncoder::~AudioTrackEncoder() {}
 
-}  // namespace content
+}  // namespace blink

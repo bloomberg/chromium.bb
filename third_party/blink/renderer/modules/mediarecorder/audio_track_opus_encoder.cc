@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_recorder/audio_track_opus_encoder.h"
-
-#include <string>
-#include <utility>
+#include "third_party/blink/renderer/modules/mediarecorder/audio_track_opus_encoder.h"
 
 #include "media/base/audio_sample_types.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -63,7 +60,7 @@ bool DoEncode(OpusEncoder* opus_encoder,
 
 }  // anonymous namespace
 
-namespace content {
+namespace blink {
 
 AudioTrackOpusEncoder::AudioTrackOpusEncoder(
     OnEncodedAudioCB on_encoded_audio_cb,
@@ -195,4 +192,4 @@ void AudioTrackOpusEncoder::DestroyExistingOpusEncoder() {
   }
 }
 
-}  // namespace content
+}  // namespace blink

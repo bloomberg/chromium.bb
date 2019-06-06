@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_RECORDER_AUDIO_TRACK_PCM_ENCODER_H_
-#define CONTENT_RENDERER_MEDIA_RECORDER_AUDIO_TRACK_PCM_ENCODER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_AUDIO_TRACK_PCM_ENCODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_AUDIO_TRACK_PCM_ENCODER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "base/time/time.h"
-#include "content/renderer/media_recorder/audio_track_encoder.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
+#include "third_party/blink/renderer/modules/mediarecorder/audio_track_encoder.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
-namespace content {
+namespace blink {
 
 // A signed, 16-bit linear audio "encoder" that will just pass the audio right
 // back out again.
@@ -31,6 +31,6 @@ class AudioTrackPcmEncoder : public AudioTrackEncoder {
   DISALLOW_COPY_AND_ASSIGN(AudioTrackPcmEncoder);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_RECORDER_AUDIO_TRACK_PCM_ENCODER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_AUDIO_TRACK_PCM_ENCODER_H_
