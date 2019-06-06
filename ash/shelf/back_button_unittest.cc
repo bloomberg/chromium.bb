@@ -133,7 +133,12 @@ class KioskNextBackButtonTest : public BackButtonTest {
   void SetUp() override {
     set_start_session(false);
     BackButtonTest::SetUp();
-    client_ = BindMockKioskNextShellClient();
+    client_ = std::make_unique<MockKioskNextShellClient>();
+  }
+
+  void TearDown() override {
+    client_.reset();
+    BackButtonTest::TearDown();
   }
 
   void SimulateKioskNextSession() {

@@ -8,7 +8,7 @@
 
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"

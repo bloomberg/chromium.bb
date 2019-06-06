@@ -32,15 +32,15 @@ class KioskNextHomeControllerTest : public AshTestBase {
     scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
     set_start_session(false);
     AshTestBase::SetUp();
-    client_ = BindMockKioskNextShellClient();
+    client_ = std::make_unique<MockKioskNextShellClient>();
     LogInKioskNextUser(GetSessionControllerClient());
     SetUpHomeWindow();
   }
 
   void TearDown() override {
     home_screen_window_.reset();
-    AshTestBase::TearDown();
     client_.reset();
+    AshTestBase::TearDown();
   }
 
   void SetUpHomeWindow() {

@@ -368,7 +368,12 @@ class KioskNextImeMenuTest : public ImeMenuTrayTest {
   void SetUp() override {
     set_start_session(false);
     ImeMenuTrayTest::SetUp();
-    client_ = BindMockKioskNextShellClient();
+    client_ = std::make_unique<MockKioskNextShellClient>();
+  }
+
+  void TearDown() override {
+    client_.reset();
+    ImeMenuTrayTest::TearDown();
   }
 
  private:

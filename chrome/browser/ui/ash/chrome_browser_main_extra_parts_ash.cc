@@ -204,8 +204,10 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
     TabScrubber::GetInstance();
   }
 
-  if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell))
+  if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
     kiosk_next_shell_client_ = std::make_unique<KioskNextShellClient>();
+    kiosk_next_shell_client_->Init();
+  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {

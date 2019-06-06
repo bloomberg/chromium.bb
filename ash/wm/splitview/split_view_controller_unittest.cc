@@ -4615,8 +4615,13 @@ class SplitViewKioskNextAppDraggingTest : public SplitViewAppDraggingTest {
 
     SplitViewAppDraggingTest::SetUp();
 
-    client_ = BindMockKioskNextShellClient();
+    client_ = std::make_unique<MockKioskNextShellClient>();
     LogInKioskNextUser(GetSessionControllerClient());
+  }
+
+  void TearDown() override {
+    client_.reset();
+    SplitViewAppDraggingTest::TearDown();
   }
 
  private:

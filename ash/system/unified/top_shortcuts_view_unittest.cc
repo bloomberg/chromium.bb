@@ -35,6 +35,7 @@ class TopShortcutsViewTest : public NoSessionAshTestBase {
   }
 
   void TearDown() override {
+    kiosk_next_shell_client_.reset();
     controller_.reset();
     top_shortcuts_view_.reset();
     model_.reset();
@@ -47,7 +48,7 @@ class TopShortcutsViewTest : public NoSessionAshTestBase {
   }
 
   void CreateKioskNextSession() {
-    kiosk_next_shell_client_ = BindMockKioskNextShellClient();
+    kiosk_next_shell_client_ = std::make_unique<MockKioskNextShellClient>();
     LogInKioskNextUser(GetSessionControllerClient());
   }
 

@@ -6,7 +6,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/screen_util.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/kiosk_next/kiosk_next_shell_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 
 #include <memory>
 #include <utility>
@@ -52,12 +52,12 @@ std::unique_ptr<ShelfModel> CreateKioskNextShelfModel() {
 
 }  // namespace
 
-KioskNextShellController::KioskNextShellController() = default;
+KioskNextShellControllerImpl::KioskNextShellControllerImpl() = default;
 
-KioskNextShellController::~KioskNextShellController() = default;
+KioskNextShellControllerImpl::~KioskNextShellControllerImpl() = default;
 
 // static
-void KioskNextShellController::RegisterProfilePrefs(
+void KioskNextShellControllerImpl::RegisterProfilePrefs(
     PrefRegistrySimple* registry,
     bool for_test) {
   if (for_test) {
@@ -67,43 +67,40 @@ void KioskNextShellController::RegisterProfilePrefs(
   }
 }
 
-void KioskNextShellController::BindRequest(
-    mojom::KioskNextShellControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void KioskNextShellControllerImpl::SetClientAndLaunchSession(
+    KioskNextShellClient* client) {
+  DCHECK_NE(!!client, !!client_);
+  client_ = client;
+  LaunchKioskNextShellIfEnabled();
 }
 
-bool KioskNextShellController::IsEnabled() {
+bool KioskNextShellControllerImpl::IsEnabled() {
   return kiosk_next_enabled_;
 }
 
-void KioskNextShellController::AddObserver(KioskNextShellObserver* observer) {
+void KioskNextShellControllerImpl::AddObserver(
+    KioskNextShellObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void KioskNextShellController::RemoveObserver(
+void KioskNextShellControllerImpl::RemoveObserver(
     KioskNextShellObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void KioskNextShellController::SetClient(
-    mojom::KioskNextShellClientPtr client) {
-  kiosk_next_shell_client_ = std::move(client);
-  LaunchKioskNextShellIfEnabled();
-}
-
-void KioskNextShellController::OnActiveUserPrefServiceChanged(
+void KioskNextShellControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
   LaunchKioskNextShellIfEnabled();
 }
 
-void KioskNextShellController::LaunchKioskNextShellIfEnabled() {
+void KioskNextShellControllerImpl::LaunchKioskNextShellIfEnabled() {
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
   PrefService* pref_service = session_controller->GetPrimaryUserPrefService();
   if (!pref_service)
     return;
 
-  if (!kiosk_next_shell_client_.is_bound())
+  if (!client_)
     return;
 
   bool prev_kiosk_next_enabled = kiosk_next_enabled_;
@@ -119,7 +116,7 @@ void KioskNextShellController::LaunchKioskNextShellIfEnabled() {
       kiosk_next_home_controller_.get());
   Shell::Get()->RemoveAppListController();
 
-  kiosk_next_shell_client_->LaunchKioskNextShell(
+  client_->LaunchKioskNextShell(
       session_controller->GetPrimaryUserSession()->user_info.account_id);
   UMA_HISTOGRAM_BOOLEAN("KioskNextShell.Launched", true);
 
