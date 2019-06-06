@@ -7180,6 +7180,13 @@ histogram as enum -->
   <int value="3" label="By arrow key"/>
 </enum>
 
+<enum name="ChromeOSParseCPUFrequencyStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Zero logical CPUs"/>
+  <int value="2" label="Some CPUs have zero frequencies"/>
+  <int value="3" label="All CPUs have zero frequencies"/>
+</enum>
+
 <enum name="ChromeOSPlatformVerificationExpiryStatus">
   <summary>
     Possible results of a platform verification expiry check. See

@@ -10,6 +10,10 @@
 #include "chrome/browser/metrics/perf/metric_collector.h"
 #include "chrome/browser/metrics/perf/random_selector.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace metrics {
 
 struct CPUIdentity;
@@ -40,6 +44,7 @@ class PerfCollector : public MetricCollector {
       std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
       std::unique_ptr<SampledProfile> sampled_profile,
       PerfProtoType type,
+      bool has_cycles,
       const std::string& perf_stdout);
 
   // MetricCollector:
@@ -47,6 +52,31 @@ class PerfCollector : public MetricCollector {
   void CollectProfile(std::unique_ptr<SampledProfile> sampled_profile) override;
 
   const RandomSelector& command_selector() const { return command_selector_; }
+
+  // Executes asynchronously on another thread pool. When it finishes, posts a
+  // task on the given task_runner.
+  static void ParseCPUFrequencies(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      base::WeakPtr<PerfCollector> perf_collector);
+  // Executes on the same sequence as the processing of perf data.
+  void SaveCPUFrequencies(const std::vector<uint32_t>& frequencies);
+
+  // Enumeration representing success and various failure modes for parsing CPU
+  // frequencies. These values are persisted to logs. Entries should not be
+  // renumbered and numeric values should never be reused.
+  enum class ParseFrequencyStatus {
+    kSuccess,
+    kNumCPUsIsZero,
+    kSomeZeroCPUFrequencies,
+    kAllZeroCPUFrequencies,
+    // Magic constant used by the histogram macros.
+    kMaxValue = kAllZeroCPUFrequencies,
+  };
+
+  // Vector of max frequencies associated with each logical CPU. Computed
+  // asynchronously at start, but initialized using the same sequence as the
+  // perf data processing code.
+  std::vector<uint32_t> max_frequencies_mhz_;
 
  private:
   // Change the values in |collection_params_| and the commands in
@@ -59,6 +89,8 @@ class PerfCollector : public MetricCollector {
 
   // An active call to perf/quipper, if set.
   std::unique_ptr<PerfOutputCall> perf_output_call_;
+
+  base::WeakPtrFactory<PerfCollector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfCollector);
 };
@@ -80,6 +112,9 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
 std::string FindBestCpuSpecifierFromParams(
     const std::map<std::string, std::string>& params,
     const CPUIdentity& cpuid);
+
+// Returns if the given perf command samples CPU cycles.
+bool CommandSamplesCPUCycles(const std::vector<std::string>& args);
 
 }  // namespace internal
 
