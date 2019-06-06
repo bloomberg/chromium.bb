@@ -395,8 +395,16 @@ AccessibilityEventRecorderUia::Thread::EventHandler::HandleAutomationEvent(
         return S_OK;
       }
 
-      std::string log = base::StringPrintf("%s %s", event_str.c_str(),
-                                           GetSenderInfo(sender).c_str());
+      // Remove duplicate menuclosed events with no event data.
+      // The "duplicates" are benign. UIA currently duplicates *all* events for
+      // in-process listeners, and the event-recorder tries to eliminate the
+      // duplicates... but since the recorder sometimes isn't able to retrieve
+      // the role, the duplicate-elimination logic doesn't see them as
+      // duplicates in this case.
+      std::string sender_info =
+          event_id == UIA_MenuClosedEventId ? "" : GetSenderInfo(sender);
+      std::string log =
+          base::StringPrintf("%s %s", event_str.c_str(), sender_info.c_str());
       owner_->OnEvent(log);
     }
   }

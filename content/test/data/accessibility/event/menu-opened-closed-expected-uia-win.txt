@@ -3,7 +3,5 @@ MenuOpened on role=menu, name=menu
 MenuOpened on role=menu
 === Start Continuation ===
 MenuClosed 
-MenuClosed on role=menu
 === Start Continuation ===
 MenuClosed 
-MenuClosed on role=menu, name=menu
