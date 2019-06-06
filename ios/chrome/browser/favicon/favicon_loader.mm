@@ -63,7 +63,9 @@ FaviconAttributes* FaviconLoader::FaviconForPageUrl(
                                      // GetLargeIconOrFallbackStyle() doesn't
                                      // return valid favicon.
     FaviconAttributesCompletionBlock block) {
-  NSString* key = base::SysUTF8ToNSString(page_url.spec());
+  NSString* key =
+      [NSString stringWithFormat:@"%d %@", (int)round(size_in_points),
+                                 base::SysUTF8ToNSString(page_url.spec())];
   FaviconAttributes* value = [favicon_cache_ objectForKey:key];
   if (value) {
     return value;
@@ -87,6 +89,8 @@ FaviconAttributes* FaviconLoader::FaviconForPageUrl(
           [FaviconAttributes attributesWithImage:favicon];
       [favicon_cache_ setObject:attributes forKey:key];
       if (block) {
+        DCHECK(favicon.size.width <= size_in_points &&
+               favicon.size.height <= size_in_points);
         block(attributes);
       }
       return;
@@ -147,7 +151,9 @@ FaviconAttributes* FaviconLoader::FaviconForIconUrl(
     float size_in_points,
     float min_size_in_points,
     FaviconAttributesCompletionBlock block) {
-  NSString* key = base::SysUTF8ToNSString(icon_url.spec());
+  NSString* key =
+      [NSString stringWithFormat:@"%d %@", (int)round(size_in_points),
+                                 base::SysUTF8ToNSString(icon_url.spec())];
   FaviconAttributes* value = [favicon_cache_ objectForKey:key];
   if (value) {
     return value;

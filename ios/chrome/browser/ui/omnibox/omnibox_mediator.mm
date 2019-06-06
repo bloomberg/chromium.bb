@@ -196,6 +196,7 @@ const CGFloat kOmniboxIconSize = 16;
   __weak __typeof(self) weakSelf = self;
   self.latestDefaultSearchEngine = defaultProvider;
   auto handleFaviconResult = ^void(FaviconAttributes* faviconCacheResult) {
+    DCHECK_LE(faviconCacheResult.faviconImage.size.width, kOmniboxIconSize);
     if (weakSelf.latestDefaultSearchEngine != defaultProvider ||
         !faviconCacheResult.faviconImage ||
         faviconCacheResult.usesDefaultImage) {
