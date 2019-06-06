@@ -79,7 +79,7 @@ assert_equals(test2Style.animationIterationCount, "10, infinite");
 
 assert_equals(test1Style.animationTimingFunction, "linear");
 assert_equals(test2Style.animationTimingFunction, "linear, ease-in-out");
-assert_equals(test3Style.animationTimingFunction, "step-start, step-end, steps(5, end)");
+assert_equals(test3Style.animationTimingFunction, "steps(1, start), steps(1), steps(5)");
 
 assert_equals(test1Style.animationDirection, "normal");
 assert_equals(test2Style.animationDirection, "normal, alternate");

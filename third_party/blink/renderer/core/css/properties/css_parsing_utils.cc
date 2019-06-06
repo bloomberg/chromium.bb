@@ -142,9 +142,27 @@ CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
       case CSSValueID::kStart:
         position = StepsTimingFunction::StepPosition::START;
         break;
+
       case CSSValueID::kEnd:
         position = StepsTimingFunction::StepPosition::END;
         break;
+
+      case CSSValueID::kJumpBoth:
+        position = StepsTimingFunction::StepPosition::JUMP_BOTH;
+        break;
+
+      case CSSValueID::kJumpEnd:
+        position = StepsTimingFunction::StepPosition::JUMP_END;
+        break;
+
+      case CSSValueID::kJumpNone:
+        position = StepsTimingFunction::StepPosition::JUMP_NONE;
+        break;
+
+      case CSSValueID::kJumpStart:
+        position = StepsTimingFunction::StepPosition::JUMP_START;
+        break;
+
       default:
         return nullptr;
     }
@@ -152,6 +170,12 @@ CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
 
   if (!args.AtEnd())
     return nullptr;
+
+  // Steps(n, jump-none) requires n >= 2.
+  if (position == StepsTimingFunction::StepPosition::JUMP_NONE &&
+      steps->GetIntValue() < 2) {
+    return nullptr;
+  }
 
   range = range_copy;
   return CSSStepsTimingFunctionValue::Create(steps->GetIntValue(), position);

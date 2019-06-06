@@ -1530,15 +1530,10 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
       StepsTimingFunction::StepPosition position =
           steps_timing_function->GetStepPosition();
       int steps = steps_timing_function->NumberOfSteps();
-      DCHECK(position == StepsTimingFunction::StepPosition::START ||
-             position == StepsTimingFunction::StepPosition::END);
 
-      if (steps > 1)
-        return CSSStepsTimingFunctionValue::Create(steps, position);
-      CSSValueID value_id = position == StepsTimingFunction::StepPosition::START
-                                ? CSSValueID::kStepStart
-                                : CSSValueID::kStepEnd;
-      return CSSIdentifierValue::Create(value_id);
+      // Canonical form of step timing function is step(n, type) or step(n) even
+      // if initially parsed as step-start or step-end.
+      return CSSStepsTimingFunctionValue::Create(steps, position);
     }
 
     default:

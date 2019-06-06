@@ -105,19 +105,49 @@ double StepsTimingFunction::GetPreciseValue(double t,
       steps * t - std::floor(steps * t) == 0) {
     current_step -= 1;
   }
+  // Jumps may differ from steps based on the number of end-point
+  // discontinuities, which may be 0, 1 or 2.
+  int jumps = NumberOfJumps();
   if (t >= 0 && current_step < 0)
     current_step = 0;
-  if (t <= 1 && current_step > steps)
-    current_step = steps;
-  return current_step / steps;
+  if (t <= 1 && current_step > jumps)
+    current_step = jumps;
+  return current_step / jumps;
+}
+
+int StepsTimingFunction::NumberOfJumps() const {
+  switch (step_position_) {
+    case StepPosition::END:
+    case StepPosition::START:
+    case StepPosition::JUMP_END:
+    case StepPosition::JUMP_START:
+      return steps_;
+
+    case StepPosition::JUMP_BOTH:
+      return steps_ + 1;
+
+    case StepPosition::JUMP_NONE:
+      DCHECK_GT(steps_, 1);
+      return steps_ - 1;
+
+    default:
+      NOTREACHED();
+      return steps_;
+  }
 }
 
 float StepsTimingFunction::GetStepsStartOffset() const {
   switch (step_position_) {
+    case StepPosition::JUMP_BOTH:
+    case StepPosition::JUMP_START:
     case StepPosition::START:
       return 1;
+
+    case StepPosition::JUMP_END:
+    case StepPosition::JUMP_NONE:
     case StepPosition::END:
       return 0;
+
     default:
       NOTREACHED();
       return 1;

@@ -73,7 +73,18 @@ class CC_ANIMATION_EXPORT StepsTimingFunction : public TimingFunction {
  public:
   // step-timing-function values
   // https://drafts.csswg.org/css-easing-1/#typedef-step-timing-function
-  enum class StepPosition { START, END };
+  enum class StepPosition {
+    START,      // Discontinuity at progress = 0.
+                // Alias for jump-start. Maintaining a separate enumerated value
+                // for serialization.
+    END,        // Discontinuity at progress = 1.
+                // Alias for jump-end. Maintaining a separate enumerated value
+                // for serialization.
+    JUMP_BOTH,  // Discontinuities at progress = 0 and 1.
+    JUMP_END,   // Discontinuity at progress = 1.
+    JUMP_NONE,  // Continuous at progress = 0 and 1.
+    JUMP_START  // Discontinuity at progress = 0.
+  };
 
   static std::unique_ptr<StepsTimingFunction> Create(
       int steps,
@@ -94,6 +105,14 @@ class CC_ANIMATION_EXPORT StepsTimingFunction : public TimingFunction {
 
  private:
   StepsTimingFunction(int steps, StepPosition step_position);
+
+  // The number of jumps is the number of discontinuities in the timing
+  // function. There is a subtle distinction between the number of steps and
+  // jumps. The number of steps is the number of intervals in the timing
+  // function. The number of jumps differs from the number of steps when either
+  // both or neither end point has a discontinuity.
+  // https://drafts.csswg.org/css-easing-1/#step-easing-functions
+  int NumberOfJumps() const;
 
   float GetStepsStartOffset() const;
 
