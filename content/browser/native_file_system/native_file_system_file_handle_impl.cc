@@ -212,36 +212,6 @@ void NativeFileSystemFileHandleImpl::DoWriteBlob(
     return;
   }
 
-  // FileSystemOperationRunner assumes that positions passed to Write are always
-  // valid, and will NOTREACHED() if that is not the case, so first check the
-  // size of the file to make sure the position passed in from the renderer is
-  // in fact valid.
-  // Of course the file could still change between checking its size and the
-  // write operation being started, but this is at least a lot better than the
-  // old implementation where the renderer only checks against how big it thinks
-  // the file currently is.
-  // TODO(https://crbug.com/957214): Fix this situation.
-  operation_runner()->GetMetadata(
-      url(), FileSystemOperation::GET_METADATA_FIELD_SIZE,
-      base::BindOnce(&NativeFileSystemFileHandleImpl::DoWriteBlobWithFileInfo,
-                     weak_factory_.GetWeakPtr(), std::move(callback), position,
-                     std::move(blob)));
-}
-
-void NativeFileSystemFileHandleImpl::DoWriteBlobWithFileInfo(
-    WriteCallback callback,
-    uint64_t position,
-    std::unique_ptr<BlobDataHandle> blob,
-    base::File::Error result,
-    const base::File::Info& file_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (file_info.size < 0 || position > static_cast<uint64_t>(file_info.size)) {
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_FAILED), 0);
-    return;
-  }
-
   operation_runner()->Write(
       url(), std::move(blob), position,
       base::BindRepeating(&NativeFileSystemFileHandleImpl::DidWrite,
@@ -257,38 +227,8 @@ void NativeFileSystemFileHandleImpl::WriteStreamImpl(
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
-  // FileSystemOperationRunner assumes that positions passed to Write are always
-  // valid, and will NOTREACHED() if that is not the case, so first check the
-  // size of the file to make sure the position passed in from the renderer is
-  // in fact valid.
-  // Of course the file could still change between checking its size and the
-  // write operation being started, but this is at least a lot better than the
-  // old implementation where the renderer only checks against how big it thinks
-  // the file currently is.
-  // TODO(https://crbug.com/957214): Fix this situation.
-  operation_runner()->GetMetadata(
-      url(), FileSystemOperation::GET_METADATA_FIELD_SIZE,
-      base::BindOnce(&NativeFileSystemFileHandleImpl::DoWriteStreamWithFileInfo,
-                     weak_factory_.GetWeakPtr(), std::move(callback), offset,
-                     std::move(stream)));
-}
-
-void NativeFileSystemFileHandleImpl::DoWriteStreamWithFileInfo(
-    WriteStreamCallback callback,
-    uint64_t position,
-    mojo::ScopedDataPipeConsumerHandle data_pipe,
-    base::File::Error result,
-    const base::File::Info& file_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (file_info.size < 0 || position > static_cast<uint64_t>(file_info.size)) {
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_FAILED), 0);
-    return;
-  }
-
   operation_runner()->Write(
-      url(), std::move(data_pipe), position,
+      url(), std::move(stream), offset,
       base::BindRepeating(&NativeFileSystemFileHandleImpl::DidWrite,
                           weak_factory_.GetWeakPtr(),
                           base::Owned(new WriteState{std::move(callback)})));

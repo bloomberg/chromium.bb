@@ -76,19 +76,9 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
   void DoWriteBlob(WriteCallback callback,
                    uint64_t position,
                    std::unique_ptr<storage::BlobDataHandle> blob);
-  void DoWriteBlobWithFileInfo(WriteCallback callback,
-                               uint64_t position,
-                               std::unique_ptr<storage::BlobDataHandle> blob,
-                               base::File::Error result,
-                               const base::File::Info& file_info);
   void WriteStreamImpl(uint64_t offset,
                        mojo::ScopedDataPipeConsumerHandle stream,
                        WriteStreamCallback callback);
-  void DoWriteStreamWithFileInfo(WriteStreamCallback callback,
-                                 uint64_t position,
-                                 mojo::ScopedDataPipeConsumerHandle data_pipe,
-                                 base::File::Error result,
-                                 const base::File::Info& file_info);
   void DidWrite(WriteState* state,
                 base::File::Error result,
                 int64_t bytes,
