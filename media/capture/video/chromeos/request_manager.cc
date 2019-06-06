@@ -5,6 +5,7 @@
 #include "media/capture/video/chromeos/request_manager.h"
 
 #include <sync/sync.h>
+
 #include <initializer_list>
 #include <map>
 #include <set>
@@ -647,7 +648,7 @@ void RequestManager::SubmitCaptureResult(
           FROM_HERE, "Failed to unwrap release fence fd");
       return;
     }
-    if (!sync_wait(fence.GetFD().get(), kSyncWaitTimeoutMs)) {
+    if (sync_wait(fence.GetFD().get(), kSyncWaitTimeoutMs)) {
       device_context_->SetErrorState(
           media::VideoCaptureError::
               kCrosHalV3BufferManagerSyncWaitOnReleaseFenceTimedOut,
