@@ -9,10 +9,10 @@ grunt  # shows available grunt commands
 ```
 
 After `build` and `serve`, open:
-* http://localhost:8080/?suite=out/cts/listing.json (default)
-* http://localhost:8080/?suite=out/demos/listing.json
-* http://localhost:8080/?suite=out/unittests/listing.json
-* http://localhost:8080/?suite=out/unittests/listing.json&filter=/basic,/params&runnow=1
+* http://localhost:8080/?suite=cts (default)
+* http://localhost:8080/?suite=demos
+* http://localhost:8080/?suite=unittests
+* http://localhost:8080/?suite=unittests&filter=/basic,/params&runnow=1
 
 ## TODO
 
