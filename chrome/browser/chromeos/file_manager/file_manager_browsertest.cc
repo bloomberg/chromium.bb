@@ -900,7 +900,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("showGridViewDownloads").InGuestMode(),
                       TestCase("showGridViewDrive").DisableDriveFs(),
                       TestCase("showGridViewDrive").EnableDriveFs(),
-                      TestCase("showGridViewButtonSwitches")));
+                      TestCase("showGridViewButtonSwitches"),
+                      TestCase("showGridViewKeyboardSelectionA11y"),
+                      TestCase("showGridViewMouseSelectionA11y")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Providers, /* providers.js */
@@ -946,7 +948,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("fileListAriaAttributes"),
                       TestCase("fileListFocusFirstItem"),
-                      TestCase("fileListSelectLastFocusedItem")));
+                      TestCase("fileListSelectLastFocusedItem"),
+                      TestCase("fileListKeyboardSelectionA11y"),
+                      TestCase("fileListMouseSelectionA11y")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */

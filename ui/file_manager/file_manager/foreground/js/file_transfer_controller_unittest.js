@@ -121,7 +121,7 @@ function setUp() {
 
   // Setup FileGrid.
   const grid = /** @type {!FileGrid} */ (queryRequiredElement('#file-grid'));
-  FileGrid.decorate(grid, metadataModel, volumeManager, historyLoader);
+  FileGrid.decorate(grid, metadataModel, volumeManager, historyLoader, a11y);
 
   // Setup the ListContainer and its dependencies
   listContainer =

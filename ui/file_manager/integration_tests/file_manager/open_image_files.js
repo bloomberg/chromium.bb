@@ -76,8 +76,8 @@
 
     // Check that opening the file was announced to screen reader.
     chrome.test.assertTrue(a11yMessages instanceof Array);
-    chrome.test.assertEq(1, a11yMessages.length);
-    chrome.test.assertEq('Opening file image3.jpg.', a11yMessages[0]);
+    chrome.test.assertEq(3, a11yMessages.length);
+    chrome.test.assertEq('Opening file image3.jpg.', a11yMessages[2]);
 
     // Check: the Gallery window should open.
     const galleryAppId = await galleryApp.waitForWindow('gallery.html');

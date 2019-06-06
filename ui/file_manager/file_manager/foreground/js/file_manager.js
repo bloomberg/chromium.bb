@@ -570,7 +570,8 @@ class FileManager extends cr.EventTarget {
     this.toolbarController_ = new ToolbarController(
         this.ui_.toolbar, this.ui_.dialogNavigationList, this.ui_.listContainer,
         assert(this.ui_.locationLine), this.selectionHandler_,
-        this.directoryModel_, this.volumeManager_);
+        this.directoryModel_, this.volumeManager_,
+        /** @type {!A11yAnnounce} */ (this.ui_));
     this.emptyFolderController_ = new EmptyFolderController(
         this.ui_.emptyFolder, this.directoryModel_, this.ui_.alertDialog);
     this.actionsController_ = new ActionsController(
@@ -914,7 +915,8 @@ class FileManager extends cr.EventTarget {
         this.dialogType == DialogType.FULL_PAGE);
     const grid = queryRequiredElement('.thumbnail-grid', dom);
     FileGrid.decorate(
-        grid, this.metadataModel_, this.volumeManager_, this.historyLoader_);
+        grid, this.metadataModel_, this.volumeManager_, this.historyLoader_,
+        /** @type {!A11yAnnounce} */ (this.ui_));
 
     this.addHistoryObserver_();
 

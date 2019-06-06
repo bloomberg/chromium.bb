@@ -113,6 +113,28 @@
   <message name="IDS_FILE_BROWSER_COLUMN_SORTED_DESC_MESSAGE" desc="Message read by Chromevox/screenreader after sorting a column in the File list in descending order.">
     File list sorted by <ph name="COLUMN_NAME">$1<ex>date modified</ex></ph> in descending order.
   </message>
+
+  <!-- File selection a11y -->
+  <message name="IDS_FILE_BROWSER_SELECTION_ADD_SINGLE_ENTRY" desc="Message spoken by Chromevox/screenreader when adding a single entry (file or folder) to the existing selection.">
+    Added <ph name="ENTRY_NAME">$1<ex>file.txt</ex></ph> to selection.
+  </message>
+  <message name="IDS_FILE_BROWSER_SELECTION_REMOVE_SINGLE_ENTRY" desc="Message spoken by Chromevox/screenreader when remove a single entry (file or folder) from the existing selection.">
+    Removed <ph name="ENTRY_NAME">$1<ex>file.txt</ex></ph> from selection.
+  </message>
+  <message name="IDS_FILE_BROWSER_SELECTION_SINGLE_ENTRY" desc="Message spoken by Chromevox/screenreader when selection only one entry (without multiple selection).">
+    Selected <ph name="ENTRY_NAME">$1<ex>file.txt</ex></ph>.
+  </message>
+  <message name="IDS_FILE_BROWSER_SELECTION_ADD_RANGE" desc="Message spoken by Chromevox/screenreader when user selects a range of entries.">
+    Selected a range of <ph name="ENTRY_COUNT">$1<ex>10</ex></ph> entries from <ph name="FROM_ENTRY_NAME">$2<ex>file.txt</ex></ph> to <ph name="TO_ENTRY_NAME">$3<ex>another_file.txt</ex></ph>.
+  </message>
+
+  <message name="IDS_FILE_BROWSER_SELECTION_CANCELLATION" desc="Message spoken by Chromevox/screenreader user cancels a selection via 'Cancel selection' button or hitting Esc key.">
+    Removed all entries from selection.
+  </message>
+  <message name="IDS_FILE_BROWSER_SELECTION_ALL_ENTRIES" desc="Message spoken by Chromevox/screenreader user selects all entries e.g.: using Ctlr+A.">
+    Selected all entries.
+  </message>
+
   <message name="IDS_FILE_BROWSER_SIZE_BYTES" desc="Size in bytes.">
     <ph name="NUMBER_OF_BYTES">$1<ex>42</ex></ph> bytes
   </message>

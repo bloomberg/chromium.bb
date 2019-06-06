@@ -405,8 +405,8 @@ class FileTable extends cr.ui.Table {
     /** @private {?function(!Event)} */
     this.onThumbnailLoadedBound_ = null;
 
-    /** @private {?A11yAnnounce} */
-    this.a11y_ = null;
+    /** @public {?A11yAnnounce} */
+    this.a11y = null;
 
     throw new Error('Designed to decorate elements');
   }
@@ -431,7 +431,7 @@ class FileTable extends cr.ui.Table {
     self.metadataModel_ = metadataModel;
     self.volumeManager_ = volumeManager;
     self.historyLoader_ = historyLoader;
-    self.a11y_ = a11y;
+    self.a11y = a11y;
 
     /** @private {ListThumbnailLoader} */
     self.listThumbnailLoader_ = null;
@@ -588,7 +588,7 @@ class FileTable extends cr.ui.Table {
 
     // Delegate to parent to sort.
     super.sort(index);
-    this.a11y_.speakA11yMessage(msg);
+    this.a11y.speakA11yMessage(msg);
   }
 
   /**
@@ -858,6 +858,25 @@ class FileTable extends cr.ui.Table {
     label.appendChild(
         filelist.renderFileNameLabel(this.ownerDocument, entry, locationInfo));
     return label;
+  }
+
+  /**
+   * @param {number} index Index of the list item.
+   * @return {string}
+   */
+  getItemLabel(index) {
+    if (index === -1) {
+      return '';
+    }
+
+    /** @type {Entry|FilesAppEntry} */
+    const entry = this.dataModel.item(index);
+    if (!entry) {
+      return '';
+    }
+
+    const locationInfo = this.volumeManager_.getLocationInfo(entry);
+    return util.getEntryLabel(locationInfo, entry);
   }
 
   /**

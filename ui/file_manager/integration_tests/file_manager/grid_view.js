@@ -85,3 +85,20 @@ testcase.showGridViewButtonSwitches = async () => {
   chrome.test.assertEq(2, a11yMessages.length, 'Missing a11y message');
   chrome.test.assertEq('File list has changed to list view.', a11yMessages[1]);
 };
+
+/**
+ * Tests that selecting/de-selecting files with keyboard produces a11y
+ * messages.
+ */
+testcase.showGridViewKeyboardSelectionA11y = async () => {
+  const isGridView = true;
+  return testcase.fileListKeyboardSelectionA11y(isGridView);
+};
+
+/**
+ * Tests that selecting/de-selecting files with mouse produces a11y messages.
+ */
+testcase.showGridViewMouseSelectionA11y = async () => {
+  const isGridView = true;
+  return testcase.fileListMouseSelectionA11y(isGridView);
+};

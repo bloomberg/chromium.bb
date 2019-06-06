@@ -18,10 +18,11 @@ class ToolbarController {
    * @param {!FileSelectionHandler} selectionHandler
    * @param {!DirectoryModel} directoryModel
    * @param {!VolumeManager} volumeManager
+   * @param {!A11yAnnounce} a11y
    */
   constructor(
       toolbar, navigationList, listContainer, locationLine, selectionHandler,
-      directoryModel, volumeManager) {
+      directoryModel, volumeManager, a11y) {
     /**
      * @private {!HTMLElement}
      * @const
@@ -106,6 +107,12 @@ class ToolbarController {
      * @const
      */
     this.volumeManager_ = volumeManager;
+
+    /**
+     * @private {!A11yAnnounce}
+     * @const
+     */
+    this.a11y_ = a11y;
 
     this.selectionHandler_.addEventListener(
         FileSelectionHandler.EventType.CHANGE,
@@ -209,6 +216,7 @@ class ToolbarController {
    */
   onCancelSelectionButtonClicked_() {
     this.directoryModel_.selectEntries([]);
+    this.a11y_.speakA11yMessage(str('SELECTION_CANCELLATION'));
   }
 
   /**
