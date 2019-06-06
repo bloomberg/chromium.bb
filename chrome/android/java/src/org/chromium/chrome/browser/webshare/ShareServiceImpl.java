@@ -254,7 +254,8 @@ public class ShareServiceImpl implements ShareService {
     }
 
     static boolean isDangerousFilename(String name) {
-        return name.indexOf('/') != -1 || name.indexOf('\\') != -1 || name.indexOf('.') <= 0
+        // Reject filenames without a permitted extension.
+        return name.indexOf('.') <= 0
                 || !PERMITTED_EXTENSIONS.contains(FileUtils.getExtension(name));
     }
 

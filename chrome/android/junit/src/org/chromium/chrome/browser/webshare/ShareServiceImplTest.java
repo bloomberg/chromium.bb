@@ -21,15 +21,18 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 public class ShareServiceImplTest {
     @Test
     @SmallTest
-    public void testSlash() {
-        Assert.assertTrue(ShareServiceImpl.isDangerousFilename("foo/bar.txt"));
-        Assert.assertTrue(ShareServiceImpl.isDangerousFilename("foo\\bar.txt"));
-    }
-
-    @Test
-    @SmallTest
-    public void testPeriod() {
+    public void testExtensionFormatting() {
+        Assert.assertFalse(ShareServiceImpl.isDangerousFilename("foo/bar.txt"));
+        Assert.assertFalse(ShareServiceImpl.isDangerousFilename("foo\\bar\u03C0.txt"));
+        Assert.assertTrue(ShareServiceImpl.isDangerousFilename("foo\\bar.tx\u03C0t"));
+        Assert.assertFalse(ShareServiceImpl.isDangerousFilename("https://example.com/a/b.html"));
+        Assert.assertTrue(ShareServiceImpl.isDangerousFilename("foo/bar.txt/"));
+        Assert.assertTrue(ShareServiceImpl.isDangerousFilename("foobar.tx\\t"));
         Assert.assertTrue(ShareServiceImpl.isDangerousFilename("hello"));
+        Assert.assertTrue(ShareServiceImpl.isDangerousFilename("hellotxt"));
+        Assert.assertTrue(ShareServiceImpl.isDangerousFilename(".txt"));
+        Assert.assertFalse(ShareServiceImpl.isDangerousFilename("https://example.com/a/.txt"));
+        Assert.assertFalse(ShareServiceImpl.isDangerousFilename("/.txt"));
         Assert.assertTrue(ShareServiceImpl.isDangerousFilename(".."));
         Assert.assertTrue(ShareServiceImpl.isDangerousFilename(".hello.txt"));
     }
