@@ -14,7 +14,7 @@
 namespace blink {
 
 class LocalFrameView;
-class LayoutRect;
+struct PhysicalRect;
 struct WebScrollIntoViewParams;
 
 // ScrollableArea for the root frame's viewport. This class ties together the
@@ -46,9 +46,9 @@ class CORE_EXPORT RootFrameViewport final
   // and so the root content is the layout viewport's content but if the page
   // sets a custom root scroller via document.rootScroller, another element
   // may be the layout viewport.
-  LayoutRect RootContentsToLayoutViewportContents(
+  PhysicalRect RootContentsToLayoutViewportContents(
       LocalFrameView& root_frame_view,
-      const LayoutRect&) const;
+      const PhysicalRect&) const;
 
   void RestoreToAnchor(const ScrollOffset&);
 
@@ -61,11 +61,11 @@ class CORE_EXPORT RootFrameViewport final
                        ScrollType,
                        ScrollBehavior,
                        ScrollCallback on_finish) override;
-  LayoutRect ScrollIntoView(const LayoutRect&,
-                            const WebScrollIntoViewParams&) override;
+  PhysicalRect ScrollIntoView(const PhysicalRect&,
+                              const WebScrollIntoViewParams&) override;
   IntRect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
-  LayoutRect VisibleScrollSnapportRect(
+  PhysicalRect VisibleScrollSnapportRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
   bool ShouldUseIntegerScrollOffset() const override;
   bool IsThrottled() const override {

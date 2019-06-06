@@ -2150,7 +2150,7 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
                                  kScrollBehaviorInstant);
   params.stop_at_main_frame_layout_viewport = true;
   layout_object->ScrollRectToVisible(
-      LayoutRect(layout_object->AbsoluteBoundingBoxRect()), params);
+      PhysicalRect(layout_object->AbsoluteBoundingBoxRect()), params);
 
   ZoomAndScrollToFocusedEditableElementRect(
       main_frame_view->RootFrameToDocument(

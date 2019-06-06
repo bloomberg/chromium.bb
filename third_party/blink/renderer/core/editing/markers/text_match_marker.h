@@ -28,7 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_TEXT_MATCH_MARKER_H_
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -54,9 +54,9 @@ class CORE_EXPORT TextMatchMarker final : public DocumentMarker {
   void SetIsActiveMatch(bool active);
 
   bool IsRendered() const;
-  bool Contains(const LayoutPoint&) const;
-  void SetLayoutRect(const LayoutRect&);
-  const LayoutRect& GetLayoutRect() const;
+  bool Contains(const PhysicalOffset&) const;
+  void SetRect(const PhysicalRect&);
+  const PhysicalRect& GetRect() const;
   void NullifyLayoutRect();
 
   void Invalidate();
@@ -65,7 +65,7 @@ class CORE_EXPORT TextMatchMarker final : public DocumentMarker {
  private:
   MatchStatus match_status_;
   LayoutStatus layout_status_ = LayoutStatus::kInvalid;
-  LayoutRect layout_rect_;
+  PhysicalRect rect_;
 
   DISALLOW_COPY_AND_ASSIGN(TextMatchMarker);
 };

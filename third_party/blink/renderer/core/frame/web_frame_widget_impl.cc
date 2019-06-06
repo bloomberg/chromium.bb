@@ -540,7 +540,7 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   if (!element->GetLayoutObject())
     return false;
 
-  LayoutRect rect_to_scroll;
+  PhysicalRect rect_to_scroll;
   WebScrollIntoViewParams params;
   GetScrollParamsForFocusedEditableElement(*element, rect_to_scroll, params);
   element->GetLayoutObject()->ScrollRectToVisible(rect_to_scroll, params);
@@ -1110,7 +1110,7 @@ void WebFrameWidgetImpl::DidCreateLocalRootView() {
 
 void WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
     const Element& element,
-    LayoutRect& rect_to_scroll,
+    PhysicalRect& rect_to_scroll,
     WebScrollIntoViewParams& params) {
   LocalFrameView& frame_view = *element.GetDocument().View();
   IntRect absolute_element_bounds =
@@ -1153,7 +1153,7 @@ void WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
   params.relative_caret_bounds = NormalizeRect(
       Intersection(absolute_caret_bounds, maximal_rect), maximal_rect);
   params.behavior = WebScrollIntoViewParams::kInstant;
-  rect_to_scroll = LayoutRect(maximal_rect);
+  rect_to_scroll = PhysicalRect(maximal_rect);
 }
 
 }  // namespace blink

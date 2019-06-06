@@ -48,8 +48,8 @@ using protocol::Response;
 
 namespace {
 
-std::unique_ptr<protocol::DOM::Rect> BuildRectForLayoutRect(
-    const LayoutRect& rect) {
+std::unique_ptr<protocol::DOM::Rect> BuildRectForPhysicalRect(
+    const PhysicalRect& rect) {
   return protocol::DOM::Rect::create()
       .setX(rect.X())
       .setY(rect.Y())
@@ -58,8 +58,8 @@ std::unique_ptr<protocol::DOM::Rect> BuildRectForLayoutRect(
       .build();
 }
 
-std::unique_ptr<protocol::Array<double>> BuildRectForLayoutRect2(
-    const LayoutRect& rect) {
+std::unique_ptr<protocol::Array<double>> BuildRectForPhysicalRect2(
+    const PhysicalRect& rect) {
   std::unique_ptr<protocol::Array<double>> result =
       protocol::Array<double>::create();
   result->addItem(rect.X());
@@ -83,8 +83,9 @@ std::unique_ptr<protocol::Array<double>> BuildRectForLayout(const int x,
 }
 
 // Returns |layout_object|'s bounding box in document coordinates.
-LayoutRect RectInDocument(const LayoutObject* layout_object) {
-  LayoutRect rect_in_absolute(layout_object->AbsoluteBoundingBoxFloatRect());
+PhysicalRect RectInDocument(const LayoutObject* layout_object) {
+  PhysicalRect rect_in_absolute = PhysicalRect::EnclosingRect(
+      layout_object->AbsoluteBoundingBoxFloatRect());
   LocalFrameView* local_frame_view = layout_object->GetFrameView();
   // Don't do frame to document coordinate transformation for layout view,
   // whose bounding box is not affected by scroll offset.
@@ -93,17 +94,17 @@ LayoutRect RectInDocument(const LayoutObject* layout_object) {
   return rect_in_absolute;
 }
 
-LayoutRect TextFragmentRectInDocument(const LayoutObject* layout_object,
-                                      const LayoutText::TextBoxInfo& text_box) {
+PhysicalRect TextFragmentRectInDocument(
+    const LayoutObject* layout_object,
+    const LayoutText::TextBoxInfo& text_box) {
   PhysicalRect local_coords_text_box_rect =
       layout_object->FlipForWritingMode(text_box.local_rect);
   PhysicalRect absolute_coords_text_box_rect =
       layout_object->LocalToAbsoluteRect(local_coords_text_box_rect);
   LocalFrameView* local_frame_view = layout_object->GetFrameView();
-  return (local_frame_view
-              ? local_frame_view->FrameToDocument(absolute_coords_text_box_rect)
-              : absolute_coords_text_box_rect)
-      .ToLayoutRect();
+  return local_frame_view
+             ? local_frame_view->FrameToDocument(absolute_coords_text_box_rect)
+             : absolute_coords_text_box_rect;
 }
 
 Document* GetEmbeddedDocument(PaintLayer* layer) {
@@ -857,11 +858,11 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
   if (!layout_object)
     return -1;
 
-  auto layout_tree_node =
-      protocol::DOMSnapshot::LayoutTreeNode::create()
-          .setDomNodeIndex(node_index)
-          .setBoundingBox(BuildRectForLayoutRect(RectInDocument(layout_object)))
-          .build();
+  auto layout_tree_node = protocol::DOMSnapshot::LayoutTreeNode::create()
+                              .setDomNodeIndex(node_index)
+                              .setBoundingBox(BuildRectForPhysicalRect(
+                                  RectInDocument(layout_object)))
+                              .build();
 
   int style_index = GetStyleIndexForNode(node);
   if (style_index != -1)
@@ -893,7 +894,7 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
             protocol::DOMSnapshot::InlineTextBox::create()
                 .setStartCharacterIndex(text_box.dom_start_offset)
                 .setNumCharacters(text_box.dom_length)
-                .setBoundingBox(BuildRectForLayoutRect(
+                .setBoundingBox(BuildRectForPhysicalRect(
                     TextFragmentRectInDocument(layout_object, text_box)))
                 .build());
       }
@@ -919,7 +920,7 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   layout_tree_snapshot->getNodeIndex()->addItem(node_index);
   layout_tree_snapshot->getStyles()->addItem(BuildStylesForNode(node));
   layout_tree_snapshot->getBounds()->addItem(
-      BuildRectForLayoutRect2(RectInDocument(layout_object)));
+      BuildRectForPhysicalRect2(RectInDocument(layout_object)));
 
   if (include_snapshot_dom_rects_) {
     protocol::Array<protocol::Array<double>>* offsetRects =
@@ -971,7 +972,7 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
 
   for (const auto& text_box : text_boxes) {
     text_box_snapshot->getLayoutIndex()->addItem(layout_index);
-    text_box_snapshot->getBounds()->addItem(BuildRectForLayoutRect2(
+    text_box_snapshot->getBounds()->addItem(BuildRectForPhysicalRect2(
         TextFragmentRectInDocument(layout_object, text_box)));
     text_box_snapshot->getStart()->addItem(text_box.dom_start_offset);
     text_box_snapshot->getLength()->addItem(text_box.dom_length);

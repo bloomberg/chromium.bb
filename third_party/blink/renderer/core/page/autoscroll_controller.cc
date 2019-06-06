@@ -195,15 +195,15 @@ void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
     return;
   }
 
-  LayoutSize offset =
-      scrollable->CalculateAutoscrollDirection(event_position).ToLayoutSize();
+  PhysicalOffset offset =
+      scrollable->CalculateAutoscrollDirection(event_position);
   if (offset.IsZero()) {
     StopAutoscroll();
     return;
   }
 
   drag_and_drop_autoscroll_reference_position_ =
-      LayoutPoint(event_position) + offset;
+      PhysicalOffset::FromFloatPointRound(event_position) + offset;
 
   if (autoscroll_type_ == kNoAutoscroll) {
     autoscroll_type_ = kAutoscrollForDragAndDrop;
@@ -332,12 +332,13 @@ void AutoscrollController::Animate() {
 
   EventHandler& event_handler =
       autoscroll_layout_object_->GetFrame()->GetEventHandler();
-  LayoutSize offset = autoscroll_layout_object_
-                          ->CalculateAutoscrollDirection(
-                              event_handler.LastKnownMousePositionInRootFrame())
-                          .ToLayoutSize();
-  LayoutPoint selection_point =
-      LayoutPoint(event_handler.LastKnownMousePositionInRootFrame()) + offset;
+  PhysicalOffset offset =
+      autoscroll_layout_object_->CalculateAutoscrollDirection(
+          event_handler.LastKnownMousePositionInRootFrame());
+  PhysicalOffset selection_point =
+      PhysicalOffset::FromFloatPointRound(
+          event_handler.LastKnownMousePositionInRootFrame()) +
+      offset;
   switch (autoscroll_type_) {
     case kAutoscrollForDragAndDrop:
       ScheduleMainThreadAnimation();
