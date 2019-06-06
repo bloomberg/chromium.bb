@@ -13,8 +13,8 @@ namespace {
 base::LazyInstance<LauncherThread>::Leaky g_launcher_thread;
 }
 
-base::MessageLoop* LauncherThread::GetMessageLoop() {
-  return g_launcher_thread.Get().java_handler_thread_.message_loop();
+scoped_refptr<base::SingleThreadTaskRunner> LauncherThread::GetTaskRunner() {
+  return g_launcher_thread.Get().java_handler_thread_.task_runner();
 }
 
 LauncherThread::LauncherThread()

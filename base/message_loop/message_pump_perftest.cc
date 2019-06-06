@@ -28,6 +28,20 @@
 #endif
 
 namespace base {
+namespace {
+
+#if defined(OS_ANDROID)
+class JavaHandlerThreadForTest : public android::JavaHandlerThread {
+ public:
+  explicit JavaHandlerThreadForTest(const char* name)
+      : android::JavaHandlerThread(name, base::ThreadPriority::NORMAL) {}
+
+  using android::JavaHandlerThread::task_environment;
+  using android::JavaHandlerThread::TaskEnvironment;
+};
+#endif
+
+}  // namespace
 
 class ScheduleWorkTest : public testing::Test {
  public:
@@ -75,7 +89,7 @@ class ScheduleWorkTest : public testing::Test {
   void ScheduleWork(MessageLoop::Type target_type, int num_scheduling_threads) {
 #if defined(OS_ANDROID)
     if (target_type == MessageLoop::TYPE_JAVA) {
-      java_thread_.reset(new android::JavaHandlerThread("target"));
+      java_thread_.reset(new JavaHandlerThreadForTest("target"));
       java_thread_->Start();
     } else
 #endif
@@ -179,8 +193,10 @@ class ScheduleWorkTest : public testing::Test {
 
   sequence_manager::internal::SequenceManagerImpl* target_message_loop_base() {
 #if defined(OS_ANDROID)
-    if (java_thread_)
-      return java_thread_->message_loop()->GetSequenceManagerImpl();
+    if (java_thread_) {
+      return static_cast<sequence_manager::internal::SequenceManagerImpl*>(
+          java_thread_->task_environment()->sequence_manager.get());
+    }
 #endif
     return MessageLoopCurrent::Get()->GetCurrentSequenceManagerImpl();
   }
@@ -189,7 +205,7 @@ class ScheduleWorkTest : public testing::Test {
   std::unique_ptr<Thread> target_;
   MessageLoop* message_loop_;
 #if defined(OS_ANDROID)
-  std::unique_ptr<android::JavaHandlerThread> java_thread_;
+  std::unique_ptr<JavaHandlerThreadForTest> java_thread_;
 #endif
   std::unique_ptr<base::TimeDelta[]> scheduling_times_;
   std::unique_ptr<base::TimeDelta[]> scheduling_thread_times_;

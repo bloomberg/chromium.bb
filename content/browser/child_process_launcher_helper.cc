@@ -224,8 +224,7 @@ base::SingleThreadTaskRunner* GetProcessLauncherTaskRunner() {
   // use-after-free if anything tries to access objects deleted by
   // AtExitManager, such as non-leaky LazyInstance.
   static base::NoDestructor<scoped_refptr<base::SingleThreadTaskRunner>>
-      launcher_task_runner(
-          android::LauncherThread::GetMessageLoop()->task_runner());
+      launcher_task_runner(android::LauncherThread::GetTaskRunner());
   return (*launcher_task_runner).get();
 #else   // defined(OS_ANDROID)
   // TODO(http://crbug.com/820200): Investigate whether we could use

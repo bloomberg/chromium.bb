@@ -33,15 +33,12 @@ JavaBridgeThread::~JavaBridgeThread() {
 
 // static
 bool JavaBridgeThread::CurrentlyOn() {
-  return g_background_thread.Get()
-      .message_loop()
-      ->task_runner()
-      ->BelongsToCurrentThread();
+  return g_background_thread.Get().task_runner()->BelongsToCurrentThread();
 }
 
 // static
 scoped_refptr<base::SingleThreadTaskRunner> JavaBridgeThread::GetTaskRunner() {
-  return g_background_thread.Get().message_loop()->task_runner();
+  return g_background_thread.Get().task_runner();
 }
 
 }  // namespace content
