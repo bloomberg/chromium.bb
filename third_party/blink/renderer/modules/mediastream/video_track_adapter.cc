@@ -683,7 +683,7 @@ void VideoTrackAdapter::StartFrameMonitoringOnIO(
            << (kFirstFrameTimeoutInFrameIntervals / source_frame_rate_) << "s";
   PostDelayedCrossThreadTask(
       *io_task_runner_, FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &VideoTrackAdapter::CheckFramesReceivedOnIO, WrapRefCounted(this),
           WTF::Passed(std::move(on_muted_callback)), frame_counter_),
       base::TimeDelta::FromSecondsD(kFirstFrameTimeoutInFrameIntervals /
