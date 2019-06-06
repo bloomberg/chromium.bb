@@ -38,7 +38,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingController {
 
   // TODO(https://crbug.com/960874): Debugging code to try and shed some light
   // on why the owned maps are invalid.
-  enum class Liveness : int32_t {
+  enum class Liveness : uint32_t {
     kAlive = 0xCA11AB13,
     kDead = 0xDEADBEEF,
   };
