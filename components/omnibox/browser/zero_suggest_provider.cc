@@ -97,10 +97,12 @@ constexpr char kOmniboxZeroSuggestEligibleHistogramName[] =
 // default search engine, the personalized service is replaced with the most
 // visited service.
 bool PersonalizedServiceShouldFallBackToMostVisited(
-    PrefService* prefs,
-    bool is_authenticated,
+    AutocompleteProviderClient* client,
     const TemplateURLService* template_url_service) {
-  if (!is_authenticated)
+  if (!client->SearchSuggestEnabled())
+    return true;
+
+  if (!client->IsAuthenticated())
     return true;
 
   if (template_url_service == nullptr)
@@ -617,9 +619,8 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
 
   if (OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
           current_page_classification_)) {
-    return PersonalizedServiceShouldFallBackToMostVisited(
-               client()->GetPrefs(), client()->IsAuthenticated(),
-               template_url_service)
+    return PersonalizedServiceShouldFallBackToMostVisited(client(),
+                                                          template_url_service)
                ? MOST_VISITED
                : REMOTE_NO_URL;
   }
