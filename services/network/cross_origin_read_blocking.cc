@@ -623,6 +623,9 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // |request_initiator_site_lock_|.  If so, then treat this request as
   // same-origin (even if |request_initiator| might be cross-origin).  See
   // also https://crbug.com/918660.
+  // TODO(lukasza): https://crbug.com/940068: Remove this code section
+  // once request_initiator is always set to the webpage (and never to the
+  // isolated world).
   if (VerifyRequestInitiatorLock(request_initiator_site_lock_, target_origin) ==
       InitiatorLockCompatibility::kCompatibleLock) {
     return kAllow;
