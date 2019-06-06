@@ -33343,6 +33343,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1807797669" label="google-doodle-url"/>
   <int value="-1804485171" label="disable-fullscreen-tab-detaching"/>
   <int value="-1802502753" label="enable-manual-password-generation:enabled"/>
+  <int value="-1799801575" label="CookieDeprecationMessages:enabled"/>
   <int value="-1798337879" label="enable-md-downloads"/>
   <int value="-1797739460" label="brotli-encoding:disabled"/>
   <int value="-1791226955" label="BreakingNewsPush:enabled"/>
@@ -33769,6 +33770,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1201183153" label="enable-centered-app-list"/>
   <int value="-1199159971"
       label="ContextualSuggestionsIPHReverseScroll:enabled"/>
+  <int value="-1197245070" label="CookieDeprecationMessages:disabled"/>
   <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>
   <int value="-1190174011" label="enable-hdr"/>

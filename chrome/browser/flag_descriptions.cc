@@ -289,9 +289,14 @@ const char kCompositedLayerBordersDescription[] =
     "Renders a border around composited Render Layers to help debug and study "
     "layer compositing.";
 
-extern const char kCookiesWithoutSameSiteMustBeSecureName[] =
+const char kCookieDeprecationMessagesName[] = "Cookie deprecation messages";
+const char kCookieDeprecationMessagesDescription[] =
+    "Show messages in the DevTools console about upcoming deprecations that "
+    "would affect sent/received cookies.";
+
+const char kCookiesWithoutSameSiteMustBeSecureName[] =
     "Cookies without SameSite must be secure";
-extern const char kCookiesWithoutSameSiteMustBeSecureDescription[] =
+const char kCookiesWithoutSameSiteMustBeSecureDescription[] =
     "If enabled, cookies without SameSite restrictions must also be Secure. If "
     "a cookie without SameSite restrictions is set without the Secure "
     "attribute, it will be rejected. This flag only has an effect if "

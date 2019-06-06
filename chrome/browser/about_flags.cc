@@ -3915,6 +3915,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kGesturePropertiesDBusService)},
 #endif  // defined(OS_CHROMEOS)
 
+    {"cookie-deprecation-messages",
+     flag_descriptions::kCookieDeprecationMessagesName,
+     flag_descriptions::kCookieDeprecationMessagesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kCookieDeprecationMessages)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
