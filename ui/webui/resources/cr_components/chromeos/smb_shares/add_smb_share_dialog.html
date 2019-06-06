@@ -79,7 +79,8 @@
             value="{{mountUrl_}}" items="[[discoveredShares_]]"
             placeholder="\\server\share"
             error-message-allowed
-            update-value-on-input autofocus>
+            update-value-on-input autofocus
+            show-loading="[[discoveryActive_]]">
         </cr-searchable-drop-down>
         <cr-input id="name" label="[[i18n('smbShareName')]]"
             value="{{mountName_}}" maxlength="64">

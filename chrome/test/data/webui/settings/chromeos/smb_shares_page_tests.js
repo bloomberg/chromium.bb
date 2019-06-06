@@ -258,4 +258,20 @@ suite('AddSmbShareDialogTests', function() {
     });
   });
 
+  test('LoadingBarDuringDiscovery', async function() {
+    const url = addDialog.$.address;
+    // Loading bar is shown when the page loads.
+    expectTrue(url.showLoading);
+
+    await smbBrowserProxy.whenCalled('startDiscovery');
+
+    cr.webUIListenerCallback('on-shares-found', ['smb://foo/bar'], false);
+    expectTrue(url.showLoading);
+
+    cr.webUIListenerCallback('on-shares-found', ['smb://foo/bar2'], true);
+    expectFalse(url.showLoading);
+
+    expectEquals(2, url.items.length);
+  });
+
 });

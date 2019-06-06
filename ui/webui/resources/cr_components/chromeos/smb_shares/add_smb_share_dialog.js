@@ -4,6 +4,9 @@
 
 /**
  * @fileoverview 'add-smb-share-dialog' is a component for adding an SMB Share.
+ *
+ * This component can only be used once to add an SMB share, and must be
+ * destroyed when finished, and re-created when shown again.
  */
 
 cr.define('smb_shares', function() {
@@ -77,6 +80,12 @@ Polymer({
       value: function() {
         return [];
       },
+    },
+
+    /** @private */
+    discoveryActive_: {
+      type: Boolean,
+      value: true,
     },
 
     /** @private */
@@ -169,11 +178,14 @@ Polymer({
   },
 
   /**
-   * @param {!Array<string>} shares
+   * @param {!Array<string>} newSharesDiscovered New shares that have been
+   * discovered since the last call.
+   * @param {boolean} done Whether share discovery has finished.
    * @private
    */
-  onSharesFound_: function(shares) {
-    this.discoveredShares_ = this.discoveredShares_.concat(shares);
+  onSharesFound_: function(newSharesDiscovered, done) {
+    this.discoveredShares_ = this.discoveredShares_.concat(newSharesDiscovered);
+    this.discoveryActive_ = !done;
   },
 
   /**

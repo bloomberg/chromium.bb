@@ -54,6 +54,9 @@ class SmbService : public KeyedService,
   using MountResponse = base::OnceCallback<void(SmbMountResult result)>;
   using StartReadDirIfSuccessfulCallback =
       base::OnceCallback<void(bool should_retry_start_read_dir)>;
+  using GatherSharesResponse =
+      base::RepeatingCallback<void(const std::vector<SmbUrl>& shares_gathered,
+                                   bool done)>;
 
   SmbService(Profile* profile, std::unique_ptr<base::TickClock> tick_clock);
   ~SmbService() override;
@@ -88,8 +91,11 @@ class SmbService : public KeyedService,
 
   // Gathers the hosts in the network using |share_finder_| and gets the shares
   // for each of the hosts found. |discovery_callback| is called as soon as host
-  // discovery is complete. |shares_callback| is called once per host and will
-  // contain the URLs to the shares found.
+  // discovery is complete. |shares_callback| may be called multiple times with
+  // new shares. |shares_callback| will be called with |done| == false when more
+  // shares are expected to be discovered. When share discovery is finished,
+  // |shares_callback| is called with |done| == true and will not be called
+  // again.
   void GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
                              GatherSharesResponse shares_callback);
 

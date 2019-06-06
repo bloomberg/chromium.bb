@@ -122,9 +122,11 @@ void SmbHandler::HandleDiscoveryDone() {
 }
 
 void SmbHandler::HandleGatherSharesResponse(
-    const std::vector<smb_client::SmbUrl>& shares_gathered) {
+    const std::vector<smb_client::SmbUrl>& shares_gathered,
+    bool done) {
   AllowJavascript();
-  FireWebUIListener("on-shares-found", BuildShareList(shares_gathered));
+  FireWebUIListener("on-shares-found", BuildShareList(shares_gathered),
+                    base::Value(done));
 }
 
 void SmbHandler::HandleUpdateCredentials(const base::ListValue* args) {

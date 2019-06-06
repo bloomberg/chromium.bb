@@ -158,9 +158,18 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
 
 void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
                                        GatherSharesResponse shares_callback) {
-  shares_callback.Run(GetPreconfiguredSharePathsForDropdown());
-  share_finder_->GatherSharesInNetwork(std::move(discovery_callback),
-                                       std::move(shares_callback));
+  auto preconfigured_shares = GetPreconfiguredSharePathsForDropdown();
+  if (!preconfigured_shares.empty()) {
+    shares_callback.Run(std::move(preconfigured_shares), false);
+  }
+  share_finder_->GatherSharesInNetwork(
+      std::move(discovery_callback),
+      base::BindOnce(
+          [](GatherSharesResponse shares_callback,
+             const std::vector<SmbUrl>& shares_gathered) {
+            std::move(shares_callback).Run(shares_gathered, true);
+          },
+          std::move(shares_callback)));
 }
 
 void SmbService::UpdateCredentials(int32_t mount_id,

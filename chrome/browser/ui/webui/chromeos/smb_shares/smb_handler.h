@@ -43,7 +43,8 @@ class SmbHandler : public content::WebUIMessageHandler {
 
   // Callback handler for StartDiscovery.
   void HandleGatherSharesResponse(
-      const std::vector<smb_client::SmbUrl>& shares_gathered);
+      const std::vector<smb_client::SmbUrl>& shares_gathered,
+      bool done);
 
   // Callback handler that indicates discovery is complete.
   void HandleDiscoveryDone();
