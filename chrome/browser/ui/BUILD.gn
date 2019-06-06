@@ -327,6 +327,8 @@ jumbo_split_static_library("ui") {
     "webui/version_handler.h",
     "webui/version_ui.cc",
     "webui/version_ui.h",
+    "webui/webui_load_timer.cc",
+    "webui/webui_load_timer.h",
     "webui/webui_util.cc",
     "webui/webui_util.h",
   ]

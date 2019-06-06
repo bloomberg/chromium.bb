@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
-#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
@@ -39,7 +38,6 @@
 #include "chrome/grit/os_settings_resources_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/unified_consent/feature.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_ui_data_source.h"
 
 #if defined(FULL_SAFE_BROWSING)
@@ -51,8 +49,7 @@ namespace chromeos {
 namespace settings {
 
 OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
-    : content::WebUIController(web_ui),
-      WebContentsObserver(web_ui->GetWebContents()) {
+    : content::WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIOSSettingsHost);
@@ -151,23 +148,6 @@ void OSSettingsUI::AddSettingsPageUIHandler(
     std::unique_ptr<content::WebUIMessageHandler> handler) {
   DCHECK(handler);
   web_ui()->AddMessageHandler(std::move(handler));
-}
-
-void OSSettingsUI::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSameDocument())
-    return;
-
-  load_start_time_ = base::Time::Now();
-}
-
-void OSSettingsUI::DocumentLoadedInFrame(
-    content::RenderFrameHost* render_frame_host) {
-  // TODO(crbug/950007): Create new load histograms
-}
-
-void OSSettingsUI::DocumentOnLoadCompletedInMainFrame() {
-  // TODO(crbug/950007): Create new load histograms
 }
 
 }  // namespace settings

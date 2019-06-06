@@ -14,7 +14,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -54,7 +53,6 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/unified_consent/feature.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -161,7 +159,9 @@ void SettingsUI::RegisterProfilePrefs(
 
 SettingsUI::SettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui),
-      WebContentsObserver(web_ui->GetWebContents()) {
+      webui_load_timer_(web_ui->GetWebContents(),
+                        "Settings.LoadDocumentTime.MD",
+                        "Settings.LoadCompletedTime.MD") {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
@@ -343,25 +343,6 @@ void SettingsUI::AddSettingsPageUIHandler(
     std::unique_ptr<content::WebUIMessageHandler> handler) {
   DCHECK(handler);
   web_ui()->AddMessageHandler(std::move(handler));
-}
-
-void SettingsUI::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSameDocument())
-    return;
-
-  load_start_time_ = base::Time::Now();
-}
-
-void SettingsUI::DocumentLoadedInFrame(
-    content::RenderFrameHost* render_frame_host) {
-  UMA_HISTOGRAM_TIMES("Settings.LoadDocumentTime.MD",
-                      base::Time::Now() - load_start_time_);
-}
-
-void SettingsUI::DocumentOnLoadCompletedInMainFrame() {
-  UMA_HISTOGRAM_TIMES("Settings.LoadCompletedTime.MD",
-                      base::Time::Now() - load_start_time_);
 }
 
 #if defined(OS_CHROMEOS)

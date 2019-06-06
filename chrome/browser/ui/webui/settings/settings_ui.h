@@ -6,9 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_UI_H_
 
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "chrome/browser/ui/webui/webui_load_timer.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class Profile;
@@ -25,8 +24,7 @@ class PrefRegistrySyncable;
 namespace settings {
 
 // The WebUI handler for chrome://settings.
-class SettingsUI : public content::WebUIController,
-                   public content::WebContentsObserver {
+class SettingsUI : public content::WebUIController {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -42,18 +40,11 @@ class SettingsUI : public content::WebUIController,
   static bool ShouldShowParentalControls(Profile* profile);
 #endif  // defined(OS_CHROMEOS)
 
-  // content::WebContentsObserver:
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override;
-  void DocumentOnLoadCompletedInMainFrame() override;
-
  private:
   void AddSettingsPageUIHandler(
       std::unique_ptr<content::WebUIMessageHandler> handler);
 
-  base::Time load_start_time_;
+  WebuiLoadTimer webui_load_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsUI);
 };
