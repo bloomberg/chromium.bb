@@ -35,19 +35,19 @@ struct CC_EXPORT DrawProperties {
   // DrawProperties::opacity may be different than LayerImpl::opacity,
   // particularly in the case when a RenderSurface re-parents the layer's
   // opacity, or when opacity is compounded by the hierarchy.
-  float opacity;
+  float opacity = 0.f;
 
   // Whether the layer has a potentially animating transform in its chain of
   // transforms to the screen. This is essentially a cache of the transform
   // node's potentially-animated status.
-  bool screen_space_transform_is_animating;
+  bool screen_space_transform_is_animating = false;
 
   // True if the layer needs to be clipped by clip_rect.
-  bool is_clipped;
+  bool is_clipped = false;
 
   // If set, it makes the layer's rounded corner not trigger a render surface if
   // possible.
-  bool is_fast_rounded_corner;
+  bool is_fast_rounded_corner = false;
 
   // This rect is a bounding box around what part of the layer is visible, in
   // the layer's coordinate space.
