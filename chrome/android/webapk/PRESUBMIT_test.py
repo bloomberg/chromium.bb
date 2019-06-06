@@ -108,7 +108,8 @@ class ShellApkVersion(unittest.TestCase):
 class OverlappingResourceFileNames(unittest.TestCase):
    RESOURCES_SHOULD_HAVE_DIFFERENT_FILE_NAMES_MESSAGE = (
        'Resources in different top level res/ directories [\'shell_apk/res\', '
-       '\'libs/common/res_splash\'] should have different names:')
+       '\'shell_apk/res_template\', \'libs/common/res_splash\'] should have '
+       'different names:')
 
    def testAddFileSameNameWithinResDirectory(self):
      # Files within a res/ directory can have same file name.

@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Expands the ShellApk's AndroidManifest.xml using Mustache template engine."""
+"""Expands template using Mustache template engine."""
 
 import argparse
 import codecs
@@ -14,7 +14,7 @@ import sys
 
 #Import pystache from //third_party/pystache
 src_dir = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
-                       os.pardir, os.pardir, os.pardir)
+                       os.pardir, os.pardir)
 sys.path.insert(0, os.path.join(src_dir, 'third_party'))
 import pystache
 sys.path.insert(0, os.path.join(src_dir, 'build/android/gyp'))

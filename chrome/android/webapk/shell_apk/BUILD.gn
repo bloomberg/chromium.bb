@@ -4,7 +4,7 @@
 
 import("//build/config/android/rules.gni")
 import("current_version/current_version.gni")
-import("manifest/manifest_mustache_pass.gni")
+import("mustache_pass.gni")
 
 webapk_manifest_to_upload_output =
     "${target_gen_dir}/webapk_manifest_to_upload/AndroidManifest.xml"
@@ -87,6 +87,10 @@ template("webapk_tmpl") {
   _java_without_services_target_name = "${target_name}_generated_webapk_java"
   _java_with_services_target_name =
       "${target_name}_generated_webapk_with_service_java"
+  _generate_res_background_xml_target_name =
+      "${target_name}_generate_res_background_xml"
+  _generated_res_background_dir =
+      "${target_gen_dir}/${_generate_res_background_xml_target_name}/res"
   _resources_target_name = "${target_name}_resources"
 
   _use_new_splash = false
@@ -106,7 +110,7 @@ template("webapk_tmpl") {
 
   # Generate manifest to upload to WebAPK server. Fills in all of the fields
   # that the server cannot customize on a per-site basis.
-  manifest_mustache_pass(_manifest_to_upload_target_name) {
+  mustache_pass(_manifest_to_upload_target_name) {
     input = "AndroidManifest.xml"
     output = _manifest_to_upload_output
     extra_variables = [
@@ -116,7 +120,7 @@ template("webapk_tmpl") {
   }
 
   # Generate manifest with test values.
-  manifest_mustache_pass(_manifest_target_name) {
+  mustache_pass(_manifest_target_name) {
     forward_variables_from(invoker,
                            [
                              "apk_package_name",
@@ -132,10 +136,21 @@ template("webapk_tmpl") {
     ]
   }
 
+  # Populate background color in values/background_color.xml
+  mustache_pass(_generate_res_background_xml_target_name) {
+    forward_variables_from(invoker, [ "config_file" ])
+    input = "res_template/values/background_color.xml"
+    output = "${_generated_res_background_dir}/values/background_color.xml"
+  }
+
   android_resources(_resources_target_name) {
     custom_package = "org.chromium.webapk.shell_apk"
     resource_dirs = [ "res" ]
+    generated_resource_dirs = [ _generated_res_background_dir ]
+    generated_resource_files =
+        get_target_outputs(":$_generate_res_background_xml_target_name")
     deps = [
+      ":$_generate_res_background_xml_target_name",
       ":webapk_strings_grd",
     ]
   }

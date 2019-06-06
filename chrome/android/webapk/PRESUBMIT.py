@@ -36,7 +36,11 @@ TRIGGER_CURRENT_VERSION_UPDATE_LOCAL_PATHS = [
     'shell_apk/src/',
 ]
 
-RES_DIR_LOCAL_PATHS = ['shell_apk/res', 'libs/common/res_splash']
+RES_DIR_LOCAL_PATHS = [
+    'shell_apk/res',
+    'shell_apk/res_template',
+    'libs/common/res_splash'
+]
 
 def _DoChangedContentsContain(changed_contents, key):
   for _, line in changed_contents:

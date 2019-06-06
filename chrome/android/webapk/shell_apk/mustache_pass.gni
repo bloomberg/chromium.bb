@@ -4,7 +4,7 @@
 
 import("//build/config/android/rules.gni")
 
-template("manifest_mustache_pass") {
+template("mustache_pass") {
   set_sources_assignment_filter([])
   forward_variables_from(invoker, [ "testonly" ])
 
@@ -27,8 +27,7 @@ template("manifest_mustache_pass") {
       sources += [ invoker.delta_config_file ]
     }
 
-    script =
-        "//chrome/android/webapk/shell_apk/manifest/manifest_mustache_pass.py"
+    script = "//chrome/android/webapk/shell_apk/mustache_pass.py"
 
     outputs = [
       invoker.output,
