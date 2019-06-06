@@ -19,7 +19,10 @@ source_set("overlays") {
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
-  friend = [ ":unit_tests" ]
+  friend = [
+    ":unit_tests",
+    "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test",
+  ]
 
   deps = [
     ":container_ui",
