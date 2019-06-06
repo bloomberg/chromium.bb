@@ -323,6 +323,25 @@ suite('GoogleAssistantHandler', function() {
     assertTrue(!!dropdown);
     assertTrue(dropdown.hasAttribute('hidden'));
   });
+
+  test('assistantDisabledByPolicy', function() {
+    let button = page.$$('#google-assistant-enable');
+    assertTrue(!!button);
+    assertFalse(button.disabled);
+    assertFalse(button.checked);
+    page.setPrefValue('settings.voice_interaction.enabled', true);
+    Polymer.dom.flush();
+    button = page.$$('#google-assistant-enable');
+    assertTrue(!!button);
+    assertFalse(button.disabled);
+    assertTrue(button.checked);
+
+    page.setPrefValue('settings.assistant.disabled_by_policy', true);
+    Polymer.dom.flush();
+    assertTrue(!!button);
+    assertTrue(button.disabled);
+    assertFalse(button.checked);
+  });
 });
 
 suite('GoogleAssistantHandlerWihtNoDspHotword', function() {

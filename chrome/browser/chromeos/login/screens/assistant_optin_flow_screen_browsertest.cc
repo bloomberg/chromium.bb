@@ -70,8 +70,8 @@ class FakeAssistantSettings
   static constexpr int CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL = 1;
   static constexpr int CONSENT_UI_FLAG_SKIP_THIRD_PARTY_DISCLOSURE = 1 << 1;
   static constexpr int CONSENT_UI_FLAG_ASK_EMAIL_OPT_IN = 1 << 2;
-  static constexpr int CONSENT_UI_FLAG_WAA_DISABLED_BY_DOMAIN = 1 << 3;
-  static constexpr int CONSENT_UI_FLAG_ASSISTANT_DISABLED_BY_DOMAIN = 1 << 4;
+  static constexpr int CONSENT_UI_FLAG_WAA_DISABLED_BY_POLICY = 1 << 3;
+  static constexpr int CONSENT_UI_FLAG_ASSISTANT_DISABLED_BY_POLICY = 1 << 4;
 
   enum class SpeakerIdEnrollmentMode {
     // On speaker enrollment request, the client will be notified that the
@@ -180,9 +180,9 @@ class FakeAssistantSettings
     auto* gaia_user_context_ui = settings_ui.mutable_gaia_user_context_ui();
     gaia_user_context_ui->set_is_gaia_user(true);
     gaia_user_context_ui->set_waa_disabled_by_dasher_domain(
-        (consent_ui_flags_ & CONSENT_UI_FLAG_WAA_DISABLED_BY_DOMAIN));
+        (consent_ui_flags_ & CONSENT_UI_FLAG_WAA_DISABLED_BY_POLICY));
     gaia_user_context_ui->set_assistant_disabled_by_dasher_domain(
-        (consent_ui_flags_ & CONSENT_UI_FLAG_ASSISTANT_DISABLED_BY_DOMAIN));
+        (consent_ui_flags_ & CONSENT_UI_FLAG_ASSISTANT_DISABLED_BY_POLICY));
 
     auto* consent_flow_ui = settings_ui.mutable_consent_flow_ui();
     consent_flow_ui->set_consent_status(
@@ -1139,9 +1139,9 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
   EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByDasherDomain) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByPolicy) {
   assistant_settings_->set_consent_ui_flags(
-      FakeAssistantSettings::CONSENT_UI_FLAG_WAA_DISABLED_BY_DOMAIN);
+      FakeAssistantSettings::CONSENT_UI_FLAG_WAA_DISABLED_BY_POLICY);
 
   arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
       ash::mojom::VoiceInteractionState::STOPPED);
@@ -1152,14 +1152,14 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByDasherDomain) {
 
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled));
   EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
-                       AssistantDisabledByDasherDomain) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantDisabledByPolicy) {
   assistant_settings_->set_consent_ui_flags(
-      FakeAssistantSettings::CONSENT_UI_FLAG_ASSISTANT_DISABLED_BY_DOMAIN);
+      FakeAssistantSettings::CONSENT_UI_FLAG_ASSISTANT_DISABLED_BY_POLICY);
 
   arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
       ash::mojom::VoiceInteractionState::STOPPED);
@@ -1170,6 +1170,9 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
 
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  EXPECT_TRUE(
+      prefs->GetBoolean(::assistant::prefs::kAssistantDisabledByPolicy));
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled));
   EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
 }

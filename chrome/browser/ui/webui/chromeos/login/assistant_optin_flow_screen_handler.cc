@@ -207,8 +207,15 @@ void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentFailure() {
 }
 
 void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {
-  // Make sure enable Assistant service since we need it during the flow.
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+
+  // If Assistant is disabled by domain admin, end the flow.
+  if (prefs->GetBoolean(::assistant::prefs::kAssistantDisabledByPolicy)) {
+    HandleFlowFinished();
+    return;
+  }
+
+  // Make sure enable Assistant service since we need it during the flow.
   prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
 
   if (arc::VoiceInteractionControllerClient::Get()->voice_interaction_state() ==
@@ -329,10 +336,19 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
 
   if (settings_ui.has_gaia_user_context_ui()) {
     auto gaia_user_context_ui = settings_ui.gaia_user_context_ui();
-    if (gaia_user_context_ui.waa_disabled_by_dasher_domain() ||
-        gaia_user_context_ui.assistant_disabled_by_dasher_domain()) {
-      DVLOG(1) << "Assistant/web & app activity is disabled by dasher domain. "
-                  "Skip Assistant opt-in flow.";
+    if (gaia_user_context_ui.assistant_disabled_by_dasher_domain()) {
+      DVLOG(1) << "Assistant is disabled by domain policy. Skip Assistant "
+                  "opt-in flow.";
+      PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+      prefs->SetBoolean(::assistant::prefs::kAssistantDisabledByPolicy, true);
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, false);
+      HandleFlowFinished();
+      return;
+    }
+
+    if (gaia_user_context_ui.waa_disabled_by_dasher_domain()) {
+      DVLOG(1) << "Web & app activity is disabled by domain policy. Skip "
+                  "Assistant opt-in flow.";
       HandleFlowFinished();
       return;
     }
@@ -579,6 +595,12 @@ void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
 
 void AssistantOptInFlowScreenHandler::HandleFlowInitialized(
     const int flow_type) {
+  auto* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  if (!prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled)) {
+    HandleFlowFinished();
+    return;
+  }
+
   initialized_ = true;
 
   if (on_initialized_)

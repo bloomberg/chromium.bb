@@ -113,6 +113,7 @@ Polymer({
     'onPrefsChanged_(prefs.settings.voice_interaction.hotword.always_on.value)',
     `onPrefsChanged_(
       prefs.settings.voice_interaction.activity_control.consent_status.value)`,
+    'onPrefsChanged_(prefs.settings.assistant.disabled_by_policy.value)',
   ],
 
   /** @private {?settings.GoogleAssistantBrowserProxy} */
@@ -187,6 +188,11 @@ Polymer({
 
   /** @private */
   onPrefsChanged_: function() {
+    if (this.getPref('settings.assistant.disabled_by_policy.value')) {
+      this.setPrefValue('settings.voice_interaction.enabled', false);
+      return;
+    }
+
     this.refreshDspHotwordState_();
 
     this.shouldShowVoiceMatchSettings_ =

@@ -33,7 +33,8 @@
         class="first primary-toggle"
         pref="{{prefs.settings.voice_interaction.enabled}}"
         label="[[getAssistantOnOffLabel_(
-            prefs.settings.voice_interaction.enabled.value)]]">
+            prefs.settings.voice_interaction.enabled.value)]]"
+        disabled="{{prefs.settings.assistant.disabled_by_policy.value}}">
     </settings-toggle-button>
     <template is="dom-if"
         if="[[prefs.settings.voice_interaction.enabled.value]]">

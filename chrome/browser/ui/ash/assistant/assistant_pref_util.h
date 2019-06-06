@@ -14,6 +14,7 @@ namespace assistant {
 namespace prefs {
 
 extern const char kAssistantConsentStatus[];
+extern const char kAssistantDisabledByPolicy[];
 
 // Registers Assistant specific profile preferences.
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
