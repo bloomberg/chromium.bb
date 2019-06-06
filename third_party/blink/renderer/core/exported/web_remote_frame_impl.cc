@@ -398,8 +398,11 @@ void WebRemoteFrameImpl::ScrollRectToVisible(
   }
 
   // Schedule the scroll.
-  PhysicalRect absolute_rect = owner_object->LocalToAncestorRect(
-      PhysicalRect(rect_to_scroll), owner_object->View());
+  LayoutRect absolute_rect =
+      owner_object
+          ->LocalToAncestorRect(PhysicalRect(rect_to_scroll),
+                                owner_object->View())
+          .ToLayoutRect();
 
   if (!params.zoom_into_rect ||
       !owner_object->GetDocument().GetFrame()->LocalFrameRoot().IsMainFrame()) {

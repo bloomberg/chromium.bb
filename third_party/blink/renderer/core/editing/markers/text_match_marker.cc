@@ -27,21 +27,21 @@ bool TextMatchMarker::IsRendered() const {
   return layout_status_ == LayoutStatus::kValidNotNull;
 }
 
-bool TextMatchMarker::Contains(const PhysicalOffset& point) const {
+bool TextMatchMarker::Contains(const LayoutPoint& point) const {
   DCHECK_EQ(layout_status_, LayoutStatus::kValidNotNull);
-  return rect_.Contains(point);
+  return layout_rect_.Contains(point);
 }
 
-void TextMatchMarker::SetRect(const PhysicalRect& rect) {
-  if (layout_status_ == LayoutStatus::kValidNotNull && rect == rect_)
+void TextMatchMarker::SetLayoutRect(const LayoutRect& rect) {
+  if (layout_status_ == LayoutStatus::kValidNotNull && rect == layout_rect_)
     return;
   layout_status_ = LayoutStatus::kValidNotNull;
-  rect_ = rect;
+  layout_rect_ = rect;
 }
 
-const PhysicalRect& TextMatchMarker::GetRect() const {
+const LayoutRect& TextMatchMarker::GetLayoutRect() const {
   DCHECK_EQ(layout_status_, LayoutStatus::kValidNotNull);
-  return rect_;
+  return layout_rect_;
 }
 
 void TextMatchMarker::NullifyLayoutRect() {

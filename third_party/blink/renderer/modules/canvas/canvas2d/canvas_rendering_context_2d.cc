@@ -358,11 +358,12 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   FloatRect bounding_rect = transformed_path.BoundingRect();
 
   // We first map canvas coordinates to layout coordinates.
-  PhysicalRect path_rect = PhysicalRect::EnclosingRect(bounding_rect);
-  PhysicalRect canvas_rect = layout_box->PhysicalContentBoxRect();
+  LayoutRect path_rect(bounding_rect);
+  LayoutRect canvas_rect = layout_box->PhysicalContentBoxRect().ToLayoutRect();
   // TODO(fserb): Is this kIgnoreTransforms correct?
-  canvas_rect.Move(
-      layout_box->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms));
+  canvas_rect.MoveBy(
+      layout_box->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms)
+          .ToLayoutPoint());
   path_rect.SetX(
       (canvas_rect.X() + path_rect.X() * canvas_rect.Width() / Width()));
   path_rect.SetY(

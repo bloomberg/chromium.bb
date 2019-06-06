@@ -2946,7 +2946,7 @@ void LocalFrameView::ForceLayoutForPagination(
     // cropping implementation should not do this!
     bool horizontal_writing_mode =
         layout_view->StyleRef().IsHorizontalWritingMode();
-    PhysicalRect document_rect(layout_view->DocumentRect());
+    const LayoutRect& document_rect = LayoutRect(layout_view->DocumentRect());
     LayoutUnit doc_logical_width = horizontal_writing_mode
                                        ? document_rect.Width()
                                        : document_rect.Height();
@@ -2973,7 +2973,8 @@ void LocalFrameView::ForceLayoutForPagination(
           layout_invalidation_reason::kPrintingChanged);
       UpdateLayout();
 
-      PhysicalRect updated_document_rect(layout_view->DocumentRect());
+      const LayoutRect& updated_document_rect =
+          LayoutRect(layout_view->DocumentRect());
       LayoutUnit doc_logical_height = horizontal_writing_mode
                                           ? updated_document_rect.Height()
                                           : updated_document_rect.Width();
@@ -2981,8 +2982,8 @@ void LocalFrameView::ForceLayoutForPagination(
                                        ? updated_document_rect.Y()
                                        : updated_document_rect.X();
       LayoutUnit doc_logical_right = horizontal_writing_mode
-                                         ? updated_document_rect.Right()
-                                         : updated_document_rect.Bottom();
+                                         ? updated_document_rect.MaxX()
+                                         : updated_document_rect.MaxY();
       LayoutUnit clipped_logical_left;
       if (!layout_view->StyleRef().IsLeftToRightDirection()) {
         clipped_logical_left =
@@ -3023,21 +3024,35 @@ IntRect LocalFrameView::ConvertToLayoutObject(const LayoutObject& layout_object,
 IntPoint LocalFrameView::ConvertFromLayoutObject(
     const LayoutObject& layout_object,
     const IntPoint& layout_object_point) const {
-  return RoundedIntPoint(ConvertFromLayoutObject(
-      layout_object, PhysicalOffset(layout_object_point)));
+  return RoundedIntPoint(
+      ConvertFromLayoutObject(layout_object, LayoutPoint(layout_object_point)));
 }
 
 IntPoint LocalFrameView::ConvertToLayoutObject(
     const LayoutObject& layout_object,
     const IntPoint& frame_point) const {
   return RoundedIntPoint(
-      ConvertToLayoutObject(layout_object, PhysicalOffset(frame_point)));
+      ConvertToLayoutObject(layout_object, LayoutPoint(frame_point)));
+}
+
+LayoutPoint LocalFrameView::ConvertFromLayoutObject(
+    const LayoutObject& layout_object,
+    const LayoutPoint& layout_object_point) const {
+  return layout_object.LocalToAbsolutePoint(PhysicalOffset(layout_object_point))
+      .ToLayoutPoint();
 }
 
 PhysicalOffset LocalFrameView::ConvertFromLayoutObject(
     const LayoutObject& layout_object,
     const PhysicalOffset& layout_object_offset) const {
   return layout_object.LocalToAbsolutePoint(layout_object_offset);
+}
+
+LayoutPoint LocalFrameView::ConvertToLayoutObject(
+    const LayoutObject& layout_object,
+    const LayoutPoint& frame_point) const {
+  return LayoutPoint(
+      ConvertToLayoutObject(layout_object, FloatPoint(frame_point)));
 }
 
 PhysicalOffset LocalFrameView::ConvertToLayoutObject(
@@ -3107,14 +3122,24 @@ FloatPoint LocalFrameView::DocumentToFrame(
   return FloatPoint(DocumentToFrame(DoublePoint(point_in_document)));
 }
 
-PhysicalOffset LocalFrameView::DocumentToFrame(
-    const PhysicalOffset& offset_in_document) const {
+LayoutPoint LocalFrameView::DocumentToFrame(
+    const LayoutPoint& point_in_document) const {
   ScrollableArea* layout_viewport = LayoutViewport();
   if (!layout_viewport)
-    return offset_in_document;
+    return point_in_document;
 
-  return offset_in_document -
-         PhysicalOffset::FromFloatSizeRound(layout_viewport->GetScrollOffset());
+  return point_in_document - LayoutSize(layout_viewport->GetScrollOffset());
+}
+
+PhysicalOffset LocalFrameView::DocumentToFrame(
+    const PhysicalOffset& offset_in_document) const {
+  return PhysicalOffset(DocumentToFrame(offset_in_document.ToLayoutPoint()));
+}
+
+LayoutRect LocalFrameView::DocumentToFrame(
+    const LayoutRect& rect_in_document) const {
+  return LayoutRect(DocumentToFrame(rect_in_document.Location()),
+                    rect_in_document.Size());
 }
 
 PhysicalRect LocalFrameView::DocumentToFrame(
@@ -3124,22 +3149,32 @@ PhysicalRect LocalFrameView::DocumentToFrame(
 }
 
 IntPoint LocalFrameView::FrameToDocument(const IntPoint& point_in_frame) const {
-  return FlooredIntPoint(FrameToDocument(PhysicalOffset(point_in_frame)));
+  return FlooredIntPoint(FrameToDocument(LayoutPoint(point_in_frame)));
+}
+
+LayoutPoint LocalFrameView::FrameToDocument(
+    const LayoutPoint& point_in_frame) const {
+  ScrollableArea* layout_viewport = LayoutViewport();
+  if (!layout_viewport)
+    return point_in_frame;
+
+  return point_in_frame + LayoutSize(layout_viewport->GetScrollOffset());
 }
 
 PhysicalOffset LocalFrameView::FrameToDocument(
     const PhysicalOffset& offset_in_frame) const {
-  ScrollableArea* layout_viewport = LayoutViewport();
-  if (!layout_viewport)
-    return offset_in_frame;
-
-  return offset_in_frame +
-         PhysicalOffset::FromFloatSizeRound(layout_viewport->GetScrollOffset());
+  return PhysicalOffset(FrameToDocument(offset_in_frame.ToLayoutPoint()));
 }
 
 IntRect LocalFrameView::FrameToDocument(const IntRect& rect_in_frame) const {
   return IntRect(FrameToDocument(rect_in_frame.Location()),
                  rect_in_frame.Size());
+}
+
+LayoutRect LocalFrameView::FrameToDocument(
+    const LayoutRect& rect_in_frame) const {
+  return LayoutRect(FrameToDocument(rect_in_frame.Location()),
+                    rect_in_frame.Size());
 }
 
 PhysicalRect LocalFrameView::FrameToDocument(
@@ -3176,6 +3211,24 @@ IntRect LocalFrameView::ConvertFromContainingEmbeddedContentView(
   }
 
   return parent_rect;
+}
+
+LayoutPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
+    const LayoutPoint& local_point) const {
+  if (LocalFrameView* parent = ParentFrameView()) {
+    auto* layout_object = GetLayoutEmbeddedContent();
+    if (!layout_object)
+      return local_point;
+
+    LayoutPoint point(local_point);
+
+    // Add borders and padding
+    point.Move((layout_object->BorderLeft() + layout_object->PaddingLeft()),
+               (layout_object->BorderTop() + layout_object->PaddingTop()));
+    return parent->ConvertFromLayoutObject(*layout_object, point);
+  }
+
+  return local_point;
 }
 
 PhysicalOffset LocalFrameView::ConvertToContainingEmbeddedContentView(
@@ -3215,10 +3268,16 @@ FloatPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
   return local_point;
 }
 
+LayoutPoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
+    const LayoutPoint& parent_point) const {
+  return LayoutPoint(
+      ConvertFromContainingEmbeddedContentView(DoublePoint(parent_point)));
+}
+
 PhysicalOffset LocalFrameView::ConvertFromContainingEmbeddedContentView(
     const PhysicalOffset& parent_offset) const {
-  return PhysicalOffset::FromFloatPointRound(
-      ConvertFromContainingEmbeddedContentView(FloatPoint(parent_offset)));
+  return PhysicalOffset(
+      ConvertFromContainingEmbeddedContentView(parent_offset.ToLayoutPoint()));
 }
 
 FloatPoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
@@ -3251,7 +3310,7 @@ DoublePoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
 IntPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
     const IntPoint& local_point) const {
   return RoundedIntPoint(
-      ConvertToContainingEmbeddedContentView(PhysicalOffset(local_point)));
+      ConvertToContainingEmbeddedContentView(LayoutPoint(local_point)));
 }
 
 void LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(
@@ -3552,11 +3611,11 @@ ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
 }
 
 void LocalFrameView::ScrollRectToVisibleInRemoteParent(
-    const PhysicalRect& rect_to_scroll,
+    const LayoutRect& rect_to_scroll,
     const WebScrollIntoViewParams& params) {
   DCHECK(GetFrame().IsLocalRoot() && !GetFrame().IsMainFrame() &&
          safe_to_propagate_scroll_to_parent_);
-  PhysicalRect new_rect = ConvertToRootFrame(rect_to_scroll);
+  LayoutRect new_rect = ConvertToRootFrame(rect_to_scroll);
   GetFrame().Client()->ScrollRectToVisibleInParentFrame(
       WebRect(new_rect.X().ToInt(), new_rect.Y().ToInt(),
               new_rect.Width().ToInt(), new_rect.Height().ToInt()),
@@ -3568,6 +3627,14 @@ void LocalFrameView::NotifyFrameRectsChangedIfNeeded() {
     root_layer_did_scroll_ = false;
     PropagateFrameRects();
   }
+}
+
+LayoutPoint LocalFrameView::ViewportToFrame(
+    const LayoutPoint& point_in_viewport) const {
+  LayoutPoint point_in_root_frame(
+      frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
+          FloatPoint(point_in_viewport)));
+  return ConvertFromRootFrame(point_in_root_frame);
 }
 
 PhysicalOffset LocalFrameView::ViewportToFrame(
@@ -3595,7 +3662,7 @@ IntRect LocalFrameView::ViewportToFrame(const IntRect& rect_in_viewport) const {
 
 IntPoint LocalFrameView::ViewportToFrame(
     const IntPoint& point_in_viewport) const {
-  return RoundedIntPoint(ViewportToFrame(PhysicalOffset(point_in_viewport)));
+  return RoundedIntPoint(ViewportToFrame(LayoutPoint(point_in_viewport)));
 }
 
 IntRect LocalFrameView::FrameToViewport(const IntRect& rect_in_frame) const {
@@ -3719,7 +3786,17 @@ IntRect LocalFrameView::ConvertToRootFrame(const IntRect& local_rect) const {
 }
 
 IntPoint LocalFrameView::ConvertToRootFrame(const IntPoint& local_point) const {
-  return RoundedIntPoint(ConvertToRootFrame(PhysicalOffset(local_point)));
+  return RoundedIntPoint(ConvertToRootFrame(LayoutPoint(local_point)));
+}
+
+LayoutPoint LocalFrameView::ConvertToRootFrame(
+    const LayoutPoint& local_point) const {
+  if (LocalFrameView* parent = ParentFrameView()) {
+    LayoutPoint parent_point =
+        ConvertToContainingEmbeddedContentView(local_point);
+    return parent->ConvertToRootFrame(parent_point);
+  }
+  return local_point;
 }
 
 PhysicalOffset LocalFrameView::ConvertToRootFrame(
@@ -3740,6 +3817,17 @@ FloatPoint LocalFrameView::ConvertToRootFrame(
     return parent->ConvertToRootFrame(parent_point);
   }
   return local_point;
+}
+
+LayoutRect LocalFrameView::ConvertToRootFrame(
+    const LayoutRect& local_rect) const {
+  if (LocalFrameView* parent = ParentFrameView()) {
+    LayoutPoint parent_point =
+        ConvertToContainingEmbeddedContentView(local_rect.Location());
+    LayoutRect parent_rect(parent_point, local_rect.Size());
+    return parent->ConvertToRootFrame(parent_rect);
+  }
+  return local_rect;
 }
 
 PhysicalRect LocalFrameView::ConvertToRootFrame(
@@ -3765,7 +3853,17 @@ IntRect LocalFrameView::ConvertFromRootFrame(
 IntPoint LocalFrameView::ConvertFromRootFrame(
     const IntPoint& point_in_root_frame) const {
   return RoundedIntPoint(
-      ConvertFromRootFrame(PhysicalOffset(point_in_root_frame)));
+      ConvertFromRootFrame(LayoutPoint(point_in_root_frame)));
+}
+
+LayoutPoint LocalFrameView::ConvertFromRootFrame(
+    const LayoutPoint& point_in_root_frame) const {
+  if (LocalFrameView* parent = ParentFrameView()) {
+    LayoutPoint parent_point =
+        parent->ConvertFromRootFrame(point_in_root_frame);
+    return ConvertFromContainingEmbeddedContentView(parent_point);
+  }
+  return point_in_root_frame;
 }
 
 PhysicalOffset LocalFrameView::ConvertFromRootFrame(

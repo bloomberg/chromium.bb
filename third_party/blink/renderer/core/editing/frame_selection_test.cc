@@ -1056,7 +1056,7 @@ TEST_F(FrameSelectionTest, SelectionBounds) {
   const int node_margin_top = 2;
   // The top of the node should be visible but the bottom should be outside
   // by the viewport. The unclipped selection bounds should not be clipped.
-  EXPECT_EQ(PhysicalRect(0, node_margin_top, node_width, node_height),
+  EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
             Selection().AbsoluteUnclippedBounds());
 
   // Scroll 500px down so the top of the node is outside the viewport and the
@@ -1065,14 +1065,14 @@ TEST_F(FrameSelectionTest, SelectionBounds) {
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->LayoutViewport()->SetScrollOffset(ScrollOffset(0, scroll_offset),
                                                 kProgrammaticScroll);
-  EXPECT_EQ(PhysicalRect(0, node_margin_top, node_width, node_height),
+  EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
             frame_view->FrameToDocument(Selection().AbsoluteUnclippedBounds()));
 
   // Adjust the page scale factor which changes the selection bounds as seen
   // through the viewport. The unclipped selection bounds should not be clipped.
   const int page_scale_factor = 2;
   GetPage().SetPageScaleFactor(page_scale_factor);
-  EXPECT_EQ(PhysicalRect(0, node_margin_top, node_width, node_height),
+  EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
             frame_view->FrameToDocument(Selection().AbsoluteUnclippedBounds()));
 }
 

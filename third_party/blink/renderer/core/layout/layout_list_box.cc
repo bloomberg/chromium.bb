@@ -131,7 +131,7 @@ void LayoutListBox::ComputeIntrinsicLogicalWidths(
     min_logical_width = LayoutUnit();
 }
 
-void LayoutListBox::ScrollToRect(const PhysicalRect& absolute_rect) {
+void LayoutListBox::ScrollToRect(const LayoutRect& absolute_rect) {
   if (HasOverflowClip()) {
     DCHECK(Layer());
     DCHECK(Layer()->GetScrollableArea());

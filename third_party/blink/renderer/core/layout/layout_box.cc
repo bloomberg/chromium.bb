@@ -664,8 +664,8 @@ void LayoutBox::ScrollToPosition(const FloatPoint& position,
   GetScrollableArea()->ScrollToAbsolutePosition(position, scroll_behavior);
 }
 
-PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
-    const PhysicalRect& absolute_rect,
+LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
+    const LayoutRect& absolute_rect,
     const WebScrollIntoViewParams& params) {
   DCHECK(params.GetScrollType() == kProgrammaticScroll ||
          params.GetScrollType() == kUserScroll);
@@ -684,7 +684,7 @@ PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
   // Presumably the same issue as in setScrollTop. See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
 
-  PhysicalRect absolute_rect_to_scroll = absolute_rect;
+  LayoutRect absolute_rect_to_scroll = absolute_rect;
   if (absolute_rect_to_scroll.Width() <= 0)
     absolute_rect_to_scroll.SetWidth(LayoutUnit(1));
   if (absolute_rect_to_scroll.Height() <= 0)
@@ -695,7 +695,7 @@ PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
   if (ContainingBlock())
     parent_box = ContainingBlock();
 
-  PhysicalRect absolute_rect_for_parent;
+  LayoutRect absolute_rect_for_parent;
   if (!IsLayoutView() && HasOverflowClip()) {
     absolute_rect_for_parent =
         GetScrollableArea()->ScrollIntoView(absolute_rect_to_scroll, params);
@@ -714,8 +714,12 @@ PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
         AllowedToPropagateRecursiveScrollToParentFrame(params)) {
       parent_box = owner_element->GetLayoutObject()->EnclosingBox();
       LayoutView* parent_view = owner_element->GetLayoutObject()->View();
-      absolute_rect_for_parent = View()->LocalToAncestorRect(
-          absolute_rect_for_parent, parent_view, kTraverseDocumentBoundaries);
+      absolute_rect_for_parent =
+          View()
+              ->LocalToAncestorRect(
+                  PhysicalRectToBeNoop(absolute_rect_for_parent), parent_view,
+                  kTraverseDocumentBoundaries)
+              .ToLayoutRect();
     }
   } else {
     absolute_rect_for_parent = absolute_rect_to_scroll;
@@ -1020,7 +1024,7 @@ bool LayoutBox::CanBeProgramaticallyScrolled() const {
   return node && HasEditableStyle(*node);
 }
 
-void LayoutBox::Autoscroll(const PhysicalOffset& position_in_root_frame) {
+void LayoutBox::Autoscroll(const LayoutPoint& position_in_root_frame) {
   LocalFrame* frame = GetFrame();
   if (!frame)
     return;
@@ -1029,11 +1033,10 @@ void LayoutBox::Autoscroll(const PhysicalOffset& position_in_root_frame) {
   if (!frame_view)
     return;
 
-  PhysicalOffset absolute_position =
-      frame_view->ConvertFromRootFrame(position_in_root_frame);
+  LayoutPoint absolute_position =
+      frame_view->ConvertFromRootFrame(LayoutPoint(position_in_root_frame));
   ScrollRectToVisibleRecursive(
-      PhysicalRect(absolute_position,
-                   PhysicalSize(LayoutUnit(1), LayoutUnit(1))),
+      LayoutRect(absolute_position, LayoutSize(1, 1)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
                               kUserScroll));

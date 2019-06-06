@@ -88,7 +88,7 @@ static void ScrollToVisible(Range* match) {
   ScrollBehavior scroll_behavior =
       smooth_find_enabled ? kScrollBehaviorSmooth : kScrollBehaviorAuto;
   first_node.GetLayoutObject()->ScrollRectToVisible(
-      PhysicalRect(match->BoundingBox()),
+      LayoutRect(match->BoundingBox()),
       WebScrollIntoViewParams(
           ScrollAlignment::kAlignCenterIfNeeded,
           ScrollAlignment::kAlignCenterIfNeeded, kUserScroll,
@@ -621,7 +621,7 @@ int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
     if (active_match_->FirstNode() &&
         active_match_->FirstNode()->GetLayoutObject()) {
       active_match_->FirstNode()->GetLayoutObject()->ScrollRectToVisible(
-          PhysicalRect(active_match_bounding_box),
+          LayoutRect(active_match_bounding_box),
           WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
                                   ScrollAlignment::kAlignCenterIfNeeded,
                                   kUserScroll));

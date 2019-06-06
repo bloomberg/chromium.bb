@@ -2907,7 +2907,7 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
   LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
   if (!layout_object || !node->isConnected())
     return false;
-  PhysicalRect target_rect(layout_object->AbsoluteBoundingBoxRect());
+  LayoutRect target_rect(layout_object->AbsoluteBoundingBoxRect());
   layout_object->ScrollRectToVisible(
       target_rect,
       WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
@@ -2935,7 +2935,7 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
   ScrollAlignment scroll_alignment = {
       kScrollAlignmentNoScroll, kScrollAlignmentCenter, kScrollAlignmentCenter};
   layout_object->ScrollRectToVisible(
-      target_rect,
+      target_rect.ToLayoutRect(),
       WebScrollIntoViewParams(scroll_alignment, scroll_alignment,
                               kProgrammaticScroll, false, kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
@@ -2950,8 +2950,8 @@ bool AXObject::OnNativeScrollToGlobalPointAction(
   LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
   if (!layout_object || !node->isConnected())
     return false;
-  PhysicalRect target_rect(layout_object->AbsoluteBoundingBoxRect());
-  target_rect.Move(-PhysicalOffset(global_point));
+  LayoutRect target_rect(layout_object->AbsoluteBoundingBoxRect());
+  target_rect.MoveBy(-global_point);
   layout_object->ScrollRectToVisible(
       target_rect,
       WebScrollIntoViewParams(ScrollAlignment::kAlignLeftAlways,

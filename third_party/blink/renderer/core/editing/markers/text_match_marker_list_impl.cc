@@ -85,8 +85,8 @@ static void UpdateMarkerLayoutRect(const Node& node, TextMatchMarker& marker) {
   LocalFrameView* frame_view = node.GetDocument().GetFrame()->View();
 
   DCHECK(frame_view);
-  marker.SetRect(
-      frame_view->FrameToDocument(PhysicalRect(ComputeTextRect(range))));
+  marker.SetLayoutRect(
+      frame_view->FrameToDocument(LayoutRect(ComputeTextRect(range))));
 }
 
 Vector<IntRect> TextMatchMarkerListImpl::LayoutRects(const Node& node) const {
@@ -98,7 +98,7 @@ Vector<IntRect> TextMatchMarkerListImpl::LayoutRects(const Node& node) const {
       UpdateMarkerLayoutRect(node, *text_match_marker);
     if (!text_match_marker->IsRendered())
       continue;
-    result.push_back(PixelSnappedIntRect(text_match_marker->GetRect()));
+    result.push_back(PixelSnappedIntRect(text_match_marker->GetLayoutRect()));
   }
 
   return result;

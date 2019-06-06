@@ -321,13 +321,13 @@ void ScrollableArea::UserScrollHelper(const ScrollOffset& offset,
   GetScrollAnimator().ScrollToOffsetWithoutAnimation(ScrollOffset(x, y));
 }
 
-PhysicalRect ScrollableArea::ScrollIntoView(
-    const PhysicalRect& rect_in_absolute,
+LayoutRect ScrollableArea::ScrollIntoView(
+    const LayoutRect& rect_in_absolute,
     const WebScrollIntoViewParams& params) {
   // TODO(bokan): This should really be implemented here but ScrollAlignment is
   // in Core which is a dependency violation.
   NOTREACHED();
-  return PhysicalRect();
+  return LayoutRect();
 }
 
 void ScrollableArea::ScrollOffsetChanged(const ScrollOffset& offset,

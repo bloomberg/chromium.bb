@@ -75,6 +75,7 @@ class LayoutAnalyzer;
 class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
+class LayoutRect;
 class LayoutSVGRoot;
 class LayoutView;
 class LocalFrame;
@@ -398,8 +399,12 @@ class CORE_EXPORT LocalFrameView final
   IntRect ConvertToLayoutObject(const LayoutObject&, const IntRect&) const;
   IntPoint ConvertFromLayoutObject(const LayoutObject&, const IntPoint&) const;
   IntPoint ConvertToLayoutObject(const LayoutObject&, const IntPoint&) const;
+  LayoutPoint ConvertFromLayoutObject(const LayoutObject&,
+                                      const LayoutPoint&) const;
   PhysicalOffset ConvertFromLayoutObject(const LayoutObject&,
                                          const PhysicalOffset&) const;
+  LayoutPoint ConvertToLayoutObject(const LayoutObject&,
+                                    const LayoutPoint&) const;
   PhysicalOffset ConvertToLayoutObject(const LayoutObject&,
                                        const PhysicalOffset&) const;
   FloatPoint ConvertToLayoutObject(const LayoutObject&,
@@ -491,6 +496,7 @@ class CORE_EXPORT LocalFrameView final
   IntPoint FrameToViewport(const IntPoint&) const;
   IntPoint ViewportToFrame(const IntPoint&) const;
   FloatPoint ViewportToFrame(const FloatPoint&) const;
+  LayoutPoint ViewportToFrame(const LayoutPoint&) const;
   PhysicalOffset ViewportToFrame(const PhysicalOffset&) const;
 
   // FIXME: Some external callers expect to get back a rect that's positioned
@@ -503,14 +509,19 @@ class CORE_EXPORT LocalFrameView final
   IntRect FrameToScreen(const IntRect&) const;
 
   // Converts from/to local frame coordinates to the root frame coordinates.
+  // TODO(wangxianzhu): Remove LayoutPoint/LayoutRect version after all clients
+  // switch to use PhysicalPoint/PhysicalRect.
   IntRect ConvertToRootFrame(const IntRect&) const;
   IntPoint ConvertToRootFrame(const IntPoint&) const;
+  LayoutPoint ConvertToRootFrame(const LayoutPoint&) const;
   PhysicalOffset ConvertToRootFrame(const PhysicalOffset&) const;
   FloatPoint ConvertToRootFrame(const FloatPoint&) const;
+  LayoutRect ConvertToRootFrame(const LayoutRect&) const;
   PhysicalRect ConvertToRootFrame(const PhysicalRect&) const;
   IntRect ConvertFromRootFrame(const IntRect&) const;
   IntPoint ConvertFromRootFrame(const IntPoint&) const;
   FloatPoint ConvertFromRootFrame(const FloatPoint&) const;
+  LayoutPoint ConvertFromRootFrame(const LayoutPoint&) const;
   PhysicalOffset ConvertFromRootFrame(const PhysicalOffset&) const;
   IntPoint ConvertSelfToChild(const EmbeddedContentView&,
                               const IntPoint&) const;
@@ -521,12 +532,16 @@ class CORE_EXPORT LocalFrameView final
   IntPoint DocumentToFrame(const IntPoint&) const;
   FloatPoint DocumentToFrame(const FloatPoint&) const;
   DoublePoint DocumentToFrame(const DoublePoint&) const;
+  LayoutPoint DocumentToFrame(const LayoutPoint&) const;
   PhysicalOffset DocumentToFrame(const PhysicalOffset&) const;
   IntRect DocumentToFrame(const IntRect&) const;
+  LayoutRect DocumentToFrame(const LayoutRect&) const;
   PhysicalRect DocumentToFrame(const PhysicalRect&) const;
   IntPoint FrameToDocument(const IntPoint&) const;
+  LayoutPoint FrameToDocument(const LayoutPoint&) const;
   PhysicalOffset FrameToDocument(const PhysicalOffset&) const;
   IntRect FrameToDocument(const IntRect&) const;
+  LayoutRect FrameToDocument(const LayoutRect&) const;
   PhysicalRect FrameToDocument(const PhysicalRect&) const;
 
   // Normally a LocalFrameView synchronously paints during full lifecycle
@@ -644,7 +659,7 @@ class CORE_EXPORT LocalFrameView final
 
   // When the frame is a local root and not a main frame, any recursive
   // scrolling should continue in the parent process.
-  void ScrollRectToVisibleInRemoteParent(const PhysicalRect&,
+  void ScrollRectToVisibleInRemoteParent(const LayoutRect&,
                                          const WebScrollIntoViewParams&);
 
   PaintArtifactCompositor* GetPaintArtifactCompositorForTesting() {
@@ -778,11 +793,14 @@ class CORE_EXPORT LocalFrameView final
   // transforms into account.
   IntRect ConvertToContainingEmbeddedContentView(const IntRect&) const;
   IntPoint ConvertToContainingEmbeddedContentView(const IntPoint&) const;
+  LayoutPoint ConvertToContainingEmbeddedContentView(const LayoutPoint&) const;
   PhysicalOffset ConvertToContainingEmbeddedContentView(
       const PhysicalOffset&) const;
   FloatPoint ConvertToContainingEmbeddedContentView(const FloatPoint&) const;
   IntRect ConvertFromContainingEmbeddedContentView(const IntRect&) const;
   IntPoint ConvertFromContainingEmbeddedContentView(const IntPoint&) const;
+  LayoutPoint ConvertFromContainingEmbeddedContentView(
+      const LayoutPoint&) const;
   PhysicalOffset ConvertFromContainingEmbeddedContentView(
       const PhysicalOffset&) const;
   FloatPoint ConvertFromContainingEmbeddedContentView(const FloatPoint&) const;

@@ -70,10 +70,10 @@ ScrollableArea& RootFrameViewport::LayoutViewport() const {
   return *layout_viewport_;
 }
 
-PhysicalRect RootFrameViewport::RootContentsToLayoutViewportContents(
+LayoutRect RootFrameViewport::RootContentsToLayoutViewportContents(
     LocalFrameView& root_frame_view,
-    const PhysicalRect& rect) const {
-  PhysicalRect ret = rect;
+    const LayoutRect& rect) const {
+  LayoutRect ret(rect);
 
   // If the root LocalFrameView is the layout viewport then coordinates in the
   // root LocalFrameView's content space are already in the layout viewport's
@@ -85,8 +85,7 @@ PhysicalRect RootFrameViewport::RootContentsToLayoutViewportContents(
   // by adding the scroll position.
   // TODO(bokan): This will have to be revisited if we ever remove the
   // restriction that a root scroller must be exactly screen filling.
-  ret.Move(
-      PhysicalOffset::FromFloatSizeRound(LayoutViewport().GetScrollOffset()));
+  ret.Move(LayoutSize(LayoutViewport().GetScrollOffset()));
 
   return ret;
 }
@@ -180,22 +179,21 @@ IntRect RootFrameViewport::VisibleContentRect(
       VisualViewport().VisibleContentRect(scrollbar_inclusion).Size());
 }
 
-PhysicalRect RootFrameViewport::VisibleScrollSnapportRect(
+LayoutRect RootFrameViewport::VisibleScrollSnapportRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   // The effective viewport is the intersection of the visual viewport with the
   // layout viewport.
-  PhysicalRect frame_rect_in_content(
-      PhysicalOffset::FromFloatSizeRound(LayoutViewport().GetScrollOffset()),
-      PhysicalSize(
+  LayoutRect frame_rect_in_content = LayoutRect(
+      FloatPoint(LayoutViewport().GetScrollOffset()),
+      FloatSize(
           LayoutViewport().VisibleContentRect(scrollbar_inclusion).Size()));
-  PhysicalRect visual_rect_in_content(
-      PhysicalOffset::FromFloatSizeRound(
-          LayoutViewport().GetScrollOffset() +
-          VisualViewport().GetScrollAnimator().CurrentOffset()),
-      PhysicalSize(
+  LayoutRect visual_rect_in_content = LayoutRect(
+      FloatPoint(LayoutViewport().GetScrollOffset() +
+                 VisualViewport().GetScrollAnimator().CurrentOffset()),
+      FloatSize(
           VisualViewport().VisibleContentRect(scrollbar_inclusion).Size()));
 
-  PhysicalRect visible_scroll_snapport =
+  LayoutRect visible_scroll_snapport =
       Intersection(visual_rect_in_content, frame_rect_in_content);
   if (!LayoutViewport().GetLayoutBox())
     return visible_scroll_snapport;
@@ -284,14 +282,13 @@ ScrollOffset RootFrameViewport::ClampToUserScrollableOffset(
   return scroll_offset;
 }
 
-PhysicalRect RootFrameViewport::ScrollIntoView(
-    const PhysicalRect& rect_in_absolute,
+LayoutRect RootFrameViewport::ScrollIntoView(
+    const LayoutRect& rect_in_absolute,
     const WebScrollIntoViewParams& params) {
-  PhysicalRect scroll_snapport_rect = VisibleScrollSnapportRect();
+  LayoutRect scroll_snapport_rect(VisibleScrollSnapportRect());
 
-  PhysicalRect rect_in_document = rect_in_absolute;
-  rect_in_document.Move(
-      PhysicalOffset::FromFloatSizeRound(LayoutViewport().GetScrollOffset()));
+  LayoutRect rect_in_document = rect_in_absolute;
+  rect_in_document.Move(LayoutSize(LayoutViewport().GetScrollOffset()));
 
   ScrollOffset new_scroll_offset =
       ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
@@ -331,8 +328,7 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
   // Return the newly moved rect to absolute coordinates.
   // TODO(szager): PaintLayerScrollableArea::ScrollIntoView clips the return
   // value to the visible content rect, but this does not.
-  rect_in_document.Move(
-      -PhysicalOffset::FromFloatSizeRound(LayoutViewport().GetScrollOffset()));
+  rect_in_document.Move(-LayoutSize(LayoutViewport().GetScrollOffset()));
   return rect_in_document;
 }
 

@@ -60,7 +60,6 @@ enum class SelectionState;
 class TextIteratorBehavior;
 struct PaintInvalidatorContext;
 struct PhysicalOffset;
-struct PhysicalRect;
 
 enum RevealExtentOption { kRevealExtent, kDoNotRevealExtent };
 
@@ -259,7 +258,7 @@ class CORE_EXPORT FrameSelection final
 
   // This returns last layouted selection bounds of LayoutSelection rather than
   // SelectionEditor keeps.
-  PhysicalRect AbsoluteUnclippedBounds() const;
+  LayoutRect AbsoluteUnclippedBounds() const;
 
   // TODO(tkent): This function has a bug that scrolling doesn't work well in
   // a case of RangeSelection. crbug.com/443061

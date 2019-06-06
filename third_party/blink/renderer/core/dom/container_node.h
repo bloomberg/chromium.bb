@@ -150,7 +150,7 @@ class CORE_EXPORT ContainerNode : public Node {
 
   void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(bool performing_reattach = false) override;
-  PhysicalRect BoundingBox() const final;
+  LayoutRect BoundingBox() const final;
   void SetFocused(bool, WebFocusType) override;
   void SetHasFocusWithinUpToAncestor(bool, Node* ancestor);
   void FocusStateChanged();

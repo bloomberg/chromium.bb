@@ -75,9 +75,11 @@ IntSize ScrollableAreaClipSizeInRootFrame(const ScrollableArea& scrollable) {
   LocalFrameView* view = box->GetFrameView();
   DCHECK(view);
 
-  PhysicalRect rect(scrollable.VisibleContentRect(blink::kIncludeScrollbars));
-  rect = view->DocumentToFrame(rect);
-  return view->ConvertToRootFrame(EnclosedIntRect(FloatRect(rect))).Size();
+  LayoutRect layout_rect =
+      LayoutRect(scrollable.VisibleContentRect(blink::kIncludeScrollbars));
+  layout_rect = view->DocumentToFrame(layout_rect);
+  IntRect rect = view->ConvertToRootFrame(EnclosedIntRect(layout_rect));
+  return rect.Size();
 }
 
 IntPoint RootFrameLocationToScrollable(const IntPoint& location_in_root_frame,

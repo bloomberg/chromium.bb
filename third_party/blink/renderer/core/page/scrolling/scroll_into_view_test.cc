@@ -589,7 +589,7 @@ TEST_F(ScrollIntoViewTest, StopAtLayoutViewportOption) {
       ScrollAlignment::kAlignLeftAlways, ScrollAlignment::kAlignTopAlways,
       kProgrammaticScroll, false, kScrollBehaviorInstant);
   params.stop_at_main_frame_layout_viewport = true;
-  target->ScrollRectToVisible(PhysicalRect(target->AbsoluteBoundingBoxRect()),
+  target->ScrollRectToVisible(LayoutRect(target->AbsoluteBoundingBoxRect()),
                               params);
 
   ScrollableArea* root_scroller =

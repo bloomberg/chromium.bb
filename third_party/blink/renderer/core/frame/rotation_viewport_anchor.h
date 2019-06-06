@@ -6,9 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ROTATION_VIEWPORT_ANCHOR_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -64,7 +65,7 @@ class CORE_EXPORT RotationViewportAnchor {
   Member<Node> anchor_node_;
 
   // In Document coordinates.
-  PhysicalRect anchor_node_bounds_;
+  LayoutRect anchor_node_bounds_;
 
   FloatSize anchor_in_inner_view_coords_;
   FloatSize anchor_in_node_coords_;

@@ -951,18 +951,20 @@ LayoutBoxModelObject* Node::GetLayoutBoxModelObject() const {
              : nullptr;
 }
 
-PhysicalRect Node::BoundingBox() const {
+LayoutRect Node::BoundingBox() const {
   if (GetLayoutObject())
-    return PhysicalRect(GetLayoutObject()->AbsoluteBoundingBoxRect());
-  return PhysicalRect();
+    return LayoutRect(GetLayoutObject()->AbsoluteBoundingBoxRect());
+  return LayoutRect();
 }
 
-PhysicalRect Node::BoundingBoxForScrollIntoView() const {
+LayoutRect Node::BoundingBoxForScrollIntoView() const {
   if (GetLayoutObject()) {
-    return GetLayoutObject()->AbsoluteBoundingBoxRectForScrollIntoView();
+    return GetLayoutObject()
+        ->AbsoluteBoundingBoxRectForScrollIntoView()
+        .ToLayoutRect();
   }
 
-  return PhysicalRect();
+  return LayoutRect();
 }
 
 Node& Node::ShadowIncludingRoot() const {

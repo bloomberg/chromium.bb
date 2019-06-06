@@ -34,9 +34,9 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_options.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
-#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 // This needs to be here because element.cc also depends on it.
 #define DUMP_NODE_STATISTICS 0
@@ -580,7 +580,7 @@ class CORE_EXPORT Node : public EventTarget {
   // inert to prevent text selection.
   bool IsInert() const;
 
-  virtual PhysicalRect BoundingBox() const;
+  virtual LayoutRect BoundingBox() const;
   IntRect PixelSnappedBoundingBox() const {
     return PixelSnappedIntRect(BoundingBox());
   }
@@ -588,7 +588,7 @@ class CORE_EXPORT Node : public EventTarget {
   // BoundingBoxForScrollIntoView() is the node's scroll snap area.
   // It is expanded from the BoundingBox() by scroll-margin.
   // https://drafts.csswg.org/css-scroll-snap-1/#scroll-snap-area
-  PhysicalRect BoundingBoxForScrollIntoView() const;
+  LayoutRect BoundingBoxForScrollIntoView() const;
 
   unsigned NodeIndex() const;
 

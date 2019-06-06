@@ -61,7 +61,7 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) final;
 
-  void Autoscroll(const PhysicalOffset&) final;
+  void Autoscroll(const LayoutPoint&) final;
 
   // Subclassed to forward to our inner div.
   LayoutUnit ScrollLeft() const final;

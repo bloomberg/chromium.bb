@@ -737,7 +737,7 @@ void Element::ScrollIntoViewNoVisualUpdate(
       ToPhysicalAlignment(options, kVerticalScroll, is_horizontal_writing_mode,
                           is_flipped_blocks_mode);
 
-  PhysicalRect bounds = BoundingBoxForScrollIntoView();
+  LayoutRect bounds = BoundingBoxForScrollIntoView();
   GetLayoutObject()->ScrollRectToVisible(
       bounds, {align_x, align_y, kProgrammaticScroll,
                /*make_visible_in_visual_viewport=*/true, behavior});
@@ -751,7 +751,7 @@ void Element::scrollIntoViewIfNeeded(bool center_if_needed) {
   if (!GetLayoutObject())
     return;
 
-  PhysicalRect bounds = BoundingBoxForScrollIntoView();
+  LayoutRect bounds = BoundingBoxForScrollIntoView();
   if (center_if_needed) {
     GetLayoutObject()->ScrollRectToVisible(
         bounds, {ScrollAlignment::kAlignCenterIfNeeded,

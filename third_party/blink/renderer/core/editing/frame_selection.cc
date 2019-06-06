@@ -963,15 +963,15 @@ String FrameSelection::SelectedTextForClipboard() const {
                  .Build());
 }
 
-PhysicalRect FrameSelection::AbsoluteUnclippedBounds() const {
+LayoutRect FrameSelection::AbsoluteUnclippedBounds() const {
   LocalFrameView* view = frame_->View();
   LayoutView* layout_view = frame_->ContentLayoutObject();
 
   if (!view || !layout_view)
-    return PhysicalRect();
+    return LayoutRect();
 
   view->UpdateLifecycleToLayoutClean();
-  return PhysicalRect(layout_selection_->AbsoluteSelectionBounds());
+  return LayoutRect(layout_selection_->AbsoluteSelectionBounds());
 }
 
 IntRect FrameSelection::ComputeRectToScroll(
@@ -1012,8 +1012,9 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
   // This function is needed to make sure that ComputeRectToScroll below has the
   // sticky offset info available before the computation.
   GetDocument().EnsurePaintLocationDataValidForNode(start.AnchorNode());
-  PhysicalRect selection_rect(ComputeRectToScroll(reveal_extent_option));
-  if (selection_rect == PhysicalRect() ||
+  LayoutRect selection_rect =
+      LayoutRect(ComputeRectToScroll(reveal_extent_option));
+  if (selection_rect == LayoutRect() ||
       !start.AnchorNode()->GetLayoutObject()->EnclosingBox())
     return;
 

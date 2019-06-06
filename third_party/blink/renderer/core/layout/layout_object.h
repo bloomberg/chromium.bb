@@ -354,8 +354,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // space of the local root frame.
   // TODO(nburris): The returned rect is actually in document coordinates, not
   // root frame coordinates.
-  PhysicalRect ScrollRectToVisible(const PhysicalRect&,
-                                   const WebScrollIntoViewParams&);
+  LayoutRect ScrollRectToVisible(const LayoutRect&,
+                                 const WebScrollIntoViewParams&);
 
   // Convenience function for getting to the nearest enclosing box of a
   // LayoutObject.
