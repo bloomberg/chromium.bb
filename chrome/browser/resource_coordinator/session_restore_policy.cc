@@ -110,7 +110,7 @@ SessionRestorePolicy::~SessionRestorePolicy() {
 }
 
 float SessionRestorePolicy::AddTabForScoring(content::WebContents* contents) {
-  DCHECK(!base::ContainsKey(tab_data_, contents));
+  DCHECK(!base::Contains(tab_data_, contents));
 
   // When the first tab is added keep track of a 'now' time. This ensures that
   // the scoring function returns consistent values over the lifetime of the

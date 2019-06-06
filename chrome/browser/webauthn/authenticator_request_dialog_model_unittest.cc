@@ -303,11 +303,11 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
     transports_info.request_type = test_case.request_type;
     transports_info.available_transports = test_case.available_transports;
 
-    if (base::ContainsKey(test_case.transport_params,
-                          TransportAvailabilityParam::kHasTouchIdCredential))
+    if (base::Contains(test_case.transport_params,
+                       TransportAvailabilityParam::kHasTouchIdCredential))
       transports_info.has_recognized_mac_touch_id_credential = true;
 
-    if (base::ContainsKey(
+    if (base::Contains(
             test_case.transport_params,
             TransportAvailabilityParam::kHasWinNativeAuthenticator)) {
       transports_info.has_win_native_api_authenticator = true;

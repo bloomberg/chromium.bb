@@ -112,8 +112,7 @@ class ExpectStateTransitionObserver : public LifecycleUnitObserver {
     } else {
       LOG(ERROR) << "transition to state "
                  << static_cast<int>(lifecycle_unit_->GetState());
-      EXPECT_TRUE(
-          base::ContainsKey(allowed_states_, lifecycle_unit_->GetState()));
+      EXPECT_TRUE(base::Contains(allowed_states_, lifecycle_unit_->GetState()));
     }
   }
 

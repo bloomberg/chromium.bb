@@ -257,7 +257,7 @@ void PrivetNotificationService::AddNotification(
   // If the UI is already open or a device was removed, we'll update the
   // existing notification but not add a new one.
   const bool notification_exists =
-      base::ContainsKey(displayed_notifications, kPrivetNotificationID);
+      base::Contains(displayed_notifications, kPrivetNotificationID);
   const bool add_new_notification =
       device_added &&
       !local_discovery::LocalDiscoveryUIHandler::GetHasVisible();

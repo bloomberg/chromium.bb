@@ -1291,7 +1291,7 @@ void NonWhitelistedCommandsAreDisabled(CommandUpdaterImpl* command_updater) {
 
   // Go through all the command ids, skip the whitelisted ones.
   for (int id : command_updater->GetAllIds()) {
-    if (base::ContainsValue(kWhitelistedIds, id)) {
+    if (base::Contains(kWhitelistedIds, id)) {
       continue;
     }
     DCHECK(!command_updater->IsCommandEnabled(id));

@@ -581,7 +581,7 @@ TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
     const std::string& lang = server_languages[i];
     if (lang == "xx")
       continue;
-    EXPECT_TRUE(base::ContainsValue(current_supported_languages, lang))
+    EXPECT_TRUE(base::Contains(current_supported_languages, lang))
         << "lang=" << lang;
   }
 }

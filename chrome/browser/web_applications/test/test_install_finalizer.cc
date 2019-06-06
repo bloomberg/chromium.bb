@@ -46,7 +46,7 @@ void TestInstallFinalizer::FinalizeInstall(
 void TestInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
     UninstallExternalWebAppCallback callback) {
-  DCHECK(base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+  DCHECK(base::Contains(next_uninstall_external_web_app_results_, app_url));
   uninstall_external_web_app_urls_.push_back(app_url);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -115,7 +115,7 @@ void TestInstallFinalizer::SetNextFinalizeInstallResult(
 void TestInstallFinalizer::SetNextUninstallExternalWebAppResult(
     const GURL& app_url,
     bool uninstalled) {
-  DCHECK(!base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+  DCHECK(!base::Contains(next_uninstall_external_web_app_results_, app_url));
   next_uninstall_external_web_app_results_[app_url] = uninstalled;
 }
 

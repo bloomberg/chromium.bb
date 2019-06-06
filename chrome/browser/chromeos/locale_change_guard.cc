@@ -238,7 +238,7 @@ bool LocaleChangeGuard::ShouldShowLocaleChangeNotification(
   if (from_lang != to_lang)
     return true;
 
-  return !base::ContainsValue(kSkipShowNotificationLanguages, from_lang);
+  return !base::Contains(kSkipShowNotificationLanguages, from_lang);
 }
 
 // static

@@ -302,7 +302,7 @@ class LookalikeUrlNavigationThrottleBrowserTest
     // Clicking the link in the interstitial should also remove the original
     // URL from history.
     ui_test_utils::HistoryEnumerator enumerator(browser->profile());
-    EXPECT_FALSE(base::ContainsValue(enumerator.urls(), navigated_url));
+    EXPECT_FALSE(base::Contains(enumerator.urls(), navigated_url));
 
     histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
                                 1);
@@ -355,7 +355,7 @@ class LookalikeUrlNavigationThrottleBrowserTest
 
     // Clicking the link should cause the original URL to appear in history.
     ui_test_utils::HistoryEnumerator enumerator(browser->profile());
-    EXPECT_TRUE(base::ContainsValue(enumerator.urls(), navigated_url));
+    EXPECT_TRUE(base::Contains(enumerator.urls(), navigated_url));
 
     histograms->ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
                                  1);

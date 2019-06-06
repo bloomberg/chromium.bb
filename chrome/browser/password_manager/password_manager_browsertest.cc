@@ -135,7 +135,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleTestAuthRequest(
                         base::CompareCase::SENSITIVE))
     return nullptr;
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  if (base::ContainsKey(request.headers, "Authorization")) {
+  if (base::Contains(request.headers, "Authorization")) {
     http_response->set_code(net::HTTP_OK);
     http_response->set_content("Success!");
   } else {

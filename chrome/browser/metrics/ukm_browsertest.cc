@@ -199,7 +199,7 @@ class UkmBrowserTestBase : public SyncTest {
   }
   bool HasSource(ukm::SourceId source_id) const {
     auto* service = ukm_service();
-    return service && base::ContainsKey(service->sources(), source_id);
+    return service && base::Contains(service->sources(), source_id);
   }
   void RecordDummySource(ukm::SourceId source_id) {
     auto* service = ukm_service();

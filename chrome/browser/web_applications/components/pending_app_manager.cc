@@ -42,7 +42,7 @@ void PendingAppManager::SynchronizeInstalledApps(
                        return install_options.install_source == install_source;
                      }));
   // Only one concurrent SynchronizeInstalledApps() expected per InstallSource.
-  DCHECK(!base::ContainsKey(synchronize_requests_, install_source));
+  DCHECK(!base::Contains(synchronize_requests_, install_source));
 
   std::vector<GURL> current_urls = GetInstalledAppUrls(install_source);
   std::sort(current_urls.begin(), current_urls.end());

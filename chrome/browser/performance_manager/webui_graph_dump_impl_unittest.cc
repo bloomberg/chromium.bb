@@ -98,7 +98,7 @@ class TestChangeStream : public mojom::WebUIGraphChangeStream {
   size_t num_changes() const { return num_changes_; }
 
  private:
-  bool HasId(int64_t id) { return base::ContainsKey(id_set_, id); }
+  bool HasId(int64_t id) { return base::Contains(id_set_, id); }
   bool HasIdIfValid(int64_t id) { return id == 0u || HasId(id); }
 
   FrameMap frame_map_;
@@ -187,7 +187,7 @@ TEST(WebUIGraphDumpImplTest, ChangeStream) {
   browser_thread_bundle.RunUntilIdle();
 
   EXPECT_EQ(1u, change_stream.num_changes());
-  EXPECT_FALSE(base::ContainsKey(change_stream.id_set(), child_frame_id));
+  EXPECT_FALSE(base::Contains(change_stream.id_set(), child_frame_id));
 
   const auto main_page_it = change_stream.page_map().find(
       NodeBase::GetSerializationId(mock_graph.page.get()));

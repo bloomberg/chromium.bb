@@ -186,7 +186,7 @@ class PolicyTestCase {
 #else
 #error "Unknown platform"
 #endif
-    return base::ContainsValue(supported_os_, os);
+    return base::Contains(supported_os_, os);
   }
   void AddSupportedOs(const std::string& os) { supported_os_.push_back(os); }
 

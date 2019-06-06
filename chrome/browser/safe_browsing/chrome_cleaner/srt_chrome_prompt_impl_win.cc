@@ -93,7 +93,7 @@ void ChromePromptImpl::DisableExtensions(
       [this, &verified_extension_ids](const base::string16& id) {
         std::string id_utf8 = base::UTF16ToUTF8(id);
         return crx_file::id_util::IdIsValid(id_utf8) &&
-               base::ContainsValue(verified_extension_ids, id) &&
+               base::Contains(verified_extension_ids, id) &&
                extension_service_->GetInstalledExtension(id_utf8) != nullptr;
       });
   if (!ids_are_valid) {

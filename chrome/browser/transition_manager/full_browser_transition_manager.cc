@@ -37,7 +37,7 @@ void FullBrowserTransitionManager::OnProfileCreated(Profile* profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   SimpleFactoryKey* key = profile->GetProfileKey();
-  DCHECK(!base::ContainsKey(simple_key_to_profile_, key));
+  DCHECK(!base::Contains(simple_key_to_profile_, key));
 
   // Register the mapping so that it can be used if deferred callbacks are added
   // later.

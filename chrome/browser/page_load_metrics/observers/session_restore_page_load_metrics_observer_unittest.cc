@@ -139,7 +139,7 @@ class SessionRestorePageLoadMetricsObserverTest
   }
 
   void SimulateTimingUpdateForTab(WebContents* contents) {
-    ASSERT_TRUE(base::ContainsKey(testers_, contents));
+    ASSERT_TRUE(base::Contains(testers_, contents));
     testers_[contents]->SimulateTimingUpdate(timing_);
   }
 

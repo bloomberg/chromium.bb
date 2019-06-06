@@ -226,7 +226,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
       }
     }
     ASSERT_NE(nullptr, app) << "No app found in scope " << scope;
-    EXPECT_TRUE(base::ContainsValue(app->enabled_methods, expected_method))
+    EXPECT_TRUE(base::Contains(app->enabled_methods, expected_method))
         << "Unable to find payment method " << expected_method
         << " in the list of enabled methods for the app installed from "
         << app->scope;

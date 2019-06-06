@@ -27,7 +27,7 @@ bool UkmUtilsForTest::HasSourceWithId(SourceId source_id) {
   auto* service =
       g_browser_process->GetMetricsServicesManager()->GetUkmService();
   DCHECK(service);
-  return base::ContainsKey(service->sources(), source_id);
+  return base::Contains(service->sources(), source_id);
 }
 
 // static

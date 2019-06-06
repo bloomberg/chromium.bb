@@ -155,8 +155,8 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
   const std::vector<std::string>& metadata =
       last_service_description_.metadata;
   EXPECT_EQ(2u, metadata.size());
-  EXPECT_TRUE(base::ContainsValue(metadata, "ab"));
-  EXPECT_TRUE(base::ContainsValue(metadata, "d=e"));
+  EXPECT_TRUE(base::Contains(metadata, "ab"));
+  EXPECT_TRUE(base::Contains(metadata, "d=e"));
 
   EXPECT_EQ(ip_address, last_service_description_.ip_address);
   EXPECT_EQ(kPort, last_service_description_.address.port());
@@ -210,8 +210,8 @@ TEST_F(ServiceDiscoveryClientMacTest, ResolveInvalidUnicodeRecord) {
   const std::vector<std::string>& metadata =
       last_service_description_.metadata;
   EXPECT_EQ(2u, metadata.size());
-  EXPECT_TRUE(base::ContainsValue(metadata, "a=b"));
-  EXPECT_TRUE(base::ContainsValue(metadata, "cd=e9"));
+  EXPECT_TRUE(base::Contains(metadata, "a=b"));
+  EXPECT_TRUE(base::Contains(metadata, "cd=e9"));
 
   EXPECT_EQ(ip_address, last_service_description_.ip_address);
   EXPECT_EQ(kPort, last_service_description_.address.port());

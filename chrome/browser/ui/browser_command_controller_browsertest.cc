@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, LockedFullscreen) {
   // Go through all the command ids and make sure all non-whitelisted commands
   // are disabled.
   for (int id : command_updater->GetAllIds()) {
-    if (base::ContainsValue(kWhitelistedIds, id)) {
+    if (base::Contains(kWhitelistedIds, id)) {
       continue;
     }
     EXPECT_FALSE(command_updater->IsCommandEnabled(id));

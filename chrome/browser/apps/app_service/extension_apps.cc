@@ -207,7 +207,7 @@ void ExtensionApps::SetPermission(const std::string& app_id,
 
   ContentSettingsType permission_type =
       static_cast<ContentSettingsType>(permission->permission_id);
-  if (!base::ContainsValue(kSupportedPermissionTypes, permission_type)) {
+  if (!base::Contains(kSupportedPermissionTypes, permission_type)) {
     return;
   }
 
@@ -278,7 +278,7 @@ void ExtensionApps::OnContentSettingChanged(
     ContentSettingsType content_type,
     const std::string& resource_identifier) {
   // If content_type is not one of the supported permissions, do nothing.
-  if (!base::ContainsValue(kSupportedPermissionTypes, content_type)) {
+  if (!base::Contains(kSupportedPermissionTypes, content_type)) {
     return;
   }
 

@@ -693,7 +693,7 @@ base::FilePath MediaGalleriesPreferences::LookUpGalleryPathForExtension(
   DCHECK(IsInitialized());
   DCHECK(extension);
   if (!include_unpermitted_galleries &&
-      !base::ContainsKey(GalleriesForExtension(*extension), gallery_id))
+      !base::Contains(GalleriesForExtension(*extension), gallery_id))
     return base::FilePath();
 
   MediaGalleriesPrefInfoMap::const_iterator it =
@@ -1008,7 +1008,7 @@ void MediaGalleriesPreferences::EraseOrBlacklistGalleryById(
       new ListPrefUpdate(prefs, prefs::kMediaGalleriesRememberedGalleries));
   base::ListValue* list = update->Get();
 
-  if (!base::ContainsKey(known_galleries_, id))
+  if (!base::Contains(known_galleries_, id))
     return;
 
   for (auto iter = list->begin(); iter != list->end(); ++iter) {
@@ -1047,7 +1047,7 @@ void MediaGalleriesPreferences::EraseOrBlacklistGalleryById(
 bool MediaGalleriesPreferences::NonAutoGalleryHasPermission(
     MediaGalleryPrefId id) const {
   DCHECK(IsInitialized());
-  DCHECK(!base::ContainsKey(known_galleries_, id) ||
+  DCHECK(!base::Contains(known_galleries_, id) ||
          known_galleries_.find(id)->second.type !=
              MediaGalleryPrefInfo::kAutoDetected);
   ExtensionPrefs* prefs = GetExtensionPrefs();

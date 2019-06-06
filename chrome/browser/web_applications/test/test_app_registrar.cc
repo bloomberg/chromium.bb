@@ -19,12 +19,12 @@ void TestAppRegistrar::AddAsInstalled(const AppId& app_id) {
 }
 
 void TestAppRegistrar::RemoveAsInstalled(const AppId& app_id) {
-  DCHECK(base::ContainsKey(installed_apps_, app_id));
+  DCHECK(base::Contains(installed_apps_, app_id));
   installed_apps_.erase(app_id);
 }
 
 void TestAppRegistrar::AddAsExternalAppUninstalledByUser(const AppId& app_id) {
-  DCHECK(!base::ContainsKey(uninstalled_external_apps_, app_id));
+  DCHECK(!base::Contains(uninstalled_external_apps_, app_id));
   uninstalled_external_apps_.insert(app_id);
 }
 
@@ -36,12 +36,12 @@ bool TestAppRegistrar::IsInstalled(const GURL& start_url) const {
 }
 
 bool TestAppRegistrar::IsInstalled(const AppId& app_id) const {
-  return base::ContainsKey(installed_apps_, app_id);
+  return base::Contains(installed_apps_, app_id);
 }
 
 bool TestAppRegistrar::WasExternalAppUninstalledByUser(
     const AppId& app_id) const {
-  return base::ContainsKey(uninstalled_external_apps_, app_id);
+  return base::Contains(uninstalled_external_apps_, app_id);
 }
 
 bool TestAppRegistrar::HasScopeUrl(const AppId& app_id) const {

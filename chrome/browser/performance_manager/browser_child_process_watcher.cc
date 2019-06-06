@@ -78,7 +78,7 @@ void BrowserChildProcessWatcher::GPUProcessExited(int id, int exit_code) {
   // It appears the exit code can be delivered either after the host is
   // disconnected, or perhaps before the HostConnected notification,
   // specifically on crash.
-  if (base::ContainsKey(gpu_process_nodes_, id)) {
+  if (base::Contains(gpu_process_nodes_, id)) {
     auto* process_node = gpu_process_nodes_[id].get();
     PerformanceManager* performance_manager = PerformanceManager::GetInstance();
 

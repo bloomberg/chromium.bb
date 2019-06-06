@@ -200,8 +200,7 @@ void TabManagerStatsCollector::RecordSwitchToTab(
 
   if (old_contents)
     foreground_contents_switched_to_times_.erase(old_contents);
-  DCHECK(
-      !base::ContainsKey(foreground_contents_switched_to_times_, new_contents));
+  DCHECK(!base::Contains(foreground_contents_switched_to_times_, new_contents));
   if (new_data->tab_loading_state() != LoadingState::LOADED) {
     foreground_contents_switched_to_times_.insert(
         std::make_pair(new_contents, NowTicks()));
@@ -380,7 +379,7 @@ void TabManagerStatsCollector::OnWillLoadNextBackgroundTab(bool timeout) {
 void TabManagerStatsCollector::OnTabIsLoaded(content::WebContents* contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!base::ContainsKey(foreground_contents_switched_to_times_, contents))
+  if (!base::Contains(foreground_contents_switched_to_times_, contents))
     return;
 
   base::TimeDelta switch_load_time =

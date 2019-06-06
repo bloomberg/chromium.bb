@@ -129,7 +129,7 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Delete) {
   helper->DeleteAppCaches(url::Origin::Create(manifest2));
   EXPECT_EQ(2u, helper->GetCount());
   EXPECT_FALSE(
-      base::ContainsKey(helper->GetOrigins(), url::Origin::Create(manifest2)));
+      base::Contains(helper->GetOrigins(), url::Origin::Create(manifest2)));
 }
 
 TEST_F(CannedBrowsingDataAppCacheHelperTest, IgnoreExtensionsAndDevTools) {

@@ -119,7 +119,7 @@ TabLoadTracker::TabLoadTracker() = default;
 
 void TabLoadTracker::StartTracking(content::WebContents* web_contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!base::ContainsKey(tabs_, web_contents));
+  DCHECK(!base::Contains(tabs_, web_contents));
 
   LoadingState loading_state = DetermineLoadingState(web_contents);
 
@@ -225,7 +225,7 @@ void TabLoadTracker::OnPageAlmostIdle(content::WebContents* web_contents) {
   // so here we can assume the event pertains to a live web_contents and
   // its most recent navigation. However, the graph tracks contents that aren't
   // tracked by this object.
-  if (!base::ContainsKey(tabs_, web_contents))
+  if (!base::Contains(tabs_, web_contents))
     return;
 
   MaybeTransitionToLoaded(web_contents);

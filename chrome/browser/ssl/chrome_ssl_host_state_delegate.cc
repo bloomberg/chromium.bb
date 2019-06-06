@@ -405,9 +405,9 @@ bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
   auto entry = BrokenHostEntry(host, child_id);
   switch (content_type) {
     case MIXED_CONTENT:
-      return base::ContainsKey(ran_mixed_content_hosts_, entry);
+      return base::Contains(ran_mixed_content_hosts_, entry);
     case CERT_ERRORS_CONTENT:
-      return base::ContainsKey(ran_content_with_cert_errors_hosts_, entry);
+      return base::Contains(ran_content_with_cert_errors_hosts_, entry);
   }
   NOTREACHED();
   return false;

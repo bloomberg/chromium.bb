@@ -427,7 +427,7 @@ ProtocolHandlerRegistry::GetUserDefinedHandlers(base::Time begin,
   ProtocolHandlerRegistry::ProtocolHandlerList result;
   for (const auto& entry : user_protocol_handlers_) {
     for (const ProtocolHandler& handler : entry.second) {
-      if (base::ContainsValue(predefined_protocol_handlers_, handler))
+      if (base::Contains(predefined_protocol_handlers_, handler))
         continue;
       if (begin <= handler.last_modified() && handler.last_modified() < end)
         result.push_back(handler);
@@ -489,7 +489,7 @@ bool ProtocolHandlerRegistry::IsRegistered(
   if (!handlers) {
     return false;
   }
-  return base::ContainsValue(*handlers, handler);
+  return base::Contains(*handlers, handler);
 }
 
 bool ProtocolHandlerRegistry::IsRegisteredByUser(
@@ -874,7 +874,7 @@ bool ProtocolHandlerRegistry::HandlerExists(const ProtocolHandler& handler,
 
 bool ProtocolHandlerRegistry::HandlerExists(const ProtocolHandler& handler,
                                             const ProtocolHandlerList& list) {
-  return base::ContainsValue(list, handler);
+  return base::Contains(list, handler);
 }
 
 void ProtocolHandlerRegistry::EraseHandler(const ProtocolHandler& handler,

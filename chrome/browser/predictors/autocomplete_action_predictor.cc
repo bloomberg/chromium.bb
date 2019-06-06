@@ -139,8 +139,7 @@ void AutocompleteActionPredictor::RegisterTransitionalMatches(
   for (const auto& match : result) {
     const GURL& url = match.destination_url;
     const size_t size = url.spec().size();
-    if (!base::ContainsValue(match_it->urls, url) &&
-        size <= kMaximumStringLength &&
+    if (!base::Contains(match_it->urls, url) && size <= kMaximumStringLength &&
         transitional_matches_size_ + size <= kMaximumTransitionalMatchesSize) {
       match_it->urls.push_back(url);
       transitional_matches_size_ += size;

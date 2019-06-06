@@ -91,7 +91,7 @@ void LocalPresentationManager::OnLocalPresentationReceiverTerminated(
 
 bool LocalPresentationManager::IsLocalPresentation(
     const std::string& presentation_id) {
-  return base::ContainsKey(local_presentations_, presentation_id);
+  return base::Contains(local_presentations_, presentation_id);
 }
 
 const MediaRoute* LocalPresentationManager::GetRoute(

@@ -67,7 +67,7 @@ TabStatsTracker* g_tab_stats_tracker_instance = nullptr;
 // Ensure that an interval is a valid one (i.e. listed in
 // |kTabUsageReportingIntervals|).
 bool IsValidInterval(base::TimeDelta interval) {
-  return base::ContainsValue(kTabUsageReportingIntervals, interval);
+  return base::Contains(kTabUsageReportingIntervals, interval);
 }
 
 }  // namespace
@@ -393,7 +393,7 @@ void TabStatsTracker::OnInitialOrInsertedTab(
   // If we already have a WebContentsObserver for this tab then it means that
   // it's already tracked and it's being dragged into a new window, there's
   // nothing to do here.
-  if (!base::ContainsKey(web_contents_usage_observers_, web_contents)) {
+  if (!base::Contains(web_contents_usage_observers_, web_contents)) {
     tab_stats_data_store_->OnTabAdded(web_contents);
     web_contents_usage_observers_.insert(std::make_pair(
         web_contents,
@@ -404,7 +404,7 @@ void TabStatsTracker::OnInitialOrInsertedTab(
 void TabStatsTracker::OnWebContentsDestroyed(
     content::WebContents* web_contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::ContainsKey(web_contents_usage_observers_, web_contents));
+  DCHECK(base::Contains(web_contents_usage_observers_, web_contents));
   web_contents_usage_observers_.erase(
       web_contents_usage_observers_.find(web_contents));
   tab_stats_data_store_->OnTabRemoved(web_contents);

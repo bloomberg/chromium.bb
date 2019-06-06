@@ -2876,7 +2876,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
 
   // Set a value for every WebsiteSetting.
   for (const content_settings::WebsiteSettingsInfo* info : *registry) {
-    if (base::ContainsValue(whitelisted_types, info->type()))
+    if (base::Contains(whitelisted_types, info->type()))
       continue;
     base::Value some_value;
     auto* content_setting = content_setting_registry->Get(info->type());
@@ -2921,7 +2921,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
 
   // All settings should be deleted now.
   for (const content_settings::WebsiteSettingsInfo* info : *registry) {
-    if (base::ContainsValue(whitelisted_types, info->type()))
+    if (base::Contains(whitelisted_types, info->type()))
       continue;
     std::unique_ptr<base::Value> value =
         map->GetWebsiteSetting(url, url, info->type(), std::string(), nullptr);

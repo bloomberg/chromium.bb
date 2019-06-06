@@ -213,8 +213,7 @@ std::unordered_set<std::string> GetBlacklistedImportantDomains(
   std::unordered_set<std::string> ignoring_domains;
   for (const ContentSettingPatternSource& site : content_settings_list) {
     GURL origin(site.primary_pattern.ToString());
-    if (!origin.is_valid() ||
-        base::ContainsKey(ignoring_domains, origin.host())) {
+    if (!origin.is_valid() || base::Contains(ignoring_domains, origin.host())) {
       continue;
     }
 

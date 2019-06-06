@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceBrowsertest, BrotliEnabled) {
   std::vector<std::string> encodings =
       base::SplitString(*simple_loader_helper.response_body(), ",",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  EXPECT_TRUE(base::ContainsValue(encodings, "br"));
+  EXPECT_TRUE(base::Contains(encodings, "br"));
 }
 
 // Test subclass that adds switches::kDiskCacheDir to the command line, to make

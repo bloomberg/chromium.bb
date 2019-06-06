@@ -182,7 +182,7 @@ bool CastActivityManager::CanJoinSession(const ActivityRecord& activity,
   if (!cast_source.ContainsApp(activity.app_id()))
     return false;
 
-  if (base::ContainsKey(activity.connected_clients(), cast_source.client_id()))
+  if (base::Contains(activity.connected_clients(), cast_source.client_id()))
     return false;
 
   if (activity.route().is_incognito() != incognito)

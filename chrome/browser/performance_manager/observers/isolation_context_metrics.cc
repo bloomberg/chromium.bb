@@ -193,8 +193,8 @@ void IsolationContextMetrics::OnIsVisibleChanged(PageNodeImpl* page_node) {
 
   // Get the data related to this browsing instance. Since there is a current
   // main frame it must already have existed.
-  DCHECK(base::ContainsKey(browsing_instance_data_,
-                           frame_node->browsing_instance_id()));
+  DCHECK(base::Contains(browsing_instance_data_,
+                        frame_node->browsing_instance_id()));
   auto* data = &browsing_instance_data_[frame_node->browsing_instance_id()];
   const BrowsingInstanceDataState old_state =
       GetBrowsingInstanceDataState(data);

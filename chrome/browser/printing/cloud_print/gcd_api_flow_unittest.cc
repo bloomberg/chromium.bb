@@ -108,7 +108,7 @@ TEST_F(GCDApiFlowTest, SuccessOAuth2) {
           "SomeToken", base::Time::Now() + base::TimeDelta::FromHours(1),
           std::string() /* No extra information needed for this test */));
 
-  EXPECT_TRUE(base::ContainsKey(requested_urls, GURL(kConfirmRequest)));
+  EXPECT_TRUE(base::Contains(requested_urls, GURL(kConfirmRequest)));
 
   test_url_loader_factory_.AddResponse(kConfirmRequest, kSampleConfirmResponse);
 
@@ -138,7 +138,7 @@ TEST_F(GCDApiFlowTest, BadJson) {
           "SomeToken", base::Time::Now() + base::TimeDelta::FromHours(1),
           std::string() /* No extra information needed for this test */));
 
-  EXPECT_TRUE(base::ContainsKey(requested_urls, GURL(kConfirmRequest)));
+  EXPECT_TRUE(base::Contains(requested_urls, GURL(kConfirmRequest)));
   test_url_loader_factory_.AddResponse(kConfirmRequest,
                                        kFailedConfirmResponseBadJson);
   base::RunLoop run_loop;

@@ -114,14 +114,14 @@ class ConnectionTracker {
   ConnectionTracker() {}
 
   void AcceptedSocketWithPort(uint16_t port) {
-    EXPECT_FALSE(base::ContainsKey(sockets_, port));
+    EXPECT_FALSE(base::Contains(sockets_, port));
     sockets_[port] = SocketStatus::kAccepted;
     CheckAccepted();
     first_accept_loop_.Quit();
   }
 
   void ReadFromSocketWithPort(uint16_t port) {
-    EXPECT_TRUE(base::ContainsKey(sockets_, port));
+    EXPECT_TRUE(base::Contains(sockets_, port));
     sockets_[port] = SocketStatus::kReadFrom;
     first_read_loop_.Quit();
   }
@@ -301,25 +301,25 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
 
   bool HasOriginAttemptedToPreconnect(const GURL& origin) {
     DCHECK_EQ(origin, origin.GetOrigin());
-    return base::ContainsKey(preconnect_url_attempts_, origin);
+    return base::Contains(preconnect_url_attempts_, origin);
   }
 
   bool HasHostBeenLookedUp(const std::string& host) {
-    return base::ContainsKey(successful_dns_lookups_, host) ||
-           base::ContainsKey(unsuccessful_dns_lookups_, host);
+    return base::Contains(successful_dns_lookups_, host) ||
+           base::Contains(unsuccessful_dns_lookups_, host);
   }
 
   bool HostFound(const std::string& host) {
-    return base::ContainsKey(successful_dns_lookups_, host);
+    return base::Contains(successful_dns_lookups_, host);
   }
 
   bool HasProxyBeenLookedUp(const GURL& url) {
-    return base::ContainsKey(successful_proxy_lookups_, url.GetOrigin()) ||
-           base::ContainsKey(unsuccessful_proxy_lookups_, url.GetOrigin());
+    return base::Contains(successful_proxy_lookups_, url.GetOrigin()) ||
+           base::Contains(unsuccessful_proxy_lookups_, url.GetOrigin());
   }
 
   bool ProxyFound(const GURL& url) {
-    return base::ContainsKey(successful_proxy_lookups_, url.GetOrigin());
+    return base::Contains(successful_proxy_lookups_, url.GetOrigin());
   }
 
  private:

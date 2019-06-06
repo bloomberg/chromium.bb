@@ -225,8 +225,8 @@ Thumbnail* ThumbnailCache::Get(TabId tab_id,
   }
 
   if (force_disk_read && primary_tab_id_ != tab_id &&
-      base::ContainsValue(visible_ids_, tab_id) &&
-      !base::ContainsValue(read_queue_, tab_id)) {
+      base::Contains(visible_ids_, tab_id) &&
+      !base::Contains(read_queue_, tab_id)) {
     read_queue_.push_back(tab_id);
     ReadNextThumbnail();
   }
@@ -321,7 +321,7 @@ void ThumbnailCache::UpdateVisibleIds(const TabIdList& priority,
     TabId tab_id = *iter;
     visible_ids_.push_back(tab_id);
     if (!cache_.Get(tab_id) && primary_tab_id_ != tab_id &&
-        !base::ContainsValue(read_queue_, tab_id))
+        !base::Contains(read_queue_, tab_id))
       read_queue_.push_back(tab_id);
     iter++;
     count++;
@@ -420,7 +420,7 @@ void ThumbnailCache::ReadNextThumbnail() {
 }
 
 void ThumbnailCache::MakeSpaceForNewItemIfNecessary(TabId tab_id) {
-  if (cache_.Get(tab_id) || !base::ContainsValue(visible_ids_, tab_id) ||
+  if (cache_.Get(tab_id) || !base::Contains(visible_ids_, tab_id) ||
       cache_.size() < cache_.MaximumCacheSize()) {
     return;
   }
@@ -432,7 +432,7 @@ void ThumbnailCache::MakeSpaceForNewItemIfNecessary(TabId tab_id) {
   for (ExpiringThumbnailCache::iterator iter = cache_.begin();
        iter != cache_.end();
        iter++) {
-    if (!base::ContainsValue(visible_ids_, iter->first)) {
+    if (!base::Contains(visible_ids_, iter->first)) {
       key_to_remove = iter->first;
       found_key_to_remove = true;
       break;

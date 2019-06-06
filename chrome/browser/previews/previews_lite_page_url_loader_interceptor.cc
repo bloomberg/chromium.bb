@@ -97,7 +97,7 @@ void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
   }
 
   // Do not attempt to serve the same URL multiple times.
-  if (base::ContainsKey(urls_processed_, tentative_resource_request.url)) {
+  if (base::Contains(urls_processed_, tentative_resource_request.url)) {
     std::move(callback).Run({});
     return;
   }

@@ -28,7 +28,7 @@ void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
 
 void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::ContainsKey(frame_nodes_, frame_node));
+  DCHECK(base::Contains(frame_nodes_, frame_node));
   frame_nodes_.erase(frame_node);
 }
 

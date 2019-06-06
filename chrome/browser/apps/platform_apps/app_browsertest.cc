@@ -1219,7 +1219,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
       incognito_profile, file_manager,
       WindowOpenDisposition::NEW_FOREGROUND_TAB, extensions::SOURCE_TEST));
 
-  while (!base::ContainsKey(opener_app_ids_, file_manager->id())) {
+  while (!base::Contains(opener_app_ids_, file_manager->id())) {
     content::RunAllPendingInMessageLoop();
   }
 }

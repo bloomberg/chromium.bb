@@ -186,9 +186,8 @@ void TabMetricsLogger::LogTabMetrics(
 
     // Verify that the browser is not closing.
     const Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-    if (base::ContainsKey(
-            BrowserList::GetInstance()->currently_closing_browsers(),
-            browser)) {
+    if (base::Contains(BrowserList::GetInstance()->currently_closing_browsers(),
+                       browser)) {
       return;
     }
 

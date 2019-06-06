@@ -1983,7 +1983,7 @@ void ChromeContentBrowserClient::PersistIsolatedOrigin(
                         prefs::kUserTriggeredIsolatedOrigins);
   base::ListValue* list = update.Get();
   base::Value value(origin.Serialize());
-  if (!base::ContainsValue(list->GetList(), value))
+  if (!base::Contains(list->GetList(), value))
     list->GetList().push_back(std::move(value));
 }
 

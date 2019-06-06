@@ -124,7 +124,7 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
 
   void SetNextFinalizeInstallResult(const GURL& url,
                                     web_app::InstallResultCode code) {
-    DCHECK(!base::ContainsKey(next_finalize_install_results_, url));
+    DCHECK(!base::Contains(next_finalize_install_results_, url));
 
     web_app::AppId app_id;
     if (code == web_app::InstallResultCode::kSuccess) {
@@ -135,8 +135,7 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
 
   void SetNextUninstallExternalWebAppResult(const GURL& app_url,
                                             bool uninstalled) {
-    DCHECK(
-        !base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+    DCHECK(!base::Contains(next_uninstall_external_web_app_results_, app_url));
 
     next_uninstall_external_web_app_results_[app_url] = {
         GetAppIdForUrl(app_url), uninstalled};
@@ -144,7 +143,7 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
 
   void SetNextCreateOsShortcutsResult(const web_app::AppId& app_id,
                                       bool shortcut_created) {
-    DCHECK(!base::ContainsKey(next_create_os_shortcuts_results_, app_id));
+    DCHECK(!base::Contains(next_create_os_shortcuts_results_, app_id));
     next_create_os_shortcuts_results_[app_id] = shortcut_created;
   }
 
@@ -168,8 +167,8 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override {
-    DCHECK(base::ContainsKey(next_finalize_install_results_,
-                             web_app_info.app_url));
+    DCHECK(
+        base::Contains(next_finalize_install_results_, web_app_info.app_url));
 
     web_app_info_list_.push_back(web_app_info);
     finalize_options_list_.push_back(options);
@@ -192,8 +191,7 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   void UninstallExternalWebApp(
       const GURL& app_url,
       UninstallExternalWebAppCallback callback) override {
-    DCHECK(
-        base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+    DCHECK(base::Contains(next_uninstall_external_web_app_results_, app_url));
     uninstall_external_web_app_urls_.push_back(app_url);
 
     web_app::AppId app_id;
@@ -217,7 +215,7 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   void CreateOsShortcuts(const web_app::AppId& app_id,
                          bool add_to_desktop,
                          CreateOsShortcutsCallback callback) override {
-    DCHECK(base::ContainsKey(next_create_os_shortcuts_results_, app_id));
+    DCHECK(base::Contains(next_create_os_shortcuts_results_, app_id));
     ++num_create_os_shortcuts_calls_;
     bool shortcut_created = next_create_os_shortcuts_results_[app_id];
     next_create_os_shortcuts_results_.erase(app_id);

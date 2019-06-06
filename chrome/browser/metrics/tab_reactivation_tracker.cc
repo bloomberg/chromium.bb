@@ -108,7 +108,7 @@ void TabReactivationTracker::NotifyTabReactivating(
 TabReactivationTracker::WebContentsHelper* TabReactivationTracker::GetHelper(
     content::WebContents* contents) {
   // Make sure it exists.
-  if (!base::ContainsKey(helper_map_, contents)) {
+  if (!base::Contains(helper_map_, contents)) {
     helper_map_.insert(std::make_pair(
         contents, std::make_unique<WebContentsHelper>(this, contents)));
   }

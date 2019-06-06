@@ -109,8 +109,8 @@ bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest) {
             base::CompareCase::INSENSITIVE_ASCII)))
       continue;
 
-    if (!base::ContainsValue(icon.purpose,
-                             blink::Manifest::ImageResource::Purpose::ANY)) {
+    if (!base::Contains(icon.purpose,
+                        blink::Manifest::ImageResource::Purpose::ANY)) {
       continue;
     }
 

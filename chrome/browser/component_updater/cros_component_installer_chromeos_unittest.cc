@@ -75,8 +75,8 @@ class TestUpdater : public OnDemandUpdater {
 
   // Whether has a pending update request (either foreground or background).
   bool HasPendingUpdate(const std::string& name) {
-    return base::ContainsKey(background_updates_, name) ||
-           base::ContainsKey(foreground_updates_, name);
+    return base::Contains(background_updates_, name) ||
+           base::Contains(foreground_updates_, name);
   }
 
   // Finishes a foreground update request. Returns false if there is no pending

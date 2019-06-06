@@ -222,7 +222,7 @@ TEST_F(DeviceDescriptionServiceTest, TestCleanUpCacheEntries) {
 
   device_description_service_.CleanUpCacheEntries();
   EXPECT_EQ(size_t(1), description_cache_.size());
-  EXPECT_TRUE(base::ContainsKey(description_cache_, device_data_3.label()));
+  EXPECT_TRUE(base::Contains(description_cache_, device_data_3.label()));
 
   AddToCache(device_data_3.label(), ParsedDialDeviceDescription(),
              true /* expired*/);

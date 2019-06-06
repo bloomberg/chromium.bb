@@ -308,7 +308,7 @@ bool ServerCacheReplayer::GetResponseForQuery(
     return false;
   }
   std::string key = GetKeyFromQueryRequest(query);
-  if (!base::ContainsKey(const_cache_, key)) {
+  if (!base::Contains(const_cache_, key)) {
     VLOG(1) << "Did not match any response for " << key;
     return false;
   }

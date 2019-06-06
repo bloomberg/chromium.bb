@@ -213,7 +213,7 @@ void PrintViewManager::OnSetupScriptedPrintPreview(
   auto& map = g_scripted_print_preview_closure_map.Get();
   content::RenderProcessHost* rph = rfh->GetProcess();
 
-  if (base::ContainsKey(map, rph)) {
+  if (base::Contains(map, rph)) {
     // Renderer already handling window.print(). Abort this attempt to prevent
     // the renderer from having multiple nested loops. If multiple nested loops
     // existed, then they have to exit in the right order and that is messy.

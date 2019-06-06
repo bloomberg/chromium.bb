@@ -187,7 +187,7 @@ void JNI_WebsitePreferenceBridge_GetOrigins(
 
   for (const auto& settings_it : embargo_settings) {
     const std::string origin = settings_it.primary_pattern.ToString();
-    if (base::ContainsValue(seen_origins, origin)) {
+    if (base::Contains(seen_origins, origin)) {
       // This origin has already been added to the list, so don't add it again.
       continue;
     }

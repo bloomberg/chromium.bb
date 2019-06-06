@@ -70,8 +70,8 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
     // should have added ANY if there was no purpose specified in the manifest).
     DCHECK(!icon.purpose.empty());
 
-    if (!base::ContainsValue(icon.purpose,
-                             blink::Manifest::ImageResource::Purpose::ANY)) {
+    if (!base::Contains(icon.purpose,
+                        blink::Manifest::ImageResource::Purpose::ANY)) {
       continue;
     }
 

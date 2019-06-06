@@ -111,7 +111,7 @@ void WiredDisplayMediaRouteProvider::CreateRoute(
     base::TimeDelta timeout,
     bool incognito,
     CreateRouteCallback callback) {
-  DCHECK(!base::ContainsKey(presentations_, presentation_id));
+  DCHECK(!base::Contains(presentations_, presentation_id));
   base::Optional<Display> display = GetDisplayBySinkId(sink_id);
   if (!display) {
     std::move(callback).Run(base::nullopt, nullptr,

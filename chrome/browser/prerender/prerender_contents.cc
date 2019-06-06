@@ -500,7 +500,7 @@ bool PrerenderContents::Matches(
       session_storage_namespace_id_ != session_storage_namespace->id()) {
     return false;
   }
-  return base::ContainsValue(alias_urls_, url);
+  return base::Contains(alias_urls_, url);
 }
 
 void PrerenderContents::RenderProcessGone(base::TerminationStatus status) {

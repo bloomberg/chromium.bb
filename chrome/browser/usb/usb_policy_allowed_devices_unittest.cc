@@ -136,29 +136,27 @@ TEST_P(UsbPolicyAllowedDevicesTest, InitializeWithExistingPrefValue) {
   EXPECT_EQ(map.size(), 3ul);
 
   auto device_key = std::make_pair(1234, 5678);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
 
   const auto& first_urls = map.at(device_key);
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       first_urls, MakeOriginPair("https://google.com", "https://google.com")));
-  EXPECT_TRUE(
-      base::ContainsKey(first_urls, MakeOriginPair("https://crbug.com")));
+  EXPECT_TRUE(base::Contains(first_urls, MakeOriginPair("https://crbug.com")));
 
   device_key = std::make_pair(4321, -1);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
 
   const auto& second_urls = map.at(device_key);
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       second_urls, MakeOriginPair("https://google.com", "https://google.com")));
-  EXPECT_TRUE(
-      base::ContainsKey(second_urls, MakeOriginPair("https://crbug.com")));
+  EXPECT_TRUE(base::Contains(second_urls, MakeOriginPair("https://crbug.com")));
 
   device_key = std::make_pair(-1, -1);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
 
   const auto& third_urls = map.at(device_key);
   EXPECT_TRUE(
-      base::ContainsKey(third_urls, MakeOriginPair("https://www.youtube.com")));
+      base::Contains(third_urls, MakeOriginPair("https://www.youtube.com")));
 }
 
 TEST_P(UsbPolicyAllowedDevicesTest,
@@ -177,29 +175,27 @@ TEST_P(UsbPolicyAllowedDevicesTest,
   EXPECT_EQ(map.size(), 3ul);
 
   auto device_key = std::make_pair(1234, 5678);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
 
   const auto& first_urls = map.at(device_key);
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       first_urls, MakeOriginPair("https://google.com", "https://google.com")));
-  EXPECT_TRUE(
-      base::ContainsKey(first_urls, MakeOriginPair("https://crbug.com")));
+  EXPECT_TRUE(base::Contains(first_urls, MakeOriginPair("https://crbug.com")));
 
   device_key = std::make_pair(4321, -1);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
 
   const auto& second_urls = map.at(device_key);
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       second_urls, MakeOriginPair("https://google.com", "https://google.com")));
-  EXPECT_TRUE(
-      base::ContainsKey(second_urls, MakeOriginPair("https://crbug.com")));
+  EXPECT_TRUE(base::Contains(second_urls, MakeOriginPair("https://crbug.com")));
 
   device_key = std::make_pair(-1, -1);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
 
   const auto& third_urls = map.at(device_key);
   EXPECT_TRUE(
-      base::ContainsKey(third_urls, MakeOriginPair("https://www.youtube.com")));
+      base::Contains(third_urls, MakeOriginPair("https://www.youtube.com")));
 }
 
 TEST_P(UsbPolicyAllowedDevicesTest,
@@ -216,29 +212,27 @@ TEST_P(UsbPolicyAllowedDevicesTest,
   EXPECT_EQ(map.size(), 3ul);
 
   auto device_key = std::make_pair(1234, 5678);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
 
   const auto& first_urls = map.at(device_key);
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       first_urls, MakeOriginPair("https://google.com", "https://google.com")));
-  EXPECT_TRUE(
-      base::ContainsKey(first_urls, MakeOriginPair("https://crbug.com")));
+  EXPECT_TRUE(base::Contains(first_urls, MakeOriginPair("https://crbug.com")));
 
   device_key = std::make_pair(4321, -1);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
 
   const auto& second_urls = map.at(device_key);
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       second_urls, MakeOriginPair("https://google.com", "https://google.com")));
-  EXPECT_TRUE(
-      base::ContainsKey(second_urls, MakeOriginPair("https://crbug.com")));
+  EXPECT_TRUE(base::Contains(second_urls, MakeOriginPair("https://crbug.com")));
 
   device_key = std::make_pair(-1, -1);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
 
   const auto& third_urls = map.at(device_key);
   EXPECT_TRUE(
-      base::ContainsKey(third_urls, MakeOriginPair("https://www.youtube.com")));
+      base::Contains(third_urls, MakeOriginPair("https://www.youtube.com")));
 
   // Ensure that the allowed devices can be removed dynamically.
   pref_value.reset(new base::Value(base::Value::Type::LIST));
@@ -279,14 +273,13 @@ TEST_P(UsbPolicyAllowedDevicesTest,
   ASSERT_EQ(map.size(), 1ul);
 
   auto device_key = std::make_pair(1234, 5678);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
 
   // Ensure a device has all of the URL patterns allowed to access it.
   const auto& urls = map.at(device_key);
-  EXPECT_TRUE(base::ContainsKey(urls, MakeOriginPair("https://google.com")));
-  EXPECT_TRUE(base::ContainsKey(urls, MakeOriginPair("https://crbug.com")));
-  EXPECT_TRUE(
-      base::ContainsKey(urls, MakeOriginPair("https://www.youtube.com")));
+  EXPECT_TRUE(base::Contains(urls, MakeOriginPair("https://google.com")));
+  EXPECT_TRUE(base::Contains(urls, MakeOriginPair("https://crbug.com")));
+  EXPECT_TRUE(base::Contains(urls, MakeOriginPair("https://www.youtube.com")));
 }
 
 namespace {
@@ -527,31 +520,28 @@ TEST_P(UsbPolicyAllowedDevicesTestBase, CombineUserAndDevicePolicies) {
   EXPECT_EQ(map.size(), 4ul);
 
   auto device_key = std::make_pair(1234, 5678);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
   const auto& first_urls = map.at(device_key);
-  EXPECT_TRUE(
-      base::ContainsKey(first_urls, MakeOriginPair("https://crbug.com")));
-  EXPECT_TRUE(
-      base::ContainsKey(first_urls, MakeOriginPair("https://google.com")));
+  EXPECT_TRUE(base::Contains(first_urls, MakeOriginPair("https://crbug.com")));
+  EXPECT_TRUE(base::Contains(first_urls, MakeOriginPair("https://google.com")));
 
   device_key = std::make_pair(4321, -1);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
   const auto& second_urls = map.at(device_key);
-  EXPECT_TRUE(
-      base::ContainsKey(second_urls, MakeOriginPair("https://crbug.com")));
+  EXPECT_TRUE(base::Contains(second_urls, MakeOriginPair("https://crbug.com")));
   EXPECT_FALSE(
-      base::ContainsKey(second_urls, MakeOriginPair("https://google.com")));
+      base::Contains(second_urls, MakeOriginPair("https://google.com")));
 
   device_key = std::make_pair(-1, -1);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
   const auto& third_urls = map.at(device_key);
   EXPECT_TRUE(
-      base::ContainsKey(third_urls, MakeOriginPair("https://www.youtube.com")));
+      base::Contains(third_urls, MakeOriginPair("https://www.youtube.com")));
 
   device_key = std::make_pair(1111, 2222);
-  ASSERT_TRUE(base::ContainsKey(map, device_key));
+  ASSERT_TRUE(base::Contains(map, device_key));
   const auto& fourth_urls = map.at(device_key);
   EXPECT_TRUE(
-      base::ContainsKey(fourth_urls, MakeOriginPair("https://www.ebay.com")));
+      base::Contains(fourth_urls, MakeOriginPair("https://www.ebay.com")));
 }
 #endif  // defined(OS_CHROMEOS)

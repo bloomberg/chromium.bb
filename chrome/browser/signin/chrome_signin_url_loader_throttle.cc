@@ -49,11 +49,11 @@ class URLLoaderThrottle::ThrottleRequestAdapter : public ChromeRequestAdapter {
   bool HasHeader(const std::string& name) override {
     return (original_headers_.HasHeader(name) ||
             modified_headers_->HasHeader(name)) &&
-           !base::ContainsValue(*headers_to_remove_, name);
+           !base::Contains(*headers_to_remove_, name);
   }
 
   void RemoveRequestHeaderByName(const std::string& name) override {
-    if (!base::ContainsValue(*headers_to_remove_, name))
+    if (!base::Contains(*headers_to_remove_, name))
       headers_to_remove_->push_back(name);
   }
 

@@ -70,8 +70,7 @@ TEST_F(PageNodeImplTest, RemoveFrame) {
 
   // Ensure correct page-frame relationship has been established.
   EXPECT_EQ(1u, page_node->GetFrameNodes().size());
-  EXPECT_TRUE(
-      base::ContainsValue(page_node->GetFrameNodes(), frame_node.get()));
+  EXPECT_TRUE(base::Contains(page_node->GetFrameNodes(), frame_node.get()));
   EXPECT_EQ(page_node.get(), frame_node->page_node());
 
   frame_node.reset();

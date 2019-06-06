@@ -93,7 +93,7 @@ void PerformanceManagerTabHelperTest::CheckGraphTopology(
         EXPECT_GE(num_hosts, page->GetAssociatedProcessNodes().size());
 
         for (auto* process_node : associated_process_nodes)
-          EXPECT_TRUE(base::ContainsKey(process_nodes, process_node));
+          EXPECT_TRUE(base::Contains(process_nodes, process_node));
 
         EXPECT_EQ(4u, page->GetFrameNodes().size());
         ASSERT_EQ(1u, page->main_frame_nodes().size());

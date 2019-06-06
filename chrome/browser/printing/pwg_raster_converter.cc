@@ -280,7 +280,7 @@ PwgRasterSettings PwgRasterConverter::GetBitmapSettings(
   const auto& types = raster_capability.value().document_types_supported;
   result.use_color =
       use_color ||
-      !base::ContainsValue(
+      !base::Contains(
           types, cloud_devices::printer::PwgDocumentTypeSupported::SGRAY_8);
 
   return result;

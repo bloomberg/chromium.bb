@@ -1915,10 +1915,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialPageRouteEvents) {
   if (AreCommittedInterstitialsEnabled()) {
     // With committed interstitials, interstitials are no longer a special case
     // so we can just use the main frame from the WebContents.
-    EXPECT_TRUE(base::ContainsValue(
-        hosts, outer_web_contents->GetMainFrame()->GetView()));
+    EXPECT_TRUE(
+        base::Contains(hosts, outer_web_contents->GetMainFrame()->GetView()));
   } else {
-    EXPECT_TRUE(base::ContainsValue(
+    EXPECT_TRUE(base::Contains(
         hosts,
         guest_web_contents->GetInterstitialPage()->GetMainFrame()->GetView()));
   }

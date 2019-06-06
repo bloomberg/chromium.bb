@@ -567,8 +567,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     }
 
     for (size_t i = 0; i < blink::kClientHintsMappingsCount; ++i) {
-      if (base::ContainsKey(request.headers,
-                            blink::kClientHintsHeaderMapping[i])) {
+      if (base::Contains(request.headers,
+                         blink::kClientHintsHeaderMapping[i])) {
         // The user agent hint is special:
         if (std::string(blink::kClientHintsHeaderMapping[i]) == "sec-ch-ua") {
           count_user_agent_hint_headers_seen_++;
@@ -594,9 +594,9 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
         continue;
       }
 
-      EXPECT_EQ(expect_client_hints,
-                base::ContainsKey(request.headers,
-                                  blink::kClientHintsHeaderMapping[i]));
+      EXPECT_EQ(
+          expect_client_hints,
+          base::Contains(request.headers, blink::kClientHintsHeaderMapping[i]));
     }
   }
 

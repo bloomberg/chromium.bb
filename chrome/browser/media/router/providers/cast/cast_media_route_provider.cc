@@ -179,7 +179,7 @@ void CastMediaRouteProvider::StartObservingMediaSinks(
     const std::string& media_source) {
   DVLOG(1) << __func__ << ", media_source: " << media_source;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (base::ContainsKey(sink_queries_, media_source))
+  if (base::Contains(sink_queries_, media_source))
     return;
 
   std::unique_ptr<CastMediaSource> cast_source =

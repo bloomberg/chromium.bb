@@ -339,7 +339,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   static const base::NoDestructor<base::flat_set<GURL>> kWhitelistedOrigins(
       base::flat_set<GURL>({GURL(kFamiliesUrl).GetOrigin(),
                             GURL(kFamiliesSecureUrl).GetOrigin()}));
-  if (base::ContainsKey(*kWhitelistedOrigins, effective_url.GetOrigin()))
+  if (base::Contains(*kWhitelistedOrigins, effective_url.GetOrigin()))
     return ALLOW;
 
   // Check Play Store terms of service.

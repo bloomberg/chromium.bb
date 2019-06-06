@@ -446,7 +446,7 @@ void OwnerSettingsServiceChromeOS::FixupLocalOwnerPolicy(
     settings->mutable_allow_new_users()->set_allow_new_users(true);
 
   em::UserWhitelistProto* whitelist_proto = settings->mutable_user_whitelist();
-  if (!base::ContainsValue(whitelist_proto->user_whitelist(), user_id))
+  if (!base::Contains(whitelist_proto->user_whitelist(), user_id))
     whitelist_proto->add_user_whitelist(user_id);
 }
 

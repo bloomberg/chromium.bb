@@ -262,7 +262,7 @@ bool SpellcheckCustomDictionary::RemoveWord(const std::string& word) {
 }
 
 bool SpellcheckCustomDictionary::HasWord(const std::string& word) const {
-  return base::ContainsKey(words_, word);
+  return base::Contains(words_, word);
 }
 
 void SpellcheckCustomDictionary::AddObserver(Observer* observer) {

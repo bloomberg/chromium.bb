@@ -161,7 +161,7 @@ bool IsAllowedLanguage(const std::string& language, const PrefService* prefs) {
     return true;
 
   // Check if locale is in list of allowed UI locales.
-  return base::ContainsValue(allowed_languages, base::Value(language));
+  return base::Contains(allowed_languages, base::Value(language));
 }
 
 bool IsAllowedUILanguage(const std::string& language,
@@ -234,7 +234,7 @@ bool AddLocaleToPreferredLanguages(const std::string& locale,
   std::vector<std::string> preferred_languages =
       base::SplitString(preferred_languages_string, ",", base::TRIM_WHITESPACE,
                         base::SPLIT_WANT_NONEMPTY);
-  if (!base::ContainsValue(preferred_languages, locale)) {
+  if (!base::Contains(preferred_languages, locale)) {
     preferred_languages.push_back(locale);
     prefs->SetString(language::prefs::kPreferredLanguages,
                      base::JoinString(preferred_languages, ","));

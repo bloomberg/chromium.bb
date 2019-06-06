@@ -736,7 +736,7 @@ int TabManager::GetNumAliveTabs() const {
 }
 
 bool TabManager::IsTabLoadingForTest(content::WebContents* contents) const {
-  if (base::ContainsKey(loading_contents_, contents))
+  if (base::Contains(loading_contents_, contents))
     return true;
   DCHECK_NE(LoadingState::LOADING,
             GetWebContentsData(contents)->tab_loading_state());

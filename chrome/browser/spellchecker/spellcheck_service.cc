@@ -398,7 +398,7 @@ void SpellcheckService::OnAcceptLanguagesChanged() {
   std::vector<std::string> filtered_dictionaries;
 
   for (const auto& dictionary : dictionaries) {
-    if (base::ContainsValue(accept_languages, dictionary)) {
+    if (base::Contains(accept_languages, dictionary)) {
       filtered_dictionaries.push_back(dictionary);
     }
   }

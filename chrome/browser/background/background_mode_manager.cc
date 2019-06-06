@@ -308,7 +308,7 @@ void BackgroundModeManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // We don't want to register multiple times for one profile.
-  DCHECK(!base::ContainsKey(background_mode_data_, profile));
+  DCHECK(!base::Contains(background_mode_data_, profile));
   auto bmd = std::make_unique<BackgroundModeData>(profile,
                                                   &command_id_handler_vector_);
   BackgroundModeData* bmd_ptr = bmd.get();

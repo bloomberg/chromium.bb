@@ -227,7 +227,7 @@ bool BackForwardMenuModel::IsSeparator(int index) const {
 void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
   // If the favicon has already been requested for this menu, don't do
   // anything.
-  if (base::ContainsKey(requested_favicons_, entry->GetUniqueID()))
+  if (base::Contains(requested_favicons_, entry->GetUniqueID()))
     return;
 
   requested_favicons_.insert(entry->GetUniqueID());

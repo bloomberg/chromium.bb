@@ -55,7 +55,7 @@ bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
   DCHECK(!skeletons1.empty());
   DCHECK(!skeletons2.empty());
   for (const std::string& skeleton1 : skeletons1) {
-    if (base::ContainsKey(skeletons2, skeleton1)) {
+    if (base::Contains(skeletons2, skeleton1)) {
       return true;
     }
   }

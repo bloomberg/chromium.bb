@@ -86,12 +86,12 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   DCHECK_NE(nullptr, render_frame_host);
   // This must not exist in the map yet.
-  DCHECK(!base::ContainsKey(frames_, render_frame_host));
+  DCHECK(!base::Contains(frames_, render_frame_host));
 
   content::RenderFrameHost* parent = render_frame_host->GetParent();
   FrameNodeImpl* parent_frame_node = nullptr;
   if (parent) {
-    DCHECK(base::ContainsKey(frames_, parent));
+    DCHECK(base::Contains(frames_, parent));
     parent_frame_node = frames_[parent].get();
   }
 

@@ -197,7 +197,7 @@ class FakeModuleListFilter : public ModuleListFilter {
   // ModuleListFilter:
   bool IsWhitelisted(base::StringPiece module_basename_hash,
                      base::StringPiece module_code_id_hash) const override {
-    return base::ContainsKey(
+    return base::Contains(
         whitelisted_modules_,
         std::make_pair(module_basename_hash, module_code_id_hash));
   }

@@ -155,8 +155,8 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerPolicyTest, CheckComponent) {
   // component installed.  Otherwise it should be installed.
   std::vector<std::string> component_ids =
       g_browser_process->component_updater()->GetComponentIDs();
-  bool sw_component_registered = base::ContainsValue(
-      component_ids, component_updater::kSwReporterComponentId);
+  bool sw_component_registered =
+      base::Contains(component_ids, component_updater::kSwReporterComponentId);
   ASSERT_EQ(policy_ != ReporterRunnerPolicy::kDisabled,
             sw_component_registered);
 }

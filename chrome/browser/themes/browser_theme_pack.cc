@@ -874,7 +874,7 @@ BrowserThemePack::BrowserThemePack(ThemeType theme_type)
     : CustomThemeSupplier(theme_type) {
   scale_factors_ = ui::GetSupportedScaleFactors();
   // On Windows HiDPI SCALE_FACTOR_100P may not be supported by default.
-  if (!base::ContainsValue(scale_factors_, ui::SCALE_FACTOR_100P))
+  if (!base::Contains(scale_factors_, ui::SCALE_FACTOR_100P))
     scale_factors_.push_back(ui::SCALE_FACTOR_100P);
 }
 
@@ -956,7 +956,7 @@ bool BrowserThemePack::GetColor(int id, SkColor* color) const {
     for (size_t i = 0; i < kColorsArrayLength; ++i) {
       if (colors_[i].id == id) {
         *color = colors_[i].color;
-        if (base::ContainsKey(*kOpaqueColors, id))
+        if (base::Contains(*kOpaqueColors, id))
           *color = SkColorSetA(*color, SK_AlphaOPAQUE);
         return true;
       }

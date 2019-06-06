@@ -56,11 +56,11 @@ void ServiceWorkerTaskProvider::OnVersionRunningStatusChanged(
 
 #if DCHECK_IS_ON()
   if (is_running) {
-    DCHECK(!base::ContainsKey(service_worker_task_map_, key) &&
-           !base::ContainsKey(tasks_to_be_created_, key));
+    DCHECK(!base::Contains(service_worker_task_map_, key) &&
+           !base::Contains(tasks_to_be_created_, key));
   } else {
-    DCHECK(base::ContainsKey(service_worker_task_map_, key) ||
-           base::ContainsKey(tasks_to_be_created_, key));
+    DCHECK(base::Contains(service_worker_task_map_, key) ||
+           base::Contains(tasks_to_be_created_, key));
   }
 #endif  // DCHECK_IS_ON()
 
@@ -166,7 +166,7 @@ void ServiceWorkerTaskProvider::CreateTask(
 
   const ServiceWorkerTaskKey key(context,
                                  service_worker_running_info.version_id);
-  DCHECK(!base::ContainsKey(service_worker_task_map_, key));
+  DCHECK(!base::Contains(service_worker_task_map_, key));
 
   auto* host = content::RenderProcessHost::FromID(
       service_worker_running_info.process_id);

@@ -40,8 +40,8 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
   if (transport_availability.request_type ==
           device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
       !transport_availability.has_empty_allow_list &&
-      base::ContainsKey(candidate_transports,
-                        device::FidoTransportProtocol::kInternal)) {
+      base::Contains(candidate_transports,
+                     device::FidoTransportProtocol::kInternal)) {
     // For GetAssertion requests, auto advance to Touch ID if the keychain
     // contains one of the allowedCredentials.
     if (transport_availability.has_recognized_mac_touch_id_credential)
@@ -53,7 +53,7 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
   // select caBLE in that case for GetAssertion operations.
   if (transport_availability.request_type ==
           device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
-      base::ContainsKey(
+      base::Contains(
           candidate_transports,
           AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {
     return AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy;
@@ -66,7 +66,7 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
   if (transport_availability.request_type ==
           device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
       last_used_transport &&
-      base::ContainsKey(candidate_transports, *last_used_transport) &&
+      base::Contains(candidate_transports, *last_used_transport) &&
       *last_used_transport != device::FidoTransportProtocol::kInternal) {
     return *last_used_transport;
   }

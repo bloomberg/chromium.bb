@@ -142,7 +142,7 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
     mojom::MediaRouteProviderPtr media_route_provider_ptr,
     mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!base::ContainsKey(media_route_providers_, provider_id));
+  DCHECK(!base::Contains(media_route_providers_, provider_id));
   media_route_provider_ptr.set_connection_error_handler(
       base::BindOnce(&MediaRouterMojoImpl::OnProviderConnectionError,
                      weak_factory_.GetWeakPtr(), provider_id));

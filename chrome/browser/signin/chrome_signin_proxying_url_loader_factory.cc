@@ -229,11 +229,11 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
   bool HasHeader(const std::string& name) override {
     return (original_headers_.HasHeader(name) ||
             modified_headers_->HasHeader(name)) &&
-           !base::ContainsValue(*removed_headers_, name);
+           !base::Contains(*removed_headers_, name);
   }
 
   void RemoveRequestHeaderByName(const std::string& name) override {
-    if (!base::ContainsValue(*removed_headers_, name))
+    if (!base::Contains(*removed_headers_, name))
       removed_headers_->push_back(name);
   }
 

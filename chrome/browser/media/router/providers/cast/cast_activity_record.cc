@@ -41,7 +41,7 @@ mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
     const url::Origin& origin,
     int tab_id) {
   const std::string& client_id = source.client_id();
-  DCHECK(!base::ContainsKey(connected_clients_, client_id));
+  DCHECK(!base::Contains(connected_clients_, client_id));
   std::unique_ptr<CastSessionClient> client =
       client_factory_for_test_
           ? client_factory_for_test_->MakeClientForTest(client_id, origin,
@@ -92,7 +92,7 @@ cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
     return cast_channel::Result::kFailed;
   }
   const std::string& message_namespace = cast_message.app_message_namespace();
-  if (!base::ContainsKey(session->message_namespaces(), message_namespace)) {
+  if (!base::Contains(session->message_namespaces(), message_namespace)) {
     DLOG(ERROR) << "Disallowed message namespace: " << message_namespace;
     if (client && cast_message.sequence_number()) {
       client->SendErrorCodeToClient(

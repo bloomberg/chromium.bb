@@ -97,7 +97,7 @@ void TCPDeviceProvider::QueryDevices(const SerialsCallback& callback) {
   std::vector<std::string> result;
   for (const net::HostPortPair& target : targets_) {
     const std::string& host = target.host();
-    if (base::ContainsValue(result, host))
+    if (base::Contains(result, host))
       continue;
     result.push_back(host);
   }

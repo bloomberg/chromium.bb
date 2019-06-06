@@ -500,7 +500,7 @@ std::unique_ptr<dbus::Response> NativeBackendKWalletTest::KWalletMethodCall(
     return nullptr;
   EXPECT_EQ("org.kde.KWallet", method_call->GetInterface());
 
-  if (base::ContainsKey(failing_methods_, method_call->GetMember()))
+  if (base::Contains(failing_methods_, method_call->GetMember()))
     return nullptr;
   std::unique_ptr<dbus::Response> response;
   if (method_call->GetMember() == "isEnabled") {

@@ -248,7 +248,7 @@ void PresentationFrame::ConnectToPresentation(
         << "Creating BrowserPresentationConnectionProxy for [presentation_id]: "
         << presentation_info.id;
     MediaRoute::Id route_id = pid_route_it->second.media_route_id();
-    if (base::ContainsKey(browser_connection_proxies_, route_id)) {
+    if (base::Contains(browser_connection_proxies_, route_id)) {
       DLOG(ERROR) << __func__
                   << "Already has a BrowserPresentationConnectionProxy for "
                   << "route: " << route_id;
@@ -585,7 +585,7 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
       return;
     }
 
-    if (!base::ContainsValue(presentation_urls, route->media_source().url())) {
+    if (!base::Contains(presentation_urls, route->media_source().url())) {
       DVLOG(2) << "Presentation URLs do not match URL of current presentation:"
                << route->media_source().url();
       return;
@@ -670,9 +670,8 @@ void PresentationServiceDelegateImpl::OnRouteResponse(
     const content::PresentationRequest& presentation_request,
     mojom::RoutePresentationConnectionPtr connection,
     const RouteRequestResult& result) {
-  if (!result.route() ||
-      !base::ContainsValue(presentation_request.presentation_urls,
-                           result.presentation_url())) {
+  if (!result.route() || !base::Contains(presentation_request.presentation_urls,
+                                         result.presentation_url())) {
     return;
   }
 

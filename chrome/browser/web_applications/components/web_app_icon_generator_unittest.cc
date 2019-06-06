@@ -44,7 +44,7 @@ void ValidateAllIconsWithURLsArePresent(
   for (const auto& icon : icons_to_check) {
     if (!icon.source_url.is_empty()) {
       bool found = false;
-      if (base::ContainsKey(size_map, icon.bitmap.width())) {
+      if (base::Contains(size_map, icon.bitmap.width())) {
         const BitmapAndSource& mapped_icon = size_map.at(icon.bitmap.width());
         if (mapped_icon.source_url == icon.source_url &&
             mapped_icon.bitmap.width() == icon.bitmap.width()) {

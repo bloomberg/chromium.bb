@@ -25,7 +25,7 @@ void NodeAttachedDataMapHelper::AttachInMap(
   GraphImpl::NodeAttachedDataKey data_key =
       std::make_pair(node, data->GetKey());
   auto& map = graph->node_attached_data_map_;
-  DCHECK(!base::ContainsKey(map, data_key));
+  DCHECK(!base::Contains(map, data_key));
   map[data_key] = std::move(data);
 }
 

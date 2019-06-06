@@ -246,7 +246,7 @@ UsbChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
         // always be called after device initialization in UsbChooserController
         // which always returns after the device list initialization in this
         // class.
-        DCHECK(base::ContainsKey(devices_, guid));
+        DCHECK(base::Contains(devices_, guid));
         objects.push_back(std::make_unique<ChooserContextBase::Object>(
             requesting_origin, embedding_origin,
             DeviceInfoToValue(*devices_[guid]),
@@ -326,7 +326,7 @@ UsbChooserContext::GetAllGrantedObjects() {
       continue;
 
     for (const std::string& guid : map_entry.second) {
-      DCHECK(base::ContainsKey(devices_, guid));
+      DCHECK(base::Contains(devices_, guid));
       objects.push_back(std::make_unique<ChooserContextBase::Object>(
           requesting_origin, embedding_origin,
           DeviceInfoToValue(*devices_[guid]),
@@ -440,7 +440,7 @@ bool UsbChooserContext::HasDevicePermission(
   auto it = ephemeral_devices_.find(
       std::make_pair(requesting_origin, embedding_origin));
   if (it != ephemeral_devices_.end() &&
-      base::ContainsKey(it->second, device_info.guid)) {
+      base::Contains(it->second, device_info.guid)) {
     return true;
   }
 
@@ -543,7 +543,7 @@ void UsbChooserContext::OnDeviceAdded(
     device::mojom::UsbDeviceInfoPtr device_info) {
   DCHECK(device_info);
   // Update the device list.
-  DCHECK(!base::ContainsKey(devices_, device_info->guid));
+  DCHECK(!base::Contains(devices_, device_info->guid));
   devices_.insert(std::make_pair(device_info->guid, device_info->Clone()));
 
   // Notify all observers.
@@ -555,7 +555,7 @@ void UsbChooserContext::OnDeviceRemoved(
     device::mojom::UsbDeviceInfoPtr device_info) {
   DCHECK(device_info);
   // Update the device list.
-  DCHECK(base::ContainsKey(devices_, device_info->guid));
+  DCHECK(base::Contains(devices_, device_info->guid));
   devices_.erase(device_info->guid);
 
   // Notify all device observers.

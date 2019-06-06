@@ -90,7 +90,7 @@ class TestBookmarkAppInstallationTaskFactory {
 
   void SetNextInstallationTaskResult(const GURL& app_url,
                                      web_app::InstallResultCode result_code) {
-    DCHECK(!base::ContainsKey(next_installation_task_results_, app_url));
+    DCHECK(!base::Contains(next_installation_task_results_, app_url));
     next_installation_task_results_[app_url] = result_code;
   }
 
@@ -110,7 +110,7 @@ class TestBookmarkAppInstallationTaskFactory {
   }
 
   web_app::InstallResultCode GetNextInstallationTaskResult(const GURL& url) {
-    DCHECK(base::ContainsKey(next_installation_task_results_, url));
+    DCHECK(base::Contains(next_installation_task_results_, url));
     auto result = next_installation_task_results_.at(url);
     next_installation_task_results_.erase(url);
     return result;

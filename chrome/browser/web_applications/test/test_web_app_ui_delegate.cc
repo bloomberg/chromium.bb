@@ -23,7 +23,7 @@ void TestWebAppUiDelegate::SetNumWindowsForApp(const AppId& app_id,
 }
 
 size_t TestWebAppUiDelegate::GetNumWindowsForApp(const AppId& app_id) {
-  DCHECK(base::ContainsKey(app_id_to_num_windows_map_, app_id));
+  DCHECK(base::Contains(app_id_to_num_windows_map_, app_id));
   return app_id_to_num_windows_map_[app_id];
 }
 
