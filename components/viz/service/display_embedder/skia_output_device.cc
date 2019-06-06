@@ -28,6 +28,8 @@ gfx::SwapResponse SkiaOutputDevice::PostSubBuffer(
   return FinishSwapBuffers(gfx::SwapResult::SWAP_FAILED);
 }
 
+void SkiaOutputDevice::SetDrawRectangle(const gfx::Rect& draw_rectangle) {}
+
 void SkiaOutputDevice::StartSwapBuffers(
     base::Optional<BufferPresentedCallback> feedback) {
   DCHECK(!feedback_);

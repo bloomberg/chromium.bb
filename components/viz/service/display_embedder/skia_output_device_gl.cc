@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
+#include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -20,20 +22,24 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
-
 namespace viz {
 
 SkiaOutputDeviceGL::SkiaOutputDeviceGL(
     gpu::SurfaceHandle surface_handle,
+    GpuServiceImpl* gpu_service,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
                        did_swap_buffer_complete_callback),
       surface_handle_(surface_handle),
+      gpu_service_(gpu_service),
       feature_info_(feature_info) {
   DCHECK(surface_handle_);
   gl_surface_ = gpu::ImageTransportSurface::CreateNativeSurface(
-      nullptr, surface_handle_, gl::GLSurfaceFormat());
+      weak_ptr_factory_.GetWeakPtr(), surface_handle_, gl::GLSurfaceFormat());
+#if !defined(OS_WIN)
+  ALLOW_UNUSED_LOCAL(gpu_service_);
+#endif
 }
 
 void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
@@ -120,12 +126,48 @@ gfx::SwapResponse SkiaOutputDeviceGL::PostSubBuffer(
       rect.x(), rect.y(), rect.width(), rect.height(), std::move(feedback)));
 }
 
+void SkiaOutputDeviceGL::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
+  gl_surface_->SetDrawRectangle(draw_rectangle);
+}
+
 void SkiaOutputDeviceGL::EnsureBackbuffer() {
   gl_surface_->SetBackbufferAllocation(true);
 }
 
 void SkiaOutputDeviceGL::DiscardBackbuffer() {
   gl_surface_->SetBackbufferAllocation(false);
+}
+
+#if defined(OS_WIN)
+void SkiaOutputDeviceGL::DidCreateAcceleratedSurfaceChildWindow(
+    gpu::SurfaceHandle parent_window,
+    gpu::SurfaceHandle child_window) {
+  gpu_service_->SendCreatedChildWindow(parent_window, child_window);
+}
+#endif
+
+const gpu::gles2::FeatureInfo* SkiaOutputDeviceGL::GetFeatureInfo() const {
+  return feature_info_.get();
+}
+
+const gpu::GpuPreferences& SkiaOutputDeviceGL::GetGpuPreferences() const {
+  return gpu_preferences_;
+}
+
+void SkiaOutputDeviceGL::DidSwapBuffersComplete(
+    gpu::SwapBuffersCompleteParams params) {
+  // TODO(kylechar): Check if this is necessary.
+}
+
+void SkiaOutputDeviceGL::BufferPresented(
+    const gfx::PresentationFeedback& feedback) {
+  // TODO(kylechar): Check if this is necessary.
+}
+
+GpuVSyncCallback SkiaOutputDeviceGL::GetGpuVSyncCallback() {
+  // TODO(sunnyps): Implement GpuVSync with SkiaRenderer.
+  NOTIMPLEMENTED();
+  return base::DoNothing::Repeatedly<base::TimeTicks, base::TimeDelta>();
 }
 
 }  // namespace viz

@@ -126,6 +126,15 @@ void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
   event.Wait();
 }
 
+void SkiaOutputSurfaceImpl::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  auto callback =
+      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SetDrawRectangle,
+                     base::Unretained(impl_on_gpu_.get()), draw_rectangle);
+  ScheduleGpuTask(std::move(callback), {});
+}
+
 void SkiaOutputSurfaceImpl::EnsureBackbuffer() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // impl_on_gpu_ is released on the GPU thread by a posted task from

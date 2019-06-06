@@ -1055,6 +1055,11 @@ void SkiaOutputSurfaceImplOnGpu::EndAccessImages(
   }
 }
 
+void SkiaOutputSurfaceImplOnGpu::SetDrawRectangle(
+    const gfx::Rect& draw_rectangle) {
+  output_device_->SetDrawRectangle(draw_rectangle);
+}
+
 sk_sp<GrContextThreadSafeProxy>
 SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
   return gr_context()->threadSafeProxy();
@@ -1084,7 +1089,8 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGLWithGpuService(
   std::unique_ptr<SkiaOutputDeviceGL> onscreen_device;
   if (surface_handle_) {
     onscreen_device = std::make_unique<SkiaOutputDeviceGL>(
-        surface_handle_, feature_info_, did_swap_buffer_complete_callback_);
+        surface_handle_, gpu_service_, feature_info_,
+        did_swap_buffer_complete_callback_);
     gl_surface_ = onscreen_device->gl_surface();
   } else {
     gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());

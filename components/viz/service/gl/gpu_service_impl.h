@@ -162,6 +162,24 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void ThrowJavaException() override;
   void Stop(StopCallback callback) override;
 
+  // gpu::GpuChannelManagerDelegate:
+  void DidCreateContextSuccessfully() override;
+  void DidCreateOffscreenContext(const GURL& active_url) override;
+  void DidDestroyChannel(int client_id) override;
+  void DidDestroyOffscreenContext(const GURL& active_url) override;
+  void DidLoseContext(bool offscreen,
+                      gpu::error::ContextLostReason reason,
+                      const GURL& active_url) override;
+  void StoreShaderToDisk(int client_id,
+                         const std::string& key,
+                         const std::string& shader) override;
+  void MaybeExitOnContextLost() override;
+  bool IsExiting() const override;
+#if defined(OS_WIN)
+  void SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
+                              gpu::SurfaceHandle child_window) override;
+#endif
+
   bool is_initialized() const { return !!gpu_host_; }
 
   media::MediaGpuChannelManager* media_gpu_channel_manager() {
@@ -236,23 +254,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   void UpdateGpuInfoPlatform(base::OnceClosure on_gpu_info_updated);
 
-  // gpu::GpuChannelManagerDelegate:
-  void DidCreateContextSuccessfully() override;
-  void DidCreateOffscreenContext(const GURL& active_url) override;
-  void DidDestroyChannel(int client_id) override;
-  void DidDestroyOffscreenContext(const GURL& active_url) override;
-  void DidLoseContext(bool offscreen,
-                      gpu::error::ContextLostReason reason,
-                      const GURL& active_url) override;
-  void StoreShaderToDisk(int client_id,
-                         const std::string& key,
-                         const std::string& shader) override;
-  void MaybeExitOnContextLost() override;
-  bool IsExiting() const override;
-#if defined(OS_WIN)
-  void SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
-                              gpu::SurfaceHandle child_window) override;
-#endif
 
 #if defined(OS_CHROMEOS)
   void CreateArcVideoDecodeAcceleratorOnMainThread(

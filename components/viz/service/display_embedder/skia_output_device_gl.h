@@ -9,9 +9,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/service/image_transport_surface_delegate.h"
 
 class GrContext;
 
@@ -27,11 +30,14 @@ class FeatureInfo;
 }  // namespace gpu
 
 namespace viz {
+class GpuServiceImpl;
 
-class SkiaOutputDeviceGL final : public SkiaOutputDevice {
+class SkiaOutputDeviceGL final : public SkiaOutputDevice,
+                                 public gpu::ImageTransportSurfaceDelegate {
  public:
   SkiaOutputDeviceGL(
       gpu::SurfaceHandle surface_handle,
+      GpuServiceImpl* gpu_service,
       scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceGL() override;
@@ -53,11 +59,25 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
   gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
                                   const GrBackendSemaphore& semaphore,
                                   BufferPresentedCallback feedback) override;
+  void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
 
+  // gpu::ImageTransportSurfaceDelegate implementation:
+#if defined(OS_WIN)
+  void DidCreateAcceleratedSurfaceChildWindow(
+      gpu::SurfaceHandle parent_window,
+      gpu::SurfaceHandle child_window) override;
+#endif
+  const gpu::gles2::FeatureInfo* GetFeatureInfo() const override;
+  const gpu::GpuPreferences& GetGpuPreferences() const override;
+  void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params) override;
+  void BufferPresented(const gfx::PresentationFeedback& feedback) override;
+  GpuVSyncCallback GetGpuVSyncCallback() override;
+
  private:
   const gpu::SurfaceHandle surface_handle_;
+  GpuServiceImpl* const gpu_service_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
   gpu::GpuPreferences gpu_preferences_;
 
@@ -65,6 +85,8 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
   scoped_refptr<gl::GLSurface> gl_surface_;
 
   bool supports_alpha_ = false;
+
+  base::WeakPtrFactory<SkiaOutputDeviceGL> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceGL);
 };

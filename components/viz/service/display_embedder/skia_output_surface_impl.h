@@ -50,6 +50,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurfaceBase {
 
   // OutputSurface implementation:
   void BindToClient(OutputSurfaceClient* client) override;
+  void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void Reshape(const gfx::Size& size,

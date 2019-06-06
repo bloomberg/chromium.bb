@@ -52,6 +52,10 @@ class SkiaOutputDevice {
   virtual gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
                                           const GrBackendSemaphore& semaphore,
                                           BufferPresentedCallback feedback);
+
+  // Set the rectangle that will be drawn into on the surface.
+  virtual void SetDrawRectangle(const gfx::Rect& draw_rectangle);
+
   const OutputSurface::Capabilities& capabilities() const {
     return capabilities_;
   }

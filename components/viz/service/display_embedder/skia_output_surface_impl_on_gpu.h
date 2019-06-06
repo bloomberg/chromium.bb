@@ -133,6 +133,8 @@ class SkiaOutputSurfaceImplOnGpu {
                          std::vector<GrBackendSemaphore>* end_semaphores);
   void EndAccessImages(const std::vector<ImageContext*>& image_contexts);
 
+  void SetDrawRectangle(const gfx::Rect& draw_rectangle);
+
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }
 
