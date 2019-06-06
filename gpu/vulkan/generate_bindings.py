@@ -31,6 +31,7 @@ VULKAN_INSTANCE_FUNCTIONS = [
 VULKAN_PHYSICAL_DEVICE_FUNCTIONS = [
 { 'name': 'vkCreateDevice' },
 { 'name': 'vkEnumerateDeviceLayerProperties' },
+{ 'name': 'vkGetPhysicalDeviceFeatures' },
 { 'name': 'vkGetPhysicalDeviceMemoryProperties'},
 { 'name': 'vkGetPhysicalDeviceQueueFamilyProperties' },
 { 'name': 'vkGetPhysicalDeviceProperties' },

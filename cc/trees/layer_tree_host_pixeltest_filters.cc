@@ -163,14 +163,6 @@ INSTANTIATE_TEST_SUITE_P(,
 #endif
                                            ));
 
-using LayerTreeHostFiltersPixelTestGPUNonVulkan = LayerTreeHostFiltersPixelTest;
-
-// TODO(crbug.com/963446): Enable these tests for Vulkan.
-INSTANTIATE_TEST_SUITE_P(,
-                         LayerTreeHostFiltersPixelTestGPUNonVulkan,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL));
-
 TEST_P(LayerTreeHostFiltersPixelTestGPU, MAYBE_BackdropFilterBlurRect) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
@@ -211,7 +203,7 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, MAYBE_BackdropFilterBlurRect) {
                base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestGPUNonVulkan, BackdropFilterBlurRounded) {
+TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRounded) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -377,8 +369,7 @@ TEST_P(LayerTreeHostFiltersPixelTestGL, BackdropFilterBlurOffAxis) {
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_off_axis.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestNonVulkan,
-       BackdropFilterBoundsWithChildren) {
+TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBoundsWithChildren) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
   scoped_refptr<SolidColorLayer> green =
@@ -635,7 +626,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, MAYBE_ImageFilterScaled) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestNonVulkan, BackdropFilterRotated) {
+TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterRotated) {
   // Add a white background with a rotated red rect in the center.
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);

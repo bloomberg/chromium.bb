@@ -80,6 +80,10 @@ class VULKAN_EXPORT VulkanDeviceQueue {
 
   VulkanFenceHelper* GetFenceHelper() const { return cleanup_helper_.get(); }
 
+  const VkPhysicalDeviceFeatures& enabled_device_features() const {
+    return enabled_device_features_;
+  }
+
  private:
   gfx::ExtensionSet enabled_extensions_;
   VkPhysicalDevice vk_physical_device_ = VK_NULL_HANDLE;
@@ -90,6 +94,7 @@ class VULKAN_EXPORT VulkanDeviceQueue {
   uint32_t vk_queue_index_ = 0;
   const VkInstance vk_instance_;
   std::unique_ptr<VulkanFenceHelper> cleanup_helper_;
+  VkPhysicalDeviceFeatures enabled_device_features_ = {};
 
   DISALLOW_COPY_AND_ASSIGN(VulkanDeviceQueue);
 };

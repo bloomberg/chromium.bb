@@ -142,6 +142,7 @@ bool VulkanDeviceQueue::Initialize(
   device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
   device_create_info.enabledExtensionCount = enabled_extensions.size();
   device_create_info.ppEnabledExtensionNames = enabled_extensions.data();
+  device_create_info.pEnabledFeatures = &enabled_device_features_;
 
   result = vkCreateDevice(vk_physical_device_, &device_create_info, nullptr,
                           &owned_vk_device_);
