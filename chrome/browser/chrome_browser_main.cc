@@ -548,12 +548,12 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
 }
 
 #if !defined(OS_ANDROID)
-bool ProcessSingletonNotificationCallback(
+void ProcessSingletonNotificationCallbackImpl(
     const base::CommandLine& command_line,
     const base::FilePath& current_directory) {
-  // Drop the request if the browser process is already in shutdown path.
+  // Drop the request if the browser process is already shutting down.
   if (!g_browser_process || g_browser_process->IsShuttingDown())
-    return false;
+    return;
 
   if (command_line.HasSwitch(switches::kOriginalProcessStartTime)) {
     std::string start_time_string =
@@ -586,8 +586,28 @@ bool ProcessSingletonNotificationCallback(
   // Record now as the last successful chrome start.
   if (ShouldRecordActiveUse(command_line))
     GoogleUpdateSettings::SetLastRunTime();
+}
 
-  return true;
+bool ProcessSingletonNotificationCallback(
+    const base::CommandLine& command_line,
+    const base::FilePath& current_directory) {
+  // Drop the request if the browser process is already shutting down.
+  // Note that we're going to post an async task below. Even if the browser
+  // process isn't shutting down right now, it could be by the time the task
+  // starts running. So, an additional check needs to happen when it starts.
+  // But regardless of any future check, there is no reason to post the task
+  // now if we know we're already shutting down.
+  if (!g_browser_process || g_browser_process->IsShuttingDown())
+    return false;
+
+  // In order to handle this request on Windows, there is platform specific
+  // code in browser_finder.cc that requires making outbound COM calls to
+  // cross-apartment shell objects (via IVirtualDesktopManager). That is not
+  // allowed within a SendMessage handler, which this function is a part of.
+  // So, we post a task to asynchronously finish the command line processing.
+  return base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ProcessSingletonNotificationCallbackImpl,
+                                command_line, current_directory));
 }
 #endif  // !defined(OS_ANDROID)
 
