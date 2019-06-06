@@ -88,7 +88,7 @@ void ExtensionCacheImpl::PutExtension(const std::string& id,
 }
 
 bool ExtensionCacheImpl::CachingAllowed(const std::string& id) {
-  return base::ContainsKey(allowed_extensions_, id);
+  return base::Contains(allowed_extensions_, id);
 }
 
 void ExtensionCacheImpl::OnCacheInitialized() {

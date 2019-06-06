@@ -192,7 +192,7 @@ bool ExtensionManagement::IsAllowedManifestType(
     return true;
   const std::vector<Manifest::Type>& allowed_types =
       global_settings_->allowed_types;
-  return base::ContainsValue(allowed_types, manifest_type);
+  return base::Contains(allowed_types, manifest_type);
 }
 
 APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(

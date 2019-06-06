@@ -796,7 +796,7 @@ void ExtensionService::DisableUserExtensionsExcept(
             ManifestURL::GetUpdateURL(extension.get())))
       continue;
     const std::string& id = extension->id();
-    if (!base::ContainsValue(except_ids, id))
+    if (!base::Contains(except_ids, id))
       DisableExtension(id, disable_reason::DISABLE_USER_ACTION);
   }
 }

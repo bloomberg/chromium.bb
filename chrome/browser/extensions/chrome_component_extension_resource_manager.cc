@@ -141,7 +141,7 @@ void ChromeComponentExtensionResourceManager::AddComponentResourceEntries(
         entries[i].name);
     resource_path = resource_path.NormalizePathSeparators();
 
-    DCHECK(!base::ContainsKey(path_to_resource_id_, resource_path));
+    DCHECK(!base::Contains(path_to_resource_id_, resource_path));
     path_to_resource_id_[resource_path] = entries[i].value;
   }
 }

@@ -470,7 +470,7 @@ void ExtensionActionRunner::UpdatePageAccessSettings(const Extension* extension,
 }
 
 void ExtensionActionRunner::RunBlockedActions(const Extension* extension) {
-  DCHECK(base::ContainsKey(pending_scripts_, extension->id()) ||
+  DCHECK(base::Contains(pending_scripts_, extension->id()) ||
          web_request_blocked_.count(extension->id()) != 0);
 
   // Clicking to run the extension counts as granting it permission to run on

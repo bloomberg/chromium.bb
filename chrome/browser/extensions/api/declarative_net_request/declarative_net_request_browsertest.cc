@@ -239,7 +239,7 @@ class WarningServiceObserver : public WarningService::Observer {
   // WarningService::TestObserver override:
   void ExtensionWarningsChanged(
       const ExtensionIdSet& affected_extensions) override {
-    if (!base::ContainsKey(affected_extensions, extension_id_))
+    if (!base::Contains(affected_extensions, extension_id_))
       return;
 
     run_loop_.Quit();
@@ -1689,7 +1689,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     // The EmbeddedTestServer sees requests after the hostname has been
     // resolved.
     bool did_see_script_request =
-        base::ContainsKey(GetAndResetRequestsToServer(), script_url);
+        base::Contains(GetAndResetRequestsToServer(), script_url);
     EXPECT_EQ(expect_script_load, did_see_script_request);
   };
 
@@ -1788,11 +1788,11 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       // Request to |expected_requested_url| should be seen by the server iff we
       // expect the page to load.
       if (expect_load) {
-        EXPECT_TRUE(base::ContainsKey(requests_seen, expected_request_url))
+        EXPECT_TRUE(base::Contains(requests_seen, expected_request_url))
             << expected_request_url.spec()
             << " was not requested from the server.";
       } else {
-        EXPECT_FALSE(base::ContainsKey(requests_seen, expected_request_url))
+        EXPECT_FALSE(base::Contains(requests_seen, expected_request_url))
             << expected_request_url.spec() << " request seen unexpectedly.";
       }
     }
@@ -2228,9 +2228,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
     std::set<GURL> seen_requests = GetAndResetRequestsToServer();
     EXPECT_EQ(!expect_script_redirected,
-              base::ContainsKey(seen_requests, requested_script_url));
+              base::Contains(seen_requests, requested_script_url));
     EXPECT_EQ(expect_script_redirected,
-              base::ContainsKey(seen_requests, redirected_script_url));
+              base::Contains(seen_requests, redirected_script_url));
 
     ExtensionActionRunner* runner =
         ExtensionActionRunner::GetForWebContents(web_contents());

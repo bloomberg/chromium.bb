@@ -301,7 +301,7 @@ void Blacklist::OnBlacklistStateReceived(const std::string& id,
 
     bool have_all_in_cache = true;
     for (const auto& id : ids) {
-      if (!base::ContainsKey(blacklist_state_cache_, id)) {
+      if (!base::Contains(blacklist_state_cache_, id)) {
         have_all_in_cache = false;
         break;
       }

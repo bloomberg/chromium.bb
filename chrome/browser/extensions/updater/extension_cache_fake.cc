@@ -51,7 +51,7 @@ void ExtensionCacheFake::PutExtension(const std::string& id,
                                       const base::FilePath& file_path,
                                       const std::string& version,
                                       const PutExtensionCallback& callback) {
-  if (base::ContainsKey(allowed_extensions_, id)) {
+  if (base::Contains(allowed_extensions_, id)) {
     cache_[id].first = version;
     cache_[id].second = file_path;
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},

@@ -295,9 +295,9 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   for (auto it = matches.cbegin(); it != matches.cend(); ++it)
     matches_ids.insert((*it)->id());
   EXPECT_TRUE(
-      base::ContainsKey(matches_ids, std::make_pair(kExtensionId, kRuleId1)));
+      base::Contains(matches_ids, std::make_pair(kExtensionId, kRuleId1)));
   EXPECT_TRUE(
-      base::ContainsKey(matches_ids, std::make_pair(kExtensionId, kRuleId2)));
+      base::Contains(matches_ids, std::make_pair(kExtensionId, kRuleId2)));
 
   GURL foobar_url("http://www.foobar.com");
   WebRequestInfo foobar_request_info(CreateRequestParams(foobar_url));

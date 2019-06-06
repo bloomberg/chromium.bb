@@ -235,7 +235,7 @@ void ChromeContentVerifierDelegate::VerifyFailed(
     UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionBecameDisabled", true);
     UMA_HISTOGRAM_ENUMERATION("Extensions.CorruptExtensionDisabledReason",
                               reason, ContentVerifyJob::FAILURE_REASON_MAX);
-  } else if (!base::ContainsKey(would_be_disabled_ids_, extension_id)) {
+  } else if (!base::Contains(would_be_disabled_ids_, extension_id)) {
     UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionWouldBeDisabled", true);
     would_be_disabled_ids_.insert(extension_id);
   }

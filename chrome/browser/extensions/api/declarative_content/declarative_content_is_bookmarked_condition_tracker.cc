@@ -111,7 +111,7 @@ BookmarkAddedForUrl(const GURL& url) {
 
 void DeclarativeContentIsBookmarkedConditionTracker::PerWebContentsTracker::
 BookmarkRemovedForUrls(const std::set<GURL>& urls) {
-  if (base::ContainsKey(urls, web_contents()->GetVisibleURL())) {
+  if (base::Contains(urls, web_contents()->GetVisibleURL())) {
     is_url_bookmarked_ = false;
     request_evaluation_.Run(web_contents());
   }
@@ -201,7 +201,7 @@ void DeclarativeContentIsBookmarkedConditionTracker::TrackForWebContents(
 void DeclarativeContentIsBookmarkedConditionTracker::OnWebContentsNavigation(
     content::WebContents* contents,
     content::NavigationHandle* navigation_handle) {
-  DCHECK(base::ContainsKey(per_web_contents_tracker_, contents));
+  DCHECK(base::Contains(per_web_contents_tracker_, contents));
   per_web_contents_tracker_[contents]->UpdateState(true);
 }
 
@@ -273,7 +273,7 @@ DeclarativeContentIsBookmarkedConditionTracker::GroupedBookmarkChangesEnded(
 void
 DeclarativeContentIsBookmarkedConditionTracker::DeletePerWebContentsTracker(
     content::WebContents* contents) {
-  DCHECK(base::ContainsKey(per_web_contents_tracker_, contents));
+  DCHECK(base::Contains(per_web_contents_tracker_, contents));
   per_web_contents_tracker_.erase(contents);
 }
 

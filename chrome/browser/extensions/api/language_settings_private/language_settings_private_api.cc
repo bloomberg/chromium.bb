@@ -167,7 +167,7 @@ std::vector<std::string> GetSortedThirdPartyIMEs(
     auto it = descriptors.begin();
     while (it != descriptors.end() && descriptors.size()) {
       if (third_party_ime_set.count(it->id()) &&
-          base::ContainsValue(it->language_codes(), language)) {
+          base::Contains(it->language_codes(), language)) {
         ime_list.push_back(it->id());
         // Remove the added descriptor from the candidate list.
         it = descriptors.erase(it);
@@ -226,7 +226,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
     language.native_display_name = entry.native_display_name;
 
     // Set optional fields only if they differ from the default.
-    if (base::ContainsKey(spellcheck_language_set, entry.code)) {
+    if (base::Contains(spellcheck_language_set, entry.code)) {
       language.supports_spellcheck.reset(new bool(true));
     }
     if (entry.supports_translate) {
@@ -286,7 +286,7 @@ LanguageSettingsPrivateEnableLanguageFunction::Run() {
   std::string chrome_language = language_code;
   language::ToChromeLanguageSynonym(&chrome_language);
 
-  if (base::ContainsValue(languages, chrome_language)) {
+  if (base::Contains(languages, chrome_language)) {
     LOG(ERROR) << "Language " << chrome_language << " already enabled";
     return RespondNow(NoArguments());
   }
@@ -319,7 +319,7 @@ LanguageSettingsPrivateDisableLanguageFunction::Run() {
   std::string chrome_language = language_code;
   language::ToChromeLanguageSynonym(&chrome_language);
 
-  if (!base::ContainsValue(languages, chrome_language)) {
+  if (!base::Contains(languages, chrome_language)) {
     LOG(ERROR) << "Language " << chrome_language << " not enabled";
     return RespondNow(NoArguments());
   }

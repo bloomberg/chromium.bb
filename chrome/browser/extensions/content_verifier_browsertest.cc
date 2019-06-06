@@ -86,7 +86,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     EXPECT_EQ(id, extension->id());
 
     // Wait for the content verification code to finish processing the hashes.
-    if (!base::ContainsKey(verifier_observer.completed_fetches(), id))
+    if (!base::Contains(verifier_observer.completed_fetches(), id))
       verifier_observer.WaitForFetchComplete(id);
 
     // Now disable the extension, since content scripts are read at enable time,
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
   // The content scripts might fail verification the first time since the
   // one-time processing might not be finished yet - if that's the case then
   // we want to wait until that work is done.
-  if (!base::ContainsKey(verifier_observer->completed_fetches(), id))
+  if (!base::Contains(verifier_observer->completed_fetches(), id))
     verifier_observer->WaitForFetchComplete(id);
 
   // It is important to destroy |verifier_observer| here so that it doesn't see

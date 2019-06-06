@@ -262,12 +262,12 @@ base::Time InstallVerifier::SignatureTimestamp() {
 }
 
 bool InstallVerifier::IsKnownId(const std::string& id) const {
-  return signature_.get() && (base::ContainsKey(signature_->ids, id) ||
-                              base::ContainsKey(signature_->invalid_ids, id));
+  return signature_.get() && (base::Contains(signature_->ids, id) ||
+                              base::Contains(signature_->invalid_ids, id));
 }
 
 bool InstallVerifier::IsInvalid(const std::string& id) const {
-  return ((signature_.get() && base::ContainsKey(signature_->invalid_ids, id)));
+  return ((signature_.get() && base::Contains(signature_->invalid_ids, id)));
 }
 
 void InstallVerifier::VerifyExtension(const std::string& extension_id) {
@@ -319,8 +319,8 @@ void InstallVerifier::RemoveMany(const ExtensionIdSet& ids) {
 
   bool found_any = false;
   for (auto i = ids.begin(); i != ids.end(); ++i) {
-    if (base::ContainsKey(signature_->ids, *i) ||
-        base::ContainsKey(signature_->invalid_ids, *i)) {
+    if (base::Contains(signature_->ids, *i) ||
+        base::Contains(signature_->invalid_ids, *i)) {
       found_any = true;
       break;
     }
@@ -397,8 +397,8 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
 
   bool verified = true;
   MustRemainDisabledOutcome outcome = VERIFIED;
-  if (base::ContainsKey(InstallSigner::GetForcedNotFromWebstore(),
-                        extension->id())) {
+  if (base::Contains(InstallSigner::GetForcedNotFromWebstore(),
+                     extension->id())) {
     verified = false;
     outcome = FORCED_NOT_VERIFIED;
   } else if (!IsFromStore(*extension)) {
@@ -418,7 +418,7 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
     // be from the webstore unless the signature explicitly lists the extension
     // as invalid.
     if (signature_.get() &&
-        !base::ContainsKey(signature_->invalid_ids, extension->id()) &&
+        !base::Contains(signature_->invalid_ids, extension->id()) &&
         GetStatus() < VerifyStatus::ENFORCE_STRICT) {
       outcome = NOT_VERIFIED_BUT_UNKNOWN_ID;
     } else {
@@ -552,8 +552,8 @@ void InstallVerifier::GarbageCollect() {
 }
 
 bool InstallVerifier::IsVerified(const std::string& id) const {
-  return ((signature_.get() && base::ContainsKey(signature_->ids, id)) ||
-          base::ContainsKey(provisional_, id));
+  return ((signature_.get() && base::Contains(signature_->ids, id)) ||
+          base::Contains(provisional_, id));
 }
 
 void InstallVerifier::BeginFetch() {
@@ -571,7 +571,7 @@ void InstallVerifier::BeginFetch() {
   }
   if (operation.type == InstallVerifier::REMOVE) {
     for (auto i = operation.ids.begin(); i != operation.ids.end(); ++i) {
-      if (base::ContainsKey(ids_to_sign, *i))
+      if (base::Contains(ids_to_sign, *i))
         ids_to_sign.erase(*i);
     }
   } else {  // All other operation types are some form of "ADD".

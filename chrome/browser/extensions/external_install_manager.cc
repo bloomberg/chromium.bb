@@ -95,7 +95,7 @@ bool ExternalInstallManager::IsPromptingEnabled() {
 void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
                                                      bool is_new_profile) {
   // Error already exists or has been previously shown.
-  if (base::ContainsKey(errors_, extension->id()) ||
+  if (base::Contains(errors_, extension->id()) ||
       shown_ids_.count(extension->id()) > 0)
     return;
 
@@ -143,7 +143,7 @@ void ExternalInstallManager::UpdateExternalExtensionAlert() {
   // The list of ids can be mutated during this loop, so make a copy.
   const std::set<ExtensionId> ids_copy = unacknowledged_ids_;
   for (const auto& id : ids_copy) {
-    if (base::ContainsKey(errors_, id) || shown_ids_.count(id) > 0)
+    if (base::Contains(errors_, id) || shown_ids_.count(id) > 0)
       continue;
 
     // Ignore the blocked and disabled extensions. They will be put into
@@ -277,7 +277,7 @@ void ExternalInstallManager::Observe(
       // not sent out if the extension is disabled (which it is here).
       const std::string& extension_id =
           content::Details<const Extension>(details).ptr()->id();
-      if (base::ContainsKey(errors_, extension_id))
+      if (base::Contains(errors_, extension_id))
         RemoveExternalInstallError(extension_id);
       break;
     }
