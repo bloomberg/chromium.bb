@@ -150,7 +150,7 @@ public class TracingPreferencesTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         Preferences activity =
                 mActivityTestRule.startPreferences(TracingPreferences.class.getName());
-        final PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
+        final PreferenceFragment fragment = (PreferenceFragment) activity.getMainFragment();
         final ButtonPreference startTracingButton = (ButtonPreference) fragment.findPreference(
                 TracingPreferences.UI_PREF_START_RECORDING);
 
@@ -250,7 +250,7 @@ public class TracingPreferencesTest {
         Context context = ContextUtils.getApplicationContext();
         Preferences activity =
                 mActivityTestRule.startPreferences(TracingPreferences.class.getName());
-        final PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
+        final PreferenceFragment fragment = (PreferenceFragment) activity.getMainFragment();
         final ButtonPreference startTracingButton = (ButtonPreference) fragment.findPreference(
                 TracingPreferences.UI_PREF_START_RECORDING);
         final TextMessagePreference statusPreference =
@@ -274,7 +274,7 @@ public class TracingPreferencesTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         Preferences activity =
                 mActivityTestRule.startPreferences(TracingPreferences.class.getName());
-        final PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
+        final PreferenceFragment fragment = (PreferenceFragment) activity.getMainFragment();
         final Preference defaultCategoriesPref =
                 fragment.findPreference(TracingPreferences.UI_PREF_DEFAULT_CATEGORIES);
         final Preference nonDefaultCategoriesPref =
@@ -307,7 +307,7 @@ public class TracingPreferencesTest {
                             intent);
 
             PreferenceFragment categoriesFragment =
-                    (PreferenceFragment) categoriesActivity.getFragmentForTest();
+                    (PreferenceFragment) categoriesActivity.getMainFragment();
             Assert.assertEquals(TracingCategoriesPreferences.class, categoriesFragment.getClass());
 
             CheckBoxPreference sampleCategoryPref =
@@ -336,7 +336,7 @@ public class TracingPreferencesTest {
         Context context = ContextUtils.getApplicationContext();
         Preferences activity =
                 mActivityTestRule.startPreferences(TracingPreferences.class.getName());
-        final PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
+        final PreferenceFragment fragment = (PreferenceFragment) activity.getMainFragment();
         final ListPreference modePref =
                 (ListPreference) fragment.findPreference(TracingPreferences.UI_PREF_MODE);
 

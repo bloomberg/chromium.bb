@@ -82,7 +82,7 @@ public class TrustedWebActivityPreferencesUiTest {
         final SingleCategoryPreferences websitePreferences =
                 TestThreadUtils.runOnUiThreadBlocking(() -> {
                     final SingleCategoryPreferences preferences =
-                            (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
+                            (SingleCategoryPreferences) preferenceActivity.getMainFragment();
                     final ExpandablePreferenceGroup group =
                             (ExpandablePreferenceGroup) preferences.findPreference(groupName);
                     preferences.onPreferenceClick(group);
@@ -136,7 +136,7 @@ public class TrustedWebActivityPreferencesUiTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             final SingleWebsitePreferences websitePreferences =
-                    (SingleWebsitePreferences) preferenceActivity.getFragmentForTest();
+                    (SingleWebsitePreferences) preferenceActivity.getMainFragment();
             final ChromeImageViewPreference notificationPreference =
                     (ChromeImageViewPreference) websitePreferences.findPreference(
                             "push_notifications_list");

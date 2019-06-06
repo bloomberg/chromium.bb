@@ -78,7 +78,7 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategoryPreferences websitePreferences =
-                    (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
+                    (SingleCategoryPreferences) preferenceActivity.getMainFragment();
             ChromeSwitchPreference location =
                     (ChromeSwitchPreference) websitePreferences.findPreference(
                             SingleCategoryPreferences.BINARY_TOGGLE_KEY);
@@ -149,7 +149,7 @@ public class SiteSettingsPreferencesTest {
             @Override
             public void run() {
                 final SingleCategoryPreferences websitePreferences =
-                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
+                        (SingleCategoryPreferences) preferenceActivity.getMainFragment();
                 final ChromeSwitchPreference cookies =
                         (ChromeSwitchPreference) websitePreferences.findPreference(
                                 SingleCategoryPreferences.BINARY_TOGGLE_KEY);
@@ -176,7 +176,7 @@ public class SiteSettingsPreferencesTest {
             final boolean enabled) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             final SingleCategoryPreferences websitePreferences =
-                    (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
+                    (SingleCategoryPreferences) preferenceActivity.getMainFragment();
             final ChromeBaseCheckBoxPreference thirdPartyCookies =
                     (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
                             SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
@@ -195,7 +195,7 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategoryPreferences preferences =
-                    (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
+                    (SingleCategoryPreferences) preferenceActivity.getMainFragment();
             ChromeSwitchPreference toggle = (ChromeSwitchPreference) preferences.findPreference(
                     SingleCategoryPreferences.BINARY_TOGGLE_KEY);
             preferences.onPreferenceChange(toggle, enabled);
@@ -237,7 +237,7 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PreferenceFragment preferenceFragment =
-                    (PreferenceFragment) preferenceActivity.getFragmentForTest();
+                    (PreferenceFragment) preferenceActivity.getMainFragment();
             PreferenceScreen preferenceScreen = preferenceFragment.getPreferenceScreen();
             int preferenceCount = preferenceScreen.getPreferenceCount();
 
@@ -380,7 +380,7 @@ public class SiteSettingsPreferencesTest {
                 SiteSettingsTestUtils.startSingleWebsitePreferences(website);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleWebsitePreferences websitePreferences =
-                    (SingleWebsitePreferences) preferenceActivity.getFragmentForTest();
+                    (SingleWebsitePreferences) preferenceActivity.getMainFragment();
             websitePreferences.resetSite();
         });
         preferenceActivity.finish();
@@ -444,7 +444,7 @@ public class SiteSettingsPreferencesTest {
                 SiteSettingsTestUtils.startSiteSettingsMenu(SiteSettingsPreferences.MEDIA_KEY);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SiteSettingsPreferences siteSettings =
-                    (SiteSettingsPreferences) preferenceActivity.getFragmentForTest();
+                    (SiteSettingsPreferences) preferenceActivity.getMainFragment();
 
             SiteSettingsPreference allSites = (SiteSettingsPreference) siteSettings.findPreference(
                     SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.ALL_SITES));

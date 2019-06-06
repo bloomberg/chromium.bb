@@ -57,7 +57,7 @@ public class PasswordViewingTypeTest {
         mContext = InstrumentationRegistry.getTargetContext();
         mMainPreferences = (MainPreferences) startMainPreferences(
                 InstrumentationRegistry.getInstrumentation(), mContext)
-                                   .getFragmentForTest();
+                                   .getMainFragment();
         mPasswordsPref = (ChromeBasePreference) mMainPreferences.findPreference(
                 MainPreferences.PREF_SAVED_PASSWORDS);
         AndroidSyncSettings.overrideForTests(mSyncContentResolverDelegate, null);

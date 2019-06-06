@@ -63,7 +63,7 @@ public class NotificationsPreferencesTest {
     public void testContentSuggestionsToggle() {
         // clang-format on
 
-        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
+        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getMainFragment();
         final ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
                 NotificationsPreferences.PREF_SUGGESTIONS);
 
@@ -106,7 +106,7 @@ public class NotificationsPreferencesTest {
     public void testToggleDisabledWhenSuggestionsDisabled() {
         // clang-format on
 
-        PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
+        PreferenceFragment fragment = (PreferenceFragment) mActivity.getMainFragment();
         ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
                 NotificationsPreferences.PREF_SUGGESTIONS);
 
@@ -127,7 +127,7 @@ public class NotificationsPreferencesTest {
         // clang-format on
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
+            PreferenceFragment fragment = (PreferenceFragment) mActivity.getMainFragment();
             Preference fromWebsites =
                     fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
 
@@ -151,7 +151,7 @@ public class NotificationsPreferencesTest {
     /** Gets the fragment of the top Activity. Assumes the top Activity is a Preferences. */
     private static Fragment getTopFragment() {
         Preferences preferences = (Preferences) ApplicationStatus.getLastTrackedFocusedActivity();
-        return preferences.getFragmentForTest();
+        return preferences.getMainFragment();
     }
 
     // TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
@@ -164,7 +164,7 @@ public class NotificationsPreferencesTest {
     public void testWebsiteNotificationsSummary() {
         // clang-format on
 
-        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
+        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getMainFragment();
         final Preference fromWebsites =
                 fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
 
@@ -191,7 +191,7 @@ public class NotificationsPreferencesTest {
     public void prefHiddenWhenOnFeed() {
         // clang-format on
 
-        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
+        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getMainFragment();
         Assert.assertNull(fragment.findPreference(NotificationsPreferences.PREF_SUGGESTIONS));
     }
 

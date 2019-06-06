@@ -378,7 +378,7 @@ public class SigninTest {
     }
 
     private static MainPreferences getMainPreferences(Preferences prefActivity) {
-        Fragment fragment = prefActivity.getFragmentForTest();
+        Fragment fragment = prefActivity.getMainFragment();
         Assert.assertNotNull(fragment);
         Assert.assertTrue(fragment instanceof MainPreferences);
         return (MainPreferences) fragment;
@@ -394,7 +394,7 @@ public class SigninTest {
     }
 
     private static void clickSignOut(Preferences prefActivity) {
-        Fragment fragment = prefActivity.getFragmentForTest();
+        Fragment fragment = prefActivity.getMainFragment();
         Assert.assertNotNull(fragment);
         Assert.assertTrue(fragment instanceof AccountManagementFragment);
         AccountManagementFragment managementFragment = (AccountManagementFragment) fragment;

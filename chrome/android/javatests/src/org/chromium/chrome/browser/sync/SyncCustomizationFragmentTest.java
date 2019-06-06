@@ -657,7 +657,7 @@ public class SyncCustomizationFragmentTest {
     private SyncCustomizationFragment startSyncCustomizationFragment() {
         mPreferences = mSyncTestRule.startPreferences(SyncCustomizationFragment.class.getName());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        return (SyncCustomizationFragment) mPreferences.getFragmentForTest();
+        return (SyncCustomizationFragment) mPreferences.getMainFragment();
     }
 
     private void closeFragment(SyncCustomizationFragment fragment) {

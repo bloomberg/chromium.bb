@@ -314,12 +314,12 @@ public class SavePasswordsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Disable the timer for progress bar.
             SavePasswordsPreferences fragment =
-                    (SavePasswordsPreferences) preferences.getFragmentForTest();
+                    (SavePasswordsPreferences) preferences.getMainFragment();
             fragment.getExportFlowForTesting()
                     .getDialogManagerForTesting()
                     .replaceCallbackDelayerForTesting(mManualDelayer);
             // Now call onResume to nudge Chrome into continuing the export flow.
-            preferences.getFragmentForTest().onResume();
+            preferences.getMainFragment().onResume();
         });
     }
 
@@ -364,7 +364,7 @@ public class SavePasswordsPreferencesTest {
             Preferences preferences, int positiveButtonLabelId) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences fragment =
-                    (SavePasswordsPreferences) preferences.getFragmentForTest();
+                    (SavePasswordsPreferences) preferences.getMainFragment();
             // To show an error, the error type for UMA needs to be specified. Because it is not
             // relevant for cases when the error is forcibly displayed in tests,
             // HistogramExportResult.NO_CONSUMER is passed as an arbitrarily chosen value.
@@ -420,7 +420,7 @@ public class SavePasswordsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences savePasswordPreferences =
-                    (SavePasswordsPreferences) preferences.getFragmentForTest();
+                    (SavePasswordsPreferences) preferences.getMainFragment();
             // Emulate an update from PasswordStore. This should not crash.
             savePasswordPreferences.passwordListAvailable(0);
         });
@@ -443,7 +443,7 @@ public class SavePasswordsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences savedPasswordPrefs =
-                    (SavePasswordsPreferences) preferences.getFragmentForTest();
+                    (SavePasswordsPreferences) preferences.getMainFragment();
             ChromeSwitchPreference onOffSwitch =
                     (ChromeSwitchPreference) savedPasswordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
@@ -464,7 +464,7 @@ public class SavePasswordsPreferencesTest {
                         SavePasswordsPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences savedPasswordPrefs =
-                    (SavePasswordsPreferences) preferences2.getFragmentForTest();
+                    (SavePasswordsPreferences) preferences2.getMainFragment();
             ChromeSwitchPreference onOffSwitch =
                     (ChromeSwitchPreference) savedPasswordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
@@ -490,7 +490,7 @@ public class SavePasswordsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences passwordPrefs =
-                    (SavePasswordsPreferences) preferences.getFragmentForTest();
+                    (SavePasswordsPreferences) preferences.getMainFragment();
             ChromeBaseCheckBoxPreference onOffSwitch =
                     (ChromeBaseCheckBoxPreference) passwordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
@@ -512,7 +512,7 @@ public class SavePasswordsPreferencesTest {
                         SavePasswordsPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences passwordPrefs =
-                    (SavePasswordsPreferences) preferences2.getFragmentForTest();
+                    (SavePasswordsPreferences) preferences2.getMainFragment();
             ChromeBaseCheckBoxPreference onOffSwitch =
                     (ChromeBaseCheckBoxPreference) passwordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
@@ -661,8 +661,7 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.resetLastReauth();
 
         // Now call onResume to nudge Chrome into continuing the export flow.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { preferences.getFragmentForTest().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
 
         // Check that the warning dialog is not displayed.
         Espresso.onView(withText(R.string.settings_passwords_export_description))
@@ -750,8 +749,7 @@ public class SavePasswordsPreferencesTest {
                 .perform(click());
         // The reauthentication dialog is skipped and the last reauthentication timestamp is not
         // reset. This looks like a failed reauthentication to SavePasswordsPreferences' onResume.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { preferences.getFragmentForTest().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
         checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
@@ -876,8 +874,7 @@ public class SavePasswordsPreferencesTest {
 
         // Call onResume to simulate that the user put Chrome into background by opening "recent
         // apps" and then restored Chrome by choosing it from the list.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { preferences.getFragmentForTest().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
 
         File tempFile = createFakeExportedPasswordsFile();
         // Pretend that passwords have been serialized to go directly to the intent.
@@ -960,8 +957,7 @@ public class SavePasswordsPreferencesTest {
 
         // Call onResume to simulate that the user put Chrome into background by opening "recent
         // apps" and then restored Chrome by choosing it from the list.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { preferences.getFragmentForTest().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
 
         // Cancel the export warning.
         Espresso.onView(withText(R.string.cancel)).perform(click());
@@ -1005,8 +1001,7 @@ public class SavePasswordsPreferencesTest {
 
         // Call onResume to simulate that the user put Chrome into background by opening "recent
         // apps" and then restored Chrome by choosing it from the list.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { preferences.getFragmentForTest().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
 
         // Check that export warning is not visible again.
         Espresso.onView(withText(R.string.cancel)).check(doesNotExist());
@@ -1456,7 +1451,7 @@ public class SavePasswordsPreferencesTest {
                 (SavePasswordsPreferences) PreferencesTest
                         .startPreferences(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
-                        .getFragmentForTest();
+                        .getMainFragment();
 
         // Force the search option into the action bar.
         TestThreadUtils.runOnUiThreadBlocking(
@@ -1480,7 +1475,7 @@ public class SavePasswordsPreferencesTest {
                 (SavePasswordsPreferences) PreferencesTest
                         .startPreferences(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
-                        .getFragmentForTest();
+                        .getMainFragment();
 
         // Force the search option into the overflow menu.
         TestThreadUtils.runOnUiThreadBlocking(
@@ -1639,7 +1634,7 @@ public class SavePasswordsPreferencesTest {
                 (SavePasswordsPreferences) PreferencesTest
                         .startPreferences(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
-                        .getFragmentForTest();
+                        .getMainFragment();
 
         Espresso.onView(withText(R.string.section_saved_passwords_exceptions)).perform(scrollTo());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -1674,7 +1669,7 @@ public class SavePasswordsPreferencesTest {
                 (SavePasswordsPreferences) PreferencesTest
                         .startPreferences(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
-                        .getFragmentForTest();
+                        .getMainFragment();
         final AtomicReference<Boolean> menuInitiallyVisible = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
@@ -1783,7 +1778,7 @@ public class SavePasswordsPreferencesTest {
                 (SavePasswordsPreferences) PreferencesTest
                         .startPreferences(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
-                        .getFragmentForTest();
+                        .getMainFragment();
         Espresso.onView(withId(R.id.search_button)).check(matches(isDisplayed()));
         final AtomicReference<ColorFilter> passwordSearchFilter = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {

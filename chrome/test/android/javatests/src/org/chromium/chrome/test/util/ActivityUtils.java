@@ -203,9 +203,9 @@ public class ActivityUtils {
                 new Criteria("Could not find fragment " + fragmentClass) {
                     @Override
                     public boolean isSatisfied() {
-                        return fragmentClass.isInstance(activity.getFragmentForTest());
+                        return fragmentClass.isInstance(activity.getMainFragment());
                     }
                 }, ACTIVITY_START_TIMEOUT_MS, CONDITION_POLL_INTERVAL_MS);
-        return (T) activity.getFragmentForTest();
+        return (T) activity.getMainFragment();
     }
 }

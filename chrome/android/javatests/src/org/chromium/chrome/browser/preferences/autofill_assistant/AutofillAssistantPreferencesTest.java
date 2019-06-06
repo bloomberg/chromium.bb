@@ -85,7 +85,7 @@ public class AutofillAssistantPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AutofillAssistantPreferences autofillAssistantPrefs =
-                    (AutofillAssistantPreferences) preferences.getFragmentForTest();
+                    (AutofillAssistantPreferences) preferences.getMainFragment();
             ChromeSwitchPreference onOffSwitch =
                     (ChromeSwitchPreference) autofillAssistantPrefs.findPreference(
                             AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH);
@@ -105,7 +105,7 @@ public class AutofillAssistantPreferencesTest {
                         AutofillAssistantPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AutofillAssistantPreferences autofillAssistantPrefs =
-                    (AutofillAssistantPreferences) preferences2.getFragmentForTest();
+                    (AutofillAssistantPreferences) preferences2.getMainFragment();
             ChromeSwitchPreference onOffSwitch =
                     (ChromeSwitchPreference) autofillAssistantPrefs.findPreference(
                             AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH);
@@ -128,7 +128,7 @@ public class AutofillAssistantPreferencesTest {
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            MainPreferences mainPrefs = (MainPreferences) preferences.getFragmentForTest();
+            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragment();
             Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
                     is(nullValue()));
         });
@@ -149,7 +149,7 @@ public class AutofillAssistantPreferencesTest {
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            MainPreferences mainPrefs = (MainPreferences) preferences.getFragmentForTest();
+            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragment();
             Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
                     is(not(nullValue())));
         });
@@ -167,7 +167,7 @@ public class AutofillAssistantPreferencesTest {
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            MainPreferences mainPrefs = (MainPreferences) preferences.getFragmentForTest();
+            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragment();
             Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
                     is(nullValue()));
         });

@@ -112,8 +112,7 @@ public class PreferencesTest {
 
         // Set the second search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEnginePreference pref =
-                    (SearchEnginePreference) prefActivity.getFragmentForTest();
+            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
             pref.setValueForTesting("1");
 
             // Ensure that the second search engine in the list is selected.
@@ -235,15 +234,13 @@ public class PreferencesTest {
 
         // Set the first search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEnginePreference pref =
-                    (SearchEnginePreference) prefActivity.getFragmentForTest();
+            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
             pref.setValueForTesting("0");
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Ensure that the first search engine in the list is selected.
-            SearchEnginePreference pref =
-                    (SearchEnginePreference) prefActivity.getFragmentForTest();
+            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
             Assert.assertNotNull(pref);
             Assert.assertEquals("0", pref.getValueForTesting());
 
@@ -313,7 +310,7 @@ public class PreferencesTest {
         String accessibilityPrefClassname = AccessibilityPreferences.class.getName();
         AccessibilityPreferences accessibilityPref = (AccessibilityPreferences) startPreferences(
                 InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
-                                                             .getFragmentForTest();
+                                                             .getMainFragment();
         SeekBarPreference textScalePref = (SeekBarPreference) accessibilityPref.findPreference(
                 AccessibilityPreferences.PREF_TEXT_SCALE);
         SeekBarLinkedCheckBoxPreference forceEnableZoomPref =
