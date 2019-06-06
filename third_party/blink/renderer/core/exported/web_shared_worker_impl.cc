@@ -353,6 +353,13 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
   // fetch (https://crbug.com/824646).
   mojom::ScriptType script_type = mojom::ScriptType::kClassic;
 
+  auto worker_settings = std::make_unique<WorkerSettings>(
+      false /* disable_reading_from_canvas */,
+      false /* strict_mixed_content_checking */,
+      true /* allow_running_of_insecure_content */,
+      false /* strictly_block_blockable_mixed_content */,
+      GenericFontFamilySettings());
+
   if (features::IsOffMainThreadSharedWorkerScriptFetchEnabled()) {
     // Off-the-main-thread script fetch:
     // Some params (e.g., referrer policy, address space, CSP) passed to
@@ -369,8 +376,8 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
         document->IsSecureContext(), outside_settings_object->GetHttpsState(),
         CreateWorkerClients(), base::nullopt /* response_address_space */,
         nullptr /* origin_trial_tokens */, devtools_worker_token_,
-        std::make_unique<WorkerSettings>(document->GetFrame()->GetSettings()),
-        kV8CacheOptionsDefault, nullptr /* worklet_module_response_map */,
+        std::move(worker_settings), kV8CacheOptionsDefault,
+        nullptr /* worklet_module_response_map */,
         std::move(pending_interface_provider_), BeginFrameProviderParams(),
         nullptr /* parent_feature_policy */, base::UnguessableToken());
     StartWorkerThread(std::move(creation_params), script_request_url_,
@@ -405,8 +412,8 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
       document->IsSecureContext(), outside_settings_object->GetHttpsState(),
       CreateWorkerClients(), main_script_loader_->ResponseAddressSpace(),
       main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
-      std::make_unique<WorkerSettings>(document->GetFrame()->GetSettings()),
-      kV8CacheOptionsDefault, nullptr /* worklet_module_response_map */,
+      std::move(worker_settings), kV8CacheOptionsDefault,
+      nullptr /* worklet_module_response_map */,
       std::move(pending_interface_provider_));
   StartWorkerThread(std::move(creation_params), script_response_url,
                     main_script_loader_->SourceText(),
