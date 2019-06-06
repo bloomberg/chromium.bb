@@ -95,6 +95,9 @@ A convenient way to copy chrome over to a Windows box is to build the
 `mini_installer` target.  Then, copy just `mini_installer.exe` over
 to the Windows box and run it to install the chrome you just built.
 
+Note that the `mini_installer` doesn't include PDB files. PDB files are needed
+to correctly symbolize stack traces (or if you want to attach a debugger).
+
 ## Running tests on swarming
 
 You can run the Windows binaries you built on swarming, like so:
