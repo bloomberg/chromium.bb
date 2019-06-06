@@ -1191,7 +1191,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   // current thread to avoid locks in most cases.
   if (thread_id == static_cast<int>(PlatformThread::CurrentId())) {
     const char* new_name =
-        ThreadIdNameManager::GetInstance()->GetName(thread_id);
+        ThreadIdNameManager::GetInstance()->GetNameForCurrentThread();
     // Check if the thread name has been set or changed since the previous
     // call (if any), but don't bother if the new name is empty. Note this will
     // not detect a thread name change within the same char* buffer address: we
